@@ -5,17 +5,17 @@
 Resume the axiom-based migration without reopening settled choices or replaying completed phases.
 This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
-Updated 2026-10-15.
+Updated 2026-10-16.
 
 ## Active work on 2026-10-15
 
-### MiMo first-group failure reopened
+### MiMo first-group correction and direct Bash review
 
 The real MiMo session at 23:29:17 UTC reached manual fallback on its first group of two Bash calls.
 The displayed error was `Original policy review and evidence closure failed`.
 The session records the user's Stop response and two aborted tool results.
 The prior installed controls covered authored codemode responses and did not establish this boundary.
-The handoff-ready conclusion is withdrawn pending reproduction and correction.
+That handoff-ready conclusion was withdrawn until the configured-catalog failure was reproduced and corrected.
 
 The configured replay now reproduces the exact aggregate with a settled catalog of 40 MCP tools.
 The nested cause is `DependencyDeadlineError: Original dependency assessment deadline expired`.
@@ -31,8 +31,8 @@ the 20-tool immediate-start probe observed a catalog change during confirmation.
 Neither is substituted for the reproduced aggregate.
 
 - [x] Recover a nested failure reproducing the exact two-call shape in a disposable host.
-- [ ] Correct the demonstrated cause and verify the real configured consumer boundary.
-- [ ] Retain regression evidence and update the MiMo handoff readiness.
+- [x] Correct the demonstrated cause and verify the real configured consumer boundary.
+- [x] Retain regression evidence and update the MiMo handoff readiness.
 
 The candidate fix `5a8760d15f` passes the unchanged 40-tool replay and reduces binding parent checks
 from 257 to 2 for 256 retained inputs.
@@ -41,15 +41,13 @@ omitting the final parent check makes the adversarial test fail.
 The full cached catalog (66 BrowserOS tools and 74 Linear tools) exposed a separate request-preparation ceiling:
 `Original request tool schemas exceed the 10000-property profile`.
 This happens before the provider request and is not the original review-deadline exception.
-The candidate is not installed while this configured-consumer blocker remains open.
-Receipt: `${HOME}/temp/agent/pi-host-isolation-20261015/mimo-full-candidate.log`.
-Next action: remove the remaining schema-count ceiling while preserving descriptor freshness,
-then repeat the full catalog and installed-command checks.
+Commit `ac68881314` removes that ceiling while preserving descriptor freshness and structural rejection.
+The maintained test retains 12,000 properties and rejects changed properties, accessors, and unexpected prototypes.
+The intermediate failure receipt is `${HOME}/temp/agent/pi-host-isolation-20261015/mimo-full-candidate.log`.
 
 The user explicitly requires direct Bash calls to receive automatic review as well.
-Extend the complete-operation review boundary to direct Bash groups;
-retain uncertainty fallback and governing prohibitions.
-Add allowed, prohibited, and mixed-group consumer controls, then replay the original MiMo group.
+The complete-operation review boundary now includes direct Bash groups,
+retaining uncertainty fallback and governing prohibitions.
 
 Commit `3827af2da9` replaces the repeated retained-origin search with a source-identity index.
 The full cached catalog generated 83,404 message inputs and 83,399 retained origins in the diagnostic fixture.
@@ -72,11 +70,49 @@ The permission clause's selected probability was 0.75;
 other clauses remained uncertain, so the original confirmation dialog appeared.
 The scripted Stop executed neither command.
 This proves live model dispatch and uncertainty fallback, not automatic approval of the complete live context.
-Live prohibition and scoped confirmation checks remain in progress before installation.
+The live candidate prohibition fixture `pi-hyper-rpc-prohibited-GaSZbp` received HTTP 200,
+opened no dialog,
+and blocked both commands.
+Candidate fixture `pi-hyper-rpc-allow-kBHlyH` passed scripted scoped confirmation and executed both commands.
+
+The corrected runtime is installed as `native-release-tmMxY3`.
+The installed `bin/pi` consumer repeats the complete configured-host fixture,
+including 17 configured packages,
+27 home-discovered skills,
+and all 140 cached MCP tools.
+Fixture `pi-hyper-rpc-allow-LuIIFZ` sent 94 questions to live Luna,
+received HTTP 200,
+and executed both native Bash commands after one scripted Allow.
+This is automatic review with uncertainty fallback, not a claim that the model automatically approved the group.
+New Pi processes load the new release; existing processes retain their loaded release.
+
+Final built policy and scope units pass,
+as do package type checking and installed direct Bash,
+message freshness,
+schema capacity,
+source-freshness work,
+bypass,
+and existing native program permission/prohibition/unspecified controls.
+Removing the final parent check still makes the adversarial freshness regression fail.
+The focused lint measured 635 warnings and one error across 14 changed files;
+the sole error was a rest-parameter test wrapper.
+After replacing it with the native callback's explicit arguments,
+that file reports 95 warnings and zero errors.
+The unchanged files had no errors in the first pass.
+These are focused checks and do not claim the package is lint-clean.
+Receipts live under `${HOME}/temp/agent/pi-host-isolation-20261015/`:
+`direct-final-semantic.log`, `direct-final-types.log`, `direct-installed-regressions.log`,
+`direct-installed-additional.log`, `mimo-omission-final.log`, `direct-final-lint.log`,
+`direct-test-final-lint.log`, and `direct-installed-allow.log`.
+The warning queue is ready for the [MiMo cleanup prompt](pi-auto-mode-mimo-lint-prompt.md).
+
+The user accepted the VUB clarification requiring configured extensions, skills, and tool catalogs in consumer checks.
+`AGENTS.md` is updated and `CLAUDE.md` regenerated through file-enforcer.
 
 ### Host-isolation replacement complete
 
-The corrected native host is installed as `native-release-Yhc7sX` and verified through the original `pi` command.
+The host-isolation release was installed as `native-release-Yhc7sX` and verified through the original `pi` command.
+It is superseded by `native-release-tmMxY3` for new processes on 2026-10-16.
 New Pi processes load it; existing processes retain their loaded release.
 All functional work in this section is complete.
 The remaining warning cleanup belongs to the requested [MiMo handoff](pi-auto-mode-mimo-lint-prompt.md).

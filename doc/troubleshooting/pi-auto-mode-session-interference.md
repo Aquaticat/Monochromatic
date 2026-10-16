@@ -310,7 +310,7 @@ The maintained regression measured 257 full parent checks for 256 retained input
 compared with 2 checks for a single input.
 Commit `5a8760d15f` performs local identity checks during construction and brackets the collection
 with parent validation.
-`package/pi-plugin/auto-mode/native/contract/integration/policy-source/run-messages.mjs:118`:
+`package/pi-plugin/auto-mode/native/contract/integration/policy-source/run-messages.mjs:116`:
 
 ```js
 // package/pi-plugin/auto-mode/native/contract/integration/policy-source/run-messages.mjs
