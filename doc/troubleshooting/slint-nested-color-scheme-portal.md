@@ -540,8 +540,27 @@ for `appearance_portal.rs`,
 `appearance_portal_tests.rs`,
 and `appearance_accent_tests.rs`.
 That check retained three pre-existing `rust/no-anonymous-functions` warnings and reported no errors.
-The complete cloud chooser rerun remains pending;
-the passing protocol tests alone do not establish recovery of the observed Zenity crash.
+The [complete cloud rerun](https://github.com/Aquaticats/Monochromatic/actions/runs/38833901553/job/116758578135)
+at immutable source `93560fbb09` then passed 117 checks with no failures and one not-injectable check.
+All seven sessions exited with status 0.
+The chooser check observed a dialog covering 800000 pixels,
+closed it with Escape,
+and verified keyboard focus returned to the player by opening Search with `Ctrl+F`.
+The subprocess probe recorded Zenity exiting with status 1 and no signal after cancellation;
+its captured stderr contained no variant-format assertion or `SIGSEGV`.
+This verifies the correction at the original chooser boundary on the prepared Depot runner.
+The job took 410 seconds,
+including a 185-second interaction step.
+
+The same captured stderr retains separate accessibility-bus,
+dconf-service,
+and transient-parent diagnostics.
+Those diagnostics did not fail this suite;
+their underlying behavior remains separate from the corrected reply contract.
+The not-injectable case is `double-shift/repeat`,
+whose harness explicitly reports a skip and points to pure detector coverage.
+These remaining findings are tracked separately from issue 1004.
+Issue 1004 remains open until the trial correction is integrated into the main branch.
 
 ### Upstream filing decision for the malformed reply
 
@@ -552,7 +571,9 @@ the passing protocol tests alone do not establish recovery of the observed Zenit
 4.  No external contribution policy is needed for the repository-owned correction.
 5.  No upstream maintainer decision is being requested.
 6.  The committed regression failed before the wrapper correction and passed afterward;
-    complete chooser verification is pending.
+    the complete cloud rerun also passed the chooser open,
+    cancel,
+    and restored-focus checks.
 
 No upstream issue or comment is proposed.
 The existing repository issue owns the consumer failure.
