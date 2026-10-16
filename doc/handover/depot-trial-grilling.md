@@ -57,7 +57,14 @@ and held-modifier repeat remained not injectable.
 Keyboard selection recovered the thirty-track fixture;
 installing Zenity did not recover the chooser check.
 Trial run `38832349057` reproduced the chooser failure while proving the shortcut reached the application.
-Run `38832874391` captures the chooser subprocess exit and stderr without changing its arguments.
+Run `38832874391` captured a Zenity `SIGSEGV` after 163 ms.
+GLib reported a `v` variant expected but a `u` value received.
+The private appearance portal returns the same shape from `Read` and `ReadOne`,
+although the current XDG contract requires an extra variant layer for deprecated `Read`.
+Trial commit `5eb02af048` adds exact wire-value signature assertions;
+the red verification is running before an implementation change.
+Issue [#1004](https://github.com/Aquaticats/Monochromatic/issues/1004)
+now contains the subprocess evidence.
 The desktop cost overlay is complete:
 daily-latest Depot allocation is USD 24.13 for the measured subset,
 while every-affected allocation retaining the container build is USD 166.56 on Developer.

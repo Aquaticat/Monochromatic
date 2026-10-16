@@ -251,6 +251,17 @@ the interaction step took 199 seconds.
 These are single-run observations and do not establish timing variance.
 [Full-session run](https://github.com/Aquaticats/Monochromatic/actions/runs/38831098294)
 
+Transparent subprocess capture in `38832874391` then recorded Zenity crashing with `SIGSEGV` after 163 ms.
+GLib reported a variant-format mismatch:
+`v` was expected but `u` was received.
+The private appearance portal's deprecated `Read` method currently returns the same shape as `ReadOne`,
+while the XDG contract documents an additional variant layer for `Read`.
+Exact signature tests are being checked against the existing implementation before a trial correction.
+The subprocess failure is observed;
+recovery from the proposed contract correction remains unverified.
+[Chooser issue and diagnostic](https://github.com/Aquaticats/Monochromatic/issues/1004#issuecomment-6205699992),
+[Settings contract](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html)
+
 Android artifact run `38826684750` built both native ABIs and the app/test APKs successfully.
 Those APKs installed on an isolated local headed Android 37 x86_64 emulator with 16 KiB pages.
 The unfiltered instrumentation invocation reported 16 cases and two failures in `SessionStoreTest`,
