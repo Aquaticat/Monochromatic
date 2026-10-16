@@ -26,7 +26,8 @@ GitHub's job API records source `aa25cce3386f50873acb1921892d5a730e042b29`,
 runner `depot-ubuntu-24.04-16`,
 start `2026-10-16T00:43:27Z`,
 and completion `2026-10-16T00:50:48Z`.
-The full job took **441 seconds**, or **7.35 elapsed minutes**.
+The full job took **441 seconds**,
+or **7.35 elapsed minutes**.
 The interaction step took 199 seconds;
 substituting that step for the full interval would omit checkout,
 dependencies,
