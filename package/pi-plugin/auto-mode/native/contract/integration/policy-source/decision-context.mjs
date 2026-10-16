@@ -3,12 +3,23 @@ import {buildVisibleContext} from '../maintained-policy.mjs';
 import {sessionEntryToContextMessages} from '../native-batch/generated/session-manager.mjs';
 
 //region Current policy and visible conversation are selected before semantic candidates.
+/** A transcript copy of the complete governing file uses the same selected-excerpt boundary. */
+function omitCompletePolicyCopies({content,policy}){
+ if(content==='')return content;
+ const complete=policy.content.trimEnd();
+ if(complete==='')return content;
+ const projected=JSON.parse(content,function selectedPolicyReference(_key,value){
+  return typeof value==='string'?value.replaceAll(complete,'[Project policy content is represented by the selected original rule excerpts.]'):value;
+ });
+ return JSON.stringify(projected);
+}
 /** Retained callback receipts authenticate inputs locally; they are not additional current instructions. */
 export function captureDecisionContext({snapshot,session,input}){
- const content=session?buildVisibleContext({
+ const visible=session?buildVisibleContext({
    entries:session.sessionManager.buildContextEntries(),
    project:sessionEntryToContextMessages
  }):'';
+ const content=omitCompletePolicyCopies({content:visible,policy:snapshot.hostGoverningPolicy});
  const conversation=content===''?undefined:Object.freeze({
    kind:'native-visible-conversation',
    content,
