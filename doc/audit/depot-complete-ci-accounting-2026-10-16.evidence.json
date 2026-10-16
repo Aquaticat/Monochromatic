@@ -1,0 +1,201 @@
+{
+  "observedAt": "2026-10-16T02:22:26.670Z",
+  "verification": {
+    "passed": true,
+    "positiveControl": {
+      "providerSeconds": 52,
+      "wallSeconds": 30,
+      "activeUnionSeconds": 29,
+      "dependencySeconds": 25,
+      "vcpuSeconds": 150
+    },
+    "successfulFixtures": [
+      "valid",
+      "missing",
+      "cancelled",
+      "failed",
+      "retry"
+    ],
+    "rejectedFixtures": [
+      "duplicate-attempt",
+      "wrong-revision",
+      "cyclic",
+      "unknown-check",
+      "missing-selected-check",
+      "unrelated-package",
+      "oxlint-file-filter",
+      "oxlint-file-mode",
+      "empty-manifest"
+    ]
+  },
+  "collectorControl": {
+    "collectedAt": "2026-10-16T02:17:05.325Z",
+    "org": "l4zncjjbj5",
+    "runId": "wf9xzbwfph",
+    "revision": "b1d360002d08b38eeddedaec1bd8b235dc296c83",
+    "status": "finished",
+    "attempts": [
+      {
+        "workflowId": "kcch748kcg",
+        "jobId": "2bp65ww5t3",
+        "jobKey": "_inline_0.yaml:rust-split:matrix-0",
+        "attemptId": "0lz28tpjxp",
+        "attempt": 1,
+        "status": "finished",
+        "metricsPath": "metrics-0lz28tpjxp.json",
+        "logPath": "logs-0lz28tpjxp.jsonl",
+        "logSha256": "c696f47462a39a8abb07ace84baa42be75ec286be8444995fbcee4072628eb22",
+        "logRecords": 556,
+        "providerAttempt": {
+          "attempt_id": "0lz28tpjxp",
+          "attempt": 1,
+          "status": "finished",
+          "conclusion": "success",
+          "sandbox_id": "l9kzx72fj3fb0hcs4470",
+          "session_id": "23cf7faf-a69b-4698-9ea9-760a5925095c",
+          "created_at": "2026-10-16T01:46:39.407Z",
+          "started_at": "2026-10-16T01:46:41.145Z",
+          "finished_at": "2026-10-16T01:47:30.905Z"
+        }
+      },
+      {
+        "workflowId": "kcch748kcg",
+        "jobId": "s5nfgm9nrk",
+        "jobKey": "_inline_0.yaml:rust-split:matrix-1",
+        "attemptId": "v89w2hw070",
+        "attempt": 1,
+        "status": "finished",
+        "metricsPath": "metrics-v89w2hw070.json",
+        "logPath": "logs-v89w2hw070.jsonl",
+        "logSha256": "120eb78b3702c622bd521756e53ab20ce32639626e508828af0bb33eade2f94e",
+        "logRecords": 751,
+        "providerAttempt": {
+          "attempt_id": "v89w2hw070",
+          "attempt": 1,
+          "status": "finished",
+          "conclusion": "success",
+          "sandbox_id": "4cfr99p7b0dc4c584vsq",
+          "session_id": "de5b2074-51a0-4b47-8e69-48eea444c6e6",
+          "created_at": "2026-10-16T01:46:39.408Z",
+          "started_at": "2026-10-16T01:46:41.113Z",
+          "finished_at": "2026-10-16T01:47:34.868Z"
+        }
+      }
+    ],
+    "artifactCount": 0,
+    "scope": "Read-only collection. Provider intervals require declared resources before pricing. Gate completion needs independent manifest reconciliation."
+  },
+  "harness": {
+    "path": "/var/mnt/encrypted/temp/agent/depot-complete-accounting-20261016/mise.toml",
+    "sha256": "d52404f38b4399a8bdc48e064e17657b41a4ec0afe3d24f4465ae06b936ee2d3",
+    "normalizedExample": {
+      "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "requestedAt": "2026-10-16T00:00:00.000Z",
+      "observedAt": "2026-10-16T00:00:40.000Z",
+      "manifest": [
+        {
+          "id": "build",
+          "needs": [],
+          "packagePath": "package/module/example"
+        },
+        {
+          "id": "lint",
+          "needs": [],
+          "packagePath": "package/module/example",
+          "family": "oxlint",
+          "executionScope": "project",
+          "task": "//package/module/example:lint:oxlint",
+          "arguments": []
+        },
+        {
+          "id": "test",
+          "needs": [
+            "build"
+          ],
+          "packagePath": "package/module/example"
+        }
+      ],
+      "checks": [
+        {
+          "id": "build",
+          "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "startedAt": "2026-10-16T00:00:05.000Z",
+          "finishedAt": "2026-10-16T00:00:15.000Z",
+          "conclusion": "success",
+          "executed": true,
+          "evidenceVerified": true,
+          "attemptIds": [
+            "shared"
+          ]
+        },
+        {
+          "id": "lint",
+          "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "startedAt": "2026-10-16T00:00:05.000Z",
+          "finishedAt": "2026-10-16T00:00:25.000Z",
+          "conclusion": "success",
+          "executed": true,
+          "evidenceVerified": true,
+          "attemptIds": [
+            "lint-job"
+          ]
+        },
+        {
+          "id": "test",
+          "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "startedAt": "2026-10-16T00:00:15.000Z",
+          "finishedAt": "2026-10-16T00:00:30.000Z",
+          "conclusion": "success",
+          "executed": true,
+          "evidenceVerified": true,
+          "attemptIds": [
+            "shared"
+          ]
+        }
+      ],
+      "attempts": [
+        {
+          "id": "shared",
+          "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "startedAt": "2026-10-16T00:00:03.000Z",
+          "finishedAt": "2026-10-16T00:00:32.000Z",
+          "product": "ci",
+          "vcpus": 2
+        },
+        {
+          "id": "lint-job",
+          "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "startedAt": "2026-10-16T00:00:04.000Z",
+          "finishedAt": "2026-10-16T00:00:27.000Z",
+          "product": "ci",
+          "vcpus": 4
+        }
+      ],
+      "selection": {
+        "base": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "head": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "changedFiles": [
+          "package/module/example/src/index.ts"
+        ],
+        "affectedPackages": [
+          "package/module/example"
+        ],
+        "excludedPackages": [
+          "package/module/unrelated"
+        ],
+        "selectedCheckIds": [
+          "build",
+          "lint",
+          "test"
+        ],
+        "selectorSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      }
+    },
+    "source": "[tasks.collect]\nshell = \"node --input-type=module-typescript -e\"\nrun = '''\nconst {execFileSync} = await import('node:child_process');\nconst {mkdirSync,writeFileSync,readFileSync} = await import('node:fs');\nconst {createHash} = await import('node:crypto');\nconst {join} = await import('node:path');\nconst runId=process.env.DEPOT_ACCOUNTING_RUN;\nif(!runId || !/^[a-z0-9]+$/.test(runId))throw new Error('DEPOT_ACCOUNTING_RUN must name one run');\nconst org=process.env.DEPOT_ACCOUNTING_ORG??'l4zncjjbj5';\nconst dir=join(process.cwd(),`collected-${runId}`);\nmkdirSync(dir,{recursive:true,mode:0o700});\nconst get=(args,name)=>{\n  const raw=execFileSync('depot',[...args,'--org',org,'--output','json'],{encoding:'utf8',maxBuffer:64*1024*1024});\n  writeFileSync(join(dir,name),raw);\n  return JSON.parse(raw);\n};\nconst status=get(['ci','status',runId],'status.json');\nconst run=get(['ci','run','show',runId],'run.json');\nconst expected=process.env.DEPOT_ACCOUNTING_SHA;\nconst actual=run.head_sha??run.run?.head_sha??run.sha??run.run?.sha;\nif(expected && actual!==expected)throw new Error(`Run revision differs: expected ${expected}, got ${actual}`);\nconst attempts=[];\nfor(const workflow of status.workflows??[])for(const job of workflow.jobs??[])for(const attempt of job.attempts??[]){\n  if(attempts.some(row=>row.attemptId===attempt.attempt_id))throw new Error(`Repeated attempt ${attempt.attempt_id}`);\n  const metrics=get(['ci','metrics',attempt.attempt_id],`metrics-${attempt.attempt_id}.json`);\n  const logPath=join(dir,`logs-${attempt.attempt_id}.jsonl`);\n  execFileSync('depot',['ci','logs',attempt.attempt_id,'--org',org,'--output','json','--output-file',logPath],{encoding:'utf8',maxBuffer:1024*1024});\n  const raw=readFileSync(logPath);\n  const lines=raw.toString().split('\\n').filter(Boolean).map(line=>JSON.parse(line));\n  attempts.push({workflowId:workflow.workflow_id,jobId:job.job_id,jobKey:job.job_key,attemptId:attempt.attempt_id,attempt:attempt.attempt,status:attempt.status,metricsPath:`metrics-${attempt.attempt_id}.json`,logPath:`logs-${attempt.attempt_id}.jsonl`,logSha256:createHash('sha256').update(raw).digest('hex'),logRecords:lines.length,providerAttempt:metrics.attempt?.attempt??metrics.attempt});\n}\nconst artifacts=get(['ci','artifacts','list',runId],'artifacts.json');\nconst summary={collectedAt:new Date().toISOString(),org,runId,revision:actual,status:status.status,attempts,artifactCount:artifacts.artifacts?.length??0,scope:'Read-only collection. Provider intervals require declared resources before pricing. Gate completion needs independent manifest reconciliation.'};\nwriteFileSync(join(dir,'collection.json'),JSON.stringify(summary,null,2)+'\\n');\nconsole.log(JSON.stringify({runId,revision:actual,attempts:attempts.length,artifactCount:summary.artifactCount,dir}));\n'''\n\n[tasks.analyze]\nshell = \"node --input-type=module-typescript -e\"\nrun = '''\nconst {readFileSync,writeFileSync} = await import('node:fs');\nconst {createHash} = await import('node:crypto');\nconst inputPath=process.env.DEPOT_ACCOUNTING_INPUT;\nif(!inputPath)throw new Error('DEPOT_ACCOUNTING_INPUT must name normalized evidence');\nconst raw=readFileSync(inputPath);\nconst input=JSON.parse(raw);\nconst instant=value=>{\n  const parsed=Date.parse(value);\n  if(!Number.isFinite(parsed))throw new Error(`Invalid timestamp ${value}`);\n  return parsed;\n};\nconst unique=(rows,label)=>{\n  const ids=rows.map(row=>row.id);\n  if(new Set(ids).size!==ids.length)throw new Error(`Duplicate ${label} identity`);\n};\nconst union=intervals=>{\n  const ordered=intervals.toSorted((a,b)=>a[0]-b[0]);\n  let total=0,end=-Infinity;\n  for(const [start,stop]of ordered){\n    if(stop<start)throw new Error('Negative interval');\n    total+=Math.max(0,stop-Math.max(start,end));\n    end=Math.max(end,stop);\n  }\n  return total/1000;\n};\nconst evaluate=evidence=>{\n  if(!/^[a-f0-9]{40}$/.test(evidence.revision))throw new Error('Immutable revision required');\n  if(evidence.manifest.length===0)throw new Error('Trial manifest cannot be empty');\n  unique(evidence.manifest,'manifest');unique(evidence.checks,'check');unique(evidence.attempts,'attempt');\n  const selection=evidence.selection;\n  if(!selection||!/^[a-f0-9]{40}$/.test(selection.base)||selection.head!==evidence.revision)throw new Error('Frozen change-selection base/head required');\n  if(!Array.isArray(selection.changedFiles)||!Array.isArray(selection.affectedPackages)||!Array.isArray(selection.excludedPackages))throw new Error('Selection inventory required');\n  if(!/^[a-f0-9]{64}$/.test(selection.selectorSha256))throw new Error('Selector fingerprint required');\n  if(selection.affectedPackages.some(path=>selection.excludedPackages.includes(path)))throw new Error('Affected package also excluded');\n  const actualIds=evidence.manifest.map(row=>row.id).toSorted();\n  if(JSON.stringify(actualIds)!==JSON.stringify([...selection.selectedCheckIds].toSorted()))throw new Error('Manifest differs from selected required checks');\n  for(const spec of evidence.manifest){\n    if(!selection.affectedPackages.includes(spec.packagePath))throw new Error(`Unrelated package selected ${spec.id}`);\n    if(spec.family==='oxlint'&&(spec.executionScope!=='project'||spec.arguments?.length!==0||!spec.task?.endsWith(':lint:oxlint')))throw new Error(`Oxlint requires whole selected project ${spec.id}`);\n  }\n  const requested=instant(evidence.requestedAt),observed=instant(evidence.observedAt);\n  if(observed<requested)throw new Error('Observation predates request');\n  const manifest=new Map(evidence.manifest.map(row=>[row.id,row]));\n  for(const row of evidence.checks)if(!manifest.has(row.id))throw new Error(`Unknown check ${row.id}`);\n  const checks=new Map(evidence.checks.map(row=>[row.id,row]));\n  const attempts=new Map(evidence.attempts.map(row=>[row.id,row]));\n  const pending=new Set(manifest.keys()),distances=new Map();\n  const outcomes=[];\n  const waitIntervals=[];\n  while(pending.size){\n    let advanced=false;\n    for(const id of pending){\n      const spec=manifest.get(id);\n      if((spec.needs??[]).some(dependency=>!manifest.has(dependency)))throw new Error(`Missing dependency for ${id}`);\n      if((spec.needs??[]).some(dependency=>!distances.has(dependency)))continue;\n      const result=checks.get(id);\n      let elapsed=0;\n      if(result){\n        if(result.revision!==evidence.revision)throw new Error(`Revision mismatch ${id}`);\n        for(const attemptId of result.attemptIds??[])if(!attempts.has(attemptId))throw new Error(`Unknown attempt ${attemptId}`);\n        if(result.startedAt&&result.finishedAt){\n          const started=instant(result.startedAt),finished=instant(result.finishedAt);\n          if(started<requested||finished<started||finished>observed)throw new Error(`Invalid check interval ${id}`);\n          elapsed=(finished-started)/1000;\n          for(const dependency of spec.needs??[]){\n            const prerequisite=checks.get(dependency);\n            if(!prerequisite?.finishedAt||instant(prerequisite.finishedAt)>started)throw new Error(`Dependency chronology differs ${id}`);\n          }\n        }\n      }\n      const terminal=result?.finishedAt&&['success','failure'].includes(result.conclusion)&&result.executed===true;\n      const accepted=terminal&&result.conclusion==='success'&&result.evidenceVerified===true&&(result.unexpectedSkips??0)===0;\n      const stop=terminal?instant(result.finishedAt):observed;\n      waitIntervals.push([requested,stop]);\n      outcomes.push({id,state:!result?'missing':result.conclusion,terminal:Boolean(terminal),accepted:Boolean(accepted),censored:!terminal});\n      distances.set(id,elapsed+Math.max(0,...(spec.needs??[]).map(dependency=>distances.get(dependency))));\n      pending.delete(id);advanced=true;\n    }\n    if(!advanced)throw new Error('Cyclic manifest dependencies');\n  }\n  const compute={};\n  const active=[];\n  for(const attempt of evidence.attempts){\n    if(attempt.revision!==evidence.revision)throw new Error(`Attempt revision mismatch ${attempt.id}`);\n    if(!attempt.startedAt){if(attempt.finishedAt)throw new Error('Finish without start');continue;}\n    const start=instant(attempt.startedAt),stop=attempt.finishedAt?instant(attempt.finishedAt):observed;\n    if(stop<start||stop>observed)throw new Error(`Invalid attempt interval ${attempt.id}`);\n    if(!(attempt.vcpus>0))throw new Error(`Missing resource size ${attempt.id}`);\n    const seconds=(stop-start)/1000;\n    const product=attempt.product;\n    compute[product]??={seconds:0,vcpuSeconds:0,attempts:0,censoredAttempts:0};\n    compute[product].seconds+=seconds;compute[product].vcpuSeconds+=seconds*attempt.vcpus;compute[product].attempts++;\n    if(!attempt.finishedAt)compute[product].censoredAttempts++;\n    active.push([start,stop]);\n  }\n  return {revision:evidence.revision,selection,manifestChecks:manifest.size,outcomes,accepted:outcomes.every(row=>row.accepted),allRequiredExecutedToTerminal:outcomes.every(row=>row.terminal),elapsedObservationSeconds:(observed-requested)/1000,unfinishedRequiredUnionSeconds:union(waitIntervals),activeAttemptUnionSeconds:union(active),executionDependencyPathSeconds:Math.max(0,...distances.values()),compute,limitations:['Provider execution intervals are usage proxies, not account ledger entries.','A missing, skipped, or cancelled required check remains censored at the observation boundary.','Execution dependency path excludes queue time and cannot replace observed request-to-completion time.','Selector reach is independently verified against repository changes; this reconciler validates its frozen output, not its discovery algorithm.']};\n};\nconst output={inputSha256:createHash('sha256').update(raw).digest('hex'),...evaluate(input)};\nwriteFileSync(process.env.DEPOT_ACCOUNTING_OUTPUT??'analysis.json',JSON.stringify(output,null,2)+'\\n');\nconsole.log(JSON.stringify(output));\n'''\n\n[tasks.verify]\nshell = \"node --input-type=module-typescript -e\"\nrun = '''\nconst {execFileSync} = await import('node:child_process');\nconst {writeFileSync,readFileSync,mkdirSync} = await import('node:fs');\nconst {strictEqual,deepStrictEqual,throws} = await import('node:assert');\nmkdirSync('fixtures',{recursive:true});\nconst revision='a'.repeat(40);\nconst at=seconds=>new Date(Date.UTC(2026,9,16)+seconds*1000).toISOString();\nconst base={revision,requestedAt:at(0),observedAt:at(40),manifest:[{id:'build',needs:[]},{id:'lint',needs:[]},{id:'test',needs:['build']}],checks:[{id:'build',revision,startedAt:at(5),finishedAt:at(15),conclusion:'success',executed:true,evidenceVerified:true,attemptIds:['shared']},{id:'lint',revision,startedAt:at(5),finishedAt:at(25),conclusion:'success',executed:true,evidenceVerified:true,attemptIds:['lint-job']},{id:'test',revision,startedAt:at(15),finishedAt:at(30),conclusion:'success',executed:true,evidenceVerified:true,attemptIds:['shared']}],attempts:[{id:'shared',revision,startedAt:at(3),finishedAt:at(32),product:'ci',vcpus:2},{id:'lint-job',revision,startedAt:at(4),finishedAt:at(27),product:'ci',vcpus:4}]};\nbase.selection={base:'b'.repeat(40),head:revision,changedFiles:['package/module/example/src/index.ts'],affectedPackages:['package/module/example'],excludedPackages:['package/module/unrelated'],selectedCheckIds:['build','lint','test'],selectorSha256:'c'.repeat(64)};\nbase.manifest=base.manifest.map(row=>({...row,packagePath:'package/module/example',...(row.id==='lint'?{family:'oxlint',executionScope:'project',task:'//package/module/example:lint:oxlint',arguments:[]}: {})}));\nconst run=(name,input)=>{\n  const path=`fixtures/${name}.json`,output=`fixtures/${name}.result.json`;\n  writeFileSync(path,JSON.stringify(input,null,2));\n  execFileSync('mise',['run','analyze'],{env:{...process.env,DEPOT_ACCOUNTING_INPUT:path,DEPOT_ACCOUNTING_OUTPUT:output},stdio:'pipe'});\n  return JSON.parse(readFileSync(output,'utf8'));\n};\nconst valid=run('valid',base);\nstrictEqual(valid.accepted,true);strictEqual(valid.unfinishedRequiredUnionSeconds,30);strictEqual(valid.activeAttemptUnionSeconds,29);strictEqual(valid.executionDependencyPathSeconds,25);strictEqual(valid.compute.ci.seconds,52);strictEqual(valid.compute.ci.vcpuSeconds,150);\nconst missing=run('missing',{...base,checks:base.checks.slice(0,2)});strictEqual(missing.accepted,false);strictEqual(missing.unfinishedRequiredUnionSeconds,40);\nconst cancelled=run('cancelled',{...base,checks:base.checks.map(row=>row.id==='test'?{...row,conclusion:'cancelled'}:row)});strictEqual(cancelled.accepted,false);strictEqual(cancelled.unfinishedRequiredUnionSeconds,40);\nconst failed=run('failed',{...base,checks:base.checks.map(row=>row.id==='lint'?{...row,conclusion:'failure'}:row)});strictEqual(failed.accepted,false);strictEqual(failed.allRequiredExecutedToTerminal,true);strictEqual(failed.unfinishedRequiredUnionSeconds,30);\nconst retry=run('retry',{...base,attempts:[...base.attempts,{id:'failed-first',revision,startedAt:at(1),finishedAt:at(3),product:'ci',vcpus:4}]});strictEqual(retry.compute.ci.vcpuSeconds,158);\nconst rejected=[['duplicate-attempt',{...base,attempts:[...base.attempts,base.attempts[0]]}],['wrong-revision',{...base,checks:base.checks.map(row=>({...row,revision:'b'.repeat(40)}))}],['cyclic',{...base,manifest:base.manifest.map(row=>row.id==='build'?{...row,needs:['test']}:row)}],['unknown-check',{...base,checks:[...base.checks,{...base.checks[0],id:'unlisted'}]}]];\nrejected.push(['missing-selected-check',{...base,manifest:base.manifest.slice(0,2)}],['unrelated-package',{...base,manifest:base.manifest.map(row=>row.id==='test'?{...row,packagePath:'package/module/unrelated'}:row)}],['oxlint-file-filter',{...base,manifest:base.manifest.map(row=>row.id==='lint'?{...row,arguments:['src/index.ts']}:row)}],['oxlint-file-mode',{...base,manifest:base.manifest.map(row=>row.id==='lint'?{...row,executionScope:'file'}:row)}]);\nrejected.push(['empty-manifest',{...base,manifest:[],checks:[],selection:{...base.selection,selectedCheckIds:[]}}]);\nfor(const [name,input]of rejected)throws(()=>run(name,input));\nwriteFileSync('verification.json',JSON.stringify({passed:true,positiveControl:{providerSeconds:52,wallSeconds:30,activeUnionSeconds:29,dependencySeconds:25,vcpuSeconds:150},successfulFixtures:['valid','missing','cancelled','failed','retry'],rejectedFixtures:rejected.map(([name])=>name)},null,2)+'\\n');\nconsole.log('PASS: overlap, sequential dependencies, shared-job deduplication, missing/cancelled/failing gates, retry usage, revision and identity guards');\n'''\n\n[tasks.retain]\nshell = \"node --input-type=module-typescript -e\"\nrun = '''\nconst {readFileSync,writeFileSync} = await import('node:fs');\nconst {createHash} = await import('node:crypto');\nconst {homedir} = await import('node:os');\nconst {join} = await import('node:path');\nconst read=path=>JSON.parse(readFileSync(path,'utf8'));\nconst hash=path=>createHash('sha256').update(readFileSync(path)).digest('hex');\nconst output={observedAt:new Date().toISOString(),verification:read('verification.json'),collectorControl:read('collected-wf9xzbwfph/collection.json'),harness:{path:join(process.cwd(),'mise.toml'),sha256:hash('mise.toml'),normalizedExample:read('fixtures/valid.json'),source:readFileSync('mise.toml','utf8')},issueComments:['https://github.com/Aquaticats/Monochromatic/issues/1030#issuecomment-6206595590','https://github.com/Aquaticats/Monochromatic/issues/572#issuecomment-6206595886'],limitation:'This verifies accounting and read-only collection, not execution of the complete selected CI graph. No new cloud run was launched.'};\nwriteFileSync(join(homedir(),'Monochromatic/doc/audit/depot-complete-ci-accounting-2026-10-16.evidence.json'),JSON.stringify(output,null,2)+'\\n');\nconsole.log(JSON.stringify({fixtureCases:output.verification.successfulFixtures.length+output.verification.rejectedFixtures.length,collectorAttempts:output.collectorControl.attempts.length,harnessSha256:output.harness.sha256}));\n'''\n\n[tasks.render]\nshell = \"node --input-type=module-typescript -e\"\nrun = '''\nconst {execFileSync} = await import('node:child_process');\nconst {readFileSync} = await import('node:fs');\nconst {homedir} = await import('node:os');\nconst {join} = await import('node:path');\nfor(const [source,output] of [[join(homedir(),'Monochromatic/doc/audit/depot-complete-ci-accounting-2026-10-16.md'),'report.html'],['issue-1030-comment.md','issue-1030-comment.html'],['issue-572-comment.md','issue-572-comment.html']]){\n  execFileSync('pandoc',['--from=gfm','--to=html',source,'--output',output]);\n  const html=readFileSync(output,'utf8');\n  if(!html.includes('<h'))throw new Error(`Missing headings ${output}`);\n  console.log(JSON.stringify({source,output,bytes:Buffer.byteLength(html)}));\n}\n'''\n"
+  },
+  "issueComments": [
+    "https://github.com/Aquaticats/Monochromatic/issues/1030#issuecomment-6206595590",
+    "https://github.com/Aquaticats/Monochromatic/issues/572#issuecomment-6206595886"
+  ],
+  "limitation": "This verifies accounting and read-only collection, not execution of the complete selected CI graph. No new cloud run was launched."
+}
