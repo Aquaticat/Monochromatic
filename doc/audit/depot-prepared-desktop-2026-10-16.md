@@ -13,7 +13,7 @@ completed the native-runtime probe.
 Prepared artifact build [run `xxs92vjc25`](https://depot.dev/orgs/l4zncjjbj5/workflows/xxs92vjc25)
 and nested-boot verification [run `t7n42wkr5n`](https://depot.dev/orgs/l4zncjjbj5/workflows/t7n42wkr5n)
 completed successfully.
-The full consumer [run `4pmthztf6p`](https://depot.dev/orgs/l4zncjjbj5/workflows/4pmthztf6p)
+The full consumer [run `p5rp4p0wvp`](https://depot.dev/orgs/l4zncjjbj5/workflows/p5rp4p0wvp)
 is running both fresh consumers.
 
 The earlier [package snapshot experiment](depot-expanded-cost-2026-10-15.md)
@@ -149,9 +149,11 @@ Its manifest records build source `7b31a6eebec64e193e4165cf7125f781daebf719`,
 the exact installed package versions,
 and these release artifacts:
 
-- `music-player`: 53,790,520 bytes;
+- `music-player`:
+  53,790,520 bytes;
   SHA-256 `59e365a380f5a92f2057db7f10b8cb027d15cd8857fa8b1975145e353b1e1da3`.
-- `monochromatic-nested-wayland-session`: 9,191,840 bytes;
+- `monochromatic-nested-wayland-session`:
+  9,191,840 bytes;
   SHA-256 `6b112ddb63bde429c9b85ea13eb2d27f839323e1e0a4549f742dbb57995adf23`.
 
 Both consumer jobs use this image with a 2-CPU,
@@ -162,6 +164,18 @@ no network,
 and a 660-second maximum lifetime.
 The consumer verifies package and artifact identity before booting services.
 It runs no package installation or compilation.
+
+The prepared binaries remain valid only for their recorded source inputs.
+`git diff 7b31a6eebe..36d48d72ef --name-only`
+shows only the experiment workflow and `desktop-app/mise.toml` changes between preparation and consumption.
+A revision changing either binary's inputs needs a fresh preparation build.
+Cost projections for changing revisions must include preparation plus consumption;
+the repeated unchanged-image consumers measure reuse separately.
+
+The initial full consumer run `4pmthztf6p` stopped before the suite because Bash could not find `mise` on `PATH`.
+Snapshots preserve the executable but not the preparation step's environment.
+The corrected workflow activates the preserved `~/.local/share/mise/bin/mise` executable explicitly
+without installing it again.
 
 ## Evidence collection
 
