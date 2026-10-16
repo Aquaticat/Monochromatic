@@ -557,9 +557,13 @@ const results = []
 const sourceRevision = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim()
 assert.equal(sourceRevision, 'ef01490f5e960f8ca0b424c12242caeb3c5a2b5e')
 const inputs = ['mise.lock', 'pnpm-lock.yaml', 'package/cli/vmsync/src/lifecycle.expensive.unit.test.ts'].map(function input(path) { return { path, sha256: createHash('sha256').update(readFileSync(join(source, path))).digest('hex') } })
-function run({ id, command, args, timeout = 120000, commandEnv = env }) {
+assert.equal(execFileSync('git', ['status', '--porcelain', '--untracked-files=no'], { cwd: source, encoding: 'utf8' }).trim(), '', 'Immutable checkout must begin with no staged or unstaged tracked changes')
+const deadline = Date.now() + 60 * 60 * 1000
+function run({ id, command, args, timeout = 120000, commandEnv = env, cleanup = false }) {
+  const remaining = deadline - Date.now() - 120000
+  if (!cleanup && remaining <= 0) throw new Error('VM experiment deadline reached; reserve remaining time for cleanup')
   const startedAt = new Date().toISOString()
-  const result = spawnSync(command, args, { cwd: source, env: commandEnv, encoding: 'utf8', timeout, maxBuffer: 32 * 1024 * 1024 })
+  const result = spawnSync(command, args, { cwd: source, env: commandEnv, encoding: 'utf8', timeout: cleanup ? timeout : Math.min(timeout, remaining), maxBuffer: 32 * 1024 * 1024 })
   writeFileSync(join(evidenceDirectory, `${id}.stdout.log`), result.stdout ?? '')
   writeFileSync(join(evidenceDirectory, `${id}.stderr.log`), result.stderr ?? '')
   const record = { id, command, args, startedAt, finishedAt: new Date().toISOString(), exitCode: result.status, signal: result.signal, error: result.error?.message }
@@ -578,6 +582,7 @@ requireSuccess(run({ id: 'apt-install', command: 'sudo', args: ['apt-get', 'inst
 for (const command of ['/usr/sbin/libvirtd', '/usr/sbin/virtlogd']) requireSuccess(run({ id: `${command.split('/').at(-1)}-help`, command, args: ['--help'] }))
 const node = process.execPath
 const cli = join(source, 'package/cli/mvm/src/cli.ts')
+let primaryFailure
 try {
   requireSuccess(run({ id: 'virtlogd-start', command: '/usr/sbin/virtlogd', args: ['--daemon', '--pid-file', join(runtime, 'virtlogd.pid')] }))
   requireSuccess(run({ id: 'libvirtd-start', command: '/usr/sbin/libvirtd', args: ['--daemon', '--pid-file', join(runtime, 'libvirtd.pid')] }))
@@ -595,22 +600,57 @@ try {
   requireSuccess(test)
   assert.equal(original.status, 0, 'Original package task failed; root-directory experiment cannot replace its result')
 }
+catch (error) {
+  primaryFailure = error
+  console.error(error)
+}
 finally {
-  const domains = run({ id: 'private-domain-list-cleanup', command: 'virsh', args: ['--connect', 'qemu:///session', 'list', '--all', '--name'] })
-  requireSuccess(domains)
-  for (const domain of domains.stdout.trim().split(/\r?\n/).filter(Boolean)) {
-    assert(['mvm-depot-preparation-ubuntu', 'mvm-depot-preparation-windows', 'mvm-vmsync-e2e-linux', 'mvm-vmsync-e2e-win', 'mvm-template-setup'].includes(domain), 'Unexpected domain in private libvirt session')
-    run({ id: `cleanup-${domain}`, command: node, args: [cli, 'destroy', domain.slice(4)] })
+  const cleanupErrors = []
+  let finalIdentity
+  try {
+    const domains = run({ id: 'private-domain-list-cleanup', command: 'virsh', args: ['--connect', 'qemu:///session', 'list', '--all', '--name'], cleanup: true })
+    requireSuccess(domains)
+    for (const domain of domains.stdout.trim().split(/\r?\n/).filter(Boolean)) {
+      assert(['mvm-depot-preparation-ubuntu', 'mvm-depot-preparation-windows', 'mvm-vmsync-e2e-linux', 'mvm-vmsync-e2e-win', 'mvm-template-setup'].includes(domain), 'Unexpected domain in private libvirt session')
+      run({ id: `cleanup-${domain}`, command: node, args: [cli, 'destroy', domain.slice(4)], cleanup: true })
+    }
+    const remaining = run({ id: 'private-domain-list-after', command: 'virsh', args: ['--connect', 'qemu:///session', 'list', '--all', '--name'], cleanup: true })
+    requireSuccess(remaining)
+    assert.equal(remaining.stdout.trim(), '')
   }
-  const remaining = run({ id: 'private-domain-list-after', command: 'virsh', args: ['--connect', 'qemu:///session', 'list', '--all', '--name'] })
-  requireSuccess(remaining)
-  assert.equal(remaining.stdout.trim(), '')
+  catch (error) {
+    cleanupErrors.push(error)
+    console.error(error)
+  }
   for (const name of ['libvirtd', 'virtlogd']) {
-    const pidFile = join(runtime, `${name}.pid`)
-    if (existsSync(pidFile)) process.kill(Number(readFileSync(pidFile, 'utf8').trim()), 'SIGTERM')
+    try {
+      const pidFile = join(runtime, `${name}.pid`)
+      if (existsSync(pidFile)) {
+        const pid = Number(readFileSync(pidFile, 'utf8').trim())
+        assert(Number.isSafeInteger(pid) && pid > 1)
+        assert(readFileSync(`/proc/${pid}/cmdline`, 'utf8').split('\0').includes(`/usr/sbin/${name}`), 'Private PID file must still name its owned daemon')
+        process.kill(pid, 'SIGTERM')
+        results.push({ id: `shutdown-${name}`, pid, signal: 'SIGTERM', requestedAt: new Date().toISOString() })
+      }
+    }
+    catch (error) {
+      cleanupErrors.push(error)
+      console.error(error)
+    }
   }
-  for (const input of inputs) assert.equal(createHash('sha256').update(readFileSync(join(source, input.path))).digest('hex'), input.sha256)
-  assert.equal(execFileSync('git', ['diff', '--name-only'], { cwd: source, encoding: 'utf8' }).trim(), '')
+  try {
+    finalIdentity = { head: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), trackedStatus: execFileSync('git', ['status', '--porcelain', '--untracked-files=no'], { cwd: source, encoding: 'utf8' }).trim(), inputs: inputs.map(function input(entry) { return { path: entry.path, sha256: createHash('sha256').update(readFileSync(join(source, entry.path))).digest('hex') } }) }
+    assert.equal(finalIdentity.head, sourceRevision)
+    assert.equal(finalIdentity.trackedStatus, '')
+    assert.deepEqual(finalIdentity.inputs, inputs)
+  }
+  catch (error) {
+    cleanupErrors.push(error)
+    console.error(error)
+  }
+  writeFileSync(join(evidenceDirectory, 'lifecycle.json'), JSON.stringify({ sourceRevision, finalIdentity, primaryFailure: primaryFailure?.stack, cleanupErrors: cleanupErrors.map(function message(error) { return error.stack ?? String(error) }), results }, null, 2))
+  if (primaryFailure) throw primaryFailure
+  if (cleanupErrors.length) throw new AggregateError(cleanupErrors, 'VM cleanup or source identity verification failed')
 }
 '''
 
