@@ -43,7 +43,7 @@ jobs:
       with:
         # Retain the preparation bootstrap already exercised by the TOML wave.
         version: 2026.10.9
-        working_directory: source
+        working_directory: harness
         install: false
         cache: false
     - name: Install exact lockfile tool versions outside source
