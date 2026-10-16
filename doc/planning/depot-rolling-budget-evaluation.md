@@ -3,8 +3,11 @@
 ## Recommendation and scope
 
 Keep Scorecard scheduling in its existing GitHub workflow during the Depot trial.
-No replacement has been validated that preserves its rolling limits while reducing admission overhead.
-This is a recommendation to defer this migration,
+An isolated GraphQL candidate now preserves the current admission decisions in supplied fixtures
+and queries live history without REST history calls.
+Recommend this query repair after its exact script passes with the workflow's own token.
+No migration to a different scheduler has been validated.
+This is a recommendation to defer scheduler migration,
 not a claim that the current gate correctly enforces every execution limit.
 The gate has measured overhead and correctness gaps described in this evaluation.
 The [trial plan](depot-ci-trial.md) authorizes evaluation,
@@ -14,7 +17,10 @@ Current provider documentation and public source were checked on October 15,
 2026.
 This evaluation compares mechanisms against the established requirement;
 it does not select a new scheduler vendor or approve a custom controller.
-There is no ranking of replacement implementations because none passed an equivalent-policy execution test.
+Ranking:
+repair the existing history query before migrating scheduling,
+because the former has an executable candidate preserving observed policy
+while the latter still lacks admission and recovery evidence.
 
 ## Required behavior
 
@@ -44,7 +50,7 @@ An implementation that scans every rejected event can become expensive even when
 
 ## Existing implementation and measured overhead
 
-The production gate runs on `ubuntu-latest` with `actions: read`.
+The REST baseline inspected before the query repair runs on `ubuntu-latest` with `actions: read`.
 Job concurrency serializes the gate under `scorecard-rate-limit` with `cancel-in-progress: false`.
 The gate lists workflow runs using a `created` filter,
 then awaits a separate jobs request for each visited run until a budget is exhausted.
@@ -118,6 +124,84 @@ reruns,
 history truncation,
 or restart recovery.
 Those gaps prevent treating its passing cases as a complete admission proof.
+
+## GraphQL query repair
+
+The user subsequently requested repair of failures associated with organization transfer
+and reiterated the objective of avoiding the shared REST quota.
+The isolated candidate in commit `024cbb224e` changes only Scorecard's history read.
+Commit `2700e15025` corrects its concurrency comment to acknowledge the existing reservation gap.
+It resolves the workflow by URL through GraphQL `resource`,
+then requests `Workflow.runs` ordered by creation time in pages of 100,
+with the latest check named `Scorecard analysis` nested in each run.
+This removes the separate per-run REST jobs request and requires no REST call to discover a workflow identifier.
+The live probe verified this exact query through GitHub's API;
+the [GraphQL object reference][github-graphql-objects] documents the fields.
+
+The candidate deliberately retains the current policy:
+workflow creation time determines window age;
+failed and unfinished checks count;
+skipped and cancelled checks do not;
+an absent analysis does not reserve capacity;
+and the latest matching check represents reruns.
+The original triggers and analysis job remain unchanged.
+This repair therefore does not resolve the accounting boundaries in Correctness boundaries.
+The baseline's REST filtered-search ceiling is replaced by an explicit 32-page bound.
+If history is incomplete at that bound,
+the candidate throws without producing an allow output.
+It also refuses admission for malformed history,
+unordered dates,
+incomplete check connections,
+nonadvancing cursors,
+API errors,
+or fewer than 100 remaining GraphQL points.
+
+The committed isolated task at `cebc724b44` extracts and executes both the old main-worktree script
+and the actual candidate YAML script with fixed time and supplied API responses.
+All 13 named policy comparisons and 32 deterministic variations produced matching admission decisions.
+All 11 incomplete-history and quota cases rejected admission.
+The [retained fixture results][graphql-fixtures] include each named policy comparison.
+For the 790-run fixture,
+the baseline made 790 per-run jobs requests and the candidate made eight GraphQL requests.
+The baseline fixture count excludes its initial workflow-list request.
+For 926 skipped runs,
+the corresponding counts were 926 per-run jobs requests and ten GraphQL requests.
+These are request-shape measurements under identical supplied history,
+not live latency measurements.
+
+The quota test was checked with a negative control:
+temporarily disabling the candidate's `remaining < 100` guard caused the low-quota assertion to fail.
+Restoring the guard returned the complete fixture task to passing.
+Only this guard received a removal control;
+the other rejection cases were exercised without separately removing their guards.
+
+The exact candidate script's read-only live probe at `2026-10-16T00:41:24.221Z`
+visited 959 historical runs,
+used ten GraphQL requests and ten points,
+made zero REST requests,
+and rejected the event after counting eight day-window analyses.
+Elapsed time was 33.2418 seconds.
+The [retained live result][graphql-live] is a single sample against changing history
+using the local authenticated CLI token.
+It is not a controlled latency comparison with the 331-second baseline
+and does not establish a billed-cost reduction.
+
+A separate [workflow-token query probe][graphql-token-probe] passed with `actions: read`,
+`checks: read`,
+and `contents: read`.
+The candidate uses those same permissions.
+The remaining adoption check is the exact candidate script running in GitHub Actions with its own workflow token;
+the query-only probe does not substitute for that consumer-boundary check.
+The isolated candidate is not a Depot migration or a new scheduler.
+
+A stricter experimental counter used actual step activity,
+including cancelled attempts and reruns,
+but that would change the current policy.
+Its 27 local fixtures passed;
+its live run stopped on HTTP 502 after nine completed pages and made no admission decision.
+The source does not expose an updated-time ordering or filter for this workflow-runs connection,
+so establishing old workflows rerun recently would require scanning their older history.
+That experimental policy is not the recommended query repair and has not been adopted.
 
 ## Native controls evaluated
 
@@ -273,9 +357,10 @@ elapsed spread,
 and actual billed usage before describing the replacement as inexpensive.
 
 Until that evidence exists,
-the scheduling portion of the trial concludes **no validated replacement**.
-The measured 331-second counting step justifies continued optimization work,
-but it does not justify deploying an untested scheduler or relaxing the accepted budgets.
+the scheduling portion of the trial concludes **no validated scheduler replacement**.
+The GraphQL repair has passing local policy comparisons and a live read-only query;
+its exact workflow-token execution remains the next check before adoption.
+The measured 331-second counting step does not justify relaxing the accepted budgets.
 
 ## Verification
 
@@ -293,3 +378,7 @@ The research was first committed as `22c3f3d65e` before document verification.
 [github-concurrency]: https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency
 [depot-compatibility]: https://depot.dev/docs/ci/compatibility
 [depot-ci-api]: https://github.com/depot/cli/blob/main/proto/depot/ci/v1/ci.proto
+[github-graphql-objects]: https://docs.github.com/en/graphql/reference/objects#workflow
+[graphql-fixtures]: ../audit/depot-scorecard-graphql-fixtures-2026-10-15.evidence.json
+[graphql-live]: ../audit/depot-scorecard-graphql-live-2026-10-15.evidence.json
+[graphql-token-probe]: https://github.com/Aquaticats/Monochromatic/actions/runs/38830412356/job/116747659391

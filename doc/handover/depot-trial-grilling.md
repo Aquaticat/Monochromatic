@@ -782,6 +782,22 @@ The scheduling evaluation measured the completed live gate:
 922 fetched runs,
 and 790 sequential job-history results.
 It found no validated equivalent replacement for the rolling budgets.
+The subsequent isolated GraphQL query repair preserves the old script's admission decisions
+across 13 named comparisons and 32 deterministic variations;
+11 incomplete-history and quota cases reject admission.
+Its actual YAML script visited 959 live runs with ten GraphQL requests,
+ten points,
+and zero REST requests,
+rejecting the event at the eight-analysis day limit.
+The single live sample took 33.2418 seconds and is not a controlled latency comparison.
+The query passed with the workflow's own token in run `38830412356`;
+execution of the exact candidate script with that token remains the adoption check.
+The candidate retains the existing creation-time,
+latest-attempt,
+cancellation,
+and absent-analysis accounting boundaries.
+This is a narrow history-query repair,
+not adoption of a Depot scheduler.
 The seven-day target-workload replay remains active.
 
 The user supplied account settings after browser discovery again returned no available browser.
