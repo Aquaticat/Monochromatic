@@ -354,16 +354,17 @@ export async function checkClickThrough(
         playingB.playing}, paused ${!pausedB.playing}`;
     },
   },);
-  // The click points need a track row under each of them, so the pane shows the folder of thirty tracks.
-  /**
-   The folder shown before the click.
-   */
-  const folderBefore = (await session.last()).folder;
+  // The disposable cloud trial uses the fallback library, whose thirty-track folder is Mmm Tones.
+  // Select that named fixture through the keyboard before exercising the unchanged click-through assertions.
   await press({
     session,
-    act: clickAt(WIDE_CLICK_POINTS.longFolder,),
-    until: function otherFolderShown(state: UiState,): boolean {
-      return state.folder !== folderBefore;
+    act: sequenceOf([
+      chordKeys({ mods: ['alt',], key: '1', },),
+      tapKey('m',),
+      tapKey('enter',),
+    ],),
+    until: function fallbackFolderShown(state: UiState,): boolean {
+      return state.folder === 'Mmm Tones';
     },
     what: 'the folder of thirty tracks shown in the track pane',
   },);
