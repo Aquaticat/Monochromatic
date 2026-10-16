@@ -406,9 +406,24 @@ Existing intentional ignored cases retain their explicit identity and rationale.
 
 Report both terminal execution and accepted validation.
 A real failed check can finish execution without validating the revision.
+Completed execution/accounting means every eligible immutable-source command has a terminal attempt
+or a verified failed-prerequisite disposition,
+with independent checks still executed and all attempts reconciled.
+Historical source failures remain failed outcomes;
+they do not require product fixes merely to complete the trial's measurement.
+Harness omissions,
+deferred waves,
+wrong execution environments,
+and unverified dependency blocks remain incomplete execution.
+The current reconciler's `accepted` field means passing validation,
+not completion of a failed experiment.
+Its terminal-execution field does not yet award completion credit to prerequisite-blocked records;
+those require explicit verified evidence in the final reconciliation.
 A skipped,
 cancelled,
 or absent required check leaves validation incomplete.
+Successful-pipeline latency requires a complete passing replay;
+a completed failing experiment establishes only its observed failed-pipeline timeline.
 Admission policy creates conditional requirements:
 a verified gate denial can finish the policy check without selecting its analysis child.
 The reconciler requires the approved policy revision,
