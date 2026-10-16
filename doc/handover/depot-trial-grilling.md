@@ -384,6 +384,22 @@ then execute the unchanged historical `vmsync` lifecycle task.
 This remains required work;
 the probe does not establish that cloud VM execution is unavailable.
 
+The VM adapter passed independent source/data-boundary review and was dispatched as Depot run `99tl7zjfgp`
+from the pushed trial commit `a0785c49e6`.
+It uses source `ef01490`,
+16 vCPUs and 64 GiB,
+a 75-minute job bound,
+and a 60-minute task deadline that reserves cleanup time.
+Its private home and libvirt runtime start without guest domains.
+Guest images remain outside the uploaded log/evidence directory.
+The adapter retains the original `vmsync` package task result;
+a separate source invocation from the repository root cannot turn that failed gate green.
+Cleanup errors do not suppress daemon termination requests or final source-identity checks.
+Daemon termination requests alone are not evidence that the processes exited.
+
+Android issue `#1002` now includes the exact-source replay evidence in comment `6207416475`.
+Its scope and open status are unchanged.
+
 ## Purpose and current state
 
 The user subsequently requested immediate execution of the agreed trial.
