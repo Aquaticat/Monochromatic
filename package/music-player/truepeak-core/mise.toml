@@ -48,11 +48,59 @@ const fail = process.env.DEPOT_TEST_TRIAL_MODE !== 'pass'
 console.log(JSON.stringify({ deliberateFailure: fail, runAttempt: process.env.GITHUB_RUN_ATTEMPT }))
 try {
   if (fail) writeFileSync(path, original.replace(assertion, 'assert_eq!(window_frames(4.0, 48000), 192001);'))
-  const result = spawnSync('cargo', ['nextest', 'run', '--locked', '--config-file', 'nextest.depot.toml', '--profile', 'depot', '--no-fail-fast', '--filter-expr', 'not test(=gain_tests::silence_gives_unity_gain)'], { stdio: 'inherit' })
+  const result = spawnSync('cargo', ['nextest', 'run', '--locked', '--config-file', 'nextest.depot.toml', '--profile', 'depot', '--no-fail-fast', '--filter-expr', 'not test(=gain::tests::silence_gives_unity_gain)'], { stdio: 'inherit' })
   if (result.error) throw result.error
   if (result.status === null) throw new Error(`nextest terminated by ${result.signal}`)
   process.exitCode = result.status
 } finally {
   writeFileSync(path, original)
 }
+'''
+
+[tasks."trial:depot:candidates"]
+description = "Print the real nextest binary identities used by Depot splitting"
+shell = "node --input-type=module-typescript -e"
+run = '''
+console.log('truepeak-core\nmonochromatic-jsonc-edit\nforbidden-regex')
+'''
+
+[tasks."trial:depot:split"]
+description = "Inspect timing assignments and run each matrix shard through Depot"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const candidates = 'mise run --quiet //package/music-player/truepeak-core:trial:depot:candidates'
+const shared = ['--candidates-command', candidates, '--candidate-type', 'classname', '--timings-type', 'testname', '--split-key', 'rust-libraries']
+execFileSync('depot', ['tests', 'split', ...shared, '--output', 'json'], { stdio: 'inherit' })
+execFileSync('depot', ['tests', 'run', ...shared, '--command', 'mise run //package/music-player/truepeak-core:trial:depot:execute-shard', '--report-path', 'depot-test-reports/*.xml', '--report-key', 'rust-libraries'], { stdio: 'inherit' })
+'''
+
+[tasks."trial:depot:execute-shard"]
+description = "Run only the real Rust crates selected by Depot and retain their native JUnit reports"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { readFileSync, mkdirSync, copyFileSync } = await import('node:fs')
+const { resolve } = await import('node:path')
+const { spawnSync } = await import('node:child_process')
+if (!process.env.DEPOT_JOB_URL) throw new Error('The split trial requires a disposable Depot CI job.')
+const selected = readFileSync(0, 'utf8').trim().split('\n').filter(Boolean)
+const crates = { 'truepeak-core': 'package/music-player/truepeak-core', 'monochromatic-jsonc-edit': 'package/rust-module/jsonc-edit', 'forbidden-regex': 'package/rust-module/forbidden-regex' }
+const config = resolve('package/music-player/truepeak-core/nextest.depot.toml')
+mkdirSync('depot-test-reports', { recursive: true })
+let failed = false
+for (const candidate of selected) {
+  const crate = crates[candidate]
+  if (!crate) throw new Error(`Unexpected test candidate ${candidate}`)
+  console.log(JSON.stringify({ candidate, crate, matrixIndex: process.env.DEPOT_MATRIX_JOB_INDEX }))
+  const args = ['nextest', 'run', '--locked', '--config-file', config, '--profile', 'depot', '--no-fail-fast']
+  if (candidate === 'truepeak-core') args.push('--filter-expr', 'not test(=gain::tests::silence_gives_unity_gain)')
+  const result = spawnSync('cargo', args, { cwd: crate, stdio: 'inherit' })
+  if (result.error) throw result.error
+  if (result.status === null) throw new Error(`nextest terminated by ${result.signal}`)
+  if (result.status !== 0) failed = true
+  copyFileSync(`${crate}/target/nextest/depot/junit.xml`, `depot-test-reports/${candidate}.xml`)
+}
+if (failed) throw new Error('At least one selected Rust test suite failed; reports were retained for upload.')
 '''
