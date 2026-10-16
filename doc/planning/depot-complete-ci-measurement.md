@@ -536,7 +536,11 @@ The root agent observed Rust selection drifting from the historical lockfile wit
 The source tasks retain auto-install disabled and tracked-source identity checks before and after execution.
 Tool installation belongs to a separate harness context,
 and current Scorecard gate policy is recorded separately from historical source policy.
-Detailed Rust selection diagnosis remains queued after manifest prerequisite review.
+The host mismatch was reproduced on mise `2026.10.0` and traced to its Rustup install-link classification.
+The same source and actual compiler probe passed with downloaded mise `2026.10.9`.
+Upstream fixed the defect in `2026.10.1`;
+see [the reproduction and source trace](../troubleshooting/mise-rust-lockfile-linked-install.md).
+That host result does not diagnose a separate cloud failure using a fixed mise release.
 
 ## Evidence and completion predicate
 
@@ -585,9 +589,12 @@ Oxlint checks require package or project scope and empty file arguments.
 - [ ] Report unexercised validation families and unresolved selector edges explicitly.
   No weighted monthly projection can turn missing execution into measured coverage.
 
-The active queue is to review logger artifact prerequisites and additional source-input edges,
+The active queue is to finish tool and image preparation for the reviewed logger artifact graph,
 connect the retained external check groups,
-execute every selected gate,
-and diagnose the observed Rust version selection drift.
+and execute every selected gate.
+The offline Pi configured-extension fixture and host adapter are assigned to the inventory agent.
+The filesystem and semantic host adapter review preserves historical task entrypoints;
+its bootstrap must disable mise-action environment export,
+and its filesystem macOS runner must retain or explicitly identify the original `macos-latest` selection.
 The first TOML and logger static-check waves may run while those independent reviews proceed.
 Their results must reconcile against the final frozen manifest before completion is claimed.
