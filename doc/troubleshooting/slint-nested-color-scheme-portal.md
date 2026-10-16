@@ -300,6 +300,8 @@ these are its boundaries.
   while the real portal returns two.
   Slint's `downcast_ref` accepts both;
   a client that insists on two layers would not.
+  The October 16 trial investigates the resulting Zenity failure under
+  "Zenity 4.0.1 fails on the private portal's deprecated Read reply".
 - The private bus does not expose unrelated host services such as notifications or file-chooser portals.
 
 ## What does not work
@@ -445,6 +447,98 @@ so it could not detect the bug and was replaced.
 The planted version failed against the stock configuration
 (`left: ["org.freedesktop.DBus", "org.example.MonochromaticPlantedService"]`)
 and passes with the private configuration.
+
+## Zenity 4.0.1 fails on the private portal's deprecated Read reply
+
+### Observed failure
+
+The Depot desktop chooser diagnostic run `38832874391`,
+job `116755346132`,
+recorded Zenity `4.0.1-1build3` exiting with `SIGSEGV` after:
+
+```text
+# Zenity stderr captured by the desktop chooser diagnostic
+GLib-CRITICAL: the GVariant format string 'v' has a type of 'v' but the given value has a type of 'u'
+GLib-CRITICAL: g_variant_get: assertion 'valid_format_string (format_string, TRUE, value)' failed
+```
+
+The subprocess was present and launched;
+the missing chooser window was not evidence that Zenity was absent.
+The existing failure is tracked in [repository issue 1004](https://github.com/Aquaticats/Monochromatic/issues/1004).
+[Chooser diagnostic run](https://github.com/Aquaticats/Monochromatic/actions/runs/38832874391)
+
+### Reply contract and test gap
+
+The [current XDG Settings specification](https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Settings.html#org-freedesktop-portal-settings-read)
+still documents two variant layers for deprecated `Read`,
+and one for `ReadOne`.
+Before the trial correction,
+`package/cli/nested-wayland-session/src/appearance_portal.rs:177`
+delegated directly to the same setting value used by `ReadOne`:
+
+```rust
+// package/cli/nested-wayland-session/src/appearance_portal.rs, before the trial correction
+fn read(&self, namespace: &str, key: &str) -> zbus::fdo::Result<OwnedValue> {
+    return self.read_setting(namespace, key);
+}
+```
+
+The existing tests converted each decoded reply directly to an integer or RGB tuple.
+Installed `zvariant` `5.14.0`,
+checksum `b5e28c25bd8bb8da5a1f3e7065d0c156b9ee9a7973adf78b0e35eaefdf3b1b5c`,
+accepts both shapes in `src/value.rs:489`,
+inside `Value::downcast_ref`:
+
+```rust
+// zvariant-5.14.0/src/value.rs:494
+if let Value::Value(v) = self {
+    <T>::try_from(v)
+} else {
+    <T>::try_from(self)
+}
+```
+
+This automatic unwrapping hid the protocol mismatch from value-only assertions.
+`Value::value_signature` preserves the distinction in `src/value.rs:295`:
+
+```rust
+// zvariant-5.14.0/src/value.rs:295
+Value::Value(_) => &Signature::Variant,
+```
+
+The trial test commit `5eb02af048` checks each decoded value's contained signature before conversion:
+`ReadOne` and `ReadAll` require `u` for color scheme or `(ddd)` for accent;
+deprecated `Read` requires `v`.
+The typed conversion then rejects further extra wrappers.
+The calls traverse the real disposable private bus,
+so they verify the serialized reply rather than a helper's in-memory return value.
+
+### Verification status
+
+The committed regression is running against the unchanged implementation using:
+
+```sh
+# trial/depot-20261015 worktree
+mise run //package/cli/nested-wayland-session:test:all
+```
+
+The expected failure is a deprecated `Read` contained signature of `u` or `(ddd)` instead of `v`.
+The implementation correction and the complete cloud chooser rerun remain pending.
+This section does not yet claim that changing the reply fixes the observed Zenity crash.
+
+### Upstream filing decision for the malformed reply
+
+1.  The observed contract violation is in this repository's private portal,
+    not an established defect in zvariant or the portal specification.
+2.  The repository controls the reply wrapper and can correct it.
+3.  The deprecated method's nested variant is explicitly documented.
+4.  No external contribution policy is needed for the repository-owned correction.
+5.  No upstream maintainer decision is being requested.
+6.  Regression tests are committed;
+    implementation and consumer verification are pending.
+
+No upstream issue or comment is proposed.
+The existing repository issue owns the consumer failure.
 
 ## Upstream filing decision
 
