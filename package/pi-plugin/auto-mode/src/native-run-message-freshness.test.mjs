@@ -5,13 +5,13 @@ import {GoverningPolicyBindingError} from '../dist/native/contract/integration/p
 //region Catalog growth must not multiply complete parent dependency scans.
 /** Retained native descriptions share one original parent observation. */
 function createFixture(count){
- const state={checks:0,current:true};
+ const state={checks:0,current:true,sourceReads:0};
  const origins=Object.freeze(Array.from({length:count},function createDescription(_,index){
   const sessionInputOccurrence=Object.freeze({});
   const occurrence=Object.freeze({});
   const source=Object.freeze({kind:'native-tool-description-input',content:`Catalog tool ${index}`,occurrence,sessionInputOccurrence});
   const publication=Object.freeze({sessionInputOccurrence,sourceOccurrence:occurrence});
-  return Object.freeze({source,publication,sessionInputOccurrence});
+  return Object.freeze({get source(){state.sourceReads++;return source;},publication,sessionInputOccurrence});
  }));
  const sources=Object.freeze({nativeConstructedInputs:origins,runMessageInputs:Object.freeze(origins.map(function readSource(origin){return origin.source;}))});
  const request=Object.freeze({sources});
@@ -32,6 +32,7 @@ const bindings=bindRunMessageSources({governing:catalog.governing});
 assert.equal(bindings.length,256);
 assert.equal(catalog.state.checks,small.state.checks,'Catalog growth must not multiply full parent scans');
 assert.ok(catalog.state.checks>=2,'Construction must check its parent before and after reading the collection');
+assert.ok(catalog.state.sourceReads<=bindings.length*4,'Catalog source identity reads must grow linearly');
 for(const [index,binding] of bindings.entries())assert.equal(binding.view.source,catalog.origins[index].source);
 assert.throws(function foreignView(){bindings[0].assertCurrent(Object.freeze({}));},GoverningPolicyBindingError);
 catalog.state.current=false;
