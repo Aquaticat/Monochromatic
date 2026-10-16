@@ -223,8 +223,8 @@ description = "Activate the previously verified rootful container boundary outsi
 dir = "{{config_root}}/../../.."
 shell = "node --input-type=module-typescript -e"
 run = '''
-const { execFileSync } = await import('node:child_process')
-const { readFileSync, writeFileSync, mkdirSync, chmodSync, realpathSync, existsSync, appendFileSync } = await import('node:fs')
+const { execFileSync, spawnSync } = await import('node:child_process')
+const { readFileSync, writeFileSync, mkdirSync, chmodSync, realpathSync, existsSync, appendFileSync, statSync } = await import('node:fs')
 const { join, delimiter } = await import('node:path')
 const { homedir } = await import('node:os')
 const { strict: assert } = await import('node:assert')
@@ -239,7 +239,9 @@ const wrapper = [
   "const { spawnSync } = await import('node:child_process');",
   'const [command, ...args] = process.argv.slice(2);',
   "const limits = command === 'run' ? ['--memory=2g', '--cpus=2', '--pids-limit=512'] : [];",
-  `const result = spawnSync('sudo', ['--non-interactive', ${JSON.stringify(podman)}, command, ...limits, ...args], { stdio: 'inherit' });`,
+  "const mutation = command === 'run' && args.some((arg) => arg.includes(':/manifest:'));",
+  "const identity = mutation ? ['--uidmap', `0:${process.getuid()}:1`, '--gidmap', `0:${process.getgid()}:1`] : [];",
+  `const result = spawnSync('sudo', ['--non-interactive', ${JSON.stringify(podman)}, command, ...limits, ...identity, ...args], { stdio: 'inherit' });`,
   'if (result.error) throw result.error;',
   'process.exitCode = result.status ?? 1;',
   '',
@@ -247,6 +249,19 @@ const wrapper = [
 writeFileSync(join(base, 'podman'), wrapper, { mode: 0o700 })
 execFileSync('sudo', ['--non-interactive', podman, '--version'], { stdio: 'inherit' })
 execFileSync('sudo', ['--non-interactive', podman, 'run', '--memory=2g', '--cpus=2', '--pids-limit=512', '--rm', 'docker.io/library/alpine:3.22', 'true'], { stdio: 'inherit' })
+const fixture = join(base, 'mutation-private-fixture')
+mkdirSync(fixture, { recursive: true, mode: 0o700 })
+chmodSync(fixture, 0o700)
+writeFileSync(join(fixture, 'shard-manifest.json'), 'mutation-private-input\n', { mode: 0o600 })
+const controlArgs = ['run', '--rm', '--network=none', '--read-only', '--cap-drop=ALL', '--security-opt=no-new-privileges', '--memory=2g', '--cpus=2', '--pids-limit=64', '--timeout=30', '--volume', `${fixture}:/manifest:rw`]
+const denied = spawnSync('sudo', ['--non-interactive', podman, ...controlArgs, 'docker.io/library/alpine:3.22', 'cat', '/manifest/shard-manifest.json'], { encoding: 'utf8', timeout: 45000 })
+assert.notEqual(denied.status, 0, 'Unmapped root without capabilities must demonstrate the private-directory permission boundary')
+assert(denied.stderr.includes('Permission denied'), 'Negative control must fail on fixture access')
+const allowed = spawnSync(join(base, 'podman'), [...controlArgs, 'docker.io/library/alpine:3.22', 'cp', '/manifest/shard-manifest.json', '/manifest/result.json'], { encoding: 'utf8', timeout: 45000 })
+console.log('\n' + JSON.stringify({ event: 'mutation-identity-control', deniedStatus: denied.status, deniedError: denied.stderr, mappedStatus: allowed.status, mappedError: allowed.stderr, uid: process.getuid(), gid: process.getgid() }))
+assert.equal(allowed.status, 0, allowed.stderr)
+assert.equal(readFileSync(join(fixture, 'result.json'), 'utf8'), 'mutation-private-input\n')
+assert.equal(statSync(join(fixture, 'result.json')).uid, process.getuid())
 appendFileSync(process.env.GITHUB_PATH, `${base}\n`)
 console.log("\n" + JSON.stringify({ event: 'container-boundary-ready', executable: podman, boundary: 'sudo --non-interactive', memory: '2g', cpus: 2, pidsLimit: 512 }))
 '''
