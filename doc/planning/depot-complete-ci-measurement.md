@@ -500,7 +500,7 @@ Android native,
 and benchmark builds compile their own core dependency through their authored Cargo invocation.
 They do not wait for the standalone core build;
 that build remains an independently selected core check.
-Its desktop `test:e2e` consumes the built application,
+The desktop `test:e2e` consumes the built application,
 and Android instrumentation consumes the built APKs.
 Remaining adapters cover root file checks,
 the core feature matrix,
@@ -598,7 +598,23 @@ Oxlint checks require package or project scope and empty file arguments.
 The active queue is to finish tool and image preparation for the reviewed logger artifact graph,
 connect the retained external check groups,
 and execute every selected gate.
-The offline Pi configured-extension fixture and host adapter are assigned to the inventory agent.
+The offline Pi host adapter is prepared on `trial/depot-pi-host-20261016`,
+through commit `7c43779e7d`,
+and awaits live execution by the environment agent.
+Its manifest retains the historical configured catalog's 22 extension entries,
+using exact-head repository artifacts and recorded public package versions.
+Preparation records independent build failures;
+only consumers needing those artifacts are blocked.
+The isolated runtime checks configured extension loading,
+real D-Bus notification payloads after an observer positive control,
+actual detached-terminal answer and cancellation,
+and all offline Pi TUI cases.
+Its network namespace has no external interface,
+and its container has two CPUs,
+2 GiB of memory,
+and a bounded lifetime.
+Task parsing and catalog membership checks pass;
+these are not live consumer success evidence.
 The filesystem and semantic host adapter review preserves historical task entrypoints;
 its bootstrap must disable mise-action environment export,
 and its filesystem macOS runner must retain or explicitly identify the original `macos-latest` selection.
