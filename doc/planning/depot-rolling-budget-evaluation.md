@@ -374,6 +374,15 @@ and the emphasized conclusion.
 `git diff --check` passed.
 The research was first committed as `22c3f3d65e` before document verification.
 
+The GraphQL repair evidence was committed as `56119c773e` before document verification.
+Scoped `lint:monochromatic-lint` passed for the updated evaluation and handover.
+Pandoc rendering of both documents was inspected for the query-repair prose,
+code spans,
+evidence links,
+and workflow-token result link.
+`git diff --check` passed.
+The isolated candidate had no tracked modifications after restoring the quota negative control.
+
 [gate-job]: https://github.com/Aquaticats/Monochromatic/actions/runs/38806855827/job/116669815274
 [github-concurrency]: https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency
 [depot-compatibility]: https://depot.dev/docs/ci/compatibility
