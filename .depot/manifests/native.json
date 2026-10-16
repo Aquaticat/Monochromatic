@@ -117,9 +117,7 @@
       "packages": [
         "package/music-player/truepeak-core.bench"
       ],
-      "prerequisites": [
-        "truepeak-core.build"
-      ],
+      "prerequisites": [],
       "platform": "linux"
     },
     {
@@ -143,9 +141,7 @@
       "packages": [
         "package/music-player/desktop-app"
       ],
-      "prerequisites": [
-        "truepeak-core.build"
-      ],
+      "prerequisites": [],
       "platform": "linux"
     },
     {
@@ -209,9 +205,7 @@
       "packages": [
         "package/music-player/android-app"
       ],
-      "prerequisites": [
-        "truepeak-core.build"
-      ],
+      "prerequisites": [],
       "platform": "linux"
     },
     {
