@@ -701,6 +701,37 @@ description = "Run isolated browser and native feature coverage measurements"
 dir = "{{config_root}}/../../.."
 run = "depot ci run --org l4zncjjbj5 --repo Aquaticats/Monochromatic --workflow .depot/workflows/depot-expanded.yml"
 
+[tasks."trial:depot:browser-identity"]
+description = "Record cloud container identity and package versions"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+console.log(JSON.stringify({ uid: process.getuid(), gid: process.getgid(), groups: process.getgroups() }))
+execFileSync('getent', ['passwd', String(process.getuid())], { stdio: 'inherit' })
+execFileSync('dpkg-query', ['--show', 'podman', 'uidmap'], { stdio: 'inherit' })
+'''
+
+[tasks."trial:depot:fail-browser-test"]
+description = "Verify a real browser assertion fails inside the disposable cloud fixture"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { readFileSync, writeFileSync } = await import('node:fs')
+const { execFileSync } = await import('node:child_process')
+if (!process.env.DEPOT_JOB_URL) throw new Error('Browser mutation requires a disposable Depot sandbox.')
+const path = 'package/module/logger/src/sink/opfs.browser.test.ts'
+const original = readFileSync(path, 'utf8')
+const assertion = "expect(typeofVerify,).toBe('function',);"
+if (!original.includes(assertion)) throw new Error('The selected browser assertion changed.')
+try {
+  writeFileSync(path, original.replace(assertion, "expect(typeofVerify,).toBe('deliberately-wrong',);"))
+  execFileSync('mise', ['run', 'test:browser', '--', path, '--project', 'chromium', '--grep', 'createOpfsSink exposes a callable verify', '--retries', '0', '--workers', '1', '--reporter', 'json', '--global-timeout', '60000'], { stdio: 'inherit' })
+  throw new Error('The deliberately wrong browser assertion unexpectedly passed.')
+} finally {
+  writeFileSync(path, original)
+}
+'''
+
 [tasks."trial:depot:dependencies"]
 description = "Install the locked workspace dependencies in a disposable trial sandbox"
 dir = "{{config_root}}/../../.."

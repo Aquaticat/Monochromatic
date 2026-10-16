@@ -1,0 +1,56 @@
+name: depot-browser-followup
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  e2e:
+    name: Existing DOM browser interactions
+    runs-on:
+      size: 4x16
+      image: monochromatic-trial-browser:20261016-v1
+    timeout-minutes: 15
+    env:
+      MISE_AUTO_INSTALL: 'false'
+      CI: 'true'
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        clean: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        version: 2026.10.9
+        install: false
+        cache: false
+    - name: Build DOM browser artifact
+      run: mise run //package/module/dom:build
+    - name: Exercise existing DOM scenarios
+      run: mise run test:e2e -- package/module/dom/src --workers 4 --retries 0 --reporter json --global-timeout 300000
+  negative:
+    name: Deliberately fail one real browser assertion
+    runs-on:
+      size: 4x16
+      image: monochromatic-trial-browser:20261016-v1
+    timeout-minutes: 10
+    env:
+      MISE_AUTO_INSTALL: 'false'
+      CI: 'true'
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        clean: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        version: 2026.10.9
+        install: false
+        cache: false
+    - name: Record sandbox identity
+      run: mise run //package/music-player/desktop-app:trial:depot:browser-identity
+    - name: Build logger browser artifacts
+      run: mise run //package/module/logger:build
+    - name: Build filesystem browser artifacts
+      run: mise run //package/module/fs-path:build
+    - name: Run the deliberate failure control
+      run: mise run //package/music-player/desktop-app:trial:depot:fail-browser-test
