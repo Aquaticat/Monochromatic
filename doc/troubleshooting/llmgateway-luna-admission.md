@@ -117,8 +117,13 @@ The earlier synthetic working-directory policy did not establish behavior under 
 The older original logs cannot be repaired retroactively.
 Authored cases establish routing and retention;
 live results establish the named observed operations, not general model accuracy.
-Final activation and installed-consumer receipts are tracked in
-[the current handover](../handover/pi-auto-mode-current-frontier.md).
+Installed release `native-release-Jg5gMF` passes the same live repository-policy replay in
+fixture `pi-hyper-rpc-allow-HTVK1s`, with four successful Luna calls, both commands executed, and no dialog.
+Its persisted JSONL records contain 518 question answers and 515 clause-admission records,
+linked to both complete assessment exchanges and the final approval.
+The installed prohibition control `pi-hyper-rpc-prohibited-a1TH2T` blocks both proposed reads without a dialog.
+The fallback, original-budget, ownership, public API, type, and focused zero-error lint checks pass.
+Complete installed receipts are indexed in [the current handover](../handover/pi-auto-mode-current-frontier.md).
 
 ### Upstream filing decision
 

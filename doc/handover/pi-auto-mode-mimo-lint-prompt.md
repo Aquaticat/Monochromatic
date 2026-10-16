@@ -114,8 +114,11 @@ parent checks at both collection boundaries,
 and registered schemas free of aggregate property-count ceilings.
 Use `test:native:run-message-freshness`, `test:native:source-freshness-work`,
 and `test:native:tool-schema-capacity` when changing capture.
-Configured-host checks must retain the real extension, skill, and MCP metadata scope.
+Configured-host checks must retain the real governing policy, working directory,
+extension, skill, and MCP metadata scope.
+Replay the reported commands against that context before claiming the incident is repaired.
 Disabling MCP omitted the original first-group failure and did not establish readiness.
+Substituting a synthetic working-directory policy omitted the later false-prerequisite boundary.
 
 Complete assessments use at most three sequential bundles of up to three parallel provider calls.
 Each provider request contains at most 200 questions and complete shared context.

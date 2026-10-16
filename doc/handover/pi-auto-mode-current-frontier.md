@@ -15,7 +15,7 @@ The user reported that the installed release blocked repository inspection comma
 `An independent authorization prerequisite remains unsatisfied or unresolved; session confirmation cannot satisfy it`.
 The affected commands list `doc/handover/` and read the repository's working-directory identity.
 The session beginning `2026-10-16T00-30-17-591Z` retains both rejected calls.
-The readiness claim is withdrawn for this boundary.
+The earlier readiness claim was withdrawn for this boundary.
 The previous live direct-Bash fixture used a synthetic working-directory policy;
 it did not establish correct decisions under the real repository's complete policy.
 
@@ -29,7 +29,7 @@ Use the already selected Luna decision route; do not introduce another vendor or
 - [x] Verify permit, deny, unavailable-model, uncertain-model, cancellation, and complete-context boundaries.
 - [x] Retain correlated clause/source references, model distributions, admission and fallback decisions in local logs;
       reconstruct a rejected review from those logs in a built-consumer regression.
-- [ ] Activate the verified runtime and update decisions, troubleshooting, and the MiMo handoff.
+- [x] Activate the verified runtime and update decisions, troubleshooting, and the MiMo handoff.
 
 The user identified the absent per-clause distributions as insufficient logging on 2026-10-16.
 Logging repair is part of this task, not a reason to leave future incidents unattributable.
@@ -38,7 +38,7 @@ Commit `9d31943c2b` also routes recoverable initial clause-assessment failures t
 while retaining the original currentness checks and deadline.
 
 The maintained regression `test:native:decision-fallback` first failed with one assessment instead of two.
-Candidate `native-release-duzo2x` now passes that regression:
+Initial candidate `native-release-duzo2x` passed that regression:
 an authored false prerequisite is reconsidered by a distinct whole-operation model question,
 and its approve result executes both direct Bash calls without an approval host.
 The new question retains original claim identity,
@@ -46,14 +46,14 @@ complete prepared operations,
 selected conversation and policy,
 and the existing judgment's transport budget.
 
-The candidate also passes the live replay of the user's exact `ls` and `git rev-parse` commands
+That initial candidate also passed the live replay of the user's exact `ls` and `git rev-parse` commands
 with the actual repository working directory and complete policy.
-It makes four successful Luna HTTP calls,
+It made four successful Luna HTTP calls,
 including the whole-operation fallback,
-executes both commands,
-and opens no dialog.
+executed both commands,
+and opened no dialog.
 Receipt: `${HOME}/temp/agent/pi-host-isolation-20261015/repo-decision-candidate.log`.
-It is not installed yet; failure-path and cancellation controls remain in progress.
+It was not installed; the final release incorporates the subsequent failure-path and diagnostic corrections.
 
 The first unchanged installed replay reached a dialog instead of reproducing the original prerequisite block.
 It estimated `PX2` as a prerequisite at `0.39`, below admission,
@@ -78,7 +78,8 @@ Its final pure-review assertion needed correction because incumbent-channel diag
 The deadline extension then exposed a separate distinction:
 assessment-budget expiry must allow unchanged operations to reach manual review,
 while source changes must not.
-The source-observer check now handles that distinction; final deadline and fresh-confirmation runs remain pending.
+Commit `d84594b527` makes the source-observer check handle that distinction.
+Final deadline and fresh-confirmation cases pass in `decision-matrix-4.log`.
 
 Local assessment logs now retain complete selected inputs, replies, and malformed responses.
 Decision logs retain source bindings, answer distributions, admission, fallback errors, and final outcomes.
@@ -109,9 +110,31 @@ both complete assessment requests and replies, and the final approval without co
 Both `PX2` occurrences remain below admission in this new observation;
 this still does not identify the original incident's missing clause evidence.
 
-Installation is in progress through `build:native`.
-Next: exercise installed `bin/pi` with the same repository-policy replay and a live prohibition control,
-then record the active release and final artifact checks.
+The installed runtime is now `native-release-Jg5gMF`.
+`build:native` staged and activated the release after validating the CLI.
+Installed `bin/pi` passes the same repository-policy replay in fixture `pi-hyper-rpc-allow-HTVK1s`:
+four successful Luna calls, both original commands executed, and no dialog.
+Its actual JSONL files retain the same complete diagnostic counts and final approval;
+`decision-log-installed-proof.log` verifies the persisted records.
+The installed explicit-prohibition control `pi-hyper-rpc-prohibited-a1TH2T` makes one successful Luna call,
+blocks both proposed reads, and opens no dialog.
+Receipts: `repo-decision-installed-final.log` and `repo-decision-installed-prohibit.log`.
+
+Installed fallback, budget, instruction identity/lifetime/batch, public API, and publication tests pass.
+The broader instruction task exposed stale tests for the 256-clause and 64-heading ceilings removed in
+`6bd25e4227`.
+Their replacement checks complete membership across those former boundaries and retains empty-subject rejection.
+`decision-fallback-installed-ownership-2.log` passes;
+`decision-fallback-types-8.log` passes;
+`decision-instruction-test-lint.log` reports zero errors and warnings.
+The other production files retain the zero-error focused check already recorded.
+
+The approved `LOG` rule and generated `CLAUDE.md` are updated.
+Decisions, README files, troubleshooting, and the MiMo handoff describe model-before-dialog behavior.
+Markdown renderer checks pass.
+New Pi processes load the installed release;
+already running processes retain their loaded modules.
+This correction is complete; the separate lint-cleanup handoff remains the next named work item.
 
 ### MiMo first-group correction and direct Bash review
 
