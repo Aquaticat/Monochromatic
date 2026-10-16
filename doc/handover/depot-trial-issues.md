@@ -11,8 +11,8 @@ and unverified policy boundaries.
 Trial-only workarounds remain open where integration or diagnosis is outstanding.
 No upstream issue or support message was sent.
 
-The final repository query returned 46 newly filed issues:
-37 open and nine closed with recovery evidence.
+The final repository query returned 50 newly filed issues:
+41 open and nine closed with recovery evidence.
 Existing issues were reused for six additional discovery or process findings.
 These counts describe the filing result,
 not completed integration of the trial-only corrections.
@@ -167,6 +167,9 @@ The final audit reused those instead of creating duplicates.
   GTK cannot commit dconf changes in the private desktop session.
 - [#1043](https://github.com/Aquaticats/Monochromatic/issues/1043):
   the folder dialog maps without a transient parent.
+- [#1044](https://github.com/Aquaticats/Monochromatic/issues/1044):
+  held-modifier repeat remains outside interactive coverage;
+  pure detector tests and ordinary held-key repeat controls do not exercise that input boundary.
 
 These warnings were visible after the chooser recovered in run `38833901553`.
 They did not fail that run's interaction assertions.
