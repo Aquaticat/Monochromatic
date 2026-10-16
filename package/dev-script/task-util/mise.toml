@@ -52,3 +52,39 @@ run = "node src/tsc-failure.unit.test.ts"
 [tasks.buildAndTest]
 description = "Build the seven node entries, then run unit tests against the built testing seam"
 run = ["mise run build", "mise run test:unit"]
+
+[tasks."trial:depot:ci:prepare"]
+description = "Prepare locked dependencies and record available tools without running repository checks"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { readFileSync, writeFileSync, mkdirSync, chmodSync } = await import('node:fs')
+const { createHash } = await import('node:crypto')
+const { homedir } = await import('node:os')
+const { join } = await import('node:path')
+const { strict: assert } = await import('node:assert')
+const sourceRevision = 'bae6ef28a183039a6c4ba509179dc4baaedeac2e'
+const base = join(homedir(), 'temp/agent/depot-complete-ci')
+mkdirSync(base, { recursive: true, mode: 0o700 })
+chmodSync(base, 0o700)
+const started = Date.now()
+execFileSync('git', ['merge-base', '--is-ancestor', sourceRevision, 'HEAD'])
+const inputs = ['mise.lock', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', 'package.json']
+const hashes = inputs.map(function input(path) {
+  const expected = execFileSync('git', ['show', `${sourceRevision}:${path}`])
+  const actual = readFileSync(path)
+  assert.deepEqual(actual, expected, `${path} must match the immutable source revision`)
+  return { path, sha256: createHash('sha256').update(actual).digest('hex') }
+})
+const before = JSON.parse(execFileSync('mise', ['ls', '--current', '--json'], { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 }))
+writeFileSync(join(base, 'tools-before.json'), JSON.stringify(before, null, 2))
+execFileSync('pnpm', ['install', '--frozen-lockfile'], { stdio: 'inherit' })
+for (const input of hashes) assert.equal(createHash('sha256').update(readFileSync(input.path)).digest('hex'), input.sha256, `${input.path} changed during frozen dependency preparation`)
+const tasks = JSON.parse(execFileSync('mise', ['tasks', '--all', '--hidden', '--json'], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }))
+writeFileSync(join(base, 'available-tasks.json'), JSON.stringify(tasks, null, 2))
+const record = { sourceRevision, inputs: hashes, elapsedMs: Date.now() - started, availableTaskCount: tasks.length, checksExecuted: false }
+writeFileSync(join(base, 'prepared.json'), JSON.stringify(record, null, 2))
+console.log(JSON.stringify({ phase: 'affected-ci-dependencies-prepared', ...record }))
+console.log(JSON.stringify({ phase: 'affected-ci-tools', tools: Object.fromEntries(Object.entries(before).map(([name, versions]) => [name, versions.map(({ version, installed }) => ({ version, installed }))])) }))
+'''
