@@ -139,7 +139,7 @@ export async function finishWithApproval({
  return Object.freeze({
   ...decision,
   automaticOutcome:decision.outcome,
-  outcome:resolveConfirmedOutcome(decision.program),
+  outcome:resolveConfirmedOutcome({program:decision.program,reconsideredOutcome:decision.operationDecision?.outcome}),
   approval:response,
   assertCurrent:assertOriginalApproval
  });

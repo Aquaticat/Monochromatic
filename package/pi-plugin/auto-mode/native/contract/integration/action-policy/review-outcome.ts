@@ -95,21 +95,26 @@ export function resolveManualReviewOutcome(program: CompiledProgram): GuardOutco
 }
 
 /**
- Preserve established prohibitions after automatic decision paths fail and the host authenticates exact-group Allow.
+ Preserve final model denials after automatic review and apply authenticated exact-group Allow to uncertainty.
  Manual authorization does not assert that an estimated external prerequisite was satisfied.
 
  @param program - original compiled facts retained through native confirmation
+
+ @param reconsideredOutcome - complete-operation review superseding preliminary clause estimates
 
  @returns operation outcome after applying only the scoped confirmation fact
 
  @throws InstructionResolutionInputError for malformed internal policy facts
  */
-export function resolveConfirmedOutcome(program: CompiledProgram): GuardOutcome {
+export function resolveConfirmedOutcome({ program, reconsideredOutcome }: {
+  readonly program: CompiledProgram;
+  readonly reconsideredOutcome?: GuardOutcome;
+}): GuardOutcome {
   tagged({ tag: resolveConfirmedOutcome.name, l }).debug('resolving original policy after scoped confirmation');
   /**
-   Preserve established prohibitions before applying confirmation to eligible requirements.
+   A terminal complete-operation denial remains binding; unresolved review leaves clause estimates diagnostic.
    */
-  const automatic = resolveManualReviewOutcome(program);
+  const automatic = reconsideredOutcome ?? resolveManualReviewOutcome(program);
   if ((automatic.state === 'resolved') && (automatic.verdict === 'deny')) return automatic;
   /**
    Retain prerequisite estimates for diagnostics without promoting them into an established terminal restriction.

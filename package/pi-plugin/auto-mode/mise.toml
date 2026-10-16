@@ -945,4 +945,10 @@ run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs prohibition",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs deadline",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs fresh",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs clause-deny-approve",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs clause-deny-deny",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs clause-deny-unknown",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs clause-deny-transport",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs clause-deny-stop",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs clause-deny-headless",
 ]

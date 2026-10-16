@@ -194,7 +194,7 @@ for(const premises of ['complete','incomplete']){
       id:'independent',applicability:'applies',satisfaction:'unsatisfied',channel
     }]
   };
-  const confirmed=resolveConfirmedOutcome(program);
+  const confirmed=resolveConfirmedOutcome({program});
   assert.equal(confirmed.state,'resolved');
   assert.equal(confirmed.verdict,'approve');
   assert.equal(confirmed.authorizationRequirements.state,channel==='incumbent-approval'?'requires-approval':'unresolved');
@@ -209,11 +209,15 @@ for(const premises of ['complete','incomplete']){
    ]
  };
  assert.equal(resolveManualReviewOutcome(mixed).authorizationRequirements.state,'unresolved');
- assert.equal(resolveConfirmedOutcome(mixed).verdict,'approve');
+ assert.equal(resolveConfirmedOutcome({program:mixed}).verdict,'approve');
  assert.equal(resolveConfirmedOutcome({
-   ...mixed,rules:[rule({id:'deny',effect:'prohibit'})]
+   program:{...mixed,rules:[rule({id:'deny',effect:'prohibit'})]}
  }).verdict,'deny');
- assert.equal(resolveConfirmedOutcome({premises,rules:[]}).verdict,'approve');
+ assert.equal(resolveConfirmedOutcome({program:{premises,rules:[]}}).verdict,'approve');
+ const prohibited={...mixed,rules:[rule({id:'deny',effect:'prohibit'})]};
+ assert.equal(resolveConfirmedOutcome({program:prohibited,reconsideredOutcome:{state:'unresolved',reason:'Both model reviews remain uncertain'}}).verdict,'approve');
+ assert.equal(prohibited.rules[0].effect,'prohibit');
+ assert.equal(resolveConfirmedOutcome({program:prohibited,reconsideredOutcome:{state:'resolved',verdict:'deny',reason:'Complete operation is prohibited'}}).verdict,'deny');
 }
 await flushPolicyDiagnostics();
 console.log(JSON.stringify({

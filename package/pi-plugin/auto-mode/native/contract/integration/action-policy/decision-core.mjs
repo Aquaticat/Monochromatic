@@ -105,7 +105,8 @@ async function decide({judgment,sourceContext,effectOwnerFor,authorizationOwnerF
    throw error;
   }
  }
- const operationDecision=policy!==undefined&&(automaticOutcome.state!=='resolved'||automaticOutcome.verdict==='ask')
+ // A clause estimate can also be a false denial; complete-operation review adjudicates it before confirmation.
+ const operationDecision=policy!==undefined&&(automaticOutcome.state!=='resolved'||automaticOutcome.verdict!=='approve')
   ?await decideCompleteOperation()
   :undefined;
  const outcome=operationDecision?.outcome??automaticOutcome;
