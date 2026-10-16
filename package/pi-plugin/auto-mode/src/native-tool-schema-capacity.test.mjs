@@ -24,9 +24,9 @@ properties.field11999.type='number';
 assert.throws(function changedSchema(){fixture.wrapped.createExecutionContext({carrier:fixture.carrier});},ExecutionContextOwnershipError);
 fixture.unregister();
 assert.equal(fixture.session.agent.prepareRequest,undefined);
-let accessorCalls=0;
-await assert.rejects(function accessorSchema(){return prepare({get type(){accessorCalls++;return 'string';}});},ExecutionContextOwnershipError);
-assert.equal(accessorCalls,0);
+const accessorState={calls:0};
+await assert.rejects(function accessorSchema(){return prepare({get type(){accessorState.calls++;return 'string';}});},ExecutionContextOwnershipError);
+assert.equal(accessorState.calls,0);
 await assert.rejects(function prototypeSchema(){return prepare(new Date());},ExecutionContextOwnershipError);
 console.log(JSON.stringify({complete:true,properties:12_000,borrowedSchemaPreserved:true,mutationRejected:true,accessorRejected:true,prototypeRejected:true}));
 //endregion

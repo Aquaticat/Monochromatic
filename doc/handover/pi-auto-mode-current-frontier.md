@@ -46,6 +46,11 @@ Receipt: `${HOME}/temp/agent/pi-host-isolation-20261015/mimo-full-candidate.log`
 Next action: remove the remaining schema-count ceiling while preserving descriptor freshness,
 then repeat the full catalog and installed-command checks.
 
+The user explicitly requires direct Bash calls to receive automatic review as well.
+Extend the complete-operation review boundary to direct Bash groups;
+retain uncertainty fallback and governing prohibitions.
+Add allowed, prohibited, and mixed-group consumer controls, then replay the original MiMo group.
+
 ### Host-isolation replacement complete
 
 The corrected native host is installed as `native-release-Yhc7sX` and verified through the original `pi` command.
