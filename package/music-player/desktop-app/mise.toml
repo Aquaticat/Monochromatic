@@ -889,13 +889,15 @@ description = "Exercise each desktop session directly with the software composit
 shell = "node --input-type=module-typescript -e"
 run = '''
 const { spawnSync } = await import('node:child_process')
+const { readFileSync } = await import('node:fs')
 const { resolve } = await import('node:path')
 const compositor = resolve('../../cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session')
 const results = []
-for (const session of ['wide', 'narrow', 'dialog', 'auto-play', 'quit', 'states', 'visual']) {
+for (const session of ['dialog']) {
   const result = spawnSync('mise', ['run', '//package/music-player/desktop-e2e:run'], { stdio: 'inherit', env: { ...process.env, E2E_COMPOSITOR: compositor, DEPOT_TRIAL_SESSION: session, E2E_OUT: resolve('target/e2e', session) } })
   results.push({ session, status: result.status, signal: result.signal, error: result.error?.message })
   console.log(JSON.stringify(results.at(-1)))
+  console.log(readFileSync(resolve('target/e2e', session, 'dialog.log'), 'utf8'))
 }
 console.log(JSON.stringify({ sessions: results }))
 if (results.some(result => result.status !== 0)) throw new Error('Desktop sessions failed; retained each independent result')

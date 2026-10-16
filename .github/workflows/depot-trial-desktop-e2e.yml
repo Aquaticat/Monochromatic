@@ -39,5 +39,5 @@ jobs:
       run: mise run //package/music-player/desktop-app:trial:depot:desktop:build
     - name: Build the compositor
       run: mise run //package/cli/nested-wayland-session:build
-    - name: Exercise every desktop session with the fallback fixture and folder chooser
+    - name: Diagnose the folder chooser with retained application output
       run: mise run //package/music-player/desktop-app:trial:depot:desktop:run

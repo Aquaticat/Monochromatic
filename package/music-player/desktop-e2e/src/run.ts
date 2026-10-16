@@ -17,6 +17,7 @@
 
 import {
   chmod,
+  copyFile,
   mkdir,
   mkdtemp,
   rm,
@@ -324,6 +325,13 @@ export async function runE2e(
     finishedAt: Date.now(),
     outputRoot: config.outputRoot,
   },);
+  // Retain the isolated chooser log before disposable session cleanup.
+  if (process.env.DEPOT_TRIAL_SESSION === 'dialog') {
+    await copyFile(
+      join(base, 'dialog.log',),
+      join(config.outputRoot, 'dialog.log',),
+    );
+  }
   await rm(
     base,
     {
