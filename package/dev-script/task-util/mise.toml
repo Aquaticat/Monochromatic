@@ -77,6 +77,52 @@ for (const [program, args] of [['node', ['--version']], ['rustc', ['--version', 
 }
 '''
 
+[tasks."trial:depot:native:components"]
+description = "Install and verify Clippy in the exact native trial toolchain"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { join } = await import('node:path')
+const { strict: assert } = await import('node:assert')
+const source = join(process.env.GITHUB_WORKSPACE, 'source')
+const toolchain = process.env.MISE_RUST_VERSION
+assert.equal(toolchain, 'nightly-2026-10-13')
+const run = args => execFileSync('mise', ['exec', '--', ...args], { cwd: source, stdio: 'inherit' })
+run(['rustup', 'component', 'list', '--installed', '--toolchain', toolchain])
+run(['rustup', 'component', 'add', 'clippy', '--toolchain', toolchain])
+run(['rustup', 'component', 'list', '--installed', '--toolchain', toolchain])
+run(['cargo', 'clippy', '--version'])
+'''
+
+[tasks."trial:depot:native:nextest"]
+description = "Execute the source test task body with nextest fail-fast disabled"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { createHash } = await import('node:crypto')
+const { join } = await import('node:path')
+const { strict: assert } = await import('node:assert')
+const source = join(process.env.GITHUB_WORKSPACE, 'source')
+const packageDir = join(source, 'package/music-player/desktop-app')
+const read = args => execFileSync('mise', args, { cwd: packageDir, encoding: 'utf8' })
+const task = JSON.parse(read(['tasks', 'info', '//package/music-player/desktop-app:test', '--json']))
+assert.equal(task.shell, 'node --input-type=module-typescript -e')
+assert.equal(task.run.length, 1)
+const dispatcher = read(['config', 'get', '--file', join(packageDir, 'mise.toml'), 'vars.cargo_dispatch'])
+const template = '{'.repeat(2) + 'vars.cargo_dispatch' + '}'.repeat(2)
+const originalCall = "runCargo(['nextest', 'run'])"
+assert.equal(task.run[0].split(template).length, 2)
+assert.equal(task.run[0].split(originalCall).length, 2)
+const body = task.run[0].replace(template, dispatcher)
+const adapted = body.replace(originalCall, "runCargo(['nextest', 'run', '--no-fail-fast'])")
+assert(!adapted.includes('{'.repeat(2)), 'Unexpected unresolved task template')
+const sha256 = value => createHash('sha256').update(value).digest('hex')
+console.log(JSON.stringify({ sourceRevision: process.env.SOURCE_HEAD, task: task.name, originalBodySha256: sha256(body), adaptedBodySha256: sha256(adapted), adapter: '--no-fail-fast', packageEnvironment: true }))
+execFileSync('mise', ['exec', '--', 'node', '--input-type=module-typescript', '-e', adapted], { cwd: packageDir, stdio: 'inherit' })
+'''
+
 [tasks."trial:depot:native:smoke"]
 description = "Call the immutable-head release artifact as a CLI consumer"
 dir = "{{config_root}}/../../.."

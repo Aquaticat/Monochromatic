@@ -75,6 +75,9 @@ jobs:
       id: tools
       working-directory: harness
       run: mise install --yes cargo:cargo-nextest@0.9.148 cmake@4.4.4
+    - name: Install and verify Clippy for the exact source toolchain
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:native:components
     - name: Expose the source-declared Windows linker
       if: ${{ runner.os == 'Windows' }}
       run: echo 'C:\Program Files\LLVM\bin' >> "$GITHUB_PATH"
@@ -97,9 +100,10 @@ jobs:
     - name: Run all-target Clippy through the package task
       if: ${{ !cancelled() && steps.identity.outcome == 'success' }}
       run: mise run //package/music-player/desktop-app:lint:clippy
-    - name: Run nextest through the package task
+    - name: Run every nextest case with the source task body
       if: ${{ !cancelled() && steps.identity.outcome == 'success' }}
-      run: mise run //package/music-player/desktop-app:test
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:native:nextest
     - name: Exercise the built release command
       if: ${{ !cancelled() && steps.build.outcome == 'success' }}
       working-directory: harness
