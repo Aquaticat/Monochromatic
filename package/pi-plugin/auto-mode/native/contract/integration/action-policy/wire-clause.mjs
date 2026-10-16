@@ -54,7 +54,7 @@ export function appendClauseQuestion({sources,head,binding,definition,index,seen
   };
   const instructions=categorical
    ?{
-     predicate:'Estimate the relationship defined by clauseRelationDefinition in the shared state, using its complete instructions and option rubrics.',
+     predicate:definition.instructions,
      selectedRule,
      proposedOperation
    }
@@ -71,11 +71,7 @@ export function appendClauseQuestion({sources,head,binding,definition,index,seen
   questions[slot]={
     type:definition.type,
     instructions,
-    criteria:categorical?Object.fromEntries(Object.keys(definition.criteria)
-      .map(function initializeClauseChoice(label) { return ([
-        label,
-        null
-      ]); })):definition.criteria
+    criteria:definition.criteria
   };
   pairs.push({
     slot,
