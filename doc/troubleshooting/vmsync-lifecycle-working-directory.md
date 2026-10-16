@@ -16,7 +16,7 @@ KVM availability cannot repair that relative path.
 
 ## Root cause
 
-`package/cli/vmsync/mise.toml:45` launches the source test from the package's task directory:
+`package/cli/vmsync/mise.toml:42` launches the source test from the package's task directory:
 
 ```toml
 # package/cli/vmsync/mise.toml at ef01490f5e
@@ -26,14 +26,14 @@ depends = ["build:js:node"]
 run = "node src/lifecycle.expensive.unit.test.ts"
 ```
 
-`package/cli/vmsync/src/lifecycle.expensive.unit.test.ts:37` defines a root-relative command argument:
+`package/cli/vmsync/src/lifecycle.expensive.unit.test.ts:36` defines a root-relative command argument:
 
 ```typescript
-// package/cli/vmsync/src/lifecycle.expensive.unit.test.ts:37 at ef01490f5e
+// package/cli/vmsync/src/lifecycle.expensive.unit.test.ts:36 at ef01490f5e
 const MVM_ARGS = ['package/cli/mvm/src/cli.ts',];
 ```
 
-The `nanoSpawn` call at line 77 passes a timeout and no working directory override.
+The `nanoSpawn` call at line 75 passes a timeout and no working directory override.
 The resulting path in Node's error directly establishes the incompatible resolution boundary.
 The main worktree still contained these same relative command arguments when inspected on 2026-10-16.
 
