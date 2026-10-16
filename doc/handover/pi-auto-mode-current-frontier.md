@@ -9,6 +9,26 @@ Updated 2026-10-16.
 
 ## Active work on 2026-10-15
 
+### Decision-model fallback correction on 2026-10-16
+
+The user reported that the installed release blocked repository inspection commands with
+`An independent authorization prerequisite remains unsatisfied or unresolved; session confirmation cannot satisfy it`.
+The affected commands list `doc/handover/` and read the repository's working-directory identity.
+The session beginning `2026-10-16T00-30-17-591Z` retains both rejected calls.
+The readiness claim is withdrawn for this boundary.
+The previous live direct-Bash fixture used a synthetic working-directory policy;
+it did not establish correct decisions under the real repository's complete policy.
+
+The user clarified that fallback means the decision model must reconsider the complete operation.
+Only when automatic decision paths fail should the host open a dialog.
+The agent's intervening interpretation, sending prerequisites directly to manual approval, was rejected.
+Use the already selected Luna decision route; do not introduce another vendor or weaken categorical thresholds.
+
+- [ ] Reproduce the reported commands with actual repository policy and identify admitted prerequisite evidence.
+- [ ] Add decision-model fallback before dialog selection when rule assessment cannot resolve the operation.
+- [ ] Verify permit, deny, unavailable-model, uncertain-model, cancellation, and complete-context boundaries.
+- [ ] Activate the verified runtime and update decisions, troubleshooting, and the MiMo handoff.
+
 ### MiMo first-group correction and direct Bash review
 
 The real MiMo session at 23:29:17 UTC reached manual fallback on its first group of two Bash calls.
