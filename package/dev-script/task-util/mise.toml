@@ -478,6 +478,59 @@ execFileSync('pkg-config', ['--exists', 'libpipewire-0.3', 'fontconfig', 'freety
 console.log('\n' + JSON.stringify({ event: 'desktop-host-verified', libraries, resources, preparedPackageCount: snapshot.packages.length }))
 '''
 
+[tasks."trial:depot:linux-nextest"]
+description = "Run the historical Linux desktop tests without fail-fast and retain full output"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync, spawnSync } = await import('node:child_process')
+const { createHash } = await import('node:crypto')
+const { mkdirSync, chmodSync, readFileSync, writeFileSync, openSync, closeSync } = await import('node:fs')
+const { homedir } = await import('node:os')
+const { join } = await import('node:path')
+const { strict: assert } = await import('node:assert')
+const source = join(process.env.GITHUB_WORKSPACE, 'source')
+const packageDir = join(source, 'package/music-player/desktop-app')
+const output = join(homedir(), 'temp/agent/depot-linux-nextest')
+mkdirSync(output, { recursive: true, mode: 0o700 })
+chmodSync(output, 0o700)
+const git = args => execFileSync('git', args, { cwd: source, encoding: 'utf8' }).trim()
+const sha256 = value => createHash('sha256').update(value).digest('hex')
+const identity = () => ({ head: git(['rev-parse', 'HEAD']), trackedStatus: git(['status', '--porcelain', '--untracked-files=no']), hashes: Object.fromEntries(['mise.lock', 'pnpm-lock.yaml', 'package/music-player/desktop-app/Cargo.lock', 'package/music-player/desktop-app/mise.toml'].map(path => [path, sha256(readFileSync(join(source, path)))])) })
+const before = identity()
+assert.equal(before.head, process.env.SOURCE_HEAD)
+assert.equal(before.trackedStatus, '')
+const read = args => execFileSync('mise', args, { cwd: packageDir, encoding: 'utf8' })
+const task = JSON.parse(read(['tasks', 'info', '//package/music-player/desktop-app:test', '--json']))
+assert.equal(task.shell, 'node --input-type=module-typescript -e')
+assert.equal(task.run.length, 1)
+const dispatcher = read(['config', 'get', '--file', join(packageDir, 'mise.toml'), 'vars.cargo_dispatch'])
+const template = '{'.repeat(2) + 'vars.cargo_dispatch' + '}'.repeat(2)
+const originalCall = "runCargo(['nextest', 'run'])"
+assert.equal(task.run[0].split(template).length, 2)
+assert.equal(task.run[0].split(originalCall).length, 2)
+const body = task.run[0].replace(template, dispatcher)
+const adapted = body.replace(originalCall, "runCargo(['nextest', 'run', '--no-fail-fast'])")
+assert(!adapted.includes('{'.repeat(2)), 'Unexpected unresolved task template')
+const stdout = openSync(join(output, 'stdout.log'), 'w', 0o600)
+const stderr = openSync(join(output, 'stderr.log'), 'w', 0o600)
+const startedAt = new Date().toISOString()
+let result
+try {
+  result = spawnSync('mise', ['exec', '--', 'node', '--input-type=module-typescript', '-e', adapted], { cwd: packageDir, stdio: ['ignore', stdout, stderr], timeout: 30 * 60 * 1000 })
+}
+finally {
+  closeSync(stdout)
+  closeSync(stderr)
+  const after = identity()
+  const record = { before, after, task: task.name, originalBodySha256: sha256(body), adaptedBodySha256: sha256(adapted), adapter: '--no-fail-fast', startedAt, finishedAt: new Date().toISOString(), exitCode: result?.status, signal: result?.signal, error: result?.error?.message }
+  writeFileSync(join(output, 'result.json'), JSON.stringify(record, null, 2))
+  console.log(JSON.stringify(record))
+  assert.deepEqual(after, before, 'Tests changed tracked historical source')
+}
+assert.equal(result?.status, 0, 'Historical tests failed; complete stdout and stderr retained in artifact')
+'''
+
 [tasks."trial:depot:ci:desktop-runtime"]
 description = "Run the complete unchanged desktop E2E task in private user services and a software parent display"
 dir = "{{config_root}}/../../.."
