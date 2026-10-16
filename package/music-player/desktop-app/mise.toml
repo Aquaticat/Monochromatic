@@ -987,3 +987,24 @@ try {
   run(['rm', name], false)
 }
 '''
+
+[tasks."trial:depot:prepared:manifest"]
+description = "Record built artifacts and confirm the original installed desktop package manifest"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { readFileSync, writeFileSync, statSync } = await import('node:fs')
+const { homedir } = await import('node:os')
+const { join, resolve } = await import('node:path')
+const { createHash } = await import('node:crypto')
+const { strict: assert } = await import('node:assert')
+const base = join(homedir(), 'temp/agent/depot-package-snapshot')
+const packages = JSON.parse(readFileSync(join(base, 'manifest.json'), 'utf8'))
+const actual = execFileSync('dpkg-query', ['--show', `--showformat=${packages.format}`, ...packages.packages], { encoding: 'utf8' })
+assert.equal(actual, packages.manifest)
+const paths = [resolve('target/release/music-player'), resolve('../../cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session')]
+const artifacts = paths.map(function artifact(path) { return { path, bytes: statSync(path).size, sha256: createHash('sha256').update(readFileSync(path)).digest('hex') } })
+const source = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+writeFileSync(join(base, 'prepared-desktop.json'), JSON.stringify({ source, artifacts, packageManifest: packages.manifest, magickVersion: packages.magickVersion }))
+console.log(JSON.stringify({ phase: 'prepared-desktop-files', source, artifacts, packages: packages.packages.length, aptInstallInvoked: false }))
+'''

@@ -29,3 +29,35 @@ jobs:
       run: mise run //package/music-player/desktop-app:trial:depot:prepared:probe
     - name: Boot an isolated systemd runtime from the unchanged installed filesystem
       run: mise run //package/music-player/desktop-app:trial:depot:prepared:boot-probe
+
+  prepare:
+    runs-on:
+      size: 16x64
+      image: monochromatic-trial-desktop-packages:20261016-v1
+    snapshot: monochromatic-trial-desktop-ready:20261016-v1
+    timeout-minutes: 20
+    env:
+      MISE_AUTO_INSTALL: 'false'
+      CARGO_BUILD_JOBS: '16'
+      LIBGL_ALWAYS_SOFTWARE: '1'
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        clean: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Pin for the trial because release discovery previously returned HTTP 403.
+        version: 2026.10.9
+        install: false
+        cache: false
+    - name: Install the build runtime once
+      run: mise install rust
+    - name: Check the locked workspace dependencies
+      run: mise run //package/music-player/desktop-app:trial:depot:dependencies
+    - name: Build the desktop application
+      run: mise run //package/music-player/desktop-app:trial:depot:desktop:build
+    - name: Build the compositor
+      run: mise run //package/cli/nested-wayland-session:build
+    - name: Record prepared files and exact package versions
+      run: mise run //package/music-player/desktop-app:trial:depot:prepared:manifest
