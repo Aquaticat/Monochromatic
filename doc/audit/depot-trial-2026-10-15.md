@@ -7,9 +7,10 @@ The agreed broader evaluation remains open.
 All ten corrected runner configurations passed,
 as did the default-container-builder concurrency repetitions.
 The [sizing report](depot-runner-sizing-2026-10-15.md) records the measured results and allocation recommendation.
-Full desktop interaction,
-Android instrumentation,
-and account-wide billing visibility remain unresolved acceptance gaps.
+Full desktop interaction and Android instrumentation have now executed and exposed failures;
+their setup and remaining coverage are being investigated.
+The user supplied the account's usage and selected hard-start limits.
+Storage views still need their different scopes reconciled.
 This report follows the [confirmed trial brief](../planning/depot-ci-trial.md).
 The user prefers the USD $20 Developer plan if intentional GitHub routing keeps it useful and convenient.
 USD $200 is the monthly ceiling,
@@ -197,12 +198,35 @@ The desktop suite's documented prerequisites include a graphical session,
 user services,
 and isolated audio routing.
 The Android emulator workflow also requires a headed host-GPU launch under the repository's emulator skill.
-Neither the full desktop keyboard-interaction suite nor Android instrumentation ran in this trial.
+That initial probe did not run desktop interaction or Android instrumentation.
 The separate Alpine graphical smoke scenarios did pass as recorded in this section.
 This is a gap in the tested environment,
 not proof that Depot cannot host a suitable environment.
 [Prerequisite run](https://depot.dev/orgs/l4zncjjbj5/workflows/jp9w8gw62r),
 [desktop suite requirements](../../package/music-player/desktop-e2e/README.md)
+
+The later Depot GitHub runner probe `38826610100` found a running systemd user manager and sudo access.
+Run `38826827023` then provisioned PipeWire,
+ImageMagick,
+and graphics dependencies,
+built the existing app and compositor,
+and ran the keyboard suite through software rendering.
+Keyboard navigation,
+playback,
+clipboard,
+and private-sink audio checks passed;
+pointer/text checks failed and the wide session aborted before later scenarios ran.
+This is executed but failing coverage,
+not a completed passing desktop suite.
+[Desktop interaction run](https://github.com/Aquaticats/Monochromatic/actions/runs/38826827023)
+
+Android artifact run `38826684750` built both native ABIs and the app/test APKs successfully.
+Those APKs installed on an isolated local headed Android 37 x86_64 emulator with 16 KiB pages.
+The unfiltered instrumentation invocation reported 16 cases and two failures in `SessionStoreTest`,
+both dereferencing a null application context in `SessionStore.prefs`.
+Raw assumption-skip status and required audio fixtures are still being checked.
+[Cloud APK build](https://github.com/Aquaticats/Monochromatic/actions/runs/38826684750),
+[instrumented storage tests](../../package/music-player/android-app/app/src/androidTest/kotlin/dev/monochromatic/musicplayer/SessionStoreTest.kt)
 
 ## Prepared environments and non-CI work
 
@@ -261,6 +285,36 @@ Moving the gate unchanged would preserve its history-query cost and make its Git
 A rolling-budget admission mechanism remains separate from unlimited execution concurrency.
 No native Depot rolling-window configuration was verified,
 and no production controller was deployed.
+The [completed scheduling evaluation](../planning/depot-rolling-budget-evaluation.md)
+also records the live gate's final result:
+331 seconds of counting,
+922 fetched runs,
+and 790 job-history results before rejecting the day budget.
+The 926-run fixture remains separate evidence.
+
+## Account evidence supplied by the user
+
+The user copied the account's October usage and limit settings on October 15 local time.
+This is account-specific user-supplied evidence,
+not an independently queried invoice.
+The USD $200 plan shows 36 container minutes used against a 5,000-minute cap,
+3,804 GitHub Actions minutes against 20,000,
+and 29 Depot CI minutes against 20,000.
+The selected "Limit usage" setting states that new builds or workflows fail to start at the limit.
+These are separate product minute limits,
+not evidence of an aggregate dollar cap covering storage or other products.
+
+The same copy reports 25.1 GB in an Intel cache view,
+2 GB cache in current usage,
+and 1 GB average in build history.
+Keep these observations separate until their scope and time aggregation are established.
+The account estimates 74 container minutes,
+7,859 GitHub Actions minutes,
+and 59 CI minutes on the next bill;
+this projection includes an exceptional runner-sizing experiment and is not a target-workload forecast.
+The trial expiry is stated as seven days,
+without an exact timestamp.
+No account setting was changed.
 
 ## Monthly plan scenarios
 

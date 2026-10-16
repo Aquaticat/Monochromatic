@@ -714,8 +714,46 @@ not an application requirement.
 The desktop prerequisite workflow initially failed because its task file was outside the configured discovery roots.
 The task was moved into the desktop package's existing `mise.toml`;
 the rerun is `38826610100`.
-The next action is provisioning and running the desktop interaction path,
-alongside cloud preparation of Android instrumented-test artifacts for an isolated local emulator.
+The desktop prerequisite rerun passed:
+the Depot GitHub runner has a running systemd user manager and noninteractive sudo.
+Full interaction run `38826827023` built the app and compositor,
+rendered through llvmpipe,
+and passed keyboard/playback/audio-routing checks,
+but failed pointer/text checks and aborted during the wide session.
+The trial environment and the unexercised scenarios still need investigation.
+
+Android artifact run `38826684750` passed.
+Both cloud-built APKs installed on a private headed Android 37 x86_64 emulator with 16 KiB pages.
+The unfiltered instrumented invocation reported 16 cases and two `SessionStoreTest` failures:
+`SessionStore.prefs` dereferenced a null application context from the test APK's context.
+Some other tests use assumptions to skip absent audio fixtures;
+raw instrumentation statuses and fixture preparation are the next verification step.
+No passing full-device-suite claim is made.
+
+The [coverage inventory](../planning/depot-expanded-coverage.md)
+and [scheduling evaluation](../planning/depot-rolling-budget-evaluation.md) are complete.
+The scheduling evaluation measured the completed live gate:
+331 seconds counting,
+922 fetched runs,
+and 790 sequential job-history results.
+It found no validated equivalent replacement for the rolling budgets.
+The seven-day target-workload replay remains active.
+
+The user supplied account settings after browser discovery again returned no available browser.
+The USD $200 plan reports 36 container minutes,
+3,804 GitHub Actions minutes,
+and 29 Depot CI minutes used.
+Selected hard-start limits are 5,000,
+20,000,
+and 20,000 minutes respectively;
+the displayed text says new builds or workflows fail to start when a limit is reached.
+The copied storage figures are 25.1 GB for an Intel cache view,
+2 GB in current usage,
+and 1 GB average in a build-history view.
+Their scopes and time aggregation have not been reconciled.
+Trial expiry is still displayed as seven days,
+without an exact timestamp.
+No account settings were changed.
 Production deployment remains outside the trial's authorization.
 
 ## Interview process correction
