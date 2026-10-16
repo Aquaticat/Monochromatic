@@ -4,10 +4,6 @@ name: npm-publish
 # trusted publisher, without publishing unrelated pending package versions.
 on:
   workflow_dispatch:
-    inputs:
-      source-ref:
-        description: 'Commit or branch containing the module-fs-path version to publish'
-        required: true
 
 permissions: {}
 
@@ -27,8 +23,6 @@ jobs:
       pnpm_config_dedupe_direct_deps: 'false'
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          ref: ${{ inputs.source-ref }}
       - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
         with:
           minimum_release_age: 1d
@@ -53,8 +47,6 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          ref: ${{ inputs.source-ref }}
       - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
         with:
           minimum_release_age: 1d
