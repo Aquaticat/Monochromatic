@@ -185,6 +185,17 @@ A real failed check can finish execution without validating the revision.
 A skipped,
 cancelled,
 or absent required check leaves validation incomplete.
+Admission policy creates conditional requirements:
+a verified gate denial can finish the policy check without selecting its analysis child.
+The reconciler requires the approved policy revision,
+gate script hash,
+successful observed gate result,
+decision timestamp,
+denial reason,
+and matching unexecuted child disposition.
+A generic skipped result cannot satisfy that contract.
+An allow decision requires actual analysis evidence,
+including its observed repository commit and check identities.
 Do not allow fail-fast cancellation or ignored child errors to turn missing coverage into a shorter successful pipeline.
 Negative controls must demonstrate propagation through the same task,
 workflow,
