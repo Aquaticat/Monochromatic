@@ -266,6 +266,30 @@ No production migration or plan change was adopted.
 
 ### Active replay at 03:01 UTC on October 16
 
+The subsequent native recovery uses harness `32a9250add`:
+run `38847322477` checks historical native source `cb95cf6d78` on Windows and macOS,
+and run `38847322559` checks desktop source `3434eaa455` on macOS.
+The harness explicitly installs Clippy for `nightly-2026-10-13`
+and derives the original test task body through mise metadata and configuration reads.
+Its only test invocation change is `--no-fail-fast`,
+applied in memory without editing historical source.
+A disposable control verified the added argument,
+package environment,
+and Slint debug-info activation before dispatch.
+Neither recovery is a result until its provider run and individual checks terminate.
+
+VM retry `8wfm7bfgjv` stopped before VM checks:
+the runner had no `XDG_RUNTIME_DIR`,
+so the short-socket assertion rejected setup.
+It produced no VM artifact and remains a failed preparation attempt.
+Harness `295045dd82` creates a missing private runner runtime directory under `/run/user/<uid>`;
+its retry is `7gxcgml68r`.
+Root retains documentation and issue work for the native Clippy prerequisite,
+nextest fail-fast coverage,
+VM socket/runtime setup,
+and the original vmsync task's relative command path.
+The final coherent whole-case replays remain required after adapter development.
+
 The complete graph remains unfinished.
 The TOML core attempt `hgqj2nstwq` recorded 16 passing checks,
 5 failed checks,
