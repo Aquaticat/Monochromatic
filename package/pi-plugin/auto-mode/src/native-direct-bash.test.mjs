@@ -15,7 +15,9 @@ const permitted=mode==='permission'||mode==='mixed';
 const relation=mode==='prohibition'?'prohibition':'permission';
 const env=await createEnvironment({policyText:`RUL:\n The complete proposed operation is ${relation==='permission'?'permitted':'prohibited'}.\n`,hostPrompt:'Fixture background.',useNativeProvider:true});
 const {createBashToolDefinition}=await import(pathToFileURL(join(env.packageRoot,'dist/core/tools/bash.js')).href);
-const bash=createBashToolDefinition(env.options.cwd);
+const originalBash=createBashToolDefinition(env.options.cwd);
+const executions={count:0};
+const bash={...originalBash,async execute(...args){executions.count++;return await Reflect.apply(originalBash.execute,originalBash,args);}};
 const {session,root,lifecycle}=await createRootSessionFactory(env).create({options:{...env.options,tools:['bash','codemode'],customTools:[bash,createOwnedCodemodeDefinition()]}});
 session.agent.getApiKey=function fixtureKey(){return process.env.FIXTURE_API_KEY;};
 const observations={assessments:0,httpCalls:0};
@@ -40,13 +42,15 @@ await using cleanup={async [Symbol.asyncDispose](){session.dispose();await sessi
  assert.ok(review,'Original direct calls must reach policy review');
  assert.equal(review.semanticAdmission.state,'matching');
  assert.ok(observations.assessments>0,'Direct Bash must reach automatic assessment');
- assert.equal(review.outcome.state,permitted?'allowed':mode==='prohibition'?'blocked':'unresolved');
+ assert.equal(review.outcome.state,mode==='unknown'?'unresolved':'resolved');
+ if(mode!=='unknown')assert.equal(review.outcome.verdict,permitted?'approve':'deny');
+ assert.equal(executions.count,permitted?2:0);
  const results=session.messages.filter(function toolResult(message){return message.role==='toolResult';});
  assert.equal(results.length,2);
  for(const [index,result] of results.entries()){
   assert.equal(result.isError,!permitted);
   const text=JSON.stringify(result.content);
-  assert.equal(text.includes(index===0?'NATIVE_DIRECT_BASH_A':'NATIVE_DIRECT_BASH_B'),permitted);
+  if(permitted)assert.ok(text.includes(index===0?'NATIVE_DIRECT_BASH_A':'NATIVE_DIRECT_BASH_B'));
  }
  console.log(JSON.stringify({complete:true,mode,assessments:observations.assessments,automaticExecutions:permitted?2:0,completeCommands:true}));
 //endregion
