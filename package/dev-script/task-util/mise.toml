@@ -378,7 +378,8 @@ if (control === 'deferred-prerequisite') {
   const report = JSON.parse(readFileSync(join(homedir(), 'temp/agent/depot-complete-ci/control-deferred-prerequisite-results.json')))
   assert.equal(report.results.find((item) => item.checkId === build.id).status, 'passed')
   assert.equal(report.results.find((item) => item.checkId === types.id).status, 'passed')
-  assert.deepEqual(report.deferredChecks, [])
+  assert.deepEqual(report.deferredChecks.map((item) => item.checkId), [check.id])
+  assert.equal(report.results.find((item) => item.checkId === check.id).status, 'skipped')
 }
 console.log("\n" + JSON.stringify({ event: 'executor-control-observed', control, executorExitCode: result.status, expectedFailure: !passing }))
 if (!passing) throw new Error(`Intentional negative control ${control} propagates to workflow failure`)
