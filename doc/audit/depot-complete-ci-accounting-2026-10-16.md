@@ -276,6 +276,47 @@ not classified as a new application defect.
 The original replay skipped nextest after the failed assertion.
 Recovery run `38844610546` keeps the application and assertion unchanged,
 while allowing independent tests after successful test compilation.
+All three recovery jobs executed exactly the same 1,432 test identities,
+with every numbered result passing and one unnamed skipped benchmark in each summary.
+Their job durations were 353 seconds for MSVC x64,
+456 seconds for GNU x64,
+and 461 seconds for MSVC ARM64.
+The jobs remain failed because the original PowerShell assertion remains failed.
+
+The macOS desktop replay ran 1,020 of 1,433 selected nonignored tests:
+1,017 passed and three watch assertions failed.
+Nextest explicitly reports 413 tests left unexecuted after fail-fast.
+The rename-target path mismatch is tracked in
+[issue #1063](https://github.com/Aquaticats/Monochromatic/issues/1063),
+the burst-write path and flag mismatch in
+[issue #1064](https://github.com/Aquaticats/Monochromatic/issues/1064),
+and the in-place-write mismatch in
+[issue #1065](https://github.com/Aquaticats/Monochromatic/issues/1065).
+These observations do not establish one shared backend cause.
+
+Native-source replay `38842787230` retained separate earlier failures.
+Windows test compilation failed with rustc `E0433` for the Unix-only CPU-time helper;
+[issue #1061](https://github.com/Aquaticats/Monochromatic/issues/1061)
+records the historical failure and existing fix `2ec128bebf`.
+The macOS random change-plan fixture failed on case-colliding names;
+[issue #1062](https://github.com/Aquaticats/Monochromatic/issues/1062)
+records existing fix `95ec5a9da8` and the exact test passing in the later desktop replay.
+Both historical issues are closed with the newer-source evidence,
+without changing the failed replay outcomes.
+The earlier macOS run executed 55 of 1,382 tests,
+with 54 passes and one failure;
+1,327 remained unexecuted.
+Missing locked-toolchain Clippy components and fail-fast recovery belong to the harness,
+separate from these source outcomes.
+
+The [Android consumer evidence](depot-complete-android-2026-10-16.evidence.json)
+matches all 15 test identities independently derived from the frozen Kotlin source and its hashes.
+The local consumer run took 6.041 seconds,
+with 13 passes,
+two retained `SessionStoreTest` failures,
+and no skips.
+Its APK producer is Depot run `j80v9dqfb4`;
+local consumer time is not added to provider compute usage.
 
 ### Logger static accounting
 
@@ -312,10 +353,17 @@ retains full-project Oxlint checks,
 and ignores unexecuted skip timestamps when evaluating dependency execution order.
 Positive and negative fixtures exercise those selection boundaries.
 
-The collection queue also includes VM run `99tl7zjfgp` at harness revision
+VM run `99tl7zjfgp` at harness revision
 `a0785c49e68573be8a806af33c50ab1fb1d1c7ca`,
-using the same frozen logger source.
-Its provider attempt accounting is pending terminal collection.
+using the same frozen logger source,
+has been collected with its artifact.
+Its attempt used 258.417 seconds and 4,134.672 vCPU-seconds at the verified 16-vCPU allocation.
+Source and lockfile hashes match immutable Git objects before and after execution.
+The original package task failed on a relative helper path;
+the separate private-environment experiment failed on a Unix socket path length before guest runtime.
+Domain lists before preparation and after cleanup were empty,
+and the lifecycle record reports no cleanup errors.
+The corrected environment replay remains pending.
 After diagnostic issue filing settles,
 the issue-ledger totals must be reconciled against the explicit issue IDs before updating them.
 
