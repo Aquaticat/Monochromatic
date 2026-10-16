@@ -184,8 +184,14 @@ It used 45 job seconds and 49 seconds from run creation to job completion.
 The failed setup attempts remain usage observations and cannot count as native check execution.
 The omitted configured Cargo installer is tracked in
 [issue #1059](https://github.com/Aquaticats/Monochromatic/issues/1059).
-Its corrected setup is being verified in
+Both hosts passed the corrected installer,
+dependent-tool,
+and immutable-source verification steps in
 [retry 38842787230](https://github.com/Aquaticats/Monochromatic/actions/runs/38842787230).
+That closes the prerequisite issue only;
+package validation was still in progress,
+with a separate failed Windows Clippy step,
+at this observation boundary.
 
 Depot native setup in run `5tbb7qftkw` failed at a separate boundary:
 the historical Git wrapper's offline Cargo build could not resolve package `ignore`.

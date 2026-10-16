@@ -4007,6 +4007,352 @@
         "timeoutMinutes": 30
       },
       "classification": "Linux desktop host preparation failed before package check summary"
+    },
+    "prerequisiteRecovery": {
+      "collection": {
+        "collectedAt": "2026-10-16T03:12:58.502Z",
+        "repo": "Aquaticats/Monochromatic",
+        "visibility": "public",
+        "runId": 38842787230,
+        "revision": "87f5bf2c1f7f4e132bd6ad12b26cd6f45f06de22",
+        "runAttempt": 1,
+        "status": "in_progress",
+        "conclusion": null,
+        "createdAt": "2026-10-16T02:54:03Z",
+        "startedAt": "2026-10-16T02:54:03Z",
+        "updatedAt": "2026-10-16T02:54:10Z",
+        "jobs": [
+          {
+            "id": 116786450062,
+            "attempt": 1,
+            "workflow": "depot-complete-native-hosts",
+            "name": "Native package gates (macos-15-intel)",
+            "status": "in_progress",
+            "conclusion": null,
+            "headSha": "87f5bf2c1f7f4e132bd6ad12b26cd6f45f06de22",
+            "startedAt": "2026-10-16T02:54:10Z",
+            "completedAt": null,
+            "seconds": null,
+            "labels": [
+              "macos-15-intel"
+            ],
+            "allocation": {
+              "label": "macos-15-intel",
+              "vcpus": 4,
+              "memoryGb": 14,
+              "publicStandardComputeUsd": 0,
+              "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+            },
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1,
+                "started_at": "2026-10-16T02:54:13Z",
+                "completed_at": "2026-10-16T02:54:16Z"
+              },
+              {
+                "name": "Checkout trial harness",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2,
+                "started_at": "2026-10-16T02:54:16Z",
+                "completed_at": "2026-10-16T02:54:47Z"
+              },
+              {
+                "name": "Checkout immutable source",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3,
+                "started_at": "2026-10-16T02:54:47Z",
+                "completed_at": "2026-10-16T02:55:14Z"
+              },
+              {
+                "name": "Set up mise",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4,
+                "started_at": "2026-10-16T02:55:14Z",
+                "completed_at": "2026-10-16T02:55:18Z"
+              },
+              {
+                "name": "Install the source-declared Node and Cargo tool prerequisites",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5,
+                "started_at": "2026-10-16T02:55:18Z",
+                "completed_at": "2026-10-16T02:55:47Z"
+              },
+              {
+                "name": "Install source-declared native tools after Rust",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 6,
+                "started_at": "2026-10-16T02:55:47Z",
+                "completed_at": "2026-10-16T02:56:04Z"
+              },
+              {
+                "name": "Expose the source-declared Windows linker",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 7,
+                "started_at": "2026-10-16T02:56:04Z",
+                "completed_at": "2026-10-16T02:56:04Z"
+              },
+              {
+                "name": "Verify immutable source and record tools",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 8,
+                "started_at": "2026-10-16T02:56:04Z",
+                "completed_at": "2026-10-16T02:56:10Z"
+              },
+              {
+                "name": "Restore exact-source native artifacts",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 9,
+                "started_at": "2026-10-16T02:56:10Z",
+                "completed_at": "2026-10-16T02:56:11Z"
+              },
+              {
+                "name": "Build release artifact through the package task",
+                "status": "in_progress",
+                "conclusion": null,
+                "number": 10,
+                "started_at": "2026-10-16T02:56:11Z",
+                "completed_at": null
+              },
+              {
+                "name": "Run all-target Clippy through the package task",
+                "status": "pending",
+                "conclusion": null,
+                "number": 11,
+                "started_at": null,
+                "completed_at": null
+              },
+              {
+                "name": "Run nextest through the package task",
+                "status": "pending",
+                "conclusion": null,
+                "number": 12,
+                "started_at": null,
+                "completed_at": null
+              },
+              {
+                "name": "Exercise the built release command",
+                "status": "pending",
+                "conclusion": null,
+                "number": 13,
+                "started_at": null,
+                "completed_at": null
+              },
+              {
+                "name": "Verify source remained immutable",
+                "status": "pending",
+                "conclusion": null,
+                "number": 14,
+                "started_at": null,
+                "completed_at": null
+              },
+              {
+                "name": "Post Restore exact-source native artifacts",
+                "status": "pending",
+                "conclusion": null,
+                "number": 26,
+                "started_at": null,
+                "completed_at": null
+              },
+              {
+                "name": "Post Checkout immutable source",
+                "status": "pending",
+                "conclusion": null,
+                "number": 27,
+                "started_at": null,
+                "completed_at": null
+              },
+              {
+                "name": "Post Checkout trial harness",
+                "status": "pending",
+                "conclusion": null,
+                "number": 28,
+                "started_at": null,
+                "completed_at": null
+              }
+            ]
+          },
+          {
+            "id": 116786450596,
+            "attempt": 1,
+            "workflow": "depot-complete-native-hosts",
+            "name": "Native package gates (windows-2025)",
+            "status": "in_progress",
+            "conclusion": null,
+            "headSha": "87f5bf2c1f7f4e132bd6ad12b26cd6f45f06de22",
+            "startedAt": "2026-10-16T02:54:06Z",
+            "completedAt": null,
+            "seconds": null,
+            "labels": [
+              "windows-2025"
+            ],
+            "allocation": {
+              "label": "windows-2025",
+              "vcpus": 4,
+              "memoryGb": 16,
+              "publicStandardComputeUsd": 0,
+              "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+            },
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1,
+                "started_at": "2026-10-16T02:54:07Z",
+                "completed_at": "2026-10-16T02:54:08Z"
+              },
+              {
+                "name": "Checkout trial harness",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2,
+                "started_at": "2026-10-16T02:54:08Z",
+                "completed_at": "2026-10-16T02:54:33Z"
+              },
+              {
+                "name": "Checkout immutable source",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3,
+                "started_at": "2026-10-16T02:54:33Z",
+                "completed_at": "2026-10-16T02:54:55Z"
+              },
+              {
+                "name": "Set up mise",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4,
+                "started_at": "2026-10-16T02:54:55Z",
+                "completed_at": "2026-10-16T02:55:00Z"
+              },
+              {
+                "name": "Install the source-declared Node and Cargo tool prerequisites",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5,
+                "started_at": "2026-10-16T02:55:00Z",
+                "completed_at": "2026-10-16T02:55:16Z"
+              },
+              {
+                "name": "Install source-declared native tools after Rust",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 6,
+                "started_at": "2026-10-16T02:55:16Z",
+                "completed_at": "2026-10-16T02:55:32Z"
+              },
+              {
+                "name": "Expose the source-declared Windows linker",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 7,
+                "started_at": "2026-10-16T02:55:32Z",
+                "completed_at": "2026-10-16T02:55:32Z"
+              },
+              {
+                "name": "Verify immutable source and record tools",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 8,
+                "started_at": "2026-10-16T02:55:32Z",
+                "completed_at": "2026-10-16T02:55:37Z"
+              },
+              {
+                "name": "Restore exact-source native artifacts",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 9,
+                "started_at": "2026-10-16T02:55:37Z",
+                "completed_at": "2026-10-16T02:55:37Z"
+              },
+              {
+                "name": "Build release artifact through the package task",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 10,
+                "started_at": "2026-10-16T02:55:37Z",
+                "completed_at": "2026-10-16T03:09:46Z"
+              },
+              {
+                "name": "Run all-target Clippy through the package task",
+                "status": "completed",
+                "conclusion": "failure",
+                "number": 11,
+                "started_at": "2026-10-16T03:09:46Z",
+                "completed_at": "2026-10-16T03:09:50Z"
+              },
+              {
+                "name": "Run nextest through the package task",
+                "status": "in_progress",
+                "conclusion": null,
+                "number": 12,
+                "started_at": "2026-10-16T03:09:50Z",
+                "completed_at": null
+              },
+              {
+                "name": "Exercise the built release command",
+                "status": "pending",
+                "conclusion": null,
+                "number": 13,
+                "started_at": null,
+                "completed_at": null
+              },
+              {
+                "name": "Verify source remained immutable",
+                "status": "pending",
+                "conclusion": null,
+                "number": 14,
+                "started_at": null,
+                "completed_at": null
+              },
+              {
+                "name": "Post Restore exact-source native artifacts",
+                "status": "pending",
+                "conclusion": null,
+                "number": 26,
+                "started_at": null,
+                "completed_at": null
+              },
+              {
+                "name": "Post Checkout immutable source",
+                "status": "pending",
+                "conclusion": null,
+                "number": 27,
+                "started_at": null,
+                "completed_at": null
+              },
+              {
+                "name": "Post Checkout trial harness",
+                "status": "pending",
+                "conclusion": null,
+                "number": 28,
+                "started_at": null,
+                "completed_at": null
+              }
+            ]
+          }
+        ],
+        "scope": "Read-only repository execution metadata. Standard public runner compute is free under published policy; storage, account ledger, and nonstandard allocations are not inferred."
+      },
+      "requiredSteps": [
+        "Install the source-declared Node and Cargo tool prerequisites",
+        "Install source-declared native tools after Rust",
+        "Verify immutable source and record tools"
+      ],
+      "verified": true,
+      "scope": "Both hosts crossed the specific Cargo installer prerequisite boundary; full package validation is still in progress",
+      "issue": "https://github.com/Aquaticats/Monochromatic/issues/1059"
     }
   },
   "caseLedger": {
