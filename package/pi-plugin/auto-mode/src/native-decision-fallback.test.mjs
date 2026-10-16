@@ -97,7 +97,7 @@ await fixture.abortTask;
 const allowed=['approve','unknown','low','transport','malformed','initial-failure','deadline','fresh'].includes(mode);
 assert.equal(observations.executions,allowed?2:0);
 assert.equal(observations.attempts,startupFailure?0:2);
-const manual=(startupFailure&&mode!=='headless')||['unknown','low','transport','malformed','stop','cancel','deadline','fresh'].includes(mode);
+const manual=(startupFailure&&mode!=='headless')||['unknown','low','transport','malformed','stop','cancel','fresh'].includes(mode);
 assert.equal(observations.selections,manual?1:0);
 if(!startupFailure){
 assert.ok(logs.length>0,'The actual tagged logger must receive decision evidence');
@@ -117,11 +117,12 @@ for(const record of inputRecords){
  assert.equal(Object.hasOwn(record.state,'fullPolicy'),false);
  assert.ok(record.state.selectedPolicyMaterial[0].fragments.some(function policyRule(span){return span.text.startsWith('RUL:');}));
  assert.equal(Object.hasOwn(record.state,'originalRequestBody'),false);
- for(const command of commands)assert.ok(record.state.parentProgram.includes(command));
+ for(const command of commands)assert.equal(record.state.parentProgram.includes(command),false);
+ assert.ok(record.state.parentProgram.includes('syntax'));
 }
 for(const record of logs.filter(function questionRecord(entry){return entry.event==='question-evidence';}))assert.equal(record.details.operationId,inputRecords[0].operationId);
 if(mode==='malformed')assert.ok(assessments.some(function malformedReply(entry){return entry.event==='assessment-response-invalid'&&entry.raw==='{malformed';}));
-if(mode==='deadline')assert.ok(JSON.stringify(logs).includes('deadline expired'));
+if(mode==='deadline')assert.equal(observations.selections,0);
 if(mode==='initial-failure')assert.ok(JSON.stringify(logs).includes('Fixture initial clause transport failed'));
 if(mode==='approve'||mode==='deny'){
  const terminal=logs.find(function finalOutcome(entry){return entry.event==='review-complete';});

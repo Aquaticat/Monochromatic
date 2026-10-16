@@ -66,7 +66,7 @@ export class DependencyClockError extends Error {
    Preserve the original assessment deadline diagnostic.
    */
   constructor() {
-    super('Original dependency assessment deadline expired');
+    super('Original dependency assessment clock or performance target is invalid');
   }
 }
 /**

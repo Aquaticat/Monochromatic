@@ -90,7 +90,7 @@ export function parseShellReviewStructure(command: string): Readonly<Record<stri
     l.debug('prepared shell structure without source scripts');
     return Object.freeze({ language: 'bash', syntax, expansionValues: 'not-evaluated', effects: 'not-established', });
   } catch (error) {
-    l.error(error);
+    l.error(String(error));
     if (error instanceof ShellReviewSyntaxError) throw error;
     throw new ShellReviewSyntaxError('Bash structure could not be parsed for automatic review', { cause: error, });
   }

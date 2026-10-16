@@ -67,6 +67,9 @@ const projected=projectVisibleOperation([{type:'thinking',thinking:'PRIVATE_REAS
 assert.equal(JSON.stringify(projected).includes('PRIVATE_REASONING_MUST_STAY_LOCAL'),false,'Thinking must never reach the operation review projection');
 assert.equal(JSON.stringify(projected).includes('PROVIDER_ONLY'),false);
 assert.equal(projected.length,1);
+assert.equal(Object.hasOwn(projected[0].arguments,'command'),false);
+assert.equal(projected[0].arguments.shell.syntax.type,'Script');
+assert.equal(JSON.stringify(projected).includes('cat restricted.txt'),false);
 await env.policyInput.reload();
 assert.equal(requests.length,1,'Unchanged initialization must reuse completed rule classifications');
 await writeFile(join(env.options.cwd,'AGENTS.md'),policyText.replace('Uncertain fixture rule.','Changed uncertain fixture rule.'));

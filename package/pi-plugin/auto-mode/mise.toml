@@ -899,6 +899,10 @@ run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs startup-failure-headless",
 ]
 
+[tasks."test:native:shell-projection"]
+description = "Verify parsed Bash control flow, literal data, and thinking exclusion at the built model boundary"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-shell-projection.test.mjs"
+
 [tasks."test:native:runtime-hooks"]
 description = "Verify native hook installation and rollback without message listeners"
 run = [

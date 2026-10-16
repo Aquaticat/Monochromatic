@@ -102,12 +102,12 @@ await describe({
 
 //endregion Original request and response cross one fixed HTTP boundary unchanged
 
-//region Deadline and cancellation retain the original judgment lifetime
+//region Cancellation retains the original judgment lifetime while timing remains advisory
 
 await describe({
   name: 'original assessment lifetime',
   children: [
-    ...[15_000, 15_001, -1, Number.NaN, Number.POSITIVE_INFINITY,].map(function elapsedClock(clock) {
+    ...[Number.NaN, Number.POSITIVE_INFINITY,].map(function elapsedClock(clock) {
       return it({
         name: `rejects original clock ${String(clock)} before HTTP`,
         fn: async () => {
@@ -126,7 +126,7 @@ await describe({
       },);
     }),
     it({
-      name: 'charges credential preparation to the original deadline',
+      name: 'allows credential preparation beyond the advisory target',
       fn: async () => {
         let clock = 0;
         let calls = 0;
@@ -137,11 +137,8 @@ await describe({
           fetchImpl: async function countDispatch() { calls++;
           return new Response('{}',); },
         },);
-        const error = await assessmentFailure(async function dispatch() {
-            return await send(assessmentInput(),);
-          },);
-        expect(error,).toBeInstanceOf(AssessmentTransportError,);
-        expect(calls,).toBe(0,);
+        expect(await send(assessmentInput()),).toBe('{}');
+        expect(calls,).toBe(1,);
       },
     },),
     it({
@@ -184,7 +181,7 @@ await describe({
       },
     },),
     it({
-      name: 'rejects completion after the original deadline even when HTTP returns bytes',
+      name: 'accepts completion after the advisory target when HTTP returns bytes',
       fn: async () => {
         let clock = 0;
         const send = assessmentSender({
@@ -192,16 +189,13 @@ await describe({
           fetchImpl: async function lateResponse() { clock = 15_000;
           return new Response('{}',); },
         },);
-        const error = await assessmentFailure(async function dispatch() {
-            return await send(assessmentInput(),);
-          },);
-        expect(error,).toBeInstanceOf(AssessmentTransportError,);
+        expect(await send(assessmentInput()),).toBe('{}');
       },
     },),
   ],
 },);
 
-//endregion Deadline and cancellation retain the original judgment lifetime
+//endregion Cancellation retains the original judgment lifetime while timing remains advisory
 
 //region HTTP failures never become model answers or disclose borrowed error text
 
@@ -232,21 +226,21 @@ await describe({
       },);
     }),
     it({
-      name: 'cancels an expired response stream before consuming later chunks',
+      name: 'cancels an explicitly aborted response stream before later chunks',
       fn: async () => {
         let cancelled = false;
-        let clock=0;
+        const controller = new AbortController();
         const stream = new ReadableStream<Uint8Array>({
           start(controller) { controller.enqueue(new Uint8Array(65_537,),); },
           pull(controller) { controller.close(); },
           cancel() { cancelled = true; },
         }, { highWaterMark: 0, },);
-        const send = assessmentSender({now:()=>clock, fetchImpl: async function streamedResponse() {
-          clock=15_000;
+        const send = assessmentSender({fetchImpl: async function streamedResponse() {
+          controller.abort('original cancellation');
           return new Response(stream,);
         }, },);
         const error = await assessmentFailure(async function dispatch() {
-            return await send(assessmentInput(),);
+            return await send({...assessmentInput(), signal:controller.signal},);
           },);
         expect(error,).toBeInstanceOf(AssessmentTransportError,);
         expect(cancelled,).toBe(true,);

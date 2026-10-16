@@ -521,7 +521,9 @@ await describe({
         );
 
         expect(context,).toContain('meow',);
-        expect(context,).toContain('cat dog.txt',);
+        expect(context,).toContain('dog.txt',);
+        expect(context,).not.toContain('cat dog.txt',);
+        expect(context,).toContain('syntax',);
         expect(context,).toContain(String.raw`observed output\nwoof`,);
         expect(context,).toContain('./cat.txt',);
         expect(context,).toContain('complete tool details',);
@@ -529,7 +531,7 @@ await describe({
     },),
 
     it({
-      name: 'preserves visible assistant reasoning and image data without provider signatures',
+      name: 'omits assistant thinking while retaining image data without provider signatures',
       fn: async function testPreservesVisibleAssistantAndImages(): Promise<void> {
         /** Context containing every visible assistant block and user image. */
         const context = buildContext(
@@ -591,7 +593,7 @@ await describe({
         );
 
         expect(context,).toContain('complete-image-data',);
-        expect(context,).toContain('complete visible reasoning',);
+        expect(context,).not.toContain('complete visible reasoning',);
         expect(context,).toContain('Complete assistant response.',);
         expect(context,).toContain('cat.txt',);
         expect(context,).toContain('complete visible assistant error',);
@@ -652,7 +654,8 @@ await describe({
           },),
         );
 
-        expect(context,).toContain('printf direct',);
+        expect(context,).not.toContain('printf direct',);
+        expect(context,).toContain('direct',);
         expect(context,).toContain('complete direct output',);
         expect(context,).toContain('/tmp/full-output',);
         expect(context,).toContain('complete custom content',);
