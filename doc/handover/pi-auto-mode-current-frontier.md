@@ -9,6 +9,32 @@ Updated 2026-10-16.
 
 ## Active work on 2026-10-15
 
+### Active false prohibition and log corruption correction on 2026-10-16
+
+The MiMo session `2026-10-16T01-17-32-548Z` rejected a group containing repository inspection commands.
+Its decision evidence identifies `DCB` as the blocking clause at prohibition scores `0.62` and `0.63`.
+The compiler admitted the first source at priority `2`;
+the router promoted that estimate to an established prohibition and skipped whole-operation review.
+This is a separate failure from the completed false-prerequisite correction.
+The user confirmed that uncertain clause denials must reach scoped Allow/Stop confirmation
+when both automatic reviews fail,
+and requested fixes for every issue shown.
+The user reiterated that accommodating Luna's interpretation failures is part of the product requirement.
+
+- [ ] Reproduce and correct clause-denial routing, retaining whole-operation denials and original ownership checks.
+- [ ] Measure the actual DCB clause interpretation against inspection and restricted-operation controls;
+      correct the assessment path rather than treating the false classification as an acceptable vendor quirk.
+- [ ] Reproduce and fix concurrent JSONL record corruption;
+      the incident log contains two malformed physical lines with interleaved record content.
+- [ ] Verify the installed host with the reported commands and record the final evidence.
+
+Incident log: `node_modules/.monochromatic/2026-10-16T01-17-31.942Z.log.jsonl`.
+Private inspection task: `${HOME}/temp/agent/pi-host-isolation-20261015`,
+`mise run inspect-prohibition-incident`.
+It recovered `1046` valid decision/assessment records and counted malformed lines without printing their content.
+Next: run the new authored false-prohibition regression against the installed release,
+then correct automatic review and independently reproduce the file-sink defect.
+
 ### Decision-model fallback correction on 2026-10-16
 
 The user reported that the installed release blocked repository inspection commands with
