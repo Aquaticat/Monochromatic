@@ -53,6 +53,11 @@ const runtime=bindNativePolicyRuntime({root,lifecycle,policyInput:env.policyInpu
   observations.attempts++;
   for(const command of commands)assert.ok(input.body.includes(command));
   const wire=JSON.parse(input.body);
+  for(const question of Object.values(wire.questions)){
+   if(!question.instructions.selectedRule)continue;
+   assert.ok(Object.values(question.criteria).every(function localRubric(criterion){return typeof criterion==='string'&&criterion.length>0;}),'Every clause choice needs its local interpretation rubric');
+   assert.equal(question.instructions.predicate,wire.state.clauseRelationDefinition.instructions,'Each clause needs complete local interpretation instructions');
+  }
   const operation=Object.values(wire.questions).some(function operationQuestion(question){return Object.hasOwn(question.criteria,'approve');});
   assert.equal(operation,observations.attempts===2);
   if(mode==='initial-failure'&&!operation)throw new Error('Fixture initial clause transport failed');
