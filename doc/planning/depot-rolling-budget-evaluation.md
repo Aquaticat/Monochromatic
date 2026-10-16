@@ -161,7 +161,7 @@ cancel,
 and inspection operations.
 Its `RunRequest` and `DispatchWorkflowRequest` contain no rolling-window budget or reservation field.
 This was checked at `depot/cli` revision `1f96d6d488f938de97ea640b115e9567ebfd6fbf`.
-[CI API source](https://github.com/depot/cli/blob/main/proto/depot/ci/v1/ci.proto).
+[CI API source][depot-ci-api].
 Together with the compatibility reference,
 this establishes no validated public configuration for this requirement;
 it does not prove that Depot has no internal capability or future extension.
@@ -172,7 +172,7 @@ Replacing them with Depot list calls would still require a separately validated 
 The API source describes `ListRuns` as recent discovery,
 not historical search;
 `ListWorkflows` has a bounded result size without a pagination token.
-[CI API source](https://github.com/depot/cli/blob/main/proto/depot/ci/v1/ci.proto).
+[CI API source][depot-ci-api].
 
 ### Depot sandboxes and periodic execution
 
@@ -277,6 +277,19 @@ the scheduling portion of the trial concludes **no validated replacement**.
 The measured 331-second counting step justifies continued optimization work,
 but it does not justify deploying an untested scheduler or relaxing the accepted budgets.
 
+## Verification
+
+`mise run replay-budget` passed all 12 fixtures.
+The scoped `lint:monochromatic-lint` task passed,
+and the Pandoc-rendered HTML was inspected for headings,
+lists,
+links,
+code spans,
+and the emphasized conclusion.
+`git diff --check` passed.
+The research was first committed as `22c3f3d65e` before document verification.
+
 [gate-job]: https://github.com/Aquaticats/Monochromatic/actions/runs/38806855827/job/116669815274
 [github-concurrency]: https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency
 [depot-compatibility]: https://depot.dev/docs/ci/compatibility
+[depot-ci-api]: https://github.com/depot/cli/blob/main/proto/depot/ci/v1/ci.proto
