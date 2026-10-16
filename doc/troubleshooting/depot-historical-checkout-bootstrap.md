@@ -1,4 +1,4 @@
-# Historical Git wrapper bootstraps fail before Depot checks
+# Historical checkout and host preparation fail before Depot checks
 
 ## Scope
 
@@ -121,6 +121,55 @@ Commit `43c0fb4e8f` sets `GIT_LFS_SKIP_SMUDGE=1` for that fixture operation.
 This preserves pointer files and does not validate the archived image payloads.
 The generator task does not select those archived screenshots as its input surface.
 The obsolete endpoint itself is a separate unresolved configuration problem.
+
+## Local patch application fails before source setup
+
+Feature run `mr9cw18gds` checked out harness base `0886b2669d`,
+then Depot's injected patch step failed:
+
+```text
+error: patch failed: package/dev-script/task-util/mise.toml:140
+error: package/dev-script/task-util/mise.toml: patch does not apply
+```
+
+The launch used local head `2288fcec22` and uploaded a 12579-byte patch
+because the remote branch still pointed at the older base.
+The log identifies the checkout and patch failure;
+it does not establish why the hunk failed.
+No historical source check executed.
+The next dispatch explicitly waits for `git push` to finish and verifies a zero-patch launch.
+This avoids this patch transport boundary without changing source inputs.
+The first replay remains under verification.
+
+## Slint executable lacks a runtime library
+
+Native desktop run `w6ln4j09fz` passed the product build, Clippy, and 1406 nextest cases.
+Its Slint check failed at executable loading:
+
+```text
+slint-viewer: error while loading shared libraries: libinput.so.10: cannot open shared object file: No such file or directory
+```
+
+The prepared Ubuntu image lacked that runtime dependency.
+The next host preparation installs Ubuntu's `libinput10` package and invokes
+the source-selected `slint-viewer --version` before package checks.
+The dependency correction is under live verification.
+
+## Desktop control requests lose standard input
+
+The same run started its private systemd user manager and PipeWire server.
+Its first control-socket attempts failed before the socket existed;
+later attempts exited zero with empty output.
+The harness finally emitted `Parent compositor must publish a real Wayland display before E2E starts`.
+No authored desktop runtime session executed.
+Container removal and overlay isolation checks passed.
+
+The wrapper supplied Node's subprocess `input`,
+but invoked `podman exec` without its interactive standard-input flag.
+The reviewed wrapper now uses `podman exec --interactive` whenever input is supplied.
+A `cat` positive control must echo the exact payload before compositor queries run.
+The complete desktop replay is under verification;
+the empty output is not evidence that the compositor cannot publish a display.
 
 ## Verification catalog
 
