@@ -30,18 +30,25 @@ including provenance verification and the scan.
 Positive and negative controls accept the original archive and reject altered bytes and an unrelated signer identity.
 The Cargo metadata generator and its eight managed manifests now use the organization URLs;
 already published manifests are immutable and were not republished.
-The scheduling investigation is preparing a GraphQL query replacement that preserves the existing gate policy.
-The live prototype inspected 954 runs with 10 requests and no REST requests;
-the actual workflow-token query also passed in run `38830412356`.
+The GraphQL query replacement landed in main commit `f598404b31`,
+preserving the existing gate policy.
+Production run `38831778986` inspected 972 runs with 10 GraphQL requests and no REST history requests;
+the daily budget correctly skipped analysis.
+The existing admission-reservation gap is separate and remains a proposed design change.
 
 The Android context experiment completed with 16 passes and no failures or skips,
 and its disposable visible emulator was shut down.
-The full desktop suite reached the wide-session folder fixture failure under direct software rendering;
-trial commit `0995d00e8d` runs every session independently so that failure cannot hide later sessions.
-Remaining work is to collect those results,
-update the Android evidence,
-reconcile the completed expanded monthly cost report and account-limit interpretation,
-and reconcile the coverage proposal with these measurements.
+Desktop run `38831098294` completed every session independently:
+116 checks passed,
+one folder-dialog check failed,
+and held-modifier repeat remained not injectable.
+Keyboard selection recovered the thirty-track fixture;
+installing Zenity did not recover the chooser check.
+Trial run `38832349057` retains application output to distinguish dialog environment failures.
+Remaining work is that diagnosis,
+fresh-consumer package snapshot verification,
+the desktop cost overlay,
+and reconciliation of the coverage recommendation with these measurements.
 
 ## Purpose and current state
 

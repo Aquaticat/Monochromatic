@@ -211,7 +211,11 @@ The discovery check must compare matching test files with the selected configura
   logcat failure context,
   and cleanup evidence.
 - Completion:
-  pending local execution of the cloud-built artifacts.
+  the cloud-built artifacts executed on the disposable local emulator.
+  With indexed audio fixtures the original suite had 14 passes and two storage-context failures;
+  a test-only context experiment passed all 16 cases without skips.
+  The original failures and artifact hashes remain in the
+  [device evidence](../audit/depot-android-device-2026-10-15.evidence.json).
   Existing classes are `NativeBridgeTest`,
   `SessionStoreTest`,
   `PeakSweepWorkerTest`,
@@ -283,9 +287,12 @@ The discovery check must compare matching test files with the selected configura
   application logs,
   and proof that audio stayed on the private null sink.
 - Completion:
-  full desktop cloud run [38826827023][desktop-run] is pending at this inventory checkpoint.
-  Environment preparation and build succeeded;
-  the trial coordinator must record the terminal interaction result.
+  the first full desktop cloud run [38826827023][desktop-run] failed pointer/text checks
+  and aborted the wide session.
+  Direct software rendering and keyboard fixture selection allowed every session to finish in run `38831098294`:
+  116 checks passed and the folder-dialog check failed.
+  Installing Zenity did not resolve that failure;
+  application-output diagnosis is running separately.
   The suite explicitly records held-modifier repeat as not injectable.
   Neither a screenshot nor passing harness unit tests proves the real interaction suite ran.
 

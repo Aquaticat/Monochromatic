@@ -7,8 +7,10 @@ The agreed broader evaluation remains open.
 All ten corrected runner configurations passed,
 as did the default-container-builder concurrency repetitions.
 The [sizing report](depot-runner-sizing-2026-10-15.md) records the measured results and allocation recommendation.
-Full desktop interaction and Android instrumentation have now executed and exposed failures;
-their setup and remaining coverage are being investigated.
+Full desktop interaction and Android instrumentation have now executed.
+The Android test-context experiment passed all 16 cases;
+the complete desktop run passed 116 checks and failed its folder-dialog check.
+Package snapshot reuse and chooser diagnostics are being verified.
 The user supplied the account's usage and selected hard-start limits.
 Storage views still need their different scopes reconciled.
 This report follows the [confirmed trial brief](../planning/depot-ci-trial.md).
@@ -219,6 +221,26 @@ pointer/text checks failed and the wide session aborted before later scenarios r
 This is executed but failing coverage,
 not a completed passing desktop suite.
 [Desktop interaction run](https://github.com/Aquaticats/Monochromatic/actions/runs/38826827023)
+
+Subsequent trial run `38831098294` ran each session independently with direct software rendering.
+Keyboard selection of the thirty-track fixture recovered the wide session.
+The terminal results were 116 passes,
+one folder-dialog failure,
+and one held-modifier case that cannot be injected.
+The wide,
+narrow,
+auto-play,
+quit,
+state,
+and visual sessions passed;
+the chooser session passed its focus-return check but failed to show a dialog.
+Zenity was installed in this run,
+so package absence is not a confirmed explanation for the remaining failure.
+The full sixteen-CPU job took 441 seconds,
+including provisioning and builds;
+the interaction step took 199 seconds.
+These are single-run observations and do not establish timing variance.
+[Full-session run](https://github.com/Aquaticats/Monochromatic/actions/runs/38831098294)
 
 Android artifact run `38826684750` built both native ABIs and the app/test APKs successfully.
 Those APKs installed on an isolated local headed Android 37 x86_64 emulator with 16 KiB pages.
@@ -508,8 +530,8 @@ The passing host suites do not replace those checks.
 
 ## Unresolved acceptance gaps and retained artifacts
 
-- Desktop interaction executed and exposed failures;
-  the independent-session trial is collecting the remaining terminal results.
+- Desktop interaction completed every session with 116 passes and one chooser failure;
+  a separate diagnostic run retains the application's chooser output.
   Android instrumentation passed all 16 cases in the isolated context experiment;
   the original test source still has the two documented failures.
 - Account usage and per-product hard-start limits are user-reported in Account evidence supplied by the user.
@@ -519,8 +541,10 @@ The passing host suites do not replace those checks.
   The direct usage endpoint still requires an organization credential unavailable to the CLI session.
 - The monthly figures are explicit workload scenarios,
   not a complete monthly forecast or measured cross-platform latency saving.
-- Rolling-budget fixture replay found the existing gate's query amplification and missing reservation interval.
-  No replacement admission mechanism is validated or deployed.
+- Rolling-budget fixture replay found query amplification and a missing reservation interval.
+  The query repair is deployed and production-verified:
+  run `38831778986` used 10 GraphQL requests to inspect 972 runs without REST history requests.
+  The separate admission-reservation design remains a proposal.
 - Standalone execution and two concurrent sandboxes passed;
   no controlled linker benchmark or concurrency-capacity benchmark was performed.
 
