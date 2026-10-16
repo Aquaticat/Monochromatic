@@ -197,6 +197,8 @@ It is not a claim that daily Depot checks provide the same feedback timing as pe
 
 The account usage endpoint rejects the current CLI user token and requires an organization token.
 The user cannot supply that token or a signed-in browser for this check.
+They subsequently clarified that further account access was deliberately rejected.
+Account inspection is intentionally excluded from trial completion.
 The trial therefore cannot verify the complete invoice,
 combined storage scope,
 standalone sandbox allowance attribution,

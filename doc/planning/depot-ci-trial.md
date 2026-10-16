@@ -230,6 +230,9 @@ The user subsequently authorized immediate execution during the unused Startup t
 and clarified that its available resources should be used for the evaluation.
 Developer allowances constrain the future recommendation,
 not the scope of these trial measurements.
+The user subsequently clarified that further account access was deliberately rejected.
+Account inspection is excluded from trial completion;
+unverified invoice and spending-control claims remain limits on the recommendation.
 
 ## Result and adoption boundary
 
@@ -239,6 +242,7 @@ remaining gaps,
 and unverified claims.
 It recommends check frequency and an execution arrangement using the user's combined cost objective.
 Selected execution experiments and the representative change-stream replay have finished.
+The agreed trial evaluation is complete with account inspection intentionally excluded.
 The resumed batch includes combined prepared desktop execution,
 representative browser/native checks,
 Depot Tests,

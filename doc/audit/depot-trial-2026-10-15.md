@@ -9,8 +9,9 @@ representative browser suites and native feature checks,
 and a controlled standalone linker workload.
 The [completion record](../handover/depot-trial-grilling.md#completed-trial-execution-and-remaining-acceptance-gaps)
 links each executed result and distinguishes production integration from evaluation.
-Account-wide billing verification is blocked by unavailable account access;
-other packages and platforms remain explicitly unpriced acceptance gaps.
+The agreed trial evaluation is complete.
+Further account access is deliberately excluded by the user's decision;
+other packages and platforms remain unpriced limits on a broader rollout forecast.
 All ten corrected runner configurations passed,
 as did the default-container-builder concurrency repetitions.
 The [sizing report](depot-runner-sizing-2026-10-15.md) records the measured results and allocation recommendation.
@@ -608,14 +609,15 @@ the trial has not yet demonstrated that all desired graphical tests and experime
   not a sufficient automatic policy.
 - Developer with selective overage is the second choice.
   It allows more relevant checks without immediately paying USD $200.
-  The successful desktop-inclusive daily-latest scenario costs USD $23.38 before excluded work and storage.
-  Every affected revision with separate container validation costs USD $160.28 in that same measured subset.
+  The current prepared-desktop and expanded-browser daily-latest scenario costs USD $20
+  before excluded work and storage.
+  Every affected revision costs USD $133.33 in that measured subset.
   The disadvantage is variable charges and dependence on a verified spending safeguard.
 - Startup is the third choice for the currently measured workload.
   Its added allowances reduce allocation pressure for frequent cloud work and parallel experiments.
   The disadvantage is the USD $200 base price,
   leaving no room beneath the user's ceiling for overage.
-  Every-affected measured demand would also exceed its included runner allowance.
+  The current measured compute subset fits its included allowances.
   The trial has not demonstrated enough additional benefit to justify that base price.
 
 Ranking:
@@ -658,14 +660,18 @@ The passing host suites do not replace those checks.
   exact trial expiry,
   and an aggregate dollar cap remain unverified.
   The direct usage endpoint still requires an organization credential unavailable to the CLI session.
+  The user deliberately excluded further account access;
+  this verification is not pending trial work.
 - The monthly figures are explicit workload scenarios,
   not a complete monthly forecast or measured cross-platform latency saving.
 - Rolling-budget fixture replay found query amplification and a missing reservation interval.
   The query repair is deployed and production-verified:
   run `38831778986` used 10 GraphQL requests to inspect 972 runs without REST history requests.
   The separate admission-reservation design remains a proposal.
-- Standalone execution and two concurrent sandboxes passed;
-  no controlled linker benchmark or concurrency-capacity benchmark was performed.
+- The controlled standalone linker experiment completed with retained artifacts and consumer checks.
+  Its timing difference is smaller than unchanged-input spread.
+  Two concurrent sandboxes executed successfully;
+  no capacity benchmark was performed.
 
 The [machine-readable evidence](depot-trial-2026-10-15.evidence.json)
 records build IDs,

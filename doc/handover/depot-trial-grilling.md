@@ -50,15 +50,19 @@ it does not establish Android device execution inside Depot.
 Production migration and plan changes remain separate decisions.
 
 The executable resumed queue is complete at its documented representative scope.
-Account-wide reconciliation remains blocked by unavailable account access;
-other packages and platforms remain explicitly unpriced acceptance gaps.
+The user explicitly excluded further account-access work on 2026-10-15 local time.
+Account-wide reconciliation is excluded by that decision,
+not a pending completion requirement.
+Other packages and platforms remain unpriced limits on a broader rollout forecast.
+The agreed trial includes representative repository execution;
+it does not require executing every package or fixing every discovered issue.
 Filing an issue does not count as executing an experiment or completing production integration.
 
 The current usage API re-probe still rejects the CLI user token and requires an organization token.
 Browser discovery through the available CLI found no running Chrome instance.
 The user said they cannot supply an organization-token file or a signed-in browser for this check.
 The accessible experiments and their measured usage are now reconciled.
-Account-wide billing and spending-control verification remain an explicit access limitation.
+Account-wide billing and spending-control verification remain unverified and intentionally excluded.
 
 The user requested a GitHub issue for every discovered problem on 2026-10-15 local time.
 The [issue inventory](depot-trial-issues.md) records each distinct trial finding,
@@ -76,7 +80,7 @@ The user asked whether package installation should also be cached.
 The desktop trial repeats apt provisioning on disposable GitHub runners.
 Depot CI snapshot run `6w30pv5zds` now proves installed-package reuse in two fresh consumers:
 23 exact package versions and ImageMagick execute without apt or downloads.
-Both consumers still report `Failed to connect to bus: No medium found` for user services;
+Both consumers reported `Failed to connect to bus: No medium found` for user services.
 That first filesystem-only trial did not establish desktop runtime startup.
 The resumed prepared desktop trial subsequently combined both successfully.
 The expanded cost report and snapshot troubleshooting record retain this boundary.

@@ -664,8 +664,10 @@ the [resumed cost report](../audit/depot-resumed-cost-2026-10-16.md)
 includes revision-specific preparation,
 expanded browser/native execution,
 and test/standalone usage sensitivities.
-the named unmeasured checks remain acceptance gaps tracked in the
+The named unmeasured checks remain broader rollout gaps tracked in the
 [issue inventory](../handover/depot-trial-issues.md).
+Further account inspection is intentionally excluded by the user's decision,
+not unfinished trial work.
 Production implementation and provider adoption remain a separate action request.
 
 [android-apk]: https://github.com/Aquaticats/Monochromatic/actions/runs/38826684750
