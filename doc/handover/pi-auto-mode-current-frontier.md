@@ -9,9 +9,9 @@ Updated 2026-10-16.
 
 ## Active work on 2026-10-15
 
-### Reopened manual fallback and resource measurement on 2026-10-16
+### Completed permission scope, startup relevance, and resource measurement on 2026-10-16
 
-The installed release remains incomplete for ordinary inspection across a real conversation.
+The earlier installed release failed ordinary inspection across a real conversation.
 The earlier passing initial-command replay did not establish that broader claim.
 Session `2026-10-16T02-17-34-349Z_01a14280-1b8c-7186-9ebb-fc9c2e546e0c`
 reached manual approval for the group inspecting task headings with `grep` and reading this document with `sed`.
@@ -73,24 +73,50 @@ The package README and Luna troubleshooting entry now describe the implemented i
 - [x] Wire startup relevance refresh into the installed host; remove complete-document classifier payloads.
 - [x] Feed selected original rules into per-operation questions and shared context, preserving source checks.
 - [x] Reproduce the full reported conversation with live Luna and verify explicit prohibitions and consent controls.
-- [ ] Measure the resulting local CPU, memory, writes, and model usage against a controlled baseline.
+- [x] Measure local CPU, memory, writes, and model usage in repeated guarded and bypass replays.
 
 The exact decision log and extracted operation assessment are retained under
 `${HOME}/temp/agent/pi-manual-fallback-20261016`.
-Next: finish the controlled repeated resource comparison and rendered documentation check.
+The installed correction is complete for the reported interaction and named regression controls.
+All six resource replays execute the original nine calls across six groups without confirmation.
+Guarded fixtures are `pi-hyper-rpc-allow-zqgI2z`, `pi-hyper-rpc-allow-6Eb1t7`,
+and `pi-hyper-rpc-allow-SMu1kz`.
 Resource replays run sequentially inside a two-CPU, 2 GiB Podman container with disposable state.
 Both arms retain cold startup classification; bypass removes operation assessment only.
 Primary-model replies are the original captured tool-call sequence; Luna remains live.
-The first successful bypass replay executes every original call without confirmation,
-uses `83.96` CPU seconds, and peaks at `1774.59` MiB.
-This is a whole-process observation under the stated bounds, not isolated approval overhead.
-Repeated unchanged-input runs are still required before comparing the guarded arm.
-The private `resource-matrix` task and `resource-summary.ts` retain receipts.
+Three bypass runs establish the observed baseline spread before three guarded runs.
+
+- Bypass: CPU `82.16` to `83.96` seconds, median `82.81`;
+  elapsed `79.68` to `81.95` seconds;
+  peak RSS `1774.59` to `1799.59` MiB, median `1790.12`;
+  writes `7127040` to `7315456` bytes.
+- Guarded: CPU `120.90` to `123.56` seconds, median `122.18`;
+  elapsed `120.30` to `121.49` seconds;
+  peak RSS `1930.80` to `1974.50` MiB, median `1935.27`;
+  writes `55607296` to `55840768` bytes.
+- Cold startup: two Luna calls, 211 questions, `78404` input tokens, and `271786` request bytes in every run.
+- Guarded totals: thirteen calls, 352 questions, `400547` to `400561` input tokens,
+  and `1900253` to `1900289` request bytes.
+  The increased request count is the positive control that bypass actually skips operation assessment.
+
+These are whole-Pi-process measurements, excluding child processes and the host-side provider bridge.
+Elapsed time includes the harness's ten-second startup wait.
+Luna inference runs remotely; primary-model generation was scripted and is excluded.
+The replay still reads the shared repository, whose Git metadata and handover text changed during the run series.
+Consequently these are observed repeated workloads, not a byte-identical causal estimate of approval-only overhead.
+The CPU ranges are separated, but the exact difference must not be presented as isolated production overhead.
+Memory approaches the fixture's imposed limit; the cold replay is not a steady-state desktop-memory measurement.
+No power or battery measurement was made.
+The private `resource-matrix` and `resource-summary` tasks retain per-run receipts and `resource-summary.json`.
 The initial harness failed before Pi started because nested Bubblewrap lacked a resolver-file source
 and could not mount `/proc`.
 Explicitly binding `/etc/resolv.conf`, using Podman's documented `unmask=/proc/*`,
 and mounting the resolved fixture path made the first replay pass.
 The original real-session memory sample and this bounded cold replay measure different workloads.
+The final type check, focused lint, startup selection, readable-context, omission control,
+decision-fallback matrix, live prohibited-read control, and full conversation replays pass.
+CommonMark rendering was inspected for the updated README and troubleshooting entry.
+New Pi processes use the installed release; already-running processes retain their loaded code.
 The earlier readiness claim is retracted beyond its tested commands.
 
 The user also requested local resource drain.
