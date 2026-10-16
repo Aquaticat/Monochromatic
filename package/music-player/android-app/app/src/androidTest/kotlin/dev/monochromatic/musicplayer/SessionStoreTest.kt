@@ -1,5 +1,5 @@
-// Instrumented SharedPreferences migration checks. The test APK context owns the
-// preference file, so these tests never touch the installed player's real session.
+// Trial-only context experiment. Run only on the disposable DepotTrialFold AVD:
+// these tests clear the isolated player's session preferences.
 
 package dev.monochromatic.musicplayer
 
@@ -24,7 +24,13 @@ class SessionStoreTest {
             Triple("ALL", true, PlaybackMode.REPEAT),
         )
         cases.forEach { (shuffle, repeatTrack, expected) ->
-            val context: Context = InstrumentationRegistry.getInstrumentation().context
+            // What: targetContext selects the installed application's Android services.
+            // Why: the test APK context has no applicationContext in the observed run.
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // const context = instrumentation.targetContext;
+            // ```
+            val context: Context = InstrumentationRegistry.getInstrumentation().targetContext
             val preferences = context.getSharedPreferences("session", Context.MODE_PRIVATE)
             preferences.edit()
                 .clear()
@@ -41,7 +47,8 @@ class SessionStoreTest {
     /** Confirms a present current value wins and stale old keys are ignored. */
     @Test
     fun currentPlaybackModeWinsOverLegacyKeys() {
-        val context: Context = InstrumentationRegistry.getInstrumentation().context
+        // Select the application context on the disposable trial device.
+        val context: Context = InstrumentationRegistry.getInstrumentation().targetContext
         val preferences = context.getSharedPreferences("session", Context.MODE_PRIVATE)
         preferences.edit()
             .clear()

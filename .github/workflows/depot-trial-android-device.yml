@@ -1,4 +1,4 @@
-name: Depot trial Android device artifacts
+name: Depot trial Android context experiment
 
 on:
   push:
