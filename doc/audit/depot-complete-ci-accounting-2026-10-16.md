@@ -277,6 +277,48 @@ The original replay skipped nextest after the failed assertion.
 Recovery run `38844610546` keeps the application and assertion unchanged,
 while allowing independent tests after successful test compilation.
 
+### Logger static accounting
+
+Depot run `qm7w64tmhj` used workflow revision `0886b2669dc9696b60493870f172d77269b6e854`
+and frozen logger source `ef01490f5e960f8ca0b424c12242caeb3c5a2b5e`.
+Its manifest contains 737 required checks:
+153 passed,
+171 failed,
+394 were skipped,
+and 19 external checks have no result in this wave.
+The graph remains incomplete.
+
+The provider artifact retains all 718 emitted result identities.
+Every one of the 547 retained log completion events exactly matches its artifact result;
+171 completion events and the aggregate summary are absent from the downloaded log.
+The artifact supplies those missing records,
+without establishing why the log lacks them.
+The retained evidence records both artifact and log hashes.
+Child output shares the concurrent workers' streams without per-check identifiers,
+so a relative diagnostic path cannot always be attributed to one check.
+
+The verified allocation was 16 vCPUs,
+64 GiB memory,
+four workers,
+and a 30-minute job limit.
+The provider attempt used 357.317 seconds and 5,717.072 vCPU-seconds;
+the request-to-finish observation spans 370.518 seconds.
+These measurements describe this development attempt,
+not complete CI latency or account billing.
+
+The accounting adapter now distinguishes affected-owner test-file selection from changed-file lint selection.
+It verifies explicit test arguments against expected files and affected owners,
+retains full-project Oxlint checks,
+and ignores unexecuted skip timestamps when evaluating dependency execution order.
+Positive and negative fixtures exercise those selection boundaries.
+
+The collection queue also includes VM run `99tl7zjfgp` at harness revision
+`a0785c49e68573be8a806af33c50ab1fb1d1c7ca`,
+using the same frozen logger source.
+Its provider attempt accounting is pending terminal collection.
+After diagnostic issue filing settles,
+the issue-ledger totals must be reconciled against the explicit issue IDs before updating them.
+
 ### Acceptance requirements
 
 Freeze one source revision and the intended manifest before each execution cell.
