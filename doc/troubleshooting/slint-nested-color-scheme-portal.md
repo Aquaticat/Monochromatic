@@ -552,9 +552,10 @@ This verifies the correction at the original chooser boundary on the prepared De
 The job took 410 seconds,
 including a 185-second interaction step.
 
-The same captured stderr retains separate accessibility-bus,
-dconf-service,
-and transient-parent diagnostics.
+The same captured stderr retains separate
+[accessibility-bus](https://github.com/Aquaticats/Monochromatic/issues/1041),
+[dconf-service](https://github.com/Aquaticats/Monochromatic/issues/1042),
+and [transient-parent](https://github.com/Aquaticats/Monochromatic/issues/1043) diagnostics.
 Those diagnostics did not fail this suite;
 their underlying behavior remains separate from the corrected reply contract.
 The not-injectable case is `double-shift/repeat`,
