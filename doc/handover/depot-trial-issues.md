@@ -222,6 +222,33 @@ retain the corresponding probes and recovery boundaries.
 Existing issues #997 and #998 retain the successful combined desktop evidence;
 they remain open for production integration.
 
+## Pending final reconciliation
+
+The totals in this handover predate the latest complete-graph replays.
+After diagnostic filing settles,
+query every explicit issue ID and reconcile the new issue records,
+reused existing issues,
+open states,
+and closures before replacing the aggregate totals.
+The native-source findings are recorded in issues #1061 and #1062 and closed as already fixed;
+the separate macOS watch findings remain open in #1063,
+#1064,
+and #1065.
+Root also added replay evidence to existing issue #1002;
+that is not a newly created issue.
+
+Accounting collection is running for terminal Depot runs `79lgpx91sf`,
+`lvcwx21cbt`,
+`ssvlvk57k4`,
+`1pfkxwlwbd`,
+`g1nngvfsrg`,
+`xz7cchwbsk`,
+`4z014g290p`,
+and `dxk4v3s0w3`.
+Their results must be reconciled with the frozen manifests and all failed attempts retained.
+The [accounting audit](../audit/depot-complete-ci-accounting-2026-10-16.md)
+owns the measurements and distinctions between execution completion and passing CI.
+
 ## Verification
 
 The application and harness issue bodies were rendered before submission.
