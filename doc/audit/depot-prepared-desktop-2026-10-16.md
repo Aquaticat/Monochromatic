@@ -7,22 +7,29 @@ and the existing seven-session interaction suite.
 It runs on the isolated `trial/depot-prepared-desktop-20261016` branch,
 starting from the verified trial source `d6deca5fa5`.
 Production workflows and subscription settings are unchanged.
-The experiment is in progress.
+The experiment passed in both fresh consumers.
 [Depot run `9jfk6fsklc`](https://depot.dev/orgs/l4zncjjbj5/workflows/9jfk6fsklc)
 completed the native-runtime probe.
 Prepared artifact build [run `xxs92vjc25`](https://depot.dev/orgs/l4zncjjbj5/workflows/xxs92vjc25)
 and nested-boot verification [run `t7n42wkr5n`](https://depot.dev/orgs/l4zncjjbj5/workflows/t7n42wkr5n)
 completed successfully.
-The first full consumer in [run `p5rp4p0wvp`](https://depot.dev/orgs/l4zncjjbj5/workflows/p5rp4p0wvp)
-passed every injectable check and its cleanup assertions.
-The second fresh consumer is running.
+Both full consumers in [run `p5rp4p0wvp`](https://depot.dev/orgs/l4zncjjbj5/workflows/p5rp4p0wvp)
+passed all 117 injectable checks and their cleanup assertions.
+Each separately reports the existing held-modifier case as not injectable.
+The [machine-readable evidence](depot-prepared-desktop-2026-10-16.evidence.json)
+retains the job intervals,
+resource statistics,
+artifact hashes,
+per-session totals,
+and runtime verification events.
 
 The earlier [package snapshot experiment](depot-expanded-cost-2026-10-15.md)
 verified the installed versions of 23 packages and ImageMagick in separate fresh consumers,
 but the consumers lacked the user-session manager and audio services needed by the interaction harness.
 The separate [GitHub runner verification](../troubleshooting/slint-nested-color-scheme-portal.md)
 passed 117 interaction checks with no failures and one not-injectable case.
-Neither result alone proves that the prepared Depot CI route can run the complete suite.
+Those separate results did not prove that the prepared Depot CI route could run the complete suite.
+The combined consumers now establish that boundary for the recorded source and image.
 
 ## Runtime boundary under test
 
@@ -213,6 +220,33 @@ removed the container,
 verified the container no longer existed,
 and verified that its overlay marker did not reach the prepared filesystem.
 
+### Repeat consumer and timing spread
+
+Job `612sb7t227`,
+attempt `mr8vmn09cj`,
+passed the same session totals and every cleanup assertion.
+It ran in sandbox `w8j1pt06vlx765bk5kp6`,
+distinct from the first consumer's `t65qnpr0s9h8tt931g49`.
+Both consumers required an absent consumer marker before writing it,
+verified identical prepared binaries and package versions,
+and removed their independent runtime overlays.
+
+The second job ran from `01:57:19.672Z` to `02:01:55.777Z`,
+or 276.105 seconds.
+File verification and service readiness took 17.030 seconds;
+the suite command took 209.946 seconds;
+the full task through cleanup took 227.671 seconds.
+The unchanged-input job spread is 20.890 seconds,
+and the suite-command spread is 8.575 seconds.
+These repeats establish observed variation,
+not a performance improvement from a changed implementation.
+
+The metrics API reports peak sandbox memory utilization of 0.14838 and 0.14656
+and peak CPU utilization of 0.25918 and 0.25850 for the respective consumers.
+These are sampled whole-sandbox ratios,
+not measurements of the application's individual memory or CPU use.
+The evidence retains sample counts and observed intervals so they are not mistaken for continuous coverage.
+
 ## Evidence collection
 
 The committed probe in
@@ -240,13 +274,34 @@ into a repository already preserved in the snapshot.
 The [existing patch-collision incident](../troubleshooting/depot-snapshot-mise-cache.md)
 records why that distinction matters.
 
-## Remaining verification
+## Unverified integrations and adoption boundary
 
-- Execute all seven sessions in separate fresh consumers and retain their individual results.
-- Verify package manifests,
-  consumer isolation,
-  audio isolation,
-  and process cleanup independently of the interaction assertions.
-- Record any new observed problem on the repository tracker after checking existing issues,
-  including [issue 997](https://github.com/Aquaticats/Monochromatic/issues/997)
-  and [issue 998](https://github.com/Aquaticats/Monochromatic/issues/998).
+The interaction result does not claim complete desktop-service integration.
+The retained dialog log reports these nonfatal boundaries separately:
+
+- The decode-priority request received D-Bus `NoReply` and kept normal priority:
+  [issue 1053](https://github.com/Aquaticats/Monochromatic/issues/1053).
+- No desktop notification service answered the analysis-progress request:
+  [issue 1054](https://github.com/Aquaticats/Monochromatic/issues/1054).
+- Smithay emitted `Erroneous EGL call didn't set EGLError` without identifying the wrapped operation:
+  [issue 1055](https://github.com/Aquaticats/Monochromatic/issues/1055).
+- The existing accessibility-bus diagnostic remains tracked by
+  [issue 1041](https://github.com/Aquaticats/Monochromatic/issues/1041).
+
+The new issue search inspected 1,020 repository issue bodies and titles,
+including closed issues,
+and found no matching runtime boundaries for the three new reports.
+The reports retain exact diagnostics and successful-suite context;
+none claims these messages caused an interaction failure.
+
+[Issue 997](https://github.com/Aquaticats/Monochromatic/issues/997)
+now has a verified experiment for its fresh-session boundary.
+[Issue 998](https://github.com/Aquaticats/Monochromatic/issues/998)
+still owns production adoption and explicit invalidation for OS packages,
+ImageMagick,
+toolchains,
+workspace dependencies,
+and application build inputs.
+No production migration or automatic refresh policy is implemented by this experiment.
+There is one measured preparation build and two unchanged-image consumers;
+a distribution of rebuild cost across changing revisions remains unmeasured.
