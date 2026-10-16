@@ -84,6 +84,118 @@ this is not an exhaustive duplicate search.
 There is no actionable upstream filing to add.
 No external report was sent.
 
+## Systemd 255.4 rejects direct user-manager startup in a fresh Depot snapshot
+
+### Symptom and source boundary
+
+The installed-package image contains the systemd and audio executables,
+but its native PID 1 is `/init`.
+In [run `9jfk6fsklc`](https://depot.dev/orgs/l4zncjjbj5/workflows/9jfk6fsklc),
+`systemd --user` returned status 1 with:
+
+```text
+# systemd 255.4-1ubuntu8.18 in the fresh Depot consumer
+Trying to run as user instance, but the system has not been booted with systemd.
+```
+
+Upstream systemd `v255`,
+commit `db11bab38ccf1ed257f310d29070843d4c58ea01`,
+contains the matching guard in `src/core/main.c:2651`:
+
+```c
+// systemd v255, src/core/main.c:2651
+if (arg_action == ACTION_RUN &&
+    sd_booted() <= 0)
+        return log_error_errno(SYNTHETIC_ERRNO(EOPNOTSUPP),
+                               "Trying to run as user instance, but the system has not been booted with systemd.");
+```
+
+`src/libsystemd/sd-daemon/sd-daemon.c:717` implements `sd_booted()` by testing the early-boot runtime directory:
+
+```c
+// systemd v255, src/libsystemd/sd-daemon/sd-daemon.c:722
+if (laccess("/run/systemd/system/", F_OK) >= 0)
+        return true;
+```
+
+This explains the installed executable's direct-start rejection.
+It does not establish that an isolated systemd runtime cannot run on the sandbox.
+The [systemd container interface](https://systemd.io/CONTAINER_INTERFACE/)
+describes the required PID 1 and mount boundaries.
+
+### Verified runtime bridge and readiness
+
+The existing Podman `5.8.4` executable successfully boots systemd against a disposable overlay
+of the installed filesystem.
+[Run `t7n42wkr5n`](https://depot.dev/orgs/l4zncjjbj5/workflows/t7n42wkr5n)
+then starts a real user manager,
+executes a transient user service,
+starts private PipeWire services,
+queries them with `pactl info`,
+and stops and removes the runtime.
+The reproducible task is on `trial/depot-prepared-desktop-20261016`,
+commit `4880b47696`:
+
+```sh
+# Pushed experiment checkout, no desktop package installation
+depot ci run --workflow .depot/workflows/depot-prepared-desktop.yml --job session-probe
+```
+
+The task calls Podman with `--rootfs /:O`,
+`--systemd=always`,
+`--cgroupns=private`,
+`--network=none`,
+`--memory=2g`,
+`--cpus=2`,
+and `--timeout=90`.
+Podman's [root filesystem documentation](https://docs.podman.io/en/latest/markdown/podman-run.1.html)
+defines the `:O` overlay behavior.
+Podman `v5.8.4`,
+commit `5431df23c742e5edea35bef34eed696f4db0106b`,
+implements it in `libpod/container_internal.go:1777`:
+
+```go
+// Podman v5.8.4, libpod/container_internal.go:1777
+if c.config.RootfsOverlay {
+    overlayDest := c.runtime.GraphRoot()
+    contentDir, err := overlay.GenerateStructure(overlayDest, c.ID(), "rootfs", c.RootUID(), c.RootGID())
+```
+
+The tradeoff is a privileged,
+bounded nested container with private runtime state and an additional boot step.
+It provides the systemd boundary required by the existing test harness;
+it does not make the native sandbox itself systemd-booted.
+The complete desktop consumer experiment is tracked in the
+[prepared-runtime audit](../audit/depot-prepared-desktop-2026-10-16.md).
+
+The first boot probe,
+run `nj4x2frgwk`,
+queried the manager immediately and received `Failed to connect to bus: No such file or directory`.
+The follow-up waits for a successful `systemctl show --property=Version --value` response before starting user units.
+Its first query failed at `01:44:18.992Z`,
+then version `255.4-1ubuntu8.18` arrived at `01:44:19.666Z`.
+The immediate-query failure therefore did not prove a failed boot.
+Fabricating `/run/systemd/system` to bypass the guard was not attempted and is not a verified workaround.
+
+### Upstream filing decision for the runtime boundary
+
+The `.out-of-scope/` search found no exclusion for Depot or systemd startup.
+The repository already tracks the missing-session boundary in
+[issue 997](https://github.com/Aquaticats/Monochromatic/issues/997).
+
+1.  No upstream defect is established:
+    the native image process model does not satisfy the direct systemd user-manager precondition.
+2.  A runtime integration can supply that precondition;
+    the isolated boot probe verifies one such integration.
+3.  Systemd documents its container interface and Podman documents systemd containers with filesystem overlays.
+4.  Upstream contribution policies were not evaluated because no upstream implementation change is proposed.
+5.  No upstream maintainer decision on this repository's harness integration was established.
+6.  The repository-side boot bridge was exercised;
+    no upstream patch was needed or prototyped.
+
+There is no upstream filing artifact to add.
+The remaining work belongs to the repository's runtime integration and consumer verification.
+
 ## Depot CLI 2.102.22 local patches collide with files retained by snapshot checkout
 
 ### Symptom
