@@ -55,7 +55,7 @@ const runtime=bindNativePolicyRuntime({root,lifecycle,policyInput:env.policyInpu
   const raw=await sendAssessment(input);
   if(operation&&mode==='low'){
    const parsed=JSON.parse(raw);
-   for(const answer of parsed.answers){answer.value={choice:'approve',probabilities:{approve:0.59,deny:0,unknown:0.41}};}
+   for(const answer of Object.values(parsed.answers)){answer.choice='approve';answer.probabilities={approve:0.59,deny:0,unknown:0.41};}
    return JSON.stringify(parsed);
   }
   return raw;
