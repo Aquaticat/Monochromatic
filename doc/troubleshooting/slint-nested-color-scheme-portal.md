@@ -530,8 +530,10 @@ notification-time readback,
 and environment-bus isolation.
 The command exited with status 1,
 and nextest reported no skipped tests.
-The implementation correction and the complete cloud chooser rerun remain pending.
-This section does not yet claim that changing the reply fixes the observed Zenity crash.
+Trial implementation commit `dcaae7c673` adds the deprecated method's extra wrapper.
+The identical command then passed all 270 tests with no skipped tests.
+The complete cloud chooser rerun remains pending;
+the passing protocol tests alone do not establish recovery of the observed Zenity crash.
 
 ### Upstream filing decision for the malformed reply
 
@@ -541,8 +543,8 @@ This section does not yet claim that changing the reply fixes the observed Zenit
 3.  The deprecated method's nested variant is explicitly documented.
 4.  No external contribution policy is needed for the repository-owned correction.
 5.  No upstream maintainer decision is being requested.
-6.  Regression tests are committed;
-    implementation and consumer verification are pending.
+6.  The committed regression failed before the wrapper correction and passed afterward;
+    complete chooser verification is pending.
 
 No upstream issue or comment is proposed.
 The existing repository issue owns the consumer failure.
@@ -645,7 +647,8 @@ Nothing is filed.
     The `--on` help text promises a handler for a callback,
     not delivery of calls made while the component is constructed.
     The interpreter can only accept a handler on an instance that exists,
-    and creating it runs `init` (`tools/viewer/main.rs:304`, then `:378`).
+    and creating it runs `init` (`tools/viewer/main.rs:304`,
+    then `:378`).
 2.  Fixable:
     only by changing how the viewer constructs components,
     for example by queuing early calls;
