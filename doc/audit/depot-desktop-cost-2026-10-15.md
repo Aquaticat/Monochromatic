@@ -19,6 +19,8 @@ The portal correction changes the input,
 so this is a new scenario rather than a timing-improvement estimate.
 The original failed-run measurement and calculations are retained in this document.
 
+### Retained failed-run scenario
+
 Adding the measured desktop interaction job to every affected revision produces a
 **USD 166.56 monthly Developer subtotal** when the separate desktop container build remains.
 Replacing that container workload with the interaction job produces **USD 141.55**.
