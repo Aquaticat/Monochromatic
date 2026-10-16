@@ -99,6 +99,20 @@ without fixture-derived byte or occurrence ceilings.
 Keep explicit cycle detection, accessor/proxy rejection, source ownership, and freshness checks.
 The capture regression is `test:native:prompt-capacity`.
 
+Direct native Bash calls now receive automatic review alongside inspected programs.
+Preserve complete command strings and whole-group assessment,
+including mixed direct Bash and codemode groups.
+Live Luna dispatch has been exercised with all 140 cached MCP tools;
+model uncertainty still uses scoped confirmation.
+Use `test:native:direct-bash` and `test:semantic-operating-policy` when changing admission.
+Keep retained-origin lookup linear in catalog size,
+parent checks at both collection boundaries,
+and registered schemas free of aggregate property-count ceilings.
+Use `test:native:run-message-freshness`, `test:native:source-freshness-work`,
+and `test:native:tool-schema-capacity` when changing capture.
+Configured-host checks must retain the real extension, skill, and MCP metadata scope.
+Disabling MCP omitted the original first-group failure and did not establish readiness.
+
 Complete assessments use at most three sequential bundles of up to three parallel provider calls.
 Each provider request contains at most 200 questions and complete shared context.
 Keep exact question names, answer ordering, shared cancellation, retired capability rejection,

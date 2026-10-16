@@ -634,8 +634,19 @@ The user adopted literal single-call support on 2026-10-14.
 The decoder accepts `return await tools.name({...})`
 and `const result = await tools.name({...}); return result;`.
 The existing awaited producer followed by `Promise.all` or `Promise.allSettled` remains supported.
-The fixed semantic scope `native-inspected-programs-v2` includes exactly the single-call and producer/successor profiles.
+The semantic scope `native-inspected-programs-v2` includes direct native Bash commands,
+single-call programs,
+and producer/successor programs.
+Direct Bash commands retain their complete string and prepared-operation identity for automatic review.
+`test:native:direct-bash` covers permitted, prohibited, uncertain, and mixed groups through native execution.
 Its supported-meaning cutoff is `0.60` with a unique leading score under the adopted Luna policy.
+
+Registered tool schemas have no aggregate property-count ceiling.
+`test:native:tool-schema-capacity` retains 12,000 properties and rejects changed descriptors,
+accessors,
+and unexpected prototypes.
+Retained-message binding indexes origins once by source identity and brackets construction with parent checks.
+`test:native:run-message-freshness` verifies the read bound and rejects mutation during construction.
 
 `test:native:single-call` verifies complete original source,
 escaped identifiers and literal data,

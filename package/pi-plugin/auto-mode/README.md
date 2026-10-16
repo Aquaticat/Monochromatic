@@ -63,7 +63,7 @@ navigation invalidates that decision without retiring later prompts.
 
 Native Shift+Tab bypass executes supported native programs without semantic profile admission.
 The fixed virtual-input guard, original execution ownership, cancellation, status, and audit entries remain active.
-With bypass disabled, automatic review retains the documented inspected program profiles in the native README.
+With bypass disabled, automatic review covers direct Bash calls and the inspected program profiles in the native README.
 
 The extension export remains available for legacy consumers.
 The remaining sections describe that legacy implementation;
@@ -634,8 +634,13 @@ Accessors are not invoked;
 proxy configurations reject before reflection.
 Borrowed callbacks remain unfrozen.
 
-`inspectSemanticAdmissionScope` matches every original program inspection to the captured profile
+`inspectSemanticAdmissionScope` matches direct Bash commands or original program inspections to the captured profile
 and requires clause candidates only for clause-selecting consumers.
+Direct Bash admission requires the original native `bash` operation with a string `command`.
+The assessment receives the complete command and every operation in its prepared group.
+An uncertain answer still requires scoped confirmation;
+headless consumers withhold execution when no approval host is available.
+`test:native:direct-bash` covers permission, prohibition, unknown answers, and a mixed Bash/program group.
 The native adapter fixes the expected model from its actual wire contract,
 not an action argument.
 A matching scope selects a consumer;
