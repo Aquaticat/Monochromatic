@@ -41,7 +41,12 @@ jobs:
         cargo_toml='package/cli/forbidden-strings/Cargo.toml'
         version=$(awk -F'"' '/^version = / { print $2; exit }' "$cargo_toml")
         tag="forbidden-strings-v${version}"
-        if ! gh release view "$tag" --repo "$REPO" >/dev/null 2>&1; then
+        archive="forbidden-strings-${version}-x86_64-unknown-linux-gnu.tar.gz"
+        # Download the public asset directly. `gh release view/download` use
+        # the shared installation REST quota and can mask HTTP 403 as 404.
+        status=$(curl --silent --show-error --location --output "$archive" --write-out '%{http_code}' \
+          "https://github.com/$REPO/releases/download/$tag/$archive")
+        if [ "$status" = '404' ]; then
           echo "::notice::Release $tag not yet published; falling back to latest forbidden-strings-v* release."
           tag=$(gh release list --repo "$REPO" --limit 50 --json tagName \
             --jq '[.[].tagName | select(startswith("forbidden-strings-v"))][0] // ""')
@@ -51,15 +56,27 @@ jobs:
           fi
           version="${tag#forbidden-strings-v}"
           echo "Using fallback release: $tag"
+          archive="forbidden-strings-${version}-x86_64-unknown-linux-gnu.tar.gz"
+          curl --fail --silent --show-error --location --output "$archive" \
+            "https://github.com/$REPO/releases/download/$tag/$archive"
+        elif [ "$status" != '200' ]; then
+          echo "::error::Downloading $archive from $REPO returned HTTP $status." >&2
+          exit 1
         fi
-
-        archive="forbidden-strings-${version}-x86_64-unknown-linux-gnu.tar.gz"
-        gh release download "$tag" --repo "$REPO" --pattern "$archive"
 
         # SLSA build-provenance: binds the archive's sha256 to the
         # cargo-publish.yml run that produced it. A swapped-out release
         # asset would fail this step.
-        gh attestation verify "$archive" --repo "$REPO"
+        if [ "$version" = '0.5.0' ]; then
+          # This release was signed before the organization transfer. Retain
+          # its original signed bundle and exact signing identity; signatures
+          # and the archive digest are still verified by gh.
+          gh attestation verify "$archive" --repo Aquaticat/Monochromatic \
+            --signer-workflow Aquaticat/Monochromatic/.github/workflows/cargo-publish.yml \
+            --bundle package/cli/forbidden-strings/provenance/0.5.0-x86_64-unknown-linux-gnu.sigstore.jsonl
+        else
+          gh attestation verify "$archive" --repo "$REPO"
+        fi
 
         # Install to a path on PATH so downstream steps invoke the binary
         # as plain `forbidden-strings`. Lives under RUNNER_TEMP so it

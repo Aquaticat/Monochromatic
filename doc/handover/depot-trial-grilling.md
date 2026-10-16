@@ -1,5 +1,33 @@
 # Depot trial interview
 
+## Active repair and remaining acceptance work
+
+On 2026-10-15 the user requested repair of organization-transfer download failures for all tools,
+then reiterated that avoiding the shared 5,000-request REST quota remains a Depot objective.
+The supplied failure is run `38828960531`,
+job `116742977613`,
+in `forbidden-strings`,
+which invokes `gh release` rather than `cargo-binstall`.
+Probe run `38829393247` reproduced authenticated REST HTTP 403,
+public HTTP 200 downloads for all four published tools,
+and `gh release view` reporting `release not found`.
+The contemporaneous Scorecard log explicitly reports installation quota exhaustion.
+
+The scanner's old provenance returns HTTP 404 through repository endpoints,
+but `users/Aquaticat/attestations/<digest>` retains its signed bundles.
+Verification using the downloaded bundle and original repository identity passed locally.
+The consumer repair is being verified before closure;
+the scheduling investigation is prototyping a GraphQL gate that preserves rolling admission semantics.
+
+The Android context experiment completed with 16 passes and no failures or skips,
+and its disposable visible emulator was shut down.
+The full desktop suite reached the wide-session folder fixture failure under direct software rendering;
+trial commit `0995d00e8d` runs every session independently so that failure cannot hide later sessions.
+Remaining work is to collect those results,
+update the Android evidence,
+finish the expanded monthly cost report and account-limit interpretation,
+and reconcile the coverage proposal with these measurements.
+
 ## Purpose and current state
 
 The user subsequently requested immediate execution of the agreed trial.
