@@ -411,4 +411,47 @@ and retains identical strict source before/after identities.
 Both controls give zero source-check credit and do not repeat the completed corpus consumer.
 The final common cohort replay remains separate work.
 
+## Native report freshness and artifact retention
+
+Development mutation tasks can finish while their native JSON remains outside the artifact directory.
+Request `lt7qwlz6h1` retains actual task terminals and CLI totals,
+but its default root TOML report and package-dist conf report were not copied.
+Those missing historical payloads cannot be reconstructed from totals.
+
+The first collector control also rejected a report created after its before-snapshot:
+the selected start clock was `2026-10-17T09:45:57.552Z`,
+while the immediately written file reported mtime `1792230357550.949` milliseconds.
+That observation disproves strict wall-clock ordering as a sufficient collector predicate here;
+it does not diagnose a Node or filesystem fault.
+The rejected guard in trial `57cd4d8d4b`,
+`package/module/logger.fuzz/mise.toml:211`, required the following comparison:
+
+```javascript
+// package/module/logger.fuzz/mise.toml, trial 57cd4d8d4b
+stat.mtimeMs >= Date.parse(startedAt)
+```
+
+The corrected trial task snapshots presence, timestamps, inode and SHA-256 before its exclusive worker invocation.
+It copies every actual regular report immediately after termination,
+binds exact bytes/hash and records freshness from changed identity or bytes.
+The clock comparison is retained separately.
+Passing source tasks require a fresh report;
+stale candidates stay explicitly uncredited.
+Package-dist JSON and nested native `target/verification` archives are preserved separately.
+The tradeoff is extra retained before/after metadata and explicit payload validation during reconciliation.
+
+Four valid, seven rejected and one freshness-guard-removal controls pass.
+Actual `ef014` consumer `knsghczl71` verifies the same collector blocks with its authored TOML CLI,
+a fresh 650-byte native report and actual readonly metadata/volume cleanup.
+The independently read mutant `9cd1056a095eaea1` is `compileError`;
+it receives zero assertion or whole mutation-check credit.
+The report SHA-256 is `692e5dd934f799518de76762ee34a0f22558a66a2832188cf5b074dfc37d7825`.
+The deciding mutation-runner modules also match the source in classifier issue `#1142`,
+so a native `killed` classification is not inferred to mean a literal assertion executed.
+
+Issue `#1160` owns native-report omission and final common per-ID reconciliation.
+No upstream Node/filesystem defect is established,
+so no third-party filing is proposed.
+The verified repair belongs to the collector's own predicate and artifact boundary.
+
 [pnpm-direct-dedupe]: https://pnpm.io/settings/other#dedupedirectdeps
