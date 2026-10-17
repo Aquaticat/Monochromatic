@@ -245,8 +245,11 @@ The current staged harness hash is recorded in the preparation evidence,
 and every parsed runtime task rejects the legacy unit name.
 The held input validator now binds `cases.native.sourceRevision`,
 the separate native case digest,
-and the selected producer route's harness/workflow in the settled outer manifest.
-Its nine offline controls pass;
+and `native.producers` in the settled outer manifest.
+It requires `.depot/workflows/depot-complete-native.yml` and the `native-android` matrix wave,
+including the wave in the producer receipt.
+Its ten offline controls pass,
+including rejection of `native-core`;
 the original five controls remain historical evidence.
 The input/receipt uses `requestedAt` and distinguishes `cohortManifestSha256` from `caseManifestSha256`.
 No emulator,

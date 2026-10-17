@@ -394,6 +394,12 @@
         "exitCode": 1,
         "expected": 1,
         "deviceOperations": 0
+      },
+      {
+        "name": "wrong-producer-wave",
+        "exitCode": 1,
+        "expected": 1,
+        "deviceOperations": 0
       }
     ]
   },
@@ -415,10 +421,11 @@
       "runId": null,
       "jobId": null,
       "attemptId": null,
-      "workflowPath": null,
+      "workflowPath": ".depot/workflows/depot-complete-native.yml",
       "receiptPath": null,
       "receiptSha256": null,
-      "routeId": null
+      "routeId": "native.producers",
+      "wave": "native-android"
     },
     "archive": {
       "path": null,
@@ -439,5 +446,5 @@
     "caseManifestSha256": null
   },
   "preparationTaskPath": "/var/mnt/encrypted/temp/agent/depot-coherent-android-consumer-20261017/mise.toml",
-  "preparationTaskSha256": "ba298e6feefe9f6523da4517f611a86587b4e75f0f2f951c9198936c5ae6d2a9"
+  "preparationTaskSha256": "d8a81e68351214c0372d1be2195947ee87490efc0cd8c00ac1ebb095042c0eff"
 }

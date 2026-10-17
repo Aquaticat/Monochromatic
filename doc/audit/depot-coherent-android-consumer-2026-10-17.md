@@ -93,11 +93,13 @@ a mismatched cohort join,
 and wrong source revision.
 Those controls and their task hash remain separate historical evidence.
 After the common manifest schema settled,
-nine current controls passed,
+the settled-schema controls passed,
 including wrong native-case digest,
 producer route,
 producer harness,
 and outer bytes.
+The final producer binding adds a rejected `native-core` wave control;
+all ten current controls pass.
 Fixture authorization is revoked in `finally`,
 including when a control fails.
 Those fixtures are not final provider proof.
@@ -145,7 +147,9 @@ The required joins are:
 - `harness.producerRevision` names the exact producer harness commit;
   `harness.consumerHarnessSha256` pins the staged local task file.
   The preparation evidence retains both original and adapted task body hashes.
-  `producer.routeId` selects an actual `routes` entry belonging to case `native`;
+  `producer.routeId` must be `native.producers`,
+  with workflow `.depot/workflows/depot-complete-native.yml` and `producer.wave` equal to `native-android`.
+  That outer `routes` entry must belong to case `native`;
   its harness revision and workflow must match the producer input.
 - `producer.runId`,
   `producer.jobId`,
@@ -158,6 +162,7 @@ The required joins are:
   `sourceRevision`,
   `harnessRevision`,
   `routeId`,
+  `wave`,
   `caseManifestSha256`,
   `cohortId`,
   `requestedAt`,
