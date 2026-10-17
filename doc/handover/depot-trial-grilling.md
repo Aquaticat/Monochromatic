@@ -7,7 +7,27 @@
 The Codex scope clarification and globally verified search/fetch MCP setup are complete.
 The user selected the Codex document change only;
 `AGENTS.md` remains unchanged.
-No coherent final replay has been dispatched.
+The coherent final replay is running.
+Common cohort `complete-20261017T111555806Z` was published in `5a52255c8f10d2a2ab06ba50f125152d42227081`.
+Authenticated Contents API decoding verified all 6191 exact bytes
+and SHA256 `ec26a2edd105dc17fb7f27bbafbe3bd92e9d0f479901e9a5f8938a98b963fc50`
+at `2026-10-17T11:16:24.579Z`,
+before the shared request instant `2026-10-17T11:17:09.003Z`.
+All six harness remotes were explicitly pushed and matched their frozen clean heads.
+The 16 parallel routes and initial TOML Scorecard case have accepted dispatch receipts.
+The remaining Scorecard cases chain only after each preceding terminal receipt.
+All seven Depot run records independently confirm the bound harness SHA,
+branch,
+repository,
+and `workflow_dispatch` event.
+The [dispatch evidence](../audit/depot-complete-dispatch-2026-10-17.evidence.json)
+retains commands,
+inputs,
+provider run IDs,
+returned metadata,
+and the actual dispatcher definitions.
+A private driver argument mistake was rejected before any provider call;
+the accepted path passes the selected route explicitly through the child environment.
 The four case manifests now have complete static registrations with `completeGraph: true`.
 Their 24 committed copies are byte-identical across six isolated harnesses.
 The registry binds 770 primary and 33 external checks to 20 routes.
@@ -412,13 +432,12 @@ usage,
 and scope.
 Issue `#1165` is closed with the exact body and closing comment re-fetched.
 This control gives no source-consumer execution or common-bound credit.
-Final coherent dispatch remains held.
+The independent native guard control remains development-only;
+the actual common-bound replay has now started.
 
 The remaining queue is explicit:
-push and verify every frozen harness;
+collect all bound routes to terminal state and chain the remaining Scorecard cases;
 retain formatter incident closure and the completed terminal accounting;
-publish the actual common manifest before the shared request clock;
-dispatch and collect all bound routes;
 join the matching Android producer to the held headful consumer;
 and compute allocation cost and overlap-aware critical paths.
 The reader report section list requires confirmation under the source-audited-report skill.

@@ -38052,5 +38052,229 @@
       "title": "Depot formatter preparer named install refreshed an unrelated Rust lock entry",
       "url": "https://github.com/Aquaticats/Monochromatic/issues/1167"
     }
-  ]
+  ],
+  "realCompleteCohort": {
+    "publication": {
+      "phase": "published-and-byte-verified",
+      "cohortId": "complete-20261017T111555806Z",
+      "path": "doc/audit/depot-complete-cohort-complete-20261017T111555806Z.json",
+      "preparedAt": "2026-10-17T11:15:55.806Z",
+      "manifestSha256": "ec26a2edd105dc17fb7f27bbafbe3bd92e9d0f479901e9a5f8938a98b963fc50",
+      "bytes": 6191,
+      "committedAt": "5a52255c8f10d2a2ab06ba50f125152d42227081",
+      "publishedAt": "2026-10-17T11:16:24.579Z",
+      "verifiedRemoteRevision": "5a52255c8f10d2a2ab06ba50f125152d42227081",
+      "repository": "Aquaticats/Monochromatic",
+      "ref": "main",
+      "endpoint": "repos/Aquaticats/Monochromatic/contents/doc/audit/depot-complete-cohort-complete-20261017T111555806Z.json?ref=main",
+      "mediaType": "application/vnd.github.object+json",
+      "gitBlob": "e90408d518d1e2fa788c0df5fd9cfa56d79b0ae1",
+      "exactPublishedBytesVerified": true,
+      "requestedAtNotYetChosen": true
+    },
+    "clock": {
+      "cohortId": "complete-20261017T111555806Z",
+      "manifestSha256": "ec26a2edd105dc17fb7f27bbafbe3bd92e9d0f479901e9a5f8938a98b963fc50",
+      "publishedAt": "2026-10-17T11:16:24.579Z",
+      "requestedAt": "2026-10-17T11:17:09.003Z"
+    },
+    "initialDispatchCount": 17,
+    "initialDispatches": [
+      {
+        "routeId": "native.producers",
+        "provider": "depot",
+        "runId": "v8cw5cmg1b",
+        "url": "https://depot.dev/orgs/l4zncjjbj5/workflows/v8cw5cmg1b",
+        "harnessRevision": "3d976fe06d22ae01c54aa206cf021a78374a3b06",
+        "workflow": ".depot/workflows/depot-complete-native.yml",
+        "requestedAt": "2026-10-17T11:17:09.003Z",
+        "startedAt": "2026-10-17T11:17:09.004Z",
+        "returnedAt": "2026-10-17T11:17:10.361Z"
+      },
+      {
+        "routeId": "native.features",
+        "provider": "depot",
+        "runId": "19wg5x1hnz",
+        "url": "https://depot.dev/orgs/l4zncjjbj5/workflows/19wg5x1hnz",
+        "harnessRevision": "3d976fe06d22ae01c54aa206cf021a78374a3b06",
+        "workflow": ".depot/workflows/depot-complete-native-features.yml",
+        "requestedAt": "2026-10-17T11:17:09.003Z",
+        "startedAt": "2026-10-17T11:17:52.448Z",
+        "returnedAt": "2026-10-17T11:17:53.471Z"
+      },
+      {
+        "routeId": "native.desktop",
+        "provider": "depot",
+        "runId": "5t5t82d4d7",
+        "url": "https://depot.dev/orgs/l4zncjjbj5/workflows/5t5t82d4d7",
+        "harnessRevision": "3d976fe06d22ae01c54aa206cf021a78374a3b06",
+        "workflow": ".depot/workflows/depot-complete-desktop-linux.yml",
+        "requestedAt": "2026-10-17T11:17:09.003Z",
+        "startedAt": "2026-10-17T11:17:54.522Z",
+        "returnedAt": "2026-10-17T11:17:55.600Z"
+      },
+      {
+        "routeId": "desktop.linux",
+        "provider": "depot",
+        "runId": "qvsvw0t64q",
+        "url": "https://depot.dev/orgs/l4zncjjbj5/workflows/qvsvw0t64q",
+        "harnessRevision": "3d976fe06d22ae01c54aa206cf021a78374a3b06",
+        "workflow": ".depot/workflows/depot-complete-desktop-case-linux.yml",
+        "requestedAt": "2026-10-17T11:17:09.003Z",
+        "startedAt": "2026-10-17T11:17:56.637Z",
+        "returnedAt": "2026-10-17T11:17:57.694Z"
+      },
+      {
+        "routeId": "toml.scanner",
+        "provider": "github-actions",
+        "runId": "39028165296",
+        "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39028165296",
+        "harnessRevision": "3d976fe06d22ae01c54aa206cf021a78374a3b06",
+        "workflow": ".github/workflows/forbidden-strings.yml",
+        "requestedAt": "2026-10-17T11:17:09.003Z",
+        "startedAt": "2026-10-17T11:17:58.725Z",
+        "returnedAt": "2026-10-17T11:18:00.936Z"
+      },
+      {
+        "routeId": "logger.scanner",
+        "provider": "github-actions",
+        "runId": "39028169152",
+        "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39028169152",
+        "harnessRevision": "3d976fe06d22ae01c54aa206cf021a78374a3b06",
+        "workflow": ".github/workflows/forbidden-strings.yml",
+        "requestedAt": "2026-10-17T11:17:09.003Z",
+        "startedAt": "2026-10-17T11:18:02.696Z",
+        "returnedAt": "2026-10-17T11:18:04.574Z"
+      },
+      {
+        "routeId": "native.scanner",
+        "provider": "github-actions",
+        "runId": "39028173115",
+        "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39028173115",
+        "harnessRevision": "3d976fe06d22ae01c54aa206cf021a78374a3b06",
+        "workflow": ".github/workflows/forbidden-strings.yml",
+        "requestedAt": "2026-10-17T11:17:09.003Z",
+        "startedAt": "2026-10-17T11:18:06.279Z",
+        "returnedAt": "2026-10-17T11:18:08.261Z"
+      },
+      {
+        "routeId": "desktop.scanner",
+        "provider": "github-actions",
+        "runId": "39028177017",
+        "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39028177017",
+        "harnessRevision": "3d976fe06d22ae01c54aa206cf021a78374a3b06",
+        "workflow": ".github/workflows/forbidden-strings.yml",
+        "requestedAt": "2026-10-17T11:17:09.003Z",
+        "startedAt": "2026-10-17T11:18:10.003Z",
+        "returnedAt": "2026-10-17T11:18:12.131Z"
+      },
+      {
+        "routeId": "native.hosts",
+        "provider": "github-actions",
+        "runId": "39028181199",
+        "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39028181199",
+        "harnessRevision": "467dc0002d6080f8aa951f488430450debf3df3c",
+        "workflow": ".github/workflows/music-player-windows.yml",
+        "requestedAt": "2026-10-17T11:17:09.003Z",
+        "startedAt": "2026-10-17T11:18:13.915Z",
+        "returnedAt": "2026-10-17T11:18:16.054Z"
+      },
+      {
+        "routeId": "desktop.macos",
+        "provider": "github-actions",
+        "runId": "39028184954",
+        "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39028184954",
+        "harnessRevision": "467dc0002d6080f8aa951f488430450debf3df3c",
+        "workflow": ".github/workflows/music-player-windows.yml",
+        "requestedAt": "2026-10-17T11:17:09.003Z",
+        "startedAt": "2026-10-17T11:18:17.844Z",
+        "returnedAt": "2026-10-17T11:18:19.654Z"
+      },
+      {
+        "routeId": "desktop.windows",
+        "provider": "github-actions",
+        "runId": "39028188707",
+        "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39028188707",
+        "harnessRevision": "4f7ff1a739976a3b781e6056dd3b71b84f1e082f",
+        "workflow": ".github/workflows/music-player-windows.yml",
+        "requestedAt": "2026-10-17T11:17:09.003Z",
+        "startedAt": "2026-10-17T11:18:21.432Z",
+        "returnedAt": "2026-10-17T11:18:23.533Z"
+      },
+      {
+        "routeId": "desktop.alpine",
+        "provider": "github-actions",
+        "runId": "39028192342",
+        "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39028192342",
+        "harnessRevision": "16ee27b3d6b115baa5f1bb4046d52d01057172cd",
+        "workflow": ".github/workflows/music-player-alpine.yml",
+        "requestedAt": "2026-10-17T11:17:09.003Z",
+        "startedAt": "2026-10-17T11:18:25.251Z",
+        "returnedAt": "2026-10-17T11:18:27.191Z"
+      },
+      {
+        "routeId": "toml.bounded",
+        "provider": "depot",
+        "runId": "4c27t98pxx",
+        "url": "https://depot.dev/orgs/l4zncjjbj5/workflows/4c27t98pxx",
+        "harnessRevision": "9cc7f28fb8db201d9774ff7cf5404ebec3ffc260",
+        "workflow": ".depot/workflows/depot-complete-toml-bounded.yml",
+        "requestedAt": "2026-10-17T11:17:09.003Z",
+        "startedAt": "2026-10-17T11:18:28.923Z",
+        "returnedAt": "2026-10-17T11:18:30.325Z"
+      },
+      {
+        "routeId": "logger.combined",
+        "provider": "depot",
+        "runId": "8nntjcgx9b",
+        "url": "https://depot.dev/orgs/l4zncjjbj5/workflows/8nntjcgx9b",
+        "harnessRevision": "3d976fe06d22ae01c54aa206cf021a78374a3b06",
+        "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
+        "requestedAt": "2026-10-17T11:17:09.003Z",
+        "startedAt": "2026-10-17T11:18:31.344Z",
+        "returnedAt": "2026-10-17T11:18:32.472Z"
+      },
+      {
+        "routeId": "logger.hosts",
+        "provider": "github-actions",
+        "runId": "39028201582",
+        "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39028201582",
+        "harnessRevision": "3d976fe06d22ae01c54aa206cf021a78374a3b06",
+        "workflow": ".github/workflows/fs-id.yml",
+        "requestedAt": "2026-10-17T11:17:09.003Z",
+        "startedAt": "2026-10-17T11:18:33.555Z",
+        "returnedAt": "2026-10-17T11:18:35.594Z"
+      },
+      {
+        "routeId": "logger.vm",
+        "provider": "depot",
+        "runId": "t428ptv0xv",
+        "url": "https://depot.dev/orgs/l4zncjjbj5/workflows/t428ptv0xv",
+        "harnessRevision": "0fbf23d77e5a9b616763990845e36dc2c453f6d6",
+        "workflow": ".depot/workflows/depot-complete-vm-original.yml",
+        "requestedAt": "2026-10-17T11:17:09.003Z",
+        "startedAt": "2026-10-17T11:18:37.410Z",
+        "returnedAt": "2026-10-17T11:18:38.467Z"
+      },
+      {
+        "routeId": "toml.scorecard",
+        "provider": "github-actions",
+        "runId": "39028208072",
+        "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39028208072",
+        "harnessRevision": "3d976fe06d22ae01c54aa206cf021a78374a3b06",
+        "workflow": ".github/workflows/scorecard.yml",
+        "requestedAt": "2026-10-17T11:17:09.003Z",
+        "startedAt": "2026-10-17T11:18:39.510Z",
+        "returnedAt": "2026-10-17T11:18:41.570Z"
+      }
+    ],
+    "allSixHarnessRemotesVerified": true,
+    "allSevenDepotRunMetadataBindingsVerified": true,
+    "actualConsumerAcceptance": false,
+    "detail": {
+      "path": "doc/audit/depot-complete-dispatch-2026-10-17.evidence.json",
+      "bytes": 217377,
+      "sha256": "57f5bddfbd777f05e850679e391b500a58cf9fbe6428c180ea965aafc0f53b78"
+    }
+  }
 }
