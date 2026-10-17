@@ -121,6 +121,12 @@ and invoice reconciliation remain separate.
 
 Next actions:
 
+- GitHub CLI `2.102.0` rejected the attempted `#1160` comment with
+  `GraphQL: was submitted too quickly (addComment)`.
+  No successful comment receipt or closure was recorded.
+  The reviewed comments for `#1160`, `#1156`, `#1052` and `#1131` remain pending.
+  Reconcile each live thread before retrying after the provider-documented backoff;
+  pace subsequent mutations and stop on another rejection.
 - Logger credential issue `#1180`,
   rebuilt tracked-output issue `#1181`,
   and terminated-worker issue `#1182` are filed with exact body readback.
