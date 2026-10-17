@@ -57,9 +57,37 @@ Harness `9f4a01f699f09abb25f10258455ac0faed0ecae8`
 installs the immutable lockfile's published compositor and leaves `E2E_COMPOSITOR` unset,
 while preserving the same source-built software parent and resource bounds.
 It retains the published ELF hash and version output in `native-tools.json`.
-Controlled native run `xdlnfpwhzz` and desktop run `7x5lk9dx9q` are waiting to terminal state.
-Both dispatches printed the pushed clean harness SHA.
-No cause has yet been assigned to the interaction failures.
+Controlled native run `xdlnfpwhzz` and desktop run `7x5lk9dx9q` are terminal and fully retained.
+Both actual consumer logs select the published binary,
+whose ELF SHA256 is `3ced1113988238dc40b9826265aed4c7f620db3f610971b6e47d9e24953ba6e3`.
+Each emitted exactly the same 70 assertion identity/status pairs as its source-built control:
+60 passing,
+nine failing,
+and one skipped.
+All retained PID rejection and OOM counters remain zero,
+and cleanup is verified.
+Provider allocations were 506.565 seconds and 499.738 seconds,
+each at 16 vCPUs and 64 GiB;
+these are separate development attempts.
+The evidence field `desktopRuntimePublishedCompositorControl` preserves their complete records.
+The retained wide screenshots are 1920 by 1080,
+although authored `WIDE_WINDOW` is 1000 by 800 and pointer targets use those fixed coordinates.
+The source compositor's `handler/xdg_shell.rs` deliberately fullscreens children to its screen size
+and ignores resize requests.
+The additional fixed-size software parent therefore changes the display geometry.
+Root's next consumer control will wrap the locked published binary with its supported
+`--headless --gpu software` mode so each authored session owns its requested output size.
+This has not yet been exercised by the actual E2E consumer.
+No causal claim about the individual interaction failures is made before that control.
+The proposed in-memory session-continuation adapter is deferred pending geometry recovery.
+Root grafted the truthful executor metadata repair while preserving native nextest continuation
+at `100452c7c6b9078d01f20ab5a086f13edeaf49d9`.
+The combined executor passed its actual disposable passing,
+failure,
+deferred-prerequisite,
+and running-progress controls;
+the legacy executor failed the running-progress negative control as expected.
+The evidence field `combinedExecutorControls` retains all five controls and the graft receipt.
 The TOML container wave also reached its job timeout;
 its retained log must be reconciled and its unexecuted independent checks resumed.
 
