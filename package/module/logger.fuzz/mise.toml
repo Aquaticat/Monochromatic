@@ -362,7 +362,7 @@ if (group === 'generated') {
         assert.equal(before.status, 'passed', 'Generated consumer initial input or dependency identity failed')
         consumer.initialIdentityVerified = true
         const observed = run({ id: index === 0 ? check.id : `${check.id}.declared`, args: ['run', task], cwd: fixture, env })
-        consumer.actualCommandExecuted = true
+        consumer.actualCommandExecuted = observed.termination !== 'spawn-error'
         observed.parentCheckId = check.id
         const patch = join(directory, `${label}.patch`), descriptor = openSync(patch, 'wx', 0o600)
         try { execFileSync('git', ['diff', '--binary', manifest.sourceRevision], { cwd: fixture, stdio: ['ignore', descriptor, 'inherit'] }) }
