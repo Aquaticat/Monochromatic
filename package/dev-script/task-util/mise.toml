@@ -879,6 +879,7 @@ const identity = { head: git(['rev-parse', 'HEAD']), sourceTree: git(['rev-parse
 assert.equal(identity.head, manifest.sourceRevision)
 assert.equal(identity.trackedStatus, '', 'Historical source changed')
 const harnessRevision = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+if (process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true') assert.match(process.env.GITHUB_SHA ?? '', /^[a-f0-9]{40}$/, 'Provider harness revision is required in CI')
 if (process.env.GITHUB_SHA) assert.equal(harnessRevision, process.env.GITHUB_SHA)
 const localDirectory = process.env.DEPOT_TOML_PROVENANCE_DIRECTORY
 if (localDirectory) assert(process.env.CI !== 'true' && process.env.GITHUB_ACTIONS !== 'true', 'Fixture output cannot run in CI')
@@ -898,7 +899,7 @@ async function readContentsApi({ path }) {
   assert.equal(envelope.type, 'file')
   assert.equal(envelope.path, path)
   assert.equal(typeof envelope.content, 'string')
-  const encoded = envelope.content.replace(/s+/g, '')
+  const encoded = envelope.content.replace(/\s+/g, '')
   assert.match(encoded, /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/)
   const bytes = Buffer.from(encoded, 'base64')
   assert(bytes.length < 1024 * 1024, 'Common manifest must be below one MiB')
