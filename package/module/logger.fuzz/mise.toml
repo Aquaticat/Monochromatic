@@ -78,10 +78,10 @@ dir = "{{config_root}}/../../.."
 shell = "node --input-type=module-typescript -e"
 run = '''
 const { execFileSync, spawnSync } = await import('node:child_process')
-const { readFileSync, writeFileSync, mkdirSync, existsSync, chmodSync } = await import('node:fs')
+const { readFileSync, writeFileSync, mkdirSync, existsSync, chmodSync, lstatSync, realpathSync, readdirSync, copyFileSync, constants } = await import('node:fs')
 const { createHash } = await import('node:crypto')
 const { homedir } = await import('node:os')
-const { join } = await import('node:path')
+const { join, dirname } = await import('node:path')
 const { strict: assert } = await import('node:assert')
 assert(process.env.GITHUB_WORKSPACE)
 const harness = join(process.env.GITHUB_WORKSPACE, 'harness')
@@ -128,6 +128,27 @@ const suiteEnv = { ...process.env, DEPOT_CI_CASE: 'logger', DEPOT_CI_CHECK_IDS: 
 const task = '//package/dev-script/task-util:trial:depot:ci:execute'
 const executionBudgetMs = Number(process.env.DEPOT_LOGGER_EXECUTION_BUDGET_MS ?? 1440000)
 assert(Number.isInteger(executionBudgetMs) && executionBudgetMs > 0 && executionBudgetMs <= 7200000, 'Logger execution budget must be a positive integer no greater than two hours')
+const mutationChecks = ['mutation', 'native-mutation'].includes(partition.name) ? partition.selectedCheckIds.map(id => manifest.checks.find(check => check.id === id)) : []
+assert(mutationChecks.length <= 1, 'Native mutation report attribution requires one selected mutation check per worker')
+const mutationCheck = mutationChecks[0]
+function nativeReportPaths() {
+  if (!mutationCheck) return []
+  const roots = mutationCheck.packages.map(owner => join(source, owner))
+  if (partition.name === 'mutation') return [...new Set([join(source, 'mutation-report.json'), ...roots.flatMap(root => [join(root, 'mutation-report.json'), join(root, 'dist/mutation-report.json')])])]
+  const paths = [], pending = roots.map(root => join(root, 'target/verification')).filter(existsSync)
+  while (pending.length) {
+    const path = pending.pop(), stat = lstatSync(path)
+    assert(!stat.isSymbolicLink(), 'Native verification evidence must not follow symlinks')
+    if (stat.isDirectory()) for (const name of readdirSync(path)) pending.push(join(path, name))
+    else if (stat.isFile()) paths.push(path)
+  }
+  return paths.toSorted()
+}
+const nativeReportSources = new Map(nativeReportPaths().map(path => {
+  if (existsSync(path)) assert(lstatSync(path).isFile() && !lstatSync(path).isSymbolicLink() && realpathSync(path).startsWith(realpathSync(source) + '/'), 'Preexisting mutation report must be a regular file inside authoritative source')
+  const stat = existsSync(path) ? lstatSync(path) : undefined
+  return [path, { path, existedAtStart: !!stat, mtimeMsAtStart: stat?.mtimeMs, ctimeMsAtStart: stat?.ctimeMs, inodeAtStart: stat?.ino, sha256AtStart: stat ? createHash('sha256').update(readFileSync(path)).digest('hex') : undefined }]
+}))
 let executionError
 try {
 if (partition.name !== 'fuzz') {
@@ -173,6 +194,29 @@ assert(!preparation.records.some(record => record.status === 'failed'), 'Indepen
   executionError = { name: error.name, message: error.message, code: error.code, status: error.status, signal: error.signal }
   throw error
 } finally {
+  if (mutationCheck) {
+    const resultPath = join(directory, 'logger-results.json')
+    const generic = existsSync(resultPath) ? JSON.parse(readFileSync(resultPath, 'utf8')) : undefined
+    const selectedResult = generic?.results.find(row => row.checkId === mutationCheck.id && ['passed', 'failed'].includes(row.status))
+    const startedAt = selectedResult?.startedAt
+    const nativeReports = nativeReportPaths().flatMap((path, index) => {
+      if (!existsSync(path)) return []
+      const stat = lstatSync(path)
+      assert(stat.isFile() && !stat.isSymbolicLink() && realpathSync(path).startsWith(realpathSync(source) + '/'), 'Native mutation report must be a regular file inside authoritative source')
+      const before = nativeReportSources.get(path) ?? { path, existedAtStart: false }
+      const artifactPath = partition.name === 'mutation' ? `logger-native-report-${mutationCheck.id}-${index}.json` : join('logger-native-verification', mutationCheck.id, path.slice(source.length + 1))
+      const target = join(directory, artifactPath)
+      mkdirSync(dirname(target), { recursive: true, mode: 0o700 })
+      copyFileSync(path, target, constants.COPYFILE_EXCL)
+      chmodSync(target, 0o600)
+      const bytes = readFileSync(target)
+      const sha256 = createHash('sha256').update(bytes).digest('hex')
+      const producedDuringInvocation = !before.existedAtStart || stat.mtimeMs !== before.mtimeMsAtStart || stat.ctimeMs !== before.ctimeMsAtStart || stat.ino !== before.inodeAtStart || sha256 !== before.sha256AtStart
+      return [{ ...before, artifactPath, bytes: bytes.length, sha256, mtimeMs: stat.mtimeMs, ctimeMs: stat.ctimeMs, inode: stat.ino, mtimeAtOrAfterSelectedStart: Boolean(startedAt && stat.mtimeMs >= Date.parse(startedAt)), freshnessBasis: 'Changed file identity or bytes since the exclusive worker before-snapshot', producedDuringInvocation }]
+    })
+    writeFileSync(join(directory, `logger-native-reports-${mutationCheck.id}.json`), JSON.stringify({ checkId: mutationCheck.id, sourceTask: mutationCheck.task, sourceRevision: manifest.sourceRevision, manifestSha256: partitions.manifestSha256, selectedResult, nativeReports, sourceReportCollectionCredit: nativeReports.some(row => row.producedDuringInvocation) }, null, 2) + '\n', { flag: 'wx', mode: 0o600 })
+    assert(selectedResult?.status !== 'passed' || nativeReports.some(row => row.producedDuringInvocation), 'Passing mutation check lacks a fresh retained native report')
+  }
   if (continuation) {
     const resultPath = join(directory, 'logger-results.json')
     const results = existsSync(resultPath) ? JSON.parse(readFileSync(resultPath, 'utf8')).results : []

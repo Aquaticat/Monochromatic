@@ -746,6 +746,7 @@ jobs:
           ~/temp/agent/depot-complete-ci/native-tools.json
           ~/temp/agent/depot-complete-ci/prepare-*.log
           ~/temp/agent/depot-complete-ci/logger-partition.json
+          ~/temp/agent/depot-complete-ci/logger-native-verification/
           ~/temp/agent/depot-complete-ci/tofu-providers.lock.hcl
           ~/temp/agent/depot-complete-ci/check-logs/
           ~/temp/agent/depot-complete-ci/*.json
