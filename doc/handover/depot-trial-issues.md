@@ -479,6 +479,11 @@ These are bounds,
 not a runtime prediction.
 Terminal wait session `96306` is active.
 The next action is artifact collection and reconciliation against all 3062 prior mutant identities.
+The immutable runner stops at the first failing selected test file,
+so the full-suite list does not prove 37 executions per mutant.
+Its spawn-error-to-`killed` classification is being checked with an independent disposable source control
+on `trial/depot-toml-spawn-control-20261017`;
+the active campaign and accepted final refs remain unchanged.
 Issue `#1130` is closed after actual bounded source,
 observer and cleanup recovery;
 `#1113` and `#1118` remain open.

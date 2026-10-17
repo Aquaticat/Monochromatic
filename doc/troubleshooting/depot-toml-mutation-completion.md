@@ -222,3 +222,19 @@ shard and mutant identity reconciliation,
 including actual live resource samples and scoped cleanup.
 Observer issue `#1130` is closed after the bounded actual recovery;
 full-campaign issue `#1113` remains open.
+
+## Selected files and actual mutation test execution
+
+Source `525d2e09f8168a3bdd7e513e26d4c80b363123e5`
+uses `package/cli/mutation-test/src/container/test-run.ts` to run selected files in order.
+It stops at the first failure or timeout.
+The 37-file full-suite selection is therefore a candidate list,
+not a claim that every test file executes for every mutant.
+Compiler rejections receive no mutant assertion credit.
+
+`runOneTest` also returns `failed` after a Node spawn exception.
+The source mutant loop classifies that result as `killed`.
+Do not infer an executed assertion from this native label alone.
+Retain actual test output and inspect complete logs for spawn diagnostics.
+A separate actual-source disposable control is being prepared to test this classification boundary.
+Its preparation does not establish that the active cloud run encountered the failure.

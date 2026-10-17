@@ -482,3 +482,28 @@ Single terminal wait session `96306` is active.
 Issue `#1130` is closed with re-fetched observed-recovery comment `6231392374`.
 Issues `#1113` and `#1118` remain open.
 This independent development run is separate from the held final coherent cohort.
+
+## Mutation runner execution boundary
+
+Immutable source `525d2e09f8168a3bdd7e513e26d4c80b363123e5`
+implements `runTests` in `package/cli/mutation-test/src/container/test-run.ts`.
+Its selected files execute in order,
+stopping at the first failure or timeout.
+The full-suite selection contains 37 possible test files;
+it does not prove that every file executes for every mutant.
+Compiler rejection reaches none of these mutant test invocations.
+
+The same source maps a Node spawn exception to `kind: 'failed'`.
+`package/cli/mutation-test/src/container/mutant-loop.ts` maps that kind to `killed`.
+The reconciliation checker therefore reports source-reported test-runner terminals separately
+from actual emitted assertion evidence.
+A status label alone does not prove that a test assertion executed.
+Complete cloud logs must also be checked for spawn diagnostics.
+No such cloud spawn failure is claimed from reading this path.
+
+A separate development control is being prepared on
+`trial/depot-toml-spawn-control-20261017`.
+It will exercise the unchanged baked source runner with a disposable typed fixture,
+an actual compiler and positive assertion control,
+then remove only the disposable Node launcher after a successful typecheck.
+The active full retry and accepted final route refs remain unchanged.
