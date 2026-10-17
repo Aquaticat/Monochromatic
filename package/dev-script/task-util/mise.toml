@@ -1354,3 +1354,80 @@ if (phase === 'after') {
 writeFileSync(join(directory, caseId + '-provenance-' + phase + '.json'), JSON.stringify(record, null, 2) + '\n')
 console.log(JSON.stringify(record))
 '''
+
+[tasks."trial:depot:ci:logger-host-source-identity"]
+description = "Retain portable exact logger source inputs before and after native host consumers"
+dir = "/var/mnt/encrypted/temp/agent/depot-native-recovery/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { createHash } = await import('node:crypto')
+const { readFileSync, writeFileSync, mkdirSync } = await import('node:fs')
+const { join, isAbsolute } = await import('node:path')
+const { strict: assert } = await import('node:assert')
+const source = process.env.SOURCE_ROOT
+const expected = process.env.SOURCE_HEAD
+const phase = process.env.PROVENANCE_PHASE
+const caseName = process.env.PROVENANCE_CASE
+const output = process.env.PROVENANCE_OUTPUT
+const cohort = { id: process.env.COHORT_ID, manifestSha256: process.env.COHORT_MANIFEST_SHA256, requestedAt: process.env.COHORT_REQUESTED_AT }
+assert.match(cohort.id ?? '', /^[A-Za-z0-9._-]{1,128}$/, 'COHORT_ID must name the frozen replay')
+assert.match(cohort.manifestSha256 ?? '', /^[a-f0-9]{64}$/, 'COHORT_MANIFEST_SHA256 must bind the complete manifest')
+assert(Number.isFinite(Date.parse(cohort.requestedAt ?? '')), 'COHORT_REQUESTED_AT must record the shared request instant')
+assert.equal(new Date(cohort.requestedAt).toISOString(), cohort.requestedAt, 'Request instant must use canonical UTC ISO form')
+assert(source && isAbsolute(source), 'SOURCE_ROOT must name an absolute source checkout')
+assert(output && isAbsolute(output), 'PROVENANCE_OUTPUT must name an absolute evidence directory')
+assert.match(expected ?? '', /^[a-f0-9]{40}$/, 'SOURCE_HEAD must be immutable')
+assert(['before', 'after'].includes(phase), 'PROVENANCE_PHASE must be before or after')
+assert(['logger'].includes(caseName), 'PROVENANCE_CASE must name a frozen route')
+const git = args => execFileSync('git', args, { cwd: source, encoding: 'utf8' }).trim()
+const sha256 = value => createHash('sha256').update(value).digest('hex')
+const indexEntries = execFileSync('git', ['ls-files', '-v', '-z'], { cwd: source, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }).split('\0').filter(Boolean)
+assert(indexEntries.every(entry => entry[0] !== 'S' && !/[a-z]/.test(entry[0])), 'Immutable source index must not hide tracked inputs with assume-unchanged or skip-worktree flags')
+const tracked = execFileSync('git', ['ls-files', '-z'], { cwd: source, encoding: 'utf8' }).split('\0').filter(Boolean)
+const casePath = '.depot/manifests/logger.json'
+const caseBytes = readFileSync(join(process.cwd(), casePath))
+assert.deepEqual(caseBytes, execFileSync('git', ['show', 'HEAD:' + casePath], {maxBuffer: 1024 * 1024}))
+const localCase = JSON.parse(caseBytes)
+assert.equal(localCase.caseId, 'logger')
+assert.equal(localCase.sourceRevision, expected)
+const packageRoots = localCase.selectedPackages
+assert(Array.isArray(packageRoots) && packageRoots.every(path => typeof path === 'string' && path.startsWith('package/')), 'Frozen logger package inventory is required')
+const metadataNames = new Set(['mise.toml', 'mise.no-env.toml', 'mise.lock', 'package.json', 'Cargo.toml', 'Cargo.lock', 'config.toml', 'coverage-baseline.json', 'Containerfile.alpine'])
+const paths = tracked.filter(path => {
+  const name = path.slice(path.lastIndexOf('/') + 1)
+  const rootConfiguration = !path.includes('/') && (metadataNames.has(name) || ['.toml', '.json', '.jsonc', '.yaml', '.yml'].some(extension => name.endsWith(extension)) || name.includes('.config.'))
+  const packageConfiguration = packageRoots.some(prefix => path.startsWith(prefix + '/')) && (metadataNames.has(name) || name.startsWith('tsconfig.') || name.includes('.config.') || path.includes('/.cargo/'))
+  return rootConfiguration || path.startsWith('.cargo/') || ['Cargo.toml', 'Cargo.lock'].includes(name) || packageConfiguration
+}).toSorted()
+for (const required of ['mise.toml', 'mise.lock', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', 'package/module/fs-id/package.json', 'package/oxlint-plugin/prefer-readonly-parameter-type/mise.toml']) assert(paths.includes(required), 'Required source input is absent: ' + required)
+const inputs = Object.fromEntries(paths.map(path => { const bytes = readFileSync(join(source, path)); assert.deepEqual(bytes, execFileSync('git', ['show', 'HEAD:' + path], { cwd: source, maxBuffer: 16 * 1024 * 1024 }), 'Configured source input differs: ' + path); return [path, { bytes: bytes.length, sha256: sha256(bytes) }] }))
+const identity = { head: git(['rev-parse', 'HEAD']), trackedStatus: git(['status', '--porcelain', '--untracked-files=no']), sourceTree: git(['rev-parse', 'HEAD^{tree}']), inputs }
+assert.equal(identity.head, expected, 'Host source differs from the frozen case')
+assert.equal(identity.trackedStatus, '', 'Host source has tracked modifications')
+const harnessRevision = execFileSync('git', ['rev-parse', 'HEAD'], {encoding:'utf8'}).trim()
+if (process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true') assert.match(process.env.GITHUB_SHA ?? '', /^[a-f0-9]{40}$/)
+if (process.env.GITHUB_SHA) assert.equal(harnessRevision, process.env.GITHUB_SHA)
+const record = {schemaVersion:1, event:'logger-host-source-identity', phase, caseName, cohort, harnessRevision, expectedSource:expected, verifierNode:process.version, platform:process.platform, architecture:process.arch, identity}
+mkdirSync(output, {recursive:true, mode:0o700})
+if (phase === 'after') {const before = JSON.parse(readFileSync(join(output,'before.json'),'utf8')); assert.equal(before.harnessRevision,harnessRevision); assert.deepEqual(before.cohort,cohort); assert.deepEqual(before.identity,identity)}
+writeFileSync(join(output,phase+'.json'),JSON.stringify(record,null,2)+'\n',{flag:'wx',mode:0o600})
+console.log(JSON.stringify({event:record.event,phase,sourceRevision:identity.head,inputs:paths.length,harnessRevision}))
+
+'''
+
+[tasks."trial:depot:ci:logger-host-prerequisites"]
+description = "Build the frozen source Node artifact required by original host consumers"
+dir = "/var/mnt/encrypted/temp/agent/depot-native-recovery/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const {execFileSync}=await import('node:child_process');const {readFileSync,writeFileSync,mkdirSync}=await import('node:fs');const {join,isAbsolute}=await import('node:path');const {createHash}=await import('node:crypto');const {strict:assert}=await import('node:assert');const source=process.env.SOURCE_ROOT;assert(source&&isAbsolute(source));assert.equal(execFileSync('git',['rev-parse','HEAD'],{cwd:source,encoding:'utf8'}).trim(),'ef01490f5e960f8ca0b424c12242caeb3c5a2b5e');const lock=readFileSync(join(source,'mise.lock'),'utf8');assert(lock.includes('version = \"12.11.2\"'.replaceAll('\\','')));const mise=process.env.MISE_BIN??(process.platform==='win32'?join(process.env.LOCALAPPDATA,'mise','bin','mise.exe'):'mise');execFileSync(mise,['exec','pnpm@12.11.2','--','pnpm','install','--frozen-lockfile'],{cwd:source,stdio:'inherit'});execFileSync(mise,['run','//package/oxlint-plugin/prefer-readonly-parameter-type:build:js:node'],{cwd:source,stdio:'inherit'});const path=join(source,'package/oxlint-plugin/prefer-readonly-parameter-type/dist/final/node/index.mjs');const bytes=readFileSync(path);assert(bytes.length>0);const output=process.env.PROVENANCE_OUTPUT;mkdirSync(output,{recursive:true,mode:0o700});writeFileSync(join(output,'built-artifact.json'),JSON.stringify({sourceRevision:'ef01490f5e960f8ca0b424c12242caeb3c5a2b5e',originalTask:'//package/oxlint-plugin/prefer-readonly-parameter-type:build:js:node',relativePath:'package/oxlint-plugin/prefer-readonly-parameter-type/dist/final/node/index.mjs',bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex'),verifierNode:process.version,platform:process.platform,architecture:process.arch},null,2)+'\n');
+'''
+
+[tasks."trial:depot:ci:logger-host-results"]
+description = "Retain original host command outcomes without crediting skipped checks"
+dir = "/var/mnt/encrypted/temp/agent/depot-native-recovery/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const {writeFileSync}=await import('node:fs');const {isAbsolute}=await import('node:path');const {strict:assert}=await import('node:assert');const statuses=Object.fromEntries(['FSID_OUTCOME','FSID_NODE_OUTCOME','PREREQUISITES_OUTCOME','EXTERNAL_OUTCOME','SEMANTIC_OUTCOME','SOURCE_BEFORE_OUTCOME','SOURCE_AFTER_OUTCOME','COHORT_BEFORE_OUTCOME','COHORT_AFTER_OUTCOME'].map(name=>[name,process.env[name]??'unavailable']));const record={schemaVersion:1,event:'logger-original-host-command-outcomes',observedAt:new Date().toISOString(),caseId:'logger',routeId:'logger.hosts',sourceRevision:process.env.SOURCE_HEAD,harnessRevision:process.env.GITHUB_SHA,cohortId:process.env.COHORT_ID,cohortManifestSha256:process.env.COHORT_MANIFEST_SHA256,requestedAt:process.env.COHORT_REQUESTED_AT,providerRunId:process.env.GITHUB_RUN_ID,providerRunAttempt:process.env.GITHUB_RUN_ATTEMPT,providerJobKey:process.env.GITHUB_JOB,platform:process.platform,architecture:process.arch,declaredFsidNode:'26.5.0',setupReportedFsidNode:process.env.FSID_SETUP_VERSION,statuses,checks:[{checkId:'host.fs-id',commands:[{originalCommand:'node package/module/fs-id/src/host-evidence.ts',outcome:statuses.FSID_OUTCOME}]},{checkId:'host.semantic-bridge',commands:[{originalTask:'//package/oxlint-plugin/prefer-readonly-parameter-type:test:external-consumer-host',outcome:statuses.EXTERNAL_OUTCOME},{originalTask:'//package/oxlint-plugin/prefer-readonly-parameter-type:test:semantic-bridge-host',outcome:statuses.SEMANTIC_OUTCOME}]}],classification:'Step outcomes require retained original logs to distinguish authored assertion failures from unmet prerequisites; skipped commands receive no execution credit'};const output=process.env.LOGGER_HOST_RESULT_OUTPUT;assert(output&&isAbsolute(output));writeFileSync(output,JSON.stringify(record,null,2)+'\n');console.log(JSON.stringify(record));assert(Object.values(statuses).every(status=>status==='success'),'An original host command, prerequisite or paired identity boundary did not succeed');assert(/^v?26\.5\.0$/u.test(record.setupReportedFsidNode??''),'Original fs-id runtime differs from its source workflow');
+'''
