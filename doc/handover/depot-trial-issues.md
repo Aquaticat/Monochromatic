@@ -359,8 +359,9 @@ The 29 distinct failed identities include the existing issues `#1062` through `#
 The remaining assertions have separate issues because a shared cause has not been established.
 The existing fleet-wide Clippy issue `#372` now has the exact native source diagnostics.
 The missing Clippy component incident `#1072` remains closed.
-Coverage issue `#1073` has complete native and Linux execution evidence,
+Coverage issue `#1073` is closed with complete native and Linux execution evidence,
 with the historical Windows source compile blocker retained as such.
+The missing Slint viewer wave issue `#1108` is closed after the corrected consumer passed.
 Linux watcher issues `#1079`,
 `#1080`,
 and `#1081` retain their original failures plus a separately observed successful repeat;

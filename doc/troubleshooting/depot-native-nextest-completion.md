@@ -140,13 +140,15 @@ These are different boundaries and do not establish an isolated speed comparison
 
 The fail-fast coverage omission now has complete execution evidence on macOS and Linux,
 plus the genuine historical Windows source compile blocker.
-This satisfies issue `#1073`'s recovery boundary.
+This satisfies issue `#1073`'s recovery boundary;
+the issue is closed with the retained execution evidence.
 It does not establish passing cross-platform CI:
 macOS assertions,
 native Clippy diagnostics,
 and historical Windows compilation remain separately recorded.
 The missing Slint viewer wave in the initial Linux attempt is tracked separately in issue `#1108`;
-the corrected tool gate and complete Linux test run verify that harness repair.
+the corrected tool gate and complete Linux test run verify that harness repair,
+and the issue is closed.
 
 ## Verified workaround and tradeoff
 

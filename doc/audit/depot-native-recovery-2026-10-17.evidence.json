@@ -27925,5 +27925,192 @@
     "windowsHistorical": "Real test compilation failure with four E0433 missing-libc diagnostics; no executable test identities.",
     "linuxLater": "Every eligible identity executed; 1460 passed, zero failed, one source-declared ignored benchmark.",
     "acceptance": "Nextest fail-fast recovery accounting complete, including independently evidenced Windows source compile blocker. This is not passing cross-platform CI."
+  },
+  "linuxRecoveryIssueActions": {
+    "verifiedAt": "2026-10-17T04:45:25.485Z",
+    "actions": [
+      {
+        "number": 1079,
+        "action": "successful-repeat-comment",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1079#issuecomment-6229781991"
+      },
+      {
+        "number": 1080,
+        "action": "successful-repeat-comment",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1080#issuecomment-6229782283"
+      },
+      {
+        "number": 1081,
+        "action": "successful-repeat-comment",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1081#issuecomment-6229782538"
+      },
+      {
+        "number": 1073,
+        "action": "closed-with-recovery-evidence",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1073#issuecomment-6229782781"
+      },
+      {
+        "number": 1108,
+        "action": "closed-with-recovery-evidence",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1108#issuecomment-6229783280"
+      }
+    ],
+    "issues": [
+      {
+        "body": "## Observed incomplete coverage\n\nHistorical macOS native replay [38842787230](https://github.com/Aquaticats/Monochromatic/actions/runs/38842787230) ran 55 of 1382 eligible cases before nextest stopped scheduling after failure. Desktop replay [38843527788](https://github.com/Aquaticats/Monochromatic/actions/runs/38843527788) ran 1020 of 1433. These terminal commands do not establish all test outcomes. Linux desktop replay `ssvlvk57k4` has the same policy gap.\n\n## Cause and remedy\n\nThe original source task invokes `cargo nextest run`. Nextest 0.9.148 defaults to fail-fast. Workflow matrix `fail-fast: false` does not configure nextest. Trial `32a9250add` derives the exact source task and dispatcher, adding only `--no-fail-fast` in memory while retaining original source hashes and package environment. A disposable control passed the exact argument, package environment, and Slint debug-info assertions. Native recoveries are 38847322477 and 38847322559; Linux recovery is also required.\n\nKeep this open until eligible identities are reconciled or genuine compilation prerequisites fail. Source assertion failures remain distinct issues. Diagnosis: `doc/troubleshooting/depot-native-nextest-completion.md`.\n",
+        "comments": [
+          {
+            "id": "IC_kwDOKlVnec8AAAABc1Lw_Q",
+            "author": {
+              "login": "Aquaticat"
+            },
+            "authorAssociation": "MEMBER",
+            "body": "Verified complete fail-fast recovery accounting in `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n\n- Historical macOS source `cb95cf6d785c3073c192b95f0632cdae7b910894`, run 38847322477: every 1382 eligible identity executed; 1356 passed and 26 failed.\n- Later macOS source `3434eaa455d569c18b52cf15100f77f9db251d21`, run 38847322559: every 1433 eligible identity executed; 1406 passed and 27 failed.\n- Historical Windows in run 38847322477: a genuine source test-compilation blocker emitted four `E0433` missing-`libc` diagnostics before enumeration. The exact compilation blocks are retained. This is the known historical #1061 boundary, not a passed Windows test suite.\n- Corrected Linux run `xf4hhngdqg`, attempt `gzf13tmv7j`, at source `3434eaa455d569c18b52cf15100f77f9db251d21`: every 1460 eligible identity executed and passed; one additional source-declared real-library benchmark remains ignored.\n\n```text\n// Corrected Linux nextest output\nSummary [  29.563s] 1460 tests run: 1460 passed, 1 skipped\n```\n\nAll executed numbered ordinals, unique identities, denominators, pass/fail statuses, adapter task hashes, and immutable source/input hashes are reconciled. Linux artifact `01a14827-9611-7704-bf87-fad55d354312` has SHA-256 `28d345887f4f8f4c1336da7b2b9ce91362eb0b57d018b270b6f7427e4ed89e2b`.\n\nClosing the harness coverage omission. This records full execution or a real source compilation blocker; it does not make cross-platform CI pass. Source assertion failures, Clippy #372, and historical Windows compilation remain separate. Linux watcher issues #1079, #1080, and #1081 retain their failures plus a separately observed successful repeat and remain open.\n",
+            "createdAt": "2026-10-17T04:45:16Z",
+            "includesCreatedEdit": false,
+            "isMinimized": false,
+            "minimizedReason": "",
+            "reactionGroups": [],
+            "url": "https://github.com/Aquaticats/Monochromatic/issues/1073#issuecomment-6229782781",
+            "viewerDidAuthor": true
+          }
+        ],
+        "labels": [
+          {
+            "id": "LA_kwDOKlVnec8AAAACjIzCDw",
+            "name": "needs-triage",
+            "description": "Maintainer needs to evaluate",
+            "color": "fbca04"
+          }
+        ],
+        "number": 1073,
+        "state": "CLOSED",
+        "title": "Depot complete-CI measurement must disable nextest fail-fast"
+      },
+      {
+        "body": "## Observed failure\n\nDepot run `ssvlvk57k4`, attempt `jqxgk2969q`, executed unchanged source `3434eaa455d569c18b52cf15100f77f9db251d21`. `engine::tests::watcher_drives_rescan_update_through_engine` failed at `package/music-player/desktop-app/src/engine_tests.rs:242` with `expected Queue(1) after opening a root with one audio file`.\n\nThe ten-second initial queue wait failed before the test created the additional file or asserted the later rescan. This does not establish a watcher-rescan defect. The source file has no diff to the main checkout when inspected.\n\n## Investigation boundary\n\nRetain initial engine updates, worker diagnostics, backend setup, and fixture ordering. Distinguish worker failure from scheduling or missing updates before changing timeouts. Default-concurrency full-suite recovery `pbg4h8ww6k` disables only nextest fail-fast in memory; its outcome remains pending. No source assertion was relaxed. The distinct initial two-track and burst-report failures remain separate. Evidence: `doc/troubleshooting/music-player-linux-watcher-test-failures.md`.\n",
+        "comments": [
+          {
+            "id": "IC_kwDOKlVnec8AAAABc1Lt5w",
+            "author": {
+              "login": "Aquaticat"
+            },
+            "authorAssociation": "MEMBER",
+            "body": "A separate successful unchanged-source observation is now retained.\n\nDepot recovery `xf4hhngdqg`, attempt `gzf13tmv7j`, ran source `3434eaa455d569c18b52cf15100f77f9db251d21` through the original package task with only `--no-fail-fast` added in memory.\nThe exact test `music-player engine::tests::watcher_drives_rescan_update_through_engine` passed at ordinal 752/1460 with default nextest concurrency.\n\n```text\n// Corrected Linux recovery nextest summary\nSummary [  29.563s] 1460 tests run: 1460 passed, 1 skipped\n```\n\nIndependent reconciliation verified all 1460 unique executed identities and their complete numbered sequence. Before/after source and input hashes match, and the collector independently checked each input hash against the immutable Git revision.\n\nArtifact `01a14827-9611-7704-bf87-fad55d354312`, SHA-256 `28d345887f4f8f4c1336da7b2b9ce91362eb0b57d018b270b6f7427e4ed89e2b`, retains complete stdout, stderr, and source/task identity records.\n\nThe initial `pbg4h8ww6k` recovery failed before tests because its desktop tool wave omitted the Slint viewer; corrected harness `409e6ec106` crossed that gate. That prerequisite failure is #1108.\n\nThis successful repeat does not identify the historical failure cause or establish that it is fixed. The original failure remains retained and this issue stays open. Full evidence: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+            "createdAt": "2026-10-17T04:45:10Z",
+            "includesCreatedEdit": false,
+            "isMinimized": false,
+            "minimizedReason": "",
+            "reactionGroups": [],
+            "url": "https://github.com/Aquaticats/Monochromatic/issues/1079#issuecomment-6229781991",
+            "viewerDidAuthor": true
+          }
+        ],
+        "labels": [
+          {
+            "id": "LA_kwDOKlVnec8AAAACjIzCDw",
+            "name": "needs-triage",
+            "description": "Maintainer needs to evaluate",
+            "color": "fbca04"
+          }
+        ],
+        "number": 1079,
+        "state": "OPEN",
+        "title": "Linux engine rescan test receives no initial single-track queue"
+      },
+      {
+        "body": "## Observed failure\n\nDepot run `ssvlvk57k4`, attempt `jqxgk2969q`, executed source `3434eaa455d569c18b52cf15100f77f9db251d21`. `engine::tests::idle_root_emits_no_extra_queue_updates` failed at `package/music-player/desktop-app/src/engine_tests.rs:143`: the initial queue expectation was `Some(2)`, but the ten-second receive returned `None`.\n\nThe test had not reached its no-extra-update window. This is not evidence that an idle root emitted extra updates. The source file has no diff to main when inspected.\n\n## Investigation boundary\n\nTrace initial worker updates and backend setup while retaining the real two-audio-file fixture. Measure unchanged-input variability before claiming flakiness or resource contention. Full-suite recovery `pbg4h8ww6k` preserves source and default concurrency, adding only `--no-fail-fast`. Keep this incident separate from the one-track initial queue and watcher burst failures until their causes are verified. Evidence: `doc/troubleshooting/music-player-linux-watcher-test-failures.md`.\n",
+        "comments": [
+          {
+            "id": "IC_kwDOKlVnec8AAAABc1LvCw",
+            "author": {
+              "login": "Aquaticat"
+            },
+            "authorAssociation": "MEMBER",
+            "body": "A separate successful unchanged-source observation is now retained.\n\nDepot recovery `xf4hhngdqg`, attempt `gzf13tmv7j`, ran source `3434eaa455d569c18b52cf15100f77f9db251d21` through the original package task with only `--no-fail-fast` added in memory.\nThe exact test `music-player engine::tests::idle_root_emits_no_extra_queue_updates` passed at ordinal 1071/1460 with default nextest concurrency.\n\n```text\n// Corrected Linux recovery nextest summary\nSummary [  29.563s] 1460 tests run: 1460 passed, 1 skipped\n```\n\nIndependent reconciliation verified all 1460 unique executed identities and their complete numbered sequence. Before/after source and input hashes match, and the collector independently checked each input hash against the immutable Git revision.\n\nArtifact `01a14827-9611-7704-bf87-fad55d354312`, SHA-256 `28d345887f4f8f4c1336da7b2b9ce91362eb0b57d018b270b6f7427e4ed89e2b`, retains complete stdout, stderr, and source/task identity records.\n\nThe initial `pbg4h8ww6k` recovery failed before tests because its desktop tool wave omitted the Slint viewer; corrected harness `409e6ec106` crossed that gate. That prerequisite failure is #1108.\n\nThis successful repeat does not identify the historical failure cause or establish that it is fixed. The original failure remains retained and this issue stays open. Full evidence: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+            "createdAt": "2026-10-17T04:45:12Z",
+            "includesCreatedEdit": false,
+            "isMinimized": false,
+            "minimizedReason": "",
+            "reactionGroups": [],
+            "url": "https://github.com/Aquaticats/Monochromatic/issues/1080#issuecomment-6229782283",
+            "viewerDidAuthor": true
+          }
+        ],
+        "labels": [
+          {
+            "id": "LA_kwDOKlVnec8AAAACjIzCDw",
+            "name": "needs-triage",
+            "description": "Maintainer needs to evaluate",
+            "color": "fbca04"
+          }
+        ],
+        "number": 1080,
+        "state": "OPEN",
+        "title": "Linux idle-root test receives no initial two-track queue"
+      },
+      {
+        "body": "## Observed failure\n\nDepot run `ssvlvk57k4`, attempt `jqxgk2969q`, tested source `3434eaa455d569c18b52cf15100f77f9db251d21`. `watch::tests::a_burst_of_writes_is_one_report_naming_each_file_once` failed at `package/music-player/desktop-app/src/watch_tests.rs:291` with `and only one report`.\n\nThe first report had already passed path membership and plain-write classification. An additional report arrived in the following two-debounce-window receive. This differs from macOS #1064, which fails the first-report path/structural-flag comparison. The shared test name does not prove a shared cause.\n\n## Investigation boundary\n\nCapture raw event kinds, timestamps, fixture registration, writes, and report emission. Preserve both report payloads and the existing assertion until the intended burst boundary is verified. Full-suite replay `pbg4h8ww6k` retains default concurrency and immutable source, adding only nextest `--no-fail-fast`. No upstream defect is established. Evidence: `doc/troubleshooting/music-player-linux-watcher-test-failures.md`.\n",
+        "comments": [
+          {
+            "id": "IC_kwDOKlVnec8AAAABc1LwCg",
+            "author": {
+              "login": "Aquaticat"
+            },
+            "authorAssociation": "MEMBER",
+            "body": "A separate successful unchanged-source observation is now retained.\n\nDepot recovery `xf4hhngdqg`, attempt `gzf13tmv7j`, ran source `3434eaa455d569c18b52cf15100f77f9db251d21` through the original package task with only `--no-fail-fast` added in memory.\nThe exact test `music-player watch::tests::a_burst_of_writes_is_one_report_naming_each_file_once` passed at ordinal 1057/1460 with default nextest concurrency.\n\n```text\n// Corrected Linux recovery nextest summary\nSummary [  29.563s] 1460 tests run: 1460 passed, 1 skipped\n```\n\nIndependent reconciliation verified all 1460 unique executed identities and their complete numbered sequence. Before/after source and input hashes match, and the collector independently checked each input hash against the immutable Git revision.\n\nArtifact `01a14827-9611-7704-bf87-fad55d354312`, SHA-256 `28d345887f4f8f4c1336da7b2b9ce91362eb0b57d018b270b6f7427e4ed89e2b`, retains complete stdout, stderr, and source/task identity records.\n\nThe initial `pbg4h8ww6k` recovery failed before tests because its desktop tool wave omitted the Slint viewer; corrected harness `409e6ec106` crossed that gate. That prerequisite failure is #1108.\n\nThis successful repeat does not identify the historical failure cause or establish that it is fixed. The original failure remains retained and this issue stays open. Full evidence: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+            "createdAt": "2026-10-17T04:45:14Z",
+            "includesCreatedEdit": false,
+            "isMinimized": false,
+            "minimizedReason": "",
+            "reactionGroups": [],
+            "url": "https://github.com/Aquaticats/Monochromatic/issues/1081#issuecomment-6229782538",
+            "viewerDidAuthor": true
+          }
+        ],
+        "labels": [
+          {
+            "id": "LA_kwDOKlVnec8AAAACjIzCDw",
+            "name": "needs-triage",
+            "description": "Maintainer needs to evaluate",
+            "color": "fbca04"
+          }
+        ],
+        "number": 1081,
+        "state": "OPEN",
+        "title": "Linux watcher burst test emits an additional report after the expected first report"
+      },
+      {
+        "body": "## Observed failure\n\nCorrected Linux nextest trial pbg4h8ww6k stopped before compilation with `spawnSync slint-viewer ENOENT`.\nThe no-fail-fast adapter uses the unchanged desktop source revision\n`3434eaa455d569c18b52cf15100f77f9db251d21`.\nNo selected tests ran in that attempt.\n\n## Deciding boundary and recovery\n\nThe workflow omitted `DEPOT_CI_WAVE=native-desktop`.\nThe trial's source-tool prerequisite installer installs Slint and CMake only for that wave.\nHarness commit `409e6ec10600958a5eba45200944ce25eefe7749` supplies the required wave.\nRecovery run `xf4hhngdqg` installed source-declared Slint 1.18.1 and crossed the desktop tool verification gate.\nThe historical application source is unchanged.\n\n## Completion criterion\n\nRetain the final recovery artifact and source identities,\nand verify that the nextest consumer crosses this specific missing-tool boundary.\nHistorical test failures are separate issues.\nSee `doc/troubleshooting/depot-historical-checkout-bootstrap.md`.\n",
+        "comments": [
+          {
+            "id": "IC_kwDOKlVnec8AAAABc1Ly8A",
+            "author": {
+              "login": "Aquaticat"
+            },
+            "authorAssociation": "MEMBER",
+            "body": "Verified the repaired desktop tool wave through the nextest consumer in corrected harness `409e6ec10600958a5eba45200944ce25eefe7749`.\n\nRecovery `xf4hhngdqg`, attempt `gzf13tmv7j`, installed source-declared Slint viewer 1.18.1, passed the source tool-selection and desktop host gates, and executed every 1460 eligible test identity at unchanged source `3434eaa455d569c18b52cf15100f77f9db251d21`.\n\n```text\n// Corrected Linux nextest output\nSummary [  29.563s] 1460 tests run: 1460 passed, 1 skipped\n```\n\nArtifact `01a14827-9611-7704-bf87-fad55d354312`, SHA-256 `28d345887f4f8f4c1336da7b2b9ce91362eb0b57d018b270b6f7427e4ed89e2b`, retains complete stdout/stderr and matching before/after source/input hashes. The independent collector reconciled the entire numbered test sequence and checked input hashes against immutable Git objects.\n\nClosing this missing-tool prerequisite boundary. The original `pbg4h8ww6k` failure and its 163.843-second provider interval remain in `doc/audit/depot-native-recovery-2026-10-17.evidence.json`. The successful recovery consumed 269.099 provider seconds on 16 vCPUs and 64 GB RAM; no source test or assertion was weakened.\n",
+            "createdAt": "2026-10-17T04:45:19Z",
+            "includesCreatedEdit": false,
+            "isMinimized": false,
+            "minimizedReason": "",
+            "reactionGroups": [],
+            "url": "https://github.com/Aquaticats/Monochromatic/issues/1108#issuecomment-6229783280",
+            "viewerDidAuthor": true
+          }
+        ],
+        "labels": [
+          {
+            "id": "LA_kwDOKlVnec8AAAACjIzCDw",
+            "name": "needs-triage",
+            "description": "Maintainer needs to evaluate",
+            "color": "fbca04"
+          }
+        ],
+        "number": 1108,
+        "state": "CLOSED",
+        "title": "bug(depot-ci): Linux no-fail-fast replay omits its desktop tool wave"
+      }
+    ]
   }
 }
