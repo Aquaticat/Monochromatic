@@ -148,7 +148,11 @@ Completed units (findings validated):
  `code-cloudflare-worker-1` (9 findings),
  `code-codex-plugin-1` (5 findings),
  `code-agent-harness-shared-1` (11 findings),
- `code-cli-2` (14 findings).
+ `code-cli-2` (14 findings),
+ `code-config-1` (15 findings),
+ `code-desktop-daemon-1` (17 findings),
+ `code-desktop-app-1` (14 findings),
+ `code-intellij-plugin-1` (6 findings).
 
 Cross-unit leads:
  `doc/planning/music-player-shared-truepeak-core.md` repeats the retired truepeak policy
@@ -178,23 +182,24 @@ Cross-unit leads:
  The byte-to-hex nibble encoder is hand-copied across at least six Rust packages
  (`code-cli-2-006` names three more sites in its notes);
  hand to the `cross-duplication` reviewer when it launches.
+ The stale pre-transfer `repository.url` (Aquaticat instead of Aquaticats) spans most
+ `package.json` files repo-wide per `code-config-1-001`;
+ likely dedupe target is open issue #1124;
+ hand to the `cross-dependency` reviewer when it launches.
 
 Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
- `code-config-1`,
  `code-desktop-app-1`,
- `code-desktop-daemon-1`,
  `code-dev-script-1`,
  `code-figma-1`,
  `code-git-1`,
- `code-intellij-plugin-1`,
- `code-kwin-1` (launched as a replacement).
+ `code-kwin-1`,
+ `code-learning-1`,
+ `code-linter-1`,
+ `code-mcp-1`,
+ `code-module-1` (launched as a replacement).
 
 Queued units in launch order (flat list; the first entry launches next):
 
-- `code-learning-1`,
-- `code-linter-1`,
-- `code-mcp-1`,
-- `code-module-1`,
 - `code-module-2`,
 - `code-module-3`,
 - `code-module-4`,
