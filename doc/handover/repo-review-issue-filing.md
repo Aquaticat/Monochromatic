@@ -143,7 +143,8 @@ Completed units (findings validated):
  `code-build-tool-1` (9 findings),
  `code-automode-native` (5 findings),
  `code-automode-src` (11 findings),
- `code-cli-1` (9 findings).
+ `code-cli-1` (9 findings),
+ `code-claude-code-plugin-1` (16 findings).
 
 Cross-unit leads:
  `doc/planning/music-player-shared-truepeak-core.md` repeats the retired truepeak policy
@@ -159,20 +160,22 @@ Cross-unit leads:
  The hand-written `isErrnoException` helper (12 sites repo-wide in two divergent bodies)
  per `code-cli-1-008` and its out-of-scope note;
  hand to the `cross-duplication` reviewer when it launches.
+ `doc/audit/dry.md` lines 1453 to 1458 bless the `console.error` plus `process.exitCode = 1`
+ idiom against AGENTS.md `PP6`, per `code-claude-code-plugin-1-016`;
+ hand to the `docs-audit` reviewer when it launches.
 
 Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
  `code-agent-harness-shared-1`,
- `code-claude-code-plugin-1`,
  `code-cli-2`,
  `code-cloudflare-worker-1`,
  `code-codex-plugin-1`,
  `code-config-1`,
  `code-desktop-app-1`,
- `code-desktop-daemon-1` (launched as a replacement).
+ `code-desktop-daemon-1`,
+ `code-dev-script-1` (launched as a replacement).
 
 Queued units in launch order (flat list; the first entry launches next):
 
-- `code-dev-script-1`,
 - `code-figma-1`,
 - `code-git-1`,
 - `code-intellij-plugin-1`,
