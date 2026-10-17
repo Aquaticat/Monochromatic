@@ -90,3 +90,13 @@ Its separate read-only `depot sandbox exec` observer uses the original VM sessio
 The VM `/bin/pwd` probe succeeded;
 the observer outcome remains pending.
 No completed report is claimed when orchestration has not produced one.
+## Final source guard scope
+
+The [source guard controls](../audit/depot-route-source-guards-2026-10-17.md)
+verify a separate final-harness repair under existing issue `#1114`.
+The guard rejects both Git index exclusions across tracked source
+and compares configured metadata bytes directly to `HEAD`.
+Its inventory includes root `.cargo/` configuration and every tracked Cargo manifest and lockfile,
+including nested Android Rust metadata.
+Untracked and ignored output remains outside this inventory.
+The active development mutation run retains its original harness.

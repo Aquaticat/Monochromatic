@@ -91,7 +91,7 @@ This audit records the isolated bounded continuation and its controls.
 
 ## Bounded continuation route
 
-The pushed trial branch `trial/depot-toml-continuation-20261017` freezes harness `c159dd63021f9304ab3e4996b1d054e5f19ea0c9`.
+The pushed trial branch `trial/depot-toml-continuation-20261017` freezes harness `640a576ade81c4edfee6a603543a7fbd18faa46b`.
 Its workflow is `.depot/workflows/depot-complete-toml-bounded.yml`,
 with required inputs
 `cohort_id`,
