@@ -169,7 +169,9 @@ Completed units (findings validated):
  `code-oxlint-plugin-1` (8 findings),
  `code-pi-plugin-2` (8 findings),
  `code-runtime-error-1` (6 findings),
- `code-rolldown-plugin-1` (14 findings).
+ `code-rolldown-plugin-1` (14 findings),
+ `code-pi-shared-1` (18 findings),
+ `code-stub-1` (5 findings).
 
 Cross-unit leads:
  `doc/planning/music-player-shared-truepeak-core.md` repeats the retired truepeak policy
@@ -210,6 +212,13 @@ Cross-unit leads:
  `package/pi-plugin`, and all 16 `package/pi-plugin/*/mise.toml` omit
  `depends = ["build"]` on `test:unit`, per `code-pi-plugin-2` notes;
  hand the first to `cross-api` and the second to `cross-build`.
+ `doc/todo/pi-shared-model-selection.md` and `doc/planning/pi-goal-stop-hook.md` document
+ removed or nonexistent `pi-shared` APIs per `code-pi-shared-1` notes;
+ hand to the `docs-handover` and `docs-planning` reviewers.
+ `.pnpmfile.mjs` and the `.pnpmfile.policies.json` header cite
+ `docs/dependency-blocklist.md`, but the file is `doc/dependency-blocklist.md`, per
+ `code-stub-1` notes;
+ hand to the `config-root` reviewer.
  The stale pre-transfer `repository.url` (Aquaticat instead of Aquaticats) spans most
  `package.json` files repo-wide per `code-config-1-001`;
  likely dedupe target is open issue #1124;
@@ -219,20 +228,19 @@ Cross-unit leads:
  hand to the `cross-dependency` reviewer when it launches.
 
 Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
- `code-pi-shared-1`,
  `code-rust-module-1`,
  `code-shim-1`,
- `code-stub-1`,
  `code-test-fixture-1`,
  `code-test-fixture-2`,
  `code-typeface-1`,
- `code-webapp-productivity-1` (launched as a replacement).
+ `code-webapp-productivity-1`,
+ `docs-troubleshooting-1`,
+ `docs-troubleshooting-2` (launched as a replacement).
 
 Queued units in launch order (flat list; the first entry launches next):
 
 - `code-stub-1`,
 - `docs-troubleshooting-1`,
-- `docs-troubleshooting-2`,
 - `docs-audit`,
 - `docs-planning`,
 - `docs-decision`,
