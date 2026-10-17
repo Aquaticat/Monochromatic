@@ -837,7 +837,7 @@ const source=join(workspace,'source'),manifestBytes=readFileSync(join(workspace,
 assert.notEqual(realpathSync(consumer),realpathSync(source),'Generated consumer must be a distinct checkout')
 const sha256=bytes=>createHash('sha256').update(bytes).digest('hex')
 const git=({cwd,args})=>execFileSync('git',args,{cwd,encoding:'utf8',maxBuffer:64*1024*1024})
-const entries=git({cwd:source,args:['ls-tree','--full-tree','--recursive','-z','HEAD']}).split('\0').filter(Boolean).map(entry=>{
+const entries=git({cwd:source,args:['ls-tree','--full-tree','-r','-z','HEAD']}).split('\0').filter(Boolean).map(entry=>{
  const boundary=entry.indexOf('\t'),[mode,type,blob]=entry.slice(0,boundary).split(' ')
  assert.equal(type,'blob','Generator identity supports only frozen tracked blobs')
  return {mode,blob,path:entry.slice(boundary+1)}
