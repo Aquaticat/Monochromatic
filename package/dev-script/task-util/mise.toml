@@ -596,7 +596,7 @@ while(pending.length&&groups.length<128){
 console.log(JSON.stringify({cgroup:text('/proc/self/cgroup'),limits:text('/proc/self/limits'),groups}));
 `
 function sampleResources(phase) {
-  const probe = run({ args: ['exec', name, 'node', '--input-type=module', '-e', resourceProbe], required: false })
+  const probe = run({ args: ['exec', name, process.execPath, '--input-type=module', '-e', resourceProbe], required: false })
   resourceSamples.push({ phase, sampledAt: new Date().toISOString(), status: probe.status, stdout: probe.stdout, stderr: probe.stderr })
   writeFileSync(join(directory, `${manifestName}-desktop-resource-samples.json`), JSON.stringify(resourceSamples, null, 2))
 }
