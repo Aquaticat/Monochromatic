@@ -50,7 +50,8 @@ both the actual transport and the disposable positive fixture caught that harnes
 ## Current clean pushed routes
 
 - native:
-  `trial/depot-coherent-native-20261017` at `2032975cbad924e63ac98bc69e14a56b20288275`,
+  `trial/depot-coherent-native-20261017` at `2032975cbad924e63ac98bc69e14a56b20288275` (current as of 2026-10-17:
+  `8c1eac43273b0b0d468a54affd15dc9612d7fe49`),
   workflow `.github/workflows/music-player-windows.yml`.
 - windows:
   `trial/depot-coherent-windows-20261017` at `e70240dc7317124a0db5b37967c570cf2f3fb6f4`,
@@ -149,4 +150,42 @@ All held workflow,
 case,
 and helper bytes remain unchanged;
 no route edit or dispatch was required.
+Final coherent dispatch remains held.
+
+## Native consumer dependency repair
+
+Repository issue [#1165](https://github.com/Aquaticats/Monochromatic/issues/1165)
+tracks the native workflow consumer conditions.
+The original predicates use `!cancelled()` and ordinary identity or build success.
+GitHub documents that a status function overrides implicit prior-success gating.
+Held repair `8c1eac43273b0b0d468a54affd15dc9612d7fe49` explicitly requires common-before success
+for build,
+Clippy,
+nextest,
+and smoke.
+Only those condition fields changed;
+source commands,
+independent source identity,
+canonical helper,
+and provisional case bytes remain identical.
+Five local configured-condition fixtures passed;
+removing the new predicates admitted all four consumers with failed common-before.
+
+Actual development [run 39025557306](https://github.com/Aquaticats/Monochromatic/actions/runs/39025557306)
+used the same workflow from a clean pushed pilot ref with a separate 20-minute job bound.
+The Node guard rejected the actual provisional case with
+`AssertionError [ERR_ASSERTION]: Final route requires a frozen complete case manifest`.
+All four original consumers were skipped.
+Independent source identity before and after passed with matching recorded lock hashes.
+Common-after was skipped.
+The artifact action also failed because the rejected guard produced no provenance directory;
+that failure remains retained.
+The provider job interval was 111 seconds;
+current documented allocation yields 444 allocated vCPU-seconds.
+These are development usage and rejection evidence,
+with no source-consumer execution or common-bound credit.
+
+The [original provider log archive](depot-native-common-before-negative-2026-10-17.evidence.zip)
+is retained byte-for-byte with every member digest and full step metadata in the machine evidence.
+No fake canonical manifest was published.
 Final coherent dispatch remains held.

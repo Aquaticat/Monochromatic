@@ -253,3 +253,70 @@ A function replacer preserved the literal command text;
 targeted formatting and command-preservation checks passed.
 The [rule clarification proposal](../planning/literal-replacement-text.md)
 records the suggested tightening of `AGENTS.md` rule `SYB`.
+
+## Common provenance must gate independent consumers
+
+The held native-host workflow at `2032975cbad924e63ac98bc69e14a56b20288275`
+placed canonical provenance before the source consumers,
+but its independent build,
+Clippy,
+and nextest predicates used
+`!cancelled() && steps.identity.outcome == 'success'`.
+Smoke depended on build success.
+No job or step declared `continue-on-error`.
+The [GitHub status-function reference][native-status-functions] states that including a status function
+overrides implicit `success()`.
+A failed common-before therefore was not a named prerequisite in those expressions.
+The historical execution consequence is an inference from configuration and documentation;
+no rejected-cohort source execution was observed at the original revision.
+
+Trial repair `8c1eac43273b0b0d468a54affd15dc9612d7fe49` adds
+`steps.provenance-before.outcome == 'success'` to the four consumer conditions.
+Original command bodies and the independent source-after identity condition remain unchanged.
+Accepted,
+failed,
+skipped,
+canceled,
+and failed-build condition controls passed.
+Removing the new predicates in an in-memory workflow again admitted the failed-common-before fixture.
+
+Development GitHub run `39025557306` reached the actual Node diagnostic
+`AssertionError [ERR_ASSERTION]: Final route requires a frozen complete case manifest`.
+Build,
+Clippy,
+nextest,
+and smoke were skipped;
+ordinary source identity before and after succeeded with equal recorded inputs.
+The separate artifact action emitted
+`No files were found with the provided path` because the guard rejected before writing provenance.
+Both failures and the full provider interval remain retained.
+This control used source `cb95cf6d785c3073c192b95f0632cdae7b910894` on macOS Intel;
+it gives no actual Windows/source3434 or accepted canonical-cohort execution credit.
+The pilot differs from the held workflow only in its 20-minute job bound.
+
+Repository issue [#1165][native-common-prerequisite] tracks this consumer dependency boundary.
+It differs from exact-byte transport issue `#1119`,
+the logger guard predicate in `#1141`,
+and expression-field scope issue `#1164`.
+The [guard audit](../audit/depot-common-manifest-route-guards-2026-10-17.md)
+retains the complete controls,
+actual provider metadata,
+diagnostics,
+and original log ZIP.
+Final coherent dispatch remains held.
+
+### Upstream filing decision for provenance dependencies
+
+- Fault is in the authored trial conditions;
+  no GitHub service defect is established.
+- A consumer configuration remedy exists and was exercised.
+- GitHub explicitly documents the status-function behavior.
+- Upstream contribution acceptance is not evaluated because no upstream change is proposed.
+- No upstream change in direction is needed;
+  the repair uses the documented step-outcome context.
+- Local condition controls and actual provider rejection establish the trial remedy within the stated scope.
+
+No upstream filing or comment is warranted.
+
+[native-status-functions]: https://docs.github.com/en/actions/reference/workflows-and-actions/expressions#status-check-functions
+[native-common-prerequisite]: https://github.com/Aquaticats/Monochromatic/issues/1165

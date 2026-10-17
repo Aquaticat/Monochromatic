@@ -2064,7 +2064,7 @@
       "kind": "native",
       "task": "trial:depot:coherent:provenance",
       "testedHarnessRevision": "2032975cbad924e63ac98bc69e14a56b20288275",
-      "currentHarnessRevision": "2032975cbad924e63ac98bc69e14a56b20288275",
+      "currentHarnessRevision": "8c1eac43273b0b0d468a54affd15dc9612d7fe49",
       "taskBlockSha256": "0693b9e32203198cf6dc19d357eb3b191564863f3f52c5e5cd27e1563a4d2af8",
       "byteIdentical": true
     },
@@ -2830,5 +2830,812 @@
       "diffCheckExitCode": 0,
       "pushedAncestorVerifiedAgainst": "349f85137af6b7a84755a37644245773f90057e9"
     }
+  },
+  "nativeConsumerGateRepair": {
+    "observedAt": "2026-10-17T10:47:49.722Z",
+    "state": "Trial wiring repaired; actual failed-common-before withholding verified. Final canonical replay remains held.",
+    "incident": {
+      "number": 1165,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1165",
+      "observedState": "OPEN",
+      "exactCreatedBodyVerified": true
+    },
+    "originalRevision": "2032975cbad924e63ac98bc69e14a56b20288275",
+    "heldRevision": "8c1eac43273b0b0d468a54affd15dc9612d7fe49",
+    "heldRef": "trial/depot-coherent-native-20261017",
+    "onlyFourConsumerConditionsChanged": true,
+    "helperAndCaseBytesUnchanged": [
+      {
+        "path": "package/dev-script/task-util/mise.toml",
+        "sha256": "741805a6a26fcd974551f2cb5c66848b0485ac405754015dcb288aa5c1f6de8d",
+        "byteIdentical": true
+      },
+      {
+        "path": ".depot/manifests/native.json",
+        "sha256": "0ab869b0e2095a9d9cb13d24380f0c48d4aa00d7733b71c8df5ad4a7183db473",
+        "byteIdentical": true
+      },
+      {
+        "path": ".depot/manifests/desktop.json",
+        "sha256": "41b74e753e3687928985ebf787cc8fc242ded799eb6f40211e68006f45b377f9",
+        "byteIdentical": true
+      }
+    ],
+    "localControls": {
+      "observedAt": "2026-10-17T10:32:33.868Z",
+      "originalRevision": "2032975cbad924e63ac98bc69e14a56b20288275",
+      "currentRevision": "8c1eac43273b0b0d468a54affd15dc9612d7fe49",
+      "ref": "trial/depot-coherent-native-20261017",
+      "workflow": ".github/workflows/music-player-windows.yml",
+      "workflowSha256": "a0cee8876e8a7b59d244ce64bf2e00401395fc37af500f069fc6acd25ee2846f",
+      "onlyRequestedConditionFieldsChanged": true,
+      "originalConsumerCommandsUnchanged": true,
+      "independentSourceIdentityRecordingUnchanged": true,
+      "unchanged": [
+        {
+          "path": "package/dev-script/task-util/mise.toml",
+          "sha256": "741805a6a26fcd974551f2cb5c66848b0485ac405754015dcb288aa5c1f6de8d",
+          "byteIdentical": true
+        },
+        {
+          "path": ".depot/manifests/native.json",
+          "sha256": "0ab869b0e2095a9d9cb13d24380f0c48d4aa00d7733b71c8df5ad4a7183db473",
+          "byteIdentical": true
+        },
+        {
+          "path": ".depot/manifests/desktop.json",
+          "sha256": "41b74e753e3687928985ebf787cc8fc242ded799eb6f40211e68006f45b377f9",
+          "byteIdentical": true
+        }
+      ],
+      "controls": [
+        {
+          "name": "accepted-common-before",
+          "state": {
+            "cancelled": false,
+            "identity": "success",
+            "build": "success",
+            "before": "success"
+          },
+          "expected": [
+            true,
+            true,
+            true,
+            true
+          ],
+          "observed": [
+            {
+              "name": "Build release artifact through the package task",
+              "condition": "${{ !cancelled() && steps.identity.outcome == 'success' && steps.provenance-before.outcome == 'success' }}",
+              "eligible": true
+            },
+            {
+              "name": "Run all-target Clippy through the package task",
+              "condition": "${{ !cancelled() && steps.identity.outcome == 'success' && steps.provenance-before.outcome == 'success' }}",
+              "eligible": true
+            },
+            {
+              "name": "Run every nextest case with the source task body",
+              "condition": "${{ !cancelled() && steps.identity.outcome == 'success' && steps.provenance-before.outcome == 'success' }}",
+              "eligible": true
+            },
+            {
+              "name": "Exercise the built release command",
+              "condition": "${{ !cancelled() && steps.build.outcome == 'success' && steps.provenance-before.outcome == 'success' }}",
+              "eligible": true
+            }
+          ],
+          "passed": true
+        },
+        {
+          "name": "failed-common-before",
+          "state": {
+            "cancelled": false,
+            "identity": "success",
+            "build": "success",
+            "before": "failure"
+          },
+          "expected": [
+            false,
+            false,
+            false,
+            false
+          ],
+          "observed": [
+            {
+              "name": "Build release artifact through the package task",
+              "condition": "${{ !cancelled() && steps.identity.outcome == 'success' && steps.provenance-before.outcome == 'success' }}",
+              "eligible": false
+            },
+            {
+              "name": "Run all-target Clippy through the package task",
+              "condition": "${{ !cancelled() && steps.identity.outcome == 'success' && steps.provenance-before.outcome == 'success' }}",
+              "eligible": false
+            },
+            {
+              "name": "Run every nextest case with the source task body",
+              "condition": "${{ !cancelled() && steps.identity.outcome == 'success' && steps.provenance-before.outcome == 'success' }}",
+              "eligible": false
+            },
+            {
+              "name": "Exercise the built release command",
+              "condition": "${{ !cancelled() && steps.build.outcome == 'success' && steps.provenance-before.outcome == 'success' }}",
+              "eligible": false
+            }
+          ],
+          "passed": true
+        },
+        {
+          "name": "skipped-common-before",
+          "state": {
+            "cancelled": false,
+            "identity": "success",
+            "build": "success",
+            "before": "skipped"
+          },
+          "expected": [
+            false,
+            false,
+            false,
+            false
+          ],
+          "observed": [
+            {
+              "name": "Build release artifact through the package task",
+              "condition": "${{ !cancelled() && steps.identity.outcome == 'success' && steps.provenance-before.outcome == 'success' }}",
+              "eligible": false
+            },
+            {
+              "name": "Run all-target Clippy through the package task",
+              "condition": "${{ !cancelled() && steps.identity.outcome == 'success' && steps.provenance-before.outcome == 'success' }}",
+              "eligible": false
+            },
+            {
+              "name": "Run every nextest case with the source task body",
+              "condition": "${{ !cancelled() && steps.identity.outcome == 'success' && steps.provenance-before.outcome == 'success' }}",
+              "eligible": false
+            },
+            {
+              "name": "Exercise the built release command",
+              "condition": "${{ !cancelled() && steps.build.outcome == 'success' && steps.provenance-before.outcome == 'success' }}",
+              "eligible": false
+            }
+          ],
+          "passed": true
+        },
+        {
+          "name": "canceled-workflow",
+          "state": {
+            "cancelled": true,
+            "identity": "success",
+            "build": "success",
+            "before": "success"
+          },
+          "expected": [
+            false,
+            false,
+            false,
+            false
+          ],
+          "observed": [
+            {
+              "name": "Build release artifact through the package task",
+              "condition": "${{ !cancelled() && steps.identity.outcome == 'success' && steps.provenance-before.outcome == 'success' }}",
+              "eligible": false
+            },
+            {
+              "name": "Run all-target Clippy through the package task",
+              "condition": "${{ !cancelled() && steps.identity.outcome == 'success' && steps.provenance-before.outcome == 'success' }}",
+              "eligible": false
+            },
+            {
+              "name": "Run every nextest case with the source task body",
+              "condition": "${{ !cancelled() && steps.identity.outcome == 'success' && steps.provenance-before.outcome == 'success' }}",
+              "eligible": false
+            },
+            {
+              "name": "Exercise the built release command",
+              "condition": "${{ !cancelled() && steps.build.outcome == 'success' && steps.provenance-before.outcome == 'success' }}",
+              "eligible": false
+            }
+          ],
+          "passed": true
+        },
+        {
+          "name": "failed-build-preserves-independent-clippy-and-nextest",
+          "state": {
+            "cancelled": false,
+            "identity": "success",
+            "build": "failure",
+            "before": "success"
+          },
+          "expected": [
+            true,
+            true,
+            true,
+            false
+          ],
+          "observed": [
+            {
+              "name": "Build release artifact through the package task",
+              "condition": "${{ !cancelled() && steps.identity.outcome == 'success' && steps.provenance-before.outcome == 'success' }}",
+              "eligible": true
+            },
+            {
+              "name": "Run all-target Clippy through the package task",
+              "condition": "${{ !cancelled() && steps.identity.outcome == 'success' && steps.provenance-before.outcome == 'success' }}",
+              "eligible": true
+            },
+            {
+              "name": "Run every nextest case with the source task body",
+              "condition": "${{ !cancelled() && steps.identity.outcome == 'success' && steps.provenance-before.outcome == 'success' }}",
+              "eligible": true
+            },
+            {
+              "name": "Exercise the built release command",
+              "condition": "${{ !cancelled() && steps.build.outcome == 'success' && steps.provenance-before.outcome == 'success' }}",
+              "eligible": false
+            }
+          ],
+          "passed": true
+        }
+      ],
+      "guardRemoval": {
+        "state": {
+          "cancelled": false,
+          "identity": "success",
+          "build": "success",
+          "before": "failure"
+        },
+        "decisions": [
+          {
+            "name": "Build release artifact through the package task",
+            "condition": "${{ !cancelled() && steps.identity.outcome == 'success' }}",
+            "eligible": true
+          },
+          {
+            "name": "Run all-target Clippy through the package task",
+            "condition": "${{ !cancelled() && steps.identity.outcome == 'success' }}",
+            "eligible": true
+          },
+          {
+            "name": "Run every nextest case with the source task body",
+            "condition": "${{ !cancelled() && steps.identity.outcome == 'success' }}",
+            "eligible": true
+          },
+          {
+            "name": "Exercise the built release command",
+            "condition": "${{ !cancelled() && steps.build.outcome == 'success' }}",
+            "eligible": true
+          }
+        ],
+        "invalidAcceptances": 4
+      },
+      "scope": "Local truth-table controls inspect the exact configured restricted boolean forms. They do not emulate the whole GitHub expression language or establish provider execution; the actual negative pilot is separate."
+    },
+    "controlsSource": {
+      "path": "verify-native-common-consumer-gates.ts",
+      "text": "import { strict as assert } from 'node:assert';\nimport { execFileSync } from 'node:child_process';\nimport { createHash } from 'node:crypto';\nimport { readFileSync, writeFileSync } from 'node:fs';\nimport { createRequire } from 'node:module';\nimport { homedir } from 'node:os';\nimport { join } from 'node:path';\n\n//region Compare committed workflow configuration and unchanged authored inputs.\nconst root = join(homedir(), 'Monochromatic');\nconst cwd = join(homedir(), 'temp/agent/depot-coherent-native-worktree');\nconst { parse } = createRequire(import.meta.url)(join(root, 'node_modules/.pnpm/yaml@2.9.1/node_modules/yaml'));\nconst originalRevision = '2032975cbad924e63ac98bc69e14a56b20288275';\nconst workflowPath = '.github/workflows/music-player-windows.yml';\nconst git = args => execFileSync('git', args, { cwd, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });\nconst currentRevision = git(['rev-parse', 'HEAD']).trim();\nconst ref = git(['branch', '--show-current']).trim();\nassert.equal(git(['status', '--porcelain=v1', '-z']), '');\nassert.equal(git(['ls-remote', 'origin', `refs/heads/${ref}`]).trim().split(/\\s/u)[0], currentRevision);\nconst original = parse(git(['show', `${originalRevision}:${workflowPath}`]));\nconst currentBytes = readFileSync(join(cwd, workflowPath));\nassert.equal(currentBytes.toString(), git(['show', `HEAD:${workflowPath}`]));\nconst current = parse(currentBytes.toString());\nconst names = [\n  'Build release artifact through the package task',\n  'Run all-target Clippy through the package task',\n  'Run every nextest case with the source task body',\n  'Exercise the built release command',\n];\nconst expected = structuredClone(original);\nfor (const name of names) {\n  const step = expected.jobs.native.steps.find(step => step.name === name);\n  assert(step);\n  step.if = step.if.replace(' }}', \" && steps.provenance-before.outcome == 'success' }}\");\n}\nassert.deepEqual(current, expected, 'Only the four requested consumer conditions may change');\nconst unchanged = ['package/dev-script/task-util/mise.toml', '.depot/manifests/native.json', '.depot/manifests/desktop.json'].map(path => {\n  const before = git(['show', `${originalRevision}:${path}`]);\n  const after = git(['show', `HEAD:${path}`]);\n  assert.equal(after, before, path);\n  assert.equal(readFileSync(join(cwd, path), 'utf8'), after);\n  return { path, sha256: createHash('sha256').update(after).digest('hex'), byteIdentical: true };\n});\n//endregion\n\n//region Exercise only the exact configured boolean grammar, then remove the new predicates in memory.\nfunction conditionEligible({ condition, state }) {\n  const pattern = /^\\$\\{\\{\\s*!cancelled\\(\\) && steps\\.(identity|build)\\.outcome == 'success'( && steps\\.provenance-before\\.outcome == 'success')?\\s*\\}\\}$/u;\n  const match = pattern.exec(condition);\n  assert(match, condition);\n  return !state.cancelled && state[match[1]] === 'success'\n    && (match[2] === undefined || state.before === 'success');\n}\n\nfunction decisions({ workflow, state }) {\n  return names.map(name => {\n    const step = workflow.jobs.native.steps.find(step => step.name === name);\n    return { name, condition: step.if, eligible: conditionEligible({ condition: step.if, state }) };\n  });\n}\n\nconst accepted = { cancelled: false, identity: 'success', build: 'success', before: 'success' };\nconst controls = [\n  { name: 'accepted-common-before', state: accepted, expected: [true, true, true, true] },\n  { name: 'failed-common-before', state: { ...accepted, before: 'failure' }, expected: [false, false, false, false] },\n  { name: 'skipped-common-before', state: { ...accepted, before: 'skipped' }, expected: [false, false, false, false] },\n  { name: 'canceled-workflow', state: { ...accepted, cancelled: true }, expected: [false, false, false, false] },\n  { name: 'failed-build-preserves-independent-clippy-and-nextest', state: { ...accepted, build: 'failure' }, expected: [true, true, true, false] },\n].map(control => {\n  const observed = decisions({ workflow: current, state: control.state });\n  assert.deepEqual(observed.map(item => item.eligible), control.expected, control.name);\n  return { ...control, observed, passed: true };\n});\nconst removed = structuredClone(current);\nfor (const step of removed.jobs.native.steps.filter(step => names.includes(step.name))) {\n  step.if = step.if.replace(\" && steps.provenance-before.outcome == 'success'\", '');\n}\nconst failedState = { ...accepted, before: 'failure' };\nconst counterfactual = decisions({ workflow: removed, state: failedState });\nassert(counterfactual.every(item => item.eligible), 'Removal must expose every missing common prerequisite');\nconst originalFailedBefore = decisions({ workflow: original, state: failedState });\nassert.deepEqual(counterfactual, originalFailedBefore);\n//endregion\n\nconst result = {\n  observedAt: new Date().toISOString(), originalRevision, currentRevision, ref,\n  workflow: workflowPath, workflowSha256: createHash('sha256').update(currentBytes).digest('hex'),\n  onlyRequestedConditionFieldsChanged: true, originalConsumerCommandsUnchanged: true,\n  independentSourceIdentityRecordingUnchanged: true, unchanged,\n  controls, guardRemoval: { state: failedState, decisions: counterfactual, invalidAcceptances: 4 },\n  scope: 'Local truth-table controls inspect the exact configured restricted boolean forms. They do not emulate the whole GitHub expression language or establish provider execution; the actual negative pilot is separate.',\n};\nwriteFileSync('native-common-consumer-gate-controls.json', `${JSON.stringify(result, null, 2)}\\n`);\nconsole.log(JSON.stringify({ currentRevision, controlsPassed: controls.length, invalidAcceptancesAfterGuardRemoval: 4, sourceAndGuardInputsUnchanged: true }));\n"
+    },
+    "dispatch": {
+      "requestedAt": "2026-10-17T10:36:41.438Z",
+      "returnedAt": "2026-10-17T10:36:43.390Z",
+      "command": {
+        "executable": "gh",
+        "args": [
+          "workflow",
+          "run",
+          "music-player-windows.yml",
+          "--repo",
+          "Aquaticats/Monochromatic",
+          "--ref",
+          "trial/depot-native-common-before-negative-20261017",
+          "--json"
+        ],
+        "stdin": {
+          "cohort_id": "development-native-common-before-20261017",
+          "manifest_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "requested_at": "2026-10-17T10:36:41.438Z",
+          "source_head": "cb95cf6d785c3073c192b95f0632cdae7b910894",
+          "hosts": "macos"
+        }
+      },
+      "sourceRevision": "cb95cf6d785c3073c192b95f0632cdae7b910894",
+      "pilotRevision": "d69eaa957bb9d28583b240ca1cfb7d1cff469b3f",
+      "pilotRef": "trial/depot-native-common-before-negative-20261017",
+      "workflow": ".github/workflows/music-player-windows.yml",
+      "workflowSha256": "582ae2a9724ea111c761287b24e60b599e13b9ff6bdf2038202bc50ca14bb21e",
+      "pilotOnlyDifference": "jobs.native.timeout-minutes changed from90 to20; all source commands, conditions, helpers and case bytes equal the held route.",
+      "runId": 39025557306,
+      "runUrl": "https://github.com/Aquaticats/Monochromatic/actions/runs/39025557306"
+    },
+    "provider": {
+      "runId": 39025557306,
+      "revision": "d69eaa957bb9d28583b240ca1cfb7d1cff469b3f",
+      "attempt": 1,
+      "status": "completed",
+      "conclusion": "failure",
+      "createdAt": "2026-10-17T10:36:43Z",
+      "startedAt": "2026-10-17T10:36:43Z",
+      "updatedAt": "2026-10-17T10:38:43Z",
+      "jobs": [
+        {
+          "id": 117375730365,
+          "attempt": 1,
+          "workflow": "depot-complete-native-hosts",
+          "name": "Native package gates (macos-15-intel)",
+          "status": "completed",
+          "conclusion": "failure",
+          "headSha": "d69eaa957bb9d28583b240ca1cfb7d1cff469b3f",
+          "startedAt": "2026-10-17T10:36:51Z",
+          "completedAt": "2026-10-17T10:38:42Z",
+          "seconds": 111,
+          "labels": [
+            "macos-15-intel"
+          ],
+          "allocation": {
+            "label": "macos-15-intel",
+            "vcpus": 4,
+            "memoryGb": 14,
+            "publicStandardComputeUsd": 0,
+            "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+          },
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1,
+              "started_at": "2026-10-17T10:36:52Z",
+              "completed_at": "2026-10-17T10:36:56Z"
+            },
+            {
+              "name": "Checkout trial harness",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2,
+              "started_at": "2026-10-17T10:36:56Z",
+              "completed_at": "2026-10-17T10:37:20Z"
+            },
+            {
+              "name": "Checkout immutable source",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3,
+              "started_at": "2026-10-17T10:37:20Z",
+              "completed_at": "2026-10-17T10:37:43Z"
+            },
+            {
+              "name": "Set up mise",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4,
+              "started_at": "2026-10-17T10:37:43Z",
+              "completed_at": "2026-10-17T10:37:48Z"
+            },
+            {
+              "name": "Install the source-declared Node and Cargo tool prerequisites",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 5,
+              "started_at": "2026-10-17T10:37:48Z",
+              "completed_at": "2026-10-17T10:38:12Z"
+            },
+            {
+              "name": "Install source-declared native tools after Rust",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 6,
+              "started_at": "2026-10-17T10:38:12Z",
+              "completed_at": "2026-10-17T10:38:21Z"
+            },
+            {
+              "name": "Install and verify Clippy for the exact source toolchain",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 7,
+              "started_at": "2026-10-17T10:38:21Z",
+              "completed_at": "2026-10-17T10:38:27Z"
+            },
+            {
+              "name": "Expose the source-declared Windows linker",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 8,
+              "started_at": "2026-10-17T10:38:27Z",
+              "completed_at": "2026-10-17T10:38:27Z"
+            },
+            {
+              "name": "Verify immutable source and record tools",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9,
+              "started_at": "2026-10-17T10:38:27Z",
+              "completed_at": "2026-10-17T10:38:29Z"
+            },
+            {
+              "name": "Record frozen source provenance before consumers",
+              "status": "completed",
+              "conclusion": "failure",
+              "number": 10,
+              "started_at": "2026-10-17T10:38:30Z",
+              "completed_at": "2026-10-17T10:38:37Z"
+            },
+            {
+              "name": "Restore exact-source native artifacts",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 11,
+              "started_at": "2026-10-17T10:38:37Z",
+              "completed_at": "2026-10-17T10:38:37Z"
+            },
+            {
+              "name": "Build release artifact through the package task",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 12,
+              "started_at": "2026-10-17T10:38:37Z",
+              "completed_at": "2026-10-17T10:38:37Z"
+            },
+            {
+              "name": "Run all-target Clippy through the package task",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 13,
+              "started_at": "2026-10-17T10:38:37Z",
+              "completed_at": "2026-10-17T10:38:37Z"
+            },
+            {
+              "name": "Run every nextest case with the source task body",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 14,
+              "started_at": "2026-10-17T10:38:37Z",
+              "completed_at": "2026-10-17T10:38:37Z"
+            },
+            {
+              "name": "Exercise the built release command",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 15,
+              "started_at": "2026-10-17T10:38:37Z",
+              "completed_at": "2026-10-17T10:38:37Z"
+            },
+            {
+              "name": "Verify source remained immutable",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 16,
+              "started_at": "2026-10-17T10:38:37Z",
+              "completed_at": "2026-10-17T10:38:39Z"
+            },
+            {
+              "name": "Record frozen source provenance after consumers",
+              "status": "completed",
+              "conclusion": "skipped",
+              "number": 17,
+              "started_at": "2026-10-17T10:38:39Z",
+              "completed_at": "2026-10-17T10:38:39Z"
+            },
+            {
+              "name": "Preserve frozen source provenance",
+              "status": "completed",
+              "conclusion": "failure",
+              "number": 18,
+              "started_at": "2026-10-17T10:38:39Z",
+              "completed_at": "2026-10-17T10:38:39Z"
+            },
+            {
+              "name": "Post Checkout immutable source",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 35,
+              "started_at": "2026-10-17T10:38:39Z",
+              "completed_at": "2026-10-17T10:38:40Z"
+            },
+            {
+              "name": "Post Checkout trial harness",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 36,
+              "started_at": "2026-10-17T10:38:40Z",
+              "completed_at": "2026-10-17T10:38:41Z"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 37,
+              "started_at": "2026-10-17T10:38:41Z",
+              "completed_at": "2026-10-17T10:38:41Z"
+            }
+          ],
+          "log": {
+            "path": "logs-117375730365.txt",
+            "bytes": 161566,
+            "sha256": "248f681000e8ddf553d1bf84147abd9918ca0c62c351b448b32f3271b1662748"
+          }
+        }
+      ]
+    },
+    "providerHeldFileComparisons": [
+      {
+        "path": ".github/workflows/music-player-windows.yml",
+        "ref": "8c1eac43273b0b0d468a54affd15dc9612d7fe49",
+        "gitBlob": "4f581fba67faa5407f559d10a31674d2dcdfbc81",
+        "bytes": 6822,
+        "sha256": "a0cee8876e8a7b59d244ce64bf2e00401395fc37af500f069fc6acd25ee2846f",
+        "actualProviderBytesVerified": true
+      },
+      {
+        "path": "package/dev-script/task-util/mise.toml",
+        "ref": "8c1eac43273b0b0d468a54affd15dc9612d7fe49",
+        "gitBlob": "47f512d02af5b4cded95f4ac0838cccdcd432093",
+        "bytes": 18160,
+        "sha256": "741805a6a26fcd974551f2cb5c66848b0485ac405754015dcb288aa5c1f6de8d",
+        "actualProviderBytesVerified": true
+      },
+      {
+        "path": ".depot/manifests/native.json",
+        "ref": "8c1eac43273b0b0d468a54affd15dc9612d7fe49",
+        "gitBlob": "c7241fadc448450d8b8edbe62610852f028c712b",
+        "bytes": 13942,
+        "sha256": "0ab869b0e2095a9d9cb13d24380f0c48d4aa00d7733b71c8df5ad4a7183db473",
+        "actualProviderBytesVerified": true
+      },
+      {
+        "path": ".depot/manifests/desktop.json",
+        "ref": "8c1eac43273b0b0d468a54affd15dc9612d7fe49",
+        "gitBlob": "9883185aa2199d01b249e2be5f34681927ddd8ee",
+        "bytes": 7633,
+        "sha256": "41b74e753e3687928985ebf787cc8fc242ded799eb6f40211e68006f45b377f9",
+        "actualProviderBytesVerified": true
+      }
+    ],
+    "usage": {
+      "providerJobMilliseconds": 111000,
+      "documentedAllocatedVcpuMilliseconds": 444000,
+      "documentedVcpus": 4,
+      "documentedMemoryGb": 14,
+      "requestToJobTerminalMilliseconds": 120562,
+      "publicStandardRunnerPolicyUsd": 0,
+      "allocationSource": {
+        "repository": "github/docs",
+        "path": "data/reusables/actions/supported-github-runners.md",
+        "gitBlob": "c8f3c197e133c49ea929a76b3e2df4b7ec1c02de",
+        "sha256": "2c5913f214ddf4991c36bb2ad4928bd8b2c48dbf6b8fb4d7cec4bc3a72bcca5f",
+        "exactPublicIntelRow": "<tr>\n      <td>macOS</td>\n      <td>4</td>\n      <td>14 GB</td>\n      <td>14 GB</td>\n      <td> Intel </td>\n      <td>\n        <code><a href=\"https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md\">macos-15-intel</a></code>,\n        <code><a href=\"https://github.com/actions/runner-images/blob/main/images/macos/macos-26-Readme.md\">macos-26-intel</a></code>\n      </td>\n    </tr>"
+      },
+      "scope": "Independent development usage. CPU/memory are current documented label allocations, not measured hardware. Account bills/storage and coherent campaign latency are not inferred."
+    },
+    "actualNegativeControl": {
+      "expectedGuardDiagnostic": "2026-10-17T10:38:37.8887140Z AssertionError [ERR_ASSERTION]: Final route requires a frozen complete case manifest",
+      "allOriginalConsumerStepsSkipped": true,
+      "consumerSteps": [
+        {
+          "name": "Build release artifact through the package task",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 12,
+          "started_at": "2026-10-17T10:38:37Z",
+          "completed_at": "2026-10-17T10:38:37Z"
+        },
+        {
+          "name": "Run all-target Clippy through the package task",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 13,
+          "started_at": "2026-10-17T10:38:37Z",
+          "completed_at": "2026-10-17T10:38:37Z"
+        },
+        {
+          "name": "Run every nextest case with the source task body",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 14,
+          "started_at": "2026-10-17T10:38:37Z",
+          "completed_at": "2026-10-17T10:38:37Z"
+        },
+        {
+          "name": "Exercise the built release command",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15,
+          "started_at": "2026-10-17T10:38:37Z",
+          "completed_at": "2026-10-17T10:38:37Z"
+        }
+      ],
+      "independentIdentityBeforeAfter": [
+        {
+          "sourceRevision": "cb95cf6d785c3073c192b95f0632cdae7b910894",
+          "platform": "darwin",
+          "architecture": "x64",
+          "inputs": {
+            "mise.lock": "95704fad9023cea1b8b530d5de696cfbd839f912aba7c0dc2c1c46519ebef733",
+            "package/music-player/desktop-app/Cargo.lock": "a8e15b9bb175f23c4025074aaa9b4e4f676e4ea18fabf3c03fefc82ea8c210e4",
+            "package/music-player/truepeak-core/Cargo.lock": "9bf611d703ba946c5d359753d93d827d5b0992c07e23d5504f9c328f0d01db3e"
+          }
+        },
+        {
+          "sourceRevision": "cb95cf6d785c3073c192b95f0632cdae7b910894",
+          "platform": "darwin",
+          "architecture": "x64",
+          "inputs": {
+            "mise.lock": "95704fad9023cea1b8b530d5de696cfbd839f912aba7c0dc2c1c46519ebef733",
+            "package/music-player/desktop-app/Cargo.lock": "a8e15b9bb175f23c4025074aaa9b4e4f676e4ea18fabf3c03fefc82ea8c210e4",
+            "package/music-player/truepeak-core/Cargo.lock": "9bf611d703ba946c5d359753d93d827d5b0992c07e23d5504f9c328f0d01db3e"
+          }
+        }
+      ],
+      "independentIdentityEqual": true,
+      "commonAfterSkipped": true,
+      "artifactFailureDiagnostic": "2026-10-17T10:38:39.9445700Z ##[error]No files were found with the provided path: /Users/runner/work/_temp/depot-provenance. No artifacts will be uploaded.",
+      "commonBoundExecutionCredit": false,
+      "sourceConsumerInvocationCredit": false,
+      "scope": "Actual macOS Intel/sourcecb95 rejected-case control only. No new Windows/source3434 provider control or successful canonical cohort acceptance is claimed."
+    },
+    "primaryArchive": {
+      "path": "doc/audit/depot-native-common-before-negative-2026-10-17.evidence.zip",
+      "bytes": 60781,
+      "sha256": "927514e26567d5ffc53d11e3bbcd03eb140bc00722652c73b07ce5b91e610463",
+      "downloadCommand": [
+        "gh",
+        "api",
+        "--allow-escape-sequences",
+        "repos/Aquaticats/Monochromatic/actions/runs/39025557306/logs"
+      ],
+      "safeMemberInspectionPassed": true,
+      "files": [
+        {
+          "name": "0_Native package gates (macos-15-intel).txt",
+          "bytes": 161566,
+          "sha256": "248f681000e8ddf553d1bf84147abd9918ca0c62c351b448b32f3271b1662748"
+        },
+        {
+          "name": "Native package gates (macos-15-intel)/system.txt",
+          "bytes": 639,
+          "sha256": "f49972a9b1398f160dc4260f9467bfd8c842a84aca9fbc0bb18a5718a9499a76"
+        },
+        {
+          "name": "Native package gates (macos-15-intel)/1_Set up job.txt",
+          "bytes": 2414,
+          "sha256": "88c6d22abb90116eb4761dd0ebe30add6cf07a9e1065cc1c5a9fbf17202d3430"
+        },
+        {
+          "name": "Native package gates (macos-15-intel)/2_Checkout trial harness.txt",
+          "bytes": 18834,
+          "sha256": "c9fafabcbf7a45dce9016ca1e8ccebca7a921f19ee99f628c6eddac6a9bf28bd"
+        },
+        {
+          "name": "Native package gates (macos-15-intel)/3_Checkout immutable source.txt",
+          "bytes": 18317,
+          "sha256": "8b9e5b0b637a045478ddd2d4507e17a64b3b9a99102abbeb105c61bffa6602cd"
+        },
+        {
+          "name": "Native package gates (macos-15-intel)/4_Set up mise.txt",
+          "bytes": 12684,
+          "sha256": "f6f114b61fdc21b3c50879985749d0f56bb03727b23cc8f9ba5be6e6c0deb7e5"
+        },
+        {
+          "name": "Native package gates (macos-15-intel)/5_Install the source-declared Node and Cargo tool prerequisites.txt",
+          "bytes": 5258,
+          "sha256": "a3214c2725ddf86e6bda8ff5698ca49c13ae887d6b4bf665b342daa5236b3cd0"
+        },
+        {
+          "name": "Native package gates (macos-15-intel)/6_Install source-declared native tools after Rust.txt",
+          "bytes": 4071,
+          "sha256": "b078aa87b7171fb1f1a34e288f46c115ed42cd521a09011c5ee04f8720778675"
+        },
+        {
+          "name": "Native package gates (macos-15-intel)/7_Install and verify Clippy for the exact source toolchain.txt",
+          "bytes": 4108,
+          "sha256": "45cf8bcfd8d90204fda69deca0c0fb681ce17805d28659dcfdd49cf60eebb0df"
+        },
+        {
+          "name": "Native package gates (macos-15-intel)/9_Verify immutable source and record tools.txt",
+          "bytes": 43469,
+          "sha256": "84b00ad1aa3ee7a4ddd5856685a3fae6e8f7f6a7e9c66e6d93ca96ced9d47288"
+        },
+        {
+          "name": "Native package gates (macos-15-intel)/10_Record frozen source provenance before consumers.txt",
+          "bytes": 2910,
+          "sha256": "4b771d4da746558c44af25372ea157543f726f7cac5023e34ba9f9b37eaaf4e5"
+        },
+        {
+          "name": "Native package gates (macos-15-intel)/16_Verify source remained immutable.txt",
+          "bytes": 43469,
+          "sha256": "11f28917c2a56601cefe7b0ecb3c99b6350902dbf8faad79517d68142d4a9f03"
+        },
+        {
+          "name": "Native package gates (macos-15-intel)/18_Preserve frozen source provenance.txt",
+          "bytes": 1773,
+          "sha256": "a88fb8c0c18be4a2687fdc80d06d3cce1eaecb058fc8d62c00fa79be2349e5ed"
+        },
+        {
+          "name": "Native package gates (macos-15-intel)/35_Post Checkout immutable source.txt",
+          "bytes": 1952,
+          "sha256": "68378a4a86720efe489f040b6cdd535e56023124699efae4d073d41a2e6ded09"
+        },
+        {
+          "name": "Native package gates (macos-15-intel)/36_Post Checkout trial harness.txt",
+          "bytes": 1953,
+          "sha256": "f281f63f99a31deb423813d965a51b533e902d852532d06a4696d8076052ace4"
+        },
+        {
+          "name": "Native package gates (macos-15-intel)/37_Complete job.txt",
+          "bytes": 393,
+          "sha256": "e1356b9ef28f08e051e65f3159ff4456bcc01efbbe7087866592064344539d6b"
+        }
+      ],
+      "fullJobLog": {
+        "member": "0_Native package gates (macos-15-intel).txt",
+        "bytes": 161566,
+        "sha256": "248f681000e8ddf553d1bf84147abd9918ca0c62c351b448b32f3271b1662748",
+        "cliCaptureMatchesProviderArchive": true
+      }
+    },
+    "duplicateSearch": [
+      {
+        "path": "native-before-duplicates-provenance.json",
+        "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "allStates": true,
+        "candidates": []
+      },
+      {
+        "path": "native-before-duplicates-common.json",
+        "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+        "allStates": true,
+        "candidates": []
+      },
+      {
+        "path": "native-before-duplicates-cohort.json",
+        "sha256": "0f6458417f1e13ce3e03f21cb4a176201c87c2b276c5e3b458004edf8ccc192b",
+        "allStates": true,
+        "candidates": [
+          {
+            "number": 1119,
+            "title": "Depot cohort manifests need byte-preserving API retrieval",
+            "state": "OPEN"
+          },
+          {
+            "number": 1141,
+            "title": "Depot logger cohort guard accepts provisional case manifests",
+            "state": "CLOSED"
+          },
+          {
+            "number": 1160,
+            "title": "Logger harness: mutation CLI native JSON is omitted from retained development artifacts",
+            "state": "OPEN"
+          },
+          {
+            "number": 1144,
+            "title": "Depot logger host preparer freezes local task directories into generated helpers",
+            "state": "CLOSED"
+          },
+          {
+            "number": 1161,
+            "title": "Logger harness: generated consumer identity guard rejects valid deduped workspace dependency",
+            "state": "CLOSED"
+          },
+          {
+            "number": 1157,
+            "title": "Logger harness: rootful generated output survives ordinary disposable worktree cleanup",
+            "state": "CLOSED"
+          },
+          {
+            "number": 1113,
+            "title": "TOML CI timeout loses active mutation evidence and censors an independent gate",
+            "state": "CLOSED"
+          }
+        ]
+      }
+    ],
+    "localInspectionCorrection": {
+      "initialQuery": ".[] | {id,name,status,...}",
+      "correctedQuery": ".[].jobs[] | {id,name,status,...}",
+      "reason": "The stored jobs response is a paginated page array. The first selector printed null page-level fields; no absence or count conclusion was taken from it."
+    },
+    "originalSourceFailuresPreserved": true,
+    "finalCoherentDispatch": false
   }
 }
