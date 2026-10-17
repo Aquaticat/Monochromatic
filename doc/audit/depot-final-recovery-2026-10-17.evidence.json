@@ -1,0 +1,883 @@
+{
+  "collectedAt": "2026-10-17T04:41:57.960Z",
+  "scope": "Current root-owned recovery evidence; separate dispatch intervals, historical failures and policy skips are retained",
+  "scanners": [
+    {
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39003219313",
+      "collection": {
+        "collectedAt": "2026-10-17T04:38:32.892Z",
+        "repo": "Aquaticats/Monochromatic",
+        "visibility": "public",
+        "runId": 39003219313,
+        "revision": "32a9250addccf6b902246d39f4756f5f12ca9603",
+        "runAttempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "createdAt": "2026-10-17T04:36:48Z",
+        "startedAt": "2026-10-17T04:36:48Z",
+        "updatedAt": "2026-10-17T04:37:18Z",
+        "jobs": [
+          {
+            "id": 117310318495,
+            "attempt": 1,
+            "workflow": "forbidden-strings",
+            "name": "scan",
+            "status": "completed",
+            "conclusion": "success",
+            "headSha": "32a9250addccf6b902246d39f4756f5f12ca9603",
+            "startedAt": "2026-10-17T04:36:52Z",
+            "completedAt": "2026-10-17T04:37:18Z",
+            "seconds": 26,
+            "labels": [
+              "ubuntu-latest"
+            ],
+            "allocation": {
+              "label": "ubuntu-latest",
+              "vcpus": 4,
+              "memoryGb": 16,
+              "publicStandardComputeUsd": 0,
+              "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+            },
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1,
+                "started_at": "2026-10-17T04:36:52Z",
+                "completed_at": "2026-10-17T04:36:53Z"
+              },
+              {
+                "name": "Checkout (full history)",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2,
+                "started_at": "2026-10-17T04:36:53Z",
+                "completed_at": "2026-10-17T04:37:07Z"
+              },
+              {
+                "name": "Download prebuilt forbidden-strings binary",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3,
+                "started_at": "2026-10-17T04:37:07Z",
+                "completed_at": "2026-10-17T04:37:11Z"
+              },
+              {
+                "name": "Checkout immutable source for the selected change",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4,
+                "started_at": "2026-10-17T04:37:11Z",
+                "completed_at": "2026-10-17T04:37:14Z"
+              },
+              {
+                "name": "Verify immutable source and comparison base",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5,
+                "started_at": "2026-10-17T04:37:14Z",
+                "completed_at": "2026-10-17T04:37:14Z"
+              },
+              {
+                "name": "Materialize deny-list",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 6,
+                "started_at": "2026-10-17T04:37:14Z",
+                "completed_at": "2026-10-17T04:37:14Z"
+              },
+              {
+                "name": "Scan changed files",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 7,
+                "started_at": "2026-10-17T04:37:14Z",
+                "completed_at": "2026-10-17T04:37:15Z"
+              },
+              {
+                "name": "Post Checkout immutable source for the selected change",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 13,
+                "started_at": "2026-10-17T04:37:15Z",
+                "completed_at": "2026-10-17T04:37:15Z"
+              },
+              {
+                "name": "Post Checkout (full history)",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 14,
+                "started_at": "2026-10-17T04:37:15Z",
+                "completed_at": "2026-10-17T04:37:15Z"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 15,
+                "started_at": "2026-10-17T04:37:15Z",
+                "completed_at": "2026-10-17T04:37:16Z"
+              }
+            ],
+            "log": {
+              "path": "logs-117310318495.txt",
+              "bytes": 63252,
+              "sha256": "9c3d107fd17921eb712c0dd820dd26b667e02e2f74be1760c6af5796df84c279"
+            }
+          }
+        ],
+        "scope": "Read-only repository execution metadata. Standard public runner compute is free under published policy; storage, account ledger, and nonstandard allocations are not inferred."
+      },
+      "verification": {
+        "runId": "39003219313",
+        "workflowRevision": "32a9250addccf6b902246d39f4756f5f12ca9603",
+        "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+        "baseRevision": "cf9fcb48047d86e0af01ac9c73c1c7bf26fb277f",
+        "scannerVersion": "forbidden-strings 0.5.0",
+        "scannedFiles": [
+          "package/module/toml-edit/src/value-encoders.ts"
+        ],
+        "gitChangedFiles": [
+          "package/module/toml-edit/src/value-encoders.ts"
+        ],
+        "allChangedFilesScanned": true,
+        "jobSeconds": 26,
+        "createdToJobFinishedSeconds": 30,
+        "publicStandardComputeUsd": 0
+      }
+    },
+    {
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39003221137",
+      "collection": {
+        "collectedAt": "2026-10-17T04:38:44.247Z",
+        "repo": "Aquaticats/Monochromatic",
+        "visibility": "public",
+        "runId": 39003221137,
+        "revision": "32a9250addccf6b902246d39f4756f5f12ca9603",
+        "runAttempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "createdAt": "2026-10-17T04:36:50Z",
+        "startedAt": "2026-10-17T04:36:50Z",
+        "updatedAt": "2026-10-17T04:37:21Z",
+        "jobs": [
+          {
+            "id": 117310322964,
+            "attempt": 1,
+            "workflow": "forbidden-strings",
+            "name": "scan",
+            "status": "completed",
+            "conclusion": "success",
+            "headSha": "32a9250addccf6b902246d39f4756f5f12ca9603",
+            "startedAt": "2026-10-17T04:36:53Z",
+            "completedAt": "2026-10-17T04:37:21Z",
+            "seconds": 28,
+            "labels": [
+              "ubuntu-latest"
+            ],
+            "allocation": {
+              "label": "ubuntu-latest",
+              "vcpus": 4,
+              "memoryGb": 16,
+              "publicStandardComputeUsd": 0,
+              "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+            },
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1,
+                "started_at": "2026-10-17T04:36:54Z",
+                "completed_at": "2026-10-17T04:36:54Z"
+              },
+              {
+                "name": "Checkout (full history)",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2,
+                "started_at": "2026-10-17T04:36:54Z",
+                "completed_at": "2026-10-17T04:37:13Z"
+              },
+              {
+                "name": "Download prebuilt forbidden-strings binary",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3,
+                "started_at": "2026-10-17T04:37:13Z",
+                "completed_at": "2026-10-17T04:37:17Z"
+              },
+              {
+                "name": "Checkout immutable source for the selected change",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4,
+                "started_at": "2026-10-17T04:37:17Z",
+                "completed_at": "2026-10-17T04:37:18Z"
+              },
+              {
+                "name": "Verify immutable source and comparison base",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5,
+                "started_at": "2026-10-17T04:37:18Z",
+                "completed_at": "2026-10-17T04:37:18Z"
+              },
+              {
+                "name": "Materialize deny-list",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 6,
+                "started_at": "2026-10-17T04:37:18Z",
+                "completed_at": "2026-10-17T04:37:18Z"
+              },
+              {
+                "name": "Scan changed files",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 7,
+                "started_at": "2026-10-17T04:37:18Z",
+                "completed_at": "2026-10-17T04:37:18Z"
+              },
+              {
+                "name": "Post Checkout immutable source for the selected change",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 13,
+                "started_at": "2026-10-17T04:37:18Z",
+                "completed_at": "2026-10-17T04:37:18Z"
+              },
+              {
+                "name": "Post Checkout (full history)",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 14,
+                "started_at": "2026-10-17T04:37:18Z",
+                "completed_at": "2026-10-17T04:37:18Z"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 15,
+                "started_at": "2026-10-17T04:37:18Z",
+                "completed_at": "2026-10-17T04:37:18Z"
+              }
+            ],
+            "log": {
+              "path": "logs-117310322964.txt",
+              "bytes": 65174,
+              "sha256": "4e27a4cdce676c6534c0df0e31b7d0ee7499daad2e8e0dc102d59598dd540429"
+            }
+          }
+        ],
+        "scope": "Read-only repository execution metadata. Standard public runner compute is free under published policy; storage, account ledger, and nonstandard allocations are not inferred."
+      },
+      "verification": {
+        "runId": "39003221137",
+        "workflowRevision": "32a9250addccf6b902246d39f4756f5f12ca9603",
+        "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+        "baseRevision": "20dbaca6c2bb39d5d7e51fac447d76393c21a32e",
+        "scannerVersion": "forbidden-strings 0.5.0",
+        "scannedFiles": [
+          "package/module/logger/src/sink/file-append.ts",
+          "package/module/logger/src/sink/file-concurrency.unit.test.ts",
+          "package/module/logger/src/sink/file.ts"
+        ],
+        "gitChangedFiles": [
+          "package/module/logger/src/sink/file-append.ts",
+          "package/module/logger/src/sink/file-concurrency.unit.test.ts",
+          "package/module/logger/src/sink/file.ts"
+        ],
+        "allChangedFilesScanned": true,
+        "jobSeconds": 28,
+        "createdToJobFinishedSeconds": 31,
+        "publicStandardComputeUsd": 0
+      }
+    },
+    {
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39003222894",
+      "collection": {
+        "collectedAt": "2026-10-17T04:38:59.443Z",
+        "repo": "Aquaticats/Monochromatic",
+        "visibility": "public",
+        "runId": 39003222894,
+        "revision": "32a9250addccf6b902246d39f4756f5f12ca9603",
+        "runAttempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "createdAt": "2026-10-17T04:36:52Z",
+        "startedAt": "2026-10-17T04:36:52Z",
+        "updatedAt": "2026-10-17T04:37:24Z",
+        "jobs": [
+          {
+            "id": 117310328477,
+            "attempt": 1,
+            "workflow": "forbidden-strings",
+            "name": "scan",
+            "status": "completed",
+            "conclusion": "success",
+            "headSha": "32a9250addccf6b902246d39f4756f5f12ca9603",
+            "startedAt": "2026-10-17T04:36:55Z",
+            "completedAt": "2026-10-17T04:37:23Z",
+            "seconds": 28,
+            "labels": [
+              "ubuntu-latest"
+            ],
+            "allocation": {
+              "label": "ubuntu-latest",
+              "vcpus": 4,
+              "memoryGb": 16,
+              "publicStandardComputeUsd": 0,
+              "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+            },
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1,
+                "started_at": "2026-10-17T04:36:56Z",
+                "completed_at": "2026-10-17T04:36:57Z"
+              },
+              {
+                "name": "Checkout (full history)",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2,
+                "started_at": "2026-10-17T04:36:57Z",
+                "completed_at": "2026-10-17T04:37:14Z"
+              },
+              {
+                "name": "Download prebuilt forbidden-strings binary",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3,
+                "started_at": "2026-10-17T04:37:14Z",
+                "completed_at": "2026-10-17T04:37:18Z"
+              },
+              {
+                "name": "Checkout immutable source for the selected change",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4,
+                "started_at": "2026-10-17T04:37:18Z",
+                "completed_at": "2026-10-17T04:37:20Z"
+              },
+              {
+                "name": "Verify immutable source and comparison base",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5,
+                "started_at": "2026-10-17T04:37:20Z",
+                "completed_at": "2026-10-17T04:37:20Z"
+              },
+              {
+                "name": "Materialize deny-list",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 6,
+                "started_at": "2026-10-17T04:37:20Z",
+                "completed_at": "2026-10-17T04:37:20Z"
+              },
+              {
+                "name": "Scan changed files",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 7,
+                "started_at": "2026-10-17T04:37:20Z",
+                "completed_at": "2026-10-17T04:37:20Z"
+              },
+              {
+                "name": "Post Checkout immutable source for the selected change",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 13,
+                "started_at": "2026-10-17T04:37:20Z",
+                "completed_at": "2026-10-17T04:37:20Z"
+              },
+              {
+                "name": "Post Checkout (full history)",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 14,
+                "started_at": "2026-10-17T04:37:20Z",
+                "completed_at": "2026-10-17T04:37:20Z"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 15,
+                "started_at": "2026-10-17T04:37:20Z",
+                "completed_at": "2026-10-17T04:37:20Z"
+              }
+            ],
+            "log": {
+              "path": "logs-117310328477.txt",
+              "bytes": 64789,
+              "sha256": "c01cfb4f0649304eb7098242128fade8bfa8bc67b2440c80eafe817bd068ff55"
+            }
+          }
+        ],
+        "scope": "Read-only repository execution metadata. Standard public runner compute is free under published policy; storage, account ledger, and nonstandard allocations are not inferred."
+      },
+      "verification": {
+        "runId": "39003222894",
+        "workflowRevision": "32a9250addccf6b902246d39f4756f5f12ca9603",
+        "sourceRevision": "cb95cf6d785c3073c192b95f0632cdae7b910894",
+        "baseRevision": "45795584ff2dcf830dc505e121f0cc92c77860e5",
+        "scannerVersion": "forbidden-strings 0.5.0",
+        "scannedFiles": [
+          "package/music-player/truepeak-core/Cargo.lock",
+          "package/music-player/truepeak-core/Cargo.toml",
+          "package/music-player/truepeak-core/src/cache.rs",
+          "package/music-player/truepeak-core/src/cache_tests.rs",
+          "package/music-player/truepeak-core/src/fingerprint.rs",
+          "package/music-player/truepeak-core/src/fingerprint_tests.rs",
+          "package/music-player/truepeak-core/src/lib.rs",
+          "package/music-player/truepeak-core/src/policy.rs"
+        ],
+        "gitChangedFiles": [
+          "package/music-player/truepeak-core/Cargo.lock",
+          "package/music-player/truepeak-core/Cargo.toml",
+          "package/music-player/truepeak-core/src/cache.rs",
+          "package/music-player/truepeak-core/src/cache_tests.rs",
+          "package/music-player/truepeak-core/src/fingerprint.rs",
+          "package/music-player/truepeak-core/src/fingerprint_tests.rs",
+          "package/music-player/truepeak-core/src/lib.rs",
+          "package/music-player/truepeak-core/src/policy.rs"
+        ],
+        "allChangedFilesScanned": true,
+        "jobSeconds": 28,
+        "createdToJobFinishedSeconds": 31,
+        "publicStandardComputeUsd": 0
+      }
+    },
+    {
+      "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39003225054",
+      "collection": {
+        "collectedAt": "2026-10-17T04:39:04.709Z",
+        "repo": "Aquaticats/Monochromatic",
+        "visibility": "public",
+        "runId": 39003225054,
+        "revision": "32a9250addccf6b902246d39f4756f5f12ca9603",
+        "runAttempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "createdAt": "2026-10-17T04:36:54Z",
+        "startedAt": "2026-10-17T04:36:54Z",
+        "updatedAt": "2026-10-17T04:37:33Z",
+        "jobs": [
+          {
+            "id": 117310335147,
+            "attempt": 1,
+            "workflow": "forbidden-strings",
+            "name": "scan",
+            "status": "completed",
+            "conclusion": "success",
+            "headSha": "32a9250addccf6b902246d39f4756f5f12ca9603",
+            "startedAt": "2026-10-17T04:36:58Z",
+            "completedAt": "2026-10-17T04:37:32Z",
+            "seconds": 34,
+            "labels": [
+              "ubuntu-latest"
+            ],
+            "allocation": {
+              "label": "ubuntu-latest",
+              "vcpus": 4,
+              "memoryGb": 16,
+              "publicStandardComputeUsd": 0,
+              "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+            },
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1,
+                "started_at": "2026-10-17T04:36:59Z",
+                "completed_at": "2026-10-17T04:37:00Z"
+              },
+              {
+                "name": "Checkout (full history)",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2,
+                "started_at": "2026-10-17T04:37:00Z",
+                "completed_at": "2026-10-17T04:37:22Z"
+              },
+              {
+                "name": "Download prebuilt forbidden-strings binary",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3,
+                "started_at": "2026-10-17T04:37:22Z",
+                "completed_at": "2026-10-17T04:37:25Z"
+              },
+              {
+                "name": "Checkout immutable source for the selected change",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4,
+                "started_at": "2026-10-17T04:37:25Z",
+                "completed_at": "2026-10-17T04:37:28Z"
+              },
+              {
+                "name": "Verify immutable source and comparison base",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5,
+                "started_at": "2026-10-17T04:37:28Z",
+                "completed_at": "2026-10-17T04:37:28Z"
+              },
+              {
+                "name": "Materialize deny-list",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 6,
+                "started_at": "2026-10-17T04:37:28Z",
+                "completed_at": "2026-10-17T04:37:28Z"
+              },
+              {
+                "name": "Scan changed files",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 7,
+                "started_at": "2026-10-17T04:37:28Z",
+                "completed_at": "2026-10-17T04:37:28Z"
+              },
+              {
+                "name": "Post Checkout immutable source for the selected change",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 13,
+                "started_at": "2026-10-17T04:37:28Z",
+                "completed_at": "2026-10-17T04:37:28Z"
+              },
+              {
+                "name": "Post Checkout (full history)",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 14,
+                "started_at": "2026-10-17T04:37:28Z",
+                "completed_at": "2026-10-17T04:37:29Z"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 15,
+                "started_at": "2026-10-17T04:37:29Z",
+                "completed_at": "2026-10-17T04:37:29Z"
+              }
+            ],
+            "log": {
+              "path": "logs-117310335147.txt",
+              "bytes": 66539,
+              "sha256": "207caaa60b285eec1caf7b4a438e6d86aeec0557e56884a83ab243878bbe40e7"
+            }
+          }
+        ],
+        "scope": "Read-only repository execution metadata. Standard public runner compute is free under published policy; storage, account ledger, and nonstandard allocations are not inferred."
+      },
+      "verification": {
+        "runId": "39003225054",
+        "workflowRevision": "32a9250addccf6b902246d39f4756f5f12ca9603",
+        "sourceRevision": "3434eaa455d569c18b52cf15100f77f9db251d21",
+        "baseRevision": "a9b4a681d21907ecc5eb208a754e7b9a0f6e9168",
+        "scannerVersion": "forbidden-strings 0.5.0",
+        "scannedFiles": [
+          "package/music-player/desktop-app/Cargo.toml",
+          "package/music-player/desktop-app/src/console_attach.rs",
+          "package/music-player/desktop-app/src/console_attach_tests.rs",
+          "package/music-player/desktop-app/src/console_attach_win32.rs",
+          "package/music-player/desktop-app/src/lib.rs",
+          "package/music-player/desktop-app/src/main.rs"
+        ],
+        "gitChangedFiles": [
+          "package/music-player/desktop-app/Cargo.toml",
+          "package/music-player/desktop-app/src/console_attach.rs",
+          "package/music-player/desktop-app/src/console_attach_tests.rs",
+          "package/music-player/desktop-app/src/console_attach_win32.rs",
+          "package/music-player/desktop-app/src/lib.rs",
+          "package/music-player/desktop-app/src/main.rs"
+        ],
+        "allChangedFilesScanned": true,
+        "jobSeconds": 34,
+        "createdToJobFinishedSeconds": 38,
+        "publicStandardComputeUsd": 0
+      }
+    }
+  ],
+  "scorecard": {
+    "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39003200588",
+    "collection": {
+      "collectedAt": "2026-10-17T04:39:48.903Z",
+      "repo": "Aquaticats/Monochromatic",
+      "visibility": "public",
+      "runId": 39003200588,
+      "revision": "e5869e93d837922d62be470be974d94c39177619",
+      "runAttempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "createdAt": "2026-10-17T04:36:29Z",
+      "startedAt": "2026-10-17T04:36:29Z",
+      "updatedAt": "2026-10-17T04:36:40Z",
+      "jobs": [
+        {
+          "id": 117310260471,
+          "attempt": 1,
+          "workflow": "Scorecard supply-chain security",
+          "name": "Scorecard rate limit",
+          "status": "completed",
+          "conclusion": "success",
+          "headSha": "e5869e93d837922d62be470be974d94c39177619",
+          "startedAt": "2026-10-17T04:36:33Z",
+          "completedAt": "2026-10-17T04:36:39Z",
+          "seconds": 6,
+          "labels": [
+            "ubuntu-latest"
+          ],
+          "allocation": {
+            "label": "ubuntu-latest",
+            "vcpus": 4,
+            "memoryGb": 16,
+            "publicStandardComputeUsd": 0,
+            "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+          },
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1,
+              "started_at": "2026-10-17T04:36:34Z",
+              "completed_at": "2026-10-17T04:36:35Z"
+            },
+            {
+              "name": "Count recent analysis runs",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2,
+              "started_at": "2026-10-17T04:36:35Z",
+              "completed_at": "2026-10-17T04:36:37Z"
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3,
+              "started_at": "2026-10-17T04:36:37Z",
+              "completed_at": "2026-10-17T04:36:37Z"
+            }
+          ],
+          "log": {
+            "path": "logs-117310260471.txt",
+            "bytes": 9163,
+            "sha256": "aec1f2fbea46a16d511766de8f053d188a60726fd7441cef33b79da84f622cf0"
+          }
+        },
+        {
+          "id": 117310289215,
+          "attempt": 1,
+          "workflow": "Scorecard supply-chain security",
+          "name": "Scorecard analysis",
+          "status": "completed",
+          "conclusion": "skipped",
+          "headSha": "e5869e93d837922d62be470be974d94c39177619",
+          "startedAt": "2026-10-17T04:36:40Z",
+          "completedAt": "2026-10-17T04:36:40Z",
+          "seconds": 0,
+          "labels": [
+            "ubuntu-latest"
+          ],
+          "allocation": {
+            "label": "ubuntu-latest",
+            "vcpus": 4,
+            "memoryGb": 16,
+            "publicStandardComputeUsd": 0,
+            "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+          },
+          "steps": []
+        }
+      ],
+      "scope": "Read-only repository execution metadata. Standard public runner compute is free under published policy; storage, account ledger, and nonstandard allocations are not inferred."
+    },
+    "diagnostic": "2026-10-17T04:36:37.8732939Z ##[notice]Skipping Scorecard analysis: 4 runs already executed in the last hour.",
+    "traversal": "2026-10-17T04:36:37.8697863Z Checked 6 historical runs using 1 GraphQL requests and 1 points; no REST history requests.",
+    "analysisExecuted": false,
+    "scope": "Current rolling policy against live default repository; not a historical immutable-source analysis"
+  },
+  "tomlPatchFailure": {
+    "collection": {
+      "collectedAt": "2026-10-17T04:30:54.521Z",
+      "org": "l4zncjjbj5",
+      "runId": "gfklnntq0x",
+      "revision": "3b3be538e75ca30ecb3fa44dfb003a4366cd67ec",
+      "status": "failed",
+      "attempts": [
+        {
+          "workflowId": "01r3jsfthp",
+          "jobId": "0nmbpw45gc",
+          "jobKey": "_inline_0.yaml:containers",
+          "attemptId": "3r4cn5c094",
+          "attempt": 1,
+          "status": "failed",
+          "metricsPath": "metrics-3r4cn5c094.json",
+          "logPath": "logs-3r4cn5c094.jsonl",
+          "logSha256": "db92666e34b953c31e8e1ae5cafbf1c4e26a8eff9e1effa21116de40d264886b",
+          "logRecords": 99,
+          "providerAttempt": {
+            "attempt_id": "3r4cn5c094",
+            "attempt": 1,
+            "status": "failed",
+            "conclusion": "failure",
+            "sandbox_id": "771qvf0thd035l7k75mm",
+            "session_id": "b977b40f-3e82-4184-8ff3-48c8b505d903",
+            "created_at": "2026-10-16T04:05:45.104Z",
+            "started_at": "2026-10-16T04:05:49.570Z",
+            "finished_at": "2026-10-16T04:06:20.163Z"
+          }
+        },
+        {
+          "workflowId": "01r3jsfthp",
+          "jobId": "r3q6n5v8mk",
+          "jobKey": "_inline_0.yaml:generated",
+          "attemptId": "mspp6h6bvx",
+          "attempt": 1,
+          "status": "failed",
+          "metricsPath": "metrics-mspp6h6bvx.json",
+          "logPath": "logs-mspp6h6bvx.jsonl",
+          "logSha256": "c44ce676b20f9a659cdc7b4817d9ec0904b9b601566862edb65c4aeceba1b8da",
+          "logRecords": 127,
+          "providerAttempt": {
+            "attempt_id": "mspp6h6bvx",
+            "attempt": 1,
+            "status": "failed",
+            "conclusion": "failure",
+            "sandbox_id": "ftl9c4d7x18sb8p7qjw3",
+            "session_id": "b6d413b0-ea4a-4eb4-92b2-2631549311e0",
+            "created_at": "2026-10-16T04:05:45.104Z",
+            "started_at": "2026-10-16T04:05:48.571Z",
+            "finished_at": "2026-10-16T04:06:03.975Z"
+          }
+        },
+        {
+          "workflowId": "01r3jsfthp",
+          "jobId": "j7tl0wmpcm",
+          "jobKey": "_inline_0.yaml:toml",
+          "attemptId": "fj40zf4vzx",
+          "attempt": 1,
+          "status": "failed",
+          "metricsPath": "metrics-fj40zf4vzx.json",
+          "logPath": "logs-fj40zf4vzx.jsonl",
+          "logSha256": "d0bde3015499dc8a4e29efab7ced5bdeb8adb86338c580450fe791c6d4452902",
+          "logRecords": 99,
+          "providerAttempt": {
+            "attempt_id": "fj40zf4vzx",
+            "attempt": 1,
+            "status": "failed",
+            "conclusion": "failure",
+            "sandbox_id": "ds6k6z3rchnr3rrz5kn4",
+            "session_id": "cd10b89b-535f-4383-a894-6846406dda4e",
+            "created_at": "2026-10-16T04:05:45.104Z",
+            "started_at": "2026-10-16T04:05:49.673Z",
+            "finished_at": "2026-10-16T04:06:20.166Z"
+          }
+        }
+      ],
+      "artifactCount": 0,
+      "scope": "Read-only collection. Provider intervals require declared resources before pricing. Gate completion needs independent manifest reconciliation."
+    },
+    "run": {
+      "org_id": "l4zncjjbj5",
+      "run_id": "gfklnntq0x",
+      "repo": "Aquaticats/Monochromatic",
+      "ref": "3b3be538e75ca30ecb3fa44dfb003a4366cd67ec",
+      "sha": "3b3be538e75ca30ecb3fa44dfb003a4366cd67ec",
+      "head_sha": "3b3be538e75ca30ecb3fa44dfb003a4366cd67ec",
+      "trigger": "api",
+      "status": "failed",
+      "created_at": "2026-10-16T04:05:35Z",
+      "started_at": "2026-10-16T04:05:35Z",
+      "finished_at": "2026-10-16T04:06:20Z"
+    },
+    "status": {
+      "org_id": "l4zncjjbj5",
+      "run_id": "gfklnntq0x",
+      "status": "failed",
+      "workflows": [
+        {
+          "workflow_id": "01r3jsfthp",
+          "status": "failed",
+          "name": "depot-complete-toml-full",
+          "jobs": [
+            {
+              "job_display_name": "Exact-head TOML container and mutation checks",
+              "job_id": "0nmbpw45gc",
+              "job_key": "_inline_0.yaml:containers",
+              "status": "failed",
+              "attempts": [
+                {
+                  "attempt_id": "3r4cn5c094",
+                  "attempt": 1,
+                  "status": "failed",
+                  "sandbox_id": "771qvf0thd035l7k75mm",
+                  "session_id": "b977b40f-3e82-4184-8ff3-48c8b505d903",
+                  "logs_command": "depot ci logs 3r4cn5c094 --org l4zncjjbj5",
+                  "download_available": false,
+                  "view_url": "https://depot.dev/orgs/l4zncjjbj5/workflows/01r3jsfthp?job=0nmbpw45gc&attempt=3r4cn5c094",
+                  "ssh_available": false
+                }
+              ]
+            },
+            {
+              "job_display_name": "Exact-head TOML generator consistency in disposable checkout",
+              "job_id": "r3q6n5v8mk",
+              "job_key": "_inline_0.yaml:generated",
+              "status": "failed",
+              "attempts": [
+                {
+                  "attempt_id": "mspp6h6bvx",
+                  "attempt": 1,
+                  "status": "failed",
+                  "sandbox_id": "ftl9c4d7x18sb8p7qjw3",
+                  "session_id": "b6d413b0-ea4a-4eb4-92b2-2631549311e0",
+                  "logs_command": "depot ci logs mspp6h6bvx --org l4zncjjbj5",
+                  "download_available": false,
+                  "view_url": "https://depot.dev/orgs/l4zncjjbj5/workflows/01r3jsfthp?job=r3q6n5v8mk&attempt=mspp6h6bvx",
+                  "ssh_available": false
+                }
+              ]
+            },
+            {
+              "job_display_name": "Historical TOML package checks",
+              "job_id": "j7tl0wmpcm",
+              "job_key": "_inline_0.yaml:toml",
+              "status": "failed",
+              "attempts": [
+                {
+                  "attempt_id": "fj40zf4vzx",
+                  "attempt": 1,
+                  "status": "failed",
+                  "sandbox_id": "ds6k6z3rchnr3rrz5kn4",
+                  "session_id": "cd10b89b-535f-4383-a894-6846406dda4e",
+                  "logs_command": "depot ci logs fj40zf4vzx --org l4zncjjbj5",
+                  "download_available": false,
+                  "view_url": "https://depot.dev/orgs/l4zncjjbj5/workflows/01r3jsfthp?job=j7tl0wmpcm&attempt=fj40zf4vzx",
+                  "ssh_available": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "artifacts": {
+      "artifacts": []
+    },
+    "disposition": "Harness local patch failed before immutable source execution in all jobs; no check coverage"
+  }
+}
