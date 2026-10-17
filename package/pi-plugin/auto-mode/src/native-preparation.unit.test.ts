@@ -5,7 +5,7 @@ import { createPreparationFixture } from './native-preparation-fixture.ts';
 
 //region Complete original membership publishes only after source sealing and final lifetime checks.
 await describe({ name: '', children: [
-  it({ name: 'constructs lazily and publishes original immutable bindings after every dependency check', fn: async function publishesOriginals() {
+  it({ name: 'constructs lazily and shares native bindings through source and selection checks', fn: async function publishesOriginals() {
     /** Native preparation owns no published members or selection at construction. */
     const f = createPreparationFixture();
     assert.deepEqual(f.events, []);
@@ -13,8 +13,8 @@ await describe({ name: '', children: [
     assert.throws(function selectionBeforePreparation() {
       f.owner.knownSelection();
     }, { name: 'JudgmentConstructionError', message: 'Judgment question selection was not prepared' });
-    f.state.onStep = function beforePublication() {
-      assert.equal(f.byMember.size, 0);
+    f.state.onStep = function beforePublication(point) {
+      assert.equal(f.byMember.size, point === 'active:1' ? 0 : 2);
       assert.equal(f.owner.state.prepared, false);
       assert.equal(f.owner.state.handle, undefined);
     };

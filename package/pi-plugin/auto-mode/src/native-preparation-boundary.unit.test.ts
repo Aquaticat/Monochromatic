@@ -16,7 +16,7 @@ await describe({ name: '', children: [
       assert.equal(f.owner.state.preparationFailed, true);
       assert.equal(f.owner.state.preparing, false);
       assert.equal(f.owner.state.selection, undefined);
-      assert.equal(f.byMember.size, 0);
+      assert.equal(f.byMember.size, 2);
       assert.deepEqual(f.events, ['active:1', 'seal:1', 'publishSources:1', 'prepareDependencies:1', 'active:2', 'finalizeDependencies:1', 'checkpoint:1', 'sources:1']);
     } });
   }),
@@ -52,7 +52,7 @@ await describe({ name: '', children: [
     }, failure);
     assert.equal(f.owner.state.preparationFailure, failure);
     assert.equal(f.owner.state.preparing, false);
-    assert.equal(f.byMember.size, 0);
+    assert.equal(f.byMember.size, 2);
     assert.equal(f.state.counts.get('finalizeDependencies'), 1);
     assert.equal(f.state.counts.get('checkpoint'), 1);
   } }),
@@ -67,7 +67,7 @@ await describe({ name: '', children: [
     assert.equal(f.owner.state.prepared, false);
     assert.equal(f.owner.state.selection, undefined);
     assert.equal(f.owner.state.handle, undefined);
-    assert.equal(f.byMember.size, 0);
+    assert.equal(f.byMember.size, 2);
     assert.equal(f.state.counts.get('active'), 2);
     assert.equal(f.state.counts.get('checkpoint'), 2);
     assert.ok(Error.isError(f.owner.state.preparationFailure));
@@ -102,7 +102,7 @@ await describe({ name: '', children: [
       assert.equal(f.owner.state.preparationFailed, true);
       assert.equal(f.owner.state.preparing, false);
       assert.equal(f.owner.state.prepared, false);
-      assert.equal(f.byMember.size, 0);
+      assert.equal(f.byMember.size, 2);
       assert.equal(f.owner.state.handle, undefined);
       assert.equal(f.owner.knownSelection(), f.owner.state.selection);
       assert.equal(f.budget.diagnostics().retired, true);
