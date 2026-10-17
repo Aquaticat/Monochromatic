@@ -39,6 +39,8 @@ const activeHeredoc=JSON.stringify(review('cat <<END\n$(cat private.txt)\nEND\n'
 assert.ok(activeHeredoc.includes('CommandExpansion'));
 assert.equal(activeHeredoc.includes('$(cat private.txt)'),false);
 assert.throws(function incomplete(){review('if true; then cat file');});
+assert.throws(function missingCommand(){projectVisibleOperation([{type:'toolCall',name:'bash',arguments:{timeout:2}}]);},{name:'ReviewOperationInputError'});
+assert.deepEqual(review('').commands,[]);
 const malformed=[{type:'thinking',thinking:'PRIVATE_THINKING'},{type:'toolCall',name:'bash',arguments:{command:'if true; then cat file'}}];
 assert.equal(projectOperationSummary(malformed)[0].arguments.command,'if true; then cat file');
 assert.equal(JSON.stringify(projectOperationSummary(malformed)).includes('PRIVATE_THINKING'),false);

@@ -1,5 +1,105 @@
 # Auto-mode on Pi 1.2.0 blocks prompts after provider switching and tree navigation
 
+## Pi 1.2.0 review expiry and unprojected Bash inputs on 2026-10-16
+
+### Symptom and retained evidence
+
+Session `2026-10-16T03-32-01-642Z_01a142c4-45e9-75fa-b579-ea10d43323ae`
+displayed `Auto-mode could not assess this operation: Original policy review and evidence closure failed`
+for `chatcmpl-tool-a23317ad323e080b` and `chatcmpl-tool-9328d924e6057489`.
+Review `01906150-53fc-4313-94ad-0c7ae40d26df` retains
+`JudgmentDeadlineError: Judgment preparation and assessment deadline expired`.
+Its first request begins `9772` milliseconds after review start and returns `1050` milliseconds later.
+The final request has no retained answer before the deadline failure.
+This evidence establishes elapsed-time rejection; it does not establish a low-confidence final model answer.
+
+### Root cause and correction
+
+At the parent of commit `77001d41e6`,
+`package/pi-plugin/auto-mode/native/contract/lifecycle/judgment-budget-error-occurrences/controls-private/candidate.ts:126`
+rejects elapsed preparation and assessment time:
+
+```ts
+// package/pi-plugin/auto-mode/native/contract/lifecycle/judgment-budget-error-occurrences/controls-private/candidate.ts
+if(current>=deadlineAt)throw new JudgmentDeadlineError('Judgment preparation and assessment deadline expired');
+```
+
+The user clarified that fifteen seconds is an implementation guideline.
+The corrected budget retains monotonic clock validation and cancellation,
+and returns the remaining advisory interval even when negative.
+The current `candidate.ts:129` contains:
+
+```ts
+// package/pi-plugin/auto-mode/native/contract/lifecycle/judgment-budget-error-occurrences/controls-private/candidate.ts
+return targetAt-current;
+```
+
+The HTTP sender carries the original `signal` directly into `fetch`;
+there is no elapsed-target abort timer.
+Startup relevance likewise uses an untimed signal instead of its former `45_000` millisecond timer.
+Transport errors, actual cancellation, stale inputs, and provider-call accounting remain separate failure paths.
+
+The user also required no model thinking and locally parsed Bash structure.
+`package/pi-plugin/auto-mode/native/contract/integration/action-policy/wire-material.mjs:43`
+projects tool arguments before model requests:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/integration/action-policy/wire-material.mjs
+return block.type==='toolCall'?{...block,arguments:projectReviewInput({name:block.name,input:block.arguments})}:block;
+```
+
+The same file's `projectPreparedOperation` covers prepared inputs.
+Historical tool calls and direct Bash entries use the same maintained projection.
+The incumbent `unbash` parser supplies quoting, nested execution, control flow, and redirection roles;
+the original command stays local for execution and ownership checks.
+Human confirmation uses a separate thinking-free summary so parsing failure does not disable manual review.
+Literal argument data and quoted here-document bodies remain data even when they resemble shell commands.
+
+### Verification and remaining boundary
+
+Installed candidate `native-release-b8o8BL` contains the correction.
+The focused consumer commands are:
+
+```sh
+# package/pi-plugin/auto-mode
+mise run //package/pi-plugin/auto-mode:test:native:shell-projection
+mise run //package/pi-plugin/auto-mode:test:native:startup-relevance
+mise run //package/pi-plugin/auto-mode:test:native:judgment-budget
+mise run //package/pi-plugin/auto-mode:test:assessment-transport
+mise run //package/pi-plugin/auto-mode:test:decision-wire
+mise run //package/pi-plugin/auto-mode:test:native:dependency-facade
+mise run //package/pi-plugin/auto-mode:test:native:decision-fallback
+mise run //package/pi-plugin/auto-mode:test:visible-context
+```
+
+Passing catalogs include late responses, delayed credential preparation,
+pipelines, logical operators, quoted literal substitutions, active substitutions,
+process substitutions, arithmetic, parameter defaults, and quoted or active here-documents.
+Rejected catalogs include incomplete Bash, cancelled requests, stale inputs,
+unavailable credentials, malformed responses, and established prohibitions.
+The thinking-exclusion and late-answer tests failed against the original installed behavior before correction.
+
+The first complete-session replay stopped after eleven tool results with native exit status `137`.
+No native fatal diagnostic was retained, and the output ceiling was not reached.
+It is incomplete evidence, with no established termination cause.
+The final sequential replay retains the original conversation and configured resources in a disposable,
+two-CPU, 2 GiB container; its result belongs in the current-frontier handover.
+
+### Workaround tradeoffs and rejected approaches
+
+No larger hard timeout implements an advisory timing requirement.
+Ignoring parsing failures would lose permission-relevant operations.
+Instead, incomplete structure reaches original human confirmation when available,
+and headless execution remains withheld.
+Parsing alone does not prove runtime expansion values, reachability, or command effects.
+
+### Upstream filing decision
+
+Nothing to file upstream: the enforced timer and payload projection are repository-owned integration behavior.
+The ownership gate fails for Pi and the parser; no upstream change is needed to implement this correction.
+The other filing gates, supported use, contribution policy, maintainer interest, and upstream prototype,
+do not become filing obligations for this consumer defect.
+
 ## Symptom
 
 On 2026-10-15 the user reported `Root lease has been retired` and `Connection error.`.
