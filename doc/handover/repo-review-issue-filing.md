@@ -194,7 +194,8 @@ Completed units (findings validated):
  `cross-dependency` (7 findings),
  `cross-testing` (4 findings),
  `cross-rust` (3 findings),
- `cross-build` (6 findings).
+ `cross-build` (6 findings),
+ `cross-logging` (5 findings).
 
 Cross-unit leads:
  `doc/planning/music-player-shared-truepeak-core.md` repeats the retired truepeak policy
@@ -264,6 +265,10 @@ Cross-unit leads:
  `doc/planning/monorepo-manager-route-research/stack-rust.md` cites an `MXR` rule tag that
  no longer exists in `AGENTS.md` (`MXL` is the max-lines rule), per `cross-rust` notes;
  file it directly at dedupe time.
+ `.agents/skills/project-code-review/SKILL.md` line 913 requires every catch block to log
+ via `console.error()` while AGENTS.md `TLG` forbids raw console in production code, per
+ `cross-logging` notes;
+ fold into the SKILL.md corrections issue at dedupe time.
  The stale pre-transfer `repository.url` (Aquaticat instead of Aquaticats) spans most
  `package.json` files repo-wide per `code-config-1-001`;
  likely dedupe target is open issue #1124;
@@ -273,8 +278,7 @@ Cross-unit leads:
  hand to the `cross-dependency` reviewer when it launches.
 
 Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
- `cross-api`,
- `cross-logging` (the final two units; `cross-duplication` adjudicated all seven of its
+ `cross-api` (the final unit; `cross-duplication` adjudicated all seven of its
  leads inside `cross-duplication-001`, refuting the `visible-context.ts` twin claim).
 
 Dedupe verdicts already recorded in finding text:
