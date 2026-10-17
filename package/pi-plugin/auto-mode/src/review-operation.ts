@@ -43,7 +43,7 @@ export function projectReviewInput({
    */
   const l = tagged({ tag: projectReviewInput.name, });
   l.debug('projecting tool arguments for review');
-  if (name !== 'bash') return input;
+  if (name !== 'bash' && !(name === 'process' && input.action === 'start')) return input;
   /**
    Keep original execution options beside the parsed command structure.
    */
@@ -52,7 +52,7 @@ export function projectReviewInput({
     ...options
   } = input;
   if ((typeof command) !== 'string')
-    throw new ReviewOperationInputError('Bash tool input has no command string to parse for review');
+    throw new ReviewOperationInputError('Shell operation input has no command string to parse for review');
   return {
     ...options,
     shell: parseShellReviewStructure(command),

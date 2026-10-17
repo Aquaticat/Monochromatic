@@ -31,6 +31,25 @@ The original session and eight runtime logs are copied privately to
 The `notify-send` SIGTERM warning concerns notification delivery and does not establish either review failure's cause.
 Next action: replay the exact captured requests and distinguish model ambiguity from transport failure.
 
+### Package size and architecture work authorized on 2026-10-17
+
+The user also requests a size investigation, implementation of a manageable architecture,
+and package-local justification of every major part.
+The size measurement uses `du --bytes --max-depth=2 package/pi-plugin/auto-mode`:
+7,354,649,993 bytes total, including 7,089,712,671 bytes of package-local diagnostic logs,
+258,159,664 bytes of build output, 2,265,351 bytes in `src`, and 2,025,723 bytes in `native`.
+These are apparent filesystem sizes, separate from tracked-source complexity.
+
+- [ ] Inventory tracked production, test, research, generated, and obsolete code and actual runtime reachability.
+- [ ] Reduce repeated diagnostics and retained build duplication without losing decision reconstruction
+  or invalidating active sessions.
+- [ ] Consolidate maintained modules behind explicit interfaces, removing superseded paths after proving consumers.
+- [ ] Add package-local purpose, invariants, alternatives, callers, and verification for every major retained part.
+- [ ] Verify permission failures, installed interactions, lint, types, tests, and measured before/after size.
+
+The root `TCV` rule stays unchanged as explicitly requested.
+Concurrent unrelated edits remain outside this work.
+
 ### Completed advisory timing and operation projection on 2026-10-17
 
 Session `2026-10-16T03-32-01-642Z_01a142c4-45e9-75fa-b579-ea10d43323ae`
