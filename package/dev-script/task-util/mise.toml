@@ -289,7 +289,8 @@ const wrapper = [
     if(child.status !== 0) throw new Error('Mutation metadata inspection failed: '+String(child.stderr));
     return child;
   };
-  const imageId = execute(['image','inspect','--format','{{.Id}}',image]).stdout.trim();
+  const imageId = JSON.parse(execute(['image','inspect',image]).stdout)[0].Id;
+  if(!/^(?:sha256:)?[a-f0-9]{64}$/u.test(imageId)) throw new Error('Metadata extraction requires an immutable image ID');
   const container = execute(['create','--memory=2g','--cpus=2','--pids-limit=64','--network=none','--read-only','--cap-drop=ALL','--security-opt=no-new-privileges',image,'true']).stdout.trim();
   if(!/^[a-f0-9]{64}$/u.test(container)) throw new Error('Metadata inspection must return one disposable container ID');
   let archive;
@@ -319,7 +320,7 @@ const wrapper = [
   const copiedSha256 = createHash('sha256').update(readFileSync(file)).digest('hex');
   const copied = statSync(file);
   if(sha256 !== copiedSha256 || copied.uid !== process.getuid() || (copied.mode & 0o777) !== 0o600) throw new Error('Owned metadata copy must preserve source bytes and private mode');
-  if(execute(['image','inspect','--format','{{.Id}}',image]).stdout.trim() !== imageId) throw new Error('Source image identity changed during metadata extraction');
+  if(JSON.parse(execute(['image','inspect',image]).stdout)[0].Id !== imageId) throw new Error('Source image identity changed during metadata extraction');
   const record = {event:'mutation-owned-metadata',image,imageId,sourcePath:'/baked/node_modules/.pnpm-workspace-state-v1.json',original:{mode:entry[1],uid:Number(entry[2]),gid:Number(entry[3]),bytes:Number(entry[4])},owned:{uid:copied.uid,gid:copied.gid,mode:copied.mode & 0o777,bytes:copied.size},sha256,copiedSha256,readonly:true,sourceImageUnchanged:true,archiveSha256:createHash('sha256').update(archive).digest('hex')};
   writeFileSync(join(directory,'metadata-evidence.json'),JSON.stringify(record,null,2)+'\n',{mode:0o600});
   console.error(JSON.stringify(record));
