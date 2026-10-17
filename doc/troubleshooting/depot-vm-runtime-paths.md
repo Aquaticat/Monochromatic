@@ -181,6 +181,14 @@ This is provider preparation overhead,
 not a test of primary-group normalization.
 The next attempt must begin only after the harness push completes
 and `git ls-remote` matches its local committed revision.
+Clean recovery run `vq299blkbw` uses remotely verified harness
+`a683cd54f98b11add860c1bab48b33d14883a370`.
+Its dispatch reported no local patch upload.
+The run retains the 16-CPU,
+64-GiB disposable cloud allocation,
+75-minute provider timeout,
+and 60-minute experiment deadline with cleanup reserve.
+Terminal results and guest evidence remain required.
 
 The fifth run built the historical source bundle,
 again measured the original package task's separate working-directory failure,
@@ -213,7 +221,8 @@ running the source suite from the repository root cannot replace that task resul
 5.  The measured impact is failed guest preparation,
     with no guest checks executed.
 6.  The original failure is reproduced in the provider log;
-    the corrected runtime setup is under verification.
+    actual template boot verified the corrected socket paths.
+    The separate primary-group candidate is under verification.
 
 A GitHub mirror issue search for `socket path too long` returned no matches.
 That result is not evidence that the behavior has never been reported elsewhere.
