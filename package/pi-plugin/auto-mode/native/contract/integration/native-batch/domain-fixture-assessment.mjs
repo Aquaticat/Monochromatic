@@ -91,6 +91,8 @@ const sendAssessment=httpTransport?createAssessmentSender({
     false
   );
   const decisionRequest=JSON.parse(options.body);
+  if(settings.transientHttpFailure && observations.httpCalls===2)
+    throw new TypeError('Fixture connection reset with private request data');
   const nativeRequest={
     model:decisionRequest.model,
     state:JSON.parse(decisionRequest.input),

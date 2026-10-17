@@ -34,9 +34,9 @@ const originalBash=createBashToolDefinition(env.options.cwd);
 const bash={...originalBash,async execute(toolCallId,input,signal,onUpdate,context){observations.executions++;return await Reflect.apply(originalBash.execute,originalBash,[toolCallId,input,signal,onUpdate,context]);}};
 const {session,root,lifecycle}=await createRootSessionFactory(env).create({options:{...env.options,tools:['bash'],customTools:[bash]}});
 session.agent.getApiKey=function fixtureKey(){return process.env.FIXTURE_API_KEY;};
-const decision=['approve','initial-failure','stale','abort','deadline'].includes(mode)?'approve':['deny','prohibition'].includes(mode)?'deny':'unknown';
+const decision=['approve','transient','initial-failure','stale','abort','deadline'].includes(mode)?'approve':['deny','transient-deny','prohibition'].includes(mode)?'deny':'unknown';
 const relation=clauseDenial||mode==='prohibition'?'prohibition':mode==='fresh'?'fresh-session-approval':'prerequisite';
-const sendAssessment=createDomainFixtureAssessment({settings:{relation:'permission',unresolvedClause:relation,operationDecision:decision,operatingPolicy:true,httpTransport:true},observations});
+const sendAssessment=createDomainFixtureAssessment({settings:{relation:'permission',unresolvedClause:relation,operationDecision:decision,operatingPolicy:true,httpTransport:true,transientHttpFailure:mode.startsWith('transient')},observations});
 const commands=['printf FALLBACK_A','printf FALLBACK_B'];
 const calls=commands.map(function proposedCommand(command,index){return {index,id:`fallback-${index}`,type:'function',function:{name:'bash',arguments:JSON.stringify({command})}};});
 const requests={count:0};
@@ -62,7 +62,7 @@ const runtime=bindNativePolicyRuntime({root,lifecycle,policyInput:env.policyInpu
    assert.equal(question.instructions.predicate,wire.state.clauseRelationDefinition.instructions,'Each clause needs complete local interpretation instructions');
   }
   const operation=Object.values(wire.questions).some(function operationQuestion(question){return Object.hasOwn(question.criteria,'approve');});
-  assert.equal(operation,observations.attempts===2);
+  assert.equal(operation,observations.attempts>=2);
   if(mode==='initial-failure'&&!operation)throw new Error('Fixture initial clause transport failed');
   if(operation&&mode==='transport')throw new Error('Fixture final decision transport failed');
   if(operation&&mode==='malformed')return '{malformed';
@@ -94,9 +94,10 @@ if(startupFailure){
 }
 await session.prompt('Perform the complete proposed local inspection.');
 await fixture.abortTask;
-const allowed=['approve','unknown','low','transport','malformed','initial-failure','deadline','fresh'].includes(mode);
+const allowed=['approve','transient','unknown','low','transport','malformed','initial-failure','deadline','fresh'].includes(mode);
 assert.equal(observations.executions,allowed?2:0);
-assert.equal(observations.attempts,startupFailure?0:2);
+assert.equal(observations.attempts,startupFailure?0:mode.startsWith('transient')?3:2);
+if(mode.startsWith('transient'))assert.equal(observations.httpCalls,3);
 const manual=(startupFailure&&mode!=='headless')||['unknown','low','transport','malformed','stop','cancel','fresh'].includes(mode);
 assert.equal(observations.selections,manual?1:0);
 if(!startupFailure){
