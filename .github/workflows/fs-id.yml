@@ -1,4 +1,4 @@
-# Development only: no common manifest is published or authenticated by this workflow.
+# Runner-dependent paths belong to their consuming step environments.
 name: depot-development-logger-host-prerequisites
 on:
   workflow_dispatch:
@@ -36,9 +36,7 @@ jobs:
       SOURCE_ROOT: ${{ github.workspace }}/source
       SOURCE_HEAD: ef01490f5e960f8ca0b424c12242caeb3c5a2b5e
       PROVENANCE_CASE: logger
-      PROVENANCE_OUTPUT: ${{ runner.temp }}/logger-host-source
       DEPOT_CI_CASE: logger
-      LOGGER_HOST_RESULT_OUTPUT: ${{ runner.temp }}/logger-host-results.json
     steps:
     - name: Preserve checkout LF bytes
       id: checkout_lf
@@ -78,6 +76,7 @@ jobs:
       run: mise run //package/dev-script/task-util:trial:depot:ci:logger-host-source-identity
       env:
         PROVENANCE_PHASE: before
+        PROVENANCE_OUTPUT: ${{ runner.temp }}/logger-host-source
     - name: Set up Node
       uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
       with:
@@ -95,6 +94,8 @@ jobs:
       id: prerequisites
       working-directory: harness
       run: mise run //package/dev-script/task-util:trial:depot:ci:logger-host-prerequisites
+      env:
+        PROVENANCE_OUTPUT: ${{ runner.temp }}/logger-host-source
     - name: Execute original test:external-consumer-host
       id: external_consumer
       continue-on-error: true
@@ -112,6 +113,7 @@ jobs:
       if: ${{ always() && steps.source_before.outcome == 'success' }}
       env:
         PROVENANCE_PHASE: after
+        PROVENANCE_OUTPUT: ${{ runner.temp }}/logger-host-source
     - name: Retain every original host command outcome
       id: results
       working-directory: harness
@@ -126,6 +128,7 @@ jobs:
         SOURCE_BEFORE_OUTCOME: ${{ steps.source_before.outcome }}
         SOURCE_AFTER_OUTCOME: ${{ steps.source_after.outcome }}
         FSID_SETUP_VERSION: ${{ steps.fsid_node.outputs.node-version }}
+        LOGGER_HOST_RESULT_OUTPUT: ${{ runner.temp }}/logger-host-results.json
     - name: Preserve development-only host source and original command receipts
       if: ${{ always() }}
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
