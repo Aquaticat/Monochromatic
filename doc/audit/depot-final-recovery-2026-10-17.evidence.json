@@ -38343,14 +38343,16 @@
       "windowsIndependentConsumersVerified": true,
       "alpineSmokeVerified": true,
       "nativeMacRetryPending": true,
-      "newSourceMeasureFailureNeedsIssue": true,
+      "newSourceMeasureFailureNeedsIssue": false,
       "openIssues": [
         1173,
         1174,
         1175,
-        1176
+        1176,
+        1178
       ],
-      "closedPrivateVerifierIssue": 1177
+      "closedPrivateVerifierIssue": 1177,
+      "sourceMeasureIssue": 1178
     }
   }
 }

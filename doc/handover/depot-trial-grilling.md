@@ -126,7 +126,8 @@ a shared cause is not established.
 Only native macOS is being rerun in run `39028181199` with the unchanged frozen harness and inputs.
 The original failed attempt remains retained and receives no paired-provenance completion credit.
 The retry and its orchestration gap must remain in provider allocation and critical-path accounting.
-Next actions are to file the two transport incidents and remaining source-style findings,
+The transport and changed-Rust source-style incidents are filed.
+Next actions are to retain and reconcile remaining provider terminals,
 retain and reconcile all host consumer assertions,
 collect the pending logger/TOML terminals,
 and finish overlap-aware accounting.
@@ -165,7 +166,7 @@ the source-declared ignored benchmark remains separately identified.
 Native Windows is source-compile-blocked before test execution.
 The native macOS first attempt adds an untracked `measure::tests::two_sweeps_of_one_load_decode_a_track_only_once` failure:
 the decode count was two instead of one.
-Its issue must be filed without claiming a cause;
+Its separately verified issue `#1178` is open without a cause claim;
 the unchanged-source retry is still pending.
 Native and desktop style findings are open as `#1173` and `#1174`.
 The separate macOS API and artifact transport incidents are open as `#1175` and `#1176`.

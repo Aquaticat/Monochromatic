@@ -697,7 +697,7 @@ Scoped source/configuration follow-up `#1172` remains open under `#562`.
 The [verified incident receipts](../audit/depot-coherent-incident-closures-2026-10-17.evidence.json)
 retain exact bodies and closing comments.
 The native macOS retry remains active after separate API-connect and artifact-service timeout boundaries.
-Those incidents and the remaining changed-Rust source-style failures still need issue reconciliation.
+The separate transport and changed-Rust source-style incidents are tracked in the October 17 source/transport section.
 
 ## Source style and separate macOS transport incidents on October 17
 
@@ -710,6 +710,8 @@ Those incidents and the remaining changed-Rust source-style failures still need 
 
 The [host consumer evidence](../audit/depot-coherent-host-consumers-2026-10-17.evidence.json)
 retains exact filed bodies and source/platform consumer outcomes.
-The native macOS decode-count assertion is newly observed and still needs its scoped issue.
+Native macOS decode-count assertion issue `#1178` is open.
+The actual `tone.wav` count was two instead of one;
+its cause remains unestablished.
 The API and artifact failures have no established shared cause;
 the unchanged-harness macOS retry remains under verification.
