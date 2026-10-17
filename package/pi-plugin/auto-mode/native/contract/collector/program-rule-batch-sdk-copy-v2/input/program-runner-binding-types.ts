@@ -5,7 +5,6 @@ import type { GroupCollectorInput } from './group-collector-types.ts';
 import type { JudgmentPrograms } from './program-api.ts';
 import type { ProgramNativeCall } from './program-operation-types.ts';
 import type {
-  NativeReturnOwner,
   NativeCallSlot,
   NativeReturnTool
 } from './native-return-types.ts';
@@ -24,7 +23,6 @@ export type ProgramRunnerTool = NativeReturnTool & Readonly<{ executionMode?: st
  */
 export type ProgramBindingRunner<Recorder extends object> = Readonly<{
   scopes: Map<object | string, ProgramScope<Recorder>>;
-  host: Readonly<{ runOwnedToolCall: NativeReturnOwner['runNative'] }>;
 }>;
 /**
  Original binding preserves parent identity and delegates admission to the same judgment owner.

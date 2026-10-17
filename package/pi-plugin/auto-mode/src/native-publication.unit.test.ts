@@ -8,7 +8,7 @@ import type { FixturePublicAPI } from './native-api-module-fixture.ts';
 /** Owner membership is recorded independently from the constructor's publication mapping. */
 const ownerKeys = {
   programs: ['bindPreparedProgram', 'preparedProgramFor', 'openProgram', 'programFor', 'reachProgramGroup',
-    'reachedGroupFor', 'bindProgramCalls', 'prepareReachedMembers', 'invokeProgramNative', 'scriptValueFor',
+    'reachedGroupFor', 'bindProgramCalls', 'prepareReachedMembers', 'scriptValueFor',
     'markProgramGuard', 'inspectReachedGroup', 'inspectProgram'],
   executions: ['assertExecutionEntry', 'executionEntryFor', 'memberFor', 'beginExecution', 'executionFor',
     'finishExecution', 'inspectExecution'],

@@ -223,8 +223,8 @@ export function nativeReturnFixture({
    Fixed callbacks expose each original ownership boundary independently.
    */
   function nativeRun(
-      originalCall,
-      originalOptions
+      originalCall: NativeReturnFixture['call'],
+      originalOptions: unknown
     ): unknown {
       state.invocations++;
       if ((originalCall !== call) || (originalOptions !== options)) throw new Error('Native invocation lost original argument identity');
