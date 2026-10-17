@@ -17,7 +17,11 @@ Upstream TypeScript remains in the verified checkout used by the compiler.
 and copies non-TypeScript assets from the same source.
 The emitted package metadata and qualification manifest remain with the runtime.
 This removes the second source tree from each release without changing the compiler or native transformations.
-The change is awaiting byte comparison against the qualified runtime baseline and consumer verification.
+Release `native-release-FcmP01` contains 1,031 regular files totaling 8,225,739 bytes,
+compared with 1,499 files totaling 12,743,268 bytes in `native-release-J4fNNL`.
+All 507 qualified SDK runtime modules and assets remain byte-identical across the releases.
+The 18-mode native lifecycle catalog and disposable publication/rollback test pass;
+the package type check also passes.
 
 ## Invariants and retained releases
 

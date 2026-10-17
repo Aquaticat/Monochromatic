@@ -191,6 +191,16 @@ The child dispatcher cannot be replaced with a thin phase adapter alone.
 its invocation lifetime currently encloses both preparation and execution.
 The private-group consolidation must retain that lifetime through finalization when removing its token protocol.
 
+The direct-checkout compilation change is implemented in commit `df529bd748`.
+Bounded build `native-release-FcmP01` uses two CPUs and 2 GiB with disposable home/log directories.
+Its regular-file total is 8,225,739 bytes across 1,031 files.
+The comparison against `native-release-J4fNNL` finds all 507 qualified SDK runtime files and assets
+byte-identical (5,234,528 bytes).
+The 18 lifecycle cases,
+disposable successive-release/publication rollback test,
+and package type check pass.
+This release-size improvement does not complete the requested source architecture reduction.
+
 A provider-payload audit finds a separate missed shell boundary:
 known process result metadata and `ad-process:notification` details retain raw `command` strings.
 The new regression was committed red;

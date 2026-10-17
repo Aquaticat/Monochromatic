@@ -1,5 +1,4 @@
-import {executeWithOwnedMember} from "../../../lifecycle/native-program-groups/execute-child.mjs";
-import {NativeExecutionGuardError} from "../../../lifecycle/execution-context-carrier/execute.mjs";
+import {executeWithOwnedMember,NativeExecutionGuardError} from "../../../lifecycle/execution-context-carrier/execute.mjs";
 //region Private prepared-group dispatcher; all executable members wait for one combined judgment.
 export class PreparedBatchContractError extends Error {}
 export class PreparedBatchExecutionError extends Error {

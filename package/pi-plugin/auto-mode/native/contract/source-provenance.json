@@ -815,7 +815,8 @@
     },
     {
       "original": "lifecycle/native-program-groups/execute-child.mjs",
-      "maintained": "lifecycle/native-program-groups/execute-child.mjs",
+      "maintained": "lifecycle/execution-context-carrier/execute.mjs",
+      "movedOn": "2026-10-17",
       "sha256": "34f0465297afc878ce3c5ee5f0952fd4ade1d522dbd148e082a08952f3bc9146",
       "origin": "authored-source",
       "relocatedLiterals": 0
