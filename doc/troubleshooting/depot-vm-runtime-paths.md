@@ -76,7 +76,7 @@ This is a separate failed setup assumption,
 not another libvirt socket-length rejection.
 It occurred before VM command recording and produced no VM evidence artifact.
 
-## Candidate workaround and tradeoffs
+## Verified socket layout and tradeoffs
 
 Harness `295045dd82` on branch `trial/depot-complete-vm-20261016`
 creates `/run/user/<uid>` with owner-only permissions when missing,
@@ -167,9 +167,13 @@ The actual invocation in `vq299blkbw` reached final Ubuntu guest creation succes
 the recorded `prepare-ubuntu` command exited zero at `2026-10-17T04:39:59.774Z`,
 followed by successful `destroy-preparation-ubuntu` at `04:40:00.167Z`.
 This exercises the shared-directory guest boundary that failed in the fifth run.
-Windows preparation,
-retained normalized identities,
-and terminal cleanup evidence remain required.
+The retained identities keep UID 1001
+and change primary GID from 1001 to the passwd GID 117.
+The actual virtiofs daemon log records `Client connected, servicing requests`
+and a normal client disconnect during guest destruction.
+The separate `Couldn't set the process uid as root: -1` warning is retained;
+successful client service does not explain or remove that warning.
+The Ubuntu preparation result verifies this consumer-side group normalization.
 The VM consumer gap is tracked in
 [issue #1088](https://github.com/Aquaticats/Monochromatic/issues/1088).
 
@@ -194,7 +198,9 @@ The run retains the 16-CPU,
 64-GiB disposable cloud allocation,
 75-minute provider timeout,
 and 60-minute experiment deadline with cleanup reserve.
-Terminal results and the Windows guest evidence remain required.
+The run is terminal with a separate failed Windows prerequisite.
+The group mismatch issue `#1088` is resolved by its measured Ubuntu consumer proof;
+the Windows timeout remains open in `#1109`.
 
 The fifth run built the historical source bundle,
 again measured the original package task's separate working-directory failure,
@@ -205,6 +211,112 @@ and the private domain list was empty after cleanup.
 No Ubuntu/Windows lifecycle test pass follows from this attempt.
 The original task remains tracked by `#1076`;
 running the source suite from the repository root cannot replace that task result.
+
+## Separate Windows template verification timeout
+
+In `vq299blkbw`,
+Windows installation reached an answering guest agent at `04:48:20.244Z`.
+The WinFsp and VirtIO guest-tools installation commands returned,
+then the template shut down at `04:48:49.712Z`.
+The redefined VirtIO disk configuration started its guest-agent wait at `04:48:49.838Z`.
+The `prepare-windows` command exited 1 at `04:53:51.603Z` with:
+
+```text
+mvm: guest agent on template-setup did not respond within 300s
+```
+
+At frozen source `ef01490f5e960f8ca0b424c12242caeb3c5a2b5e`,
+`package/cli/mvm/src/template-windows-virtio.ts:57` rebuilds the domain for the post-install pass:
+
+```ts
+// package/cli/mvm/src/template-windows-virtio.ts:57
+const virtioXml = domainXml({
+  diskPath,
+  name: TEMPLATE_VM_NAME,
+  osFamily: 'windows',
+},);
+await defineVm({
+  vmDir,
+  xml: virtioXml,
+},);
+await startVm({ name: TEMPLATE_VM_NAME, },);
+```
+
+`package/cli/mvm/src/template-windows-virtio.ts:69`
+then requests the configured verification timeout:
+
+```ts
+// package/cli/mvm/src/template-windows-virtio.ts:69
+await waitForGuestAgent({
+  name: TEMPLATE_VM_NAME,
+  timeoutMs: VIRTIO_VERIFY_AGENT_TIMEOUT_MS,
+},);
+```
+
+`package/cli/mvm/src/config.ts:87` supplies its measured deadline:
+
+```ts
+// package/cli/mvm/src/config.ts:87
+export const VIRTIO_VERIFY_AGENT_TIMEOUT_MS = 300_000;
+```
+
+`package/cli/mvm/src/virsh-wait.ts:121` emits the timeout after failed guest pings:
+
+```ts
+// package/cli/mvm/src/virsh-wait.ts:121
+if (elapsed >= timeoutMs) {
+  throw new Error(
+    `guest agent on ${name} did not respond within ${
+      String(timeoutMs / MS_PER_SECOND,)
+    }s`,
+    { cause: error, },
+  );
+}
+```
+
+This locates the observed failure after the disk switch.
+It does not establish whether the guest failed to boot,
+the storage driver failed,
+or the agent service failed.
+Increasing the timeout is untested.
+There is no verified workaround for this separate prerequisite.
+The issue is [#1109](https://github.com/Aquaticats/Monochromatic/issues/1109).
+No Windows application fix or additional VM attempt is included in this diagnosis.
+
+## Terminal source and coverage verification
+
+The successful recovery attempt retains artifact
+`01a14835-9090-7ae6-9802-21e1bc74a1ee`,
+21,474 bytes,
+SHA-256 `606cb2a627cc1dcf9bc99d4bb310e9e9ae00c05fcd4ef90b4dc951c0559663e1`.
+Its lifecycle record reports unchanged source HEAD and empty tracked status.
+The source lockfiles and original lifecycle test hashes match the immutable Git blobs.
+Cleanup errors are empty,
+and successful private libvirt listings are empty before setup and after cleanup.
+
+The configured original test identities are:
+
+- `vmsync lifecycle (Linux) > full CLI lifecycle`:
+  unexecuted.
+- `vmsync lifecycle (Windows) > full CLI lifecycle`:
+  unexecuted.
+
+The original package task failed during top-level Linux setup,
+before registering its test bodies,
+with the helper working-directory defect tracked by `#1076`.
+The supplementary repository-root source-suite command was never reached
+because Windows template verification failed first.
+Ubuntu guest preparation is a positive environment check;
+it does not replace either unexecuted lifecycle test.
+
+The [recovery evidence](../audit/depot-vm-recovery-2026-10-17.evidence.json)
+records the clean pushed replay route,
+unchanged source inputs,
+actual normalized identities,
+terminal provider usage,
+and coverage status.
+Final coherent pipeline replay remains a separate measurement step;
+no replay was dispatched as part of this handoff.
 
 ## What does not work
 
@@ -225,10 +337,13 @@ running the source suite from the repository root cannot replace that task resul
     [libvirtd manual](https://libvirt.org/manpages/libvirtd.html).
 4.  Contribution-policy assessment is unnecessary without a proposed upstream change.
 5.  The measured impact is failed guest preparation,
-    with no guest checks executed.
+    followed by successful normalized Ubuntu creation
+    and a separate Windows guest-agent timeout.
+    The original lifecycle test bodies remain unexecuted.
 6.  The original failure is reproduced in the provider log;
     actual template boot verified the corrected socket paths.
-    The separate primary-group candidate is under verification.
+    Actual normalized Ubuntu creation verified the primary-group workaround.
+    The Windows guest-agent timeout has no established upstream cause.
 
 A GitHub mirror issue search for `socket path too long` returned no matches.
 That result is not evidence that the behavior has never been reported elsewhere.

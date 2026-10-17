@@ -1,0 +1,263 @@
+{
+  "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+  "sourceInputs": [
+    {
+      "path": "mise.lock",
+      "sha256": "95704fad9023cea1b8b530d5de696cfbd839f912aba7c0dc2c1c46519ebef733"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "bcf3a948a1d8cad0c7c22af26856af36779a963263a2d2d1b2755c3fa00e6049"
+    },
+    {
+      "path": "package/cli/vmsync/src/lifecycle.expensive.unit.test.ts",
+      "sha256": "e1ab543bd6d494983f7bf04dbf151030dab7ba0c3a84225e58c361c7d7061471"
+    }
+  ],
+  "diagnosticRoute": {
+    "branch": "trial/depot-complete-vm-20261016",
+    "harnessRevision": "a683cd54f98b11add860c1bab48b33d14883a370",
+    "workflow": ".depot/workflows/depot-complete-vm.yml",
+    "task": "//package/dev-script/task-util:trial:depot:vm",
+    "runId": "vq299blkbw",
+    "status": "failed Windows prerequisite after successful Ubuntu guest preparation",
+    "artifact": {
+      "artifact": {
+        "artifact_id": "01a14835-9090-7ae6-9802-21e1bc74a1ee",
+        "run_id": "vq299blkbw",
+        "workflow_id": "kn1wz06pnt",
+        "workflow_path": "",
+        "job_id": "knx7fkp81f",
+        "job_key": "_inline_0.yaml:vm",
+        "attempt_id": "0nfgv4zjz8",
+        "attempt": 1,
+        "name": "logger-vm-evidence",
+        "size_bytes": 21474,
+        "created_at": "2026-10-17T04:53:52Z"
+      },
+      "file": "collected-vq299blkbw/logger-vm-evidence.zip",
+      "sha256": "606cb2a627cc1dcf9bc99d4bb310e9e9ae00c05fcd4ef90b4dc951c0559663e1",
+      "members": [
+        "apt-install.stderr.log",
+        "apt-install.stdout.log",
+        "apt-update.stderr.log",
+        "apt-update.stdout.log",
+        "daemon-log-inventory.json",
+        "daemon-mvm-depot-preparation-ubuntu-fs0-virtiofsd.log",
+        "daemon-mvm-depot-preparation-ubuntu.log",
+        "daemon-mvm-template-setup.log",
+        "destroy-preparation-ubuntu.stderr.log",
+        "destroy-preparation-ubuntu.stdout.log",
+        "identity-initial.json",
+        "identity-normalized.json",
+        "libvirtd-help.stderr.log",
+        "libvirtd-help.stdout.log",
+        "libvirtd-start.stderr.log",
+        "libvirtd-start.stdout.log",
+        "lifecycle.json",
+        "mvm-help.stderr.log",
+        "mvm-help.stdout.log",
+        "package-task-before-environment.stderr.log",
+        "package-task-before-environment.stdout.log",
+        "prepare-ubuntu.stderr.log",
+        "prepare-ubuntu.stdout.log",
+        "prepare-windows.stdout.log",
+        "prepare-windows.stderr.log",
+        "private-domain-list-after.stderr.log",
+        "private-domain-list-after.stdout.log",
+        "private-domain-list-before.stderr.log",
+        "private-domain-list-cleanup.stderr.log",
+        "private-domain-list-before.stdout.log",
+        "private-domain-list-cleanup.stdout.log",
+        "results.json",
+        "source-build.stderr.log",
+        "source-build.stdout.log",
+        "virtlogd-help.stderr.log",
+        "virtlogd-help.stdout.log",
+        "virtlogd-start.stderr.log",
+        "virtlogd-start.stdout.log"
+      ]
+    }
+  },
+  "finalMinimalRoute": {
+    "status": "pending implementation and clean push",
+    "selectedTask": "//package/cli/vmsync:test:e2e",
+    "args": [],
+    "expectedFileCount": 1,
+    "reason": "Logger owner is correcting the frozen manifest to the authored source task and adding vmsync.build prerequisite; final route must record the actual task failure without another template-preparation cycle"
+  },
+  "verification": {
+    "runId": "vq299blkbw",
+    "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+    "immutableSourceVerified": true,
+    "cleanupVerified": true,
+    "originalTaskBeforeEnvironment": "failed",
+    "initial": {
+      "uid": 1001,
+      "gid": 1001,
+      "groups": [
+        4,
+        117,
+        999,
+        1001
+      ],
+      "passwdGid": 117
+    },
+    "normalized": {
+      "uid": 1001,
+      "gid": 117,
+      "groups": [
+        4,
+        117,
+        999
+      ],
+      "passwdGid": 117
+    },
+    "commands": [
+      {
+        "id": "source-build",
+        "exitCode": 0,
+        "signal": null
+      },
+      {
+        "id": "package-task-before-environment",
+        "exitCode": 1,
+        "signal": null
+      },
+      {
+        "id": "apt-update",
+        "exitCode": 0,
+        "signal": null
+      },
+      {
+        "id": "apt-install",
+        "exitCode": 0,
+        "signal": null
+      },
+      {
+        "id": "libvirtd-help",
+        "exitCode": 0,
+        "signal": null
+      },
+      {
+        "id": "virtlogd-help",
+        "exitCode": 0,
+        "signal": null
+      },
+      {
+        "id": "virtlogd-start",
+        "exitCode": 0,
+        "signal": null
+      },
+      {
+        "id": "libvirtd-start",
+        "exitCode": 0,
+        "signal": null
+      },
+      {
+        "id": "private-domain-list-before",
+        "exitCode": 0,
+        "signal": null
+      },
+      {
+        "id": "mvm-help",
+        "exitCode": 0,
+        "signal": null
+      },
+      {
+        "id": "prepare-ubuntu",
+        "exitCode": 0,
+        "signal": null
+      },
+      {
+        "id": "destroy-preparation-ubuntu",
+        "exitCode": 0,
+        "signal": null
+      },
+      {
+        "id": "prepare-windows",
+        "exitCode": 1,
+        "signal": null
+      },
+      {
+        "id": "private-domain-list-cleanup",
+        "exitCode": 0,
+        "signal": null
+      },
+      {
+        "id": "private-domain-list-after",
+        "exitCode": 0,
+        "signal": null
+      }
+    ],
+    "configuredTests": [
+      {
+        "suite": "vmsync lifecycle (Linux)",
+        "name": "full CLI lifecycle",
+        "executed": false,
+        "status": "unexecuted",
+        "evidence": "Original task fails during top-level VM setup before describe/it registration; supplementary source-suite command was not reached"
+      },
+      {
+        "suite": "vmsync lifecycle (Windows)",
+        "name": "full CLI lifecycle",
+        "executed": false,
+        "status": "unexecuted",
+        "evidence": "Original task fails during top-level VM setup before describe/it registration; supplementary source-suite command was not reached"
+      }
+    ],
+    "primaryFailure": "AssertionError [ERR_ASSERTION]: Subprocess failed; retained stdout and stderr identify its input\n\n1 !== 0\n\n    at requireSuccess ([eval]:57:42)\n    at [eval]:76:5",
+    "lifecycleStatus": "failed or prerequisite failed",
+    "supplementarySourceSuiteStatus": "not reached"
+  },
+  "usage": [
+    {
+      "runId": "22b5683gx8",
+      "attemptId": "w1zscshgq1",
+      "status": "failed",
+      "seconds": 204.904,
+      "declaredVcpus": 16,
+      "declaredMemoryGiB": 64,
+      "vcpuSeconds": 3278.464,
+      "resourceBasis": "VM workflow size: 16x64",
+      "observedPeakMemoryFraction": 0.039677126159698074,
+      "source": "/home/user/temp/agent/depot-complete-accounting-20261016/collected-22b5683gx8/metrics-w1zscshgq1.json"
+    },
+    {
+      "runId": "042gflb8jn",
+      "attemptId": "smdblfngd4",
+      "status": "failed",
+      "seconds": 37.681,
+      "declaredVcpus": 16,
+      "declaredMemoryGiB": 64,
+      "vcpuSeconds": 602.896,
+      "resourceBasis": "VM workflow size: 16x64",
+      "observedPeakMemoryFraction": 0.014530817003738148,
+      "source": "/home/user/temp/agent/depot-complete-accounting-20261016/collected-042gflb8jn/metrics-smdblfngd4.json"
+    },
+    {
+      "runId": "vq299blkbw",
+      "attemptId": "0nfgv4zjz8",
+      "status": "failed",
+      "seconds": 1006.843,
+      "declaredVcpus": 16,
+      "declaredMemoryGiB": 64,
+      "vcpuSeconds": 16109.488,
+      "resourceBasis": "VM workflow size: 16x64",
+      "observedPeakMemoryFraction": 0.15073785053336514,
+      "source": "/home/user/temp/agent/depot-complete-accounting-20261016/collected-vq299blkbw/metrics-0nfgv4zjz8.json"
+    }
+  ],
+  "issues": {
+    "groupMismatch": 1088,
+    "originalWorkingDirectory": 1076,
+    "windowsVirtioVerification": 1109
+  },
+  "limitations": [
+    "Neither original lifecycle test body executed.",
+    "The supplemental repository-root source suite was never reached.",
+    "The Windows timeout does not establish its guest boot, driver, or service root cause.",
+    "Declared allocation is separate from sampled memory utilization fractions.",
+    "No final coherent pipeline replay has been dispatched."
+  ]
+}
