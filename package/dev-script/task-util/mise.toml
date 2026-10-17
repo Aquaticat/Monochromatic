@@ -193,6 +193,7 @@ async function execute(check) {
   let outputLog
   let outputSha256
   let outputBytes
+  let spawnError
   if (!skipReason) {
     runningCheckRecords.set(check.id, { checkId: check.id, task: check.task, args: check.args, startedAt })
     writeCase({ event: 'case-progress', executionState: 'running' })
@@ -203,6 +204,7 @@ async function execute(check) {
       const child = spawn('mise', ['run', check.task, ...(check.args.length > 0 ? ['--', ...check.args] : [])], { stdio: ['ignore', descriptor, descriptor], env: { ...process.env, ...(check.env ?? {}) } })
       ;[exitCode, signal] = await once(child, 'exit')
     } catch (error) {
+      spawnError = { name: error.name, message: error.message, code: error.code }
       console.error(error)
     } finally {
       closeSync(descriptor)
@@ -212,7 +214,7 @@ async function execute(check) {
     outputBytes = statSync(outputLog).size
     if (exitCode !== 0) console.error(JSON.stringify({ event: 'check-diagnostic-tail', checkId: check.id, output: output.subarray(-16000).toString() }))
   }
-  const record = { ...checkIdentity, event: 'check-finished', finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode, signal, status: skipReason ? 'skipped' : exitCode === 0 ? 'passed' : 'failed', skipReason, outputLog, outputSha256, outputBytes }
+  const record = { ...checkIdentity, event: 'check-finished', finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode, signal, spawnError, status: skipReason ? 'skipped' : exitCode === 0 ? 'passed' : 'failed', skipReason, outputLog, outputSha256, outputBytes }
   results.push(record)
   runningCheckRecords.delete(check.id)
   console.log("\n" + JSON.stringify(record))
@@ -352,7 +354,7 @@ const { join } = await import('node:path')
 const { homedir } = await import('node:os')
 const { strict: assert } = await import('node:assert')
 const control = process.env.DEPOT_CI_CONTROL_CASE
-assert(['passing', 'failure', 'oxlint-args', 'oxlint-scope', 'deferred-prerequisite'].includes(control), 'Unknown executor control')
+assert(['passing', 'failure', 'oxlint-args', 'oxlint-scope', 'deferred-prerequisite', 'metadata-progress'].includes(control), 'Unknown executor control')
 const base = join(homedir(), 'temp/agent/depot-complete-ci', `control-${control}`)
 const source = join(base, 'source')
 const packageRoot = join(source, 'package/control/fixture')
@@ -365,7 +367,8 @@ writeFileSync(join(source, 'mise.lock'), '')
 writeFileSync(join(source, 'pnpm-lock.yaml'), '{}\n')
 writeFileSync(join(source, 'pnpm-workspace.yaml'), '{}\n')
 writeFileSync(join(source, 'package.json'), '{"private":true,"type":"module"}\n')
-const command = control === 'failure' ? 'throw new Error("intentional executor failure control")' : 'console.log("executor passing control")'
+const metadataProgressCommand = 'const {readFileSync}=await import("node:fs");const {homedir}=await import("node:os");const report=JSON.parse(readFileSync(`${homedir()}/temp/agent/depot-complete-ci/control-metadata-progress-results.json`,"utf8"));if(report.event!=="case-progress"||report.executionState!=="running"||!report.runningChecks?.some(check=>check.checkId==="control.lint.oxlint")||report.results.some(check=>check.checkId==="control.lint.oxlint"))throw new Error("metadata progress control expected its own running check before terminal completion")'
+const command = control === 'metadata-progress' ? metadataProgressCommand : control === 'failure' ? 'throw new Error("intentional executor failure control")' : 'console.log("executor passing control")'
 const buildCommand = 'const {writeFileSync}=await import("node:fs");writeFileSync("build.marker","ready")'
 const typesCommand = 'const {readFileSync}=await import("node:fs");const {strict:assert}=await import("node:assert");assert.equal(readFileSync("build.marker","utf8"),"ready")'
 writeFileSync(join(packageRoot, 'mise.toml'), `[tasks."lint:oxlint"]\nshell = "node --input-type=module-typescript -e"\nrun = ${JSON.stringify(command)}\n[tasks.build]\nshell = "node --input-type=module-typescript -e"\nrun = ${JSON.stringify(buildCommand)}\n[tasks."lint:types"]\nshell = "node --input-type=module-typescript -e"\nrun = ${JSON.stringify(typesCommand)}\n`)
@@ -385,13 +388,13 @@ const sourceRevision = git(['rev-parse', 'HEAD'])
 const check = { id: 'control.lint.oxlint', task: '//package/control/fixture:lint:oxlint', args: control === 'oxlint-args' ? ['input.txt'] : [], family: 'lint', scope: control === 'oxlint-scope' ? 'files' : 'package', packages: ['package/control/fixture'], prerequisites: [] }
 const build = { ...check, id: 'control.build', task: '//package/control/fixture:build', family: 'build', scope: 'package', args: [] }
 const types = { ...build, id: 'control.types', task: '//package/control/fixture:lint:types', family: 'lint', prerequisites: [control === 'failure' ? check.id : build.id] }
-const manifest = { schemaVersion: 1, caseId: `control-${control}`, sourceRevision, baseRevision, headRevision: sourceRevision, changedFiles: ['package/control/fixture/input.txt'], selectedPackages: ['package/control/fixture'], checks: [check, types, build], externalChecks: [], completeGraph: false }
+const manifest = { schemaVersion: 1, caseId: `control-${control}`, sourceRevision, baseRevision, headRevision: sourceRevision, changedFiles: ['package/control/fixture/input.txt'], selectedPackages: ['package/control/fixture'], checks: [check, types, build], externalChecks: [], completeGraph: control === 'metadata-progress' }
 writeFileSync(join(manifestRoot, 'toml.json'), JSON.stringify(manifest, null, 2))
 const env = { ...process.env, GITHUB_WORKSPACE: base, MISE_TRUSTED_CONFIG_PATHS: `${process.env.MISE_TRUSTED_CONFIG_PATHS ?? ''}:${base}`, DEPOT_CI_WAVE: control === 'deferred-prerequisite' ? 'static' : 'all', DEPOT_CI_CPUS: '2', DEPOT_CI_MEMORY_GIB: '8', DEPOT_CI_WORKERS: '4' }
 if (control === 'deferred-prerequisite') env.DEPOT_CI_CHECK_IDS = JSON.stringify(['control.types'])
 const result = spawnSync('mise', ['run', '//package/dev-script/task-util:trial:depot:ci:execute'], { env, stdio: 'inherit' })
 if (result.error) throw result.error
-const passing = control === 'passing' || control === 'deferred-prerequisite'
+const passing = control === 'passing' || control === 'deferred-prerequisite' || control === 'metadata-progress'
 if (passing) assert.equal(result.status, 0, 'Passing control must succeed')
 else assert.notEqual(result.status, 0, 'Negative control must fail the executor')
 if (control === 'failure') {
@@ -400,6 +403,19 @@ if (control === 'failure') {
   assert.equal(report.results.find((item) => item.checkId === check.id).exitCode, 1)
   assert.equal(report.results.find((item) => item.checkId === types.id).status, 'skipped')
   assert.equal(report.results.find((item) => item.checkId === build.id).status, 'passed')
+  assert.equal(report.conclusion, 'failed')
+}
+if (passing || control === 'failure') {
+  const report = JSON.parse(readFileSync(join(homedir(), `temp/agent/depot-complete-ci/control-${control}-results.json`)))
+  assert.equal(report.event, 'case-finished')
+  assert.equal(report.executionState, 'finished')
+  assert.equal(report.completeGraph, manifest.completeGraph)
+  assert.equal(report.sourceInputsVerified, true)
+  assert.equal(report.allActiveChecksHaveTerminalRecords, true)
+  assert.deepEqual(report.runningChecks, [])
+  assert.deepEqual(report.remainingActiveCheckIds, [])
+  assert.deepEqual(report.manifestCheckIds, manifest.checks.map(check => check.id))
+  if (passing) assert.equal(report.conclusion, 'passed')
 }
 if (control === 'deferred-prerequisite') {
   const report = JSON.parse(readFileSync(join(homedir(), 'temp/agent/depot-complete-ci/control-deferred-prerequisite-results.json')))
@@ -407,6 +423,9 @@ if (control === 'deferred-prerequisite') {
   assert.equal(report.results.find((item) => item.checkId === types.id).status, 'passed')
   assert.deepEqual(report.deferredChecks.map((item) => item.checkId), [check.id])
   assert.equal(report.results.find((item) => item.checkId === check.id).status, 'skipped')
+  assert.deepEqual(report.requestedCheckIds, [types.id])
+  assert.deepEqual(report.selectedCheckIds.toSorted(), [types.id, build.id].toSorted())
+  assert.deepEqual(report.prerequisiteCheckIds, [build.id])
 }
 console.log("\n" + JSON.stringify({ event: 'executor-control-observed', control, executorExitCode: result.status, expectedFailure: !passing }))
 if (!passing) throw new Error(`Intentional negative control ${control} propagates to workflow failure`)
