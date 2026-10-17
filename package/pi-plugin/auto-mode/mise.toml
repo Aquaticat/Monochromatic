@@ -976,3 +976,15 @@ run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs clause-deny-stop",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs clause-deny-headless",
 ]
+[tasks."test:native:phases"]
+description = "Exercise actual native preparation, execution, callbacks, updates, and group withholding"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-phase.test.mjs parallel",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-phase.test.mjs sequential",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-phase.test.mjs implicit-sequential",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-phase.test.mjs invalid",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-phase.test.mjs before-block",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-phase.test.mjs tool-error",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-phase.test.mjs deny",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-phase.test.mjs cancel",
+]
