@@ -276,7 +276,9 @@ The evidence record retains every emitted assertion identity,
 counter sample,
 artifact digest,
 and provider allocation interval.
-Issue [#1110](https://github.com/Aquaticats/Monochromatic/issues/1110) remains open for full independent coverage.
+At this checkpoint,
+issue [#1110](https://github.com/Aquaticats/Monochromatic/issues/1110) remained open for full independent coverage.
+The complete independent-session controls described in this section now satisfy that acceptance boundary.
 
 These interaction failures remain a separate boundary from the repaired PID limit.
 The harness had overridden `E2E_COMPOSITOR` with a binary built from the historical source checkout.
@@ -288,13 +290,86 @@ installs the locked published tool,
 retains its ELF SHA-256 and actual version output,
 and clears the inherited override before running the unchanged authored task.
 The source-built software parent and resource bounds remain the same.
-Controls `xdlnfpwhzz` and `7x5lk9dx9q` are running for the native and desktop historical sources respectively.
-Their outcomes are pending;
-the compositor selection is not yet an established cause of the interaction failures.
+Controls `xdlnfpwhzz` and `7x5lk9dx9q` completed for the native and desktop historical sources respectively.
+Their retained results and subsequent headless controls are recorded in
+[the display geometry diagnosis](depot-desktop-e2e-display-geometry.md).
+Executable selection alone does not establish the cause of an individual interaction failure.
 
-Later configured sessions remain unexecuted when the first session fails.
+Without trial continuation,
+configured sessions after the first failing session remain unexecuted.
 The `runtimeCompleted` field means the invocation and cleanup returned,
 not that every configured session passed or executed.
+
+### Complete independent-session verification
+
+Development controls `w21t2hzv67` and `d83q9lrgfx` at harness
+`2294b7f1171c2cd88d0ca50dd148404a3a0db4b6` are terminal and fully collected.
+The trial's explicitly recorded in-memory orchestration hook preserves ordinary session failures
+and continues independent sessions.
+Safety,
+unknown,
+and cleanup errors remain fatal.
+Historical source and assertion files on disk remain unchanged.
+
+Actual committed selectors yield six native and seven desktop sessions,
+including desktop `auto-play`.
+Every configured session has retained raw logs and actual assertion outcomes.
+Effective private limits are verified before invocation;
+all retained before/after PID-rejection and OOM counters remain zero.
+The helper verifies restored private audio sinks,
+no active test units,
+no application process,
+and removal of the private container and overlay writes.
+Issue `#1110` is closed on this complete independent-session evidence.
+
+Native reports 106 passes,
+one original chooser failure,
+one authored skip,
+and a separate synthetic failure retaining the wide-session folder setup error.
+Desktop reports 110 passes with the same failure and skip classifications.
+The source inventory still has six original wide assertions unexecuted per case.
+Source issues `#1004` and `#1005` remain open,
+as does production orchestration issue `#1006`.
+These development controls do not establish a passing source gate or final coherent replay.
+
+### Completed session logs disappear before collection
+
+The original `package/music-player/desktop-e2e/src/run.ts` writes the summary,
+then removes its scratch base.
+`src/session.ts` writes each session's stdout/stderr as a log inside that base.
+The trial's post-command collector therefore copies the directory after those completed-run logs have disappeared.
+Historical continuation controls `s3cmrhf2kp` and `wxq11xm2hd` retain summaries and screenshots,
+but have no raw session logs.
+This retention boundary is separate from aborted-session coverage and the TOML active-evidence loss.
+
+Trial implementation `b6b44d679853c29e39a3c801b64ca66a32d30a97`
+extends the existing source-hash-checked loader hook.
+It copies only regular top-level `*.log` files to a private archive outside the source scratch base,
+checks copied byte counts and SHA256,
+and writes an archive manifest.
+The original source removal stays in `finally`,
+including archive-copy failure paths.
+A post-run probe rejects missing or corrupt archives and verifies that the source scratch base is absent.
+
+The actual generated hook passed 16 archive controls across the source cases,
+including quoted/newline paths,
+an existing destination,
+symlinks,
+an archive nested inside the source base,
+and missing or duplicate source anchors.
+Removing the original cleanup lets the module return successfully,
+but the actual post-run probe fails.
+The updated hook also passed 17 continuation/safety controls per source case.
+
+The actual provider controls retain 16 native logs totaling 2,022,505 bytes
+and 17 desktop logs totaling 2,128,752 bytes.
+Every downloaded file matches its manifest's byte count and SHA256.
+The provider archive event matches that manifest,
+and the post-run probe confirms original scratch removal.
+Every raw log records the actual headless software-compositor invocation.
+The desktop archive includes `auto-play.log` and its four original assertion outcomes.
+Issues `#1133` for retention and `#1120` for source-selected inventory are closed.
+The `desktopRuntimeSessionLogArchiveControl` field in the final recovery evidence retains the complete proof.
 
 ## Source identity input coverage
 

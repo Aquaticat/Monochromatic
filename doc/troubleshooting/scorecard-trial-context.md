@@ -161,6 +161,29 @@ no upstream change or filing is proposed.
 The repository tracks the corrected adapter error in
 [issue #1058](https://github.com/Aquaticats/Monochromatic/issues/1058).
 
+### GitHub expressions emitted by a task
+
+The workflow generator encounters the same template boundary.
+A literal `${{ always() && steps.cohort_before.outcome == 'success' }}` inside its JavaScript string
+is parsed by `mise` before Node can write the destination YAML.
+A disposable fixture with local `mise 2026.10.0` prints:
+
+```text
+# mise run --skip-tools probe
+mise ERROR failed to validate task probe
+mise ERROR invalid task script template for task probe
+mise ERROR Unexpected character
+```
+
+The verified generator constructs the opening delimiters from separate string parts in Node
+and joins them only when emitting the destination expression.
+The literal fixture exits with status 1 before producing Node output.
+The generated fixture exits successfully and prints the exact GitHub expression.
+A positive control replacing `always()` with `failure()` changes that output.
+The corrected generator produced the scanner and Scorecard workflows;
+parsed comparisons preserve the selected scanner command bodies and Scorecard history script exactly.
+This is another consumer syntax boundary covered by `#1058`.
+
 [action-metadata]: https://github.com/ossf/scorecard-action/blob/f49aabe0b5af0936a0987cfb85d86b75731b0186/action.yaml
 [action-options]: https://github.com/ossf/scorecard-action/blob/f49aabe0b5af0936a0987cfb85d86b75731b0186/options/options.go
 [action-main]: https://github.com/ossf/scorecard-action/blob/f49aabe0b5af0936a0987cfb85d86b75731b0186/main.go
