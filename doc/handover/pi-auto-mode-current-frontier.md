@@ -68,6 +68,58 @@ These are apparent filesystem sizes, separate from tracked-source complexity.
 The root `TCV` rule stays unchanged as explicitly requested.
 Concurrent unrelated edits remain outside this work.
 
+### Structural redesign required after size clarification
+
+The user rejects both the measured approximately 400 MB directory and a hypothetical 100 MB package.
+The user also expected substantially less implementation than the 13,000 lint-warning count suggests.
+The user explicitly clarifies that 13,000 is not a code-size target.
+Do not turn that comparison into an arbitrary line budget or declare storage archival sufficient.
+The earlier consolidation and component documents are a baseline,
+not completion of this clarified maintainability request.
+
+The existing inventory labels roughly 66,000 lines as production source,
+including comments and types;
+its filename-based categories are not executable-line or runtime-reachability proof.
+The measured `dist/final/node` tree is 376,443 apparent bytes.
+Most of the remaining directory total is retained native releases and diagnostics.
+Measure the clean artifact,
+runtime dependency graph,
+and actual maintained code separately before making another size claim.
+
+- [ ] Measure executable source and statement counts across runtime,
+  build transformations,
+  tests,
+  research,
+  and unreachable code with a validated parser-based inventory.
+- [ ] Apply the module deletion test to the request,
+  evidence,
+  lifetime,
+  and prepared-group machinery;
+  replace avoidable bookkeeping with deep modules whose interfaces express required behavior.
+- [ ] Consolidate implementation and tests through those interfaces,
+  preserving permission scope,
+  original execution and cancellation,
+  freshness,
+  scoped confirmation,
+  bypass,
+  transport accounting,
+  and configured-host behavior.
+- [ ] Reduce clean build and runtime contents rather than relying on moving old artifacts.
+- [ ] Rewrite each package-local justification around the final implementation,
+  include its measured size and deletion rationale,
+  and verify the redesigned installed consumer and complete diagnostic scope.
+
+The retained `buildVisibleContext` cases were incorrectly removed with mixed legacy tests.
+Commit `e611393f02` restores all 13 maintained cases in sibling test modules,
+directly exercising the built projection through Pi's actual session projector.
+Its task and type check pass;
+two logger sink-verification timeout warnings during the first run remain visible in the captured stderr.
+The native fallback matrix and all other targeted final tasks pass.
+The first long replay after process-ID correlation reaches all 16 calls with no confirmation
+and 17 successful Luna requests,
+but its final `cat` fails because the proposed parallel setup races output-directory creation.
+The next replay seeds that directory as a fixture precondition and must still run.
+
 Completed source consolidation removes the obsolete extension pipeline,
 exclusive tests,
 heuristic catalogs,
