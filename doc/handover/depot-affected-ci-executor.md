@@ -238,7 +238,11 @@ and source/input hashes when assessing the result. Report missing checks as miss
 The logger execution agent owns package request `4x77lb56cs`
 and external request `j4m7gw8mwg` through terminal reconciliation.
 The frozen source is `ef01490f5e960f8ca0b424c12242caeb3c5a2b5e`;
-manifest SHA-256 is `f4cbd47f210f5b031d76c5fc1c28fa704b349621f91eefa3f4f3ad575acfedc3`.
+development manifest SHA-256 is `f4cbd47f210f5b031d76c5fc1c28fa704b349621f91eefa3f4f3ad575acfedc3`.
+On 2026-10-17, the final manifest became
+`4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7`
+after correcting the Vmsync external route to authored `test:e2e` and its build prerequisite.
+All 719 package specifications and the other 18 external specifications remain unchanged.
 Independent closure verification confirms 719 package checks and 19 external specifications.
 The graph remains acyclic and preserves full package Oxlint arguments.
 
@@ -247,10 +251,17 @@ with immutable source and dependency input hashes independently verified before 
 The root agent owns current scanners and the Scorecard gate.
 The VM agent owns the vmsync lifecycle experiment.
 
-The next action is collecting both Depot requests at terminal state,
-hashing their artifacts and per-check logs,
-reconciling actual reach and prerequisite outcomes,
-and retaining every provider attempt in usage accounting.
+Both requests are terminal and collected with hashed artifact downloads.
+Package reconciliation verifies 685 identities with terminal records,
+three started checks without terminal records and 31 unstarted checks.
+Development prerequisite recovery `dhxhzzvmc3` is running at pushed revision `2676cb365a206434b525bf032a5875cafde827e9`.
+Invalid request `tf9ddwgbw3` used the wrong revision and receives no historical check credit.
+Continuation routing at `7f9fb86ba7` selects the 34 unresolved checks
+and three proved rsync ownership infrastructure failures in isolated jobs.
+The next action is verifying and dispatching that continuation,
+then collecting its actual per-check outcomes.
+The root agent must align GHA, VM and shared helper routes before final combined dispatch.
+The prepared combined workflow remains incomplete until that integration and bounded check coverage are verified.
 Only harness execution failures receive recovery edits;
 historical source failures remain diagnostics.
 The requests were launched separately and do not establish a single complete passing pipeline latency.
