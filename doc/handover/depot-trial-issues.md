@@ -461,20 +461,33 @@ and verify actual canonical reads before final coherent dispatch.
 Final dispatch remains held.
 
 Bounded metadata forwarding trial `vlrxjltfkq` is dispatched on `316e1a8a309e71e456a741eb63e5ff3b94b75646`.
-The observer deadline is 60000 milliseconds; original source adapter bytes and source arguments are preserved.
-A copied observer forwarder retains sudo lifecycle results, and source Podman correlation is now recorded.
-Terminal collection verifies success, all ten metadata results, source correlation and scoped cleanup.
-The longest metadata call was 14100.441549 milliseconds; its forwarded sudo call returned zero.
-Issue `#1130` retains this observer deadline boundary, original failures and rejection controls.
-After a complete actual result, the authorized queue continues to the full TOML-only immutable mutation retry.
+The observer deadline is 60000 milliseconds;
+original source adapter bytes and source arguments are preserved.
+A copied observer forwarder retains sudo lifecycle results,
+and source Podman correlation is now recorded.
+Terminal collection verifies success,
+all ten metadata results,
+source correlation and scoped cleanup.
+The longest metadata call was 14100.441549 milliseconds;
+its forwarded sudo call returned zero.
+Issue `#1130` retains this observer deadline boundary,
+original failures and rejection controls.
+After a complete actual result,
+the authorized queue continues to the full TOML-only immutable mutation retry.
 
 Full TOML-only development retry `23dk3nr90f` is dispatched at `0f1ef041a0de2ff6d2db6dd55210b1160c592648`.
-The exact request, provider workflow bytes, source defaults and budget controls are retained in the TOML audit.
-Its source wrapper budget is five hours; provider job budget is 360 minutes.
-These are bounds, not a runtime prediction.
+The exact request,
+provider workflow bytes,
+source defaults and budget controls are retained in the TOML audit.
+Its source wrapper budget is five hours;
+provider job budget is 360 minutes.
+These are bounds,
+not a runtime prediction.
 Terminal wait session `96306` is active.
 The next action is artifact collection and reconciliation against all 3062 prior mutant identities.
-Issue `#1130` is closed after actual bounded source, observer and cleanup recovery; `#1113` and `#1118` remain open.
+Issue `#1130` is closed after actual bounded source,
+observer and cleanup recovery;
+`#1113` and `#1118` remain open.
 Final coherent dispatch remains held.
 
 ## Native recovery assertion tracking

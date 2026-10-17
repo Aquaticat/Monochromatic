@@ -91,7 +91,8 @@ This audit records the isolated bounded continuation and its controls.
 
 ## Bounded continuation route
 
-The pushed trial branch `trial/depot-toml-continuation-20261017` freezes harness `640a576ade81c4edfee6a603543a7fbd18faa46b` (current prepared route as of 2026-10-17: `0f1ef041a0de2ff6d2db6dd55210b1160c592648`).
+The pushed trial branch `trial/depot-toml-continuation-20261017` freezes harness `640a576ade81c4edfee6a603543a7fbd18faa46b` (current prepared route as of 2026-10-17:
+`0f1ef041a0de2ff6d2db6dd55210b1160c592648`).
 Its workflow is `.depot/workflows/depot-complete-toml-bounded.yml`,
 with required inputs
 `cohort_id`,
@@ -196,7 +197,8 @@ Final coherent dispatch remains held.
 
 ## Final source guard recovery
 
-The prepared route now uses `640a576ade81c4edfee6a603543a7fbd18faa46b` (current prepared route as of 2026-10-17: `0f1ef041a0de2ff6d2db6dd55210b1160c592648`).
+The prepared route now uses `640a576ade81c4edfee6a603543a7fbd18faa46b` (current prepared route as of 2026-10-17:
+`0f1ef041a0de2ff6d2db6dd55210b1160c592648`).
 Its previous native-report recovery revision remains `c159dd63021f9304ab3e4996b1d054e5f19ea0c9`.
 The [source guard audit](depot-route-source-guards-2026-10-17.md)
 retains direct committed-byte checks for root configuration,
@@ -397,13 +399,21 @@ Its metadata-only deadline is 60000 milliseconds.
 The unchanged source consumer retains the complete proven container adapter byte-for-byte.
 An observer-only copy adds before/after sudo forwarding receipts and preserves actual Podman arguments.
 The source correlation wrapper now retains each invocation without changing its forwarded argument policy.
-Disposable forwarding, timeout rejection, and removed-timeout detection controls pass.
+Disposable forwarding,
+timeout rejection,
+and removed-timeout detection controls pass.
 Original eight-second failures remain retained.
-Only complete actual source, metadata, correlation, and cleanup evidence permits the full immutable-source retry.
+Only complete actual source,
+metadata,
+correlation,
+and cleanup evidence permits the full immutable-source retry.
 
 ## Verified bounded source and observer recovery
 
-Actual trial `vlrxjltfkq`, workflow `fkzv9kxx7k`, job `gz17n0n8q6`, attempt `tfzhj6cztj`,
+Actual trial `vlrxjltfkq`,
+workflow `fkzv9kxx7k`,
+job `gz17n0n8q6`,
+attempt `tfzhj6cztj`,
 finished successfully on immutable harness `316e1a8a309e71e456a741eb63e5ff3b94b75646`.
 The source command again exited zero with the same green baseline and one `compileError` identity.
 No mutant assertion execution or full-campaign pass is claimed.
@@ -417,7 +427,9 @@ the division between sudo and actual Podman remains unresolved.
 Every operation duration is retained.
 The original eight-second failures remain failed historical observations.
 
-The actual source correlation receipts retain image lookup, build, and run calls.
+The actual source correlation receipts retain image lookup,
+build,
+and run calls.
 Run forwarded the original source argv with only the existing attempt label inserted,
 and returned zero.
 Before/after source identity and scoped cleanup passed.

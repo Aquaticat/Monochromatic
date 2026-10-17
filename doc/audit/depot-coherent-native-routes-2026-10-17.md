@@ -17,7 +17,8 @@ and local controls.
 - Ref:
   `trial/depot-coherent-native-20261017`.
 - Harness:
-  `0cc63fdf5768a69a7d42c55f48adfe63e3c3341a` (current as of 2026-10-17: `2032975cbad924e63ac98bc69e14a56b20288275`).
+  `0cc63fdf5768a69a7d42c55f48adfe63e3c3341a` (current as of 2026-10-17:
+  `2032975cbad924e63ac98bc69e14a56b20288275`).
 - Workflow:
   `.github/workflows/music-player-windows.yml`.
 - Workflow name:
@@ -40,7 +41,8 @@ The existing nextest adapter inserts only `--no-fail-fast` in memory and emits o
 - Ref:
   `trial/depot-coherent-windows-20261017`.
 - Harness:
-  `f994e3f6902ad4c4b887822f18695d57da736ca4` (current as of 2026-10-17: `e70240dc7317124a0db5b37967c570cf2f3fb6f4`).
+  `f994e3f6902ad4c4b887822f18695d57da736ca4` (current as of 2026-10-17:
+  `e70240dc7317124a0db5b37967c570cf2f3fb6f4`).
 - Workflow:
   `.github/workflows/music-player-windows.yml`.
 - Workflow name:
@@ -65,7 +67,8 @@ its own provider step log must contain the exact expected version line.
 - Ref:
   `trial/depot-coherent-alpine-20261017`.
 - Harness:
-  `30ceb0c1f8e215988e53fee6389b12b78b215a6f` (current as of 2026-10-17: `5152df4debd88f5e0b57802c7c8c958b1a5f6255`).
+  `30ceb0c1f8e215988e53fee6389b12b78b215a6f` (current as of 2026-10-17:
+  `5152df4debd88f5e0b57802c7c8c958b1a5f6255`).
 - Workflow:
   `.github/workflows/music-player-alpine.yml`.
 - Workflow name:

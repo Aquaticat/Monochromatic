@@ -210,11 +210,15 @@ the bounded compilation result alone does not complete the campaign.
 ## Full campaign continuation
 
 The verified bounded recovery is followed by development run `23dk3nr90f`.
-It executes only the original full TOML mutation task, with unchanged source defaults.
-The source wrapper permits five hours, with a 360-minute provider job budget.
-This is a declared execution allowance, not a throughput prediction.
+It executes only the original full TOML mutation task,
+with unchanged source defaults.
+The source wrapper permits five hours,
+with a 360-minute provider job budget.
+This is a declared execution allowance,
+not a throughput prediction.
 Original failed usage and source incidents remain retained.
-The next evidence requirement is complete source, shard and mutant identity reconciliation,
+The next evidence requirement is complete source,
+shard and mutant identity reconciliation,
 including actual live resource samples and scoped cleanup.
 Observer issue `#1130` is closed after the bounded actual recovery;
 full-campaign issue `#1113` remains open.
