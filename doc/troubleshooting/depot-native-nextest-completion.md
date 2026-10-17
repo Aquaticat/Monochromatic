@@ -249,12 +249,7 @@ Neither fixture packaging error is a music-player source failure.
 
 The first generated Windows YAML also failed dprint with `invalid indentation`.
 JavaScript replacement-string expansion interpreted the literal PowerShell `$` followed by a quote.
-A function replacer preserved the literal command text; targeted formatting and command-preservation checks passed.
-A proposed clarification to `AGENTS.md` rule `SYB` is:
-
-```text
-# Proposed AGENTS.md rule clarification; not applied
-SYB: Cross-syntax text obeys destination grammar.
-Encode at final interpolation; literal replacement text uses callback replacers.
-Prefer types or ASTs over comment-string DSLs.
-```
+A function replacer preserved the literal command text;
+targeted formatting and command-preservation checks passed.
+The [rule clarification proposal](../planning/literal-replacement-text.md)
+records the suggested tightening of `AGENTS.md` rule `SYB`.
