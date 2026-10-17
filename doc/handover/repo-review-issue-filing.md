@@ -188,7 +188,8 @@ Completed units (findings validated):
  `docs-handover` (13 findings),
  `config-ci` (10 findings),
  `cross-security` (2 findings),
- `config-paused-1` (8 findings).
+ `config-paused-1` (8 findings),
+ `config-paused-2` (15 findings).
 
 Cross-unit leads:
  `doc/planning/music-player-shared-truepeak-core.md` repeats the retired truepeak policy
@@ -250,6 +251,11 @@ Cross-unit leads:
  `@monochromatic-dev/module-es` and `outdent` from `@cspotcode/outdent`, contradicting
  AGENTS.md `PP5` and the code, per `config-root-docs` notes;
  no unit covers that file, so file it directly at dedupe time.
+ `Caddyfile`, `.idea/*.xml`, `.gitignore`, `.cargo/config.toml`, and
+ `.claude-plugin/marketplace.json` (10 entries) still reference pre-rename `packages/`
+ paths, per `config-paused-2` notes;
+ dedupe candidate with the `config-paused-2` rename-staleness finding and
+ `docs-handover-008`.
  The stale pre-transfer `repository.url` (Aquaticat instead of Aquaticats) spans most
  `package.json` files repo-wide per `code-config-1-001`;
  likely dedupe target is open issue #1124;
@@ -259,14 +265,13 @@ Cross-unit leads:
  hand to the `cross-dependency` reviewer when it launches.
 
 Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
- `config-paused-2`,
  `cross-dependency`,
  `cross-duplication`,
  `cross-testing`,
  `cross-build`,
  `cross-rust`,
  `cross-api`,
- `cross-logging` (launched as the final queued unit).
+ `cross-logging` (the final seven units).
 
 Queued units in launch order (flat list; the first entry launches next):
 
