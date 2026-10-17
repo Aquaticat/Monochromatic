@@ -21,7 +21,9 @@ The replacement retains branch coverage and adds the actual provider request as 
 The tradeoff is an explicit request-capture requirement for provider-facing changes.
 Ranking: replacing `TCV` precedes keeping its current wording because payload exclusions become testable obligations.
 
-## Status
+## User decision
 
 Proposed to the user through the question tool on 2026-10-17.
-No `AGENTS.md` edit is authorized by this proposal alone.
+The user chose to keep `TCV` unchanged and put the lesson in package-local documentation.
+The `AGENTS.md` replacement is rejected.
+The package-local verification lesson is the remaining action after the active replay finishes.
