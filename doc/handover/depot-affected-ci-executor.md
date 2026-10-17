@@ -277,7 +277,21 @@ The graph remains acyclic and preserves full package Oxlint arguments.
 The current host request `39003180992` passed all six Linux/macOS/Windows jobs,
 with immutable source and dependency input hashes independently verified before and after each job.
 The root agent owns current scanners and the Scorecard gate.
-The VM agent owns the vmsync lifecycle experiment.
+The held VM route is clean and remotely verified at
+`b2dcdc40d8ae2cfb1f7e13001db28ad8f17626b3`
+on `trial/depot-complete-vm-20261016`.
+It carries current logger manifest digest
+`d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9`,
+requires the common cohort strings,
+verifies the exact base64-decoded manifest and `logger.vm` route binding,
+and retains reviewed source identity guards before/after execution.
+Its 28 disposable controls passed;
+the API response and authored source subprocess are explicit fixtures.
+The unchanged authored `test:e2e` command retains its natural build dependency and failed required-check semantics.
+Both original lifecycle identities remain unexecuted until the actual source task reaches them.
+See the [VM route contract](../troubleshooting/depot-vm-runtime-paths.md#common-cohort-binding)
+and [preparation evidence](../audit/depot-vm-cohort-preparation-2026-10-17.evidence.json).
+No final dispatch or guest preparation occurred.
 
 Both requests are terminal and collected with hashed artifact downloads.
 Package reconciliation verifies 685 identities with terminal records,

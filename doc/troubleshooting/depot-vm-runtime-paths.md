@@ -324,9 +324,13 @@ no replay was dispatched as part of this handoff.
 
 ## Clean route for final coherent replay
 
-The final route is committed and remotely verified at
+The initial minimal route was committed and remotely verified at
 `0cb7b85ec0c70438636f15d43f021d9cf3d52b8e`
 on branch `trial/depot-complete-vm-20261016`.
+On 2026-10-17,
+the cohort-bound route superseded that preparation at
+`b2dcdc40d8ae2cfb1f7e13001db28ad8f17626b3`,
+with a clean worktree and matching remote branch OID.
 Workflow `.depot/workflows/depot-complete-vm-original.yml`,
 job `vm-original`,
 runs `//package/dev-script/task-util:trial:depot:vm:original`.
@@ -340,6 +344,10 @@ The corrected manifest is in `.depot/manifests/logger.json`
 on the logger harness branch,
 with correction commit `0095ae37c74af1b5d720af3544876aee897be1ad`
 and SHA-256 `4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7`.
+The current VM route carries the logger owner's subsequent corrected manifest bytes,
+SHA-256 `d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9`.
+The later digest includes the logger owner's other prerequisite corrections;
+its authored VM selection remains `test:e2e` with no arguments.
 The recovery evidence compares its selected task,
 arguments,
 file identity,
@@ -366,6 +374,120 @@ its inline Node module passed syntax checking,
 and its committed workflow/source-task selection matched the corrected route.
 The new adapter's consumer invocation is reserved for the coherent replay;
 these checks do not establish a new provider result.
+
+### Common cohort binding
+
+The workflow requires string inputs `cohort_id`,
+`manifest_sha256`,
+and `requested_at`.
+The cohort identifier accepts 1 to 128 characters from `[A-Za-z0-9._-]`.
+The digest is lowercase hexadecimal SHA-256 of the exact outer common manifest bytes.
+The timestamp must be a valid UTC ISO date ending in `Z`;
+seconds and millisecond precision are accepted without rewriting the shared input.
+
+Task `trial:depot:vm:cohort` checks the actual harness `HEAD` against `GITHUB_SHA`,
+rejects tracked harness edits and index masks,
+and validates the authored VM selection in the logger case manifest.
+The implementation on the VM branch is `package/dev-script/task-util/mise.toml:807`:
+
+```js
+// package/dev-script/task-util/mise.toml, VM harness branch
+assert.equal(harnessRevision,process.env.GITHUB_SHA,'Actual harness HEAD must equal GITHUB_SHA');
+```
+
+It reads `doc/audit/depot-complete-cohort-${cohort_id}.json` from `main`
+using GitHub's contents object response,
+decodes its base64 content,
+and checks the decoded bytes against the supplied digest before parsing the JSON.
+The manifest must be below 1 MiB.
+The decoding boundary is `package/dev-script/task-util/mise.toml:830`:
+
+```js
+// package/dev-script/task-util/mise.toml, VM harness branch
+const bytes=Buffer.from(response.content,'base64');
+```
+
+The parsed manifest must match `cohortId`,
+`cases.logger.sourceRevision`,
+`cases.logger.baseRevision`,
+and `cases.logger.manifestSha256`.
+Route `routes['logger.vm']` must name case `logger`,
+the original workflow path,
+and the actual harness revision.
+`requested_at` is retained from dispatch rather than read from the frozen manifest.
+Subsequent phase guards rehash the retained outer bytes and require identical cohort/request metadata.
+
+### Source and result receipts
+
+The route-equivalent source guard copies the reviewed helper's configured metadata enumeration,
+Git-blob comparison,
+NUL path boundaries,
+and rejection of all assume-unchanged/skip-worktree flags.
+It hashes 650 configured inputs for the current logger selection.
+Indexed exclusions remain incompatible with this immutable-source contract.
+The source guard is `package/dev-script/task-util/mise.toml:884` on the VM branch:
+
+```js
+// package/dev-script/task-util/mise.toml, VM harness branch
+assert(indexEntries.every(entry=>entry[0]!=='S'&&!/[a-z]/.test(entry[0])),'Immutable source index must not hide tracked inputs with assume-unchanged or skip-worktree flags');
+```
+
+The before record is taken before dependency preparation and preserved across repeated before checks.
+The always-run after step verifies source identity even when the authored task fails.
+Both identity records retain the same cohort object and harness revision.
+The artifact directory contains `cohort.json`,
+the exact `common-manifest.json` bytes,
+`common-manifest-fetch.json` with the contents API provenance,
+`logger-source-before.json`,
+`logger-source-after.json`,
+raw source stdout/stderr,
+and `results.json`.
+The results use schema version 2 and distinguish outer `cohort.manifestSha256`
+from `caseManifestSha256` and historical `sourceRevision`.
+They retain the authored command,
+timing,
+actual exit status,
+both configured test identities,
+source identities,
+and unexercised runtime status.
+The collector must join `providerJobUrl` to actual Depot run/job/attempt metadata.
+
+### Disposable preparation controls
+
+The [cohort preparation evidence](../audit/depot-vm-cohort-preparation-2026-10-17.evidence.json)
+retains 28 actual-task controls at the pushed harness revision.
+Positive before/after identities agree.
+Invalid input syntax,
+wrong outer bytes or case/route bindings,
+changed cohort/request metadata,
+wrong source,
+ordinary and root Cargo edits,
+and unchanged or edited index masks are rejected.
+The orchestration control substitutes only the authored source subprocess,
+retains its fixture failure,
+and leaves both lifecycle tests unexecuted.
+The contents API response is also an explicit fixture because no final common manifest is published yet.
+These controls do not re-execute the natural build,
+source failure,
+or guest lifecycle.
+
+The first private-HOME fixture hid the existing global Git LFS filters
+and failed the source guard on hydrated media.
+The retained fixture-environment control compares filtered blob identities with and without
+`GIT_CONFIG_GLOBAL` pointing to the existing configuration,
+using private LFS storage.
+A later `git status` returned clean in both environments;
+that cached null result alone does not establish equal filter behavior.
+Preserving the Git configuration and isolating Mise's fixture configuration allowed the controls to pass.
+The failed first output remains in the private fixture directory.
+No shared historical checkout was modified.
+
+The runnable private fixture is
+`~/temp/agent/depot-vm-cohort-controls-20261017/mise.toml`.
+Final dispatch,
+the actual published common-manifest fetch,
+the authored source/build execution,
+and provider collection remain held for the coherent cohort.
 
 ## What does not work
 
