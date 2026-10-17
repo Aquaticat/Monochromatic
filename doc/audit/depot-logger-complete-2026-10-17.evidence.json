@@ -278,6 +278,7 @@
   ],
   "completeGraph": false,
   "pending": [
+    "Build and gate authentic ef014 monochromatic-lint and replay original failed Git host checks; preserve current two linter-prerequisite failures.",
     "Collect lt7qwlz6h1 and reconcile the three previously unfinished authored tasks with actual source outcomes.",
     "Duplicate-search and file remaining six genuine source diagnostics; native owner maps eight Git2.56 host parent-suite failures to existing incidents.",
     "Wire common inputs/receipts, correct VM workflow and explicit19 external route ownership; verify57 selectors and every package/browser identity before final root freeze.",
@@ -25018,11 +25019,21 @@
     },
     "sourceFailuresIssueMapping": {
       "owner": "/root/native_accounting",
-      "status": "Comparing exact retained diagnostics to existing native incidents",
-      "parentSuiteFailures": 8,
+      "status": "Mapping six actual assertion boundaries and separately duplicate-searching missing-linter prerequisite",
+      "parentSuiteReportedFailures": 8,
+      "actualAssertionFailures": 6,
+      "unmetLinterPrerequisites": 2,
       "expectedChildNegativeAssertionsExcluded": true
     },
-    "finalArtifactUploadPlan": "Retain tool/image transfer receipts, original logs, actual Git ELF and source controls; retain audited base archive once rather than uploading cache tar per job"
+    "finalArtifactUploadPlan": "Retain tool/image transfer receipts, original logs, actual Git ELF and source controls; retain audited base archive once rather than uploading cache tar per job",
+    "unmetLinterPrerequisite": {
+      "variable": "GIT_POLICY_NATIVE_TEST_LINTER",
+      "affectedParentSuiteReportedFailures": 2,
+      "realLinterAssertionsExercised": false,
+      "remainingActualAssertionFailures": 6,
+      "previousBlanketSourceFailureClassificationRetracted": true,
+      "requiredRecovery": "Build authentic ef014 linter with executable provenance and real gate before replaying the unchanged original two host checks"
+    }
   },
   "globalDevelopmentUnion": {
     "terminalChecks": 686,

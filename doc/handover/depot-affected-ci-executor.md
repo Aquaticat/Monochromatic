@@ -376,7 +376,11 @@ an actual Git commit and the literal `/proc/PID/exe` boundary in bounded private
 Both unchanged host tasks execute with source input verification and cleanup:
 binary-host reports 136 passed, one failed and one ignored;
 library-host reports 1,805 passed, seven failed and four ignored.
-The native accounting owner is matching those eight parent-suite diagnostics to existing incidents.
+Two Markdown failures are unset `GIT_POLICY_NATIVE_TEST_LINTER` prerequisites,
+not exercised real-linter assertions;
+the previous blanket source-failure characterization is retracted.
+Build and gate the authentic immutable-source linter before replaying both original failed host checks.
+The native accounting owner is matching the remaining six actual assertions to existing incidents.
 The separate prior Git `2.55.0` prerequisite gap is repaired for this adapter.
 The provider allocation consumed 1,144.408 allocated CPU-seconds or $0.0572204 published compute before credits.
 Current development evidence has terminal observations for 717 package identities,

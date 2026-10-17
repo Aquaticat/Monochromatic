@@ -266,8 +266,13 @@ Deliberately failing child lock-helper controls are not additional parent-suite 
 Both build prerequisites pass, every retained check-log hash and provider URL matches,
 source inputs remain verified and runtime cleanup is verified.
 All sampled OOM and PID rejection counters remain zero.
-These source failures are separate from the repaired Git version prerequisite and the native container baseline.
-The native accounting owner is comparing the exact eight parent-suite failure diagnostics with existing incidents.
+Two Markdown failures stop at unset `GIT_POLICY_NATIVE_TEST_LINTER`;
+they have not exercised the real-linter assertions and are an unmet harness prerequisite.
+The earlier description of all eight as source assertion failures is retracted.
+The Git version prerequisite remains independently verified.
+An authentic linter built from this immutable source, with executable provenance and a real gate,
+must precede replay of the two unchanged host checks.
+The native accounting owner is comparing the other six actual assertion boundaries with existing incidents.
 The actual `2x8` allocation consumed 572.204 provider-job seconds and 1,144.408 allocated CPU-seconds,
 corresponding to $0.0572204 published compute before credits.
 
