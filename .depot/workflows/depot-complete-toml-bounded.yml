@@ -21,6 +21,7 @@ on:
         required: true
 
 env:
+  GH_TOKEN: ${{ github.token }}
   COHORT_ID: ${{ inputs.cohort_id }}
   COHORT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
   COHORT_REQUESTED_AT: ${{ inputs.requested_at }}
