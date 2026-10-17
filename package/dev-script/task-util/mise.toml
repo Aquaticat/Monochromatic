@@ -781,7 +781,10 @@ assert.equal(identity.head, manifest.sourceRevision)
 assert.equal(identity.trackedStatus, '', 'Historical source changed')
 const harnessRevision = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
 if (process.env.GITHUB_SHA) assert.equal(harnessRevision, process.env.GITHUB_SHA)
-const directory = join(homedir(), 'temp/agent/depot-complete-ci')
+const localDirectory = process.env.DEPOT_TOML_PROVENANCE_DIRECTORY
+if (localDirectory) assert(process.env.CI !== 'true' && process.env.GITHUB_ACTIONS !== 'true', 'Fixture output cannot run in CI')
+const directory = localDirectory ?? join(homedir(), 'temp/agent/depot-complete-ci')
+assert(directory.startsWith('/'))
 mkdirSync(directory, { recursive: true, mode: 0o700 })
 const record = { schemaVersion: 1, event: 'source-provenance', phase, cohort, identity, harnessRevision, manifestSha256: sha256(manifestBytes), observedAt: new Date().toISOString(), verifierNode: process.version }
 if (phase === 'after') {
@@ -815,6 +818,7 @@ assert(isAbsolute(directory))
 mkdirSync(directory, { recursive: true, mode: 0o700 })
 const source = control?.cwd ?? join(process.env.GITHUB_WORKSPACE, 'source')
 const manifest = control ? undefined : JSON.parse(readFileSync(join(process.env.GITHUB_WORKSPACE, 'harness/.depot/manifests/toml.json'), 'utf8'))
+if (!control) assert(!existsSync(join(directory, 'toml-results.json')), 'Refusing stale source results')
 const checkId = control?.checkId ?? process.env.DEPOT_TOML_CHECK_ID
 assert(['package.dev-script.file-enforcer.test.container', 'package.module.toml-edit.test.mutation', 'package.dev-script.file-enforcer.test.mutation'].includes(checkId))
 const maxMs = control?.maxMs ?? Number(process.env.DEPOT_TOML_MAX_MS ?? 3600000)
@@ -959,12 +963,14 @@ let selectedResult
 const resultsPath = join(directory, 'toml-results.json')
 if (!control && existsSync(resultsPath)) selectedResult = JSON.parse(readFileSync(resultsPath, 'utf8')).results.find(row => row.checkId === checkId)
 const record = { schemaVersion: 1, event: 'bounded-gate-finished', checkId, sourceRevision: manifest?.sourceRevision, cohort: { id: process.env.COHORT_ID, manifestSha256: process.env.COHORT_MANIFEST_SHA256, requestedAt: process.env.COHORT_REQUESTED_AT }, startedAt, finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, maxMs, graceMs, timedOut, exit, selectedResult, sourceGateTerminal: !!selectedResult && ['passed', 'failed'].includes(selectedResult.status), label, signals, cleanup, cleanupVerified, processGroupAfter, instrumentationErrors, logLimitExceeded, output: { bytes: stdout.length, sha256: createHash('sha256').update(stdout).digest('hex') }, wrapperSha256: createHash('sha256').update(wrapper).digest('hex'), fixtureOnly: !!control }
+record.selectedInvocationStarted = !control && existsSync(join(directory, 'check-logs', checkId + '.log'))
+record.terminalDisposition = record.sourceGateTerminal ? selectedResult.status : timedOut && record.selectedInvocationStarted ? 'timed-out' : control ? 'fixture' : 'incomplete'
 writeFileSync(prefix + '-results.json', JSON.stringify(record, null, 2) + '\n')
 console.log(JSON.stringify(record))
 child.unref()
 assert(cleanupVerified, 'Scoped containers remain after bounded gate')
 assert.equal(instrumentationErrors.length, 0, 'Container or output evidence could not be fully observed')
-assert(!logLimitExceeded, 'Partial output exceeded256MiB; selected source execution is incomplete')
+assert(!logLimitExceeded, 'Partial output exceeded 256MiB; selected source execution is incomplete')
 assert(!timedOut, 'Selected gate exceeded harness deadline; this is incomplete source execution')
 assert.equal(exit.exitCode, 0, 'Selected source command failed; retained result is not a pass')
 if (!control) assert(record.sourceGateTerminal, 'Selected check lacks its original terminal result')
