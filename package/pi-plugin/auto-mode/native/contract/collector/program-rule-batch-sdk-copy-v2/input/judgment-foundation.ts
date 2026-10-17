@@ -5,18 +5,12 @@ import { tagged } from '@monochromatic-dev/module-logger/ts';
 import {createJudgmentBudget} from '../../../lifecycle/judgment-budget-error-occurrences/controls-private/candidate.ts';
 import {createDependencyFacade} from '../../../lifecycle/native-text-read-contract/dependencies.mjs';
 import {readMainAgentRequest} from '../../request-producer-group-consumer/request.ts';
-import {captureJudgmentMembership} from './judgment-membership.ts';
 import {createJudgmentSources} from './judgment-sources.ts';
 import type {
   JudgmentFoundationInput,
   JudgmentFoundation
 } from './judgment-foundation-types.ts';
 import type {JudgmentConstructorSources} from './judgment-constructor-types.ts';
-import type {
-  ProgramMemberRecord,
-  ProgramGroup
-} from './program-state-types.ts';
-import type {InstructionMember} from './instruction-types.ts';
 /**
  Foundation logging omits original request and source values.
  */
@@ -112,10 +106,7 @@ rl.debug('creating original judgment foundation');
     /**
      Original owner results retain source and response identity.
      */
-    const {
-      parentJSON,
-      declaredNames
-    }=captureJudgmentMembership(response);
+    const group=input.group();
     /**
      Original facade retains observation order and caller identity.
      */
@@ -129,30 +120,14 @@ rl.debug('creating original judgment foundation');
       trace,
       now
     });
-    /**
-     Root and child owners share exact original record identities.
-     */
-    const bindings=new WeakMap<object,ProgramMemberRecord & InstructionMember>();
-    /**
-     Declared member identifiers retain original publication order.
-     */
-    const byMember=new Map<string,object>();
-    /**
-     Retained reached groups share original program ownership.
-     */
-    const childGroups:ProgramGroup[]=[];
 return {
+  ...group,
   budget,
   requestInput,
   sourceOwner,
   receipt,
   readCurrentSourceBinding,
-  parentJSON,
-  declaredNames,
-  facade,
-  bindings,
-  byMember,
-  childGroups
+  facade
 };
 }
 //endregion

@@ -26,7 +26,7 @@ export const batchBoundary: string = `async function executeToolCalls(currentCon
         if (typeof config.executeToolBatch !== "function") throw new Error("These tool calls were not run because the host did not configure their combined policy review.");
         if (!signal) throw new Error("Original run cancellation is unavailable for these tool calls.");
         await config.executeToolBatch({
-            assistantMessage,context:currentContext,signal,runToolCall,
+            assistantMessage,context:currentContext,signal,
             nativePhases:{
                 prepare:async ({call,before}) => prepareToolCall(currentContext,assistantMessage,call,{beforeToolCall:before},signal),
                 run:async ({prepared,execute,onUpdate,after}) => {

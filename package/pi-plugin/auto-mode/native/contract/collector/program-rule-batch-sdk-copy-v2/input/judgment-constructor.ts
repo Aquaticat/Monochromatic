@@ -17,7 +17,6 @@ import {createJudgmentDependencyChecks} from './judgment-dependencies.ts';
 import {readMainAgentRequest} from "../../request-producer-group-consumer/request.ts";
 
 import {createJudgmentPrograms} from './program-owner.ts';
-import {createJudgmentExecutions} from './execution-owner.ts';
 import {createJudgmentLifecycle} from './judgment-lifecycle.ts';
 import {createJudgmentPreparation} from './judgment-preparation.ts';
 import {createJudgmentInspection} from './judgment-inspection.ts';
@@ -68,7 +67,8 @@ export function createJudgmentConstructor<const Source extends JudgmentConstruct
     startedAt,
     signal,
     response,
-    stream
+    stream,
+    group
   }: JudgmentConstructionInput): JudgmentPublicAPI<Source> {
     /**
      Selection remains lazy until original preparation publishes it.
@@ -103,7 +103,9 @@ export function createJudgmentConstructor<const Source extends JudgmentConstruct
       facade,
       bindings,
       byMember,
-      childGroups
+      childGroups,
+      executions,
+      preparedJSON
     }=createJudgmentFoundation({
       now,
       producerOwner,
@@ -118,6 +120,7 @@ export function createJudgmentConstructor<const Source extends JudgmentConstruct
       signal,
       response,
       stream,
+      group,
       assertDependenciesCurrent(){return assertDependenciesCurrent();}
     });
     /**
@@ -232,34 +235,14 @@ export function createJudgmentConstructor<const Source extends JudgmentConstruct
       catalogSHA256,
       resolveBinding,
       bindings,
-      byMember
+      byMember,
+      preparedJSON
     });
     /**
      Original owner capabilities retain captured method identities.
      */
     const {prepare}=preparation;
 
-    /**
-     Original owner capabilities retain captured method identities.
-     */
-    const executions=createJudgmentExecutions({
-      bindings,
-      byMember,
-      readClosure(){
-        return {
-          finished:lifecycle.state
-            .finished,
-          closeFailed:lifecycle.state
-            .closeFailed
-        };
-      },
-      readJudgment(){
-        return judgment;
-      },
-      response,
-      stream,
-      assertDependenciesCurrent
-    });
     /**
      Captured original methods link subsequent owners without invoking them.
      */

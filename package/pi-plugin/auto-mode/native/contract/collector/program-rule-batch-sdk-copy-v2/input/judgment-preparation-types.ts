@@ -72,6 +72,7 @@ export type JudgmentPreparationInput<Source extends JudgmentPreparationSources =
   catalogText: string;
   catalogSHA256: string;
   resolveBinding: QuestionSelectionInput['resolveBinding'];
+  preparedJSON: (members: readonly ProgramPreparedMember[]) => string;
   bindings: Readonly<{
     set: (
       identity: object,

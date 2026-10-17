@@ -11,11 +11,10 @@ import {declareResultProgram} from "../../collector/program-rule-batch-sdk-copy-
  */
 export function registerOwnedExecutionTools({
   session,
-  producerOwner,
   stream,
   wrapToolDefinition,
   readBypass,
-  manualOrigins
+  executionOrigins
 }){
  const {agent} = session;
  const previous=agent.prepareRequest;
@@ -166,14 +165,9 @@ export function registerOwnedExecutionTools({
    }
    function readOrigin(carrier){
     if(carrier.stream!==stream)throw new ExecutionContextOwnershipError('Execution context belongs to another stream consumer');
-    const readManual=manualOrigins?.get(carrier.token);
-    if(readManual){current();return readManual(carrier);}
-    const judgment=producerOwner.judgmentFor({
-      response:carrier.response,
-      stream
-    });
-    const origin=judgment.executionEntryFor(carrier.token);
-    current();return origin;
+    const readEntry=executionOrigins.get(carrier.token);
+    if(!readEntry)throw new ExecutionContextOwnershipError('Execution context has no active original group member');
+    current();return readEntry(carrier);
    }
    function capturePreparedProgram({
      judgment,

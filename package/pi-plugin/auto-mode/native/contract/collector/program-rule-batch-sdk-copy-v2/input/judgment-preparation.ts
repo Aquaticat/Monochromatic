@@ -4,8 +4,6 @@
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import { createQuestionSelection } from '../../../lifecycle/claim-evidence-batch-selection/selection-owner.ts';
 import { JudgmentConstructionError } from './judgment-error.ts';
-import { capturePreparedJudgmentJSON } from './judgment-prepared-input.ts';
-import { publishJudgmentMembers } from './judgment-preparation-publication.ts';
 import {captureDecisionMaterial} from '../../../integration/policy-source/decision-material.mjs';
 import type {
   JudgmentPreparationInput,
@@ -44,7 +42,6 @@ export function createJudgmentPreparation<const Source extends JudgmentPreparati
   const {
     active,
     budget,
-    declaredNames,
     observer,
     response,
     receipt,
@@ -56,8 +53,7 @@ export function createJudgmentPreparation<const Source extends JudgmentPreparati
     catalogText,
     catalogSHA256,
     resolveBinding,
-    bindings,
-    byMember,
+    preparedJSON:readPreparedJSON,
   } = input;
   /**
    Preparation outcome remains distinct from later assessment and evidence closure.
@@ -99,10 +95,7 @@ export function createJudgmentPreparation<const Source extends JudgmentPreparati
       /**
        Complete immutable inputs are serialized before any source sealing or dependency preparation.
        */
-      const preparedJSON = capturePreparedJudgmentJSON({
-        members,
-        declaredNames
-      });
+      const preparedJSON = readPreparedJSON(members);
       /**
        Original truthiness selects the source-sealing path without invoking its presence marker.
        */
@@ -176,12 +169,6 @@ export function createJudgmentPreparation<const Source extends JudgmentPreparati
       });
       active();
       budget.checkpoint();
-      publishJudgmentMembers({
-        members,
-        bindings,
-        byMember,
-        signal
-      });
       state.handle = dependencyHandle;
       state.prepared = true;
     } catch (error) {

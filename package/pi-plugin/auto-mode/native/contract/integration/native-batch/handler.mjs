@@ -1,9 +1,8 @@
 import {dispatchPreparedBatch} from "./generated/prepared-dispatch.mjs";
-import {createDecisionGate,EstablishedPolicyDecisionError} from '../action-policy/decision-core.mjs';
+import {createDecisionGate} from '../action-policy/decision-core.mjs';
 import {captureApprovalHostSource} from '../action-policy/approval.mjs';
-import {createManualGroup} from './manual-group.mjs';
+import {createPreparedGroup} from './prepared-group.mjs';
 import {tagged} from '@monochromatic-dev/module-logger/ts';
-import {inspect as inspectValue} from 'node:util';
 
 export class NativeBatchBindingError extends Error {}
 
@@ -47,174 +46,34 @@ export function prepareProgramInputs({
  }
 }
 
-/** Compose the incumbent dispatcher with the fixed original-response review path. */
-export function createNativeBatchHandler({
-  producerOwner,
-  stream,
-  observer,
-  collector,
-  policyInput,
-  effectOwnerFor,
-  authorizationOwnerFor,
-  semanticAdmissionPolicy,
-  headingContextAdmissionPolicy,
-  unitAdoptionAdmissionPolicy,
-  approvalHost,
-  captureOperationCurrentness,
-  manualOrigins
-  ,readBypass=function readNoBypass(){return false;}
-}){
- const captureHost=captureApprovalHostSource(approvalHost);
- const l=tagged({tag:createNativeBatchHandler.name,l:tagged({tag:'auto-mode-native-batch'})});
- const reviewer=createDecisionGate({
-   producerOwner,
-   stream,
-   observer,
-   collector,
-   policyInput,
-   effectOwnerFor,
-   authorizationOwnerFor,
-   semanticAdmissionPolicy,
-   headingContextAdmissionPolicy,
-   unitAdoptionAdmissionPolicy,
-   approvalHost
- });
- return async function executeToolBatch({
-   assistantMessage,
-   context,
-   signal,
-   runToolCall,nativePhases,
-   executionMode,
-   beforeToolCall,
-   afterToolCall,
-   onStart,
-   onFinish,
-   onUpdate
- }){
-  producerOwner.assertMainAgentResponse({
-    response:assistantMessage,
-    stream
-  });
-  const assertOperationCurrent=captureOperationCurrentness();
-  const manual=createManualGroup({response:assistantMessage,stream,signal,assertOperationCurrent,captureHost,origins:manualOrigins});
-  using operationLifetime={ [Symbol.dispose](){manual.close();} };
-  const bypass=readBypass();
-  const reviewState={
-    reviewed:undefined,
-    bypassed:false,
-    judgment:undefined,
-    automaticFailure:undefined,
-    manual:false
-  };
-  function retainAutomaticFailure(error){
-   tagged({tag:retainAutomaticFailure.name,l}).debug('automatic assessment failed; retaining cause for manual approval');
-   tagged({tag:retainAutomaticFailure.name,l}).debug(inspectValue(error,{depth:8,customInspect:false,getters:false}));
-   reviewState.automaticFailure??={error};
-  }
-  try{reviewState.judgment=producerOwner.beginJudgment({response:assistantMessage,stream,signal});}
-  catch(error){retainAutomaticFailure(error);}
-  const {judgment}=reviewState;
-  function assertFresh(){
-   manual.current();
-   if(bypass&&(!readBypass()))throw new NativeBatchBindingError('Explicit bypass was disabled before this group completed; retry with guardrail checks');
-   if(reviewState.manual){reviewState.reviewed?.assertCurrent();return;}
-   if(reviewState.automaticFailure)return;
-   if(producerOwner.judgmentFor({
-     response:assistantMessage,
-     stream
-   })!==judgment)throw new NativeBatchBindingError('Original complete-group judgment changed');
-   if(reviewState.reviewed){reviewState.reviewed
-     .assertCurrent();return;}
-   if(reviewState.bypassed){judgment.assertDependenciesCurrent();return;}
-   try{
-    judgment.checkpoint();
-    if(judgment.inspect().prepared)judgment.assertDependenciesCurrent();
-   }catch(error){retainAutomaticFailure(error);}
-  }
-  function executionOwner(){return reviewState.manual?manual:judgment;}
-  const execution={
-   memberFor(id){return executionOwner().memberFor(id);},
-   beginExecution(member){return executionOwner().beginExecution(member);},
-   executionFor(token){return executionOwner().executionFor(token);},
-   finishExecution(token){return executionOwner().finishExecution(token);}
-  };
-  const dispatched=await dispatchPreparedBatch({
-    calls:assistantMessage.content
-      .filter(function isPreparedToolCall(part) { return (part.type==='toolCall'); }),
-    tools:context.tools??[],
-    assistantMessage,
-    context,
-    signal,
-    runToolCall,nativePhases,
-    executionMode,
-    executionJudgment:execution,
-    onStart,
-    onFinish,
-    onUpdate,
-    prepare:async function invokeOriginalBeforeToolCall(hook) { return (await beforeToolCall?.(
-      hook,
-      signal
-    )); },
-    after:afterToolCall,
-    assertFresh,
-    async assess({members}){
-    manual.prepare(members);
-    async function automaticReview(){
-    judgment.prepare(members);
-    if(bypass){
-     assertFresh();
-     judgment.finalize();
-     observer.retainExecutionSources(assistantMessage);
-     reviewState.bypassed=true;
-     return;
-    }
-    prepareProgramInputs({
-      judgment,
-      tools:context.tools??[]
+/** Bind one complete native group to its original source observer and execution lifetime. */
+export function createNativeBatchHandler({producerOwner,stream,observer,collector,policyInput,
+  effectOwnerFor,authorizationOwnerFor,semanticAdmissionPolicy,headingContextAdmissionPolicy,
+  unitAdoptionAdmissionPolicy,approvalHost,captureOperationCurrentness,executionOrigins,
+  readBypass=function readNoBypass(){return false;}}){
+  const captureHost=captureApprovalHostSource(approvalHost);
+  const l=tagged({tag:createNativeBatchHandler.name,l:tagged({tag:'auto-mode-native-batch'})});
+  const reviewer=createDecisionGate({producerOwner,stream,observer,collector,policyInput,
+    effectOwnerFor,authorizationOwnerFor,semanticAdmissionPolicy,headingContextAdmissionPolicy,
+    unitAdoptionAdmissionPolicy,approvalHost});
+  return async function executeToolBatch({assistantMessage,context,signal,nativePhases,executionMode,
+    beforeToolCall,afterToolCall,onStart,onFinish,onUpdate}){
+    tagged({tag:executeToolBatch.name,l}).debug('reviewing complete native group');
+    producerOwner.assertMainAgentResponse({response:assistantMessage,stream});
+    const group=createPreparedGroup({response:assistantMessage,stream,signal,
+      assertOperationCurrent:captureOperationCurrentness(),captureHost,origins:executionOrigins,readBypass,
+      constructSource(context){return producerOwner.beginJudgment({response:assistantMessage,stream,signal,group:context});},
+      reviewSource(){return reviewer.review(assistantMessage);},
+      preparePrograms(judgment){prepareProgramInputs({judgment,tools:context.tools??[]});},
+      retainSources(){observer.retainExecutionSources(assistantMessage);}
     });
-    reviewState.reviewed=await reviewer.review(assistantMessage);
-    reviewState.reviewed
-      .assertCurrent();
-    if((reviewState.reviewed
-      .outcome
-      .state
-      ==='resolved')&&(reviewState.reviewed
-        .outcome
-        .verdict
-        ==='approve')){
-     observer.retainExecutionSources(assistantMessage);
-     reviewState.reviewed
-       .assertCurrent();
-     return;
-    }
-    }
-    if(!reviewState.automaticFailure){
-     try{await automaticReview();}
-     catch(error){
-      if(error instanceof EstablishedPolicyDecisionError)throw error;
-      retainAutomaticFailure(error);
-     }
-    }
-    if(reviewState.automaticFailure){
-     manual.current();
-     try{if(judgment&&judgment.inspect().finalRecord===undefined)judgment.finalize();}
-     catch(error){tagged({tag:'closeAutomaticAssessment',l}).debug(`automatic evidence closure failed: ${String(error)}`);}
-     reviewState.manual=true;
-     reviewState.reviewed=await manual.request(reviewState.automaticFailure.error);
-    }
-    if(reviewState.bypassed||reviewState.reviewed?.outcome.verdict==='approve')return {block:false};
-    return {
-      block:true,
-      reason:reviewState.reviewed
-        .outcome
-        .reason
-        ??'Execution is withheld because the complete group has no established policy outcome'
-    };
-   }
-  });
-  return Object.freeze({
-    ...dispatched,
-    review:reviewState.reviewed
-  });
- };
+    using operationLifetime={ [Symbol.dispose](){group.close();} };
+    const dispatched=await dispatchPreparedBatch({
+      calls:assistantMessage.content.filter(part=>part.type==='toolCall'),tools:context.tools??[],
+      nativePhases,signal,executionMode,executionJudgment:group,onStart,onFinish,onUpdate,
+      async prepare(hook){return await beforeToolCall?.(hook,signal);},
+      after:afterToolCall,assertFresh:group.current,assess:group.assess
+    });
+    return Object.freeze({...dispatched,review:group.review()});
+  };
 }
