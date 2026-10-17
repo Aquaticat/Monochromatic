@@ -82326,6 +82326,14 @@
     "sensitivityPassed": true,
     "providerDispatch": false,
     "actualMacos15ProviderProof": false,
-    "primaryManifestCorrectionParentOwned": true
+    "primaryManifestCorrectionParentOwned": true,
+    "documentationVerification": {
+      "path": "/home/user/temp/agent/depot-logger-host-scope-docs-6P7f0Z/results.json",
+      "sha256": "d0a5c4147bb8b4ba6ecca7a281d2f711c711cee3439ec3c94f22053494bb9b9f",
+      "markdownRendered": 3,
+      "jsonParsed": true,
+      "scopedDprintPassed": true,
+      "gitDiffWhitespacePassed": true
+    }
   }
 }
