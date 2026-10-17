@@ -23,8 +23,10 @@ The installed CLI reports `2.102.23`.
 The source clone is unmodified at `1f96d6d488f938de97ea640b115e9567ebfd6fbf`.
 The Git blobs for the relevant files match tag `v2.102.23`:
 
-- `pkg/cmd/ci/workflow.go`: `7d01a70340086f5f4aedcb5da11dc25e10bd7e39`.
-- `pkg/cmd/ci/metrics.go`: `1e27e860dbe9ed184a8631f502f46f526b1688bd`.
+- `pkg/cmd/ci/workflow.go`:
+  `7d01a70340086f5f4aedcb5da11dc25e10bd7e39`.
+- `pkg/cmd/ci/metrics.go`:
+  `1e27e860dbe9ed184a8631f502f46f526b1688bd`.
 
 The source paths in this section refer to the Depot CLI repository.
 `pkg/cmd/ci/workflow.go:390` copies attempt timestamp strings directly from the workflow response:
