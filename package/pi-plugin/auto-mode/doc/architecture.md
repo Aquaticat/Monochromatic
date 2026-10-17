@@ -19,7 +19,7 @@ native lifecycle and fallback catalogs,
 and configured MiMo replay pass.
 Lint cleanup remains a separate measured task.
 
-The final package measurement is 22,897,968 regular-file bytes,
+The final package measurement is 22,895,931 regular-file bytes,
 including the active 8,211,396-byte native release and a verified rollback.
 Shared dependency symlink targets are excluded.
 The parser inventory counts 65,692 nonblank code lines across 813 tracked source files,
