@@ -388,13 +388,46 @@
       "sourceChecksExecuted": 0,
       "purpose": "Actual bounded rootful orphan cleanup control",
       "publishedComputeUsdBeforeCredits": 0.0059503
+    },
+    {
+      "id": "r1mn88ccqt",
+      "revision": "99edd42b6e53f4b4ef88b5c39c9a6ae677dfedff",
+      "status": "failure",
+      "terminal": true,
+      "artifactsCollected": true,
+      "purpose": "Diagnostic prerequisite failure before mutation invocation",
+      "coversWholeCheck": false,
+      "frozenMutationCheckCredit": 0,
+      "providerSize": "2x8",
+      "providerJobSeconds": 120.165,
+      "allocatedCpuSeconds": 240.33,
+      "publishedComputeUsdBeforeCredits": 0.012016500000000001,
+      "accountLedgerVerified": false,
+      "collectionDirectory": "/home/user/temp/agent/depot-complete-accounting-20261016/terminal-r1mn88ccqt-5vUCWc/collected-r1mn88ccqt"
+    },
+    {
+      "id": "knsghczl71",
+      "revision": "392a3ea04128547d9b452dd3bea7a4df1235acd1",
+      "status": "success",
+      "terminal": true,
+      "artifactsCollected": true,
+      "purpose": "Authentic bounded native report collection control, no whole mutation-check credit",
+      "coversWholeCheck": false,
+      "frozenMutationCheckCredit": 0,
+      "providerSize": "2x8",
+      "providerJobSeconds": 180.017,
+      "allocatedCpuSeconds": 360.034,
+      "publishedComputeUsdBeforeCredits": 0.0180017,
+      "accountLedgerVerified": false,
+      "collectionDirectory": "/home/user/temp/agent/depot-complete-accounting-20261016/terminal-knsghczl71-PkFIBw/collected-knsghczl71"
     }
   ],
   "completeGraph": false,
   "pending": [
-    "Finish final native-report retention around each single mutation leaf and run bounded authentic ef014 CLI collector control without repeating completed full check.",
-    "File distinct cleanup permission, repaired prerequisite, native report omission and source-child diagnostic incidents after broader duplicate matching; attach source PATH drift/rootless gid mismatch to existing335/1047.",
-    "Root selectively grafts final used logger helpers preserving strengthened cohort/source/native/desktop helpers, integrates GHA/VM routes, freezes the authenticated common manifest and then coordinates final dispatch."
+    "Parent selectively grafts verified generated cleanup and native-report blocks from392a3ea041, preserving strengthened canonical guards and native/desktop helpers.",
+    "Parent regenerates auxiliary/candidate digests when completeGraph becomes true, verifies every719+19 route including GHA/VM in the authenticated common manifest, and coordinates final cohort dispatch.",
+    "Final common replay collects all per-leaf/native reports, attributes actual executed versus source-blocked internal campaigns and validates fresh selected-package payloads before per-ID aggregation; #1160 stays open until that reconciliation.",
+    "No source fix is claimed for #1145 to #1156, #1135 to #1140, existing#335/#1047/#1052/#1076/#1077/#1078 or classifier#1142; retain actual source failures and scoped blocks rather than repeatedly repairing immutable code."
   ],
   "packageDevelopmentReconciliation": {
     "runId": "4x77lb56cs",
@@ -80338,5 +80371,1811 @@
         }
       ]
     }
+  },
+  "nativeReportCollectorVerified": {
+    "path": "/home/user/temp/agent/depot-complete-accounting-20261016/terminal-knsghczl71-PkFIBw/collected-knsghczl71/logger-native-report-verification.json",
+    "sha256": "40f994afcc89afa5e870795eee8e0d28948ada96d1bd2ef3a99fbb89505e73af",
+    "report": {
+      "runId": "knsghczl71",
+      "harnessRevision": "392a3ea04128547d9b452dd3bea7a4df1235acd1",
+      "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+      "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+      "workflowId": "7bh1n71pss",
+      "jobId": "7b6w7fjk4c",
+      "attemptId": "snclls3gdd",
+      "viewUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/7bh1n71pss?job=7b6w7fjk4c&attempt=snclls3gdd",
+      "providerConclusion": "success",
+      "providerSize": "2x8",
+      "providerJobSeconds": 180.017,
+      "allocatedCpuSeconds": 360.034,
+      "publishedComputeUsdBeforePlanCredits": 0.0180017,
+      "accountLedgerVerified": false,
+      "sourceBeforeAfterEqual": true,
+      "authenticSourceCliExitCode": 0,
+      "coversWholeCheck": false,
+      "frozenMutationCheckCredit": 0,
+      "sourceMutationTaskRepeatedInFull": false,
+      "diagnosticMayRepeatSourceSubset": true,
+      "actualMutantId": "9cd1056a095eaea1",
+      "actualMutantStatus": "compileError",
+      "mutantAssertionCredit": 0,
+      "unrunMutantsInDiagnostic": 0,
+      "sourceEnumeratedFullSuiteFiles": 37,
+      "sourceBaselineReachedMutantLoop": true,
+      "nativeReportBytes": 650,
+      "nativeReportSha256": "692e5dd934f799518de76762ee34a0f22558a66a2832188cf5b074dfc37d7825",
+      "reportFreshFromBeforeAbsence": true,
+      "historicalMissingNativeReportsRecovered": false,
+      "ownedVolumeCleanupVerified": true,
+      "actualMetadata": {
+        "event": "mutation-owned-metadata",
+        "image": "localhost/mutation-test-runtime:299616bc3856",
+        "imageId": "51434727e64ac7daef2c68ce8f962f9082cb3be27c2574999bea4fede500fc81",
+        "sourcePath": "/baked/node_modules/.pnpm-workspace-state-v1.json",
+        "original": {
+          "mode": "-rw-------",
+          "uid": 0,
+          "gid": 0,
+          "bytes": 33427
+        },
+        "owned": {
+          "uid": 1001,
+          "gid": 1001,
+          "mode": 384,
+          "bytes": 33427
+        },
+        "sha256": "285dabdd92e7e400952942bae91a8a2e5d4fbc16778c2baca8b45404b7ded66c",
+        "copiedSha256": "285dabdd92e7e400952942bae91a8a2e5d4fbc16778c2baca8b45404b7ded66c",
+        "readonly": true,
+        "sourceImageUnchanged": true,
+        "archiveSha256": "9387093bab217b33091d094e94e7c5e952a8b3742c90fbd7cfeeaed5c26b6016"
+      },
+      "metadataBindings": 2,
+      "files": [
+        {
+          "path": "logger-mutation-pilot-adaptation.json",
+          "bytes": 1768,
+          "sha256": "c4608eb90f29a6b1ebb2b670fc1bf7249e3aa31d2668d39bb15655cec66f3aec"
+        },
+        {
+          "path": "logger-mutation-pilot-collector.ts",
+          "bytes": 6129,
+          "sha256": "407798d765ee3dc697c94dc837d98ab3e7af55143311b33772a4d0199b610031"
+        },
+        {
+          "path": "logger-mutation-pilot-consumer.log",
+          "bytes": 72680,
+          "sha256": "1a82f05b1709cc7d6db8668d4c66af10fda1fd50a94050d5f080d9b1c0786d12"
+        },
+        {
+          "path": "logger-mutation-pilot-invocation.json",
+          "bytes": 380,
+          "sha256": "ce49bbb08fa1e0e30328bd2bd86a68dc407b58709c63995b07a84c92cd729936"
+        },
+        {
+          "path": "logger-mutation-pilot-prerequisite-package.module.caught-value.build.log",
+          "bytes": 543,
+          "sha256": "9b0a6061571cf3a21cb54d8c4e887e9e87520ce3f6b41441d79f90acad1dad8c"
+        },
+        {
+          "path": "logger-mutation-pilot-prerequisite-package.module.toml-edit.build.log",
+          "bytes": 829,
+          "sha256": "aa936cc2e6e2d29194be2fa413dc89ac034335b7c2f3e47ef702c18831fd2ff0"
+        },
+        {
+          "path": "logger-native-report-package.module.toml-edit.test.mutation-0.json",
+          "bytes": 650,
+          "sha256": "692e5dd934f799518de76762ee34a0f22558a66a2832188cf5b074dfc37d7825"
+        },
+        {
+          "path": "logger-native-reports-package.module.toml-edit.test.mutation.json",
+          "bytes": 1460,
+          "sha256": "493698ca5c79fcab1c31e0dae5ab97b20e0dc9bb1e907d980e7b499bce8c96b1"
+        },
+        {
+          "path": "logger-source-after.json",
+          "bytes": 79788,
+          "sha256": "22df2cf83c1143c63acab756ca258f01408c966076e21e07ac6b95675fda808b"
+        },
+        {
+          "path": "logger-source-before.json",
+          "bytes": 79789,
+          "sha256": "012750daba32aeda5ca050d75282a32bd696088086803760e1878dffeb4a7f51"
+        },
+        {
+          "path": "native-tools.json",
+          "bytes": 890,
+          "sha256": "d533a2927ce89ee8168fa2bbadac0e219e9ee93e2b25d6da40509e0ec02a159e"
+        },
+        {
+          "path": "private-image-transfer-results.json",
+          "bytes": 432,
+          "sha256": "ff304ddd52f47a6125c4f0f2aec1504e638ee29c0c33aca64a21d4e3530df963"
+        },
+        {
+          "path": "container-bin/podman",
+          "bytes": 14821,
+          "sha256": "aad4cf72a279920d32b7c889db3e1e94ff12bd9aa5ba889757096e978c68fd2e"
+        },
+        {
+          "path": "container-bin/mutation-private-fixture/result.json",
+          "bytes": 23,
+          "sha256": "9f5b3078bc99086112ea426748346ba4976559df35c07238dc36162fbe0c23c0"
+        },
+        {
+          "path": "container-bin/mutation-private-fixture/shard-manifest.json",
+          "bytes": 23,
+          "sha256": "9f5b3078bc99086112ea426748346ba4976559df35c07238dc36162fbe0c23c0"
+        },
+        {
+          "path": "container-bin/metadata-control-KEa8wj/Containerfile",
+          "bytes": 101,
+          "sha256": "fbe577bee6bcebf9d4745167bede1c1d49b16e5fd74070ec6e711db1181a2ca9"
+        },
+        {
+          "path": "container-bin/metadata-control-KEa8wj/state.json",
+          "bytes": 53,
+          "sha256": "fb9fe5db7e7f2c33bb739cdd95c1a2788b50af0c7c5c09f84e408946a0cf739e"
+        },
+        {
+          "path": "container-bin/image-metadata-gwLdo4/metadata-evidence.json",
+          "bytes": 731,
+          "sha256": "3374b361b78420ad36e8b84a5f6609e56657723a52c98387b203169525cdd0ba"
+        },
+        {
+          "path": "container-bin/image-metadata-gwLdo4/owned-state.json",
+          "bytes": 53,
+          "sha256": "fb9fe5db7e7f2c33bb739cdd95c1a2788b50af0c7c5c09f84e408946a0cf739e"
+        },
+        {
+          "path": "container-bin/image-metadata-gwLdo4/source.tar",
+          "bytes": 2048,
+          "sha256": "9b2655af6b550a2cd4e86949775e26f0c5594470822ae8dd957b611df9827638"
+        },
+        {
+          "path": "container-bin/image-metadata-WLVYzG/metadata-evidence.json",
+          "bytes": 737,
+          "sha256": "846d7327630d70a61101233d47973bcc6fd22db2cc81fadd5e306b059cc7d4d5"
+        },
+        {
+          "path": "container-bin/image-metadata-WLVYzG/owned-state.json",
+          "bytes": 33427,
+          "sha256": "285dabdd92e7e400952942bae91a8a2e5d4fbc16778c2baca8b45404b7ded66c"
+        },
+        {
+          "path": "container-bin/image-metadata-WLVYzG/source.tar",
+          "bytes": 35328,
+          "sha256": "9387093bab217b33091d094e94e7c5e952a8b3742c90fbd7cfeeaed5c26b6016"
+        }
+      ],
+      "adaptation": {
+        "harnessRevision": "392a3ea04128547d9b452dd3bea7a4df1235acd1",
+        "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+        "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+        "taskBodySha256": "20c49eb2cc4764cf2fed9b473c88d7e5339c4a915906cafda189d14bfb834f92",
+        "beforeSha256": "a1887f97b1d84bd593730944b79c7507c25d4ab12a3550713ac008ac133547f1",
+        "afterSha256": "8c439e52cb870102913b52692f66accd2b02b7a549e534472f19e38ffedb08db",
+        "programSha256": "407798d765ee3dc697c94dc837d98ab3e7af55143311b33772a4d0199b610031",
+        "adaptation": "Only collector input receipt changes from logger-results.json to logger-mutation-pilot-invocation.json; diagnostic source argv is explicit and partial.",
+        "prerequisiteRecords": [
+          {
+            "checkId": "package.module.caught-value.build",
+            "args": [],
+            "startedAt": "2026-10-17T09:58:35.727Z",
+            "finishedAt": "2026-10-17T09:58:37.087Z",
+            "exitCode": 0,
+            "artifact": "logger-mutation-pilot-prerequisite-package.module.caught-value.build.log",
+            "sha256": "9b0a6061571cf3a21cb54d8c4e887e9e87520ce3f6b41441d79f90acad1dad8c"
+          },
+          {
+            "checkId": "package.module.toml-edit.build",
+            "args": [],
+            "startedAt": "2026-10-17T09:58:37.087Z",
+            "finishedAt": "2026-10-17T09:58:38.716Z",
+            "exitCode": 0,
+            "artifact": "logger-mutation-pilot-prerequisite-package.module.toml-edit.build.log",
+            "sha256": "aa936cc2e6e2d29194be2fa413dc89ac034335b7c2f3e47ef702c18831fd2ff0"
+          }
+        ],
+        "argv": [
+          "mise",
+          "run",
+          "//package/module/toml-edit:test:mutation",
+          "--",
+          "src/toml-get-comments.ts",
+          "--containers",
+          "1",
+          "--shard-size",
+          "1"
+        ],
+        "coversWholeCheck": false,
+        "frozenMutationCheckCredit": 0
+      },
+      "nativeReport": {
+        "schemaVersion": 1,
+        "packagePath": "package/module/toml-edit",
+        "totals": {
+          "killed": 0,
+          "survived": 0,
+          "timeout": 0,
+          "compileError": 1,
+          "runtimeError": 0,
+          "ignored": 0
+        },
+        "mutants": [
+          {
+            "id": "9cd1056a095eaea1",
+            "file": "src/toml-get-comments.ts",
+            "line": 28,
+            "column": 26,
+            "operator": "block",
+            "original": "{\n  return edit.comments;\n}",
+            "replacement": "{}",
+            "description": "emptied block",
+            "status": "compileError",
+            "position": 1,
+            "rerunCount": 0,
+            "confirmed": true
+          }
+        ],
+        "ignored": [],
+        "infraErrors": [],
+        "shardCount": 1
+      }
+    },
+    "localControls": {
+      "path": "/home/user/temp/agent/depot-native-report-controls-A8f2fn/results.json",
+      "sha256": "deaf7cf3c8760844ec01e8bc6d3cba0266af8e64b9e147829b09c7c21f7ec60b",
+      "report": {
+        "harnessRevision": "062384429554bfd1b3fae5a4843bba5d499ed1d5",
+        "taskBodySha256": "20c49eb2cc4764cf2fed9b473c88d7e5339c4a915906cafda189d14bfb834f92",
+        "beforeSha256": "a1887f97b1d84bd593730944b79c7507c25d4ab12a3550713ac008ac133547f1",
+        "afterSha256": "8c439e52cb870102913b52692f66accd2b02b7a549e534472f19e38ffedb08db",
+        "controls": [
+          {
+            "name": "fresh-root",
+            "expected": "accepted",
+            "exitCode": 0,
+            "stderr": "",
+            "receipt": {
+              "checkId": "package.module.sample.test.mutation",
+              "sourceTask": "//package/module/sample:test:mutation",
+              "sourceRevision": "fixture",
+              "manifestSha256": "fixture",
+              "selectedResult": {
+                "checkId": "package.module.sample.test.mutation",
+                "status": "passed",
+                "startedAt": "2026-10-17T09:49:03.776Z"
+              },
+              "nativeReports": [
+                {
+                  "path": "/home/user/temp/agent/depot-native-report-controls-A8f2fn/fresh-root/source/mutation-report.json",
+                  "existedAtStart": false,
+                  "artifactPath": "logger-native-report-package.module.sample.test.mutation-0.json",
+                  "bytes": 16,
+                  "sha256": "f545a98e0da5be43269811ad121f0238b983af383459b02d345d41f6624e2000",
+                  "mtimeMs": 1792230543776.1091,
+                  "ctimeMs": 1792230543776.1091,
+                  "inode": 51442964,
+                  "mtimeAtOrAfterSelectedStart": true,
+                  "freshnessBasis": "Changed file identity or bytes since the exclusive worker before-snapshot",
+                  "producedDuringInvocation": true
+                }
+              ],
+              "sourceReportCollectionCredit": true
+            }
+          },
+          {
+            "name": "fresh-owner-dist",
+            "expected": "accepted",
+            "exitCode": 0,
+            "stderr": "",
+            "receipt": {
+              "checkId": "package.module.sample.test.mutation",
+              "sourceTask": "//package/module/sample:test:mutation",
+              "sourceRevision": "fixture",
+              "manifestSha256": "fixture",
+              "selectedResult": {
+                "checkId": "package.module.sample.test.mutation",
+                "status": "passed",
+                "startedAt": "2026-10-17T09:49:03.827Z"
+              },
+              "nativeReports": [
+                {
+                  "path": "/home/user/temp/agent/depot-native-report-controls-A8f2fn/fresh-owner-dist/source/package/module/sample/dist/mutation-report.json",
+                  "existedAtStart": false,
+                  "artifactPath": "logger-native-report-package.module.sample.test.mutation-2.json",
+                  "bytes": 16,
+                  "sha256": "f545a98e0da5be43269811ad121f0238b983af383459b02d345d41f6624e2000",
+                  "mtimeMs": 1792230543826.1106,
+                  "ctimeMs": 1792230543826.1106,
+                  "inode": 51442977,
+                  "mtimeAtOrAfterSelectedStart": false,
+                  "freshnessBasis": "Changed file identity or bytes since the exclusive worker before-snapshot",
+                  "producedDuringInvocation": true
+                }
+              ],
+              "sourceReportCollectionCredit": true
+            }
+          },
+          {
+            "name": "stale",
+            "expected": "rejected",
+            "exitCode": 1,
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Passing mutation check lacks a fresh retained native report\n    at file:///var/mnt/encrypted/temp/agent/depot-native-report-controls-A8f2fn/stale/program.ts:43:5 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "receipt": {
+              "checkId": "package.module.sample.test.mutation",
+              "sourceTask": "//package/module/sample:test:mutation",
+              "sourceRevision": "fixture",
+              "manifestSha256": "fixture",
+              "selectedResult": {
+                "checkId": "package.module.sample.test.mutation",
+                "status": "passed",
+                "startedAt": "2026-10-17T09:49:03.877Z"
+              },
+              "nativeReports": [
+                {
+                  "path": "/home/user/temp/agent/depot-native-report-controls-A8f2fn/stale/source/mutation-report.json",
+                  "existedAtStart": true,
+                  "mtimeMsAtStart": 1577836800000,
+                  "ctimeMsAtStart": 1792230543876.112,
+                  "inodeAtStart": 51442986,
+                  "sha256AtStart": "e4d556dfadce6403943c753856bae3711b9ca8df4f066eba5d8d6ca43380066d",
+                  "artifactPath": "logger-native-report-package.module.sample.test.mutation-0.json",
+                  "bytes": 14,
+                  "sha256": "e4d556dfadce6403943c753856bae3711b9ca8df4f066eba5d8d6ca43380066d",
+                  "mtimeMs": 1577836800000,
+                  "ctimeMs": 1792230543876.112,
+                  "inode": 51442986,
+                  "mtimeAtOrAfterSelectedStart": false,
+                  "freshnessBasis": "Changed file identity or bytes since the exclusive worker before-snapshot",
+                  "producedDuringInvocation": false
+                }
+              ],
+              "sourceReportCollectionCredit": false
+            }
+          },
+          {
+            "name": "missing",
+            "expected": "rejected",
+            "exitCode": 1,
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Passing mutation check lacks a fresh retained native report\n    at file:///var/mnt/encrypted/temp/agent/depot-native-report-controls-A8f2fn/missing/program.ts:43:5 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "receipt": {
+              "checkId": "package.module.sample.test.mutation",
+              "sourceTask": "//package/module/sample:test:mutation",
+              "sourceRevision": "fixture",
+              "manifestSha256": "fixture",
+              "selectedResult": {
+                "checkId": "package.module.sample.test.mutation",
+                "status": "passed",
+                "startedAt": "2026-10-17T09:49:03.922Z"
+              },
+              "nativeReports": [],
+              "sourceReportCollectionCredit": false
+            }
+          },
+          {
+            "name": "preexisting-symlink",
+            "expected": "rejected",
+            "exitCode": 1,
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Preexisting mutation report must be a regular file inside authoritative source\n    at file:///var/mnt/encrypted/temp/agent/depot-native-report-controls-A8f2fn/preexisting-symlink/program.ts:18:25\n    at Array.map (<anonymous>)\n    at file:///var/mnt/encrypted/temp/agent/depot-native-report-controls-A8f2fn/preexisting-symlink/program.ts:17:57 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n"
+          },
+          {
+            "name": "after-symlink",
+            "expected": "rejected",
+            "exitCode": 1,
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Native mutation report must be a regular file inside authoritative source\n    at file:///var/mnt/encrypted/temp/agent/depot-native-report-controls-A8f2fn/after-symlink/program.ts:30:7\n    at Array.flatMap (<anonymous>)\n    at file:///var/mnt/encrypted/temp/agent/depot-native-report-controls-A8f2fn/after-symlink/program.ts:27:47 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n"
+          },
+          {
+            "name": "parent-symlink-escape",
+            "expected": "rejected",
+            "exitCode": 1,
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Native mutation report must be a regular file inside authoritative source\n    at file:///var/mnt/encrypted/temp/agent/depot-native-report-controls-A8f2fn/parent-symlink-escape/program.ts:30:7\n    at Array.flatMap (<anonymous>)\n    at file:///var/mnt/encrypted/temp/agent/depot-native-report-controls-A8f2fn/parent-symlink-escape/program.ts:27:47 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n"
+          },
+          {
+            "name": "failed-source-no-report",
+            "expected": "accepted",
+            "exitCode": 0,
+            "stderr": "",
+            "receipt": {
+              "checkId": "package.module.sample.test.mutation",
+              "sourceTask": "//package/module/sample:test:mutation",
+              "sourceRevision": "fixture",
+              "manifestSha256": "fixture",
+              "selectedResult": {
+                "checkId": "package.module.sample.test.mutation",
+                "status": "failed",
+                "startedAt": "2026-10-17T09:49:04.105Z"
+              },
+              "nativeReports": [],
+              "sourceReportCollectionCredit": false
+            }
+          },
+          {
+            "name": "native-directory-fresh",
+            "expected": "accepted",
+            "exitCode": 0,
+            "stderr": "",
+            "receipt": {
+              "checkId": "package.module.sample.test.mutation",
+              "sourceTask": "//package/module/sample:test:mutation",
+              "sourceRevision": "fixture",
+              "manifestSha256": "fixture",
+              "selectedResult": {
+                "checkId": "package.module.sample.test.mutation",
+                "status": "passed",
+                "startedAt": "2026-10-17T09:49:04.150Z"
+              },
+              "nativeReports": [
+                {
+                  "path": "/home/user/temp/agent/depot-native-report-controls-A8f2fn/native-directory-fresh/source/package/module/sample/target/verification/native-mutation-control/baseline.log",
+                  "existedAtStart": false,
+                  "artifactPath": "logger-native-verification/package.module.sample.test.mutation/package/module/sample/target/verification/native-mutation-control/baseline.log",
+                  "bytes": 13,
+                  "sha256": "8e5b47aaaf6622955231d41f1dcd4f40be45366d54e29c19c945a6f55962390a",
+                  "mtimeMs": 1792230544149.1196,
+                  "ctimeMs": 1792230544149.1196,
+                  "inode": 51443041,
+                  "mtimeAtOrAfterSelectedStart": false,
+                  "freshnessBasis": "Changed file identity or bytes since the exclusive worker before-snapshot",
+                  "producedDuringInvocation": true
+                },
+                {
+                  "path": "/home/user/temp/agent/depot-native-report-controls-A8f2fn/native-directory-fresh/source/package/module/sample/target/verification/native-mutation-control/outcomes.json",
+                  "existedAtStart": false,
+                  "artifactPath": "logger-native-verification/package.module.sample.test.mutation/package/module/sample/target/verification/native-mutation-control/outcomes.json",
+                  "bytes": 15,
+                  "sha256": "4f47f58375abf81d37490e00f304805ef0e2650705913817b3837c888ed54c53",
+                  "mtimeMs": 1792230544149.1196,
+                  "ctimeMs": 1792230544149.1196,
+                  "inode": 51443040,
+                  "mtimeAtOrAfterSelectedStart": false,
+                  "freshnessBasis": "Changed file identity or bytes since the exclusive worker before-snapshot",
+                  "producedDuringInvocation": true
+                }
+              ],
+              "sourceReportCollectionCredit": true
+            }
+          },
+          {
+            "name": "native-directory-symlink",
+            "expected": "rejected",
+            "exitCode": 1,
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Native verification evidence must not follow symlinks\n    at nativeReportPaths (file:///var/mnt/encrypted/temp/agent/depot-native-report-controls-A8f2fn/native-directory-symlink/program.ts:11:5)\n    at file:///var/mnt/encrypted/temp/agent/depot-native-report-controls-A8f2fn/native-directory-symlink/program.ts:27:27 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n"
+          },
+          {
+            "name": "multiple-mutation-checks",
+            "expected": "rejected",
+            "exitCode": 1,
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Native mutation report attribution requires one selected mutation check per worker\n    at file:///var/mnt/encrypted/temp/agent/depot-native-report-controls-A8f2fn/multiple-mutation-checks/program.ts:2:1 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n"
+          },
+          {
+            "name": "guard-removal-stale",
+            "expected": "accepted",
+            "exitCode": 0,
+            "stderr": "",
+            "receipt": {
+              "checkId": "package.module.sample.test.mutation",
+              "sourceTask": "//package/module/sample:test:mutation",
+              "sourceRevision": "fixture",
+              "manifestSha256": "fixture",
+              "selectedResult": {
+                "checkId": "package.module.sample.test.mutation",
+                "status": "passed",
+                "startedAt": "2026-10-17T09:49:04.294Z"
+              },
+              "nativeReports": [
+                {
+                  "path": "/home/user/temp/agent/depot-native-report-controls-A8f2fn/guard-removal-stale/source/mutation-report.json",
+                  "existedAtStart": true,
+                  "mtimeMsAtStart": 1577836800000,
+                  "ctimeMsAtStart": 1792230544292.1235,
+                  "inodeAtStart": 51443077,
+                  "sha256AtStart": "e4d556dfadce6403943c753856bae3711b9ca8df4f066eba5d8d6ca43380066d",
+                  "artifactPath": "logger-native-report-package.module.sample.test.mutation-0.json",
+                  "bytes": 14,
+                  "sha256": "e4d556dfadce6403943c753856bae3711b9ca8df4f066eba5d8d6ca43380066d",
+                  "mtimeMs": 1577836800000,
+                  "ctimeMs": 1792230544292.1235,
+                  "inode": 51443077,
+                  "mtimeAtOrAfterSelectedStart": false,
+                  "freshnessBasis": "Changed file identity or bytes since the exclusive worker before-snapshot",
+                  "producedDuringInvocation": false
+                }
+              ],
+              "sourceReportCollectionCredit": false
+            }
+          }
+        ],
+        "valid": 4,
+        "rejected": 7,
+        "staleAcceptedWithFreshnessGuardRemoved": true,
+        "sourceMutationChecksRepeated": 0,
+        "authenticConsumerPending": true
+      }
+    },
+    "selectiveGraft": {
+      "path": "/home/user/temp/agent/depot-logger-native-report-graft-392a3ea041.json",
+      "sha256": "df9a7fe27771e07362462bfe5962d4255d0e757600d7d78e0665ea744613b74d",
+      "report": {
+        "harnessRevision": "392a3ea04128547d9b452dd3bea7a4df1235acd1",
+        "task": "//package/module/logger.fuzz:trial:depot:remainder",
+        "taskBodySha256": "20c49eb2cc4764cf2fed9b473c88d7e5339c4a915906cafda189d14bfb834f92",
+        "imports": {
+          "fsAdded": [
+            "lstatSync",
+            "realpathSync",
+            "readdirSync",
+            "copyFileSync",
+            "constants"
+          ],
+          "pathAdded": [
+            "dirname"
+          ]
+        },
+        "beforeBlock": "const mutationChecks = ['mutation', 'native-mutation'].includes(partition.name) ? partition.selectedCheckIds.map(id => manifest.checks.find(check => check.id === id)) : []\nassert(mutationChecks.length <= 1, 'Native mutation report attribution requires one selected mutation check per worker')\nconst mutationCheck = mutationChecks[0]\nfunction nativeReportPaths() {\n  if (!mutationCheck) return []\n  const roots = mutationCheck.packages.map(owner => join(source, owner))\n  if (partition.name === 'mutation') return [...new Set([join(source, 'mutation-report.json'), ...roots.flatMap(root => [join(root, 'mutation-report.json'), join(root, 'dist/mutation-report.json')])])]\n  const paths = [], pending = roots.map(root => join(root, 'target/verification')).filter(existsSync)\n  while (pending.length) {\n    const path = pending.pop(), stat = lstatSync(path)\n    assert(!stat.isSymbolicLink(), 'Native verification evidence must not follow symlinks')\n    if (stat.isDirectory()) for (const name of readdirSync(path)) pending.push(join(path, name))\n    else if (stat.isFile()) paths.push(path)\n  }\n  return paths.toSorted()\n}\nconst nativeReportSources = new Map(nativeReportPaths().map(path => {\n  if (existsSync(path)) assert(lstatSync(path).isFile() && !lstatSync(path).isSymbolicLink() && realpathSync(path).startsWith(realpathSync(source) + '/'), 'Preexisting mutation report must be a regular file inside authoritative source')\n  const stat = existsSync(path) ? lstatSync(path) : undefined\n  return [path, { path, existedAtStart: !!stat, mtimeMsAtStart: stat?.mtimeMs, ctimeMsAtStart: stat?.ctimeMs, inodeAtStart: stat?.ino, sha256AtStart: stat ? createHash('sha256').update(readFileSync(path)).digest('hex') : undefined }]\n}))\n",
+        "beforeSha256": "a1887f97b1d84bd593730944b79c7507c25d4ab12a3550713ac008ac133547f1",
+        "afterFinallyBlock": "  if (mutationCheck) {\n    const resultPath = join(directory, 'logger-results.json')\n    const generic = existsSync(resultPath) ? JSON.parse(readFileSync(resultPath, 'utf8')) : undefined\n    const selectedResult = generic?.results.find(row => row.checkId === mutationCheck.id && ['passed', 'failed'].includes(row.status))\n    const startedAt = selectedResult?.startedAt\n    const nativeReports = nativeReportPaths().flatMap((path, index) => {\n      if (!existsSync(path)) return []\n      const stat = lstatSync(path)\n      assert(stat.isFile() && !stat.isSymbolicLink() && realpathSync(path).startsWith(realpathSync(source) + '/'), 'Native mutation report must be a regular file inside authoritative source')\n      const before = nativeReportSources.get(path) ?? { path, existedAtStart: false }\n      const artifactPath = partition.name === 'mutation' ? `logger-native-report-${mutationCheck.id}-${index}.json` : join('logger-native-verification', mutationCheck.id, path.slice(source.length + 1))\n      const target = join(directory, artifactPath)\n      mkdirSync(dirname(target), { recursive: true, mode: 0o700 })\n      copyFileSync(path, target, constants.COPYFILE_EXCL)\n      chmodSync(target, 0o600)\n      const bytes = readFileSync(target)\n      const sha256 = createHash('sha256').update(bytes).digest('hex')\n      const producedDuringInvocation = !before.existedAtStart || stat.mtimeMs !== before.mtimeMsAtStart || stat.ctimeMs !== before.ctimeMsAtStart || stat.ino !== before.inodeAtStart || sha256 !== before.sha256AtStart\n      return [{ ...before, artifactPath, bytes: bytes.length, sha256, mtimeMs: stat.mtimeMs, ctimeMs: stat.ctimeMs, inode: stat.ino, mtimeAtOrAfterSelectedStart: Boolean(startedAt && stat.mtimeMs >= Date.parse(startedAt)), freshnessBasis: 'Changed file identity or bytes since the exclusive worker before-snapshot', producedDuringInvocation }]\n    })\n    writeFileSync(join(directory, `logger-native-reports-${mutationCheck.id}.json`), JSON.stringify({ checkId: mutationCheck.id, sourceTask: mutationCheck.task, sourceRevision: manifest.sourceRevision, manifestSha256: partitions.manifestSha256, selectedResult, nativeReports, sourceReportCollectionCredit: nativeReports.some(row => row.producedDuringInvocation) }, null, 2) + '\\n', { flag: 'wx', mode: 0o600 })\n    assert(selectedResult?.status !== 'passed' || nativeReports.some(row => row.producedDuringInvocation), 'Passing mutation check lacks a fresh retained native report')\n  }\n",
+        "afterSha256": "8c439e52cb870102913b52692f66accd2b02b7a549e534472f19e38ffedb08db",
+        "workflowArtifactPath": "~/temp/agent/depot-complete-ci/logger-native-verification/",
+        "preserveRootCanonicalHelpers": true,
+        "doNotCopyDiagnosticOnlyPilotTask": true,
+        "authenticProof": "/home/user/temp/agent/depot-complete-accounting-20261016/terminal-knsghczl71-PkFIBw/collected-knsghczl71/logger-native-report-verification.json"
+      }
+    },
+    "fullHistoricalReportRecovery": false
+  },
+  "additionalTerminalIncidents": [
+    {
+      "testId": "conf-missing-coverage-baseline",
+      "title": "conf-fork.fuzz: unchanged coverage gate cannot read its absent committed baseline",
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1145",
+      "localBodySha256": "ca7f7284271e9e5bccc68819b58b65c35d242119ed741692f93de9d6b0287add",
+      "number": 1145,
+      "state": "OPEN",
+      "remoteBodySha256": "ca7f7284271e9e5bccc68819b58b65c35d242119ed741692f93de9d6b0287add",
+      "remoteBodyMatches": true,
+      "renderedVerified": true,
+      "currentState": "OPEN"
+    },
+    {
+      "testId": "jsonc-coverage-regression",
+      "title": "jsonc-edit.fuzz: coverage falls below four committed function baselines",
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1146",
+      "localBodySha256": "2d7249b6db706f1cd903a969b5a08245a4276076af13c4cda870e082fe4cdb10",
+      "number": 1146,
+      "state": "OPEN",
+      "remoteBodySha256": "2d7249b6db706f1cd903a969b5a08245a4276076af13c4cda870e082fe4cdb10",
+      "remoteBodyMatches": true,
+      "renderedVerified": true,
+      "currentState": "OPEN"
+    },
+    {
+      "testId": "logger-console-coverage-regression",
+      "title": "logger.fuzz: console sink coverage reaches 453 of 456 baseline covered lines",
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1147",
+      "localBodySha256": "25754713b17bc6eca9b06ecea8b61bfbfe5424dc547ceebe06c6467b22f8669c",
+      "number": 1147,
+      "state": "OPEN",
+      "remoteBodySha256": "25754713b17bc6eca9b06ecea8b61bfbfe5424dc547ceebe06c6467b22f8669c",
+      "remoteBodyMatches": true,
+      "renderedVerified": true,
+      "currentState": "OPEN"
+    },
+    {
+      "testId": "matcher-isMatch-negation",
+      "title": "matcher-fork: isMatch disagrees with upstream for repeated bare negation patterns",
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1148",
+      "localBodySha256": "6958b9cc14012dc8205e76d75d31c8582cb97fc4c198fc046600c70fc54d6255",
+      "number": 1148,
+      "state": "OPEN",
+      "remoteBodySha256": "6958b9cc14012dc8205e76d75d31c8582cb97fc4c198fc046600c70fc54d6255",
+      "remoteBodyMatches": true,
+      "renderedVerified": true,
+      "currentState": "OPEN"
+    },
+    {
+      "testId": "pmap-concurrent-workload-trace",
+      "title": "p-map-fork: concurrent-map workload trace disagrees with upstream",
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1149",
+      "localBodySha256": "f7c6f174d3926276f5f99e839d6ed2c3cb16e58db1ce59a65185cbcb8cd6d91d",
+      "number": 1149,
+      "state": "OPEN",
+      "remoteBodySha256": "f7c6f174d3926276f5f99e839d6ed2c3cb16e58db1ce59a65185cbcb8cd6d91d",
+      "remoteBodyMatches": true,
+      "renderedVerified": true,
+      "currentState": "OPEN"
+    },
+    {
+      "testId": "pmap-streaming-workload-trace",
+      "title": "p-map-fork: streaming-map workload trace disagrees with upstream",
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1150",
+      "localBodySha256": "940c3670123da26dd07d71b48b7a012f00516b2e0c5f3f9a21a47fcd072ad3e7",
+      "number": 1150,
+      "state": "OPEN",
+      "remoteBodySha256": "940c3670123da26dd07d71b48b7a012f00516b2e0c5f3f9a21a47fcd072ad3e7",
+      "remoteBodyMatches": true,
+      "renderedVerified": true,
+      "currentState": "OPEN"
+    },
+    {
+      "testId": "pmap-null-configuration-diagnostic",
+      "title": "p-map-fork: concurrent-map null-input diagnostic differs from upstream",
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1151",
+      "localBodySha256": "2ec7049e16a6485898dea159a3fc139f82632f58603c920a38038552eef8eea3",
+      "number": 1151,
+      "state": "OPEN",
+      "remoteBodySha256": "2ec7049e16a6485898dea159a3fc139f82632f58603c920a38038552eef8eea3",
+      "remoteBodyMatches": true,
+      "renderedVerified": true,
+      "currentState": "OPEN"
+    },
+    {
+      "testId": "pmap-undefined-streaming-diagnostic",
+      "title": "p-map-fork: streaming-map undefined-input diagnostic differs from upstream",
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1152",
+      "localBodySha256": "6af231dda61533e285d6f43c6a34e76ce5d1b4f674c9c8f97d93c57ea9f51a71",
+      "number": 1152,
+      "state": "OPEN",
+      "remoteBodySha256": "6af231dda61533e285d6f43c6a34e76ce5d1b4f674c9c8f97d93c57ea9f51a71",
+      "remoteBodyMatches": true,
+      "renderedVerified": true,
+      "currentState": "OPEN"
+    },
+    {
+      "testId": "async-single-call-timeout",
+      "title": "make-asynchronous-fork.fuzz: single-call settlements match upstream reaches authored 120000 ms timeout",
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1153",
+      "localBodySha256": "cf0c494ef4e5b91d7afce64f8cdd5453a57f8383469a1b3ae454d73b5ec9b4cb",
+      "number": 1153,
+      "state": "OPEN",
+      "remoteBodySha256": "cf0c494ef4e5b91d7afce64f8cdd5453a57f8383469a1b3ae454d73b5ec9b4cb",
+      "remoteBodyMatches": true,
+      "renderedVerified": true,
+      "currentState": "OPEN"
+    },
+    {
+      "testId": "async-iteration-timeout",
+      "title": "make-asynchronous-fork.fuzz: iteration drains match upstream reaches authored 120000 ms timeout",
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1154",
+      "localBodySha256": "ca9dc8fb72b2334bf50176676d0202b5891f33d23ecdabc8f22e2dce027ba725",
+      "number": 1154,
+      "state": "OPEN",
+      "remoteBodySha256": "ca9dc8fb72b2334bf50176676d0202b5891f33d23ecdabc8f22e2dce027ba725",
+      "remoteBodyMatches": true,
+      "renderedVerified": true,
+      "currentState": "OPEN"
+    },
+    {
+      "testId": "async-concurrent-timeout",
+      "title": "make-asynchronous-fork.fuzz: concurrent calls match in order reaches authored 180000 ms timeout",
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1155",
+      "localBodySha256": "9cceb6d6c0f8c12296096f97f65aca19870d0a4430248d576cb16ad1f016e60b",
+      "number": 1155,
+      "state": "OPEN",
+      "remoteBodySha256": "9cceb6d6c0f8c12296096f97f65aca19870d0a4430248d576cb16ad1f016e60b",
+      "remoteBodyMatches": true,
+      "renderedVerified": true,
+      "currentState": "OPEN"
+    },
+    {
+      "testId": "conf-mutation-red-baseline",
+      "title": "conf-fork: mutation campaign reports a red conf.cache.unit.test.ts baseline",
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1156",
+      "localBodySha256": "c71eb77ca5c2583a3b83147a9c54334e7cb3b500dcb6784b0d8179edfc412cc0",
+      "number": 1156,
+      "state": "OPEN",
+      "remoteBodySha256": "c71eb77ca5c2583a3b83147a9c54334e7cb3b500dcb6784b0d8179edfc412cc0",
+      "remoteBodyMatches": true,
+      "renderedVerified": true,
+      "currentState": "OPEN"
+    },
+    {
+      "testId": "generated-rootful-cleanup",
+      "title": "Logger harness: rootful generated output survives ordinary disposable worktree cleanup",
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1157",
+      "localBodySha256": "d512bb658cc060e66a45f838f066e3bbd7dc6cb0fb7e3c76a6896e8385b3939f",
+      "number": 1157,
+      "state": "OPEN",
+      "remoteBodySha256": "d512bb658cc060e66a45f838f066e3bbd7dc6cb0fb7e3c76a6896e8385b3939f",
+      "remoteBodyMatches": true,
+      "renderedVerified": true,
+      "currentState": "CLOSED",
+      "closure": {
+        "number": 1157,
+        "state": "CLOSED",
+        "comment": "https://github.com/Aquaticats/Monochromatic/issues/1157#issuecomment-6232674029",
+        "trialRepairScopeOnly": true
+      }
+    },
+    {
+      "testId": "git-host-version-prerequisite",
+      "title": "Logger harness: host native checks start with Git2.55 instead of declared Git2.56 prerequisite",
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1158",
+      "localBodySha256": "5d6a018c7022fc68c6fa12baacfd5dad81f1e504f67bc763c2b31ca0a0acd83a",
+      "number": 1158,
+      "state": "OPEN",
+      "remoteBodySha256": "5d6a018c7022fc68c6fa12baacfd5dad81f1e504f67bc763c2b31ca0a0acd83a",
+      "remoteBodyMatches": true,
+      "renderedVerified": true,
+      "currentState": "CLOSED",
+      "closure": {
+        "number": 1158,
+        "state": "CLOSED",
+        "comment": "https://github.com/Aquaticats/Monochromatic/issues/1158#issuecomment-6232674837",
+        "trialRepairScopeOnly": true
+      }
+    },
+    {
+      "testId": "git-host-authentic-linter-prerequisite",
+      "title": "Logger harness: host Markdown assertions stop at unset authentic linter prerequisite",
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1159",
+      "localBodySha256": "8f9cbc27457644aefaa178924cb17a11717504e847f7c47f278098bf16381a1a",
+      "number": 1159,
+      "state": "OPEN",
+      "remoteBodySha256": "8f9cbc27457644aefaa178924cb17a11717504e847f7c47f278098bf16381a1a",
+      "remoteBodyMatches": true,
+      "renderedVerified": true,
+      "currentState": "CLOSED",
+      "closure": {
+        "number": 1159,
+        "state": "CLOSED",
+        "comment": "https://github.com/Aquaticats/Monochromatic/issues/1159#issuecomment-6232675670",
+        "trialRepairScopeOnly": true
+      }
+    },
+    {
+      "testId": "native-mutation-report-artifact-omission",
+      "title": "Logger harness: mutation CLI native JSON is omitted from retained development artifacts",
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1160",
+      "localBodySha256": "04c7aca557570c09cea5fe583883a7f8078030f85cb95ba271d0d22f47f7e66e",
+      "number": 1160,
+      "state": "OPEN",
+      "remoteBodySha256": "04c7aca557570c09cea5fe583883a7f8078030f85cb95ba271d0d22f47f7e66e",
+      "remoteBodyMatches": true,
+      "renderedVerified": true,
+      "currentState": "OPEN"
+    },
+    {
+      "testId": "generated-deduped-workspace-resolver",
+      "title": "Logger harness: generated consumer identity guard rejects valid deduped workspace dependency",
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1161",
+      "localBodySha256": "2ced5df6026035a4bb3629ee18d8cc00d9604c678f00c18cb61838a0c0ffcb51",
+      "number": 1161,
+      "state": "OPEN",
+      "remoteBodySha256": "2ced5df6026035a4bb3629ee18d8cc00d9604c678f00c18cb61838a0c0ffcb51",
+      "remoteBodyMatches": true,
+      "renderedVerified": true,
+      "currentState": "CLOSED",
+      "closure": {
+        "number": 1161,
+        "state": "CLOSED",
+        "comment": "https://github.com/Aquaticats/Monochromatic/issues/1161#issuecomment-6232676533",
+        "trialRepairScopeOnly": true
+      }
+    },
+    {
+      "testId": "generated-pilot-wrong-selector-environment",
+      "title": "Logger harness: generated pilot sets an unrecognized external selector environment name",
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1162",
+      "localBodySha256": "e102a4cfdb50c7b78774609316c944468327ee7ce97c42815dce75ce0ac9cd0a",
+      "number": 1162,
+      "state": "OPEN",
+      "remoteBodySha256": "e102a4cfdb50c7b78774609316c944468327ee7ce97c42815dce75ce0ac9cd0a",
+      "remoteBodyMatches": true,
+      "renderedVerified": true,
+      "currentState": "CLOSED",
+      "closure": {
+        "number": 1162,
+        "state": "CLOSED",
+        "comment": "https://github.com/Aquaticats/Monochromatic/issues/1162#issuecomment-6232677419",
+        "trialRepairScopeOnly": true
+      },
+      "correctedRemoteBodySha256": "2445999cecc5073e402c5c153c74408824536cf33438364ee950fdec4951b378"
+    },
+    {
+      "testId": "native-report-pilot-frozen-install",
+      "title": "Logger harness: native report diagnostic omits frozen source workspace dependency installation",
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1163",
+      "localBodySha256": "78796a33bdf605d3766280a85dc65dac9d89b73ab63e0cd18b163d0f1bc0d407",
+      "number": 1163,
+      "state": "OPEN",
+      "remoteBodySha256": "78796a33bdf605d3766280a85dc65dac9d89b73ab63e0cd18b163d0f1bc0d407",
+      "remoteBodyMatches": true,
+      "renderedVerified": true,
+      "currentState": "CLOSED",
+      "closure": {
+        "number": 1163,
+        "state": "CLOSED",
+        "comment": "https://github.com/Aquaticats/Monochromatic/issues/1163#issuecomment-6232678529",
+        "trialRepairScopeOnly": true
+      }
+    }
+  ],
+  "additionalTerminalIncidentComments": [
+    {
+      "number": 335,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/335#issuecomment-6232672916",
+      "bodySha256": "37f3821bd301387ac92944cacfef09d0a9c9b2cb152831e0481a86d42706342d",
+      "remoteBodyMatches": true,
+      "rendered": true
+    },
+    {
+      "number": 1047,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1047#issuecomment-6232673266",
+      "bodySha256": "1565d3ec1952ad251594b4046bee3c4051ff2aa4bef0002d55274a788cb03214",
+      "remoteBodyMatches": true,
+      "rendered": true
+    },
+    {
+      "number": 1160,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1160#issuecomment-6232673672",
+      "bodySha256": "4d77121700a4c5c2e8ba0bb9760b98d2093967b6949535edf3bcc33f9d24fa28",
+      "remoteBodyMatches": true,
+      "rendered": true
+    },
+    {
+      "number": 1157,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1157#issuecomment-6232674029",
+      "bodySha256": "4a396bad75e81b99ca1b2a539124d1c0ae3af6b982c69c0fe0bd5fa51503c428",
+      "remoteBodyMatches": true,
+      "rendered": true
+    },
+    {
+      "number": 1158,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1158#issuecomment-6232674837",
+      "bodySha256": "e1bc2727cbc7e770d7a9cfaab497181000e7df9e6d890b5fcfdafc44bd142b48",
+      "remoteBodyMatches": true,
+      "rendered": true
+    },
+    {
+      "number": 1159,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1159#issuecomment-6232675670",
+      "bodySha256": "7b86dc3fdcc7a9342c36ddb7a0423784154836010bb865316c013f0fdec84bde",
+      "remoteBodyMatches": true,
+      "rendered": true
+    },
+    {
+      "number": 1161,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1161#issuecomment-6232676533",
+      "bodySha256": "04811511dc0e70b5035ebe8034aab6beea6c067216361ab973159c7f9d41f10f",
+      "remoteBodyMatches": true,
+      "rendered": true
+    },
+    {
+      "number": 1162,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1162#issuecomment-6232677419",
+      "bodySha256": "51d368209b0b8a5682d0ed452481176ad0850dae5a5d5bd82bdb4d02d1c74749",
+      "remoteBodyMatches": true,
+      "rendered": true
+    },
+    {
+      "number": 1163,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1163#issuecomment-6232678529",
+      "bodySha256": "b094ae787fd76236c556be59f3c2973a7baca07232118974950df589bd5003a0",
+      "remoteBodyMatches": true,
+      "rendered": true
+    }
+  ],
+  "additionalIncidentSearches": [
+    {
+      "path": "/home/user/temp/agent/depot-logger-async-broad-search-20261017.json",
+      "sha256": "538473de6d5b10165e0da4302ddfee476ceaa514e8d92b418e562246a04f351c",
+      "count": 5,
+      "issues": [
+        {
+          "number": 613,
+          "title": "refactor(*): extract one shared fuzz coverage harness from 13 sidecar copies (44 duplicate clusters)",
+          "state": "OPEN"
+        },
+        {
+          "number": 646,
+          "title": "refactor(*): internal duplication inside the fuzz sidecars, including two names for one enumerability test (26 clusters)",
+          "state": "OPEN"
+        },
+        {
+          "number": 658,
+          "title": "chore(slopo): propose 30 structural-idiom dismissals; hold 15 pending the i18n factory in #639 and the two-sided-habit policy",
+          "state": "OPEN"
+        },
+        {
+          "number": 618,
+          "title": "refactor(*): one shared record and value type-guard family; two isRecord copies accept arrays (6 clusters, 90 sites)",
+          "state": "OPEN"
+        },
+        {
+          "number": 657,
+          "title": "chore(slopo): propose 8 variant dismissals; hold 39 pending the two-sided-habit policy and a dispatch-macro owner, plus 3 uncertain",
+          "state": "OPEN"
+        }
+      ]
+    },
+    {
+      "path": "/home/user/temp/agent/depot-logger-async-source-search-20261017.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "count": 0,
+      "issues": []
+    },
+    {
+      "path": "/home/user/temp/agent/depot-logger-ci-retries-duplicate-search-20261017.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "count": 0,
+      "issues": []
+    },
+    {
+      "path": "/home/user/temp/agent/depot-logger-cleanup-broad-search-20261017.json",
+      "sha256": "f175e6feaf6cb857af1ffd1615ab22fcecca5dd3ff6c9ca7fdd4b76891e952b9",
+      "count": 6,
+      "issues": [
+        {
+          "number": 628,
+          "title": "fix(git-policy-cli): one lock candidate directory can be created without its private mode (5 clusters)",
+          "state": "OPEN"
+        },
+        {
+          "number": 619,
+          "title": "refactor(module-fs-path): consolidate error-code guards, fs probes and path relations; four probes are wrong today (14 clusters)",
+          "state": "OPEN"
+        },
+        {
+          "number": 515,
+          "title": "git-policy-cli: missing declared dependency is reported as a non-self-contained config",
+          "state": "OPEN"
+        },
+        {
+          "number": 397,
+          "title": "feat(dev-script): create independent relocatable checkouts",
+          "state": "OPEN"
+        },
+        {
+          "number": 655,
+          "title": "refactor(pi-plugin-auto-mode): merge the two parallel trusted-temp-path modules that decide a write boundary (9 clusters)",
+          "state": "OPEN"
+        },
+        {
+          "number": 455,
+          "title": "feat(config-oxlint): enforce functional semantics instead of functional-looking syntax",
+          "state": "OPEN"
+        }
+      ]
+    },
+    {
+      "path": "/home/user/temp/agent/depot-logger-conf-baseline-search-20261017.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "count": 0,
+      "issues": []
+    },
+    {
+      "path": "/home/user/temp/agent/depot-logger-conf-coverage-search-20261017.json",
+      "sha256": "2d0d6a3af357bf4f3a150c58feab78f92370335cda44b3e20d205a02f2aabe67",
+      "count": 8,
+      "issues": [
+        {
+          "number": 613,
+          "title": "refactor(*): extract one shared fuzz coverage harness from 13 sidecar copies (44 duplicate clusters)"
+        },
+        {
+          "number": 657,
+          "title": "chore(slopo): propose 8 variant dismissals; hold 39 pending the two-sided-habit policy and a dispatch-macro owner, plus 3 uncertain"
+        },
+        {
+          "number": 658,
+          "title": "chore(slopo): propose 30 structural-idiom dismissals; hold 15 pending the i18n factory in #639 and the two-sided-habit policy"
+        },
+        {
+          "number": 620,
+          "title": "refactor(*): shared disposables for temp directories and process-global overrides; two restores are wrong (5 clusters, 45 sites)"
+        },
+        {
+          "number": 656,
+          "title": "chore(slopo): propose 16 boilerplate-trivial dismissals; hold 17 pending owners for the error-naming, Rust-error, web-component and null-record patterns"
+        },
+        {
+          "number": 659,
+          "title": "chore(slopo): propose 13 dismissals; hold 9 pending owners for the comparator, quoting, path-segment and license-reader patterns"
+        },
+        {
+          "number": 680,
+          "title": "docs(audit): index of the 278 unnecessary-regex site issues"
+        },
+        {
+          "number": 618,
+          "title": "refactor(*): one shared record and value type-guard family; two isRecord copies accept arrays (6 clusters, 90 sites)"
+        }
+      ]
+    },
+    {
+      "path": "/home/user/temp/agent/depot-logger-generated-bin-search-20261017.json",
+      "sha256": "3f97fb636ee94723e0e10fee02d0f6236f9e4e4ee650c30168b6b95bb57a394d",
+      "count": 6,
+      "issues": [
+        {
+          "number": 335,
+          "title": "fix(build): generate mise PATH entries from workspace metadata, not ambient node_modules"
+        },
+        {
+          "number": 99,
+          "title": "fix(build): add explicit dependency from build:js tasks to bun-install for fresh-clone builds"
+        },
+        {
+          "number": 521,
+          "title": "Verify installability of every package published to pnpr"
+        },
+        {
+          "number": 397,
+          "title": "feat(dev-script): create independent relocatable checkouts"
+        },
+        {
+          "number": 163,
+          "title": "build(dprint): document or enforce that dprint is managed via mise, not pnpm"
+        },
+        {
+          "number": 246,
+          "title": "Plan: migrate mise task shell from nushell to Node (approved)"
+        }
+      ]
+    },
+    {
+      "path": "/home/user/temp/agent/depot-logger-generated-cleanup-search-20261017.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "count": 0,
+      "issues": []
+    },
+    {
+      "path": "/home/user/temp/agent/depot-logger-generated-dedupe-search-20261017.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "count": 0,
+      "issues": []
+    },
+    {
+      "path": "/home/user/temp/agent/depot-logger-generated-path-search-20261017.json",
+      "sha256": "2339e896efd57808c9d0559a03834a958c7f90a082418a22cea19d871e2683b0",
+      "count": 52,
+      "issues": [
+        {
+          "number": 1068,
+          "title": "file-enforcer mutation task resolves its repository-relative package path twice"
+        },
+        {
+          "number": 633,
+          "title": "refactor(file-enforcer): root file-enforcer.config.ts re-implements helpers its own packages own (5 clusters)"
+        },
+        {
+          "number": 707,
+          "title": "refactor(test-fixture-file-enforcer-perf): drop the unnecessary regex at test-fixture/file-enforcer-perf/src/validate-benchmarks.ts:19"
+        },
+        {
+          "number": 698,
+          "title": "refactor(test-fixture-file-enforcer-perf): drop the unnecessary regex at test-fixture/file-enforcer-perf/src/run-constrained-config.ts:75"
+        },
+        {
+          "number": 699,
+          "title": "refactor(test-fixture-file-enforcer-perf): drop the unnecessary regex at test-fixture/file-enforcer-perf/src/bench-in-container.ts:32"
+        },
+        {
+          "number": 700,
+          "title": "refactor(test-fixture-file-enforcer-perf): drop the unnecessary regex at test-fixture/file-enforcer-perf/src/bench-in-container.ts:35"
+        },
+        {
+          "number": 607,
+          "title": "file-enforcer: new managed files can be committed before they are enforced"
+        },
+        {
+          "number": 644,
+          "title": "refactor(dev-script): shared steps in vm-builder, watch-restart, file-enforcer, deps-cube and tofu (20 clusters)"
+        },
+        {
+          "number": 335,
+          "title": "fix(build): generate mise PATH entries from workspace metadata, not ambient node_modules"
+        },
+        {
+          "number": 516,
+          "title": "git-policy markdown adapter truncates a dependency failure into a report-parse error"
+        },
+        {
+          "number": 619,
+          "title": "refactor(module-fs-path): consolidate error-code guards, fs probes and path relations; four probes are wrong today (14 clusters)"
+        },
+        {
+          "number": 1113,
+          "title": "TOML CI timeout loses active mutation evidence and censors an independent gate"
+        },
+        {
+          "number": 278,
+          "title": "fix(file-enforcer): manifest lock contenders can read a partially written owner.json"
+        },
+        {
+          "number": 1066,
+          "title": "Full-package Oxlint panics on no-generated-empty-object-type at the TOML revision"
+        },
+        {
+          "number": 503,
+          "title": "module-fs-path: redesign the ./node ensure/empty family around measured idioms, or delete it (survey attached)"
+        },
+        {
+          "number": 612,
+          "title": "refactor(git-policy-cli): decide the fate of the generated src/optional mirror tree (99 duplicate clusters)"
+        },
+        {
+          "number": 446,
+          "title": "Document the non-use of a root Cargo workspace as a decision doc"
+        },
+        {
+          "number": 244,
+          "title": "Ban `?? '<default>'` masking; convert getJsonProperty/getTomlProperty to sentinels"
+        },
+        {
+          "number": 1031,
+          "title": "forbidden-strings 0.5.0 binary discovery lacks the namespaced release-tag template"
+        },
+        {
+          "number": 286,
+          "title": "build(licenses): enforce npm package license metadata and generated license texts"
+        },
+        {
+          "number": 58,
+          "title": "docs: standardize README heading conventions across packages"
+        },
+        {
+          "number": 613,
+          "title": "refactor(*): extract one shared fuzz coverage harness from 13 sidecar copies (44 duplicate clusters)"
+        },
+        {
+          "number": 529,
+          "title": "Fix @monochromatic-dev/dev-script-file-enforcer published entry paths"
+        },
+        {
+          "number": 618,
+          "title": "refactor(*): one shared record and value type-guard family; two isRecord copies accept arrays (6 clusters, 90 sites)"
+        },
+        {
+          "number": 620,
+          "title": "refactor(*): shared disposables for temp directories and process-global overrides; two restores are wrong (5 clusters, 45 sites)"
+        },
+        {
+          "number": 659,
+          "title": "chore(slopo): propose 13 dismissals; hold 9 pending owners for the comparator, quoting, path-segment and license-reader patterns"
+        },
+        {
+          "number": 212,
+          "title": "build(*): fix runtime-export build drift and document tsdown exceptions"
+        },
+        {
+          "number": 680,
+          "title": "docs(audit): index of the 278 unnecessary-regex site issues"
+        },
+        {
+          "number": 528,
+          "title": "Fix @monochromatic-dev/dev-script-backup-path published entry paths"
+        },
+        {
+          "number": 530,
+          "title": "Fix @monochromatic-dev/dev-script-watch-restart published entry paths"
+        },
+        {
+          "number": 257,
+          "title": "Track removing Slint experimental feature flag"
+        },
+        {
+          "number": 666,
+          "title": "refactor(*): derive error names in one base class instead of 210 hand-written assignments"
+        },
+        {
+          "number": 502,
+          "title": "Replace the hand-rolled node_modules upward walks in file-enforcer and build-tool-css with fs-path root discovery"
+        },
+        {
+          "number": 616,
+          "title": "chore(slopo): recognise vendored, generated, archived and test-only trees in the duplicate-code review (11 clusters)"
+        },
+        {
+          "number": 500,
+          "title": "Replace the six find-up call sites with fs-path root discovery and drop find-up from the catalog"
+        },
+        {
+          "number": 614,
+          "title": "build(*): transpiled .js is emitted beside .ts sources in src/, producing 71 duplicate clusters"
+        },
+        {
+          "number": 611,
+          "title": "refactor(music-player-design): emit one support.js instead of two byte-identical copies (159 duplicate clusters)"
+        },
+        {
+          "number": 621,
+          "title": "refactor(pi-plugin): one shared fake Pi extension host and verify-built-extension runner (14 clusters, 12 packages)"
+        },
+        {
+          "number": 677,
+          "title": "Agent workflow: prevent expanding verification queues and invented delivery authorization barriers"
+        },
+        {
+          "number": 521,
+          "title": "Verify installability of every package published to pnpr"
+        },
+        {
+          "number": 657,
+          "title": "chore(slopo): propose 8 variant dismissals; hold 39 pending the two-sided-habit policy and a dispatch-macro owner, plus 3 uncertain"
+        },
+        {
+          "number": 456,
+          "title": "forbidden-strings: precompiled rule loading is unreachable for the runtime rules file"
+        },
+        {
+          "number": 537,
+          "title": "Stop pnpr from publishing packages whose only entries are TypeScript source or stripped exports"
+        },
+        {
+          "number": 656,
+          "title": "chore(slopo): propose 16 boilerplate-trivial dismissals; hold 17 pending owners for the error-naming, Rust-error, web-component and null-record patterns"
+        },
+        {
+          "number": 367,
+          "title": "De-root forbidden-strings rule materialization onto the embedded baseline"
+        },
+        {
+          "number": 236,
+          "title": "perf(file-enforcer): skip recompute on no-op runs with a staleness cache"
+        },
+        {
+          "number": 265,
+          "title": "Restore TSDoc inline links removed from comments"
+        },
+        {
+          "number": 374,
+          "title": "perf(lint): bring warm whole-repo oxlint under 60 seconds"
+        },
+        {
+          "number": 246,
+          "title": "Plan: migrate mise task shell from nushell to Node (approved)"
+        },
+        {
+          "number": 163,
+          "title": "build(dprint): document or enforce that dprint is managed via mise, not pnpm"
+        },
+        {
+          "number": 604,
+          "title": "Clear the fleet-wide Clippy shadow deny fallout (shadow_reuse, shadow_same, shadow_unrelated)"
+        },
+        {
+          "number": 247,
+          "title": "Replace Stryker with our own container-native mutation testing framework (no plan drafted yet)"
+        }
+      ]
+    },
+    {
+      "path": "/home/user/temp/agent/depot-logger-generated-selector-search-20261017.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "count": 0,
+      "issues": []
+    },
+    {
+      "path": "/home/user/temp/agent/depot-logger-git-prereq-search-20261017.json",
+      "sha256": "3113d4a842c76e3f948bbccff12afcadde2d369a07cd8dbfebedea3055a70e61",
+      "count": 7,
+      "issues": [
+        {
+          "number": 1140,
+          "title": "Git host: long-name inspection failure is classified as Conflict",
+          "state": "OPEN"
+        },
+        {
+          "number": 1139,
+          "title": "Git host: private input handle reports one link instead of zero",
+          "state": "OPEN"
+        },
+        {
+          "number": 1138,
+          "title": "Git host: replacement lock is missing after post-landing release",
+          "state": "OPEN"
+        },
+        {
+          "number": 1137,
+          "title": "Git host: installing through a replaced index lock returns success",
+          "state": "OPEN"
+        },
+        {
+          "number": 1136,
+          "title": "Git host: releasing a replaced index lock returns success",
+          "state": "OPEN"
+        },
+        {
+          "number": 1135,
+          "title": "Git host: PID-file creation failure reports an unqualified long-name diagnostic",
+          "state": "OPEN"
+        },
+        {
+          "number": 1032,
+          "title": "GitHub intermittently rejects main auto-push with GH006 without naming the rejected requirement",
+          "state": "OPEN"
+        }
+      ]
+    },
+    {
+      "path": "/home/user/temp/agent/depot-logger-jsonc-source-search-20261017.json",
+      "sha256": "5c16c353e1f156ec29e6e16f1af6b31f0a29ab56903afde14ceee677a252e340",
+      "count": 8,
+      "issues": [
+        {
+          "number": 613,
+          "title": "refactor(*): extract one shared fuzz coverage harness from 13 sidecar copies (44 duplicate clusters)",
+          "state": "OPEN"
+        },
+        {
+          "number": 398,
+          "title": "Define the repo idiom for .conformance sidecar packages",
+          "state": "OPEN"
+        },
+        {
+          "number": 658,
+          "title": "chore(slopo): propose 30 structural-idiom dismissals; hold 15 pending the i18n factory in #639 and the two-sided-habit policy",
+          "state": "OPEN"
+        },
+        {
+          "number": 634,
+          "title": "fix(monochromatic-lint): consume rust-linter-core instead of re-implementing spans and rules; end_line() returns the start line (10 clusters)",
+          "state": "OPEN"
+        },
+        {
+          "number": 657,
+          "title": "chore(slopo): propose 8 variant dismissals; hold 39 pending the two-sided-habit policy and a dispatch-macro owner, plus 3 uncertain",
+          "state": "OPEN"
+        },
+        {
+          "number": 656,
+          "title": "chore(slopo): propose 16 boilerplate-trivial dismissals; hold 17 pending owners for the error-naming, Rust-error, web-component and null-record patterns",
+          "state": "OPEN"
+        },
+        {
+          "number": 604,
+          "title": "Clear the fleet-wide Clippy shadow deny fallout (shadow_reuse, shadow_same, shadow_unrelated)",
+          "state": "CLOSED"
+        },
+        {
+          "number": 247,
+          "title": "Replace Stryker with our own container-native mutation testing framework (no plan drafted yet)",
+          "state": "CLOSED"
+        }
+      ]
+    },
+    {
+      "path": "/home/user/temp/agent/depot-logger-linter-broad-search-20261017.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "count": 0,
+      "issues": []
+    },
+    {
+      "path": "/home/user/temp/agent/depot-logger-linter-prereq-search-20261017.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "count": 0,
+      "issues": []
+    },
+    {
+      "path": "/home/user/temp/agent/depot-logger-logger-coverage-search-20261017.json",
+      "sha256": "f43e433ab63e116eeb5654703738779ec2dbe295200ea4ef6db892724cd66fce",
+      "count": 10,
+      "issues": [
+        {
+          "number": 620,
+          "title": "refactor(*): shared disposables for temp directories and process-global overrides; two restores are wrong (5 clusters, 45 sites)",
+          "state": "OPEN"
+        },
+        {
+          "number": 646,
+          "title": "refactor(*): internal duplication inside the fuzz sidecars, including two names for one enumerability test (26 clusters)",
+          "state": "OPEN"
+        },
+        {
+          "number": 497,
+          "title": "Mutation testing for the logger and toml-edit property campaigns",
+          "state": "OPEN"
+        },
+        {
+          "number": 1025,
+          "title": "CI: execute existing Playwright browser and end-to-end suites",
+          "state": "OPEN"
+        },
+        {
+          "number": 1029,
+          "title": "CI path filters omit shared lockfiles and toolchain inputs consumed by jobs",
+          "state": "OPEN"
+        },
+        {
+          "number": 479,
+          "title": "test(module-logger): post-release verification track",
+          "state": "OPEN"
+        },
+        {
+          "number": 613,
+          "title": "refactor(*): extract one shared fuzz coverage harness from 13 sidecar copies (44 duplicate clusters)",
+          "state": "OPEN"
+        },
+        {
+          "number": 503,
+          "title": "module-fs-path: redesign the ./node ensure/empty family around measured idioms, or delete it (survey attached)",
+          "state": "OPEN"
+        },
+        {
+          "number": 658,
+          "title": "chore(slopo): propose 30 structural-idiom dismissals; hold 15 pending the i18n factory in #639 and the two-sided-habit policy",
+          "state": "OPEN"
+        },
+        {
+          "number": 656,
+          "title": "chore(slopo): propose 16 boilerplate-trivial dismissals; hold 17 pending owners for the error-naming, Rust-error, web-component and null-record patterns",
+          "state": "OPEN"
+        }
+      ]
+    },
+    {
+      "path": "/home/user/temp/agent/depot-logger-matcher-broad-search-20261017.json",
+      "sha256": "56c7783096aea685392c11c58780a4dd0c2be034a3194ad9f12bacf3e5461003",
+      "count": 31,
+      "issues": [
+        {
+          "number": 730,
+          "title": "refactor(git-policy-cli.fuzz): drop the unnecessary regex at package/git-policy/cli.fuzz/bin/container.mjs:178",
+          "state": "OPEN"
+        },
+        {
+          "number": 720,
+          "title": "refactor(linter-monochromatic-lint.fuzz): drop the unnecessary regex at package/linter/monochromatic-lint.fuzz/bin/container.mjs:159",
+          "state": "OPEN"
+        },
+        {
+          "number": 728,
+          "title": "refactor(git-policy-cli.fuzz): drop the unnecessary regex at package/git-policy/cli.fuzz/bin/planted-controls.mjs:165",
+          "state": "OPEN"
+        },
+        {
+          "number": 718,
+          "title": "refactor(linter-monochromatic-lint.fuzz): drop the unnecessary regex at package/linter/monochromatic-lint.fuzz/bin/planted-controls.mjs:92",
+          "state": "OPEN"
+        },
+        {
+          "number": 729,
+          "title": "refactor(git-policy-cli.fuzz): drop the unnecessary regex at package/git-policy/cli.fuzz/bin/planted-controls.mjs:166",
+          "state": "OPEN"
+        },
+        {
+          "number": 719,
+          "title": "refactor(linter-monochromatic-lint.fuzz): drop the unnecessary regex at package/linter/monochromatic-lint.fuzz/bin/planted-controls.mjs:93",
+          "state": "OPEN"
+        },
+        {
+          "number": 613,
+          "title": "refactor(*): extract one shared fuzz coverage harness from 13 sidecar copies (44 duplicate clusters)",
+          "state": "OPEN"
+        },
+        {
+          "number": 1129,
+          "title": "feat(*): track upstream for the vendored forks",
+          "state": "OPEN"
+        },
+        {
+          "number": 642,
+          "title": "refactor(module-toml-edit): consolidate the comment scans, block matchers and trivia scanners (9 clusters)",
+          "state": "OPEN"
+        },
+        {
+          "number": 584,
+          "title": "prefer-error-is-error: is the lint scope right? full legacy Error detection inventory",
+          "state": "OPEN"
+        },
+        {
+          "number": 658,
+          "title": "chore(slopo): propose 30 structural-idiom dismissals; hold 15 pending the i18n factory in #639 and the two-sided-habit policy",
+          "state": "OPEN"
+        },
+        {
+          "number": 657,
+          "title": "chore(slopo): propose 8 variant dismissals; hold 39 pending the two-sided-habit policy and a dispatch-macro owner, plus 3 uncertain",
+          "state": "OPEN"
+        },
+        {
+          "number": 664,
+          "title": "refactor(quick-lru-fork): the fuzz coverage driver records evictions it never checks, and one expiry filter is written three times",
+          "state": "OPEN"
+        },
+        {
+          "number": 680,
+          "title": "docs(audit): index of the 278 unnecessary-regex site issues",
+          "state": "OPEN"
+        },
+        {
+          "number": 652,
+          "title": "refactor(*): shared domain helpers for LFS oids, JSONL, git worktrees and cache directories (9 clusters)",
+          "state": "OPEN"
+        },
+        {
+          "number": 629,
+          "title": "refactor(git-policy-cli): one fixture support module per language for the trust, e2e and perf fixtures (12 clusters)",
+          "state": "OPEN"
+        },
+        {
+          "number": 616,
+          "title": "chore(slopo): recognise vendored, generated, archived and test-only trees in the duplicate-code review (11 clusters)",
+          "state": "OPEN"
+        },
+        {
+          "number": 647,
+          "title": "refactor(rust-module-forbidden-regex): share the bench port helpers, codec mappings and bench harness (17 clusters)",
+          "state": "OPEN"
+        },
+        {
+          "number": 282,
+          "title": "docs(root): refresh the package inventory and remove stale implementation counts",
+          "state": "OPEN"
+        },
+        {
+          "number": 644,
+          "title": "refactor(dev-script): shared steps in vm-builder, watch-restart, file-enforcer, deps-cube and tofu (20 clusters)",
+          "state": "OPEN"
+        },
+        {
+          "number": 659,
+          "title": "chore(slopo): propose 13 dismissals; hold 9 pending owners for the comparator, quoting, path-segment and license-reader patterns",
+          "state": "OPEN"
+        },
+        {
+          "number": 503,
+          "title": "module-fs-path: redesign the ./node ensure/empty family around measured idioms, or delete it (survey attached)",
+          "state": "OPEN"
+        },
+        {
+          "number": 656,
+          "title": "chore(slopo): propose 16 boilerplate-trivial dismissals; hold 17 pending owners for the error-naming, Rust-error, web-component and null-record patterns",
+          "state": "OPEN"
+        },
+        {
+          "number": 336,
+          "title": "build(publish): exclude compiler state and tests from public package tarballs",
+          "state": "OPEN"
+        },
+        {
+          "number": 604,
+          "title": "Clear the fleet-wide Clippy shadow deny fallout (shadow_reuse, shadow_same, shadow_unrelated)",
+          "state": "CLOSED"
+        },
+        {
+          "number": 250,
+          "title": "Decide: how to eliminate per-package mise task `extends` boilerplate (4 prototypes built, vote needed)",
+          "state": "OPEN"
+        },
+        {
+          "number": 615,
+          "title": "refactor(music-player-design): the vendored _ds_bundle.js is loaded by nothing (10 duplicate clusters)",
+          "state": "OPEN"
+        },
+        {
+          "number": 379,
+          "title": "test(forbidden-regex): differential fuzz target for the batch API",
+          "state": "CLOSED"
+        },
+        {
+          "number": 363,
+          "title": "feat(forbidden-strings): scan file path names (filenames and directory segments) against the ruleset",
+          "state": "CLOSED"
+        },
+        {
+          "number": 377,
+          "title": "feat(forbidden-regex): line-indexed batch match API, contract and reference implementation",
+          "state": "CLOSED"
+        },
+        {
+          "number": 431,
+          "title": "fix(oxlint-plugin-stylistic): address right-associative exponentiation hazard",
+          "state": "CLOSED"
+        }
+      ]
+    },
+    {
+      "path": "/home/user/temp/agent/depot-logger-matcher-source-search-20261017.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "count": 0,
+      "issues": []
+    },
+    {
+      "path": "/home/user/temp/agent/depot-logger-native-report-search-20261017.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "count": 0,
+      "issues": []
+    },
+    {
+      "path": "/home/user/temp/agent/depot-logger-newuidmap-search-20261017.json",
+      "sha256": "7d9b651e6589e126bc6ca42a675503da432e95ac098eadc3f6c7997aef385b4e",
+      "count": 3,
+      "issues": [
+        {
+          "number": 1047,
+          "title": "Prepare a working Podman user mapping for Depot browser CI"
+        },
+        {
+          "number": 1088,
+          "title": "Depot VM virtiofs preparation fails on runner primary-group mismatch"
+        },
+        {
+          "number": 1116,
+          "title": "Depot mutation user-namespace adapter fails unmounting /sys/kernel/debug"
+        }
+      ]
+    },
+    {
+      "path": "/home/user/temp/agent/depot-logger-opfs-duplicate-search-20261017.json",
+      "sha256": "54aed81e78e59ee7c5251b29fabb2c7c1436fc9020907fb70d50183dd5e87c66",
+      "count": 9,
+      "issues": [
+        {
+          "number": 1052,
+          "title": "Distinguish unavailable OPFS from logger regressions in browser tests",
+          "state": "OPEN"
+        },
+        {
+          "number": 653,
+          "title": "refactor(module-logger): share the buffered-sink batching, the conf watcher close and the morph-compact IPC transport (11 clusters)",
+          "state": "OPEN"
+        },
+        {
+          "number": 505,
+          "title": "Decide whether to demote module-fs-path path operations despite the normalize decision",
+          "state": "OPEN"
+        },
+        {
+          "number": 479,
+          "title": "test(module-logger): post-release verification track",
+          "state": "OPEN"
+        },
+        {
+          "number": 500,
+          "title": "Replace the six find-up call sites with fs-path root discovery and drop find-up from the catalog",
+          "state": "CLOSED"
+        },
+        {
+          "number": 23,
+          "title": "Fix Playwright browser test failures after migration from Vitest",
+          "state": "CLOSED"
+        },
+        {
+          "number": 157,
+          "title": "build: track upstream JSR and vlt fixes for version-specific manifest endpoint 404",
+          "state": "CLOSED"
+        },
+        {
+          "number": 22,
+          "title": "Review: Zero-config multi-sink logger implementation",
+          "state": "CLOSED"
+        },
+        {
+          "number": 185,
+          "title": "build(module/es): plan the split of module/es into many smaller packages and the deletion of module/es itself",
+          "state": "CLOSED"
+        }
+      ]
+    },
+    {
+      "path": "/home/user/temp/agent/depot-logger-pmap-broad-search-20261017.json",
+      "sha256": "aeff5d649ea3295c75326898b20e2529b1aa11f515dd9a3a33655e05e7a46169",
+      "count": 7,
+      "issues": [
+        {
+          "number": 646,
+          "title": "refactor(*): internal duplication inside the fuzz sidecars, including two names for one enumerability test (26 clusters)",
+          "state": "OPEN"
+        },
+        {
+          "number": 613,
+          "title": "refactor(*): extract one shared fuzz coverage harness from 13 sidecar copies (44 duplicate clusters)",
+          "state": "OPEN"
+        },
+        {
+          "number": 1129,
+          "title": "feat(*): track upstream for the vendored forks",
+          "state": "OPEN"
+        },
+        {
+          "number": 657,
+          "title": "chore(slopo): propose 8 variant dismissals; hold 39 pending the two-sided-habit policy and a dispatch-macro owner, plus 3 uncertain",
+          "state": "OPEN"
+        },
+        {
+          "number": 658,
+          "title": "chore(slopo): propose 30 structural-idiom dismissals; hold 15 pending the i18n factory in #639 and the two-sided-habit policy",
+          "state": "OPEN"
+        },
+        {
+          "number": 660,
+          "title": "refactor(*): eight duplications where consolidate-or-dismiss is a judgement call (8 clusters)",
+          "state": "OPEN"
+        },
+        {
+          "number": 656,
+          "title": "chore(slopo): propose 16 boilerplate-trivial dismissals; hold 17 pending owners for the error-naming, Rust-error, web-component and null-record patterns",
+          "state": "OPEN"
+        }
+      ]
+    },
+    {
+      "path": "/home/user/temp/agent/depot-logger-pmap-source-search-20261017.json",
+      "sha256": "f024fd0a46ffc7acaa25b3b9ce3d5cba92c2772c2296f89720e623cf8857cacd",
+      "count": 2,
+      "issues": [
+        {
+          "number": 657,
+          "title": "chore(slopo): propose 8 variant dismissals; hold 39 pending the two-sided-habit policy and a dispatch-macro owner, plus 3 uncertain",
+          "state": "OPEN"
+        },
+        {
+          "number": 658,
+          "title": "chore(slopo): propose 30 structural-idiom dismissals; hold 15 pending the i18n factory in #639 and the two-sided-habit policy",
+          "state": "OPEN"
+        }
+      ]
+    },
+    {
+      "path": "/home/user/temp/agent/depot-logger-report-install-search-20261017.json",
+      "sha256": "138b6f4d4447559d1e147a6d35c3d44b57192b41d67d93133a8334831cf3d253",
+      "count": 1,
+      "issues": [
+        {
+          "number": 618,
+          "title": "refactor(*): one shared record and value type-guard family; two isRecord copies accept arrays (6 clusters, 90 sites)",
+          "state": "OPEN"
+        }
+      ]
+    }
+  ],
+  "sourceBlockedInternalFuzzFiles": [
+    {
+      "package": "package/module/make-asynchronous-fork.fuzz",
+      "executedFirst": "src/differential.property.unit.test.ts",
+      "unexecutedFollowing": "src/fork.property.unit.test.ts",
+      "reason": "Authored execFileSync loop stops on first source-file failure"
+    },
+    {
+      "package": "package/module/matcher-fork.fuzz",
+      "executedFirst": "src/differential.property.unit.test.ts",
+      "unexecutedFollowing": "src/limits.property.unit.test.ts",
+      "reason": "Authored execFileSync loop stops on first source-file failure"
+    },
+    {
+      "package": "package/module/p-map-fork.fuzz",
+      "executedFirst": "src/differential.property.unit.test.ts",
+      "unexecutedFollowing": "src/limits.property.unit.test.ts",
+      "reason": "Authored execFileSync loop stops on first source-file failure"
+    }
+  ],
+  "relatedSpawnClassifierSourceComparison": [
+    {
+      "path": "package/cli/mutation-test/src/container/test-run.ts",
+      "loggerSourceSha256": "d808824fdba60983af9983b110e089ab4245c38df9e6b2dc92afa4e60f750def",
+      "tomlSourceSha256": "d808824fdba60983af9983b110e089ab4245c38df9e6b2dc92afa4e60f750def",
+      "identical": true
+    },
+    {
+      "path": "package/cli/mutation-test/src/container/mutant-loop.ts",
+      "loggerSourceSha256": "dc8006a0c3b212f3550427c1ece3af69caa7d2c9aaac92445701a51261e643a4",
+      "tomlSourceSha256": "dc8006a0c3b212f3550427c1ece3af69caa7d2c9aaac92445701a51261e643a4",
+      "identical": true
+    }
+  ],
+  "mutationClassificationLimit": {
+    "relatedIssue": 1142,
+    "issueControlSourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+    "loggerCaughtSpawnOccurrenceProven": false,
+    "killedTotalsAreSourceNativeClassifications": true,
+    "literalAssertionCreditInferred": false
+  },
+  "sourceSelectorCorrection": {
+    "number": 1162,
+    "initialBodySha256": "e102a4cfdb50c7b78774609316c944468327ee7ce97c42815dce75ce0ac9cd0a",
+    "correctedBodySha256": "2445999cecc5073e402c5c153c74408824536cf33438364ee950fdec4951b378",
+    "remoteBodyMatches": true,
+    "callerRevision": "18e8c13173",
+    "callerWorkflowSha256": "296b6aa40350fdda274e62fe667bc408597ea10cd1cda8d8e9acbeda9655d53d",
+    "receiverTaskFileSha256": "6b49f4161a68b9058cadfc8409cb790adbc1edadfe2acdfc6feae1a71dd3ff2e",
+    "wrongCallerVariable": "DEPOT_LOGGER_EXTERNAL_GROUP",
+    "actualReceiverVariable": "DEPOT_LOGGER_EXTERNAL",
+    "comment": "https://github.com/Aquaticats/Monochromatic/issues/1162#issuecomment-6232730007",
+    "currentState": "CLOSED",
+    "retractedInitialNameDirection": true
   }
 }

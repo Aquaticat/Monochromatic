@@ -495,21 +495,30 @@ Native mutation-report JSON was omitted from these historical artifacts;
 per-mutant reconciliation is unavailable, and CLI totals are explicitly summaries.
 Development union v3 has all 719 package identities terminal, with no latest unfinished task;
 it remains separate from coherent replay and does not infer eligibility from terminal state.
-The remaining queue is fresh native-report retention and an authentic bounded CLI collector control,
-filing the other distinct source/harness incidents and root integration of the candidate.
-The native-report collector now has four positive, seven rejected and one guard-removal control;
-actual bounded source control `r1mn88ccqt` is running at clean-pushed `99edd42b6e`,
-on a `2x8` provider with one source file/container/shard and zero whole mutation-check credit.
-Its terminal collection and native JSON byte/freshness verification are queued next.
+The native-report collector has four valid, seven rejected and one guard-removal control.
 The emitted program's syntax/environment controls pass;
 package type checking stops at this worktree's absent `nano-spawn` dependency before checking types.
 Control `r1mn88ccqt` terminates before mutation invocation:
 its diagnostic-only workflow omits frozen pnpm installation and caught-value cannot resolve config-rolldown.
 The exact failed prerequisite log and strict source guards are retained.
-Bounded recovery `knsghczl71` at `392a3ea041` adds the combined route's existing frozen install;
-terminal collection and native report proof are queued, with no whole mutation credit.
+Recovery `knsghczl71` at clean-pushed `392a3ea04128547d9b452dd3bea7a4df1235acd1` is independently verified.
+Its original bounded TOML CLI retains a fresh 650-byte native report:
+`9cd1056a095eaea1` is `compileError`, zero unrun IDs, zero mutant assertion/whole-check credit.
+Both original build prerequisites, strict source identity, 33,427-byte readonly metadata,
+original/copied/archive hashes and actual volume/container cleanup verify.
+The actual `2x8` allocation is 360.034 CPU-seconds, or $0.0180017 before credits.
+The parent has exact selective graft blocks/hashes for the remainder collector and combined native-verification archive path;
+preserve its canonical guards/native/desktop helpers and omit diagnostic-only pilot code.
 Async/matcher/p-map fuzz tasks source-fail in their first differential property file;
 their later fork/limits property file is explicitly unexecuted under the authored fail-fast loop.
+Distinct source boundaries are filed as `#1145` to `#1156`;
+verified scoped trial repairs are closed as `#1157` to `#1159` and `#1161` to `#1163`.
+Existing `#335`/`#1047` have additive consumer proofs; `#1160` stays open for final per-ID artifact reconciliation.
+The initial `#1162` field-name direction is explicitly corrected from immutable caller/receiver definitions.
+Classifier `#1142` has byte-identical deciding modules in both relevant source revisions;
+native `killed` totals do not imply literal assertion credit or prove a caught-spawn occurrence here.
+The remaining queue belongs to root: selective integration, complete-manifest digest regeneration,
+coherent authenticated GHA/VM/Depot dispatch and final source/prerequisite/per-ID reconciliation.
 No generated outputs will be restored to manufacture a clean receipt.
 Only harness execution failures receive recovery edits;
 historical source failures remain diagnostics.

@@ -558,6 +558,69 @@ and strict source before/after identities match.
 Its actual `2x8` usage is 119.006 allocated CPU-seconds, or $0.0059503 before credits.
 Neither cleanup control repeats an original generator or gives source-check credit.
 
+## Native reports and final adapter handoff
+
+Authentic source control `knsghczl71` passes at clean-pushed
+`392a3ea04128547d9b452dd3bea7a4df1235acd1`.
+Both frozen build prerequisites pass.
+The original TOML mutation task runs one explicitly selected source file with one container and shard size one,
+retaining its authored full-suite context.
+Its 37 source test files reach the baseline gate before the mutant loop.
+The actual native report independently contains mutant `9cd1056a095eaea1`, status `compileError`, and zero unrun IDs.
+This gives zero mutant assertion or whole frozen mutation-check credit.
+The fresh native report is 650 bytes, SHA-256
+`692e5dd934f799518de76762ee34a0f22558a66a2832188cf5b074dfc37d7825`.
+Its ID and bytes are independently read from this `ef014` consumer, not inferred from another source revision.
+
+The exact production snapshot/copy blocks execute with only the diagnostic input-receipt filename changed.
+All retained files are hash-bound, and strict authoritative source before/after identities match.
+The actual runtime image is `51434727e64ac7daef2c68ce8f962f9082cb3be27c2574999bea4fede500fc81`.
+Its 33,427-byte baked metadata is copied byte-identically from root `0600` to source-owner `0600`
+and bound readonly; original, copied and archived hashes match.
+Actual volume and metadata-container cleanup verify.
+The `2x8` provider consumes 360.034 allocated CPU-seconds, or $0.0180017 before credits.
+Historical missing reports remain missing.
+
+The verified adapter ref is `392a3ea04128547d9b452dd3bea7a4df1235acd1`.
+The parent owns selective integration of the generated cleanup task/caller,
+native-report filesystem imports and snapshot/finally blocks,
+and combined `logger-native-verification/` artifact path.
+The exact block hashes and source strings are retained in the companion evidence.
+Its strengthened canonical cohort/source/native/desktop helpers must remain intact.
+The diagnostic-only pilot task/workflow is not required by the final route.
+`completeGraph` remains false until the parent freezes and regenerates the complete common registration.
+
+## Filed terminal boundaries
+
+Distinct source incidents `#1145` to `#1156` record the coverage-baseline/gate failures,
+matcher disagreement, separate p-map comparisons, separate async timeout groups and conf red baseline.
+The six source host assertions remain `#1135` to `#1140`.
+Scoped trial repairs `#1157`, `#1158`, `#1159`, `#1161`, `#1162` and `#1163`
+are closed only after their actual consumer/control evidence is posted and remotely verified.
+Native report incident `#1160` remains open for final common per-ID artifact reconciliation.
+Existing PATH drift `#335` and rootless GID mismatch `#1047` receive additive immutable-source consumer proofs.
+Every new title/body/label and posted comment is re-fetched and checked against its retained rendered draft.
+
+The initial `#1162` body reversed the caller/receiver environment names; that direction is retracted.
+Immutable harness `18e8c13173` sets `DEPOT_LOGGER_EXTERNAL_GROUP` in the pilot,
+while its actual adapter reads `DEPOT_LOGGER_EXTERNAL`.
+The corrected body and explicit correction comment are verified against both immutable definitions.
+The original failure, correction commit and later consumer proof are unchanged.
+A narrow process-rule proposal is retained in
+[CI incident source-boundary evidence](../planning/ci-incident-source-boundary-evidence.md).
+
+Related source classifier incident `#1142` shows why a native `killed` classification alone is not literal assertion credit.
+The deciding `test-run.ts` and `mutant-loop.ts` files are byte-identical between logger `ef014` and its `525d2e` control.
+Their source hashes are retained in the companion evidence.
+No caught-spawn occurrence is inferred for the logger campaign, and its CLI totals remain source-native classifications.
+
+The remaining execution belongs to the parent:
+integrate the verified blocks,
+regenerate auxiliary digests when freezing the complete manifest,
+bind every package/external/GHA/VM route to the same authenticated cohort,
+then collect source failures, actual internal executions and prerequisite blocks separately.
+The development union and these adapter controls establish no single complete passing-pipeline latency.
+
 [mapping-incident]: https://github.com/Aquaticats/Monochromatic/issues/1116
 [metadata-incident]: https://github.com/Aquaticats/Monochromatic/issues/1117
 [candidate-correction]: https://github.com/Aquaticats/Monochromatic/commit/3ac9616096bc45fe4e02cddfec8a14fb9b6b72d6#commitcomment-205400693
