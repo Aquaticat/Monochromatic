@@ -22,18 +22,22 @@ Resume the repository-wide review of this repo without re-deriving its scope,
 - [x] Fan out the remaining review scopes to subagents.
  All 66 units completed on 2026-10-17;
  632 findings landed in `findings/*.json` (66 files).
-- [ ] Deduplicate findings against each other and the 826 open issues.
- In progress:
- three dedupe judges (`decisions-a`, `decisions-b`, `decisions-c`) each own a third of
- the findings files and decide file, merge, or skip per finding;
- one splitter owns the `cross-duplication-001` aggregate (split into one finding per
- pattern), the recorded verdicts (`code-pi-plugin-2-002` merges into `cross-build-002`),
- and authors the three direct-file findings (SKILL.md `PP5` and `TLG` contradictions,
- `stack-rust.md` stale `MXR` tag).
- Mechanical candidates:
- `dedupe/candidates.json` (5 title-similarity groups, 96 shared-evidence-site groups).
- Judge output merges into `dedupe/decisions.json` (chains resolved) before filing.
+- [x] Deduplicate findings against each other and the 826 open issues.
+ Complete on 2026-10-17:
+ 643 findings (632 review findings, 6 split aggregate findings, 5 direct findings);
+ judge verdicts file 581, merge 20, skip 42 (skips verified against live issues with
+ `gh issue view`; notable: #1124 repository.url, #636 search-fetch transport, #613
+ fuzz coverage harness, #294 line-length migration).
+ Reconciliation overrides live in `dedupe/decisions-reconcile.json`:
+ the split aggregate patterns are filed,
+ `direct-003` merges into `docs-planning-003`,
+ `direct-004` and `direct-005` recover sites that open-issue skips would have lost.
+ Merged result: `dedupe/decisions.json` (chains resolved, validated by
+ `merge-decisions.ts`).
 - [ ] File one issue per distinct defect and report the issue numbers.
+ In progress:
+ `node file-issues.ts` files the 581 findings with paced `gh issue create`,
+ resumable through `filed.jsonl`.
 
 ## State on 2026-10-17
 
