@@ -1,5 +1,14 @@
 import {SourceCollectionError} from '../collector.mjs';
 
+/** Native custom data is retained at construction and admitted by the actual context-copy callback. */
+function isCustomDataInput(origin){
+  const {source}=origin;
+  if(source.inputOrigin==='native-custom-construction')return true;
+  if(source.inputOrigin!=='native-agent-input')return false;
+  const metadata=JSON.parse(source.inputLocation.metadataJSON);
+  return metadata.role==='custom'&&['steer','followUp'].includes(metadata.method);
+}
+
 //region Read and refresh the current run without treating retained ancestry as current.
 /** Read and refresh the current run without treating retained ancestry as current. */
 export function createRunLifecycle({state,history,known,phase,check,publishScope,reserve,base,fail,reject,assertLive,readConstructedInputs,retainContextInputs,assertSessionInputs,readRoot}){
@@ -66,7 +75,16 @@ function read({options}){
     const constructedInputs=readConstructedInputs?.();
     if((constructedInputs!==scope.constructedInputs)&&(constructedInputs?.length
       ||scope.constructedInputs
-      ?.length))retainContextInputs([]);
+      ?.length)){
+      const previous=scope.constructedInputs??[];
+      const customOnly=constructedInputs!==undefined&&constructedInputs.length>=previous.length
+        &&previous.every((origin,index)=>origin===constructedInputs[index])
+        &&constructedInputs.slice(previous.length).every(isCustomDataInput);
+      // Pending custom data has not changed this run's governing inputs or its serialized request.
+      // Its original publication remains available when a real context callback admits the message.
+      if(customOnly)scope.constructedInputs=constructedInputs;
+      else retainContextInputs([]);
+    }
     return phase({
       scope,
       at:'current-read',

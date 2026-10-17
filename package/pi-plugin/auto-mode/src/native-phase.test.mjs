@@ -4,6 +4,7 @@ import {join} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {setTimeout as wait} from 'node:timers/promises';
 import {logger} from '@monochromatic-dev/module-logger/ts';
+import {writeFile} from 'node:fs/promises';
 import {createEnvironment} from '../dist/native/contract/integration/native-batch/environment.mjs';
 import {createRootSessionFactory} from '../dist/native/contract/integration/native-batch/session-root.ts';
 import {bindNativePolicyRuntime} from '../dist/native/contract/integration/native-batch/runtime.mjs';
@@ -13,7 +14,7 @@ import {createDomainFixtureAssessment} from '../dist/native/contract/integration
 //region Real native callbacks surround one complete-group review.
 /** Each mode runs in a separate process because native fixture configuration owns its disposable home. */
 const mode=process.argv[2]??'parallel';
-assert.ok(['parallel','sequential','implicit-sequential','invalid','before-block','tool-error','deny','cancel','notification-context','notification-turn','steer-user'].includes(mode));
+assert.ok(['parallel','sequential','implicit-sequential','invalid','before-block','tool-error','deny','cancel','notification-context','notification-turn','steer-user','policy-change'].includes(mode));
 /** Event traces retain native call identity without depending on subprocess completion order. */
 const events=[];
 /** Model and execution counters distinguish missing coverage from successful withholding. */
@@ -87,6 +88,7 @@ const runtime=bindNativePolicyRuntime({
       mode==='notification-turn'?{triggerTurn:true,deliverAs:'steer'}:{triggerTurn:false});
     }
     if(mode==='steer-user'&&observations.attempts===2)await session.steer('Stop the proposed operation. Reply without executing tools.');
+    if(mode==='policy-change'&&observations.attempts===2)await writeFile(join(env.options.cwd,'AGENTS.md'),'RUL:\n The proposed inspection is prohibited.\n');
     return await sendAssessment(input);
   },
   async terminalFetch(){
@@ -100,7 +102,7 @@ const runtime=bindNativePolicyRuntime({
 await using cleanup={async [Symbol.asyncDispose](){await state.abortTask;session.dispose();await session.agent.waitForIdle();runtime.detach();unsubscribe();await env.drain();await logger.flush();}};
 await session.prompt('Perform the complete proposed local inspection.');
 await state.abortTask;
-const withheld=['invalid','before-block','deny','steer-user'].includes(mode);
+const withheld=['invalid','before-block','deny','steer-user','policy-change'].includes(mode);
 assert.equal(observations.executions,withheld?0:mode==='cancel'?1:3);
 assert.equal(observations.attempts,['invalid','before-block'].includes(mode)?0:2);
 assert.equal(observations.active,0);
