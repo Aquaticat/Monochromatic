@@ -805,7 +805,7 @@ run = '''
 const { spawn, spawnSync, execFileSync } = await import('node:child_process')
 const { once } = await import('node:events')
 const { setTimeout: delay } = await import('node:timers/promises')
-const { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, openSync, closeSync, readSync, statSync, realpathSync } = await import('node:fs')
+const { readFileSync, writeFileSync, copyFileSync, chmodSync, constants, mkdirSync, readdirSync, existsSync, openSync, closeSync, readSync, statSync, lstatSync, realpathSync } = await import('node:fs')
 const { join, delimiter, isAbsolute } = await import('node:path')
 const { homedir } = await import('node:os')
 const { randomUUID, createHash } = await import('node:crypto')
@@ -817,6 +817,7 @@ const directory = control?.output ?? join(homedir(), 'temp/agent/depot-complete-
 assert(isAbsolute(directory))
 mkdirSync(directory, { recursive: true, mode: 0o700 })
 const source = control?.cwd ?? join(process.env.GITHUB_WORKSPACE, 'source')
+const nativeReportSources = [join(source, 'mutation-report.json'), join(source, 'package/dev-script/file-enforcer/mutation-report.json')].map(path => ({ path, existedAtStart: existsSync(path), mtimeMsAtStart: existsSync(path) ? lstatSync(path).mtimeMs : undefined }))
 const manifest = control ? undefined : JSON.parse(readFileSync(join(process.env.GITHUB_WORKSPACE, 'harness/.depot/manifests/toml.json'), 'utf8'))
 if (!control) assert(!existsSync(join(directory, 'toml-results.json')), 'Refusing stale source results')
 const checkId = control?.checkId ?? process.env.DEPOT_TOML_CHECK_ID
@@ -977,6 +978,22 @@ const shardEvidence = shardFiles.map(relativePath => {
   return { path: relativePath, bytes: statSync(path).size, sha256: hash.digest('hex') }
 })
 writeFileSync(join(directory, 'toml-mutant-evidence-index.json'), JSON.stringify({ fixtureOnly: !!control, files: shardEvidence }, null, 2) + '\n')
+const nativeReports = nativeReportSources.flatMap((row, index) => {
+  if (!existsSync(row.path) || (!control && !checkId.endsWith('.test.mutation'))) return []
+  const stat = lstatSync(row.path)
+  assert(stat.isFile(), 'Default mutation report must be a regular file')
+  const artifactPath = 'toml-native-report-' + checkId + '-' + index + '.json'
+  const target = join(directory, artifactPath)
+  copyFileSync(row.path, target, constants.COPYFILE_EXCL)
+  chmodSync(target, 0o600)
+  const descriptor = openSync(target, 'r')
+  const hash = createHash('sha256')
+  const bytes = Buffer.alloc(65536)
+  let length
+  try { while ((length = readSync(descriptor, bytes, 0, bytes.length, null)) > 0) hash.update(bytes.subarray(0, length)) }
+  finally { closeSync(descriptor) }
+  return [{ ...row, artifactPath, bytes: stat.size, sha256: hash.digest('hex'), mtimeMs: stat.mtimeMs, producedDuringInvocation: stat.mtimeMs >= Date.parse(consumerSpawnedAt) && stat.mtimeMs !== row.mtimeMsAtStart }]
+})
 const stdout = readFileSync(outputPath)
 let selectedResult
 const resultsPath = join(directory, 'toml-results.json')
@@ -990,6 +1007,7 @@ record.containerIdsAfter = remainingAfter
 record.consumer = { command, args, cwd: control ? source : process.cwd(), selectedSourceTask: manifest?.checks.find(row => row.id === checkId)?.task }
 record.adapterOverlay = { DEPOT_CI_CHECK_IDS: env.DEPOT_CI_CHECK_IDS, DEPOT_CI_WORKERS: env.DEPOT_CI_WORKERS, TMPDIR: shardDirectory, correlatedPodmanSha256: record.wrapperSha256 }
 record.shardEvidence = shardEvidence
+record.nativeReports = nativeReports
 writeFileSync(prefix + '-results.json', JSON.stringify(record, null, 2) + '\n')
 console.log(JSON.stringify(record))
 child.unref()
