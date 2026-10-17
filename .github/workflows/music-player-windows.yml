@@ -27,6 +27,19 @@ name: depot-complete-windows-test-recovery
 
 on:
   workflow_dispatch:
+    inputs:
+      cohort_id:
+        description: Frozen complete-graph replay identifier
+        required: true
+        type: string
+      manifest_sha256:
+        description: SHA-256 of the shared frozen complete manifest
+        required: true
+        type: string
+      requested_at:
+        description: Shared request instant in ISO 8601 UTC
+        required: true
+        type: string
   pull_request:
     paths:
     - 'package/music-player/desktop-app/**'
@@ -148,6 +161,9 @@ jobs:
         PROVENANCE_PHASE: before
         PROVENANCE_CASE: windows
         PROVENANCE_OUTPUT: ${{ runner.temp }}/depot-provenance
+        COHORT_ID: ${{ inputs.cohort_id }}
+        COHORT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+        COHORT_REQUESTED_AT: ${{ inputs.requested_at }}
       run: mise run //package/dev-script/task-util:trial:depot:coherent:provenance
 
     # The repository pins its Rust toolchain in mise.lock (a dated nightly shared by every package); read it
@@ -494,6 +510,9 @@ jobs:
         PROVENANCE_PHASE: after
         PROVENANCE_CASE: windows
         PROVENANCE_OUTPUT: ${{ runner.temp }}/depot-provenance
+        COHORT_ID: ${{ inputs.cohort_id }}
+        COHORT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+        COHORT_REQUESTED_AT: ${{ inputs.requested_at }}
       run: mise run //package/dev-script/task-util:trial:depot:coherent:provenance
     - name: Preserve frozen source provenance
       if: ${{ always() }}
