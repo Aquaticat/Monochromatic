@@ -903,6 +903,10 @@ run = [
 description = "Verify parsed Bash control flow, literal data, and thinking exclusion at the built model boundary"
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-shell-projection.test.mjs"
 
+[tasks."test:visible-context"]
+description = "Verify built conversation windows, thinking exclusion, and parsed historical Bash inputs"
+run = "node --max-old-space-size=512 src/context.unit.test.ts"
+
 [tasks."test:native:runtime-hooks"]
 description = "Verify native hook installation and rollback without message listeners"
 run = [

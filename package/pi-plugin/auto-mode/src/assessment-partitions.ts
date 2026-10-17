@@ -16,8 +16,13 @@ import {
  Assessment lifecycle logs exclude all provider and source content.
  */
 const l=tagged({tag:'auto-mode-assessment-partitions'});
-/** Judgment allowance includes sequential bundles and their parallel calls. */
-const transportAllowance = { calls: 9, parallel: 3, } as const;
+/**
+ Judgment allowance includes sequential bundles and their parallel calls.
+ */
+const transportAllowance = {
+  calls: 9,
+  parallel: 3,
+} as const;
 
 //region Every bundle retains one shared performance target and actual call accounting.
 /**
