@@ -98,6 +98,13 @@ export async function dispatchPreparedBatch({
         active('prepare-entry');
         const result=await prepare(hook);
         hookState.blocked=Boolean(result?.block);
+        if(hookState.blocked){
+          state.decision??=Object.freeze({block:true,reason:result.reason||'A member preparation blocked this complete group'});
+          await finishWithheld();
+        }else if(state.decision?.block){
+          await finishWithheld();
+          return state.decision;
+        }
         return result;
       }
       const prepared=await nativePhases.prepare({call,before});
@@ -106,10 +113,8 @@ export async function dispatchPreparedBatch({
         state.decision??=Object.freeze({block:true,reason:hookState.blocked
           ?prepared.result.content?.[0]?.text||'A member preparation blocked this complete group'
           :'A member failed native preparation before group admission'});
-        if(hookState.blocked)await finishWithheld();
         await publish({record,outcome:{toolCall:call,result:prepared.result,isError:prepared.isError}});
         records.push(record);
-        await finishWithheld();
       }else{
         if(prepared.kind!=='prepared')throw new PreparedBatchContractError('Original native preparation returned no prepared member');
         record.member=manifest({call,prepared});
@@ -123,6 +128,7 @@ export async function dispatchPreparedBatch({
       if(!records.includes(record))records.push(record);
     }
   }
+  if(state.decision!==undefined)await finishWithheld();
   if(state.decision===undefined){
     try{
       active('input-prepared');
