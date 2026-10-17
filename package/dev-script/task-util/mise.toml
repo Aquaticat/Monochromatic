@@ -629,7 +629,9 @@ if (result.signal) console.error(JSON.stringify({ event: 'trial-headless-composi
 process.exitCode = result.status ?? 1;
 `
 }
-function continuationHook({ targetUrl, sourceSha256 }) {
+function continuationHook({ targetUrl, sourceSha256, archiveRoot }) {
+  assert.equal(typeof archiveRoot, 'string')
+  assert(archiveRoot.startsWith('/'), 'Session log archive must use an absolute private path')
   const replacement = [
     '    try {',
     '      await SESSION_RUNNERS[name](context,);',
@@ -643,6 +645,33 @@ function continuationHook({ targetUrl, sourceSha256 }) {
     '      },);',
     '      await checkPreconditions(config,);',
     '    }',
+  ].join('\n')
+  const cleanupCall = ['  await rm(', '    base,', '    {', '      recursive: true,', '      force: true,', '    },', '  );'].join('\n')
+  const cleanupReplacement = ['  try {', '    await retainTrialSessionLogs(base);', '  } finally {', ...cleanupCall.split('\n').map(line => '  ' + line), '  }'].join('\n')
+  const archiveSource = [
+    'async function retainTrialSessionLogs(base) {',
+    "  const fs = await import('node:fs/promises');",
+    "  const { join, basename, resolve, sep } = await import('node:path');",
+    "  const { createHash } = await import('node:crypto');",
+    "  const { strict: assert } = await import('node:assert');",
+    '  const archiveRoot = ' + JSON.stringify(archiveRoot) + ';',
+    "  assert(!resolve(archiveRoot).startsWith(resolve(base) + sep) && resolve(archiveRoot) !== resolve(base), 'Archive must survive original scratch cleanup');",
+    '  await fs.mkdir(archiveRoot, { recursive: true, mode: 0o700 });',
+    '  const destination = join(archiveRoot, basename(base));',
+    '  await fs.mkdir(destination, { mode: 0o700 });',
+    '  const files = [];',
+    "  for (const entry of (await fs.readdir(base, { withFileTypes: true })).filter(entry => entry.name.endsWith('.log')).toSorted((a, b) => a.name.localeCompare(b.name))) {",
+    "    assert(entry.isFile(), 'Session log must be a regular file: ' + entry.name);",
+    '    const original = await fs.readFile(join(base, entry.name));',
+    '    await fs.copyFile(join(base, entry.name), join(destination, entry.name), fs.constants.COPYFILE_EXCL);',
+    '    const copied = await fs.readFile(join(destination, entry.name));',
+    "    assert.deepEqual(copied, original, 'Archived session bytes differ: ' + entry.name);",
+    "    files.push({ name: entry.name, bytes: original.length, sha256: createHash('sha256').update(original).digest('hex') });",
+    '  }',
+    "  const record = { schemaVersion: 1, event: 'trial-session-logs-archived', sourceBase: base, destination, files };",
+    "  await fs.writeFile(join(destination, 'archive-manifest.json'), JSON.stringify(record, null, 2) + '\\n', { mode: 0o600 });",
+    '  console.error(JSON.stringify(record));',
+    '}',
   ].join('\n')
   return `
 const { registerHooks } = await import('node:module');
@@ -662,10 +691,36 @@ registerHooks({ load(url, context, nextLoad) {
   const originalCall = '    await SESSION_RUNNERS[name](context,);';
   assert.equal(source.split(originalImport).length, 2);
   assert.equal(source.split(originalCall).length, 2);
-  const patched = source.replace(originalImport, "import { CheckFailureError, expect, } from './errors.ts';").replace(originalCall, ${JSON.stringify(replacement)});
-  console.error(JSON.stringify({ event: 'trial-session-continuation-applied', target, sourceSha256: expected, loadedSha256: digest(source), patchedSha256: digest(patched), catches: 'CheckFailureError only', cleanupGuard: 'original checkPreconditions before continuation' }));
+  const cleanup = ${JSON.stringify(cleanupCall)};
+  assert.equal(source.split(cleanup).length, 2, 'Source scratch cleanup must have one exact anchor');
+  assert(!source.includes('function retainTrialSessionLogs('), 'Archive helper must not shadow source declarations');
+  const continued = source.replace(originalImport, "import { CheckFailureError, expect, } from './errors.ts';").replace(originalCall, ${JSON.stringify(replacement)});
+  const patched = ${JSON.stringify(archiveSource)} + '\\n' + continued.replace(cleanup, ${JSON.stringify(cleanupReplacement)});
+  console.error(JSON.stringify({ event: 'trial-session-continuation-applied', target, sourceSha256: expected, loadedSha256: digest(source), patchedSha256: digest(patched), catches: 'CheckFailureError only', cleanupGuard: 'original checkPreconditions before continuation', logArchiveRoot: ${JSON.stringify(archiveRoot)}, scratchCleanup: 'original rm in finally' }));
   return { ...loaded, source: patched };
 } });
+`
+}
+function sessionLogArchiveProbe(archiveRoot) {
+  return `
+const {readFileSync,readdirSync,existsSync}=await import('node:fs');
+const {join,basename}=await import('node:path');
+const {createHash}=await import('node:crypto');
+const {strict:assert}=await import('node:assert');
+const root=${JSON.stringify(archiveRoot)};
+const directories=readdirSync(root,{withFileTypes:true});assert(directories.length>0,'No pre-cleanup session log archive');
+const archives=[];
+for(const entry of directories){
+ assert(entry.isDirectory());
+ const directory=join(root,entry.name);const record=JSON.parse(readFileSync(join(directory,'archive-manifest.json'),'utf8'));
+ assert.equal(record.schemaVersion,1);assert.equal(record.destination,directory);assert.equal(basename(record.sourceBase),entry.name);
+ assert.equal(existsSync(record.sourceBase),false,'Original source scratch cleanup must still remove its base');
+ assert(record.files.length>0,'Completed source run must retain actual session logs');
+ assert.deepEqual(readdirSync(directory).filter(name=>name.endsWith('.log')).sort(),record.files.map(file=>file.name).sort());
+ for(const file of record.files){assert.equal(basename(file.name),file.name);const bytes=readFileSync(join(directory,file.name));assert.equal(bytes.length,file.bytes);assert.equal(createHash('sha256').update(bytes).digest('hex'),file.sha256);}
+ archives.push({...record,sourceScratchRemoved:true});
+}
+console.log(JSON.stringify({event:'trial-session-log-archive-verified',archives}));
 `
 }
 async function sourceSessions(source) {
@@ -696,10 +751,11 @@ const runnerBytes = readFileSync(runnerPath)
 assert.deepEqual(runnerBytes, execFileSync('git', ['show', `HEAD:${runnerRelativePath}`], { cwd: source }), 'Continuation must inspect exact committed runner bytes')
 const runnerSha256 = createHash('sha256').update(runnerBytes).digest('hex')
 const hookPath = join(directory, 'desktop-session-continuation.mts')
-const hookSource = continuationHook({ targetUrl: pathToFileURL(runnerPath).href, sourceSha256: runnerSha256 })
+const archiveRoot = join(directory, 'desktop-runtime-scratch', 'retained')
+const hookSource = continuationHook({ targetUrl: pathToFileURL(runnerPath).href, sourceSha256: runnerSha256, archiveRoot })
 writeFileSync(hookPath, hookSource, { mode: 0o600 })
 const nodeOptions = `${process.env.NODE_OPTIONS ?? ''} --import=${pathToFileURL(hookPath).href}`.trim()
-const continuation = { mode: 'ordinary-session-failure-continuation', sourceRelativePath: runnerRelativePath, sourceSha256: runnerSha256, hookPath, hookSha256: createHash('sha256').update(hookSource).digest('hex'), sourceEditedOnDisk: false, syntheticFailurePrefix: 'trial/session-aborted/', fatalErrorsPreserved: ['SafetyStopError', 'unknown errors', 'cleanup precondition errors'] }
+const continuation = { mode: 'ordinary-session-failure-continuation', sourceRelativePath: runnerRelativePath, sourceSha256: runnerSha256, hookPath, hookSha256: createHash('sha256').update(hookSource).digest('hex'), sourceEditedOnDisk: false, syntheticFailurePrefix: 'trial/session-aborted/', fatalErrorsPreserved: ['SafetyStopError', 'unknown errors', 'cleanup precondition errors'], logArchive: { root: archiveRoot, selection: 'top-level regular *.log files', originalCleanup: 'rm(base) retained in finally' } }
 const sessionInventory = await sourceSessions(source)
 const manifestBytes = readFileSync(join(process.env.GITHUB_WORKSPACE, `harness/.depot/manifests/${manifestName}.json`))
 const manifest = JSON.parse(manifestBytes)
@@ -718,6 +774,7 @@ function run({ args, required = true, inherit = false, input, limit = 45000 }) {
   return result
 }
 let suite
+let sessionLogArchive
 let runtimeCompleted = false
 let failure
 const resourceSamples = []
@@ -775,10 +832,13 @@ for(const [path,contents] of ${JSON.stringify(overrides)}){
   const before = run({ args: [...user, 'pactl', 'list', 'short', 'sinks'] })
   sampleResources('before-suite')
   suite = run({ args: [...user, `E2E_TMP=${scratch}`, `NODE_OPTIONS=${nodeOptions}`, 'mise', 'run', '//package/music-player/desktop-app:test:e2e'], required: false, inherit: true, limit: 780000 })
+  const archiveProbe = run({ args: [...user, process.execPath, '--input-type=module', '-e', sessionLogArchiveProbe(archiveRoot)], required: false })
+  sessionLogArchive = { status: archiveProbe.status, signal: archiveProbe.signal, stdout: archiveProbe.stdout, stderr: archiveProbe.stderr, ...(archiveProbe.status === 0 ? { verified: JSON.parse(archiveProbe.stdout) } : {}) }
   sampleResources('after-suite')
   const output = join(directory, 'desktop-e2e')
   mkdirSync(output, { recursive: true, mode: 0o700 })
   run({ args: ['cp', `${name}:${app}/target/e2e/.`, output], required: false })
+  if (suite.status === 0 || existsSync(join(output, 'e2e-summary.json'))) assert.equal(archiveProbe.status, 0, 'Completed source report requires preserved log bytes and original scratch removal')
   const after = run({ args: [...user, 'pactl', 'list', 'short', 'sinks'] })
   const names = (text) => text.trim().split('\n').filter(Boolean).map((line) => line.split('\t')[1]).sort()
   assert.deepEqual(names(after.stdout), names(before.stdout), 'Suite must restore private audio sinks')
@@ -802,7 +862,7 @@ for(const [path,contents] of ${JSON.stringify(overrides)}){
   run({ args: ['rm', name], required: false })
   const cleanupVerified = run({ args: ['container', 'exists', name], required: false }).status === 1 && !existsSync(marker)
   runtimeCompleted = runtimeCompleted && cleanupVerified
-  const record = { schemaVersion: 1, event: 'check-finished', caseId: manifest.caseId, sourceRevision: manifest.sourceRevision, manifestSha256: createHash('sha256').update(manifestBytes).digest('hex'), checkId: 'desktop-app.test.e2e', task: '//package/music-player/desktop-app:test:e2e', args: [], startedAt, finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode: suite?.status ?? null, signal: suite?.signal ?? null, status: runtimeCompleted && suite?.status === 0 ? 'passed' : 'failed', runtimeCompleted, cleanupVerified, failure, compositorSelection, continuation, sessionInventory, sessions: sessionInventory.sessions, resources: { cpus: 2, memoryGiB: 2, containerPidsMax: 512, privateUserSliceTasksMax: 448, privateServiceTasksMax: 256 }, providerJobUrl: process.env.DEPOT_JOB_URL }
+  const record = { schemaVersion: 1, event: 'check-finished', caseId: manifest.caseId, sourceRevision: manifest.sourceRevision, manifestSha256: createHash('sha256').update(manifestBytes).digest('hex'), checkId: 'desktop-app.test.e2e', task: '//package/music-player/desktop-app:test:e2e', args: [], startedAt, finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode: suite?.status ?? null, signal: suite?.signal ?? null, status: runtimeCompleted && suite?.status === 0 ? 'passed' : 'failed', runtimeCompleted, cleanupVerified, failure, compositorSelection, continuation, sessionLogArchive, sessionInventory, sessions: sessionInventory.sessions, resources: { cpus: 2, memoryGiB: 2, containerPidsMax: 512, privateUserSliceTasksMax: 448, privateServiceTasksMax: 256 }, providerJobUrl: process.env.DEPOT_JOB_URL }
   writeFileSync(join(directory, `${manifestName}-desktop-e2e-results.json`), JSON.stringify(record, null, 2))
   console.log('\n' + JSON.stringify(record))
 }
