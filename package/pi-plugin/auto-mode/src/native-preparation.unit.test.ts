@@ -66,6 +66,7 @@ await describe({ name: '', children: [
         mandatoryPolicy: f.state.sealedSources.mandatoryPolicy,
         governingSources: f.state.sealedSources.governingSources,
         instructionAuthority: 'not-established',
+        policyMaterial: undefined,
       });
       assert.ok(Object.isFrozen(request.envelope));
       assert.ok((request.envelope !== null) && ((typeof request.envelope) === 'object'));

@@ -34,7 +34,7 @@ await describe({ name: '', children: [
     assert.deepEqual(view.memberExecutions, []);
     assert.deepEqual(view.childGroups, []);
     assert.equal(view.accounting.startedAt, 100);
-    assert.equal(view.accounting.targetAt, 5_100);
+    assert.equal(view.accounting.targetAt, 15_100);
     assert.deepEqual(fixture.events, constructionEvents);
     fixture.events.length = 0;
     fixture.state.clock = 201;
@@ -75,17 +75,18 @@ await describe({ name: '', children: [
     }, { name: 'JudgmentCancelledError', cause: fixture.failure });
     assert.deepEqual(fixture.events, []);
   } }),
-  it({ name: 'rejects expiry reached during source handoff at final construction checkpoint', fn: async function expired() {
-    /** Source handoff advances the original clock without changing the fixed deadline. */
+  it({ name: 'allows source handoff beyond the advisory target at final construction checkpoint', fn: async function lateConstruction() {
+    /** Source handoff advances the original clock without changing the performance target. */
     const fixture = createConstructorFixture();
     fixture.state.onStep = function expireAfterHandoff(point): void {
-      if (point === 'begin') fixture.state.clock = 5_100;
+      if (point === 'begin') fixture.state.clock = 60_000;
     };
-    /** Original deadline remains preparation-inclusive across owner assembly. */
+    /** Original timing remains preparation-inclusive across owner assembly. */
     const construct = constructorModule.createJudgmentConstructor(fixture.options);
-    assert.throws(function constructExpired() { 
-      construct(fixture.occurrence); 
-    }, { name: 'JudgmentDeadlineError' });
+    /** Late construction retains its original advisory target without retiring evidence. */
+    const judgment = construct(fixture.occurrence);
+    assert.equal(judgment.inspect().accounting.targetAt, 15_100);
+    assert.equal(judgment.inspect().accounting.retired, false);
     assert.deepEqual(fixture.events, constructionEvents);
   } }),
   it({ name: 'retains constructor error identity when original preparation is unavailable', fn: async function unprepared() {
