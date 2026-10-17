@@ -205,7 +205,7 @@ const packageRoots = ['package/music-player/desktop-app', 'package/music-player/
 const metadataNames = new Set(['mise.toml', 'mise.no-env.toml', 'mise.lock', 'package.json', 'Cargo.toml', 'Cargo.lock', 'config.toml', 'coverage-baseline.json', 'Containerfile.alpine'])
 const paths = tracked.filter(path => {
   const name = path.slice(path.lastIndexOf('/') + 1)
-  const rootConfiguration = !path.includes('/') && (['.toml', '.json', '.jsonc', '.yaml', '.yml'].some(extension => name.endsWith(extension)) || name.includes('.config.'))
+  const rootConfiguration = !path.includes('/') && (metadataNames.has(name) || ['.toml', '.json', '.jsonc', '.yaml', '.yml'].some(extension => name.endsWith(extension)) || name.includes('.config.'))
   const packageConfiguration = packageRoots.some(prefix => path.startsWith(prefix + '/')) && (metadataNames.has(name) || name.startsWith('tsconfig.') || name.includes('.config.') || path.includes('/.cargo/'))
   return rootConfiguration || path.startsWith('.cargo/') || ['Cargo.toml', 'Cargo.lock'].includes(name) || packageConfiguration
 }).toSorted()
