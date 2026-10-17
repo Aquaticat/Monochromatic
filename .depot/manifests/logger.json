@@ -14374,12 +14374,10 @@
   "externalChecks": [
     {
       "id": "special.package.cli.vmsync.src.lifecycle.expensive.unit.test.ts",
-      "task": "//package/cli/vmsync:test:unit",
-      "args": [
-        "package/cli/vmsync/src/lifecycle.expensive.unit.test.ts"
-      ],
+      "task": "//package/cli/vmsync:test:e2e",
+      "args": [],
       "family": "test",
-      "scope": "files",
+      "scope": "package",
       "packages": [
         "package/cli/vmsync"
       ],
@@ -14388,10 +14386,11 @@
       ],
       "expectedFileCount": 1,
       "prerequisite": "KVM/libvirt disposable Linux and Windows guests",
-      "reason": "Required affected consumer test retained for a matching disposable host, not silently skipped as expensive.",
+      "reason": "Retain the authored lifecycle task and its build dependency. The prior development specification used an alternate unit-file route; its provenance remains under the original manifest digest.",
       "prerequisites": [
         "package.module.caught-value.build",
-        "package.module.const.build"
+        "package.module.const.build",
+        "package.cli.vmsync.build"
       ]
     },
     {

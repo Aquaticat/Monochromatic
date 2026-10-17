@@ -3,7 +3,7 @@
   "caseId": "logger",
   "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
   "manifestPath": ".depot/manifests/logger.json",
-  "manifestSha256": "f4cbd47f210f5b031d76c5fc1c28fa704b349621f91eefa3f4f3ad575acfedc3",
+  "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
   "packageChecks": 719,
   "externalChecks": 19,
   "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
@@ -124,5 +124,14 @@
       "job": "logger_external",
       "matrixGroup": "generated"
     }
-  ]
+  ],
+  "previousDevelopmentManifestSha256": "f4cbd47f210f5b031d76c5fc1c28fa704b349621f91eefa3f4f3ad575acfedc3",
+  "manifestCorrection": {
+    "checkId": "special.package.cli.vmsync.src.lifecycle.expensive.unit.test.ts",
+    "previousTask": "//package/cli/vmsync:test:unit",
+    "currentTask": "//package/cli/vmsync:test:e2e",
+    "sourceTask": "package/cli/vmsync/mise.toml",
+    "reason": "Use the authored dedicated lifecycle task and preserve its build prerequisite",
+    "packageCheckGraphUnchanged": true
+  }
 }

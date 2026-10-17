@@ -253,7 +253,7 @@ const source = join(process.env.GITHUB_WORKSPACE, 'source')
 const bytes = readFileSync(join(harness, '.depot/manifests/logger.json'))
 const manifest = JSON.parse(bytes)
 const digest = createHash('sha256').update(bytes).digest('hex')
-assert.equal(digest, 'f4cbd47f210f5b031d76c5fc1c28fa704b349621f91eefa3f4f3ad575acfedc3')
+assert.equal(digest, '4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7')
 assert.equal(execFileSync('git', ['rev-parse', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), manifest.sourceRevision)
 const group = process.env.DEPOT_LOGGER_EXTERNAL
 const groups = {
@@ -283,7 +283,7 @@ function run({ id, command = 'mise', args, cwd = source, env = process.env, limi
   const output = readFileSync(log)
   const record = { checkId: id, command, args, cwd, startedAt, finishedAt: new Date().toISOString(), exitCode: result.status, signal: result.signal, error: result.error?.message, status: result.status === 0 ? 'passed' : 'failed', outputLog: log, outputSha256: createHash('sha256').update(output).digest('hex'), outputBytes: output.length }
   records.push(record)
-  writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, group, selectedCheckIds: groups[group], providerJobUrl: process.env.DEPOT_JOB_URL, records }, null, 2))
+  writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, group, selectedCheckIds: requested, providerJobUrl: process.env.DEPOT_JOB_URL, records }, null, 2))
   console.log('\n' + JSON.stringify(record))
   if (result.status !== 0) console.error(output.subarray(-16000).toString())
   return record
@@ -332,7 +332,7 @@ if (group === 'generated') {
   }
 }
 assert.equal(execFileSync('git', ['diff', '--name-only', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), '', 'External checks must preserve tracked source')
-writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, group, selectedCheckIds: groups[group], prerequisiteIds, providerJobUrl: process.env.DEPOT_JOB_URL, records }, null, 2))
+writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, group, selectedCheckIds: requested, prerequisiteIds, providerJobUrl: process.env.DEPOT_JOB_URL, records }, null, 2))
 assert(records.every(record => record.status === 'passed'), 'Logger external checks failed or lack verified prerequisites; see retained records')
 '''
 
