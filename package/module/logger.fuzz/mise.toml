@@ -418,14 +418,17 @@ if (group === 'generated') {
         consumer.disposition = consumer.actualCommandExecuted ? 'consumer-observation-failed' : 'unexecuted-prerequisite-failed'
       } finally {
         if (existsSync(fixture)) {
-          const observe = (command, args) => { const result = spawnSync(command, args, { cwd: fixture, encoding: 'utf8', timeout: 60000 }); return { command, args, exitCode: result.status, stdout: result.stdout, stderr: result.stderr, error: result.error?.message } }
-          consumer.cleanupIgnoredDryRun = observe('git', ['clean', '--dry-run', '-d', '-X'])
-          consumer.rootGitDirProbe = observe('ls', ['--directory', '--', 'HEAD', 'config', 'hooks', 'objects', 'refs'])
-          consumer.rootGitDirIgnoreProbe = observe('git', ['check-ignore', '--verbose', '--', 'HEAD', 'config', 'hooks', 'objects', 'refs'])
-          const removed = spawnSync('git', ['worktree', 'remove', '--force', fixture], { cwd: source, encoding: 'utf8', timeout: 180000 })
-          consumer.cleanupResult = { exitCode: removed.status, stdout: removed.stdout, stderr: removed.stderr, error: removed.error?.message }
-          const inventory = execFileSync('git', ['worktree', 'list', '--porcelain'], { cwd: source, encoding: 'utf8' })
-          consumer.cleanupVerified = removed.status === 0 && !existsSync(fixture) && !inventory.includes('worktree ' + fixture + '\n')
+          const removed = run({ id: `${label}.cleanup`, args: ['run', '//package/module/logger.fuzz:trial:depot:generated:cleanup'], cwd: harness, env, limit: 300000 })
+          const cleanupPath = join(directory, `generated-${label}-cleanup.json`)
+          if (existsSync(cleanupPath)) {
+            consumer.cleanup = JSON.parse(readFileSync(cleanupPath, 'utf8'))
+            consumer.cleanupIgnoredDryRun = consumer.cleanup.ignoredDryRun
+            consumer.rootGitDirProbe = consumer.cleanup.rootGitDirProbe
+            consumer.rootGitDirIgnoreProbe = consumer.cleanup.rootGitDirIgnoreProbe
+            consumer.cleanupResult = consumer.cleanup.ordinaryRemoval
+            consumer.privilegedCleanupResult = consumer.cleanup.privilegedRemoval
+            consumer.cleanupVerified = removed.status === 'passed' && consumer.cleanup.cleanupVerified
+          }
         }
         writeFileSync(join(directory, `generated-${label}-results.json`), JSON.stringify(consumer, null, 2) + '\n', { flag: 'wx', mode: 0o600 })
       }
@@ -459,6 +462,62 @@ assert.equal(execFileSync('git', ['diff', '--name-only', 'HEAD'], { cwd: source,
 writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, completeGraph: manifest.completeGraph, group, selectedCheckIds: requested, generatedInvocationScope, browserPartition, browserPartitionManifestSha256, coversWholeCheck: !browserPartition && (!generatedInvocationScope || generatedInvocationScope.coversWholeSelectedChecks), prerequisiteIds, providerJobUrl: process.env.DEPOT_JOB_URL, generatedConsumers, records }, null, 2))
 assert(generatedConsumers.every(consumer => consumer.initialIdentityVerified && consumer.actualCommandExecuted && consumer.authoritativeAfterVerified && consumer.cleanupVerified && !consumer.error), 'Generated consumer prerequisite, observation or cleanup remained incomplete')
 assert(records.every(record => record.status === 'passed'), 'Logger external checks failed or lack verified prerequisites; see retained records')
+'''
+
+[tasks."trial:depot:generated:cleanup"]
+description = "Remove only a registered disposable generator worktree, retaining permission and scope proofs"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const {execFileSync,spawnSync}=await import('node:child_process')
+const {readFileSync,writeFileSync,existsSync,lstatSync,realpathSync,readdirSync}=await import('node:fs')
+const {join,resolve}=await import('node:path')
+const {homedir}=await import('node:os')
+const {strict:assert}=await import('node:assert')
+const source=join(process.env.GITHUB_WORKSPACE,'source'),harness=join(process.env.GITHUB_WORKSPACE,'harness')
+const directory=join(homedir(),'temp/agent/depot-complete-ci')
+const manifest=JSON.parse(readFileSync(join(harness,'.depot/manifests/logger.json'),'utf8'))
+const label=process.env.DEPOT_LOGGER_GENERATED_LABEL,fixture=process.env.DEPOT_LOGGER_GENERATED_CONSUMER
+const labels=['root.generated-consistency','sidecar.generated-type-consistency'].flatMap(id=>{const check=manifest.externalChecks.find(item=>item.id===id);return (check.task?[check.task]:check.tasks).map((task,index)=>`${id}.${index}`)})
+assert(labels.includes(label),'Cleanup requires a frozen generated invocation label')
+assert.equal(fixture,join(directory,`logger-generated-${label}`),'Cleanup refuses any other fixture path')
+assert(lstatSync(fixture).isDirectory()&&!lstatSync(fixture).isSymbolicLink(),'Cleanup refuses a symlink fixture')
+const canonicalFixture=realpathSync(fixture),canonicalSource=realpathSync(source)
+assert.equal(canonicalFixture,join(realpathSync(directory),`logger-generated-${label}`),'Cleanup refuses escaped fixture ancestry')
+assert(!canonicalFixture.startsWith(canonicalSource+'/')&&!canonicalSource.startsWith(canonicalFixture+'/'),'Cleanup refuses authoritative ancestry')
+const git=(args,cwd=source)=>execFileSync('git',args,{cwd,encoding:'utf8',maxBuffer:16*1024*1024}).trim()
+assert.equal(git(['rev-parse','HEAD']),manifest.sourceRevision,'Cleanup requires the bound authoritative HEAD')
+assert.equal(git(['rev-parse','HEAD'],fixture),manifest.sourceRevision,'Cleanup requires the bound consumer HEAD')
+assert.equal(realpathSync(resolve(fixture,git(['rev-parse','--git-common-dir'],fixture))),realpathSync(resolve(source,git(['rev-parse','--git-common-dir']))),'Cleanup refuses a foreign repository')
+const registration=git(['worktree','list','--porcelain']).split('\n\n').find(block=>block.startsWith(`worktree ${canonicalFixture}\n`))
+assert(registration?.split('\n').includes(`HEAD ${manifest.sourceRevision}`),'Cleanup requires exact worktree registration')
+const authoritativeStatusBefore=git(['status','--porcelain','--untracked-files=normal'])
+const observe=(command,args,cwd=fixture)=>{const result=spawnSync(command,args,{cwd,encoding:'utf8',timeout:180000,maxBuffer:16*1024*1024});return {command,args,exitCode:result.status,stdout:result.stdout,stderr:result.stderr,error:result.error?.message}}
+const ignoredDryRun=observe('git',['clean','--dry-run','-d','-X'])
+assert.equal(ignoredDryRun.exitCode,0,'Cleanup requires an ignored-file inventory')
+const rootGitDirProbe=observe('ls',['--directory','--','HEAD','config','hooks','objects','refs'])
+const rootGitDirIgnoreProbe=observe('git',['check-ignore','--verbose','--','HEAD','config','hooks','objects','refs'])
+assert.equal(rootGitDirProbe.stdout,'','Cleanup refuses root Git-directory entries for inspection')
+const metadata=[]
+const inspect=path=>{const stat=lstatSync(path);metadata.push({path:canonicalFixture===realpathSync(path)?'.':path.slice(fixture.length+1),uid:stat.uid,gid:stat.gid,mode:stat.mode&0o777,type:stat.isDirectory()?'directory':stat.isSymbolicLink()?'symlink':'file',bytes:stat.size});assert(metadata.length<=8192,'Cleanup metadata inventory exceeded its explicit bound');return stat}
+inspect(fixture)
+const output=join(fixture,'package/module/deepmerge-ts.fuzz/dist/declared-type')
+if(existsSync(output)){
+  const pending=[output]
+  while(pending.length){const path=pending.pop(),stat=inspect(path);if(stat.isDirectory()&&!stat.isSymbolicLink())for(const child of readdirSync(path))pending.push(join(path,child))}
+}
+const ordinaryRemoval=observe('git',['worktree','remove','--force',fixture],source)
+let privilegedRemoval
+if(ordinaryRemoval.exitCode!==0&&existsSync(fixture))privilegedRemoval=observe('sudo',['--non-interactive','git','-c',`safe.directory=${canonicalSource}`,'-C',source,'worktree','remove','--force',fixture],source)
+const inventory=git(['worktree','list','--porcelain'])
+const cleanupVerified=!existsSync(fixture)&&!inventory.split('\n').includes(`worktree ${canonicalFixture}`)&&(privilegedRemoval??ordinaryRemoval).exitCode===0
+const authoritativeStatusAfter=git(['status','--porcelain','--untracked-files=normal'])
+const authoritativeHeadAfter=git(['rev-parse','HEAD'])
+writeFileSync(join(directory,`generated-${label}-cleanup.json`),JSON.stringify({label,fixture,canonicalFixture,sourceRevision:manifest.sourceRevision,registration,ignoredDryRun,rootGitDirProbe,rootGitDirIgnoreProbe,metadata,ordinaryRemoval,privilegedRemoval,inventory,cleanupVerified,authoritativeStatusBefore,authoritativeStatusAfter,authoritativeHeadAfter},null,2)+'\n',{flag:'wx',mode:0o600})
+assert.equal(authoritativeStatusAfter,authoritativeStatusBefore,'Cleanup changed authoritative source status')
+assert.equal(authoritativeHeadAfter,manifest.sourceRevision,'Cleanup changed authoritative HEAD')
+assert(cleanupVerified,'Disposable generator worktree cleanup remained incomplete')
+console.log(JSON.stringify({label,cleanupVerified,ordinaryExitCode:ordinaryRemoval.exitCode,privilegedExitCode:privilegedRemoval?.exitCode,metadataEntries:metadata.length}))
 '''
 
 [tasks."trial:depot:prerequisites"]
