@@ -139,7 +139,8 @@ Completed units (findings validated):
  `code-mp-android` (3 findings),
  `code-mp-rest` (12 findings),
  `code-gitpolicy-rest` (8 findings),
- `code-mp-design` (11 findings).
+ `code-mp-design` (11 findings),
+ `code-build-tool-1` (9 findings).
 
 Cross-unit leads:
  `doc/planning/music-player-shared-truepeak-core.md` repeats the retired truepeak policy
@@ -148,68 +149,71 @@ Cross-unit leads:
  Root `.gitignore` `*.js` (line 57) strands generated-but-needed JavaScript repo-wide,
  per `code-mp-design-001`;
  hand to the `config-root` reviewer when it launches.
+ The `this.name = '...'` error-class idiom (775 sites in `package/`) and the sentinel
+ `unique symbol` absence idiom (20-plus sites in two spellings) have no owning module,
+ per `code-build-tool-1` notes;
+ hand to the `cross-duplication` reviewer when it launches.
 
 Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
  `code-automode-src`,
  `code-automode-native`,
  `code-agent-harness-shared-1`,
- `code-build-tool-1`,
  `code-claude-code-plugin-1`,
  `code-cli-1`,
  `code-cli-2`,
- `code-cloudflare-worker-1` (launched as a replacement).
+ `code-cloudflare-worker-1`,
+ `code-codex-plugin-1` (launched as a replacement).
 
-Queued units in launch order (groups of 8):
+Queued units in launch order (flat list; the first entry launches next):
 
-1. `code-codex-plugin-1`.
-2. `code-config-1`,
- `code-desktop-app-1`,
- `code-desktop-daemon-1`,
- `code-dev-script-1`,
- `code-figma-1`,
- `code-git-1`,
- `code-intellij-plugin-1`,
- `code-kwin-1`.
-3. `code-learning-1`,
- `code-linter-1`,
- `code-mcp-1`,
- `code-module-1`,
- `code-module-2`,
- `code-module-3`,
- `code-module-4`,
- `code-ownership-marker-1`.
-4. `code-oxlint-plugin-1`,
- `code-pi-plugin-1`,
- `code-pi-plugin-2`,
- `code-pi-shared-1`,
- `code-rolldown-plugin-1`,
- `code-runtime-error-1`,
- `code-rust-module-1`,
- `code-shim-1`.
-5. `code-stub-1`,
- `code-test-fixture-1`,
- `code-test-fixture-2`,
- `code-typeface-1`,
- `code-webapp-productivity-1`,
- `docs-troubleshooting-1`,
- `docs-troubleshooting-2`,
- `docs-audit`.
-6. `docs-planning`,
- `docs-decision`,
- `docs-handover`,
- `config-root`,
- `config-root-docs`,
- `config-ci`,
- `config-paused-1`,
- `config-paused-2`.
-7. `cross-security`,
- `cross-dependency`,
- `cross-duplication`,
- `cross-testing`,
- `cross-build`,
- `cross-rust`,
- `cross-api`,
- `cross-logging`.
+- `code-config-1`,
+- `code-desktop-app-1`,
+- `code-desktop-daemon-1`,
+- `code-dev-script-1`,
+- `code-figma-1`,
+- `code-git-1`,
+- `code-intellij-plugin-1`,
+- `code-kwin-1`,
+- `code-learning-1`,
+- `code-linter-1`,
+- `code-mcp-1`,
+- `code-module-1`,
+- `code-module-2`,
+- `code-module-3`,
+- `code-module-4`,
+- `code-ownership-marker-1`,
+- `code-oxlint-plugin-1`,
+- `code-pi-plugin-1`,
+- `code-pi-plugin-2`,
+- `code-pi-shared-1`,
+- `code-rolldown-plugin-1`,
+- `code-runtime-error-1`,
+- `code-rust-module-1`,
+- `code-shim-1`,
+- `code-stub-1`,
+- `code-test-fixture-1`,
+- `code-test-fixture-2`,
+- `code-typeface-1`,
+- `code-webapp-productivity-1`,
+- `docs-troubleshooting-1`,
+- `docs-troubleshooting-2`,
+- `docs-audit`,
+- `docs-planning`,
+- `docs-decision`,
+- `docs-handover`,
+- `config-root`,
+- `config-root-docs`,
+- `config-ci`,
+- `config-paused-1`,
+- `config-paused-2`,
+- `cross-security`,
+- `cross-dependency`,
+- `cross-duplication`,
+- `cross-testing`,
+- `cross-build`,
+- `cross-rust`,
+- `cross-api`,
+- `cross-logging`.
 
 Replacement rule:
  as each running unit reports,
