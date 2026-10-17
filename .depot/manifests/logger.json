@@ -2727,7 +2727,8 @@
         "package/pi-plugin/advisor"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "role": "artifact build",
       "dependencyOrdering": "Task-owned prerequisites plus artifact resolution; do not gate unrelated checks on unrelated builds.",
@@ -2775,7 +2776,8 @@
         "package/pi-plugin/auto-mode"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "role": "artifact build",
       "dependencyOrdering": "Task-owned prerequisites plus artifact resolution; do not gate unrelated checks on unrelated builds.",
@@ -2823,7 +2825,8 @@
         "package/pi-plugin/goal"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "role": "artifact build",
       "dependencyOrdering": "Task-owned prerequisites plus artifact resolution; do not gate unrelated checks on unrelated builds.",
@@ -2968,7 +2971,8 @@
         "package/pi-plugin/thinking-default"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "role": "artifact build",
       "dependencyOrdering": "Task-owned prerequisites plus artifact resolution; do not gate unrelated checks on unrelated builds.",
@@ -3172,13 +3176,12 @@
       "packages": [
         "package/agent-harness-shared/current-time-context"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.agent-harness-shared.current-time-context.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.agent-harness-shared.current-time-context.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -3227,14 +3230,12 @@
         "package/agent-harness-shared/search-fetch"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.agent-harness-shared.search-fetch.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.agent-harness-shared.search-fetch.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -3296,14 +3297,12 @@
         "package/agent-harness-shared/session-discovery"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.agent-harness-shared.session-discovery.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.agent-harness-shared.session-discovery.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -3355,14 +3354,12 @@
         "package/agent-harness-shared/shell-command-analyzer"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.agent-harness-shared.shell-command-analyzer.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.agent-harness-shared.shell-command-analyzer.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -3414,14 +3411,12 @@
         "package/agent-harness-shared/terminal-title"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.agent-harness-shared.terminal-title.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.agent-harness-shared.terminal-title.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -3473,13 +3468,12 @@
       "packages": [
         "package/agent-harness-shared/text-scan"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.agent-harness-shared.text-scan.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.agent-harness-shared.text-scan.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -3530,13 +3524,12 @@
       "packages": [
         "package/agent-harness-shared/truncate"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.agent-harness-shared.truncate.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.agent-harness-shared.truncate.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -3585,13 +3578,12 @@
       "packages": [
         "package/agent-harness-shared/usage-projection"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.agent-harness-shared.usage-projection.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.agent-harness-shared.usage-projection.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -3640,14 +3632,12 @@
         "package/build-tool/css"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.build-tool.css.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.build-tool.css.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -3700,14 +3690,12 @@
       ],
       "prerequisites": [
         "package.agent-harness-shared.terminal-title.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.claude-code-plugin.bash-output-filter.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.claude-code-plugin.bash-output-filter.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -3737,14 +3725,12 @@
       ],
       "prerequisites": [
         "package.agent-harness-shared.terminal-title.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.claude-code-plugin.claude-spawn.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.claude-code-plugin.claude-spawn.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -3774,14 +3760,12 @@
       ],
       "prerequisites": [
         "package.agent-harness-shared.terminal-title.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.claude-code-plugin.correction-reminder.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.claude-code-plugin.correction-reminder.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -3811,14 +3795,12 @@
       ],
       "prerequisites": [
         "package.agent-harness-shared.terminal-title.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.claude-code-plugin.guardrail.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.claude-code-plugin.guardrail.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -3848,14 +3830,12 @@
       ],
       "prerequisites": [
         "package.agent-harness-shared.terminal-title.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.claude-code-plugin.prompt-time.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.claude-code-plugin.prompt-time.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -3885,14 +3865,12 @@
       ],
       "prerequisites": [
         "package.agent-harness-shared.terminal-title.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.claude-code-plugin.session-start-housekeeping.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.claude-code-plugin.session-start-housekeeping.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -3927,7 +3905,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -3991,13 +3968,12 @@
       "packages": [
         "package/claude-code-plugin/statusline"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.claude-code-plugin.statusline.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.claude-code-plugin.statusline.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -4051,14 +4027,12 @@
       ],
       "prerequisites": [
         "package.agent-harness-shared.terminal-title.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.claude-code-plugin.stop-reminder.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.claude-code-plugin.stop-reminder.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -4110,14 +4084,12 @@
       ],
       "prerequisites": [
         "package.agent-harness-shared.terminal-title.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.claude-code-plugin.terminal-title.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.claude-code-plugin.terminal-title.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -4146,14 +4118,12 @@
         "package/cli/android-exempt-unused"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.cli.android-exempt-unused.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.cli.android-exempt-unused.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -4204,14 +4174,12 @@
         "package/cli/fy"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.cli.fy.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.cli.fy.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -4265,14 +4233,12 @@
       "prerequisites": [
         "package.module.caught-value.build",
         "package.module.const.build",
-        "package.module.numeric-format.build"
+        "package.module.numeric-format.build",
+        "package.cli.git-clone-size.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.cli.git-clone-size.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -4338,7 +4304,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -4385,14 +4350,12 @@
         "package/cli/mutation-test"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.cli.mutation-test.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.cli.mutation-test.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -4449,14 +4412,12 @@
         "package.module.caught-value.build",
         "package.module.const.build",
         "package.module.hyperscript.build",
-        "package.module.numeric-format.build"
+        "package.module.numeric-format.build",
+        "package.cli.mvm.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.cli.mvm.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -4537,14 +4498,12 @@
         "package/cli/open-code-review-issue"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.cli.open-code-review-issue.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.cli.open-code-review-issue.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -4607,14 +4566,12 @@
         "package/cli/rgffplay"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.cli.rgffplay.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.cli.rgffplay.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -4664,14 +4621,12 @@
         "package/cli/terminal-exec"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.cli.terminal-exec.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.cli.terminal-exec.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -4724,14 +4679,12 @@
         "package/cli/unused-export"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.cli.unused-export.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.cli.unused-export.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -4782,14 +4735,12 @@
       ],
       "prerequisites": [
         "package.module.caught-value.build",
-        "package.module.const.build"
+        "package.module.const.build",
+        "package.cli.vmsync.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.cli.vmsync.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -4848,14 +4799,12 @@
         "package/cli/wg-allowedips"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.cli.wg-allowedips.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.cli.wg-allowedips.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -4906,14 +4855,12 @@
         "package/cli/wg-quicker"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.cli.wg-quicker.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.cli.wg-quicker.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -4977,14 +4924,12 @@
       ],
       "prerequisites": [
         "package.module.caught-value.build",
-        "package.module.logger.build"
+        "package.module.logger.build",
+        "package.cloudflare-worker.rand.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.cloudflare-worker.rand.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -5041,14 +4986,12 @@
       ],
       "prerequisites": [
         "package.module.caught-value.build",
-        "package.module.logger.build"
+        "package.module.logger.build",
+        "package.config.lfs-r2-worker.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.config.lfs-r2-worker.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -5104,14 +5047,12 @@
         "package/config/oxlint"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.config.oxlint.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.config.oxlint.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -5140,14 +5081,12 @@
         "package/config/pnpr"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.config.pnpr.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.config.pnpr.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -5203,7 +5142,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -5258,7 +5196,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -5288,14 +5225,12 @@
       ],
       "prerequisites": [
         "package.module.caught-value.build",
-        "package.module.logger.build"
+        "package.module.logger.build",
+        "package.desktop-app.electron-counter.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.desktop-app.electron-counter.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -5345,13 +5280,12 @@
       "packages": [
         "package/desktop-app/electron-infra"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.desktop-app.electron-infra.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.desktop-app.electron-infra.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -5402,14 +5336,12 @@
       ],
       "prerequisites": [
         "package.module.caught-value.build",
-        "package.module.logger.build"
+        "package.module.logger.build",
+        "package.desktop-app.file-manager-electron.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.desktop-app.file-manager-electron.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -5464,14 +5396,12 @@
       "prerequisites": [
         "package.module.caught-value.build",
         "package.module.const.build",
-        "package.module.llm-type.build"
+        "package.module.llm-type.build",
+        "package.desktop-daemon.hall-monitor.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.desktop-daemon.hall-monitor.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -5499,13 +5429,12 @@
       "packages": [
         "package/dev-script/backup-path"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.dev-script.backup-path.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.dev-script.backup-path.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -5537,7 +5466,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -5590,7 +5518,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -5648,7 +5575,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -5710,14 +5636,12 @@
       "prerequisites": [
         "package.module.caught-value.build",
         "package.module.const.build",
-        "package.module.pnpm-workspace-catalog.build"
+        "package.module.pnpm-workspace-catalog.build",
+        "package.dev-script.deps-cube.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.dev-script.deps-cube.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -5783,7 +5707,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -5839,14 +5762,12 @@
         "package/dev-script/file-enforcer"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.dev-script.file-enforcer.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.dev-script.file-enforcer.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -5955,7 +5876,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -5985,14 +5905,12 @@
       ],
       "prerequisites": [
         "package.module.caught-value.build",
-        "package.module.const.build"
+        "package.module.const.build",
+        "package.dev-script.task-util.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.dev-script.task-util.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -6054,14 +5972,12 @@
       ],
       "prerequisites": [
         "package.module.caught-value.build",
-        "package.module.hyperscript.build"
+        "package.module.hyperscript.build",
+        "package.dev-script.vm-builder.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.dev-script.vm-builder.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -6091,14 +6007,12 @@
       ],
       "prerequisites": [
         "package.module.caught-value.build",
-        "package.module.const.build"
+        "package.module.const.build",
+        "package.dev-script.watch-restart.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.dev-script.watch-restart.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -6162,14 +6076,12 @@
         "package/figma/kiwi"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.figma.kiwi.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.figma.kiwi.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -6198,14 +6110,12 @@
         "package/figma/to-penpot"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.figma.to-penpot.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.figma.to-penpot.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -6217,13 +6127,12 @@
       "packages": [
         "package/git-policy/cli.fuzz"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.git-policy.cli.fuzz.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.git-policy.cli.fuzz.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -6252,14 +6161,12 @@
         "package/git-policy/cli"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.git-policy.cli.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.git-policy.cli.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -6316,14 +6223,12 @@
         "package/git/executable"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.git.executable.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.git.executable.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -6374,13 +6279,12 @@
       "packages": [
         "package/intellij-plugin/islands-black"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.intellij-plugin.islands-black.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.intellij-plugin.islands-black.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -6410,14 +6314,12 @@
       ],
       "prerequisites": [
         "package.module.async-time.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.kwin.key-helper.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.kwin.key-helper.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -6473,14 +6375,12 @@
         "package.module.caught-value.build",
         "package.module.const.build",
         "package.module.hyperscript.build",
-        "package.module.numeric-format.build"
+        "package.module.numeric-format.build",
+        "package.mcp.mvm.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.mcp.mvm.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -6533,14 +6433,12 @@
         "package/mcp/search-fetch"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.mcp.search-fetch.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.mcp.search-fetch.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -6590,14 +6488,12 @@
         "package/mcp/stdio"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.mcp.stdio.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.mcp.stdio.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -6651,13 +6547,12 @@
       "packages": [
         "package/module/array-at"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.module.array-at.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.array-at.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -6707,13 +6602,12 @@
       "packages": [
         "package/module/async-iter"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.module.async-iter.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.async-iter.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -6761,13 +6655,12 @@
       "packages": [
         "package/module/async-time"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.module.async-time.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.async-time.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -6816,13 +6709,12 @@
       "packages": [
         "package/module/caught-value"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.module.caught-value.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.caught-value.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -6851,12 +6743,12 @@
         "package/module/conf-fork.fuzz"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.conf-fork.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -6871,7 +6763,8 @@
         "package/module/conf-fork.fuzz"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.conf-fork.build"
       ],
       "expectedFiles": [
         "package/module/conf-fork.fuzz/src/differential.property.unit.test.ts",
@@ -6906,14 +6799,12 @@
         "package/module/conf-fork"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.conf-fork.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.conf-fork.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -6987,13 +6878,12 @@
       "packages": [
         "package/module/const"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.module.const.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.const.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -7027,7 +6917,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -7061,7 +6950,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -7116,7 +7004,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -7167,14 +7054,12 @@
         "package/module/css-edit"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.css-edit.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.css-edit.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -7228,7 +7113,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -7315,13 +7199,12 @@
       "packages": [
         "package/module/dom"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.module.dom.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.dom.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -7350,14 +7233,12 @@
         "package/module/fs-id"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.fs-id.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.fs-id.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -7408,14 +7289,12 @@
         "package/module/fs-path"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.fs-path.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.fs-path.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -7471,13 +7350,12 @@
       "packages": [
         "package/module/function-arity"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.module.function-arity.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.function-arity.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -7525,13 +7403,12 @@
       "packages": [
         "package/module/hyperscript"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.module.hyperscript.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.hyperscript.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -7559,13 +7436,12 @@
       "packages": [
         "package/module/i18n-compose"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.module.i18n-compose.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.i18n-compose.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -7623,14 +7499,12 @@
       ],
       "prerequisites": [
         "package.module.caught-value.build",
-        "package.module.llm-type.build"
+        "package.module.llm-type.build",
+        "package.module.image-diff.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.image-diff.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -7688,7 +7562,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -7722,7 +7595,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -7776,7 +7648,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -7826,14 +7697,12 @@
         "package/module/jsonc-edit"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.jsonc-edit.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.jsonc-edit.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -7894,14 +7763,12 @@
         "package/module/kv-store"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.kv-store.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.kv-store.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -7951,13 +7818,12 @@
       "packages": [
         "package/module/llm-type"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.module.llm-type.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.llm-type.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -7992,7 +7858,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -8045,14 +7910,12 @@
         "package/module/logger"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.logger.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.logger.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -8126,7 +7989,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -8173,13 +8035,12 @@
       "packages": [
         "package/module/make-asynchronous-fork"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.module.make-asynchronous-fork.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.make-asynchronous-fork.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -8237,7 +8098,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -8284,13 +8144,12 @@
       "packages": [
         "package/module/matcher-fork"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.module.matcher-fork.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.matcher-fork.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -8346,14 +8205,12 @@
         "package/module/matrix"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.matrix.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.matrix.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -8382,14 +8239,12 @@
         "package/module/memoize"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.memoize.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.memoize.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -8440,14 +8295,12 @@
         "package/module/numeric-format"
       ],
       "prerequisites": [
-        "package.module.const.build"
+        "package.module.const.build",
+        "package.module.numeric-format.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.numeric-format.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -8475,13 +8328,12 @@
       "packages": [
         "package/module/observable"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.module.observable.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.observable.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -8530,13 +8382,12 @@
       "packages": [
         "package/module/or-throw"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.module.or-throw.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.or-throw.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -8615,7 +8466,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -8664,13 +8514,12 @@
       "packages": [
         "package/module/p-limit-fork"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.module.p-limit-fork.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.p-limit-fork.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -8733,7 +8582,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -8783,14 +8631,12 @@
         "package/module/p-map-fork"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.p-map-fork.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.p-map-fork.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -8851,12 +8697,12 @@
         "package/module/p-memoize-fork.fuzz"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.p-memoize-fork.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -8871,7 +8717,8 @@
         "package/module/p-memoize-fork.fuzz"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.p-memoize-fork.build"
       ],
       "expectedFiles": [
         "package/module/p-memoize-fork.fuzz/src/differential.property.unit.test.ts",
@@ -8905,13 +8752,12 @@
       "packages": [
         "package/module/p-memoize-fork"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.module.p-memoize-fork.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.p-memoize-fork.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -8974,7 +8820,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -9023,13 +8868,12 @@
       "packages": [
         "package/module/pify-fork"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.module.pify-fork.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.pify-fork.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -9084,14 +8928,12 @@
         "package/module/pipe"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.pipe.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.pipe.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -9144,14 +8986,12 @@
         "package/module/pnpm-workspace-catalog"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.pnpm-workspace-catalog.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.pnpm-workspace-catalog.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -9208,7 +9048,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -9257,13 +9096,12 @@
       "packages": [
         "package/module/quick-lru-fork"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.module.quick-lru-fork.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.quick-lru-fork.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -9323,14 +9161,12 @@
       ],
       "prerequisites": [
         "package.module.caught-value.build",
-        "package.module.const.build"
+        "package.module.const.build",
+        "package.module.test-diagnostic.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.test-diagnostic.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -9385,14 +9221,12 @@
         "package/module/test-expect"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.test-expect.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.test-expect.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -9443,14 +9277,12 @@
         "package/module/test-sandbox"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.test-sandbox.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.test-sandbox.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -9502,14 +9334,12 @@
       "prerequisites": [
         "package.module.caught-value.build",
         "package.module.const.build",
-        "package.module.numeric-format.build"
+        "package.module.numeric-format.build",
+        "package.module.test.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.test.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -9579,13 +9409,12 @@
       "packages": [
         "package/module/throws"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.module.throws.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.throws.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -9634,14 +9463,12 @@
         "package/module/token-count"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.token-count.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.token-count.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -9698,7 +9525,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -9754,14 +9580,12 @@
         "package/module/toml-edit"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.toml-edit.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.toml-edit.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -9847,14 +9671,12 @@
         "package/module/wg-allowedips"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.wg-allowedips.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.wg-allowedips.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -9909,13 +9731,12 @@
       "packages": [
         "package/module/zip-writer"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.module.zip-writer.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.module.zip-writer.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -9969,7 +9790,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -10042,14 +9862,12 @@
         "package/oxlint-plugin/no-restricted-syntax"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.oxlint-plugin.no-restricted-syntax.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.oxlint-plugin.no-restricted-syntax.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -10100,14 +9918,12 @@
         "package/oxlint-plugin/prefer-readonly-parameter-type"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.oxlint-plugin.prefer-readonly-parameter-type.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.oxlint-plugin.prefer-readonly-parameter-type.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -10179,13 +9995,12 @@
       "packages": [
         "package/oxlint-plugin/shared"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.oxlint-plugin.shared.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.oxlint-plugin.shared.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -10234,14 +10049,12 @@
         "package/oxlint-plugin/stylistic"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.oxlint-plugin.stylistic.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.oxlint-plugin.stylistic.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -10293,14 +10106,12 @@
         "package/oxlint-plugin/test-import"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.oxlint-plugin.test-import.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.oxlint-plugin.test-import.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -10358,14 +10169,12 @@
         "package/oxlint-plugin/test-support"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.oxlint-plugin.test-support.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.oxlint-plugin.test-support.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -10394,14 +10203,12 @@
         "package/oxlint-plugin/tsdoc"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.oxlint-plugin.tsdoc.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.oxlint-plugin.tsdoc.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -10461,14 +10268,13 @@
         "package/pi-plugin/advisor"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-plugin.advisor.build",
+        "package.pi-shared.model-selection.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.pi-plugin.advisor.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -10484,7 +10290,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.advisor.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "expectedFiles": [
         "package/pi-plugin/advisor/src/advisor-client-failure.unit.test.ts",
@@ -10538,14 +10345,12 @@
         "package/pi-plugin/agent-settled-notification"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-plugin.agent-settled-notification.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.pi-plugin.agent-settled-notification.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -10595,14 +10400,12 @@
         "package/pi-plugin/ask-user-question"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-plugin.ask-user-question.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.pi-plugin.ask-user-question.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -10667,14 +10470,13 @@
         "package/pi-plugin/auto-mode"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-plugin.auto-mode.build",
+        "package.pi-shared.model-selection.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.pi-plugin.auto-mode.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -10690,7 +10492,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "expectedFiles": [
         "package/pi-plugin/auto-mode/native/build.unit.test.ts",
@@ -10908,14 +10711,12 @@
       "prerequisites": [
         "package.module.caught-value.build",
         "package.module.const.build",
-        "package.module.numeric-format.build"
+        "package.module.numeric-format.build",
+        "package.pi-plugin.bash-poke.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.pi-plugin.bash-poke.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -10998,13 +10799,12 @@
       "packages": [
         "package/pi-plugin/current-time-context"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.pi-plugin.current-time-context.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.pi-plugin.current-time-context.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -11054,14 +10854,13 @@
         "package/pi-plugin/goal"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-plugin.goal.build",
+        "package.pi-shared.model-selection.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.pi-plugin.goal.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -11077,7 +10876,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.goal.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "expectedFiles": [
         "package/pi-plugin/goal/src/completion.unit.test.ts",
@@ -11117,14 +10917,12 @@
         "package/pi-plugin/guardrail"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-plugin.guardrail.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.pi-plugin.guardrail.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -11177,14 +10975,12 @@
         "package/pi-plugin/model-retirement"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-plugin.model-retirement.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.pi-plugin.model-retirement.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -11240,14 +11036,12 @@
         "package/pi-plugin/morph-compact"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-plugin.morph-compact.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.pi-plugin.morph-compact.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -11305,14 +11099,12 @@
         "package/pi-plugin/openai-fast"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-plugin.openai-fast.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.pi-plugin.openai-fast.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -11381,14 +11173,12 @@
         "package/pi-plugin/search-fetch"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-plugin.search-fetch.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.pi-plugin.search-fetch.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -11439,14 +11229,12 @@
         "package/pi-plugin/spawn"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-plugin.spawn.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.pi-plugin.spawn.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -11502,14 +11290,12 @@
         "package/pi-plugin/statusline"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-plugin.statusline.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.pi-plugin.statusline.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -11561,14 +11347,12 @@
       ],
       "prerequisites": [
         "package.agent-harness-shared.terminal-title.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-plugin.terminal-title.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.pi-plugin.terminal-title.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -11620,14 +11404,13 @@
         "package/pi-plugin/thinking-default"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-plugin.thinking-default.build",
+        "package.pi-shared.model-selection.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.pi-plugin.thinking-default.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -11643,7 +11426,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.thinking-default.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "expectedFiles": [
         "package/pi-plugin/thinking-default/src/apply-thinking-default.unit.test.ts",
@@ -11681,14 +11465,12 @@
         "package/pi-shared/model-review"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-review.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.pi-shared.model-review.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -11741,14 +11523,12 @@
         "package/pi-shared/model-selection"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.pi-shared.model-selection.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -11812,13 +11592,12 @@
       "packages": [
         "package/rolldown-plugin/import-attributes"
       ],
-      "prerequisites": [],
+      "prerequisites": [
+        "package.rolldown-plugin.import-attributes.build"
+      ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.rolldown-plugin.import-attributes.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -11852,7 +11631,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -11885,14 +11663,12 @@
         "package.module.const.build",
         "package.module.hyperscript.build",
         "package.module.logger.build",
-        "package.module.or-throw.build"
+        "package.module.or-throw.build",
+        "package.ssg.aquati.cat.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.ssg.aquati.cat.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -11940,7 +11716,6 @@
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -11972,14 +11747,12 @@
         "package.module.caught-value.build",
         "package.module.const.build",
         "package.module.hyperscript.build",
-        "package.module.llm-type.build"
+        "package.module.llm-type.build",
+        "package.webapp-productivity.done-postcss.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.webapp-productivity.done-postcss.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -12035,14 +11808,12 @@
         "package.module.caught-value.build",
         "package.module.const.build",
         "package.module.hyperscript.build",
-        "package.module.llm-type.build"
+        "package.module.llm-type.build",
+        "package.webapp-productivity.done.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.webapp-productivity.done.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -12097,14 +11868,12 @@
       "prerequisites": [
         "package.module.caught-value.build",
         "package.module.const.build",
-        "package.module.hyperscript.build"
+        "package.module.hyperscript.build",
+        "package.webapp-productivity.doodle-widget.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.webapp-productivity.doodle-widget.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -12135,14 +11904,12 @@
       "prerequisites": [
         "package.module.caught-value.build",
         "package.module.const.build",
-        "package.module.hyperscript.build"
+        "package.module.hyperscript.build",
+        "package.webapp-productivity.rss.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.webapp-productivity.rss.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -12171,14 +11938,12 @@
         "package/webapp-productivity/syllable-break-demo"
       ],
       "prerequisites": [
-        "package.module.hyperscript.build"
+        "package.module.hyperscript.build",
+        "package.webapp-productivity.syllable-break-demo.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.webapp-productivity.syllable-break-demo.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -12208,14 +11973,12 @@
       ],
       "prerequisites": [
         "package.module.caught-value.build",
-        "package.module.hyperscript.build"
+        "package.module.hyperscript.build",
+        "package.webapp-productivity.wc.build"
       ],
       "env": {
         "TSC_SINGLE_THREADED": "1"
       },
-      "artifactPrerequisites": [
-        "package.webapp-productivity.wc.build"
-      ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
     {
@@ -12628,7 +12391,8 @@
         "package/module/conf-fork.fuzz"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.conf-fork.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -12642,7 +12406,8 @@
         "package/module/conf-fork.fuzz"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.conf-fork.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13137,7 +12902,8 @@
         "package/module/p-memoize-fork.fuzz"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.p-memoize-fork.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13151,7 +12917,8 @@
         "package/module/p-memoize-fork.fuzz"
       ],
       "prerequisites": [
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.module.p-memoize-fork.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13327,7 +13094,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.advisor.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13342,7 +13110,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.advisor.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13387,7 +13156,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13402,7 +13172,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13417,7 +13188,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13432,7 +13204,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13447,7 +13220,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13462,7 +13236,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13477,7 +13252,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13492,7 +13268,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13507,7 +13284,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13522,7 +13300,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13537,7 +13316,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13552,7 +13332,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13567,7 +13348,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13582,7 +13364,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13597,7 +13380,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13612,7 +13396,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13627,7 +13412,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13642,7 +13428,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13657,7 +13444,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13672,7 +13460,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13687,7 +13476,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13702,7 +13492,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13717,7 +13508,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13732,7 +13524,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13747,7 +13540,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13762,7 +13556,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13777,7 +13572,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13792,7 +13588,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13807,7 +13604,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13822,7 +13620,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13837,7 +13636,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13852,7 +13652,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13867,7 +13668,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13882,7 +13684,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13897,7 +13700,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13912,7 +13716,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13927,7 +13732,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13942,7 +13748,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13957,7 +13764,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13972,7 +13780,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -13987,7 +13796,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14002,7 +13812,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14017,7 +13828,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14032,7 +13844,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14047,7 +13860,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14062,7 +13876,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14077,7 +13892,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14092,7 +13908,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14107,7 +13924,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14122,7 +13940,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14137,7 +13956,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14152,7 +13972,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14167,7 +13988,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14182,7 +14004,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14197,7 +14020,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14212,7 +14036,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14227,7 +14052,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14242,7 +14068,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14257,7 +14084,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14272,7 +14100,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14287,7 +14116,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14302,7 +14132,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14317,7 +14148,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14332,7 +14164,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14347,7 +14180,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.auto-mode.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14376,7 +14210,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.goal.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14391,7 +14226,8 @@
       ],
       "prerequisites": [
         "package.pi-plugin.goal.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     },
@@ -14515,7 +14351,22 @@
       ],
       "prerequisites": [
         "package.pi-plugin.thinking-default.build",
-        "package.module.caught-value.build"
+        "package.module.caught-value.build",
+        "package.pi-shared.model-selection.build"
+      ],
+      "artifactEvidence": "logger-artifact-edges.json"
+    },
+    {
+      "id": "package.git-policy.cli.fuzz.smoke",
+      "task": "//package/git-policy/cli.fuzz:smoke",
+      "args": [],
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/git-policy/cli.fuzz"
+      ],
+      "prerequisites": [
+        "package.git-policy.cli.fuzz.build"
       ],
       "artifactEvidence": "logger-artifact-edges.json"
     }
@@ -14523,12 +14374,10 @@
   "externalChecks": [
     {
       "id": "special.package.cli.vmsync.src.lifecycle.expensive.unit.test.ts",
-      "task": "//package/cli/vmsync:test:unit",
-      "args": [
-        "package/cli/vmsync/src/lifecycle.expensive.unit.test.ts"
-      ],
+      "task": "//package/cli/vmsync:test:e2e",
+      "args": [],
       "family": "test",
-      "scope": "files",
+      "scope": "package",
       "packages": [
         "package/cli/vmsync"
       ],
@@ -14537,10 +14386,11 @@
       ],
       "expectedFileCount": 1,
       "prerequisite": "KVM/libvirt disposable Linux and Windows guests",
-      "reason": "Required affected consumer test retained for a matching disposable host, not silently skipped as expensive.",
+      "reason": "Retain the authored lifecycle task and its build dependency. The prior development specification used an alternate unit-file route; its provenance remains under the original manifest digest.",
       "prerequisites": [
         "package.module.caught-value.build",
-        "package.module.const.build"
+        "package.module.const.build",
+        "package.cli.vmsync.build"
       ]
     },
     {
@@ -14720,7 +14570,8 @@
         "package.module.hyperscript.build",
         "package.module.test.build",
         "package.module.fs-path.build",
-        "package.module.logger.fuzz.bundle.browser-properties"
+        "package.module.logger.fuzz.bundle.browser-properties",
+        "package.webapp-productivity.wc.build"
       ]
     },
     {
@@ -14749,7 +14600,9 @@
         "firefox"
       ],
       "prerequisite": "Playwright image matching this immutable lockfile and required built artifacts.",
-      "prerequisites": []
+      "prerequisites": [
+        "package.module.dom.build"
+      ]
     },
     {
       "id": "root.forbidden-strings",
@@ -16960,8 +16813,7 @@
   ],
   "completeGraph": false,
   "remainingReview": [
-    "Artifact dependency ordering and complete tool/image prerequisites",
-    "Source-import edges beyond manifest closure",
+    "Complete tool/image prerequisites",
     "External desktop/VM/network/host adapters",
     "Root scanner, generated consistency and Scorecard accounting"
   ],

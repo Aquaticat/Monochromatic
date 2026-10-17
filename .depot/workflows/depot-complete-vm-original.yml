@@ -2,6 +2,19 @@ name: depot-complete-vm-original
 
 on:
   workflow_dispatch:
+    inputs:
+      cohort_id:
+        description: Shared coherent cohort identifier
+        required: true
+        type: string
+      manifest_sha256:
+        description: SHA256 of the exact outer common manifest bytes
+        required: true
+        type: string
+      requested_at:
+        description: Shared UTC ISO request timestamp
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -17,6 +30,9 @@ jobs:
       MISE_LOCKED: '1'
       MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
       DEPOT_CI_CASE: logger
+      DEPOT_CI_COHORT_ID: ${{ inputs.cohort_id }}
+      DEPOT_CI_COHORT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+      DEPOT_CI_COHORT_REQUESTED_AT: ${{ inputs.requested_at }}
       CI: 'true'
     steps:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -40,6 +56,14 @@ jobs:
         env: false
         export_path: false
         cache: false
+    - name: Bind the exact harness and common cohort
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:vm:cohort
+    - name: Verify immutable source before dependency preparation
+      working-directory: harness
+      env:
+        DEPOT_CI_IDENTITY_PHASE: before
+      run: mise run //package/dev-script/task-util:trial:depot:ci:source-identity
     - name: Install exact source tool versions
       working-directory: harness
       env:
@@ -54,6 +78,12 @@ jobs:
     - name: Execute the original selected VM lifecycle task
       working-directory: harness
       run: mise run //package/dev-script/task-util:trial:depot:vm:original
+    - name: Verify immutable source and cohort after execution
+      if: always()
+      working-directory: harness
+      env:
+        DEPOT_CI_IDENTITY_PHASE: after
+      run: mise run //package/dev-script/task-util:trial:depot:ci:source-identity
     - name: Preserve original VM task evidence
       if: always()
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

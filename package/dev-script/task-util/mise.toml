@@ -739,14 +739,19 @@ chmodSync(scratch, 0o700)
 const evidence = join(scratch, 'depot-complete-vm-original-evidence')
 mkdirSync(evidence, { recursive: true, mode: 0o700 })
 chmodSync(evidence, 0o700)
+execFileSync('mise', ['run', '//package/dev-script/task-util:trial:depot:vm:cohort'], { cwd: join(process.env.GITHUB_WORKSPACE, 'harness'), stdio: 'inherit' })
+const binding = JSON.parse(readFileSync(join(evidence, 'cohort.json'), 'utf8'))
 const privateHome = mkdtempSync(join(scratch, 'depot-vm-original-'))
 const runtime = join(privateHome, 'runtime')
 mkdirSync(runtime, { mode: 0o700 })
 const env = { ...process.env, HOME: privateHome, XDG_CONFIG_HOME: join(privateHome, '.config'), XDG_CACHE_HOME: join(privateHome, '.cache'), XDG_DATA_HOME: join(privateHome, '.local/share'), XDG_RUNTIME_DIR: runtime, MISE_DATA_DIR: join(originalHome, '.local/share/mise'), MISE_CONFIG_DIR: join(originalHome, '.config/mise'), MISE_CACHE_DIR: join(originalHome, '.cache/mise') }
 const revision = 'ef01490f5e960f8ca0b424c12242caeb3c5a2b5e'
-const identity = () => ({ head: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), trackedStatus: execFileSync('git', ['status', '--porcelain', '--untracked-files=no'], { cwd: source, encoding: 'utf8' }).trim(), inputs: ['mise.lock', 'pnpm-lock.yaml', 'mise.toml', 'package/cli/vmsync/mise.toml', 'package/cli/vmsync/src/lifecycle.expensive.unit.test.ts'].map(path => ({ path, sha256: createHash('sha256').update(readFileSync(join(source, path))).digest('hex') })) })
-const initialIdentity = identity()
-assert.equal(initialIdentity.head, revision)
+const identity = phase => {
+  execFileSync('mise', ['run', '//package/dev-script/task-util:trial:depot:ci:source-identity'], { cwd: join(process.env.GITHUB_WORKSPACE, 'harness'), env: { ...process.env, DEPOT_CI_IDENTITY_PHASE: phase, DEPOT_CI_IDENTITY_OUTPUT_DIRECTORY: evidence }, stdio: 'inherit' })
+  return JSON.parse(readFileSync(join(evidence, 'logger-source-' + phase + '.json'), 'utf8')).identity
+}
+const initialIdentity = identity('before')
+assert.equal(initialIdentity.sourceRevision, revision)
 assert.equal(initialIdentity.trackedStatus, '')
 const command = 'mise'
 const args = ['run', '//package/cli/vmsync:test:e2e']
@@ -755,17 +760,124 @@ const result = spawnSync(command, args, { cwd: source, env, encoding: 'utf8', ti
 const finishedAt = new Date().toISOString()
 writeFileSync(join(evidence, 'original-package-task.stdout.log'), result.stdout ?? '')
 writeFileSync(join(evidence, 'original-package-task.stderr.log'), result.stderr ?? '')
-const finalIdentity = identity()
+let finalIdentity
+let finalIdentityError
+try { finalIdentity = identity('after') }
+catch (error) { finalIdentityError = error; console.error(error) }
 const helperResolutionFailure = result.status === 1 && (result.stderr ?? '').includes('MODULE_NOT_FOUND') && (result.stderr ?? '').includes('/package/cli/vmsync/package/cli/mvm/src/cli.ts')
 const testNames = [...readFileSync(join(source, 'package/cli/vmsync/src/lifecycle.expensive.unit.test.ts'), 'utf8').matchAll(/^\s*name: '([^']+)',/gm)].map(match => match[1])
 assert.deepEqual(testNames, ['vmsync lifecycle (Linux)', 'full CLI lifecycle', 'vmsync lifecycle (Windows)', 'full CLI lifecycle'])
 const configuredTests = [0, 2].map(index => ({ suite: testNames[index], name: testNames[index + 1], executed: false, status: helperResolutionFailure ? 'unexecuted because original top-level setup failed' : 'unverified' }))
-const record = { sourceRevision: revision, checkId: 'special.package.cli.vmsync.src.lifecycle.expensive.unit.test.ts', selectedTask: '//package/cli/vmsync:test:e2e', selectedArgs: [], expectedFiles: ['package/cli/vmsync/src/lifecycle.expensive.unit.test.ts'], expectedFileCount: 1, initialIdentity, finalIdentity, providerJobUrl: process.env.DEPOT_JOB_URL, resources: { cpus: 16, memoryGiB: 64 }, result: { command, args, cwd: source, startedAt, finishedAt, exitCode: result.status, signal: result.signal, error: result.error?.message }, helperResolutionFailure, configuredTests, runtimeEntries: readdirSync(runtime), diagnosticGuestPreparationExecuted: false, runtimeCoverage: 'unexercised; final route invokes the authored task before any diagnostic guest preparation' }
+const record = { schemaVersion: 2, cohort: binding.cohort, harnessRevision: binding.harnessRevision, caseManifestSha256: binding.caseManifestSha256, sourceRevision: revision, checkId: 'special.package.cli.vmsync.src.lifecycle.expensive.unit.test.ts', selectedTask: '//package/cli/vmsync:test:e2e', selectedArgs: [], expectedFiles: ['package/cli/vmsync/src/lifecycle.expensive.unit.test.ts'], expectedFileCount: 1, initialIdentity, finalIdentity, finalIdentityError: finalIdentityError?.stack, providerJobUrl: process.env.DEPOT_JOB_URL, resources: { cpus: 16, memoryGiB: 64 }, result: { command, args, cwd: source, startedAt, finishedAt, exitCode: result.status, signal: result.signal, error: result.error?.message }, helperResolutionFailure, configuredTests, runtimeEntries: readdirSync(runtime), diagnosticGuestPreparationExecuted: false, runtimeCoverage: 'unexercised; final route invokes the authored task before any diagnostic guest preparation' }
 writeFileSync(join(evidence, 'results.json'), JSON.stringify(record, null, 2))
 console.log(JSON.stringify(record))
 if (result.status !== 0) console.error(result.stderr ?? '')
+if (finalIdentityError) throw finalIdentityError
 assert.deepEqual(finalIdentity, initialIdentity, 'The authored VM task must preserve immutable source and tracked inputs')
 if (result.error) throw result.error
 assert(helperResolutionFailure, 'Unexpected source-task result; inspect retained output before accepting coverage')
 throw new OriginalVmTaskFailure('Original selected vmsync task failed before either lifecycle test body; retained source failure must remain a failed required check')
+'''
+
+[tasks."trial:depot:vm:cohort"]
+description = "Bind the VM source selection to the exact clean harness and outer coherent cohort inputs"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const {execFileSync}=await import('node:child_process');
+const {readFileSync,writeFileSync,mkdirSync,existsSync}=await import('node:fs');
+const {createHash}=await import('node:crypto');
+const {homedir}=await import('node:os');
+const {join}=await import('node:path');
+const {strict:assert}=await import('node:assert');
+const workspace=process.env.GITHUB_WORKSPACE;
+assert(workspace,'GITHUB_WORKSPACE required');
+const id=process.env.DEPOT_CI_COHORT_ID;
+const manifestSha256=process.env.DEPOT_CI_COHORT_MANIFEST_SHA256;
+const requestedAt=process.env.DEPOT_CI_COHORT_REQUESTED_AT;
+assert(typeof id==='string'&&/^[A-Za-z0-9._-]{1,128}$/.test(id)&&!/[\r\n]/.test(id),'cohort_id must contain 1 to 128 permitted identifier characters');
+assert(typeof manifestSha256==='string'&&manifestSha256.length===64&&/^[a-f0-9]{64}$/.test(manifestSha256),'manifest_sha256 must be lowercase SHA256 of the exact outer common manifest bytes');
+const timestamp=typeof requestedAt==='string'?/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d{1,3}))?Z$/.exec(requestedAt):null;
+assert(timestamp&&timestamp[0]===requestedAt,'requested_at must be a shared UTC ISO timestamp');
+assert.equal(new Date(requestedAt).toISOString(),timestamp[1]+'.'+(timestamp[2]??'').padEnd(3,'0')+'Z','requested_at must be a valid UTC date');
+const harness=join(workspace,'harness');
+const git=args=>execFileSync('git',args,{cwd:harness,encoding:'utf8',maxBuffer:16*1024*1024}).trim();
+const harnessRevision=git(['rev-parse','HEAD']);
+assert.match(process.env.GITHUB_SHA??'',/^[a-f0-9]{40}$/);
+assert.equal(harnessRevision,process.env.GITHUB_SHA,'Actual harness HEAD must equal GITHUB_SHA');
+assert.equal(git(['status','--porcelain','--untracked-files=no']),'','Coherent harness must have no tracked edits');
+assert(git(['ls-files','-v','-z']).split('\0').filter(Boolean).every(entry=>entry[0]!=='S'&&!/[a-z]/.test(entry[0])),'Coherent harness index must not hide tracked edits');
+const manifestBytes=readFileSync(join(harness,'.depot/manifests/logger.json'));
+const manifest=JSON.parse(manifestBytes);
+assert.equal(manifest.caseId,'logger');
+assert.equal(manifest.sourceRevision,'ef01490f5e960f8ca0b424c12242caeb3c5a2b5e');
+const selected=manifest.externalChecks.find(check=>check.id==='special.package.cli.vmsync.src.lifecycle.expensive.unit.test.ts');
+assert.equal(selected?.task,'//package/cli/vmsync:test:e2e');
+assert.deepEqual(selected.args,[]);
+assert.equal(selected.expectedFileCount,1);
+assert.deepEqual(selected.expectedFiles,['package/cli/vmsync/src/lifecycle.expensive.unit.test.ts']);
+assert(selected.prerequisites.includes('package.cli.vmsync.build'),'Selected VM route must retain its authored build prerequisite');
+const record={schemaVersion:1,caseId:'logger',sourceRevision:manifest.sourceRevision,harnessRevision,caseManifestSha256:createHash('sha256').update(manifestBytes).digest('hex'),cohort:{id,manifestSha256,requestedAt}};
+const directory=join(homedir(),'temp/agent/depot-complete-vm-original-evidence');
+mkdirSync(directory,{recursive:true,mode:0o700});
+const path=join(directory,'cohort.json');
+if(existsSync(path))assert.deepEqual(JSON.parse(readFileSync(path,'utf8')),record,'VM cohort or harness binding changed within the attempt');
+writeFileSync(path,JSON.stringify(record,null,2)+'\n');
+console.log(JSON.stringify({event:'vm-cohort-bound',...record}));
+'''
+
+[tasks."trial:depot:ci:source-identity"]
+description = "Retain reviewed immutable source/configuration checks with the exact VM cohort and harness"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const {execFileSync}=await import('node:child_process');
+const {readFileSync,writeFileSync,mkdirSync,existsSync}=await import('node:fs');
+const {createHash}=await import('node:crypto');
+const {homedir}=await import('node:os');
+const {join}=await import('node:path');
+const {strict:assert}=await import('node:assert');
+const workspace=process.env.GITHUB_WORKSPACE;
+assert(workspace,'GITHUB_WORKSPACE required');
+execFileSync('mise',['run','//package/dev-script/task-util:trial:depot:vm:cohort'],{cwd:join(workspace,'harness'),stdio:'inherit'});
+const cohortRecord=JSON.parse(readFileSync(join(homedir(),'temp/agent/depot-complete-vm-original-evidence/cohort.json'),'utf8')); 
+const caseId=process.env.DEPOT_CI_CASE??'toml';
+const phase=process.env.DEPOT_CI_IDENTITY_PHASE;
+assert(['before','after'].includes(phase),'Identity phase must be before or after');
+const source=join(workspace,'source');
+const manifestBytes=readFileSync(join(workspace,`harness/.depot/manifests/${caseId}.json`));
+const manifest=JSON.parse(manifestBytes);
+const git=args=>execFileSync('git',args,{cwd:source,encoding:'utf8',maxBuffer:16*1024*1024}).trim();
+const sha256=value=>createHash('sha256').update(value).digest('hex');
+const packages=new Set([...manifest.selectedPackages,...manifest.externalChecks.flatMap(check=>check.artifactPrerequisitePackage?[check.artifactPrerequisitePackage]:[])]);
+const paths=new Set(['mise.lock','mise.toml','pnpm-lock.yaml','pnpm-workspace.yaml','package.json']);
+const trackedFiles=new Set(git(['ls-files','-z']).split('\0').filter(Boolean));
+const indexEntries=git(['ls-files','-v','-z']).split('\0').filter(Boolean);
+assert(indexEntries.every(entry=>entry[0]!=='S'&&!/[a-z]/.test(entry[0])),'Immutable source index must not hide tracked inputs with assume-unchanged or skip-worktree flags');
+const packageRoots=[...packages];
+const metadataNames=new Set(['mise.toml','mise.lock','package.json','Cargo.toml','Cargo.lock','config.toml']);
+for(const path of trackedFiles){
+ const name=path.slice(path.lastIndexOf('/')+1);
+ const rootConfiguration=!path.includes('/')&&(['.toml','.json','.jsonc','.yaml','.yml'].some(extension=>name.endsWith(extension))||name.includes('.config.'));
+ const packageConfiguration=packageRoots.some(pkg=>path.startsWith(`${pkg}/`))&&(metadataNames.has(name)||name.startsWith('tsconfig.')||name.includes('.config.')||path.includes('/.cargo/'));
+ if(rootConfiguration||path.startsWith('.cargo/')||packageConfiguration)paths.add(path);
+}
+const head=git(['rev-parse','HEAD']);
+assert.equal(head,manifest.sourceRevision);
+const trackedStatus=git(['status','--porcelain','--untracked-files=no']);
+assert.equal(trackedStatus,'','Coherent replay changed tracked source');
+const inputs=Object.fromEntries([...paths].sort().map(path=>{
+ const bytes=readFileSync(join(source,path));
+ assert.deepEqual(bytes,execFileSync('git',['show',`${head}:${path}`],{cwd:source,maxBuffer:16*1024*1024}),`Configured source input differs: ${path}`);
+ return [path,sha256(bytes)];
+}));
+const identity={cohort:cohortRecord.cohort,harnessRevision:cohortRecord.harnessRevision,caseId,sourceRevision:head,sourceTree:git(['rev-parse','HEAD^{tree}']),trackedStatus,inputs,manifestSha256:sha256(manifestBytes)};
+const directory=process.env.DEPOT_CI_IDENTITY_OUTPUT_DIRECTORY??join(homedir(),'temp/agent/depot-complete-vm-original-evidence');
+mkdirSync(directory,{recursive:true,mode:0o700});
+if(phase==='after')assert.deepEqual(identity,JSON.parse(readFileSync(join(directory,`${caseId}-source-before.json`),'utf8')).identity,'Before and after immutable source records differ');
+const identityPath=join(directory,`${caseId}-source-${phase}.json`);
+if(phase==='before'&&existsSync(identityPath))assert.deepEqual(identity,JSON.parse(readFileSync(identityPath,'utf8')).identity,'Repeated before identity differs');
+else writeFileSync(identityPath,JSON.stringify({phase,collectedAt:new Date().toISOString(),identity},null,2)+'\n');
+console.log(JSON.stringify({event:'immutable-source-verified',phase,caseId,sourceRevision:head,sourceTree:identity.sourceTree,configuredInputs:paths.size,manifestSha256:identity.manifestSha256}));
+
 '''
