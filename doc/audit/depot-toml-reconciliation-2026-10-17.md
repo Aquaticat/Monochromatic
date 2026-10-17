@@ -169,8 +169,7 @@ All check-log hashes and matching clean before/after source proofs are verified.
 TOML mutation attempt `q3xbl70q20` independently selected 54 source files,
 excluded 37 test files,
 and began building its runtime image.
-Its terminal collector remains active;
-final outcome and usage are still pending.
+Its terminal outcome is now retained in the development terminal reconciliation.
 These development observations do not form a complete-graph latency sample.
 Final coherent dispatch remains held.
 
@@ -183,9 +182,9 @@ and distinguishes fresh reports from pre-existing stale reports.
 The positive fixture preserves all native report identities;
 the stale-report control is explicitly marked false.
 
-The active development run remains on `274ec49595d60f663249d61ab35a0806fe29aff0`.
+The development run used `274ec49595d60f663249d61ab35a0806fe29aff0`.
 Its inputs are unchanged.
-A read-only `depot sandbox exec` observer request is retained to capture the native report if orchestration finishes.
+A read-only `depot sandbox exec` observer retained the complete native report when orchestration finished.
 The actual `/bin/pwd` probe succeeded against its VM.
 An initial reader syntax error is retained;
 the corrected reader uses a separate output and request record.
@@ -204,4 +203,43 @@ retains direct committed-byte checks for root configuration,
 all tracked Cargo metadata,
 and selected package configuration,
 plus rejection of both Git index exclusions.
-The active development run retains its original harness.
+The terminal development run retains its original harness identity.
+
+## Terminal TOML infrastructure outcome
+
+Run `p6vm5s00w6` finished with both independent consumer commands failed.
+TOML attempt `q3xbl70q20` ran its selected source task for `2640500.405168` milliseconds.
+It did not reach the one-hour wrapper deadline;
+cleanup verifies no remaining owned process group or labeled containers.
+Matching clean before/after source records and every check-log hash are retained.
+The combined provider allocation interval is `2834043` milliseconds at `16x64`,
+or `45344688` allocated vCPU-milliseconds.
+
+The full native report is retained byte-for-byte as
+[`depot-toml-mutation-native-2026-10-17.evidence.json.gz`](depot-toml-mutation-native-2026-10-17.evidence.json.gz).
+Its uncompressed SHA-256 is `e3b1023242fb838e30ad22ce1aa0c593f412401be141901594af34c484177bce`.
+All `3062` distinct mutant identities reconcile with `9037` shard manifests and attempts.
+All final statuses are `runtimeError`,
+with no source mutation assertion completion.
+Every shard failed `rsync --archive` with exit `23` and:
+
+```text
+# Source container copy diagnostic
+rsync: [generator] chgrp "/work/." failed: Operation not permitted (1)
+```
+
+This repeats the diagnosed root-owned `/work` tmpfs boundary,
+separate from user-namespace unmount issue `#1116` and baked-metadata issue `#1117`.
+The final TOML route must adopt the complete proven named-volume and baked-metadata adapter
+and pass a bounded actual TOML pilot before the full campaign.
+The source task body and assertions remain unchanged.
+
+Artifact `01a148a6-f383-7601-97bb-5e2f44ea27ff` is `9453423` bytes,
+with SHA-256 `8480e110dfd7c09a672aa6786fa9469b482e08e0df8c8c336e1b55264ce5059d`.
+The archive has `9047` members and `57437642` expanded bytes.
+Its `32240214`-byte check log exceeded the first collector's `16` MiB member bound;
+a fresh extraction used measured `64` MiB member and `128` MiB total bounds,
+retaining the first partial extraction.
+One metadata snapshot assertion is retained without attributing a narrower cause.
+Issue `#1113` remains open while the actual mutation campaign boundary is unresolved.
+Final coherent dispatch remains held.

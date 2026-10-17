@@ -85,11 +85,11 @@ A report unchanged from before the consumer remains explicitly stale.
 This preserves the original command and all assertions.
 
 A native-report positive fixture and a stale-report marking control pass.
-The active development request predates this copy adapter.
+The development request predates this copy adapter.
 Its separate read-only `depot sandbox exec` observer uses the original VM session and a native command timeout.
 The VM `/bin/pwd` probe succeeded;
-the observer outcome remains pending.
-No completed report is claimed when orchestration has not produced one.
+the observer retained the complete native report with a verified digest.
+
 ## Final source guard scope
 
 The [source guard controls](../audit/depot-route-source-guards-2026-10-17.md)
@@ -99,4 +99,23 @@ and compares configured metadata bytes directly to `HEAD`.
 Its inventory includes root `.cargo/` configuration and every tracked Cargo manifest and lockfile,
 including nested Android Rust metadata.
 Untracked and ignored output remains outside this inventory.
-The active development mutation run retains its original harness.
+The development mutation run retains its original harness identity.
+
+## Actual retained infrastructure outcome
+
+Development run `p6vm5s00w6` completed its independent mutation commands.
+File-enforcer failed at its existing package-path `ENOENT` boundary.
+TOML retained `3062` distinct mutant identities across `9037` shard attempts,
+all marked `runtimeError` after source copying failed before assertions.
+Each shard reports `rsync` exit `23` and
+`rsync: [generator] chgrp "/work/." failed: Operation not permitted (1)`.
+This is the diagnosed root-owned work-tmpfs boundary,
+separate from issues `#1116` and `#1117`.
+
+The wrapper did not time out.
+Its final cleanup proves no owned process group or labeled container remains.
+The combined provider interval is `2834043` milliseconds at `16x64`.
+The full native report is retained as compressed byte-identical evidence in
+[the terminal audit](../audit/depot-toml-reconciliation-2026-10-17.md#terminal-toml-infrastructure-outcome).
+These infrastructure-derived statuses do not establish source mutation completion or passing tests.
+The complete current container adapter and a bounded actual TOML consumer pilot remain required.

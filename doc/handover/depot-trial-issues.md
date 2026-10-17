@@ -419,19 +419,30 @@ and verified timeout cleanup.
 Development run `p6vm5s00w6` requests only the two missing mutation gates.
 File-enforcer mutation now has a failed terminal result matching `#1068`,
 with verified artifact and clean source proofs.
-TOML mutation remains independent and active;
-terminal collection is held in session `38964`.
+TOML mutation finished with `3062` infrastructure-derived `runtimeError` identities
+across `9037` shard attempts before assertions.
+Its full native report,
+provider allocation,
+artifacts,
+and verified cleanup are retained.
+A bounded actual TOML pilot through the current complete container adapter is queued;
+the full campaign remains incomplete.
 Completed container failure `#1070` remains separate;
 application source stays immutable.
 Final coherent dispatch remains held.
 
 The prepared harness also copies the native default mutation report with a freshness guard.
 The active development run keeps its original harness hash;
-a read-only observer request is held in session `59869`.
+the read-only native-report observer completed with verified bytes and digest.
 
 The [source guard controls](../audit/depot-route-source-guards-2026-10-17.md)
 verify the final route against hidden index exclusions and direct committed metadata bytes.
 These local controls do not replace provider before/after evidence.
+
+The common-manifest guard extension is queued on the isolated final refs.
+Provisional case bytes must be replaced by the real frozen complete case manifests.
+No fake common manifest will be published;
+local response stubs will remain distinct from actual authenticated API transport.
 
 ## Native recovery assertion tracking
 
