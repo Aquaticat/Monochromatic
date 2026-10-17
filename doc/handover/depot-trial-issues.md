@@ -669,13 +669,17 @@ their causes are not resolved by that later pass.
 The [verified closure receipts](../audit/depot-coherent-incident-closures-2026-10-17.evidence.json)
 retain actual final provider proof and exact filed issue bodies.
 
-- `#1168` is closed: all original logger host runner labels and applicable commands passed,
+- `#1168` is closed:
+ all original logger host runner labels and applicable commands passed,
   including semantic-only `macos-15`.
-- `#1169` is closed: the private dispatcher now passes the route through its child environment;
+- `#1169` is closed:
+ the private dispatcher now passes the route through its child environment;
   all 20 routes were accepted after the pre-provider argument failure.
-- `#1170` is closed: the Android collector reads the actual case result filename;
+- `#1170` is closed:
+ the Android collector reads the actual case result filename;
   the bound APK pair reached all 15 original device assertions.
-- `#1171` is closed: the private cold-boot copy excludes unused NOCOW snapshot/transient state;
+- `#1171` is closed:
+ the private cold-boot copy excludes unused NOCOW snapshot/transient state;
   retained entries still require reflinks,
   and the real device lifecycle and cleanup passed.
 
