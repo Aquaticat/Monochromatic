@@ -590,7 +590,8 @@ accepts valid before/after complete-case fixtures,
 and rejects 21 additional malformed binding/input/harness controls.
 Removing only the new complete-case predicate restores invalid acceptance.
 The source and all harness fixtures finish with clean tracked state.
-The current root task body equals the controlled task body,
+At root integration `ea0306a772`,
+the task body equals the controlled task body,
 with SHA256 `ce2425d4b0d3e84f3f4370976dc10f9a61f7b4c0ce66513c8c40ef52f4edf9ca`.
 
 Issue `#1141` is filed and closed with fresh body/state verification.

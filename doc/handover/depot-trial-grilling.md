@@ -162,6 +162,13 @@ and rejects 21 other invalid binding/input/harness controls.
 Removing the complete-case predicate restores invalid acceptance.
 Distinct issue `#1141` is filed and verified closed.
 `rootLoggerIntegrationPreparation` retains this fixture proof separately from actual provider acceptance.
+Its `desktopSourceCompatibility` field also retains fresh logger-source controls:
+the actual selector has seven sessions including Auto-play,
+the original controller loop passes 17 continuation/safety controls,
+and the archive passes eight controls.
+The real selector function rejects the legacy six-session receipt.
+The logger controller and selector bytes match the desktop case;
+this does not claim that the logger source's application assertions have executed.
 The authentic linter pilot `q10910cxfm` completes both formerly unmet Markdown prerequisites;
 its six remaining library assertion failures match the native owner's mapping and have separate issues
 `#1135` through `#1140`.
@@ -191,19 +198,34 @@ The route is statically ready;
 the separate `#1134` cleanup incident is repaired and closed with retained evidence.
 No additional guest or emulator has launched.
 
-The logger's external host route remains a separate static-registration item.
-Prepare the existing `.github/workflows/fs-id.yml` as a manually bound `logger.hosts` trial route
-for Linux,
+Root `7d487813bfe559b0fa5299e36aba010d71439b34` prepares `.github/workflows/fs-id.yml`
+as the manually bound `logger.hosts` route for the original Linux,
 macOS,
-and Windows.
-Retain the original fs-id host command and both original semantic-bridge consumer tasks.
-Adapt the native owner's portable provenance guard from
-`2032975cbad924e63ac98bc69e14a56b20288275`,
-including selected logger metadata and the actual host workflow binding.
-Do not replace the root's verified POSIX guard or the stronger logger cohort helper.
-Verify Windows checkout byte preservation and real source prerequisites before final static freeze.
+and Windows matrix.
+It retains the actual fs-id command and Node26.5.0 setup,
+adds both original semantic-bridge consumer tasks,
+and derives Node26.11.1/pnpm12.11.2 from the immutable source lock.
+Root `bbb40c740f` formats the workflow.
+The portable source guard derives from `2032975cbad924e63ac98bc69e14a56b20288275`;
+the stronger logger cohort helper now admits only each route's registered workflow,
+including `logger.hosts`.
+The existing combined-route fixture suite still passes two valid and 22 rejection controls,
+with the expected legacy and complete-case guard-removal invalid acceptances.
+Structured workflow/result controls preserve the original commands and matrix,
+accept a complete result,
+reject seven failed/skipped/wrong-runtime outcomes,
+and detect invalid acceptance after removing the result failure gate.
+The first host source fixture failed because its inherited Mise task directory resolved outside the harness checkout.
+Root `bcc683bd85` binds source-case reads and harness Git operations to explicit `GITHUB_WORKSPACE/harness` paths.
+The corrected host binding/source controls are pending.
+Retain that initial fixture failure separately,
+verify native host prerequisites with a bounded development route,
+and then freeze static registration.
+No actual final common manifest has been published.
 
-The logger owner's bounded development recovery `lt7qwlz6h1`
+The logger owner's bounded development recovery `lt7qwlz6h1` is terminal with all three artifacts downloaded.
+The owner is reconciling its original source outcomes and resource records.
+It
 uses clean pushed harness `f69a78a3b31f81cbfe47496bcdc6e2ac75549777`.
 Only conf fuzz and TOML/conf mutation are replayed,
 with unchanged source arguments,
@@ -246,24 +268,34 @@ correlation,
 source outcome,
 and cleanup proofs;
 `#1130` is closed.
-The full unchanged-source TOML mutation retry `23dk3nr90f`
-is running at harness `0f1ef041a0de2ff6d2db6dd55210b1160c592648`,
-with a five-hour check bound and six-hour provider bound.
-Its original source arguments remain unchanged.
-The native owner retains its terminal wait and finite progress evidence;
-completed shard events are not distinct final mutant counts.
+The full unchanged-source TOML mutation retry `23dk3nr90f` is terminal at
+`0f1ef041a0de2ff6d2db6dd55210b1160c592648`.
+All 3,062 identities match the frozen source spans and 463 green-baseline shard reports.
+Native runner outcomes are 921 killed,
+256 survived,
+three timeout,
+1,882 compileError,
+and zero runtimeError.
+These native labels do not imply that every killed outcome is an authored assertion failure.
+The separate actual-source classifier control demonstrates that a missing test-spawn executable also returns killed.
+Its caught-spawn diagnostic emitter is verified;
+the full campaign contains no matching diagnostic at that specific branch.
+The campaign's source arguments remain unchanged,
+source identities and cleanup pass,
+and four auxiliary inspect failures remain separately retained.
+The native owner is completing durable accounting and the distinct classifier incident filing.
 The prior failed campaigns and separate source-producer issue `#1118` remain retained.
 
 The remaining queue is explicit:
-collect the provider log archive and corrected inventory controls;
-finish scanner and Scorecard workflow integration;
-reconcile the running logger and TOML work;
+retain final host binding/source controls and complete native host prerequisite verification;
+integrate the logger owner's final disposable-consumer cleanup adapter;
+finish the terminal logger/TOML accounting and incident reconciliation;
 complete every case's registration and copy its final bytes to every owner;
 freeze and publish the actual common manifest before the shared request clock;
 dispatch and collect all bound routes;
 join the matching Android producer to the held headful consumer;
 and compute allocation cost and overlap-aware critical paths.
-The VM owner is also assessing a natural-build consumer bridge for the source cwd failure `#1076`,
+The VM owner's natural-build consumer bridge for source cwd failure `#1076` is statically ready,
 while preserving the original authored gate's result and avoiding Windows fixtures.
 The held Android join now accepts only `native.producers`,
 the final native workflow,
