@@ -14,8 +14,8 @@ and SHA256 `ec26a2edd105dc17fb7f27bbafbe3bd92e9d0f479901e9a5f8938a98b963fc50`
 at `2026-10-17T11:16:24.579Z`,
 before the shared request instant `2026-10-17T11:17:09.003Z`.
 All six harness remotes were explicitly pushed and matched their frozen clean heads.
-The 16 parallel routes and initial TOML Scorecard case have accepted dispatch receipts.
-The remaining Scorecard cases chain only after each preceding terminal receipt.
+All 16 parallel routes and four sequential Scorecard cases have accepted dispatch receipts.
+Each Scorecard dispatch followed the preceding case's terminal receipt.
 All seven Depot run records independently confirm the bound harness SHA,
 branch,
 repository,
@@ -39,7 +39,14 @@ while its natural 502,093-byte bundle and isolated CLI consumer passed.
 Both original Linux and Windows guest lifecycles remain unexecuted.
 All four logger host runner labels and applicable original command outcomes are verified
 against distinct provider-digest-matched archives and equal source/common identities.
-Issue `#1168` is ready to close with actual `macos-15` evidence.
+Issue `#1168` is closed after actual `macos-15` verification.
+The corrected dispatcher argument,
+Android artifact filename,
+and NOCOW cold-copy preparer incidents are filed and closed as `#1169`,
+`#1170`,
+and `#1171`.
+The [verified closure receipts](../audit/depot-coherent-incident-closures-2026-10-17.evidence.json)
+retain exact issue bodies and the logger closing comment.
 The common-bound Android APK pair passed the held input validator.
 Private AVD preparation then failed before launch on NOCOW snapshot/transient reflinks.
 The filesystem controls and source trace are retained in

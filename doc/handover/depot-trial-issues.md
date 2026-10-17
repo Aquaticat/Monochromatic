@@ -663,3 +663,23 @@ their causes are not resolved by that later pass.
 - [#1108](https://github.com/Aquaticats/Monochromatic/issues/1108):
   the Linux trial omitted the source-selected Slint viewer tool wave;
   the corrected tool gate and every eligible Linux test now pass.
+
+## Coherent replay preparer closures on October 17
+
+The [verified closure receipts](../audit/depot-coherent-incident-closures-2026-10-17.evidence.json)
+retain actual final provider proof and exact filed issue bodies.
+
+- `#1168` is closed: all original logger host runner labels and applicable commands passed,
+  including semantic-only `macos-15`.
+- `#1169` is closed: the private dispatcher now passes the route through its child environment;
+  all 20 routes were accepted after the pre-provider argument failure.
+- `#1170` is closed: the Android collector reads the actual case result filename;
+  the bound APK pair reached all 15 original device assertions.
+- `#1171` is closed: the private cold-boot copy excludes unused NOCOW snapshot/transient state;
+  retained entries still require reflinks,
+  and the real device lifecycle and cleanup passed.
+
+The Android source failures remain open in `#1002`;
+13 device assertions passed and two failed,
+with no skipped or missing assertions.
+Source/tool compatibility diagnostics from the remaining cohort routes are still being reconciled.

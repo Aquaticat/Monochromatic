@@ -38302,6 +38302,16 @@
         "bytes": 26367,
         "sha256": "e5164c86c2545a0d91c2a537154278a82655f967159b9edca3c4b9522d00ec97"
       }
+    },
+    "verifiedIncidentClosures": {
+      "path": "doc/audit/depot-coherent-incident-closures-2026-10-17.evidence.json",
+      "closedIssues": [
+        1168,
+        1169,
+        1170,
+        1171
+      ],
+      "loggerClosingComment": "https://github.com/Aquaticats/Monochromatic/issues/1168#issuecomment-6233525959"
     }
   }
 }
