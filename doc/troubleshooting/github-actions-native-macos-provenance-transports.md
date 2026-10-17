@@ -163,12 +163,28 @@ and common inputs:
 gh run rerun 39028181199 --repo Aquaticats/Monochromatic --job 117383212664
 ```
 
-The request was accepted.
-Its consumer and artifact verification are still pending.
+The request was accepted and attempt two completed.
+macOS job `117393630494` verified equal source/common before and after records
+and published artifact `12101426954` with a matching provider digest.
+All 1382 observed test identities equal the first attempt's identity set,
+with a dropped-identity sensitivity control.
+The retry recorded 1356 passes,
+26 known failures,
+and one summary skip whose identity was not printed.
+The decode-cache case tracked by `#1178` passed on this unchanged-source repeat;
+the first-attempt failure remains valid evidence and the issue stays open.
 Re-execution consumes another full job allocation and adds its actual orchestration gap to the critical path.
 The original attempt remains retained and has no paired-provenance completion credit.
-A successful repeat would establish recovery for that attempt,
-not the cause or permanent resolution of either transport incident.
+The successful transport repeat establishes recovery for attempt two.
+It does not establish the cause or permanent resolution of either transport incident.
+Issues `#1175` and `#1176` remain open.
+
+The second-attempt jobs API also lists a Windows row under new ID `117393631745`.
+Its start and completion times and every step record equal original job `117383212796`.
+Its provenance artifact is the original `12099718026`,
+and the attempt-two log archive contains only macOS logs.
+This Windows row carries the original execution forward.
+Allocation accounting must preserve that alias without counting another Windows execution.
 
 ## What does not work
 
@@ -195,7 +211,7 @@ No upstream submission is proposed:
 4.  Contribution eligibility was not investigated because no upstream defect or submission is established.
 5.  No maintainer willingness or refusal is inferred.
 6.  No upstream patch is claimed.
-    The actual repository recovery request is retained separately and remains under verification.
+    The actual repository recovery request and verified attempt-two source/common pair are retained separately.
 
 There is no substantiated upstream defect report or additive upstream comment to file from this evidence.
-The repository incidents stay separate and open while their recovery evidence is collected.
+The repository incidents stay separate and open after the verified transport recovery.
