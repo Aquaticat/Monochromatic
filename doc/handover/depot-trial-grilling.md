@@ -46,9 +46,30 @@ The filesystem controls and source trace are retained in
 [the cold-copy troubleshooting record](../troubleshooting/android-emulator-cold-boot-reflink-nocow.md).
 The revised local prepare task excludes unused snapshot and adb transient state;
 all other staged device task bodies remain unchanged.
-Resume the existing producer with consumer attempt two;
-verify the private AVD metadata before its first launch.
-No device assertion has run yet.
+Consumer attempt two completed with the same bound producer.
+The private AVD copy and metadata check passed,
+and all 15 original instrumented assertions ran:
+13 passed,
+two `SessionStoreTest` cases failed with the null-context symptom in `#1002`,
+and none skipped or missing.
+The adb instrumentation command exited zero;
+the aggregate task correctly failed.
+Guest API `37`,
+ABI `x86_64`,
+page size `16384`,
+and font scale `1.0` were measured before execution;
+forced density and size were unset.
+Graceful shutdown passed,
+the unit is inactive,
+the private adb server is stopped,
+and all three private sockets are closed.
+Owned AVD ini/config hashes remain unchanged.
+The [actual Android evidence](../audit/depot-coherent-android-2026-10-17.evidence.json)
+retains producer joins,
+APK digests,
+complete raw instrumentation,
+all device lifecycle steps,
+and the missing-assertion positive control.
 The [early cohort evidence](../audit/depot-coherent-early-results-2026-10-17.evidence.json)
 retains these boundaries and full structured receipts.
 
@@ -462,7 +483,7 @@ the actual common-bound replay has now started.
 The remaining queue is explicit:
 collect all bound routes to terminal state and chain the remaining Scorecard cases;
 retain formatter incident closure and the completed terminal accounting;
-join the matching Android producer to the held headful consumer;
+retain the completed matching Android consumer and incident closures;
 and compute allocation cost and overlap-aware critical paths.
 The reader report section list requires confirmation under the source-audited-report skill.
 The proposed sections are decision and acceptance limits;

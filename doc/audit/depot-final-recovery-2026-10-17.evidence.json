@@ -38285,9 +38285,23 @@
     "localAndroidConsumer": {
       "sourceAndCommonBoundAPKsVerified": true,
       "producerRun": "v8cw5cmg1b",
-      "initialPhase": "private-copy failed before emulator launch",
-      "copyRecoveryPrepared": true,
-      "deviceAssertionsExecuted": false
+      "producerJob": "5chhw8m344",
+      "producerAttempt": "pb0rj75l0t",
+      "passed": 13,
+      "failed": 2,
+      "skipped": 0,
+      "missingAssertions": 0,
+      "sourceIssue": 1002,
+      "initialPrivateCopyFailureRetained": true,
+      "coldBootCopyRecoveryVerified": true,
+      "deviceAssertionsExecuted": true,
+      "privateUnitInactive": true,
+      "privateAdbStopped": true,
+      "detail": {
+        "path": "doc/audit/depot-coherent-android-2026-10-17.evidence.json",
+        "bytes": 26367,
+        "sha256": "e5164c86c2545a0d91c2a537154278a82655f967159b9edca3c4b9522d00ec97"
+      }
     }
   }
 }
