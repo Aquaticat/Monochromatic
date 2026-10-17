@@ -37485,6 +37485,16 @@
       },
       "firstCaseReadFixRevision": "bcc683bd85b0ab28dc90619832a20c5d705f5860",
       "cause": "The generator embedded a literal Mise template in its own run body, so outer Tera expanded it before helper definitions were written"
+    },
+    "issue": {
+      "number": 1144,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1144",
+      "title": "Depot logger host preparer freezes local task directories into generated helpers",
+      "state": "CLOSED",
+      "bodySha256": "b03c59f8c5dab1900e433bbe000aefb77f85eec0e11ecc2ecc05a7b564a12285",
+      "bodyVerified": true,
+      "closedStateVerified": true,
+      "actualProviderAcceptance": false
     }
   }
 }
