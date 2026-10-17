@@ -278,7 +278,7 @@ const source = join(process.env.GITHUB_WORKSPACE, 'source')
 const bytes = readFileSync(join(harness, '.depot/manifests/logger.json'))
 const manifest = JSON.parse(bytes)
 const digest = createHash('sha256').update(bytes).digest('hex')
-assert.equal(digest, '4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7')
+assert.equal(digest, JSON.parse(readFileSync(join(harness, '.depot/manifests/logger-orchestrator.json'), 'utf8')).manifestSha256)
 assert.equal(execFileSync('git', ['rev-parse', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), manifest.sourceRevision)
 const group = process.env.DEPOT_LOGGER_EXTERNAL
 const groups = {

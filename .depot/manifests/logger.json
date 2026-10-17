@@ -14570,7 +14570,8 @@
         "package.module.hyperscript.build",
         "package.module.test.build",
         "package.module.fs-path.build",
-        "package.module.logger.fuzz.bundle.browser-properties"
+        "package.module.logger.fuzz.bundle.browser-properties",
+        "package.webapp-productivity.wc.build"
       ]
     },
     {
@@ -14599,7 +14600,9 @@
         "firefox"
       ],
       "prerequisite": "Playwright image matching this immutable lockfile and required built artifacts.",
-      "prerequisites": []
+      "prerequisites": [
+        "package.module.dom.build"
+      ]
     },
     {
       "id": "root.forbidden-strings",

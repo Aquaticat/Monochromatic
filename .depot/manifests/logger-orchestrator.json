@@ -3,7 +3,7 @@
   "caseId": "logger",
   "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
   "manifestPath": ".depot/manifests/logger.json",
-  "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+  "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
   "packageChecks": 719,
   "externalChecks": 19,
   "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
@@ -133,5 +133,24 @@
     "sourceTask": "package/cli/vmsync/mise.toml",
     "reason": "Use the authored dedicated lifecycle task and preserve its build prerequisite",
     "packageCheckGraphUnchanged": true
-  }
+  },
+  "previousDevelopmentManifestDigests": [
+    "f4cbd47f210f5b031d76c5fc1c28fa704b349621f91eefa3f4f3ad575acfedc3",
+    "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7"
+  ],
+  "additionalArtifactPrerequisites": [
+    {
+      "checkId": "root.e2e",
+      "prerequisite": "package.module.dom.build",
+      "source": "package/module/dom/src/test-setup.ts",
+      "artifact": "package/module/dom/dist/final/neutral/index.mjs",
+      "observedFailureRun": "dhxhzzvmc3"
+    },
+    {
+      "checkId": "root.browser",
+      "prerequisite": "package.webapp-productivity.wc.build",
+      "source": "package/webapp-productivity/wc/src/page.browser.test.ts",
+      "artifact": "package/webapp-productivity/wc/dist/final/index.html"
+    }
+  ]
 }
