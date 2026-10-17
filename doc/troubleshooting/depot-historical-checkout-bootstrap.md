@@ -278,7 +278,8 @@ artifact digest,
 and provider allocation interval.
 At this checkpoint,
 issue [#1110](https://github.com/Aquaticats/Monochromatic/issues/1110) remained open for full independent coverage.
-The complete independent-session controls described in this section now satisfy that acceptance boundary.
+The controls in [complete independent-session verification](#complete-independent-session-verification)
+now satisfy that acceptance boundary.
 
 These interaction failures remain a separate boundary from the repaired PID limit.
 The harness had overridden `E2E_COMPOSITOR` with a binary built from the historical source checkout.
@@ -336,7 +337,8 @@ These development controls do not establish a passing source gate or final coher
 
 The original `package/music-player/desktop-e2e/src/run.ts` writes the summary,
 then removes its scratch base.
-`src/session.ts` writes each session's stdout/stderr as a log inside that base.
+`package/music-player/desktop-e2e/src/session.ts`
+writes each session's stdout/stderr as a log inside that base.
 The trial's post-command collector therefore copies the directory after those completed-run logs have disappeared.
 Historical continuation controls `s3cmrhf2kp` and `wxq11xm2hd` retain summaries and screenshots,
 but have no raw session logs.
