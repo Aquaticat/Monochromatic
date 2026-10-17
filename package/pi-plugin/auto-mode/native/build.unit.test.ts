@@ -1,5 +1,5 @@
 /** Verify the build command against a disposable installation. @module */
-import { cp, mkdir, mkdtemp, readFile, realpath, symlink, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readFile, realpath, stat, symlink, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import spawn, { SubprocessError } from 'nano-spawn';
@@ -75,11 +75,16 @@ await describe({ name: 'native release publication', children: [it({
     expect(await rejectedBuild(packageRoot)).toContain('fixture CLI loading failure');
     expect(await realpath(active)).toBe(published);
     expect(await version(packageRoot)).toBe(expectedVersion);
-    await writeFile(cliPath, cli);
+    const changedCli = `${cli}\n// Distinct immutable release fixture.\n`;
+    await writeFile(cliPath, changedCli);
     await build(packageRoot);
-    expect(await realpath(active)).not.toBe(published);
+    const latest = await realpath(active);
+    expect(latest).not.toBe(published);
     expect(await version(packageRoot)).toBe(expectedVersion);
     expect(await readFile(join(published, 'cli.mjs'), 'utf8')).toBe(cli);
+    expect(await readFile(join(latest, 'cli.mjs'), 'utf8')).toBe(changedCli);
+    expect((await stat(join(latest, 'cli.mjs'))).ino).not.toBe((await stat(join(published, 'cli.mjs'))).ino);
+    expect((await stat(join(latest, 'PI-LICENSE.txt'))).ino).toBe((await stat(join(published, 'PI-LICENSE.txt'))).ino);
   },
 })] });
 //endregion Failed release publication
