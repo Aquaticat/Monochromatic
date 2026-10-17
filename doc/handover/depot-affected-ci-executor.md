@@ -483,7 +483,19 @@ Cloud cleanup-only control `qsg8tx4bvb` is requested from clean pushed
 Three valid/five rejected selector controls, a guard-removal control and two prerequisite controls pass.
 Root has integrated the unchanged generated identity helper and owns its strengthened cohort guard;
 preserve that guard while grafting the generated branch's new forwarding/selection logic.
-The remaining queue is terminal long-three reconciliation and cleanup-control verification,
+Cleanup control `qsg8tx4bvb` measures root `0:0` output and reproduces ordinary deletion failure;
+Git already removes registration, so the privileged Git retry is rejected.
+The orphan-only correction at `53514e17d6` passes `p3jlkgvl99`,
+with strict source identity, image config, metadata, confined removal and no remaining containers independently verified.
+Ten negative fixtures, the ordinary positive fixture and the guard-removal control pass, all removed.
+Long-three is independently reconciled: conf fuzz and TOML mutation pass;
+conf mutation exits one from a red `src/conf.cache.unit.test.ts` baseline.
+All three have actual source terminal records and nine verified logs, with no wrapper timeouts.
+Native mutation-report JSON was omitted from these historical artifacts;
+per-mutant reconciliation is unavailable, and CLI totals are explicitly summaries.
+Development union v3 has all 719 package identities terminal, with no latest unfinished task;
+it remains separate from coherent replay and does not infer eligibility from terminal state.
+The remaining queue is fresh native-report retention and an authentic bounded CLI collector control,
 filing the other distinct source/harness incidents and root integration of the candidate.
 No generated outputs will be restored to manufacture a clean receipt.
 Only harness execution failures receive recovery edits;

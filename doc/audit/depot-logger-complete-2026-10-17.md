@@ -326,9 +326,24 @@ an unchanged-ref reprobe succeeded without a source or workflow edit.
 No server-side cause is inferred from that observation.
 The mutation jobs use `4x16`, matching the authored two concurrent two-CPU containers;
 the single fuzz container uses `2x8`.
-The next actions are terminal collection of the three long campaigns,
-the actual generated-consumer pilot,
-filing the remaining distinct source diagnostics,
+All three long tasks now have independently verified source terminal records,
+with nine exact source/prerequisite log hashes and actual attempt URLs.
+Conf fuzz and TOML mutation pass.
+TOML reports 922 killed, 255 survived, three timeouts, 1,882 compile errors and zero runtime errors across 462 shards.
+Conf mutation exits one after one red baseline in `src/conf.cache.unit.test.ts`;
+its summary reports 406 killed, 90 survived, four timeouts, 393 compile errors and one runtime error across 166 shards.
+That baseline's narrower cause is unproved.
+The development artifacts omitted the native mutation-report JSON files,
+so these CLI totals are retained summaries, not an independent per-mutant reconciliation.
+The successful fuzz container's evidence copy and cleanup are verified.
+Actual allocated usage is 33,447.81 CPU-seconds, or $1.6723905 published compute before credits.
+The new development union has terminal observations for all 719 package identities,
+with no unfinished selected task.
+It retains the superseded 685/34, 686/33 and 717/2 snapshots.
+It is not a coherent replay and does not infer eligibility or valid source prerequisites from terminal status alone.
+The remaining queue includes fresh native-report retention around each final mutation leaf,
+a bounded authentic source CLI consumer control,
+filing the remaining distinct source/harness diagnostics,
 and root integration of the prepared combined route.
 The final coherent replay is held until the root agent aligns those routes.
 The common cohort manifest will be a separate authenticated, byte-verified file on `main`.
@@ -494,15 +509,24 @@ It rejects symlinks, authoritative aliases/ancestry and stray root Git-directory
 Ignored-file dry runs and root Git-directory/ignore probes precede removal.
 It records generated output metadata,
 tries ordinary removal,
-then confines a privileged Git removal to that same already-verified disposable worktree.
+then handles only a verified orphan left by ordinary Git removal.
 Local actual-program controls accept the ordinary fixture,
-reject eight invalid fixtures at their intended guards,
+reject ten invalid fixtures at their intended guards,
 and accept an unknown label only when that guard is removed.
 Every control fixture is removed.
 Cloud control `qsg8tx4bvb` uses a `2x8` provider job and an actual two-CPU/two-GiB/512-PID container
-to reproduce disposable rootful output and exercise the fallback.
-Its terminal metadata and cleanup proof remain pending.
-It executes no original generator and gives no source-check credit.
+and measures a root `0:0` corpus directory with mode `0755` and file with mode `0644`.
+It reproduces ordinary `Permission denied` and shows Git already removed the worktree registration.
+The proposed privileged Git retry then reports `is not a working tree`; that hypothesis is rejected.
+The corrected fallback requires the removed registration,
+measured foreign-owned output,
+unchanged authoritative HEAD/status and the same exact nonsymlink disposable path before confined removal.
+Actual control `p3jlkgvl99` passes at `53514e17d6ca27fa74efb0bc8d0a731ec7707a84`.
+Its image config equals the original declared-corpus pull's `7a0d2c0c...` config.
+The fixture and all control containers are verified absent,
+and strict source before/after identities match.
+Its actual `2x8` usage is 119.006 allocated CPU-seconds, or $0.0059503 before credits.
+Neither cleanup control repeats an original generator or gives source-check credit.
 
 [mapping-incident]: https://github.com/Aquaticats/Monochromatic/issues/1116
 [metadata-incident]: https://github.com/Aquaticats/Monochromatic/issues/1117

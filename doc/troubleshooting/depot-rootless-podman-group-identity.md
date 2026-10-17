@@ -379,4 +379,36 @@ The two-CPU, two-GiB and 512-PID bounds remain effective.
 The linter sample records 9,663 memory-limit events with zero OOM events and zero PID rejections.
 The final common cohort replay remains separate work.
 
+## Disposable generator output cleanup
+
+The rootful declared-type consumer `62nbb3srhk` completes its original corpus task:
+439 draws are kept, 61 are deliberately dropped, and the tracked generated corpus is unchanged.
+The separate disposable-worktree cleanup fails with Git's `Permission denied` diagnostic.
+The failed predecessor retains no ownership stat;
+the error alone does not establish its UID, GID or mode.
+
+Bounded control `qsg8tx4bvb` uses the same actual Node image config
+`7a0d2c0c30811c393f278a255613b2a78cac778438bc06464e4a8b6979c3d4a9`
+and the source task's readonly repository plus writable output mount geometry.
+It measures a root `0:0` directory with mode `0755` and file with mode `0644`.
+Ordinary Git removal reproduces `Permission denied` and still removes the worktree registration.
+A proposed privileged Git retry therefore fails with `is not a working tree`.
+That remedy is rejected.
+
+The verified cleanup validates the frozen invocation's exact disposable path,
+HEADs, shared Git repository and original worktree registration before removal.
+It records ignored-file dry runs, root Git-directory/ignore probes and output metadata.
+After ordinary removal fails,
+it permits privileged deletion only if registration is gone,
+foreign ownership was measured,
+the exact nonsymlink orphan path is unchanged,
+and authoritative HEAD/status still match.
+It never changes ownership or source bytes.
+Ten rejected fixtures, an ordinary positive fixture and a guard-removal acceptance verify the scope.
+Actual control `p3jlkgvl99` passes the rootful fallback,
+proves the fixture and containers absent,
+and retains identical strict source before/after identities.
+Both controls give zero source-check credit and do not repeat the completed corpus consumer.
+The final common cohort replay remains separate work.
+
 [pnpm-direct-dedupe]: https://pnpm.io/settings/other#dedupedirectdeps
