@@ -562,7 +562,8 @@ Current owned TOML recovery accounting is complete.
 Source classifier `#1142` and source prototype lookup `#1118` remain open.
 No application source changed.
 The final TOML route stays at `0f1ef041a0de2ff6d2db6dd55210b1160c592648`.
-Native/Windows/Alpine original guard templates resolve to their intended harnesses under actual nested Mise metadata calls;
+Native/Windows/Alpine original guard templates resolve to their intended harnesses
+under actual nested Mise metadata calls;
 no guard rewrite was made.
 Next owned step depends on root supplying complete frozen case bytes and the published canonical manifest.
 Then update the copied case bytes and route hashes,

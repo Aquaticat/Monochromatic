@@ -101,7 +101,8 @@ TOML's explicitly named development pilot identity does not claim canonical coho
 
 ## Current guard block verification
 
-The prepared TOML route advanced to `0f1ef041a0de2ff6d2db6dd55210b1160c592648` for metadata receipts and the independent full retry budget.
+The prepared TOML route advanced to `0f1ef041a0de2ff6d2db6dd55210b1160c592648`
+for metadata receipts and the independent full retry budget.
 Its canonical guard block remains byte-identical to the harness exercised by the 20 accepted and 110 rejected controls.
 The current native,
 Windows,
