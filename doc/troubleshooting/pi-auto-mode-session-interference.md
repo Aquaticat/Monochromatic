@@ -1,4 +1,213 @@
-# Auto-mode on Pi 1.2.0 blocks prompts after provider switching and tree navigation
+# Auto-mode on Pi 1.2.0 blocks authorized tool groups
+
+## Process metadata and queued custom inputs on 2026-10-17
+
+### Symptoms and separate incidents
+
+Session `2026-10-17T04-53-14-520Z_01a14834-fc97-70de-9615-03cc0636384b`
+reports two approval failures.
+The mixed `process.start` and `bash` group containing `chatcmpl-tool-b60c3965f752386f`
+receives `approve: 0.48`, `deny: 0.34`, `unknown: 0.18`.
+The model answered,
+but its score does not reach the retained `0.60` cutoff.
+The final Bash pair containing `chatcmpl-tool-a7a4468548c5838a` instead throws
+`AssessmentTransportError: Assessment HTTP request or response failed; no provider answer was admitted`.
+The historical exception was discarded;
+its underlying cause remains unknown.
+Three unchanged saved-request replays of that final pair succeed at `approve: 0.88`.
+
+The accompanying `notify-send` SIGTERM warning concerns approval notification delivery.
+It does not establish either permission-review failure's cause.
+
+Full configured replays expose additional boundaries:
+
+- Visible process results and completion messages contain raw shell commands in metadata.
+- Queuing a custom message during assessment produces
+  `SourceCollectionError: Native run prompt was replaced after this source snapshot`.
+- Queuing custom data during a primary model request produces
+  `SourceCollectionError: Only original unregistered manager or native event input occurrences may extend this source snapshot`.
+
+The two freshness messages come from different checks.
+Neither proves that instruction text changed.
+
+### Source trace
+
+`package/pi-plugin/auto-mode/src/review-operation.ts:27`
+originally projected only Bash calls.
+The maintained projection now includes process starts while retaining other process actions:
+
+```ts
+// package/pi-plugin/auto-mode/src/review-operation.ts
+if (name !== 'bash' && !(name === 'process' && input.action === 'start')) return input;
+```
+
+Replacing only the process command copies in the saved mixed-group request with parser structure
+changes the result to `approve: 0.69`, `deny: 0.20`, `unknown: 0.11`
+in three identical live trials.
+Execution still uses the original input.
+
+That call projection does not cover returned process metadata.
+`package/pi-plugin/auto-mode/src/visible-context.ts:207`
+and `:232` now select metadata projection by the original tool name or exact custom-message type.
+`package/pi-plugin/auto-mode/src/review-process-result.ts:49`
+projects known command fields while preserving output text and unrelated data:
+
+```ts
+// package/pi-plugin/auto-mode/src/review-process-result.ts
+const projected=typeof details.command==='string'?projectReviewInput({name:'bash',input:details}):details;
+```
+
+The same module handles `process`, `processes[]`, and `result.info` records.
+An arbitrary data property named `command` does not select this path.
+
+The custom-message freshness chain begins in
+`package/pi-plugin/auto-mode/native/contract/integration/native-batch/prompt-input-source.ts:73`:
+
+```ts
+// package/pi-plugin/auto-mode/native/contract/integration/native-batch/prompt-input-source.ts
+to:'        captureNativeCustomMessageInput({manager:this.#sessionManager,message:appMessage});\n        if (options?.deliverAs === "nextTurn") {'
+```
+
+The injected capture precedes the SDK's delivery choice.
+`package/pi-plugin/auto-mode/native/contract/collector/run-prompt-custody-v3/loaded-user-inputs.mjs:185`
+retains its original construction:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/collector/run-prompt-custody-v3/loaded-user-inputs.mjs
+retainConstructedInput({
+  carrier:message,
+  value,
+  metadata,
+  inputField:'customMessage',
+  inputOrigin:'native-custom-construction'
+});
+```
+
+`loaded-pool.mjs:79` appends that origin to the constructed-input array.
+Before the correction,
+`run-prompt-custody-v3/lifecycle.mjs` responded to any array change with `retainContextInputs([])`.
+`run-prompt-custody-v3/context.mjs:59` then replaced the run-composition object:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/collector/run-prompt-custody-v3/context.mjs
+const view=Object.freeze({
+  ...scope.view,
+  retainedMessageOrigins
+});
+check(scope);scope.view=view;scope.constructedInputs=constructedInputs;
+```
+
+`collector/rule-relevance-sdk-copy/input/resource-bindings.mjs:149`
+rejects that changed identity:
+
+```js
+// package/pi-plugin/auto-mode/native/contract/collector/rule-relevance-sdk-copy/input/resource-bindings.mjs
+if(readSessionRun(session)!==saved.run)throw new SourceCollectionError('Native run prompt was replaced after this source snapshot');
+```
+
+The lifecycle now retains pending custom data without replacing the already observed run.
+Actual context admission still retains the original publication and serialized-request contribution proof.
+User instructions do not take that custom-data path.
+
+A second rejection occurs after queuing custom data during the primary request.
+`integration/policy-source/manager-source-growth.mjs:79`
+allowed appended manager and event inputs but omitted native custom constructions.
+The focused `notification-primary` test fails against `native-release-GSPIDj`.
+Diagnostic instrumentation identifies `native-custom-construction`,
+role `custom`,
+permission `false`,
+matching original source/publication occurrences,
+and no registration or run replacement.
+The correction shares the custom-data classifier with lifecycle reads;
+all existing ownership,
+prefix-order,
+permission,
+and occurrence checks remain.
+Verification of that correction is still in progress.
+
+Transport recovery is separate.
+`package/pi-plugin/auto-mode/src/assessment-transport.ts:174`
+retains only a sanitized category for actual non-aborted fetch TypeErrors:
+
+```ts
+// package/pi-plugin/auto-mode/src/assessment-transport.ts
+if (!options.signal?.aborted && error instanceof TypeError)
+  throw new AssessmentRequestFailure('Assessment HTTP invocation failed with TypeError; no provider answer was admitted');
+```
+
+`src/assessment-failure.ts:22` classifies complete failed bundles for the existing bounded retry owner.
+It does not manufacture a model answer or add another retry budget.
+Credential,
+cancellation,
+response,
+HTTP-status,
+protocol,
+mixed-bundle,
+forged-name,
+and cyclic-aggregate failures remain ineligible.
+This recovery does not identify the discarded historical transport exception.
+
+### Verification and current limit
+
+Run the maintained consumer tasks from the repository:
+
+```sh
+# package/pi-plugin/auto-mode
+mise run //package/pi-plugin/auto-mode:test:native:phases
+mise run //package/pi-plugin/auto-mode:test:visible-context
+mise run //package/pi-plugin/auto-mode:test:assessment-transport
+mise run //package/pi-plugin/auto-mode:test:native:decision-fallback
+```
+
+The pre-correction native lifecycle catalog passes parallel and sequential execution,
+argument preparation,
+awaited updates,
+callback withholding,
+denial,
+cancellation,
+and custom messages queued during assessment.
+Queued user instructions and changed policy files withhold every member.
+The new catalog adds custom messages,
+user steering,
+and policy changes during primary requests.
+The final catalog has not yet passed.
+The denial mutant removes only the dispatch guard from a copied built module;
+three actual executions make the maintained denial test fail,
+while the production artifact hash remains unchanged.
+
+Payload fixture `pi-hyper-rpc-allow-jZsxRg` contains nine raw structured command fields.
+The same audit finds none across the 17 requests in `pi-hyper-rpc-allow-QaT10o`.
+The latter still contains an intermediate tool failure,
+so its payload result does not establish interaction completeness.
+Configured fixture `pi-hyper-rpc-allow-GRsLAm` confirms the intermediate `process.output` succeeds,
+then reaches the separate source-growth rejection before its next Bash pair.
+The complete configured replay must pass before renewing MiMo handoff readiness.
+
+### Corrections, tradeoffs, and rejected approaches
+
+The correction preserves the `0.60` cutoff,
+Luna selection,
+source attribution,
+complete-group decisions,
+and the existing attempt budget.
+Parsed shell structure replaces executable syntax only at the review boundary.
+Literal command-looking data and complete visible output remain available.
+Pending custom messages remain captured and must reach later actual requests.
+Changing the input-origin classification does not allow new user instructions to reuse an old decision.
+
+Lowering the cutoff would bypass the observed uncertainty rather than repair the missing projection.
+Projecting proposed calls alone misses returned metadata.
+Equating a new run object with changed instruction text was an incorrect diagnosis.
+Suppressing all freshness errors would lose the user-stop and policy-change boundary.
+Replaying only the reported final pair misses the preceding process and notification behavior.
+
+### Upstream filing decision
+
+The deciding failures are in this repository's projection and source tracking.
+No external dependency defect is established for these incidents.
+The upstream-filing check therefore fails its external-ownership prerequisite;
+the remaining upstream contribution checks do not apply.
+No upstream issue or external message is authorized or needed.
 
 ## Pi 1.2.0 review expiry and unprojected Bash inputs on 2026-10-16
 
