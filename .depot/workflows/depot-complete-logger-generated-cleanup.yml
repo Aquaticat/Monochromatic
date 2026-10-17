@@ -36,6 +36,14 @@ jobs:
         env: false
         export_path: false
         cache: false
+    - name: Install exact source tool versions outside authoritative source
+      working-directory: harness
+      env:
+        MISE_LOCKED: '0'
+      run: mise run //package/dev-script/task-util:trial:depot:ci:native-tools
+    - name: Verify selected source tools and dependency inputs
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:ci:native-tool-gate
     - name: Verify immutable authoritative inputs before cleanup control
       working-directory: harness
       env:
