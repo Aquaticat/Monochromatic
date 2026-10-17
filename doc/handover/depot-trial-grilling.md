@@ -336,7 +336,25 @@ The original canceled run remains incomplete,
 and source failures `#1068` and `#1070` remain unresolved.
 The prior failed campaigns and separate source-producer issue `#1118` remain retained.
 
+The final logger combined workflow covers both browser external checks through its disjoint 32-cell matrix.
+Its 97 expanded jobs include the 84 authored browser cases and 34 e2e cases.
+Register `root.browser` and `root.e2e` under `logger.combined`;
+the standalone `logger.browser` workflow is an alternative and must not be dispatched redundantly.
+Preserve the source's actual zero retries and missing CI forwarding in `#1131`.
+The successful macOS semantic-bridge development execution is extra-platform overhead;
+the frozen semantic-bridge requirement remains Linux and Windows.
+
+The registration review found no bound changed-Cargo-file formatter for the native and desktop cases.
+Root must add and exercise an exact-file adapter without replacing either authored source task.
+The native host workflow's complete conditions also permit source consumers after a failed common guard:
+they use `!cancelled()` and source-identity success without requiring the common-before step.
+This is a conclusion from the committed conditions and current documented expression semantics,
+not an observed rejected-cohort provider run.
+The native owner is repairing those conditions and preparing a bounded negative provider control.
+Neither finding receives final acceptance credit from a task count.
+
 The remaining queue is explicit:
+complete the changed-Cargo-file formatter and native host guard controls;
 finish terminal logger accounting and incident reconciliation;
 complete every case's registration and copy its final bytes to every owner;
 freeze and publish the actual common manifest before the shared request clock;

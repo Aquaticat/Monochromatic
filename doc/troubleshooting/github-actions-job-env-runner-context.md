@@ -82,12 +82,19 @@ source prerequisites and authored checks require their own terminal receipts.
 
 ## Upstream filing decision
 
-- Fault: ours; the context restriction is documented.
-- Upstream fixability: no service defect was established.
-- Supported usage: step environment and action input fields support the required expression.
-- Contribution acceptance: no contribution is proposed because the configuration correction resolves the incident.
-- Upstream direction: the published context reference explicitly describes this restriction.
-- Prototype: the consumer workflow correction was exercised through GitHub dispatch.
+- Fault:
+  ours;
+  the context restriction is documented.
+- Upstream fixability:
+  no service defect was established.
+- Supported usage:
+  step environment and action input fields support the required expression.
+- Contribution acceptance:
+  no contribution is proposed because the configuration correction resolves the incident.
+- Upstream direction:
+  the published context reference explicitly describes this restriction.
+- Prototype:
+  the consumer workflow correction was exercised through GitHub dispatch.
 
 No upstream issue or comment is warranted.
 There is no additive upstream finding or draft to file.
