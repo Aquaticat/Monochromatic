@@ -400,3 +400,37 @@ The source correlation wrapper now retains each invocation without changing its 
 Disposable forwarding, timeout rejection, and removed-timeout detection controls pass.
 Original eight-second failures remain retained.
 Only complete actual source, metadata, correlation, and cleanup evidence permits the full immutable-source retry.
+
+## Verified bounded source and observer recovery
+
+Actual trial `vlrxjltfkq`, workflow `fkzv9kxx7k`, job `gz17n0n8q6`, attempt `tfzhj6cztj`,
+finished successfully on immutable harness `316e1a8a309e71e456a741eb63e5ff3b94b75646`.
+The source command again exited zero with the same green baseline and one `compileError` identity.
+No mutant assertion execution or full-campaign pass is claimed.
+All ten metadata operations and all forwarded sudo calls returned zero.
+The longest list operation took `14100.441549` milliseconds;
+the Node observer recorded `14077.079173` milliseconds inside its synchronous
+`sudo --non-interactive /usr/local/bin/podman` call.
+That call then returned zero.
+This localizes most observed delay to the forwarded call;
+the division between sudo and actual Podman remains unresolved.
+Every operation duration is retained.
+The original eight-second failures remain failed historical observations.
+
+The actual source correlation receipts retain image lookup, build, and run calls.
+Run forwarded the original source argv with only the existing attempt label inserted,
+and returned zero.
+Before/after source identity and scoped cleanup passed.
+The original generated consumer forwarder and observer copy are both retained as artifact bytes.
+Removing only the two observer lifecycle lines reconstructs the original file exactly.
+The periodic metadata samples still missed the live source container;
+inner resource limits remain declared argv values for this bounded pilot.
+
+The provider interval was `165081` milliseconds at `16x64`,
+or `2641296` allocated vCPU-milliseconds.
+Artifact `01a148cd-37bb-750c-969a-1d040159af2e` has 55933 bytes,
+SHA-256 `35ab60a4bbd6adb146676b810e3123d3d0fe08a2174873a73736480ee596be19`.
+All 24 members are individually hashed.
+Issue [#1130](https://github.com/Aquaticats/Monochromatic/issues/1130)
+records the distinct observer deadline boundary and retained rejection controls.
+The next authorized action is the full TOML-only immutable-source mutation retry.

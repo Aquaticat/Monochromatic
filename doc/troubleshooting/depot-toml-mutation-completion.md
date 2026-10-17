@@ -188,3 +188,21 @@ The next bounded trial may extend the metadata-only deadline while preserving so
 timeout rejection controls,
 complete operation durations,
 and scoped cleanup.
+
+## Verified bounded observer recovery
+
+Trial `vlrxjltfkq` finished successfully with the unchanged source consumer,
+the same terminal compilation identity,
+all ten metadata results,
+source Podman correlation,
+matching source identities,
+and scoped cleanup.
+The list observer took `14100.441549` milliseconds once;
+its synchronous sudo forwarding span was `14077.079173` milliseconds and returned zero.
+The 60000-millisecond bound covers this actual delayed call.
+The underlying Podman-versus-sudo cause remains unresolved.
+The Node observer's two lifecycle additions are byte-separated from the unchanged consumer forwarder.
+Issue [#1130](https://github.com/Aquaticats/Monochromatic/issues/1130)
+retains both original eight-second failures and the verified timeout rejection/removal controls.
+This recovery permits a full source mutation retry;
+the bounded compilation result alone does not complete the campaign.

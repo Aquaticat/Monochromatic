@@ -463,7 +463,9 @@ Final dispatch remains held.
 Bounded metadata forwarding trial `vlrxjltfkq` is dispatched on `316e1a8a309e71e456a741eb63e5ff3b94b75646`.
 The observer deadline is 60000 milliseconds; original source adapter bytes and source arguments are preserved.
 A copied observer forwarder retains sudo lifecycle results, and source Podman correlation is now recorded.
-Terminal collector session `12290` is active.
+Terminal collection verifies success, all ten metadata results, source correlation and scoped cleanup.
+The longest metadata call was 14100.441549 milliseconds; its forwarded sudo call returned zero.
+Issue `#1130` retains this observer deadline boundary, original failures and rejection controls.
 After a complete actual result, the authorized queue continues to the full TOML-only immutable mutation retry.
 
 ## Native recovery assertion tracking
