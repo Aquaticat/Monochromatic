@@ -1,5 +1,11 @@
 # Native host integration
 
+The current [architecture documents](../doc/architecture.md) justify each major retained module.
+The superseded extension entry was removed on 2026-10-17.
+Historical migration descriptions retain their original implementation names;
+current public consumers use maintained named exports.
+
+
 This directory maintains the native runtime,
 source collectors,
 judgment consumer,
