@@ -236,3 +236,98 @@ assert.equal(execFileSync('git', ['diff', '--name-only', 'HEAD'], { cwd: source,
 writeFileSync(join(directory, 'logger-remainder-preparation-results.json'), JSON.stringify({ sourceRevision, partition, records, providerJobUrl: process.env.DEPOT_JOB_URL }, null, 2))
 if (records.some(record => record.status === 'failed')) throw new Error('Remainder preparation failed; retained logs identify infrastructure prerequisites')
 '''
+
+[tasks."trial:depot:external"]
+description = "Run explicit logger external checks with immutable identity and prerequisite records"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync, spawnSync } = await import('node:child_process')
+const { readFileSync, writeFileSync, mkdirSync, existsSync, openSync, closeSync } = await import('node:fs')
+const { createHash } = await import('node:crypto')
+const { homedir } = await import('node:os')
+const { join } = await import('node:path')
+const { strict: assert } = await import('node:assert')
+const harness = join(process.env.GITHUB_WORKSPACE, 'harness')
+const source = join(process.env.GITHUB_WORKSPACE, 'source')
+const bytes = readFileSync(join(harness, '.depot/manifests/logger.json'))
+const manifest = JSON.parse(bytes)
+const digest = createHash('sha256').update(bytes).digest('hex')
+assert.equal(digest, 'f4cbd47f210f5b031d76c5fc1c28fa704b349621f91eefa3f4f3ad575acfedc3')
+assert.equal(execFileSync('git', ['rev-parse', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), manifest.sourceRevision)
+const group = process.env.DEPOT_LOGGER_EXTERNAL
+const groups = {
+  browser: ['root.browser'],
+  e2e: ['root.e2e'],
+  electron: ['package.desktop-app.electron-counter.test.wayland', 'package.desktop-app.file-manager-electron.test.wayland'],
+  generated: ['root.generated-consistency', 'sidecar.generated-type-consistency'],
+  'root-lint': ['root.config-oxlint'],
+  desktop: ['artifact.music-desktop-e2e'],
+}
+assert(Object.hasOwn(groups, group), 'Unknown logger external group')
+const selected = groups[group].map(id => manifest.externalChecks.find(check => check.id === id))
+assert(selected.every(Boolean))
+const directory = join(homedir(), 'temp/agent/depot-complete-ci')
+mkdirSync(join(directory, 'check-logs'), { recursive: true, mode: 0o700 })
+const records = []
+function run({ id, command = 'mise', args, cwd = source, env = process.env, limit = 1200000 }) {
+  const startedAt = new Date().toISOString()
+  const log = join(directory, 'check-logs', `${id}.log`)
+  const descriptor = openSync(log, 'w', 0o600)
+  let result
+  try { result = spawnSync(command, args, { cwd, env, stdio: ['ignore', descriptor, descriptor], timeout: limit }) }
+  finally { closeSync(descriptor) }
+  const output = readFileSync(log)
+  const record = { checkId: id, command, args, cwd, startedAt, finishedAt: new Date().toISOString(), exitCode: result.status, signal: result.signal, error: result.error?.message, status: result.status === 0 ? 'passed' : 'failed', outputLog: log, outputSha256: createHash('sha256').update(output).digest('hex'), outputBytes: output.length }
+  records.push(record)
+  writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, group, selectedCheckIds: groups[group], providerJobUrl: process.env.DEPOT_JOB_URL, records }, null, 2))
+  console.log('\n' + JSON.stringify(record))
+  if (result.status !== 0) console.error(output.subarray(-16000).toString())
+  return record
+}
+const prerequisiteIds = [...new Set(selected.flatMap(check => check.prerequisites ?? []))]
+if (prerequisiteIds.length) run({ id: `external-${group}-prerequisites`, args: ['run', '//package/dev-script/task-util:trial:depot:ci:execute'], cwd: harness, env: { ...process.env, DEPOT_CI_CHECK_IDS: JSON.stringify(prerequisiteIds), DEPOT_CI_WORKERS: '1', DEPOT_CI_WAVE: 'all' } })
+const prerequisiteResults = prerequisiteIds.length ? JSON.parse(readFileSync(join(directory, 'logger-results.json'), 'utf8')).results : []
+if (group === 'generated') {
+  const fixture = join(directory, 'logger-generated-fixture')
+  const env = { ...process.env, GIT_LFS_SKIP_SMUDGE: '1', MISE_TRUSTED_CONFIG_PATHS: `${process.env.MISE_TRUSTED_CONFIG_PATHS}:${fixture}` }
+  execFileSync('git', ['worktree', 'add', '--detach', fixture, manifest.sourceRevision], { cwd: source, env, stdio: 'inherit' })
+  execFileSync('mise', ['run', 'prepare:pnpm:install', '--', '--frozen-lockfile'], { cwd: fixture, env, stdio: 'inherit' })
+  for (const check of selected) {
+    const args = check.task ? ['run', check.task] : ['run', check.tasks[0]]
+    const first = run({ id: check.id, args, cwd: fixture, env })
+    if (check.tasks?.length > 1) run({ id: `${check.id}.declared`, args: ['run', check.tasks[1]], cwd: fixture, env })
+    const diff = execFileSync('git', ['diff', '--binary'], { cwd: fixture, maxBuffer: 32 * 1024 * 1024 })
+    writeFileSync(join(directory, `${check.id}.patch`), diff)
+    const untracked = execFileSync('git', ['ls-files', '--others', '--exclude-standard'], { cwd: fixture, encoding: 'utf8' }).trim()
+    first.changedTrackedBytes = diff.length
+    first.untracked = untracked
+    if (diff.length || untracked) first.status = 'failed'
+  }
+} else if (group === 'desktop') {
+  run({ id: 'external-desktop-host', args: ['run', '//package/dev-script/task-util:trial:depot:ci:desktop-host'], cwd: harness })
+  run({ id: 'external-desktop-compositor', args: ['run', '//package/cli/nested-wayland-session:build'] })
+  run({ id: 'external-desktop-artifact', args: ['run', '//package/music-player/desktop-app:build'] })
+  run({ id: 'artifact.music-desktop-e2e', args: ['run', '//package/dev-script/task-util:trial:depot:ci:desktop-runtime'], cwd: harness })
+} else if (group === 'electron') {
+  run({ id: 'external-electron-compositor', args: ['run', '//package/cli/nested-wayland-session:build'] })
+  const runtime = join(directory, 'electron-runtime')
+  mkdirSync(runtime, { recursive: true, mode: 0o700 })
+  const compositor = join(source, 'package/cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session')
+  for (const check of selected) {
+    run({ id: check.id, command: compositor, args: ['--headless', '--gpu', 'software', '--socket', join(runtime, `${check.packages[0].split('/').at(-1)}.sock`), '--size', '1920x1080', '--', 'mise', 'run', check.task], env: { ...process.env, XDG_RUNTIME_DIR: runtime, LIBGL_ALWAYS_SOFTWARE: '1' }, limit: 600000 })
+  }
+} else {
+  for (const check of selected) {
+    const failed = (check.prerequisites ?? []).filter(id => prerequisiteResults.find(record => record.checkId === id)?.status !== 'passed')
+    if (failed.length) {
+      records.push({ checkId: check.id, status: 'skipped', failedPrerequisites: failed, finishedAt: new Date().toISOString() })
+      continue
+    }
+    run({ id: check.id, args: ['run', check.task, ...((check.args ?? []).length ? ['--', ...check.args] : [])] })
+  }
+}
+assert.equal(execFileSync('git', ['diff', '--name-only', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), '', 'External checks must preserve tracked source')
+writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, group, selectedCheckIds: groups[group], prerequisiteIds, providerJobUrl: process.env.DEPOT_JOB_URL, records }, null, 2))
+assert(records.every(record => record.status === 'passed'), 'Logger external checks failed or lack verified prerequisites; see retained records')
+'''
