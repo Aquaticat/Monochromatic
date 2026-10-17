@@ -145,7 +145,9 @@ Completed units (findings validated):
  `code-automode-src` (11 findings),
  `code-cli-1` (9 findings),
  `code-claude-code-plugin-1` (16 findings),
- `code-cloudflare-worker-1` (9 findings).
+ `code-cloudflare-worker-1` (9 findings),
+ `code-codex-plugin-1` (5 findings),
+ `code-agent-harness-shared-1` (11 findings).
 
 Cross-unit leads:
  `doc/planning/music-player-shared-truepeak-core.md` repeats the retired truepeak policy
@@ -164,22 +166,27 @@ Cross-unit leads:
  `doc/audit/dry.md` lines 1453 to 1458 bless the `console.error` plus `process.exitCode = 1`
  idiom against AGENTS.md `PP6`, per `code-claude-code-plugin-1-016`;
  hand to the `docs-audit` reviewer when it launches.
+ `file-enforcer.config.ts` `CARGO_PROFILE_BY_DIR` omits `package/codex-plugin/bash-limit`
+ and `package/git-policy/cli` although both declare `[profile.release]` tables,
+ per `code-codex-plugin-1` notes;
+ hand to the `config-root` reviewer when it launches.
+ The hand-written `isRecord` type guard (57 sites repo-wide,
+ owner candidate `package/cli/mutation-test/src/is-record.ts`) per
+ `code-agent-harness-shared-1-002`;
+ hand to the `cross-duplication` reviewer when it launches.
 
 Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
- `code-agent-harness-shared-1`,
  `code-cli-2`,
- `code-codex-plugin-1`,
  `code-config-1`,
  `code-desktop-app-1`,
  `code-desktop-daemon-1`,
- `code-dev-script-1` (launched as a replacement),
- `code-figma-1` (launched as a replacement; its slot came up one turn late because the
- 8-child cap was full).
+ `code-dev-script-1`,
+ `code-figma-1`,
+ `code-git-1`,
+ `code-intellij-plugin-1` (launched as a replacement).
 
 Queued units in launch order (flat list; the first entry launches next):
 
-- `code-git-1`,
-- `code-intellij-plugin-1`,
 - `code-kwin-1`,
 - `code-learning-1`,
 - `code-linter-1`,
