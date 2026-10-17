@@ -248,9 +248,9 @@ the separate native case digest,
 and `native.producers` in the settled outer manifest.
 It requires `.depot/workflows/depot-complete-native.yml` and the `native-android` matrix wave,
 including the wave in the producer receipt.
-Its ten offline controls pass,
-including rejection of `native-core`;
-the original five controls remain historical evidence.
+Its thirteen offline controls pass,
+including self-consistent wrong-route/workflow receipts and rejection of `native-core`;
+the original five and settled-schema nine controls remain separate historical evidence.
 The input/receipt uses `requestedAt` and distinguishes `cohortManifestSha256` from `caseManifestSha256`.
 No emulator,
 adb server,

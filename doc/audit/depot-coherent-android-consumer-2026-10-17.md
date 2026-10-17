@@ -98,8 +98,12 @@ including wrong native-case digest,
 producer route,
 producer harness,
 and outer bytes.
-The final producer binding adds a rejected `native-core` wave control;
-all ten current controls pass.
+The final producer binding rejects self-consistent receipts for another route,
+another workflow,
+or the `native-core` wave,
+and rejects a receipt whose wave differs from the accepted input.
+All thirteen current controls pass.
+The five original and nine settled-schema controls remain separate historical records.
 Fixture authorization is revoked in `finally`,
 including when a control fails.
 Those fixtures are not final provider proof.

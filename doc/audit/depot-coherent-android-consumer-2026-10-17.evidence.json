@@ -338,6 +338,70 @@
       ]
     }
   },
+  "previousSettledSchemaControls": {
+    "revision": "9098a77232c1f2201c09d96f3850143c7c31c808^",
+    "preparationTaskSha256": "ba298e6feefe9f6523da4517f611a86587b4e75f0f2f951c9198936c5ae6d2a9",
+    "scope": "Historical nine settled-schema controls before exact final route/workflow/wave binding",
+    "controls": {
+      "scope": "Offline byte/provenance join controls; synthetic cohort/receipt/archive fields, historical real APK bytes. Not final provider proof.",
+      "results": [
+        {
+          "name": "missing-producer",
+          "exitCode": 1,
+          "expected": 1,
+          "deviceOperations": 0
+        },
+        {
+          "name": "historical-apk-hashes-with-fixture-provenance",
+          "exitCode": 0,
+          "expected": 0,
+          "deviceOperations": 0
+        },
+        {
+          "name": "wrong-apk-hash",
+          "exitCode": 1,
+          "expected": 1,
+          "deviceOperations": 0
+        },
+        {
+          "name": "wrong-cohort-join",
+          "exitCode": 1,
+          "expected": 1,
+          "deviceOperations": 0
+        },
+        {
+          "name": "wrong-source",
+          "exitCode": 1,
+          "expected": 1,
+          "deviceOperations": 0
+        },
+        {
+          "name": "wrong-case-manifest",
+          "exitCode": 1,
+          "expected": 1,
+          "deviceOperations": 0
+        },
+        {
+          "name": "wrong-producer-route",
+          "exitCode": 1,
+          "expected": 1,
+          "deviceOperations": 0
+        },
+        {
+          "name": "wrong-producer-harness",
+          "exitCode": 1,
+          "expected": 1,
+          "deviceOperations": 0
+        },
+        {
+          "name": "wrong-outer-bytes",
+          "exitCode": 1,
+          "expected": 1,
+          "deviceOperations": 0
+        }
+      ]
+    }
+  },
   "contractControls": {
     "scope": "Offline byte/provenance join controls; synthetic cohort/receipt/archive fields, historical real APK bytes. Not final provider proof.",
     "results": [
@@ -396,7 +460,25 @@
         "deviceOperations": 0
       },
       {
+        "name": "self-consistent-wrong-route",
+        "exitCode": 1,
+        "expected": 1,
+        "deviceOperations": 0
+      },
+      {
+        "name": "self-consistent-wrong-workflow",
+        "exitCode": 1,
+        "expected": 1,
+        "deviceOperations": 0
+      },
+      {
         "name": "wrong-producer-wave",
+        "exitCode": 1,
+        "expected": 1,
+        "deviceOperations": 0
+      },
+      {
+        "name": "wrong-receipt-wave",
         "exitCode": 1,
         "expected": 1,
         "deviceOperations": 0
@@ -446,5 +528,5 @@
     "caseManifestSha256": null
   },
   "preparationTaskPath": "/var/mnt/encrypted/temp/agent/depot-coherent-android-consumer-20261017/mise.toml",
-  "preparationTaskSha256": "d8a81e68351214c0372d1be2195947ee87490efc0cd8c00ac1ebb095042c0eff"
+  "preparationTaskSha256": "280adb512e35477fc73a86b5797ebfceaf7577a69328a68535e770c81c641cb5"
 }
