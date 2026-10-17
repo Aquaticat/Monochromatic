@@ -15,7 +15,8 @@ Both use mise action version `2026.10.9` and separate harness/source checkouts.
 Run `zn4q03mh59` failed before selected checks with Node's `MODULE_NOT_FOUND`
 for `source/node_modules/@monochromatic-dev/git-policy-cli/dist/final/node/index.mjs`.
 
-At the TOML revision, `package/git-policy/cli/package.json:17` declares:
+At the TOML revision,
+`package/git-policy/cli/package.json:17` declares:
 
 ```json
 // package/git-policy/cli/package.json at 525d2e09f8
@@ -33,7 +34,8 @@ The executor's initial Git identity read therefore starts a missing program.
 The harness runs the existing `//package/git-policy/cli:build` task before Git commands.
 It then uses the historical `git cli-git trust --yes` command for the reviewed TypeScript policy.
 Run `hgqj2nstwq` reached all selected core checks after this preparation.
-The package build and policy trust are setup costs, not TOML test coverage.
+The package build and policy trust are setup costs,
+not TOML test coverage.
 
 ## Native revision needs its published policy tool
 
@@ -48,7 +50,8 @@ location searched: crates.io index
 required by package `monochromatic-git-policy-cli v0.1.2`
 ```
 
-At the native revision, `package/git-policy/cli/mise.toml` defines its build as:
+At the native revision,
+`package/git-policy/cli/mise.toml` defines its build as:
 
 ```toml
 # package/git-policy/cli/mise.toml at cb95cf6d78
@@ -93,7 +96,8 @@ The exact source input comparison prevented those attempts being counted as vali
 Source commands now use `MISE_LOCKED=1`.
 Tool installation occurs outside source using explicit versions read from its lockfile.
 The action's implicit environment activation is disabled using `env: false`
-and `export_path: false`; each task activates its own configured environment.
+and `export_path: false`;
+each task activates its own configured environment.
 The complete lockfile rewrite has not yet been retained as a diff,
 so its individual metadata changes remain unclassified.
 
@@ -104,7 +108,9 @@ See [historical trust snapshots](cli-git-trusted-snapshot-stale-policy-code.md).
 
 ## Generated-file fixture tries an obsolete LFS endpoint
 
-Run `d1jgjp62lg`, attempt `3xh4qrphll`, failed during `git worktree add`:
+Run `d1jgjp62lg`,
+attempt `3xh4qrphll`,
+failed during `git worktree add`:
 
 ```text
 Error downloading object: package-deprecated/audit/oph-common-look-and-feel/screenshot/contact-page.png
@@ -166,7 +172,9 @@ and the complete test identities before the coverage gap can close.
 
 ## Slint executable lacks a runtime library
 
-Native desktop run `w6ln4j09fz` passed the product build, Clippy, and 1406 nextest cases.
+Native desktop run `w6ln4j09fz` passed the product build,
+Clippy,
+and 1406 nextest cases.
 Its Slint check failed at executable loading:
 
 ```text
@@ -196,12 +204,18 @@ the empty output is not evidence that the compositor cannot publish a display.
 
 ## Verification catalog
 
-- Passed: historical JavaScript wrapper build and policy trust before TOML core execution.
-- Passed: published native wrapper installation and source tool gate before the desktop host probe.
-- Failed: Git reads immediately after dependency linking at the older JavaScript-wrapper revision.
-- Failed: inherited offline native-wrapper source build without its registry cache.
-- Failed: generated worktree checkout with default LFS smudging against the obsolete endpoint.
-- Pending: generated consistency after pointer-preserving checkout and fixture-local policy trust.
+- Passed:
+  historical JavaScript wrapper build and policy trust before TOML core execution.
+- Passed:
+  published native wrapper installation and source tool gate before the desktop host probe.
+- Failed:
+  Git reads immediately after dependency linking at the older JavaScript-wrapper revision.
+- Failed:
+  inherited offline native-wrapper source build without its registry cache.
+- Failed:
+  generated worktree checkout with default LFS smudging against the obsolete endpoint.
+- Pending:
+  generated consistency after pointer-preserving checkout and fixture-local policy trust.
 
 Do not disable policy guards,
 change historical source inputs,
