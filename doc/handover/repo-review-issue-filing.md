@@ -132,22 +132,22 @@ Findings arrive as one JSON array per unit with fields id,
 
 Completed units (findings validated):
  `code-ssg-1` (25 findings),
- `code-ide-src` (5 findings).
+ `code-ide-src` (5 findings),
+ `code-ide-design` (6 findings).
 
 Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
  `code-mp-desktop`,
  `code-mp-android`,
  `code-mp-design`,
  `code-mp-rest`,
- `code-ide-design`,
  `code-gitpolicy-src`,
  `code-gitpolicy-rest`,
- `code-automode-src` (launched as the first replacement).
+ `code-automode-src`,
+ `code-automode-native` (launched as a replacement).
 
-Queued units in launch order (56 remaining, groups of 8):
+Queued units in launch order (groups of 8):
 
-1. `code-automode-native`,
- `code-agent-harness-shared-1`,
+1. `code-agent-harness-shared-1`,
  `code-build-tool-1`,
  `code-claude-code-plugin-1`,
  `code-cli-1`,
