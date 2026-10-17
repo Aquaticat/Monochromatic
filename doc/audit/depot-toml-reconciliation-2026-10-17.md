@@ -507,3 +507,8 @@ It will exercise the unchanged baked source runner with a disposable typed fixtu
 an actual compiler and positive assertion control,
 then remove only the disposable Node launcher after a successful typecheck.
 The active full retry and accepted final route refs remain unchanged.
+
+The independent classification control is dispatched as `m018vgrtcv`,
+using clean harness `b78123c7bd8e20d4319cddd63c34c70fa7638d72`.
+Its exact development request and authenticated provider workflow/helper bytes
+are retained in the machine evidence.

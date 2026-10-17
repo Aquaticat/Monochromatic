@@ -489,6 +489,10 @@ observer and cleanup recovery;
 `#1113` and `#1118` remain open.
 Final coherent dispatch remains held.
 
+Independent actual-source spawn classification control `m018vgrtcv` is dispatched
+on clean harness `b78123c7bd8e20d4319cddd63c34c70fa7638d72`;
+its terminal evidence and any demonstrated distinct issue remain required.
+
 ## Native recovery assertion tracking
 
 The coherent replay routes are prepared and pushed,
