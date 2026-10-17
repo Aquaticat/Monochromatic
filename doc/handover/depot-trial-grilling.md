@@ -50,9 +50,9 @@ These development allocations do not constitute a coherent whole-case latency me
 The complete receipts are in the `desktopRuntimeSessionContinuationControl` evidence field.
 
 The source controller writes its summary and then removes its scratch base.
-Completed source session logs therefore disappear before the current post-command collector copies them.
-The summary and 106 native or 110 desktop screenshots are retained,
-but the missing raw session logs remain an evidence gap.
+The historical `bb475f636f51a00864710454c6499fcd3db6b8a4` artifacts therefore lack raw session logs:
+the post-command collector runs after that removal.
+Those historical artifacts retain their summaries and screenshots without retrospective log credit.
 Trial archive implementation `b6b44d679853c29e39a3c801b64ca66a32d30a97`
 copies regular session logs before the original source removal,
 verifies their bytes and SHA256,
@@ -64,8 +64,7 @@ symlink rejection,
 source-anchor failures,
 and a removed-cleanup control that the actual post-run probe rejects.
 The updated hook also passed 17 continuation/safety controls per source case.
-The missing completed-run logs are separately filed as `#1133`;
-actual provider archive verification remains required.
+The missing completed-run logs are separately filed as `#1133`.
 The clean pushed final root worktree is
 `~/temp/agent/depot-cohort-root-worktree-20261017`,
 branch `trial/depot-cohort-root-20261017`.
@@ -73,12 +72,32 @@ Its `f8d090f36dbbbba5dee6e96a732a7da0cd2bc73e` preparation derives the receipt i
 from each committed source selector.
 Actual function controls accept six native and seven desktop routes;
 the legacy six-route desktop negative fails.
-Provider verification of this corrected receipt remains pending under `#1120`.
-Both archive/inventory controls are now dispatched from clean,
+Both archive/inventory controls were dispatched from clean,
 explicitly pushed and remote-verified harness `2294b7f1171c2cd88d0ca50dd148404a3a0db4b6`:
 native `w21t2hzv67` and desktop `d83q9lrgfx`.
-One terminal-wait task owns both runs;
-its current command session is `40385`.
+Both are terminal and fully collected.
+Native retains 16 raw log files totaling 2,022,505 bytes;
+desktop retains 17 totaling 2,128,752 bytes,
+including `auto-play.log`.
+Every copied file matches its archive manifest's byte count and SHA256.
+The provider's archive event matches that manifest,
+and the post-run probe verifies removal of the original scratch directory.
+Every raw log contains the actual headless software-compositor invocation.
+The receipts match the committed source selectors' six native and seven desktop sessions.
+Source identities match before and after,
+all sampled PID/OOM counters remain zero,
+and cleanup is verified.
+Counts remain 106 passes/two failures/one skip and 110 passes/two failures/one skip respectively.
+The authored-inventory comparison still finds the same six unexecuted wide-session assertions per case.
+These controls resolve the trial archive and inventory acceptance boundaries in `#1133` and `#1120`;
+they do not resolve the source failures or establish a passing whole-case replay.
+Provider allocations were 521.934 seconds and 388.986 seconds at `16x64`.
+`desktopRuntimeSessionLogArchiveControl` retains the actual proof,
+including raw-log hashes,
+source-selected inventories,
+screenshots,
+resource samples,
+and complete compressed inspection receipts.
 The unused source-compositor build step was removed from the new diagnostic and final Linux routes.
 Historical allocations remain retained without adjustment.
 
@@ -101,7 +120,17 @@ they do not establish provider acceptance of an actual final common manifest.
 The current guard body equals the tested body.
 Final Linux workflow bindings at `afbaaaccd6f87ff968419bd518c2511155fcdad8`
 passed scoped formatting and before/after gate checks.
-Scanner and Scorecard workflow integration remains queued.
+Scanner integration at `6889dadf4e` reuses the actual prepared policy revision
+`32a9250addccf6b902246d39f4756f5f12ca9603`.
+The initially selected `409e6` reference lacked the required manual inputs;
+the preparation rejected it before writing.
+Scorecard integration at `ccc414df2135290d123e0653edc2d06933274a3a`
+reuses the existing conditional live-default-branch adapter and its unchanged quota gate.
+Both workflows now require the common inputs and a selected case/source/base,
+with paired source/cohort guards.
+Scoped formatting passes;
+structured policy-preservation verification remains queued.
+Dispatch the Scorecard cases to terminal state sequentially so GitHub's pending-run replacement cannot cancel a case.
 The retained proof fields are `rootCommonCohortPreparation`
 and `desktopRuntimeSessionLogArchivePreparation`.
 
