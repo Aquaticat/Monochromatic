@@ -387,6 +387,8 @@ const wrapper = [
     assert(full.cases.length>0);
     assert.equal(new Set(full.cases.map(test=>test.key)).size,full.cases.length);
     assert(full.cases.every(test=>scope.fullFiles.includes(test.file)&&scope.fullProjects.includes(test.project)));
+    assert.deepEqual([...new Set(full.cases.map(test=>test.file))].sort(),[...scope.fullFiles].sort());
+    assert.deepEqual([...new Set(full.cases.map(test=>test.project))].sort(),[...scope.fullProjects].sort());
     const expected=full.cases.filter(test=>test.file===scope.file&&test.project===scope.project);
     assert(expected.length>0,'Declared file/project partition must select source cases');
     const selectedArgs=[...original,'--project='+scope.project];
@@ -417,7 +419,7 @@ const wrapper = [
   "const browserScope = browser && process.env.DEPOT_LOGGER_BROWSER_SCOPE ? JSON.parse(process.env.DEPOT_LOGGER_BROWSER_SCOPE) : undefined;",
   "const browserProbe = `const {readFileSync}=await import('node:fs');const {spawnSync}=await import('node:child_process');const {cpus,availableParallelism}=await import('node:os');function sample(phase){const files={};for(const name of ['pids.current','pids.max','pids.events','memory.current','memory.max','memory.events','cpu.max']){try{files[name]=readFileSync('/sys/fs/cgroup/'+name,'utf8').trim()}catch(error){files[name]={error:error.message}}}console.log(JSON.stringify({event:'browser-container-resources',phase,workers:1,logicalCpus:cpus().length,availableParallelism:availableParallelism(),files}))}sample('before');const child=spawnSync(process.argv[1],process.argv.slice(2),{stdio:'inherit'});sample('after');if(child.error)throw child.error;process.exitCode=child.status??1;`;",
   "const invocation = browserScope ? [...mappedArgs.slice(0,browserIndex+1),'node','--input-type=module','--eval','('+browserPartitionMain.toString()+')()',JSON.stringify(browserScope),...mappedArgs.slice(browserIndex+1)] : browser ? [...mappedArgs.slice(0, browserIndex + 1), 'node', '--input-type=module', '--eval', browserProbe, ...mappedArgs.slice(browserIndex + 1), '--workers=1'] : mappedArgs;",
-  "if(browser) console.log(JSON.stringify({event:'browser-concurrency-adaptation',workers:1,originalCommand:mappedArgs.slice(browserIndex + 1),adaptedCommand:[...mappedArgs.slice(browserIndex + 1),'--workers=1'],filesAndProjectsUnchanged:true}));",
+  "if(browser) console.log(JSON.stringify({event:'browser-concurrency-adaptation',workers:1,originalCommand:mappedArgs.slice(browserIndex + 1),filesAndProjectsUnchanged:!browserScope,partitionScope:browserScope,caseInventoryRequired:Boolean(browserScope)}));",
   'let result; let metadata; let created = false; let cleanup; let remaining;',
   'try {',
   "  if(volume) { const creation = spawnSync('sudo',['--non-interactive',podman,'volume','create','--opt','type=tmpfs','--opt','device=tmpfs','--opt','nocopy','--opt',`o=${workOptions}`,volume],{encoding:'utf8',timeout:60000}); if(creation.error) throw creation.error; if(creation.status !== 0) throw new Error(`Mutation tmpfs volume creation failed: ${creation.stderr}`); created = true; console.error(JSON.stringify({event:'mutation-owned-tmpfs-created',volume,options:workOptions,uid:process.getuid(),gid:process.getgid(),capabilityAdditions:[],userNamespaceMapping:false})); }",
