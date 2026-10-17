@@ -400,3 +400,23 @@ Terminal wait `43521` is reaped with exit zero.
 The actual-source control artifact is retained in
 [the primary control ZIP](../audit/depot-toml-spawn-control-2026-10-17.evidence.zip).
 No application source was changed.
+
+## Original selected-check terminal accounting
+
+All `24` originally selected task commands now have retained actual terminal outcomes:
+`20 passed` and `4 failed`.
+This joins historical independent development evidence for coverage accounting only.
+The original canceled run remains incomplete in its original record.
+The final common cohort remains held.
+File-enforcer mutation ran and failed before enumeration with its original `ENOENT` (`#1068`);
+it receives no mutant assertion credit.
+The original completed file-enforcer container failure remains failed (`#1070`).
+The independent actual-source classifier defect is now [issue `#1142`](https://github.com/Aquaticats/Monochromatic/issues/1142),
+verified open with `needs-triage`.
+No application source fix was made.
+The structured `historicalIndependentCoverage` retains each selected identity,
+its exact source task,
+its original disposition,
+and its actual terminal receipt.
+Issue `#1113` closure is prepared against that retained coverage.
+The source failures and native outcome limitations remain explicit.

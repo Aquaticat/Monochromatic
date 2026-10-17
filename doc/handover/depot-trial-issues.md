@@ -512,9 +512,14 @@ file-carrier terminal wait session `32240` was active at dispatch
 and is terminal and reaped as of `2026-10-17`.
 No false-kill reproduction is claimed until this actual source control completes.
 
-Current TOML checkpoint: full development run `23dk3nr90f` is successful and reconciled.
+Current TOML checkpoint:
+full development run `23dk3nr90f` is successful and reconciled.
 All `3062` identities have source-native terminal dispositions backed by physical green-baseline reports:
-`921 killed`, `256 survived`, `3 timeout`, `1882 compileError`, and zero `runtimeError`.
+`921 killed`,
+`256 survived`,
+`3 timeout`,
+`1882 compileError`,
+and zero `runtimeError`.
 Keep native `killed` as a source classification without inferred literal assertion credit.
 Four auxiliary Podman `inspect` status-`125` receipts remain separate from zero final infrastructure errors.
 The durable primary ZIP and per-identity compressed reconciliation are linked in the owned TOML audit.
@@ -523,10 +528,12 @@ File control `699f9lg5zm` failed its ancillary dependency metadata lookup before
 Independent corrected control `rsbr0wrdt0` finished successfully at
 `f650e3e2f923bea21a7baf9565bb1ec3efb4fbde`;
 terminal wait session `43521` is reaped with exit zero.
-Next: retain that actual classifier and emitter result,
+Next:
+retain that actual classifier and emitter result,
 file a distinct source incident only if reproduced after duplicate comparison,
 and reconcile the original timeout issue's required coverage.
-Only the TOML mutation check ran in the full retry; this is not final cohort latency.
+Only the TOML mutation check ran in the full retry;
+this is not final cohort latency.
 Final common publication and dispatch remain held.
 
 Actual-source classifier and emitter controls passed.
@@ -535,9 +542,20 @@ removing the test launcher after the real compiler passed also returned native `
 with no test-entry marker and exact `spawn node ENOENT`.
 The source emitted both expected caught-spawn diagnostics.
 Keep this controlled source defect separate from the full campaign's zero matching log diagnostics.
-Next: publish the distinct source report after duplicate comparison,
+Next:
+publish the distinct source report after duplicate comparison,
 retain its receipt,
 and close `#1113` only against the fully retained independent check outcomes.
+Final common publication and dispatch remain held.
+
+Source classifier issue `#1142` is published and verified open with `needs-triage`.
+All `24` original selected task commands now have retained terminal receipts:
+`20 passed` and `4 failed`,
+with the historical canceled run preserved as incomplete.
+The remaining owned action is to close `#1113` against the verified independent coverage
+and retain its closure receipt.
+Source failures remain failed;
+this historical union is not final coherent coverage or latency.
 Final common publication and dispatch remain held.
 
 ## Native recovery assertion tracking
