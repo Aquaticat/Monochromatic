@@ -341,11 +341,31 @@ Its 97 expanded jobs include the 84 authored browser cases and 34 e2e cases.
 Register `root.browser` and `root.e2e` under `logger.combined`;
 the standalone `logger.browser` workflow is an alternative and must not be dispatched redundantly.
 Preserve the source's actual zero retries and missing CI forwarding in `#1131`.
-The successful macOS semantic-bridge development execution is extra-platform overhead;
-the frozen semantic-bridge requirement remains Linux and Windows.
+The Linux/Windows-only semantic-bridge manifest row was incorrect.
+The frozen `.github/workflows/readonly-semantic-bridge.yml` includes `macos-15`
+and runs both semantic source tasks there.
+Its workflow blob is `a091f76946056c0e0920c98fa657219be7ec3f71`.
+The separate fs-id workflow uses `macos-latest`.
+The proposal to skip macOS semantic validation is withdrawn.
+The final host adapter must preserve the four-label union and each original runtime.
+Development run `39023040772` retains its actual successful commands and artifacts;
+its `macos-latest` label does not establish the explicit `macos-15` binding.
+The logger owner is preparing this isolated correction without a development redispatch.
 
-The registration review found no bound changed-Cargo-file formatter for the native and desktop cases.
-Root must add and exercise an exact-file adapter without replacing either authored source task.
+Root `6aefa5d651b8754cbd2d330704e5513cc1157650` adds the exact changed-Cargo-file formatter
+to `native.producers` wave `native-core` and `desktop.linux`.
+The actual Mise helper passes 20 control rows across native and desktop fixtures.
+Both unselected-file positive controls expose failures that the selected-file adapter correctly excludes.
+Malformed selected Cargo input is retained and fails terminal verification;
+removing the source-revision guard restores invalid acceptance.
+Source lockfiles remain unchanged.
+These synthetic Cargo fixtures establish adapter behavior,
+not either authored Cargo file's formatting outcome or actual final provider acceptance.
+The [formatter evidence](../audit/depot-changed-cargo-format-controls-2026-10-17.evidence.json)
+retains the helper,
+control driver,
+receipts,
+and verified Mise install isolation.
 The native host workflow's complete conditions also permit source consumers after a failed common guard:
 they use `!cancelled()` and source-identity success without requiring the common-before step.
 This is a conclusion from the committed conditions and current documented expression semantics,
@@ -354,13 +374,25 @@ The native owner is repairing those conditions and preparing a bounded negative 
 Neither finding receives final acceptance credit from a task count.
 
 The remaining queue is explicit:
-complete the changed-Cargo-file formatter and native host guard controls;
-finish terminal logger accounting and incident reconciliation;
+integrate the original-label logger host correction and retain the native guard negative proof;
+use the completed terminal logger accounting and incident reconciliation;
 complete every case's registration and copy its final bytes to every owner;
 freeze and publish the actual common manifest before the shared request clock;
 dispatch and collect all bound routes;
 join the matching Android producer to the held headful consumer;
 and compute allocation cost and overlap-aware critical paths.
+The reader report section list requires confirmation under the source-audited-report skill.
+The proposed sections are decision and acceptance limits;
+immutable workloads and scope;
+gate and artifact-consumer results;
+reliability and source failures;
+provider allocation,
+cost,
+and critical paths;
+and adoption conditions and unresolved evidence.
+Ask this optional structure question while continuing technical work;
+do not draft the reader report before confirmation.
+
 The VM owner's natural-build consumer bridge for source cwd failure `#1076` is statically ready,
 while preserving the original authored gate's result and avoiding Windows fixtures.
 The held Android join now accepts only `native.producers`,

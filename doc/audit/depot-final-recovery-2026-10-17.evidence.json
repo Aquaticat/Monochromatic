@@ -37777,5 +37777,94 @@
       "actualFinalProviderAcceptance": false
     },
     "actualFinalProviderAcceptance": false
+  },
+  "changedCargoFormatterPreparation": {
+    "harnessRevision": "6aefa5d651b8754cbd2d330704e5513cc1157650",
+    "task": "//package/dev-script/task-util:trial:depot:ci:changed-toml-format",
+    "definitionSha256": "27501caed444b4c76c01b7bc89d0e781e2ad63fa74185610fb08b9360980d437",
+    "controlRows": 20,
+    "validCases": [
+      "native",
+      "desktop"
+    ],
+    "unselectedPositiveControls": 2,
+    "sourceLockfilesUnchanged": true,
+    "removedSourceGuardInvalidAcceptanceObserved": true,
+    "detail": {
+      "path": "doc/audit/depot-changed-cargo-format-controls-2026-10-17.evidence.json",
+      "bytes": 25018,
+      "sha256": "fc0a05a09c553c34a0158cf8cb892fdac99e0ac2c78d66d064959460b376d1c5"
+    },
+    "actualFinalProviderAcceptance": false
+  },
+  "namedFormatterInstallIsolation": {
+    "observedAt": "2026-10-17T10:32:47.203Z",
+    "miseVersion": "2026.10.0 linux-x64 (2026-10-02)",
+    "sourceDprintVersion": "0.61.1",
+    "namedInstallObservedRootLockDrift": {
+      "beforeRust": "nightly-2026-10-13",
+      "afterRust": "nightly-2026-10-17",
+      "beforeSha256": "95704fad9023cea1b8b530d5de696cfbd839f912aba7c0dc2c1c46519ebef733",
+      "afterSha256": "716878be8e23f6ac111c743951b5003743e81d26af0825d1a794311d06b99186",
+      "originalWorktreeRestored": true
+    },
+    "isolatedInstall": {
+      "command": [
+        "mise",
+        "--no-config",
+        "install",
+        "dprint@0.61.1"
+      ],
+      "exitCode": 0,
+      "fixture": "${AGENT_SCRATCH}/depot-native-recovery/dprint-install-isolation-dYsNGV",
+      "lockBeforeAfterSha256": "95704fad9023cea1b8b530d5de696cfbd839f912aba7c0dc2c1c46519ebef733",
+      "unchanged": true
+    },
+    "checkHelp": {
+      "exitCode": 10,
+      "output": "source-dprint-check-help.txt",
+      "sha256": "6b79458e8f6f4acb4a7654cd86480f9c3968dc65420f61b477a9b799486b646e"
+    },
+    "rootStatus": ""
+  },
+  "loggerAuthoredHostScopeCorrection": {
+    "observedAt": "2026-10-17T10:48:58.217Z",
+    "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+    "semanticWorkflow": ".github/workflows/readonly-semantic-bridge.yml",
+    "semanticWorkflowGitBlob": "a091f76946056c0e0920c98fa657219be7ec3f71",
+    "semanticWorkflowSha256": "ad58659406d0df8a25a7476f9b979ac2e9a004ee03be6a39c242176366d8933d",
+    "semanticWorkflowText": "name: readonly semantic bridge host evidence\n\non:\n  pull_request:\n    branches: ['main']\n    paths:\n    - 'package/config/oxlint/**'\n    - 'package/ownership-markers/foreign-borrowed/**'\n    - 'package/oxlint-plugin/no-restricted-syntax/**'\n    - 'package/oxlint-plugin/prefer-readonly-parameter-type/**'\n    - 'package/oxlint-plugin/shared/**'\n    - 'package/test-fixture/oxlint-no-restricted-syntax/**'\n    - 'pnpm-lock.yaml'\n    - '.github/workflows/readonly-semantic-bridge.yml'\n  merge_group:\n    branches: ['main']\n  push:\n    branches: ['main']\n    paths:\n    - 'package/config/oxlint/**'\n    - 'package/ownership-markers/foreign-borrowed/**'\n    - 'package/oxlint-plugin/no-restricted-syntax/**'\n    - 'package/oxlint-plugin/prefer-readonly-parameter-type/**'\n    - 'package/oxlint-plugin/shared/**'\n    - 'package/test-fixture/oxlint-no-restricted-syntax/**'\n    - 'pnpm-lock.yaml'\n    - '.github/workflows/readonly-semantic-bridge.yml'\n\nconcurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  semantic-bridge:\n    name: semantic bridge (${{ matrix.os }})\n    strategy:\n      fail-fast: false\n      matrix:\n        os:\n        - ubuntu-latest\n        - macos-15\n        - windows-latest\n    runs-on: ${{ matrix.os }}\n    env:\n      MISE_AUTO_INSTALL: 'false'\n    steps:\n    - name: Checkout\n      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd\n      with:\n        fetch-depth: 1\n\n    - name: Set up mise without repository-wide tool installation\n      uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c\n      with:\n        # Resolve \"latest\" through the GitHub releases API, published releases only,\n        # one day old like pnpm's minimumReleaseAge. Without it the action installs\n        # whatever mise.jdx.dev/VERSION names, which runs ahead of the GitHub release\n        # (2025.8.19, 2026.9.3): doc/troubleshooting/mise-action-version-ahead-of-release.md\n        minimum_release_age: 1d\n        install: false\n\n    - name: Install package tools\n      run: mise install node pnpm\n\n    - name: Install workspace dependencies\n      run: mise exec node pnpm -- pnpm install --frozen-lockfile\n\n    - name: Build semantic plugin artifact\n      run: mise run //package/oxlint-plugin/prefer-readonly-parameter-type:build:js:node\n\n    - name: Verify native bridge lifecycle and platform paths\n      run: mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:semantic-bridge-host\n\n    - name: Verify external consumer artifact\n      run: mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:external-consumer-host\n",
+    "semanticRunnerLabels": [
+      "ubuntu-latest",
+      "macos-15",
+      "windows-latest"
+    ],
+    "fsidWorkflow": ".github/workflows/fs-id.yml",
+    "fsidWorkflowSha256": "70f7b17ad18be83110fd00ce11890c1a626aad872301d5e65d78982f357452c8",
+    "fsidWorkflowText": "name: filesystem identity host evidence\n\non:\n  pull_request:\n    branches: ['main']\n    paths:\n    - 'package/module/fs-id/**'\n    - '.github/workflows/fs-id.yml'\n  push:\n    branches: ['main']\n    paths:\n    - 'package/module/fs-id/**'\n    - '.github/workflows/fs-id.yml'\n\nconcurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: true\n\npermissions:\n  contents: read\n\njobs:\n  preferred-identity:\n    name: preferred identity (${{ matrix.os }})\n    strategy:\n      fail-fast: false\n      matrix:\n        os:\n        - ubuntu-latest\n        - macos-latest\n        - windows-latest\n    runs-on: ${{ matrix.os }}\n    steps:\n    - name: Checkout\n      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd\n      with:\n        fetch-depth: 1\n\n    - name: Set up Node\n      uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444\n      with:\n        node-version: 26.5.0\n        package-manager-cache: false\n\n    - name: Resolve preferred identity\n      run: node package/module/fs-id/src/host-evidence.ts\n",
+    "fsidRunnerLabels": [
+      "ubuntu-latest",
+      "macos-latest",
+      "windows-latest"
+    ],
+    "incorrectProvisionalSemanticPlatforms": [
+      "linux",
+      "windows"
+    ],
+    "requiredSemanticPlatforms": [
+      "linux",
+      "macos",
+      "windows"
+    ],
+    "rejectedAction": "Skip authored macOS semantic consumers based on the incomplete manifest row",
+    "developmentRun": "39023040772",
+    "developmentRunnerLabels": [
+      "ubuntu-latest",
+      "macos-latest",
+      "windows-latest"
+    ],
+    "exactSemanticMacos15BindingVerified": false,
+    "finalRouteCorrection": "Retain the four-label union, with each source workflow command and runtime applicable only to its original labels",
+    "finalProviderAcceptance": false
   }
 }

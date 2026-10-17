@@ -636,6 +636,36 @@ Native platform prerequisite verification remains a separate development workflo
 `rootLoggerHostPreparation` in `doc/audit/depot-final-recovery-2026-10-17.evidence.json`
 retains the initial failure and corrected controls separately from actual provider acceptance.
 
+## Named formatter install refreshes an unrelated lock entry
+
+Local Mise `2026.10.0 linux-x64 (2026-10-02)` ran `mise install dprint@0.61.1`
+inside the prepared root trial harness with `MISE_LOCKED=0`.
+The named installation changed `mise.lock`'s recorded Rust version from `nightly-2026-10-13`
+to `nightly-2026-10-17`.
+The tracked diff established the unrelated lock change;
+it does not establish that an unrelated Rust compiler was installed.
+Only this exact owned diff was restored,
+and the worktree then verified clean.
+
+The real invocation `mise --no-config install dprint@0.61.1` returned zero in a disposable fixture
+and preserved its lock bytes.
+The before/after lock SHA256 is `95704fad9023cea1b8b530d5de696cfbd839f912aba7c0dc2c1c46519ebef733`.
+The changed-Cargo formatter uses this isolated installation and
+`mise --no-config exec dprint@0.61.1 -- dprint check --list-different <selected-file>`.
+Its actual Mise fixture controls execute and verify each selected Cargo file,
+leave the source lockfile unchanged,
+and prove that malformed unselected Cargo input remains detectable by an unscoped dprint invocation.
+The adapter still uses the source checkout's dprint configuration.
+
+The [formatter controls](../audit/depot-changed-cargo-format-controls-2026-10-17.evidence.json)
+retain the measured local Mise version,
+source-locked formatter version,
+isolation receipt,
+and exact helper/control definitions.
+The provider bootstrap uses Mise `2026.10.9`;
+its final execution remains a separate acceptance boundary.
+No third-party defect is inferred from this local side effect.
+
 ## Prepared Android launch retained a legacy unit
 
 The initial local Android staging adapter updated standalone `depot-trial-fold` literals,
