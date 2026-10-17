@@ -56,6 +56,7 @@ on:
 permissions: {}
 
 env:
+  GH_TOKEN: ${{ github.token }}
   # The root mise config lists heavy dev tools with auto_install on. This workflow does not use mise
   # (rustup comes with every runner image), but the setting keeps any accidental mise call from building them.
   # Same pattern as npm-release.yml and music-player-release.yml.

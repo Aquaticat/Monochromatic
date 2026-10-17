@@ -1,0 +1,232 @@
+{
+  "schemaVersion": 1,
+  "caseId": "desktop",
+  "event": "push",
+  "eventBranch": "main",
+  "sourceRevision": "3434eaa455d569c18b52cf15100f77f9db251d21",
+  "baseRevision": "a9b4a681d21907ecc5eb208a754e7b9a0f6e9168",
+  "headRevision": "3434eaa455d569c18b52cf15100f77f9db251d21",
+  "changedFiles": [
+    "package/music-player/desktop-app/Cargo.toml",
+    "package/music-player/desktop-app/src/console_attach.rs",
+    "package/music-player/desktop-app/src/console_attach_tests.rs",
+    "package/music-player/desktop-app/src/console_attach_win32.rs",
+    "package/music-player/desktop-app/src/lib.rs",
+    "package/music-player/desktop-app/src/main.rs"
+  ],
+  "directlyChangedPackages": [
+    "package/music-player/desktop-app"
+  ],
+  "selectedPackages": [
+    "package/music-player/desktop-app"
+  ],
+  "selectionReasons": [],
+  "tools": [
+    "node",
+    "pnpm",
+    "rust",
+    "cargo:cargo-nextest",
+    "cmake",
+    "cargo:slint-viewer",
+    "cargo:monochromatic-lint"
+  ],
+  "checks": [
+    {
+      "id": "desktop-app.build",
+      "task": "//package/music-player/desktop-app:build",
+      "args": [],
+      "family": "build",
+      "scope": "package",
+      "packages": [
+        "package/music-player/desktop-app"
+      ],
+      "prerequisites": [],
+      "platform": "linux"
+    },
+    {
+      "id": "desktop-app.lint.clippy",
+      "task": "//package/music-player/desktop-app:lint:clippy",
+      "args": [],
+      "family": "lint",
+      "scope": "package",
+      "packages": [
+        "package/music-player/desktop-app"
+      ],
+      "prerequisites": [],
+      "platform": "linux"
+    },
+    {
+      "id": "desktop-app.lint.slint",
+      "task": "//package/music-player/desktop-app:lint:slint",
+      "args": [],
+      "family": "lint",
+      "scope": "package",
+      "packages": [
+        "package/music-player/desktop-app"
+      ],
+      "prerequisites": [],
+      "platform": "linux"
+    },
+    {
+      "id": "desktop-app.test",
+      "task": "//package/music-player/desktop-app:test",
+      "args": [],
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/music-player/desktop-app"
+      ],
+      "prerequisites": [],
+      "platform": "linux"
+    },
+    {
+      "id": "desktop-app.test.e2e",
+      "task": "//package/music-player/desktop-app:test:e2e",
+      "args": [],
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/music-player/desktop-app"
+      ],
+      "prerequisites": [],
+      "platform": "linux"
+    },
+    {
+      "id": "root.changed-rust-style",
+      "task": "//:lint:monochromatic-lint",
+      "args": [
+        "package/music-player/desktop-app/src/console_attach.rs",
+        "package/music-player/desktop-app/src/console_attach_tests.rs",
+        "package/music-player/desktop-app/src/console_attach_win32.rs",
+        "package/music-player/desktop-app/src/lib.rs",
+        "package/music-player/desktop-app/src/main.rs"
+      ],
+      "family": "lint",
+      "scope": "files",
+      "packages": [
+        "package/music-player/desktop-app"
+      ],
+      "prerequisites": [],
+      "platform": "linux"
+    }
+  ],
+  "externalChecks": [
+    {
+      "id": "root.forbidden-strings",
+      "family": "lint",
+      "scope": "files",
+      "files": [
+        "package/music-player/desktop-app/Cargo.toml",
+        "package/music-player/desktop-app/src/console_attach.rs",
+        "package/music-player/desktop-app/src/console_attach_tests.rs",
+        "package/music-player/desktop-app/src/console_attach_win32.rs",
+        "package/music-player/desktop-app/src/lib.rs",
+        "package/music-player/desktop-app/src/main.rs"
+      ],
+      "reason": "Push change gate; root owns workflow adapter."
+    },
+    {
+      "id": "root.scorecard",
+      "family": "test",
+      "scope": "repository",
+      "reason": "Retain source policy as provenance and current repaired policy as the selected trial policy; include analysis only when its gate admits it."
+    },
+    {
+      "id": "root.changed-toml-format",
+      "family": "lint",
+      "scope": "files",
+      "files": [
+        "package/music-player/desktop-app/Cargo.toml"
+      ],
+      "task": "//:lint:dprint",
+      "reason": "Root task hardcodes file discovery; trial adapter must pass the exact changed TOML file."
+    },
+    {
+      "id": "desktop.windows-workflow",
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/music-player/desktop-app"
+      ],
+      "workflow": ".github/workflows/music-player-windows.yml",
+      "platforms": [
+        "windows-msvc-x64",
+        "windows-msvc-arm64",
+        "windows-gnu-x64-ucrt64"
+      ],
+      "reason": "Replay the exact source-head workflow, including nextest, executable build, linker/PE assertions, redirected and console-handle CLI checks, and launch checks."
+    },
+    {
+      "id": "desktop.alpine-workflow",
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/music-player/desktop-app"
+      ],
+      "workflow": ".github/workflows/music-player-alpine.yml",
+      "platforms": [
+        "alpine-x86_64",
+        "alpine-aarch64"
+      ],
+      "reason": "Replay the exact source-head workflow: alsa-fallback nextest/build and no-server, ALSA, PipeWire smoke scenarios in the repository nested compositor."
+    },
+    {
+      "id": "desktop.macos-native",
+      "family": "test",
+      "scope": "package",
+      "packages": [
+        "package/music-player/desktop-app"
+      ],
+      "platforms": [
+        "macos-x64"
+      ],
+      "reason": "Native package build, all-target Clippy, nextest, release CLI consumer, and source identity through the root adapter."
+    }
+  ],
+  "excludedChecks": [
+    {
+      "task": "desktop-app:test:alpine",
+      "reason": "Its authored local helper repeats one host-architecture workflow arm; exact source-head dual-architecture workflow supplies coverage."
+    },
+    {
+      "task": "desktop-app:build:windows-gnu/test:windows-gnu",
+      "reason": "Native Windows GNU workflow exercises the product host boundary. Linux Wine helper is an alternate local execution mechanism, not an additional product target."
+    },
+    {
+      "task": "desktop-app:lint/build:debug/*:container",
+      "reason": "Cargo check and debug aliases are subsumed by selected build/Clippy/tests; record actual Linux host/container dispatch rather than counting it twice."
+    },
+    {
+      "task": "desktop-app:verify:signing/notarize/publish",
+      "reason": "Distribution-signing and account access excluded from source correctness trial."
+    },
+    {
+      "task": "truepeak-core/android-app checks",
+      "reason": "Desktop source change does not reverse-select its dependencies or sibling consumers. Build prerequisites use exact source, without unrelated package lint/test."
+    },
+    {
+      "task": "CodeQL/final-newline",
+      "reason": "Case event is push; PR/merge-group/scheduled workflow predicates do not apply."
+    }
+  ],
+  "completeGraph": false,
+  "remainingReview": [
+    "Root scanner and changed-file format adapters",
+    "Exact-head Windows and Alpine workflow results",
+    "macOS native adapter result",
+    "Desktop e2e fresh compositor and TypeScript dependency prerequisites",
+    "Current-policy Scorecard disposition"
+  ],
+  "selectionEvidence": {
+    "positive": [
+      "package/music-player/desktop-app"
+    ],
+    "negative": [
+      "package/music-player/android-app",
+      "package/music-player/truepeak-core",
+      "package/module/logger"
+    ],
+    "closureFile": "desktop-closure.json",
+    "closureSha256": "b2f886ff139d94b659b162915a28618b1f8b78fe5000a02303a89ae0255371d2"
+  }
+}
