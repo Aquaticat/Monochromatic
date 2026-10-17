@@ -274,17 +274,55 @@
       ],
       "terminal": true,
       "artifactsCollected": 4
+    },
+    {
+      "id": "q10910cxfm",
+      "revision": "c789a14548fec9df1cee01facb9577d83ddfd42c",
+      "status": "failed",
+      "terminal": true,
+      "artifactsCollected": true,
+      "selectedPackageChecks": [
+        "package.git-policy.cli.native.test.host",
+        "package.git-policy.cli.native.test.binary.host"
+      ],
+      "selectedExternalChecks": [],
+      "sourceOutcomes": "Both original Markdown assertions passed with authentic linter; binary137P0F1ignored,library1806P6F4ignored; six distinct source failures remain",
+      "publishedComputeUsdBeforeCredits": 0.0687007
+    },
+    {
+      "id": "vt8vzj154t",
+      "revision": "18e8c13173f244316ef528467ae0ccbf1fe38c80",
+      "status": "failed",
+      "terminal": true,
+      "artifactsCollected": true,
+      "selectedPackageChecks": [],
+      "selectedExternalChecks": [
+        "root.generated-consistency",
+        "sidecar.generated-type-consistency"
+      ],
+      "originalSourceChecksExecuted": 0,
+      "reason": "Pilot selector wiring rejected before any original source task"
+    },
+    {
+      "id": "drzwk5q8mc",
+      "revision": "673ab92e49885dd61fcf08e168ed9c59bf29c6be",
+      "status": "requested",
+      "terminal": false,
+      "artifactsCollected": false,
+      "selectedPackageChecks": [],
+      "selectedExternalChecks": [
+        "root.generated-consistency",
+        "sidecar.generated-type-consistency"
+      ]
     }
   ],
   "completeGraph": false,
   "pending": [
-    "Build and gate authentic ef014 monochromatic-lint and replay original failed Git host checks; preserve current two linter-prerequisite failures.",
     "Collect lt7qwlz6h1 and reconcile the three previously unfinished authored tasks with actual source outcomes.",
-    "Duplicate-search and file remaining six genuine source diagnostics; native owner maps eight Git2.56 host parent-suite failures to existing incidents.",
-    "Wire common inputs/receipts, correct VM workflow and explicit19 external route ownership; verify57 selectors and every package/browser identity before final root freeze.",
-    "Integrate root verified desktop continuation and canonical helper guards without changing source task bodies or scope.",
-    "Hold final coherent replay until root aligns GHA, VM and shared helper routes; preserve completeGraphfalse until approved freeze.",
-    "Correct the3ac9616096 commit subject via a commit comment after push: it adds candidate selectors, with no final common freeze or dispatch."
+    "Collect drzwk5q8mc and prove real frozen-source initial consumer bytes/tree, frozen workspace links, per-authored-generator output drift, strict authoritative cleanliness and cleanup.",
+    "File six independently duplicate-searched Git host assertion incidents, the repaired missing-linter prerequisite, the six other genuine source diagnostics and any distinct new harness boundary.",
+    "Root selectively integrates the prepared97-job combined route, canonical source/common guards, verified desktop continuation, authentic Git/linter helpers and explicit19 external routing.",
+    "Root aligns GHA/VM and shared helpers, freezes authenticated common manifest and final complete case digest only after every route is verified. Final cohort dispatch remains held; completeGraphfalse."
   ],
   "packageDevelopmentReconciliation": {
     "runId": "4x77lb56cs",
@@ -25018,12 +25056,19 @@
       "finalCoherentReplayHeld": true
     },
     "sourceFailuresIssueMapping": {
-      "owner": "/root/native_accounting",
-      "status": "Mapping six actual assertion boundaries and separately duplicate-searching missing-linter prerequisite",
-      "parentSuiteReportedFailures": 8,
-      "actualAssertionFailures": 6,
-      "unmetLinterPrerequisites": 2,
-      "expectedChildNegativeAssertionsExcluded": true
+      "auditRevision": "8661765628",
+      "auditPath": "doc/audit/depot-git-host-failure-mapping-2026-10-17.evidence.json",
+      "noMatchingIncidentFound": true,
+      "distinctFailureNames": [
+        "real_index_lock::tests::a_pid_file_that_cannot_be_created_fails_the_acquisition",
+        "real_index_lock::tests::a_replaced_lock_is_never_released",
+        "real_index_lock::tests::an_install_through_a_replaced_lock_is_refused",
+        "real_index_lock::tests::releasing_after_a_landing_leaves_a_replaced_lock",
+        "transaction_git::tests::input_files_leave_nothing_behind",
+        "worktree_completion::tests::an_error_that_is_not_a_conflict_fails_the_inspection"
+      ],
+      "sharedCauseProven": false,
+      "issueFilingPending": true
     },
     "finalArtifactUploadPlan": "Retain tool/image transfer receipts, original logs, actual Git ELF and source controls; retain audited base archive once rather than uploading cache tar per job",
     "unmetLinterPrerequisite": {
@@ -25032,8 +25077,12 @@
       "realLinterAssertionsExercised": false,
       "remainingActualAssertionFailures": 6,
       "previousBlanketSourceFailureClassificationRetracted": true,
-      "requiredRecovery": "Build authentic ef014 linter with executable provenance and real gate before replaying the unchanged original two host checks"
-    }
+      "requiredRecovery": "Build authentic ef014 linter with executable provenance and real gate before replaying the unchanged original two host checks",
+      "historicalObservationRunId": "10zmqch10h",
+      "resolvedByRunId": "q10910cxfm"
+    },
+    "currentRealLinterAssertionsExercised": true,
+    "currentRemainingSourceAssertionFailures": 6
   },
   "globalDevelopmentUnion": {
     "terminalChecks": 686,
@@ -52937,5 +52986,1883 @@
     },
     "correction": "Git host2 belong to frozen rust6, not regular16; verified against source JSON before candidate wiring",
     "sourceGraphSha256Unchanged": "c7c7aca4f7a2d3865bcaf9abc32ae8a7f546d7170be20c90f782402ffa6200b8"
+  },
+  "gitHostLinterRecovery": {
+    "path": "/home/user/temp/agent/depot-complete-accounting-20261016/terminal-q10910cxfm-FQOaEE/collected-q10910cxfm/logger-git-linter-verification.json",
+    "sha256": "c813c4754f1b9a6de499181141f93d372b3792eb7dc60d9609eef0c6941d97b3",
+    "report": {
+      "runId": "q10910cxfm",
+      "harnessRevision": "c789a14548fec9df1cee01facb9577d83ddfd42c",
+      "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+      "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+      "workflowId": "pd08hzf1qd",
+      "jobId": "8fbgk7w256",
+      "attemptId": "nd3rk1sf8j",
+      "viewUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/pd08hzf1qd?job=8fbgk7w256&attempt=nd3rk1sf8j",
+      "providerConclusion": "failure",
+      "providerSize": "2x8",
+      "allocatedCpuCount": 2,
+      "providerJobSeconds": 687.007,
+      "allocatedCpuSeconds": 1374.014,
+      "publishedComputeUsdBeforePlanCredits": 0.0687007,
+      "accountLedgerVerified": false,
+      "environment": "Private full worker rootfs overlay; unchanged worker ABI; real /usr/bin/git ELF; original host tasks under source UID",
+      "build": {
+        "upstreamRevision": "a018953688f1b10bddf91bff8747068f5f4746a4",
+        "upstreamTree": "96aa7b9f343426cd28cf6c2da737b9f847a2919d",
+        "sourceArchiveSha256": "f9fe8e8e154798639bb00f7d50144e8f5b2ca6a5d891e245c4330000197fd5f8",
+        "sourceArchiveBytes": 54056960,
+        "originalSourceInputs": 4966,
+        "sourceInputsBeforeAfterEqual": true,
+        "sourceInputDigest": "11c4c764c83e9a5df9493f71f567f3d07cf327928cf3688e204baff4b8aec501",
+        "makeArgs": [
+          "--jobs=2",
+          "prefix=/usr",
+          "NO_GETTEXT=YesPlease",
+          "NO_TCLTK=YesPlease",
+          "PYTHON_PATH=/usr/bin/python3",
+          "CARGO_ARGS=--offline --release",
+          "DESTDIR=/home/runner/temp/agent/depot-git-host-Y7vl9J/stage",
+          "install"
+        ],
+        "tools": {
+          "make": "GNU Make 4.3\nBuilt for x86_64-pc-linux-gnu\nCopyright (C) 1988-2020 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.",
+          "cc": "cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0\nCopyright (C) 2023 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.",
+          "cargo": "cargo 1.101.0-nightly (29c5daa1a 2026-10-07)",
+          "rustc": "rustc 1.101.0-nightly (e9bbadf68 2026-10-12)",
+          "rsync": "rsync  version 3.2.7  protocol version 31\nCopyright (C) 1996-2022 by Andrew Tridgell, Wayne Davison, and others.\nWeb site: https://rsync.samba.org/\nCapabilities:\n    64-bit files, 64-bit inums, 64-bit timestamps, 64-bit long ints,\n    socketpairs, symlinks, symtimes, hardlinks, hardlink-specials,\n    hardlink-symlinks, IPv6, atimes, batchfiles, inplace, append, ACLs,\n    xattrs, optional secluded-args, iconv, prealloc, stop-at, no crtimes\nOptimizations:\n    SIMD-roll, no asm-roll, openssl-crypto, no asm-MD5\nChecksum list:\n    xxh128 xxh3 xxh64 (xxhash) md5 md4 sha1 none\nCompress list:\n    zstd lz4 zlibx zlib none\nDaemon auth list:\n    sha512 sha256 sha1 md5 md4\n\nrsync comes with ABSOLUTELY NO WARRANTY.  This is free software, and you\nare welcome to redistribute it under certain conditions.  See the GNU\nGeneral Public Licence for details."
+        },
+        "version": "git version 2.56.0",
+        "elfSha256": "93696240ecdb527669d3b2d15598ab210cbcf27e9edbc9c99608745ab37c41b0",
+        "elfBytes": 20315424,
+        "sharedLibraries": "\tlinux-vdso.so.1 (0x00007f2fe1da1000)\n\tlibz.so.1 => /lib/x86_64-linux-gnu/libz.so.1 (0x00007f2fe1d72000)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f2fe1400000)\n\t/lib64/ld-linux-x86-64.so.2 (0x00007f2fe1da3000)\n",
+        "libraryFiles": [
+          {
+            "path": "/lib/x86_64-linux-gnu/libc.so.6",
+            "sha256": "3a15d66867d83762c7f2f1e37359cb8f6c5743edb369c65285cb0b1c4f7498bf",
+            "bytes": 2129424
+          },
+          {
+            "path": "/lib/x86_64-linux-gnu/libz.so.1",
+            "sha256": "86200da370f20476a2507e9097a789b5ef97269b4ca8d5e164ad82dab9d99892",
+            "bytes": 113000
+          },
+          {
+            "path": "/lib64/ld-linux-x86-64.so.2",
+            "sha256": "c20a2dc8917c755f02b94049356320fe1f62ac7d9f8994731f807d9df39302da",
+            "bytes": 236616
+          }
+        ],
+        "osRelease": "PRETTY_NAME=\"Ubuntu 24.04.5 LTS\"\nNAME=\"Ubuntu\"\nVERSION_ID=\"24.04\"\nVERSION=\"24.04.5 LTS (Noble Numbat)\"\nVERSION_CODENAME=noble\nID=ubuntu\nID_LIKE=debian\nHOME_URL=\"https://www.ubuntu.com/\"\nSUPPORT_URL=\"https://help.ubuntu.com/\"\nBUG_REPORT_URL=\"https://bugs.launchpad.net/ubuntu/\"\nPRIVACY_POLICY_URL=\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"\nUBUNTU_CODENAME=noble\nLOGO=ubuntu-logo\n",
+        "resources": {
+          "logicalCpus": 2,
+          "availableParallelism": 2,
+          "files": {
+            "cpu.max": "200000 100000",
+            "memory.max": "2147483648",
+            "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0",
+            "pids.max": "512",
+            "pids.events": "max 0"
+          }
+        }
+      },
+      "installed": {
+        "version": "git version 2.56.0",
+        "elfSha256": "93696240ecdb527669d3b2d15598ab210cbcf27e9edbc9c99608745ab37c41b0",
+        "elfBytes": 20315424,
+        "execPath": "/usr/libexec/git-core",
+        "sharedLibraries": "\tlinux-vdso.so.1 (0x00007f53bfd66000)\n\tlibz.so.1 => /lib/x86_64-linux-gnu/libz.so.1 (0x00007f53bfd37000)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f53bf400000)\n\t/lib64/ld-linux-x86-64.so.2 (0x00007f53bfd68000)\n",
+        "libraryFiles": [
+          {
+            "path": "/lib/x86_64-linux-gnu/libc.so.6",
+            "sha256": "3a15d66867d83762c7f2f1e37359cb8f6c5743edb369c65285cb0b1c4f7498bf",
+            "bytes": 2129424
+          },
+          {
+            "path": "/lib/x86_64-linux-gnu/libz.so.1",
+            "sha256": "86200da370f20476a2507e9097a789b5ef97269b4ca8d5e164ad82dab9d99892",
+            "bytes": 113000
+          },
+          {
+            "path": "/lib64/ld-linux-x86-64.so.2",
+            "sha256": "c20a2dc8917c755f02b94049356320fe1f62ac7d9f8994731f807d9df39302da",
+            "bytes": 236616
+          }
+        ],
+        "consumerFixtureHead": "d4a5e4e462ceb6fc5fd4af01b1722c7a5afc0c83",
+        "processExe": "/usr/bin/git",
+        "processExitCode": 0,
+        "resources": {
+          "cpu.max": "200000 100000",
+          "memory.max": "2147483648",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0",
+          "pids.max": "512",
+          "pids.events": "max 0"
+        }
+      },
+      "linter": {
+        "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+        "originalStage": "package/git-policy/cli/bin/native-linter-snapshot.mjs",
+        "compilerArgs": [
+          "build",
+          "--offline",
+          "--locked",
+          "--bin",
+          "monochromatic-lint"
+        ],
+        "compilerEnvironment": {
+          "CARGO_NET_OFFLINE": "true",
+          "CARGO_BUILD_JOBS": "2",
+          "CARGO_PROFILE_DEV_DEBUG": "0",
+          "CARGO_INCREMENTAL": "0"
+        },
+        "tools": {
+          "rustc": "rustc 1.101.0-nightly (e9bbadf68 2026-10-12)\nbinary: rustc\ncommit-hash: e9bbadf6824e65b3583c2dda3a0926ec76df9143\ncommit-date: 2026-10-12\nhost: x86_64-unknown-linux-gnu\nrelease: 1.101.0-nightly\nLLVM version: 23.1.3\n",
+          "cargo": "cargo 1.101.0-nightly (29c5daa1a 2026-10-07)\n"
+        },
+        "sourceInputs": [
+          {
+            "path": ".cargo/config.toml",
+            "sha256": "7352bfbf249b17aa4293845ef4ef6766227e6ed059d3861556595fa543af01f5",
+            "bytes": 477,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/Cargo.lock",
+            "sha256": "a65e0479a1c2a6c6629e4d55d37354283e8942b914fda730aaebbc3dec268c42",
+            "bytes": 74325,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/Cargo.toml",
+            "sha256": "158fb617f318744c11a23cbe2481616ee8eccc38380855c0297f2a9ca05f7d71",
+            "bytes": 4060,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/LICENSES/GPL-3.0-or-later.txt",
+            "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+            "bytes": 35149,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/LICENSES/LGPL-3.0-or-later.txt",
+            "sha256": "e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118",
+            "bytes": 7652,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/LICENSES/markdownlint-MIT.txt",
+            "sha256": "cdc3c1fb00ee139442c915e98afac039223569a00527e9f7aefc54f92019aec4",
+            "bytes": 1073,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/README.md",
+            "sha256": "16a5dd31e14c812ba16cd29ec3533501f0a083f346447196eff9d07867bb8c5a",
+            "bytes": 11895,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/bin/clippy-container.mjs",
+            "sha256": "7ddde7dd944b5949a068aca24e00d802ed278381a8853a1b92a484ad942edd60",
+            "bytes": 1246,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/bin/mutate-container.mjs",
+            "sha256": "803a2474ba7a4e352ae6867a0e5fab7f44993456c84227c8022e2797094465da",
+            "bytes": 19494,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/bin/test-container.mjs",
+            "sha256": "8d8ca49012f16fc5e24d3d3794d9b82cac8698531eb22f6e1beed236fa33b663",
+            "bytes": 2708,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/fixtures/lfs-url-parity.json",
+            "sha256": "289d64aa6e37080e881b6e5ea0ee2623c6f48d4d0bfc1afdf6aaffe233bb16e5",
+            "bytes": 175518,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/fixtures/merge-cases.json",
+            "sha256": "492ae6d5d19e5b0c1fdf6b2565c95f13f1f8b27337a8996034e7d6e243128cc2",
+            "bytes": 3198,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/fixtures/processors.json",
+            "sha256": "d582a4d2d15e29a607e5e9ccb9fb2503a2ff9d68f25268bae22642b958f86e2f",
+            "bytes": 928,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/fixtures/semantic-break-parity.json",
+            "sha256": "864fc5cd423414ce0fca4f89f14447e47aca45454362108c71dc09af27e41efd",
+            "bytes": 9066,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/mise.toml",
+            "sha256": "f1e9c7019f246a72e10dceafa583c25a3518d123dcd8c340286840fff67a949f",
+            "bytes": 19990,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/binary_tests.rs",
+            "sha256": "2fa11674ab6c31a6f73c5d7d2c74189f7e88c5e05ec817392c33b1acccfd16a6",
+            "bytes": 44778,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/cli_options.rs",
+            "sha256": "fefbab97ae53bf86b447c3b3d426e41a0ba2b18edd84d8cc089244e7aa3b7d2b",
+            "bytes": 4243,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/cli_options_tests.rs",
+            "sha256": "8c111945615d2f3737b852c46851c84a0a3dddc50c1f9a3b81deb4a2bab27131",
+            "bytes": 5400,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/config_data.rs",
+            "sha256": "0bf5981029a8d061bca715013b4657def2b450cb8331b9229560e89b86ae186b",
+            "bytes": 7024,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/config_error.rs",
+            "sha256": "ce7055207f97e17fee12fb17d8646ea018b53fb4d1c0b6665e322f1cc166c8a5",
+            "bytes": 2561,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/config_lookup.rs",
+            "sha256": "457d9af32b2068c6f81f9fe8946f98c9d62f944601db62f93e94e87d5b89d1ca",
+            "bytes": 10237,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/config_lookup_tests.rs",
+            "sha256": "7cdb1c4a50590c00f6ad73e152aba47c7735a2b5d7a97f366677658af2722076",
+            "bytes": 8380,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/config_match.rs",
+            "sha256": "6b1c3fc5861832fe207dea0e504d27c23583536e90041e3cd5a3e0edf245f865",
+            "bytes": 7371,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/config_match_tests.rs",
+            "sha256": "cd98292dc77c2d075c39cf202ba74ce8ad40b573531680626ee298d14afb7643",
+            "bytes": 8438,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/config_merge.rs",
+            "sha256": "797695400958eff49654a68d2fe0d0bac1aedefca39cd9f961b533651cc2d78d",
+            "bytes": 9536,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/config_merge_tests.rs",
+            "sha256": "9836581128c1ce5b3ca58a2c37b3c247c8c7b5eacd13d9937b25fed1119a5faa",
+            "bytes": 8310,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/configuration.rs",
+            "sha256": "d957f9a26e71e6fee4738001b997aa94d8dc3f5425367a073f3a30884df99698",
+            "bytes": 6019,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/configuration_rules.rs",
+            "sha256": "10f1cab19fd3b8b5455a5a469f4b13a07e0d9566c5c8042b8ea11e5c69af2acd",
+            "bytes": 6589,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/configuration_tests.rs",
+            "sha256": "ab8f9740eabd77a2e384d28a38a2e38d7a08085efe273af5c0465c2d00310a43",
+            "bytes": 8067,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/diagnostic.rs",
+            "sha256": "6b51379b671b6f36d7a0a036aeff48978606393fbe21593364c71a25b48562d3",
+            "bytes": 5358,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/diagnostic_tests.rs",
+            "sha256": "937cf34ba0b1b27f2f9f1ff8bdcc895b24221d365537ff73b328ce9c3217d0e8",
+            "bytes": 4367,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/edits.rs",
+            "sha256": "1c37a3cad81acc85dabb15bf3d714bf4cc4d21fe4e8c9a09435d482b724264a6",
+            "bytes": 7706,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/edits_tests.rs",
+            "sha256": "309b8ba9e8916e30d761dba7a058dcfad9916e2abe688b8f6adf4bbd32cc8afb",
+            "bytes": 6261,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/file_discovery.rs",
+            "sha256": "72ecda6a235b44280632128ca09ebc34220d1f61acdfea48983208bc28f18042",
+            "bytes": 6947,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/file_discovery_tests.rs",
+            "sha256": "b34767dbb10edc608e4bae112eccdd8ad10c9172860dc62dd3377a93946b338a",
+            "bytes": 5136,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/fix_loop.rs",
+            "sha256": "49124fd23b752e15c02cb4d9273af8616780b0b58a2df609516808d4d428d8b1",
+            "bytes": 4776,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/fix_loop_tests.rs",
+            "sha256": "0f2ba0a3f279cd7f3eaa602a13fafd872414177a0a4cf8906cc5d877e5f24f49",
+            "bytes": 6741,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/lib.rs",
+            "sha256": "0d745d76ef1cd6e7a971c52ded33f9cfb91aa46b80fcccf727f9120d300f335b",
+            "bytes": 9642,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/main.rs",
+            "sha256": "c2cf2eff7ccf414bb2a02d41bcab0abf6a2d50beae7ce69410daf391b51c19ef",
+            "bytes": 1146,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_basic_tests.rs",
+            "sha256": "bf1dcb70a835fbe5b62dc23fbd79b1a055e5b80b84b7bb40d9d8f8e3967e64cb",
+            "bytes": 8198,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_block_start.rs",
+            "sha256": "5849a4b9b3001a5858255a92c4ee568c0f12c3d2048e73d620c6755e8e1b055d",
+            "bytes": 3744,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_block_start_tests.rs",
+            "sha256": "26102639c027fe18e45e872bac1b17b9624aa768c77bc02c61375af8c7220c4c",
+            "bytes": 1410,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_break_points.rs",
+            "sha256": "1978028598af22e42b957b7081cca304262d7f81cd5fdcef395a0c73d7bdfcbd",
+            "bytes": 4965,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_break_points_tests.rs",
+            "sha256": "ad30b806c40092a26a8489a36b0c4bcf599e6f7e03ab3bf7080693606c2d4624",
+            "bytes": 5381,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_code.rs",
+            "sha256": "8c16ba61d629b9ba652df010fb5c205ebc8bcd15676ed62a3aa57e0a6492df06",
+            "bytes": 3151,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_commands.rs",
+            "sha256": "1293ae74f54cfa8522a9c437f83d33ac7f13e8013c21fe85d3e8b9ffffaf875e",
+            "bytes": 4160,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_commands_tests.rs",
+            "sha256": "25a1c061d3f33e2d6f15e6e8cddf2383d4fb8f3f8ccfde049ac081e29e80bfb3",
+            "bytes": 5313,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_definitions.rs",
+            "sha256": "7ff8371621441a923145775c72a5f55191e9c1b2744a2e0378b33caf391728cb",
+            "bytes": 7172,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_definitions_tests.rs",
+            "sha256": "3f6a069a559e7916df69c14dd6c1651943b96b42ba7b4939fbc99d8dcd5bd901",
+            "bytes": 4022,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_dispatch.rs",
+            "sha256": "7bc2fe2c1a5be27273aa46cf48251877dd5a838829dcd960dd66f3e98675909e",
+            "bytes": 3800,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_dispatch_tests.rs",
+            "sha256": "b46f81c452af5acf6596ed7b0c1ea66712c44c21eac2340e1d6c6f118829cf10",
+            "bytes": 6209,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_duplicate_headings.rs",
+            "sha256": "1214fdc50b1958819e8219ff94f911736e92389ba976c82256d6003c02d3b402",
+            "bytes": 3479,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_duplicate_headings_tests.rs",
+            "sha256": "43c314123ac3cbcc4304c3d8da0bc5726535bd89119a98be6cafe88cf338d55d",
+            "bytes": 2562,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_finding.rs",
+            "sha256": "ce0acd2073b92861bc29a3396da840254f42855aa1cb0ca48752d5434077c1c8",
+            "bytes": 2827,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_headings.rs",
+            "sha256": "cd71d4676117969c8aa15d3d72cd94339a4a7cb536749d85fc7dde187e5ce373",
+            "bytes": 5165,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_config.rs",
+            "sha256": "c719cbf67bce78e69f578ec3abba94ab4061849bd531a90300dd5bc8c8be17a0",
+            "bytes": 7322,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_config_tests.rs",
+            "sha256": "48fa99604bc5a70f3279eb109224853e4b4729177e135e036c0dd0822cba2f60",
+            "bytes": 5747,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_context.rs",
+            "sha256": "fec669490cf4257d6643a7b845a29cdbc613c2704897bf8b0277fc2a64ed7fb1",
+            "bytes": 14220,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_context_tests.rs",
+            "sha256": "750005080688c57f63aab7624a115239e1be09fb865c5ab27e8335470149fbda",
+            "bytes": 13942,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_endpoint.rs",
+            "sha256": "9d25736a4c2d50c7a356af14943d4273d4f5cdc92f2d47cc9ad0788e891cc82f",
+            "bytes": 17470,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_endpoint_tests.rs",
+            "sha256": "5f4b9b423439d3905cf503f3371e04135e5b384d230ebcab2cbd393fc9baf517",
+            "bytes": 8774,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_image_url.rs",
+            "sha256": "0f3ff1226d23d2ff1159498c26ad5380bd9bb9c63a5a5178956ce935ee38a076",
+            "bytes": 9694,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_image_url_tests.rs",
+            "sha256": "550d89ed7d2dde1118ca67f0d370beea6fd3305c9568fe6e68a425d7ff0e79f1",
+            "bytes": 10183,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_oid.rs",
+            "sha256": "3aa8f390145b7880b790a9b86a850975bba4167c4c7dacb138a1fed8a0b84de0",
+            "bytes": 3936,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_oid_tests.rs",
+            "sha256": "ef7430defe9032b2b15cbdca6792cc6bd89078affa439a63861a770b891dbf9a",
+            "bytes": 3755,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_patterns.rs",
+            "sha256": "5d37818bd0153fba10059eca157070f208cf2b64827547f5046a0e16f5c6e0e4",
+            "bytes": 6925,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_patterns_tests.rs",
+            "sha256": "afe0c0b821b59d485e1e5de24a0e54129ef070f28eb698ae25c16e03a2a3c50d",
+            "bytes": 4317,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_sha256.rs",
+            "sha256": "33399cd37e2bc63fe958123c40db4f0c0f3db36494a56530cf6bf00ac80fdec5",
+            "bytes": 8986,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_sha256_tests.rs",
+            "sha256": "6409ce9141928d63e336ba52f71f8f0a12ebd0f3a6ec5196199cba90294109da",
+            "bytes": 3892,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_target.rs",
+            "sha256": "e3fcd2e3d6a1370334ba3e4be863c1806dfd3c604f1deca5bcb7941d0d265ec3",
+            "bytes": 9488,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_lfs_target_tests.rs",
+            "sha256": "d1bf17b82501b0a277a88313fb7dbd559d7b8433944d07401804f16870573df2",
+            "bytes": 7717,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_links.rs",
+            "sha256": "1fd2070eb7374499b8b5946e2328f92dd0ee3e13d7c197d3ad8aace16ed8a89a",
+            "bytes": 4543,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_parity_tests.rs",
+            "sha256": "9f97fc39ac0437106ad37e7ae858657663dd02341eaf70661256938ae57b27da",
+            "bytes": 3221,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_positions.rs",
+            "sha256": "e56703061110fcc40b5f85cd479623d90996cf50f8da212166cd6a36dae7a2e9",
+            "bytes": 4170,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_positions_tests.rs",
+            "sha256": "b4023a6838eda1d4b1cd9d72444ca752f468e18e9f1abb62e1077c65eabae151",
+            "bytes": 2652,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_prose_context.rs",
+            "sha256": "104afb7d68bcc5a68f66446fabaa1e4086f39b0bfa3fa7cf1639bb03e8019202",
+            "bytes": 4956,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_prose_context_tests.rs",
+            "sha256": "c134cb4282d988ac848200e552a67ad7458e0137aa212b2b1fc5d421a703a3e4",
+            "bytes": 8668,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_punctuation.rs",
+            "sha256": "8d87c86d747982e29e5ae271bda49324a76a8f5a6377300cdb3dcce8e3344976",
+            "bytes": 7335,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_punctuation_tests.rs",
+            "sha256": "75d2a945421fe962b5c106b907a9233971d88ff9fd69697ff8189005d0290f76",
+            "bytes": 3890,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_rule_settings.rs",
+            "sha256": "e538dcda263356f352bc91ad704d90297e038945df7de72561d50418d6e99942",
+            "bytes": 7861,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_rule_settings_tests.rs",
+            "sha256": "f943f7848d1c4cbbb8ab6616cce3a00714b277f82119192d9a2177fe81df3a6f",
+            "bytes": 5349,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_semantic_breaks.rs",
+            "sha256": "2264678f89d8df71b9d4a26f6daa4e1506768a371fca1beff49cb648472ec31d",
+            "bytes": 5840,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_semantic_breaks_tests.rs",
+            "sha256": "b4b319b4e3bffe17b5449e628179027a0dc7151619337606e6e0d899fdbea806",
+            "bytes": 7977,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_source.rs",
+            "sha256": "5ad47f3de2e7d4d5e99f1f34eda9372f5c4da10f5ee7b3b4d9c604bcdb8c4f70",
+            "bytes": 20016,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_source_tests.rs",
+            "sha256": "d29f9326c4f3f1635c56430efce973914e0dc96c88812d7496fdfde3d47e0e14",
+            "bytes": 7001,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_table_text.rs",
+            "sha256": "a12a05bb6ac933b9db815e999a4e1d157d98ae87f55c5a1328181272ed2df63e",
+            "bytes": 4146,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_table_text_tests.rs",
+            "sha256": "e31eb1e1596fab5d484218388fa087895e1586008a017162d2122f5bd8896e56",
+            "bytes": 2239,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_tables.rs",
+            "sha256": "4dd71c6ad2fc6f973e58ddf2ad8b2e688c3f296772dcde703c2c1081f0445aff",
+            "bytes": 6257,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_tables_tests.rs",
+            "sha256": "75ca9d851c20b6f0ef3203c0b1d1532c7c66d5e0de4ed0039bdf66a51b226316",
+            "bytes": 5155,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/markdown_traversal_tests.rs",
+            "sha256": "57668c50083e018cb9a82a1a16b8006022966a3cbf1b41250bc28e1dd910c57f",
+            "bytes": 13859,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/path_inputs.rs",
+            "sha256": "ee894b3cae3bffdbf221f188204007e7db651cf7e3570899d31fd2e47063d341",
+            "bytes": 6370,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/path_inputs_tests.rs",
+            "sha256": "46e00e86780a655a33d914bcb98db58a392f24c3e8c5dedb20466b6e8969e0da",
+            "bytes": 4390,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors.rs",
+            "sha256": "fe873004fe741e6d53a017d3064c29ba173d0bfa16375244d3483786c3dcad55",
+            "bytes": 8570,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_check.rs",
+            "sha256": "dc87b0296b716aadcca19d7f4bdce43db816615794a0f03565a86cb2624cbfcc",
+            "bytes": 4174,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_consumer.rs",
+            "sha256": "0b22d26634f04603123eba56163faaa7b5096c10d28b183176027dd7223c4a0f",
+            "bytes": 3669,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_controls_tests.rs",
+            "sha256": "fab325649eaa1c76f8f3318e005b6a5a12ecb1ecb9eaa76d14410dfa8dd02c0b",
+            "bytes": 8526,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_docs.rs",
+            "sha256": "04efb25e35a39e0c4e674f69e3be6cf4971ab8835ca4039c6ddc0ea4c1e4a2e3",
+            "bytes": 12071,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_docs_tests.rs",
+            "sha256": "d9d4104a9dbb8a2dc69594f3ab25ab33dda5eec6be0a4f66a04ffe1c38300572",
+            "bytes": 7606,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_edge_tests.rs",
+            "sha256": "b09969a5be2022d636dc9dc6f0517a7b056727f07c0aaea3d8e53af17258e8f6",
+            "bytes": 13771,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_fences.rs",
+            "sha256": "b3060deb9f240be85066bf4da80155e75913968397ed28e73e2aaed1ab6acde4",
+            "bytes": 5564,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_fuzz_tests.rs",
+            "sha256": "9520c70a834ff913a36d87f53806bb523440a4e0042ca7cfedf6378b164d0601",
+            "bytes": 5040,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_lines.rs",
+            "sha256": "e938fe71e63b84b2f4f6c8f1c736f48e81bc5250ca774920ac31d12ce174dd58",
+            "bytes": 4258,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_model.rs",
+            "sha256": "9c308bb08f582d4a9818221857d0ede6877ebd81fe2869241755b80fb8379bbf",
+            "bytes": 6455,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_prepare.rs",
+            "sha256": "c9c00d059fac6905a434a4a01647a1906a00507628cbeb616d0dbd33fa7bc9b6",
+            "bytes": 4881,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_prepare_tests.rs",
+            "sha256": "423bb49d569df1e3041e328dda9b2da863908f25e5b25fbbd0f56a446bf4eb02",
+            "bytes": 4243,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_projection.rs",
+            "sha256": "8000803ba2d68c5494907c5d47efd7720f09a1cb8068d3715e1f5d575fdac311",
+            "bytes": 7014,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_projection_tests.rs",
+            "sha256": "ee6554f4bce68bed17c66e4f5efd63b1f600139195952e06aed0762c88e311c2",
+            "bytes": 7694,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_rewrite.rs",
+            "sha256": "b8c99fe0c0cabcedf7c196a522940628deacb0dbd2542a215c84b097177a7a1c",
+            "bytes": 2445,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_rewrite_tests.rs",
+            "sha256": "0e81e0257916b91772563b3a7d6c9d302ade90ecff9cc0675fad44ad8d80395b",
+            "bytes": 9194,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_spans.rs",
+            "sha256": "e762156c2d61978ca0f127bff99fd5bd103c7d9af01e7b458d3506a3b100e2ab",
+            "bytes": 3861,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_spans_tests.rs",
+            "sha256": "90f961b2de716e5d01ee139e2fa8a7157fd3afb361da8d2ff7ae53ed5cf7fe03",
+            "bytes": 13046,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/processors_tests.rs",
+            "sha256": "4da14d52df10015438034941369fc2ed05ac9d7da436e6c37f3aefa8d6b0f4d2",
+            "bytes": 9865,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/resolved_rules.rs",
+            "sha256": "85af201eab66dcbd6c64cf26baa66da39d12b72e74df188541659fc4af8f6dd9",
+            "bytes": 3477,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_check.rs",
+            "sha256": "fb8501c1c2572879f5f5c11d274063e41f31ed44b0967ce9247c5844bbd1b2ad",
+            "bytes": 16682,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_check_tests.rs",
+            "sha256": "4c36b58ecbe9d1551a37db053bd9dc7852609640f378b67a4193bc6ccd1eab06",
+            "bytes": 10679,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_command.rs",
+            "sha256": "797ea9601d34c1c6e212590ac627ac900681b23c1cea943fe9b39ba0eda87a80",
+            "bytes": 8508,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_command_fix_tests.rs",
+            "sha256": "568a59557d736f2422ad9f0f1fb41cb5cda59114390f98122626fc48ae81a715",
+            "bytes": 18342,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_command_tests.rs",
+            "sha256": "e048eceb1e1ff3169ee0449a44e97041c140cc3421b94e32b8f2466fa5600788",
+            "bytes": 16569,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_failure.rs",
+            "sha256": "d6e807d73efa424ce1fc31fff9841622596cd8039cdab1e2d7726dbc89fa27ac",
+            "bytes": 5793,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_failure_tests.rs",
+            "sha256": "2c73c8ec10f926706e5aa1138ad43326b9ed0315d07384d68a133d1348a3ec69",
+            "bytes": 5074,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_file.rs",
+            "sha256": "2682f780dfb38771d4de5c6b0c0e020f4329ca65bc58fd7297fd37a651adac3d",
+            "bytes": 9085,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_file_tests.rs",
+            "sha256": "e6aaf787fef9569fcfe66edc9fc8271ed8d09581d66560d7e2b20a83fff61597",
+            "bytes": 11427,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_finish.rs",
+            "sha256": "a6c4e9aba52695a95c35d408f16f4a280810c69608f95d8be2b43c4f379d6815",
+            "bytes": 4623,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_json.rs",
+            "sha256": "810e68ca66b16e2f59774bf371ca8ccf41833181a6ce8d8df06f4065bfb2b50c",
+            "bytes": 3939,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_json_tests.rs",
+            "sha256": "e3a63d5f5ea7b88ff4c4b9e8907542b352f4d1138f6a7e64ea79c0a685dcbebf",
+            "bytes": 3246,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_lfs.rs",
+            "sha256": "c08fc93e19850592b566d5c6d1d7ea10d8e7df30c7ee2ea8159d3a2b9b7008b2",
+            "bytes": 5067,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_lfs_tests.rs",
+            "sha256": "0c79b7565357ee15aadbc5212c98e18a3cfc7feb9555fc2129bd3ff574dd4f33",
+            "bytes": 5488,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_modes.rs",
+            "sha256": "7e2140629ee8d39844703996685d0a4ee775ae3dc252b0530cbc5a0174c058ff",
+            "bytes": 11606,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_modes_tests.rs",
+            "sha256": "e67e02f5fdaeb46f89897e5e8aabd5594f3cd782721ca37bfa2eadcc144aad53",
+            "bytes": 7861,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_output.rs",
+            "sha256": "f08d3f25b650fe5b6dc1b74a31a7b3761fbbfc3613f677bc075ed8dec42ad096",
+            "bytes": 2973,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_output_tests.rs",
+            "sha256": "d0d1922ad9202b0750f1c9abff5ef3aeaf5860790df33a9844e2f0ff87747a1a",
+            "bytes": 4746,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_paths.rs",
+            "sha256": "fb7429673810be6d0b19a790d19477f76b61a73121b1a201930f96a64193a3ac",
+            "bytes": 6120,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_paths_tests.rs",
+            "sha256": "18ed4d0b897f00bdcaff241c36c4ad57ae77d127006e89bbdfd073ddc7c74414",
+            "bytes": 4627,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_plan.rs",
+            "sha256": "94105ef0419c522994530b7c133029483c0068320f1d40ea22ae80291addf8d0",
+            "bytes": 10866,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_plan_tests.rs",
+            "sha256": "6ff0d208d49531377261250225b61bbac27f785906624a5279a10fe5b57731a7",
+            "bytes": 9850,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_process.rs",
+            "sha256": "4953d2038597a11e1170216467ef2f68c4ee2fae3d1d3e88e728833f40861085",
+            "bytes": 8974,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_process_tests.rs",
+            "sha256": "6f346b58ed67dc6cea6b6e2267e1784994d8a96a8cfeb057a9805ec722b24f30",
+            "bytes": 7755,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_stdin.rs",
+            "sha256": "c0f1a622166df83d018af1b3432fa69ef43cc1c270e9ca8e140dacbfbaaf5381",
+            "bytes": 4114,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_test_support.rs",
+            "sha256": "b051a2ddfc9484820138976a127ba65666aa0ac719d804bc08e89e89ffe57caf",
+            "bytes": 4868,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_workers.rs",
+            "sha256": "f0d94fc68f1225db7b258ac8af21b9f256ec5bbcd660902578b41cebb05d6325",
+            "bytes": 12444,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_workers_tests.rs",
+            "sha256": "6b1efbdea9e7956afae7b7b92ef5556268ecb6ad8bdbc27721b305e0fc1b5dbc",
+            "bytes": 12401,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_write.rs",
+            "sha256": "19245daa8574e9cffc3038b7f6a59ea7714e1aa2f7f8149b20c7b26eced577ff",
+            "bytes": 7417,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/run_write_tests.rs",
+            "sha256": "4f43a5b08176056e783678ad6fb04e48aa7f4b8ff53ef5c907e0b77ea05647cd",
+            "bytes": 7310,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_dispatch.rs",
+            "sha256": "fad1fe310e962583a69d3572ec02c15be5f5ce9d8855e97cada0d30f46fca053",
+            "bytes": 1925,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_explicit_declarations.rs",
+            "sha256": "2db1faace1414a144ee8d102edac4f142d1b7a9910006767e35fd7b1815466a0",
+            "bytes": 4482,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_explicit_declarations_tests.rs",
+            "sha256": "f11237846e6fb9ba76beb82e4ce4bfa1b4a9f8b4fa4d6938c892e82ec0d9ece0",
+            "bytes": 5897,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_explicit_generics.rs",
+            "sha256": "48d49682369e1ddc59ee00182c3b696a144bfc2b72ed10f7106d0ad01b42efd5",
+            "bytes": 5333,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_explicit_inference.rs",
+            "sha256": "bd6de7afa26f6693f6cd2da4b85bd5fd92db83e162c52548fc58d4f476f3d55f",
+            "bytes": 5316,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_explicit_types.rs",
+            "sha256": "20b83f045bc1b23428c3ab19b9fd2ed3bc5154dbaa4920a2cacfc1772026cdb9",
+            "bytes": 1908,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_explicit_types_tests.rs",
+            "sha256": "810e5f841ea13d7eaea4ba9e38e70baeea4b06fdcb32447f9043556620dc15d9",
+            "bytes": 13491,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_file_engine.rs",
+            "sha256": "5acebcfcd413029885b61d3ed1d7c0355275df6abae95d2fd78614d09d9bb5d9",
+            "bytes": 4627,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_file_engine_tests.rs",
+            "sha256": "7568b6898e150fdc6891c32ba863a988c4b11892285d9ab742a15932ec7250bd",
+            "bytes": 4381,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_generic_arguments.rs",
+            "sha256": "75f8342d34eae80a2b52e41f41ab1b255617540be34c112c8a1eeb303371c851",
+            "bytes": 7823,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_inferred_constants.rs",
+            "sha256": "09f404c59cbf05617e1cf1c6799a064d02cabfd402a4e9b983b3ccf697b5f713",
+            "bytes": 3944,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_inferred_constants_tests.rs",
+            "sha256": "cce0e771f499055cb3374ebc1533347303d84144026858adc675d99d214ad59f",
+            "bytes": 4123,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_no_anonymous_functions.rs",
+            "sha256": "a354e1f561e0cb8e4e117673d2347410176ab51624906232c8d7b87875f64713",
+            "bytes": 4611,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_no_anonymous_functions_tests.rs",
+            "sha256": "2b46d62e99f359dcdc7f186665beb10087ebcef52d746cef0cf74a486dcd3435",
+            "bytes": 7701,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_rule_settings.rs",
+            "sha256": "46131213662a37945c73ebfee78b8e84bdf1e1cdb7234fbdc8febd6984733585",
+            "bytes": 4749,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_rule_settings_tests.rs",
+            "sha256": "b1e5dcc5bfc2134555ff52055b1df54ea876729dbb4e6efedd8e8201b1cb9c32",
+            "bytes": 5424,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_rules.rs",
+            "sha256": "ace75109aa0c15df1faba41e921912330add7e4ddadcf15b90a33f7682c4be98",
+            "bytes": 7430,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_rules_tests.rs",
+            "sha256": "b4c779536d820d8a468e6b52fd36968208f31faa889f7e0ded17c6a45bcfbff3",
+            "bytes": 6460,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_semantic_error.rs",
+            "sha256": "feee6eb548919c653a4c593daa7a69388142c97a63943466bdbe89c59286ca74",
+            "bytes": 1302,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_semantic_session.rs",
+            "sha256": "0b0ce3b1f9c956799b3a03bc147a4305169191053fe373758840c937dc6c7765",
+            "bytes": 10674,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_semantic_session_tests.rs",
+            "sha256": "f00b77b9a86ef257ecc2113111d6a8d4ad868b981b62ea1f696a18c70f9d7c69",
+            "bytes": 2563,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_semantic_test_support.rs",
+            "sha256": "1651e7a49a35dfdf8d7cddbb35fbc5c4f8b0d9e73bb373870860d7076519cbac",
+            "bytes": 3927,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_source.rs",
+            "sha256": "d75c2e40e46bcb207a6b4556bc1f5a450888b16e068f9cb16b64050b0e134f2e",
+            "bytes": 7657,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_source_tests.rs",
+            "sha256": "fc56922b72bfb88bd70689c2cd68d5d6f78955f0f7b5a0f4208175ef5ec67d3e",
+            "bytes": 5567,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_tests_in_sidecars.rs",
+            "sha256": "18de70b0543a9cee9dc5d9edc96b104e5e27bbe33a251f2f9abe0b5fc8db2e75",
+            "bytes": 7948,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_tests_in_sidecars_tests.rs",
+            "sha256": "d54ba58019eecd92533bb8b83bd3d7472e4b1d39fb0f686944786d42c3494ba0",
+            "bytes": 7243,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_toolchain.rs",
+            "sha256": "b365d76d1607224958e31388dd91e206eda01ca4e5ec06495c6751be55131251",
+            "bytes": 4132,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_type_diagnostic.rs",
+            "sha256": "d96ce8608cf079bb3f270ab64658d3f17a17fb2467f7f297110b16cc97849da8",
+            "bytes": 2651,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_workspace.rs",
+            "sha256": "d9ff3599f3ec473f0d6f7de4c5598946834272cc8a63e2827292cfdbcdaac5bb",
+            "bytes": 8604,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/rust_workspace_tests.rs",
+            "sha256": "2e8c2e4a043ca94e901c7a516e20455fa92039341451e7954a06237fa00c458f",
+            "bytes": 9094,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/src/test_fs.rs",
+            "sha256": "91a3ff3dc8616c1abfc43027b619bc6afc0bf43f0fda41d9d7237ed20ebb3ca6",
+            "bytes": 2620,
+            "mode": 420
+          },
+          {
+            "path": "package/linter/monochromatic-lint/test.Containerfile",
+            "sha256": "d569d9a634807d8fa948d3dc651816e3c979c4f3c890dba80902a9de827f7360",
+            "bytes": 813,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/.cargo/mutants.toml",
+            "sha256": "6fbae09b60e77973ac1e14a636a51ff91089a5ee239fcb585b147f3f8613bd9f",
+            "bytes": 4942,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/Cargo.lock",
+            "sha256": "a08e414f4aef8c256071b4e149a55cda2f82dea1dcbc0ba278b36abc80b8e9cf",
+            "bytes": 168,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/Cargo.toml",
+            "sha256": "d63ec6087242b717b1bdabcf915c30da7dc378905b0ec2335a07a663813bffa0",
+            "bytes": 1702,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/LICENSES/GPL-3.0-or-later.txt",
+            "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+            "bytes": 35149,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/LICENSES/LGPL-3.0-or-later.txt",
+            "sha256": "e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118",
+            "bytes": 7652,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/README.md",
+            "sha256": "e749f83fefd00cd880db2604992e3e9ed38a69b1efe2e4cd45f78a078552e3d0",
+            "bytes": 2614,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/fixtures/jsonc-conformance.json",
+            "sha256": "eeefc850980d549c9a2ffcfda5007515a5ac0208b56e7d966a40b5db66f1dd9b",
+            "bytes": 11107,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/mise.toml",
+            "sha256": "5cdbf72ac92db1080c9e196a9f898489856614ff3bd41e5bb321298e0086cfb2",
+            "bytes": 2051,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/api_tests.rs",
+            "sha256": "0bd5ed5f7ff02e4a7dc154004aae44464a349fece50ad84c4f9683a03fbc9522",
+            "bytes": 10032,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/comment_merge.rs",
+            "sha256": "18dcd7c1310cdda4975584d847f4875c9ff6f7abb13150a753de85a89b8fc2c1",
+            "bytes": 5834,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/edit_apply.rs",
+            "sha256": "ad6a87b7a43e1102009446971df25476ef19c449077d91568405699c91d594e4",
+            "bytes": 3916,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/edit_comment.rs",
+            "sha256": "c597e05b97d01eafa5ac6bfc9f505b5aff393ea2baf28c7c801199487f9758f0",
+            "bytes": 6966,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/edit_comment_tests.rs",
+            "sha256": "6796f9331329a46a0798d8979018df40eb1dc8bb57eee7c9c7cf93028e1dfedd",
+            "bytes": 10665,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/edit_spine.rs",
+            "sha256": "1272da1a4ba4cff209643ea249d4e870e1766d85aeae5972339bc8ada18bbb5e",
+            "bytes": 18913,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/edit_state.rs",
+            "sha256": "f09ba1b52b326f772ae48479b648a5c1d80ac843a9179d351e06a31d83ec3b40",
+            "bytes": 3643,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/edit_tests.rs",
+            "sha256": "deed21e588c03514b4a70420a6a810fff46d883f513e76d5393897930a16220c",
+            "bytes": 15839,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/emit.rs",
+            "sha256": "4acf3fc6c9408bf69cd0b5897c223b112c6c5e7b5078e26f0e62187fb4bcaa35",
+            "bytes": 5160,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/error.rs",
+            "sha256": "8626a49a1b76b00c4b457f615f9852ebc17876d12f3ace7f0ccbb082e73bf3a3",
+            "bytes": 13490,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/fixture_tests.rs",
+            "sha256": "0833d25f0f8781c8aa5be243084fa684ede140d8a9a1c0e8d9b88327f8e41b86",
+            "bytes": 18059,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/lib.rs",
+            "sha256": "50ab94e48daee36b4cd37343a8ed38362d444f90f1081b7da26432662f284711",
+            "bytes": 13238,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/navigate.rs",
+            "sha256": "ffc44f0b74edcd29c06010af86b2650361811a21de00f722e0e9134139676f46",
+            "bytes": 9574,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/number.rs",
+            "sha256": "952d671be446d678ba0cb5005ce6d0e144835db53236b63f948282c3cf6c90e9",
+            "bytes": 12755,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/number_scale.rs",
+            "sha256": "d7a91db5db7adce0d0ad76925441c615e7de9ba1c3882d3d55fbe5f5c1bcf137",
+            "bytes": 7330,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/number_tests.rs",
+            "sha256": "3b247977d38abd6fd264c14a6b65e79dec1e0c4f992463b5f2b74bde7ed18513",
+            "bytes": 8688,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/parse.rs",
+            "sha256": "102247b34912e48708da0698d2bbabebf8eb67d9ff39c234d7a0d20981e94dde",
+            "bytes": 20837,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/parse_tests.rs",
+            "sha256": "c9f02f7ab18bd95f7d76075f14e75680f52ddb396c69ff99e70d764b85fa6802",
+            "bytes": 25045,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/path.rs",
+            "sha256": "ed733acaa68bf9dec9dd1ddd42236526d08ffa97fcab3ee0e7016e3ed54a1e6a",
+            "bytes": 5359,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/scan.rs",
+            "sha256": "e492aab99f8cd00218bd3af9b9dfba3d10dfe496bb9a9c07c729fe21a3500936",
+            "bytes": 16500,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/text_units.rs",
+            "sha256": "64129aa289f52c3d2aafd2c5902b91943d5fb0ee95ab1154e6b1b7299efaf155",
+            "bytes": 7262,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/text_units_tests.rs",
+            "sha256": "51b8db69484772ccb5951a381a292d07b9f61b83971e3f0cb9965f5de85231b4",
+            "bytes": 5193,
+            "mode": 420
+          },
+          {
+            "path": "package/rust-module/jsonc-edit/src/value.rs",
+            "sha256": "a80770174481dbf5ed9dfe09120a8a9566dec59af4ea8b4c890aa9d3efde1fca",
+            "bytes": 17720,
+            "mode": 420
+          }
+        ],
+        "sourceInputsBeforeAfterEqual": true,
+        "sourceInputDigest": "0f3241c00e37b12aa491a69d3eb7905bfa35f99f85abcb5f38719628b429fc29",
+        "executable": "/home/runner/temp/agent/depot-git-host-Y7vl9J/linter-target/debug/monochromatic-lint",
+        "elfSha256": "63fee7f02a04ad493115b8f1494042d602f8541cf7dedd0aa88d3c88368f30de",
+        "elfBytes": 110474544,
+        "sharedLibraries": "\tlinux-vdso.so.1 (0x00007f503eb5b000)\n\tlibgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007f503eb1a000)\n\tlibm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007f503ea31000)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f503b200000)\n\t/lib64/ld-linux-x86-64.so.2 (0x00007f503eb5d000)\n",
+        "libraryFiles": [
+          {
+            "path": "/lib/x86_64-linux-gnu/libc.so.6",
+            "sha256": "3a15d66867d83762c7f2f1e37359cb8f6c5743edb369c65285cb0b1c4f7498bf",
+            "bytes": 2129424
+          },
+          {
+            "path": "/lib/x86_64-linux-gnu/libgcc_s.so.1",
+            "sha256": "d93224d2b0dab4247598be683adca02f5cf00586f99c187579cd7e92058fb7cb",
+            "bytes": 183024
+          },
+          {
+            "path": "/lib/x86_64-linux-gnu/libm.so.6",
+            "sha256": "fce00b6f25f459cf4ae0b7fae4257909a1a8a86f9149e7c029a5d617baf1ccd0",
+            "bytes": 952616
+          },
+          {
+            "path": "/lib64/ld-linux-x86-64.so.2",
+            "sha256": "c20a2dc8917c755f02b94049356320fe1f62ac7d9f8994731f807d9df39302da",
+            "bytes": 236616
+          }
+        ],
+        "ruleCatalogSha256": "7ecc670fb3f53ac7c0880cf557adde695d35e8572310ab919fd7e9288bcc2281",
+        "consumer": {
+          "args": [
+            "--config=/home/runner/temp/agent/depot-git-host-Y7vl9J/linter-consumer.config.json",
+            "--stdin",
+            "--stdin-filename=pkg/README.md",
+            "--fix"
+          ],
+          "input": "# T\n\n![shot](asset/shot.png)\n",
+          "expected": "# T\n\n![shot](https://lfs.example.com/org/repo/de7030234493a8bea844dbe1d8676e68a2c1a4b014c721f0425a22b6df66faec/pkg/asset/shot.png)\n",
+          "actual": "# T\n\n![shot](https://lfs.example.com/org/repo/de7030234493a8bea844dbe1d8676e68a2c1a4b014c721f0425a22b6df66faec/pkg/asset/shot.png)\n",
+          "fixedInputUnchanged": true
+        },
+        "resources": {
+          "cpu.max": "200000 100000",
+          "memory.max": "2147483648",
+          "memory.events": "low 0\nhigh 0\nmax 9663\noom 0\noom_kill 0\noom_group_kill 0",
+          "pids.max": "512",
+          "pids.events": "max 0"
+        }
+      },
+      "runtime": {
+        "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+        "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+        "harnessRevision": "c789a14548fec9df1cee01facb9577d83ddfd42c",
+        "selectedCheckIds": [
+          "package.git-policy.cli.native.test.host",
+          "package.git-policy.cli.native.test.binary.host"
+        ],
+        "upstreamRevision": "a018953688f1b10bddf91bff8747068f5f4746a4",
+        "upstreamTree": "96aa7b9f343426cd28cf6c2da737b9f847a2919d",
+        "sourceArchiveSha256": "f9fe8e8e154798639bb00f7d50144e8f5b2ca6a5d891e245c4330000197fd5f8",
+        "sourceArchiveBytes": 54056960,
+        "environment": "Private full worker rootfs overlay; unchanged worker ABI; real /usr/bin/git ELF; original host tasks under source UID",
+        "resources": {
+          "cpus": 2,
+          "memoryGiB": 2,
+          "pidsLimit": 512,
+          "network": "none"
+        },
+        "phase": "sourceTasksReturned",
+        "sourceTasksExecuted": true,
+        "exitCode": 1,
+        "signal": null,
+        "cleanupVerified": true,
+        "evidenceCopied": true,
+        "copied": [
+          {
+            "file": "git-host-build-results.json",
+            "copied": true
+          },
+          {
+            "file": "git-host-build.log",
+            "copied": true
+          },
+          {
+            "file": "git-host-installed-results.json",
+            "copied": true
+          },
+          {
+            "file": "git-host-linter-results.json",
+            "copied": true
+          },
+          {
+            "file": "git-host-linter-build.log",
+            "copied": true
+          },
+          {
+            "file": "git-host-2.56.0-elf",
+            "copied": true
+          },
+          {
+            "file": "git-host-linter-elf",
+            "copied": true
+          }
+        ],
+        "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/pd08hzf1qd?job=8fbgk7w256&attempt=nd3rk1sf8j"
+      },
+      "outcomes": [
+        {
+          "schemaVersion": 1,
+          "caseId": "logger",
+          "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+          "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+          "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/pd08hzf1qd?job=8fbgk7w256&attempt=nd3rk1sf8j",
+          "resources": {
+            "cpus": 2,
+            "memoryGiB": 2
+          },
+          "selectedCheckIds": [
+            "package.git-policy.cli.native.test.binary.host",
+            "package.git-policy.cli.native.test.host",
+            "package.git-policy.cli.build",
+            "package.module.caught-value.build"
+          ],
+          "checkId": "package.module.caught-value.build",
+          "task": "//package/module/caught-value:build",
+          "args": [],
+          "startedAt": "2026-10-17T08:25:32.552Z",
+          "event": "check-finished",
+          "finishedAt": "2026-10-17T08:25:38.336Z",
+          "elapsedMs": 5784.544858,
+          "exitCode": 0,
+          "signal": null,
+          "status": "passed",
+          "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.module.caught-value.build.log",
+          "outputSha256": "387d2fdc06ec673b657c7bd88ab9d02d4c6b7085a50c5be382acb53e8913e5c4",
+          "outputBytes": 543
+        },
+        {
+          "schemaVersion": 1,
+          "caseId": "logger",
+          "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+          "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+          "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/pd08hzf1qd?job=8fbgk7w256&attempt=nd3rk1sf8j",
+          "resources": {
+            "cpus": 2,
+            "memoryGiB": 2
+          },
+          "selectedCheckIds": [
+            "package.git-policy.cli.native.test.binary.host",
+            "package.git-policy.cli.native.test.host",
+            "package.git-policy.cli.build",
+            "package.module.caught-value.build"
+          ],
+          "checkId": "package.git-policy.cli.build",
+          "task": "//package/git-policy/cli:build",
+          "args": [],
+          "startedAt": "2026-10-17T08:25:38.338Z",
+          "event": "check-finished",
+          "finishedAt": "2026-10-17T08:27:40.144Z",
+          "elapsedMs": 121806.341426,
+          "exitCode": 0,
+          "signal": null,
+          "status": "passed",
+          "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.git-policy.cli.build.log",
+          "outputSha256": "8b2229d95a64ff08a0386fe9a659858c9123eeb35298c7f6bd574bf90f856617",
+          "outputBytes": 4320
+        },
+        {
+          "schemaVersion": 1,
+          "caseId": "logger",
+          "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+          "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+          "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/pd08hzf1qd?job=8fbgk7w256&attempt=nd3rk1sf8j",
+          "resources": {
+            "cpus": 2,
+            "memoryGiB": 2
+          },
+          "selectedCheckIds": [
+            "package.git-policy.cli.native.test.binary.host",
+            "package.git-policy.cli.native.test.host",
+            "package.git-policy.cli.build",
+            "package.module.caught-value.build"
+          ],
+          "checkId": "package.git-policy.cli.native.test.binary.host",
+          "task": "//package/git-policy/cli:native:test:binary:host",
+          "args": [],
+          "startedAt": "2026-10-17T08:27:40.796Z",
+          "event": "check-finished",
+          "finishedAt": "2026-10-17T08:29:43.739Z",
+          "elapsedMs": 122942.597385,
+          "exitCode": 0,
+          "signal": null,
+          "status": "passed",
+          "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.git-policy.cli.native.test.binary.host.log",
+          "outputSha256": "f35a0b40e0cfa289b73a20a255c2115cb60b13eea6cf9f52c9c85ca167c62c84",
+          "outputBytes": 15487
+        },
+        {
+          "schemaVersion": 1,
+          "caseId": "logger",
+          "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+          "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+          "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/pd08hzf1qd?job=8fbgk7w256&attempt=nd3rk1sf8j",
+          "resources": {
+            "cpus": 2,
+            "memoryGiB": 2
+          },
+          "selectedCheckIds": [
+            "package.git-policy.cli.native.test.binary.host",
+            "package.git-policy.cli.native.test.host",
+            "package.git-policy.cli.build",
+            "package.module.caught-value.build"
+          ],
+          "checkId": "package.git-policy.cli.native.test.host",
+          "task": "//package/git-policy/cli:native:test:host",
+          "args": [],
+          "startedAt": "2026-10-17T08:29:43.744Z",
+          "event": "check-finished",
+          "finishedAt": "2026-10-17T08:30:38.918Z",
+          "elapsedMs": 55173.63583500002,
+          "exitCode": 101,
+          "signal": null,
+          "status": "failed",
+          "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.git-policy.cli.native.test.host.log",
+          "outputSha256": "df1a5268f731a89c88fd8f5baee8fc6689b10de2d6b091f6c74435d13b1a30ad",
+          "outputBytes": 158587
+        }
+      ],
+      "failed": [
+        {
+          "checkId": "package.git-policy.cli.native.test.host",
+          "exitCode": 101,
+          "diagnostic": [
+            "live_lock::tests::helper_reads_the_limit_from_its_environment --- FAILED",
+            "failures:",
+            "thread 'live_lock::tests::helper_reads_the_limit_from_its_environment' (26895) panicked at src/native/live_lock_tests.rs:137:5:",
+            "assertion `left == right` failed",
+            "failures:",
+            "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1815 filtered out; finished in 0.00s",
+            "live_lock::tests::helper_reads_the_limit_from_its_environment --- FAILED",
+            "failures:",
+            "thread 'live_lock::tests::helper_reads_the_limit_from_its_environment' (26897) panicked at src/native/live_lock_tests.rs:137:5:",
+            "assertion `left == right` failed",
+            "failures:",
+            "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1815 filtered out; finished in 0.00s",
+            "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1815 filtered out; finished in 0.00s",
+            "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1815 filtered out; finished in 0.00s",
+            "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1815 filtered out; finished in 0.00s",
+            "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1815 filtered out; finished in 0.00s",
+            "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1815 filtered out; finished in 0.30s",
+            "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1815 filtered out; finished in 0.40s",
+            "test real_index_lock::tests::a_pid_file_that_cannot_be_created_fails_the_acquisition ... FAILED",
+            "test real_index_lock::tests::a_replaced_lock_is_never_released ... FAILED",
+            "test real_index_lock::tests::an_install_through_a_replaced_lock_is_refused ... FAILED",
+            "test real_index_lock::tests::releasing_after_a_landing_leaves_a_replaced_lock ... FAILED",
+            "test transaction_git::tests::input_files_leave_nothing_behind ... FAILED",
+            "test worktree_completion::tests::an_error_that_is_not_a_conflict_fails_the_inspection ... FAILED",
+            "failures:",
+            "thread 'real_index_lock::tests::a_pid_file_that_cannot_be_created_fails_the_acquisition' (29036) panicked at src/native/real_index_lock_tests.rs:336:5:",
+            "thread 'real_index_lock::tests::a_replaced_lock_is_never_released' (29037) panicked at src/native/real_index_lock_tests.rs:56:42:",
+            "thread 'real_index_lock::tests::an_install_through_a_replaced_lock_is_refused' (29052) panicked at src/native/real_index_lock_tests.rs:240:63:",
+            "thread 'real_index_lock::tests::releasing_after_a_landing_leaves_a_replaced_lock' (29059) panicked at src/native/real_index_lock_tests.rs:274:37:",
+            "thread 'transaction_git::tests::input_files_leave_nothing_behind' (32802) panicked at src/native/transaction_git_tests.rs:190:5:",
+            "assertion `left == right` failed",
+            "thread 'worktree_completion::tests::an_error_that_is_not_a_conflict_fails_the_inspection' (33010) panicked at src/native/worktree_completion_tests.rs:321:77:",
+            "failures:",
+            "test result: FAILED. 1806 passed; 6 failed; 4 ignored; 0 measured; 0 filtered out; finished in 42.81s",
+            "error: test failed, to rerun pass `--lib`"
+          ],
+          "tail": "ls_a_missing_destination_from_an_unreadable_one ... ok\ntest worktree_copy_recovery::tests::report_writes_notices_then_summary ... ok\ntest worktree_copy_recovery::tests::the_pending_check_reaps_abandoned_stages_only_without_a_live_owner ... ok\ntest worktree_copy_recovery::tests::unregistered_destination_is_discarded_with_notice ... ok\ntest worktree_copy_registry::tests::added_worktree_is_found_with_its_root ... ok\ntest worktree_copy_registry::tests::admin_listing_keeps_only_real_directories ... ok\ntest worktree_copy_registry::tests::admin_listing_of_a_file_fails_with_its_path ... ok\ntest worktree_copy_registry::tests::bare_and_linked_repositories_are_observed ... ok\ntest worktree_copy_registry::tests::linked_and_bare_observations_ignore_named_paths ... ok\ntest worktree_copy_registry::tests::linked_pointer_names_its_administrative_directory ... ok\ntest worktree_copy_registry::tests::main_worktree_and_foreign_pointer_have_no_linked_identity ... ok\ntest worktree_copy_registry::tests::main_worktree_is_observed_for_named_paths_only ... ok\ntest worktree_copy_registry::tests::missing_admin_directory_is_empty ... ok\ntest worktree_copy_registry::tests::outside_and_main_worktrees_are_not_applicable ... ok\ntest worktree_copy_registry::tests::registration_without_root_fails ... ok\ntest worktree_copy_registry::tests::unchanged_administration_creates_nothing ... ok\ntest worktree_copy_registry::tests::unresolvable_pointer_fails_with_its_root ... ok\ntest worktree_copy_registry::tests::worktree_registered_before_failing_hook_is_found ... ok\ntest worktree_copy_rollback::tests::absent_paths_are_neither_removed_nor_retained ... ok\ntest worktree_copy_rollback::tests::edited_file_is_retained_by_path ... ok\ntest worktree_copy_rollback::tests::non_empty_scaffold_is_retained_with_reason ... ok\ntest worktree_copy_rollback::tests::proven_paths_are_removed_child_first ... ok\ntest worktree_copy_rollback::tests::replaced_path_is_retained_as_changed ... ok\ntest worktree_copy_selection::tests::absent_named_file_selects_nothing ... ok\ntest worktree_copy_selection::tests::every_exclusion_source_and_symbolic_links_are_selected ... ok\ntest worktree_copy_selection::tests::excluded_roots_are_not_walked_for_special_entries ... ok\ntest worktree_copy_selection::tests::filesystem_path_joins_validated_components ... ok\ntest worktree_copy_selection::tests::ignored_directories_collapse_into_outermost_root ... ok\ntest worktree_copy_selection::tests::ignored_special_entries_are_selected_only_when_ignored ... ok\ntest worktree_copy_selection::tests::js_order_compares_utf16_code_units ... ok\ntest worktree_copy_selection::tests::listing_outside_a_repository_fails_with_cause ... ok\ntest worktree_copy_selection::tests::named_directory_selects_nothing ... ok\ntest worktree_copy_selection::tests::named_file_that_git_does_not_ignore_is_not_selected ... ok\ntest worktree_copy_selection::tests::named_ignored_file_is_selected_alone ... ok\ntest worktree_copy_selection::tests::named_path_is_matched_literally ... ok\ntest worktree_copy_lock::tests::unproven_owner_fails_the_blocking_wait_and_keeps_lock ... ok\ntest worktree_copy_selection::tests::repository_paths_are_compared_by_component ... ok\ntest worktree_copy_selection::tests::named_path_with_glob_characters_is_found_literally ... ok\ntest worktree_copy_selection::tests::selection_ignores_the_users_global_git_options ... ok\ntest worktree_copy_selection::tests::selection_modes_choose_the_roots ... ok\ntest worktree_copy_selection::tests::special_entries_under_an_excluded_root_are_not_selected ... ok\ntest worktree_copy_selection::tests::special_entry_check_ignores_the_users_global_git_options ... ok\ntest worktree_copy_selection::tests::unsafe_repository_paths_are_refused ... ok\ntest worktree_copy_stage::tests::bytes_are_copied_exactly_when_the_clone_is_refused ... ok\ntest worktree_copy_stage::tests::copied_file_has_identical_bytes ... ok\ntest worktree_copy_selection::tests::unsafe_named_path_is_refused ... ok\ntest worktree_copy_stage::tests::failed_copy_removes_its_stage ... ok\ntest worktree_copy_stage::tests::only_strictly_nested_roots_are_nested ... ok\ntest worktree_copy_stage::tests::nested_registered_worktree_is_not_copied ... ok\ntest worktree_copy_stage::tests::stage_mirrors_selected_entries_with_modes_and_links ... ok\ntest worktree_copy_stage::tests::the_clone_request_reports_what_it_did ... ok\ntest worktree_copy_stage::tests::the_clone_request_succeeds_where_the_filesystem_clones ... ok\ntest worktree_copy_stage_claim::tests::a_claim_names_the_container_and_creates_no_container ... ok\ntest worktree_copy_stage::tests::staging_under_a_missing_parent_fails_with_cause ... ok\ntest worktree_copy_stage_claim::tests::a_claim_naming_a_relative_path_is_refused ... ok\ntest worktree_copy_stage_claim::tests::a_claim_without_a_common_directory_fails ... ok\ntest worktree_copy_stage_claim::tests::a_claim_naming_another_directory_is_refused ... ok\ntest worktree_copy_stage_claim::tests::a_claim_without_a_container_is_removed_without_a_notice ... ok\ntest worktree_copy_stage_claim::tests::a_container_that_cannot_be_examined_keeps_its_claim ... ok\ntest worktree_copy_stage_claim::tests::a_linked_container_is_refused_and_its_target_kept ... ok\ntest worktree_copy_stage_claim::tests::a_repository_without_a_journal_root_reaps_nothing ... ok\ntest worktree_copy_stage_claim::tests::a_shared_claim_file_is_refused ... ok\ntest worktree_copy_stage_claim::tests::a_shared_stage_is_refused_and_kept ... ok\ntest worktree_copy_stage_claim::tests::an_abandoned_stage_is_removed_with_a_notice ... ok\ntest worktree_copy_stage_claim::tests::an_unfinished_claim_write_is_removed ... ok\ntest worktree_copy_stage_claim::tests::an_unlistable_journal_root_is_a_failure_and_not_an_empty_one ... ok\ntest worktree_copy_stage_claim::tests::claims_exist_until_released ... ok\ntest worktree_copy_stage_claim::tests::every_abandoned_stage_is_removed ... ok\ntest worktree_copy_stage_claim::tests::only_an_absent_directory_may_skip_its_sync ... ok\ntest worktree_copy_stage_claim::tests::other_files_are_not_claims ... ok\ntest worktree_copy_stage_claim::tests::releasing_a_claim_removes_only_its_file ... ok\ntest worktree_copy_stage_claim::tests::a_journaled_stage_is_kept ... ok\ntest worktree_copy_transaction::tests::beginning_the_installation_persists_the_installing_phase ... ok\ntest worktree_copy_transaction::tests::completed_synchronization_leaves_no_journal_or_stage ... ok\ntest worktree_copy_transaction::tests::failed_installation_never_stays_pending ... ok\ntest worktree_copy_transaction::tests::failed_staging_releases_its_claim ... ok\ntest worktree_copy_transaction::tests::interrupted_installation_resumes_from_its_log ... ok\ntest worktree_copy_transaction::tests::recorder_claims_each_path_once ... ok\ntest worktree_identity::tests::failed_output_distinguishes_absent_bare_and_git_directory ... ok\ntest worktree_copy_transaction::tests::stage_missing_a_claim_cannot_be_recovered ... ok\ntest worktree_identity::tests::native_git_applies_global_selection_options ... ok\ntest worktree_identity::tests::native_git_identifies_non_utf8_repository_paths ... ok\ntest worktree_identity::tests::native_git_identifies_main_and_linked_worktrees ... ok\ntest worktree_identity::tests::successful_output_is_a_main_or_linked_worktree ... ok\ntest worktree_identity::tests::unexpected_output_shapes_are_rejected ... ok\ntest worktree_identity::tests::unstartable_git_is_an_error ... ok\ntest wrapped_command::tests::a_dry_run_commit_is_checked_and_forwarded ... ok\ntest wrapped_command::tests::a_guarded_command_is_prepared_in_order ... ok\ntest wrapped_command::tests::a_real_push_must_clear_the_manual_push_gate ... ok\ntest worktree_identity::tests::native_git_reports_locations_without_a_worktree ... ok\ntest wrapped_command::tests::add_reads_its_candidates_after_add_explicit ... ok\ntest wrapped_command::tests::configuration_selects_the_policies_of_a_guarded_command ... ok\ntest wrapped_command::tests::invocations_without_a_subcommand_are_forwarded_untouched ... ok\ntest wrapped_command::tests::read_only_commands_skip_configuration_and_refusals ... ok\ntest wrapped_command::tests::worktree_creation_and_aliases_are_forwarded_from_every_location ... ok\ntest wrapped_command::tests::worktree_policies_read_the_location ... ok\ntest wrapper_controls::tests::control_flags_follow_the_table ... ok\ntest wrapper_controls::tests::controls_before_the_subcommand_are_removed ... ok\ntest wrapper_controls::tests::every_shipped_policy_has_its_enforce_spelling ... ok\ntest wrapper_controls::tests::fixed_spellings_have_their_meaning ... ok\ntest wrapper_controls::tests::recorded_controls_are_set_once ... ok\ntest wrapper_controls::tests::tokens_outside_global_option_position_are_kept ... ok\ntest wrapper_controls::tests::undecodable_arguments_are_kept_unchanged ... ok\ntest wrapper_invocation::tests::commit_hatch_is_removed_by_position ... ok\ntest wrapper_invocation::tests::invocations_without_a_command_have_no_region ... ok\ntest wrapper_invocation::tests::refused_regions_report_the_refusal ... ok\ntest wrapper_invocation::tests::table_commands_lose_controls_in_option_position ... ok\ntest wrapper_invocation::tests::the_command_word_and_its_region_follow_the_global_options ... ok\ntest wrapper_invocation::tests::undecodable_arguments_are_kept_unchanged ... ok\ntest wrapper_invocation::tests::untabled_commands_lose_leading_controls_only ... ok\ntest wrapper_invocation::tests::values_and_paths_spelling_a_control_are_kept ... ok\ntest wrapper_invocation::tests::worktree_opt_out_is_removed_after_either_word ... ok\ntest wrapped_command::tests::add_findings_come_from_what_the_add_would_stage ... ok\n\nfailures:\n\n---- real_index_lock::tests::a_pid_file_that_cannot_be_created_fails_the_acquisition stdout ----\n\nthread 'real_index_lock::tests::a_pid_file_that_cannot_be_created_fails_the_acquisition' (29036) panicked at src/native/real_index_lock_tests.rs:336:5:\nStop(\"File name too long (os error 36)\")\n\n---- real_index_lock::tests::a_replaced_lock_is_never_released stdout ----\n\nthread 'real_index_lock::tests::a_replaced_lock_is_never_released' (29037) panicked at src/native/real_index_lock_tests.rs:56:42:\na replaced lock must not be released: ()\n\n---- real_index_lock::tests::an_install_through_a_replaced_lock_is_refused stdout ----\n\nthread 'real_index_lock::tests::an_install_through_a_replaced_lock_is_refused' (29052) panicked at src/native/real_index_lock_tests.rs:240:63:\na replaced lock must not be written: ()\n\n---- real_index_lock::tests::releasing_after_a_landing_leaves_a_replaced_lock stdout ----\n\nthread 'real_index_lock::tests::releasing_after_a_landing_leaves_a_replaced_lock' (29059) panicked at src/native/real_index_lock_tests.rs:274:37:\nreplacement kept: Os { code: 2, kind: NotFound, message: \"No such file or directory\" }\n\n---- transaction_git::tests::input_files_leave_nothing_behind stdout ----\n\nthread 'transaction_git::tests::input_files_leave_nothing_behind' (32802) panicked at src/native/transaction_git_tests.rs:190:5:\nassertion `left == right` failed\n  left: 1\n right: 0\n\n---- worktree_completion::tests::an_error_that_is_not_a_conflict_fails_the_inspection stdout ----\n\nthread 'worktree_completion::tests::an_error_that_is_not_a_conflict_fails_the_inspection' (33010) panicked at src/native/worktree_completion_tests.rs:321:77:\nname too long: Conflict\n\n\nfailures:\n    real_index_lock::tests::a_pid_file_that_cannot_be_created_fails_the_acquisition\n    real_index_lock::tests::a_replaced_lock_is_never_released\n    real_index_lock::tests::an_install_through_a_replaced_lock_is_refused\n    real_index_lock::tests::releasing_after_a_landing_leaves_a_replaced_lock\n    transaction_git::tests::input_files_leave_nothing_behind\n    worktree_completion::tests::an_error_that_is_not_a_conflict_fails_the_inspection\n\ntest result: FAILED. 1806 passed; 6 failed; 4 ignored; 0 measured; 0 filtered out; finished in 42.81s\n\nerror: test failed, to rerun pass `--lib`\n\u001b[34m\u001b[1m[//package/git-policy/cli:native:test:ho…]\u001b[0m \u001b[31mERROR\u001b[0m task failed\n"
+        }
+      ],
+      "logHashesVerified": 4,
+      "actualLinterConsumerAndBothOriginalMarkdownAssertionsPassed": true,
+      "remainingFailureNames": [
+        "real_index_lock::tests::a_pid_file_that_cannot_be_created_fails_the_acquisition",
+        "real_index_lock::tests::a_replaced_lock_is_never_released",
+        "real_index_lock::tests::an_install_through_a_replaced_lock_is_refused",
+        "real_index_lock::tests::releasing_after_a_landing_leaves_a_replaced_lock",
+        "transaction_git::tests::input_files_leave_nothing_behind",
+        "worktree_completion::tests::an_error_that_is_not_a_conflict_fails_the_inspection"
+      ],
+      "suiteOutcomes": {
+        "binary": {
+          "passed": 137,
+          "failed": 0,
+          "ignored": 1
+        },
+        "library": {
+          "passed": 1806,
+          "failed": 6,
+          "ignored": 4
+        }
+      },
+      "sourceInputsVerified": true,
+      "artifactBytes": 132137361,
+      "largestArtifactFiles": [
+        {
+          "path": "git-host-linter-elf",
+          "bytes": 110474544
+        },
+        {
+          "path": "git-host-2.56.0-elf",
+          "bytes": 20315424
+        },
+        {
+          "path": "logger-results.json",
+          "bytes": 1054592
+        },
+        {
+          "path": "check-logs/package.git-policy.cli.native.test.host.log",
+          "bytes": 158587
+        },
+        {
+          "path": "git-host-linter-results.json",
+          "bytes": 46527
+        },
+        {
+          "path": "git-host-build.log",
+          "bytes": 28226
+        },
+        {
+          "path": "check-logs/package.git-policy.cli.native.test.binary.host.log",
+          "bytes": 15487
+        },
+        {
+          "path": "git-host-linter-build.log",
+          "bytes": 8965
+        }
+      ],
+      "finalCoherentReplayHeld": true
+    }
+  },
+  "preparedCombinedCandidate": {
+    "path": "/home/user/temp/agent/depot-logger-combined-controls-M4WCpP/results.json",
+    "sha256": "c31686cf4a05cf9f48643e9f2580d9ba4588eb75ce2fec409cc1ecb392b6f718",
+    "report": {
+      "harnessRevision": "18e8c13173f244316ef528467ae0ccbf1fe38c80",
+      "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+      "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+      "packageGraphSha256": "c7c7aca4f7a2d3865bcaf9abc32ae8a7f546d7170be20c90f782402ffa6200b8",
+      "selectedRemainderChecks": 155,
+      "priorActiveChecks": 564,
+      "packageUnion": 719,
+      "remainderSelectors": 57,
+      "externalChecks": 19,
+      "browserPartitions": 32,
+      "fullPackageOxlintChecks": 155,
+      "sourceIdentityHelperUnchanged": true,
+      "completeGraph": false,
+      "candidateOnly": true,
+      "finalDispatch": false,
+      "workflows": [
+        {
+          "path": ".depot/workflows/depot-complete-logger-combined.yml",
+          "sha256": "4fb92c754b8e5ab2b03a74159ef113c20645553c9addb7059a69f1c92f6e4fbe",
+          "jobs": 7,
+          "expandedJobs": 97
+        },
+        {
+          "path": ".depot/workflows/depot-complete-logger-browser-full.yml",
+          "sha256": "7df442ce4e1934b032ecbf4a025f334d5ec441bb5cd77492d02906b038429ccf",
+          "jobs": 1,
+          "expandedJobs": 32
+        }
+      ]
+    }
+  },
+  "generatedConsumerIsolation": {
+    "authoritativeDriftHypothesisRetracted": true,
+    "existingPerCheckIsolationRetainedAndStrengthened": true,
+    "perAuthoredInvocationIsolation": true,
+    "strictAuthoritativeGuardUnchanged": true,
+    "miniatureControls": {
+      "path": "/home/user/temp/agent/depot-generated-controls-eNGPfc/results.json",
+      "sha256": "8f4d001e4fc3a58d3f5f866921ae5c7c194e29d9b3e6539733624889922af357",
+      "report": {
+        "taskBodySha256": "1588011696cca60bb85d442be3816c96ff055255ecd089dc0667751ba7d3fc91",
+        "helperRevision": "31cdf06b4e69d8058cad1a327dcb076a8529a0eb",
+        "controls": [
+          {
+            "kind": "clean",
+            "status": 0,
+            "stdout": "{\"phase\":\"before\",\"label\":\"clean\",\"trackedAuthoritativeInputs\":4,\"consumerInputsVerified\":true,\"workspaceLinks\":1,\"dependencySymlinks\":1}\n",
+            "stderr": "",
+            "guardRemovedAccepted": false,
+            "cleanupIgnoredDryRun": "Would remove node_modules/\n",
+            "rootGitDirProbe": "",
+            "rootGitDirIgnoreProbe": "",
+            "cleanupVerified": true
+          },
+          {
+            "kind": "consumer-drift",
+            "status": 1,
+            "stdout": "",
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Tracked generator input drift\n\n'M source.txt' !== ''\n\n    at verify (file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:23:9)\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:38:18 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'M source.txt',\n  expected: '',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "guardRemovedAccepted": true,
+            "cleanupIgnoredDryRun": "Would remove node_modules/\n",
+            "rootGitDirProbe": "",
+            "rootGitDirIgnoreProbe": "",
+            "cleanupVerified": true
+          },
+          {
+            "kind": "authoritative-drift",
+            "status": 1,
+            "stdout": "",
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Tracked generator input drift\n\n'M source.txt' !== ''\n\n    at verify (file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:23:9)\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:35:21 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'M source.txt',\n  expected: '',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "guardRemovedAccepted": true,
+            "cleanupIgnoredDryRun": "Would remove node_modules/\n",
+            "rootGitDirProbe": "",
+            "rootGitDirIgnoreProbe": "",
+            "cleanupVerified": true
+          },
+          {
+            "kind": "workspace-link-leak",
+            "status": 1,
+            "stdout": "",
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Workspace dependency must resolve to its consumer checkout: /home/user/temp/agent/depot-generated-controls-eNGPfc/workspace-link-leak/consumer/node_modules/@fixture/demo\n+ actual - expected\n\n+ '/var/mnt/encrypted/temp/agent/depot-generated-controls-eNGPfc/workspace-link-leak/source/package/module/demo'\n- '/var/mnt/encrypted/temp/agent/depot-generated-controls-eNGPfc/workspace-link-leak/consumer/package/module/demo'\n\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:47:10 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: '/var/mnt/encrypted/temp/agent/depot-generated-controls-eNGPfc/workspace-link-leak/source/package/module/demo',\n  expected: '/var/mnt/encrypted/temp/agent/depot-generated-controls-eNGPfc/workspace-link-leak/consumer/package/module/demo',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "guardRemovedAccepted": true,
+            "cleanupIgnoredDryRun": "Would remove node_modules/\n",
+            "rootGitDirProbe": "",
+            "rootGitDirIgnoreProbe": "",
+            "cleanupVerified": true
+          },
+          {
+            "kind": "consumer-index-flag",
+            "status": 1,
+            "stdout": "",
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Index flags must not hide tracked inputs\n    at verify (file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:22:2)\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:38:18 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "guardRemovedAccepted": false,
+            "cleanupIgnoredDryRun": "Would remove node_modules/\n",
+            "rootGitDirProbe": "",
+            "rootGitDirIgnoreProbe": "",
+            "cleanupVerified": true
+          }
+        ],
+        "actualSourceConsumer": false,
+        "scope": "Disposable miniature repository verifies guard behavior; real frozen source consumer remains cloud pilot"
+      }
+    },
+    "actualSelectorPrefixControls": {
+      "path": "/home/user/temp/agent/depot-external-selector-controls-gPoCt5/results.json",
+      "sha256": "28354a86346d781c2b8ddf201494ad45797f3e463bea8dde7c425d61d04cca98",
+      "report": {
+        "scope": "Actual registered external adapter prefix, real frozen source/manifest binding; no original source check executed",
+        "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+        "prefixSha256": "33496b10b02a5d60763191a8b4e00bdb297e9c8e4e97f7a0d36df23eb9f7b198",
+        "validGroups": [
+          {
+            "group": "browser",
+            "status": 0,
+            "stdout": "{\"group\":\"browser\"}\n"
+          },
+          {
+            "group": "e2e",
+            "status": 0,
+            "stdout": "{\"group\":\"e2e\"}\n"
+          },
+          {
+            "group": "electron",
+            "status": 0,
+            "stdout": "{\"group\":\"electron\"}\n"
+          },
+          {
+            "group": "generated",
+            "status": 0,
+            "stdout": "{\"group\":\"generated\"}\n"
+          },
+          {
+            "group": "root-lint",
+            "status": 0,
+            "stdout": "{\"group\":\"root-lint\"}\n"
+          },
+          {
+            "group": "desktop",
+            "status": 0,
+            "stdout": "{\"group\":\"desktop\"}\n"
+          }
+        ],
+        "wrongVariableRejected": true,
+        "guardRemovedWrongVariableAccepted": true,
+        "pilotBindingMatchesActualConsumer": true
+      }
+    },
+    "failedPilot": {
+      "runId": "vt8vzj154t",
+      "harnessRevision": "18e8c13173f244316ef528467ae0ccbf1fe38c80",
+      "incorrectVariable": "DEPOT_LOGGER_EXTERNAL_GROUP",
+      "actualVariable": "DEPOT_LOGGER_EXTERNAL",
+      "diagnostic": "AssertionError [ERR_ASSERTION]: Unknown logger external group",
+      "originalSourceChecksExecuted": 0,
+      "generatedDriftObserved": false
+    },
+    "bindingFixRevision": "673ab92e49885dd61fcf08e168ed9c59bf29c6be",
+    "correctedPilot": {
+      "runId": "drzwk5q8mc",
+      "requestedFromRevision": "673ab92e49885dd61fcf08e168ed9c59bf29c6be",
+      "terminalReconciliationPending": true
+    },
+    "finalRegistrationPendingRealSourceConsumerProof": true
+  },
+  "candidateCommitCorrection": {
+    "commit": "3ac9616096bc45fe4e02cddfec8a14fb9b6b72d6",
+    "commentId": 205400693,
+    "url": "https://github.com/Aquaticats/Monochromatic/commit/3ac9616096bc45fe4e02cddfec8a14fb9b6b72d6#commitcomment-205400693",
+    "finalFreezeOrDispatchOccurred": false
   }
 }

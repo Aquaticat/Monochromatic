@@ -326,10 +326,10 @@ an unchanged-ref reprobe succeeded without a source or workflow edit.
 No server-side cause is inferred from that observation.
 The mutation jobs use `4x16`, matching the authored two concurrent two-CPU containers;
 the single fuzz container uses `2x8`.
-The next actions are terminal leaf reconciliation,
-file/engine browser recovery after its supported `2x8` pilot,
-controlled Git host prerequisite recovery,
-and a combined workflow with root-owned host, scanner, policy and VM routes.
+The next actions are terminal collection of the three long campaigns,
+the actual generated-consumer pilot,
+filing the remaining distinct source diagnostics,
+and root integration of the prepared combined route.
 The final coherent replay is held until the root agent aligns those routes.
 The common cohort manifest will be a separate authenticated, byte-verified file on `main`.
 Its outer SHA-256 differs from the single-case logger manifest digest.
@@ -342,21 +342,94 @@ Ten invalid-binding, transport, size and request-clock controls reject their inp
 Removing the digest guard makes its invalid-digest control pass,
 which proves that control detects the guard's absence.
 The authenticated live transport proof remains separate from the injected transport fixture.
-Common workflow wiring and the final freeze remain pending.
+Common workflow wiring is prepared and independently checked; root integration and the final freeze remain pending.
 The candidate complete remainder inventory has 57 disjoint selectors for 155 checks;
 its union with the prior static/unit closure covers all 719 identities without changing the package graph hash.
 Direct inspection corrected the split to regular 16, Rust four and Git host two:
 the Git host tasks belong to the frozen Rust partition.
 Both primary and candidate manifests retain `completeGraph: false`.
 The `3ac9616096` subject's word `freeze` overstates this candidate inventory's readiness;
-a corrective commit comment is queued after its push.
+[its corrective comment][candidate-correction] records that no final freeze or dispatch occurred.
 The current OPFS reproduction is added to existing issue `#1052`;
 the separately verified CI propagation boundary is tracked by issue `#1131`.
-The generated-check adapter already isolates each check in a separate detached worktree;
-its `changedTrackedBytes` field measures diff bytes.
-The original source checkout remains clean for the source identity guards.
-The prepared combined workflow remains incomplete until that integration is verified.
+The generated-check adapter already isolated checks in separate detached worktrees.
+The hypothesis that its generated drift necessarily dirties the authoritative checkout is retracted.
+Its `changedTrackedBytes` field measures diff bytes, rather than a file count.
+The stronger consumer controls and real-source pilot are recorded separately.
+The prepared combined workflow remains incomplete until root integration and the remaining controls are verified.
 Historical source failures stay terminal diagnostics for this measurement.
+
+## Authentic host linter prerequisite
+
+Recovery `q10910cxfm` uses clean pushed harness `c789a14548fec9df1cee01facb9577d83ddfd42c`,
+independently matched to both provider revisions.
+The original immutable-source linter build uses `cargo build --offline --locked --bin monochromatic-lint`.
+Every retained source input matches its `ef01490f5e960f8ca0b424c12242caeb3c5a2b5e` Git object.
+The retained ELF has 110,474,544 bytes and SHA-256
+`63fee7f02a04ad493115b8f1494042d602f8541cf7dedd0aa88d3c88368f30de`.
+Its real stdin Markdown rewrite produces the expected LFS URL and leaves already-fixed input unchanged.
+Both original Markdown host assertions now pass.
+The unchanged binary suite reports 137 passed, zero failed and one ignored;
+the unchanged library suite reports 1,806 passed, six failed and four ignored.
+Those six names exactly match [the independently searched incident mapping](depot-git-host-failure-mapping-2026-10-17.md).
+Their causes remain unproved; the related lock ownership cases remain separate incidents.
+Deliberate child-process failures are not additional parent-suite failures.
+All generic log hashes, actual attempt URLs, immutable source inputs and cleanup are verified.
+The two-CPU, two-GiB and 512-PID controls remain effective.
+The linter sample records 9,663 memory-limit events, zero OOM events and zero PID rejections;
+the memory-limit counter is not described as zero.
+The actual `2x8` job consumed 687.007 provider-job seconds and 1,374.014 allocated CPU-seconds,
+or $0.0687007 published compute before credits.
+The retained artifact contains 132,137,361 extracted bytes,
+including both authentic ELFs and the full source logs,
+without another copy of the audited base-image cache.
+
+## Prepared combined route
+
+The candidate at `18e8c13173f244316ef528467ae0ccbf1fe38c80` expands to 97 jobs:
+static and unit closures,
+57 remainder selectors,
+Pi and WireGuard,
+four external adapter groups and 32 browser cells.
+Independent controls verify all 719 package identities,
+the 155 disjoint remainder identities,
+155 full-package Oxlint task arguments,
+the 19 external routes,
+required common inputs and paired always-run after guards.
+The root source-identity helper matches the copied canonical helper bytes.
+The browser standalone workflow contains the same cells and must not be dispatched alongside the combined workflow.
+The external routing manifest explicitly leaves root-owned GHA and VM integration pending.
+Primary and candidate manifests still declare `completeGraph: false`.
+There is no final cohort dispatch.
+
+## Generated consumer identity controls
+
+Each authored generator now receives its own disposable checkout and frozen dependency installation.
+Before invocation, the adapter verifies its HEAD, index, every tracked blob's bytes and modes,
+and workspace dependency targets against the frozen source.
+Workspace links and dependency roots may not resolve into the authoritative checkout.
+The adapter retains the original command, binary diff, changed bytes and hashes,
+actual process termination and cleanup inventory for each invocation.
+No independent generator runs on a previous generator's mutated tree,
+and generated outputs are not restored to manufacture cleanliness.
+The authoritative before/after guard remains strict.
+Miniature controls pass for clean consumers and reject consumer drift,
+authoritative drift, workspace-link leakage and hidden index flags.
+Three guard-removal controls prove the corresponding negative controls detect absent guards.
+These fixtures do not establish actual frozen-source generator execution.
+
+Pilot `vt8vzj154t` stops before any original source check:
+the harness declares `DEPOT_LOGGER_EXTERNAL_GROUP`,
+while the actual adapter reads `DEPOT_LOGGER_EXTERNAL` and emits
+`AssertionError [ERR_ASSERTION]: Unknown logger external group`.
+This is a pilot wiring defect, not generated source drift.
+Commit `673ab92e49885dd61fcf08e168ed9c59bf29c6be` corrects the binding.
+Actual registered-program prefix controls accept all six groups,
+reject the wrong variable and accept it only after the rejecting guard is removed.
+The combined workflow already uses the correct variable.
+Corrected bounded pilot `drzwk5q8mc` is requested from that clean explicitly pushed ref;
+its terminal source dispositions and actual initial consumer proofs remain pending.
 
 [mapping-incident]: https://github.com/Aquaticats/Monochromatic/issues/1116
 [metadata-incident]: https://github.com/Aquaticats/Monochromatic/issues/1117
+[candidate-correction]: https://github.com/Aquaticats/Monochromatic/commit/3ac9616096bc45fe4e02cddfec8a14fb9b6b72d6#commitcomment-205400693
