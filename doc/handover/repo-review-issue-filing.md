@@ -176,7 +176,8 @@ Completed units (findings validated):
  `code-test-fixture-1` (14 findings),
  `code-shim-1` (7 findings),
  `code-typeface-1` (11 findings),
- `code-test-fixture-2` (10 findings).
+ `code-test-fixture-2` (10 findings),
+ `code-webapp-productivity-1` (12 findings).
 
 Cross-unit leads:
  `doc/planning/music-player-shared-truepeak-core.md` repeats the retired truepeak policy
@@ -236,21 +237,19 @@ Cross-unit leads:
  hand to the `cross-dependency` reviewer when it launches.
 
 Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
- `code-webapp-productivity-1`,
  `docs-troubleshooting-1`,
  `docs-troubleshooting-2`,
  `docs-audit`,
  `docs-planning`,
  `docs-decision`,
  `docs-handover`,
- `config-root` (launched as a replacement; carries the gitignore, cargo-profile, and
- blocklist-path leads).
+ `config-root`,
+ `config-root-docs` (launched as a replacement).
 
 Queued units in launch order (flat list; the first entry launches next):
 
 - `code-stub-1`,
 - `docs-troubleshooting-1`,
-- `config-root-docs`,
 - `config-ci`,
 - `config-paused-1`,
 - `config-paused-2`,
