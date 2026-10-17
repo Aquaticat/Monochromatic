@@ -93,7 +93,10 @@ assert.equal(partitions.manifestSha256, createHash('sha256').update(manifestByte
 assert.equal(partitions.sourceRevision, manifest.sourceRevision)
 assert.equal(execFileSync('git', ['rev-parse', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), manifest.sourceRevision)
 const continuationId = process.env.DEPOT_LOGGER_CONTINUATION_ID
-const continuationManifest = continuationId ? JSON.parse(readFileSync(join(harness, '.depot/manifests/logger-continuation.json'), 'utf8')) : undefined
+const selectionPlan = process.env.DEPOT_LOGGER_SELECTION_PLAN ?? 'development'
+assert(['development', 'complete'].includes(selectionPlan), 'Unknown logger selection plan')
+const selectionPath = selectionPlan === 'complete' ? '.depot/manifests/logger-complete-selectors.json' : '.depot/manifests/logger-continuation.json'
+const continuationManifest = continuationId ? JSON.parse(readFileSync(join(harness, selectionPath), 'utf8')) : undefined
 if (continuationManifest) {
   assert.equal(continuationManifest.manifestSha256, partitions.manifestSha256)
   assert.equal(continuationManifest.sourceRevision, manifest.sourceRevision)
