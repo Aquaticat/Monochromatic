@@ -22,4 +22,5 @@ Never hedge about text one read away.
 
 The intended completion criterion is an inventory of every emitted report and its default destination
 before choosing capture paths.
-This is a proposal; `AGENTS.md` is unchanged.
+This is a proposal;
+`AGENTS.md` is unchanged.

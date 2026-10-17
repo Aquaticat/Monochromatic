@@ -426,7 +426,8 @@ application source stays immutable.
 Final coherent dispatch remains held.
 
 The prepared harness also copies the native default mutation report with a freshness guard.
-The active development run keeps its original harness hash; a read-only observer request is held in session `59869`.
+The active development run keeps its original harness hash;
+a read-only observer request is held in session `59869`.
 
 ## Native recovery assertion tracking
 

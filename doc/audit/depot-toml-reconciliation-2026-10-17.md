@@ -178,15 +178,19 @@ Final coherent dispatch remains held.
 
 Reading the complete CLI emitter also found its default `cwd()/mutation-report.json` output.
 The prepared harness now copies that full native report outside source,
-retains its bytes and hash, and distinguishes fresh reports from pre-existing stale reports.
-The positive fixture preserves all native report identities; the stale-report control is explicitly marked false.
+retains its bytes and hash,
+and distinguishes fresh reports from pre-existing stale reports.
+The positive fixture preserves all native report identities;
+the stale-report control is explicitly marked false.
 
 The active development run remains on `274ec49595d60f663249d61ab35a0806fe29aff0`.
 Its inputs are unchanged.
 A read-only `depot sandbox exec` observer request is retained to capture the native report if orchestration finishes.
 The actual `/bin/pwd` probe succeeded against its VM.
-An initial reader syntax error is retained; the corrected reader uses a separate output and request record.
-If orchestration times out before writing the report, no completed native report is claimed.
+An initial reader syntax error is retained;
+the corrected reader uses a separate output and request record.
+If orchestration times out before writing the report,
+no completed native report is claimed.
 The [instruction proposal](../planning/toml-report-emitter-verification.md)
 makes checking report writers and default paths explicit without changing `AGENTS.md`.
 Final coherent dispatch remains held.

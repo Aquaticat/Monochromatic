@@ -87,5 +87,6 @@ This preserves the original command and all assertions.
 A native-report positive fixture and a stale-report marking control pass.
 The active development request predates this copy adapter.
 Its separate read-only `depot sandbox exec` observer uses the original VM session and a native command timeout.
-The VM `/bin/pwd` probe succeeded; the observer outcome remains pending.
+The VM `/bin/pwd` probe succeeded;
+the observer outcome remains pending.
 No completed report is claimed when orchestration has not produced one.

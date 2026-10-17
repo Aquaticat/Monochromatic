@@ -22992,6 +22992,29 @@
           }
         },
         "eventsSha256": "485df2e2fd6efde18f4fb21674b61c6d181ddabab629769f7569735ee45f28fa"
+      },
+      "nativeCopyVerification": {
+        "harnessRevision": "c159dd63021f9304ab3e4996b1d054e5f19ea0c9",
+        "observations": [
+          {
+            "name": "pass",
+            "identities": [
+              "fixture-one",
+              "fixture-two"
+            ],
+            "sha256": "2e5a56828a30e2011bccf552b3d07f5df2a10b1c6aa1e194d56678713d1e593c",
+            "producedDuringInvocation": true
+          },
+          {
+            "name": "fail",
+            "identities": [
+              "fixture-one",
+              "fixture-two"
+            ],
+            "sha256": "2e5a56828a30e2011bccf552b3d07f5df2a10b1c6aa1e194d56678713d1e593c",
+            "producedDuringInvocation": false
+          }
+        ]
       }
     },
     "development": {
@@ -34593,5 +34616,10 @@
       "body": "Observed actual repeat in development run `p6vm5s00w6`, attempt `3r4zr1jp80`, at frozen source `525d2e09f8168a3bdd7e513e26d4c80b363123e5`.\n\nThe source task `//package/dev-script/file-enforcer:test:mutation` reached a failed terminal outcome after `298.0142400000004` milliseconds. Its package-relative invocation again doubles `package/dev-script/file-enforcer` and fails directory discovery with `ENOENT`.\n\n```text\n# check-logs/package.dev-script.file-enforcer.test.mutation.log\n[//package/dev-script/file-enforcer:test…] $ const { existsSync, readdirSync, statSync } = await import('node:fs')\nnode:internal/fs/promises:1744\n  const result = await PromisePrototypeThen(\n                 ^\n\nError: ENOENT: no such file or directory, scandir '/home/runner/work/Monochromatic/Monochromatic/source/package/dev-script/file-enforcer/package/dev-script/file-enforcer/src'\n    at async readdir (node:internal/fs/promises:1744:18)\n    at async listTsFiles (file:///home/runner/work/Monochromatic/Monochromatic/source/package/cli/mutation-test/src/host/selection.ts:71:19)\n    at async selectSources (file:///home/runner/work/Monochromatic/Monochromatic/source/package/cli/mutation-test/src/host/selection.ts:121:15)\n    at async enumeratePackage (file:///home/runner/work/Monochromatic/Monochromatic/source/package/cli/mutation-test/src/host/enumerate-package.ts:63:8)\n    at async orchestrateRun (file:///home/runner/work/Monochromatic/Monochromatic/source/package/cli/mutation-test/src/host/orchestrate.ts:88:7)\n    at async runCli (file:///home/runner/work/Monochromatic/Monochromatic/source/package/cli/mutation-test/src/cli.ts:85:19)\n    at async file:///home/runner/work/Monochromatic/Monochromatic/source/package/cli/mutation-test/src/cli.ts:125:1 {\n  errno: -2,\n  code: 'ENOENT',\n  syscall: 'scandir',\n  path: '/home/runner/work/Monochromatic/Monochromatic/source/package/dev-script/file-enforcer/package/dev-script/file-enforcer/src'\n}\n\nNode.js v26.10.0\nnode:internal/errors:999\n  const err = new Error(message);\n              ^\n\nError: Command failed: node /home/runner/work/Monochromatic/Monochromatic/source/package/cli/mutation-test/src/cli.ts --package package/dev-script/file-enforcer\n    at genericNodeError (node:internal/errors:999:15)\n    at wrappedFn (node:internal/errors:544:14)\n    at checkExecSyncError (node:child_process:943:11)\n    at execFileSync (node:child_process:979:15)\n    at runWorkspaceNode ([eval]:12:3)\n    at [eval]:64:1 {\n  status: 1,\n  signal: null,\n  output: [ null, null, null ],\n  pid: 3882,\n  stdout: null,\n  stderr: null\n}\n\nNode.js v26.10.0\n[//package/dev-script/file-enforcer:test…] ERROR task failed\n```\n\nArtifact `01a1487e-a04e-758b-b2cb-910beb55c0ff` has SHA256 `490aa2cf69719c8894670599d0914720238b4d654905af0f56fd5f60328734bc`. Matching clean before/after source proofs, the complete source log, wrapper outcome, and provider metrics are retained in `doc/audit/depot-toml-reconciliation-2026-10-17.evidence.json`. Provider usage is `95451` milliseconds at `16x64`.\n\nThis is an executed failed source check, not a passing mutation campaign. TOML mutation continues independently. No source fix or issue closure is claimed.\n"
     }
   ],
-  "agentInstructionProposal": "doc/planning/toml-report-emitter-verification.md"
+  "agentInstructionProposal": "doc/planning/toml-report-emitter-verification.md",
+  "agentInstructionProposalVerification": {
+    "characters": 153,
+    "words": 24,
+    "state": "Proposed only; existing FCH handle retained"
+  }
 }
