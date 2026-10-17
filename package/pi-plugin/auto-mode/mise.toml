@@ -961,3 +961,8 @@ run = [
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-phase.test.mjs notification-context",
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-phase.test.mjs notification-turn",
 ]
+
+[tasks."test:native:phase"]
+description = "Exercise one actual native group lifecycle mode"
+usage = 'arg "<mode>" help="Native phase fixture mode"'
+run = 'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-phase.test.mjs "$usage_mode"'
