@@ -2809,6 +2809,26 @@
     },
     "outcome": "No runner token occurs in workflow-level or job-level env. Provenance runner.temp values already use step.env; artifact paths use step.with. No route edit or provider dispatch was needed.",
     "scopeLimit": "No new GitHub parser acceptance, Windows/macOS execution, or canonical-cohort acceptance is claimed. Existing guards, source commands and provisional case bytes are unchanged. Final coherent dispatch remains held.",
-    "existingVerifiedDiagnosis": "doc/troubleshooting/github-actions-job-env-runner-context.md"
+    "existingVerifiedDiagnosis": "doc/troubleshooting/github-actions-job-env-runner-context.md",
+    "verification": {
+      "verifiedCommit": "21e32a2b81",
+      "jsonLint": {
+        "task": "mise run lint:dprint -- doc/audit/depot-common-manifest-route-guards-2026-10-17.evidence.json",
+        "exitCode": 0
+      },
+      "markdownLint": {
+        "task": "mise run lint:monochromatic-lint -- doc/audit/depot-common-manifest-route-guards-2026-10-17.md",
+        "exitCode": 0
+      },
+      "render": {
+        "task": "mise run render-common-manifest-audit",
+        "exitCode": 0,
+        "outputRead": true,
+        "bytes": 7433,
+        "sha256": "4c43dbfc1e69395a9208e71243878fa188e8e8d05ea244ea72b9a536e84453d0"
+      },
+      "diffCheckExitCode": 0,
+      "pushedAncestorVerifiedAgainst": "349f85137af6b7a84755a37644245773f90057e9"
+    }
   }
 }
