@@ -474,15 +474,15 @@ This preserves reviewable work while leaving publication and closure incomplete.
 
 ### Upstream filing decision for this incident
 
-1. **Upstream fault:** not established.
+1.  An upstream defect is not established.
     A server rejection alone does not establish an incorrect client or provider behavior.
-2. **Fixability:** the deciding server condition is unknown;
+2.  The deciding server condition is unknown;
     no architectural impossibility is claimed.
-3. **Supported use:** commenting on repository issues is a supported CLI surface.
-4. **Contribution acceptance:** not evaluated for a new report because no upstream defect is established.
-5. **Expected upstream action:** unknown;
+3.  Commenting on repository issues is a supported CLI surface.
+4.  Contribution acceptance was not evaluated because no upstream defect is established.
+5.  Expected upstream action is unknown;
     no maintainer refusal is inferred.
-6. **Prototype:** no upstream fix is justified by the current evidence.
+6.  No upstream fix is justified by the current evidence.
     The consumer pacing variant was exercised and did not recover posting.
 
 There is no fileable upstream defect report from this observation.
