@@ -840,7 +840,7 @@ const descriptor = openSync(outputPath, 'wx', 0o600)
 const telemetry = []
 const instrumentationErrors = []
 function podman(args) {
-  const result = spawnSync(originalPodman, args, { cwd: source, encoding: 'utf8', timeout: 8000, maxBuffer: 4 * 1024 * 1024 })
+  const result = spawnSync(originalPodman, args, { cwd: source, encoding: 'utf8', timeout: 8000, killSignal: 'SIGKILL', maxBuffer: 4 * 1024 * 1024 })
   return { args, status: result.status, signal: result.signal, error: result.error?.message, stdout: result.stdout, stderr: result.stderr }
 }
 function containers() {
@@ -951,11 +951,11 @@ try {
   try { retainProgress() } catch (error) { instrumentationErrors.push(String(error)) }
 }
 const remaining = safeSnapshot() ?? []
-const cleanup = remaining.map(id => podman(['rm', '--force', '--time=1', id]))
+const cleanup = remaining.map(id => ({ id, kill: podman(['kill', '--signal=SIGKILL', id]), remove: podman(['rm', '--force', '--time=0', '--ignore', id]) }))
 const processGroupAfter = groupMembers()
 let remainingAfter
 try { remainingAfter = containers() } catch (error) { instrumentationErrors.push(String(error)) }
-const cleanupVerified = remainingAfter?.length === 0 && cleanup.every(row => row.status === 0) && processGroupAfter.every(row => row.state === 'Z')
+const cleanupVerified = remainingAfter?.length === 0 && cleanup.every(row => row.remove.status === 0) && processGroupAfter.every(row => row.state === 'Z')
 const events = podman(['events', '--since', startedAt, '--until', new Date().toISOString(), '--stream=false', '--filter', 'label=' + label, '--format', 'json'])
 writeFileSync(prefix + '-events.json', JSON.stringify(events, null, 2) + '\n')
 const stdout = readFileSync(outputPath)
