@@ -29,9 +29,9 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-latest
-          - macos-latest
-          - windows-latest
+        - ubuntu-latest
+        - macos-latest
+        - windows-latest
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     defaults:
@@ -39,7 +39,7 @@ jobs:
         shell: bash
         working-directory: source
     env:
-      MISE_AUTO_INSTALL: "false"
+      MISE_AUTO_INSTALL: 'false'
       MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
       MISE_NODE_VERSION: 26.11.1
       MISE_PNPM_VERSION: 12.11.2
@@ -59,116 +59,116 @@ jobs:
       DEPOT_COHORT_IDENTITY_OUTPUT_DIRECTORY: ${{ runner.temp }}/logger-host-cohort
       LOGGER_HOST_RESULT_OUTPUT: ${{ runner.temp }}/logger-host-results.json
     steps:
-      - name: Preserve checkout LF bytes
-        id: checkout_lf
-        working-directory: ${{ github.workspace }}
-        run: git config --global core.autocrlf false
-      - name: Allow source paths on Windows
-        id: checkout_paths
-        working-directory: ${{ github.workspace }}
-        run: git config --global core.longpaths true
-      - name: Checkout immutable trial harness
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          path: harness
-          persist-credentials: false
-      - name: Checkout immutable logger source
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          path: source
-          ref: ef01490f5e960f8ca0b424c12242caeb3c5a2b5e
-          persist-credentials: false
-      - name: Set up verified mise bootstrap
-        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
-        with:
-          version: 2026.10.9
-          working_directory: harness
-          install: false
-          cache: false
-          env: false
-          export_path: false
-      - name: Install source-locked Node and pnpm
-        id: locked_tools
-        working-directory: harness
-        run: mise install --yes node@26.11.1 pnpm@12.11.2
-      - name: Bind exact shared cohort before host checks
-        id: cohort_before
-        working-directory: harness
-        run: mise run //package/module/logger.fuzz:trial:depot:cohort-identity
-        env:
-          DEPOT_CI_IDENTITY_PHASE: before
-      - name: Record immutable source before host checks
-        id: source_before
-        working-directory: harness
-        run: mise run //package/dev-script/task-util:trial:depot:ci:logger-host-source-identity
-        env:
-          PROVENANCE_PHASE: before
-      - name: Set up Node
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
-        with:
-          node-version: 26.5.0
-          package-manager-cache: false
-        id: fsid_node
-      - name: Record original fs-id Node runtime
-        id: fsid_node_version
-        run: node --version
-      - name: Resolve preferred identity
-        run: node package/module/fs-id/src/host-evidence.ts
-        id: fsid
-        continue-on-error: true
-      - name: Install frozen source dependencies and build original Node artifact
-        id: prerequisites
-        working-directory: harness
-        run: mise run //package/dev-script/task-util:trial:depot:ci:logger-host-prerequisites
-      - name: Execute original test:external-consumer-host
-        id: external_consumer
-        continue-on-error: true
-        if: ${{ !cancelled() && steps.prerequisites.outcome == 'success' && steps.source_before.outcome == 'success' && steps.cohort_before.outcome == 'success' }}
-        run: mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:external-consumer-host
-      - name: Execute original test:semantic-bridge-host
-        id: semantic_bridge
-        continue-on-error: true
-        if: ${{ !cancelled() && steps.prerequisites.outcome == 'success' && steps.source_before.outcome == 'success' && steps.cohort_before.outcome == 'success' }}
-        run: mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:semantic-bridge-host
-      - name: Verify immutable source after host checks
-        id: source_after
-        working-directory: harness
-        run: mise run //package/dev-script/task-util:trial:depot:ci:logger-host-source-identity
-        if: ${{ always() && steps.source_before.outcome == 'success' }}
-        env:
-          PROVENANCE_PHASE: after
-      - name: Verify exact shared cohort after host checks
-        id: cohort_after
-        working-directory: harness
-        run: mise run //package/module/logger.fuzz:trial:depot:cohort-identity
-        if: ${{ always() && steps.cohort_before.outcome == 'success' }}
-        env:
-          DEPOT_CI_IDENTITY_PHASE: after
-      - name: Retain every original host command outcome
-        id: results
-        working-directory: harness
-        run: mise run //package/dev-script/task-util:trial:depot:ci:logger-host-results
-        if: ${{ always() }}
-        env:
-          FSID_OUTCOME: ${{ steps.fsid.outcome }}
-          FSID_NODE_OUTCOME: ${{ steps.fsid_node_version.outcome }}
-          PREREQUISITES_OUTCOME: ${{ steps.prerequisites.outcome }}
-          EXTERNAL_OUTCOME: ${{ steps.external_consumer.outcome }}
-          SEMANTIC_OUTCOME: ${{ steps.semantic_bridge.outcome }}
-          SOURCE_BEFORE_OUTCOME: ${{ steps.source_before.outcome }}
-          SOURCE_AFTER_OUTCOME: ${{ steps.source_after.outcome }}
-          COHORT_BEFORE_OUTCOME: ${{ steps.cohort_before.outcome }}
-          COHORT_AFTER_OUTCOME: ${{ steps.cohort_after.outcome }}
-          FSID_SETUP_VERSION: ${{ steps.fsid_node.outputs.node-version }}
-      - name: Preserve host source, cohort and command receipts
-        if: ${{ always() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: logger-hosts-${{ runner.os }}-${{ runner.arch }}-${{ inputs.cohort_id }}
-          path: |-
-            ${{ runner.temp }}/logger-host-source
-            ${{ runner.temp }}/logger-host-cohort
-            ${{ runner.temp }}/logger-host-results.json
-          if-no-files-found: error
+    - name: Preserve checkout LF bytes
+      id: checkout_lf
+      working-directory: ${{ github.workspace }}
+      run: git config --global core.autocrlf false
+    - name: Allow source paths on Windows
+      id: checkout_paths
+      working-directory: ${{ github.workspace }}
+      run: git config --global core.longpaths true
+    - name: Checkout immutable trial harness
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        path: harness
+        persist-credentials: false
+    - name: Checkout immutable logger source
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        path: source
+        ref: ef01490f5e960f8ca0b424c12242caeb3c5a2b5e
+        persist-credentials: false
+    - name: Set up verified mise bootstrap
+      uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        version: 2026.10.9
+        working_directory: harness
+        install: false
+        cache: false
+        env: false
+        export_path: false
+    - name: Install source-locked Node and pnpm
+      id: locked_tools
+      working-directory: harness
+      run: mise install --yes node@26.11.1 pnpm@12.11.2
+    - name: Bind exact shared cohort before host checks
+      id: cohort_before
+      working-directory: harness
+      run: mise run //package/module/logger.fuzz:trial:depot:cohort-identity
+      env:
+        DEPOT_CI_IDENTITY_PHASE: before
+    - name: Record immutable source before host checks
+      id: source_before
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:ci:logger-host-source-identity
+      env:
+        PROVENANCE_PHASE: before
+    - name: Set up Node
+      uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+      with:
+        node-version: 26.5.0
+        package-manager-cache: false
+      id: fsid_node
+    - name: Record original fs-id Node runtime
+      id: fsid_node_version
+      run: node --version
+    - name: Resolve preferred identity
+      run: node package/module/fs-id/src/host-evidence.ts
+      id: fsid
+      continue-on-error: true
+    - name: Install frozen source dependencies and build original Node artifact
+      id: prerequisites
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:ci:logger-host-prerequisites
+    - name: Execute original test:external-consumer-host
+      id: external_consumer
+      continue-on-error: true
+      if: ${{ !cancelled() && steps.prerequisites.outcome == 'success' && steps.source_before.outcome == 'success' && steps.cohort_before.outcome == 'success' }}
+      run: mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:external-consumer-host
+    - name: Execute original test:semantic-bridge-host
+      id: semantic_bridge
+      continue-on-error: true
+      if: ${{ !cancelled() && steps.prerequisites.outcome == 'success' && steps.source_before.outcome == 'success' && steps.cohort_before.outcome == 'success' }}
+      run: mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:semantic-bridge-host
+    - name: Verify immutable source after host checks
+      id: source_after
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:ci:logger-host-source-identity
+      if: ${{ always() && steps.source_before.outcome == 'success' }}
+      env:
+        PROVENANCE_PHASE: after
+    - name: Verify exact shared cohort after host checks
+      id: cohort_after
+      working-directory: harness
+      run: mise run //package/module/logger.fuzz:trial:depot:cohort-identity
+      if: ${{ always() && steps.cohort_before.outcome == 'success' }}
+      env:
+        DEPOT_CI_IDENTITY_PHASE: after
+    - name: Retain every original host command outcome
+      id: results
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:ci:logger-host-results
+      if: ${{ always() }}
+      env:
+        FSID_OUTCOME: ${{ steps.fsid.outcome }}
+        FSID_NODE_OUTCOME: ${{ steps.fsid_node_version.outcome }}
+        PREREQUISITES_OUTCOME: ${{ steps.prerequisites.outcome }}
+        EXTERNAL_OUTCOME: ${{ steps.external_consumer.outcome }}
+        SEMANTIC_OUTCOME: ${{ steps.semantic_bridge.outcome }}
+        SOURCE_BEFORE_OUTCOME: ${{ steps.source_before.outcome }}
+        SOURCE_AFTER_OUTCOME: ${{ steps.source_after.outcome }}
+        COHORT_BEFORE_OUTCOME: ${{ steps.cohort_before.outcome }}
+        COHORT_AFTER_OUTCOME: ${{ steps.cohort_after.outcome }}
+        FSID_SETUP_VERSION: ${{ steps.fsid_node.outputs.node-version }}
+    - name: Preserve host source, cohort and command receipts
+      if: ${{ always() }}
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: logger-hosts-${{ runner.os }}-${{ runner.arch }}-${{ inputs.cohort_id }}
+        path: |-
+          ${{ runner.temp }}/logger-host-source
+          ${{ runner.temp }}/logger-host-cohort
+          ${{ runner.temp }}/logger-host-results.json
+        if-no-files-found: error
 env:
   GH_TOKEN: ${{ github.token }}
