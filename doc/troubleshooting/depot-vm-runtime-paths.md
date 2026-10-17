@@ -293,6 +293,10 @@ Its lifecycle record reports unchanged source HEAD and empty tracked status.
 The source lockfiles and original lifecycle test hashes match the immutable Git blobs.
 Cleanup errors are empty,
 and successful private libvirt listings are empty before setup and after cleanup.
+Daemon lifecycle records confirm requested `SIGTERM` signals;
+they do not retain a subsequent PID-exit probe.
+The verified cleanup boundary is the empty private domain list,
+not independently observed daemon exit.
 
 The configured original test identities are:
 

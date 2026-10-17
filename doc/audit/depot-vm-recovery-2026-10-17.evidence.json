@@ -334,6 +334,7 @@
     "windowsVirtioVerification": 1109
   },
   "limitations": [
+    "Private domain cleanup is verified; daemon SIGTERM requests have no subsequent retained PID-exit probe.",
     "Neither original lifecycle test body executed.",
     "The supplemental repository-root source suite was never reached.",
     "The Windows timeout does not establish its guest boot, driver, or service root cause.",
