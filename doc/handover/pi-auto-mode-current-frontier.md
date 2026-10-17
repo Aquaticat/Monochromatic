@@ -89,13 +89,17 @@ It does not rewrite existing release paths.
 The disposable publication regression fails on the expected inode equality before the fix,
 then passes with distinct changed CLI files and a usable previous command.
 The latest build reuses 1,476 files totaling 11,714,237 bytes.
-Current installed release is `native-release-coZmcB`.
+Current installed release is `native-release-NteRIg`.
+Its build reuses 1,479 identical files totaling 11,813,141 bytes.
 
-The private scratch task `archive-historical-logs` is running in a two-CPU,
+The private scratch task `archive-historical-logs` completes in a two-CPU,
 2 GiB container.
-It selects 12,626 unchanged log files predating this boot,
-totaling 7,064,174,193 bytes,
-and writes verified gzip archives plus a source-path and SHA-256 manifest outside the package.
+It archives 12,626 unchanged log files predating this boot,
+totaling 7,064,174,193 original bytes,
+into 194,896,137 compressed bytes outside the package.
+The independent `archive-audit` rereads every gzip and verifies the source-path manifest's SHA-256 and length.
+Its positive control rejects changed content of the same length in a valid gzip.
+The reference scan checks all 1,670 tracked Markdown files and finds no archived filename references.
 No original is removed before decompressed content verification and manifest append.
 Root stray Git-directory entries are absent;
 the scoped ignored-file dry run lists only `.cache`, `dist`, and `node_modules`.
@@ -103,7 +107,7 @@ No whole-directory cleanup is performed.
 
 Remaining verification and documentation work:
 
-- Finish archive verification and measure package and archive sizes separately.
+- Measure package and archive sizes separately after the completed independent archive audit.
 - Run types,
   complete maintained lint,
   bounded package units,
@@ -113,16 +117,21 @@ Remaining verification and documentation work:
   preparation,
   confirmation,
   and fallback regressions after consolidation.
-- Run `replay-process` and `replay-bash` from the private scratch directory.
-  The prepared harness restores each exact original session prefix and uses a fixture command
-  to call original `Agent.continue` without adding a user message that changes visible-context selection.
-  It uses the configured installed command,
-  configured extensions and skills,
-  live Luna,
-  disposable state,
-  and the original two-member group.
-  This new harness has not yet run and must be debugged if its own assertions fail.
+- Complete `replay-bash` through Pi's normal prompt entry.
+  The rejected prefix-resume harness bypasses the required primary prompt observer and fails before assessment.
+  Its failure is not a product regression.
+  The replacement replays every original tool group from the normal prompt through each reported group,
+  preserving preceding turns and configured resources.
+  Its first run passes all 11 calls through the mixed process/Bash group,
+  with 12 live Luna requests and no confirmation (`pi-hyper-rpc-allow-ZCKjZH`).
+  The final replay through the later Bash group runs against `native-release-NteRIg`.
 - Audit complete transmitted payloads and run live prohibited-operation controls.
+- Prove the newly committed failure-category tests reject a copied classifier with its guard removed.
+  Run all package units with disposable state and bounded resources.
+  The first container cannot use the unavailable `cpuset` controller;
+  the runner now uses `taskset` within the unchanged two-CPU and 2 GiB limits.
+  The second launch exposes mise's basename-sensitive shim dispatch;
+  its executable mount is corrected to `/fixture-bin/mise`.
 - Update troubleshooting,
   package verification lessons,
   architecture evidence,
