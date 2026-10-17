@@ -28,6 +28,9 @@ on:
         - both
         - macos
 
+env:
+  GH_TOKEN: ${{ github.token }}
+
 permissions:
   contents: read
 
