@@ -277,6 +277,20 @@ member association,
 and failure tests stay in place.
 Full unit verification must rerun after that test migration.
 
+The migrated full bounded unit suite and package type check pass on `native-release-1DiyGD`.
+That includes the 22 real native lifecycle modes and disposable publication rollback.
+The next consolidation removes a remaining second confirmation owner:
+`decision-core.mjs` now returns compiled policy and source currentness,
+and `prepared-group.mjs` handles both uncertain outcomes and assessment failures through one scoped selector.
+Established denials remain terminal;
+stale established results throw `EstablishedPolicyDecisionError` instead of requesting another generic Allow.
+Confirmation checks source dependencies directly when entering from an existing compiler operation,
+and retains the complete compiled currentness check outside that wrapper.
+Unknown headless outcomes stay withheld without opening a selector.
+The old `finishWithApproval` router is removed.
+The new build and confirmation matrix are pending;
+the removed router's original-source TUI adapter still needs a usage audit before retirement.
+
 A provider-payload audit finds a separate missed shell boundary:
 known process result metadata and `ad-process:notification` details retain raw `command` strings.
 The new regression was committed red;
