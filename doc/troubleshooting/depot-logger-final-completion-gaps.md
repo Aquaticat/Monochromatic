@@ -30,7 +30,7 @@ attempt `cnhrgd3dct`,
 finishes its original source task with exit zero and retains equal local source identities.
 Its initial authenticated common-manifest lookup succeeds at `11:19:38.790Z`.
 The final lookup fails at `12:54:38.162Z` with HTTP 401.
-All times describe October 17, 2026 in UTC.
+All times describe 2026-10-17 in UTC.
 The reason the credentials were rejected is unknown.
 Elapsed time alone does not prove token expiry.
 

@@ -103,7 +103,8 @@ ending before the failed final guard diagnostic.
 Lossless fractional-second normalization proves equal timestamp/body sequences,
 and removing a record changes the hash.
 Issue `#1179` remains open with unknown root cause and no paired-provenance completion credit.
-All 24 TOML primary task terminals are now independently reconciled: 20 passed and four failed.
+All 24 TOML primary task terminals are now independently reconciled:
+20 passed and four failed.
 Eighty-five configured source files were hashed against frozen Git blobs.
 The native report preserves all 3062 selected identities,
 463 green-baseline shard reports,
