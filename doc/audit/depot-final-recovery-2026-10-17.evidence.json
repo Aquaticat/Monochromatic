@@ -38418,6 +38418,57 @@
         "https://docs.github.com/en/actions/reference/runners/github-hosted-runners",
         "https://docs.github.com/en/billing/concepts/product-billing/github-actions"
       ]
-    }
+    },
+    "tomlCompleteSourceExecution": {
+      "path": "doc/audit/depot-coherent-toml-2026-10-17.evidence.json",
+      "primary": {
+        "primary": 24,
+        "passed": 20,
+        "failed": 4,
+        "unpaired": [
+          "package.module.toml-edit.test.mutation"
+        ]
+      },
+      "nativeMutation": {
+        "selectedIdentities": 3062,
+        "shards": 463,
+        "totals": {
+          "killed": 921,
+          "survived": 256,
+          "timeout": 3,
+          "compileError": 1882,
+          "runtimeError": 0,
+          "ignored": 0
+        },
+        "selectedFullSuiteTests": 37,
+        "allBaselinesGreen": true,
+        "allShardReportsAndSourceReturnsRetained": true,
+        "sourceSpanIdentitiesVerified": 3062,
+        "selectedMutantDropRejected": true,
+        "sourceLogBytes": 41142381,
+        "sourceLogSha256": "8ee89e5aadc0968a0e435f9651b7c8c86426be3ac8eb7dab9817e55c905541d5",
+        "knownSpawnDiagnosticCount": 0,
+        "metadataOperations": 1269,
+        "metadataForwardingEvents": 2538,
+        "metadataBudgetMs": 60000,
+        "longestMetadataOperationMs": 8926.082681,
+        "expectedMissingObjectInspections": 4,
+        "sourceElapsedMs": 4296012.238841,
+        "wrapperElapsedMs": 4297550.541982,
+        "sourceExitCode": 0,
+        "finalGuardExitCode": 1,
+        "pairedProvenanceAccepted": false,
+        "issue": 1179
+      },
+      "sourceConfigurationFilesIndependentlyHashed": 85,
+      "generatedConsistency": {
+        "status": "failed",
+        "commandExitCode": 0,
+        "changedTrackedFiles": "mise.toml"
+      },
+      "pairedProvenanceAccepted": false
+    },
+    "allProviderRoutesTerminal": true,
+    "loggerArtifactReconciliation": "collection-in-progress"
   }
 }

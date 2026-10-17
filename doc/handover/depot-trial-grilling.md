@@ -33,9 +33,30 @@ ending before the failed final guard diagnostic.
 Lossless fractional-second normalization proves equal timestamp/body sequences,
 and removing a record changes the hash.
 Issue `#1179` remains open with unknown root cause and no paired-provenance completion credit.
-Full reconciliation of the TOML primary checks and native shard evidence remains pending.
+All 24 TOML primary task terminals are now independently reconciled: 20 passed and four failed.
+Eighty-five configured source files were hashed against frozen Git blobs.
+The native report preserves all 3062 selected identities,
+463 green-baseline shard reports,
+all physical source returns,
+and every frozen-source mutation span.
+Its 37 selected full-suite test files match the prior same-source inventory.
+No exact known spawn diagnostic was observed in the 41142381-byte source log;
+the positive diagnostic control succeeds,
+and killed status alone receives no assertion credit.
+All 1269 metadata operations are retained with 2538 forwarding events.
+Four nonzero inspections are expected already-removed objects;
+the longest operation took 8926.082681 milliseconds under the 60000-millisecond metadata budget.
+Root generated consistency failed after an exit-zero command changed disposable `mise.toml`.
+The [complete TOML receipts](../audit/depot-coherent-toml-2026-10-17.evidence.json)
+retain raw shard bytes,
+the native report,
+full native source output,
+and every failed source-check log.
+The missing final provenance pair still receives no completion credit.
 
-The allocation snapshot has 107 closed Depot intervals and one active logger interval.
+All provider routes are now terminal.
+Logger artifact collection and assertion reconciliation are running.
+The retained allocation snapshot still has 107 closed Depot intervals and the then-active logger interval.
 Its 268273.804 allocated vCPU-seconds prorate to $13.4136902 at the published CI rate.
 This is an incomplete compute subtotal,
 not an invoice or final trial cost.
@@ -44,11 +65,8 @@ Account-wide billing access remains outside scope.
 
 Remaining independently verifiable work:
 
-- Reconcile the completed TOML primary checks,
-  native shards,
-  metadata observations and source failures.
-- Collect and reconcile the remaining logger terminal,
-  artifacts and authored assertions.
+- Reconcile the completed TOML source failures with their issue threads.
+- Collect and reconcile the terminal logger artifacts and authored assertions.
 - Scope and file the repaired private macOS-verifier,
   timestamp-comparison,
   issue-readback,
