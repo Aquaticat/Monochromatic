@@ -47,7 +47,74 @@ not a passing lifecycle suite.
 The trial VM adapter preserves the original task result,
 then attempts the unchanged test source from the repository root after guest prerequisites are prepared.
 It never allows that supplementary experiment to turn an original task failure into success.
-Guest preparation remains pending.
+The later recovery created and destroyed its private Ubuntu guest successfully.
+Its Windows template verification then failed before the supplementary source-suite command was reached.
+Those [environment results](depot-vm-runtime-paths.md#separate-windows-template-verification-timeout)
+do not execute either original lifecycle test.
+
+## Repository-root consumer boundary
+
+The 2026-10-17 source audit preserves `ef01490f5e960f8ca0b424c12242caeb3c5a2b5e`.
+The additional command uses the same file and no test arguments:
+
+```sh
+# Immutable source repository root, in an isolated disposable consumer environment.
+node /absolute/source/package/cli/vmsync/src/lifecycle.expensive.unit.test.ts
+```
+
+The absolute outer file path and repository-root working directory resolve the helper command
+without changing the original authored task.
+The bundle path also remains bound to the original package:
+`package/cli/vmsync/src/lifecycle.expensive.unit.test.ts:44` to line 51 derives it from the source file.
+
+```typescript
+// package/cli/vmsync/src/lifecycle.expensive.unit.test.ts:44 at ef01490f5e
+const PKG_ROOT = await findRootCached({
+  cwd: import.meta.dirname,
+  marker: packageNamed('@monochromatic-dev/cli-vmsync',),
+},);
+const BUNDLE_PATH = join(PKG_ROOT, 'dist', 'final', 'node', 'index.mjs',);
+```
+
+This file has no Linux-only setup selection.
+Linux guest creation and artifact transfer occur at lines 150 to 158,
+before its `describe` at line 185.
+After the Linux block,
+Windows creation is unconditional at lines 319 to 327,
+before its own `describe` at line 379:
+
+```typescript
+// package/cli/vmsync/src/lifecycle.expensive.unit.test.ts:319 at ef01490f5e
+await safeDestroy(VM,);
+await mvm({
+  args: ['create', VM, '--image', 'windows',],
+  timeout: CREATE_TIMEOUT_MS,
+},);
+await mvm({ args: ['push', VM, BUNDLE_PATH, 'index.mjs',], },);
+```
+
+The outer path/cwd bridge therefore cannot establish a complete unchanged-file pass
+while Windows fixtures remain excluded.
+Selecting a test name cannot avoid setup that runs before that test is registered.
+Any direct natural-bundle CLI checks are separate artifact consumption;
+they do not mark `vmsync lifecycle (Linux) > full CLI lifecycle`
+or `vmsync lifecycle (Windows) > full CLI lifecycle` as executed.
+
+The owned bounded probe is
+`~/temp/agent/depot-vm-artifact-bridge-20261017/mise.toml`.
+It uses the private exact-source fixture from the cohort controls,
+with a 2 GiB memory limit and two CPUs.
+It does not write either shared historical checkout.
+The natural frozen dependency install and `//package/cli/vmsync:build:js:node` remain source-owned tasks.
+No emulator or provider run is dispatched by this probe.
+
+Guest cleanup also requires an outer guard:
+the Linux cleanup declaration at line 184 follows its setup commands,
+and the Windows cleanup declaration at line 378 does the same.
+A setup failure can precede both declarations.
+The immutable `mvm` defaults are 8192 MiB and four vCPUs
+in `package/cli/mvm/src/config.ts:38` and line 43;
+the source test does not pass resource overrides to its `create` calls.
 
 A production repair should derive the `mvm` entry point from an owned absolute source location
 or set an explicit repository-root command directory.
