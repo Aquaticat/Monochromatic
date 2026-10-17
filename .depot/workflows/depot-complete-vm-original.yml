@@ -58,9 +58,11 @@ jobs:
         export_path: false
         cache: false
     - name: Bind the exact harness and common cohort
+      id: cohort
       working-directory: harness
       run: mise run //package/dev-script/task-util:trial:depot:vm:cohort
     - name: Verify immutable source before dependency preparation
+      id: source_before
       working-directory: harness
       env:
         DEPOT_CI_IDENTITY_PHASE: before
@@ -76,9 +78,18 @@ jobs:
     - name: Install frozen source dependencies
       working-directory: source
       run: mise run prepare:pnpm:install -- --frozen-lockfile
+    - name: Retain the natural VM bundle and build receipt
+      id: vm_build
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:vm:build
     - name: Execute the original selected VM lifecycle task
+      id: vm_original
       working-directory: harness
       run: mise run //package/dev-script/task-util:trial:depot:vm:original
+    - name: Consume the retained bundle without source or network
+      if: always() && steps.cohort.outcome == 'success' && steps.source_before.outcome == 'success' && steps.vm_build.outcome == 'success'
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:vm:consume
     - name: Verify immutable source and cohort after execution
       if: always()
       working-directory: harness
