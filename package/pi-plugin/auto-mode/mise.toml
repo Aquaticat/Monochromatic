@@ -1,3 +1,6 @@
+[env]
+MONOCHROMATIC_LOG_DIRECTORY = "{{env.HOME}}/temp/agent/pi-auto-mode-diagnostics"
+
 [vars]
 # The full semantic lint uses both Node and Go workers. These are the worker
 # settings verified under the session's 4-GiB aggregate cgroup limit; no rules are disabled.

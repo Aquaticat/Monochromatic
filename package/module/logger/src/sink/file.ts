@@ -130,7 +130,8 @@ export async function findNodeModulesUp(
 // asserts a Node runtime and no `process.versions.node` probe is needed.
 
 /**
- Builds a file sink that appends JSONL records to the nearest ancestor
+ Builds a file sink that appends JSONL records to a caller-selected directory,
+ `MONOCHROMATIC_LOG_DIRECTORY`, or the nearest ancestor
  `node_modules/.monochromatic/{timestamp}.log.jsonl` (resolved once during
  verification). The resolved path and the verification memo live in this
  instance's closure (no module-global state), so independent loggers and
@@ -138,6 +139,8 @@ export async function findNodeModulesUp(
  and its complete `appendFile`, so the logger's pending-write tracking also
  covers queued records without a separate `flush` hook.
  
+ @param directory - explicit destination keeps caller-owned diagnostics outside workspace artifacts
+
  @returns Sink backed by `node:fs/promises`.
  
  @example
@@ -147,7 +150,9 @@ export async function findNodeModulesUp(
  await logger.flush();
  ```
  */
-export function createFileSink(): Sink {
+export function createFileSink({
+  directory = process.env.MONOCHROMATIC_LOG_DIRECTORY,
+}: Readonly<{ directory?: string }> = {}): Sink {
   /**
    Instance-local file-sink resources. `filePath` is populated during
    verification and read by `write`; `verifyPromise` memoizes concurrent
@@ -173,7 +178,7 @@ export function createFileSink(): Sink {
       /**
        Resolved absolute path of the closest ancestor `node_modules`, or the sentinel when none exists (e.g. a stray cwd).
        */
-      const nodeModulesDir = await findNodeModulesUp({
+      const nodeModulesDir = directory ? directory : await findNodeModulesUp({
         cwd: process.cwd(),
         stat,
         dirname,
@@ -190,13 +195,13 @@ export function createFileSink(): Sink {
       /**
        Directory under the chosen `node_modules` where every monochromatic log file lands.
        */
-      const LOG_DIR = join(
+      const LOG_DIR = directory ? directory : join(
         nodeModulesDir,
         '.monochromatic',
       );
       await mkdir(
         LOG_DIR,
-        { recursive: true, },
+        { recursive: true, mode: 0o700, },
       );
 
       /**
