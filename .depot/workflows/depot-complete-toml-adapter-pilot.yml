@@ -1,0 +1,130 @@
+name: depot-complete-toml-adapter-pilot
+
+on:
+  workflow_dispatch:
+    inputs:
+      scope:
+        type: choice
+        options:
+        - complete
+        - mutations-only
+        default: complete
+        required: true
+      cohort_id:
+        type: string
+        required: true
+      manifest_sha256:
+        type: string
+        required: true
+      requested_at:
+        type: string
+        required: true
+
+env:
+  COHORT_ID: ${{ inputs.cohort_id }}
+  COHORT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+  COHORT_REQUESTED_AT: ${{ inputs.requested_at }}
+
+permissions:
+  contents: read
+
+jobs:
+
+  pilot:
+    name: Bounded exact-source TOML adapter consumer pilot
+    runs-on:
+      size: 16x64
+      image: monochromatic-trial-typescript:20261015-v1
+    timeout-minutes: 25
+    env:
+      MISE_AUTO_INSTALL: 'false'
+      MISE_LOCKED: '1'
+      CI: 'true'
+      DEPOT_CI_WAVE: containers
+      DEPOT_TOML_CHECK_ID: package.module.toml-edit.test.mutation
+      DEPOT_TOML_PILOT: toml-get-comments
+      DEPOT_TOML_MAX_MS: '900000'
+      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+      OXLINT_THREADS: '1'
+      TSC_SINGLE_THREADED: '1'
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        path: harness
+        persist-credentials: false
+        clean: false
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        path: source
+        ref: 525d2e09f8168a3bdd7e513e26d4c80b363123e5
+        fetch-depth: 2
+        persist-credentials: false
+        clean: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Match the already exercised preparation bootstrap.
+        version: 2026.10.9
+        working_directory: source
+        install: false
+        env: false
+        export_path: false
+        cache: false
+    - name: Install the exact-head dependency runtimes and conformance runner
+      working-directory: source
+      run: mise install node pnpm
+    - name: Install conformance runner outside immutable source
+      working-directory: harness
+      env:
+        MISE_LOCKED: '0'
+      run: mise install github:toml-lang/toml-test
+    - name: Install exact-head frozen dependencies
+      working-directory: source
+      run: mise run prepare:pnpm:install -- --frozen-lockfile
+    - name: Verify bounded rootful container execution
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:ci:containers
+    - name: Build the historical Git policy wrapper prerequisite
+      working-directory: source
+      run: mise run //package/git-policy/cli:build
+    - name: Trust the reviewed exact-head repository policy
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:ci:trust-source
+    - name: Verify frozen source and cohort before consumers
+      id: source-before
+      working-directory: harness
+      env:
+        DEPOT_TOML_PHASE: before
+      run: mise run //package/dev-script/task-util:trial:depot:toml:identity
+    - name: Build the exact TOML artifact prerequisite
+      working-directory: source
+      run: mise run //package/module/toml-edit:build
+    - name: Enumerate the actual bounded source selector
+      working-directory: source
+      run: mise run //package/module/toml-edit:test:mutation -- src/toml-get-comments.ts --dry-run
+    - name: Run the reviewed package checks and retain every result
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:toml:bounded
+    - name: Verify frozen source and cohort after consumers
+      if: ${{ !cancelled() && steps.source-before.outcome == 'success' }}
+      working-directory: harness
+      env:
+        DEPOT_TOML_PHASE: after
+      run: mise run //package/dev-script/task-util:trial:depot:toml:identity
+    - name: Preserve check evidence and generated diffs
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: toml-adapter-consumer-pilot-evidence
+        path: |
+          ~/temp/agent/depot-complete-ci/*-results.json
+          ~/temp/agent/depot-complete-ci/toml*.json
+          ~/temp/agent/depot-complete-ci/toml*.log
+          ~/temp/agent/depot-complete-ci/toml-mutation-shards/mutation-manifest-*/*.json
+          ~/temp/agent/depot-complete-ci/toml-mutation-shards/mutation-report-*/*.json
+          ~/temp/agent/depot-complete-ci/check-logs/*.log
+          ~/temp/agent/depot-complete-ci/container-bin/*.json
+          ~/temp/agent/depot-complete-ci/container-bin/*.jsonl
+          ~/temp/agent/depot-complete-ci/container-bin/*/*.json
+          ~/temp/agent/depot-complete-ci/container-bin/*/*.tar
+          ~/temp/agent/depot-complete-ci/*.patch
+        if-no-files-found: ignore
