@@ -19,7 +19,8 @@ not a measured accuracy guarantee.
 
 Complete assessments are split into provider requests of at most 200 questions,
 with up to three parallel calls per bundle and three sequential bundles per judgment.
-Every call shares the original fifteen-second preparation-inclusive deadline.
+Every call shares original cancellation and preparation-inclusive timing.
+Fifteen seconds is an advisory performance target; elapsed time never expires review evidence.
 No average USD 0.001 per judgment cost limit applies.
 Question identities and complete shared context survive partitioning;
 partial answer sets cannot authorize execution.
@@ -29,6 +30,11 @@ Tool-use, formatting, naming, and workflow conventions remain agent guidance.
 Review inputs contain the proposed operation, readable project policy excerpts,
 and the larger of the latest five visible messages or the span from the latest user message.
 Pi's hidden prompts, tool metadata, and skill catalog remain outside model review.
+Assistant thinking and provider signatures are excluded from conversation and proposed-operation inputs.
+Bash is parsed locally into command, argument, quoting, control-flow, redirect, and expansion structure.
+Complete Bash source stays local for execution and human confirmation.
+Literal arguments and quoted here-document bodies remain data, including text resembling shell syntax.
+Incomplete or unsupported parsed structure routes the original operation to human confirmation.
 Complete copies of the root policy in visible messages are replaced by a reference to selected excerpts.
 Older conversation receipts stay local for provenance.
 Each clause question includes the complete proposed operation beside the selected clause.
@@ -191,17 +197,18 @@ longer latest-user spans are not capped.
 
 Each selected message is encoded as canonical untrusted JSON without auto-mode summarization or truncation.
 Projection preserves complete user text and images,
-assistant text and visible reasoning,
-tool-call names and full arguments,
+assistant text,
+tool-call names and arguments with Bash source replaced by parsed structure,
 tool-result text,
 images,
 renderer details and error state,
-direct Bash commands and output,
+parsed direct Bash commands and complete output,
 visible custom messages,
 compaction summaries,
 and branch summaries.
 Guard verdict is attached to corresponding tool result for circumvention context.
-Provider-only signatures,
+Assistant thinking,
+provider-only signatures,
 token usage,
 timestamps,
 provider metadata,

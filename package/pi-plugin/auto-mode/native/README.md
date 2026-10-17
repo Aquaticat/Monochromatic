@@ -17,8 +17,9 @@ root and source identity,
 ordered callback failures,
 every file checkpoint,
 and exact retained file bytes in disposable roots.
-Live checks enforce the original deadline;
-retained checks preserve cancellation and freshness after that deadline expires.
+Live checks enforce original cancellation and clock validity;
+retained checks preserve cancellation and freshness after decision completion.
+Fifteen seconds is an advisory performance target, with no elapsed-time rejection.
 Mechanical projections explicitly withhold instruction authority and human permission.
 `test:native:program-queue` checks original recorder reuse,
 private token and public label membership,
@@ -411,10 +412,10 @@ The bootstrap binds the maintained Luna adapter and direct HTTP sender
 for `openai/gpt-6-luna-decisions` through the Gateway `/v1/decisions` route.
 It reads `AUTO_MODE_LLMGATEWAY_API_KEY` only when an original configured assessment is dispatched,
 preserves every original state value and named question in the Decisions wire format,
-retains the original deadline,
+retains original cancellation and advisory timing,
 and partitions complete assessments into requests containing at most 200 questions.
 One judgment permits at most three sequential bundles with at most three parallel HTTP calls each.
-Every bundle uses the original fifteen-second preparation-inclusive deadline.
+Every bundle uses original cancellation and preparation-inclusive timing without a deadline timer.
 Failed bundles consume their allowance;
 later dispatches and the single eligible retry share the same counters.
 Each request retains complete shared context and original question names.
@@ -481,7 +482,7 @@ those facts remain unsatisfied until the original user response arrives.
 Generic prerequisites retain their separate fact owner.
 
 Unresolved and unspecified clause assessments first reach the whole-operation Luna decision question.
-It retains the original operation, selected conversation, policy, deadline, and transport allowance.
+It retains the original operation, selected conversation, policy, cancellation, and transport allowance.
 Only unresolved or failed automatic paths reach the original dialog when a UI is available.
 An established prohibition at the strongest known applicable tier blocks even when other premises are uncertain.
 Headless uncertainty remains blocked.

@@ -22,7 +22,9 @@ export class AssessmentTransportError extends Error {
  Original judgment supplies its already encoded body and preparation-inclusive performance target.
  */
 export type AssessmentTransportInput = {
-  /** Owned judgment capability accounts for every parallel provider invocation. */
+  /**
+   Owned judgment capability accounts for every parallel provider invocation.
+   */
   readonly runBundle?: <Result>(operations: readonly ((input: {
     readonly signal: AbortSignal;
     readonly targetAt: number;
@@ -196,7 +198,7 @@ export function createAssessmentHttpSender({
       /**
        Native cancellation governs fetch and body consumption without an advisory-target timer.
        */
-      const signal = input.signal;
+      const {signal} = input;
       sl.debug('dispatching original assessment HTTP attempt',);
       /**
        Redirect refusal retains the fixed private-data route.

@@ -25,14 +25,26 @@ This is a separate deadline incident, not evidence of a low-confidence final ans
 The exact log is retained privately under `${HOME}/temp/agent/pi-bash-bones-20261016/session.log.jsonl`.
 
 The user additionally requires no model thinking in Luna inputs and parser-derived Bash structure only.
-The installed projection currently retains thinking text and raw Bash strings;
+The reported installed projection retained thinking text and raw Bash strings;
 the confirmation dialog also displays the unprojected parent response and its thinking signature.
 The existing parser-first decision was therefore not fully implemented at the current wire boundary.
 
-- [ ] Remove thinking and signatures from review context and human confirmation summaries.
-- [ ] Parse Bash locally and send only structural operation data to Luna, preserving permission-relevant details.
-- [ ] Remove the hard fifteen-second cutoff, now explicitly a performance guideline, and replay the reported boundary.
+- [x] Remove thinking and signatures from review context and human confirmation summaries.
+- [x] Parse Bash locally and send only structural operation data to Luna, preserving permission-relevant details.
+- [x] Remove the hard fifteen-second cutoff, now explicitly a performance guideline.
+- [ ] Replay the complete reported interaction through the installed host.
 - [ ] Verify the installed consumer, prohibited-operation controls, and complete transmitted payloads.
+
+Commits `77001d41e6`, `79b62c75a5`, `29b3361ffd`, `af5693baa7`, `baecc20430`, and `c718ae955a`
+implement advisory timing, thinking exclusion, and the incumbent Bash parser's structural projection.
+Built shell-projection, startup-relevance, budget, transport, decision-wire, dependency-facade,
+and decision-fallback checks pass on `native-release-3tBgOk`.
+The first full replay fixture `pi-hyper-rpc-allow-56qZR4` completed eleven tool calls
+and fifteen successful Luna requests before the native process exited with status `137`.
+No confirmation appeared before termination.
+This incomplete replay does not establish success for the reported later group.
+The retained stderr has no native fatal diagnostic; the termination cause remains unestablished.
+The next step is a final rebuild and a resource-bounded sequential replay with retained termination evidence.
 
 ### Completed permission scope, startup relevance, and resource measurement on 2026-10-16
 

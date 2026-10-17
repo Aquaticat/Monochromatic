@@ -9,7 +9,9 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
  Invalid Bash input cannot silently disappear from review.
  */
 export class ReviewOperationInputError extends Error {
-  /** Identify malformed operation input at the projection boundary. */
+  /**
+   Identify malformed operation input at the projection boundary.
+   */
   override readonly name = 'ReviewOperationInputError';
 }
 
@@ -36,11 +38,15 @@ export function projectReviewInput({
   readonly name: string;
   readonly input: Readonly<Record<string, unknown>>;
 }): Readonly<Record<string, unknown>> {
-  /** Function-scoped projection diagnostics omit original argument content. */
+  /**
+   Function-scoped projection diagnostics omit original argument content.
+   */
   const l = tagged({ tag: projectReviewInput.name, });
   l.debug('projecting tool arguments for review');
   if (name !== 'bash') return input;
-  /** Keep original execution options beside the parsed command structure. */
+  /**
+   Keep original execution options beside the parsed command structure.
+   */
   const {
     command,
     ...options

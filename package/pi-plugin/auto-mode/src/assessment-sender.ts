@@ -107,7 +107,11 @@ export function createAssessmentSender({
     /**
      Attempt number, cancellation, and performance target pass through unchanged.
      */
-    const decoded = await sendAssessmentPartitions({input,sendHttp,assertLifetime});
+    const decoded = await sendAssessmentPartitions({
+      input,
+      sendHttp,
+      assertLifetime
+    });
     /**
      Response identity and vocabulary checks do not supply policy admission.
      */
