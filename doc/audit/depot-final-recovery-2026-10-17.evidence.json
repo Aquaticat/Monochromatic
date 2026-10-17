@@ -37357,5 +37357,107 @@
       "actualProviderAcceptance": false,
       "scope": "Exercises the unchanged real source controller loop, recorder, selector, errors, cleanup anchor and actual trial hook with fixture session bodies. This does not claim execution of logger-source application assertions."
     }
+  },
+  "rootLoggerHostPreparation": {
+    "preparedAt": "2026-10-17T09:40:09.170Z",
+    "harnessRevision": "bcc683bd85b0ab28dc90619832a20c5d705f5860",
+    "workflow": ".github/workflows/fs-id.yml",
+    "workflowSha256": "977bc865f0b2fc73b724da1e522afd78446c17a4fab52a91895dc39310a9b119",
+    "originalPlatforms": [
+      "ubuntu-latest",
+      "macOS-latest",
+      "windows-latest"
+    ],
+    "originalFsidNodeVersion": "26.5.0",
+    "sourceLockNodeVersion": "26.11.1",
+    "sourceLockPnpmVersion": "12.11.2",
+    "protectedRootTaskCount": 8,
+    "protectedRootTasksUnchanged": true,
+    "actualTasks": [
+      {
+        "task": "//package/module/logger.fuzz:trial:depot:cohort-identity",
+        "runSha256": "72c29172b9fe1ec3df38731b8c0830de5db42752a9f43793deee794588bf9272",
+        "currentBodyEqualsControlledBody": true
+      },
+      {
+        "task": "//package/dev-script/task-util:trial:depot:ci:logger-host-source-identity",
+        "runSha256": "a4051d7897c50659ebf2982cccf0d57b847a7927929de50ecde7f2f1ec936e14",
+        "currentBodyEqualsControlledBody": true
+      },
+      {
+        "task": "//package/dev-script/task-util:trial:depot:ci:logger-host-results",
+        "runSha256": "8efadcc7730199361e942c420b849f63f397c3a7f291fe8673d964082bcee2f6",
+        "currentBodyEqualsControlledBody": true
+      }
+    ],
+    "cohortControls": {
+      "normalAccepted": 2,
+      "rejected": 22,
+      "legacyInvalidAccepted": true,
+      "removedFrozenCaseGuardInvalidAccepted": true,
+      "sourceAndHarnessesClean": true,
+      "proof": {
+        "rawBytes": 37527,
+        "rawSha256": "cfba5ffa5e03badfb22647967cbc857da6d400c4b36ad4ba815182b8ee80e482",
+        "privatePathsRedacted": true,
+        "sanitizedBytes": 36084,
+        "sanitizedSha256": "09864130043edad7206cbc2f986c4a1559e459486525786219bc5fb324a167c7",
+        "encoding": "gzip+base64",
+        "data": "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"
+      }
+    },
+    "hostBindingControls": {
+      "normalAccepted": 4,
+      "rejected": 9,
+      "removedRouteGuardInvalidAccepted": true,
+      "sourceAndHarnessesClean": true,
+      "platform": "linux-fixtures-only",
+      "proof": {
+        "rawBytes": 12034,
+        "rawSha256": "c51cb3dca9d7eca8490a8734f8ff371f000e738eeab9ead2b8340774616de064",
+        "privatePathsRedacted": true,
+        "sanitizedBytes": 12034,
+        "sanitizedSha256": "c51cb3dca9d7eca8490a8734f8ff371f000e738eeab9ead2b8340774616de064",
+        "encoding": "gzip+base64",
+        "data": "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"
+      }
+    },
+    "workflowAndResultControls": {
+      "normalAccepted": 1,
+      "rejected": 7,
+      "removedResultGateInvalidAccepted": true,
+      "proof": {
+        "rawBytes": 20275,
+        "rawSha256": "9482689c040ff055837f87e9ecccfd1aecfc9a4c9aab47378f17c949279b3bdb",
+        "privatePathsRedacted": true,
+        "sanitizedBytes": 20275,
+        "sanitizedSha256": "9482689c040ff055837f87e9ecccfd1aecfc9a4c9aab47378f17c949279b3bdb",
+        "encoding": "gzip+base64",
+        "data": "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"
+      }
+    },
+    "inheritedCwdFailure": {
+      "failedHarnessRevision": "7d487813bfe559b0fa5299e36aba010d71439b34",
+      "repairedHarnessRevision": "bcc683bd85b0ab28dc90619832a20c5d705f5860",
+      "diagnostic": "ENOENT reading the case manifest outside the harness checkout",
+      "repair": "Read local case metadata and run harness Git operations against explicit GITHUB_WORKSPACE/harness",
+      "externalMiseCauseAsserted": false,
+      "proof": {
+        "rawBytes": 2307,
+        "rawSha256": "d935b8368f2b576bc35d0112ea263d66b38722debcb06c50aa84f08b14c5e87b",
+        "privatePathsRedacted": true,
+        "sanitizedBytes": 2268,
+        "sanitizedSha256": "de4a552c0c616ee7a41e7bc8f916be3d7ecf66d9018c4d0ca2e27a073caa0c41",
+        "encoding": "gzip+base64",
+        "data": "H4sIAAAAAAAAA+1WW2vkNhh9n18h/DJbGI8l+S5KoQ8p9KEJJPvUOAVdPs0o8UhTSZ7sEPLfF9uTzSTdwrYvpbTGGHy+c76LdCz8tEAoETxAwlDy/d6bA4+Q7nnc/pCsxph3jyFh6HaBEEJP0xOhpOcC+lGydSGm0m2dj6kA7TxMson0YKwaOXP4Fd9vT/XeCx6df9C9exxj642J20FkL1jIdEiNWh93/asAPu1BRlA3kcdhbBN/CYWvQGZj+di1Hfr+jKjcEMeST10CB7CxS1iXSLfbOfsy2gG80QZUl6y6uf+JNA8wgTPxZzXhvdtswKenHNp8isOJ5t0Q4Q1rPS5hmIPw+wAhgvpx7oFiWqUEp6T+iDGb7jXG+Nezgr9wazSEeLPltKwmleYFqKqpC11XVaEpLzipmroFQnJciRokFHVTU10SKmjZ8KJWui1I1YgmB4Gn7Ls/5i0anNclFSInWmCpoOUFVZiqssxFi2VBCRU4VzmVmueaFi1pSN62uK6VUFhOebfcWwjhGg4mGGenxKThohV1odqGCCILLtuqxUphklNZc1C6buqinhMEN3gJb/SgMSlarEtoK6wbybEoaCEJpQWVHEQuS05FCV3y3NnkfOPB+3Hjkwl6Xn2Dx7mO4P+Cxd/x/3UOn/r/3+D/AYPPdf/0EJ/D/9QhTr7Z4l8b3zoFTAdWN7SzCHmIg7dIGKuM3azdHuyHEX93/dbZzl547zxDF5dXF5cfGbIOhUFukTY9IOeRMh5kdP64QmMatMwO3Gc7GzOw0h/3EVS2VrB3MXsxXMhOn8V9cHY51+URXYl7kHFq5uZoJfpw1jQjzXdfiB64+sn08JZV0Ybl5SvrFg68v2O0ZqRFTyMM3lvHUEpX45scdWg5z7WcoHAMkvc9Q8uxiRkbfwTY35nqeVy8S6dgfR/QgVZrQtaks7dZtufygW8gU3BIg/RmH7PIw0M6RNOz6A3v2ZSaScNOx8y5P40CG0083qGL6+urazRqkeamB9XZk88XCN0tnhefAYB5lQXcCAAA"
+      }
+    },
+    "actualCompleteGraph": false,
+    "actualProviderAcceptance": false,
+    "next": [
+      "Run the original host prerequisites and commands in an isolated development-only GitHub host route",
+      "Integrate final logger disposable-consumer cleanup/report retention",
+      "Freeze exact case bytes after every static route is ready"
+    ]
   }
 }
