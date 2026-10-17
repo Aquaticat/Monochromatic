@@ -135,8 +135,6 @@ filters,
 and safety guards remain unchanged.
 This route does not establish the behavior of a nested compositor under an ordinary desktop parent.
 
-## What does not work
-
 ## Completed session logs disappear before collection
 
 This is a separate evidence-retention boundary from display geometry.
