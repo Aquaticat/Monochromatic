@@ -4,18 +4,49 @@
 
 name: Scorecard supply-chain security
 on:
-  # For Branch-Protection check. Only the default branch is supported. See
-  # https://github.com/ossf/scorecard/blob/main/docs/checks.md#branch-protection
-  branch_protection_rule:
-  # To guarantee Maintained check is occasionally updated. See
-  # https://github.com/ossf/scorecard/blob/main/docs/checks.md#maintained
-  schedule:
-  - cron: '20 7 * * 6'
-  push:
-    branches: ['main']
+  workflow_dispatch:
+    inputs:
+      cohort_id:
+        description: Frozen shared replay identity
+        required: true
+        type: string
+      manifest_sha256:
+        description: SHA256 of the exact published common manifest bytes
+        required: true
+        type: string
+      requested_at:
+        description: Shared canonical UTC request instant after publication
+        required: true
+        type: string
+      case_id:
+        description: Immutable case selected by the common manifest
+        required: true
+        type: choice
+        options: [toml, logger, native, desktop]
+      source_head:
+        description: Immutable source revision to scan
+        required: true
+        type: string
+      source_base:
+        description: Immutable comparison base
+        required: true
+        type: string
 
 # Declare default permissions as read only.
 permissions: read-all
+
+env:
+  MISE_AUTO_INSTALL: 'false'
+  MISE_LOCKED: '1'
+  MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+  DEPOT_CI_CASE: ${{ inputs.case_id }}
+  DEPOT_CI_ROUTE: ${{ format('{0}.scorecard', inputs.case_id) }}
+  SOURCE_HEAD: ${{ inputs.source_head }}
+  SOURCE_BASE: ${{ inputs.source_base }}
+  COHORT_ID: ${{ inputs.cohort_id }}
+  COHORT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+  COHORT_REQUESTED_AT: ${{ inputs.requested_at }}
+  GH_TOKEN: ${{ github.token }}
 
 jobs:
   # Count recent analysis checks in GraphQL batches instead of spending one REST request per run.
@@ -25,6 +56,7 @@ jobs:
   rate-limit:
     name: Scorecard rate limit
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       actions: read
       checks: read
@@ -32,11 +64,42 @@ jobs:
     # Serialize gate jobs only; this does not reserve capacity before the later analysis job becomes visible.
     # A run waiting behind the gate is replaced by a newer one, which is the debounce.
     concurrency:
-      group: scorecard-rate-limit
+      group: scorecard-complete-cohort
       cancel-in-progress: false
     outputs:
       allowed: ${{ steps.count.outputs.allowed }}
     steps:
+    - name: Checkout frozen harness
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        path: harness
+        persist-credentials: false
+    - name: Checkout immutable case source
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        path: source
+        ref: ${{ inputs.source_head }}
+        fetch-depth: 2
+        persist-credentials: false
+    - name: Install verified task runner bootstrap
+      uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Reuse the bootstrap exercised by the existing trial workflows.
+        version: 2026.10.9
+        working_directory: harness
+        install: false
+        env: false
+        export_path: false
+        cache: false
+    - name: Install the frozen harness Node runtime
+      working-directory: harness
+      run: mise install node
+    - name: Bind immutable source and shared cohort before Scorecard
+      id: cohort_before
+      working-directory: harness
+      env:
+        DEPOT_CI_IDENTITY_PHASE: before
+      run: mise run //package/dev-script/task-util:trial:depot:ci:cohort-identity
     - name: 'Count recent analysis runs'
       id: count
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -157,64 +220,76 @@ jobs:
           }
           core.setOutput('allowed', String(spent === undefined));
 
+    - name: Verify immutable source and shared cohort after Scorecard
+      if: ${{ always() && steps.cohort_before.outcome == 'success' }}
+      working-directory: harness
+      env:
+        DEPOT_CI_IDENTITY_PHASE: after
+      run: mise run //package/dev-script/task-util:trial:depot:ci:cohort-identity
+    - name: Preserve Scorecard gate cohort provenance
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: scorecard-${{ inputs.case_id }}-gate-cohort-evidence
+        path: ~/temp/agent/depot-complete-ci/*-provenance-*.json
+        if-no-files-found: ignore
+
   analysis:
     name: Scorecard analysis
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: rate-limit
-    # `publish_results: true` only works when run from the default branch. conditional can be removed if disabled.
-    if: >-
-      needs.rate-limit.outputs.allowed == 'true' &&
-      (github.event.repository.default_branch == github.ref_name || github.event_name == 'pull_request')
-    permissions:
-      # Needed to upload the results to code-scanning dashboard.
-      security-events: write
-      # Needed to publish results and get a badge (see publish_results below).
-      id-token: write
-      # Uncomment the permissions below if installing in a private repository.
-      # contents: read
-      # actions: read
-
+    if: needs.rate-limit.result == 'success' && needs.rate-limit.outputs.allowed == 'true'
+    permissions: read-all
     steps:
-    - name: 'Checkout code'
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+    - name: Checkout frozen harness
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       with:
+        path: harness
         persist-credentials: false
-
-    - name: 'Run analysis'
-      uses: ossf/scorecard-action@f49aabe0b5af0936a0987cfb85d86b75731b0186 # v2.4.1
+    - name: Checkout immutable case source
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       with:
-        results_file: results.sarif
-        results_format: sarif
-        # (Optional) "write" PAT token. Uncomment the `repo_token` line below if:
-        # - you want to enable the Branch-Protection check on a *public* repository, or
-        # - you are installing Scorecard on a *private* repository
-        # To create the PAT, follow the steps in https://github.com/ossf/scorecard-action?tab=readme-ov-file#authentication-with-fine-grained-pat-optional.
-        # repo_token: ${{ secrets.SCORECARD_TOKEN }}
-
-        # Public repositories:
-        #   - Publish results to OpenSSF REST API for easy access by consumers
-        #   - Allows the repository to include the Scorecard badge.
-        #   - See https://github.com/ossf/scorecard-action#publishing-results.
-        # For private repositories:
-        #   - `publish_results` will always be set to `false`, regardless
-        #     of the value entered here.
-        publish_results: true
-
-        # (Optional) Uncomment file_mode if you have a .gitattributes with files marked export-ignore
-        # file_mode: git
-
-    # Upload the results as artifacts (optional). Commenting out will disable uploads of run results in SARIF
-    # format to the repository Actions tab.
+        path: source
+        ref: ${{ inputs.source_head }}
+        fetch-depth: 2
+        persist-credentials: false
+    - name: Install verified task runner bootstrap
+      uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Reuse the bootstrap exercised by the existing trial workflows.
+        version: 2026.10.9
+        working_directory: harness
+        install: false
+        env: false
+        export_path: false
+        cache: false
+    - name: Install the frozen harness Node runtime
+      working-directory: harness
+      run: mise install node
+    - name: Bind immutable source and shared cohort before Scorecard
+      id: cohort_before
+      working-directory: harness
+      env:
+        DEPOT_CI_IDENTITY_PHASE: before
+      run: mise run //package/dev-script/task-util:trial:depot:ci:cohort-identity
+    - name: 'Measure live default-branch analysis without publication'
+      working-directory: harness/.scorecard-trial
+      env:
+        INPUT_REPO_TOKEN: ${{ github.token }}
+      run: mise run --skip-tools analysis
+    - name: Verify immutable source and shared cohort after Scorecard
+      if: ${{ always() && steps.cohort_before.outcome == 'success' }}
+      working-directory: harness
+      env:
+        DEPOT_CI_IDENTITY_PHASE: after
+      run: mise run //package/dev-script/task-util:trial:depot:ci:cohort-identity
     - name: 'Upload artifact'
+      if: always()
       uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
       with:
-        name: SARIF file
-        path: results.sarif
+        name: scorecard-${{ inputs.case_id }}-analysis-evidence
+        path: |
+          harness/.scorecard-trial/output/
+          ~/temp/agent/depot-complete-ci/*-provenance-*.json
         retention-days: 5
-
-    # Upload the results to GitHub's code scanning dashboard (optional).
-    # Commenting out will disable upload of results to your repo's Code Scanning dashboard
-    - name: 'Upload to code-scanning'
-      uses: github/codeql-action/upload-sarif@e46ed2cbd01164d986452f91f178727624ae40d7
-      with:
-        sarif_file: results.sarif
