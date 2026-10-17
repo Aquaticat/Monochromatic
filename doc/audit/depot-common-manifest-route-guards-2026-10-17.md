@@ -128,3 +128,25 @@ This verifies Linux task-directory resolution;
 it does not claim a new Windows/macOS provider run or actual canonical-cohort read.
 The original body controls remain `20` accepted and `110` rejected cases.
 Final canonical acceptance and coherent dispatch remain held.
+
+## GitHub runner context scope audit
+
+Structured YAML inspection found no `runner` token in any workflow-level or job-level environment
+of the held native,
+Windows,
+or Alpine routes at the accepted revisions.
+Their provenance output paths already use step-level environments;
+artifact paths use action inputs.
+The current GitHub documentation bytes and environment mappings are retained in the machine evidence.
+The scanner reached the known invalid job and workflow environment fixtures,
+while excluding the valid step fixture and runtime `RUNNER_TEMP` variable.
+This is a local scope audit,
+not new GitHub parser acceptance or host execution.
+
+The [existing parser diagnosis](../troubleshooting/github-actions-job-env-runner-context.md)
+retains the exact HTTP 422 diagnostic and actual accepted step-level recovery.
+All held workflow,
+case,
+and helper bytes remain unchanged;
+no route edit or dispatch was required.
+Final coherent dispatch remains held.

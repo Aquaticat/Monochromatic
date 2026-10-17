@@ -2394,5 +2394,421 @@
     ],
     "scope": "Actual nested Mise metadata resolution on Linux for unchanged original native, Windows, Alpine and TOML templates. Earlier real guard body controls remain the 20 accepted and 110 rejected cases. This is not a new Windows/macOS provider execution or canonical-cohort read.",
     "conclusion": "Original task configuration keeps the literal config_root template and resolves to each intended harness. No native guard rewrite was made."
+  },
+  "heldGitHubRunnerContextAudit": {
+    "observedAt": "2026-10-17T10:01:07.714Z",
+    "scope": "Structured YAML inspection of every workflow/job env mapping in the three held GitHub routes. Runner-token matching is conservative local inspection, not the GitHub backend parser.",
+    "controls": [
+      {
+        "name": "known-invalid-job-environment",
+        "yaml": "jobs:\n  example:\n    env:\n      OUTPUT: ${{ runner.temp }}/output\n",
+        "expected": 1,
+        "observed": 1,
+        "passed": true
+      },
+      {
+        "name": "known-invalid-workflow-environment",
+        "yaml": "env:\n  OUTPUT: ${{ runner.temp }}/output\njobs: {}\n",
+        "expected": 1,
+        "observed": 1,
+        "passed": true
+      },
+      {
+        "name": "step-environment-remains-outside-job-environment",
+        "yaml": "jobs:\n  example:\n    steps:\n      - env:\n          OUTPUT: ${{ runner.temp }}/output\n        run: original-command\n",
+        "expected": 0,
+        "observed": 0,
+        "passed": true
+      },
+      {
+        "name": "runtime-variable-is-not-runner-context",
+        "yaml": "jobs:\n  example:\n    env:\n      OUTPUT: \"$env:RUNNER_TEMP\"\n",
+        "expected": 0,
+        "observed": 0,
+        "passed": true
+      }
+    ],
+    "routes": [
+      {
+        "id": "native",
+        "directory": "depot-coherent-native-worktree",
+        "revision": "2032975cbad924e63ac98bc69e14a56b20288275",
+        "workflow": ".github/workflows/music-player-windows.yml",
+        "workflowBytes": 6630,
+        "workflowSha256": "8405dfb1c339351a005ee36116ac918629ca045ddab7656a314bc65bf4e9ccb6",
+        "workflowAndJobEnvironments": [
+          {
+            "path": "env",
+            "value": {
+              "GH_TOKEN": "${{ github.token }}"
+            },
+            "runnerTokenCandidates": []
+          },
+          {
+            "path": "jobs.native.env",
+            "value": {
+              "MISE_AUTO_INSTALL": "false",
+              "MISE_TRUSTED_CONFIG_PATHS": "${{ github.workspace }}",
+              "MISE_NODE_VERSION": "26.11.1",
+              "MISE_RUST_VERSION": "nightly-2026-10-13",
+              "MISE_CMAKE_VERSION": "4.4.4",
+              "CARGO_INCREMENTAL": "0",
+              "CARGO_PROFILE_DEV_DEBUG": "0",
+              "SOURCE_HEAD": "${{ inputs.source_head }}"
+            },
+            "runnerTokenCandidates": []
+          }
+        ],
+        "runnerFields": [
+          {
+            "path": "jobs.native.name",
+            "value": "Native package gates (${{ matrix.runner }})",
+            "expressions": [
+              "${{ matrix.runner }}"
+            ],
+            "bareIf": false
+          },
+          {
+            "path": "jobs.native.runs-on",
+            "value": "${{ matrix.runner }}",
+            "expressions": [
+              "${{ matrix.runner }}"
+            ],
+            "bareIf": false
+          },
+          {
+            "path": "jobs.native.steps.15.env.PROVENANCE_OUTPUT",
+            "value": "${{ runner.temp }}/depot-provenance",
+            "expressions": [
+              "${{ runner.temp }}"
+            ],
+            "bareIf": false
+          },
+          {
+            "path": "jobs.native.steps.16.with.name",
+            "value": "depot-native-provenance-${{ inputs.source_head }}-${{ runner.os }}-${{ runner.arch }}",
+            "expressions": [
+              "${{ runner.os }}",
+              "${{ runner.arch }}"
+            ],
+            "bareIf": false
+          },
+          {
+            "path": "jobs.native.steps.16.with.path",
+            "value": "${{ runner.temp }}/depot-provenance",
+            "expressions": [
+              "${{ runner.temp }}"
+            ],
+            "bareIf": false
+          },
+          {
+            "path": "jobs.native.steps.6.if",
+            "value": "${{ runner.os == 'Windows' }}",
+            "expressions": [
+              "${{ runner.os == 'Windows' }}"
+            ],
+            "bareIf": true
+          },
+          {
+            "path": "jobs.native.steps.8.env.PROVENANCE_OUTPUT",
+            "value": "${{ runner.temp }}/depot-provenance",
+            "expressions": [
+              "${{ runner.temp }}"
+            ],
+            "bareIf": false
+          },
+          {
+            "path": "jobs.native.steps.9.with.key",
+            "value": "depot-complete-native-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.source_head }}",
+            "expressions": [
+              "${{ runner.os }}",
+              "${{ runner.arch }}"
+            ],
+            "bareIf": false
+          }
+        ],
+        "unchangedTrackedInputs": [
+          {
+            "path": ".depot/manifests/desktop.json",
+            "bytes": 7633,
+            "sha256": "41b74e753e3687928985ebf787cc8fc242ded799eb6f40211e68006f45b377f9"
+          },
+          {
+            "path": ".depot/manifests/native.json",
+            "bytes": 13942,
+            "sha256": "0ab869b0e2095a9d9cb13d24380f0c48d4aa00d7733b71c8df5ad4a7183db473"
+          },
+          {
+            "path": "package/dev-script/task-util/mise.toml",
+            "bytes": 18160,
+            "sha256": "741805a6a26fcd974551f2cb5c66848b0485ac405754015dcb288aa5c1f6de8d"
+          }
+        ],
+        "trackedStatusEmptyBeforeAndAfter": true,
+        "workflowEdited": false,
+        "dispatchPerformed": false
+      },
+      {
+        "id": "windows",
+        "directory": "depot-coherent-windows-worktree",
+        "revision": "e70240dc7317124a0db5b37967c570cf2f3fb6f4",
+        "workflow": ".github/workflows/music-player-windows.yml",
+        "workflowBytes": 31269,
+        "workflowSha256": "ea2fbf3804afac723c97a313c0e6a2acdb8d73c9a0da1d924fe1c887d0fa9ba7",
+        "workflowAndJobEnvironments": [
+          {
+            "path": "env",
+            "value": {
+              "GH_TOKEN": "${{ github.token }}",
+              "MISE_AUTO_INSTALL": "false",
+              "SLINT_ENABLE_EXPERIMENTAL_FEATURES": "1",
+              "SLINT_EMIT_DEBUG_INFO": "1",
+              "CARGO_INCREMENTAL": "0",
+              "CARGO_PROFILE_DEV_DEBUG": "0",
+              "CARGO_TERM_COLOR": "always",
+              "NEXTEST_VERSION": "0.9.148"
+            },
+            "runnerTokenCandidates": []
+          },
+          {
+            "path": "jobs.windows.env",
+            "value": {
+              "TARGET": "${{ matrix.target }}",
+              "FLAVOR": "${{ matrix.flavor }}",
+              "JOB_NAME": "${{ matrix.name }}"
+            },
+            "runnerTokenCandidates": []
+          }
+        ],
+        "runnerFields": [
+          {
+            "path": "jobs.windows.runs-on",
+            "value": "${{ matrix.runner }}",
+            "expressions": [
+              "${{ matrix.runner }}"
+            ],
+            "bareIf": false
+          },
+          {
+            "path": "jobs.windows.steps.12.with.key",
+            "value": "mp-win-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.name }}-${{ matrix.target }}-${{ steps.toolchain.outputs.version }}-${{ hashFiles('package/music-player/desktop-app/Cargo.lock', 'package/music-player/truepeak-core/Cargo.lock') }}",
+            "expressions": [
+              "${{ runner.os }}",
+              "${{ runner.arch }}"
+            ],
+            "bareIf": false
+          },
+          {
+            "path": "jobs.windows.steps.12.with.restore-keys",
+            "value": "mp-win-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.name }}-${{ matrix.target }}-${{ steps.toolchain.outputs.version }}-\n",
+            "expressions": [
+              "${{ runner.os }}",
+              "${{ runner.arch }}"
+            ],
+            "bareIf": false
+          },
+          {
+            "path": "jobs.windows.steps.27.env.PROVENANCE_OUTPUT",
+            "value": "${{ runner.temp }}/depot-provenance",
+            "expressions": [
+              "${{ runner.temp }}"
+            ],
+            "bareIf": false
+          },
+          {
+            "path": "jobs.windows.steps.28.with.path",
+            "value": "${{ runner.temp }}/depot-provenance",
+            "expressions": [
+              "${{ runner.temp }}"
+            ],
+            "bareIf": false
+          },
+          {
+            "path": "jobs.windows.steps.4.env.PROVENANCE_OUTPUT",
+            "value": "${{ runner.temp }}/depot-provenance",
+            "expressions": [
+              "${{ runner.temp }}"
+            ],
+            "bareIf": false
+          },
+          {
+            "path": "jobs.windows.steps.7.with.key",
+            "value": "msys2-pkg-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.msystem }}-${{ steps.month.outputs.value }}",
+            "expressions": [
+              "${{ runner.os }}",
+              "${{ runner.arch }}"
+            ],
+            "bareIf": false
+          },
+          {
+            "path": "jobs.windows.steps.7.with.restore-keys",
+            "value": "msys2-pkg-v1-${{ runner.os }}-${{ runner.arch }}-${{ matrix.msystem }}-\n",
+            "expressions": [
+              "${{ runner.os }}",
+              "${{ runner.arch }}"
+            ],
+            "bareIf": false
+          }
+        ],
+        "unchangedTrackedInputs": [
+          {
+            "path": ".depot/manifests/desktop.json",
+            "bytes": 7633,
+            "sha256": "41b74e753e3687928985ebf787cc8fc242ded799eb6f40211e68006f45b377f9"
+          },
+          {
+            "path": ".depot/manifests/native.json",
+            "bytes": 13942,
+            "sha256": "0ab869b0e2095a9d9cb13d24380f0c48d4aa00d7733b71c8df5ad4a7183db473"
+          },
+          {
+            "path": "package/dev-script/task-util/mise.toml",
+            "bytes": 10942,
+            "sha256": "b4a715b29eaf5f172b049fee04d5a6d5c1fe68964f0ad13b4249a35d56c243e8"
+          }
+        ],
+        "trackedStatusEmptyBeforeAndAfter": true,
+        "workflowEdited": false,
+        "dispatchPerformed": false
+      },
+      {
+        "id": "alpine",
+        "directory": "depot-coherent-alpine-worktree",
+        "revision": "5152df4debd88f5e0b57802c7c8c958b1a5f6255",
+        "workflow": ".github/workflows/music-player-alpine.yml",
+        "workflowBytes": 15147,
+        "workflowSha256": "04552da97fc4bc3a79393e5f6cda1d740e81e183207ad4203114f39d355b673b",
+        "workflowAndJobEnvironments": [
+          {
+            "path": "env",
+            "value": {
+              "GH_TOKEN": "${{ github.token }}"
+            },
+            "runnerTokenCandidates": []
+          },
+          {
+            "path": "jobs.alpine.env",
+            "value": {
+              "CI_CACHE": "${{ github.workspace }}/.ci-cache",
+              "BUILD_MEMORY": "12g",
+              "BUILD_CPUS": "4"
+            },
+            "runnerTokenCandidates": []
+          }
+        ],
+        "runnerFields": [
+          {
+            "path": "jobs.alpine.runs-on",
+            "value": "${{ matrix.runner }}",
+            "expressions": [
+              "${{ matrix.runner }}"
+            ],
+            "bareIf": false
+          },
+          {
+            "path": "jobs.alpine.steps.15.with.key",
+            "value": "music-player-alpine-${{ runner.arch }}-${{ steps.toolchain.outputs.key }}-${{ hashFiles('package/music-player/desktop-app/Cargo.lock', 'package/cli/nested-wayland-session/Cargo.lock') }}",
+            "expressions": [
+              "${{ runner.arch }}"
+            ],
+            "bareIf": false
+          },
+          {
+            "path": "jobs.alpine.steps.17.with.path",
+            "value": "${{ runner.temp }}/smoke-out",
+            "expressions": [
+              "${{ runner.temp }}"
+            ],
+            "bareIf": false
+          },
+          {
+            "path": "jobs.alpine.steps.18.env.PROVENANCE_OUTPUT",
+            "value": "${{ runner.temp }}/depot-provenance",
+            "expressions": [
+              "${{ runner.temp }}"
+            ],
+            "bareIf": false
+          },
+          {
+            "path": "jobs.alpine.steps.19.with.path",
+            "value": "${{ runner.temp }}/depot-provenance",
+            "expressions": [
+              "${{ runner.temp }}"
+            ],
+            "bareIf": false
+          },
+          {
+            "path": "jobs.alpine.steps.4.env.PROVENANCE_OUTPUT",
+            "value": "${{ runner.temp }}/depot-provenance",
+            "expressions": [
+              "${{ runner.temp }}"
+            ],
+            "bareIf": false
+          },
+          {
+            "path": "jobs.alpine.steps.8.with.key",
+            "value": "music-player-alpine-${{ runner.arch }}-${{ steps.toolchain.outputs.key }}-${{ hashFiles('package/music-player/desktop-app/Cargo.lock', 'package/cli/nested-wayland-session/Cargo.lock') }}",
+            "expressions": [
+              "${{ runner.arch }}"
+            ],
+            "bareIf": false
+          },
+          {
+            "path": "jobs.alpine.steps.8.with.restore-keys",
+            "value": "music-player-alpine-${{ runner.arch }}-${{ steps.toolchain.outputs.key }}-\n",
+            "expressions": [
+              "${{ runner.arch }}"
+            ],
+            "bareIf": false
+          }
+        ],
+        "unchangedTrackedInputs": [
+          {
+            "path": ".depot/manifests/desktop.json",
+            "bytes": 7633,
+            "sha256": "41b74e753e3687928985ebf787cc8fc242ded799eb6f40211e68006f45b377f9"
+          },
+          {
+            "path": ".depot/manifests/native.json",
+            "bytes": 13942,
+            "sha256": "0ab869b0e2095a9d9cb13d24380f0c48d4aa00d7733b71c8df5ad4a7183db473"
+          },
+          {
+            "path": "package/dev-script/task-util/mise.toml",
+            "bytes": 10941,
+            "sha256": "6b13064299fab706b35ac0c49488da7b6f0eac3f30742643e8a4758d7d97781d"
+          }
+        ],
+        "trackedStatusEmptyBeforeAndAfter": true,
+        "workflowEdited": false,
+        "dispatchPerformed": false
+      }
+    ],
+    "currentDocumentation": {
+      "repository": "github/docs",
+      "path": "content/actions/reference/workflows-and-actions/contexts.md",
+      "gitBlob": "be3a45d835ae1d18903a01162e3c6e6efb7e3add",
+      "gitUrl": "https://api.github.com/repos/github/docs/git/blobs/be3a45d835ae1d18903a01162e3c6e6efb7e3add",
+      "bytes": 50559,
+      "sha256": "cdcfe7575683bd13e1942a085bc853e8907495386de5a2715be96b2270f35396",
+      "referenceRows": [
+        {
+          "line": 97,
+          "text": "| `jobs.<job_id>.env` | `github, needs, strategy, matrix, vars, secrets, inputs` | None |"
+        },
+        {
+          "line": 109,
+          "text": "| `jobs.<job_id>.steps.env` | `github, needs, strategy, matrix, job, runner, env, vars, secrets, steps, inputs` | `hashFiles` |"
+        },
+        {
+          "line": 114,
+          "text": "| `jobs.<job_id>.steps.with` | `github, needs, strategy, matrix, job, runner, env, vars, secrets, steps, inputs` | `hashFiles` |"
+        }
+      ],
+      "command": "gh api repos/github/docs/contents/content/actions/reference/workflows-and-actions/contexts.md --header Accept:application/vnd.github.object+json"
+    },
+    "outcome": "No runner token occurs in workflow-level or job-level env. Provenance runner.temp values already use step.env; artifact paths use step.with. No route edit or provider dispatch was needed.",
+    "scopeLimit": "No new GitHub parser acceptance, Windows/macOS execution, or canonical-cohort acceptance is claimed. Existing guards, source commands and provisional case bytes are unchanged. Final coherent dispatch remains held.",
+    "existingVerifiedDiagnosis": "doc/troubleshooting/github-actions-job-env-runner-context.md"
   }
 }
