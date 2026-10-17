@@ -16,9 +16,9 @@ Root is documenting the setup before resuming its remaining replay preparation.
 The user clarified that `.out-of-scope/codex-harness.md` describes no ongoing maintenance guarantee,
 not a prohibition on Codex work.
 The document now explicitly permits work authorized by the active task without a separate policy exception.
-An optional clarification of `AGENTS.md`'s existing `AUT` rule was proposed through the question tool;
-the user's response is pending,
-and `AGENTS.md` has not been changed.
+The user chose to keep this clarification only in the Codex scope document;
+the proposed general `AUT` clarification was declined,
+and `AGENTS.md` remains unchanged.
 The existing Depot work remains active:
 logger recovery `dhxhzzvmc3` and independent-leaf recovery preparation belong to the logger owner;
 native platform route preparation belongs to the native owner.
