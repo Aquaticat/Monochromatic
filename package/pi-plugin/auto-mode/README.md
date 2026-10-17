@@ -9,6 +9,13 @@ The installed native host evaluates the proposed operation against applicable in
 Luna estimates instruction meanings;
 code resolves the decision and preserves the original operation through confirmation and execution.
 
+The [architecture and size record](doc/architecture.md) documents the shared prepared-group implementation,
+each major responsibility,
+verified behavior,
+and remaining lint debt.
+The package occupies about 22.9 MB including active output and a verified rollback,
+excluding shared dependency symlink targets.
+
 ## Current native behavior
 
 The installed `pi` command uses the maintained native host described in [the native README](native/README.md).

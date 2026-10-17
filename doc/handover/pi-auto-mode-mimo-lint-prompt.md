@@ -1,251 +1,112 @@
-# MiMo v2.6 Pro lint cleanup prompt
+# MiMo lint handoff
 
-## Purpose
+## Objective and scope
 
-Paste the task section into a new MiMo v2.6 Pro coding session in this repository.
-It hands off remaining auto-mode lint work after replacing the decision core and restoring native behavior.
-It preserves selected decision context, scoped confirmation, bypass, and verified release activation.
-Review the measured diagnostics and behavioral evidence in the resulting commits.
-The prompt itself has not been benchmarked against alternative prompts.
+MiMo's task is to clear the complete maintained lint scope for `package/pi-plugin/auto-mode`
+while preserving the verified native execution and review behavior.
+The refactor has passing behavioral verification; lint completion is still pending.
 
-The bounded work cycle and explicit repeat-call rule are deliberate:
-Xiaomi documents unnecessary repeated tool calls as a MiMo v2.6 failure mode in its
-[tool repetition analysis](https://mimo.xiaomi.com/zh/blog/mimo-v2-6-tool-call-repetition).
-This is a task-level mitigation,
-not a claim that a prompt replaces model or harness fixes.
+The 2026-10-17 full Oxlint run reports **83 errors and 13,686 warnings**
+across **813 files and 486 rules**, using one thread.
+The previous intermediate snapshot reported 30 errors and 13,163 warnings.
+Phase extraction and its genuine host fixtures add findings while removing retired protocols;
+this is an explicit increase in diagnostic debt, not a clean-lint claim.
 
-## Task prompt
+The exact diagnostics and per-file error index are private:
 
-You are implementing lint fixes in `package/pi-plugin/auto-mode` in the current repository.
-Finish the remaining maintained-code lint queue while preserving Pi's working native behavior.
-Work autonomously through verified changes until the queue is complete or a concrete blocker requires user input.
-The installed baseline is verified for this handoff:
-the complete reported interaction reaches all 21 calls across 12 groups without confirmation,
-and the independent prohibited-read control blocks both reads.
-The complete lint queue still needs a fresh measurement.
+- `${HOME}/temp/agent/pi-mimo-lint-approval-20261017/final-full-oxlint.log`.
+- `${HOME}/temp/agent/pi-mimo-lint-approval-20261017/final-lint-errors.json`.
+- `${HOME}/temp/agent/pi-mimo-lint-approval-20261017/final-lint-summary.json`.
 
-### Establish the current state
+## Starting point
 
-Read `AGENTS.md`,
-applicable package instructions,
-and `doc/handover/pi-auto-mode-current-frontier.md`.
-Treat its active-work section as current and its named measurements as historical.
-Use `doc/handover/pi-auto-mode-axiom-evaluation.md` only for evidence needed by the boundary you change.
-Inspect repository status and preserve concurrent changes.
+1.  Read the [package architecture](../../package/pi-plugin/auto-mode/doc/architecture.md)
+    and the [implemented compact design](../../package/pi-plugin/auto-mode/doc/compact-review-design.md).
+    Each major responsibility links to its callers, invariants, alternatives, and verification.
+2.  Select a coherent error cluster from the measured error index.
+    Native phase fixtures contain 25 errors;
+    the shared dispatcher and phase callbacks are separate clusters.
+    The linter rule source and actual borrowed API determine a valid restructuring.
+3.  After a coherent change, the package type check and affected consumer tests establish preservation.
+    Execution changes also need a native build before their consumer tests.
+4.  Completion requires a fresh full-package lint result with zero errors and warnings,
+    passing type checking and affected native tests,
+    and a report of commits and exercised boundaries.
 
-Run the package's complete maintained lint task through `mise run`,
-save its untruncated output,
-and count diagnostics by file and rule.
-Verify the configured input scope includes maintained native modules.
-The last pre-bypass measurement was 826 files,
-zero errors,
-and 10151 warnings.
-Those numbers are a historical reference,
-not a current baseline.
-The subsequent host-isolation focused check covered 40 changed files,
-with zero errors and 2709 warnings.
-It exited nonzero for warnings and is not a complete-package count.
-The replacement's type checking and relevant built-consumer regressions passed.
-Live configured-host Luna checks verified scoped Allow, prohibition, and independent external approval requirements.
+The configured commands are:
 
-Read root and package `mise.toml` before selecting commands.
-Existing tasks include `lint:oxlint`,
-`lint:types`,
-`build:js:node`,
-`build:native`,
-`test:native:domain`,
-`test:native:approval-context`,
-and `test:native:bypass`.
-Invoke package tasks as `mise run //package/pi-plugin/auto-mode:<task>`.
+```sh
+# Repository: package/pi-plugin/auto-mode/mise.toml
+mise run //package/pi-plugin/auto-mode:lint:oxlint
+mise run //package/pi-plugin/auto-mode:lint:types
+mise run //package/pi-plugin/auto-mode:build
+mise run //package/pi-plugin/auto-mode:test:unit
+mise run //package/pi-plugin/auto-mode:test:native:phases
+mise run //package/pi-plugin/auto-mode:test:native:decision-fallback
+mise run //package/pi-plugin/auto-mode:test:native:execution
+```
 
-### Preserve the repaired behavior
+The lint task already bounds Node and Go workers.
+Verification uses disposable state and the repository's resource limits.
+An explicit filename subset supports local iteration;
+the no-argument lint command is the completion measurement.
+Rule severity and coverage remain unchanged.
 
-Pi owns ordinary chat, provider switching, retries, navigation, reload, and native callback effects.
-Auto-mode starts the judgment at complete-group dispatch and captures operation-local native currentness.
-Preserve passive prompt, event, and transport observation when capture fails.
-Unresolved or failed clause assessment first reaches Luna's complete-operation decision question.
-Only exhausted automatic paths or unavailable original inputs fall back to manual approval of the exact group.
-An established policy decision or approval remains binding when its dependencies become stale;
-the fallback must not open a second dialog that bypasses it.
-Use `test:native:session-actions`, `test:native:host-isolation`, and `test:native:manual-group`
-when changing these boundaries.
+## Verified behavior to preserve
 
-Shift+Tab now toggles explicit bypass through `src/native-bypass.ts` and native resource registration.
-Enabled bypass executes native tools and nested programs without semantic assessments or fabricated approvals.
-Disabled bypass restores normal policy enforcement.
-Programs outside automatic inspection then require manual approval; Stop executes nothing.
-Session reload preserves state;
-the visible status and session audit entries remain meaningful.
-The fixed virtual-input guard runs in both modes.
-The integration regression test is `test:native:bypass`.
-Bypass also supports ordinary native programs outside the guarded semantic profiles.
-Do not move semantic profile preparation back ahead of the bypass branch.
+The native build is `native-release-qWSxFz`.
+Both direct and child groups use Pi's actual preparation, execution, and finalization bodies.
+The same prepared group owns automatic review, manual confirmation, membership, and execution maps.
+Native slots expose phase retention; the retired `invokeProgramNative` API and whole-call adapters are absent.
+Restoring them to satisfy fixture typing would restore removed architecture.
 
-`native/contract/integration/action-policy/decision-core.mjs` now owns decision composition.
-The former `evaluate.mjs`, `index.mjs`, and `reviewer.mjs` forwarding paths were removed on 2026-10-15.
-Preserve this consolidation rather than restoring a parallel decision framework.
-Assessment context selects the legacy five-message floor or complete latest-user span before candidate issuance.
-Review covers execution permission and required consent.
-Its inputs are the proposed operation, selected readable project policy excerpts, and selected visible messages.
-Pi's hidden prompts, tool metadata, and skill catalog stay outside Luna review.
-Initialization and reload refresh changed or missing tagged policy-rule relevance through the incumbent cache.
-Rules scoring below `0.60`, including uncertain rules, are culled from operation review.
-Complete policy documents remain local for original-source and freshness checks.
-Keep complete selected messages;
-retained archives and the raw provider request must not return as additional model input.
-Each clause question also carries the complete proposed operation.
-The regressions are `test:visible-context`, `test:native:shell-projection`, and `test:native:startup-relevance`.
+The full units and type check pass.
+The native lifecycle catalog passes all 22 modes,
+including actual child preparation, hidden-property rejection, hook blocking, and cancellation.
+The 24 fallback cases and native execution catalogs pass.
+Logger destination tests and the full logger unit suite also pass.
 
-Prerequisite estimates and first-pass prohibition estimates must reach the decision model
-rather than becoming terminal restrictions.
-Last-resort Allow authorizes the exact group without rewriting those estimates as satisfied external facts.
-Final whole-operation model denials remain terminal.
-Retain correlated assessment inputs, source references, distributions, admission, and fallback reasons in logs.
-Use `test:native:approval` and `test:native:manual-review` when changing this boundary.
-Use `test:native:decision-fallback` for model-before-dialog routing and diagnostic reconstruction.
+The final configured replay `pi-hyper-rpc-allow-nTpk0q` completes all 16 original calls,
+including both reported groups and intermediate process output,
+with zero selectors and 17 actual live-Luna requests.
+The actual transmitted requests pass positive-controlled payload inspection:
+raw structured commands, thinking, and signatures are absent.
+The prohibition replay `pi-hyper-rpc-allow-gSMsqH` withholds both process/Bash members
+with zero selectors and three actual Luna responses.
+The private replay retains configured extensions, skills, tool catalogs, and preceding turns.
 
-Native builds stage immutable releases, including their matching maintained policy bundle,
-and validate CLI loading before changing the active link.
-Use `test:native:build-activation` for changes to build publication.
-Do not relocate or delete a release referenced by a running process.
+The process-local denial mutation removes both independent disposition barriers.
+The real native test then executes three harmless fixture commands and fails with `3 !== 0`.
+Production file hashes remain unchanged.
+Private replay and mutation tasks live in the investigation scratch `mise.toml`.
 
-The earlier corrected release was `native-release-ikWviS` as of 2026-10-16.
-The current installed release is `native-release-b8o8BL`, verified on 2026-10-17.
-Its 22 fallback cases, complete configured-session replay, live prohibition control,
-and audit of all 25 outgoing replay requests pass.
-Fresh Pi sessions load this release;
-already-running processes retain their loaded modules.
+Luna remains `openai/gpt-6-luna-decisions` with cutoff `0.60`.
+Assessments retain three sequential bundles of up to three parallel calls,
+at most 200 questions per call, and the existing eligible one-retry allowance.
+Fifteen seconds remains advisory.
+Clause, heading, unit, and whole-operation fallback semantics remain distinct.
+Source identity, exact membership, tool freshness, cancellation, callbacks, event ordering,
+scoped Allow/Stop, headless withholding, the fixed program guard, and issued-work drain remain required.
 
-Normal prompt capture retains complete text, source lists, tool metadata, and follow-up history
-without fixture-derived byte or occurrence ceilings.
-Keep explicit cycle detection, accessor/proxy rejection, source ownership, and freshness checks.
-The capture regression is `test:native:prompt-capacity`.
+The root `TCV` rule is unchanged by the user's decision.
+The package-local [review-input lesson](../../package/pi-plugin/auto-mode/native/review-input-verification.md)
+records actual provider-payload verification.
 
-Direct native Bash calls now receive automatic review alongside inspected programs.
-Preserve complete command strings locally for execution, ownership, and human confirmation.
-Luna receives locally parsed Bash structure, including argument and quoting roles,
-control flow, redirects, assignments, and nested execution.
-Assistant thinking and provider signatures are excluded from proposed operations and historical conversation.
-Whole-group assessment covers mixed direct Bash and codemode groups.
-The package-local lesson is `package/pi-plugin/auto-mode/native/review-input-verification.md`.
-Live Luna dispatch has been exercised with all 140 cached MCP tools;
-model uncertainty still uses scoped confirmation.
-Use `test:native:direct-bash` and `test:semantic-operating-policy` when changing admission.
-Keep retained-origin lookup linear in catalog size,
-parent checks at both collection boundaries,
-and registered schemas free of aggregate property-count ceilings.
-Use `test:native:run-message-freshness`, `test:native:source-freshness-work`,
-and `test:native:tool-schema-capacity` when changing capture.
-Configured-host checks must retain the real governing policy, working directory,
-extension, skill, and MCP metadata scope.
-Replay the reported commands against that context before claiming the incident is repaired.
-Disabling MCP omitted the original first-group failure and did not establish readiness.
-Substituting a synthetic working-directory policy omitted the later false-prerequisite boundary.
+## Storage and adjacent change
 
-Complete assessments use at most three sequential bundles of up to three parallel provider calls.
-Each provider request contains at most 200 questions and complete shared context.
-Keep exact question names, answer ordering, shared cancellation, and retired capability rejection.
-Fifteen seconds is a preparation-inclusive performance guideline.
-Elapsed time alone cannot expire evidence, cancel a provider request, or trigger confirmation.
-Constructor, preparation, transport, and startup relevance retain advisory timing without an enforced timer.
-Failed bundles and eligible retries consume the same allowance.
-The average USD 0.001 per judgment cost limit was removed.
-The built regression is `test:assessment-bundles`.
-Do not reinstate size-triggered manual review as a workaround for request construction.
+The package measures about 22.9 MB including the active 8.21 MB native output and a verified rollback.
+The measurement excludes shared dependency symlink targets.
+The source inventory still contains 65,692 parser-counted code lines including 28,596 verification lines.
+The user explicitly did not adopt 13k as a line target.
 
-Preserve original response,
-judgment,
-source,
-tool,
-and callback ownership.
-Keep cancellation,
-ordering,
-once-only cleanup,
-error constructors,
-error identity,
-and failure timing intact.
-`retainExecutionSources` supports both approved and explicitly bypassed execution;
-it retains dependencies and does not issue permission.
-Avoid changes to provider choices,
-user configuration,
-approval policy,
-or native installation while performing lint cleanup.
+Historical logs are losslessly archived outside the package.
+Maintenance removes 43 inactive release copies after consumer checks.
+New package tasks route logs through the existing shared logger using `MONOCHROMATIC_LOG_DIRECTORY`.
+The logger's optional directory API and its destination fixtures are the adjacent change in
+`package/module/logger`; they have passing build, unit, and type checks.
+Automatic release eviction and log retention are not implemented.
 
-### Work one boundary at a time
-
-Select a coherent diagnostic cluster from the current measurement.
-Historical candidates are the remaining `prepared-dispatch.mjs` coordination code
-and `program-profile-reviewed.mjs`.
-Prefer the current measured queue over those historical priorities.
-
-Read the relevant linter implementation and offending values.
-Explain the intended invariant briefly,
-then make the code shape satisfy it.
-Extract typed sibling modules when a real ownership or lifecycle boundary exists.
-Reuse the original module's diagnostic constructors and borrowed callbacks where identity matters.
-Preserve real mutation contracts;
-an analyzer limitation is not evidence of a runtime mutation.
-
-Keep lint rules,
-file coverage,
-and severity unchanged.
-Do not hide findings with broad casts,
-suppression comments,
-ignored files,
-fake contracts,
-or generated copies of maintained code.
-Treat a needed semantic change as a separate design decision requiring explicit acceptance.
-
-For each boundary:
-
-1.  Record the baseline behavior and the concrete invariants its consumers must retain.
-2.  Implement and commit scoped changes according to repository commit rules.
-3.  Build the maintained exports and native consumer as needed,
-    run package type checking,
-    and exercise the built consumer through the relevant test tasks.
-4.  For changed execution or ownership paths,
-    compare against the original implementation in disposable fixtures.
-    Include an allowed-versus-blocked positive control and relevant failure paths.
-    Prove new guards can fail using process-local omissions or disposable artifacts.
-5.  Run focused lint,
-    then recount complete maintained diagnostics after the boundary is verified.
-    Explain any increases rather than claiming progress from one clean file.
-6.  Update the current handover with commits,
-    measured results,
-    unresolved findings,
-    and the next concrete boundary.
-    Start the next queued boundary without waiting for a continuation request.
-
-Use existing replay and omission fixtures where they fit.
-Historical scratch artifacts live under `${HOME}/temp/agent/pi-tool-call-scope-20261014/`;
-verify their existence and inputs before relying on them.
-Keep state-mutating verification in disposable fixtures.
-Use the package's configured resource bounds.
-
-### Keep tool use tied to evidence
-
-Before each call,
-identify the unresolved fact,
-edit,
-or verification it serves.
-Batch independent reads;
-sequence edits before commands that consume them.
-Retain useful results in the handover instead of repeatedly rediscovering them.
-Repeat a command only after relevant state changed,
-to resolve a transient failure,
-or to perform a named control.
-If the same failure recurs with unchanged inputs,
-inspect its cause and change the experiment.
-Summarize findings and next actions without exposing private reasoning.
-
-### Completion
-
-Finish when the complete maintained lint scope reports zero errors and warnings,
-the package type check and affected built-consumer tests pass,
-and native bypass plus ordinary policy enforcement still pass their regression checks.
-Document the measured scope and any surfaces not exercised.
-Report commits,
-before-and-after diagnostics,
-verification commands and results,
-and remaining blockers.
-Never describe a subset as completion of the whole queue.
+The [current frontier](pi-auto-mode-current-frontier.md) retains incident evidence,
+commits, failed experiments, and historical measurements.
+The original second group's discarded transport cause remains unknown.
+Desktop `notify-send` termination is a separate incident.

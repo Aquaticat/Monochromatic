@@ -7,6 +7,82 @@ This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
 Updated 2026-10-17.
 
+## Verified MiMo lint handoff on 2026-10-17
+
+The current handoff is [MiMo lint handoff](pi-auto-mode-mimo-lint-prompt.md).
+The prepared group now owns automatic and manual review and execution membership.
+Root and child groups share actual native prepare/run/finalize phases.
+The duplicate manual group,
+original-source approval router,
+child dispatcher,
+and unused whole-call native API are removed.
+The remaining source compiler authenticates questions,
+source attribution,
+model responses,
+and asynchronous freshness rather than owning another execution path.
+
+Full units and type checking pass after migrating API catalogs to actual native slot phases.
+The phase-only API build `native-release-mHAoem` passes all 22 real lifecycle modes,
+all 24 fallback modes,
+and native execution catalogs.
+The final build `native-release-qWSxFz` includes the final type/documentation changes.
+Configured replay `pi-hyper-rpc-allow-nTpk0q` completes all 16 original calls,
+with zero selectors and 17 actual live-Luna requests.
+Positive-controlled inspection of the actual requests excludes raw structured commands,
+thinking,
+and signatures.
+Prohibition control `pi-hyper-rpc-allow-gSMsqH` withholds both process/Bash members,
+with zero selectors and three Luna responses.
+The process-local mutation removes both independent denial barriers;
+the actual native test executes three harmless fixture commands and fails with `3 !== 0`.
+Both production artifact hashes remain unchanged.
+
+The package measures about 22.9 MB after reviewed cleanup,
+including the 8,211,396-byte active output and a verified rollback.
+Shared external dependency symlink targets are excluded.
+The emitted runtime graph contains no missing static targets and records five computed import sites.
+Its 794 conservatively reachable files total 6,099,319 bytes;
+the complete output contains 1,030 regular files and 8,211,396 bytes.
+The source parser counts 813 tracked files,
+65,692 nonblank code lines,
+29,136 runtime statements,
+and 28,596 code lines in filename-classified verification.
+The user did not adopt a 13k line target.
+
+Cleanup dry-run and root stray-Git-entry checks precede removal of 43 inactive generated releases.
+The active output and `native-release-mHAoem` remain;
+no live native process references an old release at cleanup.
+An uncapped package-consumer scan has no hits outside this package.
+The final 622 unchanged logs preserve 265,115,894 original bytes as 10,014,676 compressed bytes.
+Independent combined-archive verification checks all 13,248 files and 7,329,290,087 decompressed bytes,
+and rejects changed same-length content in valid gzip.
+The first combined audit correctly rejects the old single-batch membership count;
+the corrected auditor checks both original inventories and every manifest entry.
+
+The existing logger now accepts an explicit directory or `MONOCHROMATIC_LOG_DIRECTORY`.
+Package tasks use private task diagnostics outside the package.
+The logger build,
+full unit suite,
+and type check pass.
+Directory tests exercise real filesystem records and independent default-logger child processes.
+Ancestor-discovery fixtures explicitly clear the new environment setting;
+concurrency verification now waits for both verifiers to start before releasing either.
+Its original elapsed-time assertion failed twice at about 94 and 97 ms against a 50 ms threshold.
+Root `TCV` remains unchanged;
+the provider-payload lesson stays in package docs.
+
+Full maintained Oxlint reports 83 errors and 13,686 warnings across 813 files and 486 rules,
+using one thread in the disposable 2 GiB,
+two-CPU runner.
+This supersedes the intermediate 30-error,
+13,163-warning snapshot and is an explicit increase in lint debt after phase extraction and real fixtures.
+MiMo's next task is the complete lint queue,
+using the per-file error index and preserving the verified behavior.
+Automatic release eviction and diagnostic retention remain unimplemented;
+current build paths are immutable for running consumers.
+The original second incident's discarded underlying transport cause remains unknown.
+Desktop notification termination is separate.
+
 ## Active work on 2026-10-15
 
 ### Reopened MiMo lint handoff on 2026-10-17
@@ -14,22 +90,22 @@ Updated 2026-10-17.
 The readiness claim covered the saved Bash/read interaction only and was too broad for the MiMo handoff.
 Session `2026-10-17T04-53-14-520Z_01a14834-fc97-70de-9615-03cc0636384b` reports separate failures:
 
-- [ ] Resolve and verify the mixed `process`/`bash` group containing `chatcmpl-tool-b60c3965f752386f`.
+- [x] Resolve and verify the mixed `process`/`bash` group containing `chatcmpl-tool-b60c3965f752386f`.
   Whole-operation approval scores `0.48`, denial `0.34`, unknown `0.18`.
   The model answered; the existing cutoff correctly required confirmation.
   Its captured input includes raw `process.start.command`, outside the prior Bash-only projection.
-- [ ] Resolve and verify the Bash-only group containing `chatcmpl-tool-a7a4468548c5838a`.
+- [x] Resolve and verify the Bash-only group containing `chatcmpl-tool-a7a4468548c5838a`.
   Clause assessment succeeds; the whole-operation request throws `AssessmentTransportError`:
   `Assessment HTTP request or response failed; no provider answer was admitted`.
   The discarded underlying exception prevents identifying its cause from this log alone.
-- [ ] Replay both groups with preceding turns through the configured installed consumer,
+- [x] Replay both groups with preceding turns through the configured installed consumer,
   audit transmitted inputs, and run prohibited-operation controls before renewing readiness.
 
 The original session and eight runtime logs are copied privately to
 `${HOME}/temp/agent/pi-mimo-lint-approval-20261017`.
 `mise run target-evidence` there isolates both captured groups and their model evidence.
 The `notify-send` SIGTERM warning concerns notification delivery and does not establish either review failure's cause.
-Next action: replay the exact captured requests and distinguish model ambiguity from transport failure.
+The next action at that point was replaying captured requests to distinguish ambiguity from transport failure.
 
 The unchanged mixed-group request reproduces `approve: 0.48`, `deny: 0.34`, `unknown: 0.18`
 in three live trials.
