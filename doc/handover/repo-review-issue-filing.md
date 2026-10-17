@@ -205,7 +205,7 @@ Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
  `code-ownership-marker-1`,
  `code-oxlint-plugin-1`,
  `code-pi-plugin-1`,
- `code-pi-plugin-2` (next launch; the 8-child cap was full when its slot came up).
+ `code-pi-plugin-2` (launched one turn late; the 8-child cap was full when its slot came up).
 
 Queued units in launch order (flat list; the first entry launches next):
 
