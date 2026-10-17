@@ -34,6 +34,19 @@ on:
       - 'package/cli/nested-wayland-session/**'
       - '.github/workflows/music-player-alpine.yml'
   workflow_dispatch:
+    inputs:
+      cohort_id:
+        description: Frozen complete-graph replay identifier
+        required: true
+        type: string
+      manifest_sha256:
+        description: SHA-256 of the shared frozen complete manifest
+        required: true
+        type: string
+      requested_at:
+        description: Shared request instant in ISO 8601 UTC
+        required: true
+        type: string
 
 permissions: {}
 
@@ -107,6 +120,9 @@ jobs:
           PROVENANCE_PHASE: before
           PROVENANCE_CASE: alpine
           PROVENANCE_OUTPUT: ${{ runner.temp }}/depot-provenance
+          COHORT_ID: ${{ inputs.cohort_id }}
+          COHORT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+          COHORT_REQUESTED_AT: ${{ inputs.requested_at }}
         run: mise run //package/dev-script/task-util:trial:depot:coherent:provenance
       - name: Build the Alpine images
         run: |
@@ -278,6 +294,9 @@ jobs:
           PROVENANCE_PHASE: after
           PROVENANCE_CASE: alpine
           PROVENANCE_OUTPUT: ${{ runner.temp }}/depot-provenance
+          COHORT_ID: ${{ inputs.cohort_id }}
+          COHORT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+          COHORT_REQUESTED_AT: ${{ inputs.requested_at }}
         run: mise run //package/dev-script/task-util:trial:depot:coherent:provenance
       - name: Preserve frozen source provenance
         if: ${{ always() }}
