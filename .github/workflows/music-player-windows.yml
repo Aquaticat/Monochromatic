@@ -126,17 +126,17 @@ jobs:
         key: depot-complete-native-v1-${{ runner.os }}-${{ runner.arch }}-${{ inputs.source_head }}
     - name: Build release artifact through the package task
       id: build
-      if: ${{ !cancelled() && steps.identity.outcome == 'success' }}
+      if: ${{ !cancelled() && steps.identity.outcome == 'success' && steps.provenance-before.outcome == 'success' }}
       run: mise run //package/music-player/desktop-app:build
     - name: Run all-target Clippy through the package task
-      if: ${{ !cancelled() && steps.identity.outcome == 'success' }}
+      if: ${{ !cancelled() && steps.identity.outcome == 'success' && steps.provenance-before.outcome == 'success' }}
       run: mise run //package/music-player/desktop-app:lint:clippy
     - name: Run every nextest case with the source task body
-      if: ${{ !cancelled() && steps.identity.outcome == 'success' }}
+      if: ${{ !cancelled() && steps.identity.outcome == 'success' && steps.provenance-before.outcome == 'success' }}
       working-directory: harness
       run: mise run //package/dev-script/task-util:trial:depot:native:nextest
     - name: Exercise the built release command
-      if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+      if: ${{ !cancelled() && steps.build.outcome == 'success' && steps.provenance-before.outcome == 'success' }}
       working-directory: harness
       run: mise run //package/dev-script/task-util:trial:depot:native:smoke
     - name: Verify source remained immutable
