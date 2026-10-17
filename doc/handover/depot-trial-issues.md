@@ -347,6 +347,17 @@ The [trial report](../audit/depot-trial-2026-10-15.md)
 and [coverage proposal](../planning/depot-expanded-coverage.md)
 retain the measurement and adoption boundaries.
 
+## TOML reconciliation queue
+
+Run `p9r4xl6n12` has 22 terminal package checks, one started mutation without a result,
+and one unexecuted independent file-enforcer mutation check.
+Both available artifacts are downloaded and hash-reconciled in
+[the TOML audit](../audit/depot-toml-reconciliation-2026-10-17.md).
+The generator actually ran and found ambient package-bin PATH drift, matching existing issue `#335`.
+Container failure and whole-job timeout remain distinct observations.
+Isolated bounded continuation routing is being prepared; application source stays immutable.
+Final coherent dispatch remains held.
+
 ## Native recovery assertion tracking
 
 The coherent replay routes are prepared and pushed,
