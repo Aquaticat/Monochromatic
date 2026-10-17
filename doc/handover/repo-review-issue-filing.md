@@ -180,7 +180,8 @@ Completed units (findings validated):
  `code-webapp-productivity-1` (12 findings),
  `docs-troubleshooting-1` (12 findings),
  `docs-audit` (13 findings),
- `docs-troubleshooting-2` (15 findings).
+ `docs-troubleshooting-2` (15 findings),
+ `config-root` (14 findings).
 
 Cross-unit leads:
  `doc/planning/music-player-shared-truepeak-core.md` repeats the retired truepeak policy
@@ -250,17 +251,16 @@ Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
  `docs-planning`,
  `docs-decision`,
  `docs-handover`,
- `config-root`,
  `config-root-docs`,
  `config-ci`,
  `config-paused-1`,
- `config-paused-2` (launched as a replacement).
+ `config-paused-2`,
+ `cross-security` (launched as a replacement).
 
 Queued units in launch order (flat list; the first entry launches next):
 
 - `code-stub-1`,
 - `docs-troubleshooting-1`,
-- `cross-security`,
 - `cross-dependency`,
 - `cross-duplication`,
 - `cross-testing`,
