@@ -136,22 +136,27 @@ Completed units (findings validated):
  `code-ide-design` (6 findings),
  `code-mp-desktop` (6 findings),
  `code-gitpolicy-src` (3 findings),
- `code-mp-android` (3 findings).
+ `code-mp-android` (3 findings),
+ `code-mp-rest` (12 findings).
+
+Cross-unit leads:
+ `doc/planning/music-player-shared-truepeak-core.md` repeats the retired truepeak policy
+ figures from `code-mp-rest-001`;
+ hand to the `docs-planning` reviewer when it launches.
 
 Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
  `code-mp-design`,
- `code-mp-rest`,
  `code-gitpolicy-rest`,
  `code-automode-src`,
  `code-automode-native`,
  `code-agent-harness-shared-1`,
  `code-build-tool-1`,
- `code-claude-code-plugin-1` (launched as a replacement).
+ `code-claude-code-plugin-1`,
+ `code-cli-1` (launched as a replacement).
 
 Queued units in launch order (groups of 8):
 
-1. `code-cli-1`,
- `code-cli-2`,
+1. `code-cli-2`,
  `code-cloudflare-worker-1`,
  `code-codex-plugin-1`.
 2. `code-config-1`,
