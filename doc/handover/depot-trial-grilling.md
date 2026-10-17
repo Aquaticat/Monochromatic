@@ -91,6 +91,12 @@ Counts remain 106 passes/two failures/one skip and 110 passes/two failures/one s
 The authored-inventory comparison still finds the same six unexecuted wide-session assertions per case.
 These controls resolve the trial archive and inventory acceptance boundaries in `#1133` and `#1120`;
 they do not resolve the source failures or establish a passing whole-case replay.
+Issues `#1133`,
+`#1120`,
+and `#1110` are closed after fresh comment-body and state verification.
+The same evidence was added to open source issues `#1004`,
+`#1005`,
+and `#1006`.
 Provider allocations were 521.934 seconds and 388.986 seconds at `16x64`.
 `desktopRuntimeSessionLogArchiveControl` retains the actual proof,
 including raw-log hashes,
@@ -128,11 +134,40 @@ Scorecard integration at `ccc414df2135290d123e0653edc2d06933274a3a`
 reuses the existing conditional live-default-branch adapter and its unchanged quota gate.
 Both workflows now require the common inputs and a selected case/source/base,
 with paired source/cohort guards.
-Scoped formatting passes;
-structured policy-preservation verification remains queued.
+Root `c51a5c94e8dd92db9dbcec0a12ff3d285daa8217` passes structured workflow controls:
+the selected scanner command bodies and Scorecard quota script are byte-identical after YAML parsing,
+every job has paired guards and required inputs,
+and the Scorecard adapter differs only in its standard task shell and runtime cohort metadata.
+Actual adapter invocations reject missing tokens and wrong repositories before network or container work.
+Scoped formatting passes.
 Dispatch the Scorecard cases to terminal state sequentially so GitHub's pending-run replacement cannot cancel a case.
 The retained proof fields are `rootCommonCohortPreparation`
-and `desktopRuntimeSessionLogArchivePreparation`.
+and `rootGitHubWorkflowPreparation`.
+The verified local GitHub-expression template collision is added to the existing Scorecard troubleshooting document.
+
+The logger owner has prepared a combined candidate at `18e8c13173f244316ef528467ae0ccbf1fe38c80`:
+97 expanded jobs,
+with 57 disjoint remainder partitions covering 155 checks,
+plus the existing producers and 32 browser partitions.
+Its 155 remainder identities and 564 other active identities exactly cover the 719-check graph.
+Integrate its workflow and used logger helpers into the root while preserving the root's verified native,
+desktop,
+and common-identity task bodies.
+The authentic linter pilot `q10910cxfm` completes both formerly unmet Markdown prerequisites;
+its six remaining library assertion failures match the native owner's mapping.
+The generator pilot `vt8vzj154t` failed before source execution because its development environment used
+`DEPOT_LOGGER_EXTERNAL_GROUP` while the adapter reads `DEPOT_LOGGER_EXTERNAL`.
+The owner is verifying the correction before retrying;
+the combined candidate already uses the correct variable.
+These are development results,
+not final cohort coverage.
+
+The VM artifact-consumer route is prepared at `8719ad3db0167574a5a8324132fa9a0bb74fd098`.
+The owner's actual 19-control suite and separate default rootful consumer pass.
+The original task still fails `#1076`,
+and both lifecycle identities remain unexecuted.
+The owner is completing cohort regressions and the `#1134` cleanup-incident record before static-readiness handoff.
+No additional guest or emulator has launched.
 
 The logger owner's bounded development recovery `lt7qwlz6h1`
 uses clean pushed harness `f69a78a3b31f81cbfe47496bcdc6e2ac75549777`.
