@@ -5,18 +5,14 @@
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { assessmentHttpFailure, } from './assessment-http-failure.ts';
+import { AssessmentTransportError, AssessmentRequestFailure } from './assessment-failure.ts';
+export { AssessmentTransportError } from './assessment-failure.ts';
 
 //region Transport owns HTTP resources while the judgment owns attempts and admission
 
 /**
  Transport diagnostics exclude credentials, request content, and upstream response text.
  */
-export class AssessmentTransportError extends Error {
-  /**
-   Identify the transport boundary without retaining borrowed failure causes.
-   */
-  override readonly name = 'AssessmentTransportError';
-}
 
 /**
  Original judgment supplies its already encoded body and preparation-inclusive performance target.
@@ -204,7 +200,7 @@ export function createAssessmentHttpSender({
        Redirect refusal retains the fixed private-data route.
        Gateway-internal retries are independent of this single client attempt.
        */
-      const response = await fetchImpl(
+      const response = await dispatchRequest(
         endpoint,
         {
         method: 'POST',
@@ -243,6 +239,26 @@ export function createAssessmentHttpSender({
       }
       sl.debug('original assessment HTTP request or response failed',);
       throw new AssessmentTransportError('Assessment HTTP request or response failed; no provider answer was admitted',);
+    }
+  }
+  /**
+   Preserve a fixed category for an actual fetch failure while withholding its borrowed cause.
+   @param url - fixed assessment endpoint
+   @param options - original request and cancellation
+   @returns original complete HTTP response
+   @throws AssessmentRequestFailure for a fetch TypeError while the caller remains active
+   @throws original error for cancellation or a nontransport failure
+   */
+  async function dispatchRequest(url: string, options: RequestInit): Promise<Response> {
+    const dl = tagged({ tag: dispatchRequest.name, l: rl });
+    try {
+      return await fetchImpl(url, options);
+    }
+    catch (error) {
+      dl.debug('assessment HTTP invocation failed');
+      if (!options.signal?.aborted && error instanceof TypeError)
+        throw new AssessmentRequestFailure('Assessment HTTP invocation failed with TypeError; no provider answer was admitted');
+      throw error;
     }
   }
   return send;

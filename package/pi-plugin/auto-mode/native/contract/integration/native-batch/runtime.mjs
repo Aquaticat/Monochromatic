@@ -19,6 +19,7 @@ import {prepareNativeSourceAssociation} from './source-association.mjs';
 import {
   installNativePolicyHooks,
   NativePolicyRuntimeError
+  ,isRetryableAssessmentFailure
 } from '../maintained-policy.mjs';
 
 export {NativePolicyRuntimeError} from '../maintained-policy.mjs';
@@ -110,7 +111,7 @@ export function bindNativePolicyRuntime({
      .digest('hex'),
    trace,
    send:configuredSemanticUse?sendAttributedAssessment:send,
-   isRetryableTransportFailure:function declineUnqualifiedClaim() { return (false); }
+   isRetryableTransportFailure:isRetryableAssessmentFailure
  });
  const runtimeState={
    lastJudgment:undefined,

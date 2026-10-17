@@ -143,6 +143,7 @@ await writeFile(
   ),
   `import {flushPolicyDiagnostics} from ${JSON.stringify(maintainedEntry)};\nawait flushPolicyDiagnostics();\n`
  +`export {askUser,buildVisibleContext,projectReviewInput,registerNativeBypass,readNativeBypassEnabled,createAssessmentSender,createNativeSemanticOperatingPolicies,admitsOperatingChoice,VERDICT_ENTRY_TYPE,AuthorizationEvidenceError,captureAuthorizationInputs,captureAuthorizationOwnerFactory,MISSING_AUTHORIZATION_EVIDENCE,assertOriginalInputBudget,InputReceiptBudgetError,resolveInstructionEffects,InstructionResolutionInputError,inspectAuthorizationRequirements,resolveGuardOutcome,lowerEstablishedClause,CLAUSE_RELATIONS,createNativeQueryObservation,installNativePolicyHooks,NativePolicyRuntimeError,consumeRequestMaterial,retainRequestMaterialObligations,SemanticAdmissionPolicyError,copySemanticAdmissionPolicy,inspectSemanticAdmissionScope,matchesSemanticProgramProfile,matchesSemanticOperationProfile,consumeHeadingContexts,consumeUnitAdoptions,selectUnitAdoptionPairs,UnitAdoptionBindingError,consumeSourceAssociations,PolicyInputBindingError,flushPolicyDiagnostics} from ${JSON.stringify(maintainedEntry)};\n`
+    +`export {isRetryableAssessmentFailure} from ${JSON.stringify(maintainedEntry)};\n`
     +`export const maintainedPolicyEntry=${JSON.stringify(maintainedEntry)};\nexport const maintainedPackageRoot=${JSON.stringify(maintainedRoot)};\n`,
   {mode:0o600}
 );

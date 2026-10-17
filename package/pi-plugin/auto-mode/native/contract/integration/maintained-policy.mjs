@@ -6,6 +6,7 @@ export {
   registerNativeBypass,
   readNativeBypassEnabled,
   createAssessmentSender,
+  isRetryableAssessmentFailure,
   createNativeSemanticOperatingPolicies,
   admitsOperatingChoice,
   VERDICT_ENTRY_TYPE,

@@ -4,6 +4,7 @@
  @module
  */
 export {
+  isRetryableAssessmentFailure,
   askUser,
   registerNativeBypass,
   readNativeBypassEnabled,
