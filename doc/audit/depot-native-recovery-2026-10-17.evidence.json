@@ -17805,5 +17805,360 @@
     "diagnostic": "Node.js v26.11.1: Error: spawnSync slint-viewer ENOENT; spawnargs: [ --version ]",
     "allEligibleTestsAccounted": false
   },
-  "allRequiredCoverageVerified": false
+  "allRequiredCoverageVerified": false,
+  "trackedTestFailures": [
+    {
+      "identity": "music-player change_plan::tests::random_edits_named_the_way_the_watcher_names_them_keep_the_queue_equal_to_the_walk",
+      "number": 1062,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1062",
+      "disposition": "existing",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "random_edits_named_the_way_the_watcher_names_them_keep_the_queue_equal_to_the_walk",
+        "matches": [
+          1062
+        ]
+      }
+    },
+    {
+      "identity": "music-player walk_order::tests::a_file_that_is_not_listed_lands_where_the_walk_would_put_it",
+      "number": 1082,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1082",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "a_file_that_is_not_listed_lands_where_the_walk_would_put_it",
+        "matches": []
+      },
+      "bodyFile": "issue-native-1.md"
+    },
+    {
+      "identity": "music-player watch::tests::a_burst_of_writes_is_one_report_naming_each_file_once",
+      "number": 1064,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1064",
+      "disposition": "existing",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "a_burst_of_writes_is_one_report_naming_each_file_once",
+        "matches": [
+          1081,
+          1064
+        ]
+      }
+    },
+    {
+      "identity": "music-player watch::tests::a_file_replaced_by_a_rename_is_reported_by_the_target_path",
+      "number": 1063,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1063",
+      "disposition": "existing",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "a_file_replaced_by_a_rename_is_reported_by_the_target_path",
+        "matches": [
+          1063
+        ]
+      }
+    },
+    {
+      "identity": "music-player watch::tests::a_file_written_in_place_is_reported_by_its_own_path",
+      "number": 1065,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1065",
+      "disposition": "existing",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "a_file_written_in_place_is_reported_by_its_own_path",
+        "matches": [
+          1065
+        ]
+      }
+    },
+    {
+      "identity": "music-player watch::tests::a_new_folder_and_a_removed_file_are_reported_as_entries_that_appeared_and_went",
+      "number": 1083,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1083",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "a_new_folder_and_a_removed_file_are_reported_as_entries_that_appeared_and_went",
+        "matches": []
+      },
+      "bodyFile": "issue-native-5.md"
+    },
+    {
+      "identity": "music-player::bin/music-player ui_focus_ring_pages_tests::the_selected_settings_row_ring_follows_the_21_px_pill_in_the_two_pane_form",
+      "number": 1084,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1084",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "the_selected_settings_row_ring_follows_the_21_px_pill_in_the_two_pane_form",
+        "matches": []
+      },
+      "bodyFile": "issue-native-6.md"
+    },
+    {
+      "identity": "music-player::bin/music-player ui_focus_ring_pages_tests::the_settings_back_ring_is_a_circle_and_a_row_ring_follows_the_group_corners_in_the_single_form",
+      "number": 1085,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1085",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "the_settings_back_ring_is_a_circle_and_a_row_ring_follows_the_group_corners_in_the_single_form",
+        "matches": []
+      },
+      "bodyFile": "issue-native-7.md"
+    },
+    {
+      "identity": "music-player::bin/music-player ui_focus_ring_pages_tests::the_template_editor_page_rings_follow_the_back_circle_and_the_reset_pill",
+      "number": 1086,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1086",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "the_template_editor_page_rings_follow_the_back_circle_and_the_reset_pill",
+        "matches": []
+      },
+      "bodyFile": "issue-native-8.md"
+    },
+    {
+      "identity": "music-player::bin/music-player ui_focus_ring_pages_tests::the_template_text_field_ring_follows_its_4_px_outline_and_leaves_the_outline_alone",
+      "number": 1087,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1087",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "the_template_text_field_ring_follows_its_4_px_outline_and_leaves_the_outline_alone",
+        "matches": []
+      },
+      "bodyFile": "issue-native-9.md"
+    },
+    {
+      "identity": "music-player::bin/music-player ui_interaction_window_tests::the_menu_is_wide_enough_for_its_longest_shortcut",
+      "number": 1089,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1089",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "the_menu_is_wide_enough_for_its_longest_shortcut",
+        "matches": []
+      },
+      "bodyFile": "issue-native-10.md"
+    },
+    {
+      "identity": "music-player::bin/music-player ui_keys_focus_tests::the_settings_page_keeps_tab_inside_it_and_a_template_line_does_not_swallow_tab",
+      "number": 1090,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1090",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "the_settings_page_keeps_tab_inside_it_and_a_template_line_does_not_swallow_tab",
+        "matches": []
+      },
+      "bodyFile": "issue-native-11.md"
+    },
+    {
+      "identity": "music-player::bin/music-player ui_keys_window_tests::a_key_between_the_shift_taps_cancels_the_double_tap",
+      "number": 1091,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1091",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "a_key_between_the_shift_taps_cancels_the_double_tap",
+        "matches": []
+      },
+      "bodyFile": "issue-native-12.md"
+    },
+    {
+      "identity": "music-player::bin/music-player ui_keys_window_tests::badges_appear_after_300_ms_of_held_control_and_vanish_on_release",
+      "number": 1092,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1092",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "badges_appear_after_300_ms_of_held_control_and_vanish_on_release",
+        "matches": []
+      },
+      "bodyFile": "issue-native-13.md"
+    },
+    {
+      "identity": "music-player::bin/music-player ui_keys_window_tests::bare_keys_do_nothing_while_the_template_line_has_focus",
+      "number": 1093,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1093",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "bare_keys_do_nothing_while_the_template_line_has_focus",
+        "matches": []
+      },
+      "bodyFile": "issue-native-14.md"
+    },
+    {
+      "identity": "music-player::bin/music-player ui_keys_window_tests::ctrl_f_does_nothing_in_settings_and_in_the_editor_page",
+      "number": 1094,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1094",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "ctrl_f_does_nothing_in_settings_and_in_the_editor_page",
+        "matches": []
+      },
+      "bodyFile": "issue-native-15.md"
+    },
+    {
+      "identity": "music-player::bin/music-player ui_keys_window_tests::ctrl_f_ctrl_alt_s_and_ctrl_o_open_search_settings_and_the_picker",
+      "number": 1095,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1095",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "ctrl_f_ctrl_alt_s_and_ctrl_o_open_search_settings_and_the_picker",
+        "matches": []
+      },
+      "bodyFile": "issue-native-16.md"
+    },
+    {
+      "identity": "music-player::bin/music-player ui_keys_window_tests::ctrl_left_and_ctrl_right_go_to_the_previous_and_next_track",
+      "number": 1096,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1096",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "ctrl_left_and_ctrl_right_go_to_the_previous_and_next_track",
+        "matches": []
+      },
+      "bodyFile": "issue-native-17.md"
+    },
+    {
+      "identity": "music-player::bin/music-player ui_keys_window_tests::ctrl_m_cycles_the_mode_and_a_held_ctrl_m_cycles_once",
+      "number": 1097,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1097",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "ctrl_m_cycles_the_mode_and_a_held_ctrl_m_cycles_once",
+        "matches": []
+      },
+      "bodyFile": "issue-native-18.md"
+    },
+    {
+      "identity": "music-player::bin/music-player ui_keys_window_tests::ctrl_shift_backspace_resets_the_template_on_the_editor_page",
+      "number": 1098,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1098",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "ctrl_shift_backspace_resets_the_template_on_the_editor_page",
+        "matches": []
+      },
+      "bodyFile": "issue-native-19.md"
+    },
+    {
+      "identity": "music-player::bin/music-player ui_keys_window_tests::ctrl_shift_g_and_ctrl_g_show_the_playing_tracks_folder",
+      "number": 1099,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1099",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "ctrl_shift_g_and_ctrl_g_show_the_playing_tracks_folder",
+        "matches": []
+      },
+      "bodyFile": "issue-native-20.md"
+    },
+    {
+      "identity": "music-player::bin/music-player ui_keys_window_tests::double_shift_does_nothing_in_settings_and_in_the_editor_page",
+      "number": 1100,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1100",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "double_shift_does_nothing_in_settings_and_in_the_editor_page",
+        "matches": []
+      },
+      "bodyFile": "issue-native-21.md"
+    },
+    {
+      "identity": "music-player::bin/music-player ui_keys_window_tests::escape_on_the_editor_page_returns_to_the_settings_list_and_ctrl_enter_does_too",
+      "number": 1101,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1101",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "escape_on_the_editor_page_returns_to_the_settings_list_and_ctrl_enter_does_too",
+        "matches": []
+      },
+      "bodyFile": "issue-native-22.md"
+    },
+    {
+      "identity": "music-player::bin/music-player ui_keys_window_tests::every_menu_row_shows_its_shortcut_right_aligned_in_the_row",
+      "number": 1102,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1102",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "every_menu_row_shows_its_shortcut_right_aligned_in_the_row",
+        "matches": []
+      },
+      "bodyFile": "issue-native-23.md"
+    },
+    {
+      "identity": "music-player::bin/music-player ui_keys_window_tests::the_tooltips_name_the_shortcut_of_every_button_that_has_one",
+      "number": 1103,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1103",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "the_tooltips_name_the_shortcut_of_every_button_that_has_one",
+        "matches": []
+      },
+      "bodyFile": "issue-native-24.md"
+    },
+    {
+      "identity": "music-player::bin/music-player ui_keys_window_tests::the_settings_editor_chords_apply_and_reset_in_the_two_pane_page",
+      "number": 1104,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1104",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "the_settings_editor_chords_apply_and_reset_in_the_two_pane_page",
+        "matches": []
+      },
+      "bodyFile": "issue-native-25.md"
+    },
+    {
+      "identity": "music-player::bin/music-player ui_auto_play_window_tests::in_the_dark_scheme_the_off_track_is_pure_black_with_an_outline_border",
+      "number": 1105,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1105",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "in_the_dark_scheme_the_off_track_is_pure_black_with_an_outline_border",
+        "matches": []
+      },
+      "bodyFile": "issue-native-26.md"
+    },
+    {
+      "identity": "music-player::bin/music-player ui_auto_play_window_tests::the_keyboard_ring_hugs_the_switch_row_with_the_group_corners",
+      "number": 1106,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1106",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "the_keyboard_ring_hugs_the_switch_row_with_the_group_corners",
+        "matches": []
+      },
+      "bodyFile": "issue-native-27.md"
+    },
+    {
+      "identity": "music-player::bin/music-player ui_auto_play_window_tests::the_switch_shows_its_state_by_thumb_position_track_fill_and_mark",
+      "number": 1107,
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1107",
+      "disposition": "new",
+      "duplicateSearch": {
+        "inventoryIssues": 1049,
+        "exactIdentity": "the_switch_shows_its_state_by_thumb_position_track_fill_and_mark",
+        "matches": []
+      },
+      "bodyFile": "issue-native-28.md"
+    }
+  ]
 }
