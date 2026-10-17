@@ -13,7 +13,7 @@ All 719 logger primary check IDs have terminal records with frozen task/argument
 and verified retained output hashes.
 They record 613 passes,
 105 failures,
-and one skip.
+and one check skipped because its prerequisite build failed.
 Only 199 logical checks have an observation with both source and cohort completion pairs.
 The generic footer declarations are not final acceptance.
 All 650 configured source-input files were independently hashed against frozen Git blobs.
@@ -37,6 +37,10 @@ Logger generated-consistency job `vkv8rwn4l1`,
 attempt `5d611nw71d`,
 ended with `Sandbox terminated before worker reported completion`.
 It published no archive.
+Its raw log retains exit-zero root generation and one sidecar command,
+then a sidecar container adapter receiving SIGKILL.
+The external driver and final source guard later report shell exit code 137.
+These partial observations do not recover the full generated-difference evidence or final bindings.
 Its declared runner was `16x64`;
 the provider retains 133 memory samples and a peak memory-utilization value of `0.9975022728697344`.
 That correlation alone does not establish the termination cause.
@@ -53,13 +57,15 @@ and invoice reconciliation remain separate.
 
 Next actions:
 
-- File the separate logger credential,
-  rebuilt tracked-output,
-  and terminated-worker findings after duplicate reconciliation.
+- Logger credential issue `#1180`,
+  rebuilt tracked-output issue `#1181`,
+  and terminated-worker issue `#1182` are filed with exact body readback.
+  The [completion troubleshooting record](../troubleshooting/depot-logger-final-completion-gaps.md)
+  keeps their boundaries separate.
 - Reconcile logger browser inventories,
   native mutation shards,
   custom consumers,
-  source failures and original conditional skips.
+  source failures and prerequisite-blocked checks.
 - Finish the external-check registry and overlap-aware allocation/critical paths,
   including the already retained native macOS retry and Windows carry-forward alias.
 - File or add scoped evidence for the repaired private evidence-construction findings.

@@ -24,6 +24,25 @@ with the six reused issues remaining separate.
 
 ## Application, harness, and runner findings
 
+### Final logger completion incidents
+
+- [#1180](https://github.com/Aquaticats/Monochromatic/issues/1180):
+  final common-manifest lookup returns HTTP 401 after successful native TOML mutation.
+  Credential rejection cause remains unknown.
+- [#1181](https://github.com/Aquaticats/Monochromatic/issues/1181):
+  static and unit tasks rebuild tracked distribution outputs;
+  their clean-tree guards reject the differences.
+- [#1182](https://github.com/Aquaticats/Monochromatic/issues/1182):
+  generated-consistency worker terminates without an artifact.
+  Partial command outcomes and SIGKILL observations survive in the provider log.
+  Neither OOM nor another termination cause is established.
+
+These additions do not change the historical completed-batch counts.
+Their evidence and acceptance boundaries are recorded in
+[the logger completion troubleshooting doc](../troubleshooting/depot-logger-final-completion-gaps.md).
+
+### Original application and runner findings
+
 - [#1002](https://github.com/Aquaticats/Monochromatic/issues/1002):
   Android instrumentation:
   SessionStoreTest uses a context with null applicationContext.

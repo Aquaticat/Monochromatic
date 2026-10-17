@@ -180,6 +180,16 @@ and joins them only when emitting the destination expression.
 The literal fixture exits with status 1 before producing Node output.
 The generated fixture exits successfully and prints the exact GitHub expression.
 A positive control replacing `always()` with `failure()` changes that output.
+
+The private logger incident-body preparer repeats this syntax boundary with a literal Actions token expression.
+`mise` reports `Variable `github` is not defined` before Node executes or any issue is created.
+The repaired preparer describes the token context in plain text and successfully renders the issue bodies.
+An attempted string-replacement repair also used JavaScript's special dollar-single-quote replacement token,
+which expanded the original suffix and corrupted only the private task file.
+A separate private `mise` recovery task reconstructs the affected block and retains the failed file's hash.
+Literal replacement data must use a replacement callback rather than replacement-string interpolation.
+The historical source,
+frozen CI harnesses and provider runs were unchanged.
 The corrected generator produced the scanner and Scorecard workflows;
 parsed comparisons preserve the selected scanner command bodies and Scorecard history script exactly.
 This is another consumer syntax boundary covered by `#1058`.
