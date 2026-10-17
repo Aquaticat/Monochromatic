@@ -13,10 +13,27 @@ the installed registry supplies the actual executable definition.
 
 ## Retained ownership
 
-`native/contract/collector/program-rule-batch-sdk-copy-v2/input` owns original group preparation,
-member identity,
-and execution state.
-`native/contract/lifecycle/native-program-groups` retains supported nested program execution.
+`native/contract/integration/native-batch/prepared-group.mjs` owns the group's review disposition
+and scoped manual confirmation.
+`prepared-group-context.ts` publishes native membership once for both automatic and manual review.
+Source collection borrows those exact records and the original prepared serialization.
+Prepared data alone does not permit execution.
+
+`native/contract/collector/program-rule-batch-sdk-copy-v2/input/prepared-dispatch.mjs`
+prepares the complete group,
+requests its decision,
+and runs those same native preparations.
+Root calls and supported nested program calls use this dispatcher.
+The generated Pi loop supplies its original preparation,
+execution,
+and finalization functions through a fixed phase factory.
+It replaces the former child turn queues and suspended before-hook gates.
+
+Factory-owned child slots reserve the existing native invocation before preparation starts.
+Their terminal continuation retains results even after parent return;
+starting another invocation or consuming a script value still requires current ownership.
+Withheld members retain native error outcomes without invoking an after hook.
+`native/contract/lifecycle/native-program-groups` retains supported nested program lifetimes.
 `native/contract/lifecycle/execution-context-carrier` binds tool context and its dependencies.
 Each responsibility is needed where callbacks can replace tools,
 modify arguments,
@@ -57,7 +74,7 @@ Treating the process tool name as automatic permission would bypass its command 
 The retained implementation prepares the actual group and changes only its review representation.
 
 `test:native:judgment-preparation`,
-`test:native:prepared-lifecycle`,
+`test:native:phases`,
 `test:native:prepared-schedule`,
 and `test:native:shell-projection` exercise these contracts.
 The shell-projection regression checks provider-facing parent and prepared inputs,

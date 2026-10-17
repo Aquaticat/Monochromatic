@@ -238,6 +238,22 @@ Next action: replace the child's deferred dispatcher with the same actual native
 preserving its original enclosing invocation lifetime,
 then repeat configured-host and payload/prohibition verification before renewing readiness.
 
+Commit `7a36bd67ef` replaces the child's deferred dispatcher body with the root phase dispatcher.
+Factory-owned native slots reserve their existing return record before actual preparation starts.
+The shared dispatcher captures every completion,
+including withheld members,
+before forwarding completion events.
+Terminal capture does not reread parent eligibility;
+new execution and script-value consumption retain their currentness checks.
+The existing whole-call helper remains temporarily for its old consumers and tests.
+The first build fails because the ordinary qualified SDK index does not export the new generated phase factory.
+The next build shows that relative imports are rebased against the original Session location.
+The factory import now has an explicit generated-loop override in `prepare-session.ts`.
+TypeScript also rejects an unknown logger argument and an optional child signal;
+the fixes use the existing caught-value formatter and original parent-signal fallback.
+The corrected type check passes.
+The corrected build and actual child consumer verification remain pending.
+
 A provider-payload audit finds a separate missed shell boundary:
 known process result metadata and `ad-process:notification` details retain raw `command` strings.
 The new regression was committed red;
