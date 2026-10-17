@@ -33,6 +33,7 @@ jobs:
       DEPOT_CI_COHORT_ID: ${{ inputs.cohort_id }}
       DEPOT_CI_COHORT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
       DEPOT_CI_COHORT_REQUESTED_AT: ${{ inputs.requested_at }}
+      GH_TOKEN: ${{ github.token }}
       CI: 'true'
     steps:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd

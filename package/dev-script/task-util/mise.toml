@@ -820,6 +820,34 @@ assert(selected.prerequisites.includes('package.cli.vmsync.build'),'Selected VM 
 const record={schemaVersion:1,caseId:'logger',sourceRevision:manifest.sourceRevision,harnessRevision,caseManifestSha256:createHash('sha256').update(manifestBytes).digest('hex'),cohort:{id,manifestSha256,requestedAt}};
 const directory=join(homedir(),'temp/agent/depot-complete-vm-original-evidence');
 mkdirSync(directory,{recursive:true,mode:0o700});
+const commonManifestPath='doc/audit/depot-complete-cohort-'+id+'.json';
+const commonBytesPath=join(directory,'common-manifest.json');
+const commonReceiptPath=join(directory,'common-manifest-fetch.json');
+if(!existsSync(commonBytesPath)){
+ const response=JSON.parse(execFileSync('gh',['api','--method','GET','--header','Accept: application/vnd.github.object+json','repos/Aquaticats/Monochromatic/contents/'+commonManifestPath+'?ref=main'],{encoding:'utf8',maxBuffer:2*1024*1024}));
+ assert.equal(response.encoding,'base64','Common manifest must use the GitHub contents object base64 transport');
+ assert.equal(response.path,commonManifestPath);
+ const bytes=Buffer.from(response.content,'base64');
+ assert(bytes.length>0&&bytes.length<1024*1024,'Common manifest must be below 1 MiB');
+ assert.equal(bytes.length,response.size);
+ assert.equal(createHash('sha256').update(bytes).digest('hex'),manifestSha256,'Outer common manifest bytes differ from manifest_sha256');
+ writeFileSync(commonBytesPath,bytes);
+ writeFileSync(commonReceiptPath,JSON.stringify({repository:'Aquaticats/Monochromatic',ref:'main',path:commonManifestPath,gitBlobSha:response.sha,size:bytes.length,encoding:'base64',fetchedAt:new Date().toISOString()},null,2)+'\n');
+}
+const commonBytes=readFileSync(commonBytesPath);
+assert(commonBytes.length>0&&commonBytes.length<1024*1024,'Common manifest must be below 1 MiB');
+assert.equal(createHash('sha256').update(commonBytes).digest('hex'),manifestSha256,'Outer common manifest bytes differ from manifest_sha256');
+const commonManifest=JSON.parse(commonBytes);
+assert.equal(commonManifest.schemaVersion,1);
+assert.equal(commonManifest.cohortId,id,'Outer common manifest cohort differs');
+assert.equal(commonManifest.cases?.logger?.sourceRevision,manifest.sourceRevision,'Outer logger source differs');
+assert.equal(commonManifest.cases?.logger?.baseRevision,manifest.baseRevision,'Outer logger base differs');
+assert.equal(commonManifest.cases?.logger?.manifestSha256,record.caseManifestSha256,'Outer logger case manifest digest differs');
+assert.equal(commonManifest.routes?.['logger.vm']?.caseId,'logger');
+assert.equal(commonManifest.routes?.['logger.vm']?.workflow,'.depot/workflows/depot-complete-vm-original.yml');
+assert.equal(commonManifest.routes?.['logger.vm']?.harnessRevision,harnessRevision,'Outer VM route harness differs');
+record.commonManifestPath=commonManifestPath;
+record.commonManifestBytes=commonBytes.length;
 const path=join(directory,'cohort.json');
 if(existsSync(path))assert.deepEqual(JSON.parse(readFileSync(path,'utf8')),record,'VM cohort or harness binding changed within the attempt');
 writeFileSync(path,JSON.stringify(record,null,2)+'\n');
