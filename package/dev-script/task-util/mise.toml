@@ -596,7 +596,7 @@ assert.equal(result?.status, 0, 'Historical tests failed; complete stdout and st
 '''
 
 [tasks."trial:depot:ci:desktop-runtime"]
-description = "Run the complete unchanged desktop E2E task in private user services and a software parent display"
+description = "Run the unchanged desktop E2E task with private services and per-session headless software outputs"
 dir = "{{config_root}}/../../.."
 shell = "node --input-type=module-typescript -e"
 run = '''
@@ -611,19 +611,38 @@ const { createRequire } = await import('node:module')
 const require = createRequire(join(source, 'package/music-player/desktop-e2e/package.json'))
 const { wait } = await import(require.resolve('@monochromatic-dev/module-async-time/ts'))
 const app = join(source, 'package/music-player/desktop-app')
-const compositor = join(source, 'package/cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session')
-assert(existsSync(compositor), 'The exact-head repository compositor must be built before runtime validation')
 const directory = join(homedir(), 'temp/agent/depot-complete-ci')
-const { publishedCompositor } = JSON.parse(readFileSync(join(directory, 'native-tools.json'), 'utf8'))
+const toolRecord = JSON.parse(readFileSync(join(directory, 'native-tools.json'), 'utf8'))
+const { publishedCompositor } = toolRecord
 assert(publishedCompositor?.path, 'The authored desktop task requires its locked published compositor')
 assert.equal(createHash('sha256').update(readFileSync(publishedCompositor.path)).digest('hex'), publishedCompositor.sha256, 'Published compositor bytes changed after prerequisite preparation')
+function compositorWrapper(binary) {
+  return `#!/usr/bin/env node
+const { spawnSync } = await import('node:child_process');
+const args = process.argv.slice(2);
+const probe = args.length === 1 && ['--version', '--help'].includes(args[0]);
+const forwarded = [...(probe ? [] : ['--headless', '--gpu', 'software']), ...args];
+if (!probe) console.error(JSON.stringify({ event: 'trial-headless-compositor', binary: ${JSON.stringify(binary)}, args: forwarded, nodeVersion: process.version }));
+const result = spawnSync(${JSON.stringify(binary)}, forwarded, { stdio: 'inherit' });
+if (result.error) throw result.error;
+if (result.signal) console.error(JSON.stringify({ event: 'trial-headless-compositor-signal', signal: result.signal }));
+process.exitCode = result.status ?? 1;
+`
+}
+const wrapperPath = join(directory, 'desktop-headless-compositor.mts')
+const wrapperSource = compositorWrapper(publishedCompositor.path)
+const help = spawnSync(publishedCompositor.path, ['--help'], { encoding: 'utf8', timeout: 15000 })
+assert.equal(help.status, 0, 'The selected published compositor must answer its native help probe')
+assert(help.stdout.includes('--headless') && help.stdout.includes('--gpu'), 'The published compositor must expose the requested headless GPU mode')
+writeFileSync(wrapperPath, wrapperSource, { mode: 0o700 })
+const compositorSelection = { mode: 'locked-published-headless-software', wrapperPath, wrapperSha256: createHash('sha256').update(wrapperSource).digest('hex'), publishedCompositor, helpOutput: help.stdout }
+writeFileSync(join(directory, 'native-tools.json'), JSON.stringify({ ...toolRecord, desktopCompositorBridge: compositorSelection }, null, 2))
 const manifestName = process.env.DEPOT_CI_CASE ?? 'native'
 const manifestBytes = readFileSync(join(process.env.GITHUB_WORKSPACE, `harness/.depot/manifests/${manifestName}.json`))
 const manifest = JSON.parse(manifestBytes)
 const startedAt = new Date().toISOString()
 const started = performance.now()
 const name = `depot-full-desktop-${process.pid}`
-const parentSocket = join(directory, 'desktop-parent.sock')
 const marker = join(directory, 'desktop-overlay-only')
 const scratch = join(directory, 'desktop-runtime-scratch')
 assert.equal(existsSync(marker), false, 'Fresh desktop runtime must not inherit another overlay marker')
@@ -681,7 +700,7 @@ for(const [path,contents] of ${JSON.stringify(overrides)}){
   run({ args: ['exec', name, process.execPath, '--input-type=module', '-e', configurePrivateLimits] })
   run({ args: ['exec', name, 'systemctl', 'daemon-reload'] })
   run({ args: ['exec', name, 'systemctl', 'start', `user@${process.getuid()}.service`] })
-  const user = ['exec', '--workdir', app, name, 'runuser', '--user', userInfo().username, '--', 'env', '--unset=E2E_COMPOSITOR', `XDG_RUNTIME_DIR=/run/user/${process.getuid()}`, `DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${process.getuid()}/bus`, `PATH=${process.env.PATH}`, 'MISE_AUTO_INSTALL=false', 'MISE_LOCKED=1', `MISE_RUST_VERSION=${process.env.MISE_RUST_VERSION}`, `MISE_TRUSTED_CONFIG_PATHS=${source}`, 'LIBGL_ALWAYS_SOFTWARE=1', 'E2E_ONLY=']
+  const user = ['exec', '--workdir', app, name, 'runuser', '--user', userInfo().username, '--', 'env', `E2E_COMPOSITOR=${wrapperPath}`, `XDG_RUNTIME_DIR=/run/user/${process.getuid()}`, `DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${process.getuid()}/bus`, `PATH=${process.env.PATH}`, 'MISE_AUTO_INSTALL=false', 'MISE_LOCKED=1', `MISE_RUST_VERSION=${process.env.MISE_RUST_VERSION}`, `MISE_TRUSTED_CONFIG_PATHS=${source}`, 'LIBGL_ALWAYS_SOFTWARE=1', 'E2E_ONLY=']
   assert.equal(run({ args: [...user, 'systemctl', '--user', 'show', '--property=DefaultTasksMax', '--value'] }).stdout.trim(), '256', 'Private user services must receive the measured trial task budget')
   assert.equal(run({ args: ['exec', name, 'systemctl', 'show', `user-${process.getuid()}.slice`, '--property=TasksMax', '--value'] }).stdout.trim(), '448', 'Private user slice must retain headroom inside the 512-task container')
   sampleResources('private-limits-configured')
@@ -691,17 +710,8 @@ for(const [path,contents] of ${JSON.stringify(overrides)}){
   run({ args: [...user, 'systemctl', '--user', 'start', 'pipewire.socket', 'pipewire-pulse.socket', 'wireplumber.service'] })
   run({ args: [...user, 'pactl', 'info'] })
   const before = run({ args: [...user, 'pactl', 'list', 'short', 'sinks'] })
-  run({ args: [...user, 'systemd-run', '--user', '--unit=depot-full-desktop-parent', '--property=MemoryMax=1G', '--setenv=LIBGL_ALWAYS_SOFTWARE=1', `--setenv=XDG_RUNTIME_DIR=/run/user/${process.getuid()}`, compositor, '--headless', '--gpu', 'software', '--socket', parentSocket, '--size', '1920x1080', '--', '/usr/bin/sleep', '850'] })
-  let display = ''
-  for (let attempt = 0; attempt < 30; attempt += 1) {
-    const reply = run({ args: [...user, 'socat', '-', `UNIX-CONNECT:${parentSocket}`], input: 'display\n', required: false })
-    const matched = /^ok (wayland-\d+)$/.exec(reply.stdout.trim())
-    if (reply.status === 0 && matched) { display = matched[1]; break }
-    await wait(500)
-  }
-  assert(display, 'Parent compositor must publish a real Wayland display before E2E starts')
   sampleResources('before-suite')
-  suite = run({ args: [...user, `WAYLAND_DISPLAY=${display}`, `E2E_TMP=${scratch}`, 'mise', 'run', '//package/music-player/desktop-app:test:e2e'], required: false, inherit: true, limit: 780000 })
+  suite = run({ args: [...user, `E2E_TMP=${scratch}`, 'mise', 'run', '//package/music-player/desktop-app:test:e2e'], required: false, inherit: true, limit: 780000 })
   sampleResources('after-suite')
   const output = join(directory, 'desktop-e2e')
   mkdirSync(output, { recursive: true, mode: 0o700 })
@@ -712,7 +722,7 @@ for(const [path,contents] of ${JSON.stringify(overrides)}){
   const units = run({ args: [...user, 'systemctl', '--user', 'list-units', '--state=active', '--no-legend', 'music-player-e2e*'] })
   assert.equal(units.stdout.trim(), '', 'Suite must leave no running test user units')
   assert.equal(run({ args: ['exec', name, 'pgrep', '--exact', 'music-player'], required: false }).status, 1, 'Suite must leave no application process')
-  run({ args: [...user, 'systemctl', '--user', 'stop', 'depot-full-desktop-parent.service', 'wireplumber.service', 'pipewire-pulse.service', 'pipewire-pulse.socket', 'pipewire.service', 'pipewire.socket'] })
+  run({ args: [...user, 'systemctl', '--user', 'stop', 'wireplumber.service', 'pipewire-pulse.service', 'pipewire-pulse.socket', 'pipewire.service', 'pipewire.socket'] })
   runtimeCompleted = true
 } catch (error) {
   failure = String(error)
@@ -729,7 +739,7 @@ for(const [path,contents] of ${JSON.stringify(overrides)}){
   run({ args: ['rm', name], required: false })
   const cleanupVerified = run({ args: ['container', 'exists', name], required: false }).status === 1 && !existsSync(marker)
   runtimeCompleted = runtimeCompleted && cleanupVerified
-  const record = { schemaVersion: 1, event: 'check-finished', caseId: manifest.caseId, sourceRevision: manifest.sourceRevision, manifestSha256: createHash('sha256').update(manifestBytes).digest('hex'), checkId: 'desktop-app.test.e2e', task: '//package/music-player/desktop-app:test:e2e', args: [], startedAt, finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode: suite?.status ?? null, signal: suite?.signal ?? null, status: runtimeCompleted && suite?.status === 0 ? 'passed' : 'failed', runtimeCompleted, cleanupVerified, failure, sessions: ['wide', 'narrow', 'dialog', 'quit', 'states', 'visual'], resources: { cpus: 2, memoryGiB: 2, containerPidsMax: 512, privateUserSliceTasksMax: 448, privateServiceTasksMax: 256 }, providerJobUrl: process.env.DEPOT_JOB_URL }
+  const record = { schemaVersion: 1, event: 'check-finished', caseId: manifest.caseId, sourceRevision: manifest.sourceRevision, manifestSha256: createHash('sha256').update(manifestBytes).digest('hex'), checkId: 'desktop-app.test.e2e', task: '//package/music-player/desktop-app:test:e2e', args: [], startedAt, finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode: suite?.status ?? null, signal: suite?.signal ?? null, status: runtimeCompleted && suite?.status === 0 ? 'passed' : 'failed', runtimeCompleted, cleanupVerified, failure, compositorSelection, sessions: ['wide', 'narrow', 'dialog', 'quit', 'states', 'visual'], resources: { cpus: 2, memoryGiB: 2, containerPidsMax: 512, privateUserSliceTasksMax: 448, privateServiceTasksMax: 256 }, providerJobUrl: process.env.DEPOT_JOB_URL }
   writeFileSync(join(directory, `${manifestName}-desktop-e2e-results.json`), JSON.stringify(record, null, 2))
   console.log('\n' + JSON.stringify(record))
 }
