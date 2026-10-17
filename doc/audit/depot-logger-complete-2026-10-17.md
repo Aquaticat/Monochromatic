@@ -155,7 +155,24 @@ and rejection of an incomplete full inventory before source execution.
 Cloud pilot `x0rb16tjzb` started at `2026-10-17T06:47:04Z` from clean pushed harness
 `c0eefbea382ef41c4667e90242010757eb5f759f`.
 The provider confirms that exact source and head revision.
-Its terminal collection must establish actual worker, image and resource behavior before fan-out.
+Independent terminal collection verifies both provider jobs succeeded,
+all five selected Playwright cases passed,
+and the three logger storage backend properties reported passed.
+The independently reconstructed full inventories contain 84 browser cases and 34 DOM cases.
+The exact partitions preserve dot, HTML and JSON reporters,
+one worker,
+two logical CPUs,
+the two-CPU/two-GiB container limits and the 512-PID limit.
+Both resource samples show no PID rejection or OOM events.
+The two `2x8` jobs consumed 443.551 provider-job seconds and 887.102 allocated CPU-seconds,
+corresponding to $0.0443551 published compute before plan credits.
+The account ledger and physical host RAM were not directly verified.
+Remaining-partition request `jps875l9qs` used clean pushed `51d5a2fd69507d9346d7fe6eb6345a4ee9929383`.
+All 30 jobs are terminal, with 29 provider successes and one failure;
+per-case reconciliation remains required.
+The authored source Podman command does not forward `CI`;
+the retained Playwright configuration therefore reports zero retries despite the outer workflow's `CI=true`.
+No adapter silently changes that source behavior.
 
 Provider request IDs and workflow IDs name different objects.
 Request `dhxhzzvmc3` contains workflow `fjdhk1bj7r`.
@@ -237,6 +254,21 @@ Their frozen prerequisite closures are verified.
 The passed browser-properties bundle and CLI integration are excluded from this development recovery.
 This request retains `16x64` provider allocation and original container bounds;
 compute must count the allocated 16 CPUs.
+All 35 jobs and artifacts are collected, with 26 provider successes and nine failures.
+Six failed jobs contain actual source errors:
+missing conf coverage baseline,
+JSON-C and logger coverage gates,
+an authored async differential timeout,
+and matcher and p-map differential counterexamples.
+Three tasks have no source conclusion after the 1,440,000 ms adapter budget:
+conf fuzz,
+TOML mutation and conf mutation.
+Their continuation records explicitly say `started-without-terminal-record`.
+Both mutation logs continue completing source assertions and shards at cutoff;
+the budget does not establish a source failure.
+Only those three unfinished tasks are selected for the prepared bounded two-hour recovery.
+The mutation jobs use `4x16`, matching the authored two concurrent two-CPU containers;
+the single fuzz container uses `2x8`.
 The next actions are terminal leaf reconciliation,
 file/engine browser recovery after its supported `2x8` pilot,
 controlled Git host prerequisite recovery,
@@ -247,7 +279,16 @@ Its outer SHA-256 differs from the single-case logger manifest digest.
 The combined workflow must bind the same cohort ID,
 outer digest and request timestamp before and after execution,
 and validate the common manifest's logger source, base, case digest and route harness revision.
-That receipt implementation and final freeze remain pending.
+The receipt task at `040a4814a63e27e392a68c83bceaaff78441c962` passes actual-program paired controls
+with a 1,047,160-byte base64 fixture containing escaped text.
+Ten invalid-binding, transport, size and request-clock controls reject their inputs.
+Removing the digest guard makes its invalid-digest control pass,
+which proves that control detects the guard's absence.
+The authenticated live transport proof remains separate from the injected transport fixture.
+Common workflow wiring and the final freeze remain pending.
+The generated-check adapter already isolates each check in a separate detached worktree;
+its `changedTrackedBytes` field measures diff bytes.
+The original source checkout remains clean for the source identity guards.
 The prepared combined workflow remains incomplete until that integration is verified.
 Historical source failures stay terminal diagnostics for this measurement.
 

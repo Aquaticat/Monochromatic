@@ -278,12 +278,16 @@
   ],
   "completeGraph": false,
   "pending": [
-    "Collect35-leaf1pgpb8qhn6 recovery with exact per-leaf status, output hashes, source eligibility and provider16x64 allocation/cost.",
+    "Reconcile remaining30 browser file/project cells and actual case/backend dispositions before coherent freeze.",
+    "Verify all35 leaf records/log hashes/provider URLs; run only3 unfinished tasks with bounded longer budgets, keeping prior partial campaign evidence.",
+    "Reconcile remaining30 browser file/project cells and actual case/backend dispositions before coherent freeze.",
+    "Verify all35 leaf records/log hashes/provider URLs; run only3 unfinished tasks with bounded longer budgets, keeping prior partial campaign evidence.",
     "Complete only unresolved or repaired-prerequisite leaf recovery, retaining per-leaf outcomes and actual provider allocation/cost.",
-    "Collect2 browser file/project pilots on2x8 before dispatching remaining30 cells; retain full/partition inventories and actual case JSON.",
     "Supply source-required audited Git2.56.0 and required libraries before unchanged native host checks.",
     "Duplicate-search and file remaining genuine source failures.",
-    "Hold final coherent replay until root aligns GHA, VM and shared helper routes."
+    "Hold final coherent replay until root aligns GHA, VM and shared helper routes.",
+    "Wire common inputs/receipts and verified95-job combined route; preserve completeGraphfalse until root aligns and freezes.",
+    "Wire common inputs/receipts and reconcile every combined route; preserve completeGraphfalse until root aligns and freezes."
   ],
   "packageDevelopmentReconciliation": {
     "runId": "4x77lb56cs",
@@ -17909,7 +17913,164 @@
       "providerSize": "16x64",
       "allocatedCpuCount": 16,
       "originalContainerBoundsRetained": true,
-      "terminalCollectionPending": true
+      "terminalCollectionPending": false,
+      "terminalProviderSummary": {
+        "jobs": 35,
+        "successes": 26,
+        "failures": 9,
+        "artifacts": 35,
+        "checkOutcomeVerificationPending": true
+      },
+      "incomplete": [
+        {
+          "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+          "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+          "continuationId": "package.module.conf-fork.fuzz.fuzz",
+          "partition": "fuzz",
+          "selectedCheckIds": [
+            "package.module.conf-fork.fuzz.fuzz"
+          ],
+          "activeCheckIds": [
+            "package.module.caught-value.build",
+            "package.module.conf-fork.build",
+            "package.module.conf-fork.fuzz.fuzz"
+          ],
+          "executionError": {
+            "name": "AssertionError",
+            "message": "Fuzz partition checks failed; see retained per-check records\n\n1 !== 0\n",
+            "code": "ERR_ASSERTION"
+          },
+          "executionBudgetMs": 1440000,
+          "records": [
+            {
+              "checkId": "package.module.conf-fork.fuzz.fuzz",
+              "status": "started-without-terminal-record"
+            }
+          ],
+          "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/7sc3bh1k8j?job=vb74mdx69f&attempt=wm5pb673q2"
+        },
+        {
+          "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+          "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+          "continuationId": "package.module.toml-edit.test.mutation",
+          "partition": "mutation",
+          "selectedCheckIds": [
+            "package.module.toml-edit.test.mutation"
+          ],
+          "activeCheckIds": [
+            "package.module.caught-value.build",
+            "package.module.toml-edit.build",
+            "package.module.toml-edit.test.mutation"
+          ],
+          "executionError": {
+            "name": "Error",
+            "message": "spawnSync mise ETIMEDOUT",
+            "code": "ETIMEDOUT",
+            "status": 1,
+            "signal": null
+          },
+          "executionBudgetMs": 1440000,
+          "records": [
+            {
+              "checkId": "package.module.toml-edit.test.mutation",
+              "status": "started-without-terminal-record"
+            }
+          ],
+          "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/7sc3bh1k8j?job=39l67xdfck&attempt=bwsq4gf2rc"
+        },
+        {
+          "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+          "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+          "continuationId": "package.module.conf-fork.test.mutation",
+          "partition": "mutation",
+          "selectedCheckIds": [
+            "package.module.conf-fork.test.mutation"
+          ],
+          "activeCheckIds": [
+            "package.module.caught-value.build",
+            "package.module.conf-fork.build",
+            "package.module.conf-fork.test.mutation"
+          ],
+          "executionError": {
+            "name": "Error",
+            "message": "spawnSync mise ETIMEDOUT",
+            "code": "ETIMEDOUT",
+            "status": 1,
+            "signal": null
+          },
+          "executionBudgetMs": 1440000,
+          "records": [
+            {
+              "checkId": "package.module.conf-fork.test.mutation",
+              "status": "started-without-terminal-record"
+            }
+          ],
+          "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/7sc3bh1k8j?job=kz7w2t1wkl&attempt=srntpm37tg"
+        }
+      ],
+      "longRecovery": {
+        "schemaVersion": 1,
+        "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+        "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+        "previousRunId": "1pgpb8qhn6",
+        "scope": "Development recovery only of three incomplete authored tasks, preserving original args and earlier partial progress; not a mutant checkpoint resume",
+        "checks": [
+          {
+            "name": "package.module.conf-fork.fuzz.fuzz",
+            "partition": "fuzz",
+            "reason": "Prior24-minute adapter budget ended before authored task conclusion",
+            "selectedCheckIds": [
+              "package.module.conf-fork.fuzz.fuzz"
+            ],
+            "activeCheckIds": [
+              "package.module.caught-value.build",
+              "package.module.conf-fork.build",
+              "package.module.conf-fork.fuzz.fuzz"
+            ],
+            "previousRunId": "1pgpb8qhn6",
+            "executionBudgetMs": 7200000,
+            "providerSize": "2x8",
+            "providerCpus": 2,
+            "providerMemoryGiB": 8
+          },
+          {
+            "name": "package.module.toml-edit.test.mutation",
+            "partition": "mutation",
+            "reason": "Prior24-minute adapter budget ended before authored task conclusion",
+            "selectedCheckIds": [
+              "package.module.toml-edit.test.mutation"
+            ],
+            "activeCheckIds": [
+              "package.module.caught-value.build",
+              "package.module.toml-edit.build",
+              "package.module.toml-edit.test.mutation"
+            ],
+            "previousRunId": "1pgpb8qhn6",
+            "executionBudgetMs": 7200000,
+            "providerSize": "4x16",
+            "providerCpus": 4,
+            "providerMemoryGiB": 16
+          },
+          {
+            "name": "package.module.conf-fork.test.mutation",
+            "partition": "mutation",
+            "reason": "Prior24-minute adapter budget ended before authored task conclusion",
+            "selectedCheckIds": [
+              "package.module.conf-fork.test.mutation"
+            ],
+            "activeCheckIds": [
+              "package.module.caught-value.build",
+              "package.module.conf-fork.build",
+              "package.module.conf-fork.test.mutation"
+            ],
+            "previousRunId": "1pgpb8qhn6",
+            "executionBudgetMs": 7200000,
+            "providerSize": "4x16",
+            "providerCpus": 4,
+            "providerMemoryGiB": 16
+          }
+        ]
+      }
     }
   },
   "browserRecovery": {
@@ -17925,7 +18086,7 @@
     "fileEnginePartitionRequired": true,
     "caseJsonRequired": true,
     "supportedProviderSizePlanned": "2x8",
-    "pilotVerificationPending": true,
+    "pilotVerificationPending": false,
     "publishedUsdPerAllocatedCpuSecond": 0.00005,
     "accountLedgerVerified": false,
     "frozenPartitionManifestSha256": "22a2d5e05bd7b12196f698679ae5ad2f679314076c915051957e936526e6f798",
@@ -18299,6 +18460,272 @@
       "status": "running",
       "created_at": "2026-10-17T06:47:04Z",
       "started_at": "2026-10-17T06:47:04Z"
+    },
+    "pilotVerification": {
+      "runId": "x0rb16tjzb",
+      "harnessRevision": "c0eefbea382ef41c4667e90242010757eb5f759f",
+      "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+      "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+      "partitionManifestSha256": "22a2d5e05bd7b12196f698679ae5ad2f679314076c915051957e936526e6f798",
+      "pilotEligibleForRemaining30": true,
+      "finalCoherentReplayHeld": true,
+      "verified": [
+        {
+          "partitionId": "browser.chromium.2",
+          "workflowId": "r689m8mfpx",
+          "jobId": "xll4gx20mw",
+          "attemptId": "480n6bc3m8",
+          "viewUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/r689m8mfpx?job=xll4gx20mw&attempt=480n6bc3m8",
+          "providerConclusion": "success",
+          "providerSize": "2x8",
+          "allocatedCpuCount": 2,
+          "providerJobSeconds": 219.281,
+          "allocatedCpuSeconds": 438.562,
+          "publishedComputeUsdBeforePlanCredits": 0.021928100000000002,
+          "actualHostMemoryNotDirectlySampled": true,
+          "fullInventoryCases": 84,
+          "selectedCases": [
+            {
+              "key": "[\"package/module/logger.fuzz/src/browser/properties.browser.test.ts\",47,5,\"module/logger.fuzz/src/browser/properties.browser.test.ts\",\"logger browser sinks under adversarial records\",\"every browser backend reparses the exact records, or reports itself unavailable\",\"chromium\"]",
+              "file": "package/module/logger.fuzz/src/browser/properties.browser.test.ts",
+              "project": "chromium",
+              "status": "expected",
+              "expectedStatus": "passed",
+              "attemptStatuses": [
+                "passed"
+              ],
+              "stdout": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36\n  passed  localStorage sink batches reparse to the exact records\n  passed  IndexedDB sink batches reparse to the exact records\n  passed  OPFS sink accepts every record with no breadcrumb\n",
+              "backendReports": [
+                {
+                  "status": "passed",
+                  "detail": "localStorage sink batches reparse to the exact records"
+                },
+                {
+                  "status": "passed",
+                  "detail": "IndexedDB sink batches reparse to the exact records"
+                },
+                {
+                  "status": "passed",
+                  "detail": "OPFS sink accepts every record with no breadcrumb"
+                }
+              ]
+            }
+          ],
+          "prerequisites": [
+            "package.module.caught-value.build",
+            "package.module.const.build",
+            "package.module.fs-path.build",
+            "package.module.hyperscript.build",
+            "package.module.logger.build",
+            "package.module.numeric-format.build",
+            "package.module.test.build",
+            "package.webapp-productivity.wc.build",
+            "package.module.logger.fuzz.bundle.browser-properties"
+          ],
+          "logHashesVerified": 11,
+          "resources": [
+            {
+              "event": "browser-container-resources",
+              "phase": "before",
+              "workers": 1,
+              "node": "v24.21.0",
+              "logicalCpus": 2,
+              "availableParallelism": 2,
+              "files": {
+                "pids.current": "7",
+                "pids.max": "512",
+                "pids.events": "max 0",
+                "memory.current": "56975360",
+                "memory.max": "2147483648",
+                "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0",
+                "cpu.max": "200000 100000"
+              }
+            },
+            {
+              "event": "browser-container-resources",
+              "phase": "after",
+              "workers": 1,
+              "node": "v24.21.0",
+              "logicalCpus": 2,
+              "availableParallelism": 2,
+              "files": {
+                "pids.current": "10",
+                "pids.max": "512",
+                "pids.events": "max 0",
+                "memory.current": "351535104",
+                "memory.max": "2147483648",
+                "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0",
+                "cpu.max": "200000 100000"
+              }
+            }
+          ],
+          "actualReporterKinds": [
+            "dot",
+            "html",
+            "json"
+          ],
+          "actualRetries": [
+            {
+              "project": "chromium",
+              "retries": 0
+            },
+            {
+              "project": "firefox",
+              "retries": 0
+            },
+            {
+              "project": "webkit",
+              "retries": 0
+            }
+          ],
+          "sourceAuthoredPodmanCommandDoesNotForwardCi": true,
+          "image": {
+            "reference": "mcr.microsoft.com/playwright:v1.64.0-noble@sha256:06a9939e57531807f8d5fd76ce44b53165ffb7d7501d87ab10e285c20b1e971f",
+            "id": "847f71bbb3f17fc1032d50d75bf6fb3fdcf188b16dff81f24667fe9ae9409e01"
+          },
+          "sourceInputsVerified": true
+        },
+        {
+          "partitionId": "e2e.chromium.4",
+          "workflowId": "r689m8mfpx",
+          "jobId": "tbnxrln6l8",
+          "attemptId": "vfn7smntld",
+          "viewUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/r689m8mfpx?job=tbnxrln6l8&attempt=vfn7smntld",
+          "providerConclusion": "success",
+          "providerSize": "2x8",
+          "allocatedCpuCount": 2,
+          "providerJobSeconds": 224.27,
+          "allocatedCpuSeconds": 448.54,
+          "publishedComputeUsdBeforePlanCredits": 0.022427000000000002,
+          "actualHostMemoryNotDirectlySampled": true,
+          "fullInventoryCases": 34,
+          "selectedCases": [
+            {
+              "key": "[\"package/module/dom/src/set/cssFromParam.e2e.test.ts\",18,3,\"package/module/dom/src/set/cssFromParam.e2e.test.ts\",\"onLoadSetCssFromUrlParams\",\"applies every URL param when no allowlist is supplied\",\"chromium\"]",
+              "file": "package/module/dom/src/set/cssFromParam.e2e.test.ts",
+              "project": "chromium",
+              "status": "expected",
+              "expectedStatus": "passed",
+              "attemptStatuses": [
+                "passed"
+              ],
+              "stdout": "",
+              "backendReports": []
+            },
+            {
+              "key": "[\"package/module/dom/src/set/cssFromParam.e2e.test.ts\",33,3,\"package/module/dom/src/set/cssFromParam.e2e.test.ts\",\"onLoadSetCssFromUrlParams\",\"applies only allow-listed keys when an allowlist is supplied\",\"chromium\"]",
+              "file": "package/module/dom/src/set/cssFromParam.e2e.test.ts",
+              "project": "chromium",
+              "status": "expected",
+              "expectedStatus": "passed",
+              "attemptStatuses": [
+                "passed"
+              ],
+              "stdout": "",
+              "backendReports": []
+            },
+            {
+              "key": "[\"package/module/dom/src/set/cssFromParam.e2e.test.ts\",48,3,\"package/module/dom/src/set/cssFromParam.e2e.test.ts\",\"onLoadSetCssFromUrlParams\",\"is a no-op when the query string has no matching keys\",\"chromium\"]",
+              "file": "package/module/dom/src/set/cssFromParam.e2e.test.ts",
+              "project": "chromium",
+              "status": "expected",
+              "expectedStatus": "passed",
+              "attemptStatuses": [
+                "passed"
+              ],
+              "stdout": "",
+              "backendReports": []
+            },
+            {
+              "key": "[\"package/module/dom/src/set/cssFromParam.e2e.test.ts\",63,3,\"package/module/dom/src/set/cssFromParam.e2e.test.ts\",\"onLoadSetCssFromUrlParams\",\"silently drops unknown standard CSS keys via setProperty\",\"chromium\"]",
+              "file": "package/module/dom/src/set/cssFromParam.e2e.test.ts",
+              "project": "chromium",
+              "status": "expected",
+              "expectedStatus": "passed",
+              "attemptStatuses": [
+                "passed"
+              ],
+              "stdout": "",
+              "backendReports": []
+            }
+          ],
+          "prerequisites": [
+            "package.module.dom.build"
+          ],
+          "logHashesVerified": 3,
+          "resources": [
+            {
+              "event": "browser-container-resources",
+              "phase": "before",
+              "workers": 1,
+              "node": "v24.21.0",
+              "logicalCpus": 2,
+              "availableParallelism": 2,
+              "files": {
+                "pids.current": "7",
+                "pids.max": "512",
+                "pids.events": "max 0",
+                "memory.current": "56963072",
+                "memory.max": "2147483648",
+                "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0",
+                "cpu.max": "200000 100000"
+              }
+            },
+            {
+              "event": "browser-container-resources",
+              "phase": "after",
+              "workers": 1,
+              "node": "v24.21.0",
+              "logicalCpus": 2,
+              "availableParallelism": 2,
+              "files": {
+                "pids.current": "9",
+                "pids.max": "512",
+                "pids.events": "max 0",
+                "memory.current": "334577664",
+                "memory.max": "2147483648",
+                "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0",
+                "cpu.max": "200000 100000"
+              }
+            }
+          ],
+          "actualReporterKinds": [
+            "dot",
+            "html",
+            "json"
+          ],
+          "actualRetries": [
+            {
+              "project": "chromium",
+              "retries": 0
+            },
+            {
+              "project": "firefox",
+              "retries": 0
+            }
+          ],
+          "sourceAuthoredPodmanCommandDoesNotForwardCi": true,
+          "image": {
+            "reference": "mcr.microsoft.com/playwright:v1.64.0-noble@sha256:06a9939e57531807f8d5fd76ce44b53165ffb7d7501d87ab10e285c20b1e971f",
+            "id": "847f71bbb3f17fc1032d50d75bf6fb3fdcf188b16dff81f24667fe9ae9409e01"
+          },
+          "sourceInputsVerified": true
+        }
+      ],
+      "actualPlaywrightCasesPassed": 5,
+      "providerJobSeconds": 443.55100000000004,
+      "allocatedCpuSeconds": 887.1020000000001,
+      "publishedComputeUsdBeforePlanCredits": 0.04435510000000001,
+      "accountLedgerVerified": false
+    },
+    "remaining30": {
+      "runId": "jps875l9qs",
+      "harnessRevision": "51d5a2fd69507d9346d7fe6eb6345a4ee9929383",
+      "terminalJobs": 30,
+      "providerSuccesses": 29,
+      "providerFailures": 1,
+      "artifactCount": 30,
+      "perCaseReconciliationPending": true
     }
   },
   "gitHostRecovery": {
@@ -18308,7 +18735,16 @@
     "sourceRequirement": "package/git-policy/cli/mise.toml native:test:host description",
     "auditedImage": "sha256:6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802a",
     "actualConsumerVerified": false,
-    "historicalSourceChanged": false
+    "historicalSourceChanged": false,
+    "buildBridgePlanned": {
+      "revision": "a018953688f1b10bddf91bff8747068f5f4746a4",
+      "tree": "96aa7b9f343426cd28cf6c2da737b9f847a2919d",
+      "archiveBytes": 54056960,
+      "archiveSha256": "f9fe8e8e154798639bb00f7d50144e8f5b2ca6a5d891e245c4330000197fd5f8",
+      "mechanism": "Build original release source with original flags using worker ABI in bounded rootfs overlay; install real Git ELF on disposable worker",
+      "sourceFilesUnchanged": true,
+      "actualHostConsumerPending": true
+    }
   },
   "globalDevelopmentUnion": {
     "terminalChecks": 686,
@@ -19262,7 +19698,156 @@
       "routes[route].workflow"
     ],
     "sameRequestTimestampBeforeAfter": true,
-    "implementationPending": true,
-    "finalFreezeHeld": true
+    "implementationPending": false,
+    "finalFreezeHeld": true,
+    "workflowWiringPending": true,
+    "taskRevision": "040a4814a63e27e392a68c83bceaaff78441c962",
+    "task": "//package/module/logger.fuzz:trial:depot:cohort-identity",
+    "controls": {
+      "directory": "/home/user/temp/agent/depot-logger-cohort-controls-nPjmgn",
+      "harnessRevision": "040a4814a63e27e392a68c83bceaaff78441c962",
+      "taskProgramSha256": "cd84ab5d6ba0d5de96141425eef3fb7fa1bfb81c8a8c4561b6926778444d26df",
+      "actualProgramExecuted": true,
+      "authenticatedTransportSubstitutedWithCheckedFixture": true,
+      "actualNativeTransportSeparatelyVerifiedByRoot": true,
+      "largeCanonicalBase64Bytes": 1047160,
+      "escapedTextRoundTripVerified": true,
+      "pairedIdentityVerified": true,
+      "negativeControls": 10,
+      "digestGuardRemovalDetected": true,
+      "rows": [
+        {
+          "name": "valid-before",
+          "phase": "before",
+          "status": 0,
+          "signal": null,
+          "stdout": "{\"event\":\"common-cohort-verified\",\"phase\":\"before\",\"cohortId\":\"logger-control-20261017\",\"routeId\":\"logger.combined\",\"requestedAt\":\"2026-10-17T07:00:00.123Z\",\"cohortManifestSha256\":\"7fefbbc5142cbef4c2f3d91fafc1fccec4b73edd234d51c08ef060f9d8329979\",\"manifestSha256\":\"d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9\",\"harnessRevision\":\"040a4814a63e27e392a68c83bceaaff78441c962\",\"sourceRevision\":\"ef01490f5e960f8ca0b424c12242caeb3c5a2b5e\"}\n",
+          "stderr": "",
+          "outputDirectory": "/home/user/temp/agent/depot-logger-cohort-controls-nPjmgn/valid-before",
+          "commonBytes": 1047160
+        },
+        {
+          "name": "valid-after",
+          "phase": "after",
+          "status": 0,
+          "signal": null,
+          "stdout": "{\"event\":\"common-cohort-verified\",\"phase\":\"after\",\"cohortId\":\"logger-control-20261017\",\"routeId\":\"logger.combined\",\"requestedAt\":\"2026-10-17T07:00:00.123Z\",\"cohortManifestSha256\":\"7fefbbc5142cbef4c2f3d91fafc1fccec4b73edd234d51c08ef060f9d8329979\",\"manifestSha256\":\"d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9\",\"harnessRevision\":\"040a4814a63e27e392a68c83bceaaff78441c962\",\"sourceRevision\":\"ef01490f5e960f8ca0b424c12242caeb3c5a2b5e\"}\n",
+          "stderr": "",
+          "outputDirectory": "/home/user/temp/agent/depot-logger-cohort-controls-nPjmgn/valid-before",
+          "commonBytes": 1047160
+        },
+        {
+          "name": "wrong-digest",
+          "phase": "before",
+          "status": 1,
+          "signal": null,
+          "stdout": "",
+          "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Downloaded common cohort bytes differ from requested digest\n+ actual - expected\n\n+ '7fefbbc5142cbef4c2f3d91fafc1fccec4b73edd234d51c08ef060f9d8329979'\n- 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'\n\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:34:8 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: '7fefbbc5142cbef4c2f3d91fafc1fccec4b73edd234d51c08ef060f9d8329979',\n  expected: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+          "outputDirectory": "/home/user/temp/agent/depot-logger-cohort-controls-nPjmgn/wrong-digest",
+          "commonBytes": 1047160
+        },
+        {
+          "name": "wrong-source",
+          "phase": "before",
+          "status": 1,
+          "signal": null,
+          "stdout": "",
+          "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'\n- 'ef01490f5e960f8ca0b424c12242caeb3c5a2b5e'\n\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:59:8 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',\n  expected: 'ef01490f5e960f8ca0b424c12242caeb3c5a2b5e',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+          "outputDirectory": "/home/user/temp/agent/depot-logger-cohort-controls-nPjmgn/wrong-source",
+          "commonBytes": 1047160
+        },
+        {
+          "name": "wrong-base",
+          "phase": "before",
+          "status": 1,
+          "signal": null,
+          "stdout": "",
+          "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'cccccccccccccccccccccccccccccccccccccccc'\n- '20dbaca6c2bb39d5d7e51fac447d76393c21a32e'\n\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:60:8 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: 'cccccccccccccccccccccccccccccccccccccccc',\n  expected: '20dbaca6c2bb39d5d7e51fac447d76393c21a32e',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+          "outputDirectory": "/home/user/temp/agent/depot-logger-cohort-controls-nPjmgn/wrong-base",
+          "commonBytes": 1047160
+        },
+        {
+          "name": "wrong-case-digest",
+          "phase": "before",
+          "status": 1,
+          "signal": null,
+          "stdout": "",
+          "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd'\n- 'd8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9'\n\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:61:8 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: 'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',\n  expected: 'd8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+          "outputDirectory": "/home/user/temp/agent/depot-logger-cohort-controls-nPjmgn/wrong-case-digest",
+          "commonBytes": 1047160
+        },
+        {
+          "name": "wrong-harness",
+          "phase": "before",
+          "status": 1,
+          "signal": null,
+          "stdout": "",
+          "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Actual harness HEAD differs from selected common route\n+ actual - expected\n\n+ '040a4814a63e27e392a68c83bceaaff78441c962'\n- 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'\n\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:50:8 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: '040a4814a63e27e392a68c83bceaaff78441c962',\n  expected: 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+          "outputDirectory": "/home/user/temp/agent/depot-logger-cohort-controls-nPjmgn/wrong-harness",
+          "commonBytes": 1047160
+        },
+        {
+          "name": "wrong-workflow",
+          "phase": "before",
+          "status": 1,
+          "signal": null,
+          "stdout": "",
+          "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ '.depot/workflows/depot-complete-logger-browser-full.yml'\n- '.depot/workflows/depot-complete-logger-combined.yml'\n\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:44:8 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: '.depot/workflows/depot-complete-logger-browser-full.yml',\n  expected: '.depot/workflows/depot-complete-logger-combined.yml',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+          "outputDirectory": "/home/user/temp/agent/depot-logger-cohort-controls-nPjmgn/wrong-workflow",
+          "commonBytes": 1047164
+        },
+        {
+          "name": "wrong-cohort-id",
+          "phase": "before",
+          "status": 1,
+          "signal": null,
+          "stdout": "",
+          "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'different-control-id'\n- 'logger-control-20261017'\n\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:39:8 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: 'different-control-id',\n  expected: 'logger-control-20261017',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+          "outputDirectory": "/home/user/temp/agent/depot-logger-cohort-controls-nPjmgn/wrong-cohort-id",
+          "commonBytes": 1047157
+        },
+        {
+          "name": "wrong-base64",
+          "phase": "before",
+          "status": 1,
+          "signal": null,
+          "stdout": "",
+          "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: GitHub content must be canonical base64\n\n'' !== 'A==='\n\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:32:8 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: '',\n  expected: 'A===',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+          "outputDirectory": "/home/user/temp/agent/depot-logger-cohort-controls-nPjmgn/wrong-base64",
+          "commonBytes": 1047160
+        },
+        {
+          "name": "oversized",
+          "phase": "before",
+          "status": 1,
+          "signal": null,
+          "stdout": "",
+          "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Common manifest must be smaller than1MiB\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:28:1 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+          "outputDirectory": "/home/user/temp/agent/depot-logger-cohort-controls-nPjmgn/oversized",
+          "commonBytes": 1047160
+        },
+        {
+          "name": "changed-request-clock",
+          "phase": "after",
+          "status": 1,
+          "signal": null,
+          "stdout": "",
+          "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Before and after common cohort bindings differ\n+ actual - expected\n... Skipped lines\n\n  {\n    baseRevision: '20dbaca6c2bb39d5d7e51fac447d76393c21a32e',\n    caseId: 'logger',\n    cohortId: 'logger-control-20261017',\n    cohortManifestBlobSha: '200987c13b990a665f412dd1ef1690db0d3b1de2',\n...\n    manifestSha256: 'd8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9',\n+   requestedAt: '2026-10-17T07:00:01.123Z',\n-   requestedAt: '2026-10-17T07:00:00.123Z',\n    routeId: 'logger.combined',\n    sourceRevision: 'ef01490f5e960f8ca0b424c12242caeb3c5a2b5e',\n    sourceStatus: '',\n    sourceTree: 'f7835f65413553704f9988f1fcf7f69911a8f2c0',\n    workflowPath: '.depot/workflows/depot-complete-logger-combined.yml',\n\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:71:27 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: {\n    cohortId: 'logger-control-20261017',\n    cohortManifestPath: 'doc/audit/depot-complete-cohort-logger-control-20261017.json',\n    cohortManifestSha256: '7fefbbc5142cbef4c2f3d91fafc1fccec4b73edd234d51c08ef060f9d8329979',\n    cohortManifestBlobSha: '200987c13b990a665f412dd1ef1690db0d3b1de2',\n    requestedAt: '2026-10-17T07:00:01.123Z',\n    routeId: 'logger.combined',\n    workflowPath: '.depot/workflows/depot-complete-logger-combined.yml',\n    workflowSha256: 'b73de41447deb2ff7ebd68cc8eea0baf80612980521e10af5fe90072fad97ea4',\n    caseId: 'logger',\n    sourceRevision: 'ef01490f5e960f8ca0b424c12242caeb3c5a2b5e',\n    baseRevision: '20dbaca6c2bb39d5d7e51fac447d76393c21a32e',\n    sourceTree: 'f7835f65413553704f9988f1fcf7f69911a8f2c0',\n    manifestSha256: 'd8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9',\n    harnessRevision: '040a4814a63e27e392a68c83bceaaff78441c962',\n    harnessTree: 'ba72b468d14ed5413e6e9cb5549729a5ee4ce7ee',\n    harnessStatus: '',\n    sourceStatus: ''\n  },\n  expected: {\n    cohortId: 'logger-control-20261017',\n    cohortManifestPath: 'doc/audit/depot-complete-cohort-logger-control-20261017.json',\n    cohortManifestSha256: '7fefbbc5142cbef4c2f3d91fafc1fccec4b73edd234d51c08ef060f9d8329979',\n    cohortManifestBlobSha: '200987c13b990a665f412dd1ef1690db0d3b1de2',\n    requestedAt: '2026-10-17T07:00:00.123Z',\n    routeId: 'logger.combined',\n    workflowPath: '.depot/workflows/depot-complete-logger-combined.yml',\n    workflowSha256: 'b73de41447deb2ff7ebd68cc8eea0baf80612980521e10af5fe90072fad97ea4',\n    caseId: 'logger',\n    sourceRevision: 'ef01490f5e960f8ca0b424c12242caeb3c5a2b5e',\n    baseRevision: '20dbaca6c2bb39d5d7e51fac447d76393c21a32e',\n    sourceTree: 'f7835f65413553704f9988f1fcf7f69911a8f2c0',\n    manifestSha256: 'd8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9',\n    harnessRevision: '040a4814a63e27e392a68c83bceaaff78441c962',\n    harnessTree: 'ba72b468d14ed5413e6e9cb5549729a5ee4ce7ee',\n    harnessStatus: '',\n    sourceStatus: ''\n  },\n  operator: 'deepStrictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+          "outputDirectory": "/home/user/temp/agent/depot-logger-cohort-controls-nPjmgn/valid-before",
+          "commonBytes": 1047160
+        },
+        {
+          "name": "digest-guard-removed",
+          "phase": "before",
+          "status": 0,
+          "signal": null,
+          "stdout": "{\"event\":\"common-cohort-verified\",\"phase\":\"before\",\"cohortId\":\"logger-control-20261017\",\"routeId\":\"logger.combined\",\"requestedAt\":\"2026-10-17T07:00:00.123Z\",\"cohortManifestSha256\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"manifestSha256\":\"d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9\",\"harnessRevision\":\"040a4814a63e27e392a68c83bceaaff78441c962\",\"sourceRevision\":\"ef01490f5e960f8ca0b424c12242caeb3c5a2b5e\"}\n",
+          "stderr": "",
+          "outputDirectory": "/home/user/temp/agent/depot-logger-cohort-controls-nPjmgn/digest-guard-removed",
+          "commonBytes": 1047160
+        }
+      ]
+    },
+    "liveCommonManifestNotYetPublished": true
   }
 }

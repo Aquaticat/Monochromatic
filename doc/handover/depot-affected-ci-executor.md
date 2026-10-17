@@ -339,16 +339,26 @@ Its 35 selectors are exactly the 33 unresolved identities plus two remaining own
 with frozen prerequisite closures verified.
 The passed browser-properties bundle and mutation CLI integration are excluded from development recovery.
 Retain its actual `16x64` allocation when accounting for compute.
+All 35 jobs/artifacts are collected: 26 provider successes and nine failures.
+Six failures expose source diagnostics; conf fuzz, TOML mutation and conf mutation remain incomplete
+after the 24-minute adapter budget, with explicit `started-without-terminal-record` receipts.
+The two mutation campaigns still completed assertions and shards at cutoff.
+Prepared long recovery at `f69a78a3b3` selects only those three unfinished tasks with a bounded two-hour allowance,
+using `2x8` for the single fuzz container and `4x16` for the authored two mutation containers.
 The browser routes now declare 32 disjoint file/project cells,
 with generated-program positive,
 source-negative and invalid-inventory controls passed.
-Two supported `2x8` pilot cells are running in `x0rb16tjzb`,
+Two supported `2x8` pilot cells ran in `x0rb16tjzb`,
 with provider source and head revision matching clean pushed `c0eefbea382ef41c4667e90242010757eb5f759f`.
-Collect those cells before the remaining 30,
-retaining full and partition inventories and actual case JSON.
-Then complete only unresolved or repaired-prerequisite leaf recovery,
-file/engine browser recovery with a supported `2x8` pilot,
-and supplying the source-required audited Git `2.56.0`
+They are now independently verified successful, with five passing Playwright cases,
+all three logger backend properties passed,
+full 84/34-case inventories and exact partitions,
+and actual two-CPU/two-GiB/512-PID bounds without PID or OOM events.
+The remaining 30 cells ran in `jps875l9qs` at pushed `51d5a2fd69507d9346d7fe6eb6345a4ee9929383`;
+its 29 successful jobs and one failed job still need case-level reconciliation.
+Then reconcile every selected leaf and browser case,
+finish only the three unfinished campaigns,
+and supply the source-required audited Git `2.56.0`
 before replaying the two unchanged native host checks.
 The root agent must align GHA, VM and shared helper routes before final combined dispatch.
 The prepared combined workflow remains incomplete until that integration and bounded check coverage are verified.
@@ -357,7 +367,13 @@ Authenticate through GitHub's base64 object response and hash the decoded bytes.
 Bind the three common inputs before and after execution,
 distinguishing the outer cohort SHA-256 from `cases.logger.manifestSha256`.
 Validate the logger source/base and selected route's actual harness revision.
-The logger cohort receipt task and final manifest freeze remain pending.
+The logger cohort receipt task at `040a4814a63e27e392a68c83bceaaff78441c962` is implemented and verified:
+paired receipts, a 1,047,160-byte escaped-text payload, ten rejected invalid inputs,
+and a digest-guard removal control.
+Its checked fixture transport and the root's actual authenticated transport are separate proofs.
+Workflow wiring and the final manifest freeze remain pending.
+Generated checks already run in separate detached fixtures and preserve the original source checkout;
+their diff counters measure bytes.
 Only harness execution failures receive recovery edits;
 historical source failures remain diagnostics.
 The requests were launched separately and do not establish a single complete passing pipeline latency.
