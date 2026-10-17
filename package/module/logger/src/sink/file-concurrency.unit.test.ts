@@ -11,7 +11,7 @@ await describe({
   children: [
     it({
       name: 'preserves complete large JSONL records in invocation order',
-      fn: async ctx => {
+      fn: async () => {
         /** Private disposable project keeps verification away from shared log files. */
         const scratch = join(homedir(), 'temp/agent',);
         await mkdir(scratch, { recursive: true, mode: 0o700, },);
@@ -23,12 +23,9 @@ await describe({
           },
         };
         await mkdir(join(directory, 'node_modules',),);
-        /** Scoped cwd observation selects this fixture without changing the process directory. */
-        const cwd = ctx.sinon.stub(process, 'cwd',).returns(directory,);
         /** Consumer-facing built sink must persist both small and multi-write records. */
-        const sink = createFileSink();
+        const sink = createFileSink({ directory: join(directory, 'node_modules/.monochromatic',), });
         expect(await sink.verify(),).toBe(true,);
-        cwd.restore();
         await sink.write({ level: 'info', timestamp: -1, message: 'ordinary record', },);
         /** Each payload crosses the filesystem helper's chunk boundary and includes JSON escapes. */
         const messages = ['a', 'b',].map(function largeMessage(marker,) {
