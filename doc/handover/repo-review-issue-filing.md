@@ -174,7 +174,8 @@ Completed units (findings validated):
  `code-stub-1` (5 findings),
  `code-rust-module-1` (2 findings),
  `code-test-fixture-1` (14 findings),
- `code-shim-1` (7 findings).
+ `code-shim-1` (7 findings),
+ `code-typeface-1` (11 findings).
 
 Cross-unit leads:
  `doc/planning/music-player-shared-truepeak-core.md` repeats the retired truepeak policy
@@ -222,6 +223,9 @@ Cross-unit leads:
  `docs/dependency-blocklist.md`, but the file is `doc/dependency-blocklist.md`, per
  `code-stub-1` notes;
  hand to the `config-root` reviewer.
+ 52 `no-restricted-syntax` and `no-regex` suppressions across 32 files carry inline
+ justifications but no `.md` doc as `LN3` requires, per `code-typeface-1` notes;
+ hand to the `cross-build` reviewer.
  The stale pre-transfer `repository.url` (Aquaticat instead of Aquaticats) spans most
  `package.json` files repo-wide per `code-config-1-001`;
  likely dedupe target is open issue #1124;
@@ -232,19 +236,18 @@ Cross-unit leads:
 
 Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
  `code-test-fixture-2`,
- `code-typeface-1`,
  `code-webapp-productivity-1`,
  `docs-troubleshooting-1`,
  `docs-troubleshooting-2`,
  `docs-audit`,
  `docs-planning`,
- `docs-decision` (launched as a replacement; carries the stale-decision-doc leads).
+ `docs-decision`,
+ `docs-handover` (launched as a replacement; carries the stale `doc/todo` lead).
 
 Queued units in launch order (flat list; the first entry launches next):
 
 - `code-stub-1`,
 - `docs-troubleshooting-1`,
-- `docs-handover`,
 - `config-root`,
 - `config-root-docs`,
 - `config-ci`,
