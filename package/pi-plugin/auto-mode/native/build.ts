@@ -16,6 +16,7 @@ import spawn from 'nano-spawn';
 import { buildPiSource, } from './build-source.ts';
 import { NativeSourceBuildError, qualifiedRelease, } from './build-contract.ts';
 import { activateNativeBuild } from './build-activation.ts';
+import { reuseNativeBuildFiles } from './build-reuse.ts';
 
 //region The maintained artifact owns every native module loaded at runtime.
 
@@ -134,12 +135,14 @@ const checked=await spawn(process.execPath,[join(output,'cli.mjs'),'--version'],
 });
 if(checked.stdout.trim()!==qualifiedRelease.version)
   throw new NativeSourceBuildError('Generated native command did not report the qualified version');
+const reused = await reuseNativeBuildFiles({ output, active });
 await activateNativeBuild({output,active});
 console.log(JSON.stringify({
   complete: true,
   output,
   active,
   installedSourcesModified: false,
+  reused,
 },),);
 
 //endregion
