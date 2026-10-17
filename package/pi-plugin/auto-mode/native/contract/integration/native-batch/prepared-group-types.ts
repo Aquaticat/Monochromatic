@@ -14,6 +14,8 @@ export type PreparedGroupContext = JudgmentMembershipSnapshot & Readonly<{
   executions: JudgmentExecutionOwnership & JudgmentExecutionEntry;
   prepare: (members: readonly ProgramPreparedMember[]) => void;
   preparedJSON: (members: readonly ProgramPreparedMember[]) => string;
+  bindSourceCheck: (check: () => unknown) => void;
+  assertSourceCurrent: () => void;
 }>;
 
 /** Callbacks remain private to the original complete group's native and review lifetimes. */

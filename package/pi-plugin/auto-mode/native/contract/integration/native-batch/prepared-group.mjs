@@ -50,11 +50,21 @@ export function createPreparedGroup({response,stream,signal,assertOperationCurre
       if(state.scope.inspect().prepared)state.scope.assertDependenciesCurrent();
     }catch(error){retainFailure(error);}
   }
+  /** Native entry already has its caller's operation guard; use the original compiler dependency check directly. */
+  function entryCurrent(){
+    tagged({tag:entryCurrent.name,l}).debug('checking original native entry');
+    baseCurrent();
+    if(state.manual){
+      if(state.answer&&!state.answer.decision.block)state.approval.assertOriginalAllow(state.answer);
+      return;
+    }
+    context().assertSourceCurrent();
+  }
   /** One context is shared with the policy compiler and every reached child. */
   function context(){
     if(state.context)return state.context;
     const original=createPreparedGroupContext({response,stream,signal,
-      assertDependenciesCurrent:current,
+      assertDependenciesCurrent:entryCurrent,
       readJudgment(){return state.scope??api;},
       readClosure(){return {finished:state.manual?state.answer?.decision.block===false:
         !state.automaticFailure&&(state.bypassed||state.reviewed?.outcome.verdict==='approve'),closeFailed:false};}

@@ -105,7 +105,8 @@ export function createJudgmentConstructor<const Source extends JudgmentConstruct
       byMember,
       childGroups,
       executions,
-      preparedJSON
+      preparedJSON,
+      bindSourceCheck
     }=createJudgmentFoundation({
       now,
       producerOwner,
@@ -167,6 +168,8 @@ export function createJudgmentConstructor<const Source extends JudgmentConstruct
         };
       }
     });
+    // Native execution shares the existing dependency check without entering another public operation wrapper.
+    bindSourceCheck(assertDependenciesCurrent);
     /**
      Original lifecycle shares preparation and dependency boundaries.
      */

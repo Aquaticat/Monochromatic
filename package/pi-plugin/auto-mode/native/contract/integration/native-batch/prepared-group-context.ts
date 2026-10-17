@@ -26,8 +26,23 @@ export function createPreparedGroupContext(input: PreparedGroupContextInput): Pr
   const childGroups: PreparedGroupContext['childGroups'] = [];
   /** Serialization is published only after the complete native preparation is admitted. */
   const state: { members?: Parameters<PreparedGroupContext['prepare']>[0]; json?: string } = {};
+  /** Native entry uses the compiler's original dependency check without reentering its public operation wrapper. */
+  const source: { check?: () => unknown } = {};
   /** Native caller, automatic review, and manual review share one execution map. */
   const executions = createJudgmentExecutions({ ...input, bindings, byMember });
+
+  /** Bind the original compiler dependency check once source construction reaches that boundary. */
+  function bindSourceCheck(check: () => unknown): void {
+    tagged({ tag: bindSourceCheck.name, l }).debug('binding original source dependency check');
+    if (source.check !== undefined) throw new JudgmentConstructionError('Native group already has its original source check');
+    source.check = check;
+  }
+  /** Validate dependencies directly while an enclosing compiler operation already owns reentrancy protection. */
+  function assertSourceCurrent(): void {
+    tagged({ tag: assertSourceCurrent.name, l }).debug('checking original source dependencies');
+    if (source.check === undefined) throw new JudgmentConstructionError('Native group has no original source dependency check');
+    source.check();
+  }
 
   /** Publish complete prepared members before choosing automatic or manual review. */
   function prepare(members: Parameters<PreparedGroupContext['prepare']>[0]): void {
@@ -48,6 +63,7 @@ export function createPreparedGroupContext(input: PreparedGroupContextInput): Pr
     return state.json;
   }
 
-  return Object.freeze({ ...membership, bindings, byMember, childGroups, executions, prepare, preparedJSON });
+  return Object.freeze({ ...membership, bindings, byMember, childGroups, executions, prepare, preparedJSON,
+    bindSourceCheck, assertSourceCurrent });
 }
 //endregion
