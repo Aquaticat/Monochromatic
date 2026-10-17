@@ -96,4 +96,5 @@ jobs:
           ~/temp/agent/depot-complete-ci/prepare-*.log
           ~/temp/agent/depot-complete-ci/tofu-providers.lock.hcl
           ~/temp/agent/depot-complete-ci/check-logs/
+          ~/temp/agent/depot-complete-ci/container-bin/image-metadata-*/
         if-no-files-found: ignore
