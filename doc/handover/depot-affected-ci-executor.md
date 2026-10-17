@@ -370,10 +370,20 @@ The 32 actual `2x8` jobs consumed 9,363.94 allocated CPU-seconds,
 or $0.468197 published compute before credits.
 The separately verified 35-leaf request consumed 177,819.248 allocated CPU-seconds,
 or $8.8909624 published compute before credits, including incomplete attempts.
-Then reconcile every selected leaf and browser case,
-finish only the three unfinished campaigns,
-and supply the source-required audited Git `2.56.0`
-before replaying the two unchanged native host checks.
+Git host recovery `10zmqch10h` verifies exact Git `2.56.0`,
+its real installed ELF and linked-library hashes,
+an actual Git commit and the literal `/proc/PID/exe` boundary in bounded private worker userland.
+Both unchanged host tasks execute with source input verification and cleanup:
+binary-host reports 136 passed, one failed and one ignored;
+library-host reports 1,805 passed, seven failed and four ignored.
+The native accounting owner is matching those eight parent-suite diagnostics to existing incidents.
+The separate prior Git `2.55.0` prerequisite gap is repaired for this adapter.
+The provider allocation consumed 1,144.408 allocated CPU-seconds or $0.0572204 published compute before credits.
+Current development evidence has terminal observations for 717 package identities,
+with two never-terminal tasks and three latest campaigns still incomplete.
+Keep the original `685/34` and `686/33` snapshots as scoped historical evidence.
+Collect only the three unfinished campaigns,
+complete remaining source-issue mapping and wire the common routes.
 The root agent must align GHA, VM and shared helper routes before final combined dispatch.
 The prepared combined workflow remains incomplete until that integration and bounded check coverage are verified.
 The settled common manifest lives at `doc/audit/depot-complete-cohort-${cohort_id}.json` on `main`.
@@ -386,6 +396,11 @@ paired receipts, a 1,047,160-byte escaped-text payload, ten rejected invalid inp
 and a digest-guard removal control.
 Its checked fixture transport and the root's actual authenticated transport are separate proofs.
 Workflow wiring and the final manifest freeze remain pending.
+The prepared 57-selector candidate covers all 155 remainder checks;
+Git host two are split from the Rust six, leaving Rust four and regular 16.
+Both primary and candidate manifests keep `completeGraph: false`.
+The candidate commit `3ac9616096` needs a corrective comment for its premature `freeze` wording after push.
+Current OPFS evidence updates `#1052`; the verified CI/retry environment boundary is `#1131`.
 Generated checks already run in separate detached fixtures and preserve the original source checkout;
 their diff counters measure bytes.
 Only harness execution failures receive recovery edits;

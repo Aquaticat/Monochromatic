@@ -251,10 +251,41 @@ and rejection of the previous executor by that same consumer.
 The Git host task's immutable description explicitly requires the gate's Git `2.56.0`
 for tests that start Git.
 The observed host `2.55.0` mismatch is therefore a missing test prerequisite.
-The next host recovery must supply the audited Git executable and required libraries
-before rerunning the unchanged host tasks.
-Any resulting source failures must remain separate from that mismatch
-and from the existing native container baseline failures.
+Recovery `10zmqch10h` at clean pushed `13c022e6b33007da4c23cdb88f5fdf9eccf3f23c`
+builds the exact audited Git `2.56.0` release against the worker ABI with the original build flags.
+It verifies 4,966 unchanged upstream inputs,
+the installed real ELF,
+all three linked-library hashes,
+an actual Git commit and `/proc/PID/exe` equal to `/usr/bin/git`.
+The installation and original host tasks run only in a private full worker-rootfs overlay
+with two CPUs, two GiB, 512 PIDs and no network.
+Its ELF SHA-256 is `8c7b36571efa3e7daa5230ec86ab3c2f681d76e09f00eda3261424621cbe45c8`.
+The unchanged binary-host suite reports 136 passed, one failed and one ignored;
+the unchanged library-host suite reports 1,805 passed, seven failed and four ignored.
+Deliberately failing child lock-helper controls are not additional parent-suite failures.
+Both build prerequisites pass, every retained check-log hash and provider URL matches,
+source inputs remain verified and runtime cleanup is verified.
+All sampled OOM and PID rejection counters remain zero.
+These source failures are separate from the repaired Git version prerequisite and the native container baseline.
+The native accounting owner is comparing the exact eight parent-suite failure diagnostics with existing incidents.
+The actual `2x8` allocation consumed 572.204 provider-job seconds and 1,144.408 allocated CPU-seconds,
+corresponding to $0.0572204 published compute before credits.
+
+The Git pilot artifact contains 2,351,425,116 extracted bytes;
+2,329,816,576 are the already-audited `native-base-images.tar` cache.
+The final upload plan retains image/tool transfer receipts,
+source logs, consumer reports, metadata controls and the Git ELF,
+while keeping the original audited archive as separate retained evidence.
+
+The current development union independently verifies 306 additional generic log observations
+across the ownership pilot, leaf recovery, browser prerequisites and Git host recovery.
+It contains terminal observations for 717 of the 719 package identities.
+Conf fuzz and TOML mutation have never produced a terminal task record.
+Conf mutation has an older harness-failed terminal observation,
+but its repaired-prerequisite campaign also remains incomplete.
+The latest incomplete set therefore still has three tasks.
+The original `685/34` and subsequent `686/33` snapshots remain preserved with their request scopes.
+None of these unions is a single coherent replay or proves source eligibility by terminal count alone.
 
 Continuation `1pgpb8qhn6` started at `2026-10-17T06:53:35Z` from clean pushed harness
 `51d5a2fd69507d9346d7fe6eb6345a4ee9929383`, independently confirmed by the provider.
@@ -307,6 +338,15 @@ Removing the digest guard makes its invalid-digest control pass,
 which proves that control detects the guard's absence.
 The authenticated live transport proof remains separate from the injected transport fixture.
 Common workflow wiring and the final freeze remain pending.
+The candidate complete remainder inventory has 57 disjoint selectors for 155 checks;
+its union with the prior static/unit closure covers all 719 identities without changing the package graph hash.
+Direct inspection corrected the split to regular 16, Rust four and Git host two:
+the Git host tasks belong to the frozen Rust partition.
+Both primary and candidate manifests retain `completeGraph: false`.
+The `3ac9616096` subject's word `freeze` overstates this candidate inventory's readiness;
+a corrective commit comment is queued after its push.
+The current OPFS reproduction is added to existing issue `#1052`;
+the separately verified CI propagation boundary is tracked by issue `#1131`.
 The generated-check adapter already isolates each check in a separate detached worktree;
 its `changedTrackedBytes` field measures diff bytes.
 The original source checkout remains clean for the source identity guards.
