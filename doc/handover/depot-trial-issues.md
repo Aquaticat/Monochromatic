@@ -425,7 +425,8 @@ Its full native report,
 provider allocation,
 artifacts,
 and verified cleanup are retained.
-A bounded actual TOML pilot through the current complete container adapter is queued;
+Bounded actual TOML pilot `0j8zhbn9n0` is dispatched on `a6dcb98aaa415c49633474e46acc2a3c366e31df`;
+terminal collection is active in session `62945`;
 the full campaign remains incomplete.
 Completed container failure `#1070` remains separate;
 application source stays immutable.

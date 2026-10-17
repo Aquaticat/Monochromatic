@@ -119,3 +119,7 @@ The full native report is retained as compressed byte-identical evidence in
 [the terminal audit](../audit/depot-toml-reconciliation-2026-10-17.md#terminal-toml-infrastructure-outcome).
 These infrastructure-derived statuses do not establish source mutation completion or passing tests.
 The complete current container adapter and a bounded actual TOML consumer pilot remain required.
+
+Pilot `0j8zhbn9n0` now exercises that complete adapter through the unchanged source task
+with one existing source-file selector and the full unit suite.
+Its actual outcome remains pending.

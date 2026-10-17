@@ -243,3 +243,21 @@ retaining the first partial extraction.
 One metadata snapshot assertion is retained without attributing a narrower cause.
 Issue `#1113` remains open while the actual mutation campaign boundary is unresolved.
 Final coherent dispatch remains held.
+
+## Repaired adapter consumer pilot
+
+Development pilot `0j8zhbn9n0` uses harness `a6dcb98aaa415c49633474e46acc2a3c366e31df`
+and the complete containers adapter from `d098532a5b6946231daf3c4f43e38444359a307e`.
+The original source mutation task selects `src/toml-get-comments.ts`,
+which has one mutant in the retained full inventory.
+It first emits an actual dry-run enumeration,
+then runs the full unit suite with one container and shard size one.
+The consumer budget is `900000` milliseconds in a `25`-minute job.
+Its terminal collector is active;
+no successful TOML consumer result is claimed yet.
+The exact request,
+inputs,
+receipt,
+controls,
+and additive observed-proof comment on issue `#1047` are retained.
+Final coherent dispatch remains held.

@@ -268837,6 +268837,555 @@
         "providerTaskBytesVerified": true,
         "taskSha256": "50670f65a63b66aa677d62cf53a3dae6d29fbb2c3676970de4be92ea51932ed9"
       }
+    },
+    "pilotRecovery": {
+      "state": "bounded actual TOML pilot dispatched; terminal wait62945",
+      "runId": "0j8zhbn9n0",
+      "response": {
+        "org_id": "l4zncjjbj5",
+        "run_id": "0j8zhbn9n0"
+      },
+      "manifest": {
+        "schemaVersion": 1,
+        "classification": "Independent development continuation. Not the final common cohort.",
+        "requestedAt": "2026-10-17T07:08:41.567Z",
+        "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+        "harnessRevision": "a6dcb98aaa415c49633474e46acc2a3c366e31df",
+        "branch": "trial/depot-toml-continuation-20261017",
+        "workflow": "depot-complete-toml-adapter-pilot.yml",
+        "workflowSha256": "a5f603667b280649f4fbb2e350317159754ee51fdc77d98447a03c5ab4cc7840",
+        "checks": [
+          "package.module.toml-edit.test.mutation"
+        ],
+        "pilot": {
+          "sourceFiles": [
+            "src/toml-get-comments.ts"
+          ],
+          "expectedMutantsFromPriorInventory": 1,
+          "containers": 1,
+          "shardSize": 1,
+          "fullCampaign": false
+        },
+        "scope": "mutations-only",
+        "limits": {
+          "consumerMilliseconds": 900000,
+          "jobMinutes": 25,
+          "shutdownOperationMilliseconds": 60000
+        },
+        "controlsReportSha256": "8f641d8a425e669fddc74d0307395d4ec0140922cd0576ea43ca2a50d53165bc"
+      },
+      "manifestSha256": "46ffce5a013656d8a36ad6c5a7f65aa63b25b8e49c58ea338df21648a61cbeac",
+      "cohortId": "toml-adapter-pilot-20261017T070841567Z",
+      "request": {
+        "schemaVersion": 1,
+        "command": "depot",
+        "args": [
+          "ci",
+          "dispatch",
+          "--repo",
+          "Aquaticats/Monochromatic",
+          "--org",
+          "l4zncjjbj5",
+          "--workflow",
+          "depot-complete-toml-adapter-pilot.yml",
+          "--ref",
+          "trial/depot-toml-continuation-20261017",
+          "--input",
+          "scope=mutations-only",
+          "--input",
+          "cohort_id=toml-adapter-pilot-20261017T070841567Z",
+          "--input",
+          "manifest_sha256=46ffce5a013656d8a36ad6c5a7f65aa63b25b8e49c58ea338df21648a61cbeac",
+          "--input",
+          "requested_at=2026-10-17T07:08:41.567Z",
+          "--output",
+          "json"
+        ],
+        "cwd": "/home/user/temp/agent/depot-toml-continuation-worktree",
+        "manifestSha256": "46ffce5a013656d8a36ad6c5a7f65aa63b25b8e49c58ea338df21648a61cbeac",
+        "cohortId": "toml-adapter-pilot-20261017T070841567Z",
+        "requestedAt": "2026-10-17T07:08:41.567Z",
+        "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+        "harnessRevision": "a6dcb98aaa415c49633474e46acc2a3c366e31df"
+      },
+      "receipt": {
+        "request": {
+          "schemaVersion": 1,
+          "command": "depot",
+          "args": [
+            "ci",
+            "dispatch",
+            "--repo",
+            "Aquaticats/Monochromatic",
+            "--org",
+            "l4zncjjbj5",
+            "--workflow",
+            "depot-complete-toml-adapter-pilot.yml",
+            "--ref",
+            "trial/depot-toml-continuation-20261017",
+            "--input",
+            "scope=mutations-only",
+            "--input",
+            "cohort_id=toml-adapter-pilot-20261017T070841567Z",
+            "--input",
+            "manifest_sha256=46ffce5a013656d8a36ad6c5a7f65aa63b25b8e49c58ea338df21648a61cbeac",
+            "--input",
+            "requested_at=2026-10-17T07:08:41.567Z",
+            "--output",
+            "json"
+          ],
+          "cwd": "/home/user/temp/agent/depot-toml-continuation-worktree",
+          "manifestSha256": "46ffce5a013656d8a36ad6c5a7f65aa63b25b8e49c58ea338df21648a61cbeac",
+          "cohortId": "toml-adapter-pilot-20261017T070841567Z",
+          "requestedAt": "2026-10-17T07:08:41.567Z",
+          "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "harnessRevision": "a6dcb98aaa415c49633474e46acc2a3c366e31df"
+        },
+        "finishedAt": "2026-10-17T07:08:42.836Z",
+        "status": 0,
+        "signal": null,
+        "stdout": "{\n  \"org_id\": \"l4zncjjbj5\",\n  \"run_id\": \"0j8zhbn9n0\"\n}\n",
+        "stderr": ""
+      },
+      "preparation": {
+        "adapterReference": "d098532a5b6946231daf3c4f43e38444359a307e",
+        "adapterTask": "package/dev-script/task-util/mise.toml",
+        "adapterBlockSha256": "79892f4da8cf8889d72bf1e52572f8086a85e4f47771f6b8e19652e31e9ec7e2",
+        "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+        "selectedSourceFile": "src/toml-get-comments.ts",
+        "expectedMutantsFromPriorNativeReport": 1,
+        "sourceTask": "//package/module/toml-edit:test:mutation",
+        "sourceTaskUnchanged": true,
+        "boundedMilliseconds": 900000,
+        "workflow": ".depot/workflows/depot-complete-toml-adapter-pilot.yml",
+        "finalCoherentDispatch": false
+      },
+      "controls": {
+        "root": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-wG7bHF",
+        "report": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-wG7bHF/report.json"
+      },
+      "controlsReport": {
+        "schemaVersion": 1,
+        "routeRevision": "a6dcb98aaa415c49633474e46acc2a3c366e31df",
+        "root": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-wG7bHF",
+        "source": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-wG7bHF/workspace/source",
+        "cohort": {
+          "COHORT_ID": "toml-local-controls-20261017",
+          "COHORT_MANIFEST_SHA256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+          "COHORT_REQUESTED_AT": "2026-10-17T07:07:24.096Z"
+        },
+        "records": [
+          {
+            "name": "identity",
+            "status": 0,
+            "signal": null,
+            "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-wG7bHF/0-identity.log",
+            "sha256": "3458312e3cd17f6930f0e344eb9992ef1e0e756651952b0f4132a5cc27e70560"
+          },
+          {
+            "name": "identity",
+            "status": 0,
+            "signal": null,
+            "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-wG7bHF/1-identity.log",
+            "sha256": "50135530dd1c9e7acc9d9fc645343add3a3ed8a6bdfc876093afd0d5217f2252"
+          },
+          {
+            "name": "identity",
+            "status": 1,
+            "signal": null,
+            "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-wG7bHF/2-identity.log",
+            "sha256": "c4453a6a8eddded54784100f7a7893f112bfd1d289d037b3b0b4dda2bfa691cc"
+          },
+          {
+            "name": "identity",
+            "status": 0,
+            "signal": null,
+            "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-wG7bHF/3-identity.log",
+            "sha256": "a21f983edae6487daf5c0726a63b059de2de32b682c4e0f820e4b46f48c598df"
+          },
+          {
+            "name": "identity",
+            "status": 1,
+            "signal": null,
+            "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-wG7bHF/4-identity.log",
+            "sha256": "a13e38d33747853f3d295e8fcc865a2c6ca4245861d83c6a429cc167ca7de527"
+          },
+          {
+            "name": "bounded",
+            "status": 0,
+            "signal": null,
+            "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-wG7bHF/5-bounded.log",
+            "sha256": "4d0a706ca288f5aa92067eb6c45762ca8601c1c882583ebdad92cb9f6897a093"
+          },
+          {
+            "name": "bounded",
+            "status": 1,
+            "signal": null,
+            "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-wG7bHF/6-bounded.log",
+            "sha256": "674376ab4de6fb521f837635b92a144f27736e7eb6bb4e3738c42bbda37dcfc7"
+          },
+          {
+            "name": "bounded",
+            "status": 1,
+            "signal": null,
+            "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-wG7bHF/7-bounded.log",
+            "sha256": "edec0e8f7070f9362d01970cd4437de90fd3ed7afd1cc0b19cca8c4e59c9f7f5"
+          },
+          {
+            "name": "bounded",
+            "status": 1,
+            "signal": null,
+            "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-wG7bHF/8-bounded.log",
+            "sha256": "1a194a011d7d980ddfdac35c8060c4abbc2335becf5b72d96a2ff52ece9371de"
+          }
+        ],
+        "pass": {
+          "schemaVersion": 1,
+          "event": "bounded-gate-finished",
+          "checkId": "package.dev-script.file-enforcer.test.container",
+          "cohort": {
+            "id": "toml-local-controls-20261017",
+            "manifestSha256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+            "requestedAt": "2026-10-17T07:07:24.096Z"
+          },
+          "startedAt": "2026-10-17T07:07:31.975Z",
+          "finishedAt": "2026-10-17T07:07:33.175Z",
+          "elapsedMs": 1199.3697989999998,
+          "maxMs": 5000,
+          "graceMs": 500,
+          "timedOut": false,
+          "exit": {
+            "kind": "exited",
+            "exitCode": 0,
+            "signal": null
+          },
+          "sourceGateTerminal": false,
+          "label": "io.monochromatic.toml-attempt=555c595b-6943-4b45-a907-8e5ac186a44a",
+          "signals": [],
+          "cleanup": [],
+          "cleanupVerified": true,
+          "processGroupAfter": [],
+          "instrumentationErrors": [],
+          "logLimitExceeded": false,
+          "output": {
+            "bytes": 24,
+            "sha256": "3b521b84a81996a67e51ca42c7ae940abab4a1c634ef0af92183a288e83d17b3"
+          },
+          "wrapperSha256": "319ea2c8438a8cf1060f1a9ca1042406f2abfbe1747bbe7572f9bfefb7fa59a2",
+          "fixtureOnly": true,
+          "selectedInvocationStarted": false,
+          "terminalDisposition": "fixture",
+          "consumerSpawnedAt": "2026-10-17T07:07:32.028Z",
+          "consumerOutcomeObservedAt": "2026-10-17T07:07:32.045Z",
+          "containerIdsAfter": [],
+          "consumer": {
+            "command": "/var/home/user/.local/share/mise/installs/node/26.11.1/bin/node",
+            "args": [
+              "--input-type=module",
+              "-e",
+              "import {mkdirSync,writeFileSync} from \"node:fs\";import {join} from \"node:path\";import {tmpdir} from \"node:os\";for(const kind of [\"manifest\",\"report\"]){const path=join(tmpdir(),\"mutation-\"+kind+\"-positive\");mkdirSync(path);writeFileSync(join(path,\"shard-\"+kind+\".json\"),JSON.stringify({fixtureOnly:true,ids:[\"fixture-one\",\"fixture-two\"]}));}writeFileSync(join(process.cwd(),\"mutation-report.json\"),JSON.stringify({fixtureOnly:true,mutants:[{id:\"fixture-one\"},{id:\"fixture-two\"}]}));console.log(\"positive-control-output\")"
+            ],
+            "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-wG7bHF"
+          },
+          "adapterOverlay": {
+            "DEPOT_CI_CHECK_IDS": "[\"package.dev-script.file-enforcer.test.container\"]",
+            "DEPOT_CI_WORKERS": "1",
+            "TMPDIR": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-wG7bHF/pass/toml-mutation-shards",
+            "correlatedPodmanSha256": "319ea2c8438a8cf1060f1a9ca1042406f2abfbe1747bbe7572f9bfefb7fa59a2"
+          },
+          "shardEvidence": [
+            {
+              "path": "mutation-manifest-positive/shard-manifest.json",
+              "bytes": 56,
+              "sha256": "f15b267c63f9b77ad26a6ceef6e6c869baee630cd3a6bd80396cf28d00260009"
+            },
+            {
+              "path": "mutation-report-positive/shard-report.json",
+              "bytes": 56,
+              "sha256": "f15b267c63f9b77ad26a6ceef6e6c869baee630cd3a6bd80396cf28d00260009"
+            }
+          ],
+          "nativeReports": [
+            {
+              "path": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-wG7bHF/mutation-report.json",
+              "existedAtStart": false,
+              "artifactPath": "toml-native-report-package.dev-script.file-enforcer.test.container-0.json",
+              "bytes": 74,
+              "sha256": "2e5a56828a30e2011bccf552b3d07f5df2a10b1c6aa1e194d56678713d1e593c",
+              "mtimeMs": 1792220852043.2207,
+              "producedDuringInvocation": true
+            }
+          ]
+        },
+        "fail": {
+          "schemaVersion": 1,
+          "event": "bounded-gate-finished",
+          "checkId": "package.dev-script.file-enforcer.test.container",
+          "cohort": {
+            "id": "toml-local-controls-20261017",
+            "manifestSha256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+            "requestedAt": "2026-10-17T07:07:24.096Z"
+          },
+          "startedAt": "2026-10-17T07:07:34.762Z",
+          "finishedAt": "2026-10-17T07:07:34.936Z",
+          "elapsedMs": 173.60090300000002,
+          "maxMs": 5000,
+          "graceMs": 500,
+          "timedOut": false,
+          "exit": {
+            "kind": "exited",
+            "exitCode": 7,
+            "signal": null
+          },
+          "sourceGateTerminal": false,
+          "label": "io.monochromatic.toml-attempt=b80bf9bc-1b91-438f-9616-a0fc4ab586d1",
+          "signals": [],
+          "cleanup": [],
+          "cleanupVerified": true,
+          "processGroupAfter": [],
+          "instrumentationErrors": [],
+          "logLimitExceeded": false,
+          "output": {
+            "bytes": 23,
+            "sha256": "3b3793336b8e2c7de1e594b953c5cec24806e57d37e78c89c60268cd1dae8497"
+          },
+          "wrapperSha256": "e591d93db2adddf179ea7f9a1d70c2c2d3dff0f7b8bca2665def4e439223b0e4",
+          "fixtureOnly": true,
+          "selectedInvocationStarted": false,
+          "terminalDisposition": "fixture",
+          "consumerSpawnedAt": "2026-10-17T07:07:34.792Z",
+          "consumerOutcomeObservedAt": "2026-10-17T07:07:34.807Z",
+          "containerIdsAfter": [],
+          "consumer": {
+            "command": "/var/home/user/.local/share/mise/installs/node/26.11.1/bin/node",
+            "args": [
+              "--input-type=module",
+              "-e",
+              "console.error(\"source-control-failure\");process.exitCode=7"
+            ],
+            "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-wG7bHF"
+          },
+          "adapterOverlay": {
+            "DEPOT_CI_CHECK_IDS": "[\"package.dev-script.file-enforcer.test.container\"]",
+            "DEPOT_CI_WORKERS": "1",
+            "TMPDIR": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-wG7bHF/fail/toml-mutation-shards",
+            "correlatedPodmanSha256": "e591d93db2adddf179ea7f9a1d70c2c2d3dff0f7b8bca2665def4e439223b0e4"
+          },
+          "shardEvidence": [],
+          "nativeReports": [
+            {
+              "path": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-wG7bHF/mutation-report.json",
+              "existedAtStart": true,
+              "mtimeMsAtStart": 1792220852043.2207,
+              "artifactPath": "toml-native-report-package.dev-script.file-enforcer.test.container-0.json",
+              "bytes": 74,
+              "sha256": "2e5a56828a30e2011bccf552b3d07f5df2a10b1c6aa1e194d56678713d1e593c",
+              "mtimeMs": 1792220852043.2207,
+              "producedDuringInvocation": false
+            }
+          ]
+        },
+        "timeout": {
+          "schemaVersion": 1,
+          "event": "bounded-gate-finished",
+          "checkId": "package.dev-script.file-enforcer.test.container",
+          "cohort": {
+            "id": "toml-local-controls-20261017",
+            "manifestSha256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+            "requestedAt": "2026-10-17T07:07:24.096Z"
+          },
+          "startedAt": "2026-10-17T07:07:35.654Z",
+          "finishedAt": "2026-10-17T07:07:51.734Z",
+          "elapsedMs": 16079.934815,
+          "maxMs": 15000,
+          "graceMs": 500,
+          "timedOut": true,
+          "exit": {
+            "kind": "exited",
+            "exitCode": null,
+            "signal": "SIGKILL"
+          },
+          "sourceGateTerminal": false,
+          "label": "io.monochromatic.toml-attempt=b1341b72-a9a0-4f38-a876-db6b9edd963f",
+          "signals": [
+            {
+              "observedAt": "2026-10-17T07:07:50.819Z",
+              "signal": "SIGTERM",
+              "sent": true
+            },
+            {
+              "observedAt": "2026-10-17T07:07:51.320Z",
+              "signal": "SIGKILL",
+              "sent": true
+            }
+          ],
+          "cleanup": [
+            {
+              "id": "a04eab7e72a31fd03d0defa25897f8df7e5af84a4f8edb2c910e2609597d9391",
+              "kill": {
+                "args": [
+                  "kill",
+                  "--signal=SIGKILL",
+                  "a04eab7e72a31fd03d0defa25897f8df7e5af84a4f8edb2c910e2609597d9391"
+                ],
+                "startedAt": "2026-10-17T07:07:51.394Z",
+                "finishedAt": "2026-10-17T07:07:51.492Z",
+                "elapsedMs": 98.24123899999904,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "stdout": "a04eab7e72a31fd03d0defa25897f8df7e5af84a4f8edb2c910e2609597d9391\n",
+                "stderr": ""
+              },
+              "remove": {
+                "args": [
+                  "rm",
+                  "--force",
+                  "--time=0",
+                  "--ignore",
+                  "a04eab7e72a31fd03d0defa25897f8df7e5af84a4f8edb2c910e2609597d9391"
+                ],
+                "startedAt": "2026-10-17T07:07:51.492Z",
+                "finishedAt": "2026-10-17T07:07:51.555Z",
+                "elapsedMs": 63.70134400000097,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "stdout": "a04eab7e72a31fd03d0defa25897f8df7e5af84a4f8edb2c910e2609597d9391\n",
+                "stderr": ""
+              }
+            }
+          ],
+          "cleanupVerified": true,
+          "processGroupAfter": [],
+          "instrumentationErrors": [],
+          "logLimitExceeded": false,
+          "output": {
+            "bytes": 31,
+            "sha256": "4fdef45fe3b0c9b884ec602ebdb5db5398f5a1a9bb368b4e6528480515d1553f"
+          },
+          "wrapperSha256": "d3403b1eda3e333f04946b32cde4747f18ace81b5670d44925d9013484e772f1",
+          "fixtureOnly": true,
+          "selectedInvocationStarted": false,
+          "terminalDisposition": "fixture",
+          "consumerSpawnedAt": "2026-10-17T07:07:35.684Z",
+          "consumerOutcomeObservedAt": "2026-10-17T07:07:50.690Z",
+          "containerIdsAfter": [],
+          "consumer": {
+            "command": "/var/home/user/.local/share/mise/installs/node/26.11.1/bin/node",
+            "args": [
+              "--input-type=module",
+              "-e",
+              "import {spawn,execFileSync} from 'node:child_process';import {writeFileSync} from 'node:fs';process.on('SIGTERM',()=>{});const child=spawn(process.execPath,['--input-type=module','-e','process.on(\"SIGTERM\",()=>{});setInterval(()=>{},1000)'],{stdio:'ignore'});const container=execFileSync('podman',['run','--detach','--pull=never','--network=none','--memory=2g','--cpus=2','--pids-limit=64','--entrypoint=/bin/sleep','0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0','120'],{encoding:'utf8'}).trim();writeFileSync(\"/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-wG7bHF/timeout-pids.json\",JSON.stringify({pid:process.pid,child:child.pid,container}));console.log('timeout-positive-control-ready');setInterval(()=>{},1000)"
+            ],
+            "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-wG7bHF"
+          },
+          "adapterOverlay": {
+            "DEPOT_CI_CHECK_IDS": "[\"package.dev-script.file-enforcer.test.container\"]",
+            "DEPOT_CI_WORKERS": "1",
+            "TMPDIR": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-wG7bHF/timeout/toml-mutation-shards",
+            "correlatedPodmanSha256": "d3403b1eda3e333f04946b32cde4747f18ace81b5670d44925d9013484e772f1"
+          },
+          "shardEvidence": [],
+          "nativeReports": [
+            {
+              "path": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-wG7bHF/mutation-report.json",
+              "existedAtStart": true,
+              "mtimeMsAtStart": 1792220852043.2207,
+              "artifactPath": "toml-native-report-package.dev-script.file-enforcer.test.container-0.json",
+              "bytes": 74,
+              "sha256": "2e5a56828a30e2011bccf552b3d07f5df2a10b1c6aa1e194d56678713d1e593c",
+              "mtimeMs": 1792220852043.2207,
+              "producedDuringInvocation": false
+            }
+          ]
+        },
+        "pids": {
+          "pid": 368520,
+          "child": 368527,
+          "container": "a04eab7e72a31fd03d0defa25897f8df7e5af84a4f8edb2c910e2609597d9391"
+        },
+        "observed": {
+          "id": "a04eab7e72a31fd03d0defa25897f8df7e5af84a4f8edb2c910e2609597d9391",
+          "name": "festive_hofstadter",
+          "image": "0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0",
+          "created": "2026-10-17T03:07:35.75135516-04:00",
+          "state": {
+            "OciVersion": "1.2.1",
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 368567,
+            "ConmonPid": 368565,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2026-10-17T03:07:35.80944015-04:00",
+            "FinishedAt": "0001-01-01T00:00:00Z",
+            "CgroupPath": "/user.slice/user-1000.slice/user@1000.service/user.slice/libpod-a04eab7e72a31fd03d0defa25897f8df7e5af84a4f8edb2c910e2609597d9391.scope",
+            "CheckpointedAt": "0001-01-01T00:00:00Z",
+            "RestoredAt": "0001-01-01T00:00:00Z"
+          },
+          "bounds": {
+            "memory": 2147483648,
+            "cpuQuota": 200000,
+            "cpuPeriod": 100000,
+            "nanoCpus": 2000000000,
+            "pidsLimit": 64
+          }
+        },
+        "eventsSha256": "de387d73a9c57241d3c3663b5a96ad1079f49c62be74d0c10957d7bdd3bae8a0"
+      },
+      "issueComment": {
+        "url": "https://api.github.com/repos/Aquaticats/Monochromatic/issues/comments/6231034484",
+        "html_url": "https://github.com/Aquaticats/Monochromatic/issues/1047#issuecomment-6231034484",
+        "issue_url": "https://api.github.com/repos/Aquaticats/Monochromatic/issues/1047",
+        "id": 6231034484,
+        "node_id": "IC_kwDOKlVnec8AAAABc2YKdA",
+        "user": {
+          "login": "Aquaticat",
+          "id": 66041952,
+          "node_id": "MDQ6VXNlcjY2MDQxOTUy",
+          "avatar_url": "https://avatars.githubusercontent.com/u/66041952?u=dfa68ac188989c8d17b9a838cdc14af4327dd7bc&v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/Aquaticat",
+          "html_url": "https://github.com/Aquaticat",
+          "followers_url": "https://api.github.com/users/Aquaticat/followers",
+          "following_url": "https://api.github.com/users/Aquaticat/following{/other_user}",
+          "gists_url": "https://api.github.com/users/Aquaticat/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/Aquaticat/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/Aquaticat/subscriptions",
+          "organizations_url": "https://api.github.com/users/Aquaticat/orgs",
+          "repos_url": "https://api.github.com/users/Aquaticat/repos",
+          "events_url": "https://api.github.com/users/Aquaticat/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/Aquaticat/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "created_at": "2026-10-17T07:08:13Z",
+        "updated_at": "2026-10-17T07:08:13Z",
+        "author_association": "MEMBER",
+        "body": "Additional observed mutation-adapter boundary in TOML development run `p6vm5s00w6`, attempt `q3xbl70q20`, source `525d2e09f8168a3bdd7e513e26d4c80b363123e5`, harness `274ec49595d60f663249d61ab35a0806fe29aff0`.\n\nThis is separate from this issue's original browser `newuidmap` rejection. The source-owner nonroot mutation adapter reached a root-owned `/work` tmpfs. Every one of its `9037` shard attempts emitted:\n\n```text\n# Source container copy diagnostics\nrsync: [generator] chgrp \"/work/.\" failed: Operation not permitted (1)\nrsync error: some files/attrs were not transferred (see previous errors) (code 23)\n```\n\nThe native report has `3062` distinct mutant identities, all `runtimeError`; these are infrastructure-derived statuses before mutant assertions, not completed source mutation outcomes. All native identities reconcile with all shard manifests and `18338` mutant assignments. The full byte-identical native report is durably retained as `doc/audit/depot-toml-mutation-native-2026-10-17.evidence.json.gz`, uncompressed SHA256 `e3b1023242fb838e30ad22ce1aa0c593f412401be141901594af34c484177bce`.\n\nThe original source command ran for `2640500.405168` milliseconds and failed. It did not reach the one-hour wrapper deadline. Final scoped cleanup verified no owned process group or labeled containers remained. Provider interval for this attempt is `2738592` milliseconds at `16x64`. Matching before/after source proof, artifact `01a148a6-f383-7601-97bb-5e2f44ea27ff` and SHA256 `8480e110dfd7c09a672aa6786fa9469b482e08e0df8c8c336e1b55264ce5059d`, every log hash, instrumentation limits, and cleanup are retained in `doc/audit/depot-toml-reconciliation-2026-10-17.evidence.json` (commit `893b26838e`).\n\nThe complete corrected containers adapter from `d098532a5b6946231daf3c4f43e38444359a307e` is being exercised by a bounded actual TOML pilot. That adapter's separate logger consumer already passed in `360d91ht6w`. This observation does not close browser coverage, claim a passing TOML campaign, or merge the distinct `#1116` user-namespace unmount and `#1117` baked-metadata incidents.\n",
+        "reactions": {
+          "url": "https://api.github.com/repos/Aquaticats/Monochromatic/issues/comments/6231034484/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "performed_via_github_app": null,
+        "minimized": null,
+        "pin": null
+      },
+      "finalCoherentDispatch": false
     }
   },
   "sourceDiagnostics": {
