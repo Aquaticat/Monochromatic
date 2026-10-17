@@ -44,6 +44,9 @@ jobs:
     - name: Verify selected source tools and dependency inputs
       working-directory: harness
       run: mise run //package/dev-script/task-util:trial:depot:ci:native-tool-gate
+    - name: Install immutable source frozen workspace dependencies
+      working-directory: source
+      run: mise run prepare:pnpm:install -- --frozen-lockfile
     - name: Verify immutable authoritative inputs before source diagnostic
       working-directory: harness
       env:
