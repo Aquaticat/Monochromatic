@@ -477,7 +477,8 @@ Its source wrapper budget is five hours;
 provider job budget is 360 minutes.
 These are bounds,
 not a runtime prediction.
-Terminal wait session `96306` is active.
+Terminal wait session `96306` was active at dispatch
+and is terminal and reaped as of `2026-10-17`.
 The next action is artifact collection and reconciliation against all 3062 prior mutant identities.
 The immutable runner stops at the first failing selected test file,
 so the full-suite list does not prove 37 executions per mutant.
@@ -507,7 +508,8 @@ actual local file/eval controls verify this behavior.
 File-based cloud control `699f9lg5zm` is dispatched on
 `f636b13af902ed6abe5cd8758da4cb8ba99f2175`.
 Observed-repeat wait session `51269` ended;
-file-carrier terminal wait session `32240` is active.
+file-carrier terminal wait session `32240` was active at dispatch
+and is terminal and reaped as of `2026-10-17`.
 No false-kill reproduction is claimed until this actual source control completes.
 
 Current TOML checkpoint: full development run `23dk3nr90f` is successful and reconciled.
@@ -518,12 +520,24 @@ Four auxiliary Podman `inspect` status-`125` receipts remain separate from zero 
 The durable primary ZIP and per-identity compressed reconciliation are linked in the owned TOML audit.
 Historical full wait `96306` and file-control wait `32240` are terminal and reaped.
 File control `699f9lg5zm` failed its ancillary dependency metadata lookup before classifier assertions.
-Independent corrected control `rsbr0wrdt0` is dispatched at `undefined`;
-terminal wait session `43521` is active.
+Independent corrected control `rsbr0wrdt0` finished successfully at
+`f650e3e2f923bea21a7baf9565bb1ec3efb4fbde`;
+terminal wait session `43521` is reaped with exit zero.
 Next: retain that actual classifier and emitter result,
 file a distinct source incident only if reproduced after duplicate comparison,
 and reconcile the original timeout issue's required coverage.
 Only the TOML mutation check ran in the full retry; this is not final cohort latency.
+Final common publication and dispatch remain held.
+
+Actual-source classifier and emitter controls passed.
+A genuine assertion killed the positive fixture;
+removing the test launcher after the real compiler passed also returned native `killed`,
+with no test-entry marker and exact `spawn node ENOENT`.
+The source emitted both expected caught-spawn diagnostics.
+Keep this controlled source defect separate from the full campaign's zero matching log diagnostics.
+Next: publish the distinct source report after duplicate comparison,
+retain its receipt,
+and close `#1113` only against the fully retained independent check outcomes.
 Final common publication and dispatch remain held.
 
 ## Native recovery assertion tracking
