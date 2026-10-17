@@ -171,7 +171,8 @@ Completed units (findings validated):
  `code-runtime-error-1` (6 findings),
  `code-rolldown-plugin-1` (14 findings),
  `code-pi-shared-1` (18 findings),
- `code-stub-1` (5 findings).
+ `code-stub-1` (5 findings),
+ `code-rust-module-1` (2 findings).
 
 Cross-unit leads:
  `doc/planning/music-player-shared-truepeak-core.md` repeats the retired truepeak policy
@@ -228,20 +229,19 @@ Cross-unit leads:
  hand to the `cross-dependency` reviewer when it launches.
 
 Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
- `code-rust-module-1`,
  `code-shim-1`,
  `code-test-fixture-1`,
  `code-test-fixture-2`,
  `code-typeface-1`,
  `code-webapp-productivity-1`,
  `docs-troubleshooting-1`,
- `docs-troubleshooting-2` (launched as a replacement).
+ `docs-troubleshooting-2`,
+ `docs-audit` (launched as a replacement; carries the `doc/audit/dry.md` PP6 lead).
 
 Queued units in launch order (flat list; the first entry launches next):
 
 - `code-stub-1`,
 - `docs-troubleshooting-1`,
-- `docs-audit`,
 - `docs-planning`,
 - `docs-decision`,
 - `docs-handover`,
