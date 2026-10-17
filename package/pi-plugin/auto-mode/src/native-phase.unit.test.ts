@@ -16,6 +16,7 @@ const modes = [
   'deny', 'cancel', 'notification-context', 'notification-turn', 'notification-followup',
   'notification-primary', 'notification-primary-turn', 'notification-primary-followup',
   'steer-user', 'steer-primary', 'policy-change', 'policy-primary',
+  'child-normal', 'child-before-block', 'child-unsealed', 'child-cancel',
 ] as const;
 /** A focused task selects the same maintained suite without a second fixture implementation. */
 const requested = process.argv[2];
@@ -30,7 +31,10 @@ await describe({
       /** The child limit bounds an implementation that hangs during native cleanup. */
       const result = await run(process.execPath, [
         '--max-old-space-size=512', '--import', join(root, 'dist/native/loader.mjs'),
-        join(root, 'src/native-phase.test.mjs'), mode,
+        ...(mode.startsWith('child-')
+          ? [join(root, 'src/native-child-phase.test.mjs'), 'permission', '--require-resolution', '--sdk-stream',
+            '--http-transport', '--operating-policy', `--child-phase=${mode.slice('child-'.length)}`]
+          : [join(root, 'src/native-phase.test.mjs'), mode]),
       ], { cwd: root, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024, timeout: 120_000 });
       assert.equal(result.stderr.includes('context canceled'), false, result.stderr);
       assert.equal(result.stderr.includes('context cancelled'), false, result.stderr);
