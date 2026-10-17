@@ -14,13 +14,13 @@ import {createDomainFixtureAssessment} from '../dist/native/contract/integration
 //region Real native callbacks surround one complete-group review.
 /** Each mode runs in a separate process because native fixture configuration owns its disposable home. */
 const mode=process.argv[2]??'parallel';
-assert.ok(['parallel','sequential','implicit-sequential','invalid','before-block','tool-error','deny','cancel','notification-context','notification-turn','steer-user','policy-change'].includes(mode));
+assert.ok(['parallel','sequential','implicit-sequential','invalid','before-block','tool-error','deny','cancel','notification-context','notification-turn','notification-followup','notification-primary','steer-user','policy-change'].includes(mode));
 /** Event traces retain native call identity without depending on subprocess completion order. */
 const events=[];
 /** Model and execution counters distinguish missing coverage from successful withholding. */
 const observations={assessments:0,httpCalls:0,attempts:0,selections:0,executions:0,active:0,maximumActive:0};
 /** Native cancellation and asynchronous update completion stay drainable. */
-const state={abortTask:undefined,updates:new Map(),sawNotification:false};
+const state={abortTask:undefined,updates:new Map(),sawNotification:false,followupProposed:false};
 /** Notifications must reach a subsequent real model request and permit its fresh operation. */
 const notification=mode.startsWith('notification-');
 const env=await createEnvironment({
@@ -76,6 +76,13 @@ const unsubscribe=session.agent.subscribe(async function nativeEvents(event){
   }
 });
 const sendAssessment=createDomainFixtureAssessment({settings:{relation:'permission',unresolvedClause:'prerequisite',operationDecision:mode==='deny'?'deny':'approve',operatingPolicy:true,httpTransport:true},observations});
+/** The real session selects context retention, steering, or followup delivery. */
+async function notify(){
+  await session.sendCustomMessage({customType:'ad-process:notification',content:'Authored process completion',display:true,
+    details:{command:'printf PHASE_NOTIFICATION',processId:'fixture-process'}},
+    mode==='notification-turn'?{triggerTurn:true,deliverAs:'steer'}:
+    mode==='notification-followup'?{triggerTurn:true,deliverAs:'followUp'}:{triggerTurn:false});
+}
 const calls=['A','B','C'].map(function proposal(letter,index){return {index,id:`phase-${index}`,type:'function',function:{name:'bash',arguments:JSON.stringify(mode==='invalid'&&index===1?{}:{command:`  printf PHASE_${letter}  `})}};});
 const requests={count:0};
 const runtime=bindNativePolicyRuntime({
@@ -84,11 +91,7 @@ const runtime=bindNativePolicyRuntime({
   ...createNativeSemanticOperatingPolicies(),
   async sendWire(input){
     observations.attempts++;events.push('assess');
-    if(mode.startsWith('notification-')&&observations.attempts===2){
-      await session.sendCustomMessage({customType:'ad-process:notification',content:'Authored process completion',display:true,
-        details:{command:'printf PHASE_NOTIFICATION',processId:'fixture-process'}},
-      mode==='notification-turn'?{triggerTurn:true,deliverAs:'steer'}:{triggerTurn:false});
-    }
+    if(notification&&mode!=='notification-primary'&&observations.attempts===2)await notify();
     if(mode==='steer-user'&&observations.attempts===2)await session.steer('Stop the proposed operation. Reply without executing tools.');
     if(mode==='policy-change'&&observations.attempts===2)await writeFile(join(env.options.cwd,'AGENTS.md'),'RUL:\n The proposed inspection is prohibited.\n');
     return await sendAssessment(input);
@@ -98,7 +101,10 @@ const runtime=bindNativePolicyRuntime({
     const body=await request.clone().text();
     if(body.includes('Authored process completion'))state.sawNotification=true;
     const ordinal=requests.count++;
-    const proposed=ordinal===0||(notification&&ordinal===1);
+    if(mode==='notification-primary'&&ordinal===0)await notify();
+    const followup=notification&&ordinal>0&&state.sawNotification&&!state.followupProposed;
+    if(followup)state.followupProposed=true;
+    const proposed=ordinal===0||followup;
     const selected=ordinal===0?calls:[{index:0,id:'phase-3',type:'function',function:{name:'bash',arguments:JSON.stringify({command:'printf PHASE_FOLLOWUP'})}}];
     const chunk={id:'native-phase-fixture',object:'chat.completion.chunk',created:0,model:'fixture'};
     const first={...chunk,choices:[{index:0,delta:proposed?{role:'assistant',tool_calls:selected}:{role:'assistant',content:'done'},finish_reason:null}]};

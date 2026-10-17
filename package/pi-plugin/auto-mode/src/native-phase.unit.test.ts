@@ -13,7 +13,8 @@ const root = dirname(import.meta.dirname);
 /** These modes cover native phase branches and distinguish custom data from changed instructions. */
 const modes = [
   'parallel', 'sequential', 'implicit-sequential', 'invalid', 'before-block', 'tool-error',
-  'deny', 'cancel', 'notification-context', 'notification-turn', 'steer-user', 'policy-change',
+  'deny', 'cancel', 'notification-context', 'notification-turn', 'notification-followup',
+  'notification-primary', 'steer-user', 'policy-change',
 ] as const;
 /** A focused task selects the same maintained suite without a second fixture implementation. */
 const requested = process.argv[2];
