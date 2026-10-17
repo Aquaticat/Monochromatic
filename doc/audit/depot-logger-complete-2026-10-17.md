@@ -105,7 +105,32 @@ this does not verify storage charges or the account ledger.
 
 Both Depot development requests are terminal with failed status.
 The external collection retains every attempt and hashes every downloaded artifact.
-The package collection is in progress.
+The package collection retains its 11 attempts and 11 hashed artifacts.
+Independent reconciliation verifies every executed package log hash and byte count.
+It finds terminal records for 685 package identities.
+The other 34 identities contain three started checks without terminal records and 31 unstarted checks.
+The missing records belong to the fuzz, mutation and container partitions;
+workflow completion does not establish their completion.
+
+Selective prerequisite recovery request `dhxhzzvmc3` uses pushed harness revision
+`2676cb365a206434b525bf032a5875cafde827e9`.
+It selects 12 package checks plus their declared prerequisite closure,
+browser and DOM execution,
+and only the sidecar generator check.
+The root generator's observed tracked output difference remains a source diagnostic.
+
+An invalid dispatch attempt, `tf9ddwgbw3`, used revision
+`ac6b8f5cde945b4a3ce9ea9974744369547bbdba` instead of the intended trial revision.
+Its four failed jobs receive no historical source-check credit.
+The non-login command environment selected the repository Git shim;
+Depot could not detect the repository or ref.
+The corrected login-shell dispatch resolved `/usr/bin/git` and printed the intended pushed HEAD.
+
+The remaining continuation queue selects the 34 unresolved checks
+and three checks with retained `rsync` ownership infrastructure failures.
+Each continuation receives an unchanged leaf task and its prerequisite closure in a separate job.
+The ownership adapter has passed a bounded local positive and negative control;
+the actual mutation consumer still requires verification.
 Terminal collection must retain every attempt,
 download and hash the artifacts,
 reconcile executed check identities against the frozen manifest,

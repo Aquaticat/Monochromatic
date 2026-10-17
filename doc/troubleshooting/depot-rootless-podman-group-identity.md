@@ -163,3 +163,51 @@ The actionable repository integration gap is preserved in [issue #1047][local-is
 [control-run]: https://depot.dev/orgs/l4zncjjbj5/workflows/zlhbx5k5rq
 [image-issue]: https://github.com/Aquaticats/Monochromatic/issues/1045
 [local-issue]: https://github.com/Aquaticats/Monochromatic/issues/1047
+
+## Mutation work tmpfs ownership on 2026-10-17
+
+This is a separate boundary from the `newuidmap` rejection.
+In logger development request `4x77lb56cs`,
+the rootful mutation adapter mapped the source owner's numeric UID and GID with `--user`.
+The source task then invoked `rsync --archive` against a root-owned `/work` tmpfs.
+The retained mutation logs report:
+
+```text
+rsync: [generator] chgrp "/work/." failed: Operation not permitted (1)
+rsync error: some files/attrs were not transferred (see previous errors) (code 23)
+```
+
+The source copy failed before mutant assertions.
+The affected checks include the mutation CLI integration,
+`conf-fork` mutation and `make-asynchronous-fork` mutation tasks.
+The later matcher mutation task reached the same error before its partition budget expired.
+
+A mount-free local control used Podman `5.8.7`,
+Alpine `3.22`,
+2 CPUs,
+2 GiB RAM,
+64 PIDs,
+no network,
+a read-only root filesystem and `--cap-drop=ALL`.
+With container user `1000:1000`,
+`/work` reported owner `0:0` and `chgrp` failed with the measured permission error.
+Adding `uid=1000,gid=1000` to `--tmpfs` did not work:
+Podman exited 125 with `unknown mount option "uid=1000"`.
+Harness commit `d8902dcf16` preserves that rejected development attempt;
+it is superseded by `153d7bc98c`.
+
+The positive control used rootful mappings
+`--uidmap 0:1000:1 --gidmap 0:1000:1 --user 0:0`.
+The process and tmpfs both reported container identity `0:0`,
+and the ownership check passed with the same capability and resource restrictions.
+The upstream Podman `v5.8.7` source file
+`docs/source/markdown/options/uidmap.container.md`
+documents direct host-to-container mappings for rootful callers.
+This evidence supports the mapping mechanism;
+it does not yet establish a passing Depot mutation consumer.
+
+The corrected harness derives mapping IDs from the disposable runner process,
+asserts tmpfs ownership in its existing private fixture,
+and verifies that the host result file belongs to the source owner.
+Actual source-task replay remains queued in the logger audit.
+No Podman upstream defect is established by these results.
