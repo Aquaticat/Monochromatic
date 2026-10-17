@@ -92,25 +92,40 @@ This audit records the isolated bounded continuation and its controls.
 ## Bounded continuation route
 
 The pushed trial branch `trial/depot-toml-continuation-20261017` freezes harness `274ec49595d60f663249d61ab35a0806fe29aff0`.
-Its workflow is `.depot/workflows/depot-complete-toml-bounded.yml`, with required inputs
-`cohort_id`, `manifest_sha256`, `requested_at`, and `scope`.
-`scope=complete` runs `toml`, `generated`, `container`, and the two-member `mutations` matrix.
+Its workflow is `.depot/workflows/depot-complete-toml-bounded.yml`,
+with required inputs
+`cohort_id`,
+`manifest_sha256`,
+`requested_at`,
+and `scope`.
+`scope=complete` runs `toml`,
+`generated`,
+`container`,
+and the two-member `mutations` matrix.
 `scope=mutations-only` runs only the two missing mutation gates.
 The independent jobs preserve the exact source tasks and their original flags.
 Each bounded gate has a `3600000`-millisecond consumer budget and a `90`-minute job limit.
 Separate cleanup operations have `60000`-millisecond budgets.
-The adapter retains incremental stdout, scoped container states/events, raw mutant shard JSON,
-per-file hashes, and source/cohort proofs before and after consumers.
+The adapter retains incremental stdout,
+scoped container states/events,
+raw mutant shard JSON,
+per-file hashes,
+and source/cohort proofs before and after consumers.
 The private `TMPDIR` and label-only Podman wrapper are recorded as separate harness overlays.
 
-Exact-source controls pass before and after consumers, reject a tracked source mutation,
+Exact-source controls pass before and after consumers,
+reject a tracked source mutation,
 and pass again after restoring the disposable fixture.
 Both identity and command-fixture modes reject CI use.
-A real container control observed `2147483648` memory bytes, `2` CPU quota, and `64` PID capacity.
-Its SIGTERM-resistant Node child and grandchild were killed, and the correlated container was removed.
+A real container control observed `2147483648` memory bytes,
+`2` CPU quota,
+and `64` PID capacity.
+Its SIGTERM-resistant Node child and grandchild were killed,
+and the correlated container was removed.
 The `15000`-millisecond consumer timeout control finished in `48354.209200000005` milliseconds,
 including acknowledged shutdown and evidence retention.
-A normal exit `0` passes, and an exit `7` remains failed with its output retained.
+A normal exit `0` passes,
+and an exit `7` remains failed with its output retained.
 Synthetic shard manifest/report files are hashed and retained as fixture evidence.
 The initial cleanup controls failed honestly with containers still present after their short shutdown budgets;
 their original results remain in the evidence alongside the successful control.
@@ -121,7 +136,9 @@ and [#1112](https://github.com/Aquaticats/Monochromatic/issues/1112)
 retain the two actual lint diagnostic boundaries.
 Issue [#1113](https://github.com/Aquaticats/Monochromatic/issues/1113)
 tracks the missing-terminal scheduling and artifact-retention boundary.
-All three bodies, open states, and triage labels were re-fetched and verified.
+All three bodies,
+open states,
+and triage labels were re-fetched and verified.
 
 Development dispatch `p6vm5s00w6` requests only the two missing mutation gates.
 Final coherent dispatch remains held.
