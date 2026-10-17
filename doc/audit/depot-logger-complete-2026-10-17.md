@@ -117,6 +117,12 @@ The package collection retains its 11 attempts and 11 hashed artifacts.
 Independent reconciliation verifies every executed package log hash and byte count.
 It finds terminal records for 685 package identities.
 The other 34 identities contain three started checks without terminal records and 31 unstarted checks.
+That snapshot covers request `4x77lb56cs` only and remains preserved.
+The global development union also verifies 46 executor observations from external requests
+`j4m7gw8mwg` and `dhxhzzvmc3`, including every task argument, output hash and output byte count.
+The browser-properties bundle adds one terminal identity:
+the global union contains 686 terminal identities and 33 unresolved identities.
+This union is development evidence, not a coherent complete replay or proof of source eligibility.
 The missing records belong to the fuzz, mutation and container partitions;
 workflow completion does not establish their completion.
 
@@ -160,12 +166,24 @@ Each continuation receives an unchanged leaf task and its prerequisite closure i
 It started at `2026-10-17T05:41:08Z` from clean pushed revision
 `09941541e8ba43d59b03969248f8484a2d2c4269`.
 The provider independently reports that revision in its `ref`, `sha` and `head_sha` fields.
-The ownership adapter has passed a bounded local positive and negative control;
-the actual mutation consumer still requires verification.
-Terminal collection must retain every attempt,
-download and hash the artifacts,
-reconcile executed check identities against the frozen manifest,
-and classify prerequisite suppression separately from source failures.
+All 37 attempts failed before source execution with Podman's diagnostic
+`cannot unmount /sys/kernel/debug: device or resource busy`.
+All 37 logs independently confirm the same failure and no generic case or remainder execution.
+All 37 artifacts are downloaded and hashed; the request adds no source-check credit.
+The locally passing user-namespace mapping is rejected at the actual cloud boundary.
+
+Owned-tmpfs-volume pilot `85fv28fjkl` used clean pushed revision
+`bc6889aaaa8da7974824380bd18f0447ab6945d5` and is terminal with failed status.
+Its cloud preflight passed the private-manifest denial and source-owner positive control,
+with verified volume cleanup and no added capabilities or user-namespace mapping.
+The unchanged mutation CLI integration then reached 49 shards.
+Its `rsync` sender could not read root-owned mode `0600`
+`/baked/node_modules/.pnpm-workspace-state-v1.json` under the adapter's nonroot UID.
+All 49 shard volumes were removed and verified absent.
+This newly exposed adapter prerequisite is separate from mutant assertion failures.
+The next mutation pilot must preserve the source image bytes and use a readonly,
+byte-verified owned-file bind for that generated metadata.
+The troubleshooting record retains the rejected mapping and the distinct permission boundary.
 Provider execution intervals remain usage proxies until paired with the declared allocation.
 No passing complete graph or whole passing latency is established by this interim record.
 
@@ -186,8 +204,10 @@ before rerunning the unchanged host tasks.
 Any resulting source failures must remain separate from that mismatch
 and from the existing native container baseline failures.
 
-The next actions are continuation terminal collection and per-check reconciliation,
-file/engine browser recovery and controlled Git host prerequisite recovery,
+The next actions are the generated-metadata permission control and single mutation pilot,
+only unresolved or repaired-prerequisite leaf recovery,
+file/engine browser recovery with a supported `2x8` pilot,
+and controlled Git host prerequisite recovery,
 then a combined workflow with root-owned host, scanner, policy and VM routes.
 The final coherent replay is held until the root agent aligns those routes.
 The prepared combined workflow remains incomplete until that integration is verified.

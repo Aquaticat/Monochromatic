@@ -209,5 +209,52 @@ it does not yet establish a passing Depot mutation consumer.
 The corrected harness derives mapping IDs from the disposable runner process,
 asserts tmpfs ownership in its existing private fixture,
 and verifies that the host result file belongs to the source owner.
-Actual source-task replay remains queued in the logger audit.
-No Podman upstream defect is established by these results.
+The local result did not predict the actual cloud result.
+Request `1wzr86fssk` used Podman `5.8.4` and rejected that mapping before container execution:
+
+```text
+Error: cannot unmount /sys/kernel/debug: device or resource busy
+```
+
+All 37 retained job logs contain that diagnostic;
+none reached the generic source executor.
+This is a separate visible boundary from the original `rsync` ownership error.
+The emitting diagnostic is Podman's output;
+no narrower OCI-runtime attribution or upstream cause is established.
+
+The replacement uses a uniquely named tmpfs volume with
+`--opt type=tmpfs --opt device=tmpfs --opt nocopy`
+and `--opt o=rw,exec,size=...,mode=1777,uid=...,gid=...`.
+Podman's versioned `v5.8.4` volume-create documentation supports that mount-option form.
+It keeps the source-owner nonroot UID, original resource and capability restrictions,
+and readonly source mounts without a user-namespace mapping.
+The original `/work` tmpfs size is retained.
+Only the owned named volume replaces that mount;
+the adapter removes its unique volume and verifies absence after the child exits.
+
+Bounded local positive and negative controls passed.
+The initial local volume test also required the same SELinux relabeling on both controls;
+that local label denial is distinct from UID ownership and from the cloud mapping rejection.
+Actual generated-boundary controls use the source's existing `label=disable` setting.
+Cloud pilot `85fv28fjkl` passed the private-manifest denial and source-owner positive control,
+with verified cleanup and no added capabilities.
+
+## Baked pnpm metadata under the nonroot mutation adapter
+
+The same pilot then reached the unchanged mutation CLI integration and exposed another boundary:
+
+```text
+rsync: [sender] send_files failed to open "/baked/node_modules/.pnpm-workspace-state-v1.json": Permission denied (13)
+rsync error: some files/attrs were not transferred (see previous errors) (code 23)
+```
+
+The generated image metadata is owned by root with mode `0600`.
+The authored image's default root identity can read it;
+the trial adapter's source-owner UID cannot.
+The failure happens before mutant assertions and is an adapter prerequisite gap.
+The consumer made 49 failed shard attempts, with every owned volume verified removed.
+The proposed repair extracts only that generated file from a stopped disposable image container,
+retains original image identity, bytes and mode evidence,
+and binds an owned byte-identical copy readonly at its original path.
+No passing repaired consumer is established yet.
+The logger audit tracks the single consumer pilot and distinct issue filing.

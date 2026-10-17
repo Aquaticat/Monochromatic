@@ -278,12 +278,12 @@
   ],
   "completeGraph": false,
   "pending": [
-    "Collect and reconcile all37 continuation leaf outcomes and every retained log.",
-    "Prove disjoint complete browser file/engine partitions, verify2x8 pilots and retain actual case JSON.",
-    "Supply audited Git2.56.0 and libraries before actual native host replay.",
-    "Reconcile all719 package checks and19 external specifications, distinguishing interrupted and blocked execution.",
-    "Duplicate-search and file each distinct retained source failure; compute provider allocation costs without claiming ledger verification.",
-    "Integrate root-owned GHA,VM,source attestation and desktop helpers before the held final coherent replay."
+    "Repair only generated baked metadata readability with a byte-verified readonly owned-file bind and run one mutation consumer pilot.",
+    "Recover only unresolved or repaired-prerequisite leaves, retaining every per-leaf result and actual provider allocation/cost.",
+    "Prove32 disjoint browser file/project partitions and case JSON, then a supported2x8 pilot before remaining fan-out.",
+    "Supply source-required audited Git2.56.0 and required libraries before unchanged native host checks.",
+    "Duplicate-search and file distinct newly verified harness boundaries and remaining genuine source failures.",
+    "Hold final coherent replay until root aligns GHA, VM and shared helper routes."
   ],
   "packageDevelopmentReconciliation": {
     "runId": "4x77lb56cs",
@@ -17601,7 +17601,7 @@
   },
   "continuation": {
     "runId": "1wzr86fssk",
-    "status": "running",
+    "status": "FAILED",
     "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
     "harnessRevision": "09941541e8ba43d59b03969248f8484a2d2c4269",
     "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
@@ -17610,7 +17610,240 @@
     "previouslyUnresolvedLeaves": 34,
     "infrastructureFailureLeaves": 3,
     "providerRefShaHeadShaMatchVerified": true,
-    "finalCombined": false
+    "finalCombined": false,
+    "sourceChecksStarted": 0,
+    "artifactsDownloadedAndHashed": 37,
+    "setupFailureVerification": {
+      "runId": "1wzr86fssk",
+      "attempts": 37,
+      "artifacts": 37,
+      "sourceChecksStarted": 0,
+      "diagnostic": "cannot unmount /sys/kernel/debug: device or resource busy",
+      "rows": [
+        {
+          "file": "logs-26s52ptj40.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-2vm3z2k7hx.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-45t1s3p9lv.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-46c7b7mgtt.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-4lhx2rsz3k.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-4lrd8tcf1q.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-5kvgz1vqf3.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-68ppwvsb3c.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-6hh4btbrvz.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-8ptj79p8v9.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-ccqj7w0982.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-cn3p6gc1nt.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-dq06ssdlgk.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-dx7v1n4gt5.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-f8gw5p369j.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-h1bnz5zbkg.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-h7d32r91kt.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-jg1zg5tkcp.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-khl1c6bxmq.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-kq4ztz5kff.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-lqdtw4bpz9.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-m8v8mnjrr7.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-msl8mwzv7c.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-p5nksl8mdw.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-phjjgtrx0s.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-t97f94zpdp.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-tg9l769t8f.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-v89zskmnzh.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-w10ps4jqsr.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-w3bnvmkcfx.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-w44vvk80c4.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-w60579fqtp.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-wtlp21l398.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-xk3qqsnplc.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-xwgwm4q055.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-xx9skgxsst.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        },
+        {
+          "file": "logs-z2b61vsrr9.jsonl",
+          "userNamespaceMountError": true,
+          "remainderGroupStarted": false,
+          "genericCaseStarted": false
+        }
+      ]
+    }
   },
   "browserRecovery": {
     "pending": true,
@@ -17637,5 +17870,719 @@
     "auditedImage": "sha256:6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802a",
     "actualConsumerVerified": false,
     "historicalSourceChanged": false
+  },
+  "globalDevelopmentUnion": {
+    "terminalChecks": 686,
+    "unresolved": [
+      "package.module.conf-fork.fuzz.fuzz",
+      "package.module.conf-fork.fuzz.fuzz.coverage",
+      "package.module.css-edit.fuzz.fuzz",
+      "package.module.css-edit.fuzz.fuzz.coverage",
+      "package.module.deepmerge-ts.fuzz.fuzz.coverage",
+      "package.module.jsonc-edit.fuzz.fuzz",
+      "package.module.jsonc-edit.fuzz.fuzz.coverage",
+      "package.module.logger.fuzz.fuzz",
+      "package.module.logger.fuzz.fuzz.coverage",
+      "package.module.make-asynchronous-fork.fuzz.fuzz",
+      "package.module.make-asynchronous-fork.fuzz.fuzz.coverage",
+      "package.module.matcher-fork.fuzz.fuzz",
+      "package.module.matcher-fork.fuzz.fuzz.coverage",
+      "package.module.matcher-fork.test.mutation",
+      "package.module.p-limit-fork.fuzz.fuzz",
+      "package.module.p-limit-fork.fuzz.fuzz.coverage",
+      "package.module.p-limit-fork.test.mutation",
+      "package.module.p-map-fork.fuzz.fuzz",
+      "package.module.p-map-fork.fuzz.fuzz.coverage",
+      "package.module.p-map-fork.test.mutation",
+      "package.module.p-memoize-fork.fuzz.fuzz",
+      "package.module.p-memoize-fork.fuzz.fuzz.coverage",
+      "package.module.p-memoize-fork.test.mutation",
+      "package.module.pify-fork.fuzz.fuzz",
+      "package.module.pify-fork.fuzz.fuzz.coverage",
+      "package.module.pify-fork.test.mutation",
+      "package.module.quick-lru-fork.fuzz.fuzz",
+      "package.module.quick-lru-fork.fuzz.fuzz.coverage",
+      "package.module.quick-lru-fork.test.mutation",
+      "package.module.toml-edit.fuzz.fuzz",
+      "package.module.toml-edit.fuzz.fuzz.coverage",
+      "package.module.toml-edit.test.mutation",
+      "package.git-policy.cli.fuzz.smoke"
+    ],
+    "addedObservations": [
+      {
+        "runId": "j4m7gw8mwg",
+        "artifact": "artifact-logger-external-browser-evidence/temp/agent/depot-complete-ci/logger-results.json",
+        "checkId": "package.module.caught-value.build",
+        "task": "//package/module/caught-value:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T04:40:21.789Z",
+        "finishedAt": "2026-10-17T04:40:22.878Z",
+        "outputSha256": "ecb5013c1ee70ebda5a0eae334e9e356d73aa204492041f3a1fdb9a0e6f7ce50",
+        "outputBytes": 543
+      },
+      {
+        "runId": "j4m7gw8mwg",
+        "artifact": "artifact-logger-external-browser-evidence/temp/agent/depot-complete-ci/logger-results.json",
+        "checkId": "package.module.const.build",
+        "task": "//package/module/const:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T04:40:22.885Z",
+        "finishedAt": "2026-10-17T04:40:23.810Z",
+        "outputSha256": "69586b31cd196af04fe5af1b7bfe06c109082dda24bce9fc0ee3692335f4f2c8",
+        "outputBytes": 532
+      },
+      {
+        "runId": "j4m7gw8mwg",
+        "artifact": "artifact-logger-external-browser-evidence/temp/agent/depot-complete-ci/logger-results.json",
+        "checkId": "package.module.fs-path.build",
+        "task": "//package/module/fs-path:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T04:40:23.823Z",
+        "finishedAt": "2026-10-17T04:40:24.802Z",
+        "outputSha256": "d2f20f9c2f7636c176bdcd58d407b5bff6a90b77ccf222a402f30a4c80567e7e",
+        "outputBytes": 998
+      },
+      {
+        "runId": "j4m7gw8mwg",
+        "artifact": "artifact-logger-external-browser-evidence/temp/agent/depot-complete-ci/logger-results.json",
+        "checkId": "package.module.hyperscript.build",
+        "task": "//package/module/hyperscript:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T04:40:24.810Z",
+        "finishedAt": "2026-10-17T04:40:25.787Z",
+        "outputSha256": "61bb5cba8566dc0c78c99202ea9b1945ebdd12151026666edf80978855e73f06",
+        "outputBytes": 549
+      },
+      {
+        "runId": "j4m7gw8mwg",
+        "artifact": "artifact-logger-external-browser-evidence/temp/agent/depot-complete-ci/logger-results.json",
+        "checkId": "package.module.logger.build",
+        "task": "//package/module/logger:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T04:40:25.807Z",
+        "finishedAt": "2026-10-17T04:40:26.798Z",
+        "outputSha256": "4a70e9023b56b21116282544a15b32a3a879d9ccf3e57b7b3eb7b1d7e68c5219",
+        "outputBytes": 1570
+      },
+      {
+        "runId": "j4m7gw8mwg",
+        "artifact": "artifact-logger-external-browser-evidence/temp/agent/depot-complete-ci/logger-results.json",
+        "checkId": "package.module.numeric-format.build",
+        "task": "//package/module/numeric-format:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T04:40:26.815Z",
+        "finishedAt": "2026-10-17T04:40:27.765Z",
+        "outputSha256": "c520ccd5435facf6945df9a1ece0417749c938c9d161b515e0bba0ced3374eb2",
+        "outputBytes": 546
+      },
+      {
+        "runId": "j4m7gw8mwg",
+        "artifact": "artifact-logger-external-browser-evidence/temp/agent/depot-complete-ci/logger-results.json",
+        "checkId": "package.module.test.build",
+        "task": "//package/module/test:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T04:40:27.811Z",
+        "finishedAt": "2026-10-17T04:40:28.933Z",
+        "outputSha256": "4e48bb6bed233051880e4f40b08fa725bc9ac12e7d23a130429f79fc2672f521",
+        "outputBytes": 3092
+      },
+      {
+        "runId": "j4m7gw8mwg",
+        "artifact": "artifact-logger-external-browser-evidence/temp/agent/depot-complete-ci/logger-results.json",
+        "checkId": "package.module.logger.fuzz.bundle.browser-properties",
+        "task": "//package/module/logger.fuzz:bundle:browser-properties",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T04:40:37.717Z",
+        "finishedAt": "2026-10-17T04:40:38.007Z",
+        "outputSha256": "7ec8ff95993175f6f62d15d3a3a5d7d05c921706147ea28b0b255ddb71650237",
+        "outputBytes": 241
+      },
+      {
+        "runId": "j4m7gw8mwg",
+        "artifact": "artifact-logger-external-desktop-evidence/temp/agent/depot-complete-ci/logger-results.json",
+        "checkId": "package.module.caught-value.build",
+        "task": "//package/module/caught-value:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T04:40:14.414Z",
+        "finishedAt": "2026-10-17T04:40:15.622Z",
+        "outputSha256": "f48d309566b3d8fe9d1054436d3738ea88e1b7e941b1d7a742bfb20be4a35ec2",
+        "outputBytes": 543
+      },
+      {
+        "runId": "j4m7gw8mwg",
+        "artifact": "artifact-logger-external-electron-evidence/temp/agent/depot-complete-ci/logger-results.json",
+        "checkId": "package.module.caught-value.build",
+        "task": "//package/module/caught-value:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T04:40:21.528Z",
+        "finishedAt": "2026-10-17T04:40:22.730Z",
+        "outputSha256": "0289bc42be243a039b1fe23801e0e178e844cd4402f674ca7445abbc70c1f0f5",
+        "outputBytes": 543
+      },
+      {
+        "runId": "j4m7gw8mwg",
+        "artifact": "artifact-logger-external-electron-evidence/temp/agent/depot-complete-ci/logger-results.json",
+        "checkId": "package.module.logger.build",
+        "task": "//package/module/logger:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T04:40:22.770Z",
+        "finishedAt": "2026-10-17T04:40:23.846Z",
+        "outputSha256": "284e2b17ab3efebe2974ba37c224217d1ce1936c69d61a7ecfa4cace289ea27b",
+        "outputBytes": 1570
+      },
+      {
+        "runId": "j4m7gw8mwg",
+        "artifact": "artifact-logger-external-electron-evidence/temp/agent/depot-complete-ci/logger-results.json",
+        "checkId": "package.desktop-app.electron-counter.build",
+        "task": "//package/desktop-app/electron-counter:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T04:40:23.851Z",
+        "finishedAt": "2026-10-17T04:40:25.741Z",
+        "outputSha256": "81688bfa9b472520ef537c2924029cebee104f28d560dc2401e7479c2115504b",
+        "outputBytes": 1426
+      },
+      {
+        "runId": "j4m7gw8mwg",
+        "artifact": "artifact-logger-external-electron-evidence/temp/agent/depot-complete-ci/logger-results.json",
+        "checkId": "package.desktop-app.file-manager-electron.build",
+        "task": "//package/desktop-app/file-manager-electron:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T04:40:25.745Z",
+        "finishedAt": "2026-10-17T04:40:27.459Z",
+        "outputSha256": "82b2cb7ab8c97be86d9be579fa60db0f71f422dcf5810a153b4060fcde1a65d0",
+        "outputBytes": 1633
+      },
+      {
+        "runId": "j4m7gw8mwg",
+        "artifact": "artifact-logger-external-generated-evidence/temp/agent/depot-complete-ci/logger-results.json",
+        "checkId": "package.module.caught-value.build",
+        "task": "//package/module/caught-value:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T04:40:21.342Z",
+        "finishedAt": "2026-10-17T04:40:22.569Z",
+        "outputSha256": "457c4caad7e66641011e61c3d7480012a2857f3ea79e1faa5669965baea2bd52",
+        "outputBytes": 543
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "checkId": "package.module.caught-value.build",
+        "task": "//package/module/caught-value:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:13:58.922Z",
+        "finishedAt": "2026-10-17T05:14:00.538Z",
+        "outputSha256": "27f4dc58ce0a985fc589279567030201856639555a8719e8f1a53abca95d453b",
+        "outputBytes": 543
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "checkId": "package.module.const.build",
+        "task": "//package/module/const:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:13:58.927Z",
+        "finishedAt": "2026-10-17T05:14:00.551Z",
+        "outputSha256": "0cd07a0c029630fecd624a50604816504c7e0277bf4799273482ee6f2c7430f9",
+        "outputBytes": 532
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "checkId": "package.module.hyperscript.build",
+        "task": "//package/module/hyperscript:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:13:58.946Z",
+        "finishedAt": "2026-10-17T05:14:00.722Z",
+        "outputSha256": "b9f754e9c667f8db72c9f104dd9c93412f56108132b03d221b89049b428d4694",
+        "outputBytes": 549
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "checkId": "package.module.llm-type.build",
+        "task": "//package/module/llm-type:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:14:00.742Z",
+        "finishedAt": "2026-10-17T05:14:01.837Z",
+        "outputSha256": "b8893d8aa0d397e3a4ac74222bf736389746550f903f8fa8cf22ef51b1f6c2f3",
+        "outputBytes": 531
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "checkId": "package.desktop-daemon.hall-monitor.build",
+        "task": "//package/desktop-daemon/hall-monitor:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:14:01.842Z",
+        "finishedAt": "2026-10-17T05:14:02.679Z",
+        "outputSha256": "da6ea67915d9db08f042629da0331174ddf6acae35d6fd1d3c328c51d44b5bfa",
+        "outputBytes": 251
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "checkId": "package.module.logger.build",
+        "task": "//package/module/logger:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:14:02.683Z",
+        "finishedAt": "2026-10-17T05:14:03.734Z",
+        "outputSha256": "3e0c0f97211f4bb64b3ef7a459dd813273c3d8b4e885b4c4b97b83604b3b3c20",
+        "outputBytes": 1570
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "checkId": "package.module.or-throw.build",
+        "task": "//package/module/or-throw:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:14:08.655Z",
+        "finishedAt": "2026-10-17T05:14:09.688Z",
+        "outputSha256": "6a0cec75218d81dcd6d4f5f6be5b3cf6f245444b0a7e1d41e9cb012f7160715e",
+        "outputBytes": 537
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "checkId": "package.module.toml-edit.build",
+        "task": "//package/module/toml-edit:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:14:14.382Z",
+        "finishedAt": "2026-10-17T05:14:15.525Z",
+        "outputSha256": "0ddd00c274b5c20aab86fc14f602393e9e1077fe408f3bbdba7c8763afb7e474",
+        "outputBytes": 829
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "checkId": "package.ssg.aquati.cat.build",
+        "task": "//package/ssg/aquati.cat:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:14:22.094Z",
+        "finishedAt": "2026-10-17T05:14:25.717Z",
+        "outputSha256": "c4b7dd1b2a8abfa567b6f04f44fb6d37d44fb72bc1e0e5c58e84409eeb38ae54",
+        "outputBytes": 14421
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "checkId": "package.desktop-daemon.hall-monitor.lint.types",
+        "task": "//package/desktop-daemon/hall-monitor:lint:types",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:14:27.385Z",
+        "finishedAt": "2026-10-17T05:14:28.126Z",
+        "outputSha256": "c70f76e7607edf062d845bc5985cc5a6136f47c976abc7674c3dec4edc8050c9",
+        "outputBytes": 273
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "checkId": "package.config.pnpr.build",
+        "task": "//package/config/pnpr:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:14:00.542Z",
+        "finishedAt": "2026-10-17T05:14:33.882Z",
+        "outputSha256": "7f43695a4af9cc7ef19ebecf79b39f965fc5cebedb5992e26faffecac523321c",
+        "outputBytes": 2261
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "checkId": "package.config.pnpr.lint.types",
+        "task": "//package/config/pnpr:lint:types",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:14:33.914Z",
+        "finishedAt": "2026-10-17T05:14:34.935Z",
+        "outputSha256": "2cf7c4723039bf3eca4812ee8ae6755fc910c652791d547dc1ad7c31e9cf9950",
+        "outputBytes": 248
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "checkId": "package.music-player.desktop-e2e.test.unit",
+        "task": "//package/music-player/desktop-e2e:test:unit",
+        "args": [
+          "--all"
+        ],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:14:33.879Z",
+        "finishedAt": "2026-10-17T05:14:37.154Z",
+        "outputSha256": "846b49a41471eaebe02f0d444c8c4f9ef186e5e94c4fe3da983e5b748107001c",
+        "outputBytes": 15617
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "checkId": "package.config.pnpr.test.unit",
+        "task": "//package/config/pnpr:test:unit",
+        "args": [
+          "--all"
+        ],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:14:34.995Z",
+        "finishedAt": "2026-10-17T05:14:40.105Z",
+        "outputSha256": "f37a21a57d63b8925bf1c7a0892a9f41d22a290b0f51a1b84147947002529b1d",
+        "outputBytes": 4910
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "checkId": "package.ssg.aquati.cat.test.unit",
+        "task": "//package/ssg/aquati.cat:test:unit",
+        "args": [
+          "--all"
+        ],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:14:40.141Z",
+        "finishedAt": "2026-10-17T05:14:40.721Z",
+        "outputSha256": "7b7a89b6bd51533c3fb422c12485b97088f00badc77cefd3f0d5971337f095d4",
+        "outputBytes": 1548
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "checkId": "package.ssg.aquati.cat.lint.types",
+        "task": "//package/ssg/aquati.cat:lint:types",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:14:40.102Z",
+        "finishedAt": "2026-10-17T05:14:43.679Z",
+        "outputSha256": "a406f936b498b86da8085b6d959cadd12a1b8b8b52cb5de352a67889783e8f3d",
+        "outputBytes": 250
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "checkId": "package.git-policy.cli.build",
+        "task": "//package/git-policy/cli:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:14:00.720Z",
+        "finishedAt": "2026-10-17T05:15:11.825Z",
+        "outputSha256": "c568411132febdbef25f9ce4e6680d3924e0c7774320a2b1325e9da31ce0399e",
+        "outputBytes": 4372
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "checkId": "package.module.toml-edit.test.conformance",
+        "task": "//package/module/toml-edit:test:conformance",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:14:43.677Z",
+        "finishedAt": "2026-10-17T05:15:11.925Z",
+        "outputSha256": "abfa5ee20f9d592fb2a1dda74acb158ddb86c0086239d54b72ed44c8a9736a18",
+        "outputBytes": 1886
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "checkId": "package.git-policy.cli.test.unit",
+        "task": "//package/git-policy/cli:test:unit",
+        "args": [
+          "--all"
+        ],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:15:11.888Z",
+        "finishedAt": "2026-10-17T05:15:12.377Z",
+        "outputSha256": "7a9217023922fe1ce5dccb638024fce837a1fcd08cb74e51d8b23573e5901674",
+        "outputBytes": 5264
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "checkId": "package.git-policy.cli.lint.types",
+        "task": "//package/git-policy/cli:lint:types",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:15:11.885Z",
+        "finishedAt": "2026-10-17T05:15:12.500Z",
+        "outputSha256": "f20275a2006319538a78247e19a6182bde375e17aa300f9fdda2de6aa734ad12",
+        "outputBytes": 249
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "checkId": "package.git-policy.cli.fuzz.build",
+        "task": "//package/git-policy/cli.fuzz:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:13:58.895Z",
+        "finishedAt": "2026-10-17T05:21:35.997Z",
+        "outputSha256": "b040171c2c2be4395bc199b1bd8d2cfed8b1ecdfae1df041e14462a39420e699",
+        "outputBytes": 401356
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "checkId": "package.git-policy.cli.fuzz.lint.types",
+        "task": "//package/git-policy/cli.fuzz:lint:types",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:21:36.038Z",
+        "finishedAt": "2026-10-17T05:22:21.849Z",
+        "outputSha256": "040345c3ec559a004081f48bef224e2c73393cf9a80ec3bd32a4949f96e8d4dd",
+        "outputBytes": 4989
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "checkId": "package.git-policy.cli.fuzz.test",
+        "task": "//package/git-policy/cli.fuzz:test",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:21:36.042Z",
+        "finishedAt": "2026-10-17T05:22:24.773Z",
+        "outputSha256": "edc74bfe4e449e4c0c110c4ebeaf8bfdb89caae5d76df3214489ec4d21060d62",
+        "outputBytes": 391386
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "checkId": "package.git-policy.cli.fuzz.test.planted",
+        "task": "//package/git-policy/cli.fuzz:test:planted",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:21:36.044Z",
+        "finishedAt": "2026-10-17T05:27:02.073Z",
+        "outputSha256": "30b24278260ca20ab40b9b8273bdb5d0aeb95454fa6c728b0312532833a41811",
+        "outputBytes": 5012
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-external-browser-evidence/temp/agent/depot-complete-ci/logger-results.json",
+        "checkId": "package.module.caught-value.build",
+        "task": "//package/module/caught-value:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:14:08.683Z",
+        "finishedAt": "2026-10-17T05:14:09.736Z",
+        "outputSha256": "a9b7dea50b5f9e56a180b83cff12e1bc62602362ada34ec69d5179707ee34042",
+        "outputBytes": 543
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-external-browser-evidence/temp/agent/depot-complete-ci/logger-results.json",
+        "checkId": "package.module.const.build",
+        "task": "//package/module/const:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:14:09.745Z",
+        "finishedAt": "2026-10-17T05:14:10.826Z",
+        "outputSha256": "1815e57de3411a5801638001dd29c6803aa57920be7628df3ba1df85db61c1b2",
+        "outputBytes": 532
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-external-browser-evidence/temp/agent/depot-complete-ci/logger-results.json",
+        "checkId": "package.module.fs-path.build",
+        "task": "//package/module/fs-path:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:14:10.840Z",
+        "finishedAt": "2026-10-17T05:14:11.953Z",
+        "outputSha256": "f54f5c102edc684634551545090fccf7209625d4ade2742f8b6d227e818cdc76",
+        "outputBytes": 998
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-external-browser-evidence/temp/agent/depot-complete-ci/logger-results.json",
+        "checkId": "package.module.hyperscript.build",
+        "task": "//package/module/hyperscript:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:14:11.961Z",
+        "finishedAt": "2026-10-17T05:14:13.109Z",
+        "outputSha256": "411e272a9cb80a8420e620b546022ff048c30acc3cced4e4fd13ce171a03b148",
+        "outputBytes": 549
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-external-browser-evidence/temp/agent/depot-complete-ci/logger-results.json",
+        "checkId": "package.module.logger.build",
+        "task": "//package/module/logger:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:14:13.130Z",
+        "finishedAt": "2026-10-17T05:14:14.247Z",
+        "outputSha256": "fd0705d63f9e92ff8a4285a23e27a47bda6c1d60e9645b5c41274fccf33fd5c9",
+        "outputBytes": 1570
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-external-browser-evidence/temp/agent/depot-complete-ci/logger-results.json",
+        "checkId": "package.module.numeric-format.build",
+        "task": "//package/module/numeric-format:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:14:14.266Z",
+        "finishedAt": "2026-10-17T05:14:15.360Z",
+        "outputSha256": "e3dc230076e8cdd31c5ccfb5d0c551ef2b0978255b1c670cf5ac678c12bb1d72",
+        "outputBytes": 546
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-external-browser-evidence/temp/agent/depot-complete-ci/logger-results.json",
+        "checkId": "package.module.test.build",
+        "task": "//package/module/test:build",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:14:15.411Z",
+        "finishedAt": "2026-10-17T05:14:16.324Z",
+        "outputSha256": "6815b65c49fd1e3b47707a63442dd6d8b063e795f69825fed7d2b65472a82001",
+        "outputBytes": 3091
+      },
+      {
+        "runId": "dhxhzzvmc3",
+        "artifact": "artifact-logger-external-browser-evidence/temp/agent/depot-complete-ci/logger-results.json",
+        "checkId": "package.module.logger.fuzz.bundle.browser-properties",
+        "task": "//package/module/logger.fuzz:bundle:browser-properties",
+        "args": [],
+        "status": "passed",
+        "exitCode": 0,
+        "signal": null,
+        "startedAt": "2026-10-17T05:14:25.866Z",
+        "finishedAt": "2026-10-17T05:14:26.228Z",
+        "outputSha256": "35827d50e5bd1a7345dbbe2aa5162470c5beb346bddab4f16479134c1df27891",
+        "outputBytes": 241
+      }
+    ],
+    "coherentSingleReplay": false,
+    "eligibilityNotImpliedByTerminalRecord": true,
+    "original685SnapshotPreserved": true,
+    "evidencePath": "/var/home/user/temp/agent/depot-logger-global-development-reconciliation-20261017.json",
+    "sha256": "89c3f2aa4a166ff43214e2961f071d513196264246e112ba1d4ee9c5edef4bd2"
+  },
+  "mutationCloudBoundaryPilot": {
+    "runId": "85fv28fjkl",
+    "revision": "bc6889aaaa8da7974824380bd18f0447ab6945d5",
+    "status": "FAILED",
+    "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+    "ownedVolumePositivePassed": true,
+    "privateManifestNegativePassed": true,
+    "userNamespaceMapping": false,
+    "capabilityAdditions": [],
+    "sourceConsumer": "package.cli.mutation-test.test.integration",
+    "sourceConsumerPassed": false,
+    "diagnostic": "rsync sender cannot read root-owned0600 /baked/node_modules/.pnpm-workspace-state-v1.json",
+    "sourceAssertionCredit": false,
+    "shardVolumes": 49,
+    "allShardVolumesVerifiedRemoved": true,
+    "readonlyByteVerifiedOwnedMetadataBindPilotPending": true
   }
 }

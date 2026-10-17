@@ -258,6 +258,10 @@ The VM agent owns the vmsync lifecycle experiment.
 Both requests are terminal and collected with hashed artifact downloads.
 Package reconciliation verifies 685 identities with terminal records,
 three started checks without terminal records and 31 unstarted checks.
+That preserved snapshot covers `4x77lb56cs` only.
+The independently hash-verified global development union includes external executor records
+and has 686 terminal package identities and 33 unresolved identities;
+the browser-properties bundle supplies the additional terminal identity.
 Development prerequisite recovery `dhxhzzvmc3` is terminal at pushed revision `2676cb365a206434b525bf032a5875cafde827e9`.
 All 12 selected package checks and their 24-check closure passed;
 the sidecar generator commands passed without output drift.
@@ -269,12 +273,20 @@ with request IDs kept distinct from workflow IDs.
 Invalid request `tf9ddwgbw3` used the wrong revision and receives no historical check credit.
 Continuation routing at `7f9fb86ba7` selects the 34 unresolved checks
 and three proved rsync ownership infrastructure failures in isolated jobs.
-Continuation `1wzr86fssk` is running at clean pushed revision
+Continuation `1wzr86fssk` failed at clean pushed revision
 `09941541e8ba43d59b03969248f8484a2d2c4269`, independently verified by the provider.
+All 37 collected logs prove the same user-namespace `/sys/kernel/debug` preflight failure,
+with no source execution; all 37 artifacts are hashed.
+Owned-volume pilot `85fv28fjkl` passed its cloud boundary controls at pushed `bc6889aaaa8d`,
+then exposed unreadable root-owned `0600` baked pnpm metadata in the unchanged CLI integration.
+All 49 shard volumes were verified removed.
+Preserve that distinct adapter prerequisite and repair it with a readonly byte-verified owned-file bind.
 Executor metadata now distinguishes inventory, requested IDs, prerequisite closure,
 live progress and actual case termination; its five disposable controls passed.
-The next actions are collecting every continuation leaf,
-running the file/engine browser recovery and supplying the source-required audited Git `2.56.0`
+The next actions are the single generated-metadata mutation pilot,
+only unresolved or repaired-prerequisite leaf recovery,
+file/engine browser recovery with a supported `2x8` pilot,
+and supplying the source-required audited Git `2.56.0`
 before replaying the two unchanged native host checks.
 The root agent must align GHA, VM and shared helper routes before final combined dispatch.
 The prepared combined workflow remains incomplete until that integration and bounded check coverage are verified.
