@@ -392,6 +392,9 @@ The executor deadline and missing-evidence boundary is `#1113`.
 Trial branch `trial/depot-toml-continuation-20261017` at `274ec49595d60f663249d61ab35a0806fe29aff0`
 has independent routes, immutable source/cohort proofs, retained shard identities, and verified timeout cleanup.
 Development run `p6vm5s00w6` requests only the two missing mutation gates.
+File-enforcer mutation now has a failed terminal result matching `#1068`,
+with verified artifact and clean source proofs.
+TOML mutation remains independent and active; terminal collection is held in session `38964`.
 Completed container failure `#1070` remains separate; application source stays immutable.
 Final coherent dispatch remains held.
 
