@@ -126,6 +126,15 @@ the final source/common provenance pair remains unaccepted.
 ## What does not work
 
 Repeating retrieval through the historical API did not expose the failed guard output.
+A read-only `depot sandbox exec` probe used the failed attempt's recorded sandbox and session IDs.
+Depot CLI `2.102.23` returned:
+
+```text
+sandbox "vxbdgtwhm94dpk9f124k" was not found; check that the sandbox ID is correct and the sandbox is still running
+```
+
+The probe started at `2026-10-17T13:11:59.797Z` and returned exit one at `2026-10-17T13:12:00.503Z`.
+It enumerated no account-wide resources and recovered no worker diagnostics.
 Treating the before record or source mutation success as final provenance would omit the completion boundary.
 Comparing raw timestamp spellings rejects equivalent instants.
 A diagnosis suggestion is not evidence that the source changed.
