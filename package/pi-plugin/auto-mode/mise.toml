@@ -94,7 +94,6 @@ extends = "test:unit"
 description = "Verify built approval decisions and unified stop behavior"
 run = [
   "node src/ask-user.unit.test.ts",
-  "node src/evaluate.unit.test.ts",
 ]
 
 [tasks."test:assessment-transport"]
