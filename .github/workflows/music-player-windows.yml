@@ -85,6 +85,19 @@ jobs:
       id: identity
       working-directory: harness
       run: mise run //package/dev-script/task-util:trial:depot:native:identity
+    - name: Record frozen source provenance before consumers
+      id: provenance-before
+      working-directory: harness
+      env:
+        MISE_AUTO_INSTALL: 'false'
+        MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+        MISE_NODE_VERSION: '26.11.1'
+        SOURCE_ROOT: ${{ github.workspace }}/source
+        SOURCE_HEAD: ${{ inputs.source_head }}
+        PROVENANCE_PHASE: before
+        PROVENANCE_CASE: native
+        PROVENANCE_OUTPUT: ${{ runner.temp }}/depot-provenance
+      run: mise run //package/dev-script/task-util:trial:depot:coherent:provenance
     - name: Restore exact-source native artifacts
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
       with:
@@ -112,3 +125,23 @@ jobs:
       if: ${{ !cancelled() && steps.identity.outcome == 'success' }}
       working-directory: harness
       run: mise run //package/dev-script/task-util:trial:depot:native:identity
+    - name: Record frozen source provenance after consumers
+      if: ${{ !cancelled() && steps.provenance-before.outcome == 'success' }}
+      working-directory: harness
+      env:
+        MISE_AUTO_INSTALL: 'false'
+        MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+        MISE_NODE_VERSION: '26.11.1'
+        SOURCE_ROOT: ${{ github.workspace }}/source
+        SOURCE_HEAD: ${{ inputs.source_head }}
+        PROVENANCE_PHASE: after
+        PROVENANCE_CASE: native
+        PROVENANCE_OUTPUT: ${{ runner.temp }}/depot-provenance
+      run: mise run //package/dev-script/task-util:trial:depot:coherent:provenance
+    - name: Preserve frozen source provenance
+      if: ${{ always() }}
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: depot-native-provenance-${{ inputs.source_head }}-${{ runner.os }}-${{ runner.arch }}
+        path: ${{ runner.temp }}/depot-provenance
+        if-no-files-found: error
