@@ -77,6 +77,42 @@ Do not turn that comparison into an arbitrary line budget or declare storage arc
 The earlier consolidation and component documents are a baseline,
 not completion of this clarified maintainability request.
 
+The validated parser-based inventory now records 68,040 code lines and 30,301 runtime AST statements
+across the captured 830-file scope.
+It removes actual comments and type-only declarations,
+but remaining annotations and string data still count as source lines.
+The static runtime graph contains 20,153 lines across 284 files;
+verification contains 30,073 lines across 300 filename-classified files.
+Generation prevents treating the remaining 17,568 lines as dead code.
+
+All three independent design reviews select the same substantive seam:
+review a complete group between Pi's real `prepareToolCall` and `executePreparedToolCall` phases,
+then reuse `finalizeExecutedToolCall`.
+One private group record replaces separate automatic/manual execution ownership and evidence-handle round trips.
+The [package-local design](../../package/pi-plugin/auto-mode/doc/compact-review-design.md)
+records retained semantics,
+specific deletion targets,
+and the migration's verification order.
+The original source-attribution and serialized-primary-request contribution requirements remain in scope.
+Clause compilation and whole-operation fallback remain distinct.
+
+The actual configured-host replay reaches all 16 original calls and issues no confirmation,
+but an intermediate `process.output` returns `Complete group preparation or assessment failed`.
+The two reported final Bash calls succeed.
+Do not claim the full interaction passes until the intermediate failure is diagnosed and resolved.
+Fixture `pi-hyper-rpc-allow-jZsxRg` retains the events and runtime logs.
+
+A provider-payload audit finds a separate missed shell boundary:
+known process result metadata and `ad-process:notification` details retain raw `command` strings.
+The new regression was committed red;
+`review-process-result.ts` now projects the installed finite metadata shapes with the existing shell parser.
+All 19 visible-context cases and the package type check pass after rebuilding.
+Unrelated tool/custom metadata,
+complete output text,
+quoted literal data,
+and original stored metadata remain intact.
+The final installed payload audit remains required.
+
 The existing inventory labels roughly 66,000 lines as production source,
 including comments and types;
 its filename-based categories are not executable-line or runtime-reachability proof.
