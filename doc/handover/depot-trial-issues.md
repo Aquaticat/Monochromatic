@@ -493,6 +493,12 @@ Independent actual-source spawn classification control `m018vgrtcv` is dispatche
 on clean harness `b78123c7bd8e20d4319cddd63c34c70fa7638d72`;
 its terminal evidence and any demonstrated distinct issue remain required.
 
+Control `m018vgrtcv` failed its fixture typecheck before mutation assertions.
+Its compiler detail was not retained; no false-kill result is claimed.
+Independent observation repeat `j03l179f3x` is dispatched with incremental receipts
+and original PATH commands preserved except the removable Node launcher.
+Terminal wait session `83226` ended; use the newly returned observed-repeat wait session.
+
 ## Native recovery assertion tracking
 
 The coherent replay routes are prepared and pushed,

@@ -281176,6 +281176,92 @@
       "diagnostic": "render-toml-audit: withBinaryFile: does not exist (No such file or directory)",
       "cause": "Extra task names were passed as pandoc input arguments to the first mise task.",
       "corrected": "Invoked each render task separately; all returned zero and rendered output was inspected."
+    },
+    "runnerContract": {
+      "verifiedCommit": "fc6bdb1a24",
+      "jsonLintExitCode": 0,
+      "markdownLintExitCode": 0,
+      "renderTask": "mise run render-toml-audit",
+      "renderExitCode": 0,
+      "renderedOutputRead": true,
+      "rendered": {
+        "observedAt": "2026-10-17T08:52:01.611Z",
+        "records": [
+          {
+            "file": "common-manifest-audit.html",
+            "bytes": 5462,
+            "sha256": "740e47ebd1512333884cec9d761755103d1bd3ac8a5c46c173c37230a345091c",
+            "emphasisElements": 0,
+            "relevantRenderedParagraphs": [
+              "The prepared native, Windows, Alpine, and TOML final guards bind source\nand harness identity to the shared canonical cohort manifest. Final\ndispatch remains held because the copied case manifests still have\ncompleteGraph: false. No fake cohort manifest was published. The machine\nevidence retains every disposable invocation and current authenticated\nprovider-byte comparison.",
+              "- native: trial/depot-coherent-native-20261017 at\n  2032975cbad924e63ac98bc69e14a56b20288275, workflow\n  .github/workflows/music-player-windows.yml.\n- windows: trial/depot-coherent-windows-20261017 at\n  e70240dc7317124a0db5b37967c570cf2f3fb6f4, workflow\n  .github/workflows/music-player-windows.yml.\n- alpine: trial/depot-coherent-alpine-20261017 at\n  5152df4debd88f5e0b57802c7c8c958b1a5f6255, workflow\n  .github/workflows/music-player-alpine.yml.\n- toml: trial/depot-toml-continuation-20261017 at\n  0f8ad795aa92d3beb83e3bfa4e4aa54f1bea06f8 (current as of 2026-10-17:\n  0f1ef041a0de2ff6d2db6dd55210b1160c592648), workflow\n  .depot/workflows/depot-complete-toml-bounded.yml.",
+              "The prepared TOML route advanced to\n0f1ef041a0de2ff6d2db6dd55210b1160c592648 for metadata receipts and the\nindependent full retry budget. Its canonical guard block remains\nbyte-identical to the harness exercised by the 20 accepted and 110\nrejected controls. The current native, Windows, and Alpine guard blocks\nare likewise byte-compared against their tested revisions. Fresh\nauthenticated provider reads verify every current workflow, task file\nand provisional case file byte. The case manifests still have\ncompleteGraph: false; final canonical acceptance remains held.\n"
+            ]
+          },
+          {
+            "file": "coherent-routes.html",
+            "bytes": 7900,
+            "sha256": "f70f3339ccd6ac6450d4dbb9d6145752151803f5d5bdbdc5f908d09363d87b51",
+            "emphasisElements": 0,
+            "relevantRenderedParagraphs": [
+              "The historical route hashes remain recorded in the route sections. As of\n2026-10-17, the current clean pushed references and workflow byte hashes\nare in the common-manifest guard audit. The actual guards accepted 20\nallowed and rejected 110 invalid disposable invocations. Authenticated\nbase64 transport was byte-verified against an existing audit; the absent\ncanonical API response was stubbed only for disposable semantic\ncontrols. All provisional case manifests still have completeGraph: false\nand are rejected. Root must provide complete frozen case bytes, publish\nthe canonical manifest with resulting harness hashes, and verify real\ncanonical reads before final dispatch. No final cohort was dispatched.\n"
+            ]
+          },
+          {
+            "file": "toml-audit.html",
+            "bytes": 27968,
+            "sha256": "3ac26611c8005869518eed7be826bb3aaf8e8dd1a87ee5806091dae09ba0af00",
+            "emphasisElements": 0,
+            "relevantRenderedParagraphs": [
+              "The full native report is retained byte-for-byte as\ndepot-toml-mutation-native-2026-10-17.evidence.json.gz. Its uncompressed\nSHA-256 is\ne3b1023242fb838e30ad22ce1aa0c593f412401be141901594af34c484177bce. All\n3062 distinct mutant identities reconcile with 9037 shard manifests and\nattempts. All final statuses are runtimeError, with no source mutation\nassertion completion. Every shard failed rsync --archive with exit 23\nand:",
+              "The common-manifest guard audit retains the current clean pushed route\nreferences and 20 accepted plus 110 rejected controls. The case\nmanifests remain provisional and correctly rejected for final\nacceptance. Final dispatch waits for root's complete frozen case bytes\nand the actual canonical API read.",
+              "Actual trial vlrxjltfkq uses harness\n316e1a8a309e71e456a741eb63e5ff3b94b75646. Its metadata-only deadline is\n60000 milliseconds. The unchanged source consumer retains the complete\nproven container adapter byte-for-byte. An observer-only copy adds\nbefore/after sudo forwarding receipts and preserves actual Podman\narguments. The source correlation wrapper now retains each invocation\nwithout changing its forwarded argument policy. Disposable forwarding,\ntimeout rejection, and removed-timeout detection controls pass. Original\neight-second failures remain retained. Only complete actual source,\nmetadata, correlation, and cleanup evidence permits the full\nimmutable-source retry.",
+              "Actual trial vlrxjltfkq, workflow fkzv9kxx7k, job gz17n0n8q6, attempt\ntfzhj6cztj, finished successfully on immutable harness\n316e1a8a309e71e456a741eb63e5ff3b94b75646. The source command again\nexited zero with the same green baseline and one compileError identity.\nNo mutant assertion execution or full-campaign pass is claimed. All ten\nmetadata operations and all forwarded sudo calls returned zero. The\nlongest list operation took 14100.441549 milliseconds; the Node observer\nrecorded 14077.079173 milliseconds inside its synchronous\nsudo --non-interactive /usr/local/bin/podman call. That call then\nreturned zero. This localizes most observed delay to the forwarded call;\nthe division between sudo and actual Podman remains unresolved. Every\noperation duration is retained. The original eight-second failures\nremain failed historical observations.",
+              "The provider interval was 165081 milliseconds at 16x64, or 2641296\nallocated vCPU-milliseconds. Artifact\n01a148cd-37bb-750c-969a-1d040159af2e has 55933 bytes, SHA-256\n35ab60a4bbd6adb146676b810e3123d3d0fe08a2174873a73736480ee596be19. All 24\nmembers are individually hashed. Issue #1130 records the distinct\nobserver deadline boundary and retained rejection controls. The next\nauthorized action is the full TOML-only immutable-source mutation retry.",
+              "Development run 23dk3nr90f dispatches only\npackage.module.toml-edit.test.mutation. Request time is\n2026-10-17T07:50:29.848Z; the development manifest digest is\n4b18266890cb521dfc87256ecd13f8869f39ee35b747186ca16cd53998fe84a0. The\nclean pushed branch is trial/depot-toml-continuation-20261017, harness\n0f1ef041a0de2ff6d2db6dd55210b1160c592648, workflow\n.depot/workflows/depot-complete-toml-full-mutation.yml. Its 4931\nauthenticated provider bytes match SHA-256\nce2c907be8b7e2bc449a866964869ea87e3ee0a5140c4453faf07ed0c110e954.",
+              "The original source command and defaults remain unchanged: two\ncontainers, 16 mutants per shard, 1800-second sessions, 5000-millisecond\ntest floor, baseline timeout factor three, and one single-container\nretry. The full selector is enumerated again before execution. The\nretained prior inventory has 3062 distinct mutant IDs. The wrapper\nbudget is 18000000 milliseconds and the provider job budget is 360\nminutes. These are execution bounds, not a duration forecast. The\nbounded compilation-only pilot does not establish full-suite mutant\nthroughput. Source shard progress, all actual outcomes, metadata\ndurations, and scoped cleanup remain required for terminal\nreconciliation. The allowed budget and rejected over-limit fixture are\nexercised; removing the exact upper-budget guard makes the rejected\nfixture execute.",
+              "Single terminal wait session 96306 is active. Issue #1130 is closed with\nre-fetched observed-recovery comment 6231392374. Issues #1113 and #1118\nremain open. This independent development run is separate from the held\nfinal coherent cohort."
+            ]
+          },
+          {
+            "file": "toml-completion.html",
+            "bytes": 13406,
+            "sha256": "5d0d0d21df21af4004bf493c41b16d3266cad223f02e4d616827a07f3eeb03f3",
+            "emphasisElements": 0,
+            "relevantRenderedParagraphs": [
+              "Development run p6vm5s00w6 completed its independent mutation commands.\nFile-enforcer failed at its existing package-path ENOENT boundary. TOML\nretained 3062 distinct mutant identities across 9037 shard attempts, all\nmarked runtimeError after source copying failed before assertions. Each\nshard reports rsync exit 23 and\nrsync: [generator] chgrp \"/work/.\" failed: Operation not permitted (1).\nThis is the diagnosed root-owned work-tmpfs boundary, separate from\nissues #1116 and #1117.",
+              "Actual pilot 0j8zhbn9n0 ran the unchanged one-file source mutation task\nthrough the complete containers adapter from\nd098532a5b6946231daf3c4f43e38444359a307e. Its baseline is green and the\nonly selected mutant is compileError. This source-terminal result\ncarries no mutant assertion execution credit. It verifies the owned work\nvolume and unchanged generated-metadata bind on a real TOML consumer. It\ndoes not complete the 3062-identity campaign.",
+              "Trial vlrxjltfkq finished successfully with the unchanged source\nconsumer, the same terminal compilation identity, all ten metadata\nresults, source Podman correlation, matching source identities, and\nscoped cleanup. The list observer took 14100.441549 milliseconds once;\nits synchronous sudo forwarding span was 14077.079173 milliseconds and\nreturned zero. The 60000-millisecond bound covers this actual delayed\ncall. The underlying Podman-versus-sudo cause remains unresolved. The\nNode observer's two lifecycle additions are byte-separated from the\nunchanged consumer forwarder. Issue #1130 retains both original\neight-second failures and the verified timeout rejection/removal\ncontrols. This recovery permits a full source mutation retry; the\nbounded compilation result alone does not complete the campaign.",
+              "The verified bounded recovery is followed by development run 23dk3nr90f.\nIt executes only the original full TOML mutation task, with unchanged\nsource defaults. The source wrapper permits five hours, with a\n360-minute provider job budget. This is a declared execution allowance,\nnot a throughput prediction. Original failed usage and source incidents\nremain retained. The next evidence requirement is complete source, shard\nand mutant identity reconciliation, including actual live resource\nsamples and scoped cleanup. Observer issue #1130 is closed after the\nbounded actual recovery; full-campaign issue #1113 remains open."
+            ]
+          },
+          {
+            "file": "toml-handover.html",
+            "bytes": 36301,
+            "sha256": "7cca570cc8a2720ffdabbd3e05d675374cfccbdea4b7f08cbf1ee95ab7f9110e",
+            "emphasisElements": 0,
+            "relevantRenderedParagraphs": [
+              "The TOML audit retains original run p9r4xl6n12 and terminal development\nrun p6vm5s00w6. The latter emitted 3062 distinct mutant IDs across 9037\nattempts, all infrastructure-derived runtimeError before assertions. The\nfull native report, shard identities, artifacts, provider usage, and\ncleanup are retained. File-enforcer mutation repeats #1068; the\ncompleted container failure #1070 remains separate.\nTimeout/independent-check coverage issue #1113 remains open. Source lint\nissues #1111 and #1112 remain distinct from historical panic #1066.",
+              "The canonical guard audit records current pushed route references, 20\naccepted and 110 rejected disposable invocations, and separate actual\nauthenticated transport proof. Only absent canonical API responses are\nstubbed in local controls. Provisional case manifests remain\ncompleteGraph: false and correctly rejected. Root must supply complete\nfrozen case bytes, publish the real canonical manifest with final\nharness hashes, and verify actual canonical reads before final coherent\ndispatch. Final dispatch remains held.",
+              "Bounded metadata forwarding trial vlrxjltfkq succeeded on\n316e1a8a309e71e456a741eb63e5ff3b94b75646. The observer deadline is 60000\nmilliseconds; original source adapter bytes and source arguments are\npreserved. A copied observer forwarder retains sudo lifecycle results,\nand source Podman correlation is now recorded. Terminal collection\nverifies success, all ten metadata results, source correlation and\nscoped cleanup. The longest metadata call was 14100.441549 milliseconds;\nits forwarded sudo call returned zero. Issue #1130 retains this observer\ndeadline boundary, original failures and rejection controls. Its\ncomplete actual result permitted the full TOML-only immutable mutation\nretry.",
+              "Full TOML-only development retry 23dk3nr90f is dispatched at\n0f1ef041a0de2ff6d2db6dd55210b1160c592648. The exact request, provider\nworkflow bytes, source defaults and budget controls are retained in the\nTOML audit. Its source wrapper budget is five hours; provider job budget\nis 360 minutes. These are bounds, not a runtime prediction. Terminal\nwait session 96306 is active. The next action is artifact collection and\nreconciliation against all 3062 prior mutant identities. The immutable\nrunner stops at the first failing selected test file, so the full-suite\nlist does not prove 37 executions per mutant. Its spawn-error-to-killed\nclassification is being checked with an independent disposable source\ncontrol on trial/depot-toml-spawn-control-20261017; the active campaign\nand accepted final refs remain unchanged. Issue #1130 is closed after\nactual bounded source, observer and cleanup recovery; #1113 and #1118\nremain open. Final coherent dispatch remains held."
+            ]
+          }
+        ]
+      },
+      "additionalRenderedTextInspected": [
+        "Mutation runner execution boundary",
+        "Selected files and actual mutation test execution",
+        "m018vgrtcv"
+      ],
+      "localInvocationCorrection": {
+        "failedTasks": [
+          "render-toml-completion",
+          "render-toml-handover"
+        ],
+        "diagnostic": "mise ERROR no task found",
+        "actualTask": "render-toml-audit already renders all three TOML Markdown files and passed. Failed redundant task names made no output changes."
+      }
     }
   },
   "mutationRunnerSpawnControl": {
@@ -281318,6 +281404,2131 @@
       "stdout": "{\n  \"org_id\": \"l4zncjjbj5\",\n  \"run_id\": \"m018vgrtcv\"\n}\n",
       "stderr": ""
     },
-    "state": "Dispatched independent disposable actual-source classification control; terminal source/identity/cleanup/provider accounting pending. No spawn failure is claimed in full campaign 23dk3nr90f."
+    "state": "Terminal control failure before mutation assertions. The disposable fixture typecheck returned clean:false; its initial returned diagnostic was not retained. No false-kill reproduction or application failure is claimed.",
+    "terminal": {
+      "collection": {
+        "collectedAt": "2026-10-17T08:53:49.341Z",
+        "org": "l4zncjjbj5",
+        "runId": "m018vgrtcv",
+        "revision": "b78123c7bd8e20d4319cddd63c34c70fa7638d72",
+        "status": "failed",
+        "attempts": [
+          {
+            "workflowId": "4lrxxn704k",
+            "jobId": "mxdnjg1x6v",
+            "jobKey": "depot-complete-toml-spawn-control.yml:pilot",
+            "attemptId": "f9zq821m9k",
+            "attempt": 1,
+            "status": "failed",
+            "metricsPath": "metrics-f9zq821m9k.json",
+            "logPath": "logs-f9zq821m9k.jsonl",
+            "logSha256": "161dbc82af7bb62afb2e29e73dcecbde2abb48c08e655d0b60c6addeb96a7564",
+            "logRecords": 1156,
+            "providerAttempt": {
+              "attempt_id": "f9zq821m9k",
+              "attempt": 1,
+              "status": "failed",
+              "conclusion": "failure",
+              "sandbox_id": "dbjh92mt4799plqhcdl4",
+              "session_id": "c2cdf4da-4e7a-4461-b722-1c430dab1eb3",
+              "created_at": "2026-10-17T08:50:33.987Z",
+              "started_at": "2026-10-17T08:50:38.441Z",
+              "finished_at": "2026-10-17T08:53:12.226Z"
+            }
+          }
+        ],
+        "artifactCount": 1,
+        "scope": "Read-only collection. Provider intervals require declared resources before pricing. Gate completion needs independent manifest reconciliation."
+      },
+      "artifactIndex": {
+        "collectedAt": "2026-10-17T08:54:27.099Z",
+        "extractionPolicy": "Validated relative member names; unzip -p bytes are written as fresh regular files, never archive symlinks; 64MiB per-member and 128MiB total expansion bounds. Exact member counts and expanded byte sums are measured separately for each artifact.",
+        "artifacts": [
+          {
+            "artifact_id": "01a14910-abf4-748c-82a2-016a4e8d6dfb",
+            "run_id": "m018vgrtcv",
+            "workflow_id": "4lrxxn704k",
+            "workflow_path": "depot-complete-toml-spawn-control.yml",
+            "job_id": "mxdnjg1x6v",
+            "job_key": "depot-complete-toml-spawn-control.yml:pilot",
+            "attempt_id": "f9zq821m9k",
+            "attempt": 1,
+            "name": "toml-spawn-control-evidence",
+            "size_bytes": 83583,
+            "created_at": "2026-10-17T08:53:11Z",
+            "archive": "artifact-01a14910-abf4-748c-82a2-016a4e8d6dfb.zip",
+            "sha256": "ae754ad05008793009d9604f6c0df8a79e0754c1484f29a2604e9500fa7e4dc5",
+            "extraction": "artifact-toml-spawn-control-evidence",
+            "members": [
+              {
+                "name": "container-bin/image-metadata-RyQ8YI/metadata-evidence.json",
+                "bytes": 731,
+                "sha256": "6d6cd15b7f6ff69ecf91183d0cf1e613060f6b8d6b6ab62c3152d395ac3b8b3b"
+              },
+              {
+                "name": "container-bin/image-metadata-RyQ8YI/owned-state.json",
+                "bytes": 53,
+                "sha256": "fb9fe5db7e7f2c33bb739cdd95c1a2788b50af0c7c5c09f84e408946a0cf739e"
+              },
+              {
+                "name": "container-bin/image-metadata-RyQ8YI/source.tar",
+                "bytes": 2048,
+                "sha256": "1f0ebee1ce5d19cb83366d860d8cb5bdbef7b78037b316bb0f50565066714785"
+              },
+              {
+                "name": "container-bin/image-metadata-liNdbJ/metadata-evidence.json",
+                "bytes": 737,
+                "sha256": "b34966f112faa0c3b0180a2903f30545c4e7b99c132c2fe60bc9b70fa84770ad"
+              },
+              {
+                "name": "container-bin/image-metadata-liNdbJ/owned-state.json",
+                "bytes": 29934,
+                "sha256": "bb586ba01081fb3dd30df9bdb9034eb6d370d1ad0d90d82f61bcdbae860c98d4"
+              },
+              {
+                "name": "container-bin/image-metadata-liNdbJ/source.tar",
+                "bytes": 31744,
+                "sha256": "b70b9e573bd60469acd5826d4b08381cf1e0b4e1a7fbc688f0cf2178d4e35925"
+              },
+              {
+                "name": "container-bin/image-metadata-wmz4pz/metadata-evidence.json",
+                "bytes": 737,
+                "sha256": "b34966f112faa0c3b0180a2903f30545c4e7b99c132c2fe60bc9b70fa84770ad"
+              },
+              {
+                "name": "container-bin/image-metadata-wmz4pz/owned-state.json",
+                "bytes": 29934,
+                "sha256": "bb586ba01081fb3dd30df9bdb9034eb6d370d1ad0d90d82f61bcdbae860c98d4"
+              },
+              {
+                "name": "container-bin/image-metadata-wmz4pz/source.tar",
+                "bytes": 31744,
+                "sha256": "b70b9e573bd60469acd5826d4b08381cf1e0b4e1a7fbc688f0cf2178d4e35925"
+              },
+              {
+                "name": "container-bin/metadata-control-Wb02vL/state.json",
+                "bytes": 53,
+                "sha256": "fb9fe5db7e7f2c33bb739cdd95c1a2788b50af0c7c5c09f84e408946a0cf739e"
+              },
+              {
+                "name": "container-bin/mutation-private-fixture/result.json",
+                "bytes": 23,
+                "sha256": "9f5b3078bc99086112ea426748346ba4976559df35c07238dc36162fbe0c23c0"
+              },
+              {
+                "name": "container-bin/mutation-private-fixture/shard-manifest.json",
+                "bytes": 23,
+                "sha256": "9f5b3078bc99086112ea426748346ba4976559df35c07238dc36162fbe0c23c0"
+              },
+              {
+                "name": "container-bin/podman",
+                "bytes": 9142,
+                "sha256": "8e056c1965b80014c7b9198f65e1efe59055d3e268f51ea8e8355501ed8f6e70"
+              },
+              {
+                "name": "toml-bounded-package.module.toml-edit.test.mutation-containers.json",
+                "bytes": 1642,
+                "sha256": "9ee03fe84e6f002da92d5878df956b67f65f1d169af8b40090e379586792f2f3"
+              },
+              {
+                "name": "toml-bounded-package.module.toml-edit.test.mutation-events.json",
+                "bytes": 961,
+                "sha256": "7e2415a03eb155c07a57c0fbfa560a9d2013f259cf3f11074477171e7e5e3627"
+              },
+              {
+                "name": "toml-bounded-package.module.toml-edit.test.mutation-podman-operations.jsonl",
+                "bytes": 28844,
+                "sha256": "41ed6a3f554fcbcecd70171caa41712733c75c80ecf98a2d555cf69696f759dd"
+              },
+              {
+                "name": "toml-bounded-package.module.toml-edit.test.mutation-results.json",
+                "bytes": 48948,
+                "sha256": "28694849c3514597c404193415df2a9035cd44f1d4cbd19c87efce5599905f4c"
+              },
+              {
+                "name": "toml-bounded-package.module.toml-edit.test.mutation.log",
+                "bytes": 72288,
+                "sha256": "2308b10ac28475d6c0bc1eedcc32bcfe131aba28edcc69450a3e364b9d1cda1a"
+              },
+              {
+                "name": "toml-metadata-forwarding.jsonl",
+                "bytes": 6317,
+                "sha256": "50c676fea7623199af35d96524485738dc755aec37c12dcd53c4157504035e1d"
+              },
+              {
+                "name": "toml-metadata-observer-bin/podman",
+                "bytes": 10057,
+                "sha256": "a314bcb90029c73d7bbb78d709d59b70c46451f511212bbec8b7a5293894a699"
+              },
+              {
+                "name": "toml-mutant-evidence-index.json",
+                "bytes": 397,
+                "sha256": "37c06e7338d7253c9fca1e3e60b57f4d21adcc4dace87690c70058241b0a7902"
+              },
+              {
+                "name": "toml-mutation-shards/mutation-manifest-F6L2sv/shard-manifest.json",
+                "bytes": 1919,
+                "sha256": "21c37a776646ed5fe5a92416ba1072b1b1f0734bebcfe8a47609b7597e4d0983"
+              },
+              {
+                "name": "toml-mutation-shards/mutation-report-jnHVIZ/shard-report.json",
+                "bytes": 407,
+                "sha256": "af9821bbc3e961f696ab7968fc2592e38f8a19a6281265e170d840d0515e672d"
+              },
+              {
+                "name": "toml-native-report-package.module.toml-edit.test.mutation-0.json",
+                "bytes": 650,
+                "sha256": "692e5dd934f799518de76762ee34a0f22558a66a2832188cf5b074dfc37d7825"
+              },
+              {
+                "name": "toml-provenance-after.json",
+                "bytes": 10650,
+                "sha256": "325019ca0cd1d5e8dffd48326a17356c935e577c5475aa0afe04d5dd1dcefe49"
+              },
+              {
+                "name": "toml-provenance-before.json",
+                "bytes": 10651,
+                "sha256": "38cf21b62617734f2c9c1d61d4d8bd3bab7379e77e811f48918fe9959bf22529"
+              },
+              {
+                "name": "toml-source-podman-calls.jsonl",
+                "bytes": 3260,
+                "sha256": "1785f4e844c1725d6306cf523d5eec7a1e624f2fd3ce913fc95b0a80cfa53122"
+              },
+              {
+                "name": "toml-spawn-control-results.json",
+                "bytes": 52741,
+                "sha256": "46185db79f0f1d8b66846e0905645656d14c3f40461baae6f9049614d1bef1ce"
+              },
+              {
+                "name": "toml-spawn-control.stderr.log",
+                "bytes": 1664,
+                "sha256": "4e72f1b7892f18059eeb34350d3d795264c9bbc8fc151a9ed5801843b01f5780"
+              },
+              {
+                "name": "toml-spawn-control.stdout.log",
+                "bytes": 0,
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              }
+            ]
+          }
+        ]
+      },
+      "sourceBefore": {
+        "schemaVersion": 1,
+        "event": "source-provenance",
+        "developmentOnly": true,
+        "phase": "before",
+        "cohort": {
+          "id": "toml-spawn-control-20261017T085018294Z",
+          "manifestSha256": "dafaa621ede9e174374e702ea2d6f10b7618d775467fde57bfeb5c793566d00e",
+          "requestedAt": "2026-10-17T08:50:18.294Z"
+        },
+        "identity": {
+          "head": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "sourceTree": "815e35009780abd2e98bd9bd1ccd92dcb2ef14bf",
+          "trackedStatus": "",
+          "inputs": {
+            ".cargo/config.toml": "7352bfbf249b17aa4293845ef4ef6766227e6ed059d3861556595fa543af01f5",
+            ".pnpmfile.policies.json": "6ea9a99940e8c40e194a7cc0a3627d1c0ccc2d50857b40cb5ff80d7d22001b4a",
+            "bunfig.toml": "433ee4acbd86e36b61ac8606d7dc41be82fdff0f892affd45d32be28c8dba74a",
+            "cli-git.config.ts": "9fd973870c43dfd62f8e897137a2d50a5636af2c9639616856d2c0010f860524",
+            "clippy.toml": "b4ed358ce9e6a485b48b78e88bfe59b0519c5d8c15a1ef97d689492861a447bc",
+            "docker-compose.yml": "92c5ac2157cfed0ad149359ce9986890164463150d5abf23ed90c2cbd5356620",
+            "dprint.json": "9e4ada0fb986fb2a4b7cd023b79d356136564c74bb104d707d4592c111777920",
+            "file-enforcer.config.ts": "cf41571036ccaef87dc45c185215f58834971267c7f371eeef96446fe6bf9ba6",
+            "mise.lock": "5c2f93717958a7401c46775dd5d0e5cc7b07e839a8d3d2f4e139a2a87827d248",
+            "mise.no-env.toml": "0800fb457406cb7eb9b87850cb3758670f0bcd36feba434e0f93625bef20f290",
+            "mise.toml": "22e39e9366f921953f321f0ba378dde13b291240aa1366a4cb25ce5705570464",
+            "node.config.json": "5642c9388056b13923039bd49054c620b969eda1c71f1c9f73790bf34d8feacb",
+            "oxlint.config.ts": "d3a7cc1ee8c002479bc1c9b628ce57e04b6a27a97d891b2715313bfcf5bfa54b",
+            "package.json": "5b0c4ce7596721e7dd77af9b57cf34f0ccd0ee415a52af7173536980f49e8a39",
+            "package/cli/forbidden-strings/Cargo.lock": "4b64d37d5296c2d5a425d8069b4921da3b6a5eaf78e59e12f41b4cb8588ff326",
+            "package/cli/forbidden-strings/Cargo.toml": "9f177f6af455fa0cf9189d32ac02c82333f7595ac9e8604d17f398a52d67de56",
+            "package/cli/nested-wayland-session/Cargo.lock": "0f2abdd3762b9600fecbfde440387b5478f418d20198585ea309a16b6b13c4dc",
+            "package/cli/nested-wayland-session/Cargo.toml": "ca8a975b9fe2313802e543cb837a5bd5405fbaad7a3f91e99f58f705ead19d1f",
+            "package/cli/wg-quicker-exempt/Cargo.lock": "bd3638a5288926b8b864e483fa1324657143c4f2bfe17c6c434f949a8ef9c0d6",
+            "package/cli/wg-quicker-exempt/Cargo.toml": "58e4edd1f049a609ddac57f28ca09e46da89b7a3ef3f33b9f5fc51c9362297db",
+            "package/desktop-app/file-manager-gtk-sticky/Cargo.lock": "79de51d3deda1821dece0b15b8517eb16b2d3d6be39fa572cce3c19e528f5011",
+            "package/desktop-app/file-manager-gtk-sticky/Cargo.toml": "978f882d0063ade072fb954be0eb7c08fd90bcb521b14271caee896696dcab5a",
+            "package/desktop-app/file-manager-qt/Cargo.lock": "07de4e174d187f75c65d91ccdc81e2b5e47870e1190fb1e57bc5c77f1a433817",
+            "package/desktop-app/file-manager-qt/Cargo.toml": "d62d5cadab47f6dfa08f7f961dbcc7bce9a2a3771fa0f4878f0bee4618b881b7",
+            "package/desktop-app/file-manager/Cargo.lock": "9be2ec600240a43680fe70f5330e0c2b465bc4256617329fd7c45c7442d2ad00",
+            "package/desktop-app/file-manager/Cargo.toml": "896ded3cc831394f687e75e8996740e05c65ece5258b78b3fce914ec1c41b48f",
+            "package/desktop-app/terminal/Cargo.lock": "7b961ba4579b9beb5e111c3396197d2d96e774d154e46d4ef4a18caf55eefe03",
+            "package/desktop-app/terminal/Cargo.toml": "cf65476a1b136440c3b77d281736273ef4dcca57696f9223b59eeca09035ce25",
+            "package/dev-script/file-enforcer/mise.toml": "e3cde5df52594c2a59c3ce44409169dced9e002b0a636cc38a1dafbe39140d1c",
+            "package/dev-script/file-enforcer/package.json": "4c39abb2737e49c2c151ef6421e69ff5fb96fd4d8d6eed4c1acd019df0719df4",
+            "package/dev-script/file-enforcer/rolldown.node.config.ts": "4d7006238ff573e484c44dfd3eb35bf95b868585da4764e65d9731f281494487",
+            "package/dev-script/file-enforcer/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+            "package/dev-script/vm-builder/mise.toml": "4bb5dbece0deafe7c15ade4bb71067eb06b06553fab4fdcf4c982aa351916586",
+            "package/dev-script/vm-builder/package.json": "573b8b21c97c415b6e5e2c511f278b9ac3a6c1bea9a50217c2e08ec2c244d3e3",
+            "package/dev-script/vm-builder/rolldown.node.config.ts": "b9c187392bfe6601d3580debc7ca2703d1dd2be800385948400d82fdabf2205e",
+            "package/dev-script/vm-builder/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+            "package/fuzz/forbidden-strings/Cargo.lock": "038def10192dcfbeb8dd9b5b5058b5825000eccfe13d18a703e8804d72d6fde9",
+            "package/fuzz/forbidden-strings/Cargo.toml": "e5301d702b4b405add68d5ec959db76610820ba5a85d31882fda36bc95fabd9d",
+            "package/linter/rust/Cargo.lock": "aa73aee225f08c4e9ff0693f9e2b5d7b5ffbc16968df1e5706c31db77af20d02",
+            "package/linter/rust/Cargo.toml": "402882fdbe897311a0a1229ea3106475a42660c3794404796bc11009f6d067eb",
+            "package/module/toml-edit.fuzz/coverage-baseline.json": "956fe91d4b10044e95fffd9d8bd68d0a1db09b672d6ad70c81dfa5eab1f8fd2d",
+            "package/module/toml-edit.fuzz/mise.toml": "4f8d9df1bce6a46634a66c45965917ad8b07b75ed3cb023bf9b672925f3558c4",
+            "package/module/toml-edit.fuzz/package.json": "4aaabb48f1acc138b8e8ebb8d1a0c608a22421c1cac96aed20b4f210b007a2fc",
+            "package/module/toml-edit.fuzz/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+            "package/module/toml-edit/mise.toml": "d41cfe0f1b723dc8d717b42dc64336609c8e745d228d3c44a077d6c2a5584a91",
+            "package/module/toml-edit/package.json": "98157094dfb0bec11f7388b6fd892bbea706db78edeb26bb40deb1b7839c8893",
+            "package/module/toml-edit/rolldown.browser.config.ts": "b4752a0175d6d6dcd3c7860e3fa48a1e389b9bf46fa09a43af6743704a64acb0",
+            "package/module/toml-edit/rolldown.node.config.ts": "4d7006238ff573e484c44dfd3eb35bf95b868585da4764e65d9731f281494487",
+            "package/module/toml-edit/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+            "package/music-player/android-app/rust/Cargo.lock": "b5b622d725df116fb4577185c06a0e7fc6f2b9c56a7761410bc9c76867cc03d8",
+            "package/music-player/android-app/rust/Cargo.toml": "2603e034f31c7d2d3572a51e4538c0cee27ca6698097c6fa255bf867ca70ffe9",
+            "package/music-player/desktop-app/Cargo.lock": "c6a50868db9aa083795c4df72d60f147322c0f4d54653016ab839b0141ff3def",
+            "package/music-player/desktop-app/Cargo.toml": "7066ba35c31fd538afa903b2c2fbb0cf16676443733b7f6cd69f273cc199c00f",
+            "package/music-player/truepeak-core.bench/Cargo.lock": "a78ca43d2e413cdf1364dcc6314335dbc11ad72050c5b1a89602e584bbd69dd9",
+            "package/music-player/truepeak-core.bench/Cargo.toml": "3ff02eea82e53c4158786d2407d66dbc24c3514fb19e198e196e7f53499e7a97",
+            "package/music-player/truepeak-core/Cargo.lock": "774e4ad29f37ea3e6bae54788c25ed7f7cee871ea4319cda0df3c3b2c1aff042",
+            "package/music-player/truepeak-core/Cargo.toml": "94857eddf8d433a27b79207405f6a4f9bf918f5f875241d00efe1f86001e9542",
+            "package/oxlint-plugin/prefer-readonly-parameter-type/mise.toml": "992ee0bb956d5879d6b8232e099a1459463f5f5cdab158222a7e013bfc0ac11a",
+            "package/oxlint-plugin/prefer-readonly-parameter-type/package.json": "eeababb049900694c14bee19bf6ce31e2d5dbb982b91cb5aa55f62056144ad98",
+            "package/oxlint-plugin/prefer-readonly-parameter-type/rolldown.node.config.ts": "4d7006238ff573e484c44dfd3eb35bf95b868585da4764e65d9731f281494487",
+            "package/oxlint-plugin/prefer-readonly-parameter-type/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+            "package/rust-linter-plugin/builtin/Cargo.lock": "7fa6d117cc4d2f31399d3e54f0e0422f23bf7ecef48efb9021f07cf7712ee239",
+            "package/rust-linter-plugin/builtin/Cargo.toml": "e06a5a8802f9a3d889f439c520f56d17ea4fc09244f3d5485e380f46be9b0a6c",
+            "package/rust-module/forbidden-regex.bench/Cargo.lock": "5c3ff21c5ab0f68867031ee3b9e43af73888e3e3d9569c7a6f3ce15e177cc31f",
+            "package/rust-module/forbidden-regex.bench/Cargo.toml": "db005ddaaf803830fd3a3943fdb898b930d4351195d695ca73dfef143cd337b2",
+            "package/rust-module/forbidden-regex.fuzz/Cargo.lock": "45ce6561ae598d589c9d1a7bca8aa5ea977a17bb1d6ffde9201f3399221bcc5e",
+            "package/rust-module/forbidden-regex.fuzz/Cargo.toml": "1d53d2a3be62afda4b4b2ad94cc40fbc544a3d2d8db5151dda8a74bd31aca919",
+            "package/rust-module/forbidden-regex/Cargo.lock": "b040aa536cc7b150120fd7105ae8fb6f0c137e9ae85a57a2f4eac06551258653",
+            "package/rust-module/forbidden-regex/Cargo.toml": "ebd9f626f71d1058bd710d523ec3bccfd7f6a56323fcc07bb34ef4c7909a7e72",
+            "package/rust-module/rust-linter-core/Cargo.lock": "680b6120ddc3f5fabc964f859df47be74ca6a6c8dbdfd85aa91e92978bccc30f",
+            "package/rust-module/rust-linter-core/Cargo.toml": "e52002cff0b815da660935492255c50b33d3f02200a2904ac86dcf3c0431cfda",
+            "package/rust-module/rust-linter-pattern/Cargo.lock": "6f9726c883d0314a3a7d5ad427ce133a0283f982342d1e2956e355f96795618d",
+            "package/rust-module/rust-linter-pattern/Cargo.toml": "35dbe8b82d49b0644bf4284e2c07927798a8ea91b4221dd42059c2eecb2904e1",
+            "package/test-fixture/file-enforcer-perf/mise.toml": "cc65f846352414d279b36655eb6cba19d2bed22efb93a50b51293e7daf154813",
+            "package/test-fixture/file-enforcer-perf/package.json": "5a2ec550e7eee8a052790b48939f899e98ba5c516396f677c387e61aaf1c8b36",
+            "package/test-fixture/file-enforcer-perf/src/perf.config.ts": "b4e4c301878811a367395c38e1caaa17bbef6356d2a5421205aaf5e5c09cb508",
+            "package/test-fixture/file-enforcer-perf/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+            "playwright.browser.config.ts": "22481714fd67d226521833e84b99baa0fe51922d3e2d9c1633ed2d4ae441118f",
+            "playwright.e2e.config.ts": "6b35988518bdae0839af449415228647348ba04322a1c3bc4cf6a255f3a70b6a",
+            "pnpm-lock.yaml": "e8fd3b8edb607d95f3d38249ec0b2c5ffffb18c96c65c6c31fd78c4b0877bc7e",
+            "pnpm-workspace.yaml": "ce536085d10b5e2d278fcad46e686bba77fe0d5031c1ce31255acda43e06a9ff",
+            "slopo.conf.yaml": "8bca4457e283f563a87214a7bd66514b43c168483c6f38394dc2d7333b20673d",
+            "socket.json": "7696f04db14bc1a2b5c90e2989f4dcc5b2ede18b9e187372d2fd76de32684826",
+            "stylelint.config.mjs": "83bc5d30378d7daa500be0d484b0b712cfb220b08ae119524e9a58900c51e71b",
+            "tsconfig.json": "47907a658a585e474edea803471264075658e6c2f9bad7a4c5a3044892bdf1ee"
+          }
+        },
+        "harnessRevision": "b78123c7bd8e20d4319cddd63c34c70fa7638d72",
+        "manifestSha256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+        "observedAt": "2026-10-17T08:52:08.331Z",
+        "verifierNode": "v26.11.1"
+      },
+      "sourceAfter": {
+        "schemaVersion": 1,
+        "event": "source-provenance",
+        "developmentOnly": true,
+        "phase": "after",
+        "cohort": {
+          "id": "toml-spawn-control-20261017T085018294Z",
+          "manifestSha256": "dafaa621ede9e174374e702ea2d6f10b7618d775467fde57bfeb5c793566d00e",
+          "requestedAt": "2026-10-17T08:50:18.294Z"
+        },
+        "identity": {
+          "head": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "sourceTree": "815e35009780abd2e98bd9bd1ccd92dcb2ef14bf",
+          "trackedStatus": "",
+          "inputs": {
+            ".cargo/config.toml": "7352bfbf249b17aa4293845ef4ef6766227e6ed059d3861556595fa543af01f5",
+            ".pnpmfile.policies.json": "6ea9a99940e8c40e194a7cc0a3627d1c0ccc2d50857b40cb5ff80d7d22001b4a",
+            "bunfig.toml": "433ee4acbd86e36b61ac8606d7dc41be82fdff0f892affd45d32be28c8dba74a",
+            "cli-git.config.ts": "9fd973870c43dfd62f8e897137a2d50a5636af2c9639616856d2c0010f860524",
+            "clippy.toml": "b4ed358ce9e6a485b48b78e88bfe59b0519c5d8c15a1ef97d689492861a447bc",
+            "docker-compose.yml": "92c5ac2157cfed0ad149359ce9986890164463150d5abf23ed90c2cbd5356620",
+            "dprint.json": "9e4ada0fb986fb2a4b7cd023b79d356136564c74bb104d707d4592c111777920",
+            "file-enforcer.config.ts": "cf41571036ccaef87dc45c185215f58834971267c7f371eeef96446fe6bf9ba6",
+            "mise.lock": "5c2f93717958a7401c46775dd5d0e5cc7b07e839a8d3d2f4e139a2a87827d248",
+            "mise.no-env.toml": "0800fb457406cb7eb9b87850cb3758670f0bcd36feba434e0f93625bef20f290",
+            "mise.toml": "22e39e9366f921953f321f0ba378dde13b291240aa1366a4cb25ce5705570464",
+            "node.config.json": "5642c9388056b13923039bd49054c620b969eda1c71f1c9f73790bf34d8feacb",
+            "oxlint.config.ts": "d3a7cc1ee8c002479bc1c9b628ce57e04b6a27a97d891b2715313bfcf5bfa54b",
+            "package.json": "5b0c4ce7596721e7dd77af9b57cf34f0ccd0ee415a52af7173536980f49e8a39",
+            "package/cli/forbidden-strings/Cargo.lock": "4b64d37d5296c2d5a425d8069b4921da3b6a5eaf78e59e12f41b4cb8588ff326",
+            "package/cli/forbidden-strings/Cargo.toml": "9f177f6af455fa0cf9189d32ac02c82333f7595ac9e8604d17f398a52d67de56",
+            "package/cli/nested-wayland-session/Cargo.lock": "0f2abdd3762b9600fecbfde440387b5478f418d20198585ea309a16b6b13c4dc",
+            "package/cli/nested-wayland-session/Cargo.toml": "ca8a975b9fe2313802e543cb837a5bd5405fbaad7a3f91e99f58f705ead19d1f",
+            "package/cli/wg-quicker-exempt/Cargo.lock": "bd3638a5288926b8b864e483fa1324657143c4f2bfe17c6c434f949a8ef9c0d6",
+            "package/cli/wg-quicker-exempt/Cargo.toml": "58e4edd1f049a609ddac57f28ca09e46da89b7a3ef3f33b9f5fc51c9362297db",
+            "package/desktop-app/file-manager-gtk-sticky/Cargo.lock": "79de51d3deda1821dece0b15b8517eb16b2d3d6be39fa572cce3c19e528f5011",
+            "package/desktop-app/file-manager-gtk-sticky/Cargo.toml": "978f882d0063ade072fb954be0eb7c08fd90bcb521b14271caee896696dcab5a",
+            "package/desktop-app/file-manager-qt/Cargo.lock": "07de4e174d187f75c65d91ccdc81e2b5e47870e1190fb1e57bc5c77f1a433817",
+            "package/desktop-app/file-manager-qt/Cargo.toml": "d62d5cadab47f6dfa08f7f961dbcc7bce9a2a3771fa0f4878f0bee4618b881b7",
+            "package/desktop-app/file-manager/Cargo.lock": "9be2ec600240a43680fe70f5330e0c2b465bc4256617329fd7c45c7442d2ad00",
+            "package/desktop-app/file-manager/Cargo.toml": "896ded3cc831394f687e75e8996740e05c65ece5258b78b3fce914ec1c41b48f",
+            "package/desktop-app/terminal/Cargo.lock": "7b961ba4579b9beb5e111c3396197d2d96e774d154e46d4ef4a18caf55eefe03",
+            "package/desktop-app/terminal/Cargo.toml": "cf65476a1b136440c3b77d281736273ef4dcca57696f9223b59eeca09035ce25",
+            "package/dev-script/file-enforcer/mise.toml": "e3cde5df52594c2a59c3ce44409169dced9e002b0a636cc38a1dafbe39140d1c",
+            "package/dev-script/file-enforcer/package.json": "4c39abb2737e49c2c151ef6421e69ff5fb96fd4d8d6eed4c1acd019df0719df4",
+            "package/dev-script/file-enforcer/rolldown.node.config.ts": "4d7006238ff573e484c44dfd3eb35bf95b868585da4764e65d9731f281494487",
+            "package/dev-script/file-enforcer/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+            "package/dev-script/vm-builder/mise.toml": "4bb5dbece0deafe7c15ade4bb71067eb06b06553fab4fdcf4c982aa351916586",
+            "package/dev-script/vm-builder/package.json": "573b8b21c97c415b6e5e2c511f278b9ac3a6c1bea9a50217c2e08ec2c244d3e3",
+            "package/dev-script/vm-builder/rolldown.node.config.ts": "b9c187392bfe6601d3580debc7ca2703d1dd2be800385948400d82fdabf2205e",
+            "package/dev-script/vm-builder/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+            "package/fuzz/forbidden-strings/Cargo.lock": "038def10192dcfbeb8dd9b5b5058b5825000eccfe13d18a703e8804d72d6fde9",
+            "package/fuzz/forbidden-strings/Cargo.toml": "e5301d702b4b405add68d5ec959db76610820ba5a85d31882fda36bc95fabd9d",
+            "package/linter/rust/Cargo.lock": "aa73aee225f08c4e9ff0693f9e2b5d7b5ffbc16968df1e5706c31db77af20d02",
+            "package/linter/rust/Cargo.toml": "402882fdbe897311a0a1229ea3106475a42660c3794404796bc11009f6d067eb",
+            "package/module/toml-edit.fuzz/coverage-baseline.json": "956fe91d4b10044e95fffd9d8bd68d0a1db09b672d6ad70c81dfa5eab1f8fd2d",
+            "package/module/toml-edit.fuzz/mise.toml": "4f8d9df1bce6a46634a66c45965917ad8b07b75ed3cb023bf9b672925f3558c4",
+            "package/module/toml-edit.fuzz/package.json": "4aaabb48f1acc138b8e8ebb8d1a0c608a22421c1cac96aed20b4f210b007a2fc",
+            "package/module/toml-edit.fuzz/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+            "package/module/toml-edit/mise.toml": "d41cfe0f1b723dc8d717b42dc64336609c8e745d228d3c44a077d6c2a5584a91",
+            "package/module/toml-edit/package.json": "98157094dfb0bec11f7388b6fd892bbea706db78edeb26bb40deb1b7839c8893",
+            "package/module/toml-edit/rolldown.browser.config.ts": "b4752a0175d6d6dcd3c7860e3fa48a1e389b9bf46fa09a43af6743704a64acb0",
+            "package/module/toml-edit/rolldown.node.config.ts": "4d7006238ff573e484c44dfd3eb35bf95b868585da4764e65d9731f281494487",
+            "package/module/toml-edit/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+            "package/music-player/android-app/rust/Cargo.lock": "b5b622d725df116fb4577185c06a0e7fc6f2b9c56a7761410bc9c76867cc03d8",
+            "package/music-player/android-app/rust/Cargo.toml": "2603e034f31c7d2d3572a51e4538c0cee27ca6698097c6fa255bf867ca70ffe9",
+            "package/music-player/desktop-app/Cargo.lock": "c6a50868db9aa083795c4df72d60f147322c0f4d54653016ab839b0141ff3def",
+            "package/music-player/desktop-app/Cargo.toml": "7066ba35c31fd538afa903b2c2fbb0cf16676443733b7f6cd69f273cc199c00f",
+            "package/music-player/truepeak-core.bench/Cargo.lock": "a78ca43d2e413cdf1364dcc6314335dbc11ad72050c5b1a89602e584bbd69dd9",
+            "package/music-player/truepeak-core.bench/Cargo.toml": "3ff02eea82e53c4158786d2407d66dbc24c3514fb19e198e196e7f53499e7a97",
+            "package/music-player/truepeak-core/Cargo.lock": "774e4ad29f37ea3e6bae54788c25ed7f7cee871ea4319cda0df3c3b2c1aff042",
+            "package/music-player/truepeak-core/Cargo.toml": "94857eddf8d433a27b79207405f6a4f9bf918f5f875241d00efe1f86001e9542",
+            "package/oxlint-plugin/prefer-readonly-parameter-type/mise.toml": "992ee0bb956d5879d6b8232e099a1459463f5f5cdab158222a7e013bfc0ac11a",
+            "package/oxlint-plugin/prefer-readonly-parameter-type/package.json": "eeababb049900694c14bee19bf6ce31e2d5dbb982b91cb5aa55f62056144ad98",
+            "package/oxlint-plugin/prefer-readonly-parameter-type/rolldown.node.config.ts": "4d7006238ff573e484c44dfd3eb35bf95b868585da4764e65d9731f281494487",
+            "package/oxlint-plugin/prefer-readonly-parameter-type/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+            "package/rust-linter-plugin/builtin/Cargo.lock": "7fa6d117cc4d2f31399d3e54f0e0422f23bf7ecef48efb9021f07cf7712ee239",
+            "package/rust-linter-plugin/builtin/Cargo.toml": "e06a5a8802f9a3d889f439c520f56d17ea4fc09244f3d5485e380f46be9b0a6c",
+            "package/rust-module/forbidden-regex.bench/Cargo.lock": "5c3ff21c5ab0f68867031ee3b9e43af73888e3e3d9569c7a6f3ce15e177cc31f",
+            "package/rust-module/forbidden-regex.bench/Cargo.toml": "db005ddaaf803830fd3a3943fdb898b930d4351195d695ca73dfef143cd337b2",
+            "package/rust-module/forbidden-regex.fuzz/Cargo.lock": "45ce6561ae598d589c9d1a7bca8aa5ea977a17bb1d6ffde9201f3399221bcc5e",
+            "package/rust-module/forbidden-regex.fuzz/Cargo.toml": "1d53d2a3be62afda4b4b2ad94cc40fbc544a3d2d8db5151dda8a74bd31aca919",
+            "package/rust-module/forbidden-regex/Cargo.lock": "b040aa536cc7b150120fd7105ae8fb6f0c137e9ae85a57a2f4eac06551258653",
+            "package/rust-module/forbidden-regex/Cargo.toml": "ebd9f626f71d1058bd710d523ec3bccfd7f6a56323fcc07bb34ef4c7909a7e72",
+            "package/rust-module/rust-linter-core/Cargo.lock": "680b6120ddc3f5fabc964f859df47be74ca6a6c8dbdfd85aa91e92978bccc30f",
+            "package/rust-module/rust-linter-core/Cargo.toml": "e52002cff0b815da660935492255c50b33d3f02200a2904ac86dcf3c0431cfda",
+            "package/rust-module/rust-linter-pattern/Cargo.lock": "6f9726c883d0314a3a7d5ad427ce133a0283f982342d1e2956e355f96795618d",
+            "package/rust-module/rust-linter-pattern/Cargo.toml": "35dbe8b82d49b0644bf4284e2c07927798a8ea91b4221dd42059c2eecb2904e1",
+            "package/test-fixture/file-enforcer-perf/mise.toml": "cc65f846352414d279b36655eb6cba19d2bed22efb93a50b51293e7daf154813",
+            "package/test-fixture/file-enforcer-perf/package.json": "5a2ec550e7eee8a052790b48939f899e98ba5c516396f677c387e61aaf1c8b36",
+            "package/test-fixture/file-enforcer-perf/src/perf.config.ts": "b4e4c301878811a367395c38e1caaa17bbef6356d2a5421205aaf5e5c09cb508",
+            "package/test-fixture/file-enforcer-perf/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+            "playwright.browser.config.ts": "22481714fd67d226521833e84b99baa0fe51922d3e2d9c1633ed2d4ae441118f",
+            "playwright.e2e.config.ts": "6b35988518bdae0839af449415228647348ba04322a1c3bc4cf6a255f3a70b6a",
+            "pnpm-lock.yaml": "e8fd3b8edb607d95f3d38249ec0b2c5ffffb18c96c65c6c31fd78c4b0877bc7e",
+            "pnpm-workspace.yaml": "ce536085d10b5e2d278fcad46e686bba77fe0d5031c1ce31255acda43e06a9ff",
+            "slopo.conf.yaml": "8bca4457e283f563a87214a7bd66514b43c168483c6f38394dc2d7333b20673d",
+            "socket.json": "7696f04db14bc1a2b5c90e2989f4dcc5b2ede18b9e187372d2fd76de32684826",
+            "stylelint.config.mjs": "83bc5d30378d7daa500be0d484b0b712cfb220b08ae119524e9a58900c51e71b",
+            "tsconfig.json": "47907a658a585e474edea803471264075658e6c2f9bad7a4c5a3044892bdf1ee"
+          }
+        },
+        "harnessRevision": "b78123c7bd8e20d4319cddd63c34c70fa7638d72",
+        "manifestSha256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+        "observedAt": "2026-10-17T08:53:11.052Z",
+        "verifierNode": "v26.11.1"
+      },
+      "prerequisite": {
+        "schemaVersion": 1,
+        "event": "bounded-gate-finished",
+        "checkId": "package.module.toml-edit.test.mutation",
+        "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+        "cohort": {
+          "id": "toml-spawn-control-20261017T085018294Z",
+          "manifestSha256": "dafaa621ede9e174374e702ea2d6f10b7618d775467fde57bfeb5c793566d00e",
+          "requestedAt": "2026-10-17T08:50:18.294Z"
+        },
+        "startedAt": "2026-10-17T08:52:10.140Z",
+        "finishedAt": "2026-10-17T08:53:09.704Z",
+        "elapsedMs": 59563.918093,
+        "maxMs": 900000,
+        "graceMs": 10000,
+        "timedOut": false,
+        "exit": {
+          "kind": "exited",
+          "exitCode": 0,
+          "signal": null
+        },
+        "sourceGateTerminal": false,
+        "label": "io.monochromatic.toml-attempt=8dec6ba0-54d1-42b7-bb81-2b29de6d8b23",
+        "signals": [],
+        "cleanup": [],
+        "cleanupVerified": true,
+        "processGroupAfter": [],
+        "instrumentationErrors": [],
+        "logLimitExceeded": false,
+        "output": {
+          "bytes": 72288,
+          "sha256": "2308b10ac28475d6c0bc1eedcc32bcfe131aba28edcc69450a3e364b9d1cda1a"
+        },
+        "wrapperSha256": "65ae3e11bdda964aab8a3b108428c0151bdd154ca47357ab018883994841ff40",
+        "fixtureOnly": false,
+        "selectedInvocationStarted": true,
+        "terminalDisposition": "pilot-command-passed",
+        "consumerSpawnedAt": "2026-10-17T08:52:10.180Z",
+        "consumerOutcomeObservedAt": "2026-10-17T08:53:09.550Z",
+        "containerIdsAfter": [],
+        "consumer": {
+          "command": "mise",
+          "args": [
+            "run",
+            "//package/module/toml-edit:test:mutation",
+            "--",
+            "src/toml-get-comments.ts",
+            "--containers",
+            "1",
+            "--shard-size",
+            "1"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic/source",
+          "selectedSourceTask": "//package/module/toml-edit:test:mutation"
+        },
+        "adapterOverlay": {
+          "DEPOT_CI_CHECK_IDS": "[\"package.module.toml-edit.test.mutation\"]",
+          "DEPOT_CI_WORKERS": "1",
+          "TMPDIR": "/home/runner/temp/agent/depot-complete-ci/toml-mutation-shards",
+          "correlatedPodmanSha256": "65ae3e11bdda964aab8a3b108428c0151bdd154ca47357ab018883994841ff40"
+        },
+        "shardEvidence": [
+          {
+            "path": "mutation-manifest-F6L2sv/shard-manifest.json",
+            "bytes": 1919,
+            "sha256": "21c37a776646ed5fe5a92416ba1072b1b1f0734bebcfe8a47609b7597e4d0983"
+          },
+          {
+            "path": "mutation-report-jnHVIZ/shard-report.json",
+            "bytes": 407,
+            "sha256": "af9821bbc3e961f696ab7968fc2592e38f8a19a6281265e170d840d0515e672d"
+          }
+        ],
+        "nativeReports": [
+          {
+            "path": "/home/runner/work/Monochromatic/Monochromatic/source/mutation-report.json",
+            "existedAtStart": false,
+            "artifactPath": "toml-native-report-package.module.toml-edit.test.mutation-0.json",
+            "bytes": 650,
+            "sha256": "692e5dd934f799518de76762ee34a0f22558a66a2832188cf5b074dfc37d7825",
+            "mtimeMs": 1792227189528.9614,
+            "producedDuringInvocation": true
+          }
+        ],
+        "podmanOperations": [
+          {
+            "executable": "/home/runner/temp/agent/depot-complete-ci/toml-metadata-observer-bin/podman",
+            "sourceConsumerPodman": "/home/runner/temp/agent/depot-complete-ci/container-bin/podman",
+            "args": [
+              "ps",
+              "--all",
+              "--filter",
+              "label=io.monochromatic.toml-attempt=8dec6ba0-54d1-42b7-bb81-2b29de6d8b23",
+              "--format",
+              "json"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/source",
+            "startedAt": "2026-10-17T08:52:10.141Z",
+            "finishedAt": "2026-10-17T08:52:10.178Z",
+            "elapsedMs": 37.30333,
+            "budgetMs": 60000,
+            "status": 0,
+            "signal": null,
+            "error": null,
+            "stdoutBytes": 3,
+            "stderrBytes": 0,
+            "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+            "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stdout": "[]\n",
+            "stderr": ""
+          },
+          {
+            "executable": "/home/runner/temp/agent/depot-complete-ci/toml-metadata-observer-bin/podman",
+            "sourceConsumerPodman": "/home/runner/temp/agent/depot-complete-ci/container-bin/podman",
+            "args": [
+              "ps",
+              "--all",
+              "--filter",
+              "label=io.monochromatic.toml-attempt=8dec6ba0-54d1-42b7-bb81-2b29de6d8b23",
+              "--format",
+              "json"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/source",
+            "startedAt": "2026-10-17T08:52:20.181Z",
+            "finishedAt": "2026-10-17T08:52:20.308Z",
+            "elapsedMs": 126.4737299999997,
+            "budgetMs": 60000,
+            "status": 0,
+            "signal": null,
+            "error": null,
+            "stdoutBytes": 3,
+            "stderrBytes": 0,
+            "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+            "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stdout": "[]\n",
+            "stderr": ""
+          },
+          {
+            "executable": "/home/runner/temp/agent/depot-complete-ci/toml-metadata-observer-bin/podman",
+            "sourceConsumerPodman": "/home/runner/temp/agent/depot-complete-ci/container-bin/podman",
+            "args": [
+              "ps",
+              "--all",
+              "--filter",
+              "label=io.monochromatic.toml-attempt=8dec6ba0-54d1-42b7-bb81-2b29de6d8b23",
+              "--format",
+              "json"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/source",
+            "startedAt": "2026-10-17T08:52:30.182Z",
+            "finishedAt": "2026-10-17T08:52:30.222Z",
+            "elapsedMs": 39.27513000000181,
+            "budgetMs": 60000,
+            "status": 0,
+            "signal": null,
+            "error": null,
+            "stdoutBytes": 3,
+            "stderrBytes": 0,
+            "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+            "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stdout": "[]\n",
+            "stderr": ""
+          },
+          {
+            "executable": "/home/runner/temp/agent/depot-complete-ci/toml-metadata-observer-bin/podman",
+            "sourceConsumerPodman": "/home/runner/temp/agent/depot-complete-ci/container-bin/podman",
+            "args": [
+              "ps",
+              "--all",
+              "--filter",
+              "label=io.monochromatic.toml-attempt=8dec6ba0-54d1-42b7-bb81-2b29de6d8b23",
+              "--format",
+              "json"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/source",
+            "startedAt": "2026-10-17T08:52:40.183Z",
+            "finishedAt": "2026-10-17T08:52:53.388Z",
+            "elapsedMs": 13205.186476000003,
+            "budgetMs": 60000,
+            "status": 0,
+            "signal": null,
+            "error": null,
+            "stdoutBytes": 3,
+            "stderrBytes": 0,
+            "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+            "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stdout": "[]\n",
+            "stderr": ""
+          },
+          {
+            "executable": "/home/runner/temp/agent/depot-complete-ci/toml-metadata-observer-bin/podman",
+            "sourceConsumerPodman": "/home/runner/temp/agent/depot-complete-ci/container-bin/podman",
+            "args": [
+              "ps",
+              "--all",
+              "--filter",
+              "label=io.monochromatic.toml-attempt=8dec6ba0-54d1-42b7-bb81-2b29de6d8b23",
+              "--format",
+              "json"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/source",
+            "startedAt": "2026-10-17T08:52:53.389Z",
+            "finishedAt": "2026-10-17T08:52:53.425Z",
+            "elapsedMs": 36.43273000000045,
+            "budgetMs": 60000,
+            "status": 0,
+            "signal": null,
+            "error": null,
+            "stdoutBytes": 3,
+            "stderrBytes": 0,
+            "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+            "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stdout": "[]\n",
+            "stderr": ""
+          },
+          {
+            "executable": "/home/runner/temp/agent/depot-complete-ci/toml-metadata-observer-bin/podman",
+            "sourceConsumerPodman": "/home/runner/temp/agent/depot-complete-ci/container-bin/podman",
+            "args": [
+              "ps",
+              "--all",
+              "--filter",
+              "label=io.monochromatic.toml-attempt=8dec6ba0-54d1-42b7-bb81-2b29de6d8b23",
+              "--format",
+              "json"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/source",
+            "startedAt": "2026-10-17T08:53:03.389Z",
+            "finishedAt": "2026-10-17T08:53:03.427Z",
+            "elapsedMs": 37.957409999995434,
+            "budgetMs": 60000,
+            "status": 0,
+            "signal": null,
+            "error": null,
+            "stdoutBytes": 1433,
+            "stderrBytes": 0,
+            "stdoutSha256": "858bbccc97f62634a7c7ede9ddda4f1a8f268e212297619d74d603c30b44d9e4",
+            "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stdout": "[\n  {\n    \"AutoRemove\": true,\n    \"Command\": [\n      \"node\",\n      \"/baked/package/cli/mutation-test/src/container/main.ts\"\n    ],\n    \"CreatedAt\": \"Less than a second ago\",\n    \"CIDFile\": \"\",\n    \"Exited\": false,\n    \"ExitedAt\": -62135596800,\n    \"ExitCode\": 0,\n    \"ExposedPorts\": null,\n    \"Id\": \"65afd6421c8c6d8e8ec4c83ec98fe24e8b34a29620d3affd7ad3f35e27292a2d\",\n    \"Image\": \"localhost/mutation-test-runtime:24de541ad936\",\n    \"ImageID\": \"b39af25fd293e7a2a8628817419b535c7be7f369cec3f44d537ab9ee432135a4\",\n    \"IsInfra\": false,\n    \"Labels\": {\n      \"io.buildah.version\": \"1.43.2\",\n      \"io.monochromatic.toml-attempt\": \"8dec6ba0-54d1-42b7-bb81-2b29de6d8b23\",\n      \"org.opencontainers.image.licenses\": \"MIT\",\n      \"org.opencontainers.image.title\": \"fedora\",\n      \"org.opencontainers.image.url\": \"https://fedoraproject.org/\",\n      \"org.opencontainers.image.vendor\": \"Fedora Project\",\n      \"org.opencontainers.image.version\": \"44\"\n    },\n    \"Mounts\": [\n      \"/baked/node_modules/.pnpm-workspace-state-v1.json\",\n      \"/tmp\",\n      \"/src-ro\",\n      \"/manifest\",\n      \"/out\",\n      \"/work\"\n    ],\n    \"Names\": [\n      \"busy_lewin\"\n    ],\n    \"Namespaces\": {\n      \n    },\n    \"Networks\": [],\n    \"Pid\": 6819,\n    \"Pod\": \"\",\n    \"PodName\": \"\",\n    \"Ports\": null,\n    \"Restarts\": 0,\n    \"Size\": null,\n    \"StartedAt\": 1792227183,\n    \"State\": \"running\",\n    \"Status\": \"Up Less than a second\",\n    \"Created\": 1792227183\n  }\n]\n",
+            "stderr": ""
+          },
+          {
+            "executable": "/home/runner/temp/agent/depot-complete-ci/toml-metadata-observer-bin/podman",
+            "sourceConsumerPodman": "/home/runner/temp/agent/depot-complete-ci/container-bin/podman",
+            "args": [
+              "inspect",
+              "65afd6421c8c6d8e8ec4c83ec98fe24e8b34a29620d3affd7ad3f35e27292a2d"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/source",
+            "startedAt": "2026-10-17T08:53:03.428Z",
+            "finishedAt": "2026-10-17T08:53:03.469Z",
+            "elapsedMs": 40.93598999999813,
+            "budgetMs": 60000,
+            "status": 0,
+            "signal": null,
+            "error": null,
+            "stdoutBytes": 17514,
+            "stderrBytes": 0,
+            "stdoutSha256": "06d1b35bc8f596e0609964416c4828bbdb493ffcc0cd51498170c3bcc69545c6",
+            "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stdout": "[\n     {\n          \"Id\": \"65afd6421c8c6d8e8ec4c83ec98fe24e8b34a29620d3affd7ad3f35e27292a2d\",\n          \"Created\": \"2026-10-17T08:53:03.374184234Z\",\n          \"Path\": \"node\",\n          \"Args\": [\n               \"/baked/package/cli/mutation-test/src/container/main.ts\"\n          ],\n          \"State\": {\n               \"OciVersion\": \"1.2.1\",\n               \"Status\": \"running\",\n               \"Running\": true,\n               \"Paused\": false,\n               \"Restarting\": false,\n               \"OOMKilled\": false,\n               \"Dead\": false,\n               \"Pid\": 6819,\n               \"ConmonPid\": 6814,\n               \"ExitCode\": 0,\n               \"Error\": \"\",\n               \"StartedAt\": \"2026-10-17T08:53:03.409084464Z\",\n               \"FinishedAt\": \"0001-01-01T00:00:00Z\",\n               \"CgroupPath\": \"/libpod_parent/libpod-65afd6421c8c6d8e8ec4c83ec98fe24e8b34a29620d3affd7ad3f35e27292a2d\",\n               \"CheckpointedAt\": \"0001-01-01T00:00:00Z\",\n               \"RestoredAt\": \"0001-01-01T00:00:00Z\"\n          },\n          \"Image\": \"b39af25fd293e7a2a8628817419b535c7be7f369cec3f44d537ab9ee432135a4\",\n          \"ImageDigest\": \"sha256:3c2db4558a84f48aa9a08c55067e59f954c2381cf85f730d1f4e58c38faf414b\",\n          \"ImageName\": \"localhost/mutation-test-runtime:24de541ad936\",\n          \"Rootfs\": \"\",\n          \"Pod\": \"\",\n          \"ResolvConfPath\": \"\",\n          \"HostnamePath\": \"/var/run/containers/storage/overlay-containers/65afd6421c8c6d8e8ec4c83ec98fe24e8b34a29620d3affd7ad3f35e27292a2d/userdata/hostname\",\n          \"HostsPath\": \"/var/run/containers/storage/overlay-containers/65afd6421c8c6d8e8ec4c83ec98fe24e8b34a29620d3affd7ad3f35e27292a2d/userdata/hosts\",\n          \"StaticDir\": \"/var/lib/containers/storage/overlay-containers/65afd6421c8c6d8e8ec4c83ec98fe24e8b34a29620d3affd7ad3f35e27292a2d/userdata\",\n          \"OCIConfigPath\": \"/var/lib/containers/storage/overlay-containers/65afd6421c8c6d8e8ec4c83ec98fe24e8b34a29620d3affd7ad3f35e27292a2d/userdata/config.json\",\n          \"OCIRuntime\": \"crun\",\n          \"ConmonPidFile\": \"/var/run/containers/storage/overlay-containers/65afd6421c8c6d8e8ec4c83ec98fe24e8b34a29620d3affd7ad3f35e27292a2d/userdata/conmon.pid\",\n          \"PidFile\": \"/var/run/containers/storage/overlay-containers/65afd6421c8c6d8e8ec4c83ec98fe24e8b34a29620d3affd7ad3f35e27292a2d/userdata/pidfile\",\n          \"Name\": \"busy_lewin\",\n          \"RestartCount\": 0,\n          \"Driver\": \"overlay\",\n          \"MountLabel\": \"\",\n          \"ProcessLabel\": \"\",\n          \"AppArmorProfile\": \"containers-default-0.67.1\",\n          \"EffectiveCaps\": null,\n          \"BoundingCaps\": null,\n          \"ExecIDs\": [],\n          \"GraphDriver\": {\n               \"Name\": \"overlay\",\n               \"Data\": {\n                    \"LowerDir\": \"/var/lib/containers/storage/overlay/6ba4e80b90b8e4387921105a5ce9751c9022632cc944dda5466842cdafda8607/diff:/var/lib/containers/storage/overlay/0988e7e1ac5adeb83fa29e6e013ed824877b805d0527e342a0a86cfc958dde52/diff:/var/lib/containers/storage/overlay/bb85f471979a82c6a400696b01fcabb02e6a2639757ca65f6970b54aad3c47ba/diff:/var/lib/containers/storage/overlay/5caf54cded652c824a21896b20048eccb11bb8cdce3ca774c3560cd32e1f61cc/diff\",\n                    \"MergedDir\": \"/var/lib/containers/storage/overlay/6aab65cbb8785d70d60cc274fe528e04a94da42dadfe319b88bd73539a8b0f11/merged\",\n                    \"UpperDir\": \"/var/lib/containers/storage/overlay/6aab65cbb8785d70d60cc274fe528e04a94da42dadfe319b88bd73539a8b0f11/diff\",\n                    \"WorkDir\": \"/var/lib/containers/storage/overlay/6aab65cbb8785d70d60cc274fe528e04a94da42dadfe319b88bd73539a8b0f11/work\"\n               }\n          },\n          \"Mounts\": [\n               {\n                    \"Type\": \"volume\",\n                    \"Name\": \"depot-ci-mutation-e54c9069-3085-4e42-88ce-c59d0773ffa7\",\n                    \"Source\": \"/var/lib/containers/storage/volumes/depot-ci-mutation-e54c9069-3085-4e42-88ce-c59d0773ffa7/_data\",\n                    \"Destination\": \"/work\",\n                    \"Driver\": \"local\",\n                    \"Mode\": \"\",\n                    \"Options\": [\n                         \"nosuid\",\n                         \"nodev\",\n                         \"rbind\"\n                    ],\n                    \"RW\": true,\n                    \"Propagation\": \"rprivate\"\n               },\n               {\n                    \"Type\": \"bind\",\n                    \"Source\": \"/home/runner/temp/agent/depot-complete-ci/container-bin/image-metadata-wmz4pz/owned-state.json\",\n                    \"Destination\": \"/baked/node_modules/.pnpm-workspace-state-v1.json\",\n                    \"Driver\": \"\",\n                    \"Mode\": \"\",\n                    \"Options\": [\n                         \"rbind\"\n                    ],\n                    \"RW\": false,\n                    \"Propagation\": \"rprivate\"\n               },\n               {\n                    \"Type\": \"bind\",\n                    \"Source\": \"/home/runner/work/Monochromatic/Monochromatic/source\",\n                    \"Destination\": \"/src-ro\",\n                    \"Driver\": \"\",\n                    \"Mode\": \"\",\n                    \"Options\": [\n                         \"rbind\"\n                    ],\n                    \"RW\": false,\n                    \"Propagation\": \"rprivate\"\n               },\n               {\n                    \"Type\": \"bind\",\n                    \"Source\": \"/home/runner/temp/agent/depot-complete-ci/toml-mutation-shards/mutation-manifest-F6L2sv\",\n                    \"Destination\": \"/manifest\",\n                    \"Driver\": \"\",\n                    \"Mode\": \"\",\n                    \"Options\": [\n                         \"rbind\"\n                    ],\n                    \"RW\": false,\n                    \"Propagation\": \"rprivate\"\n               },\n               {\n                    \"Type\": \"bind\",\n                    \"Source\": \"/home/runner/temp/agent/depot-complete-ci/toml-mutation-shards/mutation-report-jnHVIZ\",\n                    \"Destination\": \"/out\",\n                    \"Driver\": \"\",\n                    \"Mode\": \"\",\n                    \"Options\": [\n                         \"rbind\"\n                    ],\n                    \"RW\": true,\n                    \"Propagation\": \"rprivate\"\n               }\n          ],\n          \"Dependencies\": [],\n          \"NetworkSettings\": {\n               \"EndpointID\": \"\",\n               \"Gateway\": \"\",\n               \"IPAddress\": \"\",\n               \"IPPrefixLen\": 0,\n               \"IPv6Gateway\": \"\",\n               \"GlobalIPv6Address\": \"\",\n               \"GlobalIPv6PrefixLen\": 0,\n               \"MacAddress\": \"\",\n               \"Bridge\": \"\",\n               \"SandboxID\": \"\",\n               \"HairpinMode\": false,\n               \"LinkLocalIPv6Address\": \"\",\n               \"LinkLocalIPv6PrefixLen\": 0,\n               \"Ports\": {},\n               \"SandboxKey\": \"/proc/6819/ns/net\",\n               \"Networks\": {\n                    \"none\": {\n                         \"EndpointID\": \"\",\n                         \"Gateway\": \"\",\n                         \"IPAddress\": \"\",\n                         \"IPPrefixLen\": 0,\n                         \"IPv6Gateway\": \"\",\n                         \"GlobalIPv6Address\": \"\",\n                         \"GlobalIPv6PrefixLen\": 0,\n                         \"MacAddress\": \"\",\n                         \"NetworkID\": \"none\",\n                         \"DriverOpts\": null,\n                         \"IPAMConfig\": null,\n                         \"Links\": null\n                    }\n               }\n          },\n          \"Namespace\": \"\",\n          \"IsInfra\": false,\n          \"IsService\": false,\n          \"KubeExitCodePropagation\": \"invalid\",\n          \"lockNumber\": 1,\n          \"Config\": {\n               \"Hostname\": \"65afd6421c8c\",\n               \"Domainname\": \"\",\n               \"User\": \"1001:1001\",\n               \"AttachStdin\": false,\n               \"AttachStdout\": false,\n               \"AttachStderr\": false,\n               \"Tty\": false,\n               \"OpenStdin\": false,\n               \"StdinOnce\": false,\n               \"Env\": [\n                    \"container=oci\",\n                    \"MISE_DATA_DIR=/mise\",\n                    \"MISE_CONFIG_DIR=/mise\",\n                    \"MISE_CACHE_DIR=/mise/cache\",\n                    \"TMPDIR=/tmp\",\n                    \"XDG_CACHE_HOME=/tmp/.cache\",\n                    \"HOME=/tmp\",\n                    \"PATH=/usr/local/bin:/baked/node_modules/.bin:/usr/local/bin:/usr/bin\",\n                    \"HOSTNAME=65afd6421c8c\"\n               ],\n               \"Cmd\": [\n                    \"node\",\n                    \"/baked/package/cli/mutation-test/src/container/main.ts\"\n               ],\n               \"Image\": \"localhost/mutation-test-runtime:24de541ad936\",\n               \"Volumes\": null,\n               \"WorkingDir\": \"/work\",\n               \"Entrypoint\": null,\n               \"OnBuild\": null,\n               \"Labels\": {\n                    \"io.buildah.version\": \"1.43.2\",\n                    \"io.monochromatic.toml-attempt\": \"8dec6ba0-54d1-42b7-bb81-2b29de6d8b23\",\n                    \"org.opencontainers.image.licenses\": \"MIT\",\n                    \"org.opencontainers.image.title\": \"fedora\",\n                    \"org.opencontainers.image.url\": \"https://fedoraproject.org/\",\n                    \"org.opencontainers.image.vendor\": \"Fedora Project\",\n                    \"org.opencontainers.image.version\": \"44\"\n               },\n               \"Annotations\": {\n                    \"io.container.manager\": \"libpod\",\n                    \"io.podman.annotations.autoremove\": \"TRUE\",\n                    \"io.podman.annotations.label\": \"disable\",\n                    \"io.podman.annotations.pids-limit\": \"512\",\n                    \"org.opencontainers.image.stopSignal\": \"15\",\n                    \"org.systemd.property.KillSignal\": \"15\",\n                    \"org.systemd.property.TimeoutStopUSec\": \"uint64 10000000\"\n               },\n               \"StopSignal\": \"SIGTERM\",\n               \"HealthcheckOnFailureAction\": \"none\",\n               \"HealthLogDestination\": \"local\",\n               \"HealthcheckMaxLogCount\": 5,\n               \"HealthcheckMaxLogSize\": 500,\n               \"CreateCommand\": [\n                    \"/usr/local/bin/podman\",\n                    \"run\",\n                    \"--memory=2g\",\n                    \"--cpus=2\",\n                    \"--pids-limit=512\",\n                    \"--user\",\n                    \"1001:1001\",\n                    \"--volume\",\n                    \"/home/runner/temp/agent/depot-complete-ci/container-bin/image-metadata-wmz4pz/owned-state.json:/baked/node_modules/.pnpm-workspace-state-v1.json:ro\",\n                    \"--label\",\n                    \"io.monochromatic.toml-attempt=8dec6ba0-54d1-42b7-bb81-2b29de6d8b23\",\n                    \"--rm\",\n                    \"--pull=never\",\n                    \"--network=none\",\n                    \"--read-only\",\n                    \"--cap-drop=ALL\",\n                    \"--security-opt=no-new-privileges\",\n                    \"--security-opt=label=disable\",\n                    \"--memory\",\n                    \"2g\",\n                    \"--cpus\",\n                    \"2\",\n                    \"--pids-limit\",\n                    \"512\",\n                    \"--timeout\",\n                    \"1800\",\n                    \"--tmpfs\",\n                    \"/tmp:rw,exec,size=1g\",\n                    \"--volume\",\n                    \"depot-ci-mutation-e54c9069-3085-4e42-88ce-c59d0773ffa7:/work:rw\",\n                    \"--env\",\n                    \"HOME=/tmp\",\n                    \"--env\",\n                    \"TMPDIR=/tmp\",\n                    \"--env\",\n                    \"XDG_CACHE_HOME=/tmp/.cache\",\n                    \"--volume\",\n                    \"/home/runner/work/Monochromatic/Monochromatic/source:/src-ro:ro\",\n                    \"--volume\",\n                    \"/home/runner/temp/agent/depot-complete-ci/toml-mutation-shards/mutation-manifest-F6L2sv:/manifest:ro\",\n                    \"--volume\",\n                    \"/home/runner/temp/agent/depot-complete-ci/toml-mutation-shards/mutation-report-jnHVIZ:/out:rw\",\n                    \"--workdir\",\n                    \"/work\",\n                    \"localhost/mutation-test-runtime:24de541ad936\",\n                    \"node\",\n                    \"/baked/package/cli/mutation-test/src/container/main.ts\"\n               ],\n               \"Umask\": \"0022\",\n               \"Timeout\": 1800,\n               \"StopTimeout\": 10,\n               \"Passwd\": true,\n               \"sdNotifyMode\": \"container\"\n          },\n          \"HostConfig\": {\n               \"Binds\": [\n                    \"depot-ci-mutation-e54c9069-3085-4e42-88ce-c59d0773ffa7:/work:rw,rprivate,nosuid,nodev,rbind\",\n                    \"/home/runner/temp/agent/depot-complete-ci/container-bin/image-metadata-wmz4pz/owned-state.json:/baked/node_modules/.pnpm-workspace-state-v1.json:ro,rprivate,rbind\",\n                    \"/home/runner/work/Monochromatic/Monochromatic/source:/src-ro:ro,rprivate,rbind\",\n                    \"/home/runner/temp/agent/depot-complete-ci/toml-mutation-shards/mutation-manifest-F6L2sv:/manifest:ro,rprivate,rbind\",\n                    \"/home/runner/temp/agent/depot-complete-ci/toml-mutation-shards/mutation-report-jnHVIZ:/out:rw,rprivate,rbind\"\n               ],\n               \"CgroupManager\": \"cgroupfs\",\n               \"CgroupMode\": \"private\",\n               \"ContainerIDFile\": \"\",\n               \"LogConfig\": {\n                    \"Type\": \"k8s-file\",\n                    \"Config\": null,\n                    \"Path\": \"/var/lib/containers/storage/overlay-containers/65afd6421c8c6d8e8ec4c83ec98fe24e8b34a29620d3affd7ad3f35e27292a2d/userdata/ctr.log\",\n                    \"Tag\": \"\",\n                    \"Size\": \"-1B\"\n               },\n               \"NetworkMode\": \"none\",\n               \"PortBindings\": {},\n               \"RestartPolicy\": {\n                    \"Name\": \"no\",\n                    \"MaximumRetryCount\": 0\n               },\n               \"AutoRemove\": true,\n               \"AutoRemoveImage\": false,\n               \"Annotations\": {\n                    \"io.container.manager\": \"libpod\",\n                    \"io.podman.annotations.autoremove\": \"TRUE\",\n                    \"io.podman.annotations.label\": \"disable\",\n                    \"io.podman.annotations.pids-limit\": \"512\",\n                    \"org.opencontainers.image.stopSignal\": \"15\",\n                    \"org.systemd.property.KillSignal\": \"15\",\n                    \"org.systemd.property.TimeoutStopUSec\": \"uint64 10000000\"\n               },\n               \"VolumeDriver\": \"\",\n               \"VolumesFrom\": null,\n               \"CapAdd\": [],\n               \"CapDrop\": [\n                    \"CAP_CHOWN\",\n                    \"CAP_DAC_OVERRIDE\",\n                    \"CAP_FOWNER\",\n                    \"CAP_FSETID\",\n                    \"CAP_KILL\",\n                    \"CAP_NET_BIND_SERVICE\",\n                    \"CAP_SETFCAP\",\n                    \"CAP_SETGID\",\n                    \"CAP_SETPCAP\",\n                    \"CAP_SETUID\",\n                    \"CAP_SYS_CHROOT\"\n               ],\n               \"Dns\": [],\n               \"DnsOptions\": [],\n               \"DnsSearch\": [],\n               \"ExtraHosts\": [],\n               \"HostsFile\": \"\",\n               \"GroupAdd\": [],\n               \"IpcMode\": \"shareable\",\n               \"Cgroup\": \"\",\n               \"Cgroups\": \"default\",\n               \"Links\": null,\n               \"OomScoreAdj\": 0,\n               \"PidMode\": \"private\",\n               \"Privileged\": false,\n               \"PublishAllPorts\": false,\n               \"ReadonlyRootfs\": true,\n               \"SecurityOpt\": [\n                    \"no-new-privileges\",\n                    \"label=disable\"\n               ],\n               \"Tmpfs\": {\n                    \"/tmp\": \"rw,exec,size=1g,rprivate,nosuid,nodev,tmpcopyup\"\n               },\n               \"UTSMode\": \"private\",\n               \"UsernsMode\": \"\",\n               \"ShmSize\": 65536000,\n               \"Runtime\": \"oci\",\n               \"ConsoleSize\": [\n                    0,\n                    0\n               ],\n               \"Isolation\": \"\",\n               \"CpuShares\": 0,\n               \"Memory\": 2147483648,\n               \"NanoCpus\": 2000000000,\n               \"CgroupParent\": \"\",\n               \"BlkioWeight\": 0,\n               \"BlkioWeightDevice\": null,\n               \"BlkioDeviceReadBps\": null,\n               \"BlkioDeviceWriteBps\": null,\n               \"BlkioDeviceReadIOps\": null,\n               \"BlkioDeviceWriteIOps\": null,\n               \"CpuPeriod\": 100000,\n               \"CpuQuota\": 200000,\n               \"CpuRealtimePeriod\": 0,\n               \"CpuRealtimeRuntime\": 0,\n               \"CpusetCpus\": \"\",\n               \"CpusetMems\": \"\",\n               \"Devices\": [],\n               \"DiskQuota\": 0,\n               \"KernelMemory\": 0,\n               \"MemoryReservation\": 0,\n               \"MemorySwap\": 4294967296,\n               \"MemorySwappiness\": -1,\n               \"OomKillDisable\": false,\n               \"PidsLimit\": 512,\n               \"Ulimits\": [\n                    {\n                         \"Name\": \"RLIMIT_NOFILE\",\n                         \"Soft\": 1048576,\n                         \"Hard\": 1048576\n                    },\n                    {\n                         \"Name\": \"RLIMIT_NPROC\",\n                         \"Soft\": 1048576,\n                         \"Hard\": 1048576\n                    }\n               ],\n               \"CpuCount\": 0,\n               \"CpuPercent\": 0,\n               \"IOMaximumIOps\": 0,\n               \"IOMaximumBandwidth\": 0,\n               \"CgroupConf\": null\n          },\n          \"UseImageHosts\": false,\n          \"UseImageHostname\": false\n     }\n]\n",
+            "stderr": ""
+          },
+          {
+            "executable": "/home/runner/temp/agent/depot-complete-ci/toml-metadata-observer-bin/podman",
+            "sourceConsumerPodman": "/home/runner/temp/agent/depot-complete-ci/container-bin/podman",
+            "args": [
+              "ps",
+              "--all",
+              "--filter",
+              "label=io.monochromatic.toml-attempt=8dec6ba0-54d1-42b7-bb81-2b29de6d8b23",
+              "--format",
+              "json"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/source",
+            "startedAt": "2026-10-17T08:53:09.550Z",
+            "finishedAt": "2026-10-17T08:53:09.588Z",
+            "elapsedMs": 38.405549999995856,
+            "budgetMs": 60000,
+            "status": 0,
+            "signal": null,
+            "error": null,
+            "stdoutBytes": 3,
+            "stderrBytes": 0,
+            "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+            "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stdout": "[]\n",
+            "stderr": ""
+          },
+          {
+            "executable": "/home/runner/temp/agent/depot-complete-ci/toml-metadata-observer-bin/podman",
+            "sourceConsumerPodman": "/home/runner/temp/agent/depot-complete-ci/container-bin/podman",
+            "args": [
+              "ps",
+              "--all",
+              "--filter",
+              "label=io.monochromatic.toml-attempt=8dec6ba0-54d1-42b7-bb81-2b29de6d8b23",
+              "--format",
+              "json"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/source",
+            "startedAt": "2026-10-17T08:53:09.591Z",
+            "finishedAt": "2026-10-17T08:53:09.629Z",
+            "elapsedMs": 37.72939000000042,
+            "budgetMs": 60000,
+            "status": 0,
+            "signal": null,
+            "error": null,
+            "stdoutBytes": 3,
+            "stderrBytes": 0,
+            "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+            "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stdout": "[]\n",
+            "stderr": ""
+          },
+          {
+            "executable": "/home/runner/temp/agent/depot-complete-ci/toml-metadata-observer-bin/podman",
+            "sourceConsumerPodman": "/home/runner/temp/agent/depot-complete-ci/container-bin/podman",
+            "args": [
+              "ps",
+              "--all",
+              "--filter",
+              "label=io.monochromatic.toml-attempt=8dec6ba0-54d1-42b7-bb81-2b29de6d8b23",
+              "--format",
+              "json"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/source",
+            "startedAt": "2026-10-17T08:53:09.631Z",
+            "finishedAt": "2026-10-17T08:53:09.667Z",
+            "elapsedMs": 36.444949999997334,
+            "budgetMs": 60000,
+            "status": 0,
+            "signal": null,
+            "error": null,
+            "stdoutBytes": 3,
+            "stderrBytes": 0,
+            "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+            "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stdout": "[]\n",
+            "stderr": ""
+          },
+          {
+            "executable": "/home/runner/temp/agent/depot-complete-ci/toml-metadata-observer-bin/podman",
+            "sourceConsumerPodman": "/home/runner/temp/agent/depot-complete-ci/container-bin/podman",
+            "args": [
+              "events",
+              "--since",
+              "2026-10-17T08:52:10.140Z",
+              "--until",
+              "2026-10-17T08:53:09.667Z",
+              "--stream=false",
+              "--filter",
+              "label=io.monochromatic.toml-attempt=8dec6ba0-54d1-42b7-bb81-2b29de6d8b23",
+              "--format",
+              "json"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/source",
+            "startedAt": "2026-10-17T08:53:09.667Z",
+            "finishedAt": "2026-10-17T08:53:09.703Z",
+            "elapsedMs": 35.91313999999693,
+            "budgetMs": 60000,
+            "status": 0,
+            "signal": null,
+            "error": null,
+            "stdoutBytes": 0,
+            "stderrBytes": 0,
+            "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stdout": "",
+            "stderr": ""
+          }
+        ],
+        "sourcePodmanCalls": [
+          {
+            "event": "source-podman-call",
+            "observedAt": "2026-10-17T08:52:10.475Z",
+            "pid": 4436,
+            "command": "image",
+            "args": [
+              "exists",
+              "localhost/mutation-test-runtime:24de541ad936"
+            ],
+            "forwardedArgs": [
+              "image",
+              "exists",
+              "localhost/mutation-test-runtime:24de541ad936"
+            ]
+          },
+          {
+            "event": "source-podman-returned",
+            "observedAt": "2026-10-17T08:52:10.509Z",
+            "pid": 4436,
+            "command": "image",
+            "status": 1,
+            "signal": null,
+            "error": null
+          },
+          {
+            "event": "source-podman-call",
+            "observedAt": "2026-10-17T08:52:10.533Z",
+            "pid": 4465,
+            "command": "build",
+            "args": [
+              "--file",
+              "/home/runner/work/Monochromatic/Monochromatic/source/package/cli/mutation-test/runtime/Containerfile",
+              "--ignorefile",
+              "/home/runner/work/Monochromatic/Monochromatic/source/package/cli/mutation-test/runtime/containerignore",
+              "--tag",
+              "localhost/mutation-test-runtime:24de541ad936",
+              "/home/runner/work/Monochromatic/Monochromatic/source"
+            ],
+            "forwardedArgs": [
+              "build",
+              "--file",
+              "/home/runner/work/Monochromatic/Monochromatic/source/package/cli/mutation-test/runtime/Containerfile",
+              "--ignorefile",
+              "/home/runner/work/Monochromatic/Monochromatic/source/package/cli/mutation-test/runtime/containerignore",
+              "--tag",
+              "localhost/mutation-test-runtime:24de541ad936",
+              "/home/runner/work/Monochromatic/Monochromatic/source"
+            ]
+          },
+          {
+            "event": "source-podman-returned",
+            "observedAt": "2026-10-17T08:53:03.145Z",
+            "pid": 4465,
+            "command": "build",
+            "status": 0,
+            "signal": null,
+            "error": null
+          },
+          {
+            "event": "source-podman-call",
+            "observedAt": "2026-10-17T08:53:03.168Z",
+            "pid": 6522,
+            "command": "run",
+            "args": [
+              "--rm",
+              "--pull=never",
+              "--network=none",
+              "--read-only",
+              "--cap-drop=ALL",
+              "--security-opt=no-new-privileges",
+              "--security-opt=label=disable",
+              "--memory",
+              "2g",
+              "--cpus",
+              "2",
+              "--pids-limit",
+              "512",
+              "--timeout",
+              "1800",
+              "--tmpfs",
+              "/tmp:rw,exec,size=1g",
+              "--tmpfs",
+              "/work:rw,exec,size=2g",
+              "--env",
+              "HOME=/tmp",
+              "--env",
+              "TMPDIR=/tmp",
+              "--env",
+              "XDG_CACHE_HOME=/tmp/.cache",
+              "--volume",
+              "/home/runner/work/Monochromatic/Monochromatic/source:/src-ro:ro",
+              "--volume",
+              "/home/runner/temp/agent/depot-complete-ci/toml-mutation-shards/mutation-manifest-F6L2sv:/manifest:ro",
+              "--volume",
+              "/home/runner/temp/agent/depot-complete-ci/toml-mutation-shards/mutation-report-jnHVIZ:/out:rw",
+              "--workdir",
+              "/work",
+              "localhost/mutation-test-runtime:24de541ad936",
+              "node",
+              "/baked/package/cli/mutation-test/src/container/main.ts"
+            ],
+            "forwardedArgs": [
+              "run",
+              "--label",
+              "io.monochromatic.toml-attempt=8dec6ba0-54d1-42b7-bb81-2b29de6d8b23",
+              "--rm",
+              "--pull=never",
+              "--network=none",
+              "--read-only",
+              "--cap-drop=ALL",
+              "--security-opt=no-new-privileges",
+              "--security-opt=label=disable",
+              "--memory",
+              "2g",
+              "--cpus",
+              "2",
+              "--pids-limit",
+              "512",
+              "--timeout",
+              "1800",
+              "--tmpfs",
+              "/tmp:rw,exec,size=1g",
+              "--tmpfs",
+              "/work:rw,exec,size=2g",
+              "--env",
+              "HOME=/tmp",
+              "--env",
+              "TMPDIR=/tmp",
+              "--env",
+              "XDG_CACHE_HOME=/tmp/.cache",
+              "--volume",
+              "/home/runner/work/Monochromatic/Monochromatic/source:/src-ro:ro",
+              "--volume",
+              "/home/runner/temp/agent/depot-complete-ci/toml-mutation-shards/mutation-manifest-F6L2sv:/manifest:ro",
+              "--volume",
+              "/home/runner/temp/agent/depot-complete-ci/toml-mutation-shards/mutation-report-jnHVIZ:/out:rw",
+              "--workdir",
+              "/work",
+              "localhost/mutation-test-runtime:24de541ad936",
+              "node",
+              "/baked/package/cli/mutation-test/src/container/main.ts"
+            ]
+          },
+          {
+            "event": "source-podman-returned",
+            "observedAt": "2026-10-17T08:53:09.527Z",
+            "pid": 6522,
+            "command": "run",
+            "status": 0,
+            "signal": null,
+            "error": null
+          }
+        ],
+        "metadataOperationMs": 60000,
+        "forwardingOverlay": {
+          "originalExecutable": "/home/runner/temp/agent/depot-complete-ci/container-bin/podman",
+          "originalSha256": "8e056c1965b80014c7b9198f65e1efe59055d3e268f51ea8e8355501ed8f6e70",
+          "observerExecutable": "/home/runner/temp/agent/depot-complete-ci/toml-metadata-observer-bin/podman",
+          "observerSha256": "a314bcb90029c73d7bbb78d709d59b70c46451f511212bbec8b7a5293894a699",
+          "sourceConsumerForwarderUnchanged": true,
+          "scope": "Observer-only copied Node forwarder adds before/after sudo lifecycle receipts. Actual Podman executable and forwarded arguments are unchanged."
+        },
+        "metadataForwarding": [
+          {
+            "event": "metadata-forwarding-started",
+            "observedAt": "2026-10-17T08:52:10.161Z",
+            "nodePid": 4378,
+            "forwardedExecutable": "sudo",
+            "actualPodmanExecutable": "/usr/local/bin/podman",
+            "args": [
+              "--non-interactive",
+              "/usr/local/bin/podman",
+              "ps",
+              "--all",
+              "--filter",
+              "label=io.monochromatic.toml-attempt=8dec6ba0-54d1-42b7-bb81-2b29de6d8b23",
+              "--format",
+              "json"
+            ]
+          },
+          {
+            "event": "metadata-forwarding-returned",
+            "observedAt": "2026-10-17T08:52:10.175Z",
+            "elapsedMs": 14.222640000000002,
+            "nodePid": 4378,
+            "sudoPid": 4385,
+            "sudoStatus": 0,
+            "signal": null,
+            "error": null,
+            "actualPodmanExecutable": "/usr/local/bin/podman"
+          },
+          {
+            "event": "metadata-forwarding-started",
+            "observedAt": "2026-10-17T08:52:20.202Z",
+            "nodePid": 5019,
+            "forwardedExecutable": "sudo",
+            "actualPodmanExecutable": "/usr/local/bin/podman",
+            "args": [
+              "--non-interactive",
+              "/usr/local/bin/podman",
+              "ps",
+              "--all",
+              "--filter",
+              "label=io.monochromatic.toml-attempt=8dec6ba0-54d1-42b7-bb81-2b29de6d8b23",
+              "--format",
+              "json"
+            ]
+          },
+          {
+            "event": "metadata-forwarding-returned",
+            "observedAt": "2026-10-17T08:52:20.305Z",
+            "elapsedMs": 103.32603,
+            "nodePid": 5019,
+            "sudoPid": 5027,
+            "sudoStatus": 0,
+            "signal": null,
+            "error": null,
+            "actualPodmanExecutable": "/usr/local/bin/podman"
+          },
+          {
+            "event": "metadata-forwarding-started",
+            "observedAt": "2026-10-17T08:52:30.205Z",
+            "nodePid": 5693,
+            "forwardedExecutable": "sudo",
+            "actualPodmanExecutable": "/usr/local/bin/podman",
+            "args": [
+              "--non-interactive",
+              "/usr/local/bin/podman",
+              "ps",
+              "--all",
+              "--filter",
+              "label=io.monochromatic.toml-attempt=8dec6ba0-54d1-42b7-bb81-2b29de6d8b23",
+              "--format",
+              "json"
+            ]
+          },
+          {
+            "event": "metadata-forwarding-returned",
+            "observedAt": "2026-10-17T08:52:30.219Z",
+            "elapsedMs": 14.56074,
+            "nodePid": 5693,
+            "sudoPid": 5700,
+            "sudoStatus": 0,
+            "signal": null,
+            "error": null,
+            "actualPodmanExecutable": "/usr/local/bin/podman"
+          },
+          {
+            "event": "metadata-forwarding-started",
+            "observedAt": "2026-10-17T08:52:40.204Z",
+            "nodePid": 6416,
+            "forwardedExecutable": "sudo",
+            "actualPodmanExecutable": "/usr/local/bin/podman",
+            "args": [
+              "--non-interactive",
+              "/usr/local/bin/podman",
+              "ps",
+              "--all",
+              "--filter",
+              "label=io.monochromatic.toml-attempt=8dec6ba0-54d1-42b7-bb81-2b29de6d8b23",
+              "--format",
+              "json"
+            ]
+          },
+          {
+            "event": "metadata-forwarding-returned",
+            "observedAt": "2026-10-17T08:52:53.385Z",
+            "elapsedMs": 13181.875426,
+            "nodePid": 6416,
+            "sudoPid": 6423,
+            "sudoStatus": 0,
+            "signal": null,
+            "error": null,
+            "actualPodmanExecutable": "/usr/local/bin/podman"
+          },
+          {
+            "event": "metadata-forwarding-started",
+            "observedAt": "2026-10-17T08:52:53.409Z",
+            "nodePid": 6441,
+            "forwardedExecutable": "sudo",
+            "actualPodmanExecutable": "/usr/local/bin/podman",
+            "args": [
+              "--non-interactive",
+              "/usr/local/bin/podman",
+              "ps",
+              "--all",
+              "--filter",
+              "label=io.monochromatic.toml-attempt=8dec6ba0-54d1-42b7-bb81-2b29de6d8b23",
+              "--format",
+              "json"
+            ]
+          },
+          {
+            "event": "metadata-forwarding-returned",
+            "observedAt": "2026-10-17T08:52:53.423Z",
+            "elapsedMs": 14.1067,
+            "nodePid": 6441,
+            "sudoPid": 6448,
+            "sudoStatus": 0,
+            "signal": null,
+            "error": null,
+            "actualPodmanExecutable": "/usr/local/bin/podman"
+          },
+          {
+            "event": "metadata-forwarding-started",
+            "observedAt": "2026-10-17T08:53:03.410Z",
+            "nodePid": 6820,
+            "forwardedExecutable": "sudo",
+            "actualPodmanExecutable": "/usr/local/bin/podman",
+            "args": [
+              "--non-interactive",
+              "/usr/local/bin/podman",
+              "ps",
+              "--all",
+              "--filter",
+              "label=io.monochromatic.toml-attempt=8dec6ba0-54d1-42b7-bb81-2b29de6d8b23",
+              "--format",
+              "json"
+            ]
+          },
+          {
+            "event": "metadata-forwarding-returned",
+            "observedAt": "2026-10-17T08:53:03.425Z",
+            "elapsedMs": 14.933690000000002,
+            "nodePid": 6820,
+            "sudoPid": 6828,
+            "sudoStatus": 0,
+            "signal": null,
+            "error": null,
+            "actualPodmanExecutable": "/usr/local/bin/podman"
+          },
+          {
+            "event": "metadata-forwarding-started",
+            "observedAt": "2026-10-17T08:53:03.449Z",
+            "nodePid": 6853,
+            "forwardedExecutable": "sudo",
+            "actualPodmanExecutable": "/usr/local/bin/podman",
+            "args": [
+              "--non-interactive",
+              "/usr/local/bin/podman",
+              "inspect",
+              "65afd6421c8c6d8e8ec4c83ec98fe24e8b34a29620d3affd7ad3f35e27292a2d"
+            ]
+          },
+          {
+            "event": "metadata-forwarding-returned",
+            "observedAt": "2026-10-17T08:53:03.467Z",
+            "elapsedMs": 17.67924,
+            "nodePid": 6853,
+            "sudoPid": 6860,
+            "sudoStatus": 0,
+            "signal": null,
+            "error": null,
+            "actualPodmanExecutable": "/usr/local/bin/podman"
+          },
+          {
+            "event": "metadata-forwarding-started",
+            "observedAt": "2026-10-17T08:53:09.572Z",
+            "nodePid": 7985,
+            "forwardedExecutable": "sudo",
+            "actualPodmanExecutable": "/usr/local/bin/podman",
+            "args": [
+              "--non-interactive",
+              "/usr/local/bin/podman",
+              "ps",
+              "--all",
+              "--filter",
+              "label=io.monochromatic.toml-attempt=8dec6ba0-54d1-42b7-bb81-2b29de6d8b23",
+              "--format",
+              "json"
+            ]
+          },
+          {
+            "event": "metadata-forwarding-returned",
+            "observedAt": "2026-10-17T08:53:09.586Z",
+            "elapsedMs": 14.18063,
+            "nodePid": 7985,
+            "sudoPid": 7992,
+            "sudoStatus": 0,
+            "signal": null,
+            "error": null,
+            "actualPodmanExecutable": "/usr/local/bin/podman"
+          },
+          {
+            "event": "metadata-forwarding-started",
+            "observedAt": "2026-10-17T08:53:09.612Z",
+            "nodePid": 8009,
+            "forwardedExecutable": "sudo",
+            "actualPodmanExecutable": "/usr/local/bin/podman",
+            "args": [
+              "--non-interactive",
+              "/usr/local/bin/podman",
+              "ps",
+              "--all",
+              "--filter",
+              "label=io.monochromatic.toml-attempt=8dec6ba0-54d1-42b7-bb81-2b29de6d8b23",
+              "--format",
+              "json"
+            ]
+          },
+          {
+            "event": "metadata-forwarding-returned",
+            "observedAt": "2026-10-17T08:53:09.626Z",
+            "elapsedMs": 14.346020000000003,
+            "nodePid": 8009,
+            "sudoPid": 8016,
+            "sudoStatus": 0,
+            "signal": null,
+            "error": null,
+            "actualPodmanExecutable": "/usr/local/bin/podman"
+          },
+          {
+            "event": "metadata-forwarding-started",
+            "observedAt": "2026-10-17T08:53:09.651Z",
+            "nodePid": 8032,
+            "forwardedExecutable": "sudo",
+            "actualPodmanExecutable": "/usr/local/bin/podman",
+            "args": [
+              "--non-interactive",
+              "/usr/local/bin/podman",
+              "ps",
+              "--all",
+              "--filter",
+              "label=io.monochromatic.toml-attempt=8dec6ba0-54d1-42b7-bb81-2b29de6d8b23",
+              "--format",
+              "json"
+            ]
+          },
+          {
+            "event": "metadata-forwarding-returned",
+            "observedAt": "2026-10-17T08:53:09.665Z",
+            "elapsedMs": 13.88328,
+            "nodePid": 8032,
+            "sudoPid": 8039,
+            "sudoStatus": 0,
+            "signal": null,
+            "error": null,
+            "actualPodmanExecutable": "/usr/local/bin/podman"
+          },
+          {
+            "event": "metadata-forwarding-started",
+            "observedAt": "2026-10-17T08:53:09.687Z",
+            "nodePid": 8056,
+            "forwardedExecutable": "sudo",
+            "actualPodmanExecutable": "/usr/local/bin/podman",
+            "args": [
+              "--non-interactive",
+              "/usr/local/bin/podman",
+              "events",
+              "--since",
+              "2026-10-17T08:52:10.140Z",
+              "--until",
+              "2026-10-17T08:53:09.667Z",
+              "--stream=false",
+              "--filter",
+              "label=io.monochromatic.toml-attempt=8dec6ba0-54d1-42b7-bb81-2b29de6d8b23",
+              "--format",
+              "json"
+            ]
+          },
+          {
+            "event": "metadata-forwarding-returned",
+            "observedAt": "2026-10-17T08:53:09.701Z",
+            "elapsedMs": 13.501380000000001,
+            "nodePid": 8056,
+            "sudoPid": 8063,
+            "sudoStatus": 0,
+            "signal": null,
+            "error": null,
+            "actualPodmanExecutable": "/usr/local/bin/podman"
+          }
+        ],
+        "pilot": {
+          "developmentOnly": true,
+          "sourceFiles": [
+            "src/toml-get-comments.ts"
+          ],
+          "fullSuite": true,
+          "containers": 1,
+          "shardSize": 1,
+          "nativeReport": {
+            "schemaVersion": 1,
+            "packagePath": "package/module/toml-edit",
+            "totals": {
+              "killed": 0,
+              "survived": 0,
+              "timeout": 0,
+              "compileError": 1,
+              "runtimeError": 0,
+              "ignored": 0
+            },
+            "mutants": [
+              {
+                "id": "9cd1056a095eaea1",
+                "file": "src/toml-get-comments.ts",
+                "line": 28,
+                "column": 26,
+                "operator": "block",
+                "original": "{\n  return edit.comments;\n}",
+                "replacement": "{}",
+                "description": "emptied block",
+                "status": "compileError",
+                "position": 1,
+                "rerunCount": 0,
+                "confirmed": true
+              }
+            ],
+            "ignored": [],
+            "infraErrors": [],
+            "shardCount": 1
+          },
+          "sourceConsumerTerminal": true
+        }
+      },
+      "control": {
+        "schemaVersion": 1,
+        "developmentOnly": true,
+        "startedAt": "2026-10-17T08:53:10.008Z",
+        "finishedAt": "2026-10-17T08:53:10.594Z",
+        "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+        "harnessRevision": "b78123c7bd8e20d4319cddd63c34c70fa7638d72",
+        "cohort": {
+          "id": "toml-spawn-control-20261017T085018294Z",
+          "manifestSha256": "dafaa621ede9e174374e702ea2d6f10b7618d775467fde57bfeb5c793566d00e",
+          "requestedAt": "2026-10-17T08:50:18.294Z"
+        },
+        "resourceBounds": {
+          "memoryBytes": 2147483648,
+          "cpus": 2,
+          "pids": 512,
+          "network": "none",
+          "rootFilesystem": "readonly",
+          "sourceUid": 1001,
+          "sourceGid": 1001
+        },
+        "name": "toml-spawn-control-3af3d8da-070f-4ba9-b07c-0339a114f070",
+        "label": "io.monochromatic.toml-spawn-control=3af3d8da-070f-4ba9-b07c-0339a114f070",
+        "consumerProgram": {
+          "bytes": 7898,
+          "sha256": "417d06397eb4d08953ba133f00c9013e636107559dc387ff3dc82cdd5c558718",
+          "text": "import { strict as assert } from 'node:assert';\nimport { appendFileSync, chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';\nimport { join } from 'node:path';\nimport { createHash } from 'node:crypto';\nimport { setTimeout as wait } from 'node:timers/promises';\nimport { runTests } from '/baked/package/cli/mutation-test/src/container/test-run.ts';\nimport { tsgoCheck } from '/baked/package/cli/mutation-test/src/container/tsgo-check.ts';\nimport { runMutantLoop } from '/baked/package/cli/mutation-test/src/container/mutant-loop.ts';\n\nconst startedAt = new Date().toISOString();\nconst cgroup = () => Object.fromEntries(['memory.max', 'memory.events', 'cpu.max', 'pids.max', 'pids.events'].map(name => [name, readFileSync('/sys/fs/cgroup/' + name, 'utf8').trim()]));\nconst cgroupBefore = cgroup();\nassert.equal(cgroupBefore['memory.max'], '2147483648');\nassert.equal(cgroupBefore['pids.max'], '512');\nconst cpu = cgroupBefore['cpu.max'].split(/\\s+/).map(Number);\nassert.equal(cpu[0] / cpu[1], 2);\nconst root = '/work/spawn-fixture';\nconst bin = '/work/control-bin';\nconst output = '/out/spawn-control.json';\nmkdirSync(root, { recursive: true });\nmkdirSync(bin);\nconst originalPath = process.env.PATH;\nconst source = 'export const value: number = 1;\\n';\nwriteFileSync(join(root, 'subject.ts'), source);\nwriteFileSync(join(root, 'tsconfig.json'), JSON.stringify({ compilerOptions: { target: 'ESNext', module: 'NodeNext', strict: true, types: [], noEmit: true }, include: ['subject.ts'] }));\nwriteFileSync(join(root, 'package.json'), JSON.stringify({ type: 'module' }));\nwriteFileSync(join(root, 'subject.unit.test.mjs'), \"import {value} from './subject.ts'; import{strict as assert}from'node:assert'; import{appendFileSync}from'node:fs'; appendFileSync('/work/test-invocations.jsonl', JSON.stringify({token:process.env.CONTROL_TOKEN,value})+'\\\\n'); assert.equal(value,1);\\n\");\nconst sourceModules = ['container/test-run.ts', 'container/mutant-loop.ts', 'container/tsgo-check.ts', 'container/build-step.ts', 'engine/splice.ts'].map(relative => {\n  const path = '/baked/package/cli/mutation-test/src/' + relative;\n  const bytes = readFileSync(path);\n  return { relative, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') };\n});\nconst compilerVersion = JSON.parse(readFileSync('/baked/node_modules/typescript/package.json', 'utf8')).version;\nconst launcher = join(bin, 'node');\nconst shim = '#!' + process.execPath + '\\n' + `import{spawnSync}from'node:child_process';import{appendFileSync,existsSync,unlinkSync}from'node:fs';const args=process.argv.slice(2);const result=spawnSync(${JSON.stringify(process.execPath)},args,{stdio:'inherit',env:process.env});const row={event:'real-node-forward-return',args,status:result.status,signal:result.signal,error:result.error?{name:result.error.name,message:result.error.message,code:result.error.code}:undefined};appendFileSync('/work/node-forwards.jsonl',JSON.stringify(row)+'\\\\n');if(args[0]==='/baked/node_modules/typescript/lib/tsc.js'&&result.status===0&&existsSync('/work/remove-node-after-compiler')){unlinkSync(${JSON.stringify(launcher)});appendFileSync('/work/node-forwards.jsonl',JSON.stringify({event:'disposable-node-launcher-removed-after-real-compiler',status:result.status})+'\\\\n');}process.exit(result.status??1);\\n`;\nwriteFileSync(launcher, shim);\nchmodSync(launcher, 0o755);\nprocess.env.PATH = bin;\nconst baselineType = await tsgoCheck({ cwd: root });\nassert.equal(baselineType.clean, true);\nprocess.env.CONTROL_TOKEN = 'baseline';\nconst baselineTests = await runTests({ cwd: root, tests: ['subject.unit.test.mjs'], timeoutMs: 5000 });\nassert.equal(baselineTests.kind, 'passed');\nconst start = source.indexOf('1');\nconst manifest = {\n  schemaVersion: 1,\n  shardId: 'disposable-source-spawn-control',\n  packagePath: 'spawn-fixture',\n  timeoutFloorMs: 5000,\n  timeoutFactor: 3,\n  tests: ['subject.unit.test.mjs'],\n  mutants: [{ id: 'c000000000000001', file: 'subject.ts', line: 1, column: start + 1, start, end: start + 1, operator: 'disposable-numeric-control', original: '1', replacement: '2', description: 'Fixture changes 1 to 2' }],\n};\nprocess.env.CONTROL_TOKEN = 'genuine-kill';\nconst positive = await runMutantLoop({ packageCwd: root, manifest, baselineTestsMs: baselineTests.durationMs });\nassert.equal(positive.results[0].status, 'killed');\nassert.equal(readFileSync(join(root, 'subject.ts'), 'utf8'), source);\nconst invocationsBeforeFault = readFileSync('/work/test-invocations.jsonl', 'utf8').trim().split('\\n').map(JSON.parse);\nassert(invocationsBeforeFault.some(row => row.token === 'genuine-kill' && row.value === 2));\nwriteFileSync('/work/remove-node-after-compiler', 'fault only in disposable launcher\\n');\nprocess.env.CONTROL_TOKEN = 'spawn-failure';\nconst fault = await runMutantLoop({ packageCwd: root, manifest, baselineTestsMs: baselineTests.durationMs });\nassert.equal(fault.results[0].status, 'killed');\nassert.equal(fault.anomaly, '');\nassert.deepEqual(fault.unrun, []);\nassert.equal(existsSync(launcher), false);\nassert.equal(readFileSync(join(root, 'subject.ts'), 'utf8'), source);\nconst invocationsAfterFault = readFileSync('/work/test-invocations.jsonl', 'utf8').trim().split('\\n').map(JSON.parse);\nassert.deepEqual(invocationsAfterFault, invocationsBeforeFault, 'Fault test must never have launched');\nconst forwards = readFileSync('/work/node-forwards.jsonl', 'utf8').trim().split('\\n').map(JSON.parse);\nassert(forwards.some(row => row.event === 'disposable-node-launcher-removed-after-real-compiler' && row.status === 0));\nassert(forwards.filter(row => row.args?.[0] === '/baked/node_modules/typescript/lib/tsc.js').every(row => row.status === 0));\nprocess.env.PATH = originalPath;\nconst marker = '/work/ordered-test-markers';\nwriteFileSync(join(root, 'first.mjs'), \"import{appendFileSync}from'node:fs';appendFileSync('/work/ordered-test-markers','first\\\\n');\\n\");\nwriteFileSync(join(root, 'second.mjs'), \"import{appendFileSync}from'node:fs';appendFileSync('/work/ordered-test-markers','second\\\\n');\\n\");\nconst orderedPositive = await runTests({ cwd: root, tests: ['first.mjs', 'second.mjs'], timeoutMs: 5000 });\nassert.equal(orderedPositive.kind, 'passed');\nassert.equal(readFileSync(marker, 'utf8'), 'first\\nsecond\\n');\nwriteFileSync(marker, '');\nappendFileSync(join(root, 'first.mjs'), \"throw new Error('expected independent early-stop control');\\n\");\nconst earlyStop = await runTests({ cwd: root, tests: ['first.mjs', 'second.mjs'], timeoutMs: 5000 });\nassert.equal(earlyStop.kind, 'failed');\nassert.equal(readFileSync(marker, 'utf8'), 'first\\n');\nwriteFileSync(join(root, 'slow.mjs'), 'setInterval(()=>{},1000);\\n');\nconst timeout = await runTests({ cwd: root, tests: ['slow.mjs'], timeoutMs: 100 });\nassert.equal(timeout.kind, 'timeout');\nconst result = { schemaVersion: 1, developmentOnly: true, startedAt, finishedAt: new Date().toISOString(), nodeVersion: process.version, nodeExecutable: process.execPath, compilerVersion, sourceModules, cgroupBefore, cgroupAfter: cgroup(), fixtureSource: source, fixtureManifest: manifest, baselineType, baselineTests, genuineAssertionKill: positive, missingNodeFalseKill: fault, testInvocations: invocationsAfterFault, realNodeForwards: forwards, earlyStop: { positive: orderedPositive, failedFirst: earlyStop, remainingTestUnexecuted: true }, timeout, sourceRestored: readFileSync(join(root, 'subject.ts'), 'utf8') === source, interpretation: 'The source returns killed even though the test child never started after the real compiler passed. This is a disposable fault control, not evidence that the separate cloud mutation campaign encountered a spawn failure.' };\nwriteFileSync(output, JSON.stringify(result, null, 2) + '\\n');\nawait wait(200);\nconsole.log(JSON.stringify({ event: 'actual-source-spawn-control-complete', falseKill: fault.results[0].status, testStartedForFault: false, sourceRestored: true }));\n"
+        },
+        "imageBefore": {
+          "Id": "b39af25fd293e7a2a8628817419b535c7be7f369cec3f44d537ab9ee432135a4",
+          "Digest": "sha256:3c2db4558a84f48aa9a08c55067e59f954c2381cf85f730d1f4e58c38faf414b",
+          "RepoTags": [
+            "localhost/mutation-test-runtime:24de541ad936"
+          ],
+          "RepoDigests": [
+            "localhost/mutation-test-runtime@sha256:3c2db4558a84f48aa9a08c55067e59f954c2381cf85f730d1f4e58c38faf414b"
+          ],
+          "Parent": "9cabcd898e9c69052f884e3f8f53b9398325239c9020a7cd3931c530005a6a7b",
+          "Comment": "",
+          "Created": "2026-10-17T08:53:01.688707635Z",
+          "Config": {
+            "Env": [
+              "container=oci",
+              "MISE_DATA_DIR=/mise",
+              "MISE_CONFIG_DIR=/mise",
+              "MISE_CACHE_DIR=/mise/cache",
+              "PATH=/usr/local/bin:/baked/node_modules/.bin:/usr/local/bin:/usr/bin"
+            ],
+            "Cmd": [
+              "node",
+              "--version"
+            ],
+            "WorkingDir": "/baked",
+            "Labels": {
+              "io.buildah.version": "1.43.2",
+              "org.opencontainers.image.licenses": "MIT",
+              "org.opencontainers.image.title": "fedora",
+              "org.opencontainers.image.url": "https://fedoraproject.org/",
+              "org.opencontainers.image.vendor": "Fedora Project",
+              "org.opencontainers.image.version": "44"
+            }
+          },
+          "Version": "",
+          "Author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+          "Architecture": "amd64",
+          "Os": "linux",
+          "Size": 3768372396,
+          "VirtualSize": 3768372396,
+          "GraphDriver": {
+            "Name": "overlay",
+            "Data": {
+              "LowerDir": "/var/lib/containers/storage/overlay/0988e7e1ac5adeb83fa29e6e013ed824877b805d0527e342a0a86cfc958dde52/diff:/var/lib/containers/storage/overlay/bb85f471979a82c6a400696b01fcabb02e6a2639757ca65f6970b54aad3c47ba/diff:/var/lib/containers/storage/overlay/5caf54cded652c824a21896b20048eccb11bb8cdce3ca774c3560cd32e1f61cc/diff",
+              "UpperDir": "/var/lib/containers/storage/overlay/6ba4e80b90b8e4387921105a5ce9751c9022632cc944dda5466842cdafda8607/diff",
+              "WorkDir": "/var/lib/containers/storage/overlay/6ba4e80b90b8e4387921105a5ce9751c9022632cc944dda5466842cdafda8607/work"
+            }
+          },
+          "RootFS": {
+            "Type": "layers",
+            "Layers": [
+              "sha256:5caf54cded652c824a21896b20048eccb11bb8cdce3ca774c3560cd32e1f61cc",
+              "sha256:55f921930d9523d93cd68db46488ed620061c9bdfce61eb2b345b7f7a036e4e6",
+              "sha256:c141dc8c637550927c15b8783423290f34e14e34221e7fbef56649169e99dce1",
+              "sha256:35bd5e7133ea79ec5d1e8a29bd40c4354fbc3c1fbe56c3dc40b99a3c17af5b91"
+            ]
+          },
+          "Labels": {
+            "io.buildah.version": "1.43.2",
+            "org.opencontainers.image.licenses": "MIT",
+            "org.opencontainers.image.title": "fedora",
+            "org.opencontainers.image.url": "https://fedoraproject.org/",
+            "org.opencontainers.image.vendor": "Fedora Project",
+            "org.opencontainers.image.version": "44"
+          },
+          "Annotations": {
+            "org.opencontainers.image.base.digest": "sha256:a58bfac2282d9d234f130f1231ae464017bd13d207ed37abfd6f30e1aa07ed9c",
+            "org.opencontainers.image.base.name": "registry.fedoraproject.org/fedora:latest",
+            "org.opencontainers.image.created": "2026-10-17T08:53:01.688707635Z"
+          },
+          "ManifestType": "application/vnd.oci.image.manifest.v1+json",
+          "User": "",
+          "History": [
+            {
+              "created": "2026-10-17T06:48:51.864654782Z",
+              "created_by": "KIWI 11.1.1",
+              "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>"
+            },
+            {
+              "created": "2026-10-17T08:52:12.493916748Z",
+              "created_by": "/bin/sh -c #(nop) ENV MISE_DATA_DIR=/mise",
+              "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+              "comment": "FROM registry.fedoraproject.org/fedora:latest",
+              "empty_layer": true
+            },
+            {
+              "created": "2026-10-17T08:52:12.506997748Z",
+              "created_by": "/bin/sh -c #(nop) ENV MISE_CONFIG_DIR=/mise",
+              "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+              "empty_layer": true
+            },
+            {
+              "created": "2026-10-17T08:52:12.519438348Z",
+              "created_by": "/bin/sh -c #(nop) ENV MISE_CACHE_DIR=/mise/cache",
+              "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+              "empty_layer": true
+            },
+            {
+              "created": "2026-10-17T08:52:12.531479088Z",
+              "created_by": "/bin/sh -c #(nop) ENV PATH=/usr/local/bin:/baked/node_modules/.bin:$PATH",
+              "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+              "empty_layer": true
+            },
+            {
+              "created": "2026-10-17T08:52:24.551826255Z",
+              "created_by": "/bin/sh -c dnf install --assumeyes dnf-plugins-core ca-certificates curl git libatomic procps-ng rsync which   && dnf copr enable --assumeyes jdxcode/mise   && dnf install --assumeyes mise   && dnf clean all   && rm --recursive --force /var/cache/dnf",
+              "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>"
+            },
+            {
+              "created": "2026-10-17T08:52:25.506808085Z",
+              "created_by": "/bin/sh -c #(nop) SHELL [\"/bin/bash\", \"-o\", \"pipefail\", \"-c\"]",
+              "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+              "empty_layer": true
+            },
+            {
+              "created": "2026-10-17T08:52:25.521959955Z",
+              "created_by": "/bin/sh -c #(nop) WORKDIR /baked",
+              "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+              "empty_layer": true
+            },
+            {
+              "created": "2026-10-17T08:52:29.033922744Z",
+              "created_by": "/bin/sh -c #(nop) COPY dir:4949d3c68d029caaf88389121260e5ea32c1dfe4bcc4b23d37164675b5b47b42 in /baked      ",
+              "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>"
+            },
+            {
+              "created": "2026-10-17T08:52:53.384020857Z",
+              "created_by": "/bin/sh -c export MISE_NPM_PACKAGE_MANAGER=npm   && mise trust /baked/mise.toml   && mise install --yes node npm:pnpm   && ln --symbolic --force \"$(mise exec node -- which node)\" /usr/local/bin/node   && ln --symbolic --force \"$(mise exec node -- which npm)\" /usr/local/bin/npm   && ln --symbolic --force \"$(mise exec node npm:pnpm -- which pnpm)\" /usr/local/bin/pnpm   && mise exec node npm:pnpm -- pnpm install --frozen-lockfile",
+              "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>"
+            },
+            {
+              "created": "2026-10-17T08:53:01.688782275Z",
+              "created_by": "/bin/sh -c #(nop) CMD [\"node\", \"--version\"]",
+              "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+              "empty_layer": true
+            }
+          ],
+          "NamesHistory": [
+            "localhost/mutation-test-runtime:24de541ad936"
+          ]
+        },
+        "imageAfter": {
+          "Id": "b39af25fd293e7a2a8628817419b535c7be7f369cec3f44d537ab9ee432135a4",
+          "Digest": "sha256:3c2db4558a84f48aa9a08c55067e59f954c2381cf85f730d1f4e58c38faf414b",
+          "RepoTags": [
+            "localhost/mutation-test-runtime:24de541ad936"
+          ],
+          "RepoDigests": [
+            "localhost/mutation-test-runtime@sha256:3c2db4558a84f48aa9a08c55067e59f954c2381cf85f730d1f4e58c38faf414b"
+          ],
+          "Parent": "9cabcd898e9c69052f884e3f8f53b9398325239c9020a7cd3931c530005a6a7b",
+          "Comment": "",
+          "Created": "2026-10-17T08:53:01.688707635Z",
+          "Config": {
+            "Env": [
+              "container=oci",
+              "MISE_DATA_DIR=/mise",
+              "MISE_CONFIG_DIR=/mise",
+              "MISE_CACHE_DIR=/mise/cache",
+              "PATH=/usr/local/bin:/baked/node_modules/.bin:/usr/local/bin:/usr/bin"
+            ],
+            "Cmd": [
+              "node",
+              "--version"
+            ],
+            "WorkingDir": "/baked",
+            "Labels": {
+              "io.buildah.version": "1.43.2",
+              "org.opencontainers.image.licenses": "MIT",
+              "org.opencontainers.image.title": "fedora",
+              "org.opencontainers.image.url": "https://fedoraproject.org/",
+              "org.opencontainers.image.vendor": "Fedora Project",
+              "org.opencontainers.image.version": "44"
+            }
+          },
+          "Version": "",
+          "Author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+          "Architecture": "amd64",
+          "Os": "linux",
+          "Size": 3768372396,
+          "VirtualSize": 3768372396,
+          "GraphDriver": {
+            "Name": "overlay",
+            "Data": {
+              "LowerDir": "/var/lib/containers/storage/overlay/0988e7e1ac5adeb83fa29e6e013ed824877b805d0527e342a0a86cfc958dde52/diff:/var/lib/containers/storage/overlay/bb85f471979a82c6a400696b01fcabb02e6a2639757ca65f6970b54aad3c47ba/diff:/var/lib/containers/storage/overlay/5caf54cded652c824a21896b20048eccb11bb8cdce3ca774c3560cd32e1f61cc/diff",
+              "UpperDir": "/var/lib/containers/storage/overlay/6ba4e80b90b8e4387921105a5ce9751c9022632cc944dda5466842cdafda8607/diff",
+              "WorkDir": "/var/lib/containers/storage/overlay/6ba4e80b90b8e4387921105a5ce9751c9022632cc944dda5466842cdafda8607/work"
+            }
+          },
+          "RootFS": {
+            "Type": "layers",
+            "Layers": [
+              "sha256:5caf54cded652c824a21896b20048eccb11bb8cdce3ca774c3560cd32e1f61cc",
+              "sha256:55f921930d9523d93cd68db46488ed620061c9bdfce61eb2b345b7f7a036e4e6",
+              "sha256:c141dc8c637550927c15b8783423290f34e14e34221e7fbef56649169e99dce1",
+              "sha256:35bd5e7133ea79ec5d1e8a29bd40c4354fbc3c1fbe56c3dc40b99a3c17af5b91"
+            ]
+          },
+          "Labels": {
+            "io.buildah.version": "1.43.2",
+            "org.opencontainers.image.licenses": "MIT",
+            "org.opencontainers.image.title": "fedora",
+            "org.opencontainers.image.url": "https://fedoraproject.org/",
+            "org.opencontainers.image.vendor": "Fedora Project",
+            "org.opencontainers.image.version": "44"
+          },
+          "Annotations": {
+            "org.opencontainers.image.base.digest": "sha256:a58bfac2282d9d234f130f1231ae464017bd13d207ed37abfd6f30e1aa07ed9c",
+            "org.opencontainers.image.base.name": "registry.fedoraproject.org/fedora:latest",
+            "org.opencontainers.image.created": "2026-10-17T08:53:01.688707635Z"
+          },
+          "ManifestType": "application/vnd.oci.image.manifest.v1+json",
+          "User": "",
+          "History": [
+            {
+              "created": "2026-10-17T06:48:51.864654782Z",
+              "created_by": "KIWI 11.1.1",
+              "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>"
+            },
+            {
+              "created": "2026-10-17T08:52:12.493916748Z",
+              "created_by": "/bin/sh -c #(nop) ENV MISE_DATA_DIR=/mise",
+              "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+              "comment": "FROM registry.fedoraproject.org/fedora:latest",
+              "empty_layer": true
+            },
+            {
+              "created": "2026-10-17T08:52:12.506997748Z",
+              "created_by": "/bin/sh -c #(nop) ENV MISE_CONFIG_DIR=/mise",
+              "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+              "empty_layer": true
+            },
+            {
+              "created": "2026-10-17T08:52:12.519438348Z",
+              "created_by": "/bin/sh -c #(nop) ENV MISE_CACHE_DIR=/mise/cache",
+              "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+              "empty_layer": true
+            },
+            {
+              "created": "2026-10-17T08:52:12.531479088Z",
+              "created_by": "/bin/sh -c #(nop) ENV PATH=/usr/local/bin:/baked/node_modules/.bin:$PATH",
+              "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+              "empty_layer": true
+            },
+            {
+              "created": "2026-10-17T08:52:24.551826255Z",
+              "created_by": "/bin/sh -c dnf install --assumeyes dnf-plugins-core ca-certificates curl git libatomic procps-ng rsync which   && dnf copr enable --assumeyes jdxcode/mise   && dnf install --assumeyes mise   && dnf clean all   && rm --recursive --force /var/cache/dnf",
+              "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>"
+            },
+            {
+              "created": "2026-10-17T08:52:25.506808085Z",
+              "created_by": "/bin/sh -c #(nop) SHELL [\"/bin/bash\", \"-o\", \"pipefail\", \"-c\"]",
+              "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+              "empty_layer": true
+            },
+            {
+              "created": "2026-10-17T08:52:25.521959955Z",
+              "created_by": "/bin/sh -c #(nop) WORKDIR /baked",
+              "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+              "empty_layer": true
+            },
+            {
+              "created": "2026-10-17T08:52:29.033922744Z",
+              "created_by": "/bin/sh -c #(nop) COPY dir:4949d3c68d029caaf88389121260e5ea32c1dfe4bcc4b23d37164675b5b47b42 in /baked      ",
+              "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>"
+            },
+            {
+              "created": "2026-10-17T08:52:53.384020857Z",
+              "created_by": "/bin/sh -c export MISE_NPM_PACKAGE_MANAGER=npm   && mise trust /baked/mise.toml   && mise install --yes node npm:pnpm   && ln --symbolic --force \"$(mise exec node -- which node)\" /usr/local/bin/node   && ln --symbolic --force \"$(mise exec node -- which npm)\" /usr/local/bin/npm   && ln --symbolic --force \"$(mise exec node npm:pnpm -- which pnpm)\" /usr/local/bin/pnpm   && mise exec node npm:pnpm -- pnpm install --frozen-lockfile",
+              "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>"
+            },
+            {
+              "created": "2026-10-17T08:53:01.688782275Z",
+              "created_by": "/bin/sh -c #(nop) CMD [\"node\", \"--version\"]",
+              "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+              "empty_layer": true
+            }
+          ],
+          "NamesHistory": [
+            "localhost/mutation-test-runtime:24de541ad936"
+          ]
+        },
+        "cleanupVerified": true,
+        "operations": [
+          {
+            "command": "podman",
+            "args": [
+              "image",
+              "inspect",
+              "localhost/mutation-test-runtime:24de541ad936"
+            ],
+            "startedAt": "2026-10-17T08:53:10.009Z",
+            "finishedAt": "2026-10-17T08:53:10.049Z",
+            "elapsedMs": 39.87316,
+            "timeoutMs": 60000,
+            "status": 0,
+            "signal": null,
+            "stdoutBytes": 8060,
+            "stderrBytes": 0,
+            "stdout": "[\n     {\n          \"Id\": \"b39af25fd293e7a2a8628817419b535c7be7f369cec3f44d537ab9ee432135a4\",\n          \"Digest\": \"sha256:3c2db4558a84f48aa9a08c55067e59f954c2381cf85f730d1f4e58c38faf414b\",\n          \"RepoTags\": [\n               \"localhost/mutation-test-runtime:24de541ad936\"\n          ],\n          \"RepoDigests\": [\n               \"localhost/mutation-test-runtime@sha256:3c2db4558a84f48aa9a08c55067e59f954c2381cf85f730d1f4e58c38faf414b\"\n          ],\n          \"Parent\": \"9cabcd898e9c69052f884e3f8f53b9398325239c9020a7cd3931c530005a6a7b\",\n          \"Comment\": \"\",\n          \"Created\": \"2026-10-17T08:53:01.688707635Z\",\n          \"Config\": {\n               \"Env\": [\n                    \"container=oci\",\n                    \"MISE_DATA_DIR=/mise\",\n                    \"MISE_CONFIG_DIR=/mise\",\n                    \"MISE_CACHE_DIR=/mise/cache\",\n                    \"PATH=/usr/local/bin:/baked/node_modules/.bin:/usr/local/bin:/usr/bin\"\n               ],\n               \"Cmd\": [\n                    \"node\",\n                    \"--version\"\n               ],\n               \"WorkingDir\": \"/baked\",\n               \"Labels\": {\n                    \"io.buildah.version\": \"1.43.2\",\n                    \"org.opencontainers.image.licenses\": \"MIT\",\n                    \"org.opencontainers.image.title\": \"fedora\",\n                    \"org.opencontainers.image.url\": \"https://fedoraproject.org/\",\n                    \"org.opencontainers.image.vendor\": \"Fedora Project\",\n                    \"org.opencontainers.image.version\": \"44\"\n               }\n          },\n          \"Version\": \"\",\n          \"Author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n          \"Architecture\": \"amd64\",\n          \"Os\": \"linux\",\n          \"Size\": 3768372396,\n          \"VirtualSize\": 3768372396,\n          \"GraphDriver\": {\n               \"Name\": \"overlay\",\n               \"Data\": {\n                    \"LowerDir\": \"/var/lib/containers/storage/overlay/0988e7e1ac5adeb83fa29e6e013ed824877b805d0527e342a0a86cfc958dde52/diff:/var/lib/containers/storage/overlay/bb85f471979a82c6a400696b01fcabb02e6a2639757ca65f6970b54aad3c47ba/diff:/var/lib/containers/storage/overlay/5caf54cded652c824a21896b20048eccb11bb8cdce3ca774c3560cd32e1f61cc/diff\",\n                    \"UpperDir\": \"/var/lib/containers/storage/overlay/6ba4e80b90b8e4387921105a5ce9751c9022632cc944dda5466842cdafda8607/diff\",\n                    \"WorkDir\": \"/var/lib/containers/storage/overlay/6ba4e80b90b8e4387921105a5ce9751c9022632cc944dda5466842cdafda8607/work\"\n               }\n          },\n          \"RootFS\": {\n               \"Type\": \"layers\",\n               \"Layers\": [\n                    \"sha256:5caf54cded652c824a21896b20048eccb11bb8cdce3ca774c3560cd32e1f61cc\",\n                    \"sha256:55f921930d9523d93cd68db46488ed620061c9bdfce61eb2b345b7f7a036e4e6\",\n                    \"sha256:c141dc8c637550927c15b8783423290f34e14e34221e7fbef56649169e99dce1\",\n                    \"sha256:35bd5e7133ea79ec5d1e8a29bd40c4354fbc3c1fbe56c3dc40b99a3c17af5b91\"\n               ]\n          },\n          \"Labels\": {\n               \"io.buildah.version\": \"1.43.2\",\n               \"org.opencontainers.image.licenses\": \"MIT\",\n               \"org.opencontainers.image.title\": \"fedora\",\n               \"org.opencontainers.image.url\": \"https://fedoraproject.org/\",\n               \"org.opencontainers.image.vendor\": \"Fedora Project\",\n               \"org.opencontainers.image.version\": \"44\"\n          },\n          \"Annotations\": {\n               \"org.opencontainers.image.base.digest\": \"sha256:a58bfac2282d9d234f130f1231ae464017bd13d207ed37abfd6f30e1aa07ed9c\",\n               \"org.opencontainers.image.base.name\": \"registry.fedoraproject.org/fedora:latest\",\n               \"org.opencontainers.image.created\": \"2026-10-17T08:53:01.688707635Z\"\n          },\n          \"ManifestType\": \"application/vnd.oci.image.manifest.v1+json\",\n          \"User\": \"\",\n          \"History\": [\n               {\n                    \"created\": \"2026-10-17T06:48:51.864654782Z\",\n                    \"created_by\": \"KIWI 11.1.1\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\"\n               },\n               {\n                    \"created\": \"2026-10-17T08:52:12.493916748Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) ENV MISE_DATA_DIR=/mise\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"comment\": \"FROM registry.fedoraproject.org/fedora:latest\",\n                    \"empty_layer\": true\n               },\n               {\n                    \"created\": \"2026-10-17T08:52:12.506997748Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) ENV MISE_CONFIG_DIR=/mise\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"empty_layer\": true\n               },\n               {\n                    \"created\": \"2026-10-17T08:52:12.519438348Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) ENV MISE_CACHE_DIR=/mise/cache\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"empty_layer\": true\n               },\n               {\n                    \"created\": \"2026-10-17T08:52:12.531479088Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) ENV PATH=/usr/local/bin:/baked/node_modules/.bin:$PATH\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"empty_layer\": true\n               },\n               {\n                    \"created\": \"2026-10-17T08:52:24.551826255Z\",\n                    \"created_by\": \"/bin/sh -c dnf install --assumeyes dnf-plugins-core ca-certificates curl git libatomic procps-ng rsync which   && dnf copr enable --assumeyes jdxcode/mise   && dnf install --assumeyes mise   && dnf clean all   && rm --recursive --force /var/cache/dnf\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\"\n               },\n               {\n                    \"created\": \"2026-10-17T08:52:25.506808085Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) SHELL [\\\"/bin/bash\\\", \\\"-o\\\", \\\"pipefail\\\", \\\"-c\\\"]\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"empty_layer\": true\n               },\n               {\n                    \"created\": \"2026-10-17T08:52:25.521959955Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) WORKDIR /baked\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"empty_layer\": true\n               },\n               {\n                    \"created\": \"2026-10-17T08:52:29.033922744Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) COPY dir:4949d3c68d029caaf88389121260e5ea32c1dfe4bcc4b23d37164675b5b47b42 in /baked      \",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\"\n               },\n               {\n                    \"created\": \"2026-10-17T08:52:53.384020857Z\",\n                    \"created_by\": \"/bin/sh -c export MISE_NPM_PACKAGE_MANAGER=npm   && mise trust /baked/mise.toml   && mise install --yes node npm:pnpm   && ln --symbolic --force \\\"$(mise exec node -- which node)\\\" /usr/local/bin/node   && ln --symbolic --force \\\"$(mise exec node -- which npm)\\\" /usr/local/bin/npm   && ln --symbolic --force \\\"$(mise exec node npm:pnpm -- which pnpm)\\\" /usr/local/bin/pnpm   && mise exec node npm:pnpm -- pnpm install --frozen-lockfile\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\"\n               },\n               {\n                    \"created\": \"2026-10-17T08:53:01.688782275Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) CMD [\\\"node\\\", \\\"--version\\\"]\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"empty_layer\": true\n               }\n          ],\n          \"NamesHistory\": [\n               \"localhost/mutation-test-runtime:24de541ad936\"\n          ]\n     }\n]\n",
+            "stderr": ""
+          },
+          {
+            "command": "podman",
+            "args": [
+              "run",
+              "--rm",
+              "--name",
+              "toml-spawn-control-3af3d8da-070f-4ba9-b07c-0339a114f070",
+              "--label",
+              "io.monochromatic.toml-spawn-control=3af3d8da-070f-4ba9-b07c-0339a114f070",
+              "--memory=2g",
+              "--cpus=2",
+              "--pids-limit=512",
+              "--network=none",
+              "--read-only",
+              "--cap-drop=ALL",
+              "--security-opt=no-new-privileges",
+              "--user",
+              "1001:1001",
+              "--tmpfs",
+              "/work:rw,exec,size=2g",
+              "--tmpfs",
+              "/tmp:rw,exec,size=128m",
+              "--volume",
+              "/home/runner/temp/agent/depot-complete-ci/toml-spawn-control-JADtLX/manifest:/manifest:ro",
+              "--volume",
+              "/home/runner/temp/agent/depot-complete-ci/toml-spawn-control-JADtLX/out:/out:rw",
+              "--workdir",
+              "/work",
+              "--entrypoint",
+              "node",
+              "localhost/mutation-test-runtime:24de541ad936",
+              "--input-type=module-typescript",
+              "-e",
+              "import { strict as assert } from 'node:assert';\nimport { appendFileSync, chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';\nimport { join } from 'node:path';\nimport { createHash } from 'node:crypto';\nimport { setTimeout as wait } from 'node:timers/promises';\nimport { runTests } from '/baked/package/cli/mutation-test/src/container/test-run.ts';\nimport { tsgoCheck } from '/baked/package/cli/mutation-test/src/container/tsgo-check.ts';\nimport { runMutantLoop } from '/baked/package/cli/mutation-test/src/container/mutant-loop.ts';\n\nconst startedAt = new Date().toISOString();\nconst cgroup = () => Object.fromEntries(['memory.max', 'memory.events', 'cpu.max', 'pids.max', 'pids.events'].map(name => [name, readFileSync('/sys/fs/cgroup/' + name, 'utf8').trim()]));\nconst cgroupBefore = cgroup();\nassert.equal(cgroupBefore['memory.max'], '2147483648');\nassert.equal(cgroupBefore['pids.max'], '512');\nconst cpu = cgroupBefore['cpu.max'].split(/\\s+/).map(Number);\nassert.equal(cpu[0] / cpu[1], 2);\nconst root = '/work/spawn-fixture';\nconst bin = '/work/control-bin';\nconst output = '/out/spawn-control.json';\nmkdirSync(root, { recursive: true });\nmkdirSync(bin);\nconst originalPath = process.env.PATH;\nconst source = 'export const value: number = 1;\\n';\nwriteFileSync(join(root, 'subject.ts'), source);\nwriteFileSync(join(root, 'tsconfig.json'), JSON.stringify({ compilerOptions: { target: 'ESNext', module: 'NodeNext', strict: true, types: [], noEmit: true }, include: ['subject.ts'] }));\nwriteFileSync(join(root, 'package.json'), JSON.stringify({ type: 'module' }));\nwriteFileSync(join(root, 'subject.unit.test.mjs'), \"import {value} from './subject.ts'; import{strict as assert}from'node:assert'; import{appendFileSync}from'node:fs'; appendFileSync('/work/test-invocations.jsonl', JSON.stringify({token:process.env.CONTROL_TOKEN,value})+'\\\\n'); assert.equal(value,1);\\n\");\nconst sourceModules = ['container/test-run.ts', 'container/mutant-loop.ts', 'container/tsgo-check.ts', 'container/build-step.ts', 'engine/splice.ts'].map(relative => {\n  const path = '/baked/package/cli/mutation-test/src/' + relative;\n  const bytes = readFileSync(path);\n  return { relative, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') };\n});\nconst compilerVersion = JSON.parse(readFileSync('/baked/node_modules/typescript/package.json', 'utf8')).version;\nconst launcher = join(bin, 'node');\nconst shim = '#!' + process.execPath + '\\n' + `import{spawnSync}from'node:child_process';import{appendFileSync,existsSync,unlinkSync}from'node:fs';const args=process.argv.slice(2);const result=spawnSync(${JSON.stringify(process.execPath)},args,{stdio:'inherit',env:process.env});const row={event:'real-node-forward-return',args,status:result.status,signal:result.signal,error:result.error?{name:result.error.name,message:result.error.message,code:result.error.code}:undefined};appendFileSync('/work/node-forwards.jsonl',JSON.stringify(row)+'\\\\n');if(args[0]==='/baked/node_modules/typescript/lib/tsc.js'&&result.status===0&&existsSync('/work/remove-node-after-compiler')){unlinkSync(${JSON.stringify(launcher)});appendFileSync('/work/node-forwards.jsonl',JSON.stringify({event:'disposable-node-launcher-removed-after-real-compiler',status:result.status})+'\\\\n');}process.exit(result.status??1);\\n`;\nwriteFileSync(launcher, shim);\nchmodSync(launcher, 0o755);\nprocess.env.PATH = bin;\nconst baselineType = await tsgoCheck({ cwd: root });\nassert.equal(baselineType.clean, true);\nprocess.env.CONTROL_TOKEN = 'baseline';\nconst baselineTests = await runTests({ cwd: root, tests: ['subject.unit.test.mjs'], timeoutMs: 5000 });\nassert.equal(baselineTests.kind, 'passed');\nconst start = source.indexOf('1');\nconst manifest = {\n  schemaVersion: 1,\n  shardId: 'disposable-source-spawn-control',\n  packagePath: 'spawn-fixture',\n  timeoutFloorMs: 5000,\n  timeoutFactor: 3,\n  tests: ['subject.unit.test.mjs'],\n  mutants: [{ id: 'c000000000000001', file: 'subject.ts', line: 1, column: start + 1, start, end: start + 1, operator: 'disposable-numeric-control', original: '1', replacement: '2', description: 'Fixture changes 1 to 2' }],\n};\nprocess.env.CONTROL_TOKEN = 'genuine-kill';\nconst positive = await runMutantLoop({ packageCwd: root, manifest, baselineTestsMs: baselineTests.durationMs });\nassert.equal(positive.results[0].status, 'killed');\nassert.equal(readFileSync(join(root, 'subject.ts'), 'utf8'), source);\nconst invocationsBeforeFault = readFileSync('/work/test-invocations.jsonl', 'utf8').trim().split('\\n').map(JSON.parse);\nassert(invocationsBeforeFault.some(row => row.token === 'genuine-kill' && row.value === 2));\nwriteFileSync('/work/remove-node-after-compiler', 'fault only in disposable launcher\\n');\nprocess.env.CONTROL_TOKEN = 'spawn-failure';\nconst fault = await runMutantLoop({ packageCwd: root, manifest, baselineTestsMs: baselineTests.durationMs });\nassert.equal(fault.results[0].status, 'killed');\nassert.equal(fault.anomaly, '');\nassert.deepEqual(fault.unrun, []);\nassert.equal(existsSync(launcher), false);\nassert.equal(readFileSync(join(root, 'subject.ts'), 'utf8'), source);\nconst invocationsAfterFault = readFileSync('/work/test-invocations.jsonl', 'utf8').trim().split('\\n').map(JSON.parse);\nassert.deepEqual(invocationsAfterFault, invocationsBeforeFault, 'Fault test must never have launched');\nconst forwards = readFileSync('/work/node-forwards.jsonl', 'utf8').trim().split('\\n').map(JSON.parse);\nassert(forwards.some(row => row.event === 'disposable-node-launcher-removed-after-real-compiler' && row.status === 0));\nassert(forwards.filter(row => row.args?.[0] === '/baked/node_modules/typescript/lib/tsc.js').every(row => row.status === 0));\nprocess.env.PATH = originalPath;\nconst marker = '/work/ordered-test-markers';\nwriteFileSync(join(root, 'first.mjs'), \"import{appendFileSync}from'node:fs';appendFileSync('/work/ordered-test-markers','first\\\\n');\\n\");\nwriteFileSync(join(root, 'second.mjs'), \"import{appendFileSync}from'node:fs';appendFileSync('/work/ordered-test-markers','second\\\\n');\\n\");\nconst orderedPositive = await runTests({ cwd: root, tests: ['first.mjs', 'second.mjs'], timeoutMs: 5000 });\nassert.equal(orderedPositive.kind, 'passed');\nassert.equal(readFileSync(marker, 'utf8'), 'first\\nsecond\\n');\nwriteFileSync(marker, '');\nappendFileSync(join(root, 'first.mjs'), \"throw new Error('expected independent early-stop control');\\n\");\nconst earlyStop = await runTests({ cwd: root, tests: ['first.mjs', 'second.mjs'], timeoutMs: 5000 });\nassert.equal(earlyStop.kind, 'failed');\nassert.equal(readFileSync(marker, 'utf8'), 'first\\n');\nwriteFileSync(join(root, 'slow.mjs'), 'setInterval(()=>{},1000);\\n');\nconst timeout = await runTests({ cwd: root, tests: ['slow.mjs'], timeoutMs: 100 });\nassert.equal(timeout.kind, 'timeout');\nconst result = { schemaVersion: 1, developmentOnly: true, startedAt, finishedAt: new Date().toISOString(), nodeVersion: process.version, nodeExecutable: process.execPath, compilerVersion, sourceModules, cgroupBefore, cgroupAfter: cgroup(), fixtureSource: source, fixtureManifest: manifest, baselineType, baselineTests, genuineAssertionKill: positive, missingNodeFalseKill: fault, testInvocations: invocationsAfterFault, realNodeForwards: forwards, earlyStop: { positive: orderedPositive, failedFirst: earlyStop, remainingTestUnexecuted: true }, timeout, sourceRestored: readFileSync(join(root, 'subject.ts'), 'utf8') === source, interpretation: 'The source returns killed even though the test child never started after the real compiler passed. This is a disposable fault control, not evidence that the separate cloud mutation campaign encountered a spawn failure.' };\nwriteFileSync(output, JSON.stringify(result, null, 2) + '\\n');\nawait wait(200);\nconsole.log(JSON.stringify({ event: 'actual-source-spawn-control-complete', falseKill: fault.results[0].status, testStartedForFault: false, sourceRestored: true }));\n"
+            ],
+            "startedAt": "2026-10-17T08:53:10.050Z",
+            "finishedAt": "2026-10-17T08:53:10.484Z",
+            "elapsedMs": 433.56344,
+            "timeoutMs": 120000,
+            "status": 1,
+            "signal": null,
+            "stdoutBytes": 0,
+            "stderrBytes": 1664,
+            "stdout": "",
+            "stderr": "{\"event\":\"mutation-owned-tmpfs-created\",\"volume\":\"depot-ci-mutation-ab49745e-ab75-4433-aaf7-9087ec1c8072\",\"options\":\"rw,exec,size=2g,mode=1777,uid=1001,gid=1001\",\"uid\":1001,\"gid\":1001,\"capabilityAdditions\":[],\"userNamespaceMapping\":false}\n{\"event\":\"mutation-metadata-container-cleanup\",\"container\":\"b530b83a429612fc893f73b6c1c89031bc9af18d9ff8b456b2fecd229ce56b5e\",\"removalStatus\":0,\"remainingStatus\":1,\"cleanupVerified\":true}\n{\"event\":\"mutation-owned-metadata\",\"image\":\"localhost/mutation-test-runtime:24de541ad936\",\"imageId\":\"b39af25fd293e7a2a8628817419b535c7be7f369cec3f44d537ab9ee432135a4\",\"sourcePath\":\"/baked/node_modules/.pnpm-workspace-state-v1.json\",\"original\":{\"mode\":\"-rw-------\",\"uid\":0,\"gid\":0,\"bytes\":29934},\"owned\":{\"uid\":1001,\"gid\":1001,\"mode\":384,\"bytes\":29934},\"sha256\":\"bb586ba01081fb3dd30df9bdb9034eb6d370d1ad0d90d82f61bcdbae860c98d4\",\"copiedSha256\":\"bb586ba01081fb3dd30df9bdb9034eb6d370d1ad0d90d82f61bcdbae860c98d4\",\"readonly\":true,\"sourceImageUnchanged\":true,\"archiveSha256\":\"b70b9e573bd60469acd5826d4b08381cf1e0b4e1a7fbc688f0cf2178d4e35925\"}\nnode:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at [eval]:40:8\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.10.0\n{\"event\":\"mutation-owned-tmpfs-cleanup\",\"volume\":\"depot-ci-mutation-ab49745e-ab75-4433-aaf7-9087ec1c8072\",\"cleanupStatus\":0,\"cleanupError\":\"\",\"remainingStatus\":1,\"cleanupVerified\":true}\n"
+          },
+          {
+            "command": "podman",
+            "args": [
+              "ps",
+              "--all",
+              "--filter",
+              "label=io.monochromatic.toml-spawn-control=3af3d8da-070f-4ba9-b07c-0339a114f070",
+              "--format",
+              "json"
+            ],
+            "startedAt": "2026-10-17T08:53:10.484Z",
+            "finishedAt": "2026-10-17T08:53:10.519Z",
+            "elapsedMs": 35.41525000000007,
+            "timeoutMs": 60000,
+            "status": 0,
+            "signal": null,
+            "stdoutBytes": 3,
+            "stderrBytes": 0,
+            "stdout": "[]\n",
+            "stderr": ""
+          },
+          {
+            "command": "podman",
+            "args": [
+              "ps",
+              "--all",
+              "--filter",
+              "label=io.monochromatic.toml-spawn-control=3af3d8da-070f-4ba9-b07c-0339a114f070",
+              "--format",
+              "json"
+            ],
+            "startedAt": "2026-10-17T08:53:10.519Z",
+            "finishedAt": "2026-10-17T08:53:10.556Z",
+            "elapsedMs": 36.39305000000002,
+            "timeoutMs": 60000,
+            "status": 0,
+            "signal": null,
+            "stdoutBytes": 3,
+            "stderrBytes": 0,
+            "stdout": "[]\n",
+            "stderr": ""
+          },
+          {
+            "command": "podman",
+            "args": [
+              "image",
+              "inspect",
+              "localhost/mutation-test-runtime:24de541ad936"
+            ],
+            "startedAt": "2026-10-17T08:53:10.556Z",
+            "finishedAt": "2026-10-17T08:53:10.594Z",
+            "elapsedMs": 38.09761000000003,
+            "timeoutMs": 60000,
+            "status": 0,
+            "signal": null,
+            "stdoutBytes": 8060,
+            "stderrBytes": 0,
+            "stdout": "[\n     {\n          \"Id\": \"b39af25fd293e7a2a8628817419b535c7be7f369cec3f44d537ab9ee432135a4\",\n          \"Digest\": \"sha256:3c2db4558a84f48aa9a08c55067e59f954c2381cf85f730d1f4e58c38faf414b\",\n          \"RepoTags\": [\n               \"localhost/mutation-test-runtime:24de541ad936\"\n          ],\n          \"RepoDigests\": [\n               \"localhost/mutation-test-runtime@sha256:3c2db4558a84f48aa9a08c55067e59f954c2381cf85f730d1f4e58c38faf414b\"\n          ],\n          \"Parent\": \"9cabcd898e9c69052f884e3f8f53b9398325239c9020a7cd3931c530005a6a7b\",\n          \"Comment\": \"\",\n          \"Created\": \"2026-10-17T08:53:01.688707635Z\",\n          \"Config\": {\n               \"Env\": [\n                    \"container=oci\",\n                    \"MISE_DATA_DIR=/mise\",\n                    \"MISE_CONFIG_DIR=/mise\",\n                    \"MISE_CACHE_DIR=/mise/cache\",\n                    \"PATH=/usr/local/bin:/baked/node_modules/.bin:/usr/local/bin:/usr/bin\"\n               ],\n               \"Cmd\": [\n                    \"node\",\n                    \"--version\"\n               ],\n               \"WorkingDir\": \"/baked\",\n               \"Labels\": {\n                    \"io.buildah.version\": \"1.43.2\",\n                    \"org.opencontainers.image.licenses\": \"MIT\",\n                    \"org.opencontainers.image.title\": \"fedora\",\n                    \"org.opencontainers.image.url\": \"https://fedoraproject.org/\",\n                    \"org.opencontainers.image.vendor\": \"Fedora Project\",\n                    \"org.opencontainers.image.version\": \"44\"\n               }\n          },\n          \"Version\": \"\",\n          \"Author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n          \"Architecture\": \"amd64\",\n          \"Os\": \"linux\",\n          \"Size\": 3768372396,\n          \"VirtualSize\": 3768372396,\n          \"GraphDriver\": {\n               \"Name\": \"overlay\",\n               \"Data\": {\n                    \"LowerDir\": \"/var/lib/containers/storage/overlay/0988e7e1ac5adeb83fa29e6e013ed824877b805d0527e342a0a86cfc958dde52/diff:/var/lib/containers/storage/overlay/bb85f471979a82c6a400696b01fcabb02e6a2639757ca65f6970b54aad3c47ba/diff:/var/lib/containers/storage/overlay/5caf54cded652c824a21896b20048eccb11bb8cdce3ca774c3560cd32e1f61cc/diff\",\n                    \"UpperDir\": \"/var/lib/containers/storage/overlay/6ba4e80b90b8e4387921105a5ce9751c9022632cc944dda5466842cdafda8607/diff\",\n                    \"WorkDir\": \"/var/lib/containers/storage/overlay/6ba4e80b90b8e4387921105a5ce9751c9022632cc944dda5466842cdafda8607/work\"\n               }\n          },\n          \"RootFS\": {\n               \"Type\": \"layers\",\n               \"Layers\": [\n                    \"sha256:5caf54cded652c824a21896b20048eccb11bb8cdce3ca774c3560cd32e1f61cc\",\n                    \"sha256:55f921930d9523d93cd68db46488ed620061c9bdfce61eb2b345b7f7a036e4e6\",\n                    \"sha256:c141dc8c637550927c15b8783423290f34e14e34221e7fbef56649169e99dce1\",\n                    \"sha256:35bd5e7133ea79ec5d1e8a29bd40c4354fbc3c1fbe56c3dc40b99a3c17af5b91\"\n               ]\n          },\n          \"Labels\": {\n               \"io.buildah.version\": \"1.43.2\",\n               \"org.opencontainers.image.licenses\": \"MIT\",\n               \"org.opencontainers.image.title\": \"fedora\",\n               \"org.opencontainers.image.url\": \"https://fedoraproject.org/\",\n               \"org.opencontainers.image.vendor\": \"Fedora Project\",\n               \"org.opencontainers.image.version\": \"44\"\n          },\n          \"Annotations\": {\n               \"org.opencontainers.image.base.digest\": \"sha256:a58bfac2282d9d234f130f1231ae464017bd13d207ed37abfd6f30e1aa07ed9c\",\n               \"org.opencontainers.image.base.name\": \"registry.fedoraproject.org/fedora:latest\",\n               \"org.opencontainers.image.created\": \"2026-10-17T08:53:01.688707635Z\"\n          },\n          \"ManifestType\": \"application/vnd.oci.image.manifest.v1+json\",\n          \"User\": \"\",\n          \"History\": [\n               {\n                    \"created\": \"2026-10-17T06:48:51.864654782Z\",\n                    \"created_by\": \"KIWI 11.1.1\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\"\n               },\n               {\n                    \"created\": \"2026-10-17T08:52:12.493916748Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) ENV MISE_DATA_DIR=/mise\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"comment\": \"FROM registry.fedoraproject.org/fedora:latest\",\n                    \"empty_layer\": true\n               },\n               {\n                    \"created\": \"2026-10-17T08:52:12.506997748Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) ENV MISE_CONFIG_DIR=/mise\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"empty_layer\": true\n               },\n               {\n                    \"created\": \"2026-10-17T08:52:12.519438348Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) ENV MISE_CACHE_DIR=/mise/cache\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"empty_layer\": true\n               },\n               {\n                    \"created\": \"2026-10-17T08:52:12.531479088Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) ENV PATH=/usr/local/bin:/baked/node_modules/.bin:$PATH\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"empty_layer\": true\n               },\n               {\n                    \"created\": \"2026-10-17T08:52:24.551826255Z\",\n                    \"created_by\": \"/bin/sh -c dnf install --assumeyes dnf-plugins-core ca-certificates curl git libatomic procps-ng rsync which   && dnf copr enable --assumeyes jdxcode/mise   && dnf install --assumeyes mise   && dnf clean all   && rm --recursive --force /var/cache/dnf\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\"\n               },\n               {\n                    \"created\": \"2026-10-17T08:52:25.506808085Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) SHELL [\\\"/bin/bash\\\", \\\"-o\\\", \\\"pipefail\\\", \\\"-c\\\"]\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"empty_layer\": true\n               },\n               {\n                    \"created\": \"2026-10-17T08:52:25.521959955Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) WORKDIR /baked\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"empty_layer\": true\n               },\n               {\n                    \"created\": \"2026-10-17T08:52:29.033922744Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) COPY dir:4949d3c68d029caaf88389121260e5ea32c1dfe4bcc4b23d37164675b5b47b42 in /baked      \",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\"\n               },\n               {\n                    \"created\": \"2026-10-17T08:52:53.384020857Z\",\n                    \"created_by\": \"/bin/sh -c export MISE_NPM_PACKAGE_MANAGER=npm   && mise trust /baked/mise.toml   && mise install --yes node npm:pnpm   && ln --symbolic --force \\\"$(mise exec node -- which node)\\\" /usr/local/bin/node   && ln --symbolic --force \\\"$(mise exec node -- which npm)\\\" /usr/local/bin/npm   && ln --symbolic --force \\\"$(mise exec node npm:pnpm -- which pnpm)\\\" /usr/local/bin/pnpm   && mise exec node npm:pnpm -- pnpm install --frozen-lockfile\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\"\n               },\n               {\n                    \"created\": \"2026-10-17T08:53:01.688782275Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) CMD [\\\"node\\\", \\\"--version\\\"]\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"empty_layer\": true\n               }\n          ],\n          \"NamesHistory\": [\n               \"localhost/mutation-test-runtime:24de541ad936\"\n          ]\n     }\n]\n",
+            "stderr": ""
+          }
+        ]
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "text": ""
+      },
+      "stderr": {
+        "bytes": 1664,
+        "sha256": "4e72f1b7892f18059eeb34350d3d795264c9bbc8fc151a9ed5801843b01f5780",
+        "text": "{\"event\":\"mutation-owned-tmpfs-created\",\"volume\":\"depot-ci-mutation-ab49745e-ab75-4433-aaf7-9087ec1c8072\",\"options\":\"rw,exec,size=2g,mode=1777,uid=1001,gid=1001\",\"uid\":1001,\"gid\":1001,\"capabilityAdditions\":[],\"userNamespaceMapping\":false}\n{\"event\":\"mutation-metadata-container-cleanup\",\"container\":\"b530b83a429612fc893f73b6c1c89031bc9af18d9ff8b456b2fecd229ce56b5e\",\"removalStatus\":0,\"remainingStatus\":1,\"cleanupVerified\":true}\n{\"event\":\"mutation-owned-metadata\",\"image\":\"localhost/mutation-test-runtime:24de541ad936\",\"imageId\":\"b39af25fd293e7a2a8628817419b535c7be7f369cec3f44d537ab9ee432135a4\",\"sourcePath\":\"/baked/node_modules/.pnpm-workspace-state-v1.json\",\"original\":{\"mode\":\"-rw-------\",\"uid\":0,\"gid\":0,\"bytes\":29934},\"owned\":{\"uid\":1001,\"gid\":1001,\"mode\":384,\"bytes\":29934},\"sha256\":\"bb586ba01081fb3dd30df9bdb9034eb6d370d1ad0d90d82f61bcdbae860c98d4\",\"copiedSha256\":\"bb586ba01081fb3dd30df9bdb9034eb6d370d1ad0d90d82f61bcdbae860c98d4\",\"readonly\":true,\"sourceImageUnchanged\":true,\"archiveSha256\":\"b70b9e573bd60469acd5826d4b08381cf1e0b4e1a7fbc688f0cf2178d4e35925\"}\nnode:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at [eval]:40:8\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.10.0\n{\"event\":\"mutation-owned-tmpfs-cleanup\",\"volume\":\"depot-ci-mutation-ab49745e-ab75-4433-aaf7-9087ec1c8072\",\"cleanupStatus\":0,\"cleanupError\":\"\",\"remainingStatus\":1,\"cleanupVerified\":true}\n"
+      },
+      "providerMetrics": {
+        "type": "attempt",
+        "snapshot_at": "2026-10-17T08:53:45.897Z",
+        "run": {
+          "run_id": "m018vgrtcv",
+          "repo": "Aquaticats/Monochromatic",
+          "ref": "refs/heads/trial/depot-toml-spawn-control-20261017",
+          "sha": "b78123c7bd8e20d4319cddd63c34c70fa7638d72",
+          "head_sha": "b78123c7bd8e20d4319cddd63c34c70fa7638d72",
+          "trigger": "workflow_dispatch",
+          "status": "failed",
+          "created_at": "2026-10-17T08:50:19.408Z",
+          "started_at": "2026-10-17T08:50:19.686Z",
+          "finished_at": "2026-10-17T08:53:12.963Z"
+        },
+        "workflow": {
+          "workflow_id": "4lrxxn704k",
+          "workflow_path": "depot-complete-toml-spawn-control.yml",
+          "name": "depot-complete-toml-spawn-control",
+          "status": "failed",
+          "created_at": "2026-10-17T08:50:33.014Z",
+          "started_at": "2026-10-17T08:50:33.010Z",
+          "finished_at": "2026-10-17T08:53:12.617Z"
+        },
+        "job": {
+          "job_id": "mxdnjg1x6v",
+          "job_key": "depot-complete-toml-spawn-control.yml:pilot",
+          "status": "failed",
+          "conclusion": "failure",
+          "current_attempt": 1,
+          "created_at": "2026-10-17T08:50:33.034Z",
+          "started_at": "2026-10-17T08:50:38.441Z",
+          "finished_at": "2026-10-17T08:53:12.226Z"
+        },
+        "attempt": {
+          "attempt": {
+            "attempt_id": "f9zq821m9k",
+            "attempt": 1,
+            "status": "failed",
+            "conclusion": "failure",
+            "sandbox_id": "dbjh92mt4799plqhcdl4",
+            "session_id": "c2cdf4da-4e7a-4461-b722-1c430dab1eb3",
+            "created_at": "2026-10-17T08:50:33.987Z",
+            "started_at": "2026-10-17T08:50:38.441Z",
+            "finished_at": "2026-10-17T08:53:12.226Z"
+          },
+          "availability": {
+            "code": "available",
+            "reason": "available"
+          },
+          "stats": {
+            "sample_count": 29,
+            "cpu_sample_count": 28,
+            "memory_sample_count": 29,
+            "peak_cpu_utilization": 0.09119339504628471,
+            "average_cpu_utilization": 0.03085120257783783,
+            "peak_memory_utilization": 0.03741652579166568,
+            "average_memory_utilization": 0.024374786354266337,
+            "observed_started_at": "2026-10-17T08:50:53Z",
+            "observed_finished_at": "2026-10-17T08:53:08Z"
+          },
+          "cap": {
+            "raw_sample_count": 29,
+            "returned_sample_count": 29,
+            "max_returned_sample_count": 5000,
+            "downsampled": false,
+            "downsample_strategy": ""
+          },
+          "samples": [
+            {
+              "timestamp": "2026-10-17T08:50:53Z",
+              "memory_utilization": 0.01270177033592796
+            },
+            {
+              "timestamp": "2026-10-17T08:50:54Z",
+              "cpu_utilization": 0.014456316781898177,
+              "memory_utilization": 0.014006574922581514
+            },
+            {
+              "timestamp": "2026-10-17T08:50:58Z",
+              "cpu_utilization": 0.00015629884338855892,
+              "memory_utilization": 0.014014106612775398
+            },
+            {
+              "timestamp": "2026-10-17T08:51:03Z",
+              "cpu_utilization": 0.013121719570107474,
+              "memory_utilization": 0.014599695525349968
+            },
+            {
+              "timestamp": "2026-10-17T08:51:08Z",
+              "cpu_utilization": 0.018997625296837895,
+              "memory_utilization": 0.014280023868169182
+            },
+            {
+              "timestamp": "2026-10-17T08:51:13Z",
+              "cpu_utilization": 0.02201926685850119,
+              "memory_utilization": 0.014611661194448318
+            },
+            {
+              "timestamp": "2026-10-17T08:51:18Z",
+              "cpu_utilization": 0.021518828975353434,
+              "memory_utilization": 0.020400554721130667
+            },
+            {
+              "timestamp": "2026-10-17T08:51:23Z",
+              "cpu_utilization": 0.02973746422794575,
+              "memory_utilization": 0.029870561830074378
+            },
+            {
+              "timestamp": "2026-10-17T08:51:28Z",
+              "cpu_utilization": 0.0007510326699211416,
+              "memory_utilization": 0.030337162185472975
+            },
+            {
+              "timestamp": "2026-10-17T08:51:33Z",
+              "cpu_utilization": 0.00025009378516943853,
+              "memory_utilization": 0.03013362433192693
+            },
+            {
+              "timestamp": "2026-10-17T08:51:38Z",
+              "cpu_utilization": 0.00012510947078693858,
+              "memory_utilization": 0.029989611126687403
+            },
+            {
+              "timestamp": "2026-10-17T08:51:43Z",
+              "cpu_utilization": 0.0004997501249375312,
+              "memory_utilization": 0.030025629612856545
+            },
+            {
+              "timestamp": "2026-10-17T08:51:48Z",
+              "cpu_utilization": 0.00025040691123075,
+              "memory_utilization": 0.031035787190392867
+            },
+            {
+              "timestamp": "2026-10-17T08:51:53Z",
+              "cpu_utilization": 0.00012515644555694618,
+              "memory_utilization": 0.030544526623553003
+            },
+            {
+              "timestamp": "2026-10-17T08:51:58Z",
+              "cpu_utilization": 0.02596588058203713,
+              "memory_utilization": 0.03741652579166568
+            },
+            {
+              "timestamp": "2026-10-17T08:52:03Z",
+              "cpu_utilization": 0.01738804103077308,
+              "memory_utilization": 0.01866960224415213
+            },
+            {
+              "timestamp": "2026-10-17T08:52:08Z",
+              "cpu_utilization": 0.054375,
+              "memory_utilization": 0.01694514888693767
+            },
+            {
+              "timestamp": "2026-10-17T08:52:13Z",
+              "cpu_utilization": 0.07596201899050475,
+              "memory_utilization": 0.02381113485078264
+            },
+            {
+              "timestamp": "2026-10-17T08:52:18Z",
+              "cpu_utilization": 0.05270405608412619,
+              "memory_utilization": 0.02834460495313102
+            },
+            {
+              "timestamp": "2026-10-17T08:52:23Z",
+              "cpu_utilization": 0.023910866299449173,
+              "memory_utilization": 0.024998651584497548
+            },
+            {
+              "timestamp": "2026-10-17T08:52:28Z",
+              "cpu_utilization": 0.0523586695333249,
+              "memory_utilization": 0.02281865244942713
+            },
+            {
+              "timestamp": "2026-10-17T08:52:33Z",
+              "cpu_utilization": 0.0482897384305835,
+              "memory_utilization": 0.03166747733568646
+            },
+            {
+              "timestamp": "2026-10-17T08:52:38Z",
+              "cpu_utilization": 0.06124011227353917,
+              "memory_utilization": 0.024456855806034197
+            },
+            {
+              "timestamp": "2026-10-17T08:52:43Z",
+              "cpu_utilization": 0.02309439676930843,
+              "memory_utilization": 0.026348221136255078
+            },
+            {
+              "timestamp": "2026-10-17T08:52:48Z",
+              "cpu_utilization": 0.04160887656033287,
+              "memory_utilization": 0.026906416562721244
+            },
+            {
+              "timestamp": "2026-10-17T08:52:53Z",
+              "cpu_utilization": 0.05220022695750851,
+              "memory_utilization": 0.026464051242704588
+            },
+            {
+              "timestamp": "2026-10-17T08:52:58Z",
+              "cpu_utilization": 0.06664161342853564,
+              "memory_utilization": 0.03283932329464312
+            },
+            {
+              "timestamp": "2026-10-17T08:53:03Z",
+              "cpu_utilization": 0.05489171023151606,
+              "memory_utilization": 0.024043706155237366
+            },
+            {
+              "timestamp": "2026-10-17T08:53:08Z",
+              "cpu_utilization": 0.09119339504628471,
+              "memory_utilization": 0.024587141898501
+            }
+          ]
+        }
+      },
+      "usage": {
+        "providerAttemptStartedAt": "2026-10-17T08:50:38.441Z",
+        "providerAttemptFinishedAt": "2026-10-17T08:53:12.226Z",
+        "providerMilliseconds": 153785,
+        "runner": "16x64",
+        "allocatedVcpuMilliseconds": 2460560,
+        "scope": "Whole failed development job including unchanged source prerequisite and disposable control. Container control separately declared 2 CPU/2 GiB/512 PIDs."
+      }
+    },
+    "observedRepeat": {
+      "runId": "j03l179f3x",
+      "response": {
+        "org_id": "l4zncjjbj5",
+        "run_id": "j03l179f3x"
+      },
+      "manifest": {
+        "schemaVersion": 1,
+        "classification": "Independent development actual-source classification control; not a final common cohort.",
+        "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+        "harnessRevision": "b951351e898867524caba76f8a45f8d65a6603db",
+        "branch": "trial/depot-toml-spawn-control-20261017",
+        "workflow": "depot-complete-toml-spawn-control.yml",
+        "requestedAt": "2026-10-17T08:59:57.693Z",
+        "providerFiles": [
+          {
+            "path": ".depot/workflows/depot-complete-toml-spawn-control.yml",
+            "gitBlob": "93dd1aded49d3753af0d0bc14b4b706453f78053",
+            "bytes": 5200,
+            "sha256": "755aece267fa3a3b4f4f007b42a662788cc71d7f9c31a104350eb00bdbd7bb6d",
+            "exactProviderBytesVerified": true
+          },
+          {
+            "path": "package/dev-script/task-util/mise.toml",
+            "gitBlob": "23e2f26e7335600d2ba7d37dd37ad9286adfd501",
+            "bytes": 116832,
+            "sha256": "fbb8eeecc35cd687dfa41478025b4fad570b6ee8b526f7949ddea0737457b098",
+            "exactProviderBytesVerified": true
+          }
+        ],
+        "prepared": {
+          "observedAt": "2026-10-17T08:59:54.985Z",
+          "harnessRevision": "b951351e898867524caba76f8a45f8d65a6603db",
+          "driverSyntaxPassed": true,
+          "consumerSyntaxPassed": true,
+          "originalTaskBytesUnchanged": true,
+          "trackedStatusEmpty": true,
+          "diffCheckPassed": true
+        },
+        "prerequisite": {
+          "command": [
+            "mise",
+            "run",
+            "//package/module/toml-edit:test:mutation",
+            "--",
+            "src/toml-get-comments.ts",
+            "--containers",
+            "1",
+            "--shard-size",
+            "1"
+          ],
+          "sourceBodyUnchanged": true
+        },
+        "control": {
+          "task": "trial:depot:toml:spawn-control",
+          "sourceBodiesUnchanged": true,
+          "actualCompiler": true,
+          "genuineAssertionPositiveControl": true,
+          "disposableFault": "Remove only the disposable Node forwarding executable after the actual compiler exits zero.",
+          "resources": {
+            "memoryBytes": 2147483648,
+            "cpus": 2,
+            "pids": 512,
+            "network": "none"
+          },
+          "milliseconds": 120000
+        },
+        "scope": "mutations-only"
+      },
+      "manifestSha256": "08bc4480b994e7c5608b76bf0266a1ebb9e1a0cafd46c6966a59f3c7859eee00",
+      "cohortId": "toml-spawn-control-observed-20261017T085957693Z",
+      "request": {
+        "command": "depot",
+        "args": [
+          "ci",
+          "dispatch",
+          "--repo",
+          "Aquaticats/Monochromatic",
+          "--org",
+          "l4zncjjbj5",
+          "--workflow",
+          "depot-complete-toml-spawn-control.yml",
+          "--ref",
+          "trial/depot-toml-spawn-control-20261017",
+          "--input",
+          "scope=mutations-only",
+          "--input",
+          "cohort_id=toml-spawn-control-observed-20261017T085957693Z",
+          "--input",
+          "manifest_sha256=08bc4480b994e7c5608b76bf0266a1ebb9e1a0cafd46c6966a59f3c7859eee00",
+          "--input",
+          "requested_at=2026-10-17T08:59:57.693Z",
+          "--output",
+          "json"
+        ],
+        "cwd": "/home/user/temp/agent/depot-toml-spawn-control-worktree",
+        "requestedAt": "2026-10-17T08:59:57.693Z",
+        "cohortId": "toml-spawn-control-observed-20261017T085957693Z",
+        "manifestSha256": "08bc4480b994e7c5608b76bf0266a1ebb9e1a0cafd46c6966a59f3c7859eee00",
+        "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+        "harnessRevision": "b951351e898867524caba76f8a45f8d65a6603db"
+      },
+      "receipt": {
+        "request": {
+          "command": "depot",
+          "args": [
+            "ci",
+            "dispatch",
+            "--repo",
+            "Aquaticats/Monochromatic",
+            "--org",
+            "l4zncjjbj5",
+            "--workflow",
+            "depot-complete-toml-spawn-control.yml",
+            "--ref",
+            "trial/depot-toml-spawn-control-20261017",
+            "--input",
+            "scope=mutations-only",
+            "--input",
+            "cohort_id=toml-spawn-control-observed-20261017T085957693Z",
+            "--input",
+            "manifest_sha256=08bc4480b994e7c5608b76bf0266a1ebb9e1a0cafd46c6966a59f3c7859eee00",
+            "--input",
+            "requested_at=2026-10-17T08:59:57.693Z",
+            "--output",
+            "json"
+          ],
+          "cwd": "/home/user/temp/agent/depot-toml-spawn-control-worktree",
+          "requestedAt": "2026-10-17T08:59:57.693Z",
+          "cohortId": "toml-spawn-control-observed-20261017T085957693Z",
+          "manifestSha256": "08bc4480b994e7c5608b76bf0266a1ebb9e1a0cafd46c6966a59f3c7859eee00",
+          "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "harnessRevision": "b951351e898867524caba76f8a45f8d65a6603db"
+        },
+        "finishedAt": "2026-10-17T08:59:58.838Z",
+        "status": 0,
+        "signal": null,
+        "stdout": "{\n  \"org_id\": \"l4zncjjbj5\",\n  \"run_id\": \"j03l179f3x\"\n}\n",
+        "stderr": ""
+      },
+      "state": "Dispatched independent observation repair; original source bodies and accepted final refs unchanged. Adds incremental phases and compiler stdout/stderr receipts, and mirrors original PATH commands while keeping only node removable."
+    }
   }
 }

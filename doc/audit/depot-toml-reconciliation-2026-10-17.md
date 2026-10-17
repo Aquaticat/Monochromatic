@@ -512,3 +512,15 @@ The independent classification control is dispatched as `m018vgrtcv`,
 using clean harness `b78123c7bd8e20d4319cddd63c34c70fa7638d72`.
 Its exact development request and authenticated provider workflow/helper bytes
 are retained in the machine evidence.
+
+The first control finished failed before mutation assertions:
+its fixture typecheck returned `clean: false`,
+but the initial observer lost the returned detail.
+The unchanged bounded source prerequisite still completed with its original single compiler outcome.
+Source before/after identities and scoped container/volume cleanup are retained.
+No false mutation credit is claimed from this attempt.
+Its provider interval was `153785` milliseconds at `16x64`,
+or `2460560` allocated vCPU-milliseconds.
+Repeat `j03l179f3x` adds incremental phase and real-compiler stdout/stderr receipts,
+and preserves original PATH commands except the deliberately removable Node launcher.
+Its exact request is retained separately from the unchanged full campaign.
