@@ -613,29 +613,71 @@ and the rejection happens before any provider is called.
 content rather than an HTML page render,
 which confirms the `gh` CLI route and therefore that `PATH` survived the scrub.
 
-Not verified:
-Linkup fallback.
-It needs a key that is not configured on this machine
-(no `~/.pi/agent/extensions/pi-linkup.json`),
-so search runs Exa-only.
+Linkup fallback was verified separately,
+after the fact,
+because it needed a credential this machine did not have in a reachable place.
+`~/.bashrc:42` exports `LINKUP_API_KEY`,
+and the shared core reads exactly that name
+(`config-constants.ts:17`,
+used at `config.ts:147` and read at `config-schema.ts:223`).
+It was still unavailable to the server for two independent reasons.
+The harness process is not started from an interactive shell,
+so it never sources `.bashrc` and the name is absent from its environment.
+And even when present,
+the subprocess scrub drops any name matching `KEY|PASSWORD|SECRET|TOKEN`,
+which `LINKUP_API_KEY` does.
+
+The working route is the config file the Exa key already uses.
+`CONFIG_KEYS` accepts exactly `exaApiKey`,
+`linkupApiKey`,
+and `blocklist`,
+so `linkupApiKey` was added to
+`~/.pi/agent/extensions/pi-search-fetch.json`
+by reading the value out of `.bashrc` without echoing it.
+The Exa key and all 23 blocklist entries were confirmed byte-identical
+afterwards,
+and the file mode stayed `0600`.
+Because `loadLinkupConfig()` runs once at startup before `serve()`,
+the `include:search-fetch-mcp` row was toggled off and on through
+`plugin_manager` to respawn the child;
+both transitions reported `application: "applied"` with no warnings.
+
+The differential probe is what proves the key is live.
+`web_fetch` uses Linkup first for non-GitHub URLs,
+so the response shape changes provider.
+Before the key,
+`https://exa.ai/docs/search/quickstart` returned Exa's contents envelope with
+`requestId`,
+`results`,
+`statuses`,
+and `costDollars`.
+After the respawn,
+`https://example.com` returned a `markdown` field alongside
+`"favicon": "https://favicons.linkup.so?domain=example.com"`,
+which is Linkup's shape and names Linkup as the server.
+Search was re-run afterwards and still returned results,
+so the respawn did not regress the Exa path.
+
 Also not verified:
 what a session created before the install sees,
 since existing sessions keep the plugin revision they started with.
 
-### Open policy question
+### Settled: both fetch tools stay
 
-Two fetch tools are now live with different policies.
+Two fetch tools are live with different policies.
 The native `web_fetch` from `dsh-web-fetch-http` accepts any public HTTP(S)
 destination.
 `mcp__search-fetch__web_fetch` enforces the 23-entry blocklist,
 routes mapped GitHub URLs through `gh`,
 and strips base64 data-URL images.
 
-An agent that wants a blocklisted host can get it through the native tool.
-That is a real hole in the blocklist's purpose,
-and closing it means setting `fetch: false` on the `tool-web` preset row.
-The tradeoff is losing an account-free fetch path.
-This is left as an owner decision rather than settled here.
+An agent that wants a blocklisted host can get it through the native tool,
+so the blocklist is not a hard boundary in DSH.
+The owner decision is to keep both,
+which trades that hole for an account-free fetch path that keeps working when
+Exa or Linkup is down or rate-limited.
+`fetch: false` on the `tool-web` preset row remains the one-line change if that
+trade is ever revisited.
 
 ## Five Claude Code lifecycle hooks have no DSH counterpart
 
@@ -913,8 +955,9 @@ Measured from the active plugin list:
 
 Items 1,
 3,
-and 4 were actioned while this audit was being written and are recorded as
-done rather than open.
+4,
+and 5 were actioned while this audit was being written and are recorded as
+done or settled rather than open.
 
 1. Done:
    the instruction budget cap was raised to 131072,
@@ -952,15 +995,17 @@ done rather than open.
    Copy Pi's deferred-exposure idea rather than mounting every
    server's schema eagerly.
 
-4. Decide which fetch tool agents should use.
-   Two are live with different policies:
-   the native `web_fetch` accepts any public HTTP(S) destination,
+4. Settled:
+   both fetch tools stay.
+   The native `web_fetch` accepts any public HTTP(S) destination,
    while `mcp__search-fetch__web_fetch` enforces the 23-entry blocklist,
    routes GitHub URLs through `gh`,
-   and strips base64 data-URL images.
-   The native tool is therefore a route around the blocklist.
-   Closing it means `fetch: false` on the `tool-web` preset row,
-   at the cost of an account-free fetch path.
+   and strips base64 data-URL images,
+   so the native tool is a route around the blocklist.
+   Keeping it buys an account-free fetch path that survives an Exa or Linkup
+   outage or rate limit.
+   `fetch: false` on the `tool-web` preset row remains the one-line change if
+   that trade is revisited.
 
 5. Done:
    the 24 inert `disabled: false` patch entries were reverted,

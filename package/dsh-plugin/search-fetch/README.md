@@ -81,8 +81,26 @@ locale,
 and proxy variables survive.
 `PATH` surviving is also what makes the `gh` CLI route work.
 
-Linkup fallback needs a separate key that is not configured on this machine,
-so search runs Exa-only until one is added.
+The same scrub is why the Linkup key cannot travel through the environment.
+`agent-harness-shared/search-fetch` reads `LINKUP_API_KEY` from `process.env`
+(`config-constants.ts:17`),
+but that name matches the `KEY` pattern,
+so it is dropped from the child environment even when the host has it.
+An `export` in `~/.bashrc` is doubly unavailable,
+because the harness process is not started from an interactive shell and so
+never sources it.
+Both keys therefore live in the config file instead,
+under `exaApiKey` and `linkupApiKey`,
+which are two of the three keys `CONFIG_KEYS` accepts.
+The file is mode `0600` and is shared with the pi extension,
+so one credential serves both harnesses.
+
+`loadLinkupConfig()` runs once at startup,
+before `serve()`,
+so a key added while the server is already running is not picked up.
+Respawn it by toggling the `include:search-fetch-mcp` row through
+`plugin_manager`,
+or restart the harness.
 
 ## Prerequisites
 
