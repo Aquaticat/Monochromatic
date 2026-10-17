@@ -348,9 +348,9 @@
     {
       "id": "62nbb3srhk",
       "revision": "6a17c8fc61cf7613432c9f481416fa9ef7cc7bfe",
-      "status": "running",
-      "terminal": false,
-      "artifactsCollected": false,
+      "status": "failed",
+      "terminal": true,
+      "artifactsCollected": true,
       "selectedPackageChecks": [],
       "selectedExternalChecks": [
         "sidecar.generated-type-consistency"
@@ -358,16 +358,31 @@
       "requestedInvocationLabels": [
         "sidecar.generated-type-consistency.1"
       ],
-      "wholeExternalCheckCoverage": false
+      "wholeExternalCheckCoverage": false,
+      "sourceConsumerPassed": true,
+      "sourceResult": "corpus kept439 dropped61; exit0; no generated drift",
+      "cleanupVerified": false,
+      "publishedComputeUsdBeforeCredits": 0.047028
+    },
+    {
+      "id": "qsg8tx4bvb",
+      "revision": "bdd4144b991a98b1204621f8d3e304e37ac8abf9",
+      "status": "running",
+      "terminal": false,
+      "artifactsCollected": false,
+      "selectedPackageChecks": [],
+      "selectedExternalChecks": [],
+      "sourceChecksExecuted": 0,
+      "purpose": "Actual bounded rootful generated-output cleanup control"
     }
   ],
   "completeGraph": false,
   "pending": [
-    "Collect lt7qwlz6h1 and reconcile the three unfinished authored tasks with actual source outcomes.",
-    "Collect62nbb3srhk and verify the original declared-type corpus consumer after rootful adapter activation; preserve completed root/type-cases outcomes.",
-    "Finish duplicate matching/filing for root generated PATH drift, rootless mapping, repaired linter prerequisite and six other source diagnostics.",
-    "Root selectively grafts the generated branch forwarding/selection logic while preserving its strengthened cohort guard and canonical desktop/native/source helpers; integrate pending GHA/VM routes.",
-    "Root freezes the authenticated common manifest and complete case digest only after all routes are verified; final cohort dispatch remains held."
+    "Collect terminal lt7qwlz6h1 and reconcile actual source outcomes and any unstarted identities.",
+    "Collect qsg8tx4bvb; verify generated-output stat, ordinary refusal, confined privileged cleanup, source before/after and container absence without repeating completed generator.",
+    "File the distinct disposable worktree cleanup incident; attach frozen root PATH drift and rootless uid/gid rejection to matching existing335/1047.",
+    "Finish duplicate matching/filing for repaired harness prerequisites and six other source diagnostics.",
+    "Root selectively grafts only used generated helper changes, preserving strengthened cohort/source/native/desktop guards, integrates external routes and freezes the final authenticated common manifest before coordinated dispatch."
   ],
   "packageDevelopmentReconciliation": {
     "runId": "4x77lb56cs",
@@ -55712,7 +55727,816 @@
     ],
     "wholeExternalCheckCoverage": false,
     "rootfulAdapterActivated": true,
+    "terminalReconciliationPending": false,
+    "finalCombinedDefaultsToAllAuthoredInvocations": true,
+    "sourceConsumerPassed": true,
+    "cleanupVerified": false,
+    "outputOwnershipOfFailedPredecessorVerified": false,
+    "verification": {
+      "path": "/home/user/temp/agent/depot-complete-accounting-20261016/terminal-62nbb3srhk-O3Lci8/collected-62nbb3srhk/logger-generated-consumer-verification.json",
+      "sha256": "754d7d44bbb42f82ad404c8629aebf3ca50ac53f060ef055dfdb86b73cc0329a",
+      "report": {
+        "runId": "62nbb3srhk",
+        "harnessRevision": "6a17c8fc61cf7613432c9f481416fa9ef7cc7bfe",
+        "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+        "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+        "workflowId": "4p4mbgr4fr",
+        "jobId": "mj90rhd70w",
+        "attemptId": "pqrmbbw54k",
+        "viewUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/4p4mbgr4fr?job=mj90rhd70w&attempt=pqrmbbw54k",
+        "providerConclusion": "failure",
+        "providerSize": "4x16",
+        "allocatedCpuCount": 4,
+        "providerJobSeconds": 235.14,
+        "allocatedCpuSeconds": 940.56,
+        "publishedComputeUsdBeforePlanCredits": 0.047028,
+        "accountLedgerVerified": false,
+        "generatedInvocationScope": {
+          "manifestInventory": [
+            {
+              "label": "root.generated-consistency.0",
+              "checkId": "root.generated-consistency",
+              "task": "//:sync:files",
+              "index": 0
+            },
+            {
+              "label": "sidecar.generated-type-consistency.0",
+              "checkId": "sidecar.generated-type-consistency",
+              "task": "//package/module/deepmerge-ts.fuzz:generate:type-cases",
+              "index": 0
+            },
+            {
+              "label": "sidecar.generated-type-consistency.1",
+              "checkId": "sidecar.generated-type-consistency",
+              "task": "//package/module/deepmerge-ts.fuzz:generate:declared-type-cases",
+              "index": 1
+            }
+          ],
+          "requestedCheckIds": [
+            "sidecar.generated-type-consistency"
+          ],
+          "requestedInvocationLabels": [
+            "sidecar.generated-type-consistency.1"
+          ],
+          "coversWholeSelectedChecks": false
+        },
+        "coversWholeCheck": false,
+        "prerequisiteIds": [],
+        "prerequisiteSourceInputsVerified": true,
+        "logProof": [
+          {
+            "checkId": "sidecar.generated-type-consistency.1.frozen-install",
+            "sha256": "57570c4fcaa9ca76273dc39405a25cf83497d95bcef0d7ab235c95953dddfbb1",
+            "bytes": 3419
+          },
+          {
+            "checkId": "sidecar.generated-type-consistency.1.identity-before",
+            "sha256": "7ca36c0da3768aa5e5f03c5e5a36158f387fc04d890675fe2e8f6e225284b0e4",
+            "bytes": 302
+          },
+          {
+            "checkId": "sidecar.generated-type-consistency.1.container-adapter",
+            "sha256": "148e8153fe7c30115ec80dd59ecb5857e3221e2f8d081668958430e2da7f27e3",
+            "bytes": 3692
+          },
+          {
+            "checkId": "sidecar.generated-type-consistency.declared",
+            "sha256": "df9c1349d1b2aaa02dc08c4d6b0d740cd16369ad57693423979bb7e15914cb2b",
+            "bytes": 983
+          },
+          {
+            "checkId": "sidecar.generated-type-consistency.1.identity-after",
+            "sha256": "6fcfea978a38243202dd1fd05970725652793a33fe791886236ce99bb04746c2",
+            "bytes": 297
+          }
+        ],
+        "verified": [
+          {
+            "label": "sidecar.generated-type-consistency.1",
+            "task": "//package/module/deepmerge-ts.fuzz:generate:declared-type-cases",
+            "initial": {
+              "head": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+              "tree": "f7835f65413553704f9988f1fcf7f69911a8f2c0",
+              "trackedInputs": 13715,
+              "inputDigest": "7b0c2628a1524986d61d57d985665b544cebbddc0e3c741aa936370caefbf166"
+            },
+            "workspaceLinks": 809,
+            "ancestorResolvedLinks": 173,
+            "dependencySymlinks": 1989,
+            "processExitCode": 0,
+            "disposition": "passed",
+            "changedTrackedBytes": 0,
+            "changedFiles": [],
+            "reconstructions": [],
+            "authoritativeBeforeAfterEqual": true,
+            "cleanupVerified": false,
+            "rawConsumer": {
+              "checkId": "sidecar.generated-type-consistency",
+              "task": "//package/module/deepmerge-ts.fuzz:generate:declared-type-cases",
+              "args": [
+                "run",
+                "//package/module/deepmerge-ts.fuzz:generate:declared-type-cases"
+              ],
+              "fixture": "/home/runner/temp/agent/depot-complete-ci/logger-generated-sidecar.generated-type-consistency.1",
+              "initialIdentityVerified": true,
+              "actualCommandExecuted": true,
+              "cleanupVerified": false,
+              "processExitCode": 0,
+              "processTermination": "process-exit",
+              "headAfter": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+              "changedTrackedBytes": 0,
+              "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "changedFiles": [],
+              "untracked": [],
+              "authoredGeneratedOutputDrift": false,
+              "authoritativeAfterVerified": true,
+              "cleanupIgnoredDryRun": {
+                "command": "git",
+                "args": [
+                  "clean",
+                  "--dry-run",
+                  "-d",
+                  "-X"
+                ],
+                "exitCode": 0,
+                "stdout": "Would remove node_modules/\nWould remove package/agent-harness-shared/current-time-context/node_modules/\nWould remove package/agent-harness-shared/search-fetch/node_modules/\nWould remove package/agent-harness-shared/session-discovery/node_modules/\nWould remove package/agent-harness-shared/shell-command-analyzer/node_modules/\nWould remove package/agent-harness-shared/terminal-title/node_modules/\nWould remove package/agent-harness-shared/text-scan/node_modules/\nWould remove package/agent-harness-shared/truncate/node_modules/\nWould remove package/agent-harness-shared/usage-projection/node_modules/\nWould remove package/build-tool/css/node_modules/\nWould remove package/claude-code-plugin/bash-output-filter/node_modules/\nWould remove package/claude-code-plugin/claude-spawn/node_modules/\nWould remove package/claude-code-plugin/correction-reminder/node_modules/\nWould remove package/claude-code-plugin/guardrail/node_modules/\nWould remove package/claude-code-plugin/prompt-time/node_modules/\nWould remove package/claude-code-plugin/session-start-housekeeping/node_modules/\nWould remove package/claude-code-plugin/source/node_modules/\nWould remove package/claude-code-plugin/statusline/node_modules/\nWould remove package/claude-code-plugin/stop-reminder/node_modules/\nWould remove package/claude-code-plugin/terminal-title/node_modules/\nWould remove package/cli/android-exempt-unused/node_modules/\nWould remove package/cli/fy/node_modules/\nWould remove package/cli/git-clone-size/node_modules/\nWould remove package/cli/mutation-test.fixture/node_modules/\nWould remove package/cli/mutation-test/node_modules/\nWould remove package/cli/mvm/node_modules/\nWould remove package/cli/open-code-review-issue/node_modules/\nWould remove package/cli/rgffplay/node_modules/\nWould remove package/cli/terminal-exec/node_modules/\nWould remove package/cli/unused-export/node_modules/\nWould remove package/cli/vmsync/node_modules/\nWould remove package/cli/wg-allowedips/node_modules/\nWould remove package/cli/wg-quicker/node_modules/\nWould remove package/cloudflare-worker/rand/node_modules/\nWould remove package/config/lfs-r2-worker/node_modules/\nWould remove package/config/oxlint/node_modules/\nWould remove package/config/pnpr/node_modules/\nWould remove package/config/rolldown/node_modules/\nWould remove package/config/tofu/node_modules/\nWould remove package/desktop-app/electron-counter/node_modules/\nWould remove package/desktop-app/electron-infra/node_modules/\nWould remove package/desktop-app/file-manager-electron/node_modules/\nWould remove package/desktop-daemon/hall-monitor/node_modules/\nWould remove package/dev-script/backup-path/node_modules/\nWould remove package/dev-script/catalog-tighten.matrix/node_modules/\nWould remove package/dev-script/catalog-tighten/node_modules/\nWould remove package/dev-script/claude-cpu-cap/node_modules/\nWould remove package/dev-script/deps-cube/node_modules/\nWould remove package/dev-script/deps-update/node_modules/\nWould remove package/dev-script/file-enforcer/node_modules/\nWould remove package/dev-script/page-weight/node_modules/\nWould remove package/dev-script/task-util/node_modules/\nWould remove package/dev-script/vm-builder/node_modules/\nWould remove package/dev-script/watch-restart/node_modules/\nWould remove package/figma/kiwi/node_modules/\nWould remove package/figma/to-penpot/node_modules/\nWould remove package/git-policy/cli/node_modules/\nWould remove package/git/executable/node_modules/\nWould remove package/intellij-plugin/islands-black/node_modules/\nWould remove package/kwin/key-helper/node_modules/\nWould remove package/mcp/mvm/node_modules/\nWould remove package/mcp/search-fetch/node_modules/\nWould remove package/mcp/stdio/node_modules/\nWould remove package/module/array-at/node_modules/\nWould remove package/module/async-iter/node_modules/\nWould remove package/module/async-time/node_modules/\nWould remove package/module/caught-value/node_modules/\nWould remove package/module/conf-fork.fuzz/node_modules/\nWould remove package/module/conf-fork/node_modules/\nWould remove package/module/const/node_modules/\nWould remove package/module/css-edit.bench/node_modules/\nWould remove package/module/css-edit.conformance/node_modules/\nWould remove package/module/css-edit.fuzz/node_modules/\nWould remove package/module/css-edit/node_modules/\nWould remove package/module/deepmerge-ts.fuzz/dist/\nWould remove package/module/deepmerge-ts.fuzz/node_modules/\nWould remove package/module/dom/node_modules/\nWould remove package/module/fs-id/node_modules/\nWould remove package/module/fs-path/node_modules/\nWould remove package/module/function-arity/node_modules/\nWould remove package/module/hyperscript/node_modules/\nWould remove package/module/i18n-compose/node_modules/\nWould remove package/module/image-diff/node_modules/\nWould remove package/module/jsonc-edit.bench/node_modules/\nWould remove package/module/jsonc-edit.conformance/node_modules/\nWould remove package/module/jsonc-edit.fuzz/node_modules/\nWould remove package/module/jsonc-edit/node_modules/\nWould remove package/module/kv-store/node_modules/\nWould remove package/module/llm-type/node_modules/\nWould remove package/module/logger.fuzz/node_modules/\nWould remove package/module/logger/node_modules/\nWould remove package/module/make-asynchronous-fork.fuzz/node_modules/\nWould remove package/module/make-asynchronous-fork/node_modules/\nWould remove package/module/matcher-fork.fuzz/node_modules/\nWould remove package/module/matcher-fork/node_modules/\nWould remove package/module/matrix/node_modules/\nWould remove package/module/memoize/node_modules/\nWould remove package/module/numeric-format/node_modules/\nWould remove package/module/observable/node_modules/\nWould remove package/module/or-throw/node_modules/\nWould remove package/module/p-limit-fork.fuzz/node_modules/\nWould remove package/module/p-limit-fork/node_modules/\nWould remove package/module/p-map-fork.fuzz/node_modules/\nWould remove package/module/p-map-fork/node_modules/\nWould remove package/module/p-memoize-fork.fuzz/node_modules/\nWould remove package/module/p-memoize-fork/node_modules/\nWould remove package/module/pify-fork.fuzz/node_modules/\nWould remove package/module/pify-fork/node_modules/\nWould remove package/module/pipe/node_modules/\nWould remove package/module/pnpm-workspace-catalog/node_modules/\nWould remove package/module/quick-lru-fork.fuzz/node_modules/\nWould remove package/module/quick-lru-fork/node_modules/\nWould remove package/module/test-diagnostic/node_modules/\nWould remove package/module/test-expect/node_modules/\nWould remove package/module/test-sandbox/node_modules/\nWould remove package/module/test/node_modules/\nWould remove package/module/throws/node_modules/\nWould remove package/module/token-count/node_modules/\nWould remove package/module/toml-edit.fuzz/node_modules/\nWould remove package/module/toml-edit/node_modules/\nWould remove package/module/wg-allowedips/node_modules/\nWould remove package/module/zip-writer/node_modules/\nWould remove package/music-player/desktop-e2e/node_modules/\nWould remove package/oxlint-plugin/no-restricted-syntax/node_modules/\nWould remove package/oxlint-plugin/prefer-readonly-parameter-type/node_modules/\nWould remove package/oxlint-plugin/shared/node_modules/\nWould remove package/oxlint-plugin/stylistic/node_modules/\nWould remove package/oxlint-plugin/test-import/node_modules/\nWould remove package/oxlint-plugin/test-support/node_modules/\nWould remove package/oxlint-plugin/tsdoc/node_modules/\nWould remove package/pi-plugin/advisor/node_modules/\nWould remove package/pi-plugin/agent-settled-notification/node_modules/\nWould remove package/pi-plugin/ask-user-question/node_modules/\nWould remove package/pi-plugin/auto-mode/node_modules/\nWould remove package/pi-plugin/bash-poke/node_modules/\nWould remove package/pi-plugin/current-time-context/node_modules/\nWould remove package/pi-plugin/goal/node_modules/\nWould remove package/pi-plugin/guardrail/node_modules/\nWould remove package/pi-plugin/model-retirement/node_modules/\nWould remove package/pi-plugin/morph-compact/node_modules/\nWould remove package/pi-plugin/openai-fast/node_modules/\nWould remove package/pi-plugin/search-fetch/node_modules/\nWould remove package/pi-plugin/spawn/node_modules/\nWould remove package/pi-plugin/statusline/node_modules/\nWould remove package/pi-plugin/terminal-title/node_modules/\nWould remove package/pi-plugin/thinking-default/node_modules/\nWould remove package/pi-shared/model-review/node_modules/\nWould remove package/pi-shared/model-selection/node_modules/\nWould remove package/rolldown-plugin/import-attributes/node_modules/\nWould remove package/runtime-error/bun/node_modules/\nWould remove package/ssg/aquati.cat/node_modules/\nWould remove package/test-fixture/css-importing-filepath/node_modules/\nWould remove package/test-fixture/css-importing/node_modules/\nWould remove package/test-fixture/file-enforcer-perf/node_modules/\nWould remove package/test-fixture/oxlint-no-restricted-syntax/node_modules/\nWould remove package/typeface/aquaticat/node_modules/\nWould remove package/webapp-productivity/done-postcss/node_modules/\nWould remove package/webapp-productivity/done/node_modules/\nWould remove package/webapp-productivity/doodle-widget/node_modules/\nWould remove package/webapp-productivity/rss/node_modules/\nWould remove package/webapp-productivity/syllable-break-demo/node_modules/\nWould remove package/webapp-productivity/wc/node_modules/\n",
+                "stderr": ""
+              },
+              "rootGitDirProbe": {
+                "command": "ls",
+                "args": [
+                  "--directory",
+                  "--",
+                  "HEAD",
+                  "config",
+                  "hooks",
+                  "objects",
+                  "refs"
+                ],
+                "exitCode": 2,
+                "stdout": "",
+                "stderr": "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+              },
+              "rootGitDirIgnoreProbe": {
+                "command": "git",
+                "args": [
+                  "check-ignore",
+                  "--verbose",
+                  "--",
+                  "HEAD",
+                  "config",
+                  "hooks",
+                  "objects",
+                  "refs"
+                ],
+                "exitCode": 0,
+                "stdout": ".gitignore:30:/HEAD\tHEAD\n.gitignore:31:/config\tconfig\n.gitignore:32:/hooks\thooks\n.gitignore:33:/objects\tobjects\n.gitignore:34:/refs\trefs\n",
+                "stderr": ""
+              },
+              "cleanupResult": {
+                "exitCode": 255,
+                "stdout": "",
+                "stderr": "error: failed to delete '/home/runner/temp/agent/depot-complete-ci/logger-generated-sidecar.generated-type-consistency.1': Permission denied\n"
+              }
+            }
+          }
+        ],
+        "finalCoherentReplayHeld": true
+      }
+    }
+  },
+  "generatedCleanupRecovery": {
+    "runId": "qsg8tx4bvb",
+    "requestedHarnessRevision": "bdd4144b991a98b1204621f8d3e304e37ac8abf9",
+    "providerSize": "2x8",
+    "containerCaps": {
+      "cpus": 2,
+      "memoryGiB": 2,
+      "pids": 512
+    },
+    "originalGeneratorRepeated": false,
+    "sourceCheckCredit": 0,
+    "localControls": {
+      "path": "/home/user/temp/agent/depot-generated-cleanup-controls-FXNuUb/results.json",
+      "sha256": "0891a6d0a2168449f07e204ec7882b9970d34d2c69c65481b0abd23f150d97c8",
+      "report": {
+        "harnessRevision": "9e1de8c14e0fbab1dd8edce4ecc4e78180ea9546",
+        "taskBodySha256": "cd20d8743317dac5603b5a9984efc771eaa83996694978b73a90cef227f10659",
+        "controls": [
+          {
+            "name": "ordinary-valid",
+            "expected": "accepted",
+            "status": 0,
+            "stdout": "{\"label\":\"sidecar.generated-type-consistency.1\",\"cleanupVerified\":true,\"ordinaryExitCode\":0,\"metadataEntries\":1}\n",
+            "stderr": "",
+            "receipt": {
+              "label": "sidecar.generated-type-consistency.1",
+              "fixture": "/home/user/temp/agent/depot-generated-cleanup-controls-FXNuUb/ordinary-valid/home/temp/agent/depot-complete-ci/logger-generated-sidecar.generated-type-consistency.1",
+              "canonicalFixture": "/var/mnt/encrypted/temp/agent/depot-generated-cleanup-controls-FXNuUb/ordinary-valid/home/temp/agent/depot-complete-ci/logger-generated-sidecar.generated-type-consistency.1",
+              "sourceRevision": "6ae656f2e5479f0d3747b9899ec4df3b6d5bceb7",
+              "registration": "worktree /var/mnt/encrypted/temp/agent/depot-generated-cleanup-controls-FXNuUb/ordinary-valid/home/temp/agent/depot-complete-ci/logger-generated-sidecar.generated-type-consistency.1\nHEAD 6ae656f2e5479f0d3747b9899ec4df3b6d5bceb7\ndetached",
+              "ignoredDryRun": {
+                "command": "git",
+                "args": [
+                  "clean",
+                  "--dry-run",
+                  "-d",
+                  "-X"
+                ],
+                "exitCode": 0,
+                "stdout": "",
+                "stderr": ""
+              },
+              "rootGitDirProbe": {
+                "command": "ls",
+                "args": [
+                  "--directory",
+                  "--",
+                  "HEAD",
+                  "config",
+                  "hooks",
+                  "objects",
+                  "refs"
+                ],
+                "exitCode": 2,
+                "stdout": "",
+                "stderr": "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+              },
+              "rootGitDirIgnoreProbe": {
+                "command": "git",
+                "args": [
+                  "check-ignore",
+                  "--verbose",
+                  "--",
+                  "HEAD",
+                  "config",
+                  "hooks",
+                  "objects",
+                  "refs"
+                ],
+                "exitCode": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "metadata": [
+                {
+                  "path": ".",
+                  "uid": 1000,
+                  "gid": 1000,
+                  "mode": 493,
+                  "type": "directory",
+                  "bytes": 32
+                }
+              ],
+              "ordinaryRemoval": {
+                "command": "git",
+                "args": [
+                  "worktree",
+                  "remove",
+                  "--force",
+                  "/home/user/temp/agent/depot-generated-cleanup-controls-FXNuUb/ordinary-valid/home/temp/agent/depot-complete-ci/logger-generated-sidecar.generated-type-consistency.1"
+                ],
+                "exitCode": 0,
+                "stdout": "",
+                "stderr": ""
+              },
+              "inventory": "worktree /var/mnt/encrypted/temp/agent/depot-generated-cleanup-controls-FXNuUb/ordinary-valid/workspace/source\nHEAD 6ae656f2e5479f0d3747b9899ec4df3b6d5bceb7\nbranch refs/heads/main",
+              "cleanupVerified": true,
+              "authoritativeStatusBefore": "",
+              "authoritativeStatusAfter": "",
+              "authoritativeHeadAfter": "6ae656f2e5479f0d3747b9899ec4df3b6d5bceb7"
+            },
+            "cleanupProbes": {
+              "ignored": {
+                "status": 0,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  ""
+                ],
+                "pid": 742938,
+                "stdout": "",
+                "stderr": ""
+              },
+              "rootGit": {
+                "status": 2,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+                ],
+                "pid": 742939,
+                "stdout": "",
+                "stderr": "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+              },
+              "ignore": {
+                "status": 1,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  ""
+                ],
+                "pid": 742940,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          },
+          {
+            "name": "unknown-label",
+            "expected": "rejected",
+            "status": 1,
+            "stdout": "",
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Cleanup requires a frozen generated invocation label\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:11:1 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "cleanupProbes": {
+              "ignored": {
+                "status": 0,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  ""
+                ],
+                "pid": 742957,
+                "stdout": "",
+                "stderr": ""
+              },
+              "rootGit": {
+                "status": 2,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+                ],
+                "pid": 742963,
+                "stdout": "",
+                "stderr": "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+              },
+              "ignore": {
+                "status": 1,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  ""
+                ],
+                "pid": 742964,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          },
+          {
+            "name": "wrong-path",
+            "expected": "rejected",
+            "status": 1,
+            "stdout": "",
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Cleanup refuses any other fixture path\n+ actual - expected\n\n+ '/home/user/temp/agent/depot-generated-cleanup-controls-FXNuUb/wrong-path/home/temp/agent/depot-complete-ci/logger-generated-sidecar.generated-type-consistency.1-outside'\n- '/home/user/temp/agent/depot-generated-cleanup-controls-FXNuUb/wrong-path/home/temp/agent/depot-complete-ci/logger-generated-sidecar.generated-type-consistency.1'\n\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:12:8 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: '/home/user/temp/agent/depot-generated-cleanup-controls-FXNuUb/wrong-path/home/temp/agent/depot-complete-ci/logger-generated-sidecar.generated-type-consistency.1-outside',\n  expected: '/home/user/temp/agent/depot-generated-cleanup-controls-FXNuUb/wrong-path/home/temp/agent/depot-complete-ci/logger-generated-sidecar.generated-type-consistency.1',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "cleanupProbes": {
+              "ignored": {
+                "status": 0,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  ""
+                ],
+                "pid": 742998,
+                "stdout": "",
+                "stderr": ""
+              },
+              "rootGit": {
+                "status": 2,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+                ],
+                "pid": 743011,
+                "stdout": "",
+                "stderr": "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+              },
+              "ignore": {
+                "status": 1,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  ""
+                ],
+                "pid": 743012,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          },
+          {
+            "name": "symlink-fixture",
+            "expected": "rejected",
+            "status": 1,
+            "stdout": "",
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Cleanup refuses a symlink fixture\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:13:1 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "cleanupProbes": {
+              "ignored": {
+                "status": 0,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  ""
+                ],
+                "pid": 743067,
+                "stdout": "",
+                "stderr": ""
+              },
+              "rootGit": {
+                "status": 2,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+                ],
+                "pid": 743069,
+                "stdout": "",
+                "stderr": "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+              },
+              "ignore": {
+                "status": 1,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  ""
+                ],
+                "pid": 743070,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          },
+          {
+            "name": "source-alias",
+            "expected": "rejected",
+            "status": 1,
+            "stdout": "",
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Cleanup refuses authoritative ancestry\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:16:1 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "cleanupProbes": {
+              "ignored": {
+                "status": 0,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  ""
+                ],
+                "pid": 743088,
+                "stdout": "",
+                "stderr": ""
+              },
+              "rootGit": {
+                "status": 2,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+                ],
+                "pid": 743089,
+                "stdout": "",
+                "stderr": "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+              },
+              "ignore": {
+                "status": 1,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  ""
+                ],
+                "pid": 743090,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          },
+          {
+            "name": "foreign-repository",
+            "expected": "rejected",
+            "status": 1,
+            "stdout": "",
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Cleanup refuses a foreign repository\n+ actual - expected\n\n+ '/var/mnt/encrypted/temp/agent/depot-generated-cleanup-controls-FXNuUb/foreign-repository/home/temp/agent/depot-complete-ci/logger-generated-sidecar.generated-type-consistency.1/.git'\n- '/var/mnt/encrypted/temp/agent/depot-generated-cleanup-controls-FXNuUb/foreign-repository/workspace/source/.git'\n\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:20:8 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: '/var/mnt/encrypted/temp/agent/depot-generated-cleanup-controls-FXNuUb/foreign-repository/home/temp/agent/depot-complete-ci/logger-generated-sidecar.generated-type-consistency.1/.git',\n  expected: '/var/mnt/encrypted/temp/agent/depot-generated-cleanup-controls-FXNuUb/foreign-repository/workspace/source/.git',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "cleanupProbes": {
+              "ignored": {
+                "status": 0,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  ""
+                ],
+                "pid": 743110,
+                "stdout": "",
+                "stderr": ""
+              },
+              "rootGit": {
+                "status": 2,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+                ],
+                "pid": 743111,
+                "stdout": "",
+                "stderr": "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+              },
+              "ignore": {
+                "status": 1,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  ""
+                ],
+                "pid": 743112,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          },
+          {
+            "name": "changed-consumer-head",
+            "expected": "rejected",
+            "status": 1,
+            "stdout": "",
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Cleanup requires the bound consumer HEAD\n+ actual - expected\n\n+ '6823def90d63feac78b447e7c9ee954400eebf03'\n- '6ae656f2e5479f0d3747b9899ec4df3b6d5bceb7'\n\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:19:8 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: '6823def90d63feac78b447e7c9ee954400eebf03',\n  expected: '6ae656f2e5479f0d3747b9899ec4df3b6d5bceb7',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "cleanupProbes": {
+              "ignored": {
+                "status": 0,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  ""
+                ],
+                "pid": 743134,
+                "stdout": "",
+                "stderr": ""
+              },
+              "rootGit": {
+                "status": 2,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+                ],
+                "pid": 743135,
+                "stdout": "",
+                "stderr": "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+              },
+              "ignore": {
+                "status": 1,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  ""
+                ],
+                "pid": 743136,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          },
+          {
+            "name": "stray-root-git-entry",
+            "expected": "rejected",
+            "status": 1,
+            "stdout": "",
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Cleanup refuses root Git-directory entries for inspection\n\n'HEAD\\n' !== ''\n\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:29:8 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'HEAD\\n',\n  expected: '',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "cleanupProbes": {
+              "ignored": {
+                "status": 0,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  ""
+                ],
+                "pid": 743168,
+                "stdout": "",
+                "stderr": ""
+              },
+              "rootGit": {
+                "status": 2,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+                ],
+                "pid": 743169,
+                "stdout": "",
+                "stderr": "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+              },
+              "ignore": {
+                "status": 1,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  ""
+                ],
+                "pid": 743170,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          },
+          {
+            "name": "unregistered-worktree",
+            "expected": "rejected",
+            "status": 1,
+            "stdout": "",
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Cleanup requires exact worktree registration\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:22:1 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: undefined,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "cleanupProbes": {
+              "ignored": {
+                "status": 0,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  ""
+                ],
+                "pid": 743223,
+                "stdout": "",
+                "stderr": ""
+              },
+              "rootGit": {
+                "status": 2,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+                ],
+                "pid": 743225,
+                "stdout": "",
+                "stderr": "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+              },
+              "ignore": {
+                "status": 1,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  ""
+                ],
+                "pid": 743226,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          },
+          {
+            "name": "guard-removal-unknown-label",
+            "expected": "accepted",
+            "status": 0,
+            "stdout": "{\"label\":\"unknown.0\",\"cleanupVerified\":true,\"ordinaryExitCode\":0,\"metadataEntries\":1}\n",
+            "stderr": "",
+            "receipt": {
+              "label": "unknown.0",
+              "fixture": "/home/user/temp/agent/depot-generated-cleanup-controls-FXNuUb/guard-removal-unknown-label/home/temp/agent/depot-complete-ci/logger-generated-unknown.0",
+              "canonicalFixture": "/var/mnt/encrypted/temp/agent/depot-generated-cleanup-controls-FXNuUb/guard-removal-unknown-label/home/temp/agent/depot-complete-ci/logger-generated-unknown.0",
+              "sourceRevision": "52b5882388378958d3e3317b8eeb7c6acd20324d",
+              "registration": "worktree /var/mnt/encrypted/temp/agent/depot-generated-cleanup-controls-FXNuUb/guard-removal-unknown-label/home/temp/agent/depot-complete-ci/logger-generated-unknown.0\nHEAD 52b5882388378958d3e3317b8eeb7c6acd20324d\ndetached",
+              "ignoredDryRun": {
+                "command": "git",
+                "args": [
+                  "clean",
+                  "--dry-run",
+                  "-d",
+                  "-X"
+                ],
+                "exitCode": 0,
+                "stdout": "",
+                "stderr": ""
+              },
+              "rootGitDirProbe": {
+                "command": "ls",
+                "args": [
+                  "--directory",
+                  "--",
+                  "HEAD",
+                  "config",
+                  "hooks",
+                  "objects",
+                  "refs"
+                ],
+                "exitCode": 2,
+                "stdout": "",
+                "stderr": "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+              },
+              "rootGitDirIgnoreProbe": {
+                "command": "git",
+                "args": [
+                  "check-ignore",
+                  "--verbose",
+                  "--",
+                  "HEAD",
+                  "config",
+                  "hooks",
+                  "objects",
+                  "refs"
+                ],
+                "exitCode": 1,
+                "stdout": "",
+                "stderr": ""
+              },
+              "metadata": [
+                {
+                  "path": ".",
+                  "uid": 1000,
+                  "gid": 1000,
+                  "mode": 493,
+                  "type": "directory",
+                  "bytes": 32
+                }
+              ],
+              "ordinaryRemoval": {
+                "command": "git",
+                "args": [
+                  "worktree",
+                  "remove",
+                  "--force",
+                  "/home/user/temp/agent/depot-generated-cleanup-controls-FXNuUb/guard-removal-unknown-label/home/temp/agent/depot-complete-ci/logger-generated-unknown.0"
+                ],
+                "exitCode": 0,
+                "stdout": "",
+                "stderr": ""
+              },
+              "inventory": "worktree /var/mnt/encrypted/temp/agent/depot-generated-cleanup-controls-FXNuUb/guard-removal-unknown-label/workspace/source\nHEAD 52b5882388378958d3e3317b8eeb7c6acd20324d\nbranch refs/heads/main",
+              "cleanupVerified": true,
+              "authoritativeStatusBefore": "",
+              "authoritativeStatusAfter": "",
+              "authoritativeHeadAfter": "52b5882388378958d3e3317b8eeb7c6acd20324d"
+            },
+            "cleanupProbes": {
+              "ignored": {
+                "status": 0,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  ""
+                ],
+                "pid": 743264,
+                "stdout": "",
+                "stderr": ""
+              },
+              "rootGit": {
+                "status": 2,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+                ],
+                "pid": 743265,
+                "stdout": "",
+                "stderr": "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+              },
+              "ignore": {
+                "status": 1,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  ""
+                ],
+                "pid": 743266,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          }
+        ],
+        "ordinaryAccepted": 1,
+        "rejected": 8,
+        "unknownAcceptedWithGuardRemoved": true,
+        "allFixturesRemoved": true,
+        "sourceChecksExecuted": 0,
+        "privilegedControlPending": true
+      }
+    },
     "terminalReconciliationPending": true,
-    "finalCombinedDefaultsToAllAuthoredInvocations": true
+    "finalCommonReplayHeld": true
   }
 }

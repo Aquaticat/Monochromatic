@@ -473,10 +473,17 @@ The declared-type generator's process is invoked but Podman rejects rootless `ne
 The existing verified rootful forwarder is now activated only for that invocation.
 Recovery `62nbb3srhk`, provider-matched to clean pushed `6a17c8fc61cf7613432c9f481416fa9ef7cc7bfe`,
 selects only that unfinished invocation and explicitly reports partial external-check coverage.
+Its original corpus consumer now passes with 439 kept/61 deliberately dropped draws and no generated drift;
+all frozen inputs, strict authoritative after identity, five log hashes and actual attempt URL match.
+The job separately fails deleting the disposable checkout with `Permission denied`.
+The predecessor has no output ownership stat, so its UID/GID remains unrecorded.
+The confined cleanup helper passes one ordinary, eight rejection and one guard-removal controls.
+Cloud cleanup-only control `qsg8tx4bvb` is requested from clean pushed
+`bdd4144b991a98b1204621f8d3e304e37ac8abf9` on `2x8`, without repeating the completed generator.
 Three valid/five rejected selector controls, a guard-removal control and two prerequisite controls pass.
 Root has integrated the unchanged generated identity helper and owns its strengthened cohort guard;
 preserve that guard while grafting the generated branch's new forwarding/selection logic.
-The remaining queue is terminal long-three and declared-generator reconciliation,
+The remaining queue is terminal long-three reconciliation and cleanup-control verification,
 filing the other distinct source/harness incidents and root integration of the candidate.
 No generated outputs will be restored to manufacture a clean receipt.
 Only harness execution failures receive recovery edits;

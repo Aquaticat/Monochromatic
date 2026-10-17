@@ -475,8 +475,34 @@ and both prerequisite-gating outcomes.
 Bounded recovery `62nbb3srhk` is requested at `2026-10-17T09:12:10Z`,
 with both provider revisions equal to clean explicitly pushed
 `6a17c8fc61cf7613432c9f481416fa9ef7cc7bfe`.
-Its actual corpus outcome remains pending;
-the two completed development invocations are not repeated.
+Its original corpus consumer passes with `corpus: kept 439, dropped 61`,
+exit zero and no tracked or untracked generated drift.
+All 13,715 frozen inputs and the strict authoritative after guard match;
+five exact source/boundary log hashes and its actual attempt URL are independently verified.
+The two completed development invocations are not repeated.
+Its actual `4x16` provider usage is 940.56 allocated CPU-seconds,
+or $0.047028 published compute before credits.
+The job separately fails because `git worktree remove --force` emits `Permission denied`
+while deleting the disposable consumer.
+That failed predecessor records no output ownership stat;
+ownership is not inferred from the error alone.
+
+The cleanup helper now permits only a frozen invocation label's expected disposable path,
+matching source and consumer HEADs,
+shared Git repository and exact worktree registration.
+It rejects symlinks, authoritative aliases/ancestry and stray root Git-directory entries.
+Ignored-file dry runs and root Git-directory/ignore probes precede removal.
+It records generated output metadata,
+tries ordinary removal,
+then confines a privileged Git removal to that same already-verified disposable worktree.
+Local actual-program controls accept the ordinary fixture,
+reject eight invalid fixtures at their intended guards,
+and accept an unknown label only when that guard is removed.
+Every control fixture is removed.
+Cloud control `qsg8tx4bvb` uses a `2x8` provider job and an actual two-CPU/two-GiB/512-PID container
+to reproduce disposable rootful output and exercise the fallback.
+Its terminal metadata and cleanup proof remain pending.
+It executes no original generator and gives no source-check credit.
 
 [mapping-incident]: https://github.com/Aquaticats/Monochromatic/issues/1116
 [metadata-incident]: https://github.com/Aquaticats/Monochromatic/issues/1117
