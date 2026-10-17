@@ -1355,6 +1355,85 @@ writeFileSync(join(directory, caseId + '-provenance-' + phase + '.json'), JSON.s
 console.log(JSON.stringify(record))
 '''
 
+[tasks."trial:depot:ci:changed-toml-format"]
+description = "Check only each frozen case's changed Cargo manifest using its source-locked formatter"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const {execFileSync,spawnSync}=await import('node:child_process')
+const {readFileSync,writeFileSync,mkdirSync,lstatSync,realpathSync,existsSync}=await import('node:fs')
+const {join,dirname,isAbsolute}=await import('node:path')
+const {homedir}=await import('node:os')
+const {createHash}=await import('node:crypto')
+const {strict:assert}=await import('node:assert')
+const caseId=process.env.DEPOT_CI_CASE
+const targets={native:'package/music-player/truepeak-core/Cargo.toml',desktop:'package/music-player/desktop-app/Cargo.toml'}
+assert(Object.hasOwn(targets,caseId),'Changed-Cargo formatting requires the native or desktop case')
+assert(process.env.GITHUB_WORKSPACE&&isAbsolute(process.env.GITHUB_WORKSPACE),'An absolute disposable CI workspace is required')
+const harness=join(process.env.GITHUB_WORKSPACE,'harness'),source=join(process.env.GITHUB_WORKSPACE,'source')
+const phase=process.env.DEPOT_CI_FORMAT_PHASE??'execute'
+assert(['execute','verify'].includes(phase),'Unknown changed-Cargo formatting phase')
+const manifestPath='.depot/manifests/'+caseId+'.json'
+const manifestBytes=readFileSync(join(harness,manifestPath))
+assert.deepEqual(manifestBytes,execFileSync('git',['show','HEAD:'+manifestPath],{cwd:harness,maxBuffer:1024*1024}),'The case must match the committed harness')
+const manifest=JSON.parse(manifestBytes)
+assert.equal(manifest.caseId,caseId)
+assert.equal(manifest.completeGraph,true,'Changed-Cargo formatting requires a frozen complete case')
+const check=manifest.externalChecks.find(item=>item.id==='root.changed-toml-format')
+assert(check&&check.task==='//:lint:dprint'&&check.scope==='files','The original file-format gate is required')
+assert.deepEqual(check.files,[targets[caseId]],'Changed-Cargo formatting refuses any expanded or substituted file scope')
+assert(manifest.changedFiles.includes(targets[caseId]),'The Cargo manifest must be an original changed file')
+const sourceRevision=execFileSync('git',['rev-parse','HEAD'],{cwd:source,encoding:'utf8'}).trim()
+assert.equal(sourceRevision,manifest.sourceRevision,'The formatter source revision differs from the frozen case')
+const harnessRevision=execFileSync('git',['rev-parse','HEAD'],{cwd:harness,encoding:'utf8'}).trim()
+const sha=bytes=>createHash('sha256').update(bytes).digest('hex')
+const lock=readFileSync(join(source,'mise.lock'),'utf8')
+const locked=lock.match(/\[\[tools\.dprint\]\]\s+version = "([^"]+)"/u)
+assert(locked,'The source lock must identify its formatter version')
+const version=locked[1]
+assert(/^\d+\.\d+\.\d+$/u.test(version),'The source formatter version must be exact')
+const directory=process.env.DEPOT_CI_FORMAT_OUTPUT_DIRECTORY??join(homedir(),'temp/agent/depot-complete-ci')
+assert(isAbsolute(directory),'The formatter evidence directory must be absolute')
+mkdirSync(directory,{recursive:true,mode:0o700})
+const output=join(directory,'changed-toml-format-'+caseId+'-results.json')
+function snapshot(){return check.files.map(path=>{const absolute=join(source,path),stat=lstatSync(absolute);assert(stat.isFile()&&!stat.isSymbolicLink()&&realpathSync(absolute).startsWith(realpathSync(source)+'/'),'Changed-Cargo formatting requires a regular source file');const bytes=readFileSync(absolute);assert.deepEqual(bytes,execFileSync('git',['show','HEAD:'+path],{cwd:source,maxBuffer:1024*1024}),'The Cargo input differs from its source commit');return {path,bytes:bytes.length,sha256:sha(bytes)}})}
+const before=snapshot()
+if(phase==='verify'){
+  assert(existsSync(output),'The changed-Cargo formatter did not retain its result for '+targets[caseId])
+  const record=JSON.parse(readFileSync(output,'utf8'))
+  assert.equal(record.caseId,caseId)
+  assert.equal(record.sourceRevision,sourceRevision)
+  assert.equal(record.harnessRevision,harnessRevision)
+  assert.equal(record.manifestSha256,sha(manifestBytes))
+  assert.deepEqual(record.sourceBefore,before)
+  assert.deepEqual(record.sourceAfter,before)
+  assert.equal(record.conclusion,'passed','Changed-Cargo formatting failed for '+targets[caseId]+'; see '+output)
+  console.log(JSON.stringify({event:'changed-cargo-format-result-verified',caseId,sourceRevision,files:check.files}))
+}else{
+  assert(!existsSync(output),'Formatter evidence must be exclusive to this disposable job')
+  const startedAt=new Date().toISOString(),commands=[]
+  const env={...process.env,MISE_LOCKED:'0'}
+  function observe({args,limit}){const result=spawnSync('mise',args,{cwd:source,env,encoding:'utf8',timeout:limit,maxBuffer:4*1024*1024});const row={command:'mise',args,exitCode:result.status,signal:result.signal,error:result.error?.message,stdout:result.stdout,stderr:result.stderr};commands.push(row);return row}
+  let executionError
+  try{
+    // Disable Mise configuration during the exact tool install to preserve both tracked lockfiles.
+    const installed=observe({args:['--no-config','install','dprint@'+version],limit:300000})
+    assert.equal(installed.exitCode,0,'The source-locked formatter installation failed: '+installed.stderr)
+    const reported=observe({args:['--no-config','exec','dprint@'+version,'--','dprint','--version'],limit:60000})
+    assert.equal(reported.exitCode,0,'The source-locked formatter version command failed')
+    assert.equal(reported.stdout.trim(),'dprint '+version,'The executing formatter version differs from the source lock')
+    const formatted=observe({args:['--no-config','exec','dprint@'+version,'--','dprint','check','--list-different',...check.files],limit:300000})
+    assert.equal(formatted.exitCode,0,'Changed-Cargo formatting failed for '+targets[caseId]+': '+formatted.stdout+formatted.stderr)
+  }catch(error){executionError={name:error.name,message:error.message};throw error}
+  finally{
+    const after=snapshot()
+    writeFileSync(output,JSON.stringify({schemaVersion:1,event:'changed-cargo-format-finished',caseId,checkId:check.id,sourceRevision,harnessRevision,manifestSha256:sha(manifestBytes),originalTask:check.task,sourceMiseSha256:sha(readFileSync(join(source,'mise.toml'))),formatterVersion:version,startedAt,finishedAt:new Date().toISOString(),sourceBefore:before,sourceAfter:after,commands,executionError,conclusion:executionError?'failed':'passed'},null,2)+'\n',{flag:'wx',mode:0o600})
+    assert.deepEqual(after,before,'Changed-Cargo formatting modified its selected source input')
+    console.log(JSON.stringify({event:'changed-cargo-format-finished',caseId,files:check.files,output,conclusion:executionError?'failed':'passed'}))
+  }
+}
+'''
+
 [tasks."trial:depot:ci:logger-host-source-identity"]
 description = "Retain portable exact logger source inputs before and after native host consumers"
 dir = "{{config_root}}/../../.."

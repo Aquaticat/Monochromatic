@@ -80,6 +80,12 @@ jobs:
     - name: Verify selected source tools and frozen dependency inputs
       working-directory: harness
       run: mise run //package/dev-script/task-util:trial:depot:ci:native-tool-gate
+    - name: Check only the original changed Cargo manifest
+      id: changed_toml_format
+      if: ${{ always() && steps.cohort_before.outcome == 'success' }}
+      continue-on-error: true
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:ci:changed-toml-format
     - name: Install exact-head frozen dependencies
       working-directory: source
       run: mise run prepare:pnpm:install -- --frozen-lockfile
@@ -99,6 +105,12 @@ jobs:
       env:
         DEPOT_CI_IDENTITY_PHASE: after
       run: mise run //package/dev-script/task-util:trial:depot:ci:cohort-identity
+    - name: Retain the changed Cargo formatting gate outcome
+      if: ${{ always() && steps.cohort_before.outcome == 'success' }}
+      working-directory: harness
+      env:
+        DEPOT_CI_FORMAT_PHASE: verify
+      run: mise run //package/dev-script/task-util:trial:depot:ci:changed-toml-format
     - name: Preserve native check evidence and APKs
       if: always()
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
