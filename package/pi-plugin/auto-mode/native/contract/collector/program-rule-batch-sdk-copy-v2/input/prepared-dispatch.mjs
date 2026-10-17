@@ -2,7 +2,6 @@
 import {tagged} from '@monochromatic-dev/module-logger/ts';
 import {sealPreparedInput} from './prepared-input-seal.ts';
 import {schedulePreparedCalls} from './prepared-schedule.ts';
-import {completePreparedBatch} from './prepared-completion.ts';
 import {executeWithOwnedContext,NativeExecutionGuardError} from '../../../lifecycle/execution-context-carrier/execute.mjs';
 
 //region Native phase results and retained failures share complete-group completion.
@@ -156,6 +155,14 @@ export async function dispatchPreparedBatch({
     }
   }else settled.push(...await Promise.allSettled(records.map(run)));
   l.debug('all issued native members settled');
-  return completePreparedBatch({batchState:state,failures,settled,snapshots,PreparedBatchContractError,PreparedBatchExecutionError});
+  /** Native settlements are created locally, so no external completion association protocol is needed. */
+  const rejected=settled.filter(outcome=>outcome.status==='rejected');
+  if(failures.length>0||rejected.length>0){
+    throw new PreparedBatchExecutionError(failures.length>0?'Prepared batch retained lifecycle failures':'Prepared batch has unhandled native outcomes',{
+      failures:failures.length>0?failures:rejected.map(outcome=>outcome.reason),outcomes:settled,assessmentDecision:state.decision
+    });
+  }
+  return Object.freeze({decision:state.decision,assessmentCount:snapshots.length,
+    members:snapshots[0]??Object.freeze([]),outcomes:Object.freeze(settled.map(outcome=>outcome.value))});
 }
 //endregion

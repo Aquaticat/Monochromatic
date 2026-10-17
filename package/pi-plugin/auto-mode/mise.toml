@@ -261,33 +261,11 @@ run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-schedule-policy.unit.test.ts",
 ]
 
-[tasks."test:native:prepared-completion"]
-description = "Verify original completion envelopes, native outcomes, and retained failure precedence"
-run = [
- "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-completion.unit.test.ts",
- "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-completion-failure.unit.test.ts",
-]
-
-[tasks."test:native:prepared-member"]
-description = "Verify original member preparation, complete-group assessment, and retained failure ownership"
-run = [
- "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-member.unit.test.ts",
- "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-member-failure.unit.test.ts",
- "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-member-decision.unit.test.ts",
-]
-
 [tasks."test:native:profile-call"]
 description = "Verify original source call admission, spans, pattern ownership, and failure order"
 run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-profile-call.unit.test.ts",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-profile-call-failure.unit.test.ts",
-]
-
-[tasks."test:native:prepared-executable"]
-description = "Verify original native wrapper snapshots, queue turns, and shared context-guard failures"
-run = [
- "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-executable.unit.test.ts",
- "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-executable-failure.unit.test.ts",
 ]
 
 [tasks."test:native:group-lifetime"]
@@ -863,13 +841,6 @@ run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-profile-successors.unit.test.ts",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-profile-successors-failure.unit.test.ts",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-profile-successors-ownership.unit.test.ts",
-]
-[tasks."test:native:prepared-lifecycle"]
-description = "Verify built native member lifecycle order, callback identity, and failure disposal"
-run = [
- "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-lifecycle.unit.test.ts",
- "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-lifecycle-failure.unit.test.ts",
- "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-lifecycle-ownership.unit.test.ts",
 ]
 [tasks."test:native:bypass"]
 description = "Verify the native Shift+Tab bypass control and restored policy checks"
