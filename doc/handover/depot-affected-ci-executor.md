@@ -232,3 +232,27 @@ No cloud Android emulator is authorized by this task arrangement.
 
 Inspect manifest reach, complete check records, original diagnostics,
 and source/input hashes when assessing the result. Report missing checks as missing evidence.
+
+## Logger full replay on 2026-10-17
+
+The logger execution agent owns package request `4x77lb56cs`
+and external request `j4m7gw8mwg` through terminal reconciliation.
+The frozen source is `ef01490f5e960f8ca0b424c12242caeb3c5a2b5e`;
+manifest SHA-256 is `f4cbd47f210f5b031d76c5fc1c28fa704b349621f91eefa3f4f3ad575acfedc3`.
+Independent closure verification confirms 719 package checks and 19 external specifications.
+The graph remains acyclic and preserves full package Oxlint arguments.
+
+The current host request `39003180992` passed all six Linux/macOS/Windows jobs,
+with immutable source and dependency input hashes independently verified before and after each job.
+The root agent owns current scanners and the Scorecard gate.
+The VM agent owns the vmsync lifecycle experiment.
+
+The next action is collecting both Depot requests at terminal state,
+hashing their artifacts and per-check logs,
+reconciling actual reach and prerequisite outcomes,
+and retaining every provider attempt in usage accounting.
+Only harness execution failures receive recovery edits;
+historical source failures remain diagnostics.
+The requests were launched separately and do not establish a single complete passing pipeline latency.
+See [the logger replay audit](../audit/depot-logger-complete-2026-10-17.md)
+and its companion evidence for current outcomes and limitations.
