@@ -152,7 +152,10 @@ Completed units (findings validated):
  `code-config-1` (15 findings),
  `code-desktop-daemon-1` (17 findings),
  `code-desktop-app-1` (14 findings),
- `code-intellij-plugin-1` (6 findings).
+ `code-intellij-plugin-1` (6 findings),
+ `code-dev-script-1` (13 findings),
+ `code-git-1` (7 findings),
+ `code-figma-1` (18 findings).
 
 Cross-unit leads:
  `doc/planning/music-player-shared-truepeak-core.md` repeats the retired truepeak policy
@@ -186,23 +189,22 @@ Cross-unit leads:
  `package.json` files repo-wide per `code-config-1-001`;
  likely dedupe target is open issue #1124;
  hand to the `cross-dependency` reviewer when it launches.
+ `package/pi-plugin/auto-mode/package.json` declares `@monochromatic-dev/git-executable`
+ with zero import sites per `code-git-1` notes;
+ hand to the `cross-dependency` reviewer when it launches.
 
 Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
- `code-desktop-app-1`,
- `code-dev-script-1`,
- `code-figma-1`,
- `code-git-1`,
  `code-kwin-1`,
  `code-learning-1`,
  `code-linter-1`,
  `code-mcp-1`,
- `code-module-1` (launched as a replacement).
+ `code-module-1`,
+ `code-module-2`,
+ `code-module-3`,
+ `code-module-4` (launched as replacements).
 
 Queued units in launch order (flat list; the first entry launches next):
 
-- `code-module-2`,
-- `code-module-3`,
-- `code-module-4`,
 - `code-ownership-marker-1`,
 - `code-oxlint-plugin-1`,
 - `code-pi-plugin-1`,
