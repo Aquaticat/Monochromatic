@@ -38330,6 +38330,13 @@
       "phase": "retry-accepted",
       "requestedAt": "2026-10-17T12:15:35.881Z",
       "frozenHarnessUnchanged": true
+    },
+    "githubGateCheckpoint": {
+      "path": "doc/audit/depot-coherent-github-gates-2026-10-17.evidence.json",
+      "scannerGatesPassed": 4,
+      "scorecardPolicySkipped": 4,
+      "nativeMacPairedCompletionPending": true,
+      "allHostAssertionsReconciled": false
     }
   }
 }

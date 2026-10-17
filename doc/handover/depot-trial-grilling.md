@@ -112,7 +112,7 @@ Desktop grammar mismatch `#1172` remains open as a scoped follow-up to `#562`.
 All four scanner gates passed with paired common/source artifacts.
 Each Scorecard gate observed eight analyses already executed in the preceding day
 and conditionally skipped its analysis job;
-the exact timestamped notices and successful gate steps are retained privately for final reconciliation.
+the exact timestamped notices and paired source/common records are durably retained.
 Both Alpine architecture jobs succeeded.
 The original PowerShell file assertion failed on all three Windows variants,
 while their independent merged-stream probes captured the expected version.
@@ -130,6 +130,23 @@ Next actions are to file the two transport incidents and remaining source-style 
 retain and reconcile all host consumer assertions,
 collect the pending logger/TOML terminals,
 and finish overlap-aware accounting.
+
+The [GitHub gate checkpoint](../audit/depot-coherent-github-gates-2026-10-17.evidence.json)
+retains all scanner/Scorecard source/common pairs,
+initial host/platform outcomes,
+the two distinct native macOS transport logs,
+and unchanged-harness retry receipt.
+It also retains exact changed-Rust diagnostics:
+native has 19 semantic-line-break errors and 13 anonymous-function warnings;
+desktop has 230 semantic-line-break errors,
+33 missing-rustdoc errors,
+and 15 anonymous-function warnings.
+Their source scopes and issue reconciliation remain distinct.
+Scoped document checks pass with source-snippet warnings retained.
+The configured dprint Markdown plugin is disabled,
+so dprint verification covers JSON artifacts only;
+Markdown is checked by monochromatic-lint and CommonMark rendering.
+
 
 The four case manifests now have complete static registrations with `completeGraph: true`.
 Their 24 committed copies are byte-identical across six isolated harnesses.
