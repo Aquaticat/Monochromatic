@@ -815,7 +815,14 @@ const sha256=value=>createHash('sha256').update(value).digest('hex');
 const packages=new Set([...manifest.selectedPackages,...manifest.externalChecks.flatMap(check=>check.artifactPrerequisitePackage?[check.artifactPrerequisitePackage]:[])]);
 const paths=new Set(['mise.lock','mise.toml','pnpm-lock.yaml','pnpm-workspace.yaml','package.json']);
 const trackedFiles=new Set(git(['ls-files']).split('\n'));
-for(const pkg of packages)for(const name of ['mise.toml','package.json','Cargo.toml','Cargo.lock','tsconfig.json','.cargo/config.toml'])if(trackedFiles.has(`${pkg}/${name}`))paths.add(`${pkg}/${name}`);
+const packageRoots=[...packages];
+const metadataNames=new Set(['mise.toml','mise.lock','package.json','Cargo.toml','Cargo.lock','config.toml']);
+for(const path of trackedFiles){
+ const name=path.slice(path.lastIndexOf('/')+1);
+ const rootConfiguration=!path.includes('/')&&(['.toml','.json','.jsonc','.yaml','.yml'].some(extension=>name.endsWith(extension))||name.includes('.config.'));
+ const packageConfiguration=packageRoots.some(pkg=>path.startsWith(`${pkg}/`))&&(metadataNames.has(name)||name.startsWith('tsconfig.')||name.includes('.config.')||path.includes('/.cargo/'));
+ if(rootConfiguration||path.startsWith('.cargo/')||packageConfiguration)paths.add(path);
+}
 const head=git(['rev-parse','HEAD']);
 assert.equal(head,manifest.sourceRevision);
 const trackedStatus=git(['status','--porcelain','--untracked-files=no']);
