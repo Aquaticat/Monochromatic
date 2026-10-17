@@ -331,10 +331,15 @@ On 2026-10-17,
 the cohort-bound route superseded that preparation at
 `b2dcdc40d8ae2cfb1f7e13001db28ad8f17626b3`,
 with a clean worktree and matching remote branch OID.
+The standalone artifact extension superseded that route on 2026-10-17 at
+`8719ad3db0167574a5a8324132fa9a0bb74fd098`,
+also clean and remotely matched on the same branch.
 Workflow `.depot/workflows/depot-complete-vm-original.yml`,
 job `vm-original`,
-runs `//package/dev-script/task-util:trial:depot:vm:original`.
-The adapter invokes only the authored source command
+runs the natural build,
+`//package/dev-script/task-util:trial:depot:vm:original`,
+and the separate standalone consumer.
+The original-task adapter invokes only the authored source command
 `mise run //package/cli/vmsync:test:e2e`.
 That source task owns its existing bundle-build dependency.
 The logger manifest owner corrected the old inherited `test:unit` plus explicit file argument
@@ -372,8 +377,150 @@ with a 20-minute provider timeout and 600-second source-command bound.
 The task definition parsed through mise,
 its inline Node module passed syntax checking,
 and its committed workflow/source-task selection matched the corrected route.
-The new adapter's consumer invocation is reserved for the coherent replay;
-these checks do not establish a new provider result.
+The natural build and both rootless/default-rootful standalone consumer modes passed local actual-task controls.
+These checks do not establish a new provider result.
+
+### Standalone natural-bundle consumer
+
+Task `trial:depot:vm:build` invokes the unchanged source task
+`mise run //package/cli/vmsync:build:js:node`.
+It requires a successful cohort check and a matching source-before receipt,
+checks source identity before and after the build,
+and retains `natural-build.json` plus `vmsync/index.mjs`.
+The schema-version-one receipt binds the actual build command,
+exit,
+timestamps,
+source identity pair,
+cohort/request metadata,
+case-manifest digest,
+source/harness revisions,
+bundle bytes/SHA-256,
+and source-selected Node executable bytes/SHA-256/version.
+The original authored `test:e2e` still owns and executes its natural build dependency.
+
+Task `trial:depot:vm:consume` is an additional required workflow step.
+Its condition uses `always()` with successful `cohort`,
+`source_before`,
+and `vm_build` outcomes.
+It can therefore consume the actual build after `vm_original` fails,
+while the original source gate continues to fail the job.
+It validates the successful natural build receipt,
+all cohort/source/harness/case joins,
+both source identities,
+the retained artifact path and exact bytes,
+and the actual source-selected Node bytes/version before creating a container.
+
+The container receives only the copied bundle,
+its build receipt,
+Node,
+and the ELF loader/shared libraries reported by `ldd`.
+It has no image layer,
+source mount,
+`node_modules`,
+network,
+provider token,
+or GitHub token.
+It uses a read-only private root filesystem with a disposable `:O` overlay,
+two CPUs,
+2147483648 bytes of memory,
+512 PIDs,
+and a 60-second container bound.
+The actual bundle must pass `--help` and empty `list`.
+The consumer records actual cgroup limits,
+memory peak and peak/limit fraction,
+network interfaces,
+complete command outputs/statuses,
+and the build receipt/bundle hashes in `bundle-consumer.json`.
+
+The original `MODULE_NOT_FOUND` result and both configured lifecycle identities remain separate.
+Neither `vmsync lifecycle (Linux) > full CLI lifecycle`
+nor `vmsync lifecycle (Windows) > full CLI lifecycle` was executed by these smoke checks.
+No guest,
+Windows fixture,
+emulator,
+or real libvirt session is used.
+The source-root absolute-file probe reached its actual Linux download command
+and stopped under the intentional no-network boundary;
+it is not a lifecycle pass.
+
+The [artifact evidence](../audit/depot-vm-artifact-consumer-2026-10-17.evidence.json)
+retains 19 actual build/source/consumer controls,
+two actual default-rootful controls,
+and the 28 cohort/source regression controls at the final ref.
+Only the GitHub contents response is synthetic in the artifact controls;
+the natural build,
+original failure,
+and copied-bundle commands execute unchanged.
+Both consumer modes report an absent owned container,
+unchanged copied lower-tree inputs,
+and removed private rootfs.
+The rootless memory peak was 44994560 bytes (fraction 0.0209522),
+and the default rootful peak was 44720128 bytes (fraction 0.0208244).
+Provider compute and account usage remain unmeasured by these local controls.
+
+### Standalone rootfs cleanup failure
+
+Harness `02ea2eb5675c68677b694163966f3707eac71fb1` passed both bundle smoke commands,
+then Node `rmSync` emitted `EACCES, Permission denied: '<private-rootfs>'`.
+The container was already absent.
+The remaining runtime directories belonged to mapped UID/GID `524288`;
+`etc` had mode `0755` and its zero-byte placeholder files had mode `0700`.
+The adapter had supplied a plain `--rootfs` directory,
+then incorrectly assumed every resulting inode remained removable by the outer caller.
+The failed record and fresh remaining-inode inventory are retained separately in the artifact evidence.
+
+Podman 5.8.7,
+commit `c593b672bf3db1173aebea565ebf1a724ea196dc`,
+was inspected in the read-only clone `~/temp/agent/podman-20261017`.
+Its `libpod/container_internal.go:1847` creates `etc`,
+then line 1853 assigns container-root ownership when that directory was newly created:
+
+```go
+// Podman libpod/container_internal.go:1847 at c593b672bf3d.
+err = unix.Mkdirat(dirfd, "etc", 0o755)
+// The intervening error check is omitted from this excerpt.
+if err == nil && (rootUID != 0 || rootGID != 0) {
+    err = unix.Fchownat(dirfd, "etc", rootUID, rootGID, unix.AT_SYMLINK_NOFOLLOW)
+}
+```
+
+The same file's overlay branch at line 1778 calls `overlay.Mount`,
+and line 1809 changes the active mountpoint to the overlay:
+
+```go
+// Podman libpod/container_internal.go:1793 and line 1809 at c593b672bf3d.
+overlayMount, err := overlay.Mount(contentDir, c.config.Rootfs, overlayDest,
+    c.RootUID(), c.RootGID(), c.runtime.store.GraphOptions())
+mountPoint = overlayMount.Source
+```
+
+The verified adapter repair uses `--rootfs <private-rootfs>:O`.
+Runtime changes now belong to disposable Podman overlay storage,
+and the copied lower tree remains unchanged and removable by its caller.
+The tradeoff is requiring working Podman overlay storage.
+The adapter inventories the actual lower tree after the container exits,
+checks container absence,
+and records rootfs removal;
+a cleanup error still fails the consumer.
+Merely using `--rm` did not remove the externally supplied plain rootfs.
+Merely retaining the pre-run file list missed runtime-created inodes.
+
+#### Upstream filing decision
+
+1.  This was the repository adapter's cleanup assumption,
+    not a demonstrated Podman defect.
+2.  The adapter can select documented overlay storage and verify its cleanup.
+3.  Podman's installed `podman-run` documentation supports `--rootfs :O`.
+4.  External contribution review is inapplicable because no upstream report is proposed.
+5.  The measured failure affected our new consumer's cleanup after successful smoke commands.
+6.  Actual allowed/rejected controls and both rootless/rootful cleanup positives are retained.
+
+All-state current-repository searches for rootfs cleanup,
+Vmsync EACCES,
+and mapped-UID cleanup found no matching incident.
+Repository [issue 1134](https://github.com/Aquaticats/Monochromatic/issues/1134)
+tracks the adapter defect and its verified repair.
+No Podman upstream report or fileable draft is warranted.
 
 ### Common cohort binding
 

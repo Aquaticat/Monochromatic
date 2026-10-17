@@ -108,6 +108,35 @@ It does not write either shared historical checkout.
 The natural frozen dependency install and `//package/cli/vmsync:build:js:node` remain source-owned tasks.
 No emulator or provider run is dispatched by this probe.
 
+### Actual natural-build and artifact controls
+
+The bounded probe completed the frozen source install and natural `build:js:node` task.
+Its 502093-byte bundle has SHA-256
+`d40a77b4ce8f3387b1b1d921f1c592ab952cc2a396d4c6e523b85458f65455b6`.
+The build/install container's measured peak was 1776865280 bytes against its 2147483648-byte limit,
+a fraction of 0.8274.
+These are functional controls;
+the timings are not a provider performance comparison.
+
+The actual authored `test:e2e` command rebuilt the bundle and reproduced `MODULE_NOT_FOUND`.
+The unchanged absolute test file from the repository root passed that resolution boundary,
+then its actual Linux `mvm create` command stopped at `mvm: fetch failed`
+under the deliberate `--network=none` constraint.
+No image was downloaded,
+neither lifecycle body executed,
+and no Windows fixture or guest was created.
+
+The copied natural bundle passed standalone `--help` and empty `list` checks
+without source,
+`node_modules`,
+or network access.
+The final VM workflow registers this as a separate,
+cohort-bound [artifact consumer](depot-vm-runtime-paths.md#standalone-natural-bundle-consumer).
+It runs after the failed original command only when the actual build and source/cohort guards succeeded.
+The source gate remains failed.
+The [retained controls](../audit/depot-vm-artifact-consumer-2026-10-17.evidence.json)
+keep the root-cwd download stop and the standalone bundle result separate.
+
 Guest cleanup also requires an outer guard:
 the Linux cleanup declaration at line 184 follows its setup commands,
 and the Windows cleanup declaration at line 378 does the same.
