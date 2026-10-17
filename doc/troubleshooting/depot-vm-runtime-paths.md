@@ -93,9 +93,16 @@ Run `rv6hfj76w9` crossed both socket-length gates and progressed through templat
 The final prepared guest then failed with a different diagnostic:
 QEMU could not connect to its virtiofs socket because the connection was refused.
 That result does not establish why virtiofsd exited.
-The next diagnostic harness retains private QEMU and virtiofs daemon logs before cleanup.
+Diagnostic harness `01c948cac2` retains private QEMU and virtiofs daemon logs before cleanup.
 Both socket failures are tracked in issue `#1074`;
 the independently verified missing-runtime repair is closed in `#1075`.
+Run `rv6hfj76w9` actually booted the template,
+received `guest agent on template-setup is ready`,
+shut the guest down,
+and saved its standalone template image.
+Those executed boundaries verify the short runtime and monitor paths,
+so `#1074` is closed.
+They do not establish a working shared-directory guest or lifecycle suite.
 
 The recipe is for a disposable runner with sudo,
 not a request to change the user's real libvirt state.
@@ -103,6 +110,70 @@ It uses a separate `qemu:///session`,
 asserts an empty initial domain list,
 and permits cleanup only for the explicitly owned trial domain names.
 Guest preparation and teardown remain independently required.
+
+## Separate virtiofs primary-group prerequisite
+
+Run `22b5683gx8`,
+attempt `w1zscshgq1`,
+used diagnostic harness `01c948cac225276eedf76c5c062227eea9ba90c3`
+and unchanged historical source `ef01490f5e960f8ca0b424c12242caeb3c5a2b5e`.
+Its `logger-vm-evidence` artifact is 18,429 bytes,
+SHA-256 `05e1a751216a14332fa458a4c3538cd5869f0bdff9574abb5e553216546c3581`.
+The retained `daemon-mvm-depot-preparation-ubuntu-fs0-virtiofsd.log`
+identifies why the shared-directory daemon did not accept QEMU's connection:
+
+```text
+[2026-10-16T04:09:02Z ERROR virtiofsd::sandbox] sandbox: couldn't setup id mappings: write to uid map failed: newuidmap: Target process 3476 is owned by a different user: uid:1001 pw_uid:1001 st_uid:1001, gid:1001 pw_gid:117 st_gid:1001
+```
+
+The process and target GID are 1001,
+while passwd requires primary GID 117.
+This is the same ownership guard independently traced for
+[rootless Podman](depot-rootless-podman-group-identity.md),
+but a different consumer boundary.
+The observed virtiofs daemon diagnostic establishes this VM preparation failure;
+the Podman result alone would not establish it.
+
+The current inspected Shadow revision `e9bc595fd20558cf51aef096db262232090e8fb8`
+still rejects the mismatch in `src/newuidmap.c:132`:
+
+```c
+/* Shadow, src/newuidmap.c:132 */
+if ((getuid() != pw->pw_uid) ||
+    (!getdef_bool("GRANT_AUX_GROUP_SUBIDS") && (getgid() != pw->pw_gid)) ||
+    (pw->pw_uid != st.st_uid) ||
+    (getgid() != st.st_gid)) {
+```
+
+That source guard and the actual daemon log support a group-identity rejection.
+They do not establish why the prepared sandbox inherited this group,
+or establish a libvirt or Shadow defect.
+The deprecated `-o` option warning in the same log is separate from the fatal diagnostic.
+Changing only socket paths cannot correct the observed primary-group mismatch.
+
+Harness `a683cd54f9` records runner process and passwd group identities,
+then relaunches the disposable harness with the same UID and passwd primary GID when needed.
+It uses `sudo --non-interactive --preserve-env setpriv`
+with `--reuid`,
+`--regid`,
+and `--init-groups`.
+A marker prevents recursive relaunch;
+an assertion rejects a second mismatch.
+This candidate changes only the disposable cloud process identity,
+not passwd,
+the workstation account,
+or historical source.
+It is awaiting a real invocation and consumer verification.
+
+The fifth run built the historical source bundle,
+again measured the original package task's separate working-directory failure,
+booted and shut down the template,
+and failed final guest preparation.
+Cleanup errors were empty,
+and the private domain list was empty after cleanup.
+No Ubuntu/Windows lifecycle test pass follows from this attempt.
+The original task remains tracked by `#1076`;
+running the source suite from the repository root cannot replace that task result.
 
 ## What does not work
 
