@@ -77,7 +77,24 @@ and ignores resize requests.
 The additional fixed-size software parent therefore changes the display geometry.
 Root's next consumer control will wrap the locked published binary with its supported
 `--headless --gpu software` mode so each authored session owns its requested output size.
-This has not yet been exercised by the actual E2E consumer.
+The wrapper passed real disposable version,
+help,
+argument-boundary,
+child-exit,
+missing-binary,
+and removed-headless negative controls.
+Clean pushed harness `107b968b957dc8cb47540df94edda02e26445749`
+is now running native control `rfq31sq4g9` and desktop control `jq7ctm8pb2`.
+Each dispatch independently pushed and checked remote equality and clean status.
+Both workflows now retain before/after immutable source identity records.
+Root owns one terminal waiter for both runs;
+actual GUI geometry,
+all configured sessions,
+assertion identities,
+resource counters,
+and cleanup still need reconciliation.
+Existing issue `#1007` already tracks the nested-route pointer/text boundary;
+the measured geometry belongs there rather than in a duplicate issue.
 No causal claim about the individual interaction failures is made before that control.
 The proposed in-memory session-continuation adapter is deferred pending geometry recovery.
 Root grafted the truthful executor metadata repair while preserving native nextest continuation

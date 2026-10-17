@@ -19,7 +19,7 @@ This geometry defect is established independently of the cause of each pointer o
 ## Root cause
 
 At harness `9f4a01f699f09abb25f10258455ac0faed0ecae8`,
-`package/dev-script/task-util/mise.toml:694` started an additional software parent with this argument fragment:
+`package/dev-script/task-util/mise.toml:649` started an additional software parent with this argument fragment:
 
 ```typescript
 // package/dev-script/task-util/mise.toml, historical trial harness
@@ -39,6 +39,14 @@ export const WIDE_WINDOW = {
 ```
 
 The parent is a fixture compositor that deliberately fills its screen with the hosted toplevel.
+Its `new_toplevel` implementation at
+`package/cli/nested-wayland-session/src/handler/xdg_shell.rs:208` calls:
+
+```rust
+// package/cli/nested-wayland-session/src/handler/xdg_shell.rs
+set_fullscreen(&surface, self.screen.geometry);
+```
+
 `package/cli/nested-wayland-session/src/handler/xdg_shell.rs:98` sets fullscreen state:
 
 ```rust
@@ -53,7 +61,6 @@ The same helper at line 114 assigns the parent's logical screen size:
 state.size = Some((geometry.logical_width, geometry.logical_height).into());
 ```
 
-The module explicitly ignores client move and resize requests.
 Consequently,
 nesting the E2E compositor inside this fixed-size parent changes its output geometry.
 The wide test's Search target remains `x: 911` in `layout.ts:75`,
