@@ -116,9 +116,9 @@ the exact timestamped notices and paired source/common records are durably retai
 Both Alpine architecture jobs succeeded.
 The original PowerShell file assertion failed on all three Windows variants,
 while their independent merged-stream probes captured the expected version.
-Their uncaptured-console probes still require independent provider-log validation.
+Every uncaptured-console provider step independently printed the exact expected version.
 Native host Windows and desktop macOS retain paired provenance,
-but source Clippy and nextest failures still require assertion-level reconciliation.
+and their nextest failures are reconciled against exact observed identities.
 Native host macOS lost its after-provenance record to Node `UND_ERR_CONNECT_TIMEOUT` at `api.github.com:443`.
 Its artifact action separately exhausted five CreateArtifact request attempts.
 These are distinct transport incidents;
@@ -146,6 +146,32 @@ Scoped document checks pass with source-snippet warnings retained.
 The configured dprint Markdown plugin is disabled,
 so dprint verification covers JSON artifacts only;
 Markdown is checked by monochromatic-lint and CommonMark rendering.
+
+
+The [host consumer evidence](../audit/depot-coherent-host-consumers-2026-10-17.evidence.json)
+retains every observed nextest identity,
+source failures,
+all Windows independent version receipts,
+and Alpine smoke logs and screenshot hashes.
+Each Windows variant passed 1432 nextest tests and reported one source skip.
+Each Alpine architecture passed 1461 nextest tests and reported one source skip.
+All three Alpine audio/window scenarios and the PipeWire null-sink link passed on each architecture.
+Desktop macOS recorded 1406 passes and 27 failures;
+native macOS first attempt recorded 1355 passes and 27 failures.
+Both actual identity sets equal the earlier same-source macOS inventories,
+with a dropped-identity positive control.
+Their summaries report one skip without naming that skipped identity;
+the source-declared ignored benchmark remains separately identified.
+Native Windows is source-compile-blocked before test execution.
+The native macOS first attempt adds an untracked `measure::tests::two_sweeps_of_one_load_decode_a_track_only_once` failure:
+the decode count was two instead of one.
+Its issue must be filed without claiming a cause;
+the unchanged-source retry is still pending.
+Native and desktop style findings are open as `#1173` and `#1174`.
+The separate macOS API and artifact transport incidents are open as `#1175` and `#1176`.
+Private verifier record-classification repairs are filed and closed as `#1177`.
+Source trace and executed historical-log retrieval are in
+[the transport troubleshooting record](../troubleshooting/github-actions-native-macos-provenance-transports.md).
 
 
 The four case manifests now have complete static registrations with `completeGraph: true`.

@@ -38337,6 +38337,20 @@
       "scorecardPolicySkipped": 4,
       "nativeMacPairedCompletionPending": true,
       "allHostAssertionsReconciled": false
+    },
+    "hostConsumerReconciliation": {
+      "path": "doc/audit/depot-coherent-host-consumers-2026-10-17.evidence.json",
+      "windowsIndependentConsumersVerified": true,
+      "alpineSmokeVerified": true,
+      "nativeMacRetryPending": true,
+      "newSourceMeasureFailureNeedsIssue": true,
+      "openIssues": [
+        1173,
+        1174,
+        1175,
+        1176
+      ],
+      "closedPrivateVerifierIssue": 1177
     }
   }
 }

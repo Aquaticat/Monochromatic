@@ -698,3 +698,18 @@ The [verified incident receipts](../audit/depot-coherent-incident-closures-2026-
 retain exact bodies and closing comments.
 The native macOS retry remains active after separate API-connect and artifact-service timeout boundaries.
 Those incidents and the remaining changed-Rust source-style failures still need issue reconciliation.
+
+## Source style and separate macOS transport incidents on October 17
+
+- `#1173`: native changed-Rust prose-style errors.
+- `#1174`: desktop changed-Rust prose-style and missing-rustdoc errors.
+- `#1175`: native macOS after-provenance connection timeout at the Contents API.
+- `#1176`: native macOS artifact-service CreateArtifact retry exhaustion.
+- `#1177` is closed: the private verifier now distinguishes Alpine smoke/provenance archives
+  and actual Scorecard output from echoed task source.
+
+The [host consumer evidence](../audit/depot-coherent-host-consumers-2026-10-17.evidence.json)
+retains exact filed bodies and source/platform consumer outcomes.
+The native macOS decode-count assertion is newly observed and still needs its scoped issue.
+The API and artifact failures have no established shared cause;
+the unchanged-harness macOS retry remains under verification.
