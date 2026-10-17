@@ -5,7 +5,7 @@
 Execute the complete reviewed logger change surface at
 `ef01490f5e960f8ca0b424c12242caeb3c5a2b5e`,
 including its affected consumers and external host boundaries.
-The frozen `.depot/manifests/logger.json` has SHA-256
+The development `.depot/manifests/logger.json` has SHA-256
 `f4cbd47f210f5b031d76c5fc1c28fa704b349621f91eefa3f4f3ad575acfedc3`.
 It contains 719 package checks and 19 external check specifications.
 
@@ -27,6 +27,21 @@ Every package Oxlint specification retains its unchanged package task and empty 
 
 The retained graph verification is summarized in the companion evidence JSON.
 The earlier import audit and source freeze remain in the branch's manifest history.
+
+## Corrected final manifest
+
+On 2026-10-17, harness commit `0095ae37c7` corrects the Vmsync external specification
+to the authored `//package/cli/vmsync:test:e2e` task with empty arguments,
+package scope and the declared `package.cli.vmsync.build` prerequisite.
+The source task is retained in `package/cli/vmsync/mise.toml`.
+The final manifest SHA-256 becomes
+`4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7`.
+The development requests retain their original digest and alternate unit-file route provenance.
+Runtime equivalence of that alternate route has not been verified.
+A comparison of the parsed manifests proves all 719 package checks
+and the other 18 external specifications are unchanged.
+The serialized package-check array has SHA-256
+`c7c7aca4f7a2d3865bcaf9abc32ae8a7f546d7170be20c90f782402ffa6200b8`.
 
 ## Current execution requests
 
@@ -88,7 +103,9 @@ this does not verify storage charges or the account ledger.
 
 ## Remaining evidence
 
-Both Depot requests are running.
+Both Depot development requests are terminal with failed status.
+The external collection retains every attempt and hashes every downloaded artifact.
+The package collection is in progress.
 Terminal collection must retain every attempt,
 download and hash the artifacts,
 reconcile executed check identities against the frozen manifest,
@@ -96,6 +113,9 @@ and classify prerequisite suppression separately from source failures.
 Provider execution intervals remain usage proxies until paired with the declared allocation.
 No passing complete graph or whole passing latency is established by this interim record.
 
-The next action is terminal collection and per-check reconciliation,
-followed by narrowly scoped harness recovery for execution failures.
+The next actions are package terminal collection and per-check reconciliation,
+bounded selective prerequisite recovery,
+then a combined workflow with root-owned host, scanner, policy and VM routes.
+The final coherent replay is held until the root agent aligns those routes.
+The prepared combined workflow remains incomplete until that integration is verified.
 Historical source failures stay terminal diagnostics for this measurement.

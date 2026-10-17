@@ -1,6 +1,6 @@
 {
   "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
-  "manifestSha256": "f4cbd47f210f5b031d76c5fc1c28fa704b349621f91eefa3f4f3ad575acfedc3",
+  "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
   "checks": 719,
   "externalChecks": 19,
   "acyclic": true,
@@ -220,5 +220,44 @@
     "vcpuSeconds": 1530,
     "standardPublicComputeUsd": 0,
     "ledgerVerified": false
-  }
+  },
+  "previousDevelopmentManifestSha256": "f4cbd47f210f5b031d76c5fc1c28fa704b349621f91eefa3f4f3ad575acfedc3",
+  "unchangedPackageGraphSha256": "c7c7aca4f7a2d3865bcaf9abc32ae8a7f546d7170be20c90f782402ffa6200b8",
+  "manifestCorrection": {
+    "date": "2026-10-17",
+    "commit": "0095ae37c7",
+    "checkId": "special.package.cli.vmsync.src.lifecycle.expensive.unit.test.ts",
+    "previousTask": "//package/cli/vmsync:test:unit",
+    "currentTask": "//package/cli/vmsync:test:e2e",
+    "addedPrerequisite": "package.cli.vmsync.build",
+    "scope": "package",
+    "arguments": [],
+    "sourceTask": "package/cli/vmsync/mise.toml",
+    "unchangedPackageChecks": 719,
+    "unchangedOtherExternalChecks": 18,
+    "oldRouteRuntimeEquivalenceVerified": false
+  },
+  "developmentRuns": [
+    {
+      "id": "4x77lb56cs",
+      "revision": "b0c730f8bfb9081345cda89da1f79ff3239e7fb6",
+      "status": "failed",
+      "collection": "pending"
+    },
+    {
+      "id": "j4m7gw8mwg",
+      "revision": "1c189c7068e50401b0288f8ddbd3d0946999a913",
+      "status": "failed",
+      "collection": "complete",
+      "artifactDownloadManifest": "collected-j4m7gw8mwg/logger-artifact-downloads.json"
+    }
+  ],
+  "completeGraph": false,
+  "pending": [
+    "Collect and reconcile package development run per check",
+    "Verify prerequisite repairs with bounded selective recovery",
+    "Integrate root-owned GHA and VM routes into final coherent request",
+    "Dispatch final coherent replay only after root alignment",
+    "Reconcile complete terminal graph and cost"
+  ]
 }
