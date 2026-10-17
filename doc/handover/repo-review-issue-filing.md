@@ -177,7 +177,8 @@ Completed units (findings validated):
  `code-shim-1` (7 findings),
  `code-typeface-1` (11 findings),
  `code-test-fixture-2` (10 findings),
- `code-webapp-productivity-1` (12 findings).
+ `code-webapp-productivity-1` (12 findings),
+ `docs-troubleshooting-1` (12 findings).
 
 Cross-unit leads:
  `doc/planning/music-player-shared-truepeak-core.md` repeats the retired truepeak policy
@@ -228,6 +229,10 @@ Cross-unit leads:
  52 `no-restricted-syntax` and `no-regex` suppressions across 32 files carry inline
  justifications but no `.md` doc as `LN3` requires, per `code-typeface-1` notes;
  hand to the `cross-build` reviewer.
+ `doc/planning` and `doc/handover` files also name the deleted
+ `.github/workflows/cli-git-trust.yml` and `cli-git-performance.yml` workflows per
+ `docs-troubleshooting-1-008`;
+ dedupe candidate for that finding's issue.
  The stale pre-transfer `repository.url` (Aquaticat instead of Aquaticats) spans most
  `package.json` files repo-wide per `code-config-1-001`;
  likely dedupe target is open issue #1124;
@@ -237,20 +242,19 @@ Cross-unit leads:
  hand to the `cross-dependency` reviewer when it launches.
 
 Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
- `docs-troubleshooting-1`,
  `docs-troubleshooting-2`,
  `docs-audit`,
  `docs-planning`,
  `docs-decision`,
  `docs-handover`,
  `config-root`,
- `config-root-docs` (launched as a replacement).
+ `config-root-docs`,
+ `config-ci` (launched as a replacement).
 
 Queued units in launch order (flat list; the first entry launches next):
 
 - `code-stub-1`,
 - `docs-troubleshooting-1`,
-- `config-ci`,
 - `config-paused-1`,
 - `config-paused-2`,
 - `cross-security`,
