@@ -147,7 +147,8 @@ Completed units (findings validated):
  `code-claude-code-plugin-1` (16 findings),
  `code-cloudflare-worker-1` (9 findings),
  `code-codex-plugin-1` (5 findings),
- `code-agent-harness-shared-1` (11 findings).
+ `code-agent-harness-shared-1` (11 findings),
+ `code-cli-2` (14 findings).
 
 Cross-unit leads:
  `doc/planning/music-player-shared-truepeak-core.md` repeats the retired truepeak policy
@@ -174,20 +175,22 @@ Cross-unit leads:
  owner candidate `package/cli/mutation-test/src/is-record.ts`) per
  `code-agent-harness-shared-1-002`;
  hand to the `cross-duplication` reviewer when it launches.
+ The byte-to-hex nibble encoder is hand-copied across at least six Rust packages
+ (`code-cli-2-006` names three more sites in its notes);
+ hand to the `cross-duplication` reviewer when it launches.
 
 Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
- `code-cli-2`,
  `code-config-1`,
  `code-desktop-app-1`,
  `code-desktop-daemon-1`,
  `code-dev-script-1`,
  `code-figma-1`,
  `code-git-1`,
- `code-intellij-plugin-1` (launched as a replacement).
+ `code-intellij-plugin-1`,
+ `code-kwin-1` (launched as a replacement).
 
 Queued units in launch order (flat list; the first entry launches next):
 
-- `code-kwin-1`,
 - `code-learning-1`,
 - `code-linter-1`,
 - `code-mcp-1`,
