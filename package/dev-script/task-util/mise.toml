@@ -668,6 +668,17 @@ registerHooks({ load(url, context, nextLoad) {
 } });
 `
 }
+async function sourceSessions(source) {
+  const relativePath = 'package/music-player/desktop-e2e/src/selection.ts'
+  const path = join(source, relativePath)
+  const bytes = readFileSync(path)
+  assert.deepEqual(bytes, execFileSync('git', ['show', `HEAD:${relativePath}`], { cwd: source }), 'Session inventory must use committed source selector bytes')
+  const { sessionsFor } = await import(pathToFileURL(path).href)
+  const sessions = sessionsFor({ only: '' })
+  assert(Array.isArray(sessions) && sessions.length > 0 && sessions.every((name) => typeof name === 'string'), 'The source selector must return a nonempty session list')
+  assert.equal(new Set(sessions).size, sessions.length, 'The source selector must not duplicate session routes')
+  return { relativePath, sourceSha256: createHash('sha256').update(bytes).digest('hex'), filter: '', sessions }
+}
 const wrapperPath = join(directory, 'desktop-headless-compositor.mts')
 const wrapperSource = compositorWrapper(publishedCompositor.path)
 const help = spawnSync(publishedCompositor.path, ['--help'], { encoding: 'utf8', timeout: 15000 })
@@ -689,6 +700,7 @@ const hookSource = continuationHook({ targetUrl: pathToFileURL(runnerPath).href,
 writeFileSync(hookPath, hookSource, { mode: 0o600 })
 const nodeOptions = `${process.env.NODE_OPTIONS ?? ''} --import=${pathToFileURL(hookPath).href}`.trim()
 const continuation = { mode: 'ordinary-session-failure-continuation', sourceRelativePath: runnerRelativePath, sourceSha256: runnerSha256, hookPath, hookSha256: createHash('sha256').update(hookSource).digest('hex'), sourceEditedOnDisk: false, syntheticFailurePrefix: 'trial/session-aborted/', fatalErrorsPreserved: ['SafetyStopError', 'unknown errors', 'cleanup precondition errors'] }
+const sessionInventory = await sourceSessions(source)
 const manifestBytes = readFileSync(join(process.env.GITHUB_WORKSPACE, `harness/.depot/manifests/${manifestName}.json`))
 const manifest = JSON.parse(manifestBytes)
 const startedAt = new Date().toISOString()
@@ -790,7 +802,7 @@ for(const [path,contents] of ${JSON.stringify(overrides)}){
   run({ args: ['rm', name], required: false })
   const cleanupVerified = run({ args: ['container', 'exists', name], required: false }).status === 1 && !existsSync(marker)
   runtimeCompleted = runtimeCompleted && cleanupVerified
-  const record = { schemaVersion: 1, event: 'check-finished', caseId: manifest.caseId, sourceRevision: manifest.sourceRevision, manifestSha256: createHash('sha256').update(manifestBytes).digest('hex'), checkId: 'desktop-app.test.e2e', task: '//package/music-player/desktop-app:test:e2e', args: [], startedAt, finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode: suite?.status ?? null, signal: suite?.signal ?? null, status: runtimeCompleted && suite?.status === 0 ? 'passed' : 'failed', runtimeCompleted, cleanupVerified, failure, compositorSelection, continuation, sessions: ['wide', 'narrow', 'dialog', 'quit', 'states', 'visual'], resources: { cpus: 2, memoryGiB: 2, containerPidsMax: 512, privateUserSliceTasksMax: 448, privateServiceTasksMax: 256 }, providerJobUrl: process.env.DEPOT_JOB_URL }
+  const record = { schemaVersion: 1, event: 'check-finished', caseId: manifest.caseId, sourceRevision: manifest.sourceRevision, manifestSha256: createHash('sha256').update(manifestBytes).digest('hex'), checkId: 'desktop-app.test.e2e', task: '//package/music-player/desktop-app:test:e2e', args: [], startedAt, finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode: suite?.status ?? null, signal: suite?.signal ?? null, status: runtimeCompleted && suite?.status === 0 ? 'passed' : 'failed', runtimeCompleted, cleanupVerified, failure, compositorSelection, continuation, sessionInventory, sessions: sessionInventory.sessions, resources: { cpus: 2, memoryGiB: 2, containerPidsMax: 512, privateUserSliceTasksMax: 448, privateServiceTasksMax: 256 }, providerJobUrl: process.env.DEPOT_JOB_URL }
   writeFileSync(join(directory, `${manifestName}-desktop-e2e-results.json`), JSON.stringify(record, null, 2))
   console.log('\n' + JSON.stringify(record))
 }
