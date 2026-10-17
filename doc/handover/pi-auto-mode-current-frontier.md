@@ -216,13 +216,26 @@ Commit `167a6e7dfa` consolidates native membership and execution state across au
 The source compiler borrows those exact records and original prepared serialization.
 The separate `manual-group.mjs` owner and automatic/manual execution lookup branches are removed.
 This internal context is never accepted from provider responses or tool arguments.
-Build `native-release-Q1COLq` and types pass,
-but native consumer verification is pending and preparation/constructor fixtures need migration.
+Build `native-release-Q1COLq` and types pass.
+The first native consumer run on `native-release-hvOFxD` fails before all three effects:
+the shared execution check calls a public source operation from inside another public source operation.
+The actual exception is `JudgmentConstructionError: Judgment operations cannot reenter through callbacks`.
+Commit `7b9faaa6e7` binds the existing unwrapped dependency check for native entry;
+it retains the public freshness checks at the outer dispatcher boundary.
+Constructor and source-preparation fixtures now create genuine native group records.
+Source preparation failure retains those prepared records without publishing a source-policy selection.
+On `native-release-WjFpol`,
+the 18 native lifecycle cases,
+progress callbacks,
+single-call program profiles,
+24 fallback cases,
+execution/child-lifetime catalogs,
+constructor/preparation tests,
+and package type check pass in bounded disposable consumers.
 The followup restricts manual entry to the actual scoped Allow response,
 without retaining eligibility from a failed automatic review.
-Next action: finish the fixture migration,
-rebuild,
-run the actual native route and child catalogs,
+Next action: replace the child's deferred dispatcher with the same actual native phases,
+preserving its original enclosing invocation lifetime,
 then repeat configured-host and payload/prohibition verification before renewing readiness.
 
 A provider-payload audit finds a separate missed shell boundary:
