@@ -21955,7 +21955,14 @@
     "sourceFailures": [
       {
         "id": "package.dev-script.file-enforcer.lint.oxlint",
-        "issue": 1066
+        "historicalDistinctIssue": 1066,
+        "currentBoundary": {
+          "ruleCounts": {
+            "test-import(require-eventual-artifact)": 62,
+            "eslint(no-irregular-whitespace)": 22
+          },
+          "panic": false
+        }
       },
       {
         "id": "package.module.toml-edit.fuzz.fuzz.coverage",
@@ -21976,5 +21983,906 @@
   "continuation": {
     "state": "Preparing isolated bounded routing; no dispatch authorized for the final cohort.",
     "required": "Independent mutation/container jobs, per-check deadline, incremental output and results, immutable source proof, artifact/cleanup reserve."
-  }
+  },
+  "sourceDiagnostics": {
+    "oxlint": {
+      "scope": {
+        "files": 137,
+        "rules": 485,
+        "threads": 1,
+        "warnings": 0,
+        "errors": 84
+      },
+      "ruleCounts": {
+        "test-import(require-eventual-artifact)": 62,
+        "eslint(no-irregular-whitespace)": 22
+      },
+      "diagnostics": [
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `../tracker.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/io/cat.unit.test.ts",
+          "line": 17,
+          "column": 24
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./cat.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/io/cat.unit.test.ts",
+          "line": 21,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./tracker.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/tracker.unit.test.ts",
+          "line": 17,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./glob.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/io/glob.unit.test.ts",
+          "line": 18,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./p.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/package/p.unit.test.ts",
+          "line": 6,
+          "column": 20
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `../tracker.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/io/write.unit.test.ts",
+          "line": 21,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./cat.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/io/write.unit.test.ts",
+          "line": 22,
+          "column": 30
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./write.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/io/write.unit.test.ts",
+          "line": 27,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./cache.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/io/cache.unit.test.ts",
+          "line": 21,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./tracker.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/integration.unit.test.ts",
+          "line": 21,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./exec.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/pipeline/exec.unit.test.ts",
+          "line": 6,
+          "column": 23
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./json.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/pipeline/json.unit.test.ts",
+          "line": 13,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./xml-coding.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/pipeline/xml.unit.test.ts",
+          "line": 11,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./xml.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/pipeline/xml.unit.test.ts",
+          "line": 20,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `../tracker.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/io/write-toml.unit.test.ts",
+          "line": 22,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./write-toml.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/io/write-toml.unit.test.ts",
+          "line": 23,
+          "column": 35
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./merge.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/package/merge.unit.test.ts",
+          "line": 6,
+          "column": 33
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./p.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/package/merge.unit.test.ts",
+          "line": 7,
+          "column": 20
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./toml.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/pipeline/toml.unit.test.ts",
+          "line": 9,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./write-atomic.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/io/write-atomic.unit.test.ts",
+          "line": 21,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./apply-plan.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/cargo/apply-plan.unit.test.ts",
+          "line": 9,
+          "column": 33
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./types.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/cargo/apply-plan.unit.test.ts",
+          "line": 10,
+          "column": 41
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `../pipeline/xml.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/jetbrains/lsp4ij.unit.test.ts",
+          "line": 23,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./lsp4ij.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/jetbrains/lsp4ij.unit.test.ts",
+          "line": 24,
+          "column": 45
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./lsp4ij-types.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/jetbrains/lsp4ij.unit.test.ts",
+          "line": 26,
+          "column": 44
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./manager.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/package/manager.unit.test.ts",
+          "line": 13,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `../fuzz-budget.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/io/glob.property.unit.test.ts",
+          "line": 33,
+          "column": 30
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./glob.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/io/glob.property.unit.test.ts",
+          "line": 37,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./glob-split.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/io/glob.property.unit.test.ts",
+          "line": 38,
+          "column": 28
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `../tracker.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/watch/watch-filter.unit.test.ts",
+          "line": 20,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./watch-filter.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/watch/watch-filter.unit.test.ts",
+          "line": 25,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./transform.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/pipeline/transform.unit.test.ts",
+          "line": 9,
+          "column": 8
+        },
+        {
+          "rule": "eslint(no-irregular-whitespace)",
+          "message": "Unexpected irregular whitespace",
+          "file": "package/dev-script/file-enforcer/src/io/staleness-manifest.ts",
+          "line": 209,
+          "column": 46
+        },
+        {
+          "rule": "eslint(no-irregular-whitespace)",
+          "message": "Unexpected irregular whitespace",
+          "file": "package/dev-script/file-enforcer/src/io/write.ts",
+          "line": 307,
+          "column": 23
+        },
+        {
+          "rule": "eslint(no-irregular-whitespace)",
+          "message": "Unexpected irregular whitespace",
+          "file": "package/dev-script/file-enforcer/src/io/write.ts",
+          "line": 308,
+          "column": 29
+        },
+        {
+          "rule": "eslint(no-irregular-whitespace)",
+          "message": "Unexpected irregular whitespace",
+          "file": "package/dev-script/file-enforcer/src/cargo/manage-cargo-manifests.ts",
+          "line": 108,
+          "column": 77
+        },
+        {
+          "rule": "eslint(no-irregular-whitespace)",
+          "message": "Unexpected irregular whitespace",
+          "file": "package/dev-script/file-enforcer/src/cargo/manage-cargo-manifests.ts",
+          "line": 108,
+          "column": 81
+        },
+        {
+          "rule": "eslint(no-irregular-whitespace)",
+          "message": "Unexpected irregular whitespace",
+          "file": "package/dev-script/file-enforcer/src/cargo/manage-cargo-manifests.ts",
+          "line": 108,
+          "column": 85
+        },
+        {
+          "rule": "eslint(no-irregular-whitespace)",
+          "message": "Unexpected irregular whitespace",
+          "file": "package/dev-script/file-enforcer/src/cargo/manage-cargo-manifests.ts",
+          "line": 108,
+          "column": 89
+        },
+        {
+          "rule": "eslint(no-irregular-whitespace)",
+          "message": "Unexpected irregular whitespace",
+          "file": "package/dev-script/file-enforcer/src/cargo/manage-cargo-manifests.ts",
+          "line": 115,
+          "column": 29
+        },
+        {
+          "rule": "eslint(no-irregular-whitespace)",
+          "message": "Unexpected irregular whitespace",
+          "file": "package/dev-script/file-enforcer/src/cargo/manage-cargo-manifests.ts",
+          "line": 115,
+          "column": 33
+        },
+        {
+          "rule": "eslint(no-irregular-whitespace)",
+          "message": "Unexpected irregular whitespace",
+          "file": "package/dev-script/file-enforcer/src/cargo/manage-cargo-manifests.ts",
+          "line": 115,
+          "column": 37
+        },
+        {
+          "rule": "eslint(no-irregular-whitespace)",
+          "message": "Unexpected irregular whitespace",
+          "file": "package/dev-script/file-enforcer/src/cargo/manage-cargo-manifests.ts",
+          "line": 115,
+          "column": 41
+        },
+        {
+          "rule": "eslint(no-irregular-whitespace)",
+          "message": "Unexpected irregular whitespace",
+          "file": "package/dev-script/file-enforcer/src/cargo/manage-cargo-manifests.ts",
+          "line": 115,
+          "column": 67
+        },
+        {
+          "rule": "eslint(no-irregular-whitespace)",
+          "message": "Unexpected irregular whitespace",
+          "file": "package/dev-script/file-enforcer/src/cargo/manage-cargo-manifests.ts",
+          "line": 115,
+          "column": 71
+        },
+        {
+          "rule": "eslint(no-irregular-whitespace)",
+          "message": "Unexpected irregular whitespace",
+          "file": "package/dev-script/file-enforcer/src/cargo/manage-cargo-manifests.ts",
+          "line": 115,
+          "column": 75
+        },
+        {
+          "rule": "eslint(no-irregular-whitespace)",
+          "message": "Unexpected irregular whitespace",
+          "file": "package/dev-script/file-enforcer/src/cargo/manage-cargo-manifests.ts",
+          "line": 115,
+          "column": 79
+        },
+        {
+          "rule": "eslint(no-irregular-whitespace)",
+          "message": "Unexpected irregular whitespace",
+          "file": "package/dev-script/file-enforcer/src/cargo/manage-cargo-manifests.ts",
+          "line": 115,
+          "column": 83
+        },
+        {
+          "rule": "eslint(no-irregular-whitespace)",
+          "message": "Unexpected irregular whitespace",
+          "file": "package/dev-script/file-enforcer/src/cargo/manage-cargo-manifests.ts",
+          "line": 115,
+          "column": 87
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./options-dir.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/jetbrains/options-dir.unit.test.ts",
+          "line": 19,
+          "column": 8
+        },
+        {
+          "rule": "eslint(no-irregular-whitespace)",
+          "message": "Unexpected irregular whitespace",
+          "file": "package/dev-script/file-enforcer/src/io/glob-split.ts",
+          "line": 60,
+          "column": 23
+        },
+        {
+          "rule": "eslint(no-irregular-whitespace)",
+          "message": "Unexpected irregular whitespace",
+          "file": "package/dev-script/file-enforcer/src/io/glob-expand.ts",
+          "line": 58,
+          "column": 53
+        },
+        {
+          "rule": "eslint(no-irregular-whitespace)",
+          "message": "Unexpected irregular whitespace",
+          "file": "package/dev-script/file-enforcer/src/io/glob-expand.ts",
+          "line": 64,
+          "column": 44
+        },
+        {
+          "rule": "eslint(no-irregular-whitespace)",
+          "message": "Unexpected irregular whitespace",
+          "file": "package/dev-script/file-enforcer/src/io/glob-mirror.ts",
+          "line": 173,
+          "column": 29
+        },
+        {
+          "rule": "eslint(no-irregular-whitespace)",
+          "message": "Unexpected irregular whitespace",
+          "file": "package/dev-script/file-enforcer/src/io/glob-mirror.ts",
+          "line": 174,
+          "column": 24
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./manager-defs.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/package/manager-defs.unit.test.ts",
+          "line": 9,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./types.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/package/manager-defs.unit.test.ts",
+          "line": 10,
+          "column": 38
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `../fuzz-budget.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/pipeline/json.property.unit.test.ts",
+          "line": 38,
+          "column": 30
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./json.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/pipeline/json.property.unit.test.ts",
+          "line": 48,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `../fuzz-budget.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/pipeline/toml.property.unit.test.ts",
+          "line": 37,
+          "column": 30
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./toml.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/pipeline/toml.property.unit.test.ts",
+          "line": 41,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `../fuzz-budget.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/pipeline/xml.property.unit.test.ts",
+          "line": 31,
+          "column": 30
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./xml-coding.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/pipeline/xml.property.unit.test.ts",
+          "line": 32,
+          "column": 37
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./xml.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/pipeline/xml.property.unit.test.ts",
+          "line": 40,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `../pipeline/xml.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/jetbrains/lsp4ij-entries.unit.test.ts",
+          "line": 12,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./lsp4ij-entries.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/jetbrains/lsp4ij-entries.unit.test.ts",
+          "line": 16,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./registry-parse.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/package/registry-parse.unit.test.ts",
+          "line": 6,
+          "column": 39
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./ensure-package.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/package/ensure-package.unit.test.ts",
+          "line": 9,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./p.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/package/ensure-package.unit.test.ts",
+          "line": 10,
+          "column": 20
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./evaluate-predicate.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/platform/evaluate-predicate.unit.test.ts",
+          "line": 6,
+          "column": 36
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `../fuzz-budget.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/jetbrains/options-dir.property.unit.test.ts",
+          "line": 33,
+          "column": 30
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./options-dir.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/jetbrains/options-dir.property.unit.test.ts",
+          "line": 38,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./ensure-package.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/package/ensure-package.unit.matrix.test.ts",
+          "line": 23,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./manager.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/package/ensure-package.unit.matrix.test.ts",
+          "line": 29,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./p.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/package/ensure-package.unit.matrix.test.ts",
+          "line": 30,
+          "column": 20
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `../fuzz-budget.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/pipeline/xml-coding.property.unit.test.ts",
+          "line": 37,
+          "column": 30
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./xml-coding.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/pipeline/xml-coding.property.unit.test.ts",
+          "line": 42,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `../fuzz-budget.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/package/registry-parse.property.unit.test.ts",
+          "line": 31,
+          "column": 30
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./registry-parse.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/package/registry-parse.property.unit.test.ts",
+          "line": 32,
+          "column": 39
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./io/staleness-manifest-lock-owner.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/staleness-lock-owner-regression.unit.test.ts",
+          "line": 18,
+          "column": 33
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./io/staleness-manifest-lock-owner-publish.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/staleness-lock-owner-regression.unit.test.ts",
+          "line": 22,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./io/staleness-manifest-lock-owner.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/staleness-lock-publication-contention.unit.test.ts",
+          "line": 11,
+          "column": 33
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./io/staleness-manifest-lock-owner-publish.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/staleness-lock-publication-contention.unit.test.ts",
+          "line": 16,
+          "column": 8
+        },
+        {
+          "rule": "test-import(require-eventual-artifact)",
+          "message": "Test imports `./io/staleness-manifest-lock.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.",
+          "file": "package/dev-script/file-enforcer/src/staleness-lock-publication-contention.unit.test.ts",
+          "line": 17,
+          "column": 38
+        }
+      ],
+      "output": "[//package/dev-script/file-enforcer:lint…] $ const { existsSync, readdirSync, statSync } = await import('node:fs')\n[//package/config/oxlint:build:js:node] $ rolldown --configLoader native --config rolldown.node.config.ts\n[log] <DIR>/text-character-DFjezojC.mjs                  chunk │ size:   0.27 kB\n[log] <DIR>/index.d.mts                                  chunk │ size:   0.44 kB\n[log] <DIR>/plugin-test-import.d.mts                     chunk │ size:   0.51 kB\n[log] <DIR>/plugin-prefer-readonly-parameter-type.d.mts  chunk │ size:   0.57 kB\n[log] <DIR>/plugin-tsdoc.d.mts                           chunk │ size:   0.66 kB\n[log] <DIR>/plugin-no-restricted-syntax.d.mts            chunk │ size:   0.86 kB\n[log] <DIR>/plugin-stylistic.d.mts                       chunk │ size:   1.21 kB\n[log] <DIR>/mutation-contract-DiEOK-iz.mjs               chunk │ size:   2.66 kB\n[log] <DIR>/plugins-CSTGmgff.mjs                         chunk │ size:   4.95 kB\n[log] <DIR>/plugin-test-import.mjs                       chunk │ size:  10.55 kB\n[log] <DIR>/index.mjs                                    chunk │ size:  13.71 kB\n[log] <DIR>/tagged-F-T7_DVY.mjs                          chunk │ size:  20.94 kB\n[log] <DIR>/plugin-tsdoc.mjs                             chunk │ size:  37.69 kB\n[log] <DIR>/plugin-stylistic.mjs                         chunk │ size:  41.48 kB\n[log] <DIR>/plugin-no-restricted-syntax.mjs              chunk │ size:  88.99 kB\n[log] <DIR>/index-4P3w2Uhw.d.mts                         chunk │ size: 145.58 kB\n[log] <DIR>/plugin-prefer-readonly-parameter-type.mjs    chunk │ size: 284.16 kB\n[log]\n[success] rolldown v1.2.9 Finished in 112.73 ms\n\n  × test-import(require-eventual-artifact): Test imports `../tracker.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/io/cat.unit.test.ts:17:24]\n 16 │ } from 'node:path';\n 17 │ import { reads, } from '../tracker.ts';\n    ·                        ───────────────\n 18 │ import {\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./cat.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/io/cat.unit.test.ts:21:8]\n 20 │   type GlobResults,\n 21 │ } from './cat.ts';\n    ·        ──────────\n 22 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./tracker.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/tracker.unit.test.ts:17:8]\n 16 │   writeTimestamps,\n 17 │ } from './tracker.ts';\n    ·        ──────────────\n 18 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./glob.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/io/glob.unit.test.ts:18:8]\n 17 │   mirrorGlobPath,\n 18 │ } from './glob.ts';\n    ·        ───────────\n 19 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./p.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n   ╭─[src/package/p.unit.test.ts:6:20]\n 5 │ } from '@monochromatic-dev/module-test/ts';\n 6 │ import { p, } from './p.ts';\n   ·                    ────────\n 7 │ \n   ╰────\n\n  × test-import(require-eventual-artifact): Test imports `../tracker.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/io/write.unit.test.ts:21:8]\n 20 │   writeTimestamps,\n 21 │ } from '../tracker.ts';\n    ·        ───────────────\n 22 │ import { globResults, } from './cat.ts';\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./cat.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/io/write.unit.test.ts:22:30]\n 21 │ } from '../tracker.ts';\n 22 │ import { globResults, } from './cat.ts';\n    ·                              ──────────\n 23 │ import {\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./write.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/io/write.unit.test.ts:27:8]\n 26 │   overwriteIfNotExists,\n 27 │ } from './write.ts';\n    ·        ────────────\n 28 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./cache.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/io/cache.unit.test.ts:21:8]\n 20 │   updateCache,\n 21 │ } from './cache.ts';\n    ·        ────────────\n 22 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./tracker.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/integration.unit.test.ts:21:8]\n 20 │   writes,\n 21 │ } from './tracker.ts';\n    ·        ──────────────\n 22 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./exec.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n   ╭─[src/pipeline/exec.unit.test.ts:6:23]\n 5 │ } from '@monochromatic-dev/module-test/ts';\n 6 │ import { exec, } from './exec.ts';\n   ·                       ───────────\n 7 │ \n   ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./json.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/pipeline/json.unit.test.ts:13:8]\n 12 │   parseJsonObject,\n 13 │ } from './json.ts';\n    ·        ───────────\n 14 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./xml-coding.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/pipeline/xml.unit.test.ts:11:8]\n 10 │   xmlOptionLine,\n 11 │ } from './xml-coding.ts';\n    ·        ─────────────────\n 12 │ import {\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./xml.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/pipeline/xml.unit.test.ts:20:8]\n 19 │   type XmlEntry,\n 20 │ } from './xml.ts';\n    ·        ──────────\n 21 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `../tracker.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/io/write-toml.unit.test.ts:22:8]\n 21 │   writeTimestamps,\n 22 │ } from '../tracker.ts';\n    ·        ───────────────\n 23 │ import { overwriteTomlKey, } from './write-toml.ts';\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./write-toml.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/io/write-toml.unit.test.ts:23:35]\n 22 │ } from '../tracker.ts';\n 23 │ import { overwriteTomlKey, } from './write-toml.ts';\n    ·                                   ─────────────────\n 24 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./merge.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n   ╭─[src/package/merge.unit.test.ts:6:33]\n 5 │ } from '@monochromatic-dev/module-test/ts';\n 6 │ import { mergeOverrides, } from './merge.ts';\n   ·                                 ────────────\n 7 │ import { p, } from './p.ts';\n   ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./p.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n   ╭─[src/package/merge.unit.test.ts:7:20]\n 6 │ import { mergeOverrides, } from './merge.ts';\n 7 │ import { p, } from './p.ts';\n   ·                    ────────\n 8 │ \n   ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./toml.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/pipeline/toml.unit.test.ts:9:8]\n  8 │   getTomlProperty,\n  9 │ } from './toml.ts';\n    ·        ───────────\n 10 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./write-atomic.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/io/write-atomic.unit.test.ts:21:8]\n 20 │   writeFileAtomically,\n 21 │ } from './write-atomic.ts';\n    ·        ───────────────────\n 22 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./apply-plan.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/cargo/apply-plan.unit.test.ts:9:33]\n  8 │ \n  9 │ import { applyCargoPlan, } from './apply-plan.ts';\n    ·                                 ─────────────────\n 10 │ import type { CargoManifestPlan, } from './types.ts';\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./types.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/cargo/apply-plan.unit.test.ts:10:41]\n  9 │ import { applyCargoPlan, } from './apply-plan.ts';\n 10 │ import type { CargoManifestPlan, } from './types.ts';\n    ·                                         ────────────\n 11 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `../pipeline/xml.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/jetbrains/lsp4ij.unit.test.ts:23:8]\n 22 │   type XmlEntry,\n 23 │ } from '../pipeline/xml.ts';\n    ·        ────────────────────\n 24 │ import { manageLsp4ijServerSettings, } from './lsp4ij.ts';\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./lsp4ij.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/jetbrains/lsp4ij.unit.test.ts:24:45]\n 23 │ } from '../pipeline/xml.ts';\n 24 │ import { manageLsp4ijServerSettings, } from './lsp4ij.ts';\n    ·                                             ─────────────\n 25 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./lsp4ij-types.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/jetbrains/lsp4ij.unit.test.ts:26:44]\n 25 │ \n 26 │ import type { Lsp4ijServerSettings, } from './lsp4ij-types.ts';\n    ·                                            ───────────────────\n 27 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./manager.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/package/manager.unit.test.ts:13:8]\n 12 │   resetRootCache,\n 13 │ } from './manager.ts';\n    ·        ──────────────\n 14 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `../fuzz-budget.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/io/glob.property.unit.test.ts:33:30]\n 32 │ \n 33 │ import { fuzzRunPlan, } from '../fuzz-budget.ts';\n    ·                              ───────────────────\n 34 │ import {\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./glob.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/io/glob.property.unit.test.ts:37:8]\n 36 │   mirrorGlobPath,\n 37 │ } from './glob.ts';\n    ·        ───────────\n 38 │ import { splitGlob, } from './glob-split.ts';\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./glob-split.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/io/glob.property.unit.test.ts:38:28]\n 37 │ } from './glob.ts';\n 38 │ import { splitGlob, } from './glob-split.ts';\n    ·                            ─────────────────\n 39 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `../tracker.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/watch/watch-filter.unit.test.ts:20:8]\n 19 │   trackWriteTime,\n 20 │ } from '../tracker.ts';\n    ·        ───────────────\n 21 │ import {\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./watch-filter.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/watch/watch-filter.unit.test.ts:25:8]\n 24 │   watchDirs,\n 25 │ } from './watch-filter.ts';\n    ·        ───────────────────\n 26 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./transform.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/pipeline/transform.unit.test.ts:9:8]\n  8 │   getJsonProperty,\n  9 │ } from './transform.ts';\n    ·        ────────────────\n 10 │ \n    ╰────\n\n  × eslint(no-irregular-whitespace): Unexpected irregular whitespace\n     ╭─[src/io/staleness-manifest.ts:209:46]\n 208 │  ```ts\n 209 │  const key = stalenessKeyForDestGlob('./out/*​/*.md');\n     ·                                              ─\n 210 │  ```\n     ╰────\n  help: Try to remove the irregular whitespace\n\n  × eslint(no-irregular-whitespace): Unexpected irregular whitespace\n     ╭─[src/io/write.ts:307:23]\n 306 │  await overwriteEach({\n 307 │    destGlob: './dest/*​/*.md',\n     ·                       ─\n 308 │    files: await cat('./src/*​/*.md'),\n     ╰────\n  help: Try to remove the irregular whitespace\n\n  × eslint(no-irregular-whitespace): Unexpected irregular whitespace\n     ╭─[src/io/write.ts:308:29]\n 307 │    destGlob: './dest/*​/*.md',\n 308 │    files: await cat('./src/*​/*.md'),\n     ·                             ─\n 309 │  });\n     ╰────\n  help: Try to remove the irregular whitespace\n\n  × eslint(no-irregular-whitespace): Unexpected irregular whitespace\n     ╭─[src/cargo/manage-cargo-manifests.ts:108:77]\n 107 │  \n 108 │  @param manifestGlobs - Bounded-depth discovery globs, for example `package/​*​/​*​/Cargo.toml`\n     ·                                                                             ─\n 109 │  \n     ╰────\n  help: Try to remove the irregular whitespace\n\n  × eslint(no-irregular-whitespace): Unexpected irregular whitespace\n     ╭─[src/cargo/manage-cargo-manifests.ts:108:81]\n 107 │  \n 108 │  @param manifestGlobs - Bounded-depth discovery globs, for example `package/​*​/​*​/Cargo.toml`\n     ·                                                                              ─\n 109 │  \n     ╰────\n  help: Try to remove the irregular whitespace\n\n  × eslint(no-irregular-whitespace): Unexpected irregular whitespace\n     ╭─[src/cargo/manage-cargo-manifests.ts:108:85]\n 107 │  \n 108 │  @param manifestGlobs - Bounded-depth discovery globs, for example `package/​*​/​*​/Cargo.toml`\n     ·                                                                               ─\n 109 │  \n     ╰────\n  help: Try to remove the irregular whitespace\n\n  × eslint(no-irregular-whitespace): Unexpected irregular whitespace\n     ╭─[src/cargo/manage-cargo-manifests.ts:108:89]\n 107 │  \n 108 │  @param manifestGlobs - Bounded-depth discovery globs, for example `package/​*​/​*​/Cargo.toml`\n     ·                                                                                ─\n 109 │  \n     ╰────\n  help: Try to remove the irregular whitespace\n\n  × eslint(no-irregular-whitespace): Unexpected irregular whitespace\n     ╭─[src/cargo/manage-cargo-manifests.ts:115:29]\n 114 │  await manageCargoManifests({\n 115 │    manifestGlobs: ['package/​*​/​*​/Cargo.toml', 'package/​*​/​*​/​*​/Cargo.toml'],\n     ·                             ─\n 116 │    spec,\n     ╰────\n  help: Try to remove the irregular whitespace\n\n  × eslint(no-irregular-whitespace): Unexpected irregular whitespace\n     ╭─[src/cargo/manage-cargo-manifests.ts:115:33]\n 114 │  await manageCargoManifests({\n 115 │    manifestGlobs: ['package/​*​/​*​/Cargo.toml', 'package/​*​/​*​/​*​/Cargo.toml'],\n     ·                              ─\n 116 │    spec,\n     ╰────\n  help: Try to remove the irregular whitespace\n\n  × eslint(no-irregular-whitespace): Unexpected irregular whitespace\n     ╭─[src/cargo/manage-cargo-manifests.ts:115:37]\n 114 │  await manageCargoManifests({\n 115 │    manifestGlobs: ['package/​*​/​*​/Cargo.toml', 'package/​*​/​*​/​*​/Cargo.toml'],\n     ·                               ─\n 116 │    spec,\n     ╰────\n  help: Try to remove the irregular whitespace\n\n  × eslint(no-irregular-whitespace): Unexpected irregular whitespace\n     ╭─[src/cargo/manage-cargo-manifests.ts:115:41]\n 114 │  await manageCargoManifests({\n 115 │    manifestGlobs: ['package/​*​/​*​/Cargo.toml', 'package/​*​/​*​/​*​/Cargo.toml'],\n     ·                                ─\n 116 │    spec,\n     ╰────\n  help: Try to remove the irregular whitespace\n\n  × eslint(no-irregular-whitespace): Unexpected irregular whitespace\n     ╭─[src/cargo/manage-cargo-manifests.ts:115:67]\n 114 │  await manageCargoManifests({\n 115 │    manifestGlobs: ['package/​*​/​*​/Cargo.toml', 'package/​*​/​*​/​*​/Cargo.toml'],\n     ·                                                       ─\n 116 │    spec,\n     ╰────\n  help: Try to remove the irregular whitespace\n\n  × eslint(no-irregular-whitespace): Unexpected irregular whitespace\n     ╭─[src/cargo/manage-cargo-manifests.ts:115:71]\n 114 │  await manageCargoManifests({\n 115 │    manifestGlobs: ['package/​*​/​*​/Cargo.toml', 'package/​*​/​*​/​*​/Cargo.toml'],\n     ·                                                        ─\n 116 │    spec,\n     ╰────\n  help: Try to remove the irregular whitespace\n\n  × eslint(no-irregular-whitespace): Unexpected irregular whitespace\n     ╭─[src/cargo/manage-cargo-manifests.ts:115:75]\n 114 │  await manageCargoManifests({\n 115 │    manifestGlobs: ['package/​*​/​*​/Cargo.toml', 'package/​*​/​*​/​*​/Cargo.toml'],\n     ·                                                         ─\n 116 │    spec,\n     ╰────\n  help: Try to remove the irregular whitespace\n\n  × eslint(no-irregular-whitespace): Unexpected irregular whitespace\n     ╭─[src/cargo/manage-cargo-manifests.ts:115:79]\n 114 │  await manageCargoManifests({\n 115 │    manifestGlobs: ['package/​*​/​*​/Cargo.toml', 'package/​*​/​*​/​*​/Cargo.toml'],\n     ·                                                          ─\n 116 │    spec,\n     ╰────\n  help: Try to remove the irregular whitespace\n\n  × eslint(no-irregular-whitespace): Unexpected irregular whitespace\n     ╭─[src/cargo/manage-cargo-manifests.ts:115:83]\n 114 │  await manageCargoManifests({\n 115 │    manifestGlobs: ['package/​*​/​*​/Cargo.toml', 'package/​*​/​*​/​*​/Cargo.toml'],\n     ·                                                           ─\n 116 │    spec,\n     ╰────\n  help: Try to remove the irregular whitespace\n\n  × eslint(no-irregular-whitespace): Unexpected irregular whitespace\n     ╭─[src/cargo/manage-cargo-manifests.ts:115:87]\n 114 │  await manageCargoManifests({\n 115 │    manifestGlobs: ['package/​*​/​*​/Cargo.toml', 'package/​*​/​*​/​*​/Cargo.toml'],\n     ·                                                            ─\n 116 │    spec,\n     ╰────\n  help: Try to remove the irregular whitespace\n\n  × test-import(require-eventual-artifact): Test imports `./options-dir.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/jetbrains/options-dir.unit.test.ts:19:8]\n 18 │   type JetbrainsOptionsDirectory,\n 19 │ } from './options-dir.ts';\n    ·        ──────────────────\n 20 │ \n    ╰────\n\n  × eslint(no-irregular-whitespace): Unexpected irregular whitespace\n    ╭─[src/io/glob-split.ts:60:23]\n 59 │  splitGlob('/tmp/foo/*.ts');\n 60 │  splitGlob('./src/a/**​/*.md');\n    ·                       ─\n 61 │  ```\n    ╰────\n  help: Try to remove the irregular whitespace\n\n  × eslint(no-irregular-whitespace): Unexpected irregular whitespace\n    ╭─[src/io/glob-expand.ts:58:53]\n 57 │  \n 58 │  @param pattern - Glob pattern such as `./packages/*​/src/*.ts`.\n    ·                                                     ─\n 59 │  \n    ╰────\n  help: Try to remove the irregular whitespace\n\n  × eslint(no-irregular-whitespace): Unexpected irregular whitespace\n    ╭─[src/io/glob-expand.ts:64:44]\n 63 │  ```ts\n 64 │  const tsFiles = await expandGlob('./src/**​/*.ts');\n    ·                                            ─\n 65 │  ```\n    ╰────\n  help: Try to remove the irregular whitespace\n\n  × eslint(no-irregular-whitespace): Unexpected irregular whitespace\n     ╭─[src/io/glob-mirror.ts:173:29]\n 172 │  mirrorGlobPath({\n 173 │    sourcePattern: 'package/*​/src/*.ts',\n     ·                             ─\n 174 │    destPattern: 'temp/*​/src/*.ts',\n     ╰────\n  help: Try to remove the irregular whitespace\n\n  × eslint(no-irregular-whitespace): Unexpected irregular whitespace\n     ╭─[src/io/glob-mirror.ts:174:24]\n 173 │    sourcePattern: 'package/*​/src/*.ts',\n 174 │    destPattern: 'temp/*​/src/*.ts',\n     ·                        ─\n 175 │    sourcePath: 'package/foo/src/index.ts',\n     ╰────\n  help: Try to remove the irregular whitespace\n\n  × test-import(require-eventual-artifact): Test imports `./manager-defs.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/package/manager-defs.unit.test.ts:9:8]\n  8 │   MANAGERS,\n  9 │ } from './manager-defs.ts';\n    ·        ───────────────────\n 10 │ import type { PackageManager, } from './types.ts';\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./types.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/package/manager-defs.unit.test.ts:10:38]\n  9 │ } from './manager-defs.ts';\n 10 │ import type { PackageManager, } from './types.ts';\n    ·                                      ────────────\n 11 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `../fuzz-budget.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/pipeline/json.property.unit.test.ts:38:30]\n 37 │ \n 38 │ import { fuzzRunPlan, } from '../fuzz-budget.ts';\n    ·                              ───────────────────\n 39 │ import {\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./json.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/pipeline/json.property.unit.test.ts:48:8]\n 47 │   parseJsonObject,\n 48 │ } from './json.ts';\n    ·        ───────────\n 49 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `../fuzz-budget.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/pipeline/toml.property.unit.test.ts:37:30]\n 36 │ \n 37 │ import { fuzzRunPlan, } from '../fuzz-budget.ts';\n    ·                              ───────────────────\n 38 │ import {\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./toml.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/pipeline/toml.property.unit.test.ts:41:8]\n 40 │   getTomlProperty,\n 41 │ } from './toml.ts';\n    ·        ───────────\n 42 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `../fuzz-budget.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/pipeline/xml.property.unit.test.ts:31:30]\n 30 │ \n 31 │ import { fuzzRunPlan, } from '../fuzz-budget.ts';\n    ·                              ───────────────────\n 32 │ import { escapeXmlAttribute, } from './xml-coding.ts';\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./xml-coding.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/pipeline/xml.property.unit.test.ts:32:37]\n 31 │ import { fuzzRunPlan, } from '../fuzz-budget.ts';\n 32 │ import { escapeXmlAttribute, } from './xml-coding.ts';\n    ·                                     ─────────────────\n 33 │ import {\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./xml.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/pipeline/xml.property.unit.test.ts:40:8]\n 39 │   type XmlEntry,\n 40 │ } from './xml.ts';\n    ·        ──────────\n 41 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `../pipeline/xml.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/jetbrains/lsp4ij-entries.unit.test.ts:12:8]\n 11 │   getXmlOptionValue,\n 12 │ } from '../pipeline/xml.ts';\n    ·        ────────────────────\n 13 │ import {\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./lsp4ij-entries.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/jetbrains/lsp4ij-entries.unit.test.ts:16:8]\n 15 │   buildUserDefinedEntry,\n 16 │ } from './lsp4ij-entries.ts';\n    ·        ─────────────────────\n 17 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./registry-parse.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n   ╭─[src/package/registry-parse.unit.test.ts:6:39]\n 5 │ } from '@monochromatic-dev/module-test/ts';\n 6 │ import { firstWhitespaceToken, } from './registry-parse.ts';\n   ·                                       ─────────────────────\n 7 │ \n   ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./ensure-package.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/package/ensure-package.unit.test.ts:9:8]\n  8 │   registerPackages,\n  9 │ } from './ensure-package.ts';\n    ·        ─────────────────────\n 10 │ import { p, } from './p.ts';\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./p.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/package/ensure-package.unit.test.ts:10:20]\n  9 │ } from './ensure-package.ts';\n 10 │ import { p, } from './p.ts';\n    ·                    ────────\n 11 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./evaluate-predicate.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n   ╭─[src/platform/evaluate-predicate.unit.test.ts:6:36]\n 5 │ } from '@monochromatic-dev/module-test/ts';\n 6 │ import { evaluatePredicate, } from './evaluate-predicate.ts';\n   ·                                    ─────────────────────────\n 7 │ \n   ╰────\n\n  × test-import(require-eventual-artifact): Test imports `../fuzz-budget.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/jetbrains/options-dir.property.unit.test.ts:33:30]\n 32 │ \n 33 │ import { fuzzRunPlan, } from '../fuzz-budget.ts';\n    ·                              ───────────────────\n 34 │ import {\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./options-dir.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/jetbrains/options-dir.property.unit.test.ts:38:8]\n 37 │   parseVersionParts,\n 38 │ } from './options-dir.ts';\n    ·        ──────────────────\n 39 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./ensure-package.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/package/ensure-package.unit.matrix.test.ts:23:8]\n 22 │   registerPackages,\n 23 │ } from './ensure-package.ts';\n    ·        ─────────────────────\n 24 │ import {\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./manager.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/package/ensure-package.unit.matrix.test.ts:29:8]\n 28 │   resetManagerCache,\n 29 │ } from './manager.ts';\n    ·        ──────────────\n 30 │ import { p, } from './p.ts';\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./p.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/package/ensure-package.unit.matrix.test.ts:30:20]\n 29 │ } from './manager.ts';\n 30 │ import { p, } from './p.ts';\n    ·                    ────────\n 31 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `../fuzz-budget.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/pipeline/xml-coding.property.unit.test.ts:37:30]\n 36 │ \n 37 │ import { fuzzRunPlan, } from '../fuzz-budget.ts';\n    ·                              ───────────────────\n 38 │ import {\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./xml-coding.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/pipeline/xml-coding.property.unit.test.ts:42:8]\n 41 │   unescapeXmlAttribute,\n 42 │ } from './xml-coding.ts';\n    ·        ─────────────────\n 43 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `../fuzz-budget.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/package/registry-parse.property.unit.test.ts:31:30]\n 30 │ \n 31 │ import { fuzzRunPlan, } from '../fuzz-budget.ts';\n    ·                              ───────────────────\n 32 │ import { firstWhitespaceToken, } from './registry-parse.ts';\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./registry-parse.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/package/registry-parse.property.unit.test.ts:32:39]\n 31 │ import { fuzzRunPlan, } from '../fuzz-budget.ts';\n 32 │ import { firstWhitespaceToken, } from './registry-parse.ts';\n    ·                                       ─────────────────────\n 33 │ \n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./io/staleness-manifest-lock-owner.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/staleness-lock-owner-regression.unit.test.ts:18:33]\n 17 │ \n 18 │ import { lockOwnerState, } from './io/staleness-manifest-lock-owner.ts';\n    ·                                 ───────────────────────────────────────\n 19 │ import {\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./io/staleness-manifest-lock-owner-publish.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/staleness-lock-owner-regression.unit.test.ts:22:8]\n 21 │   stageLockOwnerPublication,\n 22 │ } from './io/staleness-manifest-lock-owner-publish.ts';\n    ·        ───────────────────────────────────────────────\n 23 │ import {\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./io/staleness-manifest-lock-owner.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/staleness-lock-publication-contention.unit.test.ts:11:33]\n 10 │ \n 11 │ import { lockOwnerState, } from './io/staleness-manifest-lock-owner.ts';\n    ·                                 ───────────────────────────────────────\n 12 │ import {\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./io/staleness-manifest-lock-owner-publish.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/staleness-lock-publication-contention.unit.test.ts:16:8]\n 15 │   stageLockOwnerPublication,\n 16 │ } from './io/staleness-manifest-lock-owner-publish.ts';\n    ·        ───────────────────────────────────────────────\n 17 │ import { acquireManifestLock, } from './io/staleness-manifest-lock.ts';\n    ╰────\n\n  × test-import(require-eventual-artifact): Test imports `./io/staleness-manifest-lock.ts`, which resolves to package source rather than built output. Import the artifact the package ships (for example `../dist/final/node/index.mjs`) so the test exercises what consumers load. If the symbol is not exported yet, export it from the package entry and mark it `@internal`.\n    ╭─[src/staleness-lock-publication-contention.unit.test.ts:17:38]\n 16 │ } from './io/staleness-manifest-lock-owner-publish.ts';\n 17 │ import { acquireManifestLock, } from './io/staleness-manifest-lock.ts';\n    ·                                      ─────────────────────────────────\n 18 │ import {\n    ╰────\n\nFound 0 warnings and 84 errors.\nFinished in 7.0s on 137 files with 485 rules using 1 threads.\nnode:internal/errors:999\n  const err = new Error(message);\n              ^\n\nError: Command failed: node /home/runner/work/Monochromatic/Monochromatic/source/package/dev-script/task-util/src/oxlint-wrapper.ts\n    at genericNodeError (node:internal/errors:999:15)\n    at wrappedFn (node:internal/errors:544:14)\n    at checkExecSyncError (node:child_process:943:11)\n    at execFileSync (node:child_process:979:15)\n    at runWorkspaceNode ([eval]:12:3)\n    at [eval]:64:1 {\n  status: 1,\n  signal: null,\n  output: [ null, null, null ],\n  pid: 3486,\n  stdout: null,\n  stderr: null\n}\n\nNode.js v26.10.0\n[//package/dev-script/file-enforcer:lint…] ERROR task failed\n"
+    },
+    "coverage": {
+      "output": "[//package/module/toml-edit.fuzz:fuzz:co…] $ const { execFileSync } = await import('node:child_process')\ncoverage driver: seed=12648430 numRuns=600 ok=6930 rejected=1628 docs=606 corrupted=600 validCorpus=91 invalidCorpus=108\ntoml-edit fuzz coverage (target src files, V8 line coverage):\n  100%   155/155   src/basic-escape.ts\n   99%   191/192   src/build-comments.ts\n  100%   315/315   src/build-document.ts\n   94%   128/136   src/build-input.ts\n  100%   104/104   src/build-value.ts\n   99%   118/119   src/comments.ts\n   35%   101/285   src/delete-value.ts\n  100%   208/209   src/document-materialize.ts\n   99%   327/329   src/emit-document.ts\n   97%    94/97    src/emit-value-node.ts\n  100%    38/38    src/emit-value-string.ts\n   61%   133/218   src/emit-value.ts\n  100%    45/45    src/empty-toml-edit.ts\n  100%   131/131   src/errors.ts\n  100%   121/121   src/index.ts\n  100%    54/54    src/keys.ts\n  100%   186/186   src/parse-toml-edit.ts\n   94%    85/90    src/path-prefix.ts\n   98%    79/81    src/path.ts\n   97%    71/73    src/resolve-block.ts\n   70%   217/310   src/resolve-document.ts (+15)\n   92%   147/159   src/set-aot.ts\n   83%   279/335   src/set-create.ts\n   84%   247/294   src/set-replace.ts\n   47%   157/333   src/set-value-inline.ts\n   91%   165/181   src/set-value.ts\n   54%    59/110   src/toml-delete.ts\n   93%   108/116   src/toml-get-comment-after.ts (+17)\n   94%    95/101   src/toml-get-comments-before.ts\n  100%    24/24    src/toml-get-comments.ts\n   95%   137/144   src/toml-get-node.ts\n   93%   112/121   src/toml-get-raw.ts\n  100%    43/43    src/toml-get-value.ts\n  100%    32/32    src/toml-get.ts\n  100%    36/36    src/toml-has.ts\n   85%   105/123   src/toml-insert-comment-after.ts\n   88%   137/155   src/toml-insert-comment-before.ts\n   98%    54/55    src/toml-keys.ts\n   81%    39/48    src/toml-set-header-comment.ts\n   95%   167/175   src/toml-set.ts\n  100%    22/22    src/toml-stringify.ts\n  100%   145/145   src/types.ts\n   77%    87/113   src/value-encoders.ts\n  100%   301/302   src/value-materialize.ts\n   98%   304/311   src/values.ts (-28)\n  100%    85/85    src/wrappers.ts\n  ----\n   87%  5988/6851  46 files\nfile:///home/runner/work/Monochromatic/Monochromatic/source/package/module/toml-edit.fuzz/src/coverage-report.ts:380\n    throw new Error(\n          ^\n\nError: Coverage regressed in 1 file(s):\n  src/values.ts: 332 -> 304 covered lines\nReach the lost lines again, or, if the drop is intended (for example a node release shifted V8 coverage), refreeze the baseline with the fuzz:coverage --write task.\n    at main (file:///home/runner/work/Monochromatic/Monochromatic/source/package/module/toml-edit.fuzz/src/coverage-report.ts:380:11)\n    at async file:///home/runner/work/Monochromatic/Monochromatic/source/package/module/toml-edit.fuzz/src/coverage-report.ts:392:47\n\nNode.js v26.10.0\nnode:internal/errors:999\n  const err = new Error(message);\n              ^\n\nError: Command failed: node /home/runner/work/Monochromatic/Monochromatic/source/package/module/toml-edit.fuzz/src/coverage-report.ts check /tmp/toml-edit-cov-gAO16I /home/runner/work/Monochromatic/Monochromatic/source/package/module/toml-edit.fuzz/coverage-baseline.json\n    at genericNodeError (node:internal/errors:999:15)\n    at wrappedFn (node:internal/errors:544:14)\n    at checkExecSyncError (node:child_process:943:11)\n    at execFileSync (node:child_process:979:15)\n    at [eval]:15:3 {\n  status: 1,\n  signal: null,\n  output: [ null, null, null ],\n  pid: 7457,\n  stdout: null,\n  stderr: null\n}\n\nNode.js v26.10.0\n[//package/module/toml-edit.fuzz:fuzz:co…] ERROR task failed\n"
+    }
+  },
+  "emittedUnitGroups": [
+    {
+      "checkId": "package.dev-script.file-enforcer.test.unit",
+      "expectedFiles": [
+        "package/dev-script/file-enforcer/src/cargo/apply-plan.unit.test.ts",
+        "package/dev-script/file-enforcer/src/cli-regression.unit.test.ts",
+        "package/dev-script/file-enforcer/src/generated-policy-contracts.unit.test.ts",
+        "package/dev-script/file-enforcer/src/integration.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/cache.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/cat.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/glob.property.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/glob.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/overwrite-each-hardening.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/overwrite-if-not-exists-hardening.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/read-existing-hardening.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/staleness-destination-hardening.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/staleness-root-hardening.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/staleness-root.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/staleness-stamp-hardening.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/staleness.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/write-atomic.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/write-toml.unit.test.ts",
+        "package/dev-script/file-enforcer/src/io/write.unit.test.ts",
+        "package/dev-script/file-enforcer/src/jetbrains/lsp4ij-entries.unit.test.ts",
+        "package/dev-script/file-enforcer/src/jetbrains/lsp4ij-hardening.unit.test.ts",
+        "package/dev-script/file-enforcer/src/jetbrains/lsp4ij.unit.test.ts",
+        "package/dev-script/file-enforcer/src/jetbrains/options-dir-hardening.unit.test.ts",
+        "package/dev-script/file-enforcer/src/jetbrains/options-dir.property.unit.test.ts",
+        "package/dev-script/file-enforcer/src/jetbrains/options-dir.unit.test.ts",
+        "package/dev-script/file-enforcer/src/package/ensure-package.unit.test.ts",
+        "package/dev-script/file-enforcer/src/package/manager-defs.unit.test.ts",
+        "package/dev-script/file-enforcer/src/package/manager.unit.test.ts",
+        "package/dev-script/file-enforcer/src/package/merge.unit.test.ts",
+        "package/dev-script/file-enforcer/src/package/p.unit.test.ts",
+        "package/dev-script/file-enforcer/src/package/registry-parse.property.unit.test.ts",
+        "package/dev-script/file-enforcer/src/package/registry-parse.unit.test.ts",
+        "package/dev-script/file-enforcer/src/pipeline/exec.unit.test.ts",
+        "package/dev-script/file-enforcer/src/pipeline/inspect.unit.test.ts",
+        "package/dev-script/file-enforcer/src/pipeline/json.property.unit.test.ts",
+        "package/dev-script/file-enforcer/src/pipeline/json.unit.test.ts",
+        "package/dev-script/file-enforcer/src/pipeline/toml.property.unit.test.ts",
+        "package/dev-script/file-enforcer/src/pipeline/toml.unit.test.ts",
+        "package/dev-script/file-enforcer/src/pipeline/transform.unit.test.ts",
+        "package/dev-script/file-enforcer/src/pipeline/xml-coding.property.unit.test.ts",
+        "package/dev-script/file-enforcer/src/pipeline/xml.property.unit.test.ts",
+        "package/dev-script/file-enforcer/src/pipeline/xml.unit.test.ts",
+        "package/dev-script/file-enforcer/src/platform/evaluate-predicate.unit.test.ts",
+        "package/dev-script/file-enforcer/src/staleness-concurrency-regression.unit.test.ts",
+        "package/dev-script/file-enforcer/src/staleness-lock-owner-regression.unit.test.ts",
+        "package/dev-script/file-enforcer/src/staleness-lock-publication-contention.unit.test.ts",
+        "package/dev-script/file-enforcer/src/staleness-lock-regression.unit.test.ts",
+        "package/dev-script/file-enforcer/src/staleness-manifest-regression.unit.test.ts",
+        "package/dev-script/file-enforcer/src/tracker.unit.test.ts",
+        "package/dev-script/file-enforcer/src/watch-directory-chokidar-regression.unit.test.ts",
+        "package/dev-script/file-enforcer/src/watch-regression.unit.test.ts",
+        "package/dev-script/file-enforcer/src/watch-start-regression.unit.test.ts",
+        "package/dev-script/file-enforcer/src/watch/notify.unit.test.ts",
+        "package/dev-script/file-enforcer/src/watch/watch-filter.unit.test.ts",
+        "package/dev-script/file-enforcer/src/watch/watch-rerun-queue.unit.test.ts"
+      ],
+      "expectedFileCount": 55,
+      "groups": [
+        "[info] [2026-10-17T04:35:39.533Z] [watchDirs] [PASS] includes config file directory, includes parent directories of all tracked reads, includes parent directories of tracked writes for protection, deduplicates directories when multiple paths share a parent, returns only config dir when no reads or writes are tracked (17ms)",
+        "[info] [2026-10-17T04:35:39.535Z] [createWatchRerunQueue] [PASS] serializes reruns queued while a rerun is active, continues draining after rerun and reporter failures (4.0ms)",
+        "[info] [2026-10-17T04:35:39.541Z] [classifyEvent] [PASS] classifies tracked read file as source, classifies config file itself as source, classifies our own write echo as ignore (mtime <= writeTimestamp), classifies external edit as protected (mtime > writeTimestamp), classifies as protected when dest has no write timestamp (content-skip case), classifies as protected when file was deleted externally, classifies unrelated file as ignore, write classification takes precedence over read for dual-tracked paths (25ms)",
+        "[info] [2026-10-17T04:35:39.541Z] [generated Git policy mutation contracts] [PASS] keeps the retired lazy-provider contract out of package/git-policy/cli/src/optional/repository-policy/index.ts, keeps the retired lazy-provider contract out of package/git-policy/cli/src/optional/forbidden-strings/index.ts (3.3ms)",
+        "[info] [2026-10-17T04:35:39.546Z] [shouldTrigger] [PASS] returns true for source events, returns true for protected events, returns false for ignore events, returns false for our own write echoes (26ms)",
+        "[info] [2026-10-17T04:35:39.551Z] [file-enforcer chokidar watchDirectory regressions] [PASS] emits source events for live tracked read changes, emits protected events for live managed destination edits (33ms)",
+        "[info] [2026-10-17T04:35:39.564Z] [tracker] [PASS] trackRead adds absolute path to reads set, trackDest adds absolute path to writes set, trackDest does not record a write timestamp, reset clears reads and writes but preserves writeTimestamps, trackRead resolves relative paths to absolute, deduplicates identical paths, handles absolute paths without double-resolving, tracks reads and writes independently (16ms)",
+        "[info] [2026-10-17T04:35:39.564Z] [writeTimestamps] [PASS] trackWriteTime records a timestamp for the path, recorded timestamp is close to Date.now(), later writes overwrite the previous timestamp, resolves relative paths to absolute (16ms)",
+        "[info] [2026-10-17T04:35:39.564Z] [addWatchedPaths] [PASS] adds all provided paths to the reads set, resolves relative paths to absolute, deduplicates with existing tracked reads, handles empty array without error (16ms)",
+        "[info] [2026-10-17T04:35:39.573Z] [file-enforcer manifest regressions] [PASS] corrupt staleness manifest fails closed instead of silently resetting, destination hash mismatch makes same-metadata manifest stale, overwrite flushes manifest entry before returning (22ms)",
+        "[info] [2026-10-17T04:35:39.598Z] [file-enforcer lock publication contention] [PASS] keeps competing acquisition pending until staged owner is published and released (72ms)",
+        "[info] [2026-10-17T04:35:39.610Z] [file-enforcer watch regressions] [PASS] empty glob dependencies watch future matching files, missing glob dependency roots watch nearest existing ancestor, missing glob dependency roots advance watched ancestor after each rerun, watch directory setup failures reject instead of resolving (31ms)",
+        "[info] [2026-10-17T04:35:39.612Z] [evaluatePredicate] [PASS] returns true for a command that exits 0, returns false for a command that exits non-zero, passes arguments to the command, returns false for a nonexistent command (23ms)",
+        "[info] [2026-10-17T04:35:39.672Z] [file-enforcer stale-lock regressions] [PASS] recovers abandoned manifest lock directories before writing manifest (177ms)",
+        "[info] [2026-10-17T04:35:39.721Z] [startWatching] [PASS] restarts failed watchers only up to a bounded limit (191ms)",
+        "[info] [2026-10-17T04:35:39.809Z] [isJsonObject] [PASS] accepts a plain object, rejects arrays, null, and primitives (9.5ms)",
+        "[info] [2026-10-17T04:35:39.809Z] [parseJsonObject] [PASS] parses object text, throws when content is an array, throws when content is invalid JSON (9.4ms)",
+        "[info] [2026-10-17T04:35:39.809Z] [formatJsonObject] [PASS] formats with two-space indent and no trailing newline (9.4ms)",
+        "[info] [2026-10-17T04:35:39.809Z] [omitJsonKey] [PASS] removes a key while preserving remaining order, is a no-op for an absent key (9.4ms)",
+        "[info] [2026-10-17T04:35:39.809Z] [mergeFlatJson] [PASS] updates existing keys in place and appends new keys in order, unions array members, keeping existing strings then deduplicated additions, drops non-string members from an existing array before union, treats a non-array existing value as empty for union (9.4ms)",
+        "[info] [2026-10-17T04:35:39.809Z] [mergeObjectDefaults] [PASS] adds only absent keys and keeps existing values (9.3ms)",
+        "[info] [2026-10-17T04:35:39.827Z] [inspect] [PASS] returns a string unchanged, returns a number unchanged, returns an array unchanged, returns an object unchanged, returns boolean unchanged, returns null unchanged, logs string content via tagged logger, logs non-string content as JSON, truncates long string content in log output, does not truncate content exactly at preview limit, handles empty string, handles GlobResult-like array, truncates large JSON objects in log output (25ms)",
+        "[info] [2026-10-17T04:35:39.855Z] [dedup] [PASS] removes duplicate lines preserving first occurrence order, returns empty string unchanged, returns single line unchanged, preserves all lines when none are duplicated, handles consecutive duplicate lines, treats lines with different whitespace as distinct, preserves blank lines but deduplicates them (5.5ms)",
+        "[info] [2026-10-17T04:35:39.855Z] [getJsonProperty] [PASS] extracts a top-level string property, extracts a nested property via array path, stringifies non-string values (number), stringifies array values with pretty printing, stringifies object values with pretty printing, returns undefined for missing paths, throws on invalid JSON input, handles boolean values, handles null values, handles deeply nested paths, indexes into arrays by numeric segment, addresses keys containing literal dots via array segments (5.5ms)",
+        "[info] [2026-10-17T04:35:39.903Z] [getTomlProperty] [PASS] extracts a top-level string property, extracts a value nested under a section header, stringifies integer values, stringifies float values, stringifies boolean true, stringifies boolean false, stringifies array values with pretty printing, stringifies inline-table values with pretty printing, indexes into array-of-tables by numeric segment, returns undefined for missing paths, addresses keys containing literal dots via array segments, throws on invalid TOML input (18ms)",
+        "[info] [2026-10-17T04:35:39.903Z] [editTomlKey] [PASS] no-op identity edit produces byte-identical output, updates an existing scalar and preserves surrounding comments, updates a value nested under a section header, creates a missing top-level key, creates a missing key inside an existing section, updates an array-of-tables element, writes an inline-table-shaped object value, throws on invalid source TOML (18ms)",
+        "[info] [2026-10-17T04:35:39.921Z] [exec (direct)] [PASS] captures stdout from a successful command, passes multiple arguments to the command, throws on non-zero exit code, includes stderr in the error message, handles command with no arguments, preserves newlines in stdout, handles large stdout output (190ms)",
+        "[info] [2026-10-17T04:35:39.925Z] [escapeXmlAttribute] [PASS] unescape after escape recovers the original string, escaped output contains no raw attribute-breaking character (70ms)",
+        "[info] [2026-10-17T04:35:39.925Z] [isDigitCodePoint] [PASS] agrees with the ASCII 0..9 range across code points (70ms)",
+        "[info] [2026-10-17T04:35:39.928Z] [exec (platform-aware)] [PASS] executes the command of the first matching predicate, skips entries whose predicate fails, supports command with no arguments, supports predicate with arguments, throws PlatformMatchError when no predicate matches, error message includes tested predicates, throws when matched command fails, supports nested PlatformCommands as command value, nested PlatformCommands throws when no inner predicate matches (197ms)",
+        "[info] [2026-10-17T04:35:39.983Z] [editTomlKey] [PASS] returns a string or throws only TomlEditError for arbitrary input, re-applying the same edit is idempotent (126ms)",
+        "[info] [2026-10-17T04:35:39.983Z] [getTomlProperty] [PASS] is total over arbitrary input, throwing only TomlEditError, reads back a string value written at a bare key (126ms)",
+        "[info] [2026-10-17T04:35:40.000Z] [file-enforcer staleness concurrency regressions] [PASS] concurrent manifest writers preserve both entries (474ms)",
+        "[info] [2026-10-17T04:35:40.021Z] [escapeXmlAttribute] [PASS] escapes every active attribute delimiter and control character, escapes ampersand before other entities to avoid double meaning (30ms)",
+        "[info] [2026-10-17T04:35:40.021Z] [unescapeXmlAttribute] [PASS] round-trips every escaped delimiter, decodes named and numeric entities including apostrophe and hex, preserves unknown entities and a dangling ampersand verbatim (30ms)",
+        "[info] [2026-10-17T04:35:40.021Z] [xmlOptionLine] [PASS] renders an indented option with an escaped value (30ms)",
+        "[info] [2026-10-17T04:35:40.021Z] [listXmlEntries] [PASS] lists keyed entries with decoded keys and byte ranges, returns no entries for a document without keyed entries, reads keys regardless of quote style and spacing around equals (30ms)",
+        "[info] [2026-10-17T04:35:40.021Z] [getXmlOptionValue] [PASS] reads and decodes an option value from a block, reads options regardless of attribute order and quote style, returns the absent sentinel when the option is missing (30ms)",
+        "[info] [2026-10-17T04:35:40.021Z] [replaceOrInsertXmlEntry] [PASS] replaces an existing entry, dropping the old line indentation idempotently, inserts a new entry before the map close regardless of its indentation, throws when the document has no map element (30ms)",
+        "[info] [2026-10-17T04:35:40.023Z] [MANAGERS] [PASS] has brew as the first entry (preferred on immutable distros), contains every PackageManager variant, every entry has non-empty check, search, and install arrays (7.1ms)",
+        "[info] [2026-10-17T04:35:40.023Z] [MANAGER_KEYS] [PASS] is derived from MANAGERS and has the same size, contains every key from MANAGERS (7.1ms)",
+        "[info] [2026-10-17T04:35:40.028Z] [registerPackages] [PASS] accepts an array of entries without throwing, replaces previously registered entries (12ms)",
+        "[info] [2026-10-17T04:35:40.035Z] [ensurePackage (index lookup)] [PASS] skips index lookup when binary is already on PATH (19ms)",
+        "[info] [2026-10-17T04:35:40.035Z] [ensurePackage (binary already on PATH)] [PASS] returns immediately for an existing binary, returns immediately for `true` (19ms)",
+        "[info] [2026-10-17T04:35:40.083Z] [mergeOverrides] [PASS] returns entries unchanged when no overrides match, applies bin from override to matching effname, applies check from override to matching effname, applies both bin and check overrides, preserves manager overrides from generated entry, preserves available set from generated entry, leaves non-matching entries untouched, keeps default check when override only changes bin (4.5ms)",
+        "[info] [2026-10-17T04:35:40.085Z] [listXmlEntries] [PASS] returns a well-formed entry array for arbitrary input without throwing (136ms)",
+        "[info] [2026-10-17T04:35:40.085Z] [findXmlEntryByKey] [PASS] never throws and agrees with listXmlEntries for arbitrary input (136ms)",
+        "[info] [2026-10-17T04:35:40.085Z] [replaceOrInsertXmlEntry] [PASS] inserts a findable entry whose option value survives the round-trip (136ms)",
+        "[info] [2026-10-17T04:35:40.088Z] [p (string shorthand)] [PASS] sets bin, check, effname, absent available, and empty overrides from a single name, produces a frozen overrides object (13ms)",
+        "[info] [2026-10-17T04:35:40.088Z] [p (object spec without yes)] [PASS] uses effname as bin when bin is omitted, uses explicit bin when provided, leaves available absent when yes is omitted, handles spec with no overrides, uses custom check flag when provided, defaults check to --version when omitted, produces a frozen overrides object (13ms)",
+        "[info] [2026-10-17T04:35:40.088Z] [p (object spec with yes)] [PASS] builds available set from bare manager names, extracts overrides from tuples in yes, bare manager names produce no overrides, freezes available set, freezes overrides from yes tuples, empty yes array produces empty available set, combines bin, check, and yes (13ms)",
+        "[info] [2026-10-17T04:35:40.161Z] [isRoot] [PASS] returns a boolean, caches the result across calls (101ms)",
+        "[info] [2026-10-17T04:35:40.168Z] [binaryExists] [PASS] returns true for a binary that exists, returns false for a binary that does not exist (107ms)",
+        "[info] [2026-10-17T04:35:40.168Z] [detectManager] [PASS] returns a real manager on a standard system, caches the result across calls (108ms)",
+        "[info] [2026-10-17T04:35:40.184Z] [firstWhitespaceToken] [PASS] returns empty token for an empty string, returns empty token for an all-whitespace line, returns empty token for each single whitespace kind alone, returns the whole string when it has no whitespace, skips leading whitespace before the token, stops at trailing whitespace after the token, returns only the first token when leading and trailing whitespace surround it, returns only the first token of multiple whitespace-separated tokens, treats every whitespace kind as a leading skip and as a separator, parses the tool name from a tab-separated mise registry line, keeps non-whitespace punctuation inside the token, preserves an astral character inside the token, handles a long leading whitespace run, linear and stack-safe, handles a long non-whitespace token, linear and stack-safe (28ms)",
+        "[info] [2026-10-17T04:35:40.203Z] [firstWhitespaceToken] [PASS] never returns a token containing ASCII whitespace, returns the empty token for empty or all-whitespace lines, recovers the token from leading whitespace, token, and separated tail (61ms)",
+        "[info] [2026-10-17T04:35:40.234Z] [buildLanguageSettingsEntry] [PASS] wraps config and schema as options under one settings entry, round-tripping escaped JSON (16ms)",
+        "[info] [2026-10-17T04:35:40.234Z] [buildUserDefinedEntry] [PASS] copies present options, skips absent ones, and declares id, name, and mappings (16ms)",
+        "[info] [2026-10-17T04:35:40.237Z] [manageLsp4ijServerSettings] [PASS] propagates corrupt JetBrains config root read errors (11ms)",
+        "[info] [2026-10-17T04:35:40.257Z] [latestJetbrainsOptionsDirectory] [PASS] propagates corrupt JetBrains config root read errors (6.2ms)",
+        "[info] [2026-10-17T04:35:40.297Z] [integration: config execution] [PASS] config file that copies one file to another, config file that concatenates multiple sources, config file using dedup transform, config file using getJsonProperty transform, config file tracks both reads and writes, config using addWatchedPaths for exec dependencies, config with overwriteIfNotExists skips existing files, direct file-enforcer config reruns builders when manifest is fresh, config with glob-based overwriteEach mirrors files (799ms)",
+        "[info] [2026-10-17T04:35:40.299Z] [latestJetbrainsOptionsDirectory] [PASS] selects the newest matching product and ignores other products, returns the no-directory sentinel when no JetBrains config root exists (41ms)",
+        "[info] [2026-10-17T04:35:40.328Z] [compareVersionParts] [PASS] is reflexive and sign-antisymmetric, is transitive across three tuples (75ms)",
+        "[info] [2026-10-17T04:35:40.328Z] [parseVersionParts] [PASS] yields a non-negative integer tuple or the sentinel, never throwing, parses a prefixed dotted numeric version back to its tuple (75ms)",
+        "[info] [2026-10-17T04:35:40.342Z] [manageLsp4ijServerSettings] [PASS] patches the base server and inserts a scoped server in both files (97ms)",
+        "[info] [2026-10-17T04:35:40.353Z] [updateCache] [PASS] sets cache entry without reading from disk, subsequent readCached returns the updated content (14ms)",
+        "[info] [2026-10-17T04:35:40.354Z] [readCached] [PASS] reads file from disk on first call, returns cached content on subsequent calls without re-reading, caches by absolute path (15ms)",
+        "[info] [2026-10-17T04:35:40.354Z] [invalidatePaths] [PASS] removes specific path from cache, re-reads file after invalidation picks up new content, does not affect other cached entries (15ms)",
+        "[info] [2026-10-17T04:35:40.357Z] [parseJsonObject] [PASS] either returns a JSON object or throws an Error for arbitrary content, format then parse round-trips to a byte-identical serialization (558ms)",
+        "[info] [2026-10-17T04:35:40.357Z] [mergeFlatJson] [PASS] array unions are deduplicated and contain every addition, set overrides apply for keys not also unioned (557ms)",
+        "[info] [2026-10-17T04:35:40.357Z] [mergeObjectDefaults] [PASS] never overwrites an existing key and adds every default key (557ms)",
+        "[info] [2026-10-17T04:35:40.357Z] [omitJsonKey] [PASS] drops exactly the named key and preserves the order of the rest (557ms)",
+        "[info] [2026-10-17T04:35:40.357Z] [isJsonObject] [PASS] accepts non-array objects and rejects arrays, null, and primitives (557ms)",
+        "[info] [2026-10-17T04:35:40.394Z] [mirrorGlobPath] [PASS] substitutes a single wildcard, substitutes multiple wildcards positionally, handles wildcards capturing multi-character segments, handles pattern with no wildcards (literal copy), throws when wildcard counts differ between source and dest, throws when source path does not match source pattern prefix, throws when source path does not match source pattern suffix, handles wildcard capturing empty string, handles wildcard at the very start of pattern, handles wildcard at the very end of pattern, handles adjacent wildcards in source and dest (15ms)",
+        "[info] [2026-10-17T04:35:40.394Z] [firstGlobMetaIndex] [PASS] returns -1 for an empty string, returns -1 when no metacharacter is present, returns 0 when the first character is a metacharacter, returns the index of a metacharacter in the middle, detects each metacharacter kind, returns the earliest index when several metacharacters appear, returns the index of a trailing metacharacter, treats path separators as ordinary characters, not metacharacters, measures the metacharacter index in UTF-16 code units, not code points, returns -1 over a long run with no metacharacter, linear and stack-safe, finds a metacharacter at the end of a long run, linear and stack-safe (15ms)",
+        "[info] [2026-10-17T04:35:40.398Z] [cat(string[])] [PASS] concatenates multiple files with newline separator, returns single file content when array has one element, auto-expands glob patterns within the array, handles mix of literal paths and globs, preserves file content exactly (no trimming), handles empty file, tracks read paths in the tracker (27ms)",
+        "[info] [2026-10-17T04:35:40.399Z] [cat(string)] [PASS] returns GlobResult array with path and content per match, returns empty array when glob matches nothing, includes the matched file path in each result, tracks each matched file in the tracker, matches files in nested directories (27ms)",
+        "[info] [2026-10-17T04:35:40.413Z] [expandGlob] [PASS] matches files with a wildcard extension pattern, returns empty array when nothing matches, includes dot-files when dot option is enabled, matches files in nested directories with double-star (33ms)",
+        "[info] [2026-10-17T04:35:40.422Z] [overwriteEach] [PASS] rejects source patterns whose captures collapse to one destination (8.8ms)",
+        "[info] [2026-10-17T04:35:40.441Z] [overwriteIfNotExists] [PASS] preserves dangling symlink destinations as existing paths (17ms)",
+        "[info] [2026-10-17T04:35:40.489Z] [readExisting] [PASS] does not treat directory read failures as absent files (4.5ms)",
+        "[info] [2026-10-17T04:35:40.490Z] [firstGlobMetaIndex] [PASS] returns the first metacharacter code unit, with none earlier (102ms)",
+        "[info] [2026-10-17T04:35:40.490Z] [splitGlob] [PASS] returns an absolute base and a suffix of the pattern without throwing (102ms)",
+        "[info] [2026-10-17T04:35:40.490Z] [mirrorGlobPath] [PASS] substitutes one captured wildcard positionally, throws on mismatched wildcard counts (102ms)",
+        "[info] [2026-10-17T04:35:40.504Z] [findNodeModulesRoot] [PASS] returns the nearest ancestor owning node_modules, returns the start directory when it owns node_modules itself, prefers a nearer node_modules over an outer one, skips a regular file named node_modules, falls back to the start directory when no ancestor owns node_modules (3.9ms)",
+        "[info] [2026-10-17T04:35:40.515Z] [file-enforcer CLI regressions] [PASS] reruns config when untracked direct dependency changes, overwriteIfNotExists existing-file effects do not let CLI skip config (992ms)",
+        "[info] [2026-10-17T04:35:40.529Z] [freshStalenessManifest] [PASS] does not treat destination directory reads as stale cache misses (18ms)",
+        "[info] [2026-10-17T04:35:40.551Z] [findNodeModulesRoot] [PASS] propagates corrupt node_modules symlink-loop stat failures (7.2ms)",
+        "[info] [2026-10-17T04:35:40.560Z] [atomic destination writes] [PASS] preserves existing destination and removes temp file when temp write fails, public overwrite replaces content without leaving temp files (10ms)",
+        "[info] [2026-10-17T04:35:40.560Z] [eager staleness manifest] [PASS] reports fresh after eager overwrite sources and destinations are unchanged, reports stale after an eager overwrite source changes (21ms)",
+        "[info] [2026-10-17T04:35:40.560Z] [freshStalenessManifest] [PASS] does not treat non-directory source stamp failures as missing files (9.0ms)",
+        "[info] [2026-10-17T04:35:40.577Z] [lazy overwrite staleness cache] [PASS] skips content builder when sources and destination are unchanged, rebuilds when a source file changes, repairs an externally edited destination (16ms)",
+        "[info] [2026-10-17T04:35:40.584Z] [lazy overwriteEach staleness cache] [PASS] skips glob builder until the glob path set changes (7.1ms)",
+        "[info] [2026-10-17T04:35:40.588Z] [applyCargoPlan] [PASS] rewrites a drifted scalar when the guard resolves, adds keys inside an existing table without moving them to top level, appends canonical blocks only when the target table is absent, leaves a present block untouched (no duplicate insertion), heals a declared dependency but never conjures an absent one, returns byte-identical text when everything already matches (7.9ms)",
+        "[info] [2026-10-17T04:35:40.658Z] [overwriteTomlKey] [PASS] updates an existing scalar and preserves comments, updates a value nested under a section header, creates a missing top-level key, updates an array-of-tables element, skips writeTimestamp when serialised text matches existing content, registers dest in writes set even when the actual write is skipped, throws when the destination does not exist (64ms)",
+        "[info] [2026-10-17T04:35:40.693Z] [overwriteIfNotExists] [PASS] creates file when it does not exist, skips writing when file already exists, still registers dest as managed when skipped, creates parent directories for new files (106ms)",
+        "[info] [2026-10-17T04:35:40.714Z] [overwrite] [PASS] creates a new file with the given content, overwrites an existing file when content differs, skips write when content is identical, still registers dest in writes set even when skipping, records writeTimestamp only when content actually changes, creates parent directories if they do not exist, handles empty content, handles content with special characters (127ms)",
+        "[info] [2026-10-17T04:35:40.725Z] [overwriteEach] [PASS] writes each file to its mirrored destination, skips files whose destination content is already identical, handles empty file array without error, tracks each destination in writes set (137ms)",
+        "[info] [2026-10-17T04:35:40.962Z] [notifyWriteProtection] [PASS] logs a warning via tagged logger, includes the file path in the warning, does not throw when notify-send is unavailable (1.4s)",
+        "[info] [2026-10-17T04:35:44.945Z] [file-enforcer stale-lock owner regressions] [PASS] keeps contenders from observing owner metadata before atomic publication, recovers fresh manifest lock directories owned by dead process, does not reclaim old manifest lock directories owned by live process, does not reclaim old manifest lock directories with malformed owner metadata (5.4s)"
+      ],
+      "limitation": "Reporter combines case descriptions in each group line. Preserve the full emitted line rather than splitting names on commas."
+    },
+    {
+      "checkId": "package.module.toml-edit.test.unit",
+      "expectedFiles": [
+        "package/module/toml-edit/src/basic-escape.unit.test.ts",
+        "package/module/toml-edit/src/canonical.unit.test.ts",
+        "package/module/toml-edit/src/comments.unit.test.ts",
+        "package/module/toml-edit/src/cross-path-effective.unit.test.ts",
+        "package/module/toml-edit/src/document-state.unit.test.ts",
+        "package/module/toml-edit/src/effective-value.unit.test.ts",
+        "package/module/toml-edit/src/emit-content-node.unit.test.ts",
+        "package/module/toml-edit/src/emit-value-node.unit.test.ts",
+        "package/module/toml-edit/src/errors.unit.test.ts",
+        "package/module/toml-edit/src/fixtures.unit.test.ts",
+        "package/module/toml-edit/src/inline-entry-state.unit.test.ts",
+        "package/module/toml-edit/src/input-state.unit.test.ts",
+        "package/module/toml-edit/src/issue-252.unit.test.ts",
+        "package/module/toml-edit/src/js-value-text.unit.test.ts",
+        "package/module/toml-edit/src/keys.unit.test.ts",
+        "package/module/toml-edit/src/parse-toml-edit.unit.test.ts",
+        "package/module/toml-edit/src/parsed-comment-state.unit.test.ts",
+        "package/module/toml-edit/src/path-prefix.unit.test.ts",
+        "package/module/toml-edit/src/path.unit.test.ts",
+        "package/module/toml-edit/src/resolve.unit.test.ts",
+        "package/module/toml-edit/src/toml-clean-path.unit.test.ts",
+        "package/module/toml-edit/src/toml-comment-access.unit.test.ts",
+        "package/module/toml-edit/src/toml-delete.path.unit.test.ts",
+        "package/module/toml-edit/src/toml-delete.unit.test.ts",
+        "package/module/toml-edit/src/toml-get-comments.unit.test.ts",
+        "package/module/toml-edit/src/toml-get-node.unit.test.ts",
+        "package/module/toml-edit/src/toml-get-raw.unit.test.ts",
+        "package/module/toml-edit/src/toml-has.unit.test.ts",
+        "package/module/toml-edit/src/toml-insert-comment-after.unit.test.ts",
+        "package/module/toml-edit/src/toml-insert-comment-before.unit.test.ts",
+        "package/module/toml-edit/src/toml-keys.unit.test.ts",
+        "package/module/toml-edit/src/toml-set-diagnostics.unit.test.ts",
+        "package/module/toml-edit/src/toml-set-header-comment.unit.test.ts",
+        "package/module/toml-edit/src/toml-set.path.unit.test.ts",
+        "package/module/toml-edit/src/toml-set.unit.test.ts",
+        "package/module/toml-edit/src/value-encoders.unit.test.ts",
+        "package/module/toml-edit/src/values.unit.test.ts"
+      ],
+      "expectedFileCount": 37,
+      "groups": [
+        "[info] [2026-10-17T04:35:49.351Z] [public TOML error classes] [PASS] retain their names and shared base type, retains the supplied cause (2.5ms)",
+        "[info] [2026-10-17T04:35:49.356Z] [synthetic value-node emission] [PASS] indents nested synthetic arrays relative to each parent, indents an array inside a synthetic inline table, keeps a clean array sibling in its original numeric spelling (5.3ms)",
+        "[info] [2026-10-17T04:35:49.359Z] [cross-path effective-value resolution] [PASS] reads a sub-path after inline-table Case C extension, reads both new and existing entries after inline-table extension, reads intermediate object after deep top-level path-create, most-specific pending edit wins over an ancestor edit, inline-table Case C extension is readable at the parent path, array-element delete: sub-path read returns post-delete value (8.1ms)",
+        "[info] [2026-10-17T04:35:49.362Z] [effective-value (read-through-edits)] [PASS] tomlGetValue on a state returns the value set on that state, tomlGetValue on the original state is unchanged after a derived set, tomlGetValue on a deleted path returns undefined, path-create set is visible on the derived state, branching: trial set on a state is invisible to siblings (5.2ms)",
+        "[info] [2026-10-17T04:35:49.363Z] [tomlGetCommentsBefore / tomlGetCommentAfter] [PASS] two consecutive # lines attach as a block, locates comments on an indexed array-of-tables header, a blank line between comment and key breaks attachment, trailing inline comment on same line, trailing comment attaches when the hash immediately follows a value, trailing comment attaches at end of file without a newline, does not mistake a preceding comment for a trailing comment, does not attach a comment on the following line, trailing inline comment absent yields no comment field (9.2ms)",
+        "[info] [2026-10-17T04:35:49.370Z] [canonical emission via emptyTomlEdit] [PASS] emits valid TOML that re-parses without error, defaults to explicit rather than dotted key creation, canonical overrides retain an empty source, omits the final newline in a synthetic canonical document when disabled, omits the final newline in a parsed canonical document when disabled, adds the final newline in a parsed canonical document when enabled, keeps empty canonical output empty, omits terminal newlines in a header-only canonical document, omits multiple terminal newlines without changing multiline string content, honors the newline preference in an empty-source splice state, preserves the final newline in an untouched splice document, preserves the final newline after editing a nonempty splice document, multiple sets accumulate in the output, header comment lands above the body (11ms)",
+        "[info] [2026-10-17T04:35:49.371Z] [issue #252 delta-accumulation regressions] [PASS] repeated path-create set replaces, not duplicates, the key, repeated in-table path-create set replaces the key, implicit dotted-key parent reads as an object, delete of an implicit dotted-key parent removes the bytes, delete of an implicit parent removes every dotted key under it, set a scalar over an implicit parent throws TomlTypeError, set an object over an implicit parent replaces its entries, delete of a mixed implicit parent removes dotted key and sub-table, delete into a prior edit is honored (no reparse), repeated whole-table-replace does not accumulate (no reparse) (30ms)",
+        "[info] [2026-10-17T04:35:49.372Z] [isAttachedGap] [PASS] empty string is not a gap, a single newline attaches, spaces and tabs around one newline still attach, leading-only and trailing-only whitespace attach, two newlines (blank line) do not attach, whitespace with no newline does not attach, a non-whitespace char breaks the gap, carriage return is not gap whitespace, a long whitespace run with one newline attaches, a long whitespace run with two newlines does not attach (8.1ms)",
+        "[info] [2026-10-17T04:35:49.375Z] [parsed inline-table state] [PASS] does not attach phantom comments to inline entries, does not add comments to synthetic inline-table entries, does not attach comments to an appended inline-table entry (4.0ms)",
+        "[info] [2026-10-17T04:35:49.377Z] [parsed document blocks] [PASS] tiles adjacent key-values without empty filler blocks, retains a trailing comment on a parsed table header, keeps distinct parsed indices for every array-of-tables header, tracks nested array-of-tables indices after every header segment (7.2ms)",
+        "[info] [2026-10-17T04:35:49.382Z] [basic string escaping] [PASS] emits every named control escape and re-parses to the same value, uses uppercase padded escapes for unnamed controls and DEL, escapes a quote and backslash in a single-line string, preserves bare quotes and escapes a triple-quote run in multiline strings, preserves parsed literal and single-line basic string styles (11ms)",
+        "[info] [2026-10-17T04:35:49.383Z] [emitContentNode] [PASS] preserves both boolean spellings, uses the inclusive array element and column limits, indents nested multiline arrays by their depth, keeps dotted keys and nested array depth inside inline tables, rejects a parsed table node with a specific diagnostic, retains empty containers and quoted inline-table keys (10ms)",
+        "[info] [2026-10-17T04:35:49.384Z] [jsValueToTomlText] [PASS] emits both boolean values and nonfinite bare numbers, formats empty and inline arrays and inline tables, uses inclusive array layout thresholds and nested indentation, preserves parse-time numeric spelling inside an equal array, preserves parsed numeric spelling only for an equal value, keeps a parsed literal style only when string content is unchanged, rejects unsupported JS inputs with a named type error (8.6ms)",
+        "[info] [2026-10-17T04:35:49.391Z] [attached comment block collection] [PASS] collects a long contiguous comment block, a blank line splits the block; only the lower run attaches, no preceding comment yields an empty block, a comment after the key does not attach (18ms)",
+        "[info] [2026-10-17T04:35:49.391Z] [synthetic scalar state] [PASS] records the TOML kind of each accepted JS scalar (5.8ms)",
+        "[info] [2026-10-17T04:35:49.419Z] [encodeKey] [PASS] bare key of letters returns unquoted, single bare char returns unquoted, ASCII letter and digit endpoints remain bare keys, digits, underscore, and hyphen are bare, empty key quotes to an empty basic string, interior space forces quoting, dot forces quoting, leading and trailing spaces force quoting, backslash is escaped inside the quoted form, double quote is escaped inside the quoted form, astral (non-ASCII) char forces quoting without escaping, a long all-bare run stays unquoted, a long run ending in one non-bare char quotes (28ms)",
+        "[info] [2026-10-17T04:35:49.424Z] [parseTomlEdit] [PASS] rejects bare carriage returns, including a trailing one, normalizes CRLF before storing and emitting the document, retains parser rejection as the cause of a package error, forwards the selected TOML version to the parser (9.7ms)",
+        "[info] [2026-10-17T04:35:49.513Z] [fixtures] [valid round-trip] [PASS] array-of-table-sample01-input.toml, array-of-table-sample02-sub-table-input.toml, array-of-table-sample08-with-inline-table-input.toml, array-sample01-input.toml, array-sample02-multi-line-and-trailing-comma-input.toml, array-teble-keys01-input.toml, boolean-sample01-input.toml, comment-sample01-input.toml, date-time01-fraction-input.toml, date-time02-fraction-input.toml, date-time03-min-input.toml, date01-leading-zero-input.toml, datetime01-input.toml, empty-inline-table01-input.toml, float-sample01-input.toml, float-sample05-underscore-input.toml, float-sample06-inf-and-nan-input.toml, float01-minus-input.toml, float01-zoro-input.toml, float03-e-input.toml, inline-table-sample01-1.1-input.toml, inline-table-sample01-input.toml, inline-table-sample02-1.1-for-table-input.toml, inline-table-sample02-for-table-input.toml, inline-table-sample03-sub-table-input.toml, inline-table-sample05-sub-table-input.toml, integer-sample01-positive-negative-number-input.toml, integer-sample02-underscore-input.toml, integer-sample03-hex-octal-binary-input.toml, integer01-zoro-input.toml, key-value-pair-sample01-input.toml, keys-sample01-bare-keys-input.toml, keys-sample02-1.1-quoted-keys-input.toml, keys-sample02-quoted-keys-input.toml, keys-sample04-1-empty-key-input.toml, keys-sample04-2-empty-key-input.toml, keys-sample05-dotted-keys-input.toml, keys-sample06-dotted-keys-input.toml, keys-sample09-hash-input.toml, keys-sample11-out-of-order-input.toml, keys-sample12-fixed-out-of-order-input.toml, keys-sample13-float-like-input.toml, leap-second01-input.toml, leap-year01-input.toml, leap-year02-input.toml, local-date-sample01-input.toml, local-date-time-sample01-input.toml, local-date-time-sample02-omitted-seconds-input.toml, local-time-sample01-input.toml, local-time-sample02-omitted-seconds-input.toml, multi-line-basic-string01-valid-end-input.toml, multi-line-basic-string02-valid-end-input.toml, number-exponent01-with-sign-input.toml, offset-date-time-sample01-input.toml, offset-date-time-sample02-with-space-input.toml, offset-date-time-sample03-omitted-seconds-input.toml, sample01-this-is-a-toml-document-input.toml, sample02-comments-input.toml, sample03-powerful-strings-input.toml, sample04-multi-line-basic-strings-input.toml, sample05-literal-strings-input.toml, sample06-multi-line-literal-strings-input.toml, sample07-numbers-input.toml, sample08-dates-and-times-input.toml, string-sample01-1.1-basic-strings-input.toml, string-sample01-basic-strings-input.toml, string-sample02-ml-basic-strings-input.toml, string-sample03-ml-basic-strings-input.toml, string-sample04-ml-basic-strings-line-ending-backslash-input.toml, string-sample05-basic-strings-with-quote-input.toml, string-sample10-literal-strings-input.toml, string-sample11-ml-literal-strings-input.toml, string-sample12-ml-literal-strings-with-quote-input.toml, table-sample01-input.toml, table-sample02-input.toml, table-sample03-keys-input.toml, table-sample04-with-spaces-input.toml, table-sample05-without-super-table-input.toml, table-sample06-without-super-table-alt-input.toml, table-sample09-out-of-order-input.toml, table-sample10-fixed-out-of-order-input.toml, table-sample11-top-level-table-input.toml, table-sample12-keys-input.toml, table-sample13-subtable-input.toml, time01-input.toml, toml10-invalid-toml11-valid-invalid24-newline-in-inline-table-input.toml, toml10-invalid-toml11-valid-invalid25-newline-in-inline-table-input.toml, toml10-invalid-toml11-valid-invalid26-newline-in-inline-table-input.toml, toml10-invalid-toml11-valid-invalid27-newline-in-inline-table-input.toml, toml10-invalid-toml11-valid-invalid28-inline-table-trailing-comma-input.toml, unicode01-input.toml (117ms)",
+        "[info] [2026-10-17T04:35:49.528Z] [fixtures] [invalid parse failures] [PASS] array-of-table-sample03-invalid-input.toml, array-of-table-sample04-invalid-input.toml, array-of-table-sample05-invalid-input.toml, array-of-table-sample06-invalid-alt-input.toml, array-of-table-sample07-invalid-alt-input.toml, float-sample02-invalid-input.toml, float-sample03-invalid-input.toml, float-sample04-invalid-input.toml, inline-table-sample04-invalid-sub-table-input.toml, inline-table-sample06-invalid-sub-table-input.toml, invalid01-array-of-table-input.toml, invalid02-array-of-table-input.toml, invalid03-table-empty-key-input.toml, invalid04-table-empty-key-input.toml, invalid05-table-empty-key-input.toml, invalid06-table-empty-key-input.toml, invalid07-table-empty-key-input.toml, invalid08-table-empty-key-input.toml, invalid09-unterminated-table-input.toml, invalid10-unterminated-table-input.toml, invalid11-unterminated-table-input.toml, invalid12-only-key-input.toml, invalid13-missing-value-input.toml, invalid14-key-newline-value-input.toml, invalid15-key-newline-value-input.toml, invalid16-array-missing-comma-input.toml, invalid17-unterminated-array-input.toml, invalid18-unterminated-inline-table-input.toml, invalid19-unterminated-inline-table-input.toml, invalid20-inline-table-unexpected-char-input.toml, invalid21-only-key-in-inline-table-input.toml, invalid22-key-newline-value-in-inline-table-input.toml, invalid23-key-newline-value-in-inline-table-input.toml, invalid29-unterminated-inline-table-input.toml, invalid30-unexpected-token-in-inline-table-input.toml, invalid31-unterminated-inline-table-input.toml, invalid32-missing-comma-in-inline-table-input.toml, invalid33-unicode-input.toml, invalid34-escape-u-input.toml, invalid35-escape-u-input.toml, invalid36-unexpected-multiline-string-input.toml, invalid37-unexpected-multiline-string-input.toml, invalid38-unexpected-multiline-string-input.toml, invalid39-unexpected-multiline-string-input.toml, invalid40-unexpected-multiline-string-input.toml, invalid41-unexpected-multiline-string-input.toml, invalid42-escape-input.toml, invalid43-escape-input.toml, invalid44-top-level-unexpected-char-input.toml, invalid45-unterminated-literal-string-input.toml, invalid46-unterminated-literal-string-input.toml, invalid47-sign-input.toml, invalid48-sign-input.toml, invalid49-number-input.toml, invalid50-hex-sign-input.toml, invalid51-t-input.toml, invalid52-f-input.toml, invalid53-date-input.toml, invalid54-date-input.toml, invalid55-date-input.toml, invalid56-date-input.toml, invalid57-date-input.toml, invalid58-invalid-date-input.toml, invalid59-invalid-date-input.toml, invalid60-invalid-date-time-input.toml, invalid61-invalid-date-time-input.toml, invalid62-invalid-date-time-input.toml, invalid63-invalid-date-time-input.toml, invalid64-invalid-date-time-input.toml, invalid65-invalid-date-time-input.toml, invalid66-invalid-date-time-input.toml, invalid67-invalid-date-time-input.toml, invalid68-invalid-date-time-input.toml, invalid69-invalid-date-time-input.toml, invalid70-invalid-date-time-input.toml, invalid71-invalid-date-time-input.toml, invalid72-invalid-date-time-input.toml, invalid73-invalid-date-time-input.toml, invalid74-invalid-date-time-input.toml, invalid75-invalid-date-time-input.toml, invalid76-invalid-date-time-input.toml, invalid77-invalid-date-time-input.toml, invalid78-number-underscore-input.toml, invalid79-number-underscore-input.toml, invalid80-number-underscore-input.toml, invalid81-month-input.toml, invalid82-leap-year-input.toml, invalid83-dot-input.toml, invalid84-dot-input.toml, invalid85-dot-input.toml, key-value-pair-sample02-invalid-input.toml, key-value-pair-sample03-invalid-input.toml, keys-sample01-1.1-bare-keys-input.toml, keys-sample03-1.1-invalid-quoted-key-input.toml, keys-sample03-invalid-empty-key-input.toml, keys-sample05-1.1-dotted-keys-input.toml, keys-sample07-invalid-dupe-keys-input.toml, keys-sample08-invalid-dupe-keys-input.toml, keys-sample10-invalid-hash-input.toml, multi-line-basic-string03-invalid-end-input.toml, multi-line-basic-string04-invalid-end-input.toml, multi-line-basic-string05-invalid-end-input.toml, string-sample06-invalid-basic-strings-with-quote-input.toml, string-sample13-invalid-ml-literal-strings-with-quote-input.toml, table-sample07-invalid-input.toml, table-sample08-invalid-input.toml, table-sample14-invalid-subtable-input.toml, table-sample15-invalid-subtable-input.toml (132ms)",
+        "[info] [2026-10-17T04:35:49.531Z] [fixtures] [PASS] valid round-trip, invalid parse failures (136ms)",
+        "[info] [2026-10-17T04:35:49.546Z] [isStrictPrefix] [PASS] accepts a matching shorter path, rejects equal and longer paths, rejects a partially matching candidate (2.1ms)",
+        "[info] [2026-10-17T04:35:49.552Z] [parsed comment state] [PASS] retains attached lines and a hash adjacent to the value, retains attached lines without requiring a trailing comment, retains a trailing comment at end of file without a newline, does not attach a comment from the following line (4.6ms)",
+        "[info] [2026-10-17T04:35:49.559Z] [clean nested read paths] [PASS] selects the matching standard table when siblings share a key name, descends through array elements to clean inline-table values, descends through nested inline-table key segments, descends through a nested indexed array-of-tables header (12ms)",
+        "[info] [2026-10-17T04:35:49.569Z] [comment accessor boundaries] [PASS] reports the missing path in both comment accessors, rejects missing insertion paths with a named diagnostic, inserts comments inside a standard table without touching sibling tables, keeps earlier top-level entries when inserting before a later key, does not borrow an unrelated comment for a synthetic array-table header, reads an attached block and same-line comment on a standard table header, reads the selected array-of-tables header instead of another instance (10ms)",
+        "[info] [2026-10-17T04:35:49.573Z] [tomlHas] [PASS] true for an existing top-level key, false for a missing path, false after delete, true after path-create set, rejects negative and out-of-range array indices, true for a nested table path (11ms)",
+        "[info] [2026-10-17T04:35:49.577Z] [tomlGetComments] [PASS] returns every Block comment in source order, returns empty array when source has no comments (3.8ms)",
+        "[info] [2026-10-17T04:35:49.579Z] [tomlGetNode] [PASS] returns the value AST node for an existing keyvalue, returns clean array-of-tables instance and nested value nodes, throws TomlPathNotFoundError for missing path, throws for an edited path (no parse-time node after tomlSet) (5.4ms)",
+        "[info] [2026-10-17T04:35:49.579Z] [formatPath] [PASS] formats string and numeric segments without extra separators, formats empty and single-segment paths (2.3ms)",
+        "[info] [2026-10-17T04:35:49.590Z] [tomlInsertCommentAfter] [PASS] appends an inline trailing comment on the same line, appends a trailing comment at end of file without adding a newline, throws TomlPathNotFoundError for missing path (4.2ms)",
+        "[info] [2026-10-17T04:35:49.601Z] [resolveByPath via tomlGetValue] [PASS] dotted-key form resolves under separate path segments, quoted key with dots resolves under the literal dotted segment, mixed quoted and bare key segments, array-of-tables: index resolves the correct instance, inline table key access, array element by index, nested table: [a.b] (8.3ms)",
+        "[info] [2026-10-17T04:35:49.603Z] [nested deletion paths] [PASS] treats an empty path as a no-op without changing the original state, removes a field from only the selected array-of-tables instance, descends through nested standard-table headers, does not delete the same key under a different table header, descends through an inline-table entry before removing a nested field, leaves a sibling inline-table entry intact during nested deletion, ignores array indices outside the current bounds (11ms)",
+        "[info] [2026-10-17T04:35:49.615Z] [tomlGetRaw] [PASS] returns the source slice for an existing keyvalue, preserves integer raw spelling (hex), returns only the clean standard table header bytes, spans every clean array-of-tables header in a collection, reads a clean indexed array-of-tables header and its child value, throws TomlPathNotFoundError for missing path, throws TomlSpliceUnavailableError in canonical mode, throws for an edited path (no clean source slice after tomlSet) (8.0ms)",
+        "[info] [2026-10-17T04:35:49.625Z] [tomlDelete] [PASS] removes a top-level key plus its trailing newline, absorbs a same-line trailing inline comment, preserves a comment line on an unrelated key, is a no-op for a missing path, effective read returns undefined for a deleted key, immutable: deletion on derived state leaves original intact, deletes a standard [foo] table including its body, deletes [foo] while leaving sibling [bar] intact, deletes every [[foo]] instance by path [\"foo\"], deletes [[foo]] instances while a sibling [bar] survives, deletes every sibling [a.x] / [a.y] sharing path [\"a\"], effective read after AOT delete returns undefined, deletes a middle array element by index, deleting the only element produces an empty array, preserves a trailing inline comment after the array value bytes, effective whole-array read after element delete reflects new array, effective sub-path read after element delete reflects new index, nested-array element delete re-emits the outer array without the targeted element, nested-array element delete: leftmost element of the inner array, nested-array element delete: only-element collapses to empty inner array, 3-level nested-array element delete, nested-array delete removes an inline-table element, effective whole-outer-array read after nested delete reflects new shape, immutable: nested-array element delete on derived state leaves original intact, immutable: array-element delete on derived state leaves original intact (18ms)",
+        "[info] [2026-10-17T04:35:49.633Z] [tomlInsertCommentBefore] [PASS] inserts a single comment line before a top-level key, inserts multiple lines, throws TomlPathNotFoundError for missing path (4.1ms)",
+        "[info] [2026-10-17T04:35:49.640Z] [tomlKeys] [PASS] lists top-level keys when no path given, lists keys inside a named table, lists array indices for an inline array, lists indices for array-of-tables, returns empty array for a scalar path, returns empty array for a missing path (8.5ms)",
+        "[info] [2026-10-17T04:35:49.681Z] [tomlSetHeaderComment] [PASS] string comment lands above the body in canonical mode, array of lines emits one comment line each, empty comment omits a synthetic header, omitting comment clears the header comment (3.1ms)",
+        "[info] [2026-10-17T04:35:49.686Z] [set rejection diagnostics] [PASS] names the failing path and the unsupported edit (5.2ms)",
+        "[info] [2026-10-17T04:35:49.704Z] [indexed and nested set paths] [PASS] updates only the addressed array-of-tables instance, rejects an absent array-of-tables index instead of editing a sibling, replaces a nested array-of-tables collection in place among siblings, keeps a deeper array-of-tables header when replacing its parent collection, creates under the deepest matching standard-table header, prefers a nested standard table over its explicit parent, chooses the deepest table even when its parent appears later, replaces a standard table following a top-level key, rejects replacing a mixed dotted-key and table parent, replaces implicit dotted keys before an unrelated table, retains comment filler when replacing an implicit parent, preserves a partial-prefix sibling during implicit replacement, separates a created key from an unterminated final source line, updates the matching table without changing another table with the same key, replaces a nested inline-table value without changing siblings, rejects nullish values with the path-specific outer diagnostic (14ms)",
+        "[info] [2026-10-17T04:35:49.705Z] [tomlSet] [PASS] no-op set with the same value is byte-identical, preserves a comment line on another key, preserves trailing inline comment on the mutated key, preserves literal quote style on re-set with same value, preserves hex integer raw spelling on re-set with same value, underscore-formatted integers normalise on re-set (parser drops _), tomlInteger() forces integer emission for whole numbers, tomlFloat() forces float emission with .0 suffix, path-create adds a new top-level key at end, path-create inserts inside an existing table, immutable: setting on a derived state leaves the original unchanged, throws TomlTypeError on null, throws TomlTypeError on undefined, replaces a [foo] table body with the new object entries, replaces [foo] body while preserving [foo.sub], absorbs a trailing inline comment when deleting body keys, top-level replace keeps sub-tables intact, array-of-tables wholesale replace emits one [[foo]] block per array element, array-of-tables replace shrinks the instance count (2 to 1), array-of-tables replace grows the instance count (2 to 3), array-of-tables replace with empty array clears every instance, array-of-tables replace preserves a sibling [bar] table, array-of-tables replace at a nested path [[a.b]], array-of-tables replace with non-array value throws TomlTypeError, array-of-tables replace with a non-object element throws TomlTypeError, sibling-tables wholesale replace still throws TomlImmutableNodeError, effective sub-path read after AOT replace returns new element value, whole-AOT read after replace returns the new instances, immutable: AOT replace on derived state leaves original intact, non-object value on a table throws TomlTypeError, empty object {} clears body and inserts nothing, nested object value becomes an inline table, immutable: table replace on derived state leaves original intact, deep path-create from empty doc emits dotted key at top-level, deep path-create into existing [a] inserts dotted key inside, inline-table extension appends a new entry, inline-table multi-segment extension uses dotted-key form, object value at deep path becomes an inline table, numeric segment in the missing tail throws TomlImmutableNodeError, top-level dotted-key insert lands before sibling table headers, rejects inline-table extension that conflicts with a deeper existing key, rejects inline-table extension that conflicts with a shorter existing key, allows deep dotted key when sibling table is strictly deeper, allows top-level dotted key when sibling table prefix is sibling-only, allows inline-table extension to a sibling dotted leaf (19ms)",
+        "[info] [2026-10-17T04:35:49.706Z] [JS-to-TOML value coercion] [PASS] tomlLocalDate produces a local-date assignment, tomlLocalDateTime produces a local-date-time assignment, tomlLocalTime produces a local-time assignment, boolean coerces to true/false, array of primitives renders inline, array re-set preserves the raw spelling of equal parsed elements, wrapped scalar reads expose plain JS values, coerces a structurally tagged float string to a numeric read, null and undefined throw TomlTypeError, rejects null and undefined nested inside arrays and tables (8.7ms)",
+        "[info] [2026-10-17T04:35:49.711Z] [tagged and styled value encoding] [PASS] spells integer and every nonfinite float explicitly, treats a non-string tomlKind as an ordinary inline table, accepts a plain object with a null prototype, retains multiline literal spelling on an equal string re-set (3.8ms)"
+      ],
+      "limitation": "Reporter combines case descriptions in each group line. Preserve the full emitted line rather than splitting names on commas."
+    },
+    {
+      "checkId": "package.module.toml-edit.fuzz.test.unit",
+      "expectedFiles": [
+        "package/module/toml-edit.fuzz/src/ci-scope.unit.test.ts",
+        "package/module/toml-edit.fuzz/src/emit.property.unit.test.ts",
+        "package/module/toml-edit.fuzz/src/generators.property.unit.test.ts",
+        "package/module/toml-edit.fuzz/src/parse-toml-edit.property.unit.test.ts",
+        "package/module/toml-edit.fuzz/src/round-trip.property.unit.test.ts",
+        "package/module/toml-edit.fuzz/src/smoke.property.unit.test.ts",
+        "package/module/toml-edit.fuzz/src/stateful.property.unit.test.ts"
+      ],
+      "expectedFileCount": 7,
+      "groups": [
+        "[info] [2026-10-17T04:36:34.622Z] [fuzz smoke] [PASS] bare key plus non-negative integer round-trips byte-identically through the built artifact (24ms)",
+        "[info] [2026-10-17T04:36:34.689Z] [stateful edit model] [PASS] set/delete sequences keep effective reads and stringify in sync with the model, repeating a successful set on the reparsed result is byte-identical (60ms)",
+        "[info] [2026-10-17T04:36:35.267Z] [fuzz generators] [PASS] integer samples parse and match their predicted value, float samples parse and match their predicted value, boolean samples parse and match their predicted value, string samples parse and the escaper agrees with the parser decoding, datetime samples parse without error, compound value text parses under a synthetic key, generated documents parse and round-trip byte-identically in splice mode, semanticEquals captures TOML value identity and difference (117ms)",
+        "[info] [2026-10-17T04:36:35.303Z] [emit seams] [PASS] _encodeKey round-trips any key name to a single decoded segment, control scalars escape through _encodeKey and _jsValueToTomlText, _jsValueToTomlText re-emits a JSON value to an equal value or rejects null, _emitContentNode reparses to the same value kind (catches datetime/number kind drift), _emitContentNode preserves nested array and inline-table contents, _emitStringValue re-emits a parsed string to the same value, _emitDocument with no edits is byte-identical to the source (141ms)",
+        "[info] [2026-10-17T04:36:35.335Z] [parse/emit round-trip] [PASS] splice mode re-emits a parsed document byte-for-byte, classifies the upstream oracle boundary and round-trips supported semantic models, meaning is invariant under leading/trailing comments and blank lines (166ms)",
+        "[info] [2026-10-17T04:36:35.395Z] [parseTomlEdit] [PASS] is total: returns a state or throws only TomlEditError (incl. deep-nesting overflow), deep nesting overflow surfaces as TomlEditError wrapping a RangeError, accepts every generated document, rejects every committed invalid fixture with TomlEditError, rejects a bare carriage return and normalizes CRLF to LF, splits TOML 1.0 from 1.1: newline-in-inline-table rejects at 1.0, accepts at 1.1 (217ms)",
+        "[info] [2026-10-17T04:36:37.239Z] [pre-install workflow scope] [PASS] keeps event path filters and the Node launcher contract explicit, runs for package/module/toml-edit/**, runs for package/module/toml-edit.fuzz/**, runs for package/test-fixture/toml-edit/**, runs for doc/decision/toml-edit-fuzzing.md, runs for .github/workflows/toml-edit-fuzz.yml, skips only a successful irrelevant comparison: \"unrelated.txt\", skips only a successful irrelevant comparison: \"package/module/toml-editor/file.ts\", skips only a successful irrelevant comparison: \"package/module/toml-edit.fuzzier/file.ts\", skips only a successful irrelevant comparison: \"doc/decision/toml-edit-fuzzing.md.bak\", skips only a successful irrelevant comparison: \".github/workflows/toml-edit-fuzz.yml.bak\", skips only a successful irrelevant comparison: \"unrelated\\npackage/module/toml-edit/fake.ts\", accepts a successful empty diff, preserves relevant tabs, quotes, non-ASCII, and embedded newlines, runs for a modified relevant file mixed with irrelevant changes, runs when a relevant file is deleted, runs when renaming into scope, runs when renaming out of scope, uses the event base even when origin/main already points at HEAD, push runs without merge-group revisions, pull_request runs without merge-group revisions, fails closed for SCOPE_BASE_SHA: {\"SCOPE_BASE_SHA\":\"\"}, fails closed for SCOPE_BASE_SHA: {\"SCOPE_BASE_SHA\":\"origin/main\"}, fails closed for SCOPE_BASE_SHA: {\"SCOPE_BASE_SHA\":\"--help\"}, fails closed for SCOPE_BASE_SHA: {\"SCOPE_BASE_SHA\":\"gggggggggggggggggggggggggggggggggggggggg\"}, fails closed for SCOPE_BASE_SHA: {\"SCOPE_BASE_SHA\":\"1111111111111111111111111111111111111111\"}, fails closed for SCOPE_HEAD_SHA: {\"SCOPE_HEAD_SHA\":\"\"}, fails closed for SCOPE_HEAD_SHA: {\"SCOPE_HEAD_SHA\":\"2222222222222222222222222222222222222222\"}, fails closed for GITHUB_EVENT_NAME: {\"GITHUB_EVENT_NAME\":\"unexpected\"}, fails closed for GITHUB_EVENT_NAME: {\"GITHUB_EVENT_NAME\":\"\"}, fails closed for GITHUB_EVENT_NAME: {}, fails closed for GITHUB_OUTPUT: {\"GITHUB_OUTPUT\":\"\"}, fails closed for GITHUB_OUTPUT: {}, fails closed for PATH: {\"PATH\":\"\"}, fails when checkout does not match the event head, fails when the event base is not an ancestor of its head, propagates a git diff failure after commit and ancestry validation, the failure oracle rejects a deliberately restored fail-open Git adapter, fails when the output cannot be appended (2.7s)"
+      ],
+      "limitation": "Reporter combines case descriptions in each group line. Preserve the full emitted line rather than splitting names on commas."
+    },
+    {
+      "checkId": "package.oxlint-plugin.prefer-readonly-parameter-type.test.unit",
+      "expectedFiles": [
+        "package/oxlint-plugin/prefer-readonly-parameter-type/src/workspace-source-effect.unit.test.ts"
+      ],
+      "expectedFileCount": 1,
+      "groups": [
+        "[info] [2026-10-17T04:37:48.313Z] [workspace source effect resolution] [PASS] resolves workspace package calls through live source without catalog entries (2.5s)"
+      ],
+      "limitation": "Reporter combines case descriptions in each group line. Preserve the full emitted line rather than splitting names on commas."
+    }
+  ],
+  "limitations": [
+    "Canceled attempt has no end-of-job source status/hash proof or active mutation artifact.",
+    "Mutation internal cause and OOM causality are not established.",
+    "root.forbidden-strings is externally owned and is not measured by this run."
+  ]
 }

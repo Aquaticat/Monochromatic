@@ -38,6 +38,7 @@ The original executor waits for each child exit and buffers its output to a file
 It has no per-check deadline.
 The job timeout prevented the artifact upload step from retaining the active mutation log.
 The mutation task's internal cause remains unknown.
+The canceled attempt also lacks an end-of-job source status/hash proof.
 The replay command `mise run reconcile-toml -- --assert-complete` fails on this exact missing-terminal boundary.
 
 ## Source failures and artifact proof
@@ -46,7 +47,12 @@ The separate generated-file check `root.generated-consistency` ran `//:sync:file
 It failed the clean-output contract because generated `mise.toml` removed package-bin PATH entries.
 The retained patch matches the existing ambient-node_modules generation boundary in issue `#335`.
 The historical LFS failure in issue `#1071` is a separate incident.
-The full-package Oxlint panic remains issue `#1066`, and fuzz coverage remains issue `#1067`.
+The full-package Oxlint task reported 84 errors across 137 files:
+- `test-import(require-eventual-artifact)`: 62.
+- `eslint(no-irregular-whitespace)`: 22.
+
+No plugin panic appears in this observation; issue `#1066` remains a separate historical incident.
+Fuzz coverage remains issue `#1067`.
 The unexecuted file-enforcer mutation task has a separate historical path-resolution failure in issue `#1068`.
 No source fix is included.
 
