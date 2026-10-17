@@ -96,11 +96,46 @@ and the migration's verification order.
 The original source-attribution and serialized-primary-request contribution requirements remain in scope.
 Clause compilation and whole-operation fallback remain distinct.
 
-The actual configured-host replay reaches all 16 original calls and issues no confirmation,
+An intermediate configured-host replay reaches all 16 original calls and issues no confirmation,
 but an intermediate `process.output` returns `Complete group preparation or assessment failed`.
 The two reported final Bash calls succeed.
 Do not claim the full interaction passes until the intermediate failure is diagnosed and resolved.
 Fixture `pi-hyper-rpc-allow-jZsxRg` retains the events and runtime logs.
+
+### Native phase verification and remaining freshness failure
+
+The maintained `test:native:phases` consumer suite passes its 12 lifecycle modes against `native-release-GSPIDj`.
+It exercises actual Pi preparation,
+Bash execution,
+awaited update subscribers,
+extension callbacks,
+group withholding,
+cancellation,
+custom notifications,
+user steering,
+and policy-file changes in disposable sessions.
+The notification-context followup also reaches a later primary request and a fresh reviewed tool group.
+The notification-turn followup augmentation still needs its focused rerun.
+The copied-artifact denial mutant executes three members and fails the maintained test as required;
+`native-phase-mutant.json` retains the production hash and unchanged-artifact check.
+
+The intermediate `process.output` failure is reproduced by queuing native custom data during assessment.
+`run-prompt-custody-v3/lifecycle.mjs` previously replaced the run-composition object
+when the constructed-input pool gained any entry.
+This does not prove instruction text changed.
+Pending custom data now remains captured until actual context admission without replacing that run object.
+Queued user instructions and changed policy files still withhold every member without another approval dialog.
+
+Full configured replay `pi-hyper-rpc-allow-GRsLAm` confirms that `process.output` now succeeds.
+It then stops before assessment of the next Bash pair with `Observed request is no longer current`.
+The retained cause is `SourceCollectionError`:
+`Only original unregistered manager or native event input occurrences may extend this source snapshot`.
+The rejected appended origin is not yet identified.
+This is a separate failure from the replaced-run-object check;
+do not claim the full interaction or lint handoff is ready.
+Next action: identify the rejected original input at `manager-source-growth.mjs:88`
+using the configured disposable replay,
+then reproduce it in the maintained native consumer fixture.
 
 A provider-payload audit finds a separate missed shell boundary:
 known process result metadata and `ad-process:notification` details retain raw `command` strings.
