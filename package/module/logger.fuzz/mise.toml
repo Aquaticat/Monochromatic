@@ -668,7 +668,9 @@ const version=execFileSync(binary,['--version'],{encoding:'utf8'}).trim()
 assert.equal(version,'git version 2.56.0')
 const libraries=execFileSync('ldd',[binary],{encoding:'utf8'})
 assert(!libraries.includes('not found'))
-writeFileSync(join(base,'git-host-build-results.json'),JSON.stringify({upstreamRevision:'a018953688f1b10bddf91bff8747068f5f4746a4',upstreamTree:'96aa7b9f343426cd28cf6c2da737b9f847a2919d',sourceArchiveSha256:sha(archive),sourceArchiveBytes:archive.length,originalSourceInputs:inputs.length,sourceInputsBeforeAfterEqual:true,sourceInputDigest:sha(Buffer.from(JSON.stringify(inputs))),makeArgs:args,tools,version,elfSha256:sha(bytes),elfBytes:bytes.length,sharedLibraries:libraries,resources:{logicalCpus:cpus().length,availableParallelism:availableParallelism(),files:sample}},null,2)+'\n',{flag:'wx',mode:0o600})
+const libraryFiles=[...new Set([...libraries.matchAll(/(?:=>\s+)?(\/\S+)\s+\(/gu)].map(match=>match[1]))].sort().map(path=>{const bytes=readFileSync(path);return {path,sha256:sha(bytes),bytes:bytes.length}})
+assert(libraryFiles.length>0)
+writeFileSync(join(base,'git-host-build-results.json'),JSON.stringify({upstreamRevision:'a018953688f1b10bddf91bff8747068f5f4746a4',upstreamTree:'96aa7b9f343426cd28cf6c2da737b9f847a2919d',sourceArchiveSha256:sha(archive),sourceArchiveBytes:archive.length,originalSourceInputs:inputs.length,sourceInputsBeforeAfterEqual:true,sourceInputDigest:sha(Buffer.from(JSON.stringify(inputs))),makeArgs:args,tools,version,elfSha256:sha(bytes),elfBytes:bytes.length,sharedLibraries:libraries,libraryFiles,osRelease:readFileSync('/etc/os-release','utf8'),resources:{logicalCpus:cpus().length,availableParallelism:availableParallelism(),files:sample}},null,2)+'\n',{flag:'wx',mode:0o600})
 console.log(JSON.stringify({version,elfSha256:sha(bytes),sourceFilesUnchanged:inputs.length}))
 '''
 
@@ -708,6 +710,9 @@ finally {processControl.stdin.end('controlled input\n')}
 const [exitCode]=await exited
 assert.equal(exitCode,0)
 const resources=Object.fromEntries(['cpu.max','memory.max','memory.events','pids.max','pids.events'].map(name=>[name,readFileSync(join('/sys/fs/cgroup',name),'utf8').trim()]))
-writeFileSync(join(base,'git-host-installed-results.json'),JSON.stringify({version,elfSha256:sha,elfBytes:bytes.length,execPath:git(['--exec-path']),sharedLibraries:execFileSync('ldd',['/usr/bin/git'],{encoding:'utf8'}),consumerFixtureHead:head,processExe:executable,processExitCode:exitCode,resources},null,2)+'\n',{flag:'wx',mode:0o600})
+const libraries=execFileSync('ldd',['/usr/bin/git'],{encoding:'utf8'})
+const libraryFiles=[...new Set([...libraries.matchAll(/(?:=>\s+)?(\/\S+)\s+\(/gu)].map(match=>match[1]))].sort().map(path=>{const bytes=readFileSync(path);return {path,sha256:createHash('sha256').update(bytes).digest('hex'),bytes:bytes.length}})
+assert.deepEqual(libraryFiles,build.libraryFiles)
+writeFileSync(join(base,'git-host-installed-results.json'),JSON.stringify({version,elfSha256:sha,elfBytes:bytes.length,execPath:git(['--exec-path']),sharedLibraries:libraries,libraryFiles,consumerFixtureHead:head,processExe:executable,processExitCode:exitCode,resources},null,2)+'\n',{flag:'wx',mode:0o600})
 console.log(JSON.stringify({installedVersion:version,elfSha256:sha,processExe:executable,consumerCommit:head}))
 '''
