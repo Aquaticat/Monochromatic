@@ -269,6 +269,75 @@ Later configured sessions remain unexecuted when the first session fails.
 The `runtimeCompleted` field means the invocation and cleanup returned,
 not that every configured session passed or executed.
 
+## Source identity input coverage
+
+The actual `trial:depot:ci:source-identity` task at harness `4c4063e78bc9aaed8e293c1b478db089d6eef0ce`
+passed before/after controls against clean historical sources `cb95cf6d78` and `3434eaa455`.
+The controls used private workspace directories with source/harness symlinks,
+`GIT_OPTIONAL_LOCKS=0`,
+and a private identity output directory.
+The shared source worktrees retained their original heads and clean tracked status.
+The shared harness task file stayed byte-identical throughout verification.
+No cloud run was dispatched.
+
+The task asserts source HEAD against the selected manifest,
+rejects dirty tracked status,
+compares configured input bytes to the committed Git blobs,
+and compares the final source/tree/input/manifest identity to the saved baseline.
+The native control retained 16 input hashes;
+the desktop control retained nine.
+Actual negative controls rejected wrong source,
+ordinary tracked-source edits,
+a changed hashed input hidden by `assume-unchanged`,
+a changed manifest,
+an invalid phase,
+and an absent before record.
+The disposable fixture was restored and its final after control passed.
+
+The explicit hash enumeration has a narrower boundary than all configured native inputs.
+`package/dev-script/task-util/mise.toml:816` starts with root JavaScript/mise metadata,
+then line 818 adds exact metadata filenames immediately inside each selected package:
+
+```javascript
+// package/dev-script/task-util/mise.toml at harness 4c4063e78b
+const paths=new Set(['mise.lock','mise.toml','pnpm-lock.yaml','pnpm-workspace.yaml','package.json']);
+for(const pkg of packages)for(const name of ['mise.toml','package.json','Cargo.toml','Cargo.lock','tsconfig.json','.cargo/config.toml'])if(trackedFiles.has(`${pkg}/${name}`))paths.add(`${pkg}/${name}`);
+```
+
+The native baseline omitted these tracked configured inputs:
+
+- `.cargo/config.toml`.
+- `package/music-player/android-app/rust/Cargo.toml`.
+- `package/music-player/android-app/rust/Cargo.lock`.
+
+Each omission was tested independently in a private clone.
+The control marked that file `assume-unchanged`,
+changed its bytes,
+confirmed empty tracked status,
+and ran the actual after task.
+Every changed omitted input was accepted with exit zero and the original saved identity.
+In contrast,
+the same index-hidden change to the hashed `mise.lock` was rejected with
+`Configured source input differs: mise.lock`.
+The byte-comparison positive control therefore detected a hidden change when its path was enumerated.
+
+This demonstrates a hash coverage gap under index-hidden edits;
+it does not establish that a real provider run changed one of these files or set an index flag.
+Ordinary tracked edits were rejected.
+Untracked files and ignored build outputs remain outside the helper contract.
+The root harness owner retains any repair;
+the verification agent changed only disposable fixtures and documentation.
+The final workflow must retain the helper's actual input set and avoid claiming omitted config hashes.
+
+The [fixture evidence](../audit/depot-source-identity-controls-2026-10-17.evidence.json)
+retains the actual task identity,
+both source/tree/manifest identities,
+input hashes,
+terminal control outcomes,
+and changed/original hashes for each omitted input.
+The fixture driver and complete command output remain in
+`~/temp/agent/depot-source-identity-controls-20261017`.
+
 ## Verification catalog
 
 - Passed:
