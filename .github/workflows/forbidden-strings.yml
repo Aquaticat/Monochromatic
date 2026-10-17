@@ -1,16 +1,37 @@
 name: forbidden-strings
 
 on:
-  pull_request:
-    branches: ['main']
-  merge_group:
-    branches: ['main']
-  push:
-    branches: ['main']
+  workflow_dispatch:
+    inputs:
+      cohort_id:
+        description: Frozen shared replay identity
+        required: true
+        type: string
+      manifest_sha256:
+        description: SHA256 of the exact published common manifest bytes
+        required: true
+        type: string
+      requested_at:
+        description: Shared canonical UTC request instant after publication
+        required: true
+        type: string
+      case_id:
+        description: Immutable case selected by the common manifest
+        required: true
+        type: choice
+        options: [toml, logger, native, desktop]
+      source_head:
+        description: Immutable source revision to scan
+        required: true
+        type: string
+      source_base:
+        description: Immutable comparison base
+        required: true
+        type: string
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.cohort_id }}-${{ inputs.case_id }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -19,13 +40,60 @@ permissions:
 jobs:
   scan:
     runs-on: ubuntu-latest
+    name: ${{ inputs.case_id }} scanner
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: source
+    env:
+      MISE_AUTO_INSTALL: 'false'
+      MISE_LOCKED: '1'
+      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+      DEPOT_CI_CASE: ${{ inputs.case_id }}
+      DEPOT_CI_ROUTE: ${{ format('{0}.scanner', inputs.case_id) }}
+      SOURCE_HEAD: ${{ inputs.source_head }}
+      SOURCE_BASE: ${{ inputs.source_base }}
+      COHORT_ID: ${{ inputs.cohort_id }}
+      COHORT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+      COHORT_REQUESTED_AT: ${{ inputs.requested_at }}
+      GH_TOKEN: ${{ github.token }}
     steps:
-    - name: Checkout (full history)
+    - name: Checkout frozen harness
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       with:
+        path: harness
         fetch-depth: 0
+        persist-credentials: false
 
+    - name: Install verified task runner bootstrap
+      uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Reuse the bootstrap exercised by the existing trial workflows.
+        version: 2026.10.9
+        working_directory: harness
+        install: false
+        env: false
+        export_path: false
+        cache: false
+    - name: Install the frozen harness Node runtime
+      working-directory: harness
+      run: mise install node
+    - name: Checkout immutable source for the selected change
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        path: source
+        ref: ${{ inputs.source_head }}
+        fetch-depth: 0
+        persist-credentials: false
+
+    - name: Bind immutable source and shared cohort before scanner
+      id: cohort_before
+      working-directory: harness
+      env:
+        DEPOT_CI_IDENTITY_PHASE: before
+      run: mise run //package/dev-script/task-util:trial:depot:ci:cohort-identity
     - name: Download prebuilt forbidden-strings binary
+      working-directory: harness
       # The cargo-publish.yml workflow uploads SLSA-attested binaries for
       # x86_64-unknown-linux-gnu (and six other targets) on every
       # Cargo.toml version bump merged to main. We try the Cargo.toml
@@ -91,6 +159,18 @@ jobs:
         echo "$bin_dir" >> "$GITHUB_PATH"
         "$bin_dir/forbidden-strings" --version
 
+    - name: Verify immutable source and comparison base
+      env:
+        SOURCE_HEAD: ${{ inputs.source_head }}
+        SOURCE_BASE: ${{ inputs.source_base }}
+      run: |
+        set -euo pipefail
+        [[ "$SOURCE_HEAD" =~ ^[0-9a-f]{40}$ ]]
+        [[ "$SOURCE_BASE" =~ ^[0-9a-f]{40}$ ]]
+        test "$(git rev-parse HEAD)" = "$SOURCE_HEAD"
+        git merge-base --is-ancestor "$SOURCE_BASE" "$SOURCE_HEAD"
+        printf 'source_head=%s\nsource_base=%s\n' "$SOURCE_HEAD" "$SOURCE_BASE"
+
     - name: Materialize deny-list
       # De-root design (commit 58995afff): no root example file and no root
       # rules file exist anymore. Compose the runtime rules file from the
@@ -124,9 +204,9 @@ jobs:
       # their merge-base comparison with main. Replaces both the old full-tree
       # push scan and the earlier `mise exec -- hk check` step.
       env:
-        EVENT_NAME: ${{ github.event_name }}
-        HEAD_SHA: ${{ github.sha }}
-        PUSH_BASE_SHA: ${{ github.event.before }}
+        EVENT_NAME: push
+        HEAD_SHA: ${{ inputs.source_head }}
+        PUSH_BASE_SHA: ${{ inputs.source_base }}
       run: |
         set -euo pipefail
         if [ "$EVENT_NAME" = 'push' ]; then
@@ -153,3 +233,17 @@ jobs:
         printf 'Scanning %d changed file(s) from %s:\n' "${#changed[@]}" "$comparison"
         printf '  %s\n' "${changed[@]}"
         forbidden-strings --builtin-rules --rules "$RUNNER_TEMP/forbidden-strings.rules.txt" "${changed[@]}"
+
+    - name: Verify immutable source and shared cohort after scanner
+      if: ${{ always() && steps.cohort_before.outcome == 'success' }}
+      working-directory: harness
+      env:
+        DEPOT_CI_IDENTITY_PHASE: after
+      run: mise run //package/dev-script/task-util:trial:depot:ci:cohort-identity
+    - name: Preserve scanner cohort provenance
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: scanner-${{ inputs.case_id }}-cohort-evidence
+        path: ~/temp/agent/depot-complete-ci/*-provenance-*.json
+        if-no-files-found: ignore
