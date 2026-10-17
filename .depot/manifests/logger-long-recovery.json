@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+  "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+  "previousRunId": "1pgpb8qhn6",
+  "scope": "Development recovery only of three incomplete authored tasks, preserving original args and earlier partial progress; not a mutant checkpoint resume",
+  "checks": [
+    {
+      "name": "package.module.conf-fork.fuzz.fuzz",
+      "partition": "fuzz",
+      "reason": "Prior24-minute adapter budget ended before authored task conclusion",
+      "selectedCheckIds": [
+        "package.module.conf-fork.fuzz.fuzz"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.conf-fork.build",
+        "package.module.conf-fork.fuzz.fuzz"
+      ],
+      "previousRunId": "1pgpb8qhn6",
+      "executionBudgetMs": 7200000,
+      "providerSize": "2x8",
+      "providerCpus": 2,
+      "providerMemoryGiB": 8
+    },
+    {
+      "name": "package.module.toml-edit.test.mutation",
+      "partition": "mutation",
+      "reason": "Prior24-minute adapter budget ended before authored task conclusion",
+      "selectedCheckIds": [
+        "package.module.toml-edit.test.mutation"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.toml-edit.build",
+        "package.module.toml-edit.test.mutation"
+      ],
+      "previousRunId": "1pgpb8qhn6",
+      "executionBudgetMs": 7200000,
+      "providerSize": "4x16",
+      "providerCpus": 4,
+      "providerMemoryGiB": 16
+    },
+    {
+      "name": "package.module.conf-fork.test.mutation",
+      "partition": "mutation",
+      "reason": "Prior24-minute adapter budget ended before authored task conclusion",
+      "selectedCheckIds": [
+        "package.module.conf-fork.test.mutation"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.conf-fork.build",
+        "package.module.conf-fork.test.mutation"
+      ],
+      "previousRunId": "1pgpb8qhn6",
+      "executionBudgetMs": 7200000,
+      "providerSize": "4x16",
+      "providerCpus": 4,
+      "providerMemoryGiB": 16
+    }
+  ]
+}
