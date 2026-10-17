@@ -26,6 +26,11 @@ with the six reused issues remaining separate.
 
 ### Final logger completion incidents
 
+- [#1434](https://github.com/Aquaticats/Monochromatic/issues/1434):
+  aggregate mutation JSON is retained,
+  but real physical shard manifests and reports are omitted.
+  Independent verification covers 5542 selected IDs;
+  the 863 declared shards receive no physical reconciliation credit.
 - [#1180](https://github.com/Aquaticats/Monochromatic/issues/1180):
   final common-manifest lookup returns HTTP 401 after successful native TOML mutation.
   Credential rejection cause remains unknown.

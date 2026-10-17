@@ -34,6 +34,10 @@ The actual ZIP directories were relisted and matched the retained member invento
 No real physical shard manifest or report files are present;
 the similarly named private fixture manifests receive no shard credit.
 Physical baseline/report/return reconciliation remains unestablished.
+The distinct physical-shard retention gap is filed as `#1434` with exact body readback.
+A read-only probe of the known completed logger TOML sandbox returned
+`sandbox "gbwhw0dz0jzdgd6n346m" was not found`;
+it recovered no temporary shard files.
 The Rust native verification format is separate and still needs its retained manifest and source-gate reconciliation.
 JSONC and file-enforcer mutation tasks failed without native JSON.
 The logger TOML selection exactly matches the 3062-ID source fixture;
@@ -92,12 +96,10 @@ Next actions:
   and terminated-worker issue `#1182` are filed with exact body readback.
   The [completion troubleshooting record](../troubleshooting/depot-logger-final-completion-gaps.md)
   keeps their boundaries separate.
-- Reconcile logger browser inventories,
-  native mutation shard retention,
-  Rust and custom consumers,
+- Reconcile Rust and custom consumers,
   source failures and prerequisite-blocked checks.
-- Reconcile the missing physical shard files with issue `#1160`'s distinct aggregate-JSON collection boundary;
-  file the narrower retained-evidence gap without claiming that no original commands ran.
+- Add the current per-ID aggregate-JSON proof to `#1160`,
+  preserving its historical missing artifacts and the distinct physical retention gap `#1434`.
 - File scoped follow-up evidence for the repaired private verifier assumptions:
   zero-based native columns,
   separate ignored records,
@@ -105,6 +107,13 @@ Next actions:
   and browser versus DOM report roots.
 - Finish the external-check registry and overlap-aware allocation/critical paths,
   including the already retained native macOS retry and Windows carry-forward alias.
+- The repository-filtered Depot index contains 276 terminal records from the trial period.
+  Every returned repository is `Aquaticats/Monochromatic`.
+  The CLI paginates until the provider's next-page token is empty;
+  the requested limit of 1000 was not reached.
+  Reconcile actual attempts and declared resources before pricing those records.
+  The oldest indexed record has no workflow,
+  so a run record alone proves no allocated CI job.
 - File or add scoped evidence for the repaired private evidence-construction findings.
 - Check and render the updated documents and inspect their actual output.
 - Await the existing reader-report outline answer before drafting that report.

@@ -174,7 +174,6 @@ StepName:    line.GetStepName(),
 ## Upstream filing decision
 
 The `.out-of-scope/` inventory has no Depot-specific exemption.
-Its Codex scope document does not prohibit this authorized investigation.
 The current-repository duplicate search found no matching incident;
 issues `#1180`,
 `#1181` and `#1182` retain the separate findings.
