@@ -549,6 +549,19 @@ const originalHome = homedir()
 const evidenceDirectory = join(originalHome, 'temp/agent/depot-complete-vm-evidence')
 mkdirSync(evidenceDirectory, { recursive: true, mode: 0o700 })
 chmodSync(evidenceDirectory, 0o700)
+const passwd = execFileSync('getent', ['passwd', String(process.getuid())], { encoding: 'utf8' }).trim().split(':')
+const passwdGid = Number(passwd[3])
+assert(Number.isSafeInteger(passwdGid) && passwdGid >= 0, 'Runner passwd primary group must be numeric')
+const identity = { uid: process.getuid(), gid: process.getgid(), groups: process.getgroups(), passwdGid }
+writeFileSync(join(evidenceDirectory, process.env.DEPOT_VM_IDENTITY_REEXEC ? 'identity-normalized.json' : 'identity-initial.json'), JSON.stringify(identity, null, 2))
+if (identity.gid !== passwdGid) {
+  assert(!process.env.DEPOT_VM_IDENTITY_REEXEC, 'Runner primary-group normalization must not recurse')
+  execFileSync('setpriv', ['--help'], { stdio: 'inherit' })
+  const normalized = spawnSync('sudo', ['--non-interactive', '--preserve-env', 'setpriv', '--reuid', String(identity.uid), '--regid', String(passwdGid), '--init-groups', '/usr/bin/env', `HOME=${originalHome}`, `PATH=${process.env.PATH}`, process.execPath, ...process.execArgv], { env: { ...process.env, DEPOT_VM_IDENTITY_REEXEC: '1' }, stdio: 'inherit', timeout: 61 * 60 * 1000 })
+  if (normalized.error) throw normalized.error
+  assert.equal(normalized.status, 0, 'Normalized disposable VM process failed; its retained evidence identifies the failing boundary')
+  process.exit(0)
+}
 const privateHome = mkdtempSync(join(originalHome, 'temp/agent/depot-complete-vm-home-'))
 const runtimeRoot = `/run/user/${process.getuid()}`
 if (!existsSync(runtimeRoot)) {
