@@ -306,23 +306,68 @@
     {
       "id": "drzwk5q8mc",
       "revision": "673ab92e49885dd61fcf08e168ed9c59bf29c6be",
-      "status": "requested",
-      "terminal": false,
-      "artifactsCollected": false,
+      "status": "failed",
+      "terminal": true,
+      "artifactsCollected": true,
       "selectedPackageChecks": [],
       "selectedExternalChecks": [
         "root.generated-consistency",
         "sidecar.generated-type-consistency"
-      ]
+      ],
+      "originalSourceChecksExecuted": 0,
+      "reason": "Direct-only guard falsely rejected root-deduplicated workspace dependency"
+    },
+    {
+      "id": "ctg9148f4t",
+      "revision": "8b64f790134bf0cc4485a9842071760cbc355f08",
+      "status": "failed",
+      "terminal": true,
+      "artifactsCollected": true,
+      "selectedPackageChecks": [],
+      "selectedExternalChecks": [
+        "root.generated-consistency",
+        "sidecar.generated-type-consistency"
+      ],
+      "originalGeneratorProcessesInvoked": 3,
+      "dispositions": [
+        {
+          "label": "root.generated-consistency.0",
+          "disposition": "authored-generated-output-drift"
+        },
+        {
+          "label": "sidecar.generated-type-consistency.0",
+          "disposition": "passed"
+        },
+        {
+          "label": "sidecar.generated-type-consistency.1",
+          "disposition": "blocked-rootless-container-mapping"
+        }
+      ],
+      "publishedComputeUsdBeforeCredits": 0.0145266
+    },
+    {
+      "id": "62nbb3srhk",
+      "revision": "6a17c8fc61cf7613432c9f481416fa9ef7cc7bfe",
+      "status": "running",
+      "terminal": false,
+      "artifactsCollected": false,
+      "selectedPackageChecks": [],
+      "selectedExternalChecks": [
+        "sidecar.generated-type-consistency"
+      ],
+      "requestedInvocationLabels": [
+        "sidecar.generated-type-consistency.1"
+      ],
+      "wholeExternalCheckCoverage": false
     }
   ],
   "completeGraph": false,
   "pending": [
-    "Collect lt7qwlz6h1 and reconcile the three previously unfinished authored tasks with actual source outcomes.",
-    "Collect drzwk5q8mc and prove real frozen-source initial consumer bytes/tree, frozen workspace links, per-authored-generator output drift, strict authoritative cleanliness and cleanup.",
-    "File six independently duplicate-searched Git host assertion incidents, the repaired missing-linter prerequisite, the six other genuine source diagnostics and any distinct new harness boundary.",
-    "Root selectively integrates the prepared97-job combined route, canonical source/common guards, verified desktop continuation, authentic Git/linter helpers and explicit19 external routing.",
-    "Root aligns GHA/VM and shared helpers, freezes authenticated common manifest and final complete case digest only after every route is verified. Final cohort dispatch remains held; completeGraphfalse."
+    "Collect lt7qwlz6h1 and reconcile the three unfinished authored tasks with actual source outcomes.",
+    "Collect62nbb3srhk and verify the original declared-type corpus consumer after rootful adapter activation; preserve completed root/type-cases outcomes.",
+    "Finish duplicate matching/filing for root generated PATH drift, rootless mapping, repaired linter prerequisite and six other source diagnostics.",
+    "Root selectively grafts the generated branch forwarding/selection logic while preserving its strengthened cohort guard and canonical desktop/native/source helpers; integrate pending GHA/VM routes.",
+    "Root freezes the authenticated common manifest and complete case digest only after all routes are verified; final cohort dispatch remains held."
   ],
   "packageDevelopmentReconciliation": {
     "runId": "4x77lb56cs",
@@ -25068,7 +25113,81 @@
         "worktree_completion::tests::an_error_that_is_not_a_conflict_fails_the_inspection"
       ],
       "sharedCauseProven": false,
-      "issueFilingPending": true
+      "issueFilingPending": false,
+      "issues": [
+        {
+          "testId": "real_index_lock::tests::a_pid_file_that_cannot_be_created_fails_the_acquisition",
+          "title": "Git host: PID-file creation failure reports an unqualified long-name diagnostic",
+          "url": "https://github.com/Aquaticats/Monochromatic/issues/1135",
+          "localBodySha256": "b50f3b1a13c41e24e669ffb03b8b9eaaebdb11457a38459662c759ee5e9cf7a0",
+          "createdAt": "2026-10-17T09:01:35.896Z",
+          "number": 1135,
+          "state": "OPEN",
+          "remoteBodySha256": "b50f3b1a13c41e24e669ffb03b8b9eaaebdb11457a38459662c759ee5e9cf7a0",
+          "remoteBodyMatchesModuloTrailingWhitespace": true,
+          "renderedBodyVerified": true
+        },
+        {
+          "testId": "real_index_lock::tests::a_replaced_lock_is_never_released",
+          "title": "Git host: releasing a replaced index lock returns success",
+          "url": "https://github.com/Aquaticats/Monochromatic/issues/1136",
+          "localBodySha256": "0164a0c89b2294638e50389cd5d58aeb3dd8ba2452654f21073e0c5c76607d75",
+          "createdAt": "2026-10-17T09:01:38.328Z",
+          "number": 1136,
+          "state": "OPEN",
+          "remoteBodySha256": "0164a0c89b2294638e50389cd5d58aeb3dd8ba2452654f21073e0c5c76607d75",
+          "remoteBodyMatchesModuloTrailingWhitespace": true,
+          "renderedBodyVerified": true
+        },
+        {
+          "testId": "real_index_lock::tests::an_install_through_a_replaced_lock_is_refused",
+          "title": "Git host: installing through a replaced index lock returns success",
+          "url": "https://github.com/Aquaticats/Monochromatic/issues/1137",
+          "localBodySha256": "3f50d0b3616952575ca90d47a4aec8c09b7efcf89f6f89f5f3832011bce194d6",
+          "createdAt": "2026-10-17T09:01:40.756Z",
+          "number": 1137,
+          "state": "OPEN",
+          "remoteBodySha256": "3f50d0b3616952575ca90d47a4aec8c09b7efcf89f6f89f5f3832011bce194d6",
+          "remoteBodyMatchesModuloTrailingWhitespace": true,
+          "renderedBodyVerified": true
+        },
+        {
+          "testId": "real_index_lock::tests::releasing_after_a_landing_leaves_a_replaced_lock",
+          "title": "Git host: replacement lock is missing after post-landing release",
+          "url": "https://github.com/Aquaticats/Monochromatic/issues/1138",
+          "localBodySha256": "c423ffadf66b5ed173d827dfe8ffdb1841c061f882eb6ff9e08255784e67e3dc",
+          "createdAt": "2026-10-17T09:01:43.155Z",
+          "number": 1138,
+          "state": "OPEN",
+          "remoteBodySha256": "c423ffadf66b5ed173d827dfe8ffdb1841c061f882eb6ff9e08255784e67e3dc",
+          "remoteBodyMatchesModuloTrailingWhitespace": true,
+          "renderedBodyVerified": true
+        },
+        {
+          "testId": "transaction_git::tests::input_files_leave_nothing_behind",
+          "title": "Git host: private input handle reports one link instead of zero",
+          "url": "https://github.com/Aquaticats/Monochromatic/issues/1139",
+          "localBodySha256": "7eb200ecc22ec9c818a6637ffa725cc54157bca0ffa0fc91c57c89b4eb170438",
+          "createdAt": "2026-10-17T09:01:45.665Z",
+          "number": 1139,
+          "state": "OPEN",
+          "remoteBodySha256": "7eb200ecc22ec9c818a6637ffa725cc54157bca0ffa0fc91c57c89b4eb170438",
+          "remoteBodyMatchesModuloTrailingWhitespace": true,
+          "renderedBodyVerified": true
+        },
+        {
+          "testId": "worktree_completion::tests::an_error_that_is_not_a_conflict_fails_the_inspection",
+          "title": "Git host: long-name inspection failure is classified as Conflict",
+          "url": "https://github.com/Aquaticats/Monochromatic/issues/1140",
+          "localBodySha256": "0265e4477e71c3eafa6ec39d3e95d5fea417e2903003af06095ecc9eccc03703",
+          "createdAt": "2026-10-17T09:01:48.063Z",
+          "number": 1140,
+          "state": "OPEN",
+          "remoteBodySha256": "0265e4477e71c3eafa6ec39d3e95d5fea417e2903003af06095ecc9eccc03703",
+          "remoteBodyMatchesModuloTrailingWhitespace": true,
+          "renderedBodyVerified": true
+        }
+      ]
     },
     "finalArtifactUploadPlan": "Retain tool/image transfer receipts, original logs, actual Git ELF and source controls; retain audited base archive once rather than uploading cache tar per job",
     "unmetLinterPrerequisite": {
@@ -54855,14 +54974,745 @@
     "correctedPilot": {
       "runId": "drzwk5q8mc",
       "requestedFromRevision": "673ab92e49885dd61fcf08e168ed9c59bf29c6be",
-      "terminalReconciliationPending": true
+      "terminalReconciliationPending": true,
+      "terminal": true,
+      "originalGeneratorCommandsExecuted": 0,
+      "cleanupVerified": 3,
+      "terminalDisposition": "Guard falsely rejected pnpm dedupeDirectDeps root-resolved config-typescript dependency",
+      "guardModelFixRevision": "8b64f790134bf0cc4485a9842071760cbc355f08"
     },
-    "finalRegistrationPendingRealSourceConsumerProof": true
+    "finalRegistrationPendingRealSourceConsumerProof": true,
+    "dedupedRootControls": {
+      "path": "/home/user/temp/agent/depot-generated-controls-09PD1b/results.json",
+      "sha256": "33d676b0a8e532546cb8e2621297fe151553e129c75119fc189fbbdb20d0bf87",
+      "report": {
+        "taskBodySha256": "4062bb9971273891d567eb577d8801e4d6f10cbe5cf8911ac9295f46550d1d4c",
+        "helperRevision": "8b64f790134bf0cc4485a9842071760cbc355f08",
+        "controls": [
+          {
+            "kind": "clean",
+            "status": 0,
+            "stdout": "{\"phase\":\"before\",\"label\":\"clean\",\"trackedAuthoritativeInputs\":5,\"consumerInputsVerified\":true,\"workspaceLinks\":2,\"dependencySymlinks\":2}\n",
+            "stderr": "",
+            "guardRemovedAccepted": false,
+            "cleanupIgnoredDryRun": "Would remove node_modules/\nWould remove package/module/consumer/node_modules/\n",
+            "rootGitDirProbe": "",
+            "rootGitDirIgnoreProbe": "",
+            "cleanupVerified": true
+          },
+          {
+            "kind": "deduped-root-clean",
+            "status": 0,
+            "stdout": "{\"phase\":\"before\",\"label\":\"deduped-root-clean\",\"trackedAuthoritativeInputs\":5,\"consumerInputsVerified\":true,\"workspaceLinks\":2,\"dependencySymlinks\":1}\n",
+            "stderr": "",
+            "guardRemovedAccepted": false,
+            "originalDirectOnlyGuardRejectedValidDedupe": true,
+            "cleanupIgnoredDryRun": "Would remove node_modules/\n",
+            "rootGitDirProbe": "",
+            "rootGitDirIgnoreProbe": "",
+            "cleanupVerified": true
+          },
+          {
+            "kind": "consumer-drift",
+            "status": 1,
+            "stdout": "",
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Tracked generator input drift\n\n'M source.txt' !== ''\n\n    at verify (file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:23:9)\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:38:18 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'M source.txt',\n  expected: '',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "guardRemovedAccepted": true,
+            "cleanupIgnoredDryRun": "Would remove node_modules/\nWould remove package/module/consumer/node_modules/\n",
+            "rootGitDirProbe": "",
+            "rootGitDirIgnoreProbe": "",
+            "cleanupVerified": true
+          },
+          {
+            "kind": "authoritative-drift",
+            "status": 1,
+            "stdout": "",
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Tracked generator input drift\n\n'M source.txt' !== ''\n\n    at verify (file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:23:9)\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:35:21 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'M source.txt',\n  expected: '',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "guardRemovedAccepted": true,
+            "cleanupIgnoredDryRun": "Would remove node_modules/\nWould remove package/module/consumer/node_modules/\n",
+            "rootGitDirProbe": "",
+            "rootGitDirIgnoreProbe": "",
+            "cleanupVerified": true
+          },
+          {
+            "kind": "workspace-link-leak",
+            "status": 1,
+            "stdout": "",
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Workspace dependency must resolve to its consumer checkout: /home/user/temp/agent/depot-generated-controls-09PD1b/workspace-link-leak/consumer/node_modules/@fixture/demo\n+ actual - expected\n\n+ '/var/mnt/encrypted/temp/agent/depot-generated-controls-09PD1b/workspace-link-leak/source/package/module/demo'\n- '/var/mnt/encrypted/temp/agent/depot-generated-controls-09PD1b/workspace-link-leak/consumer/package/module/demo'\n\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:54:10 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: '/var/mnt/encrypted/temp/agent/depot-generated-controls-09PD1b/workspace-link-leak/source/package/module/demo',\n  expected: '/var/mnt/encrypted/temp/agent/depot-generated-controls-09PD1b/workspace-link-leak/consumer/package/module/demo',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "guardRemovedAccepted": true,
+            "cleanupIgnoredDryRun": "Would remove node_modules/\nWould remove package/module/consumer/node_modules/\n",
+            "rootGitDirProbe": "",
+            "rootGitDirIgnoreProbe": "",
+            "cleanupVerified": true
+          },
+          {
+            "kind": "deduped-root-link-leak",
+            "status": 1,
+            "stdout": "",
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Workspace dependency must resolve to its consumer checkout: /home/user/temp/agent/depot-generated-controls-09PD1b/deduped-root-link-leak/consumer/node_modules/@fixture/demo\n+ actual - expected\n\n+ '/var/mnt/encrypted/temp/agent/depot-generated-controls-09PD1b/deduped-root-link-leak/source/package/module/demo'\n- '/var/mnt/encrypted/temp/agent/depot-generated-controls-09PD1b/deduped-root-link-leak/consumer/package/module/demo'\n\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:54:10 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: '/var/mnt/encrypted/temp/agent/depot-generated-controls-09PD1b/deduped-root-link-leak/source/package/module/demo',\n  expected: '/var/mnt/encrypted/temp/agent/depot-generated-controls-09PD1b/deduped-root-link-leak/consumer/package/module/demo',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "guardRemovedAccepted": true,
+            "cleanupIgnoredDryRun": "Would remove node_modules/\n",
+            "rootGitDirProbe": "",
+            "rootGitDirIgnoreProbe": "",
+            "cleanupVerified": true
+          },
+          {
+            "kind": "consumer-index-flag",
+            "status": 1,
+            "stdout": "",
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Index flags must not hide tracked inputs\n    at verify (file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:22:2)\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:38:18 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "guardRemovedAccepted": false,
+            "cleanupIgnoredDryRun": "Would remove node_modules/\nWould remove package/module/consumer/node_modules/\n",
+            "rootGitDirProbe": "",
+            "rootGitDirIgnoreProbe": "",
+            "cleanupVerified": true
+          }
+        ],
+        "actualSourceConsumer": false,
+        "scope": "Disposable miniature repository verifies guard behavior; real frozen source consumer remains cloud pilot"
+      }
+    },
+    "selectorAndPrerequisiteControls": {
+      "path": "/home/user/temp/agent/depot-generated-selector-controls-eEoSMy/results.json",
+      "sha256": "3b488ab8d3a5fa85c2f0bcce23da486702caebd8187a4146268b982b0ece10bf",
+      "report": {
+        "harnessRevision": "6a17c8fc61cf7613432c9f481416fa9ef7cc7bfe",
+        "taskBodySha256": "be73ea998eed2696d78d77682f8d0af99e99e627dc28957f897070f9c2376d21",
+        "controls": [
+          {
+            "name": "full-default",
+            "env": {},
+            "valid": true,
+            "requested": 3,
+            "whole": true,
+            "status": 0,
+            "scope": {
+              "manifestInventory": [
+                {
+                  "label": "root.generated-consistency.0",
+                  "checkId": "root.generated-consistency",
+                  "task": "//:sync:files",
+                  "index": 0
+                },
+                {
+                  "label": "sidecar.generated-type-consistency.0",
+                  "checkId": "sidecar.generated-type-consistency",
+                  "task": "//package/module/deepmerge-ts.fuzz:generate:type-cases",
+                  "index": 0
+                },
+                {
+                  "label": "sidecar.generated-type-consistency.1",
+                  "checkId": "sidecar.generated-type-consistency",
+                  "task": "//package/module/deepmerge-ts.fuzz:generate:declared-type-cases",
+                  "index": 1
+                }
+              ],
+              "requestedCheckIds": [
+                "root.generated-consistency",
+                "sidecar.generated-type-consistency"
+              ],
+              "requestedInvocationLabels": [
+                "root.generated-consistency.0",
+                "sidecar.generated-type-consistency.0",
+                "sidecar.generated-type-consistency.1"
+              ],
+              "coversWholeSelectedChecks": true
+            },
+            "stderr": ""
+          },
+          {
+            "name": "selected-check-default",
+            "env": {
+              "DEPOT_LOGGER_EXTERNAL_IDS": "[\"sidecar.generated-type-consistency\"]"
+            },
+            "valid": true,
+            "requested": 2,
+            "whole": true,
+            "status": 0,
+            "scope": {
+              "manifestInventory": [
+                {
+                  "label": "root.generated-consistency.0",
+                  "checkId": "root.generated-consistency",
+                  "task": "//:sync:files",
+                  "index": 0
+                },
+                {
+                  "label": "sidecar.generated-type-consistency.0",
+                  "checkId": "sidecar.generated-type-consistency",
+                  "task": "//package/module/deepmerge-ts.fuzz:generate:type-cases",
+                  "index": 0
+                },
+                {
+                  "label": "sidecar.generated-type-consistency.1",
+                  "checkId": "sidecar.generated-type-consistency",
+                  "task": "//package/module/deepmerge-ts.fuzz:generate:declared-type-cases",
+                  "index": 1
+                }
+              ],
+              "requestedCheckIds": [
+                "sidecar.generated-type-consistency"
+              ],
+              "requestedInvocationLabels": [
+                "sidecar.generated-type-consistency.0",
+                "sidecar.generated-type-consistency.1"
+              ],
+              "coversWholeSelectedChecks": true
+            },
+            "stderr": ""
+          },
+          {
+            "name": "unfinished-only",
+            "env": {
+              "DEPOT_LOGGER_EXTERNAL_IDS": "[\"sidecar.generated-type-consistency\"]",
+              "DEPOT_LOGGER_GENERATED_INVOCATIONS": "[\"sidecar.generated-type-consistency.1\"]"
+            },
+            "valid": true,
+            "requested": 1,
+            "whole": false,
+            "status": 0,
+            "scope": {
+              "manifestInventory": [
+                {
+                  "label": "root.generated-consistency.0",
+                  "checkId": "root.generated-consistency",
+                  "task": "//:sync:files",
+                  "index": 0
+                },
+                {
+                  "label": "sidecar.generated-type-consistency.0",
+                  "checkId": "sidecar.generated-type-consistency",
+                  "task": "//package/module/deepmerge-ts.fuzz:generate:type-cases",
+                  "index": 0
+                },
+                {
+                  "label": "sidecar.generated-type-consistency.1",
+                  "checkId": "sidecar.generated-type-consistency",
+                  "task": "//package/module/deepmerge-ts.fuzz:generate:declared-type-cases",
+                  "index": 1
+                }
+              ],
+              "requestedCheckIds": [
+                "sidecar.generated-type-consistency"
+              ],
+              "requestedInvocationLabels": [
+                "sidecar.generated-type-consistency.1"
+              ],
+              "coversWholeSelectedChecks": false
+            },
+            "stderr": ""
+          },
+          {
+            "name": "unknown-label",
+            "env": {
+              "DEPOT_LOGGER_GENERATED_INVOCATIONS": "[\"unknown\"]"
+            },
+            "valid": false,
+            "status": 1,
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Generator recovery must select frozen authored invocations\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:38:1 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n"
+          },
+          {
+            "name": "duplicate-label",
+            "env": {
+              "DEPOT_LOGGER_GENERATED_INVOCATIONS": "[\"sidecar.generated-type-consistency.1\",\"sidecar.generated-type-consistency.1\"]"
+            },
+            "valid": false,
+            "status": 1,
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(Array.isArray(generatedLabels) && new Set(generatedLabels).size === generatedLabels.length)\n\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:36:1 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n"
+          },
+          {
+            "name": "empty-labels",
+            "env": {
+              "DEPOT_LOGGER_GENERATED_INVOCATIONS": "[]"
+            },
+            "valid": false,
+            "status": 1,
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(group !== 'generated' || generatedLabels.length > 0)\n\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:37:1 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n"
+          },
+          {
+            "name": "outside-selected-check",
+            "env": {
+              "DEPOT_LOGGER_EXTERNAL_IDS": "[\"root.generated-consistency\"]",
+              "DEPOT_LOGGER_GENERATED_INVOCATIONS": "[\"sidecar.generated-type-consistency.1\"]"
+            },
+            "valid": false,
+            "status": 1,
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Generator recovery must select frozen authored invocations\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:38:1 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n"
+          },
+          {
+            "name": "wrong-group",
+            "env": {
+              "DEPOT_LOGGER_EXTERNAL": "root-lint",
+              "DEPOT_LOGGER_GENERATED_INVOCATIONS": "[\"sidecar.generated-type-consistency.1\"]"
+            },
+            "valid": false,
+            "status": 1,
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Generator invocation selection requires the generated group\n    at file:///var/mnt/encrypted/temp/agent/depot-complete-ci-worktree/[eval1]:35:1 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: '==',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n"
+          }
+        ],
+        "unknownLabelAcceptedWithGuardRemoved": true,
+        "prerequisiteControls": [
+          {
+            "status": "failed",
+            "records": [
+              {
+                "checkId": "selected",
+                "status": "skipped",
+                "failedPrerequisites": [
+                  "required"
+                ],
+                "finishedAt": "2026-10-17T09:10:34.520Z"
+              }
+            ],
+            "invocations": 0
+          },
+          {
+            "status": "passed",
+            "records": [],
+            "invocations": 1
+          }
+        ],
+        "actualSourceCheckCredit": 0
+      }
+    }
   },
   "candidateCommitCorrection": {
     "commit": "3ac9616096bc45fe4e02cddfec8a14fb9b6b72d6",
     "commentId": 205400693,
     "url": "https://github.com/Aquaticats/Monochromatic/commit/3ac9616096bc45fe4e02cddfec8a14fb9b6b72d6#commitcomment-205400693",
     "finalFreezeOrDispatchOccurred": false
+  },
+  "generatedRealSourcePilot": {
+    "path": "/home/user/temp/agent/depot-complete-accounting-20261016/terminal-ctg9148f4t-PU2Mnl/collected-ctg9148f4t/logger-generated-consumer-verification.json",
+    "sha256": "88520e0e9c3520a9c30818f347ee9ad5f3810327ed0a3724cac2ae085d6a568a",
+    "report": {
+      "runId": "ctg9148f4t",
+      "harnessRevision": "8b64f790134bf0cc4485a9842071760cbc355f08",
+      "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+      "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+      "workflowId": "5czdq4m2fq",
+      "jobId": "rg0hfh2m47",
+      "attemptId": "w0ndz9r1kl",
+      "viewUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/5czdq4m2fq?job=rg0hfh2m47&attempt=w0ndz9r1kl",
+      "providerConclusion": "failure",
+      "providerSize": "4x16",
+      "allocatedCpuCount": 4,
+      "providerJobSeconds": 72.633,
+      "allocatedCpuSeconds": 290.532,
+      "publishedComputeUsdBeforePlanCredits": 0.0145266,
+      "accountLedgerVerified": false,
+      "coversWholeCheck": true,
+      "prerequisiteIds": [
+        "package.module.caught-value.build"
+      ],
+      "prerequisiteSourceInputsVerified": true,
+      "logProof": [
+        {
+          "checkId": "external-generated-prerequisites",
+          "sha256": "fc865f0806a0475ab0ee616e9ea9b61733e54a960024a994eb7972a6dad6b3fd",
+          "bytes": 2083293
+        },
+        {
+          "checkId": "root.generated-consistency.0.frozen-install",
+          "sha256": "346559ec8bef2b830053d3e105711991b8cd69e083e29dc768c06558f35b6122",
+          "bytes": 3387
+        },
+        {
+          "checkId": "root.generated-consistency.0.identity-before",
+          "sha256": "39951b372809d21bf38acdb230d3d881cf7389d755ef0c100c401d37a65ed0f7",
+          "bytes": 294
+        },
+        {
+          "checkId": "root.generated-consistency",
+          "sha256": "0bba30f6e4c6cb8df223f07a54717b560a839b7c96847a80c18d7e4e05fddbfe",
+          "bytes": 5285
+        },
+        {
+          "checkId": "root.generated-consistency.0.identity-after",
+          "sha256": "8b3f29184fb887383ccf6625b40597db58aee39b0530d7b26debff93e425162d",
+          "bytes": 289
+        },
+        {
+          "checkId": "sidecar.generated-type-consistency.0.frozen-install",
+          "sha256": "7cf1b3f8e2d5f3a45f5348dee9da8e54f8f192ac9e2f3eccb0b02ea314b689d0",
+          "bytes": 3538
+        },
+        {
+          "checkId": "sidecar.generated-type-consistency.0.identity-before",
+          "sha256": "57a09dd76709fec1c460c29b5cbba0f221a948abbdbf8a04201ac9bcd215bf77",
+          "bytes": 302
+        },
+        {
+          "checkId": "sidecar.generated-type-consistency",
+          "sha256": "57b667f537c30ec1679c1640159bc47fe54e9c75b577f283c49948f73f310d86",
+          "bytes": 99
+        },
+        {
+          "checkId": "sidecar.generated-type-consistency.0.identity-after",
+          "sha256": "95b7e25e1102f679267c3f72854359578063cda2ebbd4b62ff17b407b14e0212",
+          "bytes": 297
+        },
+        {
+          "checkId": "sidecar.generated-type-consistency.1.frozen-install",
+          "sha256": "ff0410eba4886ee6bdd4b8e634dac870b0a16454d7b36672fc9456ae4f6626e8",
+          "bytes": 3538
+        },
+        {
+          "checkId": "sidecar.generated-type-consistency.1.identity-before",
+          "sha256": "7ca36c0da3768aa5e5f03c5e5a36158f387fc04d890675fe2e8f6e225284b0e4",
+          "bytes": 302
+        },
+        {
+          "checkId": "sidecar.generated-type-consistency.declared",
+          "sha256": "b7a7bdf8b866c09e901d2361874225ce70b5715b8b147c95a7de9bfa642537f8",
+          "bytes": 961
+        },
+        {
+          "checkId": "sidecar.generated-type-consistency.1.identity-after",
+          "sha256": "6fcfea978a38243202dd1fd05970725652793a33fe791886236ce99bb04746c2",
+          "bytes": 297
+        },
+        {
+          "checkId": "package.module.caught-value.build",
+          "sha256": "de1a661162260895fc924e3adc272a1585ba1f19e4f78949cef272078e6e92be",
+          "bytes": 543
+        }
+      ],
+      "verified": [
+        {
+          "label": "root.generated-consistency.0",
+          "task": "//:sync:files",
+          "initial": {
+            "head": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "tree": "f7835f65413553704f9988f1fcf7f69911a8f2c0",
+            "trackedInputs": 13715,
+            "inputDigest": "7b0c2628a1524986d61d57d985665b544cebbddc0e3c741aa936370caefbf166"
+          },
+          "workspaceLinks": 809,
+          "ancestorResolvedLinks": 173,
+          "dependencySymlinks": 1989,
+          "processExitCode": 0,
+          "disposition": "authored-generated-output-drift",
+          "changedTrackedBytes": 2037,
+          "changedFiles": [
+            {
+              "path": "mise.toml",
+              "sha256": "3a5e40b277c792bf7283de38c7b2af3250407506fe5516b36febe23693804b88",
+              "bytes": 67669,
+              "mode": 420
+            }
+          ],
+          "reconstructions": [
+            {
+              "path": "mise.toml",
+              "sha256": "3a5e40b277c792bf7283de38c7b2af3250407506fe5516b36febe23693804b88",
+              "bytes": 67669,
+              "sourceModeVerified": 420,
+              "retainedPath": "/home/user/temp/agent/depot-complete-accounting-20261016/terminal-ctg9148f4t-PU2Mnl/collected-ctg9148f4t/reconstructed-generated-bytes/root.generated-consistency.0/mise.toml"
+            },
+            {
+              "reconstructionFixtureRemoved": true,
+              "ignoredDryRun": "",
+              "rootGitDirProbe": {
+                "status": 2,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+                ],
+                "pid": 722613,
+                "stdout": "",
+                "stderr": "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+              },
+              "rootGitDirIgnoreProbe": {
+                "status": 1,
+                "signal": null,
+                "output": [
+                  null,
+                  "",
+                  ""
+                ],
+                "pid": 722614,
+                "stdout": "",
+                "stderr": ""
+              }
+            }
+          ],
+          "authoritativeBeforeAfterEqual": true,
+          "cleanupVerified": true,
+          "rawConsumer": {
+            "checkId": "root.generated-consistency",
+            "task": "//:sync:files",
+            "args": [
+              "run",
+              "//:sync:files"
+            ],
+            "fixture": "/home/runner/temp/agent/depot-complete-ci/logger-generated-root.generated-consistency.0",
+            "initialIdentityVerified": true,
+            "actualCommandExecuted": true,
+            "cleanupVerified": true,
+            "processExitCode": 0,
+            "processTermination": "process-exit",
+            "headAfter": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "changedTrackedBytes": 2037,
+            "diffSha256": "66222837901b6bfb10c0165bf659d27969068d2c0599bb83cce1d8f95f492066",
+            "changedFiles": [
+              {
+                "path": "mise.toml",
+                "sha256": "3a5e40b277c792bf7283de38c7b2af3250407506fe5516b36febe23693804b88",
+                "bytes": 67669,
+                "mode": 420
+              }
+            ],
+            "untracked": [],
+            "authoredGeneratedOutputDrift": true,
+            "authoritativeAfterVerified": true,
+            "cleanupIgnoredDryRun": {
+              "command": "git",
+              "args": [
+                "clean",
+                "--dry-run",
+                "-d",
+                "-X"
+              ],
+              "exitCode": 0,
+              "stdout": "Would remove .browserslistrc.resolved.local.json\nWould remove .cache/\nWould remove .claude/\nWould remove .factory/\nWould remove forbidden-strings.append.local.txt\nWould remove node_modules/\nWould remove package/agent-harness-shared/current-time-context/node_modules/\nWould remove package/agent-harness-shared/search-fetch/node_modules/\nWould remove package/agent-harness-shared/session-discovery/node_modules/\nWould remove package/agent-harness-shared/shell-command-analyzer/node_modules/\nWould remove package/agent-harness-shared/terminal-title/node_modules/\nWould remove package/agent-harness-shared/text-scan/node_modules/\nWould remove package/agent-harness-shared/truncate/node_modules/\nWould remove package/agent-harness-shared/usage-projection/node_modules/\nWould remove package/build-tool/css/node_modules/\nWould remove package/claude-code-plugin/bash-output-filter/node_modules/\nWould remove package/claude-code-plugin/claude-spawn/node_modules/\nWould remove package/claude-code-plugin/correction-reminder/node_modules/\nWould remove package/claude-code-plugin/guardrail/node_modules/\nWould remove package/claude-code-plugin/prompt-time/node_modules/\nWould remove package/claude-code-plugin/session-start-housekeeping/node_modules/\nWould remove package/claude-code-plugin/source/node_modules/\nWould remove package/claude-code-plugin/statusline/node_modules/\nWould remove package/claude-code-plugin/stop-reminder/node_modules/\nWould remove package/claude-code-plugin/terminal-title/node_modules/\nWould remove package/cli/android-exempt-unused/node_modules/\nWould remove package/cli/fy/node_modules/\nWould remove package/cli/git-clone-size/node_modules/\nWould remove package/cli/mutation-test.fixture/node_modules/\nWould remove package/cli/mutation-test/node_modules/\nWould remove package/cli/mvm/node_modules/\nWould remove package/cli/open-code-review-issue/node_modules/\nWould remove package/cli/rgffplay/node_modules/\nWould remove package/cli/terminal-exec/node_modules/\nWould remove package/cli/unused-export/node_modules/\nWould remove package/cli/vmsync/node_modules/\nWould remove package/cli/wg-allowedips/node_modules/\nWould remove package/cli/wg-quicker/node_modules/\nWould remove package/cloudflare-worker/rand/node_modules/\nWould remove package/config/lfs-r2-worker/node_modules/\nWould remove package/config/oxlint/node_modules/\nWould remove package/config/pnpr/node_modules/\nWould remove package/config/rolldown/node_modules/\nWould remove package/config/tofu/node_modules/\nWould remove package/desktop-app/electron-counter/node_modules/\nWould remove package/desktop-app/electron-infra/node_modules/\nWould remove package/desktop-app/file-manager-electron/node_modules/\nWould remove package/desktop-daemon/hall-monitor/node_modules/\nWould remove package/dev-script/backup-path/node_modules/\nWould remove package/dev-script/catalog-tighten.matrix/node_modules/\nWould remove package/dev-script/catalog-tighten/node_modules/\nWould remove package/dev-script/claude-cpu-cap/node_modules/\nWould remove package/dev-script/deps-cube/node_modules/\nWould remove package/dev-script/deps-update/node_modules/\nWould remove package/dev-script/file-enforcer/node_modules/\nWould remove package/dev-script/page-weight/node_modules/\nWould remove package/dev-script/task-util/node_modules/\nWould remove package/dev-script/vm-builder/node_modules/\nWould remove package/dev-script/watch-restart/node_modules/\nWould remove package/figma/kiwi/node_modules/\nWould remove package/figma/to-penpot/node_modules/\nWould remove package/git-policy/cli/node_modules/\nWould remove package/git/executable/node_modules/\nWould remove package/intellij-plugin/islands-black/node_modules/\nWould remove package/kwin/key-helper/node_modules/\nWould remove package/mcp/mvm/node_modules/\nWould remove package/mcp/search-fetch/node_modules/\nWould remove package/mcp/stdio/node_modules/\nWould remove package/module/array-at/node_modules/\nWould remove package/module/async-iter/node_modules/\nWould remove package/module/async-time/node_modules/\nWould remove package/module/caught-value/node_modules/\nWould remove package/module/conf-fork.fuzz/node_modules/\nWould remove package/module/conf-fork/node_modules/\nWould remove package/module/const/node_modules/\nWould remove package/module/css-edit.bench/node_modules/\nWould remove package/module/css-edit.conformance/node_modules/\nWould remove package/module/css-edit.fuzz/node_modules/\nWould remove package/module/css-edit/node_modules/\nWould remove package/module/deepmerge-ts.fuzz/node_modules/\nWould remove package/module/dom/node_modules/\nWould remove package/module/fs-id/node_modules/\nWould remove package/module/fs-path/node_modules/\nWould remove package/module/function-arity/node_modules/\nWould remove package/module/hyperscript/node_modules/\nWould remove package/module/i18n-compose/node_modules/\nWould remove package/module/image-diff/node_modules/\nWould remove package/module/jsonc-edit.bench/node_modules/\nWould remove package/module/jsonc-edit.conformance/node_modules/\nWould remove package/module/jsonc-edit.fuzz/node_modules/\nWould remove package/module/jsonc-edit/node_modules/\nWould remove package/module/kv-store/node_modules/\nWould remove package/module/llm-type/node_modules/\nWould remove package/module/logger.fuzz/node_modules/\nWould remove package/module/logger/node_modules/\nWould remove package/module/make-asynchronous-fork.fuzz/node_modules/\nWould remove package/module/make-asynchronous-fork/node_modules/\nWould remove package/module/matcher-fork.fuzz/node_modules/\nWould remove package/module/matcher-fork/node_modules/\nWould remove package/module/matrix/node_modules/\nWould remove package/module/memoize/node_modules/\nWould remove package/module/numeric-format/node_modules/\nWould remove package/module/observable/node_modules/\nWould remove package/module/or-throw/node_modules/\nWould remove package/module/p-limit-fork.fuzz/node_modules/\nWould remove package/module/p-limit-fork/node_modules/\nWould remove package/module/p-map-fork.fuzz/node_modules/\nWould remove package/module/p-map-fork/node_modules/\nWould remove package/module/p-memoize-fork.fuzz/node_modules/\nWould remove package/module/p-memoize-fork/node_modules/\nWould remove package/module/pify-fork.fuzz/node_modules/\nWould remove package/module/pify-fork/node_modules/\nWould remove package/module/pipe/node_modules/\nWould remove package/module/pnpm-workspace-catalog/node_modules/\nWould remove package/module/quick-lru-fork.fuzz/node_modules/\nWould remove package/module/quick-lru-fork/node_modules/\nWould remove package/module/test-diagnostic/node_modules/\nWould remove package/module/test-expect/node_modules/\nWould remove package/module/test-sandbox/node_modules/\nWould remove package/module/test/node_modules/\nWould remove package/module/throws/node_modules/\nWould remove package/module/token-count/node_modules/\nWould remove package/module/toml-edit.fuzz/node_modules/\nWould remove package/module/toml-edit/node_modules/\nWould remove package/module/wg-allowedips/node_modules/\nWould remove package/module/zip-writer/node_modules/\nWould remove package/music-player/desktop-e2e/node_modules/\nWould remove package/oxlint-plugin/no-restricted-syntax/node_modules/\nWould remove package/oxlint-plugin/prefer-readonly-parameter-type/node_modules/\nWould remove package/oxlint-plugin/shared/node_modules/\nWould remove package/oxlint-plugin/stylistic/node_modules/\nWould remove package/oxlint-plugin/test-import/node_modules/\nWould remove package/oxlint-plugin/test-support/node_modules/\nWould remove package/oxlint-plugin/tsdoc/node_modules/\nWould remove package/pi-plugin/advisor/node_modules/\nWould remove package/pi-plugin/agent-settled-notification/node_modules/\nWould remove package/pi-plugin/ask-user-question/node_modules/\nWould remove package/pi-plugin/auto-mode/node_modules/\nWould remove package/pi-plugin/bash-poke/node_modules/\nWould remove package/pi-plugin/current-time-context/node_modules/\nWould remove package/pi-plugin/goal/node_modules/\nWould remove package/pi-plugin/guardrail/node_modules/\nWould remove package/pi-plugin/model-retirement/node_modules/\nWould remove package/pi-plugin/morph-compact/node_modules/\nWould remove package/pi-plugin/openai-fast/node_modules/\nWould remove package/pi-plugin/search-fetch/node_modules/\nWould remove package/pi-plugin/spawn/node_modules/\nWould remove package/pi-plugin/statusline/node_modules/\nWould remove package/pi-plugin/terminal-title/node_modules/\nWould remove package/pi-plugin/thinking-default/node_modules/\nWould remove package/pi-shared/model-review/node_modules/\nWould remove package/pi-shared/model-selection/node_modules/\nWould remove package/rolldown-plugin/import-attributes/node_modules/\nWould remove package/runtime-error/bun/node_modules/\nWould remove package/ssg/aquati.cat/node_modules/\nWould remove package/test-fixture/css-importing-filepath/node_modules/\nWould remove package/test-fixture/css-importing/node_modules/\nWould remove package/test-fixture/file-enforcer-perf/node_modules/\nWould remove package/test-fixture/oxlint-no-restricted-syntax/node_modules/\nWould remove package/typeface/aquaticat/node_modules/\nWould remove package/webapp-productivity/done-postcss/node_modules/\nWould remove package/webapp-productivity/done/node_modules/\nWould remove package/webapp-productivity/doodle-widget/node_modules/\nWould remove package/webapp-productivity/rss/node_modules/\nWould remove package/webapp-productivity/syllable-break-demo/node_modules/\nWould remove package/webapp-productivity/wc/node_modules/\n",
+              "stderr": ""
+            },
+            "rootGitDirProbe": {
+              "command": "ls",
+              "args": [
+                "--directory",
+                "--",
+                "HEAD",
+                "config",
+                "hooks",
+                "objects",
+                "refs"
+              ],
+              "exitCode": 2,
+              "stdout": "",
+              "stderr": "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+            },
+            "rootGitDirIgnoreProbe": {
+              "command": "git",
+              "args": [
+                "check-ignore",
+                "--verbose",
+                "--",
+                "HEAD",
+                "config",
+                "hooks",
+                "objects",
+                "refs"
+              ],
+              "exitCode": 0,
+              "stdout": ".gitignore:30:/HEAD\tHEAD\n.gitignore:31:/config\tconfig\n.gitignore:32:/hooks\thooks\n.gitignore:33:/objects\tobjects\n.gitignore:34:/refs\trefs\n",
+              "stderr": ""
+            },
+            "cleanupResult": {
+              "exitCode": 0,
+              "stdout": "",
+              "stderr": ""
+            }
+          }
+        },
+        {
+          "label": "sidecar.generated-type-consistency.0",
+          "task": "//package/module/deepmerge-ts.fuzz:generate:type-cases",
+          "initial": {
+            "head": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "tree": "f7835f65413553704f9988f1fcf7f69911a8f2c0",
+            "trackedInputs": 13715,
+            "inputDigest": "7b0c2628a1524986d61d57d985665b544cebbddc0e3c741aa936370caefbf166"
+          },
+          "workspaceLinks": 809,
+          "ancestorResolvedLinks": 173,
+          "dependencySymlinks": 1989,
+          "processExitCode": 0,
+          "disposition": "passed",
+          "changedTrackedBytes": 0,
+          "changedFiles": [],
+          "reconstructions": [],
+          "authoritativeBeforeAfterEqual": true,
+          "cleanupVerified": true,
+          "rawConsumer": {
+            "checkId": "sidecar.generated-type-consistency",
+            "task": "//package/module/deepmerge-ts.fuzz:generate:type-cases",
+            "args": [
+              "run",
+              "//package/module/deepmerge-ts.fuzz:generate:type-cases"
+            ],
+            "fixture": "/home/runner/temp/agent/depot-complete-ci/logger-generated-sidecar.generated-type-consistency.0",
+            "initialIdentityVerified": true,
+            "actualCommandExecuted": true,
+            "cleanupVerified": true,
+            "processExitCode": 0,
+            "processTermination": "process-exit",
+            "headAfter": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "changedTrackedBytes": 0,
+            "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "changedFiles": [],
+            "untracked": [],
+            "authoredGeneratedOutputDrift": false,
+            "authoritativeAfterVerified": true,
+            "cleanupIgnoredDryRun": {
+              "command": "git",
+              "args": [
+                "clean",
+                "--dry-run",
+                "-d",
+                "-X"
+              ],
+              "exitCode": 0,
+              "stdout": "Would remove node_modules/\nWould remove package/agent-harness-shared/current-time-context/node_modules/\nWould remove package/agent-harness-shared/search-fetch/node_modules/\nWould remove package/agent-harness-shared/session-discovery/node_modules/\nWould remove package/agent-harness-shared/shell-command-analyzer/node_modules/\nWould remove package/agent-harness-shared/terminal-title/node_modules/\nWould remove package/agent-harness-shared/text-scan/node_modules/\nWould remove package/agent-harness-shared/truncate/node_modules/\nWould remove package/agent-harness-shared/usage-projection/node_modules/\nWould remove package/build-tool/css/node_modules/\nWould remove package/claude-code-plugin/bash-output-filter/node_modules/\nWould remove package/claude-code-plugin/claude-spawn/node_modules/\nWould remove package/claude-code-plugin/correction-reminder/node_modules/\nWould remove package/claude-code-plugin/guardrail/node_modules/\nWould remove package/claude-code-plugin/prompt-time/node_modules/\nWould remove package/claude-code-plugin/session-start-housekeeping/node_modules/\nWould remove package/claude-code-plugin/source/node_modules/\nWould remove package/claude-code-plugin/statusline/node_modules/\nWould remove package/claude-code-plugin/stop-reminder/node_modules/\nWould remove package/claude-code-plugin/terminal-title/node_modules/\nWould remove package/cli/android-exempt-unused/node_modules/\nWould remove package/cli/fy/node_modules/\nWould remove package/cli/git-clone-size/node_modules/\nWould remove package/cli/mutation-test.fixture/node_modules/\nWould remove package/cli/mutation-test/node_modules/\nWould remove package/cli/mvm/node_modules/\nWould remove package/cli/open-code-review-issue/node_modules/\nWould remove package/cli/rgffplay/node_modules/\nWould remove package/cli/terminal-exec/node_modules/\nWould remove package/cli/unused-export/node_modules/\nWould remove package/cli/vmsync/node_modules/\nWould remove package/cli/wg-allowedips/node_modules/\nWould remove package/cli/wg-quicker/node_modules/\nWould remove package/cloudflare-worker/rand/node_modules/\nWould remove package/config/lfs-r2-worker/node_modules/\nWould remove package/config/oxlint/node_modules/\nWould remove package/config/pnpr/node_modules/\nWould remove package/config/rolldown/node_modules/\nWould remove package/config/tofu/node_modules/\nWould remove package/desktop-app/electron-counter/node_modules/\nWould remove package/desktop-app/electron-infra/node_modules/\nWould remove package/desktop-app/file-manager-electron/node_modules/\nWould remove package/desktop-daemon/hall-monitor/node_modules/\nWould remove package/dev-script/backup-path/node_modules/\nWould remove package/dev-script/catalog-tighten.matrix/node_modules/\nWould remove package/dev-script/catalog-tighten/node_modules/\nWould remove package/dev-script/claude-cpu-cap/node_modules/\nWould remove package/dev-script/deps-cube/node_modules/\nWould remove package/dev-script/deps-update/node_modules/\nWould remove package/dev-script/file-enforcer/node_modules/\nWould remove package/dev-script/page-weight/node_modules/\nWould remove package/dev-script/task-util/node_modules/\nWould remove package/dev-script/vm-builder/node_modules/\nWould remove package/dev-script/watch-restart/node_modules/\nWould remove package/figma/kiwi/node_modules/\nWould remove package/figma/to-penpot/node_modules/\nWould remove package/git-policy/cli/node_modules/\nWould remove package/git/executable/node_modules/\nWould remove package/intellij-plugin/islands-black/node_modules/\nWould remove package/kwin/key-helper/node_modules/\nWould remove package/mcp/mvm/node_modules/\nWould remove package/mcp/search-fetch/node_modules/\nWould remove package/mcp/stdio/node_modules/\nWould remove package/module/array-at/node_modules/\nWould remove package/module/async-iter/node_modules/\nWould remove package/module/async-time/node_modules/\nWould remove package/module/caught-value/node_modules/\nWould remove package/module/conf-fork.fuzz/node_modules/\nWould remove package/module/conf-fork/node_modules/\nWould remove package/module/const/node_modules/\nWould remove package/module/css-edit.bench/node_modules/\nWould remove package/module/css-edit.conformance/node_modules/\nWould remove package/module/css-edit.fuzz/node_modules/\nWould remove package/module/css-edit/node_modules/\nWould remove package/module/deepmerge-ts.fuzz/node_modules/\nWould remove package/module/dom/node_modules/\nWould remove package/module/fs-id/node_modules/\nWould remove package/module/fs-path/node_modules/\nWould remove package/module/function-arity/node_modules/\nWould remove package/module/hyperscript/node_modules/\nWould remove package/module/i18n-compose/node_modules/\nWould remove package/module/image-diff/node_modules/\nWould remove package/module/jsonc-edit.bench/node_modules/\nWould remove package/module/jsonc-edit.conformance/node_modules/\nWould remove package/module/jsonc-edit.fuzz/node_modules/\nWould remove package/module/jsonc-edit/node_modules/\nWould remove package/module/kv-store/node_modules/\nWould remove package/module/llm-type/node_modules/\nWould remove package/module/logger.fuzz/node_modules/\nWould remove package/module/logger/node_modules/\nWould remove package/module/make-asynchronous-fork.fuzz/node_modules/\nWould remove package/module/make-asynchronous-fork/node_modules/\nWould remove package/module/matcher-fork.fuzz/node_modules/\nWould remove package/module/matcher-fork/node_modules/\nWould remove package/module/matrix/node_modules/\nWould remove package/module/memoize/node_modules/\nWould remove package/module/numeric-format/node_modules/\nWould remove package/module/observable/node_modules/\nWould remove package/module/or-throw/node_modules/\nWould remove package/module/p-limit-fork.fuzz/node_modules/\nWould remove package/module/p-limit-fork/node_modules/\nWould remove package/module/p-map-fork.fuzz/node_modules/\nWould remove package/module/p-map-fork/node_modules/\nWould remove package/module/p-memoize-fork.fuzz/node_modules/\nWould remove package/module/p-memoize-fork/node_modules/\nWould remove package/module/pify-fork.fuzz/node_modules/\nWould remove package/module/pify-fork/node_modules/\nWould remove package/module/pipe/node_modules/\nWould remove package/module/pnpm-workspace-catalog/node_modules/\nWould remove package/module/quick-lru-fork.fuzz/node_modules/\nWould remove package/module/quick-lru-fork/node_modules/\nWould remove package/module/test-diagnostic/node_modules/\nWould remove package/module/test-expect/node_modules/\nWould remove package/module/test-sandbox/node_modules/\nWould remove package/module/test/node_modules/\nWould remove package/module/throws/node_modules/\nWould remove package/module/token-count/node_modules/\nWould remove package/module/toml-edit.fuzz/node_modules/\nWould remove package/module/toml-edit/node_modules/\nWould remove package/module/wg-allowedips/node_modules/\nWould remove package/module/zip-writer/node_modules/\nWould remove package/music-player/desktop-e2e/node_modules/\nWould remove package/oxlint-plugin/no-restricted-syntax/node_modules/\nWould remove package/oxlint-plugin/prefer-readonly-parameter-type/node_modules/\nWould remove package/oxlint-plugin/shared/node_modules/\nWould remove package/oxlint-plugin/stylistic/node_modules/\nWould remove package/oxlint-plugin/test-import/node_modules/\nWould remove package/oxlint-plugin/test-support/node_modules/\nWould remove package/oxlint-plugin/tsdoc/node_modules/\nWould remove package/pi-plugin/advisor/node_modules/\nWould remove package/pi-plugin/agent-settled-notification/node_modules/\nWould remove package/pi-plugin/ask-user-question/node_modules/\nWould remove package/pi-plugin/auto-mode/node_modules/\nWould remove package/pi-plugin/bash-poke/node_modules/\nWould remove package/pi-plugin/current-time-context/node_modules/\nWould remove package/pi-plugin/goal/node_modules/\nWould remove package/pi-plugin/guardrail/node_modules/\nWould remove package/pi-plugin/model-retirement/node_modules/\nWould remove package/pi-plugin/morph-compact/node_modules/\nWould remove package/pi-plugin/openai-fast/node_modules/\nWould remove package/pi-plugin/search-fetch/node_modules/\nWould remove package/pi-plugin/spawn/node_modules/\nWould remove package/pi-plugin/statusline/node_modules/\nWould remove package/pi-plugin/terminal-title/node_modules/\nWould remove package/pi-plugin/thinking-default/node_modules/\nWould remove package/pi-shared/model-review/node_modules/\nWould remove package/pi-shared/model-selection/node_modules/\nWould remove package/rolldown-plugin/import-attributes/node_modules/\nWould remove package/runtime-error/bun/node_modules/\nWould remove package/ssg/aquati.cat/node_modules/\nWould remove package/test-fixture/css-importing-filepath/node_modules/\nWould remove package/test-fixture/css-importing/node_modules/\nWould remove package/test-fixture/file-enforcer-perf/node_modules/\nWould remove package/test-fixture/oxlint-no-restricted-syntax/node_modules/\nWould remove package/typeface/aquaticat/node_modules/\nWould remove package/webapp-productivity/done-postcss/node_modules/\nWould remove package/webapp-productivity/done/node_modules/\nWould remove package/webapp-productivity/doodle-widget/node_modules/\nWould remove package/webapp-productivity/rss/node_modules/\nWould remove package/webapp-productivity/syllable-break-demo/node_modules/\nWould remove package/webapp-productivity/wc/node_modules/\n",
+              "stderr": ""
+            },
+            "rootGitDirProbe": {
+              "command": "ls",
+              "args": [
+                "--directory",
+                "--",
+                "HEAD",
+                "config",
+                "hooks",
+                "objects",
+                "refs"
+              ],
+              "exitCode": 2,
+              "stdout": "",
+              "stderr": "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+            },
+            "rootGitDirIgnoreProbe": {
+              "command": "git",
+              "args": [
+                "check-ignore",
+                "--verbose",
+                "--",
+                "HEAD",
+                "config",
+                "hooks",
+                "objects",
+                "refs"
+              ],
+              "exitCode": 0,
+              "stdout": ".gitignore:30:/HEAD\tHEAD\n.gitignore:31:/config\tconfig\n.gitignore:32:/hooks\thooks\n.gitignore:33:/objects\tobjects\n.gitignore:34:/refs\trefs\n",
+              "stderr": ""
+            },
+            "cleanupResult": {
+              "exitCode": 0,
+              "stdout": "",
+              "stderr": ""
+            }
+          }
+        },
+        {
+          "label": "sidecar.generated-type-consistency.1",
+          "task": "//package/module/deepmerge-ts.fuzz:generate:declared-type-cases",
+          "initial": {
+            "head": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "tree": "f7835f65413553704f9988f1fcf7f69911a8f2c0",
+            "trackedInputs": 13715,
+            "inputDigest": "7b0c2628a1524986d61d57d985665b544cebbddc0e3c741aa936370caefbf166"
+          },
+          "workspaceLinks": 809,
+          "ancestorResolvedLinks": 173,
+          "dependencySymlinks": 1989,
+          "processExitCode": 1,
+          "disposition": "blocked-rootless-container-mapping",
+          "changedTrackedBytes": 0,
+          "changedFiles": [],
+          "reconstructions": [],
+          "authoritativeBeforeAfterEqual": true,
+          "cleanupVerified": true,
+          "rawConsumer": {
+            "checkId": "sidecar.generated-type-consistency",
+            "task": "//package/module/deepmerge-ts.fuzz:generate:declared-type-cases",
+            "args": [
+              "run",
+              "//package/module/deepmerge-ts.fuzz:generate:declared-type-cases"
+            ],
+            "fixture": "/home/runner/temp/agent/depot-complete-ci/logger-generated-sidecar.generated-type-consistency.1",
+            "initialIdentityVerified": true,
+            "actualCommandExecuted": true,
+            "cleanupVerified": true,
+            "processExitCode": 1,
+            "processTermination": "process-exit",
+            "headAfter": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "changedTrackedBytes": 0,
+            "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "changedFiles": [],
+            "untracked": [],
+            "authoredGeneratedOutputDrift": false,
+            "authoritativeAfterVerified": true,
+            "cleanupIgnoredDryRun": {
+              "command": "git",
+              "args": [
+                "clean",
+                "--dry-run",
+                "-d",
+                "-X"
+              ],
+              "exitCode": 0,
+              "stdout": "Would remove node_modules/\nWould remove package/agent-harness-shared/current-time-context/node_modules/\nWould remove package/agent-harness-shared/search-fetch/node_modules/\nWould remove package/agent-harness-shared/session-discovery/node_modules/\nWould remove package/agent-harness-shared/shell-command-analyzer/node_modules/\nWould remove package/agent-harness-shared/terminal-title/node_modules/\nWould remove package/agent-harness-shared/text-scan/node_modules/\nWould remove package/agent-harness-shared/truncate/node_modules/\nWould remove package/agent-harness-shared/usage-projection/node_modules/\nWould remove package/build-tool/css/node_modules/\nWould remove package/claude-code-plugin/bash-output-filter/node_modules/\nWould remove package/claude-code-plugin/claude-spawn/node_modules/\nWould remove package/claude-code-plugin/correction-reminder/node_modules/\nWould remove package/claude-code-plugin/guardrail/node_modules/\nWould remove package/claude-code-plugin/prompt-time/node_modules/\nWould remove package/claude-code-plugin/session-start-housekeeping/node_modules/\nWould remove package/claude-code-plugin/source/node_modules/\nWould remove package/claude-code-plugin/statusline/node_modules/\nWould remove package/claude-code-plugin/stop-reminder/node_modules/\nWould remove package/claude-code-plugin/terminal-title/node_modules/\nWould remove package/cli/android-exempt-unused/node_modules/\nWould remove package/cli/fy/node_modules/\nWould remove package/cli/git-clone-size/node_modules/\nWould remove package/cli/mutation-test.fixture/node_modules/\nWould remove package/cli/mutation-test/node_modules/\nWould remove package/cli/mvm/node_modules/\nWould remove package/cli/open-code-review-issue/node_modules/\nWould remove package/cli/rgffplay/node_modules/\nWould remove package/cli/terminal-exec/node_modules/\nWould remove package/cli/unused-export/node_modules/\nWould remove package/cli/vmsync/node_modules/\nWould remove package/cli/wg-allowedips/node_modules/\nWould remove package/cli/wg-quicker/node_modules/\nWould remove package/cloudflare-worker/rand/node_modules/\nWould remove package/config/lfs-r2-worker/node_modules/\nWould remove package/config/oxlint/node_modules/\nWould remove package/config/pnpr/node_modules/\nWould remove package/config/rolldown/node_modules/\nWould remove package/config/tofu/node_modules/\nWould remove package/desktop-app/electron-counter/node_modules/\nWould remove package/desktop-app/electron-infra/node_modules/\nWould remove package/desktop-app/file-manager-electron/node_modules/\nWould remove package/desktop-daemon/hall-monitor/node_modules/\nWould remove package/dev-script/backup-path/node_modules/\nWould remove package/dev-script/catalog-tighten.matrix/node_modules/\nWould remove package/dev-script/catalog-tighten/node_modules/\nWould remove package/dev-script/claude-cpu-cap/node_modules/\nWould remove package/dev-script/deps-cube/node_modules/\nWould remove package/dev-script/deps-update/node_modules/\nWould remove package/dev-script/file-enforcer/node_modules/\nWould remove package/dev-script/page-weight/node_modules/\nWould remove package/dev-script/task-util/node_modules/\nWould remove package/dev-script/vm-builder/node_modules/\nWould remove package/dev-script/watch-restart/node_modules/\nWould remove package/figma/kiwi/node_modules/\nWould remove package/figma/to-penpot/node_modules/\nWould remove package/git-policy/cli/node_modules/\nWould remove package/git/executable/node_modules/\nWould remove package/intellij-plugin/islands-black/node_modules/\nWould remove package/kwin/key-helper/node_modules/\nWould remove package/mcp/mvm/node_modules/\nWould remove package/mcp/search-fetch/node_modules/\nWould remove package/mcp/stdio/node_modules/\nWould remove package/module/array-at/node_modules/\nWould remove package/module/async-iter/node_modules/\nWould remove package/module/async-time/node_modules/\nWould remove package/module/caught-value/node_modules/\nWould remove package/module/conf-fork.fuzz/node_modules/\nWould remove package/module/conf-fork/node_modules/\nWould remove package/module/const/node_modules/\nWould remove package/module/css-edit.bench/node_modules/\nWould remove package/module/css-edit.conformance/node_modules/\nWould remove package/module/css-edit.fuzz/node_modules/\nWould remove package/module/css-edit/node_modules/\nWould remove package/module/deepmerge-ts.fuzz/dist/\nWould remove package/module/deepmerge-ts.fuzz/node_modules/\nWould remove package/module/dom/node_modules/\nWould remove package/module/fs-id/node_modules/\nWould remove package/module/fs-path/node_modules/\nWould remove package/module/function-arity/node_modules/\nWould remove package/module/hyperscript/node_modules/\nWould remove package/module/i18n-compose/node_modules/\nWould remove package/module/image-diff/node_modules/\nWould remove package/module/jsonc-edit.bench/node_modules/\nWould remove package/module/jsonc-edit.conformance/node_modules/\nWould remove package/module/jsonc-edit.fuzz/node_modules/\nWould remove package/module/jsonc-edit/node_modules/\nWould remove package/module/kv-store/node_modules/\nWould remove package/module/llm-type/node_modules/\nWould remove package/module/logger.fuzz/node_modules/\nWould remove package/module/logger/node_modules/\nWould remove package/module/make-asynchronous-fork.fuzz/node_modules/\nWould remove package/module/make-asynchronous-fork/node_modules/\nWould remove package/module/matcher-fork.fuzz/node_modules/\nWould remove package/module/matcher-fork/node_modules/\nWould remove package/module/matrix/node_modules/\nWould remove package/module/memoize/node_modules/\nWould remove package/module/numeric-format/node_modules/\nWould remove package/module/observable/node_modules/\nWould remove package/module/or-throw/node_modules/\nWould remove package/module/p-limit-fork.fuzz/node_modules/\nWould remove package/module/p-limit-fork/node_modules/\nWould remove package/module/p-map-fork.fuzz/node_modules/\nWould remove package/module/p-map-fork/node_modules/\nWould remove package/module/p-memoize-fork.fuzz/node_modules/\nWould remove package/module/p-memoize-fork/node_modules/\nWould remove package/module/pify-fork.fuzz/node_modules/\nWould remove package/module/pify-fork/node_modules/\nWould remove package/module/pipe/node_modules/\nWould remove package/module/pnpm-workspace-catalog/node_modules/\nWould remove package/module/quick-lru-fork.fuzz/node_modules/\nWould remove package/module/quick-lru-fork/node_modules/\nWould remove package/module/test-diagnostic/node_modules/\nWould remove package/module/test-expect/node_modules/\nWould remove package/module/test-sandbox/node_modules/\nWould remove package/module/test/node_modules/\nWould remove package/module/throws/node_modules/\nWould remove package/module/token-count/node_modules/\nWould remove package/module/toml-edit.fuzz/node_modules/\nWould remove package/module/toml-edit/node_modules/\nWould remove package/module/wg-allowedips/node_modules/\nWould remove package/module/zip-writer/node_modules/\nWould remove package/music-player/desktop-e2e/node_modules/\nWould remove package/oxlint-plugin/no-restricted-syntax/node_modules/\nWould remove package/oxlint-plugin/prefer-readonly-parameter-type/node_modules/\nWould remove package/oxlint-plugin/shared/node_modules/\nWould remove package/oxlint-plugin/stylistic/node_modules/\nWould remove package/oxlint-plugin/test-import/node_modules/\nWould remove package/oxlint-plugin/test-support/node_modules/\nWould remove package/oxlint-plugin/tsdoc/node_modules/\nWould remove package/pi-plugin/advisor/node_modules/\nWould remove package/pi-plugin/agent-settled-notification/node_modules/\nWould remove package/pi-plugin/ask-user-question/node_modules/\nWould remove package/pi-plugin/auto-mode/node_modules/\nWould remove package/pi-plugin/bash-poke/node_modules/\nWould remove package/pi-plugin/current-time-context/node_modules/\nWould remove package/pi-plugin/goal/node_modules/\nWould remove package/pi-plugin/guardrail/node_modules/\nWould remove package/pi-plugin/model-retirement/node_modules/\nWould remove package/pi-plugin/morph-compact/node_modules/\nWould remove package/pi-plugin/openai-fast/node_modules/\nWould remove package/pi-plugin/search-fetch/node_modules/\nWould remove package/pi-plugin/spawn/node_modules/\nWould remove package/pi-plugin/statusline/node_modules/\nWould remove package/pi-plugin/terminal-title/node_modules/\nWould remove package/pi-plugin/thinking-default/node_modules/\nWould remove package/pi-shared/model-review/node_modules/\nWould remove package/pi-shared/model-selection/node_modules/\nWould remove package/rolldown-plugin/import-attributes/node_modules/\nWould remove package/runtime-error/bun/node_modules/\nWould remove package/ssg/aquati.cat/node_modules/\nWould remove package/test-fixture/css-importing-filepath/node_modules/\nWould remove package/test-fixture/css-importing/node_modules/\nWould remove package/test-fixture/file-enforcer-perf/node_modules/\nWould remove package/test-fixture/oxlint-no-restricted-syntax/node_modules/\nWould remove package/typeface/aquaticat/node_modules/\nWould remove package/webapp-productivity/done-postcss/node_modules/\nWould remove package/webapp-productivity/done/node_modules/\nWould remove package/webapp-productivity/doodle-widget/node_modules/\nWould remove package/webapp-productivity/rss/node_modules/\nWould remove package/webapp-productivity/syllable-break-demo/node_modules/\nWould remove package/webapp-productivity/wc/node_modules/\n",
+              "stderr": ""
+            },
+            "rootGitDirProbe": {
+              "command": "ls",
+              "args": [
+                "--directory",
+                "--",
+                "HEAD",
+                "config",
+                "hooks",
+                "objects",
+                "refs"
+              ],
+              "exitCode": 2,
+              "stdout": "",
+              "stderr": "ls: cannot access 'HEAD': No such file or directory\nls: cannot access 'config': No such file or directory\nls: cannot access 'hooks': No such file or directory\nls: cannot access 'objects': No such file or directory\nls: cannot access 'refs': No such file or directory\n"
+            },
+            "rootGitDirIgnoreProbe": {
+              "command": "git",
+              "args": [
+                "check-ignore",
+                "--verbose",
+                "--",
+                "HEAD",
+                "config",
+                "hooks",
+                "objects",
+                "refs"
+              ],
+              "exitCode": 0,
+              "stdout": ".gitignore:30:/HEAD\tHEAD\n.gitignore:31:/config\tconfig\n.gitignore:32:/hooks\thooks\n.gitignore:33:/objects\tobjects\n.gitignore:34:/refs\trefs\n",
+              "stderr": ""
+            },
+            "cleanupResult": {
+              "exitCode": 0,
+              "stdout": "",
+              "stderr": ""
+            }
+          }
+        }
+      ],
+      "finalCoherentReplayHeld": true
+    }
+  },
+  "generatedDeclaredRecovery": {
+    "runId": "62nbb3srhk",
+    "harnessRevision": "6a17c8fc61cf7613432c9f481416fa9ef7cc7bfe",
+    "createdAt": "2026-10-17T09:12:10Z",
+    "requestedCheckIds": [
+      "sidecar.generated-type-consistency"
+    ],
+    "requestedInvocationLabels": [
+      "sidecar.generated-type-consistency.1"
+    ],
+    "wholeExternalCheckCoverage": false,
+    "rootfulAdapterActivated": true,
+    "terminalReconciliationPending": true,
+    "finalCombinedDefaultsToAllAuthoredInvocations": true
   }
 }
