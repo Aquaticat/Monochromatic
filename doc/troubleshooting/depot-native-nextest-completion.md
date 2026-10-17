@@ -71,10 +71,12 @@ Their independently reconciled results are retained in
 [the native recovery evidence](../audit/depot-native-recovery-2026-10-17.evidence.json).
 
 - Historical source `cb95cf6d785c3073c192b95f0632cdae7b910894` on macOS Intel:
-  all 1382 eligible identities ran, with 1356 passed and 26 failed.
+  all 1382 eligible identities ran,
+  with 1356 passed and 26 failed.
   The nextest summary reports one additional ignored case.
 - Later source `3434eaa455d569c18b52cf15100f77f9db251d21` on macOS Intel:
-  all 1433 eligible identities ran, with 1406 passed and 27 failed.
+  all 1433 eligible identities ran,
+  with 1406 passed and 27 failed.
   The nextest summary reports one additional ignored case.
 - Historical source on Windows:
   nextest test compilation failed with four `E0433` diagnostics for missing `libc`.
