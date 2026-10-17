@@ -236,10 +236,20 @@ GitHub reported HTTP 422 for `runner.temp` in the job environment.
 Root `81d751db414445c281aebbdc2eaf2735434799c6` moves the final route's temporary paths into consuming steps.
 The corrected development-only pilot at `a4a8e2501c02d590056a9f53991025f8aa93e5af` is accepted as
 GitHub run `39023040772`.
-Its single terminal wait owns the host outcome receipt.
+All three original OS jobs are terminal with success.
+All original commands passed on Linux,
+macOS,
+and Windows;
+the three artifact archives match GitHub's SHA256 digests.
+Exact source identities match before and after the commands.
+The source guard records Node `26.11.1` before the original fs-id setup
+and Node `26.5.0` after it.
+The fs-id command retains its original Node `26.5.0` runtime.
+The development receipt is retained in `loggerOriginalHostDevelopmentAcceptance`
+and its compressed evidence archive.
 See `doc/troubleshooting/github-actions-job-env-runner-context.md` for the existing verified scope rule.
-Verify actual native host prerequisites before final static freeze.
 Generator incident `#1144` is closed with the exact repair/control body and state re-fetched.
+The separately filed parser incident `#1164` is also closed after exact body and state verification.
 No actual final common manifest has been published.
 
 The logger owner's bounded development recovery `lt7qwlz6h1` is terminal with all three artifacts downloaded.
@@ -248,9 +258,18 @@ conf-fork fuzz and TOML mutation pass;
 conf mutation fails on one red baseline in `src/conf.cache.unit.test.ts`.
 No task remains incomplete.
 The historical run retained exact logs but omitted native per-mutant report files;
-the owner is adding and verifying report retention before the final helper graft.
-It
-uses clean pushed harness `f69a78a3b31f81cbfe47496bcdc6e2ac75549777`.
+that loss remains tracked by `#1160` without retrospective per-mutant credit.
+Authentic bounded source control `knsghczl71` verifies fresh native JSON retention.
+Root `ce052bc29c4df4f801fa2d5bf5016b6614411f01`
+integrates the exact controlled collector and native-verification artifact path.
+Only reports changed since the worker's before-snapshot receive collection credit.
+That bounded control does not establish whole-check mutation coverage.
+Root `d30d88df0de27e7af86680dfe220c4ba431b3a02`
+also integrates the generated-consumer cleanup verified by provider control `p3jlkgvl99`.
+The stronger root cohort guard,
+generated identity guard,
+and non-generated external branches are preserved.
+The long development recovery uses clean pushed harness `f69a78a3b31f81cbfe47496bcdc6e2ac75549777`.
 Only conf fuzz and TOML/conf mutation are replayed,
 with unchanged source arguments,
 two-hour check budgets,
@@ -270,10 +289,13 @@ passed its upstream build,
 private installation,
 actual commit,
 and executing-ELF checks in a bounded disposable worker-userland overlay.
-Both original host suites executed and failed.
-Their Markdown tests stop at the separate unset `GIT_POLICY_NATIVE_TEST_LINTER` prerequisite;
-the real-linter assertions remain unexercised until an authentic linter is supplied.
-The other assertion boundaries remain separately classified by the owners.
+That pilot's Markdown tests stop at the separate unset `GIT_POLICY_NATIVE_TEST_LINTER` prerequisite.
+The later authentic-linter control `q10910cxfm` reaches both Markdown assertions successfully.
+Its Git CLI suite records 137 passes and one ignore;
+the library suite records 1,806 passes,
+six failures,
+and four ignores.
+The six source failures remain separately filed as `#1135` through `#1140`.
 The logger owner continues prerequisite recovery,
 issue reconciliation,
 and final registration.
@@ -315,9 +337,6 @@ and source failures `#1068` and `#1070` remain unresolved.
 The prior failed campaigns and separate source-producer issue `#1118` remain retained.
 
 The remaining queue is explicit:
-collect host development run `39023040772` and resolve actual prerequisite failures;
-retain and file its separately verified job-environment parser incident;
-integrate the logger owner's final cleanup and native mutation-report retention adapters;
 finish terminal logger accounting and incident reconciliation;
 complete every case's registration and copy its final bytes to every owner;
 freeze and publish the actual common manifest before the shared request clock;
