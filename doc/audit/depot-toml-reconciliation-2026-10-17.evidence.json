@@ -276875,7 +276875,58 @@
         },
         "eventsSha256": "df8e280b143a77ffb313fe206b47ad7d3445bdcd0f3fbbde92d172155cd23993"
       },
-      "state": "Dispatched full TOML-only immutable-source retry. Single terminal status wait96306; no final canonical cohort claim."
+      "state": "Dispatched full TOML-only immutable-source retry. Single terminal status wait96306; no final canonical cohort claim.",
+      "providerDispatchProof": {
+        "observedAt": "2026-10-17T07:55:06.607Z",
+        "purpose": "One provider dispatch-consumption snapshot, not a terminal result or routine status poll.",
+        "run": {
+          "org_id": "l4zncjjbj5",
+          "run_id": "23dk3nr90f",
+          "repo": "Aquaticats/Monochromatic",
+          "ref": "refs/heads/trial/depot-toml-continuation-20261017",
+          "sha": "0f1ef041a0de2ff6d2db6dd55210b1160c592648",
+          "head_sha": "0f1ef041a0de2ff6d2db6dd55210b1160c592648",
+          "trigger": "workflow_dispatch",
+          "status": "running",
+          "created_at": "2026-10-17T07:50:30Z",
+          "started_at": "2026-10-17T07:50:31Z"
+        },
+        "status": {
+          "org_id": "l4zncjjbj5",
+          "run_id": "23dk3nr90f",
+          "status": "running",
+          "workflows": [
+            {
+              "workflow_id": "6c7k33pmdz",
+              "status": "running",
+              "workflow_path": "depot-complete-toml-full-mutation.yml",
+              "name": "depot-complete-toml-full-mutation",
+              "jobs": [
+                {
+                  "job_display_name": "Full exact-source TOML mutation recovery",
+                  "job_id": "8pb395vl18",
+                  "job_key": "depot-complete-toml-full-mutation.yml:full-mutation",
+                  "status": "running",
+                  "attempts": [
+                    {
+                      "attempt_id": "jrr8hqzbn7",
+                      "attempt": 1,
+                      "status": "running",
+                      "sandbox_id": "k6jfhswjmnvfrpdbxsmf",
+                      "session_id": "4c89bda2-f968-4941-b9c2-32f87ec3c7d6",
+                      "logs_command": "depot ci logs jrr8hqzbn7 --org l4zncjjbj5",
+                      "download_available": false,
+                      "view_url": "https://depot.dev/orgs/l4zncjjbj5/workflows/6c7k33pmdz?job=8pb395vl18&attempt=jrr8hqzbn7",
+                      "ssh_available": true,
+                      "ssh_command": "depot ci ssh 23dk3nr90f --job depot-complete-toml-full-mutation.yml:full-mutation --org l4zncjjbj5"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
     },
     "preFullRetryRoute": {
       "branch": "trial/depot-toml-continuation-20261017",
