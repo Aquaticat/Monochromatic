@@ -9,10 +9,10 @@
  The inspected name is compared as a literal identifier token and never
  reaches a pattern compiler, so identifier characters that carry regex
  meaning (`$`) classify like any other name instead of acting as anchors.
- Identifier-token edges count every non-ASCII character as part of the
- surrounding token, which the ASCII-only `\b` boundary misread in both
- directions: a name ending beside a non-ASCII letter never matched, and a
- name followed by `$` matched inside a longer identifier.
+ Identifier-token edges count every non-ASCII non-whitespace character as
+ part of the surrounding token, which the ASCII-only `\b` boundary misread
+ in both directions: a name ending beside a non-ASCII letter never matched,
+ and a name followed by `$` matched inside a longer identifier.
  The re-export scan resumes past each closing brace it has ruled out, so
  many unterminated `export {` openers cost O(n) time and O(1) stack where
  the pattern form rescanned the brace-free remainder per opener and was
@@ -84,13 +84,14 @@ function isWhitespaceCharacter(character: string,): boolean {
  occurrence only counts when it is a whole token.
  
  The set is ASCII letters, ASCII digits, `_`, `$`, plus every non-ASCII
- character as an over-approximation of Unicode ID_Continue: a non-ASCII
- neighbour keeps the token open, which is the conservative reading for a
- heuristic classifier because identifiers in real sources are nearly always
- ASCII and a non-ASCII punctuation neighbour only downgrades the
- classification to the caller's name-shape fallback. The empty string
- reports false, so both text edges close a token, the behaviour the scans
- rely on.
+ non-whitespace character as an over-approximation of Unicode ID_Continue:
+ whitespace can never sit inside an identifier, so the `\s` set is exempted
+ exactly, while any other non-ASCII neighbour keeps the token open. That is
+ the conservative reading for a heuristic classifier because identifiers in
+ real sources are nearly always ASCII and a non-ASCII punctuation neighbour
+ only downgrades the classification to the caller's name-shape fallback.
+ The empty string reports false, so both text edges close a token, the
+ behaviour the scans rely on.
  
  @param character - one character, or the empty string where an index falls
  outside the text
@@ -100,7 +101,7 @@ function isWhitespaceCharacter(character: string,): boolean {
  @example
  ```ts
  isIdentifierPartCharacter('$'); // true
- isIdentifierPartCharacter('('); // false
+ isIdentifierPartCharacter('\u00a0'); // false; no-break space is whitespace
  ```
  */
 function isIdentifierPartCharacter(character: string,): boolean {
@@ -110,7 +111,7 @@ function isIdentifierPartCharacter(character: string,): boolean {
       || ((character >= '0') && (character <= '9'))
       || (character === '_')
       || (character === '$')
-      || (character > '\u007F'));
+      || ((character > '\u007F') && (!isWhitespaceCharacter(character,))));
 }
 
 /**
