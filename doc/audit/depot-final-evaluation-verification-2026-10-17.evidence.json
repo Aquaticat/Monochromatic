@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "verifiedAt": "2026-10-17T16:03:40.075Z",
+  "verifiedAt": "2026-10-17T16:05:08.661Z",
   "report": "doc/audit/tech-depot-complete-ci-trial-vet-2026-10-17.md",
   "creationFingerprint": {
     "input": {
@@ -40,7 +40,7 @@
     "governingSkillSha256": "552ac9955299b65a9f921a4e836b60a3fabc15d3477eeb8ec2bfb3f400647f9b"
   },
   "independentChecks": {
-    "checkedAt": "2026-10-17T16:00:09.758Z",
+    "checkedAt": "2026-10-17T16:04:29.837Z",
     "primary": 770,
     "external": 33,
     "githubExecuted": 21,
@@ -48,7 +48,7 @@
     "commonRequestToTerminalMs": 5851263,
     "markdownSections": 6,
     "missingInternalLinks": [],
-    "reportSha256": "f03a3db174dcd5a2cb2d32ed54b88b3bdf557aa66da6cae71883782e019ced09"
+    "reportSha256": "98825877b9a6d9ed0eb43f520c52ff5295d2793a22c50daf19e3edeb26e56f21"
   },
   "renderInspection": {
     "report": "Read full CommonMark HTML in three bounded sections",
