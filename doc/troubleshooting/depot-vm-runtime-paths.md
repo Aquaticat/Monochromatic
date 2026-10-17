@@ -332,6 +332,14 @@ That source task owns its existing bundle-build dependency.
 The logger manifest owner corrected the old inherited `test:unit` plus explicit file argument
 to the authored `test:e2e` route and its build prerequisite;
 the historical old manifest remains development provenance.
+The corrected manifest is in `.depot/manifests/logger.json`
+on the logger harness branch,
+with correction commit `0095ae37c74af1b5d720af3544876aee897be1ad`
+and SHA-256 `4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7`.
+The recovery evidence compares its selected task,
+arguments,
+file identity,
+and bundle-build prerequisite with the minimal VM route.
 
 The final adapter allocates private HOME,
 configuration,
