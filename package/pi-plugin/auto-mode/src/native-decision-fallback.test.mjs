@@ -15,7 +15,7 @@ const requestedMode=process.argv[2]??'approve';
 const clauseDenial=requestedMode.startsWith('clause-deny-');
 const startupFailure=requestedMode.startsWith('startup-failure-');
 const mode=startupFailure?requestedMode.slice('startup-failure-'.length):clauseDenial?requestedMode.slice('clause-deny-'.length):requestedMode;
-assert.ok(['approve','deny','unknown','low','transport','malformed','initial-failure','stop','cancel','headless','stale','abort','prohibition','deadline','fresh'].includes(mode));
+assert.ok(['approve','deny','transient','transient-deny','unknown','low','transport','malformed','initial-failure','stop','cancel','headless','stale','abort','prohibition','deadline','fresh'].includes(mode));
 const {askUser,VERDICT_ENTRY_TYPE}=await import(maintainedPolicyEntry);
 const observations={assessments:0,httpCalls:0,attempts:0,selections:0,executions:0};
 /** @type {{pi:unknown,abortTask:Promise<void>|undefined}} */
