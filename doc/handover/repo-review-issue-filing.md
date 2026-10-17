@@ -259,6 +259,9 @@ Cross-unit leads:
  paths, per `config-paused-2` notes;
  dedupe candidate with the `config-paused-2` rename-staleness finding and
  `docs-handover-008`.
+ `doc/planning/monorepo-manager-route-research/stack-rust.md` cites an `MXR` rule tag that
+ no longer exists in `AGENTS.md` (`MXL` is the max-lines rule), per `cross-rust` notes;
+ file it directly at dedupe time.
  The stale pre-transfer `repository.url` (Aquaticat instead of Aquaticats) spans most
  `package.json` files repo-wide per `code-config-1-001`;
  likely dedupe target is open issue #1124;
