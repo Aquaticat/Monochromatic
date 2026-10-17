@@ -1,4 +1,4 @@
----
+<!--
 status: completed evaluation; no adoption recommendation
 lifecycle-phase: validation incomplete; no validated finalist
 subject: Depot complete CI trial
@@ -26,7 +26,7 @@ overlays:
   - Incumbent replacement parity
   - Multi-platform and browser claims
   - Native and prebuilt artifact boundaries
----
+-->
 # Depot complete CI trial evaluation
 
 ## Decision and acceptance limits
@@ -385,7 +385,8 @@ The local record does not establish an exclusive CPU/RAM allocation or increment
 [local and GitHub interval limits](depot-final-gates-and-intervals-2026-10-17.evidence.json)).
 
 From the common request to the last provider finish,
-the observed frontier is **5851263 milliseconds**, or 97 minutes 31.263 seconds.
+the observed frontier is **5851263 milliseconds**,
+or 97 minutes 31.263 seconds.
 The last attempt is logger `cnhrgd3dct`,
 ending at `2026-10-17T12:54:40.266Z` on `4x16`.
 The combined coherent provider interval union is 5837644 milliseconds.
