@@ -9,10 +9,14 @@ Adding `--allow-escape-sequences` produced the same transformed bytes.
 The fixture at commit `8c70741076b02238bc9dab9fc10443dd9aea77e2` is
 `doc/audit/depot-final-recovery-2026-10-17.evidence.json`:
 
-- Committed bytes: 1,043,537.
-  SHA-256: `1a6f6aaee60910a6fe44c653308648ba8a19abf2dc3713ebe05e227ff1390369`.
-- Raw JSON CLI bytes: 1,030,081.
-  SHA-256: `c33dfcb8b87ba5e45a5d275f82d38ce7d6542d4531eb1b7dbfb47df122a5d0cf`.
+- Committed bytes:
+  1,043,537.
+  SHA-256:
+  `1a6f6aaee60910a6fe44c653308648ba8a19abf2dc3713ebe05e227ff1390369`.
+- Raw JSON CLI bytes:
+  1,030,081.
+  SHA-256:
+  `c33dfcb8b87ba5e45a5d275f82d38ce7d6542d4531eb1b7dbfb47df122a5d0cf`.
 - The first difference is byte offset 58,924:
   the JSON escape `\u001b` becomes the inert text `^[`.
 
