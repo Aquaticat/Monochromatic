@@ -172,7 +172,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        partition: [containers, fuzz, mutation, native-mutation, pi-regression, regular, rust]
+        partition: [
+          containers,
+          fuzz,
+          mutation,
+          native-mutation,
+          pi-regression,
+          regular,
+          rust,
+        ]
     runs-on:
       size: 16x64
       image: monochromatic-trial-native-bases:20261016-v1
