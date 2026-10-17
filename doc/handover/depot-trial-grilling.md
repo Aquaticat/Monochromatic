@@ -2,7 +2,7 @@
 
 ## Completed trial execution and remaining acceptance gaps
 
-### Execution checkpoint at 07:36 UTC on October 17
+### Execution checkpoint on October 17
 
 The Codex scope clarification and globally verified search/fetch MCP setup are complete.
 The user selected the Codex document change only;
@@ -35,9 +35,19 @@ The source controller writes its summary and then removes its scratch base.
 Completed source session logs therefore disappear before the current post-command collector copies them.
 The summary and 106 native or 110 desktop screenshots are retained,
 but the missing raw session logs remain an evidence gap.
-Root must archive those logs before the original cleanup,
-preserve that cleanup even when archiving fails,
-and verify the actual consumer again.
+Trial archive implementation `b6b44d679853c29e39a3c801b64ca66a32d30a97`
+copies regular session logs before the original source removal,
+verifies their bytes and SHA256,
+and keeps the original removal in `finally`.
+Its generated hook passed 16 archive controls across the source cases,
+including copy failures,
+quoted/newline paths,
+symlink rejection,
+source-anchor failures,
+and a removed-cleanup control that the actual post-run probe rejects.
+The updated hook also passed 17 continuation/safety controls per source case.
+The missing completed-run logs are separately filed as `#1133`;
+actual provider archive verification remains required.
 The clean pushed final root worktree is
 `~/temp/agent/depot-cohort-root-worktree-20261017`,
 branch `trial/depot-cohort-root-20261017`.
@@ -46,18 +56,36 @@ from each committed source selector.
 Actual function controls accept six native and seven desktop routes;
 the legacy six-route desktop negative fails.
 Provider verification of this corrected receipt remains pending under `#1120`.
+Both archive/inventory controls are now dispatched from clean,
+explicitly pushed and remote-verified harness `2294b7f1171c2cd88d0ca50dd148404a3a0db4b6`:
+native `w21t2hzv67` and desktop `d83q9lrgfx`.
+One terminal-wait task owns both runs;
+its current command session is `40385`.
+The unused source-compositor build step was removed from the new diagnostic and final Linux routes.
+Historical allocations remain retained without adjustment.
 
 The canonical common-manifest contract is in the plan's shared cohort identity section.
 `#1119` tracks byte-preserving transport through every final route.
 The authenticated object/base64 API control verifies exact bytes at a frozen repository ref;
 raw JSON from GitHub CLI 2.102.0 changes escaped controls through its sanitizing transport.
 `doc/troubleshooting/gh-api-json-byte-preservation.md` records the deciding source and verified workaround.
-Root is adapting the native owner's guarded reader from
+Root adapted the native owner's guarded reader from
 `0f8ad795aa92d3beb83e3bfa4e4aa54f1bea06f8`
 to trusted native,
 desktop Linux,
 scanner,
 and Scorecard route bindings.
+The actual root task at `f0748cf5ad8b0236b5f06696de7a5b323abf1e11`
+passed 48 valid and 312 rejected binding controls across 12 routes.
+Removing its actual digest guard produced 12 invalid acceptances.
+Those fixtures stub only the absent canonical Contents API response;
+they do not establish provider acceptance of an actual final common manifest.
+The current guard body equals the tested body.
+Final Linux workflow bindings at `afbaaaccd6f87ff968419bd518c2511155fcdad8`
+passed scoped formatting and before/after gate checks.
+Scanner and Scorecard workflow integration remains queued.
+The retained proof fields are `rootCommonCohortPreparation`
+and `desktopRuntimeSessionLogArchivePreparation`.
 
 The logger owner's bounded development recovery `lt7qwlz6h1`
 uses clean pushed harness `f69a78a3b31f81cbfe47496bcdc6e2ac75549777`.
@@ -75,9 +103,20 @@ The independent browser development union covers all 118 configured cases:
 one failed on OPFS availability in WebKit,
 and one authored skip.
 Its 32 partitions retain zero PID rejection and OOM samples.
-The logger owner continues final registration,
+The real Git executable pilot `10zmqch10h`
+passed its upstream build,
+private installation,
+actual commit,
+and executing-ELF checks in a bounded disposable worker-userland overlay.
+Both original host suites executed and failed.
+Their Markdown tests stop at the separate unset `GIT_POLICY_NATIVE_TEST_LINTER` prerequisite;
+the real-linter assertions remain unexercised until an authentic linter is supplied.
+The other assertion boundaries remain separately classified by the owners.
+The logger owner continues prerequisite recovery,
 issue reconciliation,
-and a real Git executable pilot in a bounded disposable worker-userland overlay.
+and final registration.
+The browser OPFS failure is reconciled with `#1052`;
+the distinct missing CI-environment propagation is filed as `#1131` without a source policy change.
 
 The TOML observer incident is separately filed as `#1130`.
 The source pilot exits zero with a green baseline and one retained compile-error mutant,
@@ -86,14 +125,22 @@ The bounded observer trial `vlrxjltfkq` at
 `316e1a8a309e71e456a741eb63e5ff3b94b75646`
 uses a 60-second metadata deadline with forwarding receipts and timeout controls.
 The original source consumer helper remains byte-identical to `d098532a`.
-The native owner must prove complete metadata,
+That actual bounded control succeeded with all metadata,
 correlation,
 source outcome,
-and cleanup before dispatching the full unchanged-source mutation retry.
+and cleanup proofs;
+`#1130` is closed.
+The full unchanged-source TOML mutation retry `23dk3nr90f`
+is running at harness `0f1ef041a0de2ff6d2db6dd55210b1160c592648`,
+with a five-hour check bound and six-hour provider bound.
+Its original source arguments remain unchanged.
+The native owner retains its terminal wait and finite progress evidence;
+completed shard events are not distinct final mutant counts.
 The prior failed campaigns and separate source-producer issue `#1118` remain retained.
 
 The remaining queue is explicit:
-finish the log archive and root route controls;
+collect the provider log archive and corrected inventory controls;
+finish scanner and Scorecard workflow integration;
 reconcile the running logger and TOML work;
 complete every case's registration and copy its final bytes to every owner;
 freeze and publish the actual common manifest before the shared request clock;
@@ -102,6 +149,14 @@ join the matching Android producer to the held headful consumer;
 and compute allocation cost and overlap-aware critical paths.
 The VM owner is also assessing a natural-build consumer bridge for the source cwd failure `#1076`,
 while preserving the original authored gate's result and avoiding Windows fixtures.
+The held Android join now accepts only `native.producers`,
+the final native workflow,
+and producer wave `native-android`.
+Its 13 actual validator controls include a self-consistent wrong route,
+wrong workflow,
+and `native-core` rejection.
+No emulator was launched;
+matching final producer evidence remains required.
 No final artifact consumer may use a mismatched development producer.
 
 ### Resumed execution on October 17

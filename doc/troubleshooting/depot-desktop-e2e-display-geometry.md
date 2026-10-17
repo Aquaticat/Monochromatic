@@ -137,6 +137,48 @@ This route does not establish the behavior of a nested compositor under an ordin
 
 ## What does not work
 
+## Completed session logs disappear before collection
+
+This is a separate evidence-retention boundary from display geometry.
+The continuation controls `s3cmrhf2kp` and `wxq11xm2hd`
+attempt every source-selected session and retain summaries and screenshots,
+but their artifacts contain no raw session logs.
+Source folder setup and chooser failures remain failed.
+
+`package/music-player/desktop-e2e/src/session.ts:205` names each session log inside the run's scratch base.
+`package/music-player/desktop-e2e/src/run.ts:324` removes that base after writing the report.
+The trial collector copies the parent scratch directory after the command returns,
+which is too late for logs from a completed run.
+This differs from the aborted-session coverage issue `#1006`,
+the receipt inventory issue `#1120`,
+and active TOML mutation evidence loss `#1113`.
+The completed-log boundary is filed as
+[issue #1133](https://github.com/Aquaticats/Monochromatic/issues/1133).
+
+Trial commit `b6b44d679853c29e39a3c801b64ca66a32d30a97`
+extends the source-hash-checked in-memory loader hook to archive regular top-level session logs
+before the original removal.
+It verifies copied bytes and SHA256 and writes an archive manifest outside the source scratch base.
+The original removal remains in `finally`,
+including archive failure paths.
+The controller file on disk remains unchanged;
+the loaded controller's modification and hashes remain explicit evidence.
+
+The generated hook passed archive controls for both immutable source cases,
+including quoted/newline paths,
+copy collisions,
+symlink rejection,
+an archive nested inside the source base,
+and missing or duplicate source anchors.
+A control that removes original cleanup exits successfully,
+but the actual archive probe rejects its surviving source directory.
+The existing continuation/safety controls also pass with the archive hook.
+These are fixture proofs;
+actual provider-produced archives are pending from `w21t2hzv67` and `d83q9lrgfx`.
+`desktopRuntimeSessionLogArchivePreparation` retains the complete control receipts.
+
+## What does not work
+
 - Raising the private service and slice task limits crossed the thread-creation failure boundary,
   but did not correct the display geometry.
 - Replacing the source-built inner compositor with the locked published binary changed the actual consumer path,
