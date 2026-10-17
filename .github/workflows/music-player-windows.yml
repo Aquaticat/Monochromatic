@@ -512,29 +512,7 @@ jobs:
         $ErrorActionPreference = 'Stop'
         $PSNativeCommandUseErrorActionPreference = $true
         $exe = Join-Path (Get-Location) "target/$env:TARGET/debug/music-player.exe"
-        $version = (Select-String -Path Cargo.toml -Pattern '^version = "(.*)"      if: ${{ !cancelled() && steps.provenance-before.outcome == 'success' }}
-      working-directory: trial-provenance-harness
-      env:
-        MISE_AUTO_INSTALL: 'false'
-        MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
-        MISE_NODE_VERSION: '26.11.1'
-        SOURCE_ROOT: ${{ github.workspace }}
-        SOURCE_HEAD: 3434eaa455d569c18b52cf15100f77f9db251d21
-        PROVENANCE_PHASE: after
-        PROVENANCE_CASE: windows
-        PROVENANCE_OUTPUT: ${{ runner.temp }}/depot-provenance
-        COHORT_ID: ${{ inputs.cohort_id }}
-        COHORT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
-        COHORT_REQUESTED_AT: ${{ inputs.requested_at }}
-      run: mise run //package/dev-script/task-util:trial:depot:coherent:provenance
-    - name: Preserve frozen source provenance
-      if: ${{ always() }}
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-      with:
-        name: depot-windows-provenance-${{ matrix.name }}
-        path: ${{ runner.temp }}/depot-provenance
-        if-no-files-found: error
- | Select-Object -First 1).Matches.Groups[1].Value
+        $version = (Select-String -Path Cargo.toml -Pattern '^version = "(.*)"$' | Select-Object -First 1).Matches.Groups[1].Value
         $expected = "music-player $version"
         $probeStatus = 'failed'
         $merged = ''
@@ -583,29 +561,7 @@ jobs:
         $ErrorActionPreference = 'Stop'
         $PSNativeCommandUseErrorActionPreference = $true
         $exe = Join-Path (Get-Location) "target/$env:TARGET/debug/music-player.exe"
-        $version = (Select-String -Path Cargo.toml -Pattern '^version = "(.*)"      if: ${{ !cancelled() && steps.provenance-before.outcome == 'success' }}
-      working-directory: trial-provenance-harness
-      env:
-        MISE_AUTO_INSTALL: 'false'
-        MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
-        MISE_NODE_VERSION: '26.11.1'
-        SOURCE_ROOT: ${{ github.workspace }}
-        SOURCE_HEAD: 3434eaa455d569c18b52cf15100f77f9db251d21
-        PROVENANCE_PHASE: after
-        PROVENANCE_CASE: windows
-        PROVENANCE_OUTPUT: ${{ runner.temp }}/depot-provenance
-        COHORT_ID: ${{ inputs.cohort_id }}
-        COHORT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
-        COHORT_REQUESTED_AT: ${{ inputs.requested_at }}
-      run: mise run //package/dev-script/task-util:trial:depot:coherent:provenance
-    - name: Preserve frozen source provenance
-      if: ${{ always() }}
-      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-      with:
-        name: depot-windows-provenance-${{ matrix.name }}
-        path: ${{ runner.temp }}/depot-provenance
-        if-no-files-found: error
- | Select-Object -First 1).Matches.Groups[1].Value
+        $version = (Select-String -Path Cargo.toml -Pattern '^version = "(.*)"$' | Select-Object -First 1).Matches.Groups[1].Value
         $expected = "music-player $version"
         $probeStatus = 'failed'
         try {
