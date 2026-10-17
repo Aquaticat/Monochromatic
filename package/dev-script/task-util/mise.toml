@@ -730,6 +730,7 @@ const { homedir } = await import('node:os')
 const { join } = await import('node:path')
 const { createHash } = await import('node:crypto')
 const { strict: assert } = await import('node:assert')
+class OriginalVmTaskFailure extends Error { name = 'OriginalVmTaskFailure' }
 const source = join(process.env.GITHUB_WORKSPACE, 'source')
 const originalHome = homedir()
 const scratch = join(originalHome, 'temp/agent')
@@ -766,5 +767,5 @@ if (result.status !== 0) console.error(result.stderr ?? '')
 assert.deepEqual(finalIdentity, initialIdentity, 'The authored VM task must preserve immutable source and tracked inputs')
 if (result.error) throw result.error
 assert(helperResolutionFailure, 'Unexpected source-task result; inspect retained output before accepting coverage')
-throw new Error('Original selected vmsync task failed before either lifecycle test body; retained source failure must remain a failed required check')
+throw new OriginalVmTaskFailure('Original selected vmsync task failed before either lifecycle test body; retained source failure must remain a failed required check')
 '''
