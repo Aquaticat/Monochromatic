@@ -32,7 +32,7 @@ Neither proves that instruction text changed.
 
 ### Source trace
 
-`package/pi-plugin/auto-mode/src/review-operation.ts:27`
+`package/pi-plugin/auto-mode/src/review-operation.ts:46`
 originally projected only Bash calls.
 The maintained projection now includes process starts while retaining other process actions:
 
@@ -49,7 +49,7 @@ Execution still uses the original input.
 That call projection does not cover returned process metadata.
 `package/pi-plugin/auto-mode/src/visible-context.ts:207`
 and `:232` now select metadata projection by the original tool name or exact custom-message type.
-`package/pi-plugin/auto-mode/src/review-process-result.ts:49`
+`package/pi-plugin/auto-mode/src/review-process-result.ts:47`
 projects known command fields while preserving output text and unrelated data:
 
 ```ts
@@ -61,7 +61,7 @@ The same module handles `process`, `processes[]`, and `result.info` records.
 An arbitrary data property named `command` does not select this path.
 
 The custom-message freshness chain begins in
-`package/pi-plugin/auto-mode/native/contract/integration/native-batch/prompt-input-source.ts:73`:
+`package/pi-plugin/auto-mode/native/contract/integration/native-batch/prompt-input-source.ts:75`:
 
 ```ts
 // package/pi-plugin/auto-mode/native/contract/integration/native-batch/prompt-input-source.ts
@@ -110,7 +110,7 @@ Actual context admission still retains the original publication and serialized-r
 User instructions do not take that custom-data path.
 
 A second rejection occurs after queuing custom data during the primary request.
-`integration/policy-source/manager-source-growth.mjs:79`
+`integration/policy-source/manager-source-growth.mjs:77`
 allowed appended manager and event inputs but omitted native custom constructions.
 The focused `notification-primary` test fails against `native-release-GSPIDj`.
 Diagnostic instrumentation identifies `native-custom-construction`,
