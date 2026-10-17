@@ -14,7 +14,7 @@ import {createDomainFixtureAssessment} from '../dist/native/contract/integration
 //region Real native callbacks surround one complete-group review.
 /** Each mode runs in a separate process because native fixture configuration owns its disposable home. */
 const mode=process.argv[2]??'parallel';
-assert.ok(['parallel','sequential','implicit-sequential','invalid','before-block','tool-error','deny','cancel','notification-context','notification-turn','notification-followup','notification-primary','steer-user','policy-change'].includes(mode));
+assert.ok(['parallel','sequential','implicit-sequential','invalid','before-block','tool-error','deny','cancel','notification-context','notification-turn','notification-followup','notification-primary','notification-primary-turn','notification-primary-followup','steer-user','steer-primary','policy-change','policy-primary'].includes(mode));
 /** Event traces retain native call identity without depending on subprocess completion order. */
 const events=[];
 /** Model and execution counters distinguish missing coverage from successful withholding. */
@@ -80,8 +80,8 @@ const sendAssessment=createDomainFixtureAssessment({settings:{relation:'permissi
 async function notify(){
   await session.sendCustomMessage({customType:'ad-process:notification',content:'Authored process completion',display:true,
     details:{command:'printf PHASE_NOTIFICATION',processId:'fixture-process'}},
-    mode==='notification-turn'?{triggerTurn:true,deliverAs:'steer'}:
-    mode==='notification-followup'?{triggerTurn:true,deliverAs:'followUp'}:{triggerTurn:false});
+    mode.endsWith('-turn')?{triggerTurn:true,deliverAs:'steer'}:
+    mode.endsWith('-followup')?{triggerTurn:true,deliverAs:'followUp'}:{triggerTurn:false});
 }
 const calls=['A','B','C'].map(function proposal(letter,index){return {index,id:`phase-${index}`,type:'function',function:{name:'bash',arguments:JSON.stringify(mode==='invalid'&&index===1?{}:{command:`  printf PHASE_${letter}  `})}};});
 const requests={count:0};
@@ -91,7 +91,7 @@ const runtime=bindNativePolicyRuntime({
   ...createNativeSemanticOperatingPolicies(),
   async sendWire(input){
     observations.attempts++;events.push('assess');
-    if(notification&&mode!=='notification-primary'&&observations.attempts===2)await notify();
+    if(notification&&!mode.startsWith('notification-primary')&&observations.attempts===2)await notify();
     if(mode==='steer-user'&&observations.attempts===2)await session.steer('Stop the proposed operation. Reply without executing tools.');
     if(mode==='policy-change'&&observations.attempts===2)await writeFile(join(env.options.cwd,'AGENTS.md'),'RUL:\n The proposed inspection is prohibited.\n');
     return await sendAssessment(input);
@@ -101,7 +101,9 @@ const runtime=bindNativePolicyRuntime({
     const body=await request.clone().text();
     if(body.includes('Authored process completion'))state.sawNotification=true;
     const ordinal=requests.count++;
-    if(mode==='notification-primary'&&ordinal===0)await notify();
+    if(mode.startsWith('notification-primary')&&ordinal===0)await notify();
+    if(mode==='steer-primary'&&ordinal===0)await session.steer('Stop the proposed operation. Reply without executing tools.');
+    if(mode==='policy-primary'&&ordinal===0)await writeFile(join(env.options.cwd,'AGENTS.md'),'RUL:\n The proposed inspection is prohibited.\n');
     const followup=notification&&ordinal>0&&state.sawNotification&&!state.followupProposed;
     if(followup)state.followupProposed=true;
     const proposed=ordinal===0||followup;
@@ -115,9 +117,9 @@ const runtime=bindNativePolicyRuntime({
 await using cleanup={async [Symbol.asyncDispose](){await state.abortTask;session.dispose();await session.agent.waitForIdle();runtime.detach();unsubscribe();await env.drain();await logger.flush();}};
 await session.prompt('Perform the complete proposed local inspection.');
 await state.abortTask;
-const withheld=['invalid','before-block','deny','steer-user','policy-change'].includes(mode);
+const withheld=['invalid','before-block','deny','steer-user','steer-primary','policy-change','policy-primary'].includes(mode);
 assert.equal(observations.executions,withheld?0:mode==='cancel'?1:notification?4:3);
-assert.equal(observations.attempts,['invalid','before-block'].includes(mode)?0:notification?4:2);
+assert.equal(observations.attempts,['invalid','before-block','steer-primary','policy-primary'].includes(mode)?0:notification?4:2);
 assert.equal(observations.active,0);
 assert.equal(events.filter(event=>event==='prepare').length,notification?4:3);
 const ids=['phase-0','phase-1','phase-2',...(notification?['phase-3']:[])];

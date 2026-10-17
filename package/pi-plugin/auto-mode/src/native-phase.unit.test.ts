@@ -14,7 +14,8 @@ const root = dirname(import.meta.dirname);
 const modes = [
   'parallel', 'sequential', 'implicit-sequential', 'invalid', 'before-block', 'tool-error',
   'deny', 'cancel', 'notification-context', 'notification-turn', 'notification-followup',
-  'notification-primary', 'steer-user', 'policy-change',
+  'notification-primary', 'notification-primary-turn', 'notification-primary-followup',
+  'steer-user', 'steer-primary', 'policy-change', 'policy-primary',
 ] as const;
 /** A focused task selects the same maintained suite without a second fixture implementation. */
 const requested = process.argv[2];

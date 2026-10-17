@@ -1,13 +1,5 @@
 import {SourceCollectionError} from '../collector.mjs';
-
-/** Native custom data is retained at construction and admitted by the actual context-copy callback. */
-function isCustomDataInput(origin){
-  const {source}=origin;
-  if(source.inputOrigin==='native-custom-construction')return true;
-  if(source.inputOrigin!=='native-agent-input')return false;
-  const metadata=JSON.parse(source.inputLocation.metadataJSON);
-  return metadata.role==='custom'&&['steer','followUp'].includes(metadata.method);
-}
+import {isCustomDataInput} from './custom-data-input.mjs';
 
 //region Read and refresh the current run without treating retained ancestry as current.
 /** Read and refresh the current run without treating retained ancestry as current. */
