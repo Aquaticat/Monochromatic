@@ -45,5 +45,21 @@ const malformed=[{type:'thinking',thinking:'PRIVATE_THINKING'},{type:'toolCall',
 assert.equal(projectOperationSummary(malformed)[0].arguments.command,'if true; then cat file');
 assert.equal(JSON.stringify(projectOperationSummary(malformed)).includes('PRIVATE_THINKING'),false);
 assert.deepEqual(projectPreparedOperation([{name:'read',input:{path:'file'}}]),[{name:'read',input:{path:'file'}}]);
+const processInput={action:'start',command:'MODE=test bash -lc "cat private.txt" > output.log',cwd:'/fixture',name:'fixture',notify:{onFailure:'turn'}};
+const processBlocks=[{type:'toolCall',name:'process',arguments:processInput}];
+const projectedProcess=projectVisibleOperation(processBlocks)[0].arguments;
+assert.equal(Object.hasOwn(projectedProcess,'command'),false);
+assert.equal(projectedProcess.action,'start');
+assert.equal(projectedProcess.cwd,'/fixture');
+assert.deepEqual(projectedProcess.notify,processInput.notify);
+assert.ok(JSON.stringify(projectedProcess.shell.syntax).includes('private.txt'));
+assert.deepEqual(projectPreparedOperation([{name:'process',input:processInput}])[0].input,projectedProcess);
+assert.equal(processBlocks[0].arguments,processInput);
+assert.equal(processInput.command,'MODE=test bash -lc "cat private.txt" > output.log');
+assert.throws(function missingProcessCommand(){projectPreparedOperation([{name:'process',input:{action:'start'}}]);},{name:'ReviewOperationInputError'});
+for(const action of ['output','write','stop','list','update','clear']){
+ const input={action,input:'printf arbitrary stdin',id:'fixture-id'};
+ assert.deepEqual(projectPreparedOperation([{name:'process',input}])[0].input,input);
+}
 console.log(JSON.stringify({complete:true,parsedBash:true,thinkingAbsent:true,literalAndExecutionDistinct:true,humanFallbackRetained:true}));
 //endregion
