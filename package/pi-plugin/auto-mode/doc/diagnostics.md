@@ -18,7 +18,12 @@ another reaches an HTTP transport exception before any final answer is admitted.
 
 ## Storage ownership
 
-The shared logger owns the file sink under the nearest `node_modules/.monochromatic` directory.
+The shared logger owns the file sink and destination selection.
+Auto-mode's `mise.toml` sets `MONOCHROMATIC_LOG_DIRECTORY` to
+`${HOME}/temp/agent/pi-auto-mode-diagnostics` for package tasks.
+This preserves diagnostic records outside package source and release artifacts.
+Other consumers can select their own directory;
+an empty or unset setting preserves nearest-ancestor `node_modules/.monochromatic` discovery.
 Auto-mode does not own a parallel logging backend.
 The initial package directory contains 12,728 diagnostic files totaling 7,089,712,671 apparent bytes.
 The largest sampled files are historical logs from 2026-10-14.
@@ -86,3 +91,9 @@ The transport tests include hostile credential-bearing failures.
 Snapshot diagnostics can be inspected through their batched count records.
 The footprint inventory and sampled log-shape report are retained privately under
 `${HOME}/temp/agent/pi-mimo-lint-approval-20261017`.
+
+The shared logger's real-filesystem directory test writes through an explicit sink and the default logger.
+Independent child processes prove that an unset destination writes to disposable ancestor `node_modules`,
+while a configured destination receives its record without appending that record to the ancestor directory.
+This is a destination change,
+not automatic retention or a reduction in diagnostic content.

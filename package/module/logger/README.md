@@ -142,8 +142,10 @@ That startup buffer holds at most `STARTUP_BUFFER_CAP` records (10000,
   and writes `debug` to `process.stderr` when `process.stderr.write` is available
 - **file**:
    Node.
-  js only;
-   walks up from `process.cwd()` to the nearest
+  js only.
+  `createFileSink({ directory })` selects an explicit destination;
+  otherwise `MONOCHROMATIC_LOG_DIRECTORY` selects it for default loggers too.
+  An empty or unset destination walks up from `process.cwd()` to the nearest
   ancestor `node_modules/`,
    then appends JSONL records to
   `<that dir>/node_modules/.monochromatic/{timestamp}.log.jsonl` via
@@ -152,7 +154,8 @@ That startup buffer holds at most `STARTUP_BUFFER_CAP` records (10000,
   a large record finishes every filesystem write before the next record starts.
   Each returned write completion includes that wait,
   so `logger.flush()` also covers queued records.
-   When no ancestor `node_modules/` exists,
+   Without an explicit or environment destination,
+   when no ancestor `node_modules/` exists,
    the sink
   is marked unavailable rather than creating one at cwd;
    this prevents

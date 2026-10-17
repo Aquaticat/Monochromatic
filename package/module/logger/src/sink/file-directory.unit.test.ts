@@ -33,7 +33,7 @@ function hasMessage({ values, message }: Readonly<{ values: readonly unknown[]; 
   return values.some(value => typeof value === 'object' && value !== null && 'message' in value && value.message === message);
 }
 
-await describe({ name: createFileSink, children: [
+await describe({ name: createFileSink.name, children: [
   it({ name: 'writes and verifies an explicit destination with real ordered records', fn: async function explicitDirectory() {
     await using fixture = await workspace();
     const directory = join(fixture.path, 'explicit');
