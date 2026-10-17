@@ -773,3 +773,45 @@ const { join } = await import('node:path')
 const source = join(process.env.GITHUB_WORKSPACE, 'source')
 execFileSync('mise', ['exec', '--', 'node', join(source, 'package/git-policy/cli/dist/final/node/index.mjs'), 'cli-git', 'trust', '--yes'], { cwd: source, stdio: 'inherit' })
 '''
+
+[tasks."trial:depot:ci:source-identity"]
+description = "Retain exact source tree and configured input identities before and after a coherent case"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const {execFileSync}=await import('node:child_process');
+const {readFileSync,writeFileSync,existsSync,mkdirSync}=await import('node:fs');
+const {createHash}=await import('node:crypto');
+const {homedir}=await import('node:os');
+const {join}=await import('node:path');
+const {strict:assert}=await import('node:assert');
+const workspace=process.env.GITHUB_WORKSPACE;
+assert(workspace,'GITHUB_WORKSPACE required');
+const caseId=process.env.DEPOT_CI_CASE??'toml';
+const phase=process.env.DEPOT_CI_IDENTITY_PHASE;
+assert(['before','after'].includes(phase),'Identity phase must be before or after');
+const source=join(workspace,'source');
+const manifestBytes=readFileSync(join(workspace,`harness/.depot/manifests/${caseId}.json`));
+const manifest=JSON.parse(manifestBytes);
+const git=args=>execFileSync('git',args,{cwd:source,encoding:'utf8',maxBuffer:16*1024*1024}).trim();
+const sha256=value=>createHash('sha256').update(value).digest('hex');
+const packages=new Set([...manifest.selectedPackages,...manifest.externalChecks.flatMap(check=>check.artifactPrerequisitePackage?[check.artifactPrerequisitePackage]:[])]);
+const paths=new Set(['mise.lock','mise.toml','pnpm-lock.yaml','pnpm-workspace.yaml','package.json']);
+const trackedFiles=new Set(git(['ls-files']).split('\n'));
+for(const pkg of packages)for(const name of ['mise.toml','package.json','Cargo.toml','Cargo.lock','tsconfig.json','.cargo/config.toml'])if(trackedFiles.has(`${pkg}/${name}`))paths.add(`${pkg}/${name}`);
+const head=git(['rev-parse','HEAD']);
+assert.equal(head,manifest.sourceRevision);
+const trackedStatus=git(['status','--porcelain','--untracked-files=no']);
+assert.equal(trackedStatus,'','Coherent replay changed tracked source');
+const inputs=Object.fromEntries([...paths].sort().map(path=>{
+ const bytes=readFileSync(join(source,path));
+ assert.deepEqual(bytes,execFileSync('git',['show',`${head}:${path}`],{cwd:source,maxBuffer:16*1024*1024}),`Configured source input differs: ${path}`);
+ return [path,sha256(bytes)];
+}));
+const identity={caseId,sourceRevision:head,sourceTree:git(['rev-parse','HEAD^{tree}']),trackedStatus,inputs,manifestSha256:sha256(manifestBytes)};
+const directory=join(homedir(),'temp/agent/depot-complete-ci');
+mkdirSync(directory,{recursive:true,mode:0o700});
+if(phase==='after')assert.deepEqual(identity,JSON.parse(readFileSync(join(directory,`${caseId}-source-before.json`),'utf8')).identity,'Before and after immutable source records differ');
+writeFileSync(join(directory,`${caseId}-source-${phase}.json`),JSON.stringify({phase,collectedAt:new Date().toISOString(),identity},null,2)+'\n');
+console.log(JSON.stringify({event:'immutable-source-verified',phase,caseId,sourceRevision:head,sourceTree:identity.sourceTree,configuredInputs:paths.size,manifestSha256:identity.manifestSha256}));
+'''
