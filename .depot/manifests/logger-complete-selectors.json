@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
-  "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
-  "completeGraph": false,
+  "manifestSha256": "c7adf82827d17abb798e0af917e6237fe876160411ba72ce3364ebbc7c2c347e",
+  "completeGraph": true,
   "scope": "Complete disjoint remainder selection after prior static/unit closure; source commands and package scope unchanged; Git host uses audited worker-userland supplier",
   "priorWaveCheckIds": [
     "package.agent-harness-shared.current-time-context.lint.oxlint",
@@ -1606,5 +1606,8 @@
       "providerSize": "2x8",
       "executionBudgetMs": 1440000
     }
-  ]
+  ],
+  "previousRegistrationManifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+  "registrationStatus": "static-frozen-execution-pending",
+  "actualFinalProviderAcceptance": false
 }

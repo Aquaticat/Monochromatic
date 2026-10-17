@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "caseId": "logger",
   "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
-  "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+  "manifestSha256": "c7adf82827d17abb798e0af917e6237fe876160411ba72ce3364ebbc7c2c347e",
   "partitionKind": "file-and-configured-project",
   "fullCartesianUnionVerified": true,
   "groups": [
@@ -271,5 +271,9 @@
       "file": "package/module/dom/src/set/cssFromParam.e2e.test.ts",
       "project": "firefox"
     }
-  ]
+  ],
+  "previousRegistrationManifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+  "completeGraph": true,
+  "registrationStatus": "static-frozen-execution-pending",
+  "actualFinalProviderAcceptance": false
 }

@@ -3,126 +3,341 @@
   "caseId": "logger",
   "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
   "manifestPath": ".depot/manifests/logger.json",
-  "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+  "manifestSha256": "c7adf82827d17abb798e0af917e6237fe876160411ba72ce3364ebbc7c2c347e",
   "packageChecks": 719,
   "externalChecks": 19,
   "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
-  "completeGraph": false,
-  "status": "Development adapters retained; pending terminal reconciliation, measured shard bounds and root integration for GitHub/VM routes before coherent dispatch",
+  "completeGraph": true,
+  "status": "Complete static route registration; actual common-cohort execution and acceptance remain pending",
   "externalRoutes": [
     {
       "checkId": "special.package.cli.vmsync.src.lifecycle.expensive.unit.test.ts",
+      "routeId": "logger.vm",
       "provider": "depot",
-      "owner": "root-vm-agent",
-      "workflow": ".depot/workflows/depot-complete-vm.yml",
-      "integration": "pending-root-orchestration"
+      "workflow": ".depot/workflows/depot-complete-vm-original.yml",
+      "job": "vm-original",
+      "jobs": [
+        "vm-original"
+      ],
+      "integration": "static-registered-awaits-common-execution",
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "special.package.pi-plugin.bash-poke.src.tui.expensive.unit.test.ts",
+      "routeId": "logger.combined",
       "provider": "depot",
-      "job": "logger_pi"
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
+      "job": "logger_pi",
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "integration": "static-registered-awaits-common-execution",
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "package.cli.wg-quicker.test.integration.bypass",
+      "routeId": "logger.combined",
       "provider": "depot",
-      "job": "logger_wg"
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
+      "job": "logger_wg",
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "integration": "static-registered-awaits-common-execution",
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "package.cli.wg-quicker.test.integration.route",
+      "routeId": "logger.combined",
       "provider": "depot",
-      "job": "logger_wg"
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
+      "job": "logger_wg",
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "integration": "static-registered-awaits-common-execution",
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "package.desktop-app.electron-counter.test.wayland",
+      "routeId": "logger.combined",
       "provider": "depot",
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
       "job": "logger_external",
-      "matrixGroup": "electron"
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "matrixGroup": "electron",
+      "integration": "static-registered-awaits-common-execution",
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "package.desktop-app.file-manager-electron.test.wayland",
+      "routeId": "logger.combined",
       "provider": "depot",
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
       "job": "logger_external",
-      "matrixGroup": "electron"
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "matrixGroup": "electron",
+      "integration": "static-registered-awaits-common-execution",
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "package.pi-plugin.agent-settled-notification.verify.pi-runtime",
+      "routeId": "logger.combined",
       "provider": "depot",
-      "job": "logger_pi"
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
+      "job": "logger_pi",
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "integration": "static-registered-awaits-common-execution",
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "package.pi-plugin.ask-user-question.verify.terminal",
+      "routeId": "logger.combined",
       "provider": "depot",
-      "job": "logger_pi"
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
+      "job": "logger_pi",
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "integration": "static-registered-awaits-common-execution",
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "package.pi-plugin.auto-mode.test.native.configured-extensions",
+      "routeId": "logger.combined",
       "provider": "depot",
-      "job": "logger_pi"
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
+      "job": "logger_pi",
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "integration": "static-registered-awaits-common-execution",
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "root.browser",
+      "routeId": "logger.combined",
       "provider": "depot",
-      "job": "logger_external",
-      "matrixGroup": "browser"
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
+      "job": "logger_browser",
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "matrixGroup": "browser",
+      "integration": "static-registered-awaits-common-execution",
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "root.e2e",
+      "routeId": "logger.combined",
       "provider": "depot",
-      "job": "logger_external",
-      "matrixGroup": "e2e"
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
+      "job": "logger_browser",
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "matrixGroup": "e2e",
+      "integration": "static-registered-awaits-common-execution",
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "root.forbidden-strings",
+      "routeId": "logger.scanner",
       "provider": "github-actions",
-      "owner": "root",
       "workflow": ".github/workflows/forbidden-strings.yml",
-      "integration": "pending-root-orchestration"
+      "jobs": [
+        "scan"
+      ],
+      "integration": "static-registered-awaits-common-execution",
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "root.generated-consistency",
+      "routeId": "logger.combined",
       "provider": "depot",
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
       "job": "logger_external",
-      "matrixGroup": "generated"
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "matrixGroup": "generated",
+      "integration": "static-registered-awaits-common-execution",
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "root.scorecard",
+      "routeId": "logger.scorecard",
       "provider": "github-actions",
-      "owner": "root",
       "workflow": ".github/workflows/scorecard.yml",
-      "integration": "pending-root-orchestration",
-      "semantics": "Current policy revision and actual analysis-attempt rate gate"
+      "jobs": [
+        "rate-limit",
+        "analysis"
+      ],
+      "integration": "static-registered-awaits-common-execution",
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "root.config-oxlint",
+      "routeId": "logger.combined",
       "provider": "depot",
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
       "job": "logger_external",
-      "matrixGroup": "root-lint"
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "matrixGroup": "root-lint",
+      "integration": "static-registered-awaits-common-execution",
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "host.fs-id",
+      "routeId": "logger.hosts",
       "provider": "github-actions",
-      "owner": "root",
       "workflow": ".github/workflows/fs-id.yml",
-      "integration": "pending-root-orchestration"
+      "job": "preferred-identity",
+      "jobs": [
+        "preferred-identity"
+      ],
+      "runnerLabels": [
+        "ubuntu-latest",
+        "macos-latest",
+        "windows-latest"
+      ],
+      "integration": "static-registered-awaits-common-execution",
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "host.semantic-bridge",
+      "routeId": "logger.hosts",
       "provider": "github-actions",
-      "owner": "root",
       "workflow": ".github/workflows/fs-id.yml",
-      "integration": "pending-root-orchestration"
+      "job": "preferred-identity",
+      "jobs": [
+        "preferred-identity"
+      ],
+      "runnerLabels": [
+        "ubuntu-latest",
+        "macos-15",
+        "windows-latest"
+      ],
+      "integration": "static-registered-awaits-common-execution",
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "artifact.music-desktop-e2e",
+      "routeId": "logger.combined",
       "provider": "depot",
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
       "job": "logger_external",
-      "matrixGroup": "desktop"
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "matrixGroup": "desktop",
+      "integration": "static-registered-awaits-common-execution",
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "sidecar.generated-type-consistency",
+      "routeId": "logger.combined",
       "provider": "depot",
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
       "job": "logger_external",
-      "matrixGroup": "generated"
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "matrixGroup": "generated",
+      "integration": "static-registered-awaits-common-execution",
+      "finalProviderAcceptance": false
     }
   ],
   "previousDevelopmentManifestSha256": "f4cbd47f210f5b031d76c5fc1c28fa704b349621f91eefa3f4f3ad575acfedc3",
@@ -152,5 +367,8 @@
       "source": "package/webapp-productivity/wc/src/page.browser.test.ts",
       "artifact": "package/webapp-productivity/wc/dist/final/index.html"
     }
-  ]
+  ],
+  "previousRegistrationManifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+  "registrationStatus": "static-frozen-execution-pending",
+  "actualFinalProviderAcceptance": false
 }

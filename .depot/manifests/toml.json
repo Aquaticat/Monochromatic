@@ -512,6 +512,29 @@
       ],
       "task": "//:sync:files",
       "reason": "Root file-enforcer.config.ts imports selected file-enforcer. Execute only in a separate disposable fixture and compare generated tracked outputs."
+    },
+    {
+      "id": "root.scorecard",
+      "family": "test",
+      "scope": "repository",
+      "reason": "Register the chosen current repaired Scorecard policy for the push case; the immutable source workflow also declares push on main. Analysis uses the live default branch and sourceRevision is provenance only.",
+      "executionPolicy": {
+        "kind": "current-repaired-repository-policy",
+        "definitionRevision": "c51a5c94e8dd92db9dbcec0a12ff3d285daa8217",
+        "workflow": ".github/workflows/scorecard.yml",
+        "analysisSource": "live-default-branch",
+        "sourceRevisionRole": "provenance-only",
+        "publishResults": false,
+        "admissionGateRequired": true,
+        "limits": {
+          "perMinute": 2,
+          "perHour": 4,
+          "perDay": 8,
+          "pages": 32,
+          "reserve": 100
+        },
+        "dispatchesSequential": true
+      }
     }
   ],
   "excludedChecks": [
@@ -568,11 +591,8 @@
       "reason": "Release operations and account access are excluded; selected vm-builder run/import/push tasks provision or publish rather than validate."
     }
   ],
-  "completeGraph": false,
-  "remainingReview": [
-    "Forbidden-strings adapter",
-    "Generated-output comparison adapter"
-  ],
+  "completeGraph": true,
+  "remainingReview": [],
   "mutationBounds": {
     "containers": 2,
     "memoryPerContainer": "2g",
@@ -597,5 +617,147 @@
     "sourceImportAudit": "toml-import-reach.txt",
     "closureFile": "toml-closure.json",
     "closureSha256": "66189ad89d606b2779b72504a64e34f20180e239300e306090e3f2fbd5ab06e7"
+  },
+  "registration": {
+    "state": "frozen-static-registration",
+    "meaning": "Every selected primary and external gate has an explicit immutable-harness route. This is not an execution result or passing claim.",
+    "routeIds": [
+      "toml.bounded",
+      "toml.scanner",
+      "toml.scorecard"
+    ],
+    "primaryChecks": {
+      "package.module.toml-edit.build": {
+        "routeId": "toml.bounded",
+        "role": "selected"
+      },
+      "package.dev-script.file-enforcer.build": {
+        "routeId": "toml.bounded",
+        "role": "selected"
+      },
+      "package.dev-script.vm-builder.build": {
+        "routeId": "toml.bounded",
+        "role": "selected"
+      },
+      "package.dev-script.file-enforcer.lint.oxlint": {
+        "routeId": "toml.bounded",
+        "role": "selected"
+      },
+      "package.dev-script.file-enforcer.lint.types": {
+        "routeId": "toml.bounded",
+        "role": "selected"
+      },
+      "package.dev-script.file-enforcer.test.unit": {
+        "routeId": "toml.bounded",
+        "role": "selected"
+      },
+      "package.dev-script.vm-builder.lint.oxlint": {
+        "routeId": "toml.bounded",
+        "role": "selected"
+      },
+      "package.dev-script.vm-builder.lint.types": {
+        "routeId": "toml.bounded",
+        "role": "selected"
+      },
+      "package.module.toml-edit.lint.oxlint": {
+        "routeId": "toml.bounded",
+        "role": "selected"
+      },
+      "package.module.toml-edit.lint.types": {
+        "routeId": "toml.bounded",
+        "role": "selected"
+      },
+      "package.module.toml-edit.test.unit": {
+        "routeId": "toml.bounded",
+        "role": "selected"
+      },
+      "package.module.toml-edit.fuzz.lint.oxlint": {
+        "routeId": "toml.bounded",
+        "role": "selected"
+      },
+      "package.module.toml-edit.fuzz.lint.types": {
+        "routeId": "toml.bounded",
+        "role": "selected"
+      },
+      "package.module.toml-edit.fuzz.test.unit": {
+        "routeId": "toml.bounded",
+        "role": "selected"
+      },
+      "package.test-fixture.file-enforcer-perf.lint.types": {
+        "routeId": "toml.bounded",
+        "role": "selected"
+      },
+      "package.module.toml-edit.fuzz.fuzz": {
+        "routeId": "toml.bounded",
+        "role": "selected"
+      },
+      "package.dev-script.file-enforcer.fuzz": {
+        "routeId": "toml.bounded",
+        "role": "selected"
+      },
+      "package.module.toml-edit.fuzz.fuzz.coverage": {
+        "routeId": "toml.bounded",
+        "role": "selected"
+      },
+      "package.module.toml-edit.test.conformance": {
+        "routeId": "toml.bounded",
+        "role": "selected"
+      },
+      "package.dev-script.file-enforcer.test.container": {
+        "routeId": "toml.bounded",
+        "role": "selected"
+      },
+      "package.module.toml-edit.test.mutation": {
+        "routeId": "toml.bounded",
+        "role": "selected"
+      },
+      "package.dev-script.file-enforcer.test.mutation": {
+        "routeId": "toml.bounded",
+        "role": "selected"
+      },
+      "package.oxlint-plugin.prefer-readonly-parameter-type.build": {
+        "routeId": "toml.bounded",
+        "role": "selected"
+      },
+      "package.oxlint-plugin.prefer-readonly-parameter-type.test.unit": {
+        "routeId": "toml.bounded",
+        "role": "selected"
+      }
+    },
+    "externalChecks": {
+      "root.forbidden-strings": {
+        "routeId": "toml.scanner"
+      },
+      "root.scorecard": {
+        "routeId": "toml.scorecard",
+        "acceptance": "Retain admission decision, actual live analysis target and allocation; denied analysis is not an executed analysis"
+      },
+      "root.generated-consistency": {
+        "routeId": "toml.bounded",
+        "job": "generated",
+        "consumer": "original-source-generator-in-detached-fixture"
+      }
+    },
+    "originalReviewDispositions": [
+      {
+        "topic": "Forbidden-strings adapter",
+        "disposition": "Static adapter routes are registered; actual final results and artifact-consumer acceptance remain pending",
+        "routeIds": [
+          "toml.bounded",
+          "toml.scanner",
+          "toml.scorecard"
+        ]
+      },
+      {
+        "topic": "Generated-output comparison adapter",
+        "disposition": "Static adapter routes are registered; actual final results and artifact-consumer acceptance remain pending",
+        "routeIds": [
+          "toml.bounded",
+          "toml.scanner",
+          "toml.scorecard"
+        ]
+      }
+    ],
+    "executionAcceptancePending": true
   }
 }

@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
-  "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
-  "completeGraph": false,
-  "candidateOnly": true,
+  "manifestSha256": "c7adf82827d17abb798e0af917e6237fe876160411ba72ce3364ebbc7c2c347e",
+  "completeGraph": true,
+  "candidateOnly": false,
   "combinedExpandedJobs": 97,
   "packageSelectors": 57,
   "packageInventory": 719,
@@ -21,51 +21,82 @@
     "reason": "Combined workflow already selects all32 browser/DOM partitions"
   },
   "sourceIdentityHelper": {
-    "copiedFromHarness": "bb475f636f51a00864710454c6499fcd3db6b8a4",
-    "bodySha256": "536e5258d8abb0262f75f7ef89c5b334e81e66c042a778418f1894197a058628"
+    "definitionPath": "package/dev-script/task-util/mise.toml",
+    "task": "trial:depot:ci:source-identity",
+    "verifiedDefinitionAtRevision": "1042e3520983d0557935e0ac5baff5444cc677ce",
+    "bodySha256": "2f65306fd9359d806113c181ac7132ff20777368b684251c3275aeb11630c7e7"
   },
-  "pending": [
-    "Freeze remains parent-owned and held",
-    "Integrate verified desktop runtime helper and canonical shared byte guards",
-    "Verify frozen-source generator consumer pilot",
-    "Parent aligns current GHA/VM route guards before registration"
-  ],
+  "pending": [],
   "routes": [
     {
       "checkId": "special.package.cli.vmsync.src.lifecycle.expensive.unit.test.ts",
       "route": "logger.vm",
       "workflow": ".depot/workflows/depot-complete-vm-original.yml",
       "job": "vm-original",
-      "status": "parent-cohort-integration-pending",
+      "status": "static-registered-awaits-common-execution",
       "owner": "/root/vm_recovery",
-      "originalTask": "//package/cli/vmsync:test:e2e"
+      "originalTask": "//package/cli/vmsync:test:e2e",
+      "jobs": [
+        "vm-original"
+      ],
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "special.package.pi-plugin.bash-poke.src.tui.expensive.unit.test.ts",
       "route": "logger.combined",
       "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
       "job": "logger_pi",
-      "status": "candidate-awaits-common-freeze",
+      "status": "static-registered-awaits-common-execution",
       "owner": "/root/logger_pipeline",
-      "originalTask": "//package/pi-plugin/bash-poke:test:unit"
+      "originalTask": "//package/pi-plugin/bash-poke:test:unit",
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "package.cli.wg-quicker.test.integration.bypass",
       "route": "logger.combined",
       "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
       "job": "logger_wg",
-      "status": "candidate-awaits-common-freeze",
+      "status": "static-registered-awaits-common-execution",
       "owner": "/root/logger_pipeline",
-      "originalTask": "//package/cli/wg-quicker:test:integration:bypass"
+      "originalTask": "//package/cli/wg-quicker:test:integration:bypass",
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "package.cli.wg-quicker.test.integration.route",
       "route": "logger.combined",
       "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
       "job": "logger_wg",
-      "status": "candidate-awaits-common-freeze",
+      "status": "static-registered-awaits-common-execution",
       "owner": "/root/logger_pipeline",
-      "originalTask": "//package/cli/wg-quicker:test:integration:route"
+      "originalTask": "//package/cli/wg-quicker:test:integration:route",
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "package.desktop-app.electron-counter.test.wayland",
@@ -73,9 +104,19 @@
       "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
       "job": "logger_external",
       "partition": "electron",
-      "status": "candidate-awaits-common-freeze",
+      "status": "static-registered-awaits-common-execution",
       "owner": "/root/logger_pipeline",
-      "originalTask": "//package/desktop-app/electron-counter:test:wayland"
+      "originalTask": "//package/desktop-app/electron-counter:test:wayland",
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "package.desktop-app.file-manager-electron.test.wayland",
@@ -83,36 +124,76 @@
       "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
       "job": "logger_external",
       "partition": "electron",
-      "status": "candidate-awaits-common-freeze",
+      "status": "static-registered-awaits-common-execution",
       "owner": "/root/logger_pipeline",
-      "originalTask": "//package/desktop-app/file-manager-electron:test:wayland"
+      "originalTask": "//package/desktop-app/file-manager-electron:test:wayland",
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "package.pi-plugin.agent-settled-notification.verify.pi-runtime",
       "route": "logger.combined",
       "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
       "job": "logger_pi",
-      "status": "candidate-awaits-common-freeze",
+      "status": "static-registered-awaits-common-execution",
       "owner": "/root/logger_pipeline",
-      "originalTask": "//package/pi-plugin/agent-settled-notification:verify:pi-runtime"
+      "originalTask": "//package/pi-plugin/agent-settled-notification:verify:pi-runtime",
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "package.pi-plugin.ask-user-question.verify.terminal",
       "route": "logger.combined",
       "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
       "job": "logger_pi",
-      "status": "candidate-awaits-common-freeze",
+      "status": "static-registered-awaits-common-execution",
       "owner": "/root/logger_pipeline",
-      "originalTask": "//package/pi-plugin/ask-user-question:verify:terminal"
+      "originalTask": "//package/pi-plugin/ask-user-question:verify:terminal",
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "package.pi-plugin.auto-mode.test.native.configured-extensions",
       "route": "logger.combined",
       "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
       "job": "logger_pi",
-      "status": "candidate-awaits-common-freeze",
+      "status": "static-registered-awaits-common-execution",
       "owner": "/root/logger_pipeline",
-      "originalTask": "//package/pi-plugin/auto-mode:test:native:configured-extensions"
+      "originalTask": "//package/pi-plugin/auto-mode:test:native:configured-extensions",
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "root.browser",
@@ -120,9 +201,19 @@
       "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
       "job": "logger_browser",
       "partition": "browser",
-      "status": "candidate-awaits-common-freeze",
+      "status": "static-registered-awaits-common-execution",
       "owner": "/root/logger_pipeline",
-      "originalTask": "//:test:browser"
+      "originalTask": "//:test:browser",
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "root.e2e",
@@ -130,17 +221,30 @@
       "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
       "job": "logger_browser",
       "partition": "e2e",
-      "status": "candidate-awaits-common-freeze",
+      "status": "static-registered-awaits-common-execution",
       "owner": "/root/logger_pipeline",
-      "originalTask": "//:test:e2e"
+      "originalTask": "//:test:e2e",
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "root.forbidden-strings",
       "route": "logger.scanner",
       "workflow": ".github/workflows/forbidden-strings.yml",
-      "job": "parent-owned",
-      "status": "parent-cohort-integration-pending",
-      "owner": "/root"
+      "status": "static-registered-awaits-common-execution",
+      "owner": "/root",
+      "jobs": [
+        "scan"
+      ],
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "root.generated-consistency",
@@ -148,17 +252,31 @@
       "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
       "job": "logger_external",
       "partition": "generated",
-      "status": "frozen-source-isolation-pilot-pending",
+      "status": "static-registered-awaits-common-execution",
       "owner": "/root/logger_pipeline",
-      "originalTask": "//:sync:files"
+      "originalTask": "//:sync:files",
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "root.scorecard",
       "route": "logger.scorecard",
       "workflow": ".github/workflows/scorecard.yml",
-      "job": "parent-owned",
-      "status": "parent-cohort-integration-pending",
-      "owner": "/root"
+      "status": "static-registered-awaits-common-execution",
+      "owner": "/root",
+      "jobs": [
+        "rate-limit",
+        "analysis"
+      ],
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "root.config-oxlint",
@@ -166,29 +284,57 @@
       "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
       "job": "logger_external",
       "partition": "root-lint",
-      "status": "candidate-awaits-common-freeze",
+      "status": "static-registered-awaits-common-execution",
       "owner": "/root/logger_pipeline",
-      "originalTask": "//:lint:oxlint"
+      "originalTask": "//:lint:oxlint",
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "host.fs-id",
       "route": "logger.hosts",
       "workflow": ".github/workflows/fs-id.yml",
-      "job": "parent-owned",
-      "status": "parent-cohort-integration-pending",
-      "owner": "/root"
+      "job": "preferred-identity",
+      "status": "static-registered-awaits-common-execution",
+      "owner": "/root",
+      "jobs": [
+        "preferred-identity"
+      ],
+      "runnerLabels": [
+        "ubuntu-latest",
+        "macos-latest",
+        "windows-latest"
+      ],
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "host.semantic-bridge",
       "route": "logger.hosts",
       "workflow": ".github/workflows/fs-id.yml",
-      "job": "parent-owned",
-      "status": "parent-cohort-integration-pending",
+      "job": "preferred-identity",
+      "status": "static-registered-awaits-common-execution",
       "owner": "/root",
       "originalTasks": [
         "test:semantic-bridge-host",
         "test:external-consumer-host"
-      ]
+      ],
+      "jobs": [
+        "preferred-identity"
+      ],
+      "runnerLabels": [
+        "ubuntu-latest",
+        "macos-15",
+        "windows-latest"
+      ],
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "artifact.music-desktop-e2e",
@@ -196,9 +342,19 @@
       "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
       "job": "logger_external",
       "partition": "desktop",
-      "status": "parent-verified-desktop-helper-integration-pending",
+      "status": "static-registered-awaits-common-execution",
       "owner": "/root",
-      "originalTask": "//package/music-player/desktop-app:test:e2e"
+      "originalTask": "//package/music-player/desktop-app:test:e2e",
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "finalProviderAcceptance": false
     },
     {
       "checkId": "sidecar.generated-type-consistency",
@@ -206,12 +362,29 @@
       "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
       "job": "logger_external",
       "partition": "generated",
-      "status": "frozen-source-isolation-pilot-pending",
+      "status": "static-registered-awaits-common-execution",
       "owner": "/root/logger_pipeline",
       "originalTasks": [
         "//package/module/deepmerge-ts.fuzz:generate:type-cases",
         "//package/module/deepmerge-ts.fuzz:generate:declared-type-cases"
-      ]
+      ],
+      "jobs": [
+        "logger_static",
+        "logger_unit",
+        "logger_remainder",
+        "logger_pi",
+        "logger_wg",
+        "logger_external",
+        "logger_browser"
+      ],
+      "finalProviderAcceptance": false
     }
-  ]
+  ],
+  "previousRegistrationManifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+  "registrationStatus": "static-frozen-execution-pending",
+  "actualFinalProviderAcceptance": false,
+  "previousSourceIdentityHelper": {
+    "copiedFromHarness": "bb475f636f51a00864710454c6499fcd3db6b8a4",
+    "bodySha256": "536e5258d8abb0262f75f7ef89c5b334e81e66c042a778418f1894197a058628"
+  }
 }
