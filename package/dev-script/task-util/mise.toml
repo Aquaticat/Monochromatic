@@ -772,11 +772,19 @@ assert.match(cohort.id ?? '', /^[A-Za-z0-9._-]{1,128}$/)
 assert.match(cohort.manifestSha256 ?? '', /^[a-f0-9]{64}$/)
 assert(Number.isFinite(Date.parse(cohort.requestedAt ?? '')))
 const git = args => execFileSync('git', args, { cwd: source, encoding: 'utf8' }).trim()
+const indexEntries = execFileSync('git', ['ls-files', '-v', '-z'], { cwd: source, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }).split('\0').filter(Boolean)
+assert(indexEntries.every(entry => entry[0] !== 'S' && !/[a-z]/.test(entry[0])), 'Immutable source index must not hide tracked inputs with assume-unchanged or skip-worktree flags')
 const tracked = execFileSync('git', ['ls-files', '-z'], { cwd: source, encoding: 'utf8' }).split('\0').filter(Boolean)
-const globalInputs = ['mise.toml', 'mise.no-env.toml', 'mise.lock', 'pnpm-workspace.yaml', 'pnpm-lock.yaml', 'package.json', 'file-enforcer.config.ts', 'Cargo.toml', 'Cargo.lock']
-const paths = tracked.filter(path => globalInputs.includes(path) || manifest.selectedPackages.some(prefix => path.startsWith(prefix + '/') && ['package.json', 'mise.toml', 'Cargo.toml', 'Cargo.lock', 'tsconfig.json', 'oxlint.config.ts', 'oxlint.config.json', 'oxlint.config.jsonc', 'coverage-baseline.json'].includes(path.split('/').at(-1)))).toSorted()
+const packageRoots = [...new Set([...manifest.selectedPackages, ...manifest.externalChecks.flatMap(check => check.artifactPrerequisitePackage ? [check.artifactPrerequisitePackage] : [])])]
+const metadataNames = new Set(['mise.toml', 'mise.no-env.toml', 'mise.lock', 'package.json', 'Cargo.toml', 'Cargo.lock', 'config.toml', 'coverage-baseline.json', 'Containerfile.alpine'])
+const paths = tracked.filter(path => {
+  const name = path.slice(path.lastIndexOf('/') + 1)
+  const rootConfiguration = !path.includes('/') && (['.toml', '.json', '.jsonc', '.yaml', '.yml'].some(extension => name.endsWith(extension)) || name.includes('.config.'))
+  const packageConfiguration = packageRoots.some(prefix => path.startsWith(prefix + '/')) && (metadataNames.has(name) || name.startsWith('tsconfig.') || name.includes('.config.') || path.includes('/.cargo/'))
+  return rootConfiguration || path.startsWith('.cargo/') || packageConfiguration
+}).toSorted()
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex')
-const identity = { head: git(['rev-parse', 'HEAD']), sourceTree: git(['rev-parse', 'HEAD^{tree}']), trackedStatus: git(['status', '--porcelain', '--untracked-files=no']), inputs: Object.fromEntries(paths.map(path => [path, sha256(readFileSync(join(source, path)))])) }
+const identity = { head: git(['rev-parse', 'HEAD']), sourceTree: git(['rev-parse', 'HEAD^{tree}']), trackedStatus: git(['status', '--porcelain', '--untracked-files=no']), inputs: Object.fromEntries(paths.map(path => { const bytes = readFileSync(join(source, path)); assert.deepEqual(bytes, execFileSync('git', ['show', 'HEAD:' + path], { cwd: source, maxBuffer: 16 * 1024 * 1024 }), 'Configured source input differs: ' + path); return [path, sha256(bytes)] })) }
 assert.equal(identity.head, manifest.sourceRevision)
 assert.equal(identity.trackedStatus, '', 'Historical source changed')
 const harnessRevision = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
