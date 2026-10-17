@@ -24,7 +24,7 @@ on:
         type: choice
         options: [toml, logger, native, desktop]
       source_head:
-        description: Immutable source revision to scan
+        description: Immutable case revision for provenance; analysis uses the live default branch
         required: true
         type: string
       source_base:
