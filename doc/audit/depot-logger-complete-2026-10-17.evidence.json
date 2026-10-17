@@ -1,0 +1,14 @@
+{
+  "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+  "manifestSha256": "f4cbd47f210f5b031d76c5fc1c28fa704b349621f91eefa3f4f3ad575acfedc3",
+  "checks": 719,
+  "externalChecks": 19,
+  "acyclic": true,
+  "staticActive": 440,
+  "unitActive": 230,
+  "priorWaveUnion": 564,
+  "partitionSelected": 155,
+  "selectedUnion": 719,
+  "fullPackageOxlintArgumentsVerified": true,
+  "prerequisiteClosuresVerified": true
+}
