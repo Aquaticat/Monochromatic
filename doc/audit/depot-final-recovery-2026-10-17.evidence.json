@@ -38306,12 +38306,15 @@
     "verifiedIncidentClosures": {
       "path": "doc/audit/depot-coherent-incident-closures-2026-10-17.evidence.json",
       "closedIssues": [
+        1166,
+        1167,
         1168,
         1169,
         1170,
         1171
       ],
-      "loggerClosingComment": "https://github.com/Aquaticats/Monochromatic/issues/1168#issuecomment-6233525959"
+      "loggerClosingComment": "https://github.com/Aquaticats/Monochromatic/issues/1168#issuecomment-6233525959",
+      "openSourceCompatibilityIssue": 1172
     },
     "nativeDesktopExecution": {
       "path": "doc/audit/depot-coherent-native-desktop-2026-10-17.evidence.json",
@@ -38320,6 +38323,13 @@
       "desktopCargoFormat": "source-tool-grammar-failure",
       "nativeCargoFormat": "passed",
       "providerAllocationReconciled": false
+    },
+    "nativeMacRetry": {
+      "runId": "39028181199",
+      "previousJobId": 117383212664,
+      "phase": "retry-accepted",
+      "requestedAt": "2026-10-17T12:15:35.881Z",
+      "frozenHarnessUnchanged": true
     }
   }
 }

@@ -683,3 +683,14 @@ The Android source failures remain open in `#1002`;
 13 device assertions passed and two failed,
 with no skipped or missing assertions.
 Source/tool compatibility diagnostics from the remaining cohort routes are still being reconciled.
+
+## Executed Cargo formatter boundary on October 17
+
+Issues `#1166` and `#1167` are closed after actual common-bound formatter execution.
+The native selected Cargo file passed;
+the desktop selected file failed the documented legacy-parser grammar gap.
+Scoped source/configuration follow-up `#1172` remains open under `#562`.
+The [verified incident receipts](../audit/depot-coherent-incident-closures-2026-10-17.evidence.json)
+retain exact bodies and closing comments.
+The native macOS retry remains active after separate API-connect and artifact-service timeout boundaries.
+Those incidents and the remaining changed-Rust source-style failures still need issue reconciliation.

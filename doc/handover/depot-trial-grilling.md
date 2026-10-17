@@ -107,6 +107,30 @@ raw session logs,
 and authored-inventory sensitivity controls.
 Per-attempt provider allocation remains pending reconciliation.
 
+Formatter harness issues `#1166` and `#1167` are now closed with live command and unchanged-source evidence.
+Desktop grammar mismatch `#1172` remains open as a scoped follow-up to `#562`.
+All four scanner gates passed with paired common/source artifacts.
+Each Scorecard gate observed eight analyses already executed in the preceding day
+and conditionally skipped its analysis job;
+the exact timestamped notices and successful gate steps are retained privately for final reconciliation.
+Both Alpine architecture jobs succeeded.
+The original PowerShell file assertion failed on all three Windows variants,
+while their independent merged-stream probes captured the expected version.
+Their uncaptured-console probes still require independent provider-log validation.
+Native host Windows and desktop macOS retain paired provenance,
+but source Clippy and nextest failures still require assertion-level reconciliation.
+Native host macOS lost its after-provenance record to Node `UND_ERR_CONNECT_TIMEOUT` at `api.github.com:443`.
+Its artifact action separately exhausted five CreateArtifact request attempts.
+These are distinct transport incidents;
+a shared cause is not established.
+Only native macOS is being rerun in run `39028181199` with the unchanged frozen harness and inputs.
+The original failed attempt remains retained and receives no paired-provenance completion credit.
+The retry and its orchestration gap must remain in provider allocation and critical-path accounting.
+Next actions are to file the two transport incidents and remaining source-style findings,
+retain and reconcile all host consumer assertions,
+collect the pending logger/TOML terminals,
+and finish overlap-aware accounting.
+
 The four case manifests now have complete static registrations with `completeGraph: true`.
 Their 24 committed copies are byte-identical across six isolated harnesses.
 The registry binds 770 primary and 33 external checks to 20 routes.
