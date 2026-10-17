@@ -295,6 +295,30 @@ assert(Array.isArray(requested) && requested.length > 0 && new Set(requested).si
 assert(requested.every(id => groups[group].includes(id)), 'External recovery must select known check identities')
 const selected = requested.map(id => manifest.externalChecks.find(check => check.id === id))
 assert(selected.every(Boolean))
+const browserPartitionId = process.env.DEPOT_LOGGER_BROWSER_PARTITION
+let browserPartition
+let browserScope
+let browserPartitionManifestSha256
+if (browserPartitionId) {
+  const partitionBytes = readFileSync(join(harness, '.depot/manifests/logger-browser-partitions.json'))
+  const partitionManifest = JSON.parse(partitionBytes)
+  browserPartitionManifestSha256 = createHash('sha256').update(partitionBytes).digest('hex')
+  assert.equal(partitionManifest.manifestSha256, digest)
+  assert.equal(partitionManifest.sourceRevision, manifest.sourceRevision)
+  browserPartition = partitionManifest.partitions.find(partition => partition.id === browserPartitionId)
+  assert(browserPartition && browserPartition.group === group)
+  assert.deepEqual(requested, [browserPartition.checkId])
+  const specification = selected[0]
+  const full = partitionManifest.groups.find(item => item.group === group)
+  assert.equal(full.checkId, specification.id)
+  assert.equal(full.task, specification.task)
+  assert.deepEqual(full.files, specification.args)
+  assert.deepEqual(full.projects, specification.projects)
+  assert(full.files.includes(browserPartition.file) && full.projects.includes(browserPartition.project))
+  const configuration = readFileSync(join(source, full.configPath))
+  assert.equal(createHash('sha256').update(configuration).digest('hex'), full.configSha256)
+  browserScope = { ...browserPartition, fullFiles: full.files, fullProjects: full.projects, browserPartitionManifestSha256 }
+}
 const directory = join(homedir(), 'temp/agent/depot-complete-ci')
 mkdirSync(join(directory, 'check-logs'), { recursive: true, mode: 0o700 })
 const records = []
@@ -306,7 +330,7 @@ function run({ id, command = 'mise', args, cwd = source, env = process.env, limi
   try { result = spawnSync(command, args, { cwd, env, stdio: ['ignore', descriptor, descriptor], timeout: limit }) }
   finally { closeSync(descriptor) }
   const output = readFileSync(log)
-  const record = { checkId: id, command, args, cwd, startedAt, finishedAt: new Date().toISOString(), exitCode: result.status, signal: result.signal, error: result.error?.message, status: result.status === 0 ? 'passed' : 'failed', outputLog: log, outputSha256: createHash('sha256').update(output).digest('hex'), outputBytes: output.length }
+  const record = { checkId: id, command, args, cwd, startedAt, finishedAt: new Date().toISOString(), exitCode: result.status, signal: result.signal, error: result.error?.message, errorCode: result.error?.code, termination: result.error?.code === 'ETIMEDOUT' ? 'adapter-time-budget' : result.error ? 'spawn-error' : result.signal ? 'signal' : 'process-exit', executionBudgetMs: limit, status: result.status === 0 ? 'passed' : 'failed', ...(browserPartition && id === browserPartition.checkId ? { partitionId: browserPartition.id, partitionFile: browserPartition.file, partitionProject: browserPartition.project, coversWholeCheck: false, browserPartitionManifestSha256 } : {}), outputLog: log, outputSha256: createHash('sha256').update(output).digest('hex'), outputBytes: output.length }
   records.push(record)
   writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, group, selectedCheckIds: requested, providerJobUrl: process.env.DEPOT_JOB_URL, records }, null, 2))
   console.log('\n' + JSON.stringify(record))
@@ -358,11 +382,12 @@ if (group === 'generated') {
       records.push({ checkId: check.id, status: 'skipped', failedPrerequisites: failed, finishedAt: new Date().toISOString() })
       continue
     }
-    run({ id: check.id, args: ['run', check.task, ...((check.args ?? []).length ? ['--', ...check.args] : [])] })
+    const args = browserPartition ? [browserPartition.file] : check.args ?? []
+    run({ id: check.id, args: ['run', check.task, ...(args.length ? ['--', ...args] : [])], env: browserScope ? { ...process.env, DEPOT_LOGGER_BROWSER_SCOPE: JSON.stringify(browserScope) } : process.env })
   }
 }
 assert.equal(execFileSync('git', ['diff', '--name-only', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), '', 'External checks must preserve tracked source')
-writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, group, selectedCheckIds: requested, prerequisiteIds, providerJobUrl: process.env.DEPOT_JOB_URL, records }, null, 2))
+writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, group, selectedCheckIds: requested, browserPartition, browserPartitionManifestSha256, coversWholeCheck: !browserPartition, prerequisiteIds, providerJobUrl: process.env.DEPOT_JOB_URL, records }, null, 2))
 assert(records.every(record => record.status === 'passed'), 'Logger external checks failed or lack verified prerequisites; see retained records')
 '''
 
