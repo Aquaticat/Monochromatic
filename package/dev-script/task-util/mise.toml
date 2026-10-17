@@ -950,7 +950,7 @@ run = '''
 const { spawn, spawnSync, execFileSync } = await import('node:child_process')
 const { once } = await import('node:events')
 const { setTimeout: delay } = await import('node:timers/promises')
-const { readFileSync, writeFileSync, copyFileSync, chmodSync, constants, mkdirSync, readdirSync, existsSync, openSync, closeSync, readSync, statSync, lstatSync, realpathSync } = await import('node:fs')
+const { readFileSync, writeFileSync, copyFileSync, chmodSync, appendFileSync, constants, mkdirSync, readdirSync, existsSync, openSync, closeSync, readSync, statSync, lstatSync, realpathSync } = await import('node:fs')
 const { join, delimiter, isAbsolute } = await import('node:path')
 const { homedir } = await import('node:os')
 const { randomUUID, createHash } = await import('node:crypto')
@@ -989,11 +989,19 @@ const outputPath = prefix + '.log'
 const descriptor = openSync(outputPath, 'wx', 0o600)
 const telemetry = []
 const instrumentationErrors = []
+const podmanOperations = []
+const operationsPath = prefix + '-podman-operations.jsonl'
+writeFileSync(operationsPath, '', { flag: 'wx', mode: 0o600 })
 function podman({ args, budgetMs = 8000 }) {
   const startedAt = new Date().toISOString()
   const started = performance.now()
-  const result = spawnSync(originalPodman, args, { cwd: source, encoding: 'utf8', timeout: budgetMs, killSignal: 'SIGKILL', maxBuffer: 4 * 1024 * 1024 })
-  return { args, startedAt, finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, budgetMs, status: result.status, signal: result.signal, error: result.error?.message, stdout: result.stdout, stderr: result.stderr }
+  const result = spawnSync(originalPodman, args, { cwd: source, timeout: budgetMs, killSignal: 'SIGKILL', maxBuffer: 4 * 1024 * 1024 })
+  const stdout = result.stdout ?? Buffer.alloc(0)
+  const stderr = result.stderr ?? Buffer.alloc(0)
+  const operation = { executable: originalPodman, args, cwd: source, startedAt, finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, budgetMs, status: result.status, signal: result.signal, error: result.error ? { name: result.error.name, message: result.error.message, code: result.error.code ?? null, errno: result.error.errno ?? null, syscall: result.error.syscall ?? null, path: result.error.path ?? null, spawnargs: result.error.spawnargs ?? null } : null, stdoutBytes: stdout.length, stderrBytes: stderr.length, stdoutSha256: createHash('sha256').update(stdout).digest('hex'), stderrSha256: createHash('sha256').update(stderr).digest('hex'), stdout: stdout.toString('utf8'), stderr: stderr.toString('utf8') }
+  podmanOperations.push(operation)
+  appendFileSync(operationsPath, JSON.stringify(operation) + '\n')
+  return operation
 }
 function containers() {
   const result = podman({ args: ['ps', '--all', '--filter', 'label=' + label, '--format', 'json'] })
@@ -1155,6 +1163,7 @@ record.consumer = { command, args, cwd: control || pilot ? source : process.cwd(
 record.adapterOverlay = { DEPOT_CI_CHECK_IDS: env.DEPOT_CI_CHECK_IDS, DEPOT_CI_WORKERS: env.DEPOT_CI_WORKERS, TMPDIR: shardDirectory, correlatedPodmanSha256: record.wrapperSha256 }
 record.shardEvidence = shardEvidence
 record.nativeReports = nativeReports
+record.podmanOperations = podmanOperations
 if (pilot) {
   assert.equal(checkId, 'package.module.toml-edit.test.mutation')
   const fresh = nativeReports.find(row => row.producedDuringInvocation)
@@ -1174,6 +1183,61 @@ if (!control && !pilot) assert(record.sourceGateTerminal, 'Selected check lacks 
 if (pilot) {
   assert.equal(record.pilot.nativeReport?.mutants?.length, 1, 'Pilot must retain its actual one-mutant report')
   assert.equal(record.pilot.nativeReport.infraErrors.length, 0, 'Pilot still fails an infrastructure boundary')
-  assert(record.pilot.nativeReport.mutants.every(row => ['killed', 'survived'].includes(row.status)), 'Pilot did not reach mutant assertions')
+  const reports = shardEvidence.filter(row => row.path.startsWith('mutation-report-')).map(row => JSON.parse(readFileSync(join(shardDirectory, row.path), 'utf8')))
+  assert(reports.length > 0 && reports.every(row => row.baseline.green && row.unrun.length === 0), 'Pilot needs a green actual baseline and no unrun mutants')
 }
+'''
+
+[tasks."trial:depot:toml:pilot-identity"]
+description = "Bind the frozen TOML source and inputs to the shared replay before and after consumers"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { readFileSync, writeFileSync, mkdirSync } = await import('node:fs')
+const { createHash } = await import('node:crypto')
+const { join } = await import('node:path')
+const { homedir } = await import('node:os')
+const { strict: assert } = await import('node:assert')
+const source = join(process.env.GITHUB_WORKSPACE, 'source')
+const manifestBytes = readFileSync(join(process.env.GITHUB_WORKSPACE, 'harness/.depot/manifests/toml.json'))
+const manifest = JSON.parse(manifestBytes)
+const phase = process.env.DEPOT_TOML_PHASE
+assert(['before', 'after'].includes(phase))
+const cohort = { id: process.env.COHORT_ID, manifestSha256: process.env.COHORT_MANIFEST_SHA256, requestedAt: process.env.COHORT_REQUESTED_AT }
+assert.match(cohort.id ?? '', /^[A-Za-z0-9._-]{1,128}$/)
+assert.match(cohort.manifestSha256 ?? '', /^[a-f0-9]{64}$/)
+assert(Number.isFinite(Date.parse(cohort.requestedAt ?? '')))
+const git = args => execFileSync('git', args, { cwd: source, encoding: 'utf8' }).trim()
+const indexEntries = execFileSync('git', ['ls-files', '-v', '-z'], { cwd: source, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }).split('\0').filter(Boolean)
+assert(indexEntries.every(entry => entry[0] !== 'S' && !/[a-z]/.test(entry[0])), 'Immutable source index must not hide tracked inputs with assume-unchanged or skip-worktree flags')
+const tracked = execFileSync('git', ['ls-files', '-z'], { cwd: source, encoding: 'utf8' }).split('\0').filter(Boolean)
+const packageRoots = [...new Set([...manifest.selectedPackages, ...manifest.externalChecks.flatMap(check => check.artifactPrerequisitePackage ? [check.artifactPrerequisitePackage] : [])])]
+const metadataNames = new Set(['mise.toml', 'mise.no-env.toml', 'mise.lock', 'package.json', 'Cargo.toml', 'Cargo.lock', 'config.toml', 'coverage-baseline.json', 'Containerfile.alpine'])
+const paths = tracked.filter(path => {
+  const name = path.slice(path.lastIndexOf('/') + 1)
+  const rootConfiguration = !path.includes('/') && (metadataNames.has(name) || ['.toml', '.json', '.jsonc', '.yaml', '.yml'].some(extension => name.endsWith(extension)) || name.includes('.config.'))
+  const packageConfiguration = packageRoots.some(prefix => path.startsWith(prefix + '/')) && (metadataNames.has(name) || name.startsWith('tsconfig.') || name.includes('.config.') || path.includes('/.cargo/'))
+  return rootConfiguration || path.startsWith('.cargo/') || ['Cargo.toml', 'Cargo.lock'].includes(name) || packageConfiguration
+}).toSorted()
+const sha256 = bytes => createHash('sha256').update(bytes).digest('hex')
+const identity = { head: git(['rev-parse', 'HEAD']), sourceTree: git(['rev-parse', 'HEAD^{tree}']), trackedStatus: git(['status', '--porcelain', '--untracked-files=no']), inputs: Object.fromEntries(paths.map(path => { const bytes = readFileSync(join(source, path)); assert.deepEqual(bytes, execFileSync('git', ['show', 'HEAD:' + path], { cwd: source, maxBuffer: 16 * 1024 * 1024 }), 'Configured source input differs: ' + path); return [path, sha256(bytes)] })) }
+assert.equal(identity.head, manifest.sourceRevision)
+assert.equal(identity.trackedStatus, '', 'Historical source changed')
+const harnessRevision = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+if (process.env.GITHUB_SHA) assert.equal(harnessRevision, process.env.GITHUB_SHA)
+const localDirectory = process.env.DEPOT_TOML_PROVENANCE_DIRECTORY
+if (localDirectory) assert(process.env.CI !== 'true' && process.env.GITHUB_ACTIONS !== 'true', 'Fixture output cannot run in CI')
+const directory = localDirectory ?? join(homedir(), 'temp/agent/depot-complete-ci')
+assert(directory.startsWith('/'))
+mkdirSync(directory, { recursive: true, mode: 0o700 })
+const record = { schemaVersion: 1, event: 'source-provenance', developmentOnly: true, phase, cohort, identity, harnessRevision, manifestSha256: sha256(manifestBytes), observedAt: new Date().toISOString(), verifierNode: process.version }
+if (phase === 'after') {
+  const before = JSON.parse(readFileSync(join(directory, 'toml-provenance-before.json'), 'utf8'))
+  assert.deepEqual(before.identity, identity)
+  assert.deepEqual(before.cohort, cohort)
+  assert.equal(before.harnessRevision, harnessRevision)
+}
+writeFileSync(join(directory, 'toml-provenance-' + phase + '.json'), JSON.stringify(record, null, 2) + '\n')
+console.log(JSON.stringify(record))
 '''

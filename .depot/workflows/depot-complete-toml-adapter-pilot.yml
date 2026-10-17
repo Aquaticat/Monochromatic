@@ -93,7 +93,7 @@ jobs:
       working-directory: harness
       env:
         DEPOT_TOML_PHASE: before
-      run: mise run //package/dev-script/task-util:trial:depot:toml:identity
+      run: mise run //package/dev-script/task-util:trial:depot:toml:pilot-identity
     - name: Build the exact TOML artifact prerequisite
       working-directory: source
       run: mise run //package/module/toml-edit:build
@@ -108,7 +108,7 @@ jobs:
       working-directory: harness
       env:
         DEPOT_TOML_PHASE: after
-      run: mise run //package/dev-script/task-util:trial:depot:toml:identity
+      run: mise run //package/dev-script/task-util:trial:depot:toml:pilot-identity
     - name: Preserve check evidence and generated diffs
       if: always()
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -117,6 +117,7 @@ jobs:
         path: |
           ~/temp/agent/depot-complete-ci/*-results.json
           ~/temp/agent/depot-complete-ci/toml*.json
+          ~/temp/agent/depot-complete-ci/toml*.jsonl
           ~/temp/agent/depot-complete-ci/toml*.log
           ~/temp/agent/depot-complete-ci/toml-mutation-shards/mutation-manifest-*/*.json
           ~/temp/agent/depot-complete-ci/toml-mutation-shards/mutation-report-*/*.json

@@ -108,6 +108,7 @@ jobs:
           ~/temp/agent/depot-complete-ci/container-bin/*/*.tar
           ~/temp/agent/depot-complete-ci/*-results.json
           ~/temp/agent/depot-complete-ci/toml*.json
+          ~/temp/agent/depot-complete-ci/toml*.jsonl
           ~/temp/agent/depot-complete-ci/toml*.log
           ~/temp/agent/depot-complete-ci/toml-mutation-shards/mutation-manifest-*/*.json
           ~/temp/agent/depot-complete-ci/toml-mutation-shards/mutation-report-*/*.json
@@ -199,6 +200,7 @@ jobs:
           ~/temp/agent/depot-complete-ci/container-bin/*/*.tar
           ~/temp/agent/depot-complete-ci/*-results.json
           ~/temp/agent/depot-complete-ci/toml*.json
+          ~/temp/agent/depot-complete-ci/toml*.jsonl
           ~/temp/agent/depot-complete-ci/toml*.log
           ~/temp/agent/depot-complete-ci/toml-mutation-shards/mutation-manifest-*/*.json
           ~/temp/agent/depot-complete-ci/toml-mutation-shards/mutation-report-*/*.json
@@ -297,6 +299,7 @@ jobs:
           ~/temp/agent/depot-complete-ci/container-bin/*/*.tar
           ~/temp/agent/depot-complete-ci/*-results.json
           ~/temp/agent/depot-complete-ci/toml*.json
+          ~/temp/agent/depot-complete-ci/toml*.jsonl
           ~/temp/agent/depot-complete-ci/toml*.log
           ~/temp/agent/depot-complete-ci/toml-mutation-shards/mutation-manifest-*/*.json
           ~/temp/agent/depot-complete-ci/toml-mutation-shards/mutation-report-*/*.json
@@ -382,6 +385,7 @@ jobs:
           ~/temp/agent/depot-complete-ci/container-bin/*/*.tar
           ~/temp/agent/depot-complete-ci/*-results.json
           ~/temp/agent/depot-complete-ci/toml*.json
+          ~/temp/agent/depot-complete-ci/toml*.jsonl
           ~/temp/agent/depot-complete-ci/toml*.log
           ~/temp/agent/depot-complete-ci/toml-mutation-shards/mutation-manifest-*/*.json
           ~/temp/agent/depot-complete-ci/toml-mutation-shards/mutation-report-*/*.json
