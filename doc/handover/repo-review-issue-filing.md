@@ -34,14 +34,17 @@ Resume the repository-wide review of this repo without re-deriving its scope,
  `direct-004` and `direct-005` recover sites that open-issue skips would have lost.
  Merged result: `dedupe/decisions.json` (chains resolved, validated by
  `merge-decisions.ts`).
-- [ ] File one issue per distinct defect and report the issue numbers.
- 570 of 581 filed as issues #1183 to #1753 on 2026-10-17 (`filed.jsonl` ledger,
- zero duplicate numbers, zero errors in that pass except the 11 below).
- 11 findings failed with `gh` exiting zero and printing no URL (cross-logging-004,
- cross-rust-001 to 003, cross-security-001 and 002, cross-testing-001 to 004,
- direct-004); tracker searches confirm none of those attempts created a ghost issue,
- and issue #1434 in the number range belongs to a concurrent session.
- A resume run of `node file-issues.ts` retries exactly those 11.
+- [x] File one issue per distinct defect and report the issue numbers.
+ Complete on 2026-10-17:
+ 581 issues filed as #1183 to #1764 (54 BLOCKER, 351 WARNING, 176 NIT;
+ top categories docs 131, style 95, correctness 85, duplication 66, error-handling 42).
+ First pass filed 570; 11 failed with `gh` exiting zero and printing no URL
+ (tracker searches proved no ghost issues were created);
+ the resume pass filed exactly those 11 as #1754 to #1764.
+ `filed.jsonl` maps every finding id to its issue number;
+ `rendered/` holds every issue body as filed.
+ Issue labels:
+ `needs-triage` plus `bug` or `documentation` plus `difficulty:<value>`.
 
 ## State on 2026-10-17
 
@@ -316,10 +319,17 @@ Replacement rule:
 
 ## Next action
 
-Validate each wave's `findings/<unit-id>.json` as it lands (parse check,
- field presence,
- title length).
- When all 65 remaining units have landed:
- run `node dedupe-candidates.ts`,
- write `dedupe/decisions.json` from the candidate groups plus `open-issues.txt`,
- then run `node file-issues.ts` and report filed issue numbers.
+The review, dedupe, and filing pipeline is complete;
+nothing is queued for it.
+ What remains belongs to the maintainer:
+
+- Triage the 581 filed issues (they carry `needs-triage` plus `bug` or `documentation`
+ plus `difficulty:<value>`, per `doc/agent/triage-labels.md`).
+ The 54 BLOCKERs are the place to start; `filed.jsonl` maps finding ids to issue
+ numbers and `rendered/` holds each body as filed.
+- The 42 skip verdicts recorded in `dedupe/decisions.json` name the existing issue
+ that already owns each defect; a few carry follow-up notes in judge output
+ (for example the fuzzRuns family filed as `code-module-3-005` should fold into
+ the #613 extraction if that lands).
+- If a filed issue proves to be a duplicate after all, close it with
+ `gh issue close <n> --comment "..."` per `doc/agent/issue-tracker.md`.
