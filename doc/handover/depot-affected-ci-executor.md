@@ -503,6 +503,13 @@ on a `2x8` provider with one source file/container/shard and zero whole mutation
 Its terminal collection and native JSON byte/freshness verification are queued next.
 The emitted program's syntax/environment controls pass;
 package type checking stops at this worktree's absent `nano-spawn` dependency before checking types.
+Control `r1mn88ccqt` terminates before mutation invocation:
+its diagnostic-only workflow omits frozen pnpm installation and caught-value cannot resolve config-rolldown.
+The exact failed prerequisite log and strict source guards are retained.
+Bounded recovery `knsghczl71` at `392a3ea041` adds the combined route's existing frozen install;
+terminal collection and native report proof are queued, with no whole mutation credit.
+Async/matcher/p-map fuzz tasks source-fail in their first differential property file;
+their later fork/limits property file is explicitly unexecuted under the authored fail-fast loop.
 No generated outputs will be restored to manufacture a clean receipt.
 Only harness execution failures receive recovery edits;
 historical source failures remain diagnostics.

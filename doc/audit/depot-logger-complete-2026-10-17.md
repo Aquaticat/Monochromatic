@@ -361,6 +361,20 @@ All 18 used/control task bodies and emitted container/collector programs parse.
 Depot's `ci dispatch` rejects the new no-input workflow as not found or missing `workflow_dispatch`;
 its supported `ci run` starts this development control from the verified clean pushed HEAD.
 No diagnosis of that registration diagnostic or final common dispatch is claimed.
+
+Control `r1mn88ccqt` is terminal before the mutation CLI is invoked.
+Its diagnostic workflow omitted the frozen workspace install,
+so the first caught-value build cannot resolve `@monochromatic-dev/config-rolldown`.
+The source guard and exact failed prerequisite log remain retained, with zero mutation credit.
+Recovery `knsghczl71` runs at clean-pushed `392a3ea04128547d9b452dd3bea7a4df1235acd1`
+after adding the same frozen installation already present in the combined workflow.
+Its terminal receipt and actual native-report byte/freshness proof remain queued.
+
+The failed async, matcher and p-map fuzz tasks each enumerate two property files.
+Their unchanged `execFileSync` loop stops after `src/differential.property.unit.test.ts` fails.
+The later async `src/fork.property.unit.test.ts`
+and matcher/p-map `src/limits.property.unit.test.ts` are unexecuted/source-blocked in those invocations.
+The terminal-task union gives no completed internal campaign or branch credit to these later files.
 The final coherent replay is held until the root agent aligns those routes.
 The common cohort manifest will be a separate authenticated, byte-verified file on `main`.
 Its outer SHA-256 differs from the single-case logger manifest digest.
