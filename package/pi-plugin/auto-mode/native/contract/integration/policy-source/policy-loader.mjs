@@ -124,7 +124,7 @@ export function createPolicyLoaderState({
   let relevanceFailure;
   if(policy.relevance){
    try{
-    relevance=await owner.refreshGoverningRelevance({loader:inputState.loader});
+    relevance=await owner.refreshGoverningRelevance({loader:inputState.loader,signal:new AbortController().signal});
    }catch(error){
     relevanceFailure={cause:error};
     tagged({tag:'reload-policy-relevance'}).error(error);
