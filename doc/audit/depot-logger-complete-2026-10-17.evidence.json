@@ -82290,5 +82290,42 @@
       "gitDiffWhitespacePassed": true,
       "verificationBeforeThisMetadataAppend": true
     }
+  },
+  "hostScopeCorrection": {
+    "evidence": "doc/audit/depot-logger-host-scope-2026-10-17.evidence.json",
+    "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+    "sourceCommits": [
+      "5db0268856c5179314e6a73125772a5841067eaa",
+      "dc5423d3616744d8ac2ea9ff052f02a94f656a2d"
+    ],
+    "matrix": [
+      {
+        "os": "ubuntu-latest",
+        "fsid": true,
+        "semantic": true
+      },
+      {
+        "os": "windows-latest",
+        "fsid": true,
+        "semantic": true
+      },
+      {
+        "os": "macos-latest",
+        "fsid": true,
+        "semantic": false
+      },
+      {
+        "os": "macos-15",
+        "fsid": false,
+        "semantic": true
+      }
+    ],
+    "issue": 1168,
+    "positiveControls": 4,
+    "rejectedControls": 70,
+    "sensitivityPassed": true,
+    "providerDispatch": false,
+    "actualMacos15ProviderProof": false,
+    "primaryManifestCorrectionParentOwned": true
   }
 }
