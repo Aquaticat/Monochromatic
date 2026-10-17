@@ -39,19 +39,23 @@ Its call at line `223` supplies a 30-second request signal:
 ```javascript
 // package/dev-script/task-util/mise.toml:223, frozen native harness
 const response = await fetch(url, {
-  headers: requestHeaders,
+  headers: {
+    Accept: 'application/vnd.github.object+json',
+    'User-Agent': 'Monochromatic-Depot-Trial',
+    ...(token ? { Authorization: 'Bearer ' + token } : {}),
+  },
   signal: AbortSignal.timeout(30000),
 });
 ```
 
-The excerpt abbreviates the unchanged header expression as `requestHeaders`.
-The actual expression includes authentication and the object/base64 Contents API media type.
-No credential value is retained in this document.
-The helper writes its phase record only after the authenticated fetch,
+The excerpt expands the unchanged object expression across lines.
+It contains credential variable names without credential values.
+The authenticated fetch,
 decoded-byte checks,
-and common/source bindings succeed.
+and common-manifest binding checks precede the phase-record write.
 The record write is at `package/dev-script/task-util/mise.toml:265`.
 The failed fetch therefore leaves no after record.
+Further source assertions follow the record write.
 
 The source clone at Node tag `v26.11.1`,
 commit `364593d0631def13e3043dd84f77ebca2c767ce5`,
