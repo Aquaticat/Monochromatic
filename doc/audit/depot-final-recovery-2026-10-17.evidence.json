@@ -31458,5 +31458,335 @@
       "actualBodyVerified": true
     },
     "scope": "Actual generated-hook fixtures only. Provider log archive and corrected source-inventory verification remain pending."
+  },
+  "desktopRuntimeAuthoredAssertionInventory": {
+    "observedAt": "2026-10-17T08:17:12.767Z",
+    "directory": "/home/user/temp/agent/authored-desktop-inventory-VCRCSZ",
+    "rows": [
+      {
+        "caseId": "native",
+        "runId": "s3cmrhf2kp",
+        "sourceRevision": "cb95cf6d785c3073c192b95f0632cdae7b910894",
+        "sourceInputs": [
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/scenario-table.unit.test.ts",
+            "sha256": "83a973049ba0415711313f2e1633189ad8f506c78d09dc991f57663176e4da27"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/layout.ts",
+            "sha256": "78799cc52ac1b509f9dc73c9dadb4684e77fe818eca2b7cd208792e5a84d6a23"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-focus.ts",
+            "sha256": "16edf70721b8d77cae130984881e838bcf9c54839b7ce997766f95d832232ee6"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-playback.ts",
+            "sha256": "e72c3bfefe49041cba7ad46a44adc018d10db4f3a042c95d709e96f72a2266ec"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-seek.ts",
+            "sha256": "8d597b62e474d09105753c552fff5ddbb228d3e21ed232369907b46593829e6b"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-browse.ts",
+            "sha256": "a3fd055151e2afed8e3b92f676c10cda14dfeae27332c7b5b2152604fd248127"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-track-list.ts",
+            "sha256": "7e19a10bf27eba809127c0664eeb2fcca9371f119c8b98e55a2ac0cb9af81692"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-rows.ts",
+            "sha256": "f1e0a11f6cc7f7992fffa9f8d42dd2cb89c0e9b087a9fe1a4c34c5d80cff19b0"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-row-menu.ts",
+            "sha256": "c7ef9610dab18481216d718f3bfebf522875abb442cb833c61daae6bd84e9f2e"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-menu.ts",
+            "sha256": "b37005114cf5639c7d8f78dcb237f75ad5b08a4ec45d621defc7b30af59bfd1c"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-search.ts",
+            "sha256": "99907a596616412a031e24e70d77fea7fa38bc024317ae16e4d6bfdf37f153ac"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-double-shift.ts",
+            "sha256": "b8dd50f6b20768d24c3fef8c50cbad9dfaab9248009df166d17b166bee296d1f"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-settings.ts",
+            "sha256": "66df3e3e5388e7ff7ae0e5d32de43a23c77fd394e594254a0a923dd5a0b0f02c"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-badges.ts",
+            "sha256": "c9969ce3779126209aada5419d4cd9e2326150f4517d5e0681a469a6fb0eabfb"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-interaction.ts",
+            "sha256": "d623715ad377915ad569c0c9d4dd2a6fc18452e63de5550d7042c26c5406f724"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-select.ts",
+            "sha256": "9e2eea9cd5869c1804af68012d89e45891f70f626e24a68aeb0fb76b73b29fdd"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-lists.ts",
+            "sha256": "2e4f7ff67b3b4d1d7f996baa670ec583e931c15d5a76003b58667bcc0e35a1fb"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-breakpoint.ts",
+            "sha256": "05adca6f9d911842a8671c5007b5667f346e328e296fa3f5f53799ab010a5120"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/narrow-interaction.ts",
+            "sha256": "77a5e0c0e1fcbc21ae308864534b1f8024c6d8b1e09a46c3887867109022a2a9"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/narrow-session.ts",
+            "sha256": "1c1006a56bf2668133474e9017c8291227e2e8f1245b3fcf9b5e8d27a8431155"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/dialog-session.ts",
+            "sha256": "42d89929b4a51d8b1026ce71adf57a2909fe04514b428f44d43b2c2190b89930"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/quit-session.ts",
+            "sha256": "82094289c95853d3ca4bc92711d67dc2bf86c6339a1643e2af7d733d9ec701f6"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/states-main.ts",
+            "sha256": "89e188c21c02b9b10b24421368f6d20d8d8663d32b852d6ff20872dccb18b989"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/states-small.ts",
+            "sha256": "51ba44a328d462bed2c4f989fc2a340bffac84fdb771dcb597e1525467eccfa2"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/states-refresh.ts",
+            "sha256": "bc254dc78eecee6d4ab109102afae1a44494ce841474318f2b1f0bcc46d70b43"
+          }
+        ],
+        "actualAuthoredInventoryChunkSha256": "f2137ee528459541d7920295b34421d601ce01fc0a97b00ed64d44ea2a42b61f",
+        "authoredTotal": 114,
+        "authoredRuns": 113,
+        "authoredSkipped": 1,
+        "observedOriginal": 108,
+        "synthetic": [
+          {
+            "id": "trial/session-aborted/wide",
+            "title": "Trial adapter retained the aborted wide session",
+            "ok": false,
+            "skipped": false,
+            "detail": "timed out waiting for the folder of thirty tracks shown in the track pane; last states:\n   {\"badges\":[],\"current_index\":2,\"deck_disabled\":false,\"duration\":1,\"first_run_title\":\"\",\"focus\":\"track-list\",\"focus_request\":2,\"folder\":\"F\",\"folder_scroll\":0,\"menu_height\":0,\"menu_open\":false,\"menu_ring\":-1,\"menu_width\":0,\"menu_x\":0,\"menu_y\":0,\"mode\":1,\"picker_open\":false,\"playing\":false,\"position\":0.37151927437641724,\"reason\":\"playback-mode\",\"ring_folder\":\"Zzz Tones\",\"ring_track\":0,\"ring_track_title\":\"01\",\"ring_visible\":true,\"route\":\"Player\",\"search_query\":\"\",\"search_ring\":-1,\"seq\":689,\"settings_selected\":0,\"track_scroll\":0,\"unfolded\":true,\"zone\":\"track-list\"}\n   {\"badges\":[],\"current_index\":2,\"deck_disabled\":false,\"duration\":1,\"first_run_title\":\"\",\"focus\":\"track-list\",\"focus_request\":2,\"folder\":\"F\",\"folder_scroll\":0,\"menu_height\":0,\"menu_open\":false,\"menu_ring\":-1,\"menu_width\":0,\"menu_x\":0,\"menu_y\":0,\"mode\":1,\"picker_open\":false,\"playing\":false,\"position\":0.37151927437641724,\"reason\":\"badges\",\"ring_folder\":\"Zzz Tones\",\"ring_track\":0,\"ring_track_title\":\"01\",\"ring_visible\":true,\"route\":\"Player\",\"search_query\":\"\",\"search_ring\":-1,\"seq\":690,\"settings_selected\":0,\"track_scroll\":0,\"unfolded\":true,\"zone\":\"track-list\"}\n   {\"badges\":[],\"current_index\":2,\"deck_disabled\":false,\"duration\":1,\"first_run_title\":\"\",\"focus\":\"track-list\",\"focus_request\":2,\"folder\":\"F\",\"folder_scroll\":0,\"menu_height\":0,\"menu_open\":false,\"menu_ring\":-1,\"menu_width\":0,\"menu_x\":0,\"menu_y\":0,\"mode\":1,\"picker_open\":false,\"playing\":false,\"position\":0.37151927437641724,\"reason\":\"badges\",\"ring_folder\":\"Zzz Tones\",\"ring_track\":0,\"ring_track_title\":\"01\",\"ring_visible\":true,\"route\":\"Player\",\"search_query\":\"\",\"search_ring\":-1,\"seq\":691,\"settings_selected\":0,\"track_scroll\":0,\"unfolded\":true,\"zone\":\"track-list\"}",
+            "ms": 0
+          }
+        ],
+        "unexecutedOriginal": [
+          {
+            "id": "click-through/search-wide",
+            "session": "wide",
+            "skipped": false
+          },
+          {
+            "id": "click-through/toast-wide",
+            "session": "wide",
+            "skipped": false
+          },
+          {
+            "id": "lists/picker-follows-search-result",
+            "session": "wide",
+            "skipped": false
+          },
+          {
+            "id": "lists/track-list-keeps-place-across-breakpoint",
+            "session": "wide",
+            "skipped": false
+          },
+          {
+            "id": "layout/breakpoint-599",
+            "session": "wide",
+            "skipped": false
+          },
+          {
+            "id": "layout/breakpoint-600",
+            "session": "wide",
+            "skipped": false
+          }
+        ],
+        "positiveDropControl": {
+          "dropped": "start/page",
+          "missingBefore": 6,
+          "missingAfter": 7
+        },
+        "classification": "Authored source inventory and actual provider summary. Missing original assertions have no execution credit; synthetic continuation outcomes are separate."
+      },
+      {
+        "caseId": "desktop",
+        "runId": "wxq11xm2hd",
+        "sourceRevision": "3434eaa455d569c18b52cf15100f77f9db251d21",
+        "sourceInputs": [
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/scenario-table.unit.test.ts",
+            "sha256": "5ad4145fbabfa3f0c72662b2476d83019e2546c5061e72e37f643a4f74aa13b8"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/layout.ts",
+            "sha256": "78799cc52ac1b509f9dc73c9dadb4684e77fe818eca2b7cd208792e5a84d6a23"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-focus.ts",
+            "sha256": "16edf70721b8d77cae130984881e838bcf9c54839b7ce997766f95d832232ee6"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-playback.ts",
+            "sha256": "e72c3bfefe49041cba7ad46a44adc018d10db4f3a042c95d709e96f72a2266ec"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-seek.ts",
+            "sha256": "8d597b62e474d09105753c552fff5ddbb228d3e21ed232369907b46593829e6b"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-browse.ts",
+            "sha256": "a3fd055151e2afed8e3b92f676c10cda14dfeae27332c7b5b2152604fd248127"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-track-list.ts",
+            "sha256": "7e19a10bf27eba809127c0664eeb2fcca9371f119c8b98e55a2ac0cb9af81692"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-rows.ts",
+            "sha256": "f1e0a11f6cc7f7992fffa9f8d42dd2cb89c0e9b087a9fe1a4c34c5d80cff19b0"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-row-menu.ts",
+            "sha256": "c7ef9610dab18481216d718f3bfebf522875abb442cb833c61daae6bd84e9f2e"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-menu.ts",
+            "sha256": "b37005114cf5639c7d8f78dcb237f75ad5b08a4ec45d621defc7b30af59bfd1c"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-search.ts",
+            "sha256": "99907a596616412a031e24e70d77fea7fa38bc024317ae16e4d6bfdf37f153ac"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-double-shift.ts",
+            "sha256": "b8dd50f6b20768d24c3fef8c50cbad9dfaab9248009df166d17b166bee296d1f"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-settings.ts",
+            "sha256": "66df3e3e5388e7ff7ae0e5d32de43a23c77fd394e594254a0a923dd5a0b0f02c"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-badges.ts",
+            "sha256": "c9969ce3779126209aada5419d4cd9e2326150f4517d5e0681a469a6fb0eabfb"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-interaction.ts",
+            "sha256": "d623715ad377915ad569c0c9d4dd2a6fc18452e63de5550d7042c26c5406f724"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-select.ts",
+            "sha256": "9e2eea9cd5869c1804af68012d89e45891f70f626e24a68aeb0fb76b73b29fdd"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-lists.ts",
+            "sha256": "2e4f7ff67b3b4d1d7f996baa670ec583e931c15d5a76003b58667bcc0e35a1fb"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/wide-breakpoint.ts",
+            "sha256": "05adca6f9d911842a8671c5007b5667f346e328e296fa3f5f53799ab010a5120"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/narrow-interaction.ts",
+            "sha256": "77a5e0c0e1fcbc21ae308864534b1f8024c6d8b1e09a46c3887867109022a2a9"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/narrow-session.ts",
+            "sha256": "1c1006a56bf2668133474e9017c8291227e2e8f1245b3fcf9b5e8d27a8431155"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/dialog-session.ts",
+            "sha256": "42d89929b4a51d8b1026ce71adf57a2909fe04514b428f44d43b2c2190b89930"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/auto-play-session.ts",
+            "sha256": "43fa39ba02c4d1637082d7d3d7159804dcd0a69560ee7ad01d28485e18d0801c"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/quit-session.ts",
+            "sha256": "82094289c95853d3ca4bc92711d67dc2bf86c6339a1643e2af7d733d9ec701f6"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/states-main.ts",
+            "sha256": "89e188c21c02b9b10b24421368f6d20d8d8663d32b852d6ff20872dccb18b989"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/states-small.ts",
+            "sha256": "51ba44a328d462bed2c4f989fc2a340bffac84fdb771dcb597e1525467eccfa2"
+          },
+          {
+            "relativePath": "package/music-player/desktop-e2e/src/states-refresh.ts",
+            "sha256": "bc254dc78eecee6d4ab109102afae1a44494ce841474318f2b1f0bcc46d70b43"
+          }
+        ],
+        "actualAuthoredInventoryChunkSha256": "179bf1338f19e9305c0f164f3951c1ebeb1c64d87a07b59654058cf5c1c27341",
+        "authoredTotal": 118,
+        "authoredRuns": 117,
+        "authoredSkipped": 1,
+        "observedOriginal": 112,
+        "synthetic": [
+          {
+            "id": "trial/session-aborted/wide",
+            "title": "Trial adapter retained the aborted wide session",
+            "ok": false,
+            "skipped": false,
+            "detail": "timed out waiting for the folder of thirty tracks shown in the track pane; last states:\n   {\"auto_play_on_select\":false,\"badges\":[],\"current_index\":2,\"deck_disabled\":false,\"duration\":1,\"first_run_title\":\"\",\"focus\":\"track-list\",\"focus_request\":2,\"folder\":\"F\",\"folder_scroll\":0,\"menu_height\":0,\"menu_open\":false,\"menu_ring\":-1,\"menu_width\":0,\"menu_x\":0,\"menu_y\":0,\"mode\":1,\"picker_open\":false,\"playing\":false,\"position\":0.37151927437641724,\"reason\":\"playback-mode\",\"ring_folder\":\"Zzz Tones\",\"ring_track\":0,\"ring_track_title\":\"01\",\"ring_visible\":true,\"route\":\"Player\",\"search_query\":\"\",\"search_ring\":-1,\"seq\":687,\"settings_selected\":0,\"track_scroll\":0,\"unfolded\":true,\"zone\":\"track-list\"}\n   {\"auto_play_on_select\":false,\"badges\":[],\"current_index\":2,\"deck_disabled\":false,\"duration\":1,\"first_run_title\":\"\",\"focus\":\"track-list\",\"focus_request\":2,\"folder\":\"F\",\"folder_scroll\":0,\"menu_height\":0,\"menu_open\":false,\"menu_ring\":-1,\"menu_width\":0,\"menu_x\":0,\"menu_y\":0,\"mode\":1,\"picker_open\":false,\"playing\":false,\"position\":0.37151927437641724,\"reason\":\"badges\",\"ring_folder\":\"Zzz Tones\",\"ring_track\":0,\"ring_track_title\":\"01\",\"ring_visible\":true,\"route\":\"Player\",\"search_query\":\"\",\"search_ring\":-1,\"seq\":688,\"settings_selected\":0,\"track_scroll\":0,\"unfolded\":true,\"zone\":\"track-list\"}\n   {\"auto_play_on_select\":false,\"badges\":[],\"current_index\":2,\"deck_disabled\":false,\"duration\":1,\"first_run_title\":\"\",\"focus\":\"track-list\",\"focus_request\":2,\"folder\":\"F\",\"folder_scroll\":0,\"menu_height\":0,\"menu_open\":false,\"menu_ring\":-1,\"menu_width\":0,\"menu_x\":0,\"menu_y\":0,\"mode\":1,\"picker_open\":false,\"playing\":false,\"position\":0.37151927437641724,\"reason\":\"badges\",\"ring_folder\":\"Zzz Tones\",\"ring_track\":0,\"ring_track_title\":\"01\",\"ring_visible\":true,\"route\":\"Player\",\"search_query\":\"\",\"search_ring\":-1,\"seq\":689,\"settings_selected\":0,\"track_scroll\":0,\"unfolded\":true,\"zone\":\"track-list\"}",
+            "ms": 0
+          }
+        ],
+        "unexecutedOriginal": [
+          {
+            "id": "click-through/search-wide",
+            "session": "wide",
+            "skipped": false
+          },
+          {
+            "id": "click-through/toast-wide",
+            "session": "wide",
+            "skipped": false
+          },
+          {
+            "id": "lists/picker-follows-search-result",
+            "session": "wide",
+            "skipped": false
+          },
+          {
+            "id": "lists/track-list-keeps-place-across-breakpoint",
+            "session": "wide",
+            "skipped": false
+          },
+          {
+            "id": "layout/breakpoint-599",
+            "session": "wide",
+            "skipped": false
+          },
+          {
+            "id": "layout/breakpoint-600",
+            "session": "wide",
+            "skipped": false
+          }
+        ],
+        "positiveDropControl": {
+          "dropped": "start/page",
+          "missingBefore": 6,
+          "missingAfter": 7
+        },
+        "classification": "Authored source inventory and actual provider summary. Missing original assertions have no execution credit; synthetic continuation outcomes are separate."
+      }
+    ]
   }
 }

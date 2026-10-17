@@ -24,6 +24,24 @@ The failures remain the source folder setup in `#1005`
 and the zero-pixel folder chooser boundary already tracked in `#1004`.
 The synthetic `trial/session-aborted/wide` outcome preserves the setup error;
 checks after that setup failure within the wide session remain source-blocked.
+
+The actual authored inventory has 114 native and 118 desktop assertion identities,
+including each source's authored skip.
+The retained summaries contain 108 and 112 original identities respectively;
+synthetic continuation failures are separate.
+The same 6 wide-session assertions remain unexecuted in both cases:
+
+- `click-through/search-wide`.
+- `click-through/toast-wide`.
+- `lists/picker-follows-search-result`.
+- `lists/track-list-keeps-place-across-breakpoint`.
+- `layout/breakpoint-599`.
+- `layout/breakpoint-600`.
+
+The actual source inventory functions were exercised against committed source bytes.
+Dropping a known observed assertion increases the missing count from six to seven.
+`desktopRuntimeAuthoredAssertionInventory` retains all input hashes and the positive control.
+
 All retained PID/OOM counters are zero,
 source identities match before and after,
 and cleanup is verified.
