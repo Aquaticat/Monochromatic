@@ -497,6 +497,12 @@ Development union v3 has all 719 package identities terminal, with no latest unf
 it remains separate from coherent replay and does not infer eligibility from terminal state.
 The remaining queue is fresh native-report retention and an authentic bounded CLI collector control,
 filing the other distinct source/harness incidents and root integration of the candidate.
+The native-report collector now has four positive, seven rejected and one guard-removal control;
+actual bounded source control `r1mn88ccqt` is running at clean-pushed `99edd42b6e`,
+on a `2x8` provider with one source file/container/shard and zero whole mutation-check credit.
+Its terminal collection and native JSON byte/freshness verification are queued next.
+The emitted program's syntax/environment controls pass;
+package type checking stops at this worktree's absent `nano-spawn` dependency before checking types.
 No generated outputs will be restored to manufacture a clean receipt.
 Only harness execution failures receive recovery edits;
 historical source failures remain diagnostics.

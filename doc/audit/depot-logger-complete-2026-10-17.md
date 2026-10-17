@@ -345,6 +345,22 @@ The remaining queue includes fresh native-report retention around each final mut
 a bounded authentic source CLI consumer control,
 filing the remaining distinct source/harness diagnostics,
 and root integration of the prepared combined route.
+
+The native-report collector's local controls pass four valid fixtures,
+seven rejected fixtures and a stale acceptance after removing its freshness guard.
+An immediate-write positive control first exposed filesystem mtime lag behind the wall clock;
+freshness now compares before/after presence, identity, timestamps and bytes.
+The clock comparison remains a separately reported observation.
+The emitted pilot collector parses and inherits its environment without serializing it.
+Authentic bounded control `r1mn88ccqt` is running at clean-pushed `99edd42b6e53f4b4ef88b5c39c9a6ae677dfedff`,
+with a `2x8` provider, one selected TOML source file, one container and shard size one.
+It gives no whole frozen mutation-check credit.
+The required package type-check invocation stops before checking types:
+Node reports `ERR_MODULE_NOT_FOUND` for `nano-spawn` in this worktree's `tsc-filter.ts` dependency.
+All 18 used/control task bodies and emitted container/collector programs parse.
+Depot's `ci dispatch` rejects the new no-input workflow as not found or missing `workflow_dispatch`;
+its supported `ci run` starts this development control from the verified clean pushed HEAD.
+No diagnosis of that registration diagnostic or final common dispatch is claimed.
 The final coherent replay is held until the root agent aligns those routes.
 The common cohort manifest will be a separate authenticated, byte-verified file on `main`.
 Its outer SHA-256 differs from the single-case logger manifest digest.
