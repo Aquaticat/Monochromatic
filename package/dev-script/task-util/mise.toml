@@ -167,7 +167,7 @@ for (let index = 0; index < prerequisiteQueue.length; index += 1) {
 }
 const deferredChecks = manifest.checks.filter((check) => !activeIds.has(check.id)).map((check) => ({ checkId: check.id, reason: `Required check belongs to another execution wave; current wave: ${wave}` }))
 for (const check of manifest.checks.filter((item) => activeIds.has(item.id))) assert((check.prerequisites ?? []).every((id) => activeIds.has(id)), `Selected check has a deferred prerequisite: ${check.id}`)
-console.log("\n" + JSON.stringify({ ...identity, event: 'case-started', completeGraph: false, requestedCheckIds: requestedIds, activeCheckIds: [...activeIds], deferredChecks, tools: JSON.parse(execFileSync('mise', ['ls', '--current', '--json'], { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 })) }))
+console.log("\n" + JSON.stringify({ ...identity, event: 'case-started', completeGraph: manifest.completeGraph, requestedCheckIds: requestedIds, activeCheckIds: [...activeIds], deferredChecks, tools: JSON.parse(execFileSync('mise', ['ls', '--current', '--json'], { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 })) }))
 async function execute(check) {
   const startedAt = new Date().toISOString()
   const started = performance.now()
@@ -203,7 +203,7 @@ async function execute(check) {
   const record = { ...checkIdentity, event: 'check-finished', finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode, signal, status: skipReason ? 'skipped' : exitCode === 0 ? 'passed' : 'failed', skipReason, outputLog, outputSha256, outputBytes }
   results.push(record)
   console.log("\n" + JSON.stringify(record))
-  writeFileSync(join(directory, `${manifest.caseId}-results.json`), JSON.stringify({ ...identity, event: 'case-finished', completeGraph: false, results, deferredChecks, externalChecks: manifest.externalChecks }, null, 2))
+  writeFileSync(join(directory, `${manifest.caseId}-results.json`), JSON.stringify({ ...identity, event: 'case-finished', completeGraph: manifest.completeGraph, results, deferredChecks, externalChecks: manifest.externalChecks }, null, 2))
   return check.id
 }
 const workers = Number(process.env.DEPOT_CI_WORKERS ?? 1)
@@ -780,7 +780,7 @@ dir = "{{config_root}}/../../.."
 shell = "node --input-type=module-typescript -e"
 run = '''
 const {execFileSync}=await import('node:child_process');
-const {readFileSync,writeFileSync,existsSync,mkdirSync}=await import('node:fs');
+const {readFileSync,writeFileSync,mkdirSync}=await import('node:fs');
 const {createHash}=await import('node:crypto');
 const {homedir}=await import('node:os');
 const {join}=await import('node:path');
@@ -809,7 +809,7 @@ const inputs=Object.fromEntries([...paths].sort().map(path=>{
  return [path,sha256(bytes)];
 }));
 const identity={caseId,sourceRevision:head,sourceTree:git(['rev-parse','HEAD^{tree}']),trackedStatus,inputs,manifestSha256:sha256(manifestBytes)};
-const directory=join(homedir(),'temp/agent/depot-complete-ci');
+const directory=process.env.DEPOT_CI_IDENTITY_OUTPUT_DIRECTORY??join(homedir(),'temp/agent/depot-complete-ci');
 mkdirSync(directory,{recursive:true,mode:0o700});
 if(phase==='after')assert.deepEqual(identity,JSON.parse(readFileSync(join(directory,`${caseId}-source-before.json`),'utf8')).identity,'Before and after immutable source records differ');
 writeFileSync(join(directory,`${caseId}-source-${phase}.json`),JSON.stringify({phase,collectedAt:new Date().toISOString(),identity},null,2)+'\n');
