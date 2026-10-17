@@ -10,16 +10,16 @@
     {
       "kind": "native",
       "ref": "trial/depot-coherent-native-20261017",
-      "harnessRevision": "65ffc5cc26e794a8317d404a9db25dcc2e9daec2",
+      "harnessRevision": "0cc63fdf5768a69a7d42c55f48adfe63e3c3341a",
       "workflow": ".github/workflows/music-player-windows.yml",
       "workflowName": "depot-complete-native-hosts",
       "workflowSha256": "88e8d71e76c9c80abc2e33724993611550d5f1c2f4d489dc5f2f9dca2b93ee78",
       "workflowGitBlob": "e83f36b38c078aa0fadafeaf5e96bc4ea0e8d37d",
       "providerBytesVerified": true,
       "taskFile": "package/dev-script/task-util/mise.toml",
-      "taskFileSha256": "84b06891adac79b31eb35a2d50d99599100f5527a70210f691ad5c4741c0e027",
+      "taskFileSha256": "5e87e40a4a3a2c5eddebbdf1f35a7ffdb2802524adab761cde75f2d8b376183d",
       "provenanceTask": "//package/dev-script/task-util:trial:depot:coherent:provenance",
-      "provenanceTaskBlockSha256": "a8b7bd220db1051dc15bf22c2405f3ace93fa87d42034df0528c34d2c8f6e706",
+      "provenanceTaskBlockSha256": "1929e9caed5c7ebf550b5edeb68d550bb961e01f7d36a09fa234f90af95a9dbd",
       "commonInputs": [
         "cohort_id",
         "manifest_sha256",
@@ -46,21 +46,23 @@
           "macos-15-intel"
         ]
       },
-      "nextestPolicy": "Exact source package test task and cargo dispatcher with only --no-fail-fast inserted in memory. Original/adapted hashes are emitted by the proven adapter; tracked source is untouched."
+      "nextestPolicy": "Exact source package test task and cargo dispatcher with only --no-fail-fast inserted in memory. Original/adapted hashes are emitted by the proven adapter; tracked source is untouched.",
+      "previousHarnessRevision": "65ffc5cc26e794a8317d404a9db25dcc2e9daec2",
+      "providerTaskBytesVerified": true
     },
     {
       "kind": "windows",
       "ref": "trial/depot-coherent-windows-20261017",
-      "harnessRevision": "c8abb557b6fb8444cc65a5892802d9aab01d1130",
+      "harnessRevision": "f994e3f6902ad4c4b887822f18695d57da736ca4",
       "workflow": ".github/workflows/music-player-windows.yml",
       "workflowName": "depot-complete-windows-test-recovery",
       "workflowSha256": "b65e49ea07de8c0537a83a91d1394a933aaa48dd636fa68ddaf3c1f04fe63b9f",
       "workflowGitBlob": "0e6e9cf83a89fa8158089451ab266f8dd7b5b6f0",
       "providerBytesVerified": true,
       "taskFile": "package/dev-script/task-util/mise.toml",
-      "taskFileSha256": "18aefb68cb63438369fb96c13e55d8eb57817d859ddaa780b442e95c34ea9796",
+      "taskFileSha256": "7384f60e577dac814a69e57da4a033af99e0a29c1fb57c45a4f670c38627fe2e",
       "provenanceTask": "//package/dev-script/task-util:trial:depot:coherent:provenance",
-      "provenanceTaskBlockSha256": "a8b7bd220db1051dc15bf22c2405f3ace93fa87d42034df0528c34d2c8f6e706",
+      "provenanceTaskBlockSha256": "1929e9caed5c7ebf550b5edeb68d550bb961e01f7d36a09fa234f90af95a9dbd",
       "commonInputs": [
         "cohort_id",
         "manifest_sha256",
@@ -116,21 +118,23 @@
         ],
         "acceptance": "Merged-stream probe must pass its original assertion. Uncaptured-console probe completion additionally requires the exact expected version line in its own provider step log. Shared route before/after provenance must match."
       },
-      "originalFileAssertion": "Unchanged. Failure remains a source consumer failure even if independent continuation probes pass."
+      "originalFileAssertion": "Unchanged. Failure remains a source consumer failure even if independent continuation probes pass.",
+      "previousHarnessRevision": "c8abb557b6fb8444cc65a5892802d9aab01d1130",
+      "providerTaskBytesVerified": true
     },
     {
       "kind": "alpine",
       "ref": "trial/depot-coherent-alpine-20261017",
-      "harnessRevision": "707162e5b43edf04703c9e28bf905ba6eb3fc45e",
+      "harnessRevision": "30ceb0c1f8e215988e53fee6389b12b78b215a6f",
       "workflow": ".github/workflows/music-player-alpine.yml",
       "workflowName": "music-player-alpine",
       "workflowSha256": "b7560318b8c6a08355ab064a52c3eb51e9bb662b762ab6f3ba01be70d1bd14cc",
       "workflowGitBlob": "6cea50486370157dd27e8251c453bcd03e152829",
       "providerBytesVerified": true,
       "taskFile": "package/dev-script/task-util/mise.toml",
-      "taskFileSha256": "18aefb68cb63438369fb96c13e55d8eb57817d859ddaa780b442e95c34ea9796",
+      "taskFileSha256": "7384f60e577dac814a69e57da4a033af99e0a29c1fb57c45a4f670c38627fe2e",
       "provenanceTask": "//package/dev-script/task-util:trial:depot:coherent:provenance",
-      "provenanceTaskBlockSha256": "a8b7bd220db1051dc15bf22c2405f3ace93fa87d42034df0528c34d2c8f6e706",
+      "provenanceTaskBlockSha256": "1929e9caed5c7ebf550b5edeb68d550bb961e01f7d36a09fa234f90af95a9dbd",
       "commonInputs": [
         "cohort_id",
         "manifest_sha256",
@@ -156,7 +160,9 @@
         }
       ],
       "nextestPolicy": "Original source command includes --locked --features alsa-fallback --no-fail-fast.",
-      "independence": "Tests, app build, and compositor build require images/cache directories. Staging requires both successful builds; smoke requires staged binaries. Failed test assertions do not censor independent builds or smoke."
+      "independence": "Tests, app build, and compositor build require images/cache directories. Staging requires both successful builds; smoke requires staged binaries. Failed test assertions do not censor independent builds or smoke.",
+      "previousHarnessRevision": "707162e5b43edf04703c9e28bf905ba6eb3fc45e",
+      "providerTaskBytesVerified": true
     }
   ],
   "dispatchChecklist": [
@@ -1052,5 +1058,12 @@
     "Local controls verify provenance, copied PowerShell probe bodies, and result recording; the new cloud steps have not run.",
     "Linux disposable executable controls do not prove Windows GUI console or handle behavior.",
     "The original Alpine smoke command is preserved; each selected internal smoke scenario still needs actual provider outcome evidence."
-  ]
+  ],
+  "sourceGuardRecovery": {
+    "evidence": "doc/audit/depot-route-source-guards-2026-10-17.evidence.json",
+    "accepted": 20,
+    "rejected": 40,
+    "issue": 1114,
+    "observedAt": "2026-10-17T06:56:39.843Z"
+  }
 }

@@ -411,7 +411,7 @@ Generated PATH drift remains `#335`;
 current lint diagnostics are `#1111` and `#1112`,
 separate from the historical panic `#1066`.
 The executor deadline and missing-evidence boundary is `#1113`.
-Trial branch `trial/depot-toml-continuation-20261017` at `c159dd63021f9304ab3e4996b1d054e5f19ea0c9`
+Trial branch `trial/depot-toml-continuation-20261017` at `640a576ade81c4edfee6a603543a7fbd18faa46b`
 has independent routes,
 immutable source/cohort proofs,
 retained shard identities,
@@ -428,6 +428,10 @@ Final coherent dispatch remains held.
 The prepared harness also copies the native default mutation report with a freshness guard.
 The active development run keeps its original harness hash;
 a read-only observer request is held in session `59869`.
+
+The [source guard controls](../audit/depot-route-source-guards-2026-10-17.md)
+verify the final route against hidden index exclusions and direct committed metadata bytes.
+These local controls do not replace provider before/after evidence.
 
 ## Native recovery assertion tracking
 

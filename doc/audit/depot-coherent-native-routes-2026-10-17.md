@@ -17,7 +17,7 @@ and local controls.
 - Ref:
   `trial/depot-coherent-native-20261017`.
 - Harness:
-  `65ffc5cc26e794a8317d404a9db25dcc2e9daec2`.
+  `0cc63fdf5768a69a7d42c55f48adfe63e3c3341a`.
 - Workflow:
   `.github/workflows/music-player-windows.yml`.
 - Workflow name:
@@ -40,7 +40,7 @@ The existing nextest adapter inserts only `--no-fail-fast` in memory and emits o
 - Ref:
   `trial/depot-coherent-windows-20261017`.
 - Harness:
-  `c8abb557b6fb8444cc65a5892802d9aab01d1130`.
+  `f994e3f6902ad4c4b887822f18695d57da736ca4`.
 - Workflow:
   `.github/workflows/music-player-windows.yml`.
 - Workflow name:
@@ -65,7 +65,7 @@ its own provider step log must contain the exact expected version line.
 - Ref:
   `trial/depot-coherent-alpine-20261017`.
 - Harness:
-  `707162e5b43edf04703c9e28bf905ba6eb3fc45e`.
+  `30ceb0c1f8e215988e53fee6389b12b78b215a6f`.
 - Workflow:
   `.github/workflows/music-player-alpine.yml`.
 - Workflow name:
@@ -149,3 +149,14 @@ Measure the shared request interval through the last required terminal outcome.
 Historical failures remain valid observations.
 Development runs and successful repeats support diagnosis but cannot be combined into complete-graph latency.
 No application source fixes are included.
+
+## Source guard recovery
+
+The [final source guard audit](depot-route-source-guards-2026-10-17.md)
+retains the strengthened index invariant,
+direct committed-byte controls,
+and precise metadata scope.
+Earlier prepared native,
+Windows,
+and Alpine hashes remain in the evidence revision history.
+Their consumer workflow command bodies are unchanged.

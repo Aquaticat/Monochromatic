@@ -21989,11 +21989,11 @@
     "state": "Two missing mutation development gates dispatched; final coherent dispatch held",
     "route": {
       "branch": "trial/depot-toml-continuation-20261017",
-      "harnessRevision": "c159dd63021f9304ab3e4996b1d054e5f19ea0c9",
+      "harnessRevision": "640a576ade81c4edfee6a603543a7fbd18faa46b",
       "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
       "workflow": ".depot/workflows/depot-complete-toml-bounded.yml",
       "workflowSha256": "f24f5f1443a5d6b68fb885920214750c400f570f3a654565421a82ed098d6f26",
-      "taskFileSha256": "3c2a5f20d1cc30d3f736837a5e3fa4696f53034db3a8221dfab17a118f699e33",
+      "taskFileSha256": "50670f65a63b66aa677d62cf53a3dae6d29fbb2c3676970de4be92ea51932ed9",
       "manifestSha256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
       "inputs": {
         "scope": [
@@ -33640,6 +33640,77 @@
         "Explicit single selected check and prerequisite closure"
       ],
       "finalDispatch": "Held"
+    },
+    "priorGuardPreparedRoute": {
+      "branch": "trial/depot-toml-continuation-20261017",
+      "harnessRevision": "c159dd63021f9304ab3e4996b1d054e5f19ea0c9",
+      "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+      "workflow": ".depot/workflows/depot-complete-toml-bounded.yml",
+      "workflowSha256": "f24f5f1443a5d6b68fb885920214750c400f570f3a654565421a82ed098d6f26",
+      "taskFileSha256": "3c2a5f20d1cc30d3f736837a5e3fa4696f53034db3a8221dfab17a118f699e33",
+      "manifestSha256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+      "inputs": {
+        "scope": [
+          "complete",
+          "mutations-only"
+        ],
+        "cohort_id": "Shared request identifier",
+        "manifest_sha256": "SHA-256 of the frozen request manifest",
+        "requested_at": "Shared ISO8601 request time"
+      },
+      "jobs": {
+        "toml": "Original core package checks; complete scope only",
+        "generated": "Original generated-file consumer; complete scope only",
+        "container": "Independent completed-historically file-enforcer container gate; complete scope only",
+        "mutations": [
+          "package.module.toml-edit.test.mutation",
+          "package.dev-script.file-enforcer.test.mutation"
+        ]
+      },
+      "limits": {
+        "runner": "16x64",
+        "consumerMilliseconds": 3600000,
+        "jobMinutes": 90,
+        "terminationGraceMilliseconds": 10000,
+        "metadataOperationMilliseconds": 8000,
+        "shutdownOperationMilliseconds": 60000,
+        "sourceMutationContainerDefaults": {
+          "memory": "2g",
+          "cpus": 2,
+          "pids": 512,
+          "sessionSeconds": 1800
+        }
+      },
+      "sourceCommandsUnchanged": true,
+      "overlays": [
+        "Rootful bounded-container identity adapter retained",
+        "Label-only Podman correlation",
+        "Private TMPDIR for raw shard manifest/report retention",
+        "Explicit single selected check and prerequisite closure"
+      ],
+      "finalDispatch": "Held",
+      "nativeReportRetention": "Copies every available default mutation-report.json outside source and records hash, baseline presence, mtime, and producedDuringInvocation. Stale reports remain explicitly marked."
+    },
+    "sourceGuardRecovery": {
+      "evidence": "doc/audit/depot-route-source-guards-2026-10-17.evidence.json",
+      "accepted": 20,
+      "rejected": 40,
+      "issue": 1114,
+      "observedAt": "2026-10-17T06:56:39.843Z",
+      "previousPreparedRevision": "c159dd63021f9304ab3e4996b1d054e5f19ea0c9",
+      "preparedRevision": "640a576ade81c4edfee6a603543a7fbd18faa46b",
+      "checks": {
+        "kind": "toml",
+        "root": "/home/user/temp/agent/depot-toml-continuation-worktree",
+        "path": "package/dev-script/task-util/mise.toml",
+        "previousRevision": "c159dd63021f9304ab3e4996b1d054e5f19ea0c9",
+        "revision": "640a576ade81c4edfee6a603543a7fbd18faa46b",
+        "ref": "trial/depot-toml-continuation-20261017",
+        "clean": true,
+        "scopedFormattingPassed": true,
+        "providerTaskBytesVerified": true,
+        "taskSha256": "50670f65a63b66aa677d62cf53a3dae6d29fbb2c3676970de4be92ea51932ed9"
+      }
     }
   },
   "sourceDiagnostics": {

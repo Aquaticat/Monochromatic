@@ -194,3 +194,14 @@ no completed native report is claimed.
 The [instruction proposal](../planning/toml-report-emitter-verification.md)
 makes checking report writers and default paths explicit without changing `AGENTS.md`.
 Final coherent dispatch remains held.
+
+## Final source guard recovery
+
+The prepared route now uses `640a576ade81c4edfee6a603543a7fbd18faa46b`.
+Its previous native-report recovery revision remains `c159dd63021f9304ab3e4996b1d054e5f19ea0c9`.
+The [source guard audit](depot-route-source-guards-2026-10-17.md)
+retains direct committed-byte checks for root configuration,
+all tracked Cargo metadata,
+and selected package configuration,
+plus rejection of both Git index exclusions.
+The active development run retains its original harness.
