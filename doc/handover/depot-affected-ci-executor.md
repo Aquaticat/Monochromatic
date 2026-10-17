@@ -405,6 +405,13 @@ Git host two are split from the Rust six, leaving Rust four and regular 16.
 Both primary and candidate manifests keep `completeGraph: false`.
 The candidate commit `3ac9616096` needs a corrective comment for its premature `freeze` wording after push.
 Current OPFS evidence updates `#1052`; the verified CI/retry environment boundary is `#1131`.
+The generated-consistency adapter must run its original task in a separate disposable consumer checkout.
+Its own frozen dependency links must resolve within that consumer,
+with bound initial HEAD/tree/input bytes and retained command, generated diff, output hashes and cleanup.
+The authoritative checkout retains strict unchanged before/after guards.
+Prove rejection of pre-task consumer drift and authoritative drift before final route registration.
+This isolation adapter and its concrete controls are queued with the logger owner;
+no generated outputs will be restored to manufacture a clean receipt.
 Generated checks already run in separate detached fixtures and preserve the original source checkout;
 their diff counters measure bytes.
 Only harness execution failures receive recovery edits;
