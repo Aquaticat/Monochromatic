@@ -28,6 +28,30 @@ returned metadata,
 and the actual dispatcher definitions.
 A private driver argument mistake was rejected before any provider call;
 the accepted path passes the selected route explicitly through the child environment.
+All 20 routes now have accepted dispatch receipts.
+Every Scorecard gate succeeded and each conditional analysis was skipped;
+its exact skip reason still requires retained-log reconciliation.
+The native feature profiles passed 58,
+67,
+and 71 tests with equal source and common before/after identities.
+The original VM task reproduced source cwd failure `#1076`,
+while its natural 502,093-byte bundle and isolated CLI consumer passed.
+Both original Linux and Windows guest lifecycles remain unexecuted.
+All four logger host runner labels and applicable original command outcomes are verified
+against distinct provider-digest-matched archives and equal source/common identities.
+Issue `#1168` is ready to close with actual `macos-15` evidence.
+The common-bound Android APK pair passed the held input validator.
+Private AVD preparation then failed before launch on NOCOW snapshot/transient reflinks.
+The filesystem controls and source trace are retained in
+[the cold-copy troubleshooting record](../troubleshooting/android-emulator-cold-boot-reflink-nocow.md).
+The revised local prepare task excludes unused snapshot and adb transient state;
+all other staged device task bodies remain unchanged.
+Resume the existing producer with consumer attempt two;
+verify the private AVD metadata before its first launch.
+No device assertion has run yet.
+The [early cohort evidence](../audit/depot-coherent-early-results-2026-10-17.evidence.json)
+retains these boundaries and full structured receipts.
+
 The four case manifests now have complete static registrations with `completeGraph: true`.
 Their 24 committed copies are byte-identical across six isolated harnesses.
 The registry binds 770 primary and 33 external checks to 20 routes.

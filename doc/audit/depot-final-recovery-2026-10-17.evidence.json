@@ -38275,6 +38275,19 @@
       "path": "doc/audit/depot-complete-dispatch-2026-10-17.evidence.json",
       "bytes": 217377,
       "sha256": "57f5bddfbd777f05e850679e391b500a58cf9fbe6428c180ea965aafc0f53b78"
+    },
+    "allDispatchCount": 20,
+    "earlyResults": {
+      "path": "doc/audit/depot-coherent-early-results-2026-10-17.evidence.json",
+      "sha256": "41602e67a214e031968333559363d2280abfc78f00b6b6ebd0e48acd556411af",
+      "bytes": 338760
+    },
+    "localAndroidConsumer": {
+      "sourceAndCommonBoundAPKsVerified": true,
+      "producerRun": "v8cw5cmg1b",
+      "initialPhase": "private-copy failed before emulator launch",
+      "copyRecoveryPrepared": true,
+      "deviceAssertionsExecuted": false
     }
   }
 }
