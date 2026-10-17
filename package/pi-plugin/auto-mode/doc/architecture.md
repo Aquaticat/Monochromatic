@@ -8,6 +8,10 @@ and scoped human confirmation when automatic review cannot resolve the operation
 
 ## Refactor status
 
+The user rejects the initial consolidation as insufficient for implementation maintainability.
+The [compact prepared-group design](compact-review-design.md) records the deeper replacement now being implemented.
+The measurements and module documents in this index describe the current baseline until that replacement is verified.
+
 The user authorized consolidation and package-local justification on 2026-10-17.
 The refactor preserves the installed native host's behavior and removes the superseded extension pipeline.
 The source inventory and dependency graph are retained privately under
