@@ -182,7 +182,9 @@ Completed units (findings validated):
  `docs-audit` (13 findings),
  `docs-troubleshooting-2` (15 findings),
  `config-root` (14 findings),
- `docs-decision` (12 findings).
+ `docs-decision` (12 findings),
+ `config-root-docs` (5 findings),
+ `docs-planning` (13 findings).
 
 Cross-unit leads:
  `doc/planning/music-player-shared-truepeak-core.md` repeats the retired truepeak policy
@@ -240,6 +242,10 @@ Cross-unit leads:
  Troubleshooting docs link `github.com/Aquaticat/Monochromatic/...` (singular owner)
  while the remote is `Aquaticats/Monochromatic`, per `docs-troubleshooting-2` notes;
  dedupe candidate with `code-config-1-001` and open issue #1124.
+ `.agents/skills/project-code-review/SKILL.md` examples name `notNullishOrThrow` from
+ `@monochromatic-dev/module-es` and `outdent` from `@cspotcode/outdent`, contradicting
+ AGENTS.md `PP5` and the code, per `config-root-docs` notes;
+ no unit covers that file, so file it directly at dedupe time.
  The stale pre-transfer `repository.url` (Aquaticat instead of Aquaticats) spans most
  `package.json` files repo-wide per `code-config-1-001`;
  likely dedupe target is open issue #1124;
@@ -250,22 +256,19 @@ Cross-unit leads:
 
 Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
  `docs-planning`,
- `docs-planning`,
  `docs-handover`,
- `config-root-docs`,
  `config-ci`,
  `config-paused-1`,
  `config-paused-2`,
  `cross-security`,
- `cross-dependency` (launched as a replacement; carries the owner-url, unused-dep, and
- stale-overrides leads).
+ `cross-dependency`,
+ `cross-duplication`,
+ `cross-testing` (launched as a replacement; carries the zero-test-package lead).
 
 Queued units in launch order (flat list; the first entry launches next):
 
 - `code-stub-1`,
 - `docs-troubleshooting-1`,
-- `cross-duplication`,
-- `cross-testing`,
 - `cross-build`,
 - `cross-rust`,
 - `cross-api`,
