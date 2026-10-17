@@ -597,6 +597,7 @@ const execute=({args,required=true,inherit=false,limit=60000})=>{
 const keys=['HOME','PATH','MISE_DATA_DIR','MISE_CONFIG_DIR','MISE_STATE_DIR','MISE_NODE_VERSION','MISE_PNPM_VERSION','MISE_BUN_VERSION','MISE_DENO_VERSION','MISE_LOCKED','MISE_AUTO_INSTALL','MISE_TRUSTED_CONFIG_PATHS','RUSTUP_HOME','CARGO_HOME','RUSTUP_TOOLCHAIN','GITHUB_WORKSPACE','DEPOT_JOB_URL','OXLINT_THREADS','TSC_SINGLE_THREADED']
 const environment=keys.filter(key=>process.env[key]!==undefined).map(key=>key+'='+process.env[key])
 environment.push('DEPOT_GIT_HOST_DIRECTORY='+base,'DEPOT_CI_CASE=logger','DEPOT_CI_CHECK_IDS='+JSON.stringify(checks),'DEPOT_CI_WORKERS=1','DEPOT_CI_WAVE=all','DEPOT_CI_CPUS=2','DEPOT_CI_MEMORY_GIB=2','CI=true','LANG=C.UTF-8')
+environment.push('GIT_POLICY_NATIVE_TEST_LINTER='+join(base,'linter-target/debug/monochromatic-lint'))
 const child=task=>['exec','--user',process.getuid()+':'+process.getgid(),'--workdir',harness,name,'env','-i',...environment,'mise','run',task]
 let suite,error,cleanupVerified=false,evidenceCopied=true,phase='prepared'
 const copied=[]
@@ -606,11 +607,12 @@ try {
  phase='buildingGit';execute({args:child('//package/module/logger.fuzz:trial:depot:git-host:build'),inherit:true,limit:1860000})
  phase='installingPrivateGit';execute({args:['exec','--user','0',name,'rsync','--archive','--hard-links','--chown=root:root','--delay-updates',join(base,'stage/usr/'),'/usr/'],inherit:true})
  phase='verifyingGit';execute({args:child('//package/module/logger.fuzz:trial:depot:git-host:gate'),inherit:true})
+ phase='preparingAuthenticLinter';execute({args:child('//package/module/logger.fuzz:trial:depot:git-host:linter'),inherit:true,limit:1200000})
  phase='executingAuthoredTasks';suite=execute({args:child('//package/dev-script/task-util:trial:depot:ci:execute'),inherit:true,required:false,limit:1200000})
  phase='sourceTasksReturned'
 } catch(caught){error={name:caught.name,message:caught.message,code:caught.code}}
 finally {
- for(const file of ['git-host-build-results.json','git-host-build.log','git-host-installed-results.json']){
+ for(const file of ['git-host-build-results.json','git-host-build.log','git-host-installed-results.json','git-host-linter-results.json','git-host-linter-build.log']){
   const result=execute({args:['cp',name+':'+join(base,file),join(directory,file)],required:false})
   copied.push({file,copied:result.status===0})
  }
@@ -618,6 +620,7 @@ finally {
   const result=execute({args:['cp',name+':'+join(directory,file),join(directory,file)],required:false});if(result.status!==0)evidenceCopied=false
  }
  const binary=execute({args:['cp',name+':/usr/bin/git',join(directory,'git-host-2.56.0-elf')],required:false});copied.push({file:'git-host-2.56.0-elf',copied:binary.status===0})
+ const linter=execute({args:['cp',name+':'+join(base,'linter-target/debug/monochromatic-lint'),join(directory,'git-host-linter-elf')],required:false});copied.push({file:'git-host-linter-elf',copied:linter.status===0})
  execute({args:['logs',name],required:false});execute({args:['stop','--time=10',name],required:false});execute({args:['rm','--force',name],required:false})
  cleanupVerified=execute({args:['container','exists',name],required:false}).status===1
  assert(!existsSync(marker))
