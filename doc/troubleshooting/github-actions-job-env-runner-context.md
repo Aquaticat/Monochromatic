@@ -62,6 +62,24 @@ The tradeoff is repeating the expression at the relevant steps instead of declar
 Repeating the job-level expression in another job produces the same validation error.
 Installing tools or changing npm authentication cannot resolve an error that occurs before jobs start.
 
+## Logger host trial recurrence
+
+On 2026-10-17,
+the isolated logger host pilot at `c6aa8b698c66343a28b4dc84b3d7185d7d11c6e1`
+hit the same HTTP 422 diagnostic before any jobs started.
+Its job environment declared `PROVENANCE_OUTPUT` and `LOGGER_HOST_RESULT_OUTPUT`
+using `runner.temp`.
+The final trial workflow also declared `DEPOT_COHORT_IDENTITY_OUTPUT_DIRECTORY` at job scope.
+
+Root trial `81d751db414445c281aebbdc2eaf2735434799c6` moves those values into the consuming steps.
+The development-only pilot applies the same correction at `a4a8e2501c02d590056a9f53991025f8aa93e5af`.
+GitHub accepted [the corrected host pilot][logger-host-pilot].
+The source remains immutable,
+the original platform matrix and commands remain unchanged,
+and no final common manifest was published by this development workflow.
+Dispatch acceptance proves this parser repair;
+source prerequisites and authored checks require their own terminal receipts.
+
 ## Upstream filing decision
 
 - Fault: ours; the context restriction is documented.
@@ -77,3 +95,4 @@ There is no additive upstream finding or draft to file.
 [contexts]: https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#context-availability
 [accepted]: https://github.com/Aquaticats/Monochromatic/actions/runs/38837217115
 [release]: https://github.com/Aquaticats/Monochromatic/actions/runs/38837297263
+[logger-host-pilot]: https://github.com/Aquaticats/Monochromatic/actions/runs/39023040772

@@ -231,7 +231,15 @@ An isolated development-only host workflow is prepared on `trial/depot-logger-ho
 It has no common-manifest inputs or cohort API steps,
 retains exact source checks,
 and marks receipts as development-only with no cohort binding.
-Verify its actual native host prerequisites before final static freeze.
+Its first dispatch at `c6aa8b698c` was rejected before jobs started:
+GitHub reported HTTP 422 for `runner.temp` in the job environment.
+Root `81d751db414445c281aebbdc2eaf2735434799c6` moves the final route's temporary paths into consuming steps.
+The corrected development-only pilot at `a4a8e2501c02d590056a9f53991025f8aa93e5af` is accepted as
+GitHub run `39023040772`.
+Its single terminal wait owns the host outcome receipt.
+See `doc/troubleshooting/github-actions-job-env-runner-context.md` for the existing verified scope rule.
+Verify actual native host prerequisites before final static freeze.
+Generator incident `#1144` is closed with the exact repair/control body and state re-fetched.
 No actual final common manifest has been published.
 
 The logger owner's bounded development recovery `lt7qwlz6h1` is terminal with all three artifacts downloaded.
@@ -307,9 +315,10 @@ and source failures `#1068` and `#1070` remain unresolved.
 The prior failed campaigns and separate source-producer issue `#1118` remain retained.
 
 The remaining queue is explicit:
-retain final host binding/source controls and complete native host prerequisite verification;
-integrate the logger owner's final disposable-consumer cleanup adapter;
-finish the terminal logger/TOML accounting and incident reconciliation;
+collect host development run `39023040772` and resolve actual prerequisite failures;
+retain and file its separately verified job-environment parser incident;
+integrate the logger owner's final cleanup and native mutation-report retention adapters;
+finish terminal logger accounting and incident reconciliation;
 complete every case's registration and copy its final bytes to every owner;
 freeze and publish the actual common manifest before the shared request clock;
 dispatch and collect all bound routes;
