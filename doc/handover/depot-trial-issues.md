@@ -349,16 +349,17 @@ retain the measurement and adoption boundaries.
 
 ## Native recovery assertion tracking
 
-The next authorized measurement prepares a coherent replay,
-with one frozen complete manifest and a shared request interval.
-Independent development runs remain supporting evidence rather than a combined latency result.
-Native route preparation covers historical macOS and Windows,
-later-source macOS,
-the complete original desktop Windows variants with an independent no-fail-fast test gate,
-and both exact-source Alpine routes.
-Route preparation uses a new private scratch worktree and trial-only pushed branch.
-Dispatch waits for the common orchestrator from root.
-No application source fixes are authorized by this preparation.
+The coherent replay routes are prepared and pushed, pending the common complete-graph orchestrator.
+The [frozen route report](../audit/depot-coherent-native-routes-2026-10-17.md)
+records native macOS/Windows, original desktop Windows variants, and both Alpine architectures.
+Every original consumer command body is preserved.
+Trial-only provenance binds each job to a shared manifest, request instant, clean source, and exact harness.
+Windows merged-stream and uncaptured-console probes continue independently after the original file assertion.
+Uncaptured completion also requires its exact expected version in the provider step log.
+Alpine app/compositor builds continue independently after source test assertions.
+Local positive and rejection controls pass; the new cloud steps have not been dispatched.
+No application source fixes are included.
+Independent development runs cannot establish combined latency.
 
 The native recovery evidence retains every eligible test identity,
 exact failing output block,

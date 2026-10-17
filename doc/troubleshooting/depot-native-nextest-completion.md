@@ -220,3 +220,41 @@ Neither is the observed default-policy omission.
 No upstream filing or comment is warranted,
 and there is no additive upstream draft.
 Repository issue tracking remains required for the trial defects.
+
+## Coherent replay controls
+
+The [prepared route report](../audit/depot-coherent-native-routes-2026-10-17.md)
+separates immutable application source from trial harness revisions and shared replay provenance.
+Original Windows file-redirection failure remains failed.
+Independent merged-stream and uncaptured-console continuations retain their own results.
+An uncaptured wrong-version control exited successfully but failed the expected-line check;
+collectors must inspect that probe's actual provider output.
+
+A first local control invocation passed `-NoProfile` as the image command.
+The `crun` diagnostic was:
+
+```text
+# Initial disposable container invocation
+Error: crun: executable file `-NoProfile` not found in $PATH: No such file or directory
+```
+
+Image inspection showed no entrypoint and a `pwsh-preview` default command.
+Explicit `--entrypoint pwsh` corrected invocation.
+The copied Node fixture then emitted `error while loading shared libraries: libatomic.so.1` and exited `127`.
+Host `ldd` identified `/usr/lib64/libatomic.so.1`.
+The verified workaround from [the fixture packaging diagnosis](llmgateway-systemone-boundaries.md)
+supplied that installed library read-only and set the fixture library path.
+Corrected positive and negative controls passed in the immutable image recorded in the route evidence.
+Neither fixture packaging error is a music-player source failure.
+
+The first generated Windows YAML also failed dprint with `invalid indentation`.
+JavaScript replacement-string expansion interpreted the literal PowerShell `$` followed by a quote.
+A function replacer preserved the literal command text; targeted formatting and command-preservation checks passed.
+A proposed clarification to `AGENTS.md` rule `SYB` is:
+
+```text
+# Proposed AGENTS.md rule clarification; not applied
+SYB: Cross-syntax text obeys destination grammar.
+Encode at final interpolation; literal replacement text uses callback replacers.
+Prefer types or ASTs over comment-string DSLs.
+```
