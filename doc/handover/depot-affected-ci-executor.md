@@ -287,19 +287,40 @@ The current host request `39003180992` passed all six Linux/macOS/Windows jobs,
 with immutable source and dependency input hashes independently verified before and after each job.
 The root agent owns current scanners and the Scorecard gate.
 The held VM route is clean and remotely verified at
-`b2dcdc40d8ae2cfb1f7e13001db28ad8f17626b3`
+`8719ad3db0167574a5a8324132fa9a0bb74fd098`
 on `trial/depot-complete-vm-20261016`.
 It carries current logger manifest digest
 `d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9`,
 requires the common cohort strings,
 verifies the exact base64-decoded manifest and `logger.vm` route binding,
 and retains reviewed source identity guards before/after execution.
-Its 28 disposable controls passed;
-the API response and authored source subprocess are explicit fixtures.
+The earlier 28-control preparation at `b2dcdc40d8ae2cfb1f7e13001db28ad8f17626b3`
+remains separate historical evidence.
+The same cohort/source controls were repeated against the current route.
 The unchanged authored `test:e2e` command retains its natural build dependency and failed required-check semantics.
 Both original lifecycle identities remain unexecuted until the actual source task reaches them.
+An additional standalone bundle consumer is now registered after that original command.
+It requires actual natural-build and source/cohort receipts,
+then passes only the produced bundle,
+its receipt,
+Node,
+and required ELF libraries to a no-network,
+read-only,
+two-CPU/2-GiB container.
+It can pass after the source task fails without changing the failed source gate.
+The actual 19-control artifact suite and two default-rootful controls passed locally,
+including the real #1076 failure,
+standalone `--help`/empty `list`,
+exact artifact/provenance joins,
+rejected altered handoffs,
+and removed container/rootfs.
+The initial mapped-owned rootfs cleanup defect is retained separately as #1134;
+the verified `:O` overlay repair leaves copied lower inputs unchanged.
+Neither lifecycle body,
+guest preparation,
+nor an emulator is exercised by those smoke checks.
 See the [VM route contract](../troubleshooting/depot-vm-runtime-paths.md#common-cohort-binding)
-and [preparation evidence](../audit/depot-vm-cohort-preparation-2026-10-17.evidence.json).
+and [artifact evidence](../audit/depot-vm-artifact-consumer-2026-10-17.evidence.json).
 No final dispatch or guest preparation occurred.
 
 Both requests are terminal and collected with hashed artifact downloads.
@@ -403,17 +424,44 @@ Workflow wiring and the final manifest freeze remain pending.
 The prepared 57-selector candidate covers all 155 remainder checks;
 Git host two are split from the Rust six, leaving Rust four and regular 16.
 Both primary and candidate manifests keep `completeGraph: false`.
-The candidate commit `3ac9616096` needs a corrective comment for its premature `freeze` wording after push.
+The premature `freeze` wording in candidate commit `3ac9616096` is corrected by commit comment `205400693`.
 Current OPFS evidence updates `#1052`; the verified CI/retry environment boundary is `#1131`.
 The generated-consistency adapter must run its original task in a separate disposable consumer checkout.
 Its own frozen dependency links must resolve within that consumer,
 with bound initial HEAD/tree/input bytes and retained command, generated diff, output hashes and cleanup.
 The authoritative checkout retains strict unchanged before/after guards.
 Prove rejection of pre-task consumer drift and authoritative drift before final route registration.
-This isolation adapter and its concrete controls are queued with the logger owner;
-no generated outputs will be restored to manufacture a clean receipt.
-Generated checks already run in separate detached fixtures and preserve the original source checkout;
-their diff counters measure bytes.
+The adapter already used separate detached fixtures and preserved the authoritative checkout;
+the hypothesis that generated drift necessarily dirties authoritative source is retracted.
+Its diff counters measure bytes.
+The stronger adapter now isolates each authored invocation,
+verifies tracked bytes/modes and workspace links before execution,
+and retains its exact command, patch, output hashes, process outcome and cleanup.
+Miniature positive, drift, link-leak, hidden-index and three guard-removal controls pass.
+Real-source pilot `vt8vzj154t` executed no original source check:
+its incorrect `DEPOT_LOGGER_EXTERNAL_GROUP` binding was rejected by the adapter's actual
+`DEPOT_LOGGER_EXTERNAL` guard.
+Commit `673ab92e49885dd61fcf08e168ed9c59bf29c6be` fixes that pilot binding;
+actual-program prefix controls verify the correct selector and the rejecting guard.
+Corrected bounded pilot `drzwk5q8mc` is now requested from the clean explicitly pushed ref.
+Collect its actual consumer identity, generated output, source cleanliness and cleanup proofs before final registration.
+The combined workflow already has the correct selector.
+Independent candidate controls verify its 97 jobs, 57 disjoint selectors and all 719 package identities,
+full-package Oxlint context, 19 external routes, 32 browser cells and paired common/source guards.
+Root integration of canonical helpers, GHA and VM routes remains pending; `completeGraph` remains false.
+Authentic linter recovery `q10910cxfm` is independently verified at clean pushed
+`c789a14548fec9df1cee01facb9577d83ddfd42c`.
+The real source-built linter fixes the expected stdin Markdown and is idempotent;
+both original Markdown assertions now pass.
+Original binary-host is 137 passed, zero failed and one ignored;
+library-host is 1,806 passed, six failed and four ignored.
+The six actual failures equal the independent native mapping at `8661765628` and still need distinct issue filing.
+Source inputs, log hashes, actual attempt URL and cleanup match.
+The linter sample retains 9,663 memory-limit events with zero OOM and PID rejections.
+Its actual `2x8` provider usage is 1,374.014 allocated CPU-seconds, or $0.0687007 before credits.
+The remaining queue is terminal long-three collection, corrected generator pilot reconciliation,
+filing the distinct source/harness incidents and root integration of the candidate.
+No generated outputs will be restored to manufacture a clean receipt.
 Only harness execution failures receive recovery edits;
 historical source failures remain diagnostics.
 The requests were launched separately and do not establish a single complete passing pipeline latency.
