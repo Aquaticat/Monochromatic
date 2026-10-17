@@ -21,6 +21,8 @@ jobs:
       OXLINT_THREADS: '1'
       TSC_SINGLE_THREADED: '1'
       DEPOT_LOGGER_EXTERNAL: generated
+      DEPOT_LOGGER_EXTERNAL_IDS: '["sidecar.generated-type-consistency"]'
+      DEPOT_LOGGER_GENERATED_INVOCATIONS: '["sidecar.generated-type-consistency.1"]'
     steps:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       with:
