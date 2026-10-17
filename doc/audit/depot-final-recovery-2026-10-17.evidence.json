@@ -38312,6 +38312,14 @@
         1171
       ],
       "loggerClosingComment": "https://github.com/Aquaticats/Monochromatic/issues/1168#issuecomment-6233525959"
+    },
+    "nativeDesktopExecution": {
+      "path": "doc/audit/depot-coherent-native-desktop-2026-10-17.evidence.json",
+      "sourceAndCommonVerified": true,
+      "authoredAssertionsMissingPerCase": 6,
+      "desktopCargoFormat": "source-tool-grammar-failure",
+      "nativeCargoFormat": "passed",
+      "providerAllocationReconciled": false
     }
   }
 }

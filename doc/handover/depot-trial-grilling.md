@@ -80,6 +80,33 @@ and the missing-assertion positive control.
 The [early cohort evidence](../audit/depot-coherent-early-results-2026-10-17.evidence.json)
 retains these boundaries and full structured receipts.
 
+The actual native and desktop producer archives are independently verified.
+All active primary checks have terminal records and their check-log byte counts and hashes match.
+Source and common before/after identities match the frozen publication and provider attempt joins.
+The native core wave passed five checks and failed Clippy plus changed-Rust style.
+The native desktop and desktop-source Linux waves each passed their four package checks
+and failed changed-Rust style.
+The native style execution appears in both waves but counts once logically.
+Both runtime consumers reproduced the folder setup and system-dialog failures in `#1005` and `#1004`.
+Their original observed assertion counts are 108 of 114 and 112 of 118;
+each still lacks the same six wide-session assertions.
+The synthetic session-abort outcome is separate from authored assertions.
+All 16 native and 17 desktop raw session logs match their archive manifests,
+provider archive events,
+and exact source session selectors.
+Cleanup and all retained PID/OOM counters pass.
+The exact changed native Cargo file passed formatting.
+The desktop Cargo check ran and failed the documented TOML 1.1 inline-table grammar gap,
+while its build,
+Clippy,
+and nextest passed against the same unchanged file.
+The [actual native and desktop evidence](../audit/depot-coherent-native-desktop-2026-10-17.evidence.json)
+retains full formatter records,
+source/provider joins,
+raw session logs,
+and authored-inventory sensitivity controls.
+Per-attempt provider allocation remains pending reconciliation.
+
 The four case manifests now have complete static registrations with `completeGraph: true`.
 Their 24 committed copies are byte-identical across six isolated harnesses.
 The registry binds 770 primary and 33 external checks to 20 routes.

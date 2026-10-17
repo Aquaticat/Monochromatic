@@ -266,6 +266,73 @@ including `toml10-invalid-toml11-valid-invalid28-inline-table-trailing-comma-inp
 in its release notes and no longer depends on `taplo`;
 whether 0.8.0 formats those fixtures was not probed here (Unverified).
 
+### Frozen Cargo formatter failure in the October 17 Depot replay
+
+The coherent desktop replay reproduced this compatibility gap with the actual authored manifest,
+rather than a synthetic fixture.
+At source `3434eaa455d569c18b52cf15100f77f9db251d21`,
+`package/music-player/desktop-app/Cargo.toml` has 17,145 bytes
+and SHA256 `263bc7bf0b0af05e32e22dac60b9b499249488332de48cf9bd93db8e915f537d`.
+The original build,
+Clippy,
+and nextest tasks passed against that source.
+The source-locked dprint `0.61.1` check failed with TOML plugin `0.7.0`:
+
+```text
+Line 96, column 105: expected value, trailing comma is not allowed
+
+derer-software", ], }
+```
+
+Both recorded `mise --no-config` installation/version commands succeeded.
+The actual exact-file format command exited one.
+Source identities and selected Cargo bytes match before and after execution.
+The native case is a successful control:
+its actual changed Cargo manifest passed the same adapter and formatter version.
+The [coherent native/Desktop evidence](../audit/depot-coherent-native-desktop-2026-10-17.evidence.json)
+retains the complete formatter command records,
+source identities,
+provider joins,
+and successful build/test outcomes.
+The repaired missing-consumer issue `#1166` is separate from this executed format failure.
+
+The freshly cloned plugin tag `0.7.0`,
+commit `07383747e788015f7dbc224b7371b2bbe2f2cec5`,
+confirms the parser dependency in `Cargo.toml:39`:
+
+```toml
+# Cargo.toml:39, dprint/dprint-plugin-toml tag 0.7.0
+taplo = { version = "0.12.1", default-features = false }
+```
+
+Parsing occurs before Cargo conventions in `src/format_text.rs:42`.
+`parse_taplo` calls the dependency parser and turns its first error into the format diagnostic
+at `src/format_text.rs:52`:
+
+```rust
+// src/format_text.rs:42, dprint/dprint-plugin-toml tag 0.7.0
+fn parse_and_process_node(file_path: &Path, text: &str, config: &Configuration) -> Result<SyntaxNode> {
+  let node = parse_taplo(text)?;
+```
+
+```rust
+// src/format_text.rs:52, dprint/dprint-plugin-toml tag 0.7.0
+fn parse_taplo(text: &str) -> Result<SyntaxNode> {
+  let parse_result = taplo::parser::parse(text);
+
+  if let Some(err) = parse_result.errors.first() {
+    bail!(
+      "{}",
+      dprint_core::formatting::utils::string_utils::format_diagnostic(Some((err.range.start().into(), err.range.end().into())), &err.message, text,)
+```
+
+This observation extends the September 17 fixture evidence to a frozen authored Cargo manifest.
+It does not revise the dated September 17 repository scan.
+No source edit or formatter upgrade was applied to the immutable workload.
+The known grammar mismatch adds no new upstream defect or additive upstream report;
+the existing upstream filing decision remains applicable.
+Repository issue `#562` already records this formatter family and requests scoped follow-ups.
+
 ## Verification
 
 Versions under test:

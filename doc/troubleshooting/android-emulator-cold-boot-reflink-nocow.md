@@ -159,4 +159,14 @@ A successful APK join does not prove AVD preparation or device test execution.
      not an upstream patch.
 
 There is no upstream defect report to add from this evidence.
-The repository incident remains subject to actual cold-boot consumer verification.
+Repository incident `#1171` is closed after the revised copy and actual cold-boot consumer completed.
+All 15 original device assertions ran:
+13 passed and two reproduced the source test-context failure in `#1002`.
+The private unit is inactive,
+the private adb server is stopped,
+all private sockets are closed,
+and owned ini/config hashes remain unchanged.
+The [coherent Android evidence](../audit/depot-coherent-android-2026-10-17.evidence.json)
+retains the producer join,
+complete device results,
+and verified cleanup.
