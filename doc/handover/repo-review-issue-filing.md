@@ -193,7 +193,8 @@ Completed units (findings validated):
  `cross-duplication` (4 findings),
  `cross-dependency` (7 findings),
  `cross-testing` (4 findings),
- `cross-rust` (3 findings).
+ `cross-rust` (3 findings),
+ `cross-build` (6 findings).
 
 Cross-unit leads:
  `doc/planning/music-player-shared-truepeak-core.md` repeats the retired truepeak policy
@@ -272,10 +273,14 @@ Cross-unit leads:
  hand to the `cross-dependency` reviewer when it launches.
 
 Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
- `cross-build`,
  `cross-api`,
- `cross-logging` (the final three units; `cross-duplication` adjudicated all seven of its
+ `cross-logging` (the final two units; `cross-duplication` adjudicated all seven of its
  leads inside `cross-duplication-001`, refuting the `visible-context.ts` twin claim).
+
+Dedupe verdicts already recorded in finding text:
+ `cross-build-002` subsumes `code-pi-plugin-2-002` (keep the former);
+ `cross-dependency-006` targets open issue #1124 (skip or merge);
+ `cross-duplication-001` aggregates the six confirmed duplication leads.
 
 Queued units in launch order (flat list; the first entry launches next):
 
