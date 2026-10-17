@@ -906,6 +906,7 @@ run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/nativ
 [tasks."test:visible-context"]
 description = "Verify built conversation windows, thinking exclusion, and parsed historical Bash inputs"
 run = [
+ "node --max-old-space-size=512 src/visible-process-result.unit.test.ts",
  "node --max-old-space-size=512 src/visible-context.unit.test.ts",
  "node --max-old-space-size=512 src/visible-context-message-roles.unit.test.ts",
  "node --max-old-space-size=512 src/visible-context-window.unit.test.ts",
