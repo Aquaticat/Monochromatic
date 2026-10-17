@@ -33,6 +33,7 @@ jobs:
         clean: false
     - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
       with:
+        # Match the bootstrap exercised by the immutable-source VM diagnostic.
         version: 2026.10.9
         working_directory: harness
         install: false
