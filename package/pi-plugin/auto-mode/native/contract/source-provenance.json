@@ -767,6 +767,8 @@
     {
       "original": "lifecycle/incumbent-tui-group/approval.mjs",
       "maintained": "lifecycle/incumbent-tui-group/approval.mjs",
+      "currentMaintained": "integration/native-batch/prepared-group.mjs",
+      "movedOn": "2026-10-17",
       "sha256": "d4d73caf9ffb720e654a0ec3cb8e934cb708c364de2b265e9f8c09f9e5d76d96",
       "origin": "authored-source",
       "relocatedLiterals": 0

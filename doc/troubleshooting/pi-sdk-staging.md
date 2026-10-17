@@ -879,7 +879,12 @@ The assertion incorrectly treated all execution diagnostics as cleanup diagnosti
 
 ### Source trace
 
-The maintained approval wrapper forwards the original Stop capability:
+The maintained approval wrapper forwards the original Stop capability.
+Abort forwarding now lives in
+`package/pi-plugin/auto-mode/native/contract/lifecycle/incumbent-tui-group/approval-presentation.mjs`.
+The original-source approval router was retired on 2026-10-17;
+`prepared-group.mjs` now owns its scope checks and confirmation routing.
+The historical source location remains in the captured excerpt:
 
 ```js
 // package/pi-plugin/auto-mode/native/contract/lifecycle/incumbent-tui-group/approval.mjs:100

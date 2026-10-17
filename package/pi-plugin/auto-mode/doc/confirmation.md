@@ -2,8 +2,12 @@
 
 ## Purpose and callers
 
-`native/contract/integration/native-batch/manual-group.mjs` retains the exact group for manual fallback.
-`native/contract/integration/action-policy/approval.mjs` connects original confirmation evidence to review.
+`native/contract/integration/native-batch/prepared-group.mjs` retains the exact group for every confirmation.
+The policy compiler returns its outcome and currentness checks;
+uncertainty and assessment failure reach the same group-owned selector.
+`native/contract/integration/action-policy/approval.mjs` captures the current native presentation capabilities.
+`native/contract/lifecycle/incumbent-tui-group/approval-presentation.mjs`
+verifies the actual selection and recorded verdict.
 `src/ask-user.ts` owns the displayed Allow and Stop choice,
 headless withholding,
 session audit entry,
@@ -21,6 +25,10 @@ Stop,
 dismissal,
 and absent UI withhold execution.
 Historical verdict records remain visible audit data rather than current authorization.
+Established denials cannot reach another generic Allow prompt.
+An established review that becomes stale remains withheld.
+Source checks used inside an existing compiler operation call its original dependency check directly,
+preserving the operation's reentrancy guard.
 `src/types.ts` preserves those stored verdict shapes without retaining the obsolete flagger's model and signal types.
 
 The human summary retains original command text so it is reviewable even after parser failure.

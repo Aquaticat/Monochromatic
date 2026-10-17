@@ -291,6 +291,41 @@ The old `finishWithApproval` router is removed.
 The new build and confirmation matrix are pending;
 the removed router's original-source TUI adapter still needs a usage audit before retirement.
 
+On `native-release-Elj1GJ`,
+all 24 fallback cases and all 22 native lifecycle cases pass with unified confirmation.
+The original-source TUI adapter has no remaining code consumers and is removed after a full reference scan.
+Its provenance retains the old path and names the prepared group as its current owner.
+The configured MiMo replay `pi-hyper-rpc-allow-ZArrWh` completes all 16 original tool calls,
+including both reported groups and intermediate process output,
+with zero selectors and 17 actual Luna requests.
+Positive-controlled payload inspection finds no raw structured command fields,
+thinking,
+or signatures.
+The explicit prohibition replay `pi-hyper-rpc-allow-Pgbj60` withholds both process/Bash members,
+opens zero selectors,
+and receives three actual Luna responses.
+An earlier attempt `pi-hyper-rpc-allow-sWaoxo` exits before any assessment:
+the private diagnostic preload still searches the removed handler-local `retainAutomaticFailure`.
+Updating that instrumentation to `prepared-group.mjs`'s `retainFailure` produces the passing replay;
+the failed fixture remains untouched.
+
+The new footprint measurement is 777,859,462 regular-file bytes,
+including 506,254,358 bytes across 43 retained releases and 265,115,894 diagnostic bytes.
+The active release is 8,223,549 regular-file bytes.
+The complete emitted import graph now handles rewritten `.ts` provider paths,
+finds no missing static targets,
+and explicitly records all five computed import sites.
+Unreached files are still not declared dead from that graph alone.
+Ignored cleanup dry-run lists only the package cache,
+dist,
+and node_modules trees;
+root stray Git directory entries do not exist although ignore rules cover their names.
+Active Node command inspection finds Dsh,
+Codex launchers,
+the CPU monitor,
+and the search-fetch MCP server;
+the maintained Pi replay runs separately in its disposable fixture.
+
 A provider-payload audit finds a separate missed shell boundary:
 known process result metadata and `ad-process:notification` details retain raw `command` strings.
 The new regression was committed red;
