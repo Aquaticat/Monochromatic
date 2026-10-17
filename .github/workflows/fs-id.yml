@@ -26,10 +26,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os:
-        - ubuntu-latest
-        - macos-latest
-        - windows-latest
+        include:
+        - os: ubuntu-latest
+          fsid: true
+          semantic: true
+        - os: windows-latest
+          fsid: true
+          semantic: true
+        - os: macos-latest
+          fsid: true
+          semantic: false
+        - os: macos-15
+          fsid: false
+          semantic: true
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     defaults:
@@ -101,6 +110,7 @@ jobs:
         PROVENANCE_PHASE: before
         PROVENANCE_OUTPUT: ${{ runner.temp }}/logger-host-source
     - name: Set up Node
+      if: ${{ matrix.fsid }}
       uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
       with:
         node-version: 26.5.0
@@ -108,13 +118,27 @@ jobs:
       id: fsid_node
     - name: Record original fs-id Node runtime
       id: fsid_node_version
+      if: ${{ matrix.fsid }}
       run: node --version
     - name: Resolve preferred identity
+      if: ${{ matrix.fsid }}
       run: node package/module/fs-id/src/host-evidence.ts
       id: fsid
       continue-on-error: true
+    - name: Set up source-locked semantic Node runtime
+      id: semantic_node
+      if: ${{ matrix.semantic }}
+      uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+      with:
+        node-version: 26.11.1
+        package-manager-cache: false
+    - name: Record original semantic Node runtime
+      id: semantic_node_version
+      if: ${{ matrix.semantic }}
+      run: node --version
     - name: Install frozen source dependencies and build original Node artifact
       id: prerequisites
+      if: ${{ matrix.semantic }}
       working-directory: harness
       run: mise run //package/dev-script/task-util:trial:depot:ci:logger-host-prerequisites
       env:
@@ -122,12 +146,12 @@ jobs:
     - name: Execute original test:external-consumer-host
       id: external_consumer
       continue-on-error: true
-      if: ${{ !cancelled() && steps.prerequisites.outcome == 'success' && steps.source_before.outcome == 'success' && steps.cohort_before.outcome == 'success' }}
+      if: ${{ !cancelled() && matrix.semantic && steps.prerequisites.outcome == 'success' && steps.source_before.outcome == 'success' && steps.cohort_before.outcome == 'success' }}
       run: mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:external-consumer-host
     - name: Execute original test:semantic-bridge-host
       id: semantic_bridge
       continue-on-error: true
-      if: ${{ !cancelled() && steps.prerequisites.outcome == 'success' && steps.source_before.outcome == 'success' && steps.cohort_before.outcome == 'success' }}
+      if: ${{ !cancelled() && matrix.semantic && steps.prerequisites.outcome == 'success' && steps.source_before.outcome == 'success' && steps.cohort_before.outcome == 'success' }}
       run: mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:semantic-bridge-host
     - name: Verify immutable source after host checks
       id: source_after
@@ -151,16 +175,22 @@ jobs:
       run: mise run //package/dev-script/task-util:trial:depot:ci:logger-host-results
       if: ${{ always() }}
       env:
+        LOGGER_HOST_RUNNER_LABEL: ${{ matrix.os }}
+        LOGGER_HOST_FSID_APPLICABLE: ${{ matrix.fsid }}
+        LOGGER_HOST_SEMANTIC_APPLICABLE: ${{ matrix.semantic }}
+        PROVENANCE_OUTPUT: ${{ runner.temp }}/logger-host-source
         FSID_OUTCOME: ${{ steps.fsid.outcome }}
         FSID_NODE_OUTCOME: ${{ steps.fsid_node_version.outcome }}
         PREREQUISITES_OUTCOME: ${{ steps.prerequisites.outcome }}
         EXTERNAL_OUTCOME: ${{ steps.external_consumer.outcome }}
         SEMANTIC_OUTCOME: ${{ steps.semantic_bridge.outcome }}
+        SEMANTIC_NODE_OUTCOME: ${{ steps.semantic_node_version.outcome }}
         SOURCE_BEFORE_OUTCOME: ${{ steps.source_before.outcome }}
         SOURCE_AFTER_OUTCOME: ${{ steps.source_after.outcome }}
         COHORT_BEFORE_OUTCOME: ${{ steps.cohort_before.outcome }}
         COHORT_AFTER_OUTCOME: ${{ steps.cohort_after.outcome }}
         FSID_SETUP_VERSION: ${{ steps.fsid_node.outputs.node-version }}
+        SEMANTIC_SETUP_VERSION: ${{ steps.semantic_node.outputs.node-version }}
         LOGGER_HOST_RESULT_OUTPUT: ${{ runner.temp }}/logger-host-results.json
     - name: Preserve host source, cohort and command receipts
       if: ${{ always() }}
