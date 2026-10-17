@@ -74,3 +74,18 @@ Local controls prove the adapter behavior;
 they do not prove source mutation success.
 Issue `#1113` remains open pending actual retained consumer outcomes.
 Final coherent dispatch is held.
+
+## Default native report
+
+The full CLI emitter writes `cwd()/mutation-report.json` after orchestration.
+The TOML source task changes into its monorepo root before invoking that CLI.
+The prepared wrapper copies available default reports into the existing external evidence directory.
+It hashes each copy and records source mtime and whether the file existed before the consumer.
+A report unchanged from before the consumer remains explicitly stale.
+This preserves the original command and all assertions.
+
+A native-report positive fixture and a stale-report marking control pass.
+The active development request predates this copy adapter.
+Its separate read-only `depot sandbox exec` observer uses the original VM session and a native command timeout.
+The VM `/bin/pwd` probe succeeded; the observer outcome remains pending.
+No completed report is claimed when orchestration has not produced one.

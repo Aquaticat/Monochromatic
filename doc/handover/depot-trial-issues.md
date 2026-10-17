@@ -411,7 +411,7 @@ Generated PATH drift remains `#335`;
 current lint diagnostics are `#1111` and `#1112`,
 separate from the historical panic `#1066`.
 The executor deadline and missing-evidence boundary is `#1113`.
-Trial branch `trial/depot-toml-continuation-20261017` at `274ec49595d60f663249d61ab35a0806fe29aff0`
+Trial branch `trial/depot-toml-continuation-20261017` at `c159dd63021f9304ab3e4996b1d054e5f19ea0c9`
 has independent routes,
 immutable source/cohort proofs,
 retained shard identities,
@@ -424,6 +424,9 @@ terminal collection is held in session `38964`.
 Completed container failure `#1070` remains separate;
 application source stays immutable.
 Final coherent dispatch remains held.
+
+The prepared harness also copies the native default mutation report with a freshness guard.
+The active development run keeps its original harness hash; a read-only observer request is held in session `59869`.
 
 ## Native recovery assertion tracking
 
