@@ -868,9 +868,16 @@ if(phase==='before'){
  for(const owner of owners)for(const [name,version] of Object.entries({...owner.document.dependencies,...owner.document.devDependencies,...owner.document.optionalDependencies})){
   if(!names.has(name)&&!String(version).startsWith('workspace:'))continue
   assert(names.has(name),`Unknown frozen workspace dependency: ${name}`)
-  const path=join(owner.directory,'node_modules',name),actual=realpathSync(path)
+  let directory=owner.directory,path,actual
+  while(directory===consumer||directory.startsWith(consumer+'/')){
+   const candidate=join(directory,'node_modules',name)
+   if(existsSync(candidate)){path=candidate;actual=realpathSync(candidate);break}
+   if(directory===consumer)break
+   directory=dirname(directory)
+  }
+  assert(path,`Workspace dependency has no resolution within its consumer checkout: ${owner.document.name} -> ${name}`)
   assert.equal(actual,realpathSync(names.get(name)),`Workspace dependency must resolve to its consumer checkout: ${path}`)
-  workspaceLinks.push({path:relative(consumer,path),name,target:relative(consumer,actual)})
+  workspaceLinks.push({owner:relative(consumer,owner.directory),path:relative(consumer,path),name,target:relative(consumer,actual),ancestorResolution:directory!==owner.directory})
  }
  const roots=[consumer,...packages.map(entry=>entry.directory)].map(path=>join(path,'node_modules')).filter(existsSync)
  const stack=[...roots]
