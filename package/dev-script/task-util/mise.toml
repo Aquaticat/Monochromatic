@@ -273,18 +273,32 @@ chmodSync(base, 0o700)
 const wrapper = [
   '#!/usr/bin/env node',
   "const { spawnSync } = await import('node:child_process');",
+  "const { randomUUID } = await import('node:crypto');",
+  `const podman = ${JSON.stringify(podman)};`,
   'const [command, ...args] = process.argv.slice(2);',
   "const limits = command === 'run' ? ['--memory=2g', '--cpus=2', '--pids-limit=512'] : [];",
   "const mutation = command === 'run' && args.some((arg) => arg.includes(':/manifest:'));",
-  "const identity = mutation ? ['--uidmap', `0:${process.getuid()}:1`, '--gidmap', `0:${process.getgid()}:1`, '--user', '0:0'] : [];",
-  "const mappedArgs = args.map((arg, index) => mutation && args[index - 1] === '--tmpfs' ? `${arg},mode=1777` : arg);",
+  "const identity = mutation ? ['--user', `${process.getuid()}:${process.getgid()}`] : [];",
+  "const workIndices = mutation ? args.flatMap((arg,index) => args[index-1] === '--tmpfs' && arg.startsWith('/work:') ? [index] : []) : [];",
+  "if(mutation && workIndices.length !== 1) throw new Error('Mutation boundary requires exactly one bounded /work tmpfs');",
+  "const volume = mutation ? `depot-ci-mutation-${randomUUID()}` : undefined;",
+  "const workOptions = mutation ? `${args[workIndices[0]].slice('/work:'.length)},mode=1777,uid=${process.getuid()},gid=${process.getgid()}` : undefined;",
+  "if(mutation && !/(?:^|,)size=[1-9][0-9]*[kmg]?(?:,|$)/iu.test(workOptions)) throw new Error('Mutation /work tmpfs must retain its declared size bound');",
+  "const mappedArgs = mutation ? args.flatMap((arg,index) => index === workIndices[0]-1 ? ['--volume',`${volume}:/work:rw`] : index === workIndices[0] ? [] : [arg]) : args;",
   "const browserIndex = mappedArgs.indexOf('monochromatic-playwright');",
   "const browser = command === 'run' && browserIndex >= 0 && mappedArgs[browserIndex + 1] === 'npx' && mappedArgs[browserIndex + 2] === 'playwright' && mappedArgs[browserIndex + 3] === 'test';",
   "const browserProbe = `const {readFileSync}=await import('node:fs');const {spawnSync}=await import('node:child_process');const {cpus,availableParallelism}=await import('node:os');function sample(phase){const files={};for(const name of ['pids.current','pids.max','pids.events','memory.current','memory.max','memory.events','cpu.max']){try{files[name]=readFileSync('/sys/fs/cgroup/'+name,'utf8').trim()}catch(error){files[name]={error:error.message}}}console.log(JSON.stringify({event:'browser-container-resources',phase,workers:1,logicalCpus:cpus().length,availableParallelism:availableParallelism(),files}))}sample('before');const child=spawnSync(process.argv[1],process.argv.slice(2),{stdio:'inherit'});sample('after');if(child.error)throw child.error;process.exitCode=child.status??1;`;",
   "const invocation = browser ? [...mappedArgs.slice(0, browserIndex + 1), 'node', '--input-type=module', '--eval', browserProbe, ...mappedArgs.slice(browserIndex + 1), '--workers=1'] : mappedArgs;",
   "if(browser) console.log(JSON.stringify({event:'browser-concurrency-adaptation',workers:1,originalCommand:mappedArgs.slice(browserIndex + 1),adaptedCommand:[...mappedArgs.slice(browserIndex + 1),'--workers=1'],filesAndProjectsUnchanged:true}));",
-  `const result = spawnSync('sudo', ['--non-interactive', ${JSON.stringify(podman)}, command, ...limits, ...identity, ...invocation], { stdio: 'inherit' });`,
-  'if (result.error) throw result.error;',
+  'let result; let created = false; let cleanup; let remaining;',
+  'try {',
+  "  if(volume) { const creation = spawnSync('sudo',['--non-interactive',podman,'volume','create','--opt','type=tmpfs','--opt','device=tmpfs','--opt','nocopy','--opt',`o=${workOptions}`,volume],{encoding:'utf8',timeout:60000}); if(creation.error) throw creation.error; if(creation.status !== 0) throw new Error(`Mutation tmpfs volume creation failed: ${creation.stderr}`); created = true; console.error(JSON.stringify({event:'mutation-owned-tmpfs-created',volume,options:workOptions,uid:process.getuid(),gid:process.getgid(),capabilityAdditions:[],userNamespaceMapping:false})); }",
+  "  result = spawnSync('sudo', ['--non-interactive', podman, command, ...limits, ...identity, ...invocation], { stdio: 'inherit' });",
+  '  if (result.error) throw result.error;',
+  '} finally {',
+  "  if(created) { cleanup = spawnSync('sudo',['--non-interactive',podman,'volume','rm','--force',volume],{encoding:'utf8',timeout:60000}); remaining = spawnSync('sudo',['--non-interactive',podman,'volume','exists',volume],{encoding:'utf8',timeout:60000}); console.error(JSON.stringify({event:'mutation-owned-tmpfs-cleanup',volume,cleanupStatus:cleanup.status,cleanupError:cleanup.stderr,remainingStatus:remaining.status,cleanupVerified:cleanup.status === 0 && remaining.status === 1})); }",
+  '}',
+  "if(created && (cleanup.status !== 0 || remaining.status !== 1)) throw new Error('Mutation tmpfs volume cleanup failed; see retained boundary records');",
   'process.exitCode = result.status ?? 1;',
   '',
 ].join('\n')
@@ -295,14 +309,14 @@ const fixture = join(base, 'mutation-private-fixture')
 mkdirSync(fixture, { recursive: true, mode: 0o700 })
 chmodSync(fixture, 0o700)
 writeFileSync(join(fixture, 'shard-manifest.json'), 'mutation-private-input\n', { mode: 0o600 })
-const controlArgs = ['run', '--rm', '--network=none', '--read-only', '--cap-drop=ALL', '--security-opt=no-new-privileges', '--memory=2g', '--cpus=2', '--pids-limit=64', '--timeout=30', '--volume', `${fixture}:/manifest:rw`]
+const controlArgs = ['run', '--rm', '--network=none', '--read-only', '--cap-drop=ALL', '--security-opt=no-new-privileges', '--security-opt=label=disable', '--memory=2g', '--cpus=2', '--pids-limit=64', '--timeout=30', '--volume', `${fixture}:/manifest:rw`]
 const denied = spawnSync('sudo', ['--non-interactive', podman, ...controlArgs, 'docker.io/library/alpine:3.22', 'cat', '/manifest/shard-manifest.json'], { encoding: 'utf8', timeout: 45000 })
 assert.notEqual(denied.status, 0, 'Unmapped root without capabilities must demonstrate the private-directory permission boundary')
 assert(denied.stderr.includes('Permission denied'), 'Negative control must fail on fixture access')
 const allowed = spawnSync(join(base, 'podman'), [...controlArgs, '--tmpfs', '/work:rw,exec,size=1m', 'docker.io/library/alpine:3.22', 'sh', '-c', 'stat -c %u:%g /work && cp /manifest/shard-manifest.json /work/input && cp /work/input /manifest/result.json'], { encoding: 'utf8', timeout: 45000 })
-console.log('\n' + JSON.stringify({ event: 'mutation-identity-control', deniedStatus: denied.status, deniedError: denied.stderr, mappedStatus: allowed.status, mappedError: allowed.stderr, uid: process.getuid(), gid: process.getgid() }))
+console.log('\n' + JSON.stringify({ event: 'mutation-identity-control', boundary: 'owned-tmpfs-volume', deniedStatus: denied.status, deniedError: denied.stderr, ownedTmpfsStatus: allowed.status, ownedTmpfsError: allowed.stderr, uid: process.getuid(), gid: process.getgid() }))
 assert.equal(allowed.status, 0, allowed.stderr)
-assert.equal(allowed.stdout.trim(), '0:0', 'Mutation work tmpfs must match the source owner inside the one-identity user namespace')
+assert.equal(allowed.stdout.trim(), `${process.getuid()}:${process.getgid()}`, 'Mutation work tmpfs must match the unchanged nonroot source owner')
 assert.equal(readFileSync(join(fixture, 'result.json'), 'utf8'), 'mutation-private-input\n')
 assert.equal(statSync(join(fixture, 'result.json')).uid, process.getuid())
 appendFileSync(process.env.GITHUB_PATH, `${base}\n`)
