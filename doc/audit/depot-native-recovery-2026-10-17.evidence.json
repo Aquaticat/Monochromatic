@@ -17803,7 +17803,16 @@
     "compileBlocked": false,
     "setupBlocked": true,
     "diagnostic": "Node.js v26.11.1: Error: spawnSync slint-viewer ENOENT; spawnargs: [ --version ]",
-    "allEligibleTestsAccounted": false
+    "allEligibleTestsAccounted": false,
+    "allocation": {
+      "vcpus": 16,
+      "memoryGb": 64,
+      "workflowRevision": "af3ccd254d717efd068ad55372c6eeba18fd8938",
+      "workflowPath": ".depot/workflows/depot-complete-linux-nextest.yml",
+      "workflow": "name: depot-complete-linux-nextest\n\non:\n  workflow_dispatch:\n\npermissions:\n  contents: read\n\njobs:\n  tests:\n    runs-on:\n      size: 16x64\n      image: monochromatic-trial-desktop-ready:20261016-v1\n    timeout-minutes: 40\n    env:\n      MISE_AUTO_INSTALL: 'false'\n      MISE_LOCKED: '1'\n      CI: 'true'\n      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}\n      DEPOT_CI_CASE: desktop\n      SOURCE_HEAD: 3434eaa455d569c18b52cf15100f77f9db251d21\n    steps:\n    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd\n      with:\n        path: harness\n        persist-credentials: false\n        clean: false\n    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd\n      with:\n        path: source\n        ref: 3434eaa455d569c18b52cf15100f77f9db251d21\n        fetch-depth: 2\n        persist-credentials: false\n        clean: false\n    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c\n      with:\n        # Match the verified trial bootstrap.\n        version: 2026.10.9\n        working_directory: harness\n        install: false\n        env: false\n        export_path: false\n        cache: false\n    - name: Install exact source tools\n      working-directory: harness\n      env:\n        MISE_LOCKED: '0'\n      run: mise run //package/dev-script/task-util:trial:depot:ci:native-tools\n    - name: Verify source tool selection\n      working-directory: harness\n      run: mise run //package/dev-script/task-util:trial:depot:ci:native-tool-gate\n    - name: Install frozen dependencies\n      working-directory: source\n      run: mise run prepare:pnpm:install -- --frozen-lockfile\n    - name: Prepare native host libraries\n      working-directory: harness\n      run: mise run //package/dev-script/task-util:trial:depot:ci:desktop-host\n    - name: Execute every eligible source test\n      working-directory: harness\n      run: mise run //package/dev-script/task-util:trial:depot:linux-nextest\n    - name: Preserve full test output and source identity\n      if: always()\n      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02\n      with:\n        name: desktop-linux-nextest-evidence\n        path: ~/temp/agent/depot-linux-nextest/\n        if-no-files-found: error\n",
+      "attemptSeconds": 163.843,
+      "vcpuSeconds": 2621.488
+    }
   },
   "allRequiredCoverageVerified": false,
   "trackedTestFailures": [
@@ -18160,5 +18169,366 @@
       },
       "bodyFile": "issue-native-28.md"
     }
-  ]
+  ],
+  "createdIssuesVerified": {
+    "queriedAt": "2026-10-17T04:37:53.265Z",
+    "query": "query { repository(owner:\"Aquaticats\",name:\"Monochromatic\") { i1082:issue(number:1082) { number title body state url labels(first:100) {nodes {name}} } i1083:issue(number:1083) { number title body state url labels(first:100) {nodes {name}} } i1084:issue(number:1084) { number title body state url labels(first:100) {nodes {name}} } i1085:issue(number:1085) { number title body state url labels(first:100) {nodes {name}} } i1086:issue(number:1086) { number title body state url labels(first:100) {nodes {name}} } i1087:issue(number:1087) { number title body state url labels(first:100) {nodes {name}} } i1089:issue(number:1089) { number title body state url labels(first:100) {nodes {name}} } i1090:issue(number:1090) { number title body state url labels(first:100) {nodes {name}} } i1091:issue(number:1091) { number title body state url labels(first:100) {nodes {name}} } i1092:issue(number:1092) { number title body state url labels(first:100) {nodes {name}} } i1093:issue(number:1093) { number title body state url labels(first:100) {nodes {name}} } i1094:issue(number:1094) { number title body state url labels(first:100) {nodes {name}} } i1095:issue(number:1095) { number title body state url labels(first:100) {nodes {name}} } i1096:issue(number:1096) { number title body state url labels(first:100) {nodes {name}} } i1097:issue(number:1097) { number title body state url labels(first:100) {nodes {name}} } i1098:issue(number:1098) { number title body state url labels(first:100) {nodes {name}} } i1099:issue(number:1099) { number title body state url labels(first:100) {nodes {name}} } i1100:issue(number:1100) { number title body state url labels(first:100) {nodes {name}} } i1101:issue(number:1101) { number title body state url labels(first:100) {nodes {name}} } i1102:issue(number:1102) { number title body state url labels(first:100) {nodes {name}} } i1103:issue(number:1103) { number title body state url labels(first:100) {nodes {name}} } i1104:issue(number:1104) { number title body state url labels(first:100) {nodes {name}} } i1105:issue(number:1105) { number title body state url labels(first:100) {nodes {name}} } i1106:issue(number:1106) { number title body state url labels(first:100) {nodes {name}} } i1107:issue(number:1107) { number title body state url labels(first:100) {nodes {name}} } } }",
+    "issues": [
+      {
+        "number": 1082,
+        "title": "macOS native assertion: a file that is not listed lands where the walk would put it",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player walk_order::tests::a_file_that_is_not_listed_lands_where_the_walk_would_put_it` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/walk_order_tests.rs:75:13`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `cb95cf6d785c3073c192b95f0632cdae7b910894`: [run 38847322477, job 116800698226](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322477/job/116800698226), log line 4476.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'walk_order::tests::a_file_that_is_not_listed_lands_where_the_walk_would_put_it' (220688) panicked at src/walk_order_tests.rs:75:13:\nassertion `left == right` failed: seed 1: b/A/ß/1 probe 9.flac lands at its place\nleft: None\nright: Some(23)\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1082",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      },
+      {
+        "number": 1083,
+        "title": "macOS native assertion: a new folder and a removed file are reported as entries that appeared and went",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player watch::tests::a_new_folder_and_a_removed_file_are_reported_as_entries_that_appeared_and_went` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/watch_tests.rs:236:5`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `cb95cf6d785c3073c192b95f0632cdae7b910894`: [run 38847322477, job 116800698226](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322477/job/116800698226), log line 4561.\n- Source `3434eaa455d569c18b52cf15100f77f9db251d21`: [run 38847322559, job 116800698884](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322559/job/116800698884), log line 4461.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'watch::tests::a_new_folder_and_a_removed_file_are_reported_as_entries_that_appeared_and_went' (220817) panicked at src/watch_tests.rs:236:5:\nthe new folder is named: [(\"<fixture>/album\", true), (\"<fixture>/x.flac\", true), (\"<fixture>/b.flac\", true)]\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1083",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      },
+      {
+        "number": 1084,
+        "title": "macOS native assertion: the selected settings row ring follows the 21 px pill in the two pane form",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player::bin/music-player ui_focus_ring_pages_tests::the_selected_settings_row_ring_follows_the_21_px_pill_in_the_two_pane_form` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/ui_focus_ring_pages_tests.rs:27:5`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `cb95cf6d785c3073c192b95f0632cdae7b910894`: [run 38847322477, job 116800698226](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322477/job/116800698226), log line 4603.\n- Source `3434eaa455d569c18b52cf15100f77f9db251d21`: [run 38847322559, job 116800698884](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322559/job/116800698884), log line 4584.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'ui_focus_ring_pages_tests::the_selected_settings_row_ring_follows_the_21_px_pill_in_the_two_pane_form' (221680) panicked at src/ui_focus_ring_pages_tests.rs:27:5:\nassertion `left == right` failed: Ctrl+Alt+S opened Settings\nleft: 0\nright: 2\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1084",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      },
+      {
+        "number": 1085,
+        "title": "macOS native assertion: the settings back ring is a circle and a row ring follows the group corners in the single form",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player::bin/music-player ui_focus_ring_pages_tests::the_settings_back_ring_is_a_circle_and_a_row_ring_follows_the_group_corners_in_the_single_form` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/ui_focus_ring_pages_tests.rs:27:5`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `cb95cf6d785c3073c192b95f0632cdae7b910894`: [run 38847322477, job 116800698226](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322477/job/116800698226), log line 4624.\n- Source `3434eaa455d569c18b52cf15100f77f9db251d21`: [run 38847322559, job 116800698884](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322559/job/116800698884), log line 4605.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'ui_focus_ring_pages_tests::the_settings_back_ring_is_a_circle_and_a_row_ring_follows_the_group_corners_in_the_single_form' (221695) panicked at src/ui_focus_ring_pages_tests.rs:27:5:\nassertion `left == right` failed: Ctrl+Alt+S opened Settings\nleft: 0\nright: 2\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1085",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      },
+      {
+        "number": 1086,
+        "title": "macOS native assertion: the template editor page rings follow the back circle and the reset pill",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player::bin/music-player ui_focus_ring_pages_tests::the_template_editor_page_rings_follow_the_back_circle_and_the_reset_pill` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/ui_focus_ring_pages_tests.rs:27:5`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `cb95cf6d785c3073c192b95f0632cdae7b910894`: [run 38847322477, job 116800698226](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322477/job/116800698226), log line 4646.\n- Source `3434eaa455d569c18b52cf15100f77f9db251d21`: [run 38847322559, job 116800698884](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322559/job/116800698884), log line 4626.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'ui_focus_ring_pages_tests::the_template_editor_page_rings_follow_the_back_circle_and_the_reset_pill' (221719) panicked at src/ui_focus_ring_pages_tests.rs:27:5:\nassertion `left == right` failed: Ctrl+Alt+S opened Settings\nleft: 0\nright: 2\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1086",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      },
+      {
+        "number": 1087,
+        "title": "macOS native assertion: the template text field ring follows its 4 px outline and leaves the outline alone",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player::bin/music-player ui_focus_ring_pages_tests::the_template_text_field_ring_follows_its_4_px_outline_and_leaves_the_outline_alone` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/ui_focus_ring_pages_tests.rs:27:5`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `cb95cf6d785c3073c192b95f0632cdae7b910894`: [run 38847322477, job 116800698226](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322477/job/116800698226), log line 4667.\n- Source `3434eaa455d569c18b52cf15100f77f9db251d21`: [run 38847322559, job 116800698884](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322559/job/116800698884), log line 4647.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'ui_focus_ring_pages_tests::the_template_text_field_ring_follows_its_4_px_outline_and_leaves_the_outline_alone' (221728) panicked at src/ui_focus_ring_pages_tests.rs:27:5:\nassertion `left == right` failed: Ctrl+Alt+S opened Settings\nleft: 0\nright: 2\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1087",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      },
+      {
+        "number": 1089,
+        "title": "macOS native assertion: the menu is wide enough for its longest shortcut",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player::bin/music-player ui_interaction_window_tests::the_menu_is_wide_enough_for_its_longest_shortcut` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/ui_interaction_window_tests.rs:246:5`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `cb95cf6d785c3073c192b95f0632cdae7b910894`: [run 38847322477, job 116800698226](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322477/job/116800698226), log line 4727.\n- Source `3434eaa455d569c18b52cf15100f77f9db251d21`: [run 38847322559, job 116800698884](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322559/job/116800698884), log line 4706.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'ui_interaction_window_tests::the_menu_is_wide_enough_for_its_longest_shortcut' (222724) panicked at src/ui_interaction_window_tests.rs:246:5:\nthe Show in file manager row is described by its shortcut\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1089",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      },
+      {
+        "number": 1090,
+        "title": "macOS native assertion: the settings page keeps tab inside it and a template line does not swallow tab",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player::bin/music-player ui_keys_focus_tests::the_settings_page_keeps_tab_inside_it_and_a_template_line_does_not_swallow_tab` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/ui_keys_focus_tests.rs:171:5`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `cb95cf6d785c3073c192b95f0632cdae7b910894`: [run 38847322477, job 116800698226](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322477/job/116800698226), log line 4768.\n- Source `3434eaa455d569c18b52cf15100f77f9db251d21`: [run 38847322559, job 116800698884](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322559/job/116800698884), log line 4747.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'ui_keys_focus_tests::the_settings_page_keeps_tab_inside_it_and_a_template_line_does_not_swallow_tab' (222856) panicked at src/ui_keys_focus_tests.rs:171:5:\nassertion `left == right` failed\nleft: 0\nright: 2\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1090",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      },
+      {
+        "number": 1091,
+        "title": "macOS native assertion: a key between the shift taps cancels the double tap",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player::bin/music-player ui_keys_window_tests::a_key_between_the_shift_taps_cancels_the_double_tap` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/ui_keys_window_tests.rs:640:5`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `cb95cf6d785c3073c192b95f0632cdae7b910894`: [run 38847322477, job 116800698226](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322477/job/116800698226), log line 4793.\n- Source `3434eaa455d569c18b52cf15100f77f9db251d21`: [run 38847322559, job 116800698884](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322559/job/116800698884), log line 4773.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'ui_keys_window_tests::a_key_between_the_shift_taps_cancels_the_double_tap' (222885) panicked at src/ui_keys_window_tests.rs:640:5:\nthe key between the taps was used: []\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1091",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      },
+      {
+        "number": 1092,
+        "title": "macOS native assertion: badges appear after 300 ms of held control and vanish on release",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player::bin/music-player ui_keys_window_tests::badges_appear_after_300_ms_of_held_control_and_vanish_on_release` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/ui_keys_window_tests.rs:521:5`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `cb95cf6d785c3073c192b95f0632cdae7b910894`: [run 38847322477, job 116800698226](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322477/job/116800698226), log line 4819.\n- Source `3434eaa455d569c18b52cf15100f77f9db251d21`: [run 38847322559, job 116800698884](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322559/job/116800698884), log line 4799.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'ui_keys_window_tests::badges_appear_after_300_ms_of_held_control_and_vanish_on_release' (222994) panicked at src/ui_keys_window_tests.rs:521:5:\nassertion `left == right` failed\nleft: \"\"\nright: \"Left\"\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1092",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      },
+      {
+        "number": 1093,
+        "title": "macOS native assertion: bare keys do nothing while the template line has focus",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player::bin/music-player ui_keys_window_tests::bare_keys_do_nothing_while_the_template_line_has_focus` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/ui_keys_window_tests.rs:795:10`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `cb95cf6d785c3073c192b95f0632cdae7b910894`: [run 38847322477, job 116800698226](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322477/job/116800698226), log line 4844.\n- Source `3434eaa455d569c18b52cf15100f77f9db251d21`: [run 38847322559, job 116800698884](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322559/job/116800698884), log line 4822.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'ui_keys_window_tests::bare_keys_do_nothing_while_the_template_line_has_focus' (223060) panicked at src/ui_keys_window_tests.rs:795:10:\nthe template line exists\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1093",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      },
+      {
+        "number": 1094,
+        "title": "macOS native assertion: ctrl f does nothing in settings and in the editor page",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player::bin/music-player ui_keys_window_tests::ctrl_f_does_nothing_in_settings_and_in_the_editor_page` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/ui_keys_window_tests.rs:687:5`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `cb95cf6d785c3073c192b95f0632cdae7b910894`: [run 38847322477, job 116800698226](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322477/job/116800698226), log line 4864.\n- Source `3434eaa455d569c18b52cf15100f77f9db251d21`: [run 38847322559, job 116800698884](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322559/job/116800698884), log line 4843.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'ui_keys_window_tests::ctrl_f_does_nothing_in_settings_and_in_the_editor_page' (223119) panicked at src/ui_keys_window_tests.rs:687:5:\nassertion `left == right` failed\nleft: 1\nright: 2\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1094",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      },
+      {
+        "number": 1095,
+        "title": "macOS native assertion: ctrl f ctrl alt s and ctrl o open search settings and the picker",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player::bin/music-player ui_keys_window_tests::ctrl_f_ctrl_alt_s_and_ctrl_o_open_search_settings_and_the_picker` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/ui_keys_window_tests.rs:248:5`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `cb95cf6d785c3073c192b95f0632cdae7b910894`: [run 38847322477, job 116800698226](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322477/job/116800698226), log line 4885.\n- Source `3434eaa455d569c18b52cf15100f77f9db251d21`: [run 38847322559, job 116800698884](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322559/job/116800698884), log line 4886.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'ui_keys_window_tests::ctrl_f_ctrl_alt_s_and_ctrl_o_open_search_settings_and_the_picker' (223110) panicked at src/ui_keys_window_tests.rs:248:5:\nassertion `left == right` failed\nleft: 0\nright: 2\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1095",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      },
+      {
+        "number": 1096,
+        "title": "macOS native assertion: ctrl left and ctrl right go to the previous and next track",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player::bin/music-player ui_keys_window_tests::ctrl_left_and_ctrl_right_go_to_the_previous_and_next_track` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/ui_keys_window_tests.rs:75:5`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `cb95cf6d785c3073c192b95f0632cdae7b910894`: [run 38847322477, job 116800698226](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322477/job/116800698226), log line 4906.\n- Source `3434eaa455d569c18b52cf15100f77f9db251d21`: [run 38847322559, job 116800698884](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322559/job/116800698884), log line 4865.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'ui_keys_window_tests::ctrl_left_and_ctrl_right_go_to_the_previous_and_next_track' (223153) panicked at src/ui_keys_window_tests.rs:75:5:\nassertion `left == right` failed\nleft: []\nright: [\"prev\", \"next\"]\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1096",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      },
+      {
+        "number": 1097,
+        "title": "macOS native assertion: ctrl m cycles the mode and a held ctrl m cycles once",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player::bin/music-player ui_keys_window_tests::ctrl_m_cycles_the_mode_and_a_held_ctrl_m_cycles_once` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/ui_keys_window_tests.rs:89:5`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `cb95cf6d785c3073c192b95f0632cdae7b910894`: [run 38847322477, job 116800698226](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322477/job/116800698226), log line 4927.\n- Source `3434eaa455d569c18b52cf15100f77f9db251d21`: [run 38847322559, job 116800698884](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322559/job/116800698884), log line 4908.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'ui_keys_window_tests::ctrl_m_cycles_the_mode_and_a_held_ctrl_m_cycles_once' (223158) panicked at src/ui_keys_window_tests.rs:89:5:\nassertion `left == right` failed\nleft: None\nright: Some(\"mode ShufflePage\")\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1097",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      },
+      {
+        "number": 1098,
+        "title": "macOS native assertion: ctrl shift backspace resets the template on the editor page",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player::bin/music-player ui_keys_window_tests::ctrl_shift_backspace_resets_the_template_on_the_editor_page` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/ui_keys_window_tests.rs:745:5`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `cb95cf6d785c3073c192b95f0632cdae7b910894`: [run 38847322477, job 116800698226](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322477/job/116800698226), log line 4951.\n- Source `3434eaa455d569c18b52cf15100f77f9db251d21`: [run 38847322559, job 116800698884](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322559/job/116800698884), log line 4932.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'ui_keys_window_tests::ctrl_shift_backspace_resets_the_template_on_the_editor_page' (223244) panicked at src/ui_keys_window_tests.rs:745:5:\nassertion failed: read_state(|state|\nreturn state.editor.as_ref().is_some_and(|editor|\nreturn editor.can_reset()))\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1098",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      },
+      {
+        "number": 1099,
+        "title": "macOS native assertion: ctrl shift g and ctrl g show the playing tracks folder",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player::bin/music-player ui_keys_window_tests::ctrl_shift_g_and_ctrl_g_show_the_playing_tracks_folder` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/ui_keys_window_tests.rs:195:5`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `cb95cf6d785c3073c192b95f0632cdae7b910894`: [run 38847322477, job 116800698226](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322477/job/116800698226), log line 4975.\n- Source `3434eaa455d569c18b52cf15100f77f9db251d21`: [run 38847322559, job 116800698884](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322559/job/116800698884), log line 4975.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'ui_keys_window_tests::ctrl_shift_g_and_ctrl_g_show_the_playing_tracks_folder' (223262) panicked at src/ui_keys_window_tests.rs:195:5:\nassertion `left == right` failed: Ctrl+G\nleft: \"Beck\"\nright: \"Abba\"\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1099",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      },
+      {
+        "number": 1100,
+        "title": "macOS native assertion: double shift does nothing in settings and in the editor page",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player::bin/music-player ui_keys_window_tests::double_shift_does_nothing_in_settings_and_in_the_editor_page` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/ui_keys_window_tests.rs:669:5`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `cb95cf6d785c3073c192b95f0632cdae7b910894`: [run 38847322477, job 116800698226](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322477/job/116800698226), log line 4996.\n- Source `3434eaa455d569c18b52cf15100f77f9db251d21`: [run 38847322559, job 116800698884](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322559/job/116800698884), log line 4954.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'ui_keys_window_tests::double_shift_does_nothing_in_settings_and_in_the_editor_page' (223284) panicked at src/ui_keys_window_tests.rs:669:5:\nassertion `left == right` failed\nleft: 0\nright: 2\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1100",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      },
+      {
+        "number": 1101,
+        "title": "macOS native assertion: escape on the editor page returns to the settings list and ctrl enter does too",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player::bin/music-player ui_keys_window_tests::escape_on_the_editor_page_returns_to_the_settings_list_and_ctrl_enter_does_too` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/ui_keys_window_tests.rs:731:9`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `cb95cf6d785c3073c192b95f0632cdae7b910894`: [run 38847322477, job 116800698226](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322477/job/116800698226), log line 5022.\n- Source `3434eaa455d569c18b52cf15100f77f9db251d21`: [run 38847322559, job 116800698884](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322559/job/116800698884), log line 5001.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'ui_keys_window_tests::escape_on_the_editor_page_returns_to_the_settings_list_and_ctrl_enter_does_too' (223339) panicked at src/ui_keys_window_tests.rs:731:9:\nassertion `left == right` failed\nleft: 0\nright: 3\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1101",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      },
+      {
+        "number": 1102,
+        "title": "macOS native assertion: every menu row shows its shortcut right aligned in the row",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player::bin/music-player ui_keys_window_tests::every_menu_row_shows_its_shortcut_right_aligned_in_the_row` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/ui_keys_window_tests.rs:486:5`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `cb95cf6d785c3073c192b95f0632cdae7b910894`: [run 38847322477, job 116800698226](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322477/job/116800698226), log line 5044.\n- Source `3434eaa455d569c18b52cf15100f77f9db251d21`: [run 38847322559, job 116800698884](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322559/job/116800698884), log line 5023.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'ui_keys_window_tests::every_menu_row_shows_its_shortcut_right_aligned_in_the_row' (223343) panicked at src/ui_keys_window_tests.rs:486:5:\nassertion `left == right` failed\nleft: [\"Enter\", \"\", \"\", \"⌘⇧E\", \"⌘⇧C\", \"Delete\"]\nright: [\"Enter\", \"\", \"\", \"Ctrl+Shift+E\", \"Ctrl+Shift+C\", \"Delete\"]\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1102",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      },
+      {
+        "number": 1103,
+        "title": "macOS native assertion: the tooltips name the shortcut of every button that has one",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player::bin/music-player ui_keys_window_tests::the_tooltips_name_the_shortcut_of_every_button_that_has_one` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/ui_keys_window_tests.rs:495:5`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `cb95cf6d785c3073c192b95f0632cdae7b910894`: [run 38847322477, job 116800698226](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322477/job/116800698226), log line 5075.\n- Source `3434eaa455d569c18b52cf15100f77f9db251d21`: [run 38847322559, job 116800698884](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322559/job/116800698884), log line 5054.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'ui_keys_window_tests::the_tooltips_name_the_shortcut_of_every_button_that_has_one' (223620) panicked at src/ui_keys_window_tests.rs:495:5:\nassertion `left == right` failed\nleft: \"⌘F\"\nright: \"Ctrl+F\"\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1103",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      },
+      {
+        "number": 1104,
+        "title": "macOS native assertion: the settings editor chords apply and reset in the two pane page",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player::bin/music-player ui_keys_window_tests::the_settings_editor_chords_apply_and_reset_in_the_two_pane_page` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/ui_keys_window_tests.rs:714:5`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `cb95cf6d785c3073c192b95f0632cdae7b910894`: [run 38847322477, job 116800698226](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322477/job/116800698226), log line 5097.\n- Source `3434eaa455d569c18b52cf15100f77f9db251d21`: [run 38847322559, job 116800698884](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322559/job/116800698884), log line 5075.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'ui_keys_window_tests::the_settings_editor_chords_apply_and_reset_in_the_two_pane_page' (223611) panicked at src/ui_keys_window_tests.rs:714:5:\nassertion failed: read_state(|state|\nreturn state.editor.as_ref().is_some_and(|editor|\nreturn editor.can_reset()))\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1104",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      },
+      {
+        "number": 1105,
+        "title": "macOS native assertion: in the dark scheme the off track is pure black with an outline border",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player::bin/music-player ui_auto_play_window_tests::in_the_dark_scheme_the_off_track_is_pure_black_with_an_outline_border` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/ui_auto_play_window_tests.rs:396:5`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `3434eaa455d569c18b52cf15100f77f9db251d21`: [run 38847322559, job 116800698884](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322559/job/116800698884), log line 4489.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'ui_auto_play_window_tests::in_the_dark_scheme_the_off_track_is_pure_black_with_an_outline_border' (173418) panicked at src/ui_auto_play_window_tests.rs:396:5:\nassertion `left == right` failed: Ctrl+Alt+S opened Settings\nleft: 0\nright: 2\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1105",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      },
+      {
+        "number": 1106,
+        "title": "macOS native assertion: the keyboard ring hugs the switch row with the group corners",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player::bin/music-player ui_auto_play_window_tests::the_keyboard_ring_hugs_the_switch_row_with_the_group_corners` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/ui_auto_play_window_tests.rs:396:5`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `3434eaa455d569c18b52cf15100f77f9db251d21`: [run 38847322559, job 116800698884](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322559/job/116800698884), log line 4515.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'ui_auto_play_window_tests::the_keyboard_ring_hugs_the_switch_row_with_the_group_corners' (173712) panicked at src/ui_auto_play_window_tests.rs:396:5:\nassertion `left == right` failed: Ctrl+Alt+S opened Settings\nleft: 0\nright: 2\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1106",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      },
+      {
+        "number": 1107,
+        "title": "macOS native assertion: the switch shows its state by thumb position track fill and mark",
+        "body": "## Observed boundary\n\nThe unchanged desktop-app source fails `music-player::bin/music-player ui_auto_play_window_tests::the_switch_shows_its_state_by_thumb_position_track_fill_and_mark` on macOS Intel.\nThe assertion is at `package/music-player/desktop-app/src/ui_auto_play_window_tests.rs:396:5`.\nThe complete nextest recovery uses the original package task and environment with only `--no-fail-fast` added in memory.\nThis records the failing test boundary. It does not establish a shared cause with other keyboard, focus, watcher, or fixture failures.\n\n## Reproduction evidence\n\n- Source `3434eaa455d569c18b52cf15100f77f9db251d21`: [run 38847322559, job 116800698884](https://github.com/Aquaticats/Monochromatic/actions/runs/38847322559/job/116800698884), log line 4542.\n\n```text\n// Provider assertion output; temporary fixture roots shortened where present.\nthread 'ui_auto_play_window_tests::the_switch_shows_its_state_by_thumb_position_track_fill_and_mark' (173774) panicked at src/ui_auto_play_window_tests.rs:396:5:\nassertion `left == right` failed: Ctrl+Alt+S opened Settings\nleft: 0\nright: 2\n```\n\nBoth macOS complete runs retained every eligible identity and preserved failing exit status. Release build, release CLI consumer invocation, exact-toolchain Clippy prerequisite check, and source immutability checks passed; Clippy source diagnostics are separate.\n\n## Required investigation\n\nReproduce this exact test on macOS through the package test task. Determine whether the assertion, platform contract, or application behavior needs correction, preserving the named interaction.\nRetain the triggering input and expected/actual state before changing production behavior or weakening coverage.\n\n## Duplicate search\n\nSearched the titles and bodies of all 1049 repository issues, open and closed, through issue #1081, using the complete test identity and assertion boundary. No existing issue records this test.\nFull per-test evidence and exact failure blocks: `doc/audit/depot-native-recovery-2026-10-17.evidence.json`.\n",
+        "state": "OPEN",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1107",
+        "labels": {
+          "nodes": [
+            {
+              "name": "needs-triage"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "clippyTracking": {
+    "number": 372,
+    "url": "https://github.com/Aquaticats/Monochromatic/issues/372#issuecomment-6229698371",
+    "disposition": "existing fleet-wide explicit-return migration; additive native source diagnostics"
+  }
 }

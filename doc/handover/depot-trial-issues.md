@@ -308,8 +308,13 @@ Their retained records include allocation verification and every provider attemp
 Final source-case reconciliation still requires the corrected manifests and later recovery runs.
 VM replay `rv6hfj76w9` is collected with proof of template boot and a separate final-guest virtiofs failure.
 Its next diagnostic retry remains queued for collection after dispatch.
-Native recovery runs `38847322477` and `38847322559` remain pending collection.
-Linux desktop nextest recovery `pbg4h8ww6k` also needs collection and independent full-suite reconciliation.
+Native recovery runs `38847322477` and `38847322559` are collected and independently reconciled.
+Historical macOS ran every eligible case: 1356 passed and 26 failed.
+Later macOS ran every eligible case: 1406 passed and 27 failed.
+Historical Windows reached the known `E0433` missing-`libc` test compile boundary.
+Linux desktop nextest recovery `pbg4h8ww6k` failed during `slint-viewer --version` discovery before tests.
+Root dispatched corrected Linux recovery `xf4hhngdqg`;
+its terminal collection and independent full-suite reconciliation remain required.
 The next terminal batch has been collected:
 mutation attempts `70p38v12d7` and `0snqhv0rhl`,
 scheduler controls `m00504dz4c`,
@@ -332,3 +337,68 @@ The package-reuse and account issues were independently fetched and checked for 
 The [trial report](../audit/depot-trial-2026-10-15.md)
 and [coverage proposal](../planning/depot-expanded-coverage.md)
 retain the measurement and adoption boundaries.
+
+## Native recovery assertion tracking
+
+The native recovery evidence retains every eligible test identity,
+exact failing output block,
+source hash proof,
+provider interval,
+and allocation in
+[the native evidence](../audit/depot-native-recovery-2026-10-17.evidence.json).
+The 29 distinct failed identities include the existing issues `#1062` through `#1065`.
+The remaining assertions have separate issues because a shared cause has not been established.
+The existing fleet-wide Clippy issue `#372` now has the exact native source diagnostics.
+The missing Clippy component incident `#1072` remains closed;
+coverage issue `#1073` stays open for Linux recovery.
+
+- [#1082](https://github.com/Aquaticats/Monochromatic/issues/1082):
+  a file that is not listed lands where the walk would put it.
+- [#1083](https://github.com/Aquaticats/Monochromatic/issues/1083):
+  a new folder and a removed file are reported as entries that appeared and went.
+- [#1084](https://github.com/Aquaticats/Monochromatic/issues/1084):
+  the selected settings row ring follows the 21 px pill in the two pane form.
+- [#1085](https://github.com/Aquaticats/Monochromatic/issues/1085):
+  the settings back ring is a circle and a row ring follows the group corners in the single form.
+- [#1086](https://github.com/Aquaticats/Monochromatic/issues/1086):
+  the template editor page rings follow the back circle and the reset pill.
+- [#1087](https://github.com/Aquaticats/Monochromatic/issues/1087):
+  the template text field ring follows its 4 px outline and leaves the outline alone.
+- [#1089](https://github.com/Aquaticats/Monochromatic/issues/1089):
+  the menu is wide enough for its longest shortcut.
+- [#1090](https://github.com/Aquaticats/Monochromatic/issues/1090):
+  the settings page keeps tab inside it and a template line does not swallow tab.
+- [#1091](https://github.com/Aquaticats/Monochromatic/issues/1091):
+  a key between the shift taps cancels the double tap.
+- [#1092](https://github.com/Aquaticats/Monochromatic/issues/1092):
+  badges appear after 300 ms of held control and vanish on release.
+- [#1093](https://github.com/Aquaticats/Monochromatic/issues/1093):
+  bare keys do nothing while the template line has focus.
+- [#1094](https://github.com/Aquaticats/Monochromatic/issues/1094):
+  ctrl f does nothing in settings and in the editor page.
+- [#1095](https://github.com/Aquaticats/Monochromatic/issues/1095):
+  ctrl f ctrl alt s and ctrl o open search settings and the picker.
+- [#1096](https://github.com/Aquaticats/Monochromatic/issues/1096):
+  ctrl left and ctrl right go to the previous and next track.
+- [#1097](https://github.com/Aquaticats/Monochromatic/issues/1097):
+  ctrl m cycles the mode and a held ctrl m cycles once.
+- [#1098](https://github.com/Aquaticats/Monochromatic/issues/1098):
+  ctrl shift backspace resets the template on the editor page.
+- [#1099](https://github.com/Aquaticats/Monochromatic/issues/1099):
+  ctrl shift g and ctrl g show the playing tracks folder.
+- [#1100](https://github.com/Aquaticats/Monochromatic/issues/1100):
+  double shift does nothing in settings and in the editor page.
+- [#1101](https://github.com/Aquaticats/Monochromatic/issues/1101):
+  escape on the editor page returns to the settings list and ctrl enter does too.
+- [#1102](https://github.com/Aquaticats/Monochromatic/issues/1102):
+  every menu row shows its shortcut right aligned in the row.
+- [#1103](https://github.com/Aquaticats/Monochromatic/issues/1103):
+  the tooltips name the shortcut of every button that has one.
+- [#1104](https://github.com/Aquaticats/Monochromatic/issues/1104):
+  the settings editor chords apply and reset in the two pane page.
+- [#1105](https://github.com/Aquaticats/Monochromatic/issues/1105):
+  in the dark scheme the off track is pure black with an outline border.
+- [#1106](https://github.com/Aquaticats/Monochromatic/issues/1106):
+  the keyboard ring hugs the switch row with the group corners.
+- [#1107](https://github.com/Aquaticats/Monochromatic/issues/1107):
+  the switch shows its state by thumb position track fill and mark.
