@@ -18,6 +18,36 @@ Only 199 logical checks have an observation with both source and cohort completi
 The generic footer declarations are not final acceptance.
 All 650 configured source-input files were independently hashed against frozen Git blobs.
 
+Independent browser reconciliation now joins all 32 cells to the unchanged full and partition inventories.
+All 118 authored cases have result records:
+116 passed,
+the known WebKit OPFS availability assertion failed,
+and the authored WebKit fs-path case skipped.
+The configured effective retries and actual retry indices are zero.
+All browser cells have both source and common-cohort pairs.
+Removing a selected case fails the independent inventory comparison.
+
+Nine fresh TypeScript native mutation reports now independently verify 5542 selected identities
+and their exact frozen-source spans across 117 files.
+They separately retain 77 ignored entries and declare 863 shards.
+The actual ZIP directories were relisted and matched the retained member inventories.
+No real physical shard manifest or report files are present;
+the similarly named private fixture manifests receive no shard credit.
+Physical baseline/report/return reconciliation remains unestablished.
+The Rust native verification format is separate and still needs its retained manifest and source-gate reconciliation.
+JSONC and file-enforcer mutation tasks failed without native JSON.
+The logger TOML selection exactly matches the 3062-ID source fixture;
+removing an ID fails the comparison.
+
+The unchanged conf mutation task passes this cohort with 894 selected IDs:
+405 killed,
+92 survived,
+four timed out,
+393 failed compilation,
+and no reported runtime error.
+Its older red baseline in `#1156` remains a separate historical observation without an established fix.
+Aggregate killed status receives no assertion credit.
+
 The combined route has 97 terminal jobs,
 96 collected archives,
 and all 97 retained attempt logs.
@@ -26,8 +56,8 @@ Static and unit jobs rebuild tracked plugin bundle outputs;
 the static job also changes the tracked IntelliJ JAR.
 Their after-source and after-cohort guards correctly reject the resulting tracked differences.
 These observations do not establish a change to authored task definitions.
-The native TOML mutation task passed and retained a native report,
-which still requires independent shard reconciliation in the logger case.
+The native TOML mutation task passed and retained a native report with verified IDs and source spans.
+Its reported 462 physical shards remain unverified because their files are not retained in the archive.
 Its local source pair is available,
 but the later authenticated common-manifest lookup reports `gh: Bad credentials (HTTP 401)`.
 The credential rejection cause is not established.
@@ -63,9 +93,16 @@ Next actions:
   The [completion troubleshooting record](../troubleshooting/depot-logger-final-completion-gaps.md)
   keeps their boundaries separate.
 - Reconcile logger browser inventories,
-  native mutation shards,
-  custom consumers,
+  native mutation shard retention,
+  Rust and custom consumers,
   source failures and prerequisite-blocked checks.
+- Reconcile the missing physical shard files with issue `#1160`'s distinct aggregate-JSON collection boundary;
+  file the narrower retained-evidence gap without claiming that no original commands ran.
+- File scoped follow-up evidence for the repaired private verifier assumptions:
+  zero-based native columns,
+  separate ignored records,
+  Rust's distinct archive format,
+  and browser versus DOM report roots.
 - Finish the external-check registry and overlap-aware allocation/critical paths,
   including the already retained native macOS retry and Windows carry-forward alias.
 - File or add scoped evidence for the repaired private evidence-construction findings.
