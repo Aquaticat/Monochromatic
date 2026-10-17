@@ -423,11 +423,14 @@ and verified cleanup are retained.
 
 Actual bounded receipt repeat `mj128hqwv0` is dispatched on
 `0f8ad795aa92d3beb83e3bfa4e4aa54f1bea06f8`.
-Terminal collector session `8468` has completed with provider failure;
-artifact reconciliation is the next action.
+Terminal collection and all 20 artifact member hashes are verified.
+The exact observer list operation exceeded eight seconds with `SIGKILL` and `ETIMEDOUT`,
+after three stdout bytes and zero stderr bytes.
 Source command and eight-second metadata budgets are unchanged;
 the harness now retains exact command, signal, error code, and output bytes before assertions.
-The next action is terminal collection and diagnosis before any remedy or full mutation retry.
+The authorized next action is an isolated metadata-only deadline/forwarding trial,
+rejection controls, and another bounded actual consumer.
+Only a complete source, metadata, and cleanup result permits the full immutable mutation retry.
 Issue `#1118` records the independent, source-consumer-proved inherited-method replacement defect;
 it does not explain the infrastructure failures.
 No application source fix is authorized or applied.

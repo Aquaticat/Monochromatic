@@ -323,3 +323,33 @@ The [common-manifest guard audit](depot-common-manifest-route-guards-2026-10-17.
 retains the current clean pushed route references and 20 accepted plus 110 rejected controls.
 The case manifests remain provisional and correctly rejected for final acceptance.
 Final dispatch waits for root's complete frozen case bytes and the actual canonical API read.
+
+## Exact metadata repeat failure
+
+Repeat `mj128hqwv0`, workflow `t8wq69b56g`, job `h4c49btlhq`, attempt `3wnf82gzb8`,
+again completed the source command with exit zero and the same `compileError` identity.
+Its retained green baseline has no unrun mutant or infrastructure error.
+The wrapper remained failed because this exact metadata command exceeded its unchanged budget:
+
+`container-bin/podman ps --all --filter label=io.monochromatic.toml-attempt=7185dde1-5802-43c2-b296-e257b9f313cf --format json`.
+
+The operation ran from `2026-10-17T07:25:23.786Z` to `2026-10-17T07:25:31.793Z`,
+observed `8006.465648000001` milliseconds against an `8000`-millisecond budget,
+and ended with null status, `SIGKILL`, `ETIMEDOUT`, and errno `-110`.
+Stdout contained three bytes, `[]\n`; stderr contained zero bytes.
+Printing an empty list does not prove the forwarding process completed.
+The generated Node adapter synchronously forwards to `sudo --non-interactive`
+and the resolved actual Podman executable,
+then propagates the returned status after its conditional cleanup.
+The underlying Podman, sudo, and Node forwarding lifecycles are not yet isolated.
+Seven other list operations and the final event query returned zero.
+All operation arguments, statuses, timings, signals, error fields, output bytes, and hashes are retained.
+
+Scoped cleanup passed.
+The provider interval is `165116` milliseconds at `16x64`,
+or `2641856` allocated vCPU-milliseconds.
+Artifact `01a148c0-c29e-7644-a0ec-f546f5caf3e8` is 46389 bytes,
+SHA-256 `3e12339c854c28f69ef9ecdc29e03b2f1f0efe2959ad66bfd23347e1d75df2bb`,
+with 20 individually verified members.
+The authorized next trial may increase only the metadata deadline with explicit forwarding receipts,
+retain rejection controls, then repeat the bounded actual consumer before the full campaign.

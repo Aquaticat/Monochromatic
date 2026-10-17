@@ -155,3 +155,15 @@ This does not explain the container source-copy failure;
 all of those earlier attempts failed before mutant assertions.
 The audit retains exact candidate identities and the verified issue body.
 No source-body remedy was applied.
+
+## Exact observer deadline receipt
+
+Actual repeat `mj128hqwv0` retains the failing `container-bin/podman ps --all --filter label=... --format json`
+operation with null status, `SIGKILL`, `ETIMEDOUT`, three stdout bytes, and zero stderr bytes.
+It observed `8006.465648000001` milliseconds against an `8000`-millisecond deadline.
+Stdout `[]\n` establishes output bytes only.
+The Node forwarder, its synchronous sudo child, and actual Podman exit remain distinct lifecycle boundaries.
+The source command still completed with exit zero, green baseline, and the same terminal compilation result.
+Both original eight-second failures remain retained.
+The next bounded trial may extend the metadata-only deadline while preserving source commands,
+timeout rejection controls, complete operation durations, and scoped cleanup.
