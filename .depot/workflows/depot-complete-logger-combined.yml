@@ -742,6 +742,7 @@ jobs:
       with:
         name: logger-remainder-${{ matrix.selector }}-evidence
         path: |
+          ~/temp/agent/depot-complete-ci/logger-native-verification/
           ~/temp/agent/depot-complete-ci/*-results.json
           ~/temp/agent/depot-complete-ci/native-tools.json
           ~/temp/agent/depot-complete-ci/prepare-*.log

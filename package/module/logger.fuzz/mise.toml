@@ -78,10 +78,10 @@ dir = "{{config_root}}/../../.."
 shell = "node --input-type=module-typescript -e"
 run = '''
 const { execFileSync, spawnSync } = await import('node:child_process')
-const { readFileSync, writeFileSync, mkdirSync, existsSync, chmodSync, lstatSync, readdirSync, copyFileSync, constants } = await import('node:fs')
+const { readFileSync, writeFileSync, mkdirSync, existsSync, chmodSync, lstatSync, realpathSync, readdirSync, copyFileSync, constants } = await import('node:fs')
 const { createHash } = await import('node:crypto')
 const { homedir } = await import('node:os')
-const { join } = await import('node:path')
+const { join, dirname } = await import('node:path')
 const { strict: assert } = await import('node:assert')
 assert(process.env.GITHUB_WORKSPACE)
 const harness = join(process.env.GITHUB_WORKSPACE, 'harness')
@@ -144,7 +144,10 @@ function nativeReportPaths() {
   }
   return paths.toSorted()
 }
-const nativeReportSources = new Map(nativeReportPaths().map(path => [path, { path, existedAtStart: existsSync(path), mtimeMsAtStart: existsSync(path) ? lstatSync(path).mtimeMs : undefined }]))
+const nativeReportSources = new Map(nativeReportPaths().map(path => {
+  if (existsSync(path)) assert(lstatSync(path).isFile() && !lstatSync(path).isSymbolicLink() && realpathSync(path).startsWith(realpathSync(source) + '/'), 'Preexisting mutation report must be a regular file inside authoritative source')
+  return [path, { path, existedAtStart: existsSync(path), mtimeMsAtStart: existsSync(path) ? lstatSync(path).mtimeMs : undefined }]
+}))
 let executionError
 try {
 if (partition.name !== 'fuzz') {
@@ -198,11 +201,11 @@ assert(!preparation.records.some(record => record.status === 'failed'), 'Indepen
     const nativeReports = nativeReportPaths().flatMap((path, index) => {
       if (!existsSync(path)) return []
       const stat = lstatSync(path)
-      assert(stat.isFile() && !stat.isSymbolicLink(), 'Native mutation report must be a regular file')
+      assert(stat.isFile() && !stat.isSymbolicLink() && realpathSync(path).startsWith(realpathSync(source) + '/'), 'Native mutation report must be a regular file inside authoritative source')
       const before = nativeReportSources.get(path) ?? { path, existedAtStart: false }
       const artifactPath = partition.name === 'mutation' ? `logger-native-report-${mutationCheck.id}-${index}.json` : join('logger-native-verification', mutationCheck.id, path.slice(source.length + 1))
       const target = join(directory, artifactPath)
-      mkdirSync(join(target, '..'), { recursive: true, mode: 0o700 })
+      mkdirSync(dirname(target), { recursive: true, mode: 0o700 })
       copyFileSync(path, target, constants.COPYFILE_EXCL)
       chmodSync(target, 0o600)
       const bytes = readFileSync(target)
