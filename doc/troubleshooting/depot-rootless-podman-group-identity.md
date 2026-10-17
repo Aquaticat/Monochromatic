@@ -322,3 +322,61 @@ All 118 configured development cases have retained outcomes:
 No narrower cause for WebKit's OPFS refusal is established.
 The complete per-case evidence and resource counters are in
 [`depot-logger-complete-2026-10-17.evidence.json`](../audit/depot-logger-complete-2026-10-17.evidence.json).
+
+## Generated workspace dependency resolution
+
+Pilot `drzwk5q8mc` completed frozen installs for all three disposable generator consumers,
+then the identity guard rejected a missing local `config-typescript` link.
+No original generator ran, and all three consumers were removed.
+The guard had assumed every declared workspace dependency appears directly under its owner's `node_modules`.
+That assumption contradicts this frozen source's configured `dedupeDirectDeps: true`.
+The root package directly declares `@monochromatic-dev/config-typescript`.
+The [current pnpm setting documentation][pnpm-direct-dedupe] states that root-linked dependencies
+are not also linked into subproject `node_modules` directories when direct deduplication is enabled.
+This is a trial guard defect, not a failed source dependency installation.
+
+The corrected guard searches ancestor `node_modules` directories only within the disposable consumer.
+The first actual workspace target must still equal that consumer's frozen package directory.
+All dependency directory and symlink checks still reject resolution into authoritative source.
+Source HEAD, index flags, every tracked blob and executable mode remain verified before the original task.
+No source guard is waived.
+At `8b64f790134bf0cc4485a9842071760cbc355f08`,
+seven disposable controls pass:
+ordinary and deduplicated valid layouts,
+consumer drift,
+authoritative drift,
+ordinary and deduplicated link leaks,
+and hidden index flags.
+Four guard-removal controls accept the corresponding invalid fixtures,
+and the original direct-only resolver rejects the valid deduplicated layout.
+All seven consumers are removed.
+An initial control-driver mutation retained a newly introduced reporting variable;
+its rejection was not counted as the expected missing-link control.
+That failed fixture was retained, inspected and removed after ignored-file and root Git-directory probes.
+The fresh corrected control report is `depot-generated-controls-09PD1b/results.json` in the accounting scratch.
+Actual frozen-source generator execution remains a separate cloud consumer control.
+
+## Authentic linter for Git host checks
+
+The authored Git host tasks require the gate's Git `2.56.0`.
+Their real Markdown cases also require `GIT_POLICY_NATIVE_TEST_LINTER` to name an authentic linter.
+Supplying the Git ELF alone leaves those cases at the explicit unset-variable diagnostic,
+before the real-linter assertions.
+The private worker-rootfs adapter now builds the linter from immutable source
+`ef01490f5e960f8ca0b424c12242caeb3c5a2b5e`,
+using the original snapshot build arguments and recorded compiler environment.
+Every retained source input matches its Git object;
+the actual ELF, tool versions and linked-library hashes are retained.
+A real stdin Markdown rewrite and fixed-input idempotence gate precede both unchanged original host tasks.
+
+Actual consumer `q10910cxfm` passes both original Markdown assertions.
+Its binary suite reports 137 passed, zero failed and one ignored;
+the library suite reports 1,806 passed, six failed and four ignored.
+Those six separately mapped assertion boundaries remain source diagnostics under the retained rootfs environment.
+No common filesystem cause or universal platform failure is established.
+Source inputs, exact source logs, actual provider attempt attribution and cleanup are verified.
+The two-CPU, two-GiB and 512-PID bounds remain effective.
+The linter sample records 9,663 memory-limit events with zero OOM events and zero PID rejections.
+The final common cohort replay remains separate work.
+
+[pnpm-direct-dedupe]: https://pnpm.io/settings/other#dedupedirectdeps
