@@ -7,17 +7,20 @@ This development run is not a complete-graph latency measurement.
 
 ## Actual check coverage
 
-Of the 24 package checks, 19 passed and three failed.
+Of the 24 package checks,
+19 passed and three failed.
 TOML mutation started without a terminal result.
 File-enforcer mutation never executed.
 A `check-started` marker for a deferred check is not proof that its command ran;
 the original executor emits scheduling markers even for skipped work.
 
 The core attempt `lzb1kz3c1b` executed 21 checks:
-19 passed, and full-package file-enforcer Oxlint plus TOML fuzz coverage failed.
+19 passed,
+and full-package file-enforcer Oxlint plus TOML fuzz coverage failed.
 The three container/mutation checks were explicitly deferred in that attempt.
 The container attempt `ltfw0kr3cd` passed its first three builds,
-failed file-enforcer container tests, and then remained inside TOML mutation until cancellation.
+failed file-enforcer container tests,
+and then remained inside TOML mutation until cancellation.
 An independent readonly-parameter plugin build was also never reached in that attempt;
 the core attempt separately built and tested that selected plugin successfully.
 
@@ -52,7 +55,8 @@ The full-package Oxlint task reported 84 errors across 137 files:
 - `test-import(require-eventual-artifact)`: 62.
 - `eslint(no-irregular-whitespace)`: 22.
 
-No plugin panic appears in this observation; issue `#1066` remains a separate historical incident.
+No plugin panic appears in this observation;
+issue `#1066` remains a separate historical incident.
 Fuzz coverage remains issue `#1067`.
 The unexecuted file-enforcer mutation task has a separate historical path-resolution failure in issue `#1068`.
 No source fix is included.
@@ -63,19 +67,25 @@ No source fix is included.
   SHA-256 `473f946fa516ebf1a1d41a31f594b126f0a908e77554d79d25f8d2a60a44b457`.
 
 Every artifact member has a retained byte count and digest.
-Downloaded core result records match streamed records, and every check-log hash matches its emitted result.
-Extraction validates relative names and writes fresh regular files, with bounded expanded output.
+Downloaded core result records match streamed records,
+and every check-log hash matches its emitted result.
+Extraction validates relative names and writes fresh regular files,
+with bounded expanded output.
 The canceled container attempt has no listed artifact.
 
 ## Provider usage and continuation queue
 
-- Attempt `ltfw0kr3cd`: `1816904` provider milliseconds at `16x64`.
-- Attempt `lfx15ztb6k`: `89042` provider milliseconds at `16x64`.
-- Attempt `lzb1kz3c1b`: `224138` provider milliseconds at `16x64`.
+- Attempt `ltfw0kr3cd`:
+  `1816904` provider milliseconds at `16x64`.
+- Attempt `lfx15ztb6k`:
+  `89042` provider milliseconds at `16x64`.
+- Attempt `lzb1kz3c1b`:
+  `224138` provider milliseconds at `16x64`.
 
 The summed provider intervals are `2130084` milliseconds,
 or `34081344` allocated vCPU-milliseconds.
-These values retain failed and canceled usage; no monetary total is inferred.
+These values retain failed and canceled usage;
+no monetary total is inferred.
 
 This audit records the isolated bounded continuation and its controls.
 
@@ -113,5 +123,5 @@ Issue [#1113](https://github.com/Aquaticats/Monochromatic/issues/1113)
 tracks the missing-terminal scheduling and artifact-retention boundary.
 All three bodies, open states, and triage labels were re-fetched and verified.
 
-The two missing development mutation gates are ready for a separate dispatch.
+Development dispatch `p6vm5s00w6` requests only the two missing mutation gates.
 Final coherent dispatch remains held.

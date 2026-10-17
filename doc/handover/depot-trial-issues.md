@@ -391,7 +391,7 @@ separate from the historical panic `#1066`.
 The executor deadline and missing-evidence boundary is `#1113`.
 Trial branch `trial/depot-toml-continuation-20261017` at `274ec49595d60f663249d61ab35a0806fe29aff0`
 has independent routes, immutable source/cohort proofs, retained shard identities, and verified timeout cleanup.
-The two missing mutation development gates are the next authorized dispatch.
+Development run `p6vm5s00w6` requests only the two missing mutation gates.
 Completed container failure `#1070` remains separate; application source stays immutable.
 Final coherent dispatch remains held.
 

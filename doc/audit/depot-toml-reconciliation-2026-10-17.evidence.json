@@ -21986,7 +21986,7 @@
     "harnessIssue": 1113
   },
   "continuation": {
-    "state": "Prepared and locally verified; final coherent dispatch held",
+    "state": "Two missing mutation development gates dispatched; final coherent dispatch held",
     "route": {
       "branch": "trial/depot-toml-continuation-20261017",
       "harnessRevision": "274ec49595d60f663249d61ab35a0806fe29aff0",
@@ -22618,6 +22618,107 @@
           }
         }
       ]
+    },
+    "development": {
+      "runId": "p6vm5s00w6",
+      "response": {
+        "org_id": "l4zncjjbj5",
+        "run_id": "p6vm5s00w6"
+      },
+      "manifest": {
+        "schemaVersion": 1,
+        "classification": "Independent development continuation. Not the final common cohort.",
+        "requestedAt": "2026-10-17T06:11:50.491Z",
+        "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+        "harnessRevision": "274ec49595d60f663249d61ab35a0806fe29aff0",
+        "branch": "trial/depot-toml-continuation-20261017",
+        "workflow": "depot-complete-toml-bounded.yml",
+        "workflowSha256": "f24f5f1443a5d6b68fb885920214750c400f570f3a654565421a82ed098d6f26",
+        "checks": [
+          "package.module.toml-edit.test.mutation",
+          "package.dev-script.file-enforcer.test.mutation"
+        ],
+        "scope": "mutations-only",
+        "limits": {
+          "consumerMilliseconds": 3600000,
+          "jobMinutes": 90,
+          "shutdownOperationMilliseconds": 60000
+        },
+        "controlsReportSha256": "3a4d1067432b9e416b7305c45427a17dcb35635fc15f76ab224649420ff4d425"
+      },
+      "manifestSha256": "9e933747f428d773c939238d6a0c016a3453894ba048d2b3a83b5df518f32aeb",
+      "cohortId": "toml-development-20261017T061150491Z",
+      "request": {
+        "schemaVersion": 1,
+        "command": "depot",
+        "args": [
+          "ci",
+          "dispatch",
+          "--repo",
+          "Aquaticats/Monochromatic",
+          "--org",
+          "l4zncjjbj5",
+          "--workflow",
+          "depot-complete-toml-bounded.yml",
+          "--ref",
+          "trial/depot-toml-continuation-20261017",
+          "--input",
+          "scope=mutations-only",
+          "--input",
+          "cohort_id=toml-development-20261017T061150491Z",
+          "--input",
+          "manifest_sha256=9e933747f428d773c939238d6a0c016a3453894ba048d2b3a83b5df518f32aeb",
+          "--input",
+          "requested_at=2026-10-17T06:11:50.491Z",
+          "--output",
+          "json"
+        ],
+        "cwd": "/home/user/temp/agent/depot-toml-continuation-worktree",
+        "manifestSha256": "9e933747f428d773c939238d6a0c016a3453894ba048d2b3a83b5df518f32aeb",
+        "cohortId": "toml-development-20261017T061150491Z",
+        "requestedAt": "2026-10-17T06:11:50.491Z",
+        "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+        "harnessRevision": "274ec49595d60f663249d61ab35a0806fe29aff0"
+      },
+      "receipt": {
+        "request": {
+          "schemaVersion": 1,
+          "command": "depot",
+          "args": [
+            "ci",
+            "dispatch",
+            "--repo",
+            "Aquaticats/Monochromatic",
+            "--org",
+            "l4zncjjbj5",
+            "--workflow",
+            "depot-complete-toml-bounded.yml",
+            "--ref",
+            "trial/depot-toml-continuation-20261017",
+            "--input",
+            "scope=mutations-only",
+            "--input",
+            "cohort_id=toml-development-20261017T061150491Z",
+            "--input",
+            "manifest_sha256=9e933747f428d773c939238d6a0c016a3453894ba048d2b3a83b5df518f32aeb",
+            "--input",
+            "requested_at=2026-10-17T06:11:50.491Z",
+            "--output",
+            "json"
+          ],
+          "cwd": "/home/user/temp/agent/depot-toml-continuation-worktree",
+          "manifestSha256": "9e933747f428d773c939238d6a0c016a3453894ba048d2b3a83b5df518f32aeb",
+          "cohortId": "toml-development-20261017T061150491Z",
+          "requestedAt": "2026-10-17T06:11:50.491Z",
+          "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "harnessRevision": "274ec49595d60f663249d61ab35a0806fe29aff0"
+        },
+        "finishedAt": "2026-10-17T06:11:51.811Z",
+        "status": 0,
+        "signal": null,
+        "stdout": "{\n  \"org_id\": \"l4zncjjbj5\",\n  \"run_id\": \"p6vm5s00w6\"\n}\n",
+        "stderr": ""
+      }
     }
   },
   "sourceDiagnostics": {
