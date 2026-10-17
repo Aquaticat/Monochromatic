@@ -1,6 +1,6 @@
 {
   "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
-  "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+  "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
   "checks": 719,
   "externalChecks": 19,
   "acyclic": true,
@@ -265,22 +265,25 @@
     {
       "id": "dhxhzzvmc3",
       "revision": "2676cb365a206434b525bf032a5875cafde827e9",
-      "status": "running",
+      "status": "failed",
       "selectedPackageChecks": 12,
       "selectedExternalChecks": [
         "root.browser",
         "root.e2e",
         "sidecar.generated-type-consistency"
-      ]
+      ],
+      "terminal": true,
+      "artifactsCollected": 4
     }
   ],
   "completeGraph": false,
   "pending": [
-    "Execute 34 unresolved checks and 3 rsync ownership infrastructure failures in isolated continuation jobs",
-    "Verify prerequisite repairs with bounded selective recovery",
-    "Integrate root-owned GHA and VM routes into final coherent request",
-    "Dispatch final coherent replay only after root alignment",
-    "Reconcile complete terminal graph and cost"
+    "Collect and reconcile all37 continuation leaf outcomes and every retained log.",
+    "Prove disjoint complete browser file/engine partitions, verify2x8 pilots and retain actual case JSON.",
+    "Supply audited Git2.56.0 and libraries before actual native host replay.",
+    "Reconcile all719 package checks and19 external specifications, distinguishing interrupted and blocked execution.",
+    "Duplicate-search and file each distinct retained source failure; compute provider allocation costs without claiming ledger verification.",
+    "Integrate root-owned GHA,VM,source attestation and desktop helpers before the held final coherent replay."
   ],
   "packageDevelopmentReconciliation": {
     "runId": "4x77lb56cs",
@@ -16606,5 +16609,1033 @@
     },
     "correctiveCommit": "153d7bc98c",
     "actualSourceConsumerVerified": false
+  },
+  "manifestCorrections": [
+    {
+      "date": "2026-10-17",
+      "commit": "0095ae37c7",
+      "checkId": "special.package.cli.vmsync.src.lifecycle.expensive.unit.test.ts",
+      "previousTask": "//package/cli/vmsync:test:unit",
+      "currentTask": "//package/cli/vmsync:test:e2e",
+      "addedPrerequisite": "package.cli.vmsync.build",
+      "scope": "package",
+      "arguments": [],
+      "sourceTask": "package/cli/vmsync/mise.toml",
+      "unchangedPackageChecks": 719,
+      "unchangedOtherExternalChecks": 18,
+      "oldRouteRuntimeEquivalenceVerified": false
+    },
+    {
+      "commit": "09941541e8",
+      "checkId": "root.e2e",
+      "addedPrerequisite": "package.module.dom.build",
+      "sourceConsumer": "package/module/dom/src/test-setup.ts"
+    },
+    {
+      "commit": "09941541e8",
+      "checkId": "root.browser",
+      "addedPrerequisite": "package.webapp-productivity.wc.build",
+      "sourceConsumer": "package/webapp-productivity/wc/src/page.browser.test.ts"
+    }
+  ],
+  "executorMetadataControls": {
+    "privateRoot": "/var/mnt/encrypted/temp/agent/depot-logger-verify-20261017/metadata-controls-2hbo89",
+    "records": [
+      {
+        "control": "passing",
+        "exitCode": 0,
+        "event": "case-finished",
+        "executionState": "finished",
+        "conclusion": "passed",
+        "completeGraph": false,
+        "manifestCheckIds": [
+          "control.lint.oxlint",
+          "control.types",
+          "control.build"
+        ],
+        "requestedCheckIds": [
+          "control.lint.oxlint",
+          "control.types",
+          "control.build"
+        ],
+        "selectedCheckIds": [
+          "control.lint.oxlint",
+          "control.types",
+          "control.build"
+        ],
+        "prerequisiteCheckIds": [],
+        "sourceInputsVerified": true,
+        "allActiveChecksHaveTerminalRecords": true,
+        "reportSha256": "9f6b70bd8e5bbdd188d82b1046d76c854cabdadcd12dbcccd2a736f6c9a53dbf"
+      },
+      {
+        "control": "failure",
+        "exitCode": 1,
+        "event": "case-finished",
+        "executionState": "finished",
+        "conclusion": "failed",
+        "completeGraph": false,
+        "manifestCheckIds": [
+          "control.lint.oxlint",
+          "control.types",
+          "control.build"
+        ],
+        "requestedCheckIds": [
+          "control.lint.oxlint",
+          "control.types",
+          "control.build"
+        ],
+        "selectedCheckIds": [
+          "control.lint.oxlint",
+          "control.types",
+          "control.build"
+        ],
+        "prerequisiteCheckIds": [],
+        "sourceInputsVerified": true,
+        "allActiveChecksHaveTerminalRecords": true,
+        "reportSha256": "21633af55083700e45ce2ff48c4f0f606e1062a78bf2566cfde66a868d3a52c0"
+      },
+      {
+        "control": "deferred-prerequisite",
+        "exitCode": 0,
+        "event": "case-finished",
+        "executionState": "finished",
+        "conclusion": "passed",
+        "completeGraph": false,
+        "manifestCheckIds": [
+          "control.lint.oxlint",
+          "control.types",
+          "control.build"
+        ],
+        "requestedCheckIds": [
+          "control.types"
+        ],
+        "selectedCheckIds": [
+          "control.types",
+          "control.build"
+        ],
+        "prerequisiteCheckIds": [
+          "control.build"
+        ],
+        "sourceInputsVerified": true,
+        "allActiveChecksHaveTerminalRecords": true,
+        "reportSha256": "bf750c32eb44df2cd9f877a9c305007cf3a68f72b5b80ebf0382934b2bd5e008"
+      },
+      {
+        "control": "metadata-progress",
+        "exitCode": 0,
+        "event": "case-finished",
+        "executionState": "finished",
+        "conclusion": "passed",
+        "completeGraph": true,
+        "manifestCheckIds": [
+          "control.lint.oxlint",
+          "control.types",
+          "control.build"
+        ],
+        "requestedCheckIds": [
+          "control.lint.oxlint",
+          "control.types",
+          "control.build"
+        ],
+        "selectedCheckIds": [
+          "control.lint.oxlint",
+          "control.types",
+          "control.build"
+        ],
+        "prerequisiteCheckIds": [],
+        "sourceInputsVerified": true,
+        "allActiveChecksHaveTerminalRecords": true,
+        "reportSha256": "7b3f60d731bebb56783f4437bde86d8b6c9d6f5a3e3e0eb3bf6db8226d3c04fe"
+      },
+      {
+        "control": "legacy-metadata-progress",
+        "executorRevision": "7f9fb86ba7",
+        "exitCode": 1,
+        "expectedFailureObserved": true,
+        "diagnostic": "metadata progress control expected its own running check before terminal completion"
+      }
+    ]
+  },
+  "prerequisiteRecovery": {
+    "runId": "dhxhzzvmc3",
+    "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+    "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+    "requestedCheckIds": [
+      "package.config.pnpr.lint.types",
+      "package.git-policy.cli.lint.types",
+      "package.git-policy.cli.fuzz.lint.types",
+      "package.desktop-daemon.hall-monitor.lint.types",
+      "package.ssg.aquati.cat.lint.types",
+      "package.config.pnpr.test.unit",
+      "package.git-policy.cli.test.unit",
+      "package.ssg.aquati.cat.test.unit",
+      "package.music-player.desktop-e2e.test.unit",
+      "package.module.toml-edit.test.conformance",
+      "package.git-policy.cli.fuzz.test",
+      "package.git-policy.cli.fuzz.test.planted"
+    ],
+    "activeCheckIds": [
+      "package.config.pnpr.build",
+      "package.config.pnpr.lint.types",
+      "package.config.pnpr.test.unit",
+      "package.desktop-daemon.hall-monitor.build",
+      "package.desktop-daemon.hall-monitor.lint.types",
+      "package.git-policy.cli.build",
+      "package.git-policy.cli.fuzz.build",
+      "package.git-policy.cli.fuzz.lint.types",
+      "package.git-policy.cli.fuzz.test",
+      "package.git-policy.cli.fuzz.test.planted",
+      "package.git-policy.cli.lint.types",
+      "package.git-policy.cli.test.unit",
+      "package.module.caught-value.build",
+      "package.module.const.build",
+      "package.module.hyperscript.build",
+      "package.module.llm-type.build",
+      "package.module.logger.build",
+      "package.module.or-throw.build",
+      "package.module.toml-edit.build",
+      "package.module.toml-edit.test.conformance",
+      "package.music-player.desktop-e2e.test.unit",
+      "package.ssg.aquati.cat.build",
+      "package.ssg.aquati.cat.lint.types",
+      "package.ssg.aquati.cat.test.unit"
+    ],
+    "logHashesAndByteCountsVerified": true,
+    "groups": [
+      {
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "group": "package-prerequisites",
+        "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+        "records": [
+          {
+            "schemaVersion": 1,
+            "caseId": "logger",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+            "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+            "resources": {
+              "cpus": 16,
+              "memoryGiB": 64
+            },
+            "checkId": "package.module.caught-value.build",
+            "task": "//package/module/caught-value:build",
+            "args": [],
+            "startedAt": "2026-10-17T05:13:58.922Z",
+            "event": "check-finished",
+            "finishedAt": "2026-10-17T05:14:00.538Z",
+            "elapsedMs": 1616.2339989999998,
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.module.caught-value.build.log",
+            "outputSha256": "27f4dc58ce0a985fc589279567030201856639555a8719e8f1a53abca95d453b",
+            "outputBytes": 543
+          },
+          {
+            "schemaVersion": 1,
+            "caseId": "logger",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+            "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+            "resources": {
+              "cpus": 16,
+              "memoryGiB": 64
+            },
+            "checkId": "package.module.const.build",
+            "task": "//package/module/const:build",
+            "args": [],
+            "startedAt": "2026-10-17T05:13:58.927Z",
+            "event": "check-finished",
+            "finishedAt": "2026-10-17T05:14:00.551Z",
+            "elapsedMs": 1623.7973359999999,
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.module.const.build.log",
+            "outputSha256": "0cd07a0c029630fecd624a50604816504c7e0277bf4799273482ee6f2c7430f9",
+            "outputBytes": 532
+          },
+          {
+            "schemaVersion": 1,
+            "caseId": "logger",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+            "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+            "resources": {
+              "cpus": 16,
+              "memoryGiB": 64
+            },
+            "checkId": "package.module.hyperscript.build",
+            "task": "//package/module/hyperscript:build",
+            "args": [],
+            "startedAt": "2026-10-17T05:13:58.946Z",
+            "event": "check-finished",
+            "finishedAt": "2026-10-17T05:14:00.722Z",
+            "elapsedMs": 1776.4238670000002,
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.module.hyperscript.build.log",
+            "outputSha256": "b9f754e9c667f8db72c9f104dd9c93412f56108132b03d221b89049b428d4694",
+            "outputBytes": 549
+          },
+          {
+            "schemaVersion": 1,
+            "caseId": "logger",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+            "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+            "resources": {
+              "cpus": 16,
+              "memoryGiB": 64
+            },
+            "checkId": "package.module.llm-type.build",
+            "task": "//package/module/llm-type:build",
+            "args": [],
+            "startedAt": "2026-10-17T05:14:00.742Z",
+            "event": "check-finished",
+            "finishedAt": "2026-10-17T05:14:01.837Z",
+            "elapsedMs": 1095.3552090000003,
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.module.llm-type.build.log",
+            "outputSha256": "b8893d8aa0d397e3a4ac74222bf736389746550f903f8fa8cf22ef51b1f6c2f3",
+            "outputBytes": 531
+          },
+          {
+            "schemaVersion": 1,
+            "caseId": "logger",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+            "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+            "resources": {
+              "cpus": 16,
+              "memoryGiB": 64
+            },
+            "checkId": "package.desktop-daemon.hall-monitor.build",
+            "task": "//package/desktop-daemon/hall-monitor:build",
+            "args": [],
+            "startedAt": "2026-10-17T05:14:01.842Z",
+            "event": "check-finished",
+            "finishedAt": "2026-10-17T05:14:02.679Z",
+            "elapsedMs": 837.007188,
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.desktop-daemon.hall-monitor.build.log",
+            "outputSha256": "da6ea67915d9db08f042629da0331174ddf6acae35d6fd1d3c328c51d44b5bfa",
+            "outputBytes": 251
+          },
+          {
+            "schemaVersion": 1,
+            "caseId": "logger",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+            "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+            "resources": {
+              "cpus": 16,
+              "memoryGiB": 64
+            },
+            "checkId": "package.module.logger.build",
+            "task": "//package/module/logger:build",
+            "args": [],
+            "startedAt": "2026-10-17T05:14:02.683Z",
+            "event": "check-finished",
+            "finishedAt": "2026-10-17T05:14:03.734Z",
+            "elapsedMs": 1050.6867360000006,
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.module.logger.build.log",
+            "outputSha256": "3e0c0f97211f4bb64b3ef7a459dd813273c3d8b4e885b4c4b97b83604b3b3c20",
+            "outputBytes": 1570
+          },
+          {
+            "schemaVersion": 1,
+            "caseId": "logger",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+            "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+            "resources": {
+              "cpus": 16,
+              "memoryGiB": 64
+            },
+            "checkId": "package.module.or-throw.build",
+            "task": "//package/module/or-throw:build",
+            "args": [],
+            "startedAt": "2026-10-17T05:14:08.655Z",
+            "event": "check-finished",
+            "finishedAt": "2026-10-17T05:14:09.688Z",
+            "elapsedMs": 1032.590483,
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.module.or-throw.build.log",
+            "outputSha256": "6a0cec75218d81dcd6d4f5f6be5b3cf6f245444b0a7e1d41e9cb012f7160715e",
+            "outputBytes": 537
+          },
+          {
+            "schemaVersion": 1,
+            "caseId": "logger",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+            "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+            "resources": {
+              "cpus": 16,
+              "memoryGiB": 64
+            },
+            "checkId": "package.module.toml-edit.build",
+            "task": "//package/module/toml-edit:build",
+            "args": [],
+            "startedAt": "2026-10-17T05:14:14.382Z",
+            "event": "check-finished",
+            "finishedAt": "2026-10-17T05:14:15.525Z",
+            "elapsedMs": 1143.4657099999986,
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.module.toml-edit.build.log",
+            "outputSha256": "0ddd00c274b5c20aab86fc14f602393e9e1077fe408f3bbdba7c8763afb7e474",
+            "outputBytes": 829
+          },
+          {
+            "schemaVersion": 1,
+            "caseId": "logger",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+            "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+            "resources": {
+              "cpus": 16,
+              "memoryGiB": 64
+            },
+            "checkId": "package.ssg.aquati.cat.build",
+            "task": "//package/ssg/aquati.cat:build",
+            "args": [],
+            "startedAt": "2026-10-17T05:14:22.094Z",
+            "event": "check-finished",
+            "finishedAt": "2026-10-17T05:14:25.717Z",
+            "elapsedMs": 3622.661566999999,
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.ssg.aquati.cat.build.log",
+            "outputSha256": "c4b7dd1b2a8abfa567b6f04f44fb6d37d44fb72bc1e0e5c58e84409eeb38ae54",
+            "outputBytes": 14421
+          },
+          {
+            "schemaVersion": 1,
+            "caseId": "logger",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+            "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+            "resources": {
+              "cpus": 16,
+              "memoryGiB": 64
+            },
+            "checkId": "package.desktop-daemon.hall-monitor.lint.types",
+            "task": "//package/desktop-daemon/hall-monitor:lint:types",
+            "args": [],
+            "startedAt": "2026-10-17T05:14:27.385Z",
+            "event": "check-finished",
+            "finishedAt": "2026-10-17T05:14:28.126Z",
+            "elapsedMs": 741.3137950000018,
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.desktop-daemon.hall-monitor.lint.types.log",
+            "outputSha256": "c70f76e7607edf062d845bc5985cc5a6136f47c976abc7674c3dec4edc8050c9",
+            "outputBytes": 273
+          },
+          {
+            "schemaVersion": 1,
+            "caseId": "logger",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+            "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+            "resources": {
+              "cpus": 16,
+              "memoryGiB": 64
+            },
+            "checkId": "package.config.pnpr.build",
+            "task": "//package/config/pnpr:build",
+            "args": [],
+            "startedAt": "2026-10-17T05:14:00.542Z",
+            "event": "check-finished",
+            "finishedAt": "2026-10-17T05:14:33.882Z",
+            "elapsedMs": 33339.317625,
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.config.pnpr.build.log",
+            "outputSha256": "7f43695a4af9cc7ef19ebecf79b39f965fc5cebedb5992e26faffecac523321c",
+            "outputBytes": 2261
+          },
+          {
+            "schemaVersion": 1,
+            "caseId": "logger",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+            "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+            "resources": {
+              "cpus": 16,
+              "memoryGiB": 64
+            },
+            "checkId": "package.config.pnpr.lint.types",
+            "task": "//package/config/pnpr:lint:types",
+            "args": [],
+            "startedAt": "2026-10-17T05:14:33.914Z",
+            "event": "check-finished",
+            "finishedAt": "2026-10-17T05:14:34.935Z",
+            "elapsedMs": 1020.8353070000012,
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.config.pnpr.lint.types.log",
+            "outputSha256": "2cf7c4723039bf3eca4812ee8ae6755fc910c652791d547dc1ad7c31e9cf9950",
+            "outputBytes": 248
+          },
+          {
+            "schemaVersion": 1,
+            "caseId": "logger",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+            "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+            "resources": {
+              "cpus": 16,
+              "memoryGiB": 64
+            },
+            "checkId": "package.music-player.desktop-e2e.test.unit",
+            "task": "//package/music-player/desktop-e2e:test:unit",
+            "args": [
+              "--all"
+            ],
+            "startedAt": "2026-10-17T05:14:33.879Z",
+            "expectedFiles": [
+              "package/music-player/desktop-e2e/src/ansi.unit.test.ts",
+              "package/music-player/desktop-e2e/src/cli.unit.test.ts",
+              "package/music-player/desktop-e2e/src/clipboard.unit.test.ts",
+              "package/music-player/desktop-e2e/src/command.unit.test.ts",
+              "package/music-player/desktop-e2e/src/compositor-path.unit.test.ts",
+              "package/music-player/desktop-e2e/src/compositor-version.unit.test.ts",
+              "package/music-player/desktop-e2e/src/config.unit.test.ts",
+              "package/music-player/desktop-e2e/src/control.unit.test.ts",
+              "package/music-player/desktop-e2e/src/errors.unit.test.ts",
+              "package/music-player/desktop-e2e/src/files.unit.test.ts",
+              "package/music-player/desktop-e2e/src/image.unit.test.ts",
+              "package/music-player/desktop-e2e/src/library.unit.test.ts",
+              "package/music-player/desktop-e2e/src/log-scan.unit.test.ts",
+              "package/music-player/desktop-e2e/src/pipewire.unit.test.ts",
+              "package/music-player/desktop-e2e/src/poll.unit.test.ts",
+              "package/music-player/desktop-e2e/src/press.unit.test.ts",
+              "package/music-player/desktop-e2e/src/recorder.unit.test.ts",
+              "package/music-player/desktop-e2e/src/report.unit.test.ts",
+              "package/music-player/desktop-e2e/src/run.unit.test.ts",
+              "package/music-player/desktop-e2e/src/scenario-table.unit.test.ts",
+              "package/music-player/desktop-e2e/src/selection.unit.test.ts",
+              "package/music-player/desktop-e2e/src/session-launch.unit.test.ts",
+              "package/music-player/desktop-e2e/src/states-title.unit.test.ts",
+              "package/music-player/desktop-e2e/src/ui-state-log.unit.test.ts",
+              "package/music-player/desktop-e2e/src/ui-state.unit.test.ts"
+            ],
+            "event": "check-finished",
+            "finishedAt": "2026-10-17T05:14:37.154Z",
+            "elapsedMs": 3274.97696,
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.music-player.desktop-e2e.test.unit.log",
+            "outputSha256": "846b49a41471eaebe02f0d444c8c4f9ef186e5e94c4fe3da983e5b748107001c",
+            "outputBytes": 15617
+          },
+          {
+            "schemaVersion": 1,
+            "caseId": "logger",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+            "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+            "resources": {
+              "cpus": 16,
+              "memoryGiB": 64
+            },
+            "checkId": "package.config.pnpr.test.unit",
+            "task": "//package/config/pnpr:test:unit",
+            "args": [
+              "--all"
+            ],
+            "startedAt": "2026-10-17T05:14:34.995Z",
+            "expectedFiles": [
+              "package/config/pnpr/src/json-shape.unit.test.ts",
+              "package/config/pnpr/src/publish-plan.unit.test.ts",
+              "package/config/pnpr/src/publish-retry.unit.test.ts",
+              "package/config/pnpr/src/version-order.unit.test.ts"
+            ],
+            "event": "check-finished",
+            "finishedAt": "2026-10-17T05:14:40.105Z",
+            "elapsedMs": 5109.602623999999,
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.config.pnpr.test.unit.log",
+            "outputSha256": "f37a21a57d63b8925bf1c7a0892a9f41d22a290b0f51a1b84147947002529b1d",
+            "outputBytes": 4910
+          },
+          {
+            "schemaVersion": 1,
+            "caseId": "logger",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+            "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+            "resources": {
+              "cpus": 16,
+              "memoryGiB": 64
+            },
+            "checkId": "package.ssg.aquati.cat.test.unit",
+            "task": "//package/ssg/aquati.cat:test:unit",
+            "args": [
+              "--all"
+            ],
+            "startedAt": "2026-10-17T05:14:40.141Z",
+            "expectedFiles": [
+              "package/ssg/aquati.cat/src/component/question-id.unit.test.ts",
+              "package/ssg/aquati.cat/src/component/site-footer.unit.test.ts",
+              "package/ssg/aquati.cat/src/lib/date-divergence.unit.test.ts",
+              "package/ssg/aquati.cat/src/lib/rss.unit.test.ts",
+              "package/ssg/aquati.cat/src/page/post.unit.test.ts"
+            ],
+            "event": "check-finished",
+            "finishedAt": "2026-10-17T05:14:40.721Z",
+            "elapsedMs": 579.4680970000045,
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.ssg.aquati.cat.test.unit.log",
+            "outputSha256": "7b7a89b6bd51533c3fb422c12485b97088f00badc77cefd3f0d5971337f095d4",
+            "outputBytes": 1548
+          },
+          {
+            "schemaVersion": 1,
+            "caseId": "logger",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+            "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+            "resources": {
+              "cpus": 16,
+              "memoryGiB": 64
+            },
+            "checkId": "package.ssg.aquati.cat.lint.types",
+            "task": "//package/ssg/aquati.cat:lint:types",
+            "args": [],
+            "startedAt": "2026-10-17T05:14:40.102Z",
+            "event": "check-finished",
+            "finishedAt": "2026-10-17T05:14:43.679Z",
+            "elapsedMs": 3577.727103999998,
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.ssg.aquati.cat.lint.types.log",
+            "outputSha256": "a406f936b498b86da8085b6d959cadd12a1b8b8b52cb5de352a67889783e8f3d",
+            "outputBytes": 250
+          },
+          {
+            "schemaVersion": 1,
+            "caseId": "logger",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+            "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+            "resources": {
+              "cpus": 16,
+              "memoryGiB": 64
+            },
+            "checkId": "package.git-policy.cli.build",
+            "task": "//package/git-policy/cli:build",
+            "args": [],
+            "startedAt": "2026-10-17T05:14:00.720Z",
+            "event": "check-finished",
+            "finishedAt": "2026-10-17T05:15:11.825Z",
+            "elapsedMs": 71104.681597,
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.git-policy.cli.build.log",
+            "outputSha256": "c568411132febdbef25f9ce4e6680d3924e0c7774320a2b1325e9da31ce0399e",
+            "outputBytes": 4372
+          },
+          {
+            "schemaVersion": 1,
+            "caseId": "logger",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+            "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+            "resources": {
+              "cpus": 16,
+              "memoryGiB": 64
+            },
+            "checkId": "package.module.toml-edit.test.conformance",
+            "task": "//package/module/toml-edit:test:conformance",
+            "args": [],
+            "startedAt": "2026-10-17T05:14:43.677Z",
+            "event": "check-finished",
+            "finishedAt": "2026-10-17T05:15:11.925Z",
+            "elapsedMs": 28248.831753000006,
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.module.toml-edit.test.conformance.log",
+            "outputSha256": "abfa5ee20f9d592fb2a1dda74acb158ddb86c0086239d54b72ed44c8a9736a18",
+            "outputBytes": 1886
+          },
+          {
+            "schemaVersion": 1,
+            "caseId": "logger",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+            "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+            "resources": {
+              "cpus": 16,
+              "memoryGiB": 64
+            },
+            "checkId": "package.git-policy.cli.test.unit",
+            "task": "//package/git-policy/cli:test:unit",
+            "args": [
+              "--all"
+            ],
+            "startedAt": "2026-10-17T05:15:11.888Z",
+            "expectedFiles": [
+              "package/git-policy/cli/e2e/commit-shape-trace.unit.test.ts",
+              "package/git-policy/cli/e2e/invariant.unit.test.ts",
+              "package/git-policy/cli/e2e/jsonl-event.unit.test.ts",
+              "package/git-policy/cli/e2e/ledger.unit.test.ts",
+              "package/git-policy/cli/e2e/leftover.unit.test.ts",
+              "package/git-policy/cli/e2e/seeded-schedule.unit.test.ts",
+              "package/git-policy/cli/e2e/trace-replay.unit.test.ts",
+              "package/git-policy/cli/e2e/wrapper-selection.unit.test.ts"
+            ],
+            "event": "check-finished",
+            "finishedAt": "2026-10-17T05:15:12.377Z",
+            "elapsedMs": 489.1602920000005,
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.git-policy.cli.test.unit.log",
+            "outputSha256": "7a9217023922fe1ce5dccb638024fce837a1fcd08cb74e51d8b23573e5901674",
+            "outputBytes": 5264
+          },
+          {
+            "schemaVersion": 1,
+            "caseId": "logger",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+            "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+            "resources": {
+              "cpus": 16,
+              "memoryGiB": 64
+            },
+            "checkId": "package.git-policy.cli.lint.types",
+            "task": "//package/git-policy/cli:lint:types",
+            "args": [],
+            "startedAt": "2026-10-17T05:15:11.885Z",
+            "event": "check-finished",
+            "finishedAt": "2026-10-17T05:15:12.500Z",
+            "elapsedMs": 615.1128530000133,
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.git-policy.cli.lint.types.log",
+            "outputSha256": "f20275a2006319538a78247e19a6182bde375e17aa300f9fdda2de6aa734ad12",
+            "outputBytes": 249
+          },
+          {
+            "schemaVersion": 1,
+            "caseId": "logger",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+            "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+            "resources": {
+              "cpus": 16,
+              "memoryGiB": 64
+            },
+            "checkId": "package.git-policy.cli.fuzz.build",
+            "task": "//package/git-policy/cli.fuzz:build",
+            "args": [],
+            "startedAt": "2026-10-17T05:13:58.895Z",
+            "event": "check-finished",
+            "finishedAt": "2026-10-17T05:21:35.997Z",
+            "elapsedMs": 457101.71427,
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.git-policy.cli.fuzz.build.log",
+            "outputSha256": "b040171c2c2be4395bc199b1bd8d2cfed8b1ecdfae1df041e14462a39420e699",
+            "outputBytes": 401356
+          },
+          {
+            "schemaVersion": 1,
+            "caseId": "logger",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+            "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+            "resources": {
+              "cpus": 16,
+              "memoryGiB": 64
+            },
+            "checkId": "package.git-policy.cli.fuzz.lint.types",
+            "task": "//package/git-policy/cli.fuzz:lint:types",
+            "args": [],
+            "startedAt": "2026-10-17T05:21:36.038Z",
+            "event": "check-finished",
+            "finishedAt": "2026-10-17T05:22:21.849Z",
+            "elapsedMs": 45810.938227000006,
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.git-policy.cli.fuzz.lint.types.log",
+            "outputSha256": "040345c3ec559a004081f48bef224e2c73393cf9a80ec3bd32a4949f96e8d4dd",
+            "outputBytes": 4989
+          },
+          {
+            "schemaVersion": 1,
+            "caseId": "logger",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+            "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+            "resources": {
+              "cpus": 16,
+              "memoryGiB": 64
+            },
+            "checkId": "package.git-policy.cli.fuzz.test",
+            "task": "//package/git-policy/cli.fuzz:test",
+            "args": [],
+            "startedAt": "2026-10-17T05:21:36.042Z",
+            "event": "check-finished",
+            "finishedAt": "2026-10-17T05:22:24.773Z",
+            "elapsedMs": 48730.79211399995,
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.git-policy.cli.fuzz.test.log",
+            "outputSha256": "edc74bfe4e449e4c0c110c4ebeaf8bfdb89caae5d76df3214489ec4d21060d62",
+            "outputBytes": 391386
+          },
+          {
+            "schemaVersion": 1,
+            "caseId": "logger",
+            "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+            "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+            "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+            "resources": {
+              "cpus": 16,
+              "memoryGiB": 64
+            },
+            "checkId": "package.git-policy.cli.fuzz.test.planted",
+            "task": "//package/git-policy/cli.fuzz:test:planted",
+            "args": [],
+            "startedAt": "2026-10-17T05:21:36.044Z",
+            "event": "check-finished",
+            "finishedAt": "2026-10-17T05:27:02.073Z",
+            "elapsedMs": 326029.30409199995,
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/package.git-policy.cli.fuzz.test.planted.log",
+            "outputSha256": "30b24278260ca20ab40b9b8273bdb5d0aeb95454fa6c728b0312532833a41811",
+            "outputBytes": 5012
+          }
+        ]
+      },
+      {
+        "artifact": "artifact-logger-external-browser-evidence/temp/agent/depot-complete-ci/logger-external-browser-results.json",
+        "group": "browser",
+        "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=671vknl89v&attempt=m4gdpjr7tm",
+        "records": [
+          {
+            "checkId": "external-browser-prerequisites",
+            "command": "mise",
+            "args": [
+              "run",
+              "//package/dev-script/task-util:trial:depot:ci:execute"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/harness",
+            "startedAt": "2026-10-17T05:14:08.052Z",
+            "finishedAt": "2026-10-17T05:14:30.508Z",
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/external-browser-prerequisites.log",
+            "outputSha256": "a4ccb2e7ce6d33cfe68f68b139e55b2a0a6021fd29330b232608d9a4e4e74719",
+            "outputBytes": 70761168
+          },
+          {
+            "checkId": "root.browser",
+            "command": "mise",
+            "args": [
+              "run",
+              "//:test:browser",
+              "--",
+              "package/module/fs-path/src/opfs-root-discovery.browser.test.ts",
+              "package/module/logger.fuzz/src/browser/properties.browser.test.ts",
+              "package/module/logger/src/sink/indexed-db.browser.test.ts",
+              "package/module/logger/src/sink/local-storage.browser.test.ts",
+              "package/module/logger/src/sink/opfs.browser.test.ts",
+              "package/module/logger/src/sink/session-storage.browser.test.ts",
+              "package/module/test/src/sinon.browser.test.ts",
+              "package/webapp-productivity/wc/src/page.browser.test.ts"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/source",
+            "startedAt": "2026-10-17T05:14:30.583Z",
+            "finishedAt": "2026-10-17T05:34:30.632Z",
+            "exitCode": 1,
+            "signal": null,
+            "error": "spawnSync mise ETIMEDOUT",
+            "status": "failed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/root.browser.log",
+            "outputSha256": "66a553b0b40594dc624c0e1f858f98682c392ab6e31e653a911922b6af59bdca",
+            "outputBytes": 1315
+          }
+        ]
+      },
+      {
+        "artifact": "artifact-logger-external-e2e-evidence/temp/agent/depot-complete-ci/logger-external-e2e-results.json",
+        "group": "e2e",
+        "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=bf8lclxqbr&attempt=w3gq4h2ls8",
+        "records": [
+          {
+            "checkId": "root.e2e",
+            "command": "mise",
+            "args": [
+              "run",
+              "//:test:e2e",
+              "--",
+              "package/module/dom/src/duplicateElement.e2e.test.ts",
+              "package/module/dom/src/prompt.e2e.test.ts",
+              "package/module/dom/src/redirectingTo.e2e.test.ts",
+              "package/module/dom/src/set/cssFromParam.e2e.test.ts"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/source",
+            "startedAt": "2026-10-17T05:12:44.968Z",
+            "finishedAt": "2026-10-17T05:16:00.428Z",
+            "exitCode": 1,
+            "signal": null,
+            "status": "failed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/root.e2e.log",
+            "outputSha256": "9565c6d07c617384678d106eed4553fb982fdf108539edf28d5be5676681702c",
+            "outputBytes": 49773
+          }
+        ]
+      },
+      {
+        "artifact": "artifact-logger-external-generated-evidence/temp/agent/depot-complete-ci/logger-external-generated-results.json",
+        "group": "generated",
+        "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=d6nv16v2ld&attempt=78b0kqzskd",
+        "records": [
+          {
+            "checkId": "sidecar.generated-type-consistency",
+            "command": "mise",
+            "args": [
+              "run",
+              "//package/module/deepmerge-ts.fuzz:generate:type-cases"
+            ],
+            "cwd": "/home/runner/temp/agent/depot-complete-ci/logger-generated-sidecar.generated-type-consistency",
+            "startedAt": "2026-10-17T05:14:21.132Z",
+            "finishedAt": "2026-10-17T05:14:21.351Z",
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/sidecar.generated-type-consistency.log",
+            "outputSha256": "57b667f537c30ec1679c1640159bc47fe54e9c75b577f283c49948f73f310d86",
+            "outputBytes": 99,
+            "requiredDeclaredTaskPassed": true,
+            "changedTrackedBytes": 0,
+            "untracked": ""
+          },
+          {
+            "checkId": "sidecar.generated-type-consistency.declared",
+            "command": "mise",
+            "args": [
+              "run",
+              "//package/module/deepmerge-ts.fuzz:generate:declared-type-cases"
+            ],
+            "cwd": "/home/runner/temp/agent/depot-complete-ci/logger-generated-sidecar.generated-type-consistency",
+            "startedAt": "2026-10-17T05:14:21.352Z",
+            "finishedAt": "2026-10-17T05:14:24.614Z",
+            "exitCode": 0,
+            "signal": null,
+            "status": "passed",
+            "outputLog": "/home/runner/temp/agent/depot-complete-ci/check-logs/sidecar.generated-type-consistency.declared.log",
+            "outputSha256": "1a0274c78eb1a5bd23aa258d53b89002210e397dc78409b9f1320d6d7782c0dd",
+            "outputBytes": 983,
+            "parentCheckId": "sidecar.generated-type-consistency"
+          }
+        ]
+      }
+    ]
+  },
+  "providerIdentityControl": {
+    "runId": "dhxhzzvmc3",
+    "workflowIds": [
+      "fjdhk1bj7r"
+    ],
+    "records": [
+      {
+        "artifact": "artifact-logger-package-prerequisite-recovery-evidence/logger-results.json",
+        "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=vm37ggkdpx&attempt=63qrs4t1ms",
+        "matchedCurrentAttemptViewUrl": true
+      },
+      {
+        "artifact": "artifact-logger-external-browser-evidence/temp/agent/depot-complete-ci/logger-external-browser-results.json",
+        "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=671vknl89v&attempt=m4gdpjr7tm",
+        "matchedCurrentAttemptViewUrl": true
+      },
+      {
+        "artifact": "artifact-logger-external-e2e-evidence/temp/agent/depot-complete-ci/logger-external-e2e-results.json",
+        "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=bf8lclxqbr&attempt=w3gq4h2ls8",
+        "matchedCurrentAttemptViewUrl": true
+      },
+      {
+        "artifact": "artifact-logger-external-generated-evidence/temp/agent/depot-complete-ci/logger-external-generated-results.json",
+        "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/fjdhk1bj7r?job=d6nv16v2ld&attempt=78b0kqzskd",
+        "matchedCurrentAttemptViewUrl": true
+      }
+    ]
+  },
+  "continuation": {
+    "runId": "1wzr86fssk",
+    "status": "running",
+    "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+    "harnessRevision": "09941541e8ba43d59b03969248f8484a2d2c4269",
+    "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+    "createdAt": "2026-10-17T05:41:08Z",
+    "requestedLeaves": 37,
+    "previouslyUnresolvedLeaves": 34,
+    "infrastructureFailureLeaves": 3,
+    "providerRefShaHeadShaMatchVerified": true,
+    "finalCombined": false
+  },
+  "browserRecovery": {
+    "pending": true,
+    "priorRun": "dhxhzzvmc3",
+    "priorBrowserBudgetMs": 1200000,
+    "priorBrowserTermination": "spawnSync mise ETIMEDOUT",
+    "priorBrowserConfiguredCases": 84,
+    "priorDomConfiguredCases": 34,
+    "priorWorkers": 8,
+    "currentWorkers": 1,
+    "buildPrerequisitesCorrected": true,
+    "fileEnginePartitionRequired": true,
+    "caseJsonRequired": true,
+    "supportedProviderSizePlanned": "2x8",
+    "pilotVerificationPending": true,
+    "publishedUsdPerAllocatedCpuSecond": 0.00005,
+    "accountLedgerVerified": false
+  },
+  "gitHostRecovery": {
+    "pending": true,
+    "observedGitVersion": "2.55.0",
+    "requiredGitVersion": "2.56.0",
+    "sourceRequirement": "package/git-policy/cli/mise.toml native:test:host description",
+    "auditedImage": "sha256:6ec87f6d290a2f59bda5b3ffd4197058fe0749d02b4978c877e8edf6dc38802a",
+    "actualConsumerVerified": false,
+    "historicalSourceChanged": false
   }
 }

@@ -239,10 +239,14 @@ The logger execution agent owns package request `4x77lb56cs`
 and external request `j4m7gw8mwg` through terminal reconciliation.
 The frozen source is `ef01490f5e960f8ca0b424c12242caeb3c5a2b5e`;
 development manifest SHA-256 is `f4cbd47f210f5b031d76c5fc1c28fa704b349621f91eefa3f4f3ad575acfedc3`.
-On 2026-10-17, the final manifest became
+On 2026-10-17, the candidate manifest became
 `4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7`
 after correcting the Vmsync external route to authored `test:e2e` and its build prerequisite.
-All 719 package specifications and the other 18 external specifications remain unchanged.
+That correction retained all 719 package specifications and the other 18 external specifications.
+The current candidate is
+`d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9`,
+after adding the missing DOM and WC build prerequisites to their external checks.
+Its package specifications remain identical to the original frozen inventory.
 Independent closure verification confirms 719 package checks and 19 external specifications.
 The graph remains acyclic and preserves full package Oxlint arguments.
 
@@ -254,12 +258,24 @@ The VM agent owns the vmsync lifecycle experiment.
 Both requests are terminal and collected with hashed artifact downloads.
 Package reconciliation verifies 685 identities with terminal records,
 three started checks without terminal records and 31 unstarted checks.
-Development prerequisite recovery `dhxhzzvmc3` is running at pushed revision `2676cb365a206434b525bf032a5875cafde827e9`.
+Development prerequisite recovery `dhxhzzvmc3` is terminal at pushed revision `2676cb365a206434b525bf032a5875cafde827e9`.
+All 12 selected package checks and their 24-check closure passed;
+the sidecar generator commands passed without output drift.
+The browser group reached the engines but exceeded its 1,200,000 ms adapter budget;
+DOM setup failed on missing artifacts and browser thread creation.
+Their incomplete case coverage requires explicit file/engine recovery with case JSON.
+Provider URL verification matches each artifact to its actual workflow and attempt,
+with request IDs kept distinct from workflow IDs.
 Invalid request `tf9ddwgbw3` used the wrong revision and receives no historical check credit.
 Continuation routing at `7f9fb86ba7` selects the 34 unresolved checks
 and three proved rsync ownership infrastructure failures in isolated jobs.
-The next action is verifying and dispatching that continuation,
-then collecting its actual per-check outcomes.
+Continuation `1wzr86fssk` is running at clean pushed revision
+`09941541e8ba43d59b03969248f8484a2d2c4269`, independently verified by the provider.
+Executor metadata now distinguishes inventory, requested IDs, prerequisite closure,
+live progress and actual case termination; its five disposable controls passed.
+The next actions are collecting every continuation leaf,
+running the file/engine browser recovery and supplying the source-required audited Git `2.56.0`
+before replaying the two unchanged native host checks.
 The root agent must align GHA, VM and shared helper routes before final combined dispatch.
 The prepared combined workflow remains incomplete until that integration and bounded check coverage are verified.
 Only harness execution failures receive recovery edits;

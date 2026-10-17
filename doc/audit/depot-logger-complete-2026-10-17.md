@@ -28,13 +28,13 @@ Every package Oxlint specification retains its unchanged package task and empty 
 The retained graph verification is summarized in the companion evidence JSON.
 The earlier import audit and source freeze remain in the branch's manifest history.
 
-## Corrected final manifest
+## Candidate manifest revisions
 
 On 2026-10-17, harness commit `0095ae37c7` corrects the Vmsync external specification
 to the authored `//package/cli/vmsync:test:e2e` task with empty arguments,
 package scope and the declared `package.cli.vmsync.build` prerequisite.
 The source task is retained in `package/cli/vmsync/mise.toml`.
-The final manifest SHA-256 becomes
+That candidate manifest SHA-256 became
 `4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7`.
 The development requests retain their original digest and alternate unit-file route provenance.
 Runtime equivalence of that alternate route has not been verified.
@@ -42,6 +42,14 @@ A comparison of the parsed manifests proves all 719 package checks
 and the other 18 external specifications are unchanged.
 The serialized package-check array has SHA-256
 `c7c7aca4f7a2d3865bcaf9abc32ae8a7f546d7170be20c90f782402ffa6200b8`.
+
+Harness commit `09941541e8` adds the missing `package.module.dom.build` prerequisite to `root.e2e`
+and `package.webapp-productivity.wc.build` to `root.browser`.
+Their immutable consumers read the corresponding built artifacts.
+The current candidate digest is
+`d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9`.
+All 719 package specifications remain unchanged.
+Relative to the original development manifest, only those external rows and the Vmsync row differ.
 
 ## Current execution requests
 
@@ -118,6 +126,26 @@ It selects 12 package checks plus their declared prerequisite closure,
 browser and DOM execution,
 and only the sidecar generator check.
 The root generator's observed tracked output difference remains a source diagnostic.
+The recovery is terminal with failed status and all four artifacts collected and hashed.
+Its 12 requested package checks and their 24-check prerequisite closure passed.
+Both sidecar generator commands passed without tracked or untracked output changes.
+Independent reconciliation verifies every executed check log hash and byte count.
+
+The browser task reached the engines but exceeded the adapter's exact 1,200,000 ms budget.
+Its source configuration selected 84 cases with eight workers;
+the interrupted group does not prove that every file or engine completed.
+The DOM group selected 34 cases and failed during browser or fixture setup,
+including `pthread_create` resource errors and a missing built DOM artifact.
+These outcomes are distinct from source assertion failures.
+The current candidate adds the missing build dependencies and uses one browser worker.
+Further development recovery will partition the frozen files and configured engines,
+retain case JSON and verify that their union is complete and disjoint.
+
+Provider request IDs and workflow IDs name different objects.
+Request `dhxhzzvmc3` contains workflow `fjdhk1bj7r`.
+Every recovered artifact's `providerJobUrl` exactly matches its current attempt's `view_url`.
+The separate provider identity verification retains that equality control;
+the different workflow ID is not a stale environment defect.
 
 An invalid dispatch attempt, `tf9ddwgbw3`, used revision
 `ac6b8f5cde945b4a3ce9ea9974744369547bbdba` instead of the intended trial revision.
@@ -126,9 +154,12 @@ The non-login command environment selected the repository Git shim;
 Depot could not detect the repository or ref.
 The corrected login-shell dispatch resolved `/usr/bin/git` and printed the intended pushed HEAD.
 
-The remaining continuation queue selects the 34 unresolved checks
+Continuation request `1wzr86fssk` selects the 34 unresolved checks
 and three checks with retained `rsync` ownership infrastructure failures.
 Each continuation receives an unchanged leaf task and its prerequisite closure in a separate job.
+It started at `2026-10-17T05:41:08Z` from clean pushed revision
+`09941541e8ba43d59b03969248f8484a2d2c4269`.
+The provider independently reports that revision in its `ref`, `sha` and `head_sha` fields.
 The ownership adapter has passed a bounded local positive and negative control;
 the actual mutation consumer still requires verification.
 Terminal collection must retain every attempt,
@@ -138,8 +169,25 @@ and classify prerequisite suppression separately from source failures.
 Provider execution intervals remain usage proxies until paired with the declared allocation.
 No passing complete graph or whole passing latency is established by this interim record.
 
-The next actions are package terminal collection and per-check reconciliation,
-bounded selective prerequisite recovery,
+The executor now separates manifest inventory, requested leaves, prerequisite closure,
+live running checks and completed records.
+It writes `case-progress` while execution continues,
+`case-finished` only after the selected checks and source-input verification finish,
+and `case-aborted` when execution is incomplete.
+Its `completeGraph` field reflects the manifest.
+Five disposable controls passed, including a live consumer of its own running record
+and rejection of the previous executor by that same consumer.
+
+The Git host task's immutable description explicitly requires the gate's Git `2.56.0`
+for tests that start Git.
+The observed host `2.55.0` mismatch is therefore a missing test prerequisite.
+The next host recovery must supply the audited Git executable and required libraries
+before rerunning the unchanged host tasks.
+Any resulting source failures must remain separate from that mismatch
+and from the existing native container baseline failures.
+
+The next actions are continuation terminal collection and per-check reconciliation,
+file/engine browser recovery and controlled Git host prerequisite recovery,
 then a combined workflow with root-owned host, scanner, policy and VM routes.
 The final coherent replay is held until the root agent aligns those routes.
 The prepared combined workflow remains incomplete until that integration is verified.
