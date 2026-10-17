@@ -412,7 +412,7 @@ if (group === 'generated') {
   run({ id: 'external-desktop-host', args: ['run', '//package/dev-script/task-util:trial:depot:ci:desktop-host'], cwd: harness })
   run({ id: 'external-desktop-compositor', args: ['run', '//package/cli/nested-wayland-session:build'] })
   run({ id: 'external-desktop-artifact', args: ['run', '//package/music-player/desktop-app:build'] })
-  run({ id: 'artifact.music-desktop-e2e', args: ['run', '//package/dev-script/task-util:trial:depot:ci:desktop-runtime'], cwd: harness })
+  run({ id: 'artifact.music-desktop-e2e', args: ['run', '//package/dev-script/task-util:trial:depot:ci:desktop-runtime'], cwd: harness, limit: 7200000 })
 } else if (group === 'electron') {
   run({ id: 'external-electron-compositor', args: ['run', '//package/cli/nested-wayland-session:build'] })
   const runtime = join(directory, 'electron-runtime')
