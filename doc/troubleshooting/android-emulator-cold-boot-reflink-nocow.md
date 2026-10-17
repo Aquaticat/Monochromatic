@@ -68,14 +68,19 @@ This rules out a blanket inability to reflink on this filesystem.
 
 Working cases:
 
-- Ordinary source to ordinary destination: mandatory reflink succeeds and bytes match.
-- NOCOW source to a pre-created NOCOW destination: mandatory reflink succeeds and bytes match.
-- Installed emulator `-help-no-snapshot`: explicitly disables snapshot autoload and autosave.
+- Ordinary source to ordinary destination:
+  mandatory reflink succeeds and bytes match.
+- NOCOW source to a pre-created NOCOW destination:
+  mandatory reflink succeeds and bytes match.
+- Installed emulator `-help-no-snapshot`:
+  explicitly disables snapshot autoload and autosave.
 
 Failing cases:
 
-- NOCOW source to an ordinary destination: exit one with `Invalid argument`.
-- The initial whole-directory AVD copy: the same diagnostic and no device operations.
+- NOCOW source to an ordinary destination:
+  exit one with `Invalid argument`.
+- The initial whole-directory AVD copy:
+  the same diagnostic and no device operations.
 
 The fixture task is runnable from a private scratch directory:
 
@@ -117,7 +122,13 @@ The revised consumer input names the new local harness digest.
 This intentionally omits saved snapshots and transient adb commands.
 It preserves the existing full-boot policy rather than adding snapshot support.
 Filesystem controls pass.
-The actual revised copy and emulator boot remain pending at this checkpoint.
+The revised copy and private AVD metadata checks passed on October 17.
+The headful systemd launch booted successfully,
+installed the bound APK pair,
+and ran the original instrumentation command.
+That command reported a `SessionStore` null-context exception;
+its source outcome is separate from this copy repair.
+Graceful shutdown passed and the private unit is inactive.
 
 ## What does not work
 
