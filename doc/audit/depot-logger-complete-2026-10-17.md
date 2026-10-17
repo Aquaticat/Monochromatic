@@ -74,6 +74,18 @@ changed-file forbidden-string scanner,
 and current-policy Scorecard gate.
 The separate VM experiment owns the historical vmsync lifecycle boundary.
 
+The current [host request `39003180992`](https://github.com/Aquaticats/Monochromatic/actions/runs/39003180992)
+passed all six jobs across Linux, macOS and Windows.
+Independent log verification matched the immutable source revision and both dependency lockfile hashes
+before and after each job.
+Filesystem checks verified preferred stable identities without colons.
+Each semantic job passed its three lifecycle, offset and external-consumer groups.
+The authored external-consumer test does not retain its fresh dependency lockfile,
+so the versions selected by its allowed dependency ranges remain unverified.
+The provider job intervals total 417 seconds and 1530 vCPU-seconds.
+Standard public GitHub runner compute is free under the cited allocation policy;
+this does not verify storage charges or the account ledger.
+
 ## Remaining evidence
 
 Both Depot requests are running.

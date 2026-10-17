@@ -10,5 +10,215 @@
   "partitionSelected": 155,
   "selectedUnion": 719,
   "fullPackageOxlintArgumentsVerified": true,
-  "prerequisiteClosuresVerified": true
+  "prerequisiteClosuresVerified": true,
+  "hostVerification": {
+    "runId": 39003180992,
+    "workflowRevision": "32a9250addccf6b902246d39f4756f5f12ca9603",
+    "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+    "verified": true,
+    "jobs": [
+      {
+        "jobId": 117310202313,
+        "name": "Logger host gate (filesystem, macos-latest)",
+        "gate": "filesystem",
+        "identity": {
+          "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+          "platform": "darwin",
+          "architecture": "arm64",
+          "node": "v26.5.0",
+          "inputs": {
+            "mise.lock": "95704fad9023cea1b8b530d5de696cfbd839f912aba7c0dc2c1c46519ebef733",
+            "pnpm-lock.yaml": "bcf3a948a1d8cad0c7c22af26856af36779a963263a2d2d1b2755c3fa00e6049"
+          }
+        },
+        "identicalBeforeAfter": true,
+        "passLines": [],
+        "filesystem": {
+          "platform": "darwin",
+          "preferredSource": "volume-uuid",
+          "preferredStable": true,
+          "degradedSource": "device-number",
+          "degradedStable": false,
+          "colonFree": true
+        },
+        "seconds": 54,
+        "allocation": {
+          "label": "macos-latest",
+          "vcpus": 3,
+          "memoryGb": 7,
+          "publicStandardComputeUsd": 0,
+          "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+        }
+      },
+      {
+        "jobId": 117310202388,
+        "name": "Logger host gate (semantic, ubuntu-latest)",
+        "gate": "semantic",
+        "identity": {
+          "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+          "platform": "linux",
+          "architecture": "x64",
+          "node": "v26.11.1",
+          "inputs": {
+            "mise.lock": "95704fad9023cea1b8b530d5de696cfbd839f912aba7c0dc2c1c46519ebef733",
+            "pnpm-lock.yaml": "bcf3a948a1d8cad0c7c22af26856af36779a963263a2d2d1b2755c3fa00e6049"
+          }
+        },
+        "identicalBeforeAfter": true,
+        "passLines": [
+          "[info] [2026-10-17T04:36:59.368Z] [openSemanticFile] [PASS] discovers configured project and resolves parameter type, refreshes semantic type from virtual overlay without disk write, reuses importer from snapshot refreshed by dependency overlay, refreshes overlay for source an outer project already holds, fails closed when offset is outside source tree, retains semantic nodes through parser recovery, invalidates deleted source during rename, invalidates a deleted source while reopening one already held, opens configured source through symbolic link path, accepts Windows source paths with noncanonical casing, rejects inferred project and recovers for next configured source, releases the snapshot it replaced when discovery fails, refuses to leave refused text where an importer can reach it, reopens a source the failed discovery reported as deleted, discovers nested project after caching containing parent project, retains the text handed for each source, and one project per configured root, closes idempotently and starts again (2.2s)",
+          "[info] [2026-10-17T04:36:59.371Z] [typescriptOffset] [PASS] restores one UTF-16 unit for stripped byte-order mark (0.3ms)",
+          "[info] [2026-10-17T04:37:00.699Z] [published prefer-readonly-parameter-type consumer] [PASS] loads packed rule and TypeScript 7 bridge outside monorepo (610ms)"
+        ],
+        "seconds": 49,
+        "allocation": {
+          "label": "ubuntu-latest",
+          "vcpus": 4,
+          "memoryGb": 16,
+          "publicStandardComputeUsd": 0,
+          "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+        }
+      },
+      {
+        "jobId": 117310202413,
+        "name": "Logger host gate (filesystem, ubuntu-latest)",
+        "gate": "filesystem",
+        "identity": {
+          "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+          "platform": "linux",
+          "architecture": "x64",
+          "node": "v26.5.0",
+          "inputs": {
+            "mise.lock": "95704fad9023cea1b8b530d5de696cfbd839f912aba7c0dc2c1c46519ebef733",
+            "pnpm-lock.yaml": "bcf3a948a1d8cad0c7c22af26856af36779a963263a2d2d1b2755c3fa00e6049"
+          }
+        },
+        "identicalBeforeAfter": true,
+        "passLines": [],
+        "filesystem": {
+          "platform": "linux",
+          "preferredSource": "fs-uuid",
+          "preferredStable": true,
+          "degradedSource": "f-fsid",
+          "degradedStable": false,
+          "colonFree": true
+        },
+        "seconds": 40,
+        "allocation": {
+          "label": "ubuntu-latest",
+          "vcpus": 4,
+          "memoryGb": 16,
+          "publicStandardComputeUsd": 0,
+          "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+        }
+      },
+      {
+        "jobId": 117310202418,
+        "name": "Logger host gate (filesystem, windows-latest)",
+        "gate": "filesystem",
+        "identity": {
+          "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+          "platform": "win32",
+          "architecture": "x64",
+          "node": "v26.5.0",
+          "inputs": {
+            "mise.lock": "95704fad9023cea1b8b530d5de696cfbd839f912aba7c0dc2c1c46519ebef733",
+            "pnpm-lock.yaml": "bcf3a948a1d8cad0c7c22af26856af36779a963263a2d2d1b2755c3fa00e6049"
+          }
+        },
+        "identicalBeforeAfter": true,
+        "passLines": [],
+        "filesystem": {
+          "platform": "win32",
+          "preferredSource": "volume-serial",
+          "preferredStable": true,
+          "degradedSource": "device-number",
+          "degradedStable": false,
+          "colonFree": true
+        },
+        "seconds": 96,
+        "allocation": {
+          "label": "windows-latest",
+          "vcpus": 4,
+          "memoryGb": 16,
+          "publicStandardComputeUsd": 0,
+          "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+        }
+      },
+      {
+        "jobId": 117310202441,
+        "name": "Logger host gate (semantic, macos-15)",
+        "gate": "semantic",
+        "identity": {
+          "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+          "platform": "darwin",
+          "architecture": "arm64",
+          "node": "v26.11.1",
+          "inputs": {
+            "mise.lock": "95704fad9023cea1b8b530d5de696cfbd839f912aba7c0dc2c1c46519ebef733",
+            "pnpm-lock.yaml": "bcf3a948a1d8cad0c7c22af26856af36779a963263a2d2d1b2755c3fa00e6049"
+          }
+        },
+        "identicalBeforeAfter": true,
+        "passLines": [
+          "[info] [2026-10-17T04:37:36.988Z] [openSemanticFile] [PASS] discovers configured project and resolves parameter type, refreshes semantic type from virtual overlay without disk write, reuses importer from snapshot refreshed by dependency overlay, refreshes overlay for source an outer project already holds, fails closed when offset is outside source tree, retains semantic nodes through parser recovery, invalidates deleted source during rename, invalidates a deleted source while reopening one already held, opens configured source through symbolic link path, accepts Windows source paths with noncanonical casing, rejects inferred project and recovers for next configured source, releases the snapshot it replaced when discovery fails, refuses to leave refused text where an importer can reach it, reopens a source the failed discovery reported as deleted, discovers nested project after caching containing parent project, retains the text handed for each source, and one project per configured root, closes idempotently and starts again (2.6s)",
+          "[info] [2026-10-17T04:37:37.007Z] [typescriptOffset] [PASS] restores one UTF-16 unit for stripped byte-order mark (1.1ms)",
+          "[info] [2026-10-17T04:37:39.154Z] [published prefer-readonly-parameter-type consumer] [PASS] loads packed rule and TypeScript 7 bridge outside monorepo (1.1s)"
+        ],
+        "seconds": 84,
+        "allocation": {
+          "label": "macos-15",
+          "vcpus": 3,
+          "memoryGb": 7,
+          "publicStandardComputeUsd": 0,
+          "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+        }
+      },
+      {
+        "jobId": 117310202452,
+        "name": "Logger host gate (semantic, windows-latest)",
+        "gate": "semantic",
+        "identity": {
+          "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+          "platform": "win32",
+          "architecture": "x64",
+          "node": "v26.11.1",
+          "inputs": {
+            "mise.lock": "95704fad9023cea1b8b530d5de696cfbd839f912aba7c0dc2c1c46519ebef733",
+            "pnpm-lock.yaml": "bcf3a948a1d8cad0c7c22af26856af36779a963263a2d2d1b2755c3fa00e6049"
+          }
+        },
+        "identicalBeforeAfter": true,
+        "passLines": [
+          "[info] [2026-10-17T04:37:36.529Z] [openSemanticFile] [PASS] discovers configured project and resolves parameter type, refreshes semantic type from virtual overlay without disk write, reuses importer from snapshot refreshed by dependency overlay, refreshes overlay for source an outer project already holds, fails closed when offset is outside source tree, retains semantic nodes through parser recovery, invalidates deleted source during rename, invalidates a deleted source while reopening one already held, opens configured source through symbolic link path, accepts Windows source paths with noncanonical casing, rejects inferred project and recovers for next configured source, releases the snapshot it replaced when discovery fails, refuses to leave refused text where an importer can reach it, reopens a source the failed discovery reported as deleted, discovers nested project after caching containing parent project, retains the text handed for each source, and one project per configured root, closes idempotently and starts again (2.5s)",
+          "[info] [2026-10-17T04:37:36.531Z] [typescriptOffset] [PASS] restores one UTF-16 unit for stripped byte-order mark (0.3ms)",
+          "[info] [2026-10-17T04:37:41.363Z] [published prefer-readonly-parameter-type consumer] [PASS] loads packed rule and TypeScript 7 bridge outside monorepo (3.1s)"
+        ],
+        "seconds": 94,
+        "allocation": {
+          "label": "windows-latest",
+          "vcpus": 4,
+          "memoryGb": 16,
+          "publicStandardComputeUsd": 0,
+          "source": "https://docs.github.com/en/actions/reference/runners/github-hosted-runners#standard-github-hosted-runners-for-public-repositories"
+        }
+      }
+    ],
+    "freshConsumerResolution": {
+      "requiredBySource": true,
+      "versionEvidenceRetained": false,
+      "reason": "The authored test captures pnpm stdout and disposes its temporary external workspace; no consumer lock artifact is uploaded",
+      "source": "package/oxlint-plugin/prefer-readonly-parameter-type/src/external-consumer.unit.test.ts",
+      "ranges": {
+        "@oxlint/plugins": ">=1.73.0",
+        "typescript": ">=7.0.2"
+      }
+    }
+  },
+  "hostCompute": {
+    "seconds": 417,
+    "vcpuSeconds": 1530,
+    "standardPublicComputeUsd": 0,
+    "ledgerVerified": false
+  }
 }
