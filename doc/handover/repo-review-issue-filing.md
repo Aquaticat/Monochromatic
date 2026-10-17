@@ -173,7 +173,8 @@ Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
  `code-desktop-app-1`,
  `code-desktop-daemon-1`,
  `code-dev-script-1` (launched as a replacement),
- `code-figma-1` (next launch; the 8-child cap was full when its slot came up).
+ `code-figma-1` (launched as a replacement; its slot came up one turn late because the
+ 8-child cap was full).
 
 Queued units in launch order (flat list; the first entry launches next):
 
