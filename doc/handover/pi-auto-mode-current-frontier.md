@@ -9,6 +9,28 @@ Updated 2026-10-17.
 
 ## Active work on 2026-10-15
 
+### Reopened MiMo lint handoff on 2026-10-17
+
+The readiness claim covered the saved Bash/read interaction only and was too broad for the MiMo handoff.
+Session `2026-10-17T04-53-14-520Z_01a14834-fc97-70de-9615-03cc0636384b` reports separate failures:
+
+- [ ] Resolve and verify the mixed `process`/`bash` group containing `chatcmpl-tool-b60c3965f752386f`.
+  Whole-operation approval scores `0.48`, denial `0.34`, unknown `0.18`.
+  The model answered; the existing cutoff correctly required confirmation.
+  Its captured input includes raw `process.start.command`, outside the prior Bash-only projection.
+- [ ] Resolve and verify the Bash-only group containing `chatcmpl-tool-a7a4468548c5838a`.
+  Clause assessment succeeds; the whole-operation request throws `AssessmentTransportError`:
+  `Assessment HTTP request or response failed; no provider answer was admitted`.
+  The discarded underlying exception prevents identifying its cause from this log alone.
+- [ ] Replay both groups with preceding turns through the configured installed consumer,
+  audit transmitted inputs, and run prohibited-operation controls before renewing readiness.
+
+The original session and eight runtime logs are copied privately to
+`${HOME}/temp/agent/pi-mimo-lint-approval-20261017`.
+`mise run target-evidence` there isolates both captured groups and their model evidence.
+The `notify-send` SIGTERM warning concerns notification delivery and does not establish either review failure's cause.
+Next action: replay the exact captured requests and distinguish model ambiguity from transport failure.
+
 ### Completed advisory timing and operation projection on 2026-10-17
 
 Session `2026-10-16T03-32-01-642Z_01a142c4-45e9-75fa-b579-ea10d43323ae`
