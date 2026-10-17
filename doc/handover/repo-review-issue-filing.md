@@ -187,7 +187,8 @@ Completed units (findings validated):
  `docs-planning` (13 findings),
  `docs-handover` (13 findings),
  `config-ci` (10 findings),
- `cross-security` (2 findings).
+ `cross-security` (2 findings),
+ `config-paused-1` (8 findings).
 
 Cross-unit leads:
  `doc/planning/music-player-shared-truepeak-core.md` repeats the retired truepeak policy
