@@ -176,7 +176,7 @@ export type NativeReturnOwner = {
 //region Consumer operations expose retained evidence and guarded value access
 
 /**
- One native invocation keeps the original call and options objects.
+ One native preparation retains the original call identity.
  */
 export type NativeReturnInput = {
   /**

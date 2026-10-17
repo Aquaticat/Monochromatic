@@ -143,9 +143,9 @@ function retainNativeReturn({
 /**
  Bind terminal-safe owner callbacks once for an original reached group.
 
- @param owner - fixed runner, original slot reader, and independent live-use guards
+ @param owner - original slot reader and independent live-use guards
 
- @returns original invocation, script-value, and retained-inspection operations
+ @returns native phase retention, guarded script-value access, and retained inspection
 
  @throws NativeReturnContractError when owner callbacks are absent or an invocation violates custody
 
@@ -196,9 +196,7 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
 
    @param call - original native invocation forwarded unchanged
 
-   @param options - original invocation options forwarded unchanged
-
-   @returns reserved invocation and initiated native work
+   @returns reserved native invocation without starting execution
    */
   function reserve({
     slot: handle,
@@ -268,8 +266,6 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
     }
     return Object.freeze({ complete, fail });
   }
-
-  
 
   /**
    Read the original converted value while current ownership and member completion hold.
