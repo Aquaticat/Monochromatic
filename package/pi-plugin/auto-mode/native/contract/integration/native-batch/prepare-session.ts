@@ -185,6 +185,7 @@ const sessionCore=imports({
   path:sessionPath,
   overrides:{
  [resourceReloadUrl]:resourceReloadUrl,
+ './agent-loop.mjs':pathToFileURL(join(output,'agent-loop.mjs')).href,
  './session-manager.js':pathToFileURL(join(
    output,
    'session-manager.mjs'
