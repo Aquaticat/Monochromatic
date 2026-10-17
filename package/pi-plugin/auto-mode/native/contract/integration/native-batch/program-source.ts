@@ -76,7 +76,7 @@ export function programSessionSource(source: string): string {
  const contextRunner=replaceOnce({
    source:runnerAccess,
    from:'            runToolCall: (toolCall, parentId, signal, onUpdate) => {',
-   to:'            getContext: () => ({messages:this.agent.state.messages,tools:this.agent.state.tools}),\n            runOwnedToolCall: (call,options) => runToolCall(call,options),\n            prepareOwnedToolCall: (hook,parentId) => this._beforeToolCall(hook,parentId),\n            finishOwnedToolCall: (hook,parentId) => this._afterToolCall(hook,parentId),\n            runToolCall: (toolCall, parentId, signal, onUpdate) => {'
+   to:'            getContext: () => ({messages:this.agent.state.messages,tools:this.agent.state.tools}),\n            runOwnedToolCall: (call,options) => runToolCall(call,options),\n            createOwnedToolPhases,\n            prepareOwnedToolCall: (hook,parentId) => this._beforeToolCall(hook,parentId),\n            finishOwnedToolCall: (hook,parentId) => this._afterToolCall(hook,parentId),\n            runToolCall: (toolCall, parentId, signal, onUpdate) => {'
  });
  /**
   returned runner retains its original source occurrence before the next transformation.

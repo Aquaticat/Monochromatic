@@ -6,6 +6,7 @@ import type { JudgmentPrograms } from './program-api.ts';
 import type { ProgramNativeCall } from './program-operation-types.ts';
 import type {
   NativeReturnOwner,
+  NativeCallSlot,
   NativeReturnTool
 } from './native-return-types.ts';
 import type { ProgramScope } from './program-scope.ts';
@@ -48,6 +49,6 @@ export type ProgramRunnerBinding<Recorder extends object> = Readonly<{
   calls: readonly ProgramNativeCall[];
   ordinals: ReadonlyMap<string, number>;
   tools: readonly ProgramRunnerTool[];
-  slots: readonly object[];
+  slots: readonly NativeCallSlot[];
   tickets: readonly PromiseWithResolvers<unknown>[];
 }>;

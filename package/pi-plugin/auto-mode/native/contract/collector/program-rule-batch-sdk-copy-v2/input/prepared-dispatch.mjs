@@ -2,7 +2,7 @@
 import {tagged} from '@monochromatic-dev/module-logger/ts';
 import {sealPreparedInput} from './prepared-input-seal.ts';
 import {schedulePreparedCalls} from './prepared-schedule.ts';
-import {executeWithOwnedContext,NativeExecutionGuardError} from '../../../lifecycle/execution-context-carrier/execute.mjs';
+import {executeWithOwnedContext,executeWithOwnedMember,NativeExecutionGuardError} from '../../../lifecycle/execution-context-carrier/execute.mjs';
 
 //region Native phase results and retained failures share complete-group completion.
 /** Preparation contracts fail before releasing any executable. */
@@ -18,7 +18,7 @@ export class PreparedBatchExecutionError extends Error {
 /** Prepare members once, review actual arguments, and run those same native preparations. */
 export async function dispatchPreparedBatch({
   calls,tools,nativePhases,prepare,after,onUpdate,onStart,onFinish,assess,assertFresh,signal,
-  executionJudgment,executionMode='parallel'
+  executionJudgment,memberForExecution,executionMode='parallel'
 }){
   /** Diagnostics never inspect native argument or result payloads. */
   const l=tagged({tag:dispatchPreparedBatch.name,l:tagged({tag:'auto-mode-native-phases'})});
@@ -43,6 +43,7 @@ export async function dispatchPreparedBatch({
   function withheld(call){return {toolCall:call,result:{content:[{type:'text',text:state.decision.reason}],details:{}},isError:true};}
   /** Record outcomes before foreign completion callbacks can throw. */
   async function publish({record,outcome}){
+    nativePhases.retain?.({call:record.call,outcome});
     record.outcome=outcome;
     await onFinish?.(outcome);
     return outcome;
@@ -74,7 +75,9 @@ export async function dispatchPreparedBatch({
         active('member-execute');
         if(state.executionGuardFailed)throw new PreparedBatchContractError('An execution context guard failed; remaining group members cannot start');
       }catch(error){failures.push(error);throw error;}
-      try{return await executeWithOwnedContext({judgment:executionJudgment,tool:original,args});}
+      try{return memberForExecution===undefined
+        ?await executeWithOwnedContext({judgment:executionJudgment,tool:original,args})
+        :await executeWithOwnedMember({judgment:executionJudgment,member:memberForExecution(record.call.id),tool:original,args});}
       catch(error){
         if(error instanceof NativeExecutionGuardError){state.executionGuardFailed=true;failures.push(error);}
         throw error;
@@ -82,7 +85,8 @@ export async function dispatchPreparedBatch({
     }
     /** Preserve actual native call association for partial updates. */
     function update(partial){return onUpdate?.(partial,record.call);}
-    return await publish({record,outcome:await nativePhases.run({prepared:record.prepared,execute,onUpdate:update,after})});
+    try{return await publish({record,outcome:await nativePhases.run({call:record.call,prepared:record.prepared,execute,onUpdate:update,after})});}
+    catch(error){nativePhases.failed?.({call:record.call,error});throw error;}
   }
 
   for(const call of scheduled){
@@ -120,6 +124,7 @@ export async function dispatchPreparedBatch({
         records.push(record);
       }
     }catch(error){
+      nativePhases.failed?.({call,error});
       l.debug('native preparation or callback failed; withholding complete group');
       l.debug(error);
       record.failure={error};failures.push(error);
