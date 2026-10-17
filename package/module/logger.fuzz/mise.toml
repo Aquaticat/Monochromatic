@@ -146,7 +146,8 @@ function nativeReportPaths() {
 }
 const nativeReportSources = new Map(nativeReportPaths().map(path => {
   if (existsSync(path)) assert(lstatSync(path).isFile() && !lstatSync(path).isSymbolicLink() && realpathSync(path).startsWith(realpathSync(source) + '/'), 'Preexisting mutation report must be a regular file inside authoritative source')
-  return [path, { path, existedAtStart: existsSync(path), mtimeMsAtStart: existsSync(path) ? lstatSync(path).mtimeMs : undefined }]
+  const stat = existsSync(path) ? lstatSync(path) : undefined
+  return [path, { path, existedAtStart: !!stat, mtimeMsAtStart: stat?.mtimeMs, ctimeMsAtStart: stat?.ctimeMs, inodeAtStart: stat?.ino, sha256AtStart: stat ? createHash('sha256').update(readFileSync(path)).digest('hex') : undefined }]
 }))
 let executionError
 try {
@@ -209,9 +210,11 @@ assert(!preparation.records.some(record => record.status === 'failed'), 'Indepen
       copyFileSync(path, target, constants.COPYFILE_EXCL)
       chmodSync(target, 0o600)
       const bytes = readFileSync(target)
-      return [{ ...before, artifactPath, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex'), mtimeMs: stat.mtimeMs, producedDuringInvocation: Boolean(startedAt && stat.mtimeMs >= Date.parse(startedAt) && stat.mtimeMs !== before.mtimeMsAtStart) }]
+      const sha256 = createHash('sha256').update(bytes).digest('hex')
+      const producedDuringInvocation = !before.existedAtStart || stat.mtimeMs !== before.mtimeMsAtStart || stat.ctimeMs !== before.ctimeMsAtStart || stat.ino !== before.inodeAtStart || sha256 !== before.sha256AtStart
+      return [{ ...before, artifactPath, bytes: bytes.length, sha256, mtimeMs: stat.mtimeMs, ctimeMs: stat.ctimeMs, inode: stat.ino, mtimeAtOrAfterSelectedStart: Boolean(startedAt && stat.mtimeMs >= Date.parse(startedAt)), freshnessBasis: 'Changed file identity or bytes since the exclusive worker before-snapshot', producedDuringInvocation }]
     })
-    writeFileSync(join(directory, `logger-native-reports-${mutationCheck.id}.json`), JSON.stringify({ checkId: mutationCheck.id, sourceTask: mutationCheck.task, sourceRevision: manifest.sourceRevision, manifestSha256: partitions.manifestSha256, selectedResult, nativeReports, sourceReportCollectionCredit: nativeReports.some(row => row.producedDuringInvocation), historicalMissingReportsRemainUnreconciled: true }, null, 2) + '\n', { flag: 'wx', mode: 0o600 })
+    writeFileSync(join(directory, `logger-native-reports-${mutationCheck.id}.json`), JSON.stringify({ checkId: mutationCheck.id, sourceTask: mutationCheck.task, sourceRevision: manifest.sourceRevision, manifestSha256: partitions.manifestSha256, selectedResult, nativeReports, sourceReportCollectionCredit: nativeReports.some(row => row.producedDuringInvocation) }, null, 2) + '\n', { flag: 'wx', mode: 0o600 })
     assert(selectedResult?.status !== 'passed' || nativeReports.some(row => row.producedDuringInvocation), 'Passing mutation check lacks a fresh retained native report')
   }
   if (continuation) {
