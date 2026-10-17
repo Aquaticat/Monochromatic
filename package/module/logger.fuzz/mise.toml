@@ -276,7 +276,7 @@ const { execFileSync, spawnSync } = await import('node:child_process')
 const { readFileSync, writeFileSync, mkdirSync, existsSync, openSync, closeSync, lstatSync, readlinkSync } = await import('node:fs')
 const { createHash } = await import('node:crypto')
 const { homedir } = await import('node:os')
-const { join } = await import('node:path')
+const { join, delimiter } = await import('node:path')
 const { strict: assert } = await import('node:assert')
 const harness = join(process.env.GITHUB_WORKSPACE, 'harness')
 const source = join(process.env.GITHUB_WORKSPACE, 'source')
@@ -300,6 +300,17 @@ assert(Array.isArray(requested) && requested.length > 0 && new Set(requested).si
 assert(requested.every(id => groups[group].includes(id)), 'External recovery must select known check identities')
 const selected = requested.map(id => manifest.externalChecks.find(check => check.id === id))
 assert(selected.every(Boolean))
+const generatedInventory = group === 'generated' ? groups.generated.flatMap(id => {
+  const check = manifest.externalChecks.find(item => item.id === id)
+  return (check.task ? [check.task] : check.tasks).map((task, index) => ({ label: `${id}.${index}`, checkId: id, task, index }))
+}) : []
+const eligibleGeneratedInvocations = generatedInventory.filter(item => requested.includes(item.checkId))
+const generatedLabels = process.env.DEPOT_LOGGER_GENERATED_INVOCATIONS ? JSON.parse(process.env.DEPOT_LOGGER_GENERATED_INVOCATIONS) : eligibleGeneratedInvocations.map(item => item.label)
+assert(!process.env.DEPOT_LOGGER_GENERATED_INVOCATIONS || group === 'generated', 'Generator invocation selection requires the generated group')
+assert(Array.isArray(generatedLabels) && new Set(generatedLabels).size === generatedLabels.length)
+assert(group !== 'generated' || generatedLabels.length > 0)
+assert(generatedLabels.every(label => eligibleGeneratedInvocations.some(item => item.label === label)), 'Generator recovery must select frozen authored invocations')
+const generatedInvocationScope = group === 'generated' ? { manifestInventory: generatedInventory, requestedCheckIds: requested, requestedInvocationLabels: generatedLabels, coversWholeSelectedChecks: generatedLabels.length === eligibleGeneratedInvocations.length } : undefined
 const browserPartitionId = process.env.DEPOT_LOGGER_BROWSER_PARTITION
 let browserPartition
 let browserScope
@@ -338,7 +349,7 @@ function run({ id, command = 'mise', args, cwd = source, env = process.env, limi
   const output = readFileSync(log)
   const record = { checkId: id, command, args, cwd, startedAt, finishedAt: new Date().toISOString(), exitCode: result.status, signal: result.signal, error: result.error?.message, errorCode: result.error?.code, termination: result.error?.code === 'ETIMEDOUT' ? 'adapter-time-budget' : result.error ? 'spawn-error' : result.signal ? 'signal' : 'process-exit', executionBudgetMs: limit, status: result.status === 0 ? 'passed' : 'failed', ...(browserPartition && id === browserPartition.checkId ? { partitionId: browserPartition.id, partitionFile: browserPartition.file, partitionProject: browserPartition.project, coversWholeCheck: false, browserPartitionManifestSha256 } : {}), outputLog: log, outputSha256: createHash('sha256').update(output).digest('hex'), outputBytes: output.length }
   records.push(record)
-  writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, group, selectedCheckIds: requested, providerJobUrl: process.env.DEPOT_JOB_URL, generatedConsumers, records }, null, 2))
+  writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, completeGraph: manifest.completeGraph, group, selectedCheckIds: requested, generatedInvocationScope, providerJobUrl: process.env.DEPOT_JOB_URL, generatedConsumers, records }, null, 2))
   console.log('\n' + JSON.stringify(record))
   if (result.status !== 0) console.error(output.subarray(-16000).toString())
   return record
@@ -349,8 +360,14 @@ const resultPath = join(directory, 'logger-results.json')
 const prerequisiteResults = prerequisiteIds.length && existsSync(resultPath) ? JSON.parse(readFileSync(resultPath, 'utf8')).results : []
 if (group === 'generated') {
   for (const check of selected) {
+    const failed = (check.prerequisites ?? []).filter(id => prerequisiteResults.find(record => record.checkId === id)?.status !== 'passed')
+    if (failed.length) {
+      records.push({ checkId: check.id, status: 'skipped', failedPrerequisites: failed, finishedAt: new Date().toISOString() })
+      continue
+    }
     for (const [index, task] of (check.task ? [check.task] : check.tasks).entries()) {
       const label = `${check.id}.${index}`, fixture = join(directory, `logger-generated-${label}`)
+      if (!generatedLabels.includes(label)) continue
       const env = { ...process.env, GIT_LFS_SKIP_SMUDGE: '1', MISE_TRUSTED_CONFIG_PATHS: `${process.env.MISE_TRUSTED_CONFIG_PATHS}:${fixture}`, DEPOT_LOGGER_GENERATED_CONSUMER: fixture, DEPOT_LOGGER_GENERATED_LABEL: label }
       const consumer = { checkId: check.id, task, args: ['run', task], fixture, initialIdentityVerified: false, actualCommandExecuted: false, cleanupVerified: false }
       generatedConsumers.push(consumer)
@@ -361,7 +378,13 @@ if (group === 'generated') {
         const before = run({ id: `${label}.identity-before`, args: ['run', '//package/module/logger.fuzz:trial:depot:generated:identity'], cwd: harness, env: { ...env, DEPOT_LOGGER_GENERATED_PHASE: 'before' } })
         assert.equal(before.status, 'passed', 'Generated consumer initial input or dependency identity failed')
         consumer.initialIdentityVerified = true
-        const observed = run({ id: index === 0 ? check.id : `${check.id}.declared`, args: ['run', task], cwd: fixture, env })
+        let commandEnv = env
+        if (task === '//package/module/deepmerge-ts.fuzz:generate:declared-type-cases') {
+          const boundary = run({ id: `${label}.container-adapter`, args: ['run', '//package/dev-script/task-util:trial:depot:ci:containers'], cwd: harness, env })
+          assert.equal(boundary.status, 'passed', 'Declared-type generator requires the verified rootful container adapter')
+          commandEnv = { ...env, PATH: join(directory, 'container-bin') + delimiter + env.PATH }
+        }
+        const observed = run({ id: index === 0 ? check.id : `${check.id}.declared`, args: ['run', task], cwd: fixture, env: commandEnv })
         consumer.actualCommandExecuted = observed.termination !== 'spawn-error'
         observed.parentCheckId = check.id
         const patch = join(directory, `${label}.patch`), descriptor = openSync(patch, 'wx', 0o600)
@@ -433,7 +456,7 @@ if (group === 'generated') {
   }
 }
 assert.equal(execFileSync('git', ['diff', '--name-only', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), '', 'External checks must preserve tracked source')
-writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, group, selectedCheckIds: requested, browserPartition, browserPartitionManifestSha256, coversWholeCheck: !browserPartition, prerequisiteIds, providerJobUrl: process.env.DEPOT_JOB_URL, generatedConsumers, records }, null, 2))
+writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, completeGraph: manifest.completeGraph, group, selectedCheckIds: requested, generatedInvocationScope, browserPartition, browserPartitionManifestSha256, coversWholeCheck: !browserPartition && (!generatedInvocationScope || generatedInvocationScope.coversWholeSelectedChecks), prerequisiteIds, providerJobUrl: process.env.DEPOT_JOB_URL, generatedConsumers, records }, null, 2))
 assert(generatedConsumers.every(consumer => consumer.initialIdentityVerified && consumer.actualCommandExecuted && consumer.authoritativeAfterVerified && consumer.cleanupVerified && !consumer.error), 'Generated consumer prerequisite, observation or cleanup remained incomplete')
 assert(records.every(record => record.status === 'passed'), 'Logger external checks failed or lack verified prerequisites; see retained records')
 '''
