@@ -831,7 +831,9 @@ const wrapperDirectory = join(directory, 'toml-correlated-container-bin')
 mkdirSync(wrapperDirectory, { recursive: true, mode: 0o700 })
 const wrapper = ['#!/usr/bin/env node', "const { spawnSync } = await import('node:child_process')", 'const [command, ...args] = process.argv.slice(2)', 'const labels = command === "run" ? ["--label", ' + JSON.stringify(label) + '] : []', 'const result = spawnSync(' + JSON.stringify(originalPodman) + ', [command, ...labels, ...args], { stdio: "inherit" })', 'if (result.error) throw result.error', 'process.exitCode = result.status ?? 1', ''].join('\n')
 writeFileSync(join(wrapperDirectory, 'podman'), wrapper, { mode: 0o700 })
-const env = { ...process.env, PATH: wrapperDirectory + delimiter + process.env.PATH, DEPOT_CI_CHECK_IDS: JSON.stringify([checkId]), DEPOT_CI_WORKERS: '1' }
+const shardDirectory = join(directory, 'toml-mutation-shards')
+mkdirSync(shardDirectory, { recursive: true, mode: 0o700 })
+const env = { ...process.env, PATH: wrapperDirectory + delimiter + process.env.PATH, DEPOT_CI_CHECK_IDS: JSON.stringify([checkId]), DEPOT_CI_WORKERS: '1', TMPDIR: shardDirectory }
 const startedAt = new Date().toISOString()
 const started = performance.now()
 const prefix = join(directory, 'toml-bounded-' + checkId)
@@ -963,6 +965,18 @@ try { remainingAfter = containers() } catch (error) { instrumentationErrors.push
 const cleanupVerified = remainingAfter?.length === 0 && cleanup.every(row => row.remove.status === 0) && processGroupAfter.every(row => row.state === 'Z')
 const events = podman({ args: ['events', '--since', startedAt, '--until', new Date().toISOString(), '--stream=false', '--filter', 'label=' + label, '--format', 'json'] })
 writeFileSync(prefix + '-events.json', JSON.stringify(events, null, 2) + '\n')
+const shardFiles = readdirSync(shardDirectory, { withFileTypes: true }).filter(entry => entry.isDirectory() && /^mutation-(manifest|report)-[A-Za-z0-9]+$/.test(entry.name)).flatMap(entry => readdirSync(join(shardDirectory, entry.name), { withFileTypes: true }).filter(file => file.isFile() && file.name.endsWith('.json')).map(file => join(entry.name, file.name))).toSorted()
+const shardEvidence = shardFiles.map(relativePath => {
+  const path = join(shardDirectory, relativePath)
+  const hash = createHash('sha256')
+  const descriptor = openSync(path, 'r')
+  const bytes = Buffer.alloc(65536)
+  let length
+  try { while ((length = readSync(descriptor, bytes, 0, bytes.length, null)) > 0) hash.update(bytes.subarray(0, length)) }
+  finally { closeSync(descriptor) }
+  return { path: relativePath, bytes: statSync(path).size, sha256: hash.digest('hex') }
+})
+writeFileSync(join(directory, 'toml-mutant-evidence-index.json'), JSON.stringify({ fixtureOnly: !!control, files: shardEvidence }, null, 2) + '\n')
 const stdout = readFileSync(outputPath)
 let selectedResult
 const resultsPath = join(directory, 'toml-results.json')
@@ -974,6 +988,8 @@ record.consumerSpawnedAt = consumerSpawnedAt
 record.consumerOutcomeObservedAt = consumerOutcomeObservedAt
 record.containerIdsAfter = remainingAfter
 record.consumer = { command, args, cwd: control ? source : process.cwd(), selectedSourceTask: manifest?.checks.find(row => row.id === checkId)?.task }
+record.adapterOverlay = { DEPOT_CI_CHECK_IDS: env.DEPOT_CI_CHECK_IDS, DEPOT_CI_WORKERS: env.DEPOT_CI_WORKERS, TMPDIR: shardDirectory, correlatedPodmanSha256: record.wrapperSha256 }
+record.shardEvidence = shardEvidence
 writeFileSync(prefix + '-results.json', JSON.stringify(record, null, 2) + '\n')
 console.log(JSON.stringify(record))
 child.unref()
