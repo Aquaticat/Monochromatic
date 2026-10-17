@@ -187,6 +187,10 @@ const expected = process.env.SOURCE_HEAD
 const phase = process.env.PROVENANCE_PHASE
 const caseName = process.env.PROVENANCE_CASE
 const output = process.env.PROVENANCE_OUTPUT
+const cohort = { id: process.env.COHORT_ID, manifestSha256: process.env.COHORT_MANIFEST_SHA256, requestedAt: process.env.COHORT_REQUESTED_AT }
+assert.match(cohort.id ?? '', /^[A-Za-z0-9._-]{1,128}$/, 'COHORT_ID must name the frozen replay')
+assert.match(cohort.manifestSha256 ?? '', /^[a-f0-9]{64}$/, 'COHORT_MANIFEST_SHA256 must bind the complete manifest')
+assert(Number.isFinite(Date.parse(cohort.requestedAt ?? '')), 'COHORT_REQUESTED_AT must record the shared request instant')
 assert(source && isAbsolute(source), 'SOURCE_ROOT must name an absolute source checkout')
 assert(output && isAbsolute(output), 'PROVENANCE_OUTPUT must name an absolute evidence directory')
 assert.match(expected ?? '', /^[a-f0-9]{40}$/, 'SOURCE_HEAD must be immutable')
@@ -204,7 +208,7 @@ const inputs = Object.fromEntries(paths.map(path => { const bytes = readFileSync
 const identity = { head: git(['rev-parse', 'HEAD']), trackedStatus: git(['status', '--porcelain', '--untracked-files=no']), sourceTree: git(['rev-parse', 'HEAD^{tree}']), inputs }
 const harnessRevision = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
 if (process.env.GITHUB_SHA) assert.equal(harnessRevision, process.env.GITHUB_SHA, 'Provenance harness differs from dispatched workflow revision')
-const record = { schemaVersion: 1, event: 'source-provenance', caseName, phase, observedAt: new Date().toISOString(), expectedSource: expected, harnessRevision, verifierNode: process.version, platform: process.platform, architecture: process.arch, identity }
+const record = { schemaVersion: 1, event: 'source-provenance', caseName, phase, cohort, observedAt: new Date().toISOString(), expectedSource: expected, harnessRevision, verifierNode: process.version, platform: process.platform, architecture: process.arch, identity }
 mkdirSync(output, { recursive: true, mode: 0o700 })
 writeFileSync(join(output, phase + '.json'), JSON.stringify(record, null, 2) + '\n')
 console.log(JSON.stringify(record))
@@ -213,6 +217,7 @@ assert.equal(identity.trackedStatus, '', 'Consumer changed tracked historical so
 if (phase === 'after') {
   const before = JSON.parse(readFileSync(join(output, 'before.json'), 'utf8'))
   assert.equal(before.expectedSource, expected)
+  assert.deepEqual(before.cohort, cohort, 'Replay context changed between consumer boundaries')
   assert.equal(before.harnessRevision, harnessRevision)
   assert.deepEqual(identity, before.identity, 'Consumer changed frozen source or input hashes')
 }

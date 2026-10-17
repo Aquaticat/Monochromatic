@@ -3,6 +3,18 @@ name: depot-complete-native-hosts
 on:
   workflow_dispatch:
     inputs:
+      cohort_id:
+        description: Frozen complete-graph replay identifier
+        required: true
+        type: string
+      manifest_sha256:
+        description: SHA-256 of the shared frozen complete manifest
+        required: true
+        type: string
+      requested_at:
+        description: Shared request instant in ISO 8601 UTC
+        required: true
+        type: string
       source_head:
         description: Immutable source revision
         required: true
@@ -97,6 +109,9 @@ jobs:
         PROVENANCE_PHASE: before
         PROVENANCE_CASE: native
         PROVENANCE_OUTPUT: ${{ runner.temp }}/depot-provenance
+        COHORT_ID: ${{ inputs.cohort_id }}
+        COHORT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+        COHORT_REQUESTED_AT: ${{ inputs.requested_at }}
       run: mise run //package/dev-script/task-util:trial:depot:coherent:provenance
     - name: Restore exact-source native artifacts
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
@@ -137,6 +152,9 @@ jobs:
         PROVENANCE_PHASE: after
         PROVENANCE_CASE: native
         PROVENANCE_OUTPUT: ${{ runner.temp }}/depot-provenance
+        COHORT_ID: ${{ inputs.cohort_id }}
+        COHORT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+        COHORT_REQUESTED_AT: ${{ inputs.requested_at }}
       run: mise run //package/dev-script/task-util:trial:depot:coherent:provenance
     - name: Preserve frozen source provenance
       if: ${{ always() }}
