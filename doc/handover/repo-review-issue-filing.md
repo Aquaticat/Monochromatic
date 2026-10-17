@@ -192,7 +192,8 @@ Completed units (findings validated):
  `config-paused-2` (15 findings),
  `cross-duplication` (4 findings),
  `cross-dependency` (7 findings),
- `cross-testing` (4 findings).
+ `cross-testing` (4 findings),
+ `cross-rust` (3 findings).
 
 Cross-unit leads:
  `doc/planning/music-player-shared-truepeak-core.md` repeats the retired truepeak policy
@@ -272,9 +273,8 @@ Cross-unit leads:
 
 Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
  `cross-build`,
- `cross-rust`,
  `cross-api`,
- `cross-logging` (the final four units; `cross-duplication` adjudicated all seven of its
+ `cross-logging` (the final three units; `cross-duplication` adjudicated all seven of its
  leads inside `cross-duplication-001`, refuting the `visible-context.ts` twin claim).
 
 Queued units in launch order (flat list; the first entry launches next):
