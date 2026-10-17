@@ -27,6 +27,12 @@ It requires success for applicable commands and guards, and skipped outcomes for
 Every other helper, including changed-Cargo formatting, is byte-identical to the parent base.
 The primary logger manifest is unchanged in this child patch; its correction and digest regeneration belong to the parent.
 
+Artifact follow-up `face4f61997c698f1ab1d2f77dfc09ed2f9a7abe` adds the original runner label to upload names.
+A same-architecture simulation produces three unique legacy names for four rows,
+while the revised names are all distinct.
+Only the artifact name changes, and the result helper remains byte-identical to its 75-control version.
+This is a preflight counterexample, not an observed provider collision.
+
 ## Verification and remaining proof
 
 Four valid actual-Mise result fixtures pass, 70 invalid fixtures fail at their intended diagnostic boundaries,

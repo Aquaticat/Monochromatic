@@ -534,7 +534,9 @@ Root owns the remaining queue: complete-manifest/auxiliary digest regeneration,
 current GHA/VM bindings, coherent authenticated dispatch and final source/prerequisite/per-ID reconciliation.
 No generated outputs will be restored to manufacture a clean receipt.
 Host-scope correction `#1168` preserves the original four-label union, including semantic-only `macos-15`.
-The source-only transfer is `5db0268856` then `dc5423d361`, based on `6aefa5d651`.
+The source-only transfer is `5db0268856`, `dc5423d361` and artifact follow-up `face4f6199`, based on `6aefa5d651`.
+The follow-up keeps all four artifact names disjoint; equal simulated macOS architecture aliases the legacy names.
+No actual provider artifact collision is claimed.
 Four positive, 70 rejected and a true guard-removal result control pass; protected helpers remain byte-equal.
 Primary manifest correction and actual final `macos-15` provider proof remain parent-owned and unexecuted.
 See [the host scope audit](../audit/depot-logger-host-scope-2026-10-17.md).

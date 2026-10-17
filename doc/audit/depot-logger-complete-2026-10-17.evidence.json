@@ -82296,7 +82296,8 @@
     "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
     "sourceCommits": [
       "5db0268856c5179314e6a73125772a5841067eaa",
-      "dc5423d3616744d8ac2ea9ff052f02a94f656a2d"
+      "dc5423d3616744d8ac2ea9ff052f02a94f656a2d",
+      "face4f61997c698f1ab1d2f77dfc09ed2f9a7abe"
     ],
     "matrix": [
       {
@@ -82334,6 +82335,14 @@
       "jsonParsed": true,
       "scopedDprintPassed": true,
       "gitDiffWhitespacePassed": true
+    },
+    "artifactNamingFollowup": {
+      "commit": "face4f61997c698f1ab1d2f77dfc09ed2f9a7abe",
+      "proof": "/home/user/temp/agent/depot-logger-host-artifact-controls-86480D/results.json",
+      "legacyUniqueNames": 3,
+      "revisedUniqueNames": 4,
+      "simulatedEqualArchitecture": true,
+      "actualProviderCollisionObserved": false
     }
   }
 }

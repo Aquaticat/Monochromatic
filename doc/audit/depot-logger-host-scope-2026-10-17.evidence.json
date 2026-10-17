@@ -6061,5 +6061,58 @@
     "Parent integrates the two source commits while preserving its newer helper work.",
     "Final authenticated provider run proves the explicit macos-15 semantic row and all applicable outcomes/runtime/source/cohort receipts."
   ],
-  "coherentFinalDispatch": false
+  "coherentFinalDispatch": false,
+  "artifactNamingFollowup": {
+    "harnessRevision": "face4f61997c698f1ab1d2f77dfc09ed2f9a7abe",
+    "previousRevision": "dc5423d3616744d8ac2ea9ff052f02a94f656a2d",
+    "workflowPath": ".github/workflows/fs-id.yml",
+    "workflowSha256": "aec47774b705c361929d64c93906dc7a527922fe7a8d5f7edc5b099b6f63ea30",
+    "helperFileByteEqual": true,
+    "helperSha256": "a6fa4b0914d55ecaa96e16a138ec0e3451e1af7c79aa8d91ae994d78edb0f640",
+    "onlyArtifactNameChanged": true,
+    "currentTemplate": "logger-hosts-${{ matrix.os }}-${{ runner.os }}-${{ runner.arch }}-${{ inputs.cohort_id }}",
+    "previousTemplate": "logger-hosts-${{ runner.os }}-${{ runner.arch }}-${{ inputs.cohort_id }}",
+    "rows": [
+      {
+        "runnerLabel": "ubuntu-latest",
+        "simulatedArchitecture": "ARM64",
+        "previous": "logger-hosts-Linux-ARM64-control-cohort",
+        "revised": "logger-hosts-ubuntu-latest-Linux-ARM64-control-cohort"
+      },
+      {
+        "runnerLabel": "windows-latest",
+        "simulatedArchitecture": "ARM64",
+        "previous": "logger-hosts-Windows-ARM64-control-cohort",
+        "revised": "logger-hosts-windows-latest-Windows-ARM64-control-cohort"
+      },
+      {
+        "runnerLabel": "macos-latest",
+        "simulatedArchitecture": "ARM64",
+        "previous": "logger-hosts-macOS-ARM64-control-cohort",
+        "revised": "logger-hosts-macos-latest-macOS-ARM64-control-cohort"
+      },
+      {
+        "runnerLabel": "macos-15",
+        "simulatedArchitecture": "ARM64",
+        "previous": "logger-hosts-macOS-ARM64-control-cohort",
+        "revised": "logger-hosts-macos-15-macOS-ARM64-control-cohort"
+      }
+    ],
+    "legacyUniqueNames": 3,
+    "revisedUniqueNames": 4,
+    "legacyCounterexampleProven": true,
+    "sameArchitectureSimulated": true,
+    "actualProviderCollisionObserved": false,
+    "providerDispatch": false,
+    "sourceChecksExecuted": false,
+    "reusedHelperControls": {
+      "path": "/home/user/temp/agent/depot-logger-host-scope-controls-cwYGF9/results.json",
+      "positive": 4,
+      "rejected": 70,
+      "sensitivity": 1,
+      "helperUnchanged": true
+    },
+    "path": "/home/user/temp/agent/depot-logger-host-artifact-controls-86480D/results.json",
+    "sha256": "fa02d1c837df6d6d36b893a1632ee45ea4741987432ebfce69038b7826fb3657"
+  }
 }
