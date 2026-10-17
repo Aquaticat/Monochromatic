@@ -287,13 +287,14 @@ function run({ id, command = 'mise', args, cwd = source, env = process.env, limi
 }
 const prerequisiteIds = [...new Set(selected.flatMap(check => check.prerequisites ?? []))]
 if (prerequisiteIds.length) run({ id: `external-${group}-prerequisites`, args: ['run', '//package/dev-script/task-util:trial:depot:ci:execute'], cwd: harness, env: { ...process.env, DEPOT_CI_CHECK_IDS: JSON.stringify(prerequisiteIds), DEPOT_CI_WORKERS: '1', DEPOT_CI_WAVE: 'all' } })
-const prerequisiteResults = prerequisiteIds.length ? JSON.parse(readFileSync(join(directory, 'logger-results.json'), 'utf8')).results : []
+const resultPath = join(directory, 'logger-results.json')
+const prerequisiteResults = prerequisiteIds.length && existsSync(resultPath) ? JSON.parse(readFileSync(resultPath, 'utf8')).results : []
 if (group === 'generated') {
-  const fixture = join(directory, 'logger-generated-fixture')
-  const env = { ...process.env, GIT_LFS_SKIP_SMUDGE: '1', MISE_TRUSTED_CONFIG_PATHS: `${process.env.MISE_TRUSTED_CONFIG_PATHS}:${fixture}` }
-  execFileSync('git', ['worktree', 'add', '--detach', fixture, manifest.sourceRevision], { cwd: source, env, stdio: 'inherit' })
-  execFileSync('mise', ['run', 'prepare:pnpm:install', '--', '--frozen-lockfile'], { cwd: fixture, env, stdio: 'inherit' })
   for (const check of selected) {
+    const fixture = join(directory, `logger-generated-${check.id}`)
+    const env = { ...process.env, GIT_LFS_SKIP_SMUDGE: '1', MISE_TRUSTED_CONFIG_PATHS: `${process.env.MISE_TRUSTED_CONFIG_PATHS}:${fixture}` }
+    execFileSync('git', ['worktree', 'add', '--detach', fixture, manifest.sourceRevision], { cwd: source, env, stdio: 'inherit' })
+    execFileSync('mise', ['run', 'prepare:pnpm:install', '--', '--frozen-lockfile'], { cwd: fixture, env, stdio: 'inherit' })
     const args = check.task ? ['run', check.task] : ['run', check.tasks[0]]
     const first = run({ id: check.id, args, cwd: fixture, env })
     if (check.tasks?.length > 1) run({ id: `${check.id}.declared`, args: ['run', check.tasks[1]], cwd: fixture, env })
