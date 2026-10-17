@@ -8571,7 +8571,17 @@
                 ""
               ]
             }
-          ]
+          ],
+          "sourceDeclaredIgnoredCase": {
+            "sourcePath": "package/music-player/desktop-app/src/refresh_cost_tests.rs",
+            "line": 122,
+            "declaration": [
+              "#[ignore = \"measures a real materialized library; set MP_REFRESH_LIBRARY and MP_REFRESH_CACHE\"]",
+              "fn refresh_cost_of_one_replaced_added_and_deleted_file() {"
+            ],
+            "identity": "music-player controller_measures::refresh_cost_tests::refresh_cost_of_one_replaced_added_and_deleted_file",
+            "limitation": "Source declaration identifies the ignored real-library benchmark; provider nextest summary does not name its skip identity."
+          }
         },
         {
           "provider": {
@@ -8951,7 +8961,129 @@
                 ""
               ]
             }
-          ]
+          ],
+          "compilationDiagnosticBlocks": {
+            "clippy": [
+              {
+                "logLine": 2855,
+                "diagnostic": [
+                  "error[E0433]: cannot find module or crate `libc` in this scope",
+                  "--> src\\refresh_cost_tests.rs:100:27",
+                  "|",
+                  "100 |     let status = unsafe { libc::getrusage(libc::RUSAGE_SELF, &mut usage) };",
+                  "|                           ^^^^ use of unresolved module or unlinked crate `libc`",
+                  "|",
+                  "= help: if you wanted to use a crate named `libc`, use `cargo add libc` to add it to your `Cargo.toml`",
+                  ""
+                ]
+              },
+              {
+                "logLine": 2863,
+                "diagnostic": [
+                  "error[E0433]: cannot find module or crate `libc` in this scope",
+                  "--> src\\refresh_cost_tests.rs:100:43",
+                  "|",
+                  "100 |     let status = unsafe { libc::getrusage(libc::RUSAGE_SELF, &mut usage) };",
+                  "|                                           ^^^^ use of unresolved module or unlinked crate `libc`",
+                  "|",
+                  "= help: if you wanted to use a crate named `libc`, use `cargo add libc` to add it to your `Cargo.toml`",
+                  ""
+                ]
+              },
+              {
+                "logLine": 2871,
+                "diagnostic": [
+                  "error[E0433]: cannot find module or crate `libc` in this scope",
+                  "--> src\\refresh_cost_tests.rs:99:20",
+                  "|",
+                  "99 |     let mut usage: libc::rusage = unsafe { std::mem::zeroed() };",
+                  "|                    ^^^^ use of unresolved module or unlinked crate `libc`",
+                  "|",
+                  "= help: if you wanted to use a crate named `libc`, use `cargo add libc` to add it to your `Cargo.toml`",
+                  ""
+                ]
+              },
+              {
+                "logLine": 2879,
+                "diagnostic": [
+                  "error[E0433]: cannot find module or crate `libc` in this scope",
+                  "--> src\\refresh_cost_tests.rs:102:27",
+                  "|",
+                  "102 |     let seconds = |value: libc::timeval| return value.tv_sec as f64 + value.tv_usec as f64 / 1_000_000.0;",
+                  "|                           ^^^^ use of unresolved module or unlinked crate `libc`",
+                  "|",
+                  "= help: if you wanted to use a crate named `libc`, use `cargo add libc` to add it to your `Cargo.toml`",
+                  "",
+                  "For more information about this error, try `rustc --explain E0433`."
+                ]
+              }
+            ],
+            "nextest": [
+              {
+                "logLine": 3381,
+                "diagnostic": [
+                  "error[E0433]: cannot find module or crate `libc` in this scope",
+                  "--> src\\refresh_cost_tests.rs:100:27",
+                  "|",
+                  "100 |     let status = unsafe { libc::getrusage(libc::RUSAGE_SELF, &mut usage) };",
+                  "|                           ^^^^ use of unresolved module or unlinked crate `libc`",
+                  "|",
+                  "= help: if you wanted to use a crate named `libc`, use `cargo add libc` to add it to your `Cargo.toml`",
+                  ""
+                ]
+              },
+              {
+                "logLine": 3389,
+                "diagnostic": [
+                  "error[E0433]: cannot find module or crate `libc` in this scope",
+                  "--> src\\refresh_cost_tests.rs:100:43",
+                  "|",
+                  "100 |     let status = unsafe { libc::getrusage(libc::RUSAGE_SELF, &mut usage) };",
+                  "|                                           ^^^^ use of unresolved module or unlinked crate `libc`",
+                  "|",
+                  "= help: if you wanted to use a crate named `libc`, use `cargo add libc` to add it to your `Cargo.toml`",
+                  ""
+                ]
+              },
+              {
+                "logLine": 3397,
+                "diagnostic": [
+                  "error[E0433]: cannot find module or crate `libc` in this scope",
+                  "--> src\\refresh_cost_tests.rs:99:20",
+                  "|",
+                  "99 |     let mut usage: libc::rusage = unsafe { std::mem::zeroed() };",
+                  "|                    ^^^^ use of unresolved module or unlinked crate `libc`",
+                  "|",
+                  "= help: if you wanted to use a crate named `libc`, use `cargo add libc` to add it to your `Cargo.toml`",
+                  ""
+                ]
+              },
+              {
+                "logLine": 3405,
+                "diagnostic": [
+                  "error[E0433]: cannot find module or crate `libc` in this scope",
+                  "--> src\\refresh_cost_tests.rs:102:27",
+                  "|",
+                  "102 |     let seconds = |value: libc::timeval| return value.tv_sec as f64 + value.tv_usec as f64 / 1_000_000.0;",
+                  "|                           ^^^^ use of unresolved module or unlinked crate `libc`",
+                  "|",
+                  "= help: if you wanted to use a crate named `libc`, use `cargo add libc` to add it to your `Cargo.toml`",
+                  "",
+                  "For more information about this error, try `rustc --explain E0433`."
+                ]
+              }
+            ]
+          },
+          "sourceDeclaredIgnoredCase": {
+            "sourcePath": "package/music-player/desktop-app/src/refresh_cost_tests.rs",
+            "line": 122,
+            "declaration": [
+              "#[ignore = \"measures a real materialized library; set MP_REFRESH_LIBRARY and MP_REFRESH_CACHE\"]",
+              "fn refresh_cost_of_one_replaced_added_and_deleted_file() {"
+            ],
+            "identity": "music-player controller_measures::refresh_cost_tests::refresh_cost_of_one_replaced_added_and_deleted_file",
+            "limitation": "Source declaration identifies the ignored real-library benchmark; provider nextest summary does not name its skip identity."
+          }
         }
       ]
     },
@@ -17531,7 +17663,17 @@
                 ""
               ]
             }
-          ]
+          ],
+          "sourceDeclaredIgnoredCase": {
+            "sourcePath": "package/music-player/desktop-app/src/refresh_cost_tests.rs",
+            "line": 137,
+            "declaration": [
+              "#[ignore = \"measures a real materialized library; set MP_REFRESH_LIBRARY and MP_REFRESH_CACHE\"]",
+              "fn refresh_cost_of_one_replaced_added_and_deleted_file() {"
+            ],
+            "identity": "music-player controller_measures::refresh_cost_tests::refresh_cost_of_one_replaced_added_and_deleted_file",
+            "limitation": "Source declaration identifies the ignored real-library benchmark; provider nextest summary does not name its skip identity."
+          }
         }
       ]
     }
@@ -18530,5 +18672,22 @@
     "number": 372,
     "url": "https://github.com/Aquaticats/Monochromatic/issues/372#issuecomment-6229698371",
     "disposition": "existing fleet-wide explicit-return migration; additive native source diagnostics"
+  },
+  "verification": {
+    "executedAt": "2026-10-17T04:39:36.397Z",
+    "markdownLint": {
+      "command": "mise run //:lint:monochromatic-lint -- doc/troubleshooting/depot-native-nextest-completion.md doc/handover/depot-trial-issues.md",
+      "exitCode": 0,
+      "remainingWarning": "rust/require-rustdoc at quoted Rust excerpt, preexisting"
+    },
+    "render": {
+      "renderer": "pandoc --from=gfm --to=html",
+      "inspected": [
+        "macOS executed and failed totals",
+        "nextest terminal coverage limitations",
+        "all created issue links",
+        "Linux prerequisite failure and pending corrected recovery"
+      ]
+    }
   }
 }
