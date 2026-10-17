@@ -171,7 +171,9 @@ console.log("\n" + JSON.stringify({ ...identity, event: 'case-started', complete
 async function execute(check) {
   const startedAt = new Date().toISOString()
   const started = performance.now()
-  const checkIdentity = { ...identity, checkId: check.id, task: check.task, args: check.args, startedAt, expectedFiles: check.expectedFiles }
+  const noFailFast = check.id === 'desktop-app.test' && process.env.DEPOT_CI_TEST_NO_FAIL_FAST === '1'
+  const execution = noFailFast ? { task: '//package/dev-script/task-util:trial:depot:linux-nextest', adapter: '--no-fail-fast', workingDirectory: join(process.env.GITHUB_WORKSPACE, 'harness') } : undefined
+  const checkIdentity = { ...identity, checkId: check.id, task: check.task, args: check.args, startedAt, expectedFiles: check.expectedFiles, execution }
   const deferred = deferredChecks.find((item) => item.checkId === check.id)
   const failedPrerequisites = (check.prerequisites ?? []).filter((id) => results.find((result) => result.checkId === id)?.status !== 'passed')
   const skipReason = deferred?.reason ?? (failedPrerequisites.length > 0 ? `Required builds did not pass: ${failedPrerequisites.join(', ')}` : undefined)
@@ -186,7 +188,7 @@ async function execute(check) {
     outputLog = join(logDirectory, `${check.id}.log`)
     const descriptor = openSync(outputLog, 'w', 0o600)
     try {
-      const child = spawn('mise', ['run', check.task, ...(check.args.length > 0 ? ['--', ...check.args] : [])], { stdio: ['ignore', descriptor, descriptor], env: { ...process.env, ...(check.env ?? {}) } })
+      const child = spawn('mise', ['run', execution?.task ?? check.task, ...(check.args.length > 0 ? ['--', ...check.args] : [])], { ...(execution ? { cwd: execution.workingDirectory } : {}), stdio: ['ignore', descriptor, descriptor], env: { ...process.env, ...(check.env ?? {}), ...(noFailFast ? { SOURCE_HEAD: manifest.sourceRevision } : {}) } })
       ;[exitCode, signal] = await once(child, 'exit')
     } catch (error) {
       console.error(error)
@@ -706,7 +708,7 @@ const files = ['mise.lock', 'pnpm-lock.yaml', 'package/music-player/truepeak-cor
 const hashes = Object.fromEntries(files.map((file) => [file, createHash('sha256').update(readFileSync(join(source, file))).digest('hex')]))
 const records = []
 for (const feature of ['default', 'fingerprint', 'service']) {
-  const args = ['nextest', 'run', '--release', '--no-default-features', ...(feature === 'default' ? [] : ['--features', feature])]
+  const args = ['nextest', 'run', '--no-fail-fast', '--release', '--no-default-features', ...(feature === 'default' ? [] : ['--features', feature])]
   const startedAt = new Date().toISOString()
   const started = performance.now()
   const result = spawnSync('cargo', args, { cwd: join(source, 'package/music-player/truepeak-core'), stdio: 'inherit', timeout: 1200000 })
