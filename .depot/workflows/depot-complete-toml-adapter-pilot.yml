@@ -118,6 +118,8 @@ jobs:
           ~/temp/agent/depot-complete-ci/*-results.json
           ~/temp/agent/depot-complete-ci/toml*.json
           ~/temp/agent/depot-complete-ci/toml*.jsonl
+          ~/temp/agent/depot-complete-ci/toml-metadata-observer-bin/podman
+          ~/temp/agent/depot-complete-ci/container-bin/podman
           ~/temp/agent/depot-complete-ci/toml*.log
           ~/temp/agent/depot-complete-ci/toml-mutation-shards/mutation-manifest-*/*.json
           ~/temp/agent/depot-complete-ci/toml-mutation-shards/mutation-report-*/*.json

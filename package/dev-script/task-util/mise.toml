@@ -977,7 +977,9 @@ const label = 'io.monochromatic.toml-attempt=' + randomUUID()
 const originalPodman = realpathSync(process.env.PATH.split(delimiter).map(directory => join(directory, 'podman')).find(path => existsSync(path)))
 const wrapperDirectory = join(directory, 'toml-correlated-container-bin')
 mkdirSync(wrapperDirectory, { recursive: true, mode: 0o700 })
-const wrapper = ['#!/usr/bin/env node', "const { spawnSync } = await import('node:child_process')", 'const [command, ...args] = process.argv.slice(2)', 'const labels = command === "run" ? ["--label", ' + JSON.stringify(label) + '] : []', 'const result = spawnSync(' + JSON.stringify(originalPodman) + ', [command, ...labels, ...args], { stdio: "inherit" })', 'if (result.error) throw result.error', 'process.exitCode = result.status ?? 1', ''].join('\n')
+const sourcePodmanCallsPath = join(directory, 'toml-source-podman-calls.jsonl')
+writeFileSync(sourcePodmanCallsPath, '', { flag: 'wx', mode: 0o600 })
+const wrapper = ['#!/usr/bin/env node', "const { spawnSync } = await import('node:child_process')", "const { appendFileSync } = await import('node:fs')", 'const [command, ...args] = process.argv.slice(2)', 'const labels = command === "run" ? ["--label", ' + JSON.stringify(label) + '] : []', 'appendFileSync(' + JSON.stringify(sourcePodmanCallsPath) + ',JSON.stringify({event:"source-podman-call",observedAt:new Date().toISOString(),pid:process.pid,command,args,forwardedArgs:[command,...labels,...args]})+String.fromCharCode(10))', 'const result = spawnSync(' + JSON.stringify(originalPodman) + ', [command, ...labels, ...args], { stdio: "inherit" })', 'appendFileSync(' + JSON.stringify(sourcePodmanCallsPath) + ',JSON.stringify({event:"source-podman-returned",observedAt:new Date().toISOString(),pid:process.pid,command,status:result.status,signal:result.signal,error:result.error?{message:result.error.message,code:result.error.code??null}:null})+String.fromCharCode(10))', 'if (result.error) throw result.error', 'process.exitCode = result.status ?? 1', ''].join(String.fromCharCode(10))
 writeFileSync(join(wrapperDirectory, 'podman'), wrapper, { mode: 0o700 })
 const shardDirectory = join(directory, 'toml-mutation-shards')
 mkdirSync(shardDirectory, { recursive: true, mode: 0o700 })
@@ -989,16 +991,35 @@ const outputPath = prefix + '.log'
 const descriptor = openSync(outputPath, 'wx', 0o600)
 const telemetry = []
 const instrumentationErrors = []
+const metadataOperationMs = control?.metadataOperationMs ?? 60000
+assert(Number.isInteger(metadataOperationMs) && metadataOperationMs > 0 && metadataOperationMs <= 60000)
+const forwardingPath = join(directory, 'toml-metadata-forwarding.jsonl')
+writeFileSync(forwardingPath, '', { flag: 'wx', mode: 0o600 })
+const forwardingDirectory = join(directory, 'toml-metadata-observer-bin')
+mkdirSync(forwardingDirectory, { recursive: true, mode: 0o700 })
+const forwardingNeedle = "  result = spawnSync('sudo', ['--non-interactive', podman, command, ...limits, ...identity, ...(metadata?.args ?? []), ...invocation], { stdio: 'inherit' });"
+const originalForwarder = statSync(originalPodman).size < 256 * 1024 ? readFileSync(originalPodman, 'utf8') : ''
+let metadataPodman = originalPodman
+let forwardingOverlay
+if (originalForwarder.includes(forwardingNeedle)) {
+  assert.equal(originalForwarder.split(forwardingNeedle).length, 2)
+  const before = "  const forwardingStarted = performance.now(); const { appendFileSync } = await import('node:fs'); const forwardingPath = process.env.DEPOT_TOML_METADATA_LIFECYCLE_LOG; appendFileSync(forwardingPath, JSON.stringify({event:'metadata-forwarding-started',observedAt:new Date().toISOString(),nodePid:process.pid,forwardedExecutable:'sudo',actualPodmanExecutable:podman,args:['--non-interactive',podman,command,...limits,...identity,...(metadata?.args ?? []),...invocation]})+String.fromCharCode(10));"
+  const after = "  appendFileSync(forwardingPath, JSON.stringify({event:'metadata-forwarding-returned',observedAt:new Date().toISOString(),elapsedMs:performance.now()-forwardingStarted,nodePid:process.pid,sudoPid:result.pid,sudoStatus:result.status,signal:result.signal,error:result.error?{name:result.error.name,message:result.error.message,code:result.error.code??null}:null,actualPodmanExecutable:podman})+String.fromCharCode(10));"
+  const instrumented = originalForwarder.replace(forwardingNeedle, [before, forwardingNeedle, after].join(String.fromCharCode(10)))
+  metadataPodman = join(forwardingDirectory, 'podman')
+  writeFileSync(metadataPodman, instrumented, { flag: 'wx', mode: 0o700 })
+  forwardingOverlay = { originalExecutable: originalPodman, originalSha256: createHash('sha256').update(originalForwarder).digest('hex'), observerExecutable: metadataPodman, observerSha256: createHash('sha256').update(instrumented).digest('hex'), sourceConsumerForwarderUnchanged: true, scope: 'Observer-only copied Node forwarder adds before/after sudo lifecycle receipts. Actual Podman executable and forwarded arguments are unchanged.' }
+} else assert(control, 'Cloud metadata requires the inspected generated Node forwarder')
 const podmanOperations = []
 const operationsPath = prefix + '-podman-operations.jsonl'
 writeFileSync(operationsPath, '', { flag: 'wx', mode: 0o600 })
-function podman({ args, budgetMs = 8000 }) {
+function podman({ args, budgetMs = metadataOperationMs }) {
   const startedAt = new Date().toISOString()
   const started = performance.now()
-  const result = spawnSync(originalPodman, args, { cwd: source, timeout: budgetMs, killSignal: 'SIGKILL', maxBuffer: 4 * 1024 * 1024 })
+  const result = spawnSync(metadataPodman, args, { cwd: source, env: { ...process.env, DEPOT_TOML_METADATA_LIFECYCLE_LOG: forwardingPath }, timeout: budgetMs, killSignal: 'SIGKILL', maxBuffer: 4 * 1024 * 1024 })
   const stdout = result.stdout ?? Buffer.alloc(0)
   const stderr = result.stderr ?? Buffer.alloc(0)
-  const operation = { executable: originalPodman, args, cwd: source, startedAt, finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, budgetMs, status: result.status, signal: result.signal, error: result.error ? { name: result.error.name, message: result.error.message, code: result.error.code ?? null, errno: result.error.errno ?? null, syscall: result.error.syscall ?? null, path: result.error.path ?? null, spawnargs: result.error.spawnargs ?? null } : null, stdoutBytes: stdout.length, stderrBytes: stderr.length, stdoutSha256: createHash('sha256').update(stdout).digest('hex'), stderrSha256: createHash('sha256').update(stderr).digest('hex'), stdout: stdout.toString('utf8'), stderr: stderr.toString('utf8') }
+  const operation = { executable: metadataPodman, sourceConsumerPodman: originalPodman, args, cwd: source, startedAt, finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, budgetMs, status: result.status, signal: result.signal, error: result.error ? { name: result.error.name, message: result.error.message, code: result.error.code ?? null, errno: result.error.errno ?? null, syscall: result.error.syscall ?? null, path: result.error.path ?? null, spawnargs: result.error.spawnargs ?? null } : null, stdoutBytes: stdout.length, stderrBytes: stderr.length, stdoutSha256: createHash('sha256').update(stdout).digest('hex'), stderrSha256: createHash('sha256').update(stderr).digest('hex'), stdout: stdout.toString('utf8'), stderr: stderr.toString('utf8') }
   podmanOperations.push(operation)
   appendFileSync(operationsPath, JSON.stringify(operation) + '\n')
   return operation
@@ -1164,7 +1185,12 @@ record.adapterOverlay = { DEPOT_CI_CHECK_IDS: env.DEPOT_CI_CHECK_IDS, DEPOT_CI_W
 record.shardEvidence = shardEvidence
 record.nativeReports = nativeReports
 record.podmanOperations = podmanOperations
+record.sourcePodmanCalls = readFileSync(sourcePodmanCallsPath, 'utf8').trim().split(String.fromCharCode(10)).filter(Boolean).map(line => JSON.parse(line))
+record.metadataOperationMs = metadataOperationMs
+record.forwardingOverlay = forwardingOverlay
+record.metadataForwarding = readFileSync(forwardingPath, 'utf8').trim().split(String.fromCharCode(10)).filter(Boolean).map(line => JSON.parse(line))
 if (pilot) {
+  assert(record.sourcePodmanCalls.some(row => row.event === 'source-podman-call' && row.command === 'run'), 'Actual source Podman correlation was not exercised')
   assert.equal(checkId, 'package.module.toml-edit.test.mutation')
   const fresh = nativeReports.find(row => row.producedDuringInvocation)
   const native = fresh ? JSON.parse(readFileSync(join(directory, fresh.artifactPath), 'utf8')) : undefined
