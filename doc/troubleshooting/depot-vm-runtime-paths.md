@@ -163,7 +163,13 @@ This candidate changes only the disposable cloud process identity,
 not passwd,
 the workstation account,
 or historical source.
-It is awaiting a real invocation and consumer verification.
+The actual invocation in `vq299blkbw` reached final Ubuntu guest creation successfully;
+the recorded `prepare-ubuntu` command exited zero at `2026-10-17T04:39:59.774Z`,
+followed by successful `destroy-preparation-ubuntu` at `04:40:00.167Z`.
+This exercises the shared-directory guest boundary that failed in the fifth run.
+Windows preparation,
+retained normalized identities,
+and terminal cleanup evidence remain required.
 The VM consumer gap is tracked in
 [issue #1088](https://github.com/Aquaticats/Monochromatic/issues/1088).
 
@@ -188,7 +194,7 @@ The run retains the 16-CPU,
 64-GiB disposable cloud allocation,
 75-minute provider timeout,
 and 60-minute experiment deadline with cleanup reserve.
-Terminal results and guest evidence remain required.
+Terminal results and the Windows guest evidence remain required.
 
 The fifth run built the historical source bundle,
 again measured the original package task's separate working-directory failure,
