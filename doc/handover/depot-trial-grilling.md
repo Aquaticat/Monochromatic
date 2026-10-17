@@ -110,10 +110,31 @@ the provider retains 133 memory samples and a peak memory-utilization value of `
 That correlation alone does not establish the termination cause.
 Do not retry this resource-consuming job without first reconciling its diagnostics and memory evidence.
 
+The [repository accounting checkpoint](../audit/depot-repository-accounting-2026-10-17.evidence.json)
+now retains the complete scoped terminal inventory and precise metrics for its attempts.
+The 391 provider attempt records include 389 observed start-to-finish intervals
+and two successful `no_sandbox` records without a start time.
+Those two records receive no observed allocation interval or assumed invoice charge.
+The workflow metadata timestamps have whole-second precision;
+all observed intervals instead use the metrics endpoint's timestamps.
+The 283 prior attempt metric records and 108 coherent records reconcile without collection errors.
+
 All 108 coherent Depot attempt intervals are now closed.
 Their 291275.192 allocated vCPU-seconds prorate to $14.5637596 at the published CI rate.
 This is the coherent Depot compute subtotal.
-Prior development,
+Historical resource candidates produce a separate provisional compute proration of $47.1717936
+across 261 observed intervals.
+Exact historical uploaded workflow bytes are not established;
+20 other allocated attempts remain unpriced because their resource sizes are unbound.
+Do not present the provisional figure as verified historical spend.
+The union of all observed attempt intervals is 28061005 milliseconds,
+with peak concurrency of 108 attempts.
+That union accounts for overlap;
+it is not a reconstructed dependency critical path.
+
+Current Depot documentation identifies the included-minute base as two CPUs and eight GB.
+The coherent vCPU allocation equals 2427.2932666666666 smallest-sandbox minute equivalents.
+No allowance netting was applied.
 GitHub/local consumer allocation,
 storage,
 plan allowances,
@@ -127,7 +148,7 @@ Next actions:
   The reviewed comments for `#1160`,
   `#1156`,
   `#1052` and `#1131` remain pending.
-  A paced retry after the initial backoff received the same rejection.
+  Two paced retries after backoff received the same rejection.
   Reconcile each live thread before retrying after the provider-documented backoff;
   pace subsequent mutations and stop on another rejection.
 - Logger credential issue `#1180`,

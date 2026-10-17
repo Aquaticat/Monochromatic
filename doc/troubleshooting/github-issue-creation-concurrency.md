@@ -1,4 +1,4 @@
-# GitHub REST API 2026-03-10 recommends serial Issue creation instead of a concurrency-five queue
+# GitHub API 2026-03-10 requires mutation pacing and gh 2.102.0 comments can remain throttled after backoff
 
 ## Symptom
 
@@ -357,6 +357,136 @@ The filing constraints resolve as follows:
    The selected fix is consumer-side serialization.
 
 There is nothing additive to file or comment upstream.
+
+## Observed GitHub CLI 2.102.0 comment rejection on 2026-10-17
+
+### Symptom and boundary
+
+The authorized Depot trial reconciliation attempted to add a reviewed comment to repository issue `#1160`.
+GitHub CLI `2.102.0` returned:
+
+```text
+GraphQL: was submitted too quickly (addComment)
+```
+
+The initial request and two later retries received the same diagnostic.
+The retries followed the initial backoff and inserted a pause before each planned mutation.
+Processing stopped at the rejected comment each time.
+No successful comment receipt or issue closure was recorded.
+The reviewed comments for `#1160`,
+`#1156`,
+`#1052` and `#1131` remain pending.
+
+Read-only issue queries,
+Depot metadata queries and primary-document fetches continued to work.
+The observation does not establish an authentication failure,
+a particular quota,
+the scope or reset time of a restriction,
+or another session as its cause.
+
+### Current client source trace
+
+The source clone uses GitHub CLI tag `v2.102.0`,
+commit `fc4b137cdef0a6bd28fd461b7cf9c84a5812a8cd`.
+Its push remote is disabled and its source was not modified.
+The paths in this subsection refer to that upstream repository.
+
+`pkg/cmd/pr/shared/commentable.go:262` constructs the comment request and returns a mutation error:
+
+```go
+// pkg/cmd/pr/shared/commentable.go
+params := api.CommentCreateInput{Body: body, SubjectId: commentable.Identifier()}
+url, err := api.CommentCreate(apiClient, opts.Host, params)
+if err != nil {
+    // Upload first: an uploaded asset outlives the failed write, and the
+    // user needs to know it exists before hearing the comment did not save.
+    return errors.Join(uploadErr, err)
+}
+```
+
+`api/queries_comments.go:74` sends `CommentCreate` through the GraphQL mutation client:
+
+```go
+// api/queries_comments.go
+err := client.Mutate(repoHost, "CommentCreate", &mutation, variables)
+if err != nil {
+    return "", err
+}
+```
+
+`api/client.go:123` creates that client and passes its result through the response handler:
+
+```go
+// api/client.go
+func (c Client) Mutate(hostname, name string, mutation any, variables map[string]any) error {
+    opts := clientOptions(hostname, c.http.Transport)
+    opts.Headers[graphqlFeatures] = features
+    gqlClient, err := ghAPI.NewGraphQLClient(opts)
+    if err != nil {
+        return err
+    }
+    return handleResponse(gqlClient.Mutate(name, mutation, variables))
+}
+```
+
+This traces the failed operation to `addComment`.
+It does not expose the server's deciding throttle or prove why that throttle applied.
+
+### Verification and workaround state
+
+`gh --version` reported `2.102.0`.
+The actual posting command was:
+
+```bash
+# Authorized trial action, not a disposable verification probe.
+gh issue comment 1160 --repo Aquaticats/Monochromatic \
+  --body-file coherent-reconciliation-comment-1160.md
+```
+
+The private controller reconciles the full live issue thread against a unique comment marker before posting.
+It requires an exact body readback before closing an issue.
+The paced variant waits 1100 milliseconds before a comment or closure mutation.
+Both posting variants stopped on the diagnostic.
+
+The working catalog is read-only issue inspection,
+repository-scoped Depot metrics collection and MCP document fetching.
+The failing catalog is the original `addComment` request and both paced retries.
+Local serialization did not recover this incident during those observations.
+No bypass,
+credential rotation or automatic repost through a different API was attempted.
+
+The [current REST best-practices document][github-best-practices] was fetched again on 2026-10-17
+through the configured `search_fetch` MCP.
+It still prescribes honoring rate-limit headers,
+otherwise waiting at least a minute,
+then increasing delays and stopping after a bounded retry count.
+That REST guidance informs conservative retry scheduling;
+it does not identify this GraphQL rejection's specific limit.
+The retained primary text is in the
+[repository accounting evidence](../audit/depot-repository-accounting-2026-10-17.evidence.json).
+
+No server-reset workaround is verified yet.
+The recoverable local state is the reviewed comment bodies and the pending queue in the
+[trial handover](../handover/depot-trial-grilling.md).
+Before a later retry,
+reconcile the live marker again and honor any available provider reset instructions.
+This preserves reviewable work while leaving publication and closure incomplete.
+
+### Upstream filing decision for this incident
+
+1. **Upstream fault:** not established.
+    A server rejection alone does not establish an incorrect client or provider behavior.
+2. **Fixability:** the deciding server condition is unknown;
+    no architectural impossibility is claimed.
+3. **Supported use:** commenting on repository issues is a supported CLI surface.
+4. **Contribution acceptance:** not evaluated for a new report because no upstream defect is established.
+5. **Expected upstream action:** unknown;
+    no maintainer refusal is inferred.
+6. **Prototype:** no upstream fix is justified by the current evidence.
+    The consumer pacing variant was exercised and did not recover posting.
+
+There is no fileable upstream defect report from this observation.
+The task remains publication of the authorized current-repository comments after the rejection clears.
 
 [github-best-practices]: https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api
 [github-create-issue]: https://docs.github.com/en/rest/issues/issues#create-an-issue
