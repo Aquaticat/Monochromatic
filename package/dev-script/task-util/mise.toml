@@ -134,7 +134,7 @@ for (const path of inputs) assert.deepEqual(readFileSync(path), execFileSync('gi
 const directory = join(homedir(), 'temp/agent/depot-complete-ci')
 mkdirSync(directory, { recursive: true, mode: 0o700 })
 chmodSync(directory, 0o700)
-const identity = { schemaVersion: 1, caseId: manifest.caseId, sourceRevision, manifestSha256, providerJobUrl: process.env.DEPOT_JOB_URL, resources: { cpus: Number(process.env.DEPOT_CI_CPUS ?? 16), memoryGiB: Number(process.env.DEPOT_CI_MEMORY_GIB ?? 64) }, selectedCheckIds: manifest.checks.map((check) => check.id) }
+const identity = { schemaVersion: 1, caseId: manifest.caseId, sourceRevision, manifestSha256, providerJobUrl: process.env.DEPOT_JOB_URL, resources: { cpus: Number(process.env.DEPOT_CI_CPUS ?? 16), memoryGiB: Number(process.env.DEPOT_CI_MEMORY_GIB ?? 64) } }
 const results = []
 const logDirectory = join(directory, 'check-logs')
 mkdirSync(logDirectory, { recursive: true, mode: 0o700 })
@@ -167,21 +167,35 @@ for (let index = 0; index < prerequisiteQueue.length; index += 1) {
 }
 const deferredChecks = manifest.checks.filter((check) => !activeIds.has(check.id)).map((check) => ({ checkId: check.id, reason: `Required check belongs to another execution wave; current wave: ${wave}` }))
 for (const check of manifest.checks.filter((item) => activeIds.has(item.id))) assert((check.prerequisites ?? []).every((id) => activeIds.has(id)), `Selected check has a deferred prerequisite: ${check.id}`)
-console.log("\n" + JSON.stringify({ ...identity, event: 'case-started', completeGraph: false, requestedCheckIds: requestedIds, activeCheckIds: [...activeIds], deferredChecks, tools: JSON.parse(execFileSync('mise', ['ls', '--current', '--json'], { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 })) }))
+const requestedCheckIds = requestedIds ?? manifest.checks.filter(check => !initialDeferred.includes(check.id)).map(check => check.id)
+const selectedCheckIds = [...activeIds]
+const caseIdentity = { ...identity, completeGraph: manifest.completeGraph === true, manifestCheckIds: manifest.checks.map(check => check.id), requestedCheckIds, selectedCheckIds, activeCheckIds: selectedCheckIds, prerequisiteCheckIds: selectedCheckIds.filter(id => !requestedCheckIds.includes(id)) }
+const runningCheckRecords = new Map()
+let sourceInputsVerified = false
+function writeCase({ event, executionState, conclusion, caseError }) {
+  const remainingActiveCheckIds = selectedCheckIds.filter(id => !results.some(record => record.checkId === id))
+  const record = { ...caseIdentity, event, executionState, conclusion, caseError, sourceInputsVerified, allActiveChecksHaveTerminalRecords: remainingActiveCheckIds.length === 0, remainingActiveCheckIds, runningChecks: [...runningCheckRecords.values()], results, deferredChecks, externalChecks: manifest.externalChecks }
+  writeFileSync(join(directory, `${manifest.caseId}-results.json`), JSON.stringify(record, null, 2))
+  return record
+}
+console.log("\n" + JSON.stringify({ ...caseIdentity, event: 'case-started', executionState: 'running', deferredChecks, tools: JSON.parse(execFileSync('mise', ['ls', '--current', '--json'], { encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 })) }))
+writeCase({ event: 'case-started', executionState: 'running' })
 async function execute(check) {
   const startedAt = new Date().toISOString()
   const started = performance.now()
-  const checkIdentity = { ...identity, checkId: check.id, task: check.task, args: check.args, startedAt, expectedFiles: check.expectedFiles }
+  const checkIdentity = { ...identity, selectedCheckIds, checkId: check.id, task: check.task, args: check.args, startedAt, expectedFiles: check.expectedFiles }
   const deferred = deferredChecks.find((item) => item.checkId === check.id)
   const failedPrerequisites = (check.prerequisites ?? []).filter((id) => results.find((result) => result.checkId === id)?.status !== 'passed')
   const skipReason = deferred?.reason ?? (failedPrerequisites.length > 0 ? `Required builds did not pass: ${failedPrerequisites.join(', ')}` : undefined)
-  console.log("\n" + JSON.stringify({ ...checkIdentity, event: 'check-started' }))
+  console.log("\n" + JSON.stringify({ ...checkIdentity, event: skipReason ? 'check-skipped' : 'check-started', skipReason }))
   let exitCode = null
   let signal = null
   let outputLog
   let outputSha256
   let outputBytes
   if (!skipReason) {
+    runningCheckRecords.set(check.id, { checkId: check.id, task: check.task, args: check.args, startedAt })
+    writeCase({ event: 'case-progress', executionState: 'running' })
     assert(/^[a-zA-Z0-9._-]+$/.test(check.id), 'Check ID must be safe as an evidence filename')
     outputLog = join(logDirectory, `${check.id}.log`)
     const descriptor = openSync(outputLog, 'w', 0o600)
@@ -200,14 +214,17 @@ async function execute(check) {
   }
   const record = { ...checkIdentity, event: 'check-finished', finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode, signal, status: skipReason ? 'skipped' : exitCode === 0 ? 'passed' : 'failed', skipReason, outputLog, outputSha256, outputBytes }
   results.push(record)
+  runningCheckRecords.delete(check.id)
   console.log("\n" + JSON.stringify(record))
-  writeFileSync(join(directory, `${manifest.caseId}-results.json`), JSON.stringify({ ...identity, event: 'case-finished', completeGraph: false, results, deferredChecks, externalChecks: manifest.externalChecks }, null, 2))
+  writeCase({ event: 'case-progress', executionState: 'running' })
   return check.id
 }
 const workers = Number(process.env.DEPOT_CI_WORKERS ?? 1)
 assert(Number.isInteger(workers) && workers >= 1 && workers <= 4, 'Worker count must be between one and four')
 const pending = new Map(manifest.checks.map((check) => [check.id, check]))
 const running = new Map()
+let caseError
+try {
 while (pending.size > 0 || running.size > 0) {
   for (const [id, check] of pending) {
     if (running.size >= workers) break
@@ -222,7 +239,16 @@ while (pending.size > 0 || running.size > 0) {
   running.delete(finished)
 }
 for (const path of inputs) assert.deepEqual(readFileSync(path), execFileSync('git', ['show', `HEAD:${path}`]), `${path} changed during checks`)
-console.log("\n" + JSON.stringify({ ...identity, event: 'case-finished', completeGraph: false, results, deferredChecks, externalChecks: manifest.externalChecks }))
+sourceInputsVerified = true
+} catch (error) {
+  caseError = { name: error.name, message: error.message, code: error.code }
+  throw error
+} finally {
+  const incomplete = caseError !== undefined || selectedCheckIds.some(id => !results.some(record => record.checkId === id))
+  const failed = results.some(result => activeIds.has(result.checkId) && result.status !== 'passed')
+  const record = writeCase({ event: incomplete ? 'case-aborted' : 'case-finished', executionState: incomplete ? 'aborted' : 'finished', conclusion: incomplete ? 'incomplete' : failed ? 'failed' : 'passed', caseError })
+  console.log("\n" + JSON.stringify(record))
+}
 if (results.some((result) => result.status === 'failed')) throw new Error('Affected-package checks failed; see retained per-check records')
 '''
 
