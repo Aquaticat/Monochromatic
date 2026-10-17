@@ -9,7 +9,7 @@ Updated 2026-10-16.
 
 ## Active work on 2026-10-15
 
-### Reopened review deadline and operation projection on 2026-10-16
+### Completed advisory timing and operation projection on 2026-10-17
 
 Session `2026-10-16T03-32-01-642Z_01a142c4-45e9-75fa-b579-ea10d43323ae`
 reached `Original policy review and evidence closure failed` for tool calls
@@ -32,8 +32,8 @@ The existing parser-first decision was therefore not fully implemented at the cu
 - [x] Remove thinking and signatures from review context and human confirmation summaries.
 - [x] Parse Bash locally and send only structural operation data to Luna, preserving permission-relevant details.
 - [x] Remove the hard fifteen-second cutoff, now explicitly a performance guideline.
-- [ ] Replay the complete reported interaction through the installed host.
-- [ ] Verify the installed consumer, prohibited-operation controls, and complete transmitted payloads.
+- [x] Replay the complete reported interaction through the installed host.
+- [x] Verify the installed consumer, prohibited-operation controls, and complete transmitted payloads.
 
 Commits `77001d41e6`, `79b62c75a5`, `29b3361ffd`, `af5693baa7`, `baecc20430`, and `c718ae955a`
 implement advisory timing, thinking exclusion, and the incumbent Bash parser's structural projection.
@@ -50,7 +50,24 @@ including both reported identifiers, without confirmation, with 25 successful Lu
 Its assertion that every command succeeds is invalid: the original transcript includes a failed search.
 The replay also lacks `rg`, producing exit status `127` instead of the original search's exit status `1`.
 The harness now mounts the actual `rg` executable and checks expected tool-error identities.
-The complete replay must be repeated with that corrected shell environment before closure.
+The corrected replay `pi-hyper-rpc-allow-Caf02F` completes all 21 original tool calls across 12 groups,
+including both reported identifiers, without confirmation.
+All 25 Luna requests succeed.
+The original failed search remains an exit-status `1` result, with no missing-executable error.
+The replay runs sequentially in a disposable two-CPU, 2 GiB container and retains configured resources.
+The saved-payload audit checks all requests, including per-question operation copies,
+prepared arguments, and selected historical messages.
+It finds no assistant thinking, provider signatures, or raw Bash command fields in those model-input surfaces.
+The installed prohibition fixture `pi-hyper-rpc-prohibited-nNA56F` blocks both original reads
+without confirmation and completes three successful Luna requests.
+Built context, shell projection, startup relevance, transport, decision-wire, budget,
+constructor, preparation, and live/retained dependency checks pass.
+The 22-case fallback matrix, shared shell-analyzer tests, both package type checks,
+and focused production lint also pass.
+Installed release is `native-release-b8o8BL`.
+Verification artifacts are retained privately under `${HOME}/temp/agent/pi-bash-bones-20261016`.
+This closes the reported failure and input-boundary corrections;
+the first replay's exit-status `137` cause remains unestablished.
 The user chose to keep `TCV` unchanged and document request-capture lessons in
 `package/pi-plugin/auto-mode/native/review-input-verification.md`.
 

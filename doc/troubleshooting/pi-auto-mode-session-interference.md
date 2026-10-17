@@ -82,8 +82,19 @@ The thinking-exclusion and late-answer tests failed against the original install
 The first complete-session replay stopped after eleven tool results with native exit status `137`.
 No native fatal diagnostic was retained, and the output ceiling was not reached.
 It is incomplete evidence, with no established termination cause.
-The final sequential replay retains the original conversation and configured resources in a disposable,
-two-CPU, 2 GiB container; its result belongs in the current-frontier handover.
+The first bounded replay executes all original calls but exposes a harness defect:
+`rg` is absent, and an all-success assertion contradicts the saved transcript's failed search.
+The corrected final replay `pi-hyper-rpc-allow-Caf02F` mounts the actual executable,
+retains the original conversation and configured resources,
+and completes all 21 calls across 12 groups without confirmation in a disposable two-CPU, 2 GiB container.
+Both reported tool-call identifiers complete successfully.
+The original failed search retains exit status `1` rather than a missing-executable status `127`.
+All 25 Luna requests succeed; saved-payload inspection covers proposed operations,
+prepared members, per-question copies, and selected historical messages.
+Those surfaces contain no assistant thinking, provider signatures, or raw Bash command fields.
+Installed prohibition fixture `pi-hyper-rpc-prohibited-nNA56F` blocks both reads without confirmation.
+The context, constructor, preparation, and live/retained dependency regressions also pass,
+as do the shared analyzer tests, type checks, focused lint, and the 22-case fallback matrix.
 
 ### Workaround tradeoffs and rejected approaches
 
