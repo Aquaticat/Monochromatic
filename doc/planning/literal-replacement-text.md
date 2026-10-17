@@ -24,6 +24,7 @@ Keeping the current wording avoids adding a language-specific example,
 but leaves replacement-string grammar implicit.
 The proposed wording makes the observed boundary explicit,
 but requires readers to distinguish literal text from intentional replacement patterns.
-Ranking: clarification > unchanged wording,
+Ranking:
+clarification > unchanged wording,
 because the explicit literal-text condition covers this demonstrated failure while retaining deliberate substitutions.
 The proposal does not change application code or the current rule.
