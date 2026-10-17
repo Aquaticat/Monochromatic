@@ -113,17 +113,35 @@ The empirical check is `cordis_inspect_query` with `platform: host`,
 `provider: Tool`,
 `method: listTools`,
 which returns the tools actually callable by the requesting agent.
-That call returned 52 tools both before and after the enable sweep.
+That call returned 52 tools from the lead session,
+both before and after the enable sweep.
+
+The count is seat-dependent,
+and the difference is informative rather than
+contradictory.
+The same `listTools` call issued from a delegated subagent returns 46 tools,
+because the six Agent Teams tools (`spawn_teammate`,
+`wait_agent`,
+`team_task_create`,
+`team_task_list`,
+`team_task_get`,
+`team_task_update`)
+are lead-scoped.
+46 plus those 6 is the 52 measured from the lead.
 
 Consequence:
-the 25 `disabled: false` entries now written into
-`~/.dsh/profiles/web/cordis.patch.yml` are inert.
-They do not harm anything,
-but they are config churn that misstates what the profile does.
-Reverting them is a live question for the owner,
-not a settled fix.
+the 24 `disabled: false` entries that the enable sweep wrote into
+`~/.dsh/profiles/web/cordis.patch.yml` were inert.
+They have since been reverted,
+and the patch file again carries only rows that change profile behavior.
+The count is 24 and not the 25 originally reported,
+because `desktop-product-telemetry` and `product-analytics` ended as
+`disabled: true` after their activation errors.
+At the point the sweep finished,
+the file carried 24 `disabled: false` rows and 4 `disabled: true` rows,
+and it now carries none.
 
-## Instruction budget overflow drops AGENTS.md and injects Claude Code rules
+## Instruction budget overflow drops `AGENTS.md` and injects Claude Code rules
 
 Severity:
 high.
@@ -173,10 +191,12 @@ for `instructionFileCandidates`:
 with per-directory trimmed-content duplicates collapsed to the earliest candidate".
 
 `CLAUDE.md` is not a trimmed-content duplicate of `AGENTS.md`.
-`diff AGENTS.md CLAUDE.md` produces exactly one hunk,
+The `diff` of `AGENTS.md` against `CLAUDE.md` produces exactly one hunk,
 `0a1,49`,
-plus one trailing context line:
-50 diff lines total.
+and 50 output lines in total:
+the hunk header plus 49 added lines.
+An `0a` hunk carries no context lines,
+which is itself the evidence that nothing was removed or reordered.
 `CLAUDE.md` is `AGENTS.md` verbatim with 49 lines prepended.
 Because the content differs,
 the dedup rule does not fire,
@@ -242,10 +262,13 @@ The agent must resolve the conflict itself,
 per turn,
 with no stated precedence.
 
-### Remediation options
+### Remediation
 
-Raising the cap is the smallest change and does not touch the repo generator.
-It leaves the conflicting preamble in place:
+Applied:
+the cap was raised in the profile patch,
+which stops the omission without touching the repo generator.
+It leaves the conflicting preamble in place,
+so DSH context still carries 49 lines of Claude Code rules:
 
 ```yaml
 # ~/.dsh/profiles/web/cordis.patch.yml
@@ -255,8 +278,12 @@ It leaves the conflicting preamble in place:
     maxBytes: 131072
 ```
 
+The change takes effect at the next server start.
+It has not been observed,
+because no restart or new session has happened since it was written.
+
 Making `CLAUDE.md` content-identical to `AGENTS.md` would let the plugin's
-own dedup collapse the pair,
+own dedup collapse the pair and reclaim the duplicated 32933 bytes,
 but `file-enforcer.config.ts:2223` records that Claude Code's `@include`
 is unreliable,
 which is why the duplication exists.
@@ -269,10 +296,13 @@ so DSH can be pointed at a DSH-specific file while `AGENTS.md` and
 That requires knowing the default candidate order,
 which is not exposed in the plugin's public type surface
 and was not measured for this audit.
+It remains open,
+and it is the only option that removes the contradiction rather than the
+truncation.
 
 Unmeasured:
-whether enabling the `agent-instructions` row in this session's
-patch changed instruction loading at all.
+whether the `agent-instructions` row state in the profile patch affects
+instruction loading at all.
 The plugin already ran in turn one while its base row reported
 `enabled: false`,
 so the effective mount came from the web-app override.
@@ -286,9 +316,10 @@ medium.
 
 `~/.agents/skills/` holds 29 directories with a `SKILL.md`.
 `~/.pi/agent/skills/` holds 26 entries,
-and every one of them is a symlink into `~/.agents/skills/`,
+25 of which are symlinks resolving into `~/.agents/skills/` with none broken,
 so Pi and DSH read the same underlying store.
-`pre-compact` is the only Pi entry with no `~/.agents/skills/` counterpart.
+`pre-compact` is the 26th and the only real directory,
+with no `~/.agents/skills/` counterpart.
 
 The DSH skill catalog for this session lists 15 of those 29.
 The 14 it omits are `ask-matt`,
@@ -406,8 +437,16 @@ depending on how much the hooks are relied on.
 `.claude/settings.local.json` configures four hook events
 carrying five commands.
 Each resolves to a package built in this repo under
-`package/claude-code-plugin/`,
-which holds 13 packages:
+`package/claude-code-plugin/`.
+That directory holds 13 subdirectories,
+11 of which are packages with a `package.json`,
+and 10 of those 11 declare a `bin` entry:
+`research-agent/` holds only `agents/research.md`,
+a `README.md`,
+and a `TROUBLESHOOTING.md`,
+and `verbose-tool-output/` holds only a `WONTFIX.md`,
+while `hook-type` is a package with no bin.
+The five hooks are:
 
 - `SessionStart` with matcher `startup|resume` runs `ccssh`,
   which is `session-start-housekeeping`:
@@ -425,7 +464,7 @@ which holds 13 packages:
   which is `stop-reminder`:
   reminds the agent to investigate before guessing and refuses premature stops
 
-Searching the descriptions of all 304 `@deepseek-ai/dsh-*` packages in the
+Searching the descriptions of all 292 `@deepseek-ai/dsh-*` packages in the
 install tree for `hook`,
 `lifecycle`,
 `intercept`,
@@ -496,12 +535,19 @@ and a local `openai-fast` plugin.
 
 Pi's `~/.pi/agent/models.json` adds a fourth provider,
 `llmgateway-devpass`,
-with four models and per-model `thinkingLevelMap`
-tables that map DSH-style reasoning levels onto provider-native ones.
+with four models:
+`mimo-v2.6-pro`,
+`gpt-6.1-sol`,
+`gpt-6-astra`,
+and `muse-spark-1.3-contributor`.
+Three of the four carry a `thinkingLevelMap` table mapping DSH-style
+reasoning levels onto provider-native ones;
+`mimo-v2.6-pro` does not.
 It also carries `modelOverrides` adjusting `contextWindow` to 750000
 for `gpt-6-luna`,
 `gpt-6.1-sol`,
-and `gpt-6-astra`.
+and `gpt-6-astra` under `providers/openai`,
+with two further overrides under `providers/openai-fast`.
 
 Security finding,
 and it runs against the direction of this audit:
@@ -532,20 +578,20 @@ low to medium.
 
 Pi defines three named subagent roles with explicit tool allow-lists in
 `~/.pi/agent/pi-subagents-config.json`:
-`scout` (read,
-grep,
-find,
-ls,
-web_fetch,
-web_search),
-`planner` (the same plus todo),
-and `reviewer` (read,
-grep,
-find,
-ls,
-bash,
-web_fetch,
-web_search).
+`scout` (`read`,
+`grep`,
+`find`,
+`ls`,
+`web_fetch`,
+`web_search`),
+`planner` (the same plus `todo`),
+and `reviewer` (`read`,
+`grep`,
+`find`,
+`ls`,
+`bash`,
+`web_fetch`,
+`web_search`).
 It also carries two agent prompt files,
 `~/.pi/agent/agents/Explore.md` and `~/.pi/agent/agents/Plan.md`,
 and a populated `~/.pi/agent/pi-subagents-state/` directory.
@@ -656,10 +702,17 @@ Measured from the active plugin list:
 
 ## Priorities
 
-1. Resolve the instruction budget overflow.
-   DSH agents are currently receiving Claude Code's operating rules.
-   Raising `maxBytes` is a one-line patch change and stops the omission;
-   a DSH-specific instruction file is the correct fix.
+Items 1 and 4 were actioned while this audit was being written and are
+recorded as done rather than open.
+
+1. Done:
+   the instruction budget cap was raised to 131072 in
+   `~/.dsh/profiles/web/cordis.patch.yml`,
+   which stops `AGENTS.md` being omitted.
+   Still open:
+   DSH agents continue to receive Claude Code's 49-line preamble,
+   and only a DSH-specific instruction file removes that contradiction.
+   The change needs a server start to take effect and has not been observed.
 
 2. Decide what to do about the 14 hidden workflow skills.
    These are the handoff,
@@ -668,16 +721,29 @@ Measured from the active plugin list:
    and triage flows.
    Leaving them unreachable means DSH sessions cannot follow the same
    workflow vocabulary as Pi and Claude Code sessions.
+   Owner decision recorded as "leave as an audit finding",
+   so this stays open by choice rather than by oversight.
 
 3. Compose an MCP bridge if the seven Claude Code integrations matter.
    `@deepseek-ai/dsh-mcp-client` already exists in the install tree.
-   Start with `morph` or `serena` for code intelligence,
-   and copy Pi's deferred-exposure idea rather than mounting every
+   Start with `morph` for code intelligence,
+   since Pi deliberately sets `serena` to `"enabled": false`
+   and its Claude Code allow-list entries are historical.
+   Copy Pi's deferred-exposure idea rather than mounting every
    server's schema eagerly.
 
-4. Revert or keep the 25 inert `disabled: false` patch entries.
-   They misstate what the profile does.
-   Owner decision.
+4. Done:
+   the 24 inert `disabled: false` patch entries were reverted,
+   and the patch file again carries only rows that change profile behavior.
+   Two rows that ended `disabled: true` for cause were removed with them,
+   since neither can activate here:
+   `pwsh-sandbox` and `optional-terminal-pwsh` both collide with the bash
+   sandbox's `shell` service registration on Linux,
+   and `desktop-product-telemetry` requires an OTel collector `endpoint`,
+   `channel`,
+   `serviceName`,
+   and `serviceVersion` that are not configured,
+   which leaves `product-analytics` pending on a service that never arrives.
 
 5. Port `bash-output-filter` behavior if Bash output volume is a context
    problem in DSH sessions.
@@ -686,7 +752,8 @@ Measured from the active plugin list:
 
 6. Rotate the plaintext `llmgateway-devpass` API key in
    `~/.pi/agent/models.json` and move it to an environment variable.
-   This is a Pi defect surfaced by the comparison.
+   This is a Pi defect surfaced by the comparison,
+   and the file is mode `0644`.
 
 7. Fix the stale `enabledMcpjsonServers` entries in
    `.claude/settings.local.json`,
@@ -707,9 +774,29 @@ Stated so the gaps are not mistaken for verified absences.
 - `.claude/settings.local.json` was read in full for structure but the 583
   allow entries were counted,
   not individually classified.
-- The 13 `package/claude-code-plugin/` packages were identified by their
-  `bin` names and package descriptions;
+- The five hook packages under `package/claude-code-plugin/` were identified
+  by their `bin` names and `package.json` descriptions;
   their source was not read.
+  The 292 package count for the hook search is the number of
+  `@deepseek-ai+dsh-*` directories in the install tree.
+  Counting every `@deepseek-ai+*` directory gives 304,
+  the extra 12 being five `cordis` packages,
+  two `libreoffice-kit`,
+  two `node-addon-system`,
+  plus `cosmokit`,
+  `schemastery`,
+  and the `dsh` meta-package,
+  whose name carries no hyphen.
+- The 52-tool measurement was taken from the lead session.
+  An independent fact-check re-running the same query from a delegated
+  subagent measured 46,
+  which reconciles exactly:
+  the six Agent Teams tools are lead-scoped.
+  Neither seat could observe the other,
+  so the pair is consistent rather than mutually confirming.
+- The 203 `list_plugins` entries and the 26 `overrides` row ids were read from
+  this session's own `plugin_manager` calls and were not independently
+  re-measured.
 - Claude Code's installed plugins (`playground`,
   `plugin-dev`) and its
   marketplace catalog were not audited.
@@ -723,3 +810,27 @@ Stated so the gaps are not mistaken for verified absences.
   `.codex` is empty.
 - Whether `~/.agents/skills/` and the workspace `.agents/skills/` are the
   only two DSH skill roots was not confirmed from source.
+
+## Verification
+
+Every factual claim was re-measured from the filesystem by a separate
+fact-checker that was instructed not to trust this document,
+per the repo rule against same-session self-review in
+`doc/agent/self-review.md`.
+Of 20 numbered claims,
+16 were confirmed on first check and three were wrong:
+the `disabled: false` count,
+which is 24 and not 25;
+the package count for the hook search,
+which is 292 `@deepseek-ai/dsh-*` directories and not 304;
+and the `package/claude-code-plugin/` count,
+which is 11 packages across 13 directories and not 13 packages.
+All three are corrected in this revision,
+along with four backticking violations and two mischaracterizations the
+fact-check found:
+an `0a` diff hunk carries no context lines,
+and 25 of Pi's 26 skill entries are symlinks rather than all 26.
+Markdown rules were checked with `mise run lint:monochromatic-lint`,
+which passes clean,
+and the document was rendered through `pandoc` to confirm both YAML fences
+highlight and no emphasis marker leaks as literal text.
