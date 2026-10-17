@@ -98,16 +98,28 @@ Clean pushed harness `107b968b957dc8cb47540df94edda02e26445749`
 is now running native control `rfq31sq4g9` and desktop control `jq7ctm8pb2`.
 Each dispatch independently pushed and checked remote equality and clean status.
 Both workflows now retain before/after immutable source identity records.
-Root owns one terminal waiter for both runs;
-actual GUI geometry,
-all configured sessions,
-assertion identities,
-resource counters,
-and cleanup still need reconciliation.
+Both controls are terminal and their artifacts are downloaded.
+Each emitted 69 passing,
+zero failing,
+and one skipped assertion;
+all nine prior failing identities are restored to passing.
+All 20 retained screenshots per case have the authored 1000 by 800 dimensions.
+Before/after source identities match,
+all observed PID rejection and OOM counters remain zero,
+and cleanup is verified.
+The unchanged source still throws the folder-setup timeout before later sessions execute.
+Existing issue `#1005` already records this exact 69-pass fixed-coordinate fixture boundary.
+Root is preparing an explicitly recorded in-memory session-continuation adapter:
+retain an ordinary setup failure,
+recheck the original preconditions after cleanup,
+then run fresh independent sessions.
+Safety-stop,
+unknown,
+and cleanup errors must still stop the run.
 Existing issue `#1007` already tracks the nested-route pointer/text boundary;
 the measured geometry belongs there rather than in a duplicate issue.
 No causal claim about the individual interaction failures is made before that control.
-The proposed in-memory session-continuation adapter is deferred pending geometry recovery.
+The evidence field `desktopRuntimeHeadlessGeometryControl` retains the actual comparison and provider allocations.
 
 Root grafted the truthful executor metadata repair while preserving native nextest continuation
 at `100452c7c6b9078d01f20ab5a086f13edeaf49d9`.
@@ -124,6 +136,22 @@ while TOML continues independently.
 The final TOML route at `c159dd63021f9304ab3e4996b1d054e5f19ea0c9`
 also retains native mutation reports with hashes and explicit stale-output handling.
 It remains held for the common dispatch interval.
+
+The common cohort contract uses a frozen main-branch file named
+`doc/audit/depot-complete-cohort-<cohort_id>.json`.
+It binds `cohortId`,
+each `cases.<case>.sourceRevision` and `manifestSha256`,
+and each `routes.<route>.harnessRevision` and repo-relative workflow path.
+The shared request timestamp is created after publication and retained identically before and after each route;
+it is not part of the frozen manifest.
+Authenticated Contents API object retrieval and base64 decoding preserved all 1,043,537 tested bytes;
+the mismatched digest control was rejected.
+Raw JSON CLI output changed escaped control characters,
+even with `--allow-escape-sequences`,
+so it is not the selected byte-preserving transport.
+The common manifest remains unfrozen and no final dispatch is authorized by a control fixture.
+The native owner is repairing actual-manifest bindings on its prepared routes;
+the VM owner is adding the same contract and adapting Android's manifest lookup to `cases.native`.
 
 The user requested continuation of the authorized trial queue.
 Root is collecting the terminal native,
