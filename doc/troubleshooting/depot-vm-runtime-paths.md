@@ -164,6 +164,23 @@ not passwd,
 the workstation account,
 or historical source.
 It is awaiting a real invocation and consumer verification.
+The VM consumer gap is tracked in
+[issue #1088](https://github.com/Aquaticats/Monochromatic/issues/1088).
+
+Recovery dispatch `042gflb8jn`
+attempted to upload the local harness change over provider checkout `01c948cac2`.
+The injected patch failed before VM setup:
+
+```text
+error: patch failed: package/dev-script/task-util/mise.toml:549
+error: package/dev-script/task-util/mise.toml: patch does not apply
+```
+
+No VM evidence artifact was created.
+This is provider preparation overhead,
+not a test of primary-group normalization.
+The next attempt must begin only after the harness push completes
+and `git ls-remote` matches its local committed revision.
 
 The fifth run built the historical source bundle,
 again measured the original package task's separate working-directory failure,
@@ -181,6 +198,8 @@ running the source suite from the repository root cannot replace that task resul
 - Assuming every cloud shell inherits `XDG_RUNTIME_DIR` failed in the measured retry.
 - Successful daemon startup does not verify paths created only when a guest starts.
 - A missing artifact does not erase a failed provider attempt from cost accounting.
+- Uploading the VM harness as a local patch repeated the injected-checkout patch failure;
+  the prepared harness must be clean and remotely committed before dispatch.
 
 ## Upstream filing decision
 
