@@ -92,7 +92,19 @@ const partitions = JSON.parse(readFileSync(join(harness, '.depot/manifests/logge
 assert.equal(partitions.manifestSha256, createHash('sha256').update(manifestBytes).digest('hex'))
 assert.equal(partitions.sourceRevision, manifest.sourceRevision)
 assert.equal(execFileSync('git', ['rev-parse', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), manifest.sourceRevision)
-const partition = partitions.partitions.find(item => item.name === process.env.DEPOT_CI_PARTITION)
+const continuationId = process.env.DEPOT_LOGGER_CONTINUATION_ID
+const selectionPlan = process.env.DEPOT_LOGGER_SELECTION_PLAN ?? 'development'
+assert(['development', 'complete'].includes(selectionPlan), 'Unknown logger selection plan')
+const selectionPath = selectionPlan === 'complete' ? '.depot/manifests/logger-complete-selectors.json' : '.depot/manifests/logger-continuation.json'
+const continuationManifest = continuationId ? JSON.parse(readFileSync(join(harness, selectionPath), 'utf8')) : undefined
+if (continuationManifest) {
+  assert.equal(continuationManifest.manifestSha256, partitions.manifestSha256)
+  assert.equal(continuationManifest.sourceRevision, manifest.sourceRevision)
+}
+const continuation = continuationManifest?.checks.find(item => item.name === continuationId)
+if (continuationId) assert(continuation, 'Unknown logger continuation identity')
+if (continuation) assert.equal(continuation.partition, process.env.DEPOT_CI_PARTITION)
+const partition = continuation ? { name: continuation.partition, selectedCheckIds: continuation.selectedCheckIds, activeCheckIds: continuation.activeCheckIds } : partitions.partitions.find(item => item.name === process.env.DEPOT_CI_PARTITION)
 assert(partition, 'Unknown logger remainder partition')
 assert.equal(new Set(partition.selectedCheckIds).size, partition.selectedCheckIds.length)
 assert(partition.selectedCheckIds.every(id => manifest.checks.some(check => check.id === id)))
@@ -114,8 +126,12 @@ chmodSync(directory, 0o700)
 writeFileSync(join(directory, 'logger-partition.json'), JSON.stringify({ ...partition, manifestSha256: partitions.manifestSha256, sourceRevision: partitions.sourceRevision, providerJobUrl: process.env.DEPOT_JOB_URL }, null, 2))
 const suiteEnv = { ...process.env, DEPOT_CI_CASE: 'logger', DEPOT_CI_CHECK_IDS: JSON.stringify(partition.selectedCheckIds), DEPOT_CI_WORKERS: '1', DEPOT_CI_WAVE: 'all' }
 const task = '//package/dev-script/task-util:trial:depot:ci:execute'
+const executionBudgetMs = Number(process.env.DEPOT_LOGGER_EXECUTION_BUDGET_MS ?? 1440000)
+assert(Number.isInteger(executionBudgetMs) && executionBudgetMs > 0 && executionBudgetMs <= 7200000, 'Logger execution budget must be a positive integer no greater than two hours')
+let executionError
+try {
 if (partition.name !== 'fuzz') {
-  execFileSync('mise', ['run', task], { cwd: harness, env: suiteEnv, stdio: 'inherit', timeout: 1440000 })
+  execFileSync('mise', ['run', task], { cwd: harness, env: suiteEnv, stdio: 'inherit', timeout: executionBudgetMs })
 } else {
   const name = `depot-logger-fuzz-${process.pid}`
   const marker = join(homedir(), `temp/agent/depot-fuzz-overlay-${process.pid}`)
@@ -130,11 +146,11 @@ if (partition.name !== 'fuzz') {
   let cleanupVerified = false
   let evidenceCopied = true
   try {
-    podman({ args: ['run', '--detach', '--init', '--name', name, '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=512', '--timeout=1560', '--rootfs', '/:O', '/usr/bin/sleep', '1500'] })
+    podman({ args: ['run', '--detach', '--init', '--name', name, '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=512', `--timeout=${Math.ceil(executionBudgetMs / 1000) + 120}`, '--rootfs', '/:O', '/usr/bin/sleep', String(Math.ceil(executionBudgetMs / 1000) + 60)] })
     podman({ args: ['exec', '--user', `${process.getuid()}:${process.getgid()}`, name, 'touch', marker] })
     const allowedKeys = ['HOME', 'PATH', 'MISE_DATA_DIR', 'MISE_CONFIG_DIR', 'MISE_STATE_DIR', 'MISE_NODE_VERSION', 'MISE_PNPM_VERSION', 'MISE_BUN_VERSION', 'MISE_DENO_VERSION', 'MISE_LOCKED', 'MISE_AUTO_INSTALL', 'MISE_TRUSTED_CONFIG_PATHS', 'GITHUB_WORKSPACE', 'DEPOT_JOB_URL', 'DEPOT_CI_CASE', 'DEPOT_CI_CHECK_IDS', 'DEPOT_CI_WORKERS', 'DEPOT_CI_WAVE', 'OXLINT_THREADS', 'TSC_SINGLE_THREADED']
     const environment = allowedKeys.filter(key => suiteEnv[key] !== undefined).map(key => `${key}=${suiteEnv[key]}`)
-    suite = podman({ args: ['exec', '--user', `${process.getuid()}:${process.getgid()}`, '--workdir', harness, name, 'env', '-i', ...environment, 'DEPOT_CI_CPUS=2', 'DEPOT_CI_MEMORY_GIB=2', 'CI=true', 'LANG=C.UTF-8', 'mise', 'run', task], required: false, inherit: true, limit: 1440000 })
+    suite = podman({ args: ['exec', '--user', `${process.getuid()}:${process.getgid()}`, '--workdir', harness, name, 'env', '-i', ...environment, 'DEPOT_CI_CPUS=2', 'DEPOT_CI_MEMORY_GIB=2', 'CI=true', 'LANG=C.UTF-8', 'mise', 'run', task], required: false, inherit: true, limit: executionBudgetMs })
     for (const file of ['logger-results.json', 'check-logs']) {
       const copied = podman({ args: ['cp', `${name}:${directory}/${file}`, join(directory, file)], required: false })
       if (copied.status !== 0) evidenceCopied = false
@@ -153,6 +169,20 @@ if (partition.name !== 'fuzz') {
 }
 const preparation = JSON.parse(readFileSync(join(directory, 'logger-remainder-preparation-results.json'), 'utf8'))
 assert(!preparation.records.some(record => record.status === 'failed'), 'Independent checks completed, but preparation failures remain infrastructure failures')
+} catch (error) {
+  executionError = { name: error.name, message: error.message, code: error.code, status: error.status, signal: error.signal }
+  throw error
+} finally {
+  if (continuation) {
+    const resultPath = join(directory, 'logger-results.json')
+    const results = existsSync(resultPath) ? JSON.parse(readFileSync(resultPath, 'utf8')).results : []
+    const records = partition.selectedCheckIds.map(checkId => {
+      const result = results.find(record => record.checkId === checkId)
+      return result ? { checkId, status: result.status, skipReason: result.skipReason, startedAt: result.startedAt, finishedAt: result.finishedAt, exitCode: result.exitCode, signal: result.signal, outputSha256: result.outputSha256 } : { checkId, status: existsSync(join(directory, 'check-logs', `${checkId}.log`)) ? 'started-without-terminal-record' : 'unstarted' }
+    })
+    writeFileSync(join(directory, 'logger-continuation-results.json'), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: partitions.manifestSha256, continuationId, partition: partition.name, selectedCheckIds: partition.selectedCheckIds, activeCheckIds: partition.activeCheckIds, executionError, executionBudgetMs, records, providerJobUrl: process.env.DEPOT_JOB_URL }, null, 2))
+  }
+}
 '''
 
 [tasks."trial:depot:remainder:prepare"]
@@ -235,4 +265,634 @@ assert.equal(readFileSync(join(source, 'mise.lock'), 'utf8'), lock)
 assert.equal(execFileSync('git', ['diff', '--name-only', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), '', 'Preparation must preserve tracked source files')
 writeFileSync(join(directory, 'logger-remainder-preparation-results.json'), JSON.stringify({ sourceRevision, partition, records, providerJobUrl: process.env.DEPOT_JOB_URL }, null, 2))
 if (records.some(record => record.status === 'failed')) throw new Error('Remainder preparation failed; retained logs identify infrastructure prerequisites')
+'''
+
+[tasks."trial:depot:external"]
+description = "Run explicit logger external checks with immutable identity and prerequisite records"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync, spawnSync } = await import('node:child_process')
+const { readFileSync, writeFileSync, mkdirSync, existsSync, openSync, closeSync, lstatSync, readlinkSync } = await import('node:fs')
+const { createHash } = await import('node:crypto')
+const { homedir } = await import('node:os')
+const { join } = await import('node:path')
+const { strict: assert } = await import('node:assert')
+const harness = join(process.env.GITHUB_WORKSPACE, 'harness')
+const source = join(process.env.GITHUB_WORKSPACE, 'source')
+const bytes = readFileSync(join(harness, '.depot/manifests/logger.json'))
+const manifest = JSON.parse(bytes)
+const digest = createHash('sha256').update(bytes).digest('hex')
+assert.equal(digest, JSON.parse(readFileSync(join(harness, '.depot/manifests/logger-orchestrator.json'), 'utf8')).manifestSha256)
+assert.equal(execFileSync('git', ['rev-parse', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), manifest.sourceRevision)
+const group = process.env.DEPOT_LOGGER_EXTERNAL
+const groups = {
+  browser: ['root.browser'],
+  e2e: ['root.e2e'],
+  electron: ['package.desktop-app.electron-counter.test.wayland', 'package.desktop-app.file-manager-electron.test.wayland'],
+  generated: ['root.generated-consistency', 'sidecar.generated-type-consistency'],
+  'root-lint': ['root.config-oxlint'],
+  desktop: ['artifact.music-desktop-e2e'],
+}
+assert(Object.hasOwn(groups, group), 'Unknown logger external group')
+const requested = process.env.DEPOT_LOGGER_EXTERNAL_IDS ? JSON.parse(process.env.DEPOT_LOGGER_EXTERNAL_IDS) : groups[group]
+assert(Array.isArray(requested) && requested.length > 0 && new Set(requested).size === requested.length)
+assert(requested.every(id => groups[group].includes(id)), 'External recovery must select known check identities')
+const selected = requested.map(id => manifest.externalChecks.find(check => check.id === id))
+assert(selected.every(Boolean))
+const browserPartitionId = process.env.DEPOT_LOGGER_BROWSER_PARTITION
+let browserPartition
+let browserScope
+let browserPartitionManifestSha256
+if (browserPartitionId) {
+  const partitionBytes = readFileSync(join(harness, '.depot/manifests/logger-browser-partitions.json'))
+  const partitionManifest = JSON.parse(partitionBytes)
+  browserPartitionManifestSha256 = createHash('sha256').update(partitionBytes).digest('hex')
+  assert.equal(partitionManifest.manifestSha256, digest)
+  assert.equal(partitionManifest.sourceRevision, manifest.sourceRevision)
+  browserPartition = partitionManifest.partitions.find(partition => partition.id === browserPartitionId)
+  assert(browserPartition && browserPartition.group === group)
+  assert.deepEqual(requested, [browserPartition.checkId])
+  const specification = selected[0]
+  const full = partitionManifest.groups.find(item => item.group === group)
+  assert.equal(full.checkId, specification.id)
+  assert.equal(full.task, specification.task)
+  assert.deepEqual(full.files, specification.args)
+  assert.deepEqual(full.projects, specification.projects)
+  assert(full.files.includes(browserPartition.file) && full.projects.includes(browserPartition.project))
+  const configuration = readFileSync(join(source, full.configPath))
+  assert.equal(createHash('sha256').update(configuration).digest('hex'), full.configSha256)
+  browserScope = { ...browserPartition, fullFiles: full.files, fullProjects: full.projects, browserPartitionManifestSha256 }
+}
+const directory = join(homedir(), 'temp/agent/depot-complete-ci')
+mkdirSync(join(directory, 'check-logs'), { recursive: true, mode: 0o700 })
+const records = []
+const generatedConsumers = []
+function run({ id, command = 'mise', args, cwd = source, env = process.env, limit = 1200000 }) {
+  const startedAt = new Date().toISOString()
+  const log = join(directory, 'check-logs', `${id}.log`)
+  const descriptor = openSync(log, 'w', 0o600)
+  let result
+  try { result = spawnSync(command, args, { cwd, env, stdio: ['ignore', descriptor, descriptor], timeout: limit }) }
+  finally { closeSync(descriptor) }
+  const output = readFileSync(log)
+  const record = { checkId: id, command, args, cwd, startedAt, finishedAt: new Date().toISOString(), exitCode: result.status, signal: result.signal, error: result.error?.message, errorCode: result.error?.code, termination: result.error?.code === 'ETIMEDOUT' ? 'adapter-time-budget' : result.error ? 'spawn-error' : result.signal ? 'signal' : 'process-exit', executionBudgetMs: limit, status: result.status === 0 ? 'passed' : 'failed', ...(browserPartition && id === browserPartition.checkId ? { partitionId: browserPartition.id, partitionFile: browserPartition.file, partitionProject: browserPartition.project, coversWholeCheck: false, browserPartitionManifestSha256 } : {}), outputLog: log, outputSha256: createHash('sha256').update(output).digest('hex'), outputBytes: output.length }
+  records.push(record)
+  writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, group, selectedCheckIds: requested, providerJobUrl: process.env.DEPOT_JOB_URL, generatedConsumers, records }, null, 2))
+  console.log('\n' + JSON.stringify(record))
+  if (result.status !== 0) console.error(output.subarray(-16000).toString())
+  return record
+}
+const prerequisiteIds = [...new Set(selected.flatMap(check => check.prerequisites ?? []))]
+if (prerequisiteIds.length) run({ id: `external-${group}-prerequisites`, args: ['run', '//package/dev-script/task-util:trial:depot:ci:execute'], cwd: harness, env: { ...process.env, DEPOT_CI_CHECK_IDS: JSON.stringify(prerequisiteIds), DEPOT_CI_WORKERS: '1', DEPOT_CI_WAVE: 'all' } })
+const resultPath = join(directory, 'logger-results.json')
+const prerequisiteResults = prerequisiteIds.length && existsSync(resultPath) ? JSON.parse(readFileSync(resultPath, 'utf8')).results : []
+if (group === 'generated') {
+  for (const check of selected) {
+    for (const [index, task] of (check.task ? [check.task] : check.tasks).entries()) {
+      const label = `${check.id}.${index}`, fixture = join(directory, `logger-generated-${label}`)
+      const env = { ...process.env, GIT_LFS_SKIP_SMUDGE: '1', MISE_TRUSTED_CONFIG_PATHS: `${process.env.MISE_TRUSTED_CONFIG_PATHS}:${fixture}`, DEPOT_LOGGER_GENERATED_CONSUMER: fixture, DEPOT_LOGGER_GENERATED_LABEL: label }
+      const consumer = { checkId: check.id, task, args: ['run', task], fixture, initialIdentityVerified: false, actualCommandExecuted: false, cleanupVerified: false }
+      generatedConsumers.push(consumer)
+      try {
+        execFileSync('git', ['worktree', 'add', '--detach', fixture, manifest.sourceRevision], { cwd: source, env, stdio: 'inherit' })
+        const prepare = run({ id: `${label}.frozen-install`, args: ['run', 'prepare:pnpm:install', '--', '--frozen-lockfile'], cwd: fixture, env })
+        assert.equal(prepare.status, 'passed', 'Generated consumer frozen dependency preparation failed')
+        const before = run({ id: `${label}.identity-before`, args: ['run', '//package/module/logger.fuzz:trial:depot:generated:identity'], cwd: harness, env: { ...env, DEPOT_LOGGER_GENERATED_PHASE: 'before' } })
+        assert.equal(before.status, 'passed', 'Generated consumer initial input or dependency identity failed')
+        consumer.initialIdentityVerified = true
+        const observed = run({ id: index === 0 ? check.id : `${check.id}.declared`, args: ['run', task], cwd: fixture, env })
+        consumer.actualCommandExecuted = observed.termination !== 'spawn-error'
+        observed.parentCheckId = check.id
+        const patch = join(directory, `${label}.patch`), descriptor = openSync(patch, 'wx', 0o600)
+        try { execFileSync('git', ['diff', '--binary', manifest.sourceRevision], { cwd: fixture, stdio: ['ignore', descriptor, 'inherit'] }) }
+        finally { closeSync(descriptor) }
+        const diff = readFileSync(patch)
+        const changedPaths = execFileSync('git', ['diff', '--name-only', '-z', manifest.sourceRevision], { cwd: fixture, encoding: 'utf8' }).split('\0').filter(Boolean)
+        const changedFiles = changedPaths.map(path => {
+          const absolute = join(fixture, path)
+          if (!existsSync(absolute)) return { path, deleted: true }
+          const stat = lstatSync(absolute), bytes = stat.isSymbolicLink() ? Buffer.from(readlinkSync(absolute)) : readFileSync(absolute)
+          return { path, sha256: createHash('sha256').update(bytes).digest('hex'), bytes: bytes.length, mode: stat.mode & 0o777 }
+        })
+        const untracked = execFileSync('git', ['ls-files', '--others', '--exclude-standard', '-z'], { cwd: fixture, encoding: 'utf8' }).split('\0').filter(Boolean)
+        const headAfter = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: fixture, encoding: 'utf8' }).trim()
+        consumer.processExitCode = observed.exitCode
+        consumer.processTermination = observed.termination
+        consumer.headAfter = headAfter
+        consumer.changedTrackedBytes = diff.length
+        consumer.diffSha256 = createHash('sha256').update(diff).digest('hex')
+        consumer.changedFiles = changedFiles
+        consumer.untracked = untracked
+        consumer.authoredGeneratedOutputDrift = Boolean(diff.length || untracked.length || headAfter !== manifest.sourceRevision)
+        observed.changedTrackedBytes = diff.length
+        observed.generatedConsumer = label
+        if (consumer.authoredGeneratedOutputDrift) observed.status = 'failed'
+        const after = run({ id: `${label}.identity-after`, args: ['run', '//package/module/logger.fuzz:trial:depot:generated:identity'], cwd: harness, env: { ...env, DEPOT_LOGGER_GENERATED_PHASE: 'after' } })
+        consumer.authoritativeAfterVerified = after.status === 'passed'
+      } catch (error) {
+        consumer.error = { name: error.name, message: error.message, code: error.code }
+        consumer.disposition = consumer.actualCommandExecuted ? 'consumer-observation-failed' : 'unexecuted-prerequisite-failed'
+      } finally {
+        if (existsSync(fixture)) {
+          const observe = (command, args) => { const result = spawnSync(command, args, { cwd: fixture, encoding: 'utf8', timeout: 60000 }); return { command, args, exitCode: result.status, stdout: result.stdout, stderr: result.stderr, error: result.error?.message } }
+          consumer.cleanupIgnoredDryRun = observe('git', ['clean', '--dry-run', '-d', '-X'])
+          consumer.rootGitDirProbe = observe('ls', ['--directory', '--', 'HEAD', 'config', 'hooks', 'objects', 'refs'])
+          consumer.rootGitDirIgnoreProbe = observe('git', ['check-ignore', '--verbose', '--', 'HEAD', 'config', 'hooks', 'objects', 'refs'])
+          const removed = spawnSync('git', ['worktree', 'remove', '--force', fixture], { cwd: source, encoding: 'utf8', timeout: 180000 })
+          consumer.cleanupResult = { exitCode: removed.status, stdout: removed.stdout, stderr: removed.stderr, error: removed.error?.message }
+          const inventory = execFileSync('git', ['worktree', 'list', '--porcelain'], { cwd: source, encoding: 'utf8' })
+          consumer.cleanupVerified = removed.status === 0 && !existsSync(fixture) && !inventory.includes('worktree ' + fixture + '\n')
+        }
+        writeFileSync(join(directory, `generated-${label}-results.json`), JSON.stringify(consumer, null, 2) + '\n', { flag: 'wx', mode: 0o600 })
+      }
+    }
+  }
+} else if (group === 'desktop') {
+  run({ id: 'external-desktop-host', args: ['run', '//package/dev-script/task-util:trial:depot:ci:desktop-host'], cwd: harness })
+  run({ id: 'external-desktop-compositor', args: ['run', '//package/cli/nested-wayland-session:build'] })
+  run({ id: 'external-desktop-artifact', args: ['run', '//package/music-player/desktop-app:build'] })
+  run({ id: 'artifact.music-desktop-e2e', args: ['run', '//package/dev-script/task-util:trial:depot:ci:desktop-runtime'], cwd: harness, limit: 7200000 })
+} else if (group === 'electron') {
+  run({ id: 'external-electron-compositor', args: ['run', '//package/cli/nested-wayland-session:build'] })
+  const runtime = join(directory, 'electron-runtime')
+  mkdirSync(runtime, { recursive: true, mode: 0o700 })
+  const compositor = join(source, 'package/cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session')
+  for (const check of selected) {
+    run({ id: check.id, command: compositor, args: ['--headless', '--gpu', 'software', '--socket', join(runtime, `${check.packages[0].split('/').at(-1)}.sock`), '--size', '1920x1080', '--', 'mise', 'run', check.task], env: { ...process.env, XDG_RUNTIME_DIR: runtime, LIBGL_ALWAYS_SOFTWARE: '1' }, limit: 600000 })
+  }
+} else {
+  for (const check of selected) {
+    const failed = (check.prerequisites ?? []).filter(id => prerequisiteResults.find(record => record.checkId === id)?.status !== 'passed')
+    if (failed.length) {
+      records.push({ checkId: check.id, status: 'skipped', failedPrerequisites: failed, finishedAt: new Date().toISOString() })
+      continue
+    }
+    const args = browserPartition ? [browserPartition.file] : check.args ?? []
+    run({ id: check.id, args: ['run', check.task, ...(args.length ? ['--', ...args] : [])], env: browserScope ? { ...process.env, DEPOT_LOGGER_BROWSER_SCOPE: JSON.stringify(browserScope) } : process.env })
+  }
+}
+assert.equal(execFileSync('git', ['diff', '--name-only', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), '', 'External checks must preserve tracked source')
+writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, group, selectedCheckIds: requested, browserPartition, browserPartitionManifestSha256, coversWholeCheck: !browserPartition, prerequisiteIds, providerJobUrl: process.env.DEPOT_JOB_URL, generatedConsumers, records }, null, 2))
+assert(generatedConsumers.every(consumer => consumer.initialIdentityVerified && consumer.actualCommandExecuted && consumer.authoritativeAfterVerified && consumer.cleanupVerified && !consumer.error), 'Generated consumer prerequisite, observation or cleanup remained incomplete')
+assert(records.every(record => record.status === 'passed'), 'Logger external checks failed or lack verified prerequisites; see retained records')
+'''
+
+[tasks."trial:depot:prerequisites"]
+description = "Prepare locked logger executables and offline Cargo inputs before selected checks"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawnSync, execFileSync } = await import('node:child_process')
+const { readFileSync, writeFileSync, mkdirSync, appendFileSync } = await import('node:fs')
+const { homedir } = await import('node:os')
+const { join } = await import('node:path')
+const { createHash } = await import('node:crypto')
+const { strict: assert } = await import('node:assert')
+const source = join(process.env.GITHUB_WORKSPACE, 'source')
+const harness = join(process.env.GITHUB_WORKSPACE, 'harness')
+const lock = readFileSync(join(source, 'mise.lock'), 'utf8')
+const versions = new Map([...lock.matchAll(/^\[\[tools\.(?:"([^"]+)"|([^\]]+))\]\]\nversion = "([^"]+)"/gm)].map(match => [match[1] ?? match[2], match[3]]))
+const directory = join(homedir(), 'temp/agent/depot-complete-ci')
+mkdirSync(directory, { recursive: true, mode: 0o700 })
+const records = []
+function run({ name, args, cwd = source, env = process.env, limit = 300000 }) {
+  const startedAt = new Date().toISOString()
+  const result = spawnSync('mise', args, { cwd, env, timeout: limit, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 })
+  const output = `${result.stdout ?? ''}${result.stderr ?? ''}`
+  writeFileSync(join(directory, `prepare-${name}.log`), output, { mode: 0o600 })
+  const record = { name, args, startedAt, finishedAt: new Date().toISOString(), exitCode: result.status, signal: result.signal, error: result.error?.message, status: result.status === 0 ? 'passed' : 'failed', outputSha256: createHash('sha256').update(output).digest('hex') }
+  records.push(record)
+  writeFileSync(join(directory, 'logger-global-preparation-results.json'), JSON.stringify({ sourceRevision: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), sourceLockSha256: createHash('sha256').update(lock).digest('hex'), records }, null, 2))
+  console.log(JSON.stringify(record))
+  if (result.status !== 0) console.error(output.slice(-8000))
+}
+for (const name of ['bun', 'npm:pagefind', 'cargo:cargo-fuzz', 'cargo:monochromatic-nested-wayland-session']) {
+  assert(versions.has(name))
+  run({ name: name.replaceAll(':', '-'), args: ['install', `${name}@${versions.get(name)}`], cwd: harness, env: { ...process.env, MISE_LOCKED: '0' } })
+}
+const snapshotDirectory = join(homedir(), 'temp/agent/depot-package-snapshot')
+const snapshot = JSON.parse(readFileSync(join(snapshotDirectory, 'manifest.json'), 'utf8'))
+const imageMagick = join(snapshotDirectory, 'bin/magick')
+assert.equal(execFileSync(imageMagick, ['--version'], { encoding: 'utf8' }), snapshot.magickVersion)
+appendFileSync(process.env.GITHUB_PATH, `${join(snapshotDirectory, 'bin')}\n`)
+// The historical task selects latest without a lock entry. Retain the same 2.2.0 conformance executable already exercised in the TOML case.
+run({ name: 'toml-test-install', args: ['install', 'github:toml-lang/toml-test@2.2.0'], cwd: harness, env: { ...process.env, MISE_LOCKED: '0' } })
+run({ name: 'toml-test-version', args: ['exec', 'github:toml-lang/toml-test@2.2.0', '--', 'toml-test', 'version'] })
+for (const owner of ['package/git-policy/cli', 'package/git-policy/cli.fuzz', 'package/linter/monochromatic-lint']) {
+  run({ name: `cargo-fetch-${owner.split('/').slice(1).join('-')}`, args: ['exec', '--', 'cargo', 'fetch', '--locked', '--manifest-path', join(source, owner, 'Cargo.toml')], env: { ...process.env, CARGO_NET_OFFLINE: 'false' } })
+}
+assert.equal(readFileSync(join(source, 'mise.lock'), 'utf8'), lock)
+assert.equal(execFileSync('git', ['diff', '--name-only', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), '')
+assert(records.every(record => record.status === 'passed'), 'Logger prerequisite preparation failed; independent checks still need execution')
+'''
+
+[tasks."trial:depot:browser-image"]
+description = "Select the immutable browser image matching the historical Playwright dependency without editing source"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { readFileSync, writeFileSync, mkdirSync, appendFileSync } = await import('node:fs')
+const { createHash } = await import('node:crypto')
+const { homedir } = await import('node:os')
+const { join } = await import('node:path')
+const { strict: assert } = await import('node:assert')
+const source = join(process.env.GITHUB_WORKSPACE, 'source')
+const lock = readFileSync(join(source, 'pnpm-lock.yaml'), 'utf8')
+assert(lock.includes("'@playwright/test@1.64.0':"))
+const image = 'mcr.microsoft.com/playwright:v1.64.0-noble@sha256:06a9939e57531807f8d5fd76ce44b53165ffb7d7501d87ab10e285c20b1e971f'
+execFileSync('podman', ['pull', image], { stdio: 'inherit' })
+execFileSync('podman', ['tag', image, 'monochromatic-playwright'], { stdio: 'inherit' })
+const inspect = JSON.parse(execFileSync('podman', ['image', 'inspect', 'monochromatic-playwright'], { encoding: 'utf8' }))
+const directory = join(homedir(), 'temp/agent/depot-complete-ci')
+mkdirSync(directory, { recursive: true, mode: 0o700 })
+writeFileSync(join(directory, 'logger-browser-image-results.json'), JSON.stringify({ sourceRevision: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), image, inspect, pnpmLockSha256: createHash('sha256').update(lock).digest('hex'), originalDockerfileSha256: createHash('sha256').update(readFileSync(join(source, 'playwright.Dockerfile'))).digest('hex'), originalDockerfileMismatchIssue: 1045, adaptation: 'Populate the source task image name with the exact Playwright 1.64.0 browser image; retain historical Dockerfile unchanged' }, null, 2))
+'''
+
+[tasks."trial:depot:cohort-identity"]
+description = "Verify authenticated common cohort bytes and paired immutable logger route identities"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const {execFileSync}=await import('node:child_process');
+const {readFileSync,writeFileSync,mkdirSync}=await import('node:fs');
+const {createHash}=await import('node:crypto');
+const {homedir,cpus,availableParallelism,totalmem}=await import('node:os');
+const {join,posix}=await import('node:path');
+const {strict:assert}=await import('node:assert');
+const workspace=process.env.GITHUB_WORKSPACE;
+assert(workspace,'GITHUB_WORKSPACE required');
+const phase=process.env.DEPOT_CI_IDENTITY_PHASE;
+assert(['before','after'].includes(phase),'Identity phase must be before or after');
+const cohortId=process.env.DEPOT_COHORT_ID;
+assert(typeof cohortId==='string'&&/^[A-Za-z0-9._-]{1,128}$/u.test(cohortId),'A safe common cohort ID is required');
+const expectedSha256=process.env.DEPOT_COHORT_MANIFEST_SHA256;
+assert(typeof expectedSha256==='string'&&/^[a-f0-9]{64}$/u.test(expectedSha256),'A complete common manifest SHA256 is required');
+const requestedAt=process.env.DEPOT_COHORT_REQUESTED_AT;
+assert(typeof requestedAt==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/u.test(requestedAt)&&Number.isFinite(Date.parse(requestedAt)),'A common UTC request timestamp is required');
+assert.equal(new Date(requestedAt).toISOString(),requestedAt,'Request instant must use canonical UTC ISO form');
+const routeId=process.env.DEPOT_COHORT_ROUTE;
+assert(['logger.combined','logger.browser'].includes(routeId),'A declared logger cohort route is required');
+const workflowPath=process.env.DEPOT_COHORT_WORKFLOW;
+assert(typeof workflowPath==='string'&&workflowPath.startsWith('.depot/workflows/')&&workflowPath.endsWith('.yml')&&posix.normalize(workflowPath)===workflowPath&&!workflowPath.split('/').includes('..'),'A canonical logger workflow path is required');
+const sha256=bytes=>createHash('sha256').update(bytes).digest('hex');
+const manifestPath=`doc/audit/depot-complete-cohort-${cohortId}.json`;
+const endpoint=`repos/Aquaticats/Monochromatic/contents/${manifestPath.split('/').map(encodeURIComponent).join('/')}?ref=main`;
+const object=JSON.parse(execFileSync('gh',['api','--method','GET','--header','Accept: application/vnd.github.object+json',endpoint],{encoding:'utf8',maxBuffer:4*1024*1024,timeout:30000}));
+assert.equal(object.type,'file');
+assert.equal(object.path,manifestPath);
+assert.equal(object.encoding,'base64');
+assert(Number.isInteger(object.size)&&object.size>0&&object.size<1024*1024,'Common manifest must be smaller than1MiB');
+assert.equal(typeof object.content,'string');
+const encoded=object.content.replaceAll('\r','').replaceAll('\n','');
+const commonBytes=Buffer.from(encoded,'base64');
+assert.equal(commonBytes.toString('base64'),encoded,'GitHub content must be canonical base64');
+assert.equal(commonBytes.length,object.size);
+assert.equal(sha256(commonBytes),expectedSha256,'Downloaded common cohort bytes differ from requested digest');
+const blobSha=createHash('sha1').update(`blob ${commonBytes.length}\0`).update(commonBytes).digest('hex');
+assert.equal(object.sha,blobSha,'GitHub content blob identity differs from decoded bytes');
+const cohort=JSON.parse(commonBytes.toString('utf8'));
+assert.equal(cohort.schemaVersion,1);
+assert.equal(cohort.cohortId,cohortId);
+const binding=cohort.cases?.logger;
+const route=cohort.routes?.[routeId];
+assert(binding&&route,'Common manifest must contain logger case and selected route');
+assert.equal(route.caseId,'logger');
+assert.equal(route.workflow,workflowPath);
+assert(/^[a-f0-9]{40}$/u.test(route.harnessRevision),'Common route must pin a complete harness revision');
+const harness=join(workspace,'harness');
+const source=join(workspace,'source');
+const git=(cwd,args)=>execFileSync('git',args,{cwd,encoding:'utf8',maxBuffer:16*1024*1024}).trim();
+const harnessRevision=git(harness,['rev-parse','HEAD']);
+assert.equal(harnessRevision,route.harnessRevision,'Actual harness HEAD differs from selected common route');
+if(process.env.CI==='true'||process.env.GITHUB_ACTIONS==='true')assert.match(process.env.GITHUB_SHA??'',/^[a-f0-9]{40}$/u,'Provider harness revision is required in CI');
+if(process.env.GITHUB_SHA)assert.equal(harnessRevision,process.env.GITHUB_SHA,'Provider harness revision differs from actual checkout');
+const index=git(harness,['ls-files','-v','-z']).split('\0').filter(Boolean);
+assert(index.every(entry=>entry[0]!=='S'&&!/[a-z]/u.test(entry[0])),'Harness index must not hide tracked inputs');
+const harnessStatus=git(harness,['status','--porcelain','--untracked-files=no']);
+assert.equal(harnessStatus,'','Cohort harness has tracked modifications');
+const loggerBytes=readFileSync(join(harness,'.depot/manifests/logger.json'));
+assert.deepEqual(loggerBytes,execFileSync('git',['show',`${harnessRevision}:.depot/manifests/logger.json`],{cwd:harness,maxBuffer:16*1024*1024}));
+const logger=JSON.parse(loggerBytes.toString('utf8'));
+assert.equal(logger.caseId,'logger');
+assert.equal(process.env.DEPOT_CI_CASE,'logger','Route and selected source case differ');
+assert.equal(logger.completeGraph,true,'Final route requires a frozen complete case manifest');
+assert.equal(binding.sourceRevision,logger.sourceRevision);
+assert.equal(binding.baseRevision,logger.baseRevision);
+assert.equal(binding.manifestSha256,sha256(loggerBytes));
+const workflowBytes=readFileSync(join(harness,workflowPath));
+assert.deepEqual(workflowBytes,execFileSync('git',['show',`${harnessRevision}:${workflowPath}`],{cwd:harness,maxBuffer:16*1024*1024}));
+const sourceRevision=git(source,['rev-parse','HEAD']);
+assert.equal(sourceRevision,binding.sourceRevision);
+const sourceStatus=git(source,['status','--porcelain','--untracked-files=no']);
+assert.equal(sourceStatus,'','Cohort source has tracked modifications');
+const identity={cohortId,cohortManifestPath:manifestPath,cohortManifestSha256:expectedSha256,cohortManifestBlobSha:blobSha,requestedAt,routeId,workflowPath,workflowSha256:sha256(workflowBytes),caseId:'logger',sourceRevision,baseRevision:logger.baseRevision,sourceTree:git(source,['rev-parse','HEAD^{tree}']),manifestSha256:sha256(loggerBytes),harnessRevision,harnessTree:git(harness,['rev-parse','HEAD^{tree}']),harnessStatus,sourceStatus};
+const directory=process.env.DEPOT_COHORT_IDENTITY_OUTPUT_DIRECTORY??join(homedir(),'temp/agent/depot-complete-ci');
+mkdirSync(directory,{recursive:true,mode:0o700});
+if(phase==='after')assert.deepEqual(identity,JSON.parse(readFileSync(join(directory,'logger-cohort-before-results.json'),'utf8')).identity,'Before and after common cohort bindings differ');
+const receipt={schemaVersion:1,phase,collectedAt:new Date().toISOString(),identity,host:{logicalCpus:cpus().length,availableParallelism:availableParallelism(),physicalMemoryBytes:totalmem()},runtimeProviderJobUrl:process.env.DEPOT_JOB_URL,providerUrlAssociationRequiresCollectedAttemptVerification:true};
+writeFileSync(join(directory,`logger-cohort-${phase}-results.json`),JSON.stringify(receipt,null,2)+'\n',{flag:'wx',mode:0o600});
+console.log(JSON.stringify({event:'common-cohort-verified',phase,cohortId,routeId,requestedAt,cohortManifestSha256:expectedSha256,manifestSha256:identity.manifestSha256,harnessRevision,sourceRevision}));
+'''
+
+[tasks."trial:depot:git-host"]
+description = "Run unchanged source host checks with an audited Git2.56 ELF in bounded worker userland"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const {execFileSync,spawnSync} = await import('node:child_process')
+const {readFileSync,writeFileSync,mkdirSync,mkdtempSync,chmodSync,existsSync} = await import('node:fs')
+const {join} = await import('node:path')
+const {homedir} = await import('node:os')
+const {createHash} = await import('node:crypto')
+const {strict:assert} = await import('node:assert')
+const workspace=process.env.GITHUB_WORKSPACE
+assert(workspace)
+const harness=join(workspace,'harness'),source=join(workspace,'source')
+const manifestBytes=readFileSync(join(harness,'.depot/manifests/logger.json')),manifest=JSON.parse(manifestBytes.toString())
+const checks=['package.git-policy.cli.native.test.host','package.git-policy.cli.native.test.binary.host']
+assert.equal(manifest.sourceRevision,'ef01490f5e960f8ca0b424c12242caeb3c5a2b5e')
+for(const id of checks){const check=manifest.checks.find(check=>check.id===id);assert(check);assert.deepEqual(check.args,[])}
+assert.equal(execFileSync('git',['rev-parse','HEAD'],{cwd:source,encoding:'utf8'}).trim(),manifest.sourceRevision)
+const parent=join(homedir(),'temp/agent');mkdirSync(parent,{recursive:true,mode:0o700})
+const base=mkdtempSync(join(parent,'depot-git-host-'));chmodSync(base,0o700)
+const upstream=join(base,'upstream')
+execFileSync('git',['clone','--depth=1','--branch=v2.56.0','--no-checkout','https://github.com/git/git.git',upstream],{cwd:base,env:{...process.env,GIT_TERMINAL_PROMPT:'0'},stdio:'inherit',timeout:300000})
+execFileSync('git',['remote','set-url','--push','origin','DISABLED'],{cwd:upstream})
+const revision=execFileSync('git',['rev-parse','HEAD'],{cwd:upstream,encoding:'utf8'}).trim()
+const tree=execFileSync('git',['rev-parse','HEAD^{tree}'],{cwd:upstream,encoding:'utf8'}).trim()
+assert.equal(revision,'a018953688f1b10bddf91bff8747068f5f4746a4');assert.equal(tree,'96aa7b9f343426cd28cf6c2da737b9f847a2919d')
+const archive=execFileSync('git',['archive','--format=tar','HEAD'],{cwd:upstream,maxBuffer:128*1024*1024})
+assert.equal(archive.length,54056960)
+const archiveSha256=createHash('sha256').update(archive).digest('hex')
+assert.equal(archiveSha256,'f9fe8e8e154798639bb00f7d50144e8f5b2ca6a5d891e245c4330000197fd5f8')
+writeFileSync(join(base,'source.tar'),archive,{flag:'wx',mode:0o600})
+const directory=join(homedir(),'temp/agent/depot-complete-ci');mkdirSync(directory,{recursive:true,mode:0o700});chmodSync(directory,0o700)
+const name='depot-git-host-'+process.pid,marker=join(base,'overlay-only')
+const execute=({args,required=true,inherit=false,limit=60000})=>{
+ const result=spawnSync('sudo',['--non-interactive','podman','--cgroup-manager=cgroupfs',...args],{encoding:'utf8',timeout:limit,...(inherit?{stdio:'inherit'}:{})})
+ console.log(JSON.stringify({event:'git-host-container-operation',operation:args[0],status:result.status,signal:result.signal,error:result.error?.message,stdout:result.stdout,stderr:result.stderr}))
+ if(required)assert.equal(result.status,0,'Git host runtime operation failed: '+args[0])
+ return result
+}
+const keys=['HOME','PATH','MISE_DATA_DIR','MISE_CONFIG_DIR','MISE_STATE_DIR','MISE_NODE_VERSION','MISE_PNPM_VERSION','MISE_BUN_VERSION','MISE_DENO_VERSION','MISE_LOCKED','MISE_AUTO_INSTALL','MISE_TRUSTED_CONFIG_PATHS','RUSTUP_HOME','CARGO_HOME','RUSTUP_TOOLCHAIN','GITHUB_WORKSPACE','DEPOT_JOB_URL','OXLINT_THREADS','TSC_SINGLE_THREADED']
+const environment=keys.filter(key=>process.env[key]!==undefined).map(key=>key+'='+process.env[key])
+environment.push('DEPOT_GIT_HOST_DIRECTORY='+base,'DEPOT_CI_CASE=logger','DEPOT_CI_CHECK_IDS='+JSON.stringify(checks),'DEPOT_CI_WORKERS=1','DEPOT_CI_WAVE=all','DEPOT_CI_CPUS=2','DEPOT_CI_MEMORY_GIB=2','CI=true','LANG=C.UTF-8')
+environment.push('GIT_POLICY_NATIVE_TEST_LINTER='+join(base,'linter-target/debug/monochromatic-lint'))
+const child=task=>['exec','--user',process.getuid()+':'+process.getgid(),'--workdir',harness,name,'env','-i',...environment,'mise','run',task]
+let suite,error,cleanupVerified=false,evidenceCopied=true,phase='prepared'
+const copied=[]
+try {
+ execute({args:['run','--detach','--init','--name',name,'--network=none','--memory=2g','--cpus=2','--pids-limit=512','--timeout=5100','--rootfs','/:O','/usr/bin/sleep','5040']})
+ execute({args:['exec','--user',process.getuid()+':'+process.getgid(),name,'touch',marker]});assert(!existsSync(marker),'Worker source must remain outside overlay writes')
+ phase='buildingGit';execute({args:child('//package/module/logger.fuzz:trial:depot:git-host:build'),inherit:true,limit:1860000})
+ phase='installingPrivateGit';execute({args:['exec','--user','0',name,'rsync','--archive','--hard-links','--chown=root:root','--delay-updates',join(base,'stage/usr/'),'/usr/'],inherit:true})
+ phase='verifyingGit';execute({args:child('//package/module/logger.fuzz:trial:depot:git-host:gate'),inherit:true})
+ phase='preparingAuthenticLinter';execute({args:child('//package/module/logger.fuzz:trial:depot:git-host:linter'),inherit:true,limit:1200000})
+ phase='executingAuthoredTasks';suite=execute({args:child('//package/dev-script/task-util:trial:depot:ci:execute'),inherit:true,required:false,limit:1200000})
+ phase='sourceTasksReturned'
+} catch(caught){error={name:caught.name,message:caught.message,code:caught.code}}
+finally {
+ for(const file of ['git-host-build-results.json','git-host-build.log','git-host-installed-results.json','git-host-linter-results.json','git-host-linter-build.log']){
+  const result=execute({args:['cp',name+':'+join(base,file),join(directory,file)],required:false})
+  copied.push({file,copied:result.status===0})
+ }
+ if(suite)for(const file of ['logger-results.json','check-logs']){
+  const result=execute({args:['cp',name+':'+join(directory,file),join(directory,file)],required:false});if(result.status!==0)evidenceCopied=false
+ }
+ const binary=execute({args:['cp',name+':/usr/bin/git',join(directory,'git-host-2.56.0-elf')],required:false});copied.push({file:'git-host-2.56.0-elf',copied:binary.status===0})
+ const linter=execute({args:['cp',name+':'+join(base,'linter-target/debug/monochromatic-lint'),join(directory,'git-host-linter-elf')],required:false});copied.push({file:'git-host-linter-elf',copied:linter.status===0})
+ execute({args:['logs',name],required:false});execute({args:['stop','--time=10',name],required:false});execute({args:['rm','--force',name],required:false})
+ cleanupVerified=execute({args:['container','exists',name],required:false}).status===1
+ assert(!existsSync(marker))
+ execFileSync('sudo',['--non-interactive','chown','--recursive',process.getuid()+':'+process.getgid(),directory],{stdio:'inherit',timeout:60000})
+ writeFileSync(join(directory,'git-host-results.json'),JSON.stringify({sourceRevision:manifest.sourceRevision,manifestSha256:createHash('sha256').update(manifestBytes).digest('hex'),harnessRevision:execFileSync('git',['rev-parse','HEAD'],{cwd:harness,encoding:'utf8'}).trim(),selectedCheckIds:checks,upstreamRevision:revision,upstreamTree:tree,sourceArchiveSha256:archiveSha256,sourceArchiveBytes:archive.length,environment:'Private full worker rootfs overlay; unchanged worker ABI; real /usr/bin/git ELF; original host tasks under source UID',resources:{cpus:2,memoryGiB:2,pidsLimit:512,network:'none'},phase,error,sourceTasksExecuted:Boolean(suite),exitCode:suite?.status??null,signal:suite?.signal??null,executionError:suite?.error?.message,cleanupVerified,evidenceCopied,copied,providerJobUrl:process.env.DEPOT_JOB_URL},null,2)+'\n',{flag:'wx',mode:0o600})
+}
+assert(cleanupVerified&&evidenceCopied,'Private Git runtime cleanup or source evidence copy failed')
+assert(!error,error?.message)
+assert.equal(suite?.status,0,'Original Git host tasks failed or remained incomplete; see retained generic records')
+'''
+
+[tasks."trial:depot:git-host:build"]
+description = "Build exact upstream Git release against the bounded worker ABI without changing its source"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const {execFileSync} = await import('node:child_process')
+const {readFileSync,writeFileSync,mkdirSync,readdirSync,lstatSync,readlinkSync,openSync,closeSync} = await import('node:fs')
+const {join} = await import('node:path')
+const {createHash} = await import('node:crypto')
+const {cpus,availableParallelism} = await import('node:os')
+const {strict:assert} = await import('node:assert')
+const base=process.env.DEPOT_GIT_HOST_DIRECTORY
+assert(base)
+const sample=Object.fromEntries(['cpu.max','memory.max','memory.events','pids.max','pids.events'].map(name=>[name,readFileSync(join('/sys/fs/cgroup',name),'utf8').trim()]))
+assert.equal(sample['cpu.max'],'200000 100000')
+assert.equal(sample['memory.max'],'2147483648')
+assert.equal(sample['pids.max'],'512')
+const archive=readFileSync(join(base,'source.tar'))
+const sha=bytes=>createHash('sha256').update(bytes).digest('hex')
+assert.equal(archive.length,54056960)
+assert.equal(sha(archive),'f9fe8e8e154798639bb00f7d50144e8f5b2ca6a5d891e245c4330000197fd5f8')
+const source=join(base,'build'),stage=join(base,'stage')
+mkdirSync(source,{mode:0o700});mkdirSync(stage,{mode:0o700})
+execFileSync('tar',['--extract','--file',join(base,'source.tar'),'--directory',source],{stdio:'inherit'})
+const inputs=readdirSync(source,{recursive:true}).sort().flatMap(relative=>{
+ const path=join(source,relative),stat=lstatSync(path)
+ if(stat.isFile())return [{relative,mode:stat.mode&0o777,sha256:sha(readFileSync(path)),type:'file'}]
+ if(stat.isSymbolicLink())return [{relative,mode:stat.mode&0o777,target:readlinkSync(path),type:'link'}]
+ return []
+})
+const tools=Object.fromEntries(['make','cc','cargo','rustc','rsync'].map(tool=>[tool,execFileSync(tool,['--version'],{encoding:'utf8'}).trim()]))
+const args=['--jobs=2','prefix=/usr','NO_GETTEXT=YesPlease','NO_TCLTK=YesPlease','PYTHON_PATH=/usr/bin/python3','CARGO_ARGS=--offline --release','DESTDIR='+stage,'install']
+const log=openSync(join(base,'git-host-build.log'),'wx',0o600)
+try {execFileSync('make',args,{cwd:source,env:{...process.env,CARGO_NET_OFFLINE:'true',CARGO_BUILD_JOBS:'2'},stdio:['ignore',log,log],timeout:1800000})}
+finally {closeSync(log)}
+for(const input of inputs){const path=join(source,input.relative),stat=lstatSync(path);assert.equal(stat.mode&0o777,input.mode,input.relative);if(input.type==='file')assert.equal(sha(readFileSync(path)),input.sha256,input.relative);else assert.equal(readlinkSync(path),input.target,input.relative)}
+const binary=join(stage,'usr/bin/git'),bytes=readFileSync(binary)
+assert.deepEqual([...bytes.subarray(0,4)],[127,69,76,70])
+const version=execFileSync(binary,['--version'],{encoding:'utf8'}).trim()
+assert.equal(version,'git version 2.56.0')
+const libraries=execFileSync('ldd',[binary],{encoding:'utf8'})
+assert(!libraries.includes('not found'))
+const libraryFiles=[...new Set([...libraries.matchAll(/(?:=>\s+)?(\/\S+)\s+\(/gu)].map(match=>match[1]))].sort().map(path=>{const bytes=readFileSync(path);return {path,sha256:sha(bytes),bytes:bytes.length}})
+assert(libraryFiles.length>0)
+writeFileSync(join(base,'git-host-build-results.json'),JSON.stringify({upstreamRevision:'a018953688f1b10bddf91bff8747068f5f4746a4',upstreamTree:'96aa7b9f343426cd28cf6c2da737b9f847a2919d',sourceArchiveSha256:sha(archive),sourceArchiveBytes:archive.length,originalSourceInputs:inputs.length,sourceInputsBeforeAfterEqual:true,sourceInputDigest:sha(Buffer.from(JSON.stringify(inputs))),makeArgs:args,tools,version,elfSha256:sha(bytes),elfBytes:bytes.length,sharedLibraries:libraries,libraryFiles,osRelease:readFileSync('/etc/os-release','utf8'),resources:{logicalCpus:cpus().length,availableParallelism:availableParallelism(),files:sample}},null,2)+'\n',{flag:'wx',mode:0o600})
+console.log(JSON.stringify({version,elfSha256:sha(bytes),sourceFilesUnchanged:inputs.length}))
+'''
+
+[tasks."trial:depot:git-host:gate"]
+description = "Verify private installed Git ELF, libraries, actual commit and proc executable boundary"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const {execFileSync,spawn} = await import('node:child_process')
+const {once} = await import('node:events')
+const {readFileSync,writeFileSync,mkdirSync,readlinkSync} = await import('node:fs')
+const {join} = await import('node:path')
+const {createHash} = await import('node:crypto')
+const {strict:assert} = await import('node:assert')
+const base=process.env.DEPOT_GIT_HOST_DIRECTORY
+assert(base)
+const build=JSON.parse(readFileSync(join(base,'git-host-build-results.json'),'utf8'))
+const bytes=readFileSync('/usr/bin/git'),sha=createHash('sha256').update(bytes).digest('hex')
+assert.equal(sha,build.elfSha256)
+const version=execFileSync('/usr/bin/git',['--version'],{encoding:'utf8'}).trim()
+assert.equal(version,'git version 2.56.0')
+const fixture=join(base,'consumer');mkdirSync(fixture,{mode:0o700})
+const env={...process.env,HOME:fixture,GIT_CONFIG_NOSYSTEM:'1',GIT_CONFIG_GLOBAL:'/dev/null',GIT_CONFIG_SYSTEM:'/dev/null'}
+const git=args=>execFileSync('/usr/bin/git',args,{cwd:fixture,env,encoding:'utf8'}).trim()
+git(['init','--initial-branch=main']);writeFileSync(join(fixture,'controlled.txt'),'exact Git2.56 host consumer\n')
+git(['add','controlled.txt']);git(['-c','user.name=Git host fixture','-c','user.email=git-host@example.invalid','commit','--message=controlled fixture'])
+const head=git(['rev-parse','HEAD']);assert.match(head,/^[a-f0-9]{40}$/u)
+const processControl=spawn('/usr/bin/git',['hash-object','--stdin'],{cwd:fixture,env,stdio:['pipe','pipe','pipe']})
+assert(processControl.pid)
+processControl.stdout.resume()
+processControl.stderr.resume()
+const exited=once(processControl,'exit')
+await once(processControl,'spawn')
+let executable
+try {executable=readlinkSync('/proc/'+processControl.pid+'/exe');assert.equal(executable,'/usr/bin/git')}
+finally {processControl.stdin.end('controlled input\n')}
+const [exitCode]=await exited
+assert.equal(exitCode,0)
+const resources=Object.fromEntries(['cpu.max','memory.max','memory.events','pids.max','pids.events'].map(name=>[name,readFileSync(join('/sys/fs/cgroup',name),'utf8').trim()]))
+const libraries=execFileSync('ldd',['/usr/bin/git'],{encoding:'utf8'})
+const libraryFiles=[...new Set([...libraries.matchAll(/(?:=>\s+)?(\/\S+)\s+\(/gu)].map(match=>match[1]))].sort().map(path=>{const bytes=readFileSync(path);return {path,sha256:createHash('sha256').update(bytes).digest('hex'),bytes:bytes.length}})
+assert.deepEqual(libraryFiles,build.libraryFiles)
+writeFileSync(join(base,'git-host-installed-results.json'),JSON.stringify({version,elfSha256:sha,elfBytes:bytes.length,execPath:git(['--exec-path']),sharedLibraries:libraries,libraryFiles,consumerFixtureHead:head,processExe:executable,processExitCode:exitCode,resources},null,2)+'\n',{flag:'wx',mode:0o600})
+console.log(JSON.stringify({installedVersion:version,elfSha256:sha,processExe:executable,consumerCommit:head}))
+'''
+
+[tasks."trial:depot:git-host:linter"]
+description = "Build the authentic immutable-source linter and gate its real Markdown fix consumer"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const {execFileSync} = await import('node:child_process')
+const {readFileSync,writeFileSync,mkdirSync,openSync,closeSync,statSync} = await import('node:fs')
+const {join} = await import('node:path')
+const {createHash} = await import('node:crypto')
+const {strict:assert} = await import('node:assert')
+const base=process.env.DEPOT_GIT_HOST_DIRECTORY,workspace=process.env.GITHUB_WORKSPACE
+assert(base&&workspace)
+const source=join(workspace,'source'),owner=join(source,'package/linter/monochromatic-lint')
+const executable=join(base,'linter-target/debug/monochromatic-lint')
+assert.equal(process.env.GIT_POLICY_NATIVE_TEST_LINTER,executable)
+assert.equal(execFileSync('git',['rev-parse','HEAD'],{cwd:source,encoding:'utf8'}).trim(),'ef01490f5e960f8ca0b424c12242caeb3c5a2b5e')
+const hash=bytes=>createHash('sha256').update(bytes).digest('hex')
+const paths=execFileSync('git',['ls-files','-z','--','.cargo','package/linter/monochromatic-lint','package/rust-module/jsonc-edit'],{cwd:source,encoding:'utf8'}).split('\0').filter(Boolean).sort()
+const snapshot=()=>paths.map(path=>{const absolute=join(source,path),bytes=readFileSync(absolute);return {path,sha256:hash(bytes),bytes:bytes.length,mode:statSync(absolute).mode&0o777}})
+const before=snapshot()
+const environment={...process.env,CARGO_TARGET_DIR:join(base,'linter-target'),CARGO_NET_OFFLINE:'true',CARGO_BUILD_JOBS:'2',CARGO_PROFILE_DEV_DEBUG:'0',CARGO_INCREMENTAL:'0'}
+const args=['build','--offline','--locked','--bin','monochromatic-lint']
+const log=openSync(join(base,'git-host-linter-build.log'),'wx',0o600)
+try {execFileSync('cargo',args,{cwd:owner,env:environment,stdio:['ignore',log,log],timeout:1080000})}
+finally {closeSync(log)}
+assert.deepEqual(snapshot(),before)
+execFileSync('git',['diff','--exit-code','HEAD','--',...paths],{cwd:source,stdio:'pipe'})
+const bytes=readFileSync(executable)
+assert.equal(bytes.subarray(0,4).toString('hex'),'7f454c46')
+const libraries=execFileSync('ldd',[executable],{encoding:'utf8'})
+const libraryFiles=[...new Set([...libraries.matchAll(/(?:=>\s+)?(\/\S+)\s+\(/gu)].map(match=>match[1]))].sort().map(path=>{const bytes=readFileSync(path);return {path,sha256:hash(bytes),bytes:bytes.length}})
+const rules=execFileSync(executable,['--rules'],{cwd:owner,env:environment,encoding:'utf8',timeout:60000})
+assert(rules.includes('markdown/lfs-image-url'))
+const fixture=join(base,'consumer'),config=join(base,'linter-consumer.config.json')
+mkdirSync(join(fixture,'pkg/asset'),{recursive:true,mode:0o700})
+writeFileSync(join(fixture,'.lfsconfig'),'[lfs]\n\turl = https://lfs.example.com/org/repo\n',{flag:'wx'})
+writeFileSync(join(fixture,'.gitattributes'),'*.png filter=lfs diff=lfs merge=lfs -text\n',{flag:'wx'})
+writeFileSync(join(fixture,'pkg/asset/shot.png'),'image bytes',{flag:'wx'})
+writeFileSync(config,JSON.stringify([{files:['**/*.md','**/*.mdx'],rules:{'markdown/lfs-image-url':{severity:'warn',exclude:[]}}}]),{flag:'wx',mode:0o600})
+const input='# T\n\n![shot](asset/shot.png)\n'
+const expected='# T\n\n![shot](https://lfs.example.com/org/repo/de7030234493a8bea844dbe1d8676e68a2c1a4b014c721f0425a22b6df66faec/pkg/asset/shot.png)\n'
+const consumerArgs=['--config='+config,'--stdin','--stdin-filename=pkg/README.md','--fix']
+const fixed=execFileSync(executable,consumerArgs,{cwd:fixture,env:environment,input,encoding:'utf8',timeout:60000})
+assert.equal(fixed,expected)
+const unchanged=execFileSync(executable,consumerArgs,{cwd:fixture,env:environment,input:expected,encoding:'utf8',timeout:60000})
+assert.equal(unchanged,expected)
+assert.deepEqual(snapshot(),before)
+const tools={rustc:execFileSync('rustc',['--version','--verbose'],{encoding:'utf8'}),cargo:execFileSync('cargo',['--version'],{encoding:'utf8'})}
+const resources=Object.fromEntries(['cpu.max','memory.max','memory.events','pids.max','pids.events'].map(name=>[name,readFileSync(join('/sys/fs/cgroup',name),'utf8').trim()]))
+writeFileSync(join(base,'git-host-linter-results.json'),JSON.stringify({sourceRevision:'ef01490f5e960f8ca0b424c12242caeb3c5a2b5e',originalStage:'package/git-policy/cli/bin/native-linter-snapshot.mjs',compilerArgs:args,compilerEnvironment:{CARGO_NET_OFFLINE:'true',CARGO_BUILD_JOBS:'2',CARGO_PROFILE_DEV_DEBUG:'0',CARGO_INCREMENTAL:'0'},tools,sourceInputs:before,sourceInputsBeforeAfterEqual:true,sourceInputDigest:hash(Buffer.from(JSON.stringify(before))),executable,elfSha256:hash(bytes),elfBytes:bytes.length,sharedLibraries:libraries,libraryFiles,ruleCatalogSha256:hash(Buffer.from(rules)),consumer:{args:consumerArgs,input,expected,actual:fixed,fixedInputUnchanged:unchanged===expected},resources},null,2)+'\n',{flag:'wx',mode:0o600})
+console.log(JSON.stringify({linterElfSha256:hash(bytes),sourceInputsVerified:before.length,actualMarkdownFixConsumer:true,fixedInputUnchanged:true}))
+'''
+
+[tasks."trial:depot:generated:identity"]
+description = "Verify disposable generator input bytes and frozen workspace links without relaxing authoritative guards"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const {execFileSync}=await import('node:child_process')
+const {readFileSync,writeFileSync,mkdirSync,lstatSync,readlinkSync,realpathSync,readdirSync,existsSync}=await import('node:fs')
+const {join,relative,resolve,dirname}=await import('node:path')
+const {homedir}=await import('node:os')
+const {createHash}=await import('node:crypto')
+const {strict:assert}=await import('node:assert')
+const workspace=process.env.GITHUB_WORKSPACE,consumer=process.env.DEPOT_LOGGER_GENERATED_CONSUMER
+const label=process.env.DEPOT_LOGGER_GENERATED_LABEL,phase=process.env.DEPOT_LOGGER_GENERATED_PHASE
+assert(workspace&&consumer&&/^[a-zA-Z0-9._-]+$/.test(label??''))
+assert(['before','after'].includes(phase))
+const source=join(workspace,'source'),manifestBytes=readFileSync(join(workspace,'harness/.depot/manifests/logger.json')),manifest=JSON.parse(manifestBytes.toString())
+assert.notEqual(realpathSync(consumer),realpathSync(source),'Generated consumer must be a distinct checkout')
+const sha256=bytes=>createHash('sha256').update(bytes).digest('hex')
+const git=({cwd,args})=>execFileSync('git',args,{cwd,encoding:'utf8',maxBuffer:64*1024*1024})
+const entries=git({cwd:source,args:['ls-tree','--full-tree','-r','-z','HEAD']}).split('\0').filter(Boolean).map(entry=>{
+ const boundary=entry.indexOf('\t'),[mode,type,blob]=entry.slice(0,boundary).split(' ')
+ assert.equal(type,'blob','Generator identity supports only frozen tracked blobs')
+ return {mode,blob,path:entry.slice(boundary+1)}
+})
+function verify({cwd}){
+ assert.equal(git({cwd,args:['rev-parse','HEAD']}).trim(),manifest.sourceRevision)
+ assert(git({cwd,args:['ls-files','-v','-z']}).split('\0').filter(Boolean).every(entry=>entry[0]!=='S'&&!/[a-z]/.test(entry[0])),'Index flags must not hide tracked inputs')
+ assert.equal(git({cwd,args:['status','--porcelain','--untracked-files=no']}).trim(),'','Tracked generator input drift')
+ const inputs=entries.map(entry=>{
+  const path=join(cwd,entry.path),stat=lstatSync(path)
+  const bytes=entry.mode==='120000'?Buffer.from(readlinkSync(path)):readFileSync(path)
+  assert.equal(stat.isSymbolicLink(),entry.mode==='120000',`Tracked input kind differs: ${entry.path}`)
+  if(entry.mode!=='120000')assert.equal(Boolean(stat.mode&0o111),entry.mode==='100755',`Tracked input executable mode differs: ${entry.path}`)
+  const blob=createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex')
+  assert.equal(blob,entry.blob,`Tracked generator input bytes differ: ${entry.path}`)
+  return {...entry,sha256:sha256(bytes),bytes:bytes.length}
+ })
+ return {head:manifest.sourceRevision,tree:git({cwd,args:['rev-parse','HEAD^{tree}']}).trim(),trackedInputs:inputs.length,inputDigest:sha256(Buffer.from(JSON.stringify(inputs)))}
+}
+const authoritative=verify({cwd:source})
+let initialConsumer,workspaceLinks=[],symlinks=[]
+if(phase==='before'){
+ initialConsumer=verify({cwd:consumer});assert.deepEqual(initialConsumer,authoritative)
+ const packages=entries.filter(entry=>/^package\/[^/]+\/[^/]+\/package\.json$/.test(entry.path)).map(entry=>({directory:join(consumer,entry.path.slice(0,-13)),document:JSON.parse(readFileSync(join(consumer,entry.path),'utf8'))}))
+ const names=new Map(packages.map(entry=>[entry.document.name,entry.directory]));assert.equal(names.size,packages.length)
+ const owners=[{directory:consumer,document:JSON.parse(readFileSync(join(consumer,'package.json'),'utf8'))},...packages]
+ assert(existsSync(join(consumer,'node_modules')),'Own frozen dependency installation is required')
+ for(const owner of owners)for(const [name,version] of Object.entries({...owner.document.dependencies,...owner.document.devDependencies,...owner.document.optionalDependencies})){
+  if(!names.has(name)&&!String(version).startsWith('workspace:'))continue
+  assert(names.has(name),`Unknown frozen workspace dependency: ${name}`)
+  const path=join(owner.directory,'node_modules',name),actual=realpathSync(path)
+  assert.equal(actual,realpathSync(names.get(name)),`Workspace dependency must resolve to its consumer checkout: ${path}`)
+  workspaceLinks.push({path:relative(consumer,path),name,target:relative(consumer,actual)})
+ }
+ const roots=[consumer,...packages.map(entry=>entry.directory)].map(path=>join(path,'node_modules')).filter(existsSync)
+ const stack=[...roots]
+ const authoritativeRoot=realpathSync(source)
+ for(const root of roots){const actual=realpathSync(root);assert(actual!==authoritativeRoot&&!actual.startsWith(authoritativeRoot+'/'),'Dependency directory resolves into authoritative source')}
+ while(stack.length){
+  const directory=stack.pop()
+  for(const entry of readdirSync(directory,{withFileTypes:true})){
+   const path=join(directory,entry.name)
+   if(entry.isSymbolicLink()){
+    const link=readlinkSync(path),lexicalTarget=resolve(dirname(path),link)
+    let target,resolutionError
+    try {target=realpathSync(path)}catch(error){if(error.code!=='ENOENT')throw error;resolutionError={code:error.code,message:error.message}}
+    for(const candidate of [target,lexicalTarget].filter(Boolean))assert(candidate!==authoritativeRoot&&!candidate.startsWith(authoritativeRoot+'/'),`Dependency link resolves into authoritative source: ${path}`)
+    symlinks.push({path:relative(consumer,path),link,resolved:target,lexicalTarget,resolutionError})
+   }else if(entry.isDirectory())stack.push(path)
+  }
+ }
+}
+const directory=process.env.DEPOT_LOGGER_GENERATED_RECEIPT_DIRECTORY??join(homedir(),'temp/agent/depot-complete-ci')
+mkdirSync(directory,{recursive:true,mode:0o700})
+const result={phase,label,sourceRevision:manifest.sourceRevision,manifestSha256:sha256(manifestBytes),authoritative,initialConsumer,workspaceLinks,symlinks,strictAuthoritativeGuard:true}
+writeFileSync(join(directory,`generated-${label}-identity-${phase}.json`),JSON.stringify(result,null,2)+'\n',{flag:'wx',mode:0o600})
+console.log(JSON.stringify({phase,label,trackedAuthoritativeInputs:authoritative.trackedInputs,consumerInputsVerified:phase==='before',workspaceLinks:workspaceLinks.length,dependencySymlinks:symlinks.length}))
 '''

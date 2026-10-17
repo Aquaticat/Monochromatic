@@ -262,7 +262,7 @@ dir = "{{config_root}}/../../.."
 shell = "node --input-type=module-typescript -e"
 run = '''
 const { execFileSync, spawnSync } = await import('node:child_process')
-const { readFileSync, writeFileSync, mkdirSync, chmodSync, realpathSync, existsSync, appendFileSync, statSync } = await import('node:fs')
+const { readFileSync, writeFileSync, mkdirSync, mkdtempSync, chmodSync, realpathSync, existsSync, appendFileSync, statSync } = await import('node:fs')
 const { join, delimiter } = await import('node:path')
 const { homedir } = await import('node:os')
 const { strict: assert } = await import('node:assert')
@@ -275,13 +275,164 @@ chmodSync(base, 0o700)
 const wrapper = [
   '#!/usr/bin/env node',
   "const { spawnSync } = await import('node:child_process');",
+  "const { randomUUID, createHash } = await import('node:crypto');",
+  "const { mkdirSync, mkdtempSync, writeFileSync, readFileSync, statSync } = await import('node:fs');",
+  "const { basename, join } = await import('node:path');",
+  `const podman = ${JSON.stringify(podman)};`,
+  `const metadataBase = ${JSON.stringify(base)};`,
+  String.raw`function prepareMutationMetadata({args}) {
+  const images = args.filter(arg => /^localhost\/mutation-test-runtime:[a-f0-9]{12}$/u.test(arg));
+  if(images.length === 0) return undefined;
+  if(images.length !== 1) throw new Error('Mutation metadata binding requires one source runtime image');
+  const image = images[0];
+  const execute = (argv,options = {}) => {
+    const child = spawnSync('sudo',['--non-interactive',podman,...argv],{encoding:'utf8',timeout:60000,maxBuffer:8*1024*1024,...options});
+    if(child.error) throw child.error;
+    if(child.status !== 0) throw new Error('Mutation metadata inspection failed: '+String(child.stderr));
+    return child;
+  };
+  const imageId = JSON.parse(execute(['image','inspect',image]).stdout)[0].Id;
+  if(!/^(?:sha256:)?[a-f0-9]{64}$/u.test(imageId)) throw new Error('Metadata extraction requires an immutable image ID');
+  const container = execute(['create','--memory=2g','--cpus=2','--pids-limit=64','--network=none','--read-only','--cap-drop=ALL','--security-opt=no-new-privileges',image,'true']).stdout.trim();
+  if(!/^[a-f0-9]{64}$/u.test(container)) throw new Error('Metadata inspection must return one disposable container ID');
+  let archive;
+  try {
+    archive = execute(['cp',container+':/baked/node_modules/.pnpm-workspace-state-v1.json','-'],{encoding:null}).stdout;
+  } finally {
+    const removal = execute(['rm','--force',container]);
+    const remaining = spawnSync('sudo',['--non-interactive',podman,'container','exists',container],{encoding:'utf8',timeout:60000});
+    console.error(JSON.stringify({event:'mutation-metadata-container-cleanup',container,removalStatus:removal.status,remainingStatus:remaining.status,cleanupVerified:remaining.status===1}));
+    if(remaining.error) throw remaining.error;
+    if(remaining.status !== 1) throw new Error('Disposable metadata container remains after extraction');
+  }
+  const listing = spawnSync('tar',['--list','--verbose','--numeric-owner'],{input:archive,encoding:'utf8',env:{...process.env,LC_ALL:'C'},maxBuffer:8192});
+  if(listing.error) throw listing.error;
+  if(listing.status !== 0) throw new Error('Cannot inspect original metadata tar: '+listing.stderr);
+  const entries = listing.stdout.trim().split('\n');
+  const entry = entries.length === 1 ? /^(-[rwxstST-]{9})\s+([0-9]+)\/([0-9]+)\s+([0-9]+)\s+\S+\s+\S+\s+(.+)$/u.exec(entries[0]) : undefined;
+  if(!entry || basename(entry[5]) !== '.pnpm-workspace-state-v1.json') throw new Error('Metadata archive must contain exactly its declared regular file');
+  const extraction = spawnSync('tar',['--extract','--to-stdout'],{input:archive,maxBuffer:8*1024*1024});
+  if(extraction.error) throw extraction.error;
+  if(extraction.status !== 0 || extraction.stdout.length !== Number(entry[4])) throw new Error('Metadata byte extraction does not match original tar size');
+  const directory = mkdtempSync(join(metadataBase,'image-metadata-'));
+  const file = join(directory,'owned-state.json');
+  writeFileSync(join(directory,'source.tar'),archive,{mode:0o600});
+  writeFileSync(file,extraction.stdout,{mode:0o600});
+  const sha256 = createHash('sha256').update(extraction.stdout).digest('hex');
+  const copiedSha256 = createHash('sha256').update(readFileSync(file)).digest('hex');
+  const copied = statSync(file);
+  if(sha256 !== copiedSha256 || copied.uid !== process.getuid() || (copied.mode & 0o777) !== 0o600) throw new Error('Owned metadata copy must preserve source bytes and private mode');
+  if(JSON.parse(execute(['image','inspect',image]).stdout)[0].Id !== imageId) throw new Error('Source image identity changed during metadata extraction');
+  const record = {event:'mutation-owned-metadata',image,imageId,sourcePath:'/baked/node_modules/.pnpm-workspace-state-v1.json',original:{mode:entry[1],uid:Number(entry[2]),gid:Number(entry[3]),bytes:Number(entry[4])},owned:{uid:copied.uid,gid:copied.gid,mode:copied.mode & 0o777,bytes:copied.size},sha256,copiedSha256,readonly:true,sourceImageUnchanged:true,archiveSha256:createHash('sha256').update(archive).digest('hex')};
+  writeFileSync(join(directory,'metadata-evidence.json'),JSON.stringify(record,null,2)+'\n',{mode:0o600});
+  console.error(JSON.stringify(record));
+  return {file,sha256,args:['--volume',file+':/baked/node_modules/.pnpm-workspace-state-v1.json:ro']};
+}`,
+  String.raw`async function browserPartitionMain() {
+  const {readFileSync,writeFileSync,mkdirSync} = await import('node:fs');
+  const {join,resolve,relative} = await import('node:path');
+  const {spawnSync} = await import('node:child_process');
+  const {cpus,availableParallelism} = await import('node:os');
+  const {strict:assert} = await import('node:assert');
+  const scope = JSON.parse(process.argv[1]);
+  const command = process.argv[2];
+  const original = process.argv.slice(3);
+  assert(/^(?:browser|e2e)\.(?:chromium|firefox|webkit)\.[1-9][0-9]*$/u.test(scope.id));
+  assert.equal(original.filter(arg=>arg===scope.file).length,1);
+  const directory = join(process.cwd(),'.cache/depot-browser',scope.id);
+  mkdirSync(directory,{recursive:true,mode:0o755});
+  const evidence = {scope,operations:[],cases:[],resources:[]};
+  function retain() {writeFileSync(join(directory,'partition-evidence.json'),JSON.stringify(evidence,null,2)+'\n',{mode:0o644});}
+  function sample(phase) {
+    const files = {};
+    for(const name of ['pids.current','pids.max','pids.events','memory.current','memory.max','memory.events','cpu.max']) {
+      try {files[name]=readFileSync('/sys/fs/cgroup/'+name,'utf8').trim();}
+      catch(error) {files[name]={error:error.message};}
+    }
+    const row={event:'browser-container-resources',phase,workers:1,node:process.version,logicalCpus:cpus().length,availableParallelism:availableParallelism(),files};
+    evidence.resources.push(row);console.log(JSON.stringify(row));retain();
+  }
+  function reportCases(report) {
+    const found=[];
+    const queue=report.suites.map(suite=>({suite,titles:[]}));
+    for(const {suite,titles} of queue) {
+      const path=[...titles,suite.title];
+      queue.push(...(suite.suites??[]).map(child=>({suite:child,titles:path})));
+      for(const spec of suite.specs??[]) for(const test of spec.tests) {
+        const file=relative(process.cwd(),resolve(report.config.rootDir,spec.file));
+        const key=JSON.stringify([file,spec.line,spec.column,...path,spec.title,test.projectName]);
+        const executed=(test.results??[]).some(result=>['passed','failed','timedOut','interrupted'].includes(result.status));
+        found.push({key,file,titlePath:[...path,spec.title],line:spec.line,column:spec.column,project:test.projectName,expectedStatus:test.expectedStatus,status:test.status,executed,attemptStatuses:(test.results??[]).map(result=>({status:result.status,retry:result.retry,duration:result.duration})),disposition:executed?test.status:(test.results??[]).some(result=>result.status==='skipped')?'skipped':'unexecuted'});
+      }
+    }
+    return found;
+  }
+  function execute({name,args,expectedExit}) {
+    const output=join(directory,name+'.json');
+    const startedAt=new Date().toISOString();
+    const child=spawnSync(command,[...args,'--workers=1','--add-reporter=json'],{stdio:'inherit',env:{...process.env,PLAYWRIGHT_JSON_OUTPUT_FILE:output}});
+    const row={name,args,startedAt,finishedAt:new Date().toISOString(),exitCode:child.status,signal:child.signal,error:child.error?.message,reportPath:output};
+    evidence.operations.push(row);retain();
+    if(child.error) throw child.error;
+    let report;
+    try {report=JSON.parse(readFileSync(output,'utf8'));}
+    catch(error) {row.reportError=error.message;retain();throw error;}
+    const selected=reportCases(report);
+    row.cases=selected;row.globalErrors=report.errors;row.stats=report.stats;retain();
+    if(expectedExit!==undefined) assert.equal(child.status,expectedExit,'Playwright selector inventory must complete before source execution');
+    return {child,report,cases:selected};
+  }
+  sample('before');
+  try {
+    const fullArgs=original.flatMap(arg=>arg===scope.file?scope.fullFiles:[arg]);
+    const full=execute({name:'full-inventory',args:[...fullArgs,'--list'],expectedExit:0});
+    assert(full.cases.length>0);
+    assert.equal(new Set(full.cases.map(test=>test.key)).size,full.cases.length);
+    assert(full.cases.every(test=>scope.fullFiles.includes(test.file)&&scope.fullProjects.includes(test.project)));
+    assert.deepEqual([...new Set(full.cases.map(test=>test.file))].sort(),[...scope.fullFiles].sort());
+    assert.deepEqual([...new Set(full.cases.map(test=>test.project))].sort(),[...scope.fullProjects].sort());
+    const expected=full.cases.filter(test=>test.file===scope.file&&test.project===scope.project);
+    assert(expected.length>0,'Declared file/project partition must select source cases');
+    const selectedArgs=[...original,'--project='+scope.project];
+    const partition=execute({name:'partition-inventory',args:[...selectedArgs,'--list'],expectedExit:0});
+    assert.deepEqual(partition.cases.map(test=>test.key).sort(),expected.map(test=>test.key).sort());
+    evidence.inventoryPartitionVerified=true;retain();
+    const actual=execute({name:'results',args:selectedArgs});
+    assert.deepEqual(actual.cases.map(test=>test.key).sort(),expected.map(test=>test.key).sort());
+    evidence.cases=actual.cases;evidence.sourceExitCode=actual.child.status;
+    evidence.allSelectedCasesDisposed=actual.cases.every(test=>test.disposition!=='unexecuted');
+    process.exitCode=actual.child.status??1;
+  } catch(error) {
+    evidence.adapterError={name:error.name,message:error.message,code:error.code};retain();throw error;
+  } finally {sample('after');retain();}
+}`,
   'const [command, ...args] = process.argv.slice(2);',
   "const limits = command === 'run' ? ['--memory=2g', '--cpus=2', '--pids-limit=512'] : [];",
   "const mutation = command === 'run' && args.some((arg) => arg.includes(':/manifest:'));",
   "const identity = mutation ? ['--user', `${process.getuid()}:${process.getgid()}`] : [];",
-  "const mappedArgs = args.map((arg, index) => mutation && args[index - 1] === '--tmpfs' ? `${arg},mode=1777` : arg);",
-  `const result = spawnSync('sudo', ['--non-interactive', ${JSON.stringify(podman)}, command, ...limits, ...identity, ...mappedArgs], { stdio: 'inherit' });`,
-  'if (result.error) throw result.error;',
+  "const workIndices = mutation ? args.flatMap((arg,index) => args[index-1] === '--tmpfs' && arg.startsWith('/work:') ? [index] : []) : [];",
+  "if(mutation && workIndices.length !== 1) throw new Error('Mutation boundary requires exactly one bounded /work tmpfs');",
+  "const volume = mutation ? `depot-ci-mutation-${randomUUID()}` : undefined;",
+  "const workOptions = mutation ? `${args[workIndices[0]].slice('/work:'.length)},mode=1777,uid=${process.getuid()},gid=${process.getgid()}` : undefined;",
+  "if(mutation && !/(?:^|,)size=[1-9][0-9]*[kmg]?(?:,|$)/iu.test(workOptions)) throw new Error('Mutation /work tmpfs must retain its declared size bound');",
+  "const mappedArgs = mutation ? args.flatMap((arg,index) => index === workIndices[0]-1 ? ['--volume',`${volume}:/work:rw`] : index === workIndices[0] ? [] : [arg]) : args;",
+  "const browserIndex = mappedArgs.indexOf('monochromatic-playwright');",
+  "const browser = command === 'run' && browserIndex >= 0 && mappedArgs[browserIndex + 1] === 'npx' && mappedArgs[browserIndex + 2] === 'playwright' && mappedArgs[browserIndex + 3] === 'test';",
+  "const browserScope = browser && process.env.DEPOT_LOGGER_BROWSER_SCOPE ? JSON.parse(process.env.DEPOT_LOGGER_BROWSER_SCOPE) : undefined;",
+  "const browserProbe = `const {readFileSync}=await import('node:fs');const {spawnSync}=await import('node:child_process');const {cpus,availableParallelism}=await import('node:os');function sample(phase){const files={};for(const name of ['pids.current','pids.max','pids.events','memory.current','memory.max','memory.events','cpu.max']){try{files[name]=readFileSync('/sys/fs/cgroup/'+name,'utf8').trim()}catch(error){files[name]={error:error.message}}}console.log(JSON.stringify({event:'browser-container-resources',phase,workers:1,logicalCpus:cpus().length,availableParallelism:availableParallelism(),files}))}sample('before');const child=spawnSync(process.argv[1],process.argv.slice(2),{stdio:'inherit'});sample('after');if(child.error)throw child.error;process.exitCode=child.status??1;`;",
+  "const invocation = browserScope ? [...mappedArgs.slice(0,browserIndex+1),'node','--input-type=module','--eval','('+browserPartitionMain.toString()+')()',JSON.stringify(browserScope),...mappedArgs.slice(browserIndex+1)] : browser ? [...mappedArgs.slice(0, browserIndex + 1), 'node', '--input-type=module', '--eval', browserProbe, ...mappedArgs.slice(browserIndex + 1), '--workers=1'] : mappedArgs;",
+  "if(browser) console.log(JSON.stringify({event:'browser-concurrency-adaptation',workers:1,originalCommand:mappedArgs.slice(browserIndex + 1),filesAndProjectsUnchanged:!browserScope,partitionScope:browserScope,caseInventoryRequired:Boolean(browserScope)}));",
+  'let result; let metadata; let created = false; let cleanup; let remaining;',
+  'try {',
+  "  if(volume) { const creation = spawnSync('sudo',['--non-interactive',podman,'volume','create','--opt','type=tmpfs','--opt','device=tmpfs','--opt','nocopy','--opt',`o=${workOptions}`,volume],{encoding:'utf8',timeout:60000}); if(creation.error) throw creation.error; if(creation.status !== 0) throw new Error(`Mutation tmpfs volume creation failed: ${creation.stderr}`); created = true; console.error(JSON.stringify({event:'mutation-owned-tmpfs-created',volume,options:workOptions,uid:process.getuid(),gid:process.getgid(),capabilityAdditions:[],userNamespaceMapping:false})); }",
+  "  metadata = mutation ? prepareMutationMetadata({args:mappedArgs}) : undefined;",
+  "  result = spawnSync('sudo', ['--non-interactive', podman, command, ...limits, ...identity, ...(metadata?.args ?? []), ...invocation], { stdio: 'inherit' });",
+  '  if (result.error) throw result.error;',
+  '} finally {',
+  "  if(metadata && createHash('sha256').update(readFileSync(metadata.file)).digest('hex') !== metadata.sha256) throw new Error('Readonly generated metadata bytes changed during source execution');",
+  "  if(created) { cleanup = spawnSync('sudo',['--non-interactive',podman,'volume','rm','--force',volume],{encoding:'utf8',timeout:60000}); remaining = spawnSync('sudo',['--non-interactive',podman,'volume','exists',volume],{encoding:'utf8',timeout:60000}); console.error(JSON.stringify({event:'mutation-owned-tmpfs-cleanup',volume,cleanupStatus:cleanup.status,cleanupError:cleanup.stderr,remainingStatus:remaining.status,cleanupVerified:cleanup.status === 0 && remaining.status === 1})); }",
+  '}',
+  "if(created && (cleanup.status !== 0 || remaining.status !== 1)) throw new Error('Mutation tmpfs volume cleanup failed; see retained boundary records');",
   'process.exitCode = result.status ?? 1;',
   '',
 ].join('\n')
@@ -292,15 +443,33 @@ const fixture = join(base, 'mutation-private-fixture')
 mkdirSync(fixture, { recursive: true, mode: 0o700 })
 chmodSync(fixture, 0o700)
 writeFileSync(join(fixture, 'shard-manifest.json'), 'mutation-private-input\n', { mode: 0o600 })
-const controlArgs = ['run', '--rm', '--network=none', '--read-only', '--cap-drop=ALL', '--security-opt=no-new-privileges', '--memory=2g', '--cpus=2', '--pids-limit=64', '--timeout=30', '--volume', `${fixture}:/manifest:rw`]
+const controlArgs = ['run', '--rm', '--network=none', '--read-only', '--cap-drop=ALL', '--security-opt=no-new-privileges', '--security-opt=label=disable', '--memory=2g', '--cpus=2', '--pids-limit=64', '--timeout=30', '--volume', `${fixture}:/manifest:rw`]
 const denied = spawnSync('sudo', ['--non-interactive', podman, ...controlArgs, 'docker.io/library/alpine:3.22', 'cat', '/manifest/shard-manifest.json'], { encoding: 'utf8', timeout: 45000 })
 assert.notEqual(denied.status, 0, 'Unmapped root without capabilities must demonstrate the private-directory permission boundary')
 assert(denied.stderr.includes('Permission denied'), 'Negative control must fail on fixture access')
-const allowed = spawnSync(join(base, 'podman'), [...controlArgs, '--tmpfs', '/work:rw,exec,size=1m', 'docker.io/library/alpine:3.22', 'sh', '-c', 'cp /manifest/shard-manifest.json /work/input && cp /work/input /manifest/result.json'], { encoding: 'utf8', timeout: 45000 })
-console.log('\n' + JSON.stringify({ event: 'mutation-identity-control', deniedStatus: denied.status, deniedError: denied.stderr, mappedStatus: allowed.status, mappedError: allowed.stderr, uid: process.getuid(), gid: process.getgid() }))
+const allowed = spawnSync(join(base, 'podman'), [...controlArgs, '--tmpfs', '/work:rw,exec,size=1m', 'docker.io/library/alpine:3.22', 'sh', '-c', 'stat -c %u:%g /work && cp /manifest/shard-manifest.json /work/input && cp /work/input /manifest/result.json'], { encoding: 'utf8', timeout: 45000 })
+console.log('\n' + JSON.stringify({ event: 'mutation-identity-control', boundary: 'owned-tmpfs-volume', deniedStatus: denied.status, deniedError: denied.stderr, ownedTmpfsStatus: allowed.status, ownedTmpfsError: allowed.stderr, uid: process.getuid(), gid: process.getgid() }))
 assert.equal(allowed.status, 0, allowed.stderr)
+assert.equal(allowed.stdout.trim(), `${process.getuid()}:${process.getgid()}`, 'Mutation work tmpfs must match the unchanged nonroot source owner')
 assert.equal(readFileSync(join(fixture, 'result.json'), 'utf8'), 'mutation-private-input\n')
 assert.equal(statSync(join(fixture, 'result.json')).uid, process.getuid())
+const metadataContext = mkdtempSync(join(base, 'metadata-control-'))
+const metadataBytes = '{"privateFixture":"baked metadata readonly control"}\n'
+writeFileSync(join(metadataContext, 'state.json'), metadataBytes, { mode: 0o600 })
+writeFileSync(join(metadataContext, 'Containerfile'), 'FROM docker.io/library/alpine:3.22\nCOPY state.json /baked/node_modules/.pnpm-workspace-state-v1.json\n')
+const metadataImage = `localhost/mutation-test-runtime:${(await import('node:crypto')).randomUUID().replaceAll('-', '').slice(0, 12)}`
+execFileSync('sudo', ['--non-interactive', podman, 'build', '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000', '--network=none', '--tag', metadataImage, '--file', join(metadataContext, 'Containerfile'), metadataContext], { stdio: 'inherit' })
+try {
+  const negative = spawnSync('sudo', ['--non-interactive', podman, ...controlArgs, '--user', `${process.getuid()}:${process.getgid()}`, metadataImage, 'cat', '/baked/node_modules/.pnpm-workspace-state-v1.json'], { encoding: 'utf8', timeout: 45000 })
+  assert.notEqual(negative.status, 0)
+  assert(negative.stderr.includes('Permission denied'), negative.stderr)
+  const positive = spawnSync(join(base, 'podman'), [...controlArgs, '--tmpfs', '/work:rw,exec,size=1m', '--workdir', '/work', metadataImage, 'cat', '/baked/node_modules/.pnpm-workspace-state-v1.json'], { encoding: 'utf8', timeout: 45000 })
+  console.log('\n' + JSON.stringify({ event: 'mutation-metadata-control', image: metadataImage, negativeStatus: negative.status, negativeDiagnostic: negative.stderr, positiveStatus: positive.status, positiveDiagnostics: positive.stderr, unchangedExpectedBytes: positive.stdout === metadataBytes }))
+  assert.equal(positive.status, 0, positive.stderr)
+  assert.equal(positive.stdout, metadataBytes)
+} finally {
+  execFileSync('sudo', ['--non-interactive', podman, 'image', 'rm', metadataImage], { stdio: 'inherit' })
+}
 appendFileSync(process.env.GITHUB_PATH, `${base}\n`)
 console.log("\n" + JSON.stringify({ event: 'container-boundary-ready', executable: podman, boundary: 'sudo --non-interactive', memory: '2g', cpus: 2, pidsLimit: 512 }))
 '''

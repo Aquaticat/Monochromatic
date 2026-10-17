@@ -1,0 +1,217 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+  "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+  "completeGraph": false,
+  "candidateOnly": true,
+  "combinedExpandedJobs": 97,
+  "packageSelectors": 57,
+  "packageInventory": 719,
+  "externalInventory": 19,
+  "browserPartitions": 32,
+  "sharedInputs": [
+    "cohort_id",
+    "manifest_sha256",
+    "requested_at"
+  ],
+  "standaloneBrowserAlternative": {
+    "route": "logger.browser",
+    "workflow": ".depot/workflows/depot-complete-logger-browser-full.yml",
+    "dispatchAlongsideCombined": false,
+    "reason": "Combined workflow already selects all32 browser/DOM partitions"
+  },
+  "sourceIdentityHelper": {
+    "copiedFromHarness": "bb475f636f51a00864710454c6499fcd3db6b8a4",
+    "bodySha256": "536e5258d8abb0262f75f7ef89c5b334e81e66c042a778418f1894197a058628"
+  },
+  "pending": [
+    "Freeze remains parent-owned and held",
+    "Integrate verified desktop runtime helper and canonical shared byte guards",
+    "Verify frozen-source generator consumer pilot",
+    "Parent aligns current GHA/VM route guards before registration"
+  ],
+  "routes": [
+    {
+      "checkId": "special.package.cli.vmsync.src.lifecycle.expensive.unit.test.ts",
+      "route": "logger.vm",
+      "workflow": ".depot/workflows/depot-complete-vm-original.yml",
+      "job": "vm-original",
+      "status": "parent-cohort-integration-pending",
+      "owner": "/root/vm_recovery",
+      "originalTask": "//package/cli/vmsync:test:e2e"
+    },
+    {
+      "checkId": "special.package.pi-plugin.bash-poke.src.tui.expensive.unit.test.ts",
+      "route": "logger.combined",
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
+      "job": "logger_pi",
+      "status": "candidate-awaits-common-freeze",
+      "owner": "/root/logger_pipeline",
+      "originalTask": "//package/pi-plugin/bash-poke:test:unit"
+    },
+    {
+      "checkId": "package.cli.wg-quicker.test.integration.bypass",
+      "route": "logger.combined",
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
+      "job": "logger_wg",
+      "status": "candidate-awaits-common-freeze",
+      "owner": "/root/logger_pipeline",
+      "originalTask": "//package/cli/wg-quicker:test:integration:bypass"
+    },
+    {
+      "checkId": "package.cli.wg-quicker.test.integration.route",
+      "route": "logger.combined",
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
+      "job": "logger_wg",
+      "status": "candidate-awaits-common-freeze",
+      "owner": "/root/logger_pipeline",
+      "originalTask": "//package/cli/wg-quicker:test:integration:route"
+    },
+    {
+      "checkId": "package.desktop-app.electron-counter.test.wayland",
+      "route": "logger.combined",
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
+      "job": "logger_external",
+      "partition": "electron",
+      "status": "candidate-awaits-common-freeze",
+      "owner": "/root/logger_pipeline",
+      "originalTask": "//package/desktop-app/electron-counter:test:wayland"
+    },
+    {
+      "checkId": "package.desktop-app.file-manager-electron.test.wayland",
+      "route": "logger.combined",
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
+      "job": "logger_external",
+      "partition": "electron",
+      "status": "candidate-awaits-common-freeze",
+      "owner": "/root/logger_pipeline",
+      "originalTask": "//package/desktop-app/file-manager-electron:test:wayland"
+    },
+    {
+      "checkId": "package.pi-plugin.agent-settled-notification.verify.pi-runtime",
+      "route": "logger.combined",
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
+      "job": "logger_pi",
+      "status": "candidate-awaits-common-freeze",
+      "owner": "/root/logger_pipeline",
+      "originalTask": "//package/pi-plugin/agent-settled-notification:verify:pi-runtime"
+    },
+    {
+      "checkId": "package.pi-plugin.ask-user-question.verify.terminal",
+      "route": "logger.combined",
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
+      "job": "logger_pi",
+      "status": "candidate-awaits-common-freeze",
+      "owner": "/root/logger_pipeline",
+      "originalTask": "//package/pi-plugin/ask-user-question:verify:terminal"
+    },
+    {
+      "checkId": "package.pi-plugin.auto-mode.test.native.configured-extensions",
+      "route": "logger.combined",
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
+      "job": "logger_pi",
+      "status": "candidate-awaits-common-freeze",
+      "owner": "/root/logger_pipeline",
+      "originalTask": "//package/pi-plugin/auto-mode:test:native:configured-extensions"
+    },
+    {
+      "checkId": "root.browser",
+      "route": "logger.combined",
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
+      "job": "logger_browser",
+      "partition": "browser",
+      "status": "candidate-awaits-common-freeze",
+      "owner": "/root/logger_pipeline",
+      "originalTask": "//:test:browser"
+    },
+    {
+      "checkId": "root.e2e",
+      "route": "logger.combined",
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
+      "job": "logger_browser",
+      "partition": "e2e",
+      "status": "candidate-awaits-common-freeze",
+      "owner": "/root/logger_pipeline",
+      "originalTask": "//:test:e2e"
+    },
+    {
+      "checkId": "root.forbidden-strings",
+      "route": "logger.scanner",
+      "workflow": ".github/workflows/forbidden-strings.yml",
+      "job": "parent-owned",
+      "status": "parent-cohort-integration-pending",
+      "owner": "/root"
+    },
+    {
+      "checkId": "root.generated-consistency",
+      "route": "logger.combined",
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
+      "job": "logger_external",
+      "partition": "generated",
+      "status": "frozen-source-isolation-pilot-pending",
+      "owner": "/root/logger_pipeline",
+      "originalTask": "//:sync:files"
+    },
+    {
+      "checkId": "root.scorecard",
+      "route": "logger.scorecard",
+      "workflow": ".github/workflows/scorecard.yml",
+      "job": "parent-owned",
+      "status": "parent-cohort-integration-pending",
+      "owner": "/root"
+    },
+    {
+      "checkId": "root.config-oxlint",
+      "route": "logger.combined",
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
+      "job": "logger_external",
+      "partition": "root-lint",
+      "status": "candidate-awaits-common-freeze",
+      "owner": "/root/logger_pipeline",
+      "originalTask": "//:lint:oxlint"
+    },
+    {
+      "checkId": "host.fs-id",
+      "route": "logger.hosts",
+      "workflow": ".github/workflows/fs-id.yml",
+      "job": "parent-owned",
+      "status": "parent-cohort-integration-pending",
+      "owner": "/root"
+    },
+    {
+      "checkId": "host.semantic-bridge",
+      "route": "logger.hosts",
+      "workflow": ".github/workflows/fs-id.yml",
+      "job": "parent-owned",
+      "status": "parent-cohort-integration-pending",
+      "owner": "/root",
+      "originalTasks": [
+        "test:semantic-bridge-host",
+        "test:external-consumer-host"
+      ]
+    },
+    {
+      "checkId": "artifact.music-desktop-e2e",
+      "route": "logger.combined",
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
+      "job": "logger_external",
+      "partition": "desktop",
+      "status": "parent-verified-desktop-helper-integration-pending",
+      "owner": "/root",
+      "originalTask": "//package/music-player/desktop-app:test:e2e"
+    },
+    {
+      "checkId": "sidecar.generated-type-consistency",
+      "route": "logger.combined",
+      "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
+      "job": "logger_external",
+      "partition": "generated",
+      "status": "frozen-source-isolation-pilot-pending",
+      "owner": "/root/logger_pipeline",
+      "originalTasks": [
+        "//package/module/deepmerge-ts.fuzz:generate:type-cases",
+        "//package/module/deepmerge-ts.fuzz:generate:declared-type-cases"
+      ]
+    }
+  ]
+}
