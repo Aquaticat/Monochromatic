@@ -604,6 +604,62 @@ That host result does not diagnose a separate cloud failure using a fixed mise r
 
 ## Evidence and completion predicate
 
+### Shared cohort identity
+
+The authoritative common manifest is the main-branch file
+`doc/audit/depot-complete-cohort-<cohort_id>.json`.
+Freeze and publish its exact bytes before creating the shared request timestamp.
+The file must be smaller than 1 MiB,
+use `schemaVersion: 1`,
+and carry these bindings:
+
+- `cohortId` identifies the same immutable experiment across provider routes.
+- `cases.<caseId>` records `sourceRevision`,
+  `baseRevision`,
+  and the exact per-case `manifestSha256`.
+- `routes.<routeId>` records `caseId`,
+  the immutable `harnessRevision`,
+  and the repo-relative `workflow` path.
+
+Every final workflow requires `cohort_id`,
+`manifest_sha256`,
+and `requested_at` inputs.
+The cohort ID must match `^[A-Za-z0-9._-]{1,128}$`.
+The manifest digest must be lowercase hexadecimal SHA-256 of the common manifest's exact bytes;
+it is distinct from each case-manifest digest.
+The timestamp must be canonical UTC `Date.toISOString()` output,
+shared across all routes and retained identically before and after each route.
+It does not belong in the frozen manifest.
+
+Retrieve the file through the authenticated Contents API object response,
+decode its base64 `content`,
+and hash the decoded bytes before parsing the JSON.
+The actual transport control preserved all 1,043,537 bytes of the historical audit fixture;
+a mismatched expected digest was rejected.
+Raw JSON CLI output transformed escaped control characters and is not the selected transport.
+
+Each route validates the common cohort ID,
+its case source/base/digest,
+its workflow path,
+its actual harness `HEAD`,
+and provider `GITHUB_SHA` against that same `HEAD`.
+Before and after source guards retain clean tracked state,
+reject index exclusion flags,
+compare configured metadata directly with committed bytes,
+and prove source identity remains unchanged.
+After-work validation may revalidate the cached exact manifest bytes.
+Guard rejection remains failed evidence;
+it cannot produce a successful after-work receipt.
+
+The case manifests still have `completeGraph: false`.
+Regenerate their complete graph registrations and dependent partition headers before final cohort acceptance.
+This field describes graph registration;
+it does not prove passing execution.
+Disposable API response fixtures establish adapter rejection behavior only.
+They are not published as real cohorts and cannot establish provider execution.
+
+### Required evidence
+
 Every case manifest records `baseRevision`,
 `headRevision`,
 `sourceRevision`,
