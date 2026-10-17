@@ -20,7 +20,7 @@ All 650 configured source-input files were independently hashed against frozen G
 The [primary failure evidence](../audit/depot-logger-primary-failures-2026-10-17.evidence.json)
 now retains all 105 failed-check output files,
 with 10496598 bytes independently rehashed.
-It includes parsed lint/type candidates and the reviewed pending tracker comments.
+It includes parsed lint/type candidates and the reviewed tracker comments.
 Issue mapping remains incomplete;
 deliberately failing child controls are not terminal parent-suite failures.
 
@@ -148,25 +148,21 @@ storage,
 plan allowances,
 and invoice reconciliation remain separate.
 
+The reviewed comments for `#1160`,
+`#1156`,
+`#1052` and `#1131` were published on a later paced retry with exact body readback.
+`#1160` is closed for the recovered aggregate native JSON.
+The separate physical-shard retention issue `#1434` remains open.
+The older conf red baseline in `#1156` is preserved without a fix claim.
+
 Next actions:
 
-- GitHub CLI `2.102.0` rejected the attempted `#1160` comment with
-  `GraphQL: was submitted too quickly (addComment)`.
-  No successful comment receipt or closure was recorded.
-  The reviewed comments for `#1160`,
-  `#1156`,
-  `#1052` and `#1131` remain pending.
-  Two paced retries after backoff received the same rejection.
-  Reconcile each live thread before retrying after the provider-documented backoff;
-  pace subsequent mutations and stop on another rejection.
 - Logger credential issue `#1180`,
   rebuilt tracked-output issue `#1181`,
   and terminated-worker issue `#1182` are filed with exact body readback.
   The [completion troubleshooting record](../troubleshooting/depot-logger-final-completion-gaps.md)
   keeps their boundaries separate.
 - Reconcile source failures and prerequisite-blocked checks with existing issue threads.
-- Add the current per-ID aggregate-JSON proof to `#1160`,
-  preserving its historical missing artifacts and the distinct physical retention gap `#1434`.
 - File scoped follow-up evidence for the repaired private verifier assumptions:
   zero-based native columns,
   separate ignored records,

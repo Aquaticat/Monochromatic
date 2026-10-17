@@ -373,9 +373,11 @@ The initial request and two later retries received the same diagnostic.
 The retries followed the initial backoff and inserted a pause before each planned mutation.
 Processing stopped at the rejected comment each time.
 No successful comment receipt or issue closure was recorded.
-The reviewed comments for `#1160`,
+Those rejected attempts left the reviewed comments pending.
+A later paced retry successfully published the comments for `#1160`,
 `#1156`,
-`#1052` and `#1131` remain pending.
+`#1052` and `#1131` with exact body readback.
+`#1160` was then closed.
 
 Read-only issue queries,
 Depot metadata queries and primary-document fetches continued to work.
@@ -465,12 +467,20 @@ it does not identify this GraphQL rejection's specific limit.
 The retained primary text is in the
 [repository accounting evidence](../audit/depot-repository-accounting-2026-10-17.evidence.json).
 
-No server-reset workaround is verified yet.
-The recoverable local state is the reviewed comment bodies and the pending queue in the
-[trial handover](../handover/depot-trial-grilling.md).
-Before a later retry,
-reconcile the live marker again and honor any available provider reset instructions.
-This preserves reviewable work while leaving publication and closure incomplete.
+The later retry verified recovery of the requested operation,
+not the cause or timing of a server reset.
+The controller reused the reviewed bodies and reconciled each live marker before posting.
+Exact body readback preceded the `#1160` closure.
+The [trial handover](../handover/depot-trial-grilling.md) records the recovered publication state.
+This recovery preserves the earlier rejections without claiming that local pacing alone cleared them.
+
+A tracker search found [CLI issue #3292](https://github.com/cli/cli/issues/3292)
+about rate-limit handling and [CLI issue #4801](https://github.com/cli/cli/issues/4801)
+about the same error wording during issue creation.
+Both full threads were retained with their comment counts checked.
+The historical maintainer explanation in `#4801` describes a dynamic platform content-creation restriction.
+It supports waiting rather than treating primary API quota as a complete explanation.
+It does not establish the exact condition or limit for this `addComment` incident.
 
 ### Upstream filing decision for this incident
 
@@ -480,13 +490,14 @@ This preserves reviewable work while leaving publication and closure incomplete.
     no architectural impossibility is claimed.
 3.  Commenting on repository issues is a supported CLI surface.
 4.  Contribution acceptance was not evaluated because no upstream defect is established.
-5.  Expected upstream action is unknown;
-    no maintainer refusal is inferred.
+5.  `#4801` historically declined making individual CLI commands block for long retry periods.
+    The broader rate-limit interface discussion in `#3292` remains open.
 6.  No upstream fix is justified by the current evidence.
-    The consumer pacing variant was exercised and did not recover posting.
+    The consumer pacing variant first failed and later completed the requested publication.
 
 There is no fileable upstream defect report from this observation.
-The task remains publication of the authorized current-repository comments after the rejection clears.
+The authorized current-repository comments are published;
+no new upstream issue or comment was sent.
 
 [github-best-practices]: https://docs.github.com/en/rest/using-the-rest-api/best-practices-for-using-the-rest-api
 [github-create-issue]: https://docs.github.com/en/rest/issues/issues#create-an-issue

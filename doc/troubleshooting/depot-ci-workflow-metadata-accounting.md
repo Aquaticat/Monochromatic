@@ -27,7 +27,7 @@ The Git blobs for the relevant files match tag `v2.102.23`:
 - `pkg/cmd/ci/metrics.go`: `1e27e860dbe9ed184a8631f502f46f526b1688bd`.
 
 The source paths in this section refer to the Depot CLI repository.
-`pkg/cmd/ci/workflow.go:385` copies attempt timestamp strings directly from the workflow response:
+`pkg/cmd/ci/workflow.go:390` copies attempt timestamp strings directly from the workflow response:
 
 ```go
 // pkg/cmd/ci/workflow.go
