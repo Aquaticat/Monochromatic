@@ -39,11 +39,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  */
 function isVerdictData(data: unknown): data is VerdictData {
   if (!isRecord(data) || typeof data.action !== 'string' || typeof data.reason !== 'string') return false;
+  /** Read each potentially borrowed field once after its preceding shape checks pass. */
   const { verdict } = data;
   if (verdict !== 'approve' && verdict !== 'deny' && verdict !== 'ask'
     && verdict !== 'user-approve' && verdict !== 'user-deny') return false;
+  /** Historical fingerprints remain optional audit fields. */
   const { approvalFingerprint } = data;
   if (approvalFingerprint !== undefined && typeof approvalFingerprint !== 'string') return false;
+  /** Reuse provenance is validated as history and never promoted to native permission. */
   const { reusedFromVerdict } = data;
   return reusedFromVerdict === undefined || reusedFromVerdict === 'approve' || reusedFromVerdict === 'user-approve';
 }

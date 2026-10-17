@@ -135,6 +135,7 @@ const checked=await spawn(process.execPath,[join(output,'cli.mjs'),'--version'],
 });
 if(checked.stdout.trim()!==qualifiedRelease.version)
   throw new NativeSourceBuildError('Generated native command did not report the qualified version');
+/** Identical files share storage only after generation and loading have succeeded. */
 const reused = await reuseNativeBuildFiles({ output, active });
 await activateNativeBuild({output,active});
 console.log(JSON.stringify({

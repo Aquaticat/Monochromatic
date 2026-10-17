@@ -164,6 +164,7 @@ export function createAssessmentHttpSender({
    @throws original error for cancellation or a nontransport failure
    */
   async function dispatchRequest({ url, options }: { readonly url: string; readonly options: RequestInit }): Promise<Response> {
+    /** Invocation failures retain only a local category and function-scoped diagnostic. */
     const dl = tagged({ tag: dispatchRequest.name, l: rl });
     try {
       return await fetchImpl(url, options);

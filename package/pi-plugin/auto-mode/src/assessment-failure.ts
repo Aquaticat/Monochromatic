@@ -22,10 +22,14 @@ export class AssessmentRequestFailure extends AssessmentTransportError {
 export function isRetryableAssessmentFailure(error: unknown): boolean {
   /** Only category information crosses the diagnostic seam. */
   const l = tagged({ tag: isRetryableAssessmentFailure.name });
+  /** Unprocessed failures retain the original bundle's complete rejection set. */
   const pending: unknown[] = [error];
+  /** Cyclic aggregate graphs cannot qualify for automatic transport recovery. */
   const visited = new Set<unknown>();
-  let failures = 0;
+  /** An empty aggregate is not evidence that an HTTP invocation failed. */
+  const failures = new Set<AssessmentRequestFailure>();
   while (pending.length > 0) {
+    /** Each original rejection is classified independently of its borrowed message. */
     const current = pending.pop();
     if (current instanceof AggregateError) {
       if (visited.has(current)) return false;
@@ -37,9 +41,9 @@ export function isRetryableAssessmentFailure(error: unknown): boolean {
       l.debug('assessment failure does not permit transport retry');
       return false;
     }
-    failures++;
+    failures.add(current);
   }
   l.debug('classified original failed assessment bundle');
-  return failures > 0;
+  return failures.size > 0;
 }
 //endregion
