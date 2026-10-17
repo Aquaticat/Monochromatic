@@ -6,6 +6,8 @@ were removed on that date.
 The current native responsibilities are described in [architecture](architecture.md).
 Legacy source identifiers in this snapshot name removed implementations.
 The historical native document link now resolves from this archive directory.
+The former README used `../../../doc/` for repository documentation links.
+Their current prefix in this archive is `../../../../doc/` (moved 2026-10-17).
 
 # @monochromatic-dev/pi-plugin-auto-mode
 
@@ -390,7 +392,7 @@ Bypass,
 trust directives,
 and exact-action approvals remain session-local.
 The parent's bypass banner does not disable child guards.
-See the [subagent scope diagnosis](../../../doc/troubleshooting/pi-auto-mode-subagent-model-scope.md)
+See the [subagent scope diagnosis](../../../../doc/troubleshooting/pi-auto-mode-subagent-model-scope.md)
 for the reproduction and verification boundaries.
 
 ## Skill read allowlist
@@ -507,7 +509,7 @@ or custom interpreter code that spawns it.
 The guard exposes no live-input bypass.
 A separately deployed broker must own release events behind a narrow API.
 See
-[`doc/troubleshooting/ydotool-interrupted-key-release.md`](../../../doc/troubleshooting/ydotool-interrupted-key-release.md).
+[`doc/troubleshooting/ydotool-interrupted-key-release.md`](../../../../doc/troubleshooting/ydotool-interrupted-key-release.md).
 
 ## Migration clause lowering
 

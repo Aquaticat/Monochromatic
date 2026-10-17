@@ -123,7 +123,7 @@ all existing ownership,
 prefix-order,
 permission,
 and occurrence checks remain.
-Verification of that correction is still in progress.
+The 18-mode native consumer catalog passes against `native-release-J4fNNL`.
 
 Transport recovery is separate.
 `package/pi-plugin/auto-mode/src/assessment-transport.ts:174`
@@ -170,7 +170,12 @@ Queued user instructions and changed policy files withhold every member.
 The new catalog adds custom messages,
 user steering,
 and policy changes during primary requests.
-The final catalog has not yet passed.
+Every mode passes,
+including context,
+steering,
+and followup delivery of custom data during primary requests.
+User steering and policy changes during those requests execute no proposed member.
+The package type check passes.
 The denial mutant removes only the dispatch guard from a copied built module;
 three actual executions make the maintained denial test fail,
 while the production artifact hash remains unchanged.
@@ -182,6 +187,9 @@ so its payload result does not establish interaction completeness.
 Configured fixture `pi-hyper-rpc-allow-GRsLAm` confirms the intermediate `process.output` succeeds,
 then reaches the separate source-growth rejection before its next Bash pair.
 The complete configured replay must pass before renewing MiMo handoff readiness.
+The separate mocked configured replay `pi-hyper-rpc-allow-tN2zEc` exits with status `137`;
+no termination cause is established,
+and it is not counted as passing evidence.
 
 ### Corrections, tradeoffs, and rejected approaches
 

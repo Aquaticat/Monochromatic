@@ -137,6 +137,25 @@ Next action: identify the rejected original input at `manager-source-growth.mjs:
 using the configured disposable replay,
 then reproduce it in the maintained native consumer fixture.
 
+That next action is complete.
+The new `notification-primary` consumer case reproduces the exact rejection against `native-release-GSPIDj`.
+Instrumentation identifies an original `native-custom-construction` with role `custom`,
+permission `false`,
+matching publication and source occurrences,
+and no registration or run replacement.
+Commit `10931aaacf` admits authenticated custom-data origins through the existing source-growth checks
+and shares their classifier with lifecycle reads.
+All 18 maintained lifecycle modes pass against `native-release-J4fNNL`,
+including custom data delivered through context,
+steering,
+and followup during primary requests.
+User steering and policy changes during primary requests or assessments execute no proposed member.
+Types pass.
+The full configured live-Luna replay is running;
+its receipt is required before calling either reported interaction fixed.
+The mocked configured replay `pi-hyper-rpc-allow-tN2zEc` exits `137` without an established cause
+and does not count as passing verification.
+
 A provider-payload audit finds a separate missed shell boundary:
 known process result metadata and `ad-process:notification` details retain raw `command` strings.
 The new regression was committed red;
