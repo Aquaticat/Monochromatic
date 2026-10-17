@@ -164,7 +164,9 @@ Completed units (findings validated):
  `code-module-3` (7 findings),
  `code-module-1` (12 findings),
  `code-ownership-marker-1` (5 findings),
- `code-module-4` (17 findings).
+ `code-module-4` (17 findings),
+ `code-pi-plugin-1` (11 findings),
+ `code-oxlint-plugin-1` (8 findings).
 
 Cross-unit leads:
  `doc/planning/music-player-shared-truepeak-core.md` repeats the retired truepeak policy
@@ -194,6 +196,13 @@ Cross-unit leads:
  The byte-to-hex nibble encoder is hand-copied across at least six Rust packages
  (`code-cli-2-006` names three more sites in its notes);
  hand to the `cross-duplication` reviewer when it launches.
+ `package/pi-plugin/morph-compact/src/visible-context.ts` is a near-twin of
+ `package/pi-plugin/auto-mode/src/visible-context.ts` per `code-pi-plugin-1` notes;
+ hand to the `cross-duplication` reviewer when it launches.
+ `doc/decision/npm-publishing.md` says `./ts` is stripped at publish via
+ `publishConfig.exports`, but 27 of 31 published packages exporting `./ts` carry no
+ `publishConfig.exports`, per `code-oxlint-plugin-1` notes;
+ hand to the `cross-api` reviewer when it launches.
  The stale pre-transfer `repository.url` (Aquaticat instead of Aquaticats) spans most
  `package.json` files repo-wide per `code-config-1-001`;
  likely dedupe target is open issue #1124;
@@ -203,19 +212,18 @@ Cross-unit leads:
  hand to the `cross-dependency` reviewer when it launches.
 
 Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
- `code-oxlint-plugin-1`,
- `code-pi-plugin-1`,
  `code-pi-plugin-2`,
  `code-pi-shared-1`,
  `code-rolldown-plugin-1`,
  `code-runtime-error-1`,
  `code-rust-module-1`,
- `code-shim-1` (launched as a replacement).
+ `code-shim-1`,
+ `code-stub-1`,
+ `code-test-fixture-1` (launched as a replacement).
 
 Queued units in launch order (flat list; the first entry launches next):
 
 - `code-stub-1`,
-- `code-test-fixture-1`,
 - `code-test-fixture-2`,
 - `code-typeface-1`,
 - `code-webapp-productivity-1`,
