@@ -510,6 +510,22 @@ Observed-repeat wait session `51269` ended;
 file-carrier terminal wait session `32240` is active.
 No false-kill reproduction is claimed until this actual source control completes.
 
+Current TOML checkpoint: full development run `23dk3nr90f` is successful and reconciled.
+All `3062` identities have source-native terminal dispositions backed by physical green-baseline reports:
+`921 killed`, `256 survived`, `3 timeout`, `1882 compileError`, and zero `runtimeError`.
+Keep native `killed` as a source classification without inferred literal assertion credit.
+Four auxiliary Podman `inspect` status-`125` receipts remain separate from zero final infrastructure errors.
+The durable primary ZIP and per-identity compressed reconciliation are linked in the owned TOML audit.
+Historical full wait `96306` and file-control wait `32240` are terminal and reaped.
+File control `699f9lg5zm` failed its ancillary dependency metadata lookup before classifier assertions.
+Independent corrected control `rsbr0wrdt0` is dispatched at `undefined`;
+terminal wait session `43521` is active.
+Next: retain that actual classifier and emitter result,
+file a distinct source incident only if reproduced after duplicate comparison,
+and reconcile the original timeout issue's required coverage.
+Only the TOML mutation check ran in the full retry; this is not final cohort latency.
+Final common publication and dispatch remain held.
+
 ## Native recovery assertion tracking
 
 The coherent replay routes are prepared and pushed,

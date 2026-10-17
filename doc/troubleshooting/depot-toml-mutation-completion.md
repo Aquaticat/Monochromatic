@@ -268,3 +268,71 @@ File-based development control `699f9lg5zm` is dispatched on
 It removes only a disposable PATH symlink named `node` after its green baseline.
 NanoSpawn retains its actual absolute Node executable for the compiler.
 The actual cloud classification result remains pending.
+
+## Full immutable-source completion
+
+Development run `23dk3nr90f` completed successfully at unchanged source
+`525d2e09f8168a3bdd7e513e26d4c80b363123e5` and harness
+`0f1ef041a0de2ff6d2db6dd55210b1160c592648`.
+The historical wait session `96306` has been reaped with exit zero.
+All `3062` selected identities have native terminal outcomes:
+`921 killed`, `256 survived`, `3 timeout`, and `1882 compileError`.
+Native `runtimeError` and final infrastructure-error counts are zero.
+These are native runner classifications; `killed` does not independently prove an assertion ran.
+Compiler outcomes receive no mutant assertion credit.
+The source CLI reports raw totals without a mutation score or threshold.
+
+All `463` physical manifests and reports reconcile against `3333` assignments.
+The `32` unrun prefix assignments have subsequent final dispositions.
+Every selected identity matches its frozen source span, recomputed native ID,
+and a matching result in a physical report with a passing baseline.
+The candidate full suite contains `37` files;
+the unchanged runner stops after its first failed or timed-out file.
+It does not execute every candidate file for every mutant.
+
+The source task took `4392514.76837` milliseconds;
+the wrapper took `4394121.711807` milliseconds.
+The provider interval was `4498869` milliseconds at `16x64`,
+or `71981904` allocated vCPU-milliseconds.
+This independently requested development job is not complete-cohort latency.
+Its result envelope names the broader case inventory,
+but its actual check overlay and result execute only TOML mutation.
+
+The source log is `41142330` bytes with SHA-256
+`cb31ec5955c4d97ba6ce6f0b97a461dba37a8cc16536273f4a471f8c45b667c3`.
+It has no matching Node-spawn diagnostics.
+That observation is limited to `runOneTest`'s caught-spawn-error branch and `rl.error` emitter;
+the separate actual-source emitter control remains pending.
+It does not upgrade native `killed` into literal assertion credit.
+
+Of `1302` metadata operations, four auxiliary inspections returned Podman status `125`
+and `Error: no such object`, with exact arguments, times, byte counts, and stderr retained.
+They remain separate from the zero final native infrastructure errors.
+The events command succeeded with empty output;
+this does not prove complete event retention or establish an inspection failure's cause.
+Periodic sampling recorded `858` observations of `460` distinct containers across `441` samples.
+All available bounds were `2 GiB`, `2 CPU`, and `512 PIDs`;
+the four unavailable inspections remain in the sample record.
+All `463` original source run commands retain their declared bounds.
+All `463` named work volumes have paired successful cleanup and absence receipts,
+and all `463` stopped metadata containers have successful removal and absence receipts.
+Owned metadata was byte-identical and read-only; source image identity remained unchanged.
+Final scoped containers and process groups were empty.
+
+The complete provider artifact is retained in
+[the primary ZIP](../audit/depot-toml-full-mutation-2026-10-17.evidence.zip),
+`12057855` bytes with SHA-256
+`31e45cf2ad99de72d9253c70e1057f050f985c617c1d69a2ee3402f5ec1fa5e3`.
+Its `2337` member hashes are retained in the structured audit.
+[The compressed reconciliation](../audit/depot-toml-full-reconciliation-2026-10-17.evidence.json.gz)
+retains every identity, assignment, report mapping, source span, metadata duration,
+resource sample, cleanup receipt, exact provider usage, and the reconciliation code.
+
+The independent file-carrier classifier control `699f9lg5zm` failed an ancillary
+hardcoded NanoSpawn metadata lookup before mutation assertions.
+Its source prerequisite, exact `ENOENT`, before/after identity, cleanup, and provider usage are retained.
+No source classifier result is claimed from that failure.
+Repeat `rsbr0wrdt0` uses actual package resolution at harness
+`undefined`,
+with terminal wait session `43521`.
+The final common cohort remains held.
