@@ -3741,7 +3741,61 @@
         }
       ],
       "diffCheck": "PASS",
-      "scope": "Rendered and checked committed rejection evidence before incident closure; closure-only doc updates receive a subsequent scoped check."
+      "scope": "Rendered and checked committed rejection evidence before incident closure; closure-only doc updates receive a subsequent scoped check.",
+      "finalScopedChecks": {
+        "observedAt": "2026-10-17T11:06:25.930Z",
+        "checkedAfterCommit": "835feea206",
+        "jsonDprint": "PASS",
+        "markdownLint": "PASS; same unchanged historical rust/require-rustdoc warning at line40",
+        "diffCheck": "PASS",
+        "renderedInspection": [
+          {
+            "path": "doc/audit/depot-common-manifest-route-guards-2026-10-17.md",
+            "output": "native-common-proof-audit.html",
+            "header": "native-consumer-dependency-repair",
+            "bytes": 9551,
+            "sha256": "d99d1c69ffc75014674abbc166675988910620539e933706f40d1a2feed31c2c",
+            "emphasisElements": 0
+          },
+          {
+            "path": "doc/troubleshooting/depot-native-nextest-completion.md",
+            "output": "native-common-proof-troubleshooting.html",
+            "header": "common-provenance-must-gate-independent-consumers",
+            "bytes": 17784,
+            "sha256": "2b459f61ad4d1c6a3f7b311633044a2240544fe5957bc3a2580a3e0503efd735",
+            "emphasisElements": 0
+          }
+        ],
+        "handoverRendered": {
+          "path": "doc/handover/depot-trial-grilling.md",
+          "htmlBytes": 117158,
+          "htmlSha256": "b05e14e21b66f827c08cdc604c516a322c8c14fbc5f34892944642511bc6ba1b",
+          "nativeParagraphAndClosureRead": true,
+          "separateArtifactOutcomeRead": true
+        },
+        "localVerificationCorrections": [
+          {
+            "boundary": "Historical warning location",
+            "attempt": "Expected Markdown line40 to be the opening Rust fence",
+            "actual": "Line40 is the unchanged source-location comment inside the Rust example",
+            "outcome": "Assertion corrected to the measured comment; failure occurred before repository writes"
+          },
+          {
+            "boundary": "Mise task invocation",
+            "attempt": "Passed a second task name as a positional argument",
+            "diagnostic": "ReferenceError: render is not defined",
+            "outcome": "Ran each task through an independent mise invocation; both succeeded"
+          },
+          {
+            "boundary": "Pandoc plain-text wrapping",
+            "attempt": "Required contiguous Issue #1165 is closed text",
+            "actual": "Rendered text places a line break between Issue and #1165",
+            "outcome": "Retained original HTML/plain text and normalized whitespace only for semantic phrase matching; actual rendered paragraph was read"
+          }
+        ],
+        "existingGuidelineProposal": "doc/planning/ci-incident-source-boundary-evidence.md",
+        "scope": "Verification of closure-only documentation changes; no additional live dispatch, source execution, or final canonical credit."
+      }
     },
     "handoverUpdate": {
       "beforeSha256": "fec48c5f5eec150f299ef14b5ddcd2bf36f1e9dcb84b1c80abe5d3582413e5a3",
