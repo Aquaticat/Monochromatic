@@ -24,6 +24,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import { CONTEXT_MESSAGE_FLOOR, } from './constants.ts';
 import { projectReviewInput, } from './review-operation.ts';
+import { projectProcessResultDetails } from './review-process-result.ts';
 import { serializeUntrustedDataForJudge, } from './tool-helpers.ts';
 import {
   isVerdictEntry,
@@ -203,7 +204,7 @@ function visibleMessage(
       role: message.role,
       toolName: message.toolName,
       content: visibleTextOrImageMessageContent(message.content,),
-      ...(message.details === undefined ? {} : { details: message.details, }),
+      ...(message.details === undefined ? {} : { details: projectProcessResultDetails({details:message.details,process:message.toolName==='process'}), }),
       isError: message.isError,
     };
   }
@@ -228,7 +229,7 @@ function visibleMessage(
       role: message.role,
       customType: message.customType,
       content: visibleTextOrImageMessageContent(message.content,),
-      ...(message.details === undefined ? {} : { details: message.details, }),
+      ...(message.details === undefined ? {} : { details: projectProcessResultDetails({details:message.details,process:message.customType==='ad-process:notification'}), }),
     };
   }
   if (message.role === 'branchSummary') {
