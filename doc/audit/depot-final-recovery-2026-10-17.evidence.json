@@ -37495,6 +37495,53 @@
       "bodyVerified": true,
       "closedStateVerified": true,
       "actualProviderAcceptance": false
+    },
+    "githubParserRecovery": {
+      "recordedAt": "2026-10-17T10:01:45.809Z",
+      "initialRejectedDispatch": {
+        "requestedAt": "2026-10-17T09:54:33.315Z",
+        "developmentId": "logger-host-source-20261017-c6aa8b698c",
+        "branch": "trial/depot-logger-host-development-20261017",
+        "harnessRevision": "c6aa8b698c66343a28b4dc84b3d7185d7d11c6e1",
+        "remoteEqualityVerified": true,
+        "cleanBeforeDispatch": true,
+        "mode": "development-only",
+        "actualCohortBinding": false,
+        "dispatchStatus": 1,
+        "stdout": "",
+        "stderr": "could not create workflow dispatch event: HTTP 422: Invalid Argument - failed to parse workflow: (Line: 39, Col: 26): Unrecognized named-value: 'runner'. Located at position 1 within expression: runner.temp, (Line: 41, Col: 34): Unrecognized named-value: 'runner'. Located at position 1 within expression: runner.temp (https://api.github.com/repos/Aquaticats/Monochromatic/actions/workflows/310371636/dispatches)\n"
+      },
+      "finalHarnessRevision": "81d751db414445c281aebbdc2eaf2735434799c6",
+      "finalHelperFileUnchangedSinceDirectoryRepair": true,
+      "acceptedDevelopmentDispatch": {
+        "requestedAt": "2026-10-17T09:57:00.040Z",
+        "developmentId": "logger-host-source-20261017-a4a8e2501c",
+        "branch": "trial/depot-logger-host-development-20261017",
+        "harnessRevision": "a4a8e2501c02d590056a9f53991025f8aa93e5af",
+        "remoteEqualityVerified": true,
+        "cleanBeforeDispatch": true,
+        "mode": "development-only",
+        "actualCohortBinding": false,
+        "dispatchStatus": 0,
+        "stdout": "https://github.com/Aquaticats/Monochromatic/actions/runs/39023040772\n",
+        "stderr": "",
+        "runId": "39023040772",
+        "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39023040772"
+      },
+      "developmentHelperFileEqualsControlledFile": true,
+      "localDevelopmentControls": {
+        "harnessRevision": "9fc7fd21587873c04214cea2cbeee99f206c6999",
+        "normalAccepted": 3,
+        "rejected": 1,
+        "actualOriginalSourceChecksExecuted": false,
+        "encoding": "gzip+base64",
+        "sanitizedSha256": "a8f4d7410aa45121b6137ef35daacd4e604b1c8df68f8196187afa8049f3075e",
+        "privatePathsRedacted": true,
+        "data": "H4sIAAAAAAAAA+1X3W/bNhB/z19B6CV7sGxJ8UetoQ9uqgABlriTnWFo5AU0ebK5SKR2pDwHgf/3gZTVJm6SDliBYkVeAuTud9/H+1n3R4R4aqkBN8AnxouJFwXR0A8DPxzNg3E8COOTsDsITz56HYtdU5SgdQoboYWS1mCcs1HOo3DwZvRmdMKCfhT2GdCILQFgPM6jYMiG4/G4cSAVlrSYMAaVAe7F5MSJEf4E1ghCJygVB+udwwYKVZUgja9kcdd4oczUtDhVa4XmnZBcyJUXk5wWGh7opyhWQtJipmpkcLoGdquTLbC6CXQI/4BqIzhgkxyVDB6BUP2tvZhcHxFCyL37S4hnqL61eRoUtIg5VMrETMSFWq0A/bXSxtcuvC84SCNMU4GzhW3lip4ZamrrO/ik0k+JuKrdiO4zDzYgTebFmfdCpMzrZF61phoccgm5QnDCBthO0WkhD8L+OMgHMB4G+RtGg2U/6rMwivoRo7A8YQMaLQeNvZBVbXTmxaMg6GSHW+H8/du1yLxdJr2HVQKirdJzol3nf9tvmhvAH7/dCLoujP4mbdZsDSX9DXBfV9h5ovVq/6yb8EyVJZXcV7VhqgTtGvb5pDnDL25aNO6OwuFHh2VUwzl/EMBJUdXmsbhrw+nug4P0TWb734ZpM4WqoHcXijdbd5jfE6cy8+LmrGVeVVCTKyybOoWst40RsrUwwEyNjdftsO8UHFhBEfiZFvyyDRkNu4Nu0HQDTF2lUCk0B6DNQ5RbAzur+D7zzmbn72+mV/PT6UXioLpmDHQzSae8nL5PnkV8SJM0+fXqfHY+T2bPopLf50l6OfnlWcAsuZhczs9PnwdMr9LT5OZdcjZNn89mj5qczZP0adDO7pzjosyLr+/3/+xXze5YN9e+4M1uNsvdItvNP23EzkIqDqSi7JauoFcqXhfQcw56GlnPPRGwtCYZdM3+dTRP5SCtxa7zVDIaSiqNYP4SBV/BS2nNqb51hr1em5DaFkIavyrqlZC9CiEH9BEot1zuVxRpCQbQN3cVxAa0iWFrAO3rZkrqutxfmRfy7nzrDA4q/lr8xW5hW1JQrUUuGDXtK54ZqEh7lgjCX7VAIAiGCgmctDmTQq00MYpwoY2Qq1roNaG1WSsETqjWgNYlyakoagRNclQlqWUJhlQIzq8WBvTPRN+KqgJO2vkQBAZiA0QqAu6Hj3XEELgw34MIwi+JIPy+RHASdPvh6JUIXongZSLYP75XInglgoP4nzbjhyMCu1CxkM0U9hule1jLm5IKGYdhmElrYlDYs3glGa1Xa5Ns7eezUPKnRv1HJjM5abNPEBWS6yRNbyazWZLOz6eXi5hM5Oc22Da3mXceVUYUkooK2472m4ssVS05xTvCBSdSGeIWAngTnBpyDRtaLOIwDkf9gNxb+QokIDXAL0BruoL2M9/qmK2aHD9K8NhpmgP6ENsSXEwM1o1IVdazwpgcv33b2HGR5zE51qKsCjjO5M42xJ7D7p+a2GsYht0wk9efV5XDxtcMRWV6lnf92ogi/jrzLkiSptOUWBu3JbYLezo/ImRxtDv6B8YjQeTxEQAA"
+      },
+      "existingDiagnosis": "doc/troubleshooting/github-actions-job-env-runner-context.md",
+      "actualCommonPublished": false,
+      "actualFinalProviderAcceptance": false
     }
   }
 }
