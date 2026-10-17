@@ -147,8 +147,12 @@ Final coherent dispatch remains held.
 
 Run `p6vm5s00w6` is a separate development continuation on harness `274ec49595d60f663249d61ab35a0806fe29aff0`.
 The provider confirms branch `refs/heads/trial/depot-toml-continuation-20261017` and trigger `workflow_dispatch`.
-Actual consumer proofs retain the exact request identifier, manifest hash, and request time.
-Core, generated, and completed container jobs are skipped by `scope=mutations-only`.
+Actual consumer proofs retain the exact request identifier,
+manifest hash,
+and request time.
+Core,
+generated,
+and completed container jobs are skipped by `scope=mutations-only`.
 
 File-enforcer mutation attempt `3r4zr1jp80` reached an actual failed terminal outcome,
 repeating the doubled package-path `ENOENT` from issue `#1068`.
@@ -156,13 +160,16 @@ Its selected source task ran for `298.0142400000004` milliseconds.
 The wrapper finished in `2738.735309` milliseconds with cleanup verified.
 The provider interval is `95451` milliseconds at `16x64`,
 or `1527216` allocated vCPU-milliseconds.
-The failure occurred before mutant discovery; no mutant identities or successful campaign are claimed.
+The failure occurred before mutant discovery;
+no mutant identities or successful campaign are claimed.
 Downloaded artifact `01a1487e-a04e-758b-b2cb-910beb55c0ff` has SHA-256
 `490aa2cf69719c8894670599d0914720238b4d654905af0f56fd5f60328734bc`.
 All check-log hashes and matching clean before/after source proofs are verified.
 
 TOML mutation attempt `q3xbl70q20` independently selected 54 source files,
-excluded 37 test files, and began building its runtime image.
-Its terminal collector remains active; final outcome and usage are still pending.
+excluded 37 test files,
+and began building its runtime image.
+Its terminal collector remains active;
+final outcome and usage are still pending.
 These development observations do not form a complete-graph latency sample.
 Final coherent dispatch remains held.

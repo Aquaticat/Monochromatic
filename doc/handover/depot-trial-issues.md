@@ -382,20 +382,27 @@ retain the measurement and adoption boundaries.
 
 ## TOML reconciliation queue
 
-Run `p9r4xl6n12` has 19 passed and three failed package checks, one started mutation without a result,
+Run `p9r4xl6n12` has 19 passed and three failed package checks,
+one started mutation without a result,
 and one unexecuted independent mutation.
 Both available artifacts are downloaded and hash-reconciled in
 [the TOML audit](../audit/depot-toml-reconciliation-2026-10-17.md).
-Generated PATH drift remains `#335`; current lint diagnostics are `#1111` and `#1112`,
+Generated PATH drift remains `#335`;
+current lint diagnostics are `#1111` and `#1112`,
 separate from the historical panic `#1066`.
 The executor deadline and missing-evidence boundary is `#1113`.
 Trial branch `trial/depot-toml-continuation-20261017` at `274ec49595d60f663249d61ab35a0806fe29aff0`
-has independent routes, immutable source/cohort proofs, retained shard identities, and verified timeout cleanup.
+has independent routes,
+immutable source/cohort proofs,
+retained shard identities,
+and verified timeout cleanup.
 Development run `p6vm5s00w6` requests only the two missing mutation gates.
 File-enforcer mutation now has a failed terminal result matching `#1068`,
 with verified artifact and clean source proofs.
-TOML mutation remains independent and active; terminal collection is held in session `38964`.
-Completed container failure `#1070` remains separate; application source stays immutable.
+TOML mutation remains independent and active;
+terminal collection is held in session `38964`.
+Completed container failure `#1070` remains separate;
+application source stays immutable.
 Final coherent dispatch remains held.
 
 ## Native recovery assertion tracking
