@@ -101,6 +101,12 @@ The exact launch argument was corrected on 2026-10-17 before any launch.
 The preparation evidence retains the original/repaired parsed-body hashes and unit mismatch control.
 Both the actual parsed launch and boot tasks now name `depot-coherent-android-a038cc3c`,
 and every parsed runtime body rejects residual legacy-unit references.
+The staging defect is tracked in [#1115](https://github.com/Aquaticats/Monochromatic/issues/1115),
+closed after the actual parsed before/after control and repeated offline input checks passed.
+Fresh reads verified its body,
+`bug` label,
+closure evidence comment,
+and closed state.
 
 ## Final producer input contract
 

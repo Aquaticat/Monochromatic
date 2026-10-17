@@ -477,6 +477,32 @@ The tested task-file SHA-256 is `afb1293dedc5dd4fb398a0684661fc9a56d92cdccc20db8
 The driver and logs remain in `~/temp/agent/depot-source-identity-index-controls-20261017`.
 This verification dispatched no provider run and repeated no broad test suite.
 
+## Prepared Android launch retained a legacy unit
+
+The initial local Android staging adapter updated standalone `depot-trial-fold` literals,
+but missed the launch argument `--unit=depot-trial-fold`.
+Actual `mise tasks info launch --json` therefore exposed a launch/boot unit mismatch,
+despite valid syntax and a preparation record claiming a unique unit.
+The initial claim was retracted before any emulator launch or device operation.
+This was an adapter defect,
+not a systemd or Android Emulator failure.
+
+The repair replaces the complete launch argument,
+rejects any residual legacy-unit reference,
+and checks every generated task through Mise's actual parser against its syntax-checked body hash.
+A retained pre-fix fixture reproduces the parsed mismatch;
+the corrected launch and boot both name `depot-coherent-android-a038cc3c`.
+The [preparation evidence](../audit/depot-coherent-android-consumer-2026-10-17.evidence.json)
+retains original/repaired hashes,
+the parsed-command control,
+and repeated offline producer-input checks.
+The [preparation contract](../audit/depot-coherent-android-consumer-2026-10-17.md)
+keeps final-producer and live-device dependencies explicit.
+Issue [#1115](https://github.com/Aquaticats/Monochromatic/issues/1115) is closed for this verified local correction.
+No source bytes,
+owned AVD,
+or shared historical consumer were changed.
+
 ## Verification catalog
 
 - Passed:

@@ -314,6 +314,26 @@ or a coherent provider replay.
 The [source identity diagnosis](../troubleshooting/depot-historical-checkout-bootstrap.md#source-identity-input-coverage)
 retains the tested revisions and input boundaries.
 
+## Android consumer staging incident
+
+- [#1115](https://github.com/Aquaticats/Monochromatic/issues/1115):
+  the first prepared consumer launch retained the old systemd unit literal while boot checked the unique unit.
+  Closed after the actual parsed pre-fix control showed the mismatch,
+  repaired launch/boot bindings agreed,
+  and all parsed task bodies rejected the legacy unit.
+
+The [Android preparation](../audit/depot-coherent-android-consumer-2026-10-17.md)
+retains the retracted claim,
+corrected task hash,
+and remaining final-producer dependency.
+The bug was caught before any emulator or device operation.
+Fresh reads verified the issue body,
+`bug` label,
+[closure comment](https://github.com/Aquaticats/Monochromatic/issues/1115#issuecomment-6230699668),
+and closed state at `2026-10-17T06:30:13Z`.
+This closes only the local staging defect,
+not the pending final APK consumer or an Android Emulator defect.
+
 ## Pending final reconciliation
 
 The totals in this handover predate the latest complete-graph replays.

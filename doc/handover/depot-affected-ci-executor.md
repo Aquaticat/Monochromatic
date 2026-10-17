@@ -239,6 +239,10 @@ reused APK-hash/full-status capture,
 private headful launch bindings,
 and required producer/cohort/source/harness joins.
 The historical 13-pass/two-failure record remains separate.
+Preparation verification caught and corrected a stale launch-unit literal before any launch;
+[#1115](https://github.com/Aquaticats/Monochromatic/issues/1115) is closed with parsed-command controls.
+The current staged harness hash is recorded in the preparation evidence,
+and every parsed runtime task rejects the legacy unit name.
 No emulator,
 adb server,
 or device operation ran during this preparation.
