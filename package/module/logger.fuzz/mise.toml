@@ -1068,3 +1068,45 @@ const result={phase,label,sourceRevision:manifest.sourceRevision,manifestSha256:
 writeFileSync(join(directory,`generated-${label}-identity-${phase}.json`),JSON.stringify(result,null,2)+'\n',{flag:'wx',mode:0o600})
 console.log(JSON.stringify({phase,label,trackedAuthoritativeInputs:authoritative.trackedInputs,consumerInputsVerified:phase==='before',workspaceLinks:workspaceLinks.length,dependencySymlinks:symlinks.length}))
 '''
+
+[tasks."trial:depot:mutation-report-pilot"]
+description = "Verify native report retention with an explicit bounded authentic source diagnostic, giving no whole mutation-check credit"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+
+const {execFileSync,spawnSync}=await import('node:child_process')
+const {readFileSync,writeFileSync,mkdirSync,existsSync}=await import('node:fs')
+const {join}=await import('node:path')
+const {homedir}=await import('node:os')
+const {createHash}=await import('node:crypto')
+const {strict:assert}=await import('node:assert')
+const harness=process.cwd(),source=join(process.env.GITHUB_WORKSPACE,'source'),directory=join(homedir(),'temp/agent/depot-complete-ci')
+mkdirSync(directory,{recursive:true,mode:0o700})
+const manifestPath=join(harness,'.depot/manifests/logger.json'),manifest=JSON.parse(readFileSync(manifestPath,'utf8')),manifestSha256=createHash('sha256').update(readFileSync(manifestPath)).digest('hex')
+assert.equal(execFileSync('git',['rev-parse','HEAD'],{cwd:source,encoding:'utf8'}).trim(),manifest.sourceRevision)
+const check=manifest.checks.find(row=>row.id==='package.module.toml-edit.test.mutation')
+assert(check&&check.args.length===0)
+const environment={...process.env,PATH:join(directory,'container-bin')+':'+process.env.PATH}
+const prerequisites=[],visited=new Set()
+function visit(id){if(visited.has(id))return;visited.add(id);const item=manifest.checks.find(row=>row.id===id);assert(item);for(const dependency of item.prerequisites??[])visit(dependency);prerequisites.push(item)}
+for(const id of check.prerequisites??[])visit(id)
+const prerequisiteRecords=[]
+for(const item of prerequisites){const startedAt=new Date().toISOString(),result=spawnSync('mise',['run',item.task,...(item.args.length?['--',...item.args]:[])],{cwd:source,env:environment,encoding:'utf8',timeout:180000,maxBuffer:32*1024*1024}),log=String(result.stdout??'')+String(result.stderr??''),artifact='logger-mutation-pilot-prerequisite-'+item.id+'.log';writeFileSync(join(directory,artifact),log,{flag:'wx',mode:0o600});prerequisiteRecords.push({checkId:item.id,args:item.args,startedAt,finishedAt:new Date().toISOString(),exitCode:result.status,error:result.error?.message,artifact,sha256:createHash('sha256').update(log).digest('hex')});assert.equal(result.status,0,'Actual frozen source prerequisite failed')}
+const tasks=JSON.parse(execFileSync('mise',['tasks','--all','--json'],{cwd:harness,encoding:'utf8',maxBuffer:64*1024*1024})),body=tasks.find(row=>row.name==='//package/module/logger.fuzz:trial:depot:remainder').run[0],before=body.slice(body.indexOf('const mutationChecks ='),body.indexOf('let executionError')),start=body.indexOf('  if (mutationCheck) {',body.indexOf('} finally {\n  if (mutationCheck)')),rawAfter=body.slice(start,body.indexOf('  if (continuation)',start))
+assert(before.startsWith('const mutationChecks')&&rawAfter.startsWith('  if (mutationCheck)'))
+assert.equal(rawAfter.split("'logger-results.json'").length,2)
+const after=rawAfter.replace("'logger-results.json'","'logger-mutation-pilot-invocation.json'")
+const argv=['mise','run',check.task,'--','src/toml-get-comments.ts','--containers','1','--shard-size','1']
+const imports=body.slice(0,body.indexOf('assert(process.env.GITHUB_WORKSPACE)'))
+const prefix=imports+'\nconst source='+JSON.stringify(source)+',directory='+JSON.stringify(directory)+',manifest=JSON.parse(readFileSync('+JSON.stringify(manifestPath)+",'utf8')),partitions={manifestSha256:"+JSON.stringify(manifestSha256)+"},partition={name:'mutation',selectedCheckIds:["+JSON.stringify(check.id)+']};\n'
+const consumer='const startedAt=new Date().toISOString();const result=spawnSync('+JSON.stringify(argv[0])+','+JSON.stringify(argv.slice(1))+',{cwd:source,env:'+JSON.stringify(environment)+",encoding:'utf8',timeout:600000,maxBuffer:64*1024*1024});const log=String(result.stdout??'')+String(result.stderr??'');writeFileSync(join(directory,'logger-mutation-pilot-consumer.log'),log,{flag:'wx',mode:0o600});console.log(log);writeFileSync(join(directory,'logger-mutation-pilot-invocation.json'),JSON.stringify({results:[{checkId:"+JSON.stringify(check.id)+",status:result.status===0?'passed':'failed',startedAt,finishedAt:new Date().toISOString(),exitCode:result.status,error:result.error?.message,signal:result.signal,argv:"+JSON.stringify(argv)+",coversWholeCheck:false,frozenMutationCheckCredit:0}]}),{flag:'wx',mode:0o600});\n"
+const program=prefix+before+consumer+after+"\nassert.equal(result.status,0,'Bounded authentic source mutation CLI failed');"
+writeFileSync(join(directory,'logger-mutation-pilot-collector.ts'),program,{flag:'wx',mode:0o600})
+writeFileSync(join(directory,'logger-mutation-pilot-adaptation.json'),JSON.stringify({harnessRevision:execFileSync('git',['rev-parse','HEAD'],{cwd:harness,encoding:'utf8'}).trim(),sourceRevision:manifest.sourceRevision,manifestSha256,taskBodySha256:createHash('sha256').update(body).digest('hex'),beforeSha256:createHash('sha256').update(before).digest('hex'),afterSha256:createHash('sha256').update(rawAfter).digest('hex'),programSha256:createHash('sha256').update(program).digest('hex'),adaptation:'Only collector input receipt changes from logger-results.json to logger-mutation-pilot-invocation.json; diagnostic source argv is explicit and partial.',prerequisiteRecords,argv,coversWholeCheck:false,frozenMutationCheckCredit:0},null,2)+'\n',{flag:'wx',mode:0o600})
+execFileSync(process.execPath,[join(directory,'logger-mutation-pilot-collector.ts')],{cwd:harness,env:environment,stdio:'inherit',timeout:660000})
+const receipt=JSON.parse(readFileSync(join(directory,'logger-native-reports-'+check.id+'.json'),'utf8'))
+assert(receipt.nativeReports.some(row=>row.producedDuringInvocation))
+console.log(JSON.stringify({event:'authentic-native-report-consumer-complete',coversWholeCheck:false,frozenMutationCheckCredit:0,reports:receipt.nativeReports.length}))
+
+'''
