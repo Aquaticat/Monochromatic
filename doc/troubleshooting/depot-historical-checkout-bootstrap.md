@@ -141,6 +141,29 @@ The next dispatch explicitly waits for `git push` to finish and verifies a zero-
 This avoids this patch transport boundary without changing source inputs.
 The first replay remains under verification.
 
+TOML full attempt `gfklnntq0x` reproduced the patch boundary on 2026-10-16:
+all jobs checked out `3b3be538e7`,
+then failed on a missing `.depot/workflows/depot-complete-logger-remainder.yml`
+and an unapplied `package/module/logger.fuzz/mise.toml` hunk.
+The provider logs contain the patch diagnostic and no source-check artifact.
+The October 17 retry uses independently pushed branch `trial/depot-final-recovery-20261017`
+at `409e6ec106`,
+with clean local status and a matching remote SHA measured before dispatch.
+
+## Linux completion replay omits desktop tool selection
+
+Run `pbg4h8ww6k` reached host preparation,
+then Node reported `spawnSync slint-viewer ENOENT` during `--version`.
+No nextest cases ran and no check artifact was produced.
+The workflow had `DEPOT_CI_CASE=desktop` but no `DEPOT_CI_WAVE=native-desktop`.
+The harness selects the Slint tool only for that wave.
+This differs from an installed Slint executable missing `libinput.so.10`.
+
+Trial `409e6ec106` adds the desktop wave before exact source tool installation.
+The retry must verify installation,
+the executable's actual version,
+and the complete test identities before the coverage gap can close.
+
 ## Slint executable lacks a runtime library
 
 Native desktop run `w6ln4j09fz` passed the product build, Clippy, and 1406 nextest cases.

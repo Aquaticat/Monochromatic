@@ -2,6 +2,45 @@
 
 ## Completed trial execution and remaining acceptance gaps
 
+### Resumed execution on October 17
+
+The user requested continuation of the authorized trial queue.
+Root is collecting the terminal native,
+Linux,
+VM,
+and TOML attempts before final coverage and cost reconciliation.
+No complete-pipeline success claim has been made.
+
+Native recovery collection now confirms that both source builds,
+release CLI consumers,
+and final source-identity checks passed.
+The actual source Clippy and nextest outcomes failed and are being reconciled by test identity.
+The separate recovery evidence is
+`doc/audit/depot-native-recovery-2026-10-17.evidence.json`.
+
+Linux nextest attempt `pbg4h8ww6k` stopped before tests:
+its workflow omitted `DEPOT_CI_WAVE=native-desktop`,
+so source tool preparation did not install `slint-viewer`.
+Harness `409e6ec106` restores the desktop tool wave.
+Root's independent final-recovery branch is `trial/depot-final-recovery-20261017`.
+It was pushed and its remote SHA verified before all new dispatches.
+Root owns its TOML full replay,
+native and desktop runtime log-retrieval replays,
+and Linux nextest recovery.
+
+TOML attempt `gfklnntq0x` failed in Depot's injected local-patch step in all jobs,
+before historical source setup.
+It produced no check artifacts.
+Its original three attempts remain in accounting.
+The retry uses the clean pushed branch and avoids that patch-injection boundary.
+
+The VM diagnostic owner is collecting `22b5683gx8` and its retained daemon logs.
+The exact log identifies virtiofsd's failed user-namespace mapping;
+the deciding identity mismatch and supported recovery remain under investigation.
+The logger owner is completing the frozen graph's package and external adapters.
+The native accounting owner is reconciling Windows/macOS results and distinct failure issues.
+Account access remains excluded.
+
 The overall evaluation is not complete.
 The user corrected the completion claim:
 measuring selected jobs does not measure complete intended CI,
