@@ -16,8 +16,8 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import { analyzeShellCommand as analyzeBashCommand, } from '@monochromatic-dev/agent-harness-shared-shell-command-analyzer/ts';
 import { isBashToolEvent, } from './tool-event.ts';
+import type { ShellCommandInfo as CommandInfo } from '@monochromatic-dev/agent-harness-shared-shell-command-analyzer/ts';
 import type {
-  CommandInfo,
   GuardDecision,
 } from './types.ts';
 

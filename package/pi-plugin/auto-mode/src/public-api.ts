@@ -49,11 +49,8 @@ export {
   hasCallerScopedYdotool,
 } from './virtual-input-guard.ts';
 export {
-  type BudgetModel,
   type VerdictData,
   VERDICT_ENTRY_TYPE,
-  TRUST_ENTRY_TYPE,
-  type SignalContext,
 } from './types.ts';
 
 //region Deterministic migration kernel remains separate from native evidence admission
