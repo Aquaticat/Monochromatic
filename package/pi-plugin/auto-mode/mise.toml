@@ -958,4 +958,6 @@ run = [
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-phase.test.mjs tool-error",
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-phase.test.mjs deny",
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-phase.test.mjs cancel",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-phase.test.mjs notification-context",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-phase.test.mjs notification-turn",
 ]

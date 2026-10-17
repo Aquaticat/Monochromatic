@@ -13,7 +13,7 @@ import {createDomainFixtureAssessment} from '../dist/native/contract/integration
 //region Real native callbacks surround one complete-group review.
 /** Each mode runs in a separate process because native fixture configuration owns its disposable home. */
 const mode=process.argv[2]??'parallel';
-assert.ok(['parallel','sequential','implicit-sequential','invalid','before-block','tool-error','deny','cancel'].includes(mode));
+assert.ok(['parallel','sequential','implicit-sequential','invalid','before-block','tool-error','deny','cancel','notification-context','notification-turn'].includes(mode));
 /** Event traces retain native call identity without depending on subprocess completion order. */
 const events=[];
 /** Model and execution counters distinguish missing coverage from successful withholding. */
@@ -79,7 +79,15 @@ const runtime=bindNativePolicyRuntime({
   root,lifecycle,policyInput:env.policyInput,rootDirectory:env.options.cwd,parsePolicy:env.parser.parse,files:[],
   wrapToolDefinition:env.wrapToolDefinition,readSessionDisposalState:env.readSessionDisposalState,trace(){},
   ...createNativeSemanticOperatingPolicies(),
-  async sendWire(input){observations.attempts++;events.push('assess');return await sendAssessment(input);},
+  async sendWire(input){
+    observations.attempts++;events.push('assess');
+    if(mode.startsWith('notification-')&&observations.attempts===2){
+      await session.sendCustomMessage({customType:'ad-process:notification',content:'Authored process completion',display:true,
+        details:{command:'printf PHASE_NOTIFICATION',processId:'fixture-process'}},
+      mode==='notification-turn'?{triggerTurn:true,deliverAs:'steer'}:{triggerTurn:false});
+    }
+    return await sendAssessment(input);
+  },
   async terminalFetch(){
     const proposed=requests.count++===0;
     const chunk={id:'native-phase-fixture',object:'chat.completion.chunk',created:0,model:'fixture'};
