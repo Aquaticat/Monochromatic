@@ -2,6 +2,58 @@
 
 ## Completed trial execution and remaining acceptance gaps
 
+### Final guard and unchanged macOS recovery checkpoint
+
+The [final boundary evidence](../audit/depot-coherent-final-boundaries-2026-10-17.evidence.json)
+retains the verified macOS retry,
+TOML final-guard diagnostics and independent log probes,
+the incomplete allocation ledger,
+and current primary pricing documents fetched through the saved global Codex MCP.
+
+Native macOS attempt two retained a valid common/source before and after pair
+and published provider-digest-matched artifact `12101426954`.
+All 1382 observed identities match the first attempt.
+The retry recorded 1356 passes and 26 known failures,
+with one summary skip whose identity is not printed.
+The decode-cache case in `#1178` passed on this unchanged-source repeat;
+its first failure and open issue remain.
+Transport incidents `#1175` and `#1176` remain separate and open.
+The second-attempt Windows job ID aliases the original execution:
+its complete step records and times are identical,
+its artifact is the original,
+and the retry log archive contains only macOS.
+Do not count another Windows allocation.
+
+The TOML route is terminal and all five artifacts are collected.
+Its native mutation source task passed with verified bounded cleanup,
+but the provider final source/cohort guard exited one.
+Only its before record is archived.
+Both finite retrieval paths returned 120742 records and 41239978 body bytes,
+ending before the failed final guard diagnostic.
+Lossless fractional-second normalization proves equal timestamp/body sequences,
+and removing a record changes the hash.
+Issue `#1179` remains open with unknown root cause and no paired-provenance completion credit.
+Full reconciliation of the TOML primary checks and native shard evidence remains pending.
+
+The allocation snapshot has 107 closed Depot intervals and one active logger interval.
+Its 268273.804 allocated vCPU-seconds prorate to $13.4136902 at the published CI rate.
+This is an incomplete compute subtotal,
+not an invoice or final trial cost.
+The live pricing page names the $200 plan Startup.
+Account-wide billing access remains outside scope.
+
+Remaining independently verifiable work:
+
+- Reconcile the completed TOML primary checks, native shards, metadata observations and source failures.
+- Collect and reconcile the remaining logger terminal, artifacts and authored assertions.
+- Scope and file the repaired private macOS-verifier, timestamp-comparison, issue-readback,
+  pricing-task quoting and JSONL-parsing construction findings.
+- Add actual-cohort evidence to existing source and transport issues without closing unresolved failures.
+- Finish all original and retry allocation intervals, storage limitations and overlap-aware critical paths.
+- Reconcile the complete 770-primary and 33-external registry, preserving blocked and unexecuted branches.
+- Await the already-asked reader-report outline answer before drafting that report.
+- Check the changed Markdown and JSON and inspect their actual rendered output.
+
 ### Execution checkpoint on October 17
 
 The Codex scope clarification and globally verified search/fetch MCP setup are complete.
@@ -30,7 +82,7 @@ A private driver argument mistake was rejected before any provider call;
 the accepted path passes the selected route explicitly through the child environment.
 All 20 routes now have accepted dispatch receipts.
 Every Scorecard gate succeeded and each conditional analysis was skipped;
-its exact skip reason still requires retained-log reconciliation.
+its exact observed rolling-window denial and paired records are retained.
 The native feature profiles passed 58,
 67,
 and 71 tests with equal source and common before/after identities.
@@ -123,13 +175,14 @@ Native host macOS lost its after-provenance record to Node `UND_ERR_CONNECT_TIME
 Its artifact action separately exhausted five CreateArtifact request attempts.
 These are distinct transport incidents;
 a shared cause is not established.
-Only native macOS is being rerun in run `39028181199` with the unchanged frozen harness and inputs.
+Only native macOS was rerun in run `39028181199` with the unchanged frozen harness and inputs.
+Its second-attempt provenance and artifact publication are now independently verified.
 The original failed attempt remains retained and receives no paired-provenance completion credit.
 The retry and its orchestration gap must remain in provider allocation and critical-path accounting.
 The transport and changed-Rust source-style incidents are filed.
 Next actions are to retain and reconcile remaining provider terminals,
 retain and reconcile all host consumer assertions,
-collect the pending logger/TOML terminals,
+collect the pending logger terminal and reconcile the completed TOML evidence,
 and finish overlap-aware accounting.
 
 The [GitHub gate checkpoint](../audit/depot-coherent-github-gates-2026-10-17.evidence.json)
@@ -167,7 +220,7 @@ Native Windows is source-compile-blocked before test execution.
 The native macOS first attempt adds an untracked `measure::tests::two_sweeps_of_one_load_decode_a_track_only_once` failure:
 the decode count was two instead of one.
 Its separately verified issue `#1178` is open without a cause claim;
-the unchanged-source retry is still pending.
+the unchanged-source retry passed that case and retains the first-attempt failure without a cause claim.
 Native and desktop style findings are open as `#1173` and `#1174`.
 The separate macOS API and artifact transport incidents are open as `#1175` and `#1176`.
 Private verifier record-classification repairs are filed and closed as `#1177`.

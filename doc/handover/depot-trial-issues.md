@@ -720,3 +720,17 @@ The actual `tone.wav` count was two instead of one;
 its cause remains unestablished.
 The API and artifact failures have no established shared cause;
 the unchanged-harness macOS retry remains under verification.
+
+## Final TOML guard and native macOS repeat
+
+Issue `#1179` is open for the TOML final source/cohort guard exit without a retained diagnostic.
+The source mutation passed,
+but the missing after record receives no final paired-provenance credit.
+Native macOS attempt two has independently verified source/common records and artifact publication.
+Its 1382 tests recorded 1356 passes and 26 known failures.
+The decode-cache case in `#1178` passed on this repeat;
+that issue and the separate transport issues `#1175` and `#1176` remain open.
+The Windows row carried into attempt two is an alias of its original execution,
+not another allocation.
+The [final boundary receipts](../audit/depot-coherent-final-boundaries-2026-10-17.evidence.json)
+retain those distinctions and the private evidence-construction findings still awaiting filing.

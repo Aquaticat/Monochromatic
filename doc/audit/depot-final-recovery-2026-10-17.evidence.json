@@ -38311,7 +38311,8 @@
         1168,
         1169,
         1170,
-        1171
+        1171,
+        1177
       ],
       "loggerClosingComment": "https://github.com/Aquaticats/Monochromatic/issues/1168#issuecomment-6233525959",
       "openSourceCompatibilityIssue": 1172
@@ -38325,11 +38326,23 @@
       "providerAllocationReconciled": false
     },
     "nativeMacRetry": {
+      "phase": "completed-and-verified",
       "runId": "39028181199",
-      "previousJobId": 117383212664,
-      "phase": "retry-accepted",
-      "requestedAt": "2026-10-17T12:15:35.881Z",
-      "frozenHarnessUnchanged": true
+      "attempt": 2,
+      "pairedProvenance": true,
+      "overallSourceConclusion": "failure",
+      "firstAttemptPreserved": true,
+      "openTransportIssues": [
+        1175,
+        1176
+      ],
+      "sourceSummary": {
+        "run": 1382,
+        "passed": 1356,
+        "failed": 26,
+        "skipped": 1
+      },
+      "windowsAliasNotAnotherExecution": true
     },
     "githubGateCheckpoint": {
       "path": "doc/audit/depot-coherent-github-gates-2026-10-17.evidence.json",
@@ -38353,6 +38366,58 @@
       ],
       "closedPrivateVerifierIssue": 1177,
       "sourceMeasureIssue": 1178
+    },
+    "finalBoundaries": {
+      "path": "doc/audit/depot-coherent-final-boundaries-2026-10-17.evidence.json",
+      "runId": "39028181199",
+      "attempt": 2,
+      "jobId": 117393630494,
+      "pairedProvenance": true,
+      "summary": {
+        "run": 1382,
+        "passed": 1356,
+        "failed": 26,
+        "skipped": 1
+      },
+      "sourceIssue1178": "First attempt failed; unchanged-input retry passed; issue remains open",
+      "openTransportIssues": [
+        1175,
+        1176
+      ],
+      "windowsCarryForward": {
+        "originalJobId": 117383212796,
+        "secondAttemptAliasJobId": 117393631745,
+        "startedAt": "2026-10-17T11:18:19Z",
+        "finishedAt": "2026-10-17T11:39:54Z",
+        "allStepRecordsIdentical": true,
+        "originalArtifactId": 12099718026,
+        "originalExecutionNotRecharged": true
+      },
+      "tomlFinalGuard": {
+        "runId": "4c27t98pxx",
+        "attemptId": "3vxxw8xn21",
+        "selectedMutationExitCode": 0,
+        "finalGuardExitCode": 1,
+        "pairedProvenance": false,
+        "issue": 1179,
+        "retainedLogRecordsPerPath": 120742,
+        "retainedLogBodyBytesPerPath": 41239978,
+        "normalizedTimestampBodySequencesEqual": true,
+        "fullPrimaryAndNativeShardValidationPending": true
+      },
+      "allocationSnapshot": {
+        "complete": false,
+        "closedAttempts": 107,
+        "activeAttempts": 1,
+        "closedVcpuSeconds": 268273.804,
+        "closedUnroundedComputeProrationUsd": 13.4136902,
+        "scope": "Incomplete coherent Depot intervals only; excludes the active logger interval, GitHub, local consumers, prior development, storage, plan allowances and invoice reconciliation"
+      },
+      "pricingPrimaryUrls": [
+        "https://depot.dev/pricing",
+        "https://docs.github.com/en/actions/reference/runners/github-hosted-runners",
+        "https://docs.github.com/en/billing/concepts/product-billing/github-actions"
+      ]
     }
   }
 }
