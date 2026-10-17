@@ -14633,7 +14633,24 @@
       "family": "test",
       "scope": "repository",
       "prerequisite": "Retain current/historical policy revision, main-push rate gate and applicable analysis attempts.",
-      "prerequisites": []
+      "prerequisites": [],
+      "executionPolicy": {
+        "kind": "current-repaired-repository-policy",
+        "definitionRevision": "c51a5c94e8dd92db9dbcec0a12ff3d285daa8217",
+        "workflow": ".github/workflows/scorecard.yml",
+        "analysisSource": "live-default-branch",
+        "sourceRevisionRole": "provenance-only",
+        "publishResults": false,
+        "admissionGateRequired": true,
+        "limits": {
+          "perMinute": 2,
+          "perHour": 4,
+          "perDay": 8,
+          "pages": 32,
+          "reserve": 100
+        },
+        "dispatchesSequential": true
+      }
     },
     {
       "id": "root.config-oxlint",
@@ -14660,6 +14677,11 @@
       "workflow": ".github/workflows/fs-id.yml",
       "prerequisites": [
         "package.module.caught-value.build"
+      ],
+      "runnerLabels": [
+        "ubuntu-latest",
+        "macos-latest",
+        "windows-latest"
       ]
     },
     {
@@ -14671,6 +14693,7 @@
       ],
       "platforms": [
         "linux",
+        "macos",
         "windows"
       ],
       "tasks": [
@@ -14680,6 +14703,11 @@
       "workflow": ".github/workflows/readonly-semantic-bridge.yml",
       "prerequisites": [
         "package.module.caught-value.build"
+      ],
+      "runnerLabels": [
+        "ubuntu-latest",
+        "macos-15",
+        "windows-latest"
       ]
     },
     {
@@ -16811,12 +16839,8 @@
       "reason": "Maintenance, interactive development, account operations and unbounded campaigns are not correctness gates; required artifact preparation remains counted with its consumers."
     }
   ],
-  "completeGraph": false,
-  "remainingReview": [
-    "Complete tool/image prerequisites",
-    "External desktop/VM/network/host adapters",
-    "Root scanner, generated consistency and Scorecard accounting"
-  ],
+  "completeGraph": true,
+  "remainingReview": [],
   "selectionEvidence": {
     "positive": [
       "package/module/logger",
@@ -16829,5 +16853,4618 @@
     ],
     "closureFile": "logger-closure.json",
     "closureSha256": "96b510c671eee6b20943f2159f50081f54405b0ef87140d3d069fbdd88cbfccd"
+  },
+  "registration": {
+    "state": "frozen-static-registration",
+    "meaning": "Every selected primary and external gate has an explicit immutable-harness route. This is not an execution result or passing claim.",
+    "routeIds": [
+      "logger.combined",
+      "logger.hosts",
+      "logger.scanner",
+      "logger.scorecard",
+      "logger.vm"
+    ],
+    "primaryChecks": {
+      "package.agent-harness-shared.current-time-context.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.agent-harness-shared.current-time-context.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.agent-harness-shared.search-fetch.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.agent-harness-shared.search-fetch.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.agent-harness-shared.session-discovery.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.agent-harness-shared.session-discovery.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.agent-harness-shared.shell-command-analyzer.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.agent-harness-shared.shell-command-analyzer.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.agent-harness-shared.terminal-title.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.agent-harness-shared.terminal-title.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.agent-harness-shared.text-scan.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.agent-harness-shared.text-scan.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.agent-harness-shared.truncate.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.agent-harness-shared.truncate.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.agent-harness-shared.usage-projection.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.agent-harness-shared.usage-projection.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.build-tool.css.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.build-tool.css.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.claude-code-plugin.bash-output-filter.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.claude-code-plugin.bash-output-filter.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.claude-code-plugin.claude-spawn.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.claude-code-plugin.claude-spawn.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.claude-code-plugin.correction-reminder.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.claude-code-plugin.correction-reminder.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.claude-code-plugin.guardrail.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.claude-code-plugin.guardrail.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.claude-code-plugin.prompt-time.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.claude-code-plugin.prompt-time.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.claude-code-plugin.session-start-housekeeping.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.claude-code-plugin.session-start-housekeeping.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.claude-code-plugin.source.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.claude-code-plugin.source.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.claude-code-plugin.statusline.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.claude-code-plugin.statusline.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.claude-code-plugin.stop-reminder.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.claude-code-plugin.stop-reminder.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.claude-code-plugin.terminal-title.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.claude-code-plugin.terminal-title.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.android-exempt-unused.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.android-exempt-unused.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.fy.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.fy.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.git-clone-size.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.git-clone-size.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.mutation-test.fixture.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.mutation-test.fixture.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.mutation-test.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.mutation-test.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.mvm.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.mvm.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.open-code-review-issue.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.open-code-review-issue.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.rgffplay.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.rgffplay.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.terminal-exec.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.terminal-exec.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.unused-export.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.unused-export.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.vmsync.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.vmsync.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.wg-allowedips.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.wg-allowedips.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.wg-quicker.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cli.wg-quicker.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cloudflare-worker.rand.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.cloudflare-worker.rand.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.config.lfs-r2-worker.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.config.lfs-r2-worker.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.config.oxlint.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.config.oxlint.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.config.pnpr.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.config.pnpr.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.config.rolldown.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.config.rolldown.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.config.tofu.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.config.tofu.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.desktop-app.electron-counter.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.desktop-app.electron-counter.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.desktop-app.electron-infra.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.desktop-app.electron-infra.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.desktop-app.file-manager-electron.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.desktop-app.file-manager-electron.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.desktop-daemon.hall-monitor.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.desktop-daemon.hall-monitor.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.dev-script.backup-path.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.dev-script.backup-path.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.dev-script.catalog-tighten.matrix.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.dev-script.catalog-tighten.matrix.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.dev-script.catalog-tighten.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.dev-script.catalog-tighten.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.dev-script.claude-cpu-cap.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.dev-script.claude-cpu-cap.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.dev-script.deps-cube.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.dev-script.deps-cube.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.dev-script.deps-update.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.dev-script.deps-update.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.dev-script.file-enforcer.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.dev-script.file-enforcer.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.dev-script.page-weight.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.dev-script.page-weight.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.dev-script.task-util.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.dev-script.task-util.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.dev-script.vm-builder.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.dev-script.vm-builder.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.dev-script.watch-restart.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.dev-script.watch-restart.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.figma.kiwi.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.figma.kiwi.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.figma.to-penpot.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.figma.to-penpot.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.git-policy.cli.fuzz.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.git-policy.cli.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.git-policy.cli.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.git.executable.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.git.executable.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.intellij-plugin.islands-black.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.intellij-plugin.islands-black.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.kwin.key-helper.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.kwin.key-helper.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.mcp.mvm.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.mcp.mvm.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.mcp.search-fetch.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.mcp.search-fetch.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.mcp.stdio.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.mcp.stdio.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.array-at.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.array-at.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.async-iter.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.async-iter.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.async-time.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.async-time.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.caught-value.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.caught-value.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.conf-fork.fuzz.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.conf-fork.fuzz.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.conf-fork.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.conf-fork.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.const.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.const.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.css-edit.bench.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.css-edit.bench.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.css-edit.conformance.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.css-edit.conformance.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.css-edit.fuzz.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.css-edit.fuzz.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.css-edit.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.css-edit.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.deepmerge-ts.fuzz.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.deepmerge-ts.fuzz.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.dom.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.dom.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.fs-id.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.fs-id.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.fs-path.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.fs-path.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.function-arity.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.function-arity.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.hyperscript.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.hyperscript.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.i18n-compose.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.i18n-compose.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.image-diff.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.image-diff.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.jsonc-edit.bench.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.jsonc-edit.bench.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.jsonc-edit.conformance.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.jsonc-edit.conformance.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.jsonc-edit.fuzz.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.jsonc-edit.fuzz.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.jsonc-edit.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.jsonc-edit.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.kv-store.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.kv-store.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.llm-type.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.llm-type.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.logger.fuzz.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.logger.fuzz.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.logger.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.logger.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.make-asynchronous-fork.fuzz.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.make-asynchronous-fork.fuzz.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.make-asynchronous-fork.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.make-asynchronous-fork.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.matcher-fork.fuzz.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.matcher-fork.fuzz.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.matcher-fork.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.matcher-fork.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.matrix.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.matrix.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.memoize.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.memoize.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.numeric-format.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.numeric-format.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.observable.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.observable.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.or-throw.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.or-throw.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.p-limit-fork.fuzz.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.p-limit-fork.fuzz.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.p-limit-fork.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.p-limit-fork.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.p-map-fork.fuzz.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.p-map-fork.fuzz.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.p-map-fork.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.p-map-fork.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.p-memoize-fork.fuzz.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.p-memoize-fork.fuzz.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.p-memoize-fork.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.p-memoize-fork.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.pify-fork.fuzz.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.pify-fork.fuzz.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.pify-fork.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.pify-fork.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.pipe.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.pipe.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.pnpm-workspace-catalog.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.pnpm-workspace-catalog.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.quick-lru-fork.fuzz.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.quick-lru-fork.fuzz.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.quick-lru-fork.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.quick-lru-fork.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.test-diagnostic.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.test-diagnostic.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.test-expect.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.test-expect.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.test-sandbox.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.test-sandbox.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.test.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.test.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.throws.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.throws.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.token-count.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.token-count.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.toml-edit.fuzz.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.toml-edit.fuzz.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.toml-edit.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.toml-edit.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.wg-allowedips.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.wg-allowedips.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.zip-writer.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.module.zip-writer.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.music-player.desktop-e2e.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.music-player.desktop-e2e.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.oxlint-plugin.no-restricted-syntax.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.oxlint-plugin.no-restricted-syntax.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.oxlint-plugin.prefer-readonly-parameter-type.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.oxlint-plugin.prefer-readonly-parameter-type.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.oxlint-plugin.shared.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.oxlint-plugin.shared.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.oxlint-plugin.stylistic.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.oxlint-plugin.stylistic.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.oxlint-plugin.test-import.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.oxlint-plugin.test-import.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.oxlint-plugin.test-support.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.oxlint-plugin.test-support.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.oxlint-plugin.tsdoc.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.oxlint-plugin.tsdoc.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.advisor.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.advisor.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.agent-settled-notification.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.agent-settled-notification.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.ask-user-question.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.ask-user-question.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.bash-poke.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.bash-poke.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.current-time-context.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.current-time-context.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.goal.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.goal.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.guardrail.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.guardrail.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.model-retirement.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.model-retirement.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.morph-compact.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.morph-compact.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.openai-fast.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.openai-fast.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.search-fetch.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.search-fetch.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.spawn.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.spawn.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.statusline.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.statusline.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.terminal-title.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.terminal-title.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.thinking-default.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-plugin.thinking-default.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-shared.model-review.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-shared.model-review.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-shared.model-selection.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.pi-shared.model-selection.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.rolldown-plugin.import-attributes.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.rolldown-plugin.import-attributes.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.runtime-error.bun.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.runtime-error.bun.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.ssg.aquati.cat.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.ssg.aquati.cat.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.test-fixture.file-enforcer-perf.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.webapp-productivity.done-postcss.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.webapp-productivity.done-postcss.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.webapp-productivity.done.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.webapp-productivity.done.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.webapp-productivity.doodle-widget.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.webapp-productivity.doodle-widget.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.webapp-productivity.rss.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.webapp-productivity.rss.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.webapp-productivity.syllable-break-demo.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.webapp-productivity.syllable-break-demo.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.webapp-productivity.wc.lint.oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.webapp-productivity.wc.lint.types": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "selected"
+      },
+      "package.config.oxlint.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.agent-harness-shared.current-time-context.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.caught-value.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.agent-harness-shared.search-fetch.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.agent-harness-shared.session-discovery.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.agent-harness-shared.shell-command-analyzer.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.agent-harness-shared.terminal-title.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.agent-harness-shared.text-scan.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.agent-harness-shared.truncate.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.agent-harness-shared.usage-projection.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.build-tool.css.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.claude-code-plugin.bash-output-filter.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.claude-code-plugin.claude-spawn.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.claude-code-plugin.correction-reminder.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.claude-code-plugin.guardrail.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.claude-code-plugin.prompt-time.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.claude-code-plugin.session-start-housekeeping.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.claude-code-plugin.statusline.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.claude-code-plugin.stop-reminder.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.claude-code-plugin.terminal-title.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.cli.android-exempt-unused.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.cli.fy.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.const.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.numeric-format.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.cli.git-clone-size.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.cli.mutation-test.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.hyperscript.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.cli.mvm.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.cli.open-code-review-issue.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.cli.rgffplay.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.cli.terminal-exec.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.cli.unused-export.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.cli.vmsync.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.cli.wg-allowedips.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.cli.wg-quicker.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.logger.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.cloudflare-worker.rand.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.config.lfs-r2-worker.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.config.pnpr.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.desktop-app.electron-counter.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.desktop-app.electron-infra.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.desktop-app.file-manager-electron.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.llm-type.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.desktop-daemon.hall-monitor.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.dev-script.backup-path.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.pnpm-workspace-catalog.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.dev-script.deps-cube.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.dev-script.file-enforcer.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.dev-script.task-util.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.dev-script.vm-builder.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.dev-script.watch-restart.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.figma.kiwi.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.figma.to-penpot.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.git-policy.cli.fuzz.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.git-policy.cli.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.git.executable.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.intellij-plugin.islands-black.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.async-time.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.kwin.key-helper.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.mcp.mvm.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.mcp.search-fetch.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.mcp.stdio.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.array-at.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.async-iter.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.conf-fork.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.css-edit.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.dom.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.fs-id.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.fs-path.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.function-arity.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.i18n-compose.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.image-diff.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.jsonc-edit.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.kv-store.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.make-asynchronous-fork.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.matcher-fork.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.matrix.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.memoize.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.observable.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.or-throw.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.p-limit-fork.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.p-map-fork.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.p-memoize-fork.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.pify-fork.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.pipe.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.quick-lru-fork.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.test-diagnostic.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.test-expect.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.test-sandbox.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.test.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.throws.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.token-count.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.toml-edit.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.wg-allowedips.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.module.zip-writer.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.oxlint-plugin.no-restricted-syntax.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.oxlint-plugin.prefer-readonly-parameter-type.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.oxlint-plugin.shared.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.oxlint-plugin.stylistic.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.oxlint-plugin.test-import.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.oxlint-plugin.test-support.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.oxlint-plugin.tsdoc.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.pi-plugin.advisor.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.pi-shared.model-selection.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.pi-plugin.agent-settled-notification.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.pi-plugin.ask-user-question.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.pi-plugin.auto-mode.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.pi-plugin.bash-poke.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.pi-plugin.current-time-context.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.pi-plugin.goal.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.pi-plugin.guardrail.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.pi-plugin.model-retirement.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.pi-plugin.morph-compact.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.pi-plugin.openai-fast.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.pi-plugin.search-fetch.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.pi-plugin.spawn.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.pi-plugin.statusline.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.pi-plugin.terminal-title.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.pi-plugin.thinking-default.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.pi-shared.model-review.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.rolldown-plugin.import-attributes.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.ssg.aquati.cat.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.webapp-productivity.done-postcss.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.webapp-productivity.done.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.webapp-productivity.doodle-widget.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.webapp-productivity.rss.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.webapp-productivity.syllable-break-demo.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.webapp-productivity.wc.build": {
+        "routeId": "logger.combined",
+        "job": "logger_static",
+        "wave": "static",
+        "role": "prerequisite"
+      },
+      "package.agent-harness-shared.current-time-context.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.agent-harness-shared.search-fetch.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.agent-harness-shared.session-discovery.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.agent-harness-shared.shell-command-analyzer.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.agent-harness-shared.terminal-title.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.agent-harness-shared.text-scan.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.agent-harness-shared.truncate.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.agent-harness-shared.usage-projection.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.build-tool.css.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.claude-code-plugin.source.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.claude-code-plugin.statusline.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.claude-code-plugin.stop-reminder.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.cli.android-exempt-unused.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.cli.fy.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.cli.git-clone-size.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.cli.mutation-test.fixture.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.cli.mutation-test.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.cli.mvm.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.cli.open-code-review-issue.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.cli.rgffplay.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.cli.terminal-exec.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.cli.unused-export.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.cli.vmsync.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.cli.wg-allowedips.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.cli.wg-quicker.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.cloudflare-worker.rand.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.config.lfs-r2-worker.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.config.pnpr.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.config.rolldown.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.desktop-app.electron-counter.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.desktop-app.electron-infra.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.desktop-app.file-manager-electron.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.dev-script.catalog-tighten.matrix.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.dev-script.catalog-tighten.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.dev-script.claude-cpu-cap.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.dev-script.deps-cube.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.dev-script.deps-update.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.dev-script.file-enforcer.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.dev-script.task-util.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.dev-script.watch-restart.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.git-policy.cli.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.git.executable.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.kwin.key-helper.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.mcp.mvm.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.mcp.search-fetch.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.mcp.stdio.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.array-at.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.async-iter.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.async-time.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.conf-fork.fuzz.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.conf-fork.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.css-edit.conformance.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.css-edit.fuzz.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.css-edit.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.deepmerge-ts.fuzz.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.fs-id.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.fs-path.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.function-arity.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.i18n-compose.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.image-diff.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.jsonc-edit.conformance.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.jsonc-edit.fuzz.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.jsonc-edit.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.kv-store.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.logger.fuzz.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.logger.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.make-asynchronous-fork.fuzz.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.make-asynchronous-fork.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.matcher-fork.fuzz.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.matcher-fork.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.memoize.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.observable.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.or-throw.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.p-limit-fork.fuzz.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.p-limit-fork.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.p-map-fork.fuzz.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.p-map-fork.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.p-memoize-fork.fuzz.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.p-memoize-fork.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.pify-fork.fuzz.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.pify-fork.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.pipe.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.pnpm-workspace-catalog.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.quick-lru-fork.fuzz.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.quick-lru-fork.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.test-diagnostic.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.test-expect.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.test-sandbox.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.test.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.throws.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.token-count.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.toml-edit.fuzz.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.toml-edit.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.wg-allowedips.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.module.zip-writer.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.music-player.desktop-e2e.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.oxlint-plugin.no-restricted-syntax.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.oxlint-plugin.prefer-readonly-parameter-type.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.oxlint-plugin.shared.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.oxlint-plugin.stylistic.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.oxlint-plugin.test-import.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.oxlint-plugin.tsdoc.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.pi-plugin.advisor.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.pi-plugin.agent-settled-notification.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.pi-plugin.ask-user-question.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.pi-plugin.bash-poke.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.pi-plugin.current-time-context.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.pi-plugin.goal.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.pi-plugin.guardrail.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.pi-plugin.model-retirement.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.pi-plugin.morph-compact.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.pi-plugin.openai-fast.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.pi-plugin.search-fetch.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.pi-plugin.spawn.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.pi-plugin.statusline.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.pi-plugin.terminal-title.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.pi-plugin.thinking-default.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.pi-shared.model-review.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.pi-shared.model-selection.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.ssg.aquati.cat.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.webapp-productivity.done-postcss.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.webapp-productivity.done.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.webapp-productivity.wc.test.unit": {
+        "routeId": "logger.combined",
+        "job": "logger_unit",
+        "wave": "unit",
+        "role": "selected"
+      },
+      "package.cli.mutation-test.test.integration": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.cli.mutation-test.test.integration",
+        "partition": "containers",
+        "role": "selected"
+      },
+      "package.dev-script.catalog-tighten.matrix.test.matrix": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.dev-script.catalog-tighten.matrix.test.matrix",
+        "partition": "containers",
+        "role": "selected"
+      },
+      "package.dev-script.file-enforcer.test.container": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.dev-script.file-enforcer.test.container",
+        "partition": "containers",
+        "role": "selected"
+      },
+      "package.git-policy.cli.native.interop": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.git-policy.cli.native.interop",
+        "partition": "containers",
+        "role": "selected"
+      },
+      "package.git-policy.cli.native.test.container": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.git-policy.cli.native.test.container",
+        "partition": "containers",
+        "role": "selected"
+      },
+      "package.git-policy.cli.test.e2e.concurrent.native": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.git-policy.cli.test.e2e.concurrent.native",
+        "partition": "containers",
+        "role": "selected"
+      },
+      "package.module.conf-fork.test.container": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.conf-fork.test.container",
+        "partition": "containers",
+        "role": "selected"
+      },
+      "package.module.deepmerge-ts.fuzz.fuzz.declared-types": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.deepmerge-ts.fuzz.fuzz.declared-types",
+        "partition": "containers",
+        "role": "selected"
+      },
+      "package.module.deepmerge-ts.fuzz.fuzz.declared-types.control": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.deepmerge-ts.fuzz.fuzz.declared-types.control",
+        "partition": "containers",
+        "role": "selected"
+      },
+      "package.module.deepmerge-ts.fuzz.surface.install": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.deepmerge-ts.fuzz.surface.install",
+        "partition": "containers",
+        "role": "selected"
+      },
+      "package.module.deepmerge-ts.fuzz.surface.runtime.bun": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.deepmerge-ts.fuzz.surface.runtime.bun",
+        "partition": "containers",
+        "role": "selected"
+      },
+      "package.module.deepmerge-ts.fuzz.surface.runtime.deno": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.deepmerge-ts.fuzz.surface.runtime.deno",
+        "partition": "containers",
+        "role": "selected"
+      },
+      "package.module.deepmerge-ts.fuzz.surface.types": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.deepmerge-ts.fuzz.surface.types",
+        "partition": "containers",
+        "role": "selected"
+      },
+      "package.git-policy.cli.fuzz.smoke": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.git-policy.cli.fuzz.smoke",
+        "partition": "containers",
+        "role": "selected"
+      },
+      "package.dev-script.file-enforcer.fuzz": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.dev-script.file-enforcer.fuzz",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.conf-fork.fuzz.fuzz": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.conf-fork.fuzz.fuzz",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.conf-fork.fuzz.fuzz.coverage": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.conf-fork.fuzz.fuzz.coverage",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.css-edit.fuzz.fuzz": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.css-edit.fuzz.fuzz",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.css-edit.fuzz.fuzz.coverage": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.css-edit.fuzz.fuzz.coverage",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.deepmerge-ts.fuzz.fuzz.coverage": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.deepmerge-ts.fuzz.fuzz.coverage",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.jsonc-edit.fuzz.fuzz": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.jsonc-edit.fuzz.fuzz",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.jsonc-edit.fuzz.fuzz.coverage": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.jsonc-edit.fuzz.fuzz.coverage",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.logger.fuzz.bundle.browser-properties": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.logger.fuzz.bundle.browser-properties",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.logger.fuzz.fuzz": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.logger.fuzz.fuzz",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.logger.fuzz.fuzz.coverage": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.logger.fuzz.fuzz.coverage",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.make-asynchronous-fork.fuzz.fuzz": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.make-asynchronous-fork.fuzz.fuzz",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.make-asynchronous-fork.fuzz.fuzz.coverage": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.make-asynchronous-fork.fuzz.fuzz.coverage",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.matcher-fork.fuzz.fuzz": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.matcher-fork.fuzz.fuzz",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.matcher-fork.fuzz.fuzz.coverage": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.matcher-fork.fuzz.fuzz.coverage",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.p-limit-fork.fuzz.fuzz": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.p-limit-fork.fuzz.fuzz",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.p-limit-fork.fuzz.fuzz.coverage": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.p-limit-fork.fuzz.fuzz.coverage",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.p-map-fork.fuzz.fuzz": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.p-map-fork.fuzz.fuzz",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.p-map-fork.fuzz.fuzz.coverage": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.p-map-fork.fuzz.fuzz.coverage",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.p-memoize-fork.fuzz.fuzz": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.p-memoize-fork.fuzz.fuzz",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.p-memoize-fork.fuzz.fuzz.coverage": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.p-memoize-fork.fuzz.fuzz.coverage",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.pify-fork.fuzz.fuzz": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.pify-fork.fuzz.fuzz",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.pify-fork.fuzz.fuzz.coverage": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.pify-fork.fuzz.fuzz.coverage",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.quick-lru-fork.fuzz.fuzz": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.quick-lru-fork.fuzz.fuzz",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.quick-lru-fork.fuzz.fuzz.coverage": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.quick-lru-fork.fuzz.fuzz.coverage",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.toml-edit.fuzz.fuzz": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.toml-edit.fuzz.fuzz",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.module.toml-edit.fuzz.fuzz.coverage": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.toml-edit.fuzz.fuzz.coverage",
+        "partition": "fuzz",
+        "role": "selected"
+      },
+      "package.dev-script.file-enforcer.test.mutation": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.dev-script.file-enforcer.test.mutation",
+        "partition": "mutation",
+        "role": "selected"
+      },
+      "package.module.conf-fork.test.mutation": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.conf-fork.test.mutation",
+        "partition": "mutation",
+        "role": "selected"
+      },
+      "package.module.jsonc-edit.test.mutation": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.jsonc-edit.test.mutation",
+        "partition": "mutation",
+        "role": "selected"
+      },
+      "package.module.make-asynchronous-fork.test.mutation": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.make-asynchronous-fork.test.mutation",
+        "partition": "mutation",
+        "role": "selected"
+      },
+      "package.module.matcher-fork.test.mutation": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.matcher-fork.test.mutation",
+        "partition": "mutation",
+        "role": "selected"
+      },
+      "package.module.p-limit-fork.test.mutation": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.p-limit-fork.test.mutation",
+        "partition": "mutation",
+        "role": "selected"
+      },
+      "package.module.p-map-fork.test.mutation": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.p-map-fork.test.mutation",
+        "partition": "mutation",
+        "role": "selected"
+      },
+      "package.module.p-memoize-fork.test.mutation": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.p-memoize-fork.test.mutation",
+        "partition": "mutation",
+        "role": "selected"
+      },
+      "package.module.pify-fork.test.mutation": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.pify-fork.test.mutation",
+        "partition": "mutation",
+        "role": "selected"
+      },
+      "package.module.quick-lru-fork.test.mutation": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.quick-lru-fork.test.mutation",
+        "partition": "mutation",
+        "role": "selected"
+      },
+      "package.module.toml-edit.test.mutation": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.module.toml-edit.test.mutation",
+        "partition": "mutation",
+        "role": "selected"
+      },
+      "package.git-policy.cli.native.mutation": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "package.git-policy.cli.native.mutation",
+        "partition": "native-mutation",
+        "role": "selected"
+      },
+      "package.pi-plugin.advisor.verify.extension": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.advisor.verify.host": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.agent-settled-notification.verify.extension": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.ask-user-question.verify.extension": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.lint.native.syntax": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.approval": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.approval-context": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.approved-dependencies": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.assessment-transport": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.authorization-inputs": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.bypass": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.cli-manager": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.cli-process": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.constructor": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.context-receipts": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.decision-context": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.decision-fallback": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.direct-bash": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.domain": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.event-receipts": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.execution": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.fresh-session-approval": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.group-collector": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.group-completions": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.group-current": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.group-dispatch": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.group-failures": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.group-lifetime": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.host-isolation": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.host-lifecycle": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.input-seal": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.installation": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.instructions": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.manager-constructors": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.manual-group": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.manual-review": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.membership": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.next-decision-receipts": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.pattern-decoder": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.prepared-completion": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.prepared-executable": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.prepared-lifecycle": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.prepared-member": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.prepared-schedule": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.profile-call": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.profile-successors": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.program-owner": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.program-queue": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.program-runtime": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.progress-events": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.prompt-capacity": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.relevance-cache": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.request-claim": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.run-history": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.run-message-freshness": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.runner-binding": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.runner-events": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.runner-execution": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.runner-facade": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.sdk-stream": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.semantic-operating-policy": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.serializer-receipts": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.session-actions": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.single-call": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.source-freshness-work": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.tool-call-scope": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.tool-publication": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.tool-schema-capacity": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.auto-mode.test.native.unconfigured-policy": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.current-time-context.verify.extension": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.goal.verify.extension": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.goal.verify.pi-runtime": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.guardrail.verify.extension": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.model-retirement.verify.extension": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.model-retirement.verify.host": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.search-fetch.verify.extension": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.spawn.verify.extension": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.statusline.verify.extension": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.terminal-title.verify.extension": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.pi-plugin.thinking-default.verify.extension": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "pi-regression",
+        "partition": "pi-regression",
+        "role": "selected"
+      },
+      "package.cli.open-code-review-issue.test.integration": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "regular",
+        "partition": "regular",
+        "role": "selected"
+      },
+      "package.cloudflare-worker.rand.deploy.dry-run": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "regular",
+        "partition": "regular",
+        "role": "selected"
+      },
+      "package.config.lfs-r2-worker.deploy.dry-run": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "regular",
+        "partition": "regular",
+        "role": "selected"
+      },
+      "package.config.tofu.lint.tofu": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "regular",
+        "partition": "regular",
+        "role": "selected"
+      },
+      "package.config.tofu.test.asn-cache": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "regular",
+        "partition": "regular",
+        "role": "selected"
+      },
+      "package.config.tofu.test.external-caches": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "regular",
+        "partition": "regular",
+        "role": "selected"
+      },
+      "package.config.tofu.test.hosts-resolver": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "regular",
+        "partition": "regular",
+        "role": "selected"
+      },
+      "package.config.tofu.test.hosts-resolver.network": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "regular",
+        "partition": "regular",
+        "role": "selected"
+      },
+      "package.config.tofu.test.storagebox-resolver": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "regular",
+        "partition": "regular",
+        "role": "selected"
+      },
+      "package.dev-script.file-enforcer.lint.config.types": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "regular",
+        "partition": "regular",
+        "role": "selected"
+      },
+      "package.module.const.test": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "regular",
+        "partition": "regular",
+        "role": "selected"
+      },
+      "package.module.jsonc-edit.conformance.test.shared-fixtures": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "regular",
+        "partition": "regular",
+        "role": "selected"
+      },
+      "package.module.llm-type.test": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "regular",
+        "partition": "regular",
+        "role": "selected"
+      },
+      "package.module.matrix.test": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "regular",
+        "partition": "regular",
+        "role": "selected"
+      },
+      "package.module.numeric-format.test": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "regular",
+        "partition": "regular",
+        "role": "selected"
+      },
+      "package.module.toml-edit.test.conformance": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "regular",
+        "partition": "regular",
+        "role": "selected"
+      },
+      "package.git-policy.cli.fuzz.test": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "rust",
+        "partition": "rust",
+        "role": "selected"
+      },
+      "package.git-policy.cli.fuzz.test.planted": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "rust",
+        "partition": "rust",
+        "role": "selected"
+      },
+      "package.git-policy.cli.lint.clippy": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "rust",
+        "partition": "rust",
+        "role": "selected"
+      },
+      "package.git-policy.cli.native.clippy.windows": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "rust",
+        "partition": "rust",
+        "role": "selected"
+      },
+      "package.git-policy.cli.native.test.binary.host": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "git-host",
+        "partition": "rust",
+        "role": "selected"
+      },
+      "package.git-policy.cli.native.test.host": {
+        "routeId": "logger.combined",
+        "job": "logger_remainder",
+        "selector": "git-host",
+        "partition": "rust",
+        "role": "selected"
+      }
+    },
+    "externalChecks": {
+      "root.forbidden-strings": {
+        "routeId": "logger.scanner"
+      },
+      "root.scorecard": {
+        "routeId": "logger.scorecard",
+        "acceptance": "Retain admission decision, actual live analysis target and allocation; denied analysis is not an executed analysis"
+      },
+      "special.package.cli.vmsync.src.lifecycle.expensive.unit.test.ts": {
+        "routeId": "logger.vm",
+        "job": "vm-original"
+      },
+      "special.package.pi-plugin.bash-poke.src.tui.expensive.unit.test.ts": {
+        "routeId": "logger.combined",
+        "job": "logger_pi"
+      },
+      "package.cli.wg-quicker.test.integration.bypass": {
+        "routeId": "logger.combined",
+        "job": "logger_wg"
+      },
+      "package.cli.wg-quicker.test.integration.route": {
+        "routeId": "logger.combined",
+        "job": "logger_wg"
+      },
+      "package.desktop-app.electron-counter.test.wayland": {
+        "routeId": "logger.combined",
+        "job": "logger_external",
+        "partition": "electron"
+      },
+      "package.desktop-app.file-manager-electron.test.wayland": {
+        "routeId": "logger.combined",
+        "job": "logger_external",
+        "partition": "electron"
+      },
+      "package.pi-plugin.agent-settled-notification.verify.pi-runtime": {
+        "routeId": "logger.combined",
+        "job": "logger_pi"
+      },
+      "package.pi-plugin.ask-user-question.verify.terminal": {
+        "routeId": "logger.combined",
+        "job": "logger_pi"
+      },
+      "package.pi-plugin.auto-mode.test.native.configured-extensions": {
+        "routeId": "logger.combined",
+        "job": "logger_pi"
+      },
+      "root.browser": {
+        "routeId": "logger.combined",
+        "job": "logger_browser",
+        "partition": "browser"
+      },
+      "root.e2e": {
+        "routeId": "logger.combined",
+        "job": "logger_browser",
+        "partition": "e2e"
+      },
+      "root.generated-consistency": {
+        "routeId": "logger.combined",
+        "job": "logger_external",
+        "partition": "generated"
+      },
+      "root.config-oxlint": {
+        "routeId": "logger.combined",
+        "job": "logger_external",
+        "partition": "root-lint"
+      },
+      "host.fs-id": {
+        "routeId": "logger.hosts",
+        "job": "preferred-identity",
+        "runnerLabels": [
+          "ubuntu-latest",
+          "macos-latest",
+          "windows-latest"
+        ]
+      },
+      "host.semantic-bridge": {
+        "routeId": "logger.hosts",
+        "job": "preferred-identity",
+        "runnerLabels": [
+          "ubuntu-latest",
+          "macos-15",
+          "windows-latest"
+        ]
+      },
+      "artifact.music-desktop-e2e": {
+        "routeId": "logger.combined",
+        "job": "logger_external",
+        "partition": "desktop"
+      },
+      "sidecar.generated-type-consistency": {
+        "routeId": "logger.combined",
+        "job": "logger_external",
+        "partition": "generated"
+      }
+    },
+    "originalReviewDispositions": [
+      {
+        "topic": "Complete tool/image prerequisites",
+        "disposition": "Static adapter routes are registered; actual final results and artifact-consumer acceptance remain pending",
+        "routeIds": [
+          "logger.combined",
+          "logger.hosts",
+          "logger.scanner",
+          "logger.scorecard",
+          "logger.vm"
+        ]
+      },
+      {
+        "topic": "External desktop/VM/network/host adapters",
+        "disposition": "Static adapter routes are registered; actual final results and artifact-consumer acceptance remain pending",
+        "routeIds": [
+          "logger.combined",
+          "logger.hosts",
+          "logger.scanner",
+          "logger.scorecard",
+          "logger.vm"
+        ]
+      },
+      {
+        "topic": "Root scanner, generated consistency and Scorecard accounting",
+        "disposition": "Static adapter routes are registered; actual final results and artifact-consumer acceptance remain pending",
+        "routeIds": [
+          "logger.combined",
+          "logger.hosts",
+          "logger.scanner",
+          "logger.scorecard",
+          "logger.vm"
+        ]
+      }
+    ],
+    "executionAcceptancePending": true
   }
 }

@@ -353,7 +353,24 @@
       "id": "root.scorecard",
       "family": "test",
       "scope": "repository",
-      "reason": "Exact-head workflow includes push on main and a rate-limit gate before analysis. Root must retain the gate and applicable analysis cost according to the chosen policy revision."
+      "reason": "Exact-head workflow includes push on main and a rate-limit gate before analysis. Root must retain the gate and applicable analysis cost according to the chosen policy revision.",
+      "executionPolicy": {
+        "kind": "current-repaired-repository-policy",
+        "definitionRevision": "c51a5c94e8dd92db9dbcec0a12ff3d285daa8217",
+        "workflow": ".github/workflows/scorecard.yml",
+        "analysisSource": "live-default-branch",
+        "sourceRevisionRole": "provenance-only",
+        "publishResults": false,
+        "admissionGateRequired": true,
+        "limits": {
+          "perMinute": 2,
+          "perHour": 4,
+          "perDay": 8,
+          "pages": 32,
+          "reserve": 100
+        },
+        "dispatchesSequential": true
+      }
     },
     {
       "id": "root.changed-toml-format",
@@ -428,14 +445,8 @@
       "reason": "Publishing and account access excluded. verify:signing is a separate distribution-signing workflow, not core correctness."
     }
   ],
-  "completeGraph": false,
-  "remainingReview": [
-    "Root scanner and dprint file adapter",
-    "Feature matrix adapter",
-    "Native host platform dispatch",
-    "Disposable Android instrumentation prerequisites",
-    "Scorecard policy/provider accounting disposition"
-  ],
+  "completeGraph": true,
+  "remainingReview": [],
   "selectionEvidence": {
     "positive": [
       "package/music-player/android-app",
@@ -449,5 +460,241 @@
     ],
     "closureFile": "native-closure.json",
     "closureSha256": "05d99a53619008592186033cab7ff738696a2731029a7f7308e9b52065ddcd17"
+  },
+  "registration": {
+    "state": "frozen-static-registration",
+    "meaning": "Every selected primary and external gate has an explicit immutable-harness route. This is not an execution result or passing claim.",
+    "routeIds": [
+      "native.desktop",
+      "native.features",
+      "native.hosts",
+      "native.producers",
+      "native.scanner",
+      "native.scorecard"
+    ],
+    "primaryChecks": {
+      "truepeak-core.build": {
+        "routeId": "native.producers",
+        "job": "native",
+        "wave": "native-core",
+        "role": "selected"
+      },
+      "truepeak-core.build.default": {
+        "routeId": "native.producers",
+        "job": "native",
+        "wave": "native-core",
+        "role": "selected"
+      },
+      "truepeak-core.lint.clippy": {
+        "routeId": "native.producers",
+        "job": "native",
+        "wave": "native-core",
+        "role": "selected"
+      },
+      "truepeak-core.test": {
+        "routeId": "native.producers",
+        "job": "native",
+        "wave": "native-core",
+        "role": "selected"
+      },
+      "truepeak-core.bench.build": {
+        "routeId": "native.producers",
+        "job": "native",
+        "wave": "native-core",
+        "role": "selected"
+      },
+      "truepeak-core.bench.lint.clippy": {
+        "routeId": "native.producers",
+        "job": "native",
+        "wave": "native-core",
+        "role": "selected"
+      },
+      "root.changed-rust-style": {
+        "routeId": "native.producers",
+        "job": "native",
+        "wave": "native-core",
+        "role": "selected"
+      },
+      "android-app.build.native": {
+        "routeId": "native.producers",
+        "job": "native",
+        "wave": "native-android",
+        "role": "selected"
+      },
+      "android-app.build": {
+        "routeId": "native.producers",
+        "job": "native",
+        "wave": "native-android",
+        "role": "selected"
+      },
+      "android-app.build.release": {
+        "routeId": "native.producers",
+        "job": "native",
+        "wave": "native-android",
+        "role": "selected"
+      },
+      "android-app.lint": {
+        "routeId": "native.producers",
+        "job": "native",
+        "wave": "native-android",
+        "role": "selected"
+      },
+      "android-app.lint.clippy": {
+        "routeId": "native.producers",
+        "job": "native",
+        "wave": "native-android",
+        "role": "selected"
+      },
+      "android-app.lint.detekt": {
+        "routeId": "native.producers",
+        "job": "native",
+        "wave": "native-android",
+        "role": "selected"
+      },
+      "android-app.test.unit": {
+        "routeId": "native.producers",
+        "job": "native",
+        "wave": "native-android",
+        "role": "selected"
+      },
+      "android-app.test.instrumented.build": {
+        "routeId": "native.producers",
+        "job": "native",
+        "wave": "native-android",
+        "role": "selected"
+      },
+      "desktop-app.build": {
+        "routeId": "native.desktop",
+        "job": "native",
+        "wave": "native-desktop",
+        "role": "selected"
+      },
+      "desktop-app.lint.clippy": {
+        "routeId": "native.desktop",
+        "job": "native",
+        "wave": "native-desktop",
+        "role": "selected"
+      },
+      "desktop-app.lint.slint": {
+        "routeId": "native.desktop",
+        "job": "native",
+        "wave": "native-desktop",
+        "role": "selected"
+      },
+      "desktop-app.test": {
+        "routeId": "native.desktop",
+        "job": "native",
+        "wave": "native-desktop",
+        "role": "selected"
+      },
+      "desktop-app.test.e2e": {
+        "routeId": "native.desktop",
+        "job": "native",
+        "consumer": "original-desktop-runtime",
+        "role": "selected"
+      },
+      "android-app.test.instrumented": {
+        "routeId": "native.producers",
+        "job": "native",
+        "wave": "native-android",
+        "consumer": "matching-producer-headful-android",
+        "role": "selected",
+        "acceptancePending": "Final producer receipt, archive and APK digests, matching cohort/case bindings, and complete original instrumented-suite outcome"
+      }
+    },
+    "externalChecks": {
+      "root.forbidden-strings": {
+        "routeId": "native.scanner"
+      },
+      "root.scorecard": {
+        "routeId": "native.scorecard",
+        "acceptance": "Retain admission decision, actual live analysis target and allocation; denied analysis is not an executed analysis"
+      },
+      "root.changed-toml-format": {
+        "routeId": "native.producers",
+        "job": "native",
+        "wave": "native-core",
+        "consumer": "exact-changed-Cargo-format"
+      },
+      "core.feature-test-matrix": {
+        "routeId": "native.features",
+        "profiles": [
+          "default",
+          "fingerprint",
+          "service",
+          "all"
+        ]
+      },
+      "desktop.native-platforms": {
+        "routeId": "native.hosts",
+        "matrixConsumers": [
+          "windows-2025",
+          "macos-15-intel"
+        ]
+      }
+    },
+    "originalReviewDispositions": [
+      {
+        "topic": "Root scanner and dprint file adapter",
+        "disposition": "Static adapter routes are registered; actual final results and artifact-consumer acceptance remain pending",
+        "routeIds": [
+          "native.desktop",
+          "native.features",
+          "native.hosts",
+          "native.producers",
+          "native.scanner",
+          "native.scorecard"
+        ]
+      },
+      {
+        "topic": "Feature matrix adapter",
+        "disposition": "Static adapter routes are registered; actual final results and artifact-consumer acceptance remain pending",
+        "routeIds": [
+          "native.desktop",
+          "native.features",
+          "native.hosts",
+          "native.producers",
+          "native.scanner",
+          "native.scorecard"
+        ]
+      },
+      {
+        "topic": "Native host platform dispatch",
+        "disposition": "Static adapter routes are registered; actual final results and artifact-consumer acceptance remain pending",
+        "routeIds": [
+          "native.desktop",
+          "native.features",
+          "native.hosts",
+          "native.producers",
+          "native.scanner",
+          "native.scorecard"
+        ]
+      },
+      {
+        "topic": "Disposable Android instrumentation prerequisites",
+        "disposition": "Static adapter routes are registered; actual final results and artifact-consumer acceptance remain pending",
+        "routeIds": [
+          "native.desktop",
+          "native.features",
+          "native.hosts",
+          "native.producers",
+          "native.scanner",
+          "native.scorecard"
+        ]
+      },
+      {
+        "topic": "Scorecard policy/provider accounting disposition",
+        "disposition": "Static adapter routes are registered; actual final results and artifact-consumer acceptance remain pending",
+        "routeIds": [
+          "native.desktop",
+          "native.features",
+          "native.hosts",
+          "native.producers",
+          "native.scanner",
+          "native.scorecard"
+        ]
+      }
+    ],
+    "executionAcceptancePending": true
   }
 }

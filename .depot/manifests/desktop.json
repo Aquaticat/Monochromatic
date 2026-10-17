@@ -129,7 +129,24 @@
       "id": "root.scorecard",
       "family": "test",
       "scope": "repository",
-      "reason": "Retain source policy as provenance and current repaired policy as the selected trial policy; include analysis only when its gate admits it."
+      "reason": "Retain source policy as provenance and current repaired policy as the selected trial policy; include analysis only when its gate admits it.",
+      "executionPolicy": {
+        "kind": "current-repaired-repository-policy",
+        "definitionRevision": "c51a5c94e8dd92db9dbcec0a12ff3d285daa8217",
+        "workflow": ".github/workflows/scorecard.yml",
+        "analysisSource": "live-default-branch",
+        "sourceRevisionRole": "provenance-only",
+        "publishResults": false,
+        "admissionGateRequired": true,
+        "limits": {
+          "perMinute": 2,
+          "perHour": 4,
+          "perDay": 8,
+          "pages": 32,
+          "reserve": 100
+        },
+        "dispatchesSequential": true
+      }
     },
     {
       "id": "root.changed-toml-format",
@@ -209,14 +226,8 @@
       "reason": "Case event is push; PR/merge-group/scheduled workflow predicates do not apply."
     }
   ],
-  "completeGraph": false,
-  "remainingReview": [
-    "Root scanner and changed-file format adapters",
-    "Exact-head Windows and Alpine workflow results",
-    "macOS native adapter result",
-    "Desktop e2e fresh compositor and TypeScript dependency prerequisites",
-    "Current-policy Scorecard disposition"
-  ],
+  "completeGraph": true,
+  "remainingReview": [],
   "selectionEvidence": {
     "positive": [
       "package/music-player/desktop-app"
@@ -228,5 +239,144 @@
     ],
     "closureFile": "desktop-closure.json",
     "closureSha256": "b2f886ff139d94b659b162915a28618b1f8b78fe5000a02303a89ae0255371d2"
+  },
+  "registration": {
+    "state": "frozen-static-registration",
+    "meaning": "Every selected primary and external gate has an explicit immutable-harness route. This is not an execution result or passing claim.",
+    "routeIds": [
+      "desktop.alpine",
+      "desktop.linux",
+      "desktop.macos",
+      "desktop.scanner",
+      "desktop.scorecard",
+      "desktop.windows"
+    ],
+    "primaryChecks": {
+      "desktop-app.build": {
+        "routeId": "desktop.linux",
+        "job": "native",
+        "wave": "native-desktop",
+        "role": "selected"
+      },
+      "desktop-app.lint.clippy": {
+        "routeId": "desktop.linux",
+        "job": "native",
+        "wave": "native-desktop",
+        "role": "selected"
+      },
+      "desktop-app.lint.slint": {
+        "routeId": "desktop.linux",
+        "job": "native",
+        "wave": "native-desktop",
+        "role": "selected"
+      },
+      "desktop-app.test": {
+        "routeId": "desktop.linux",
+        "job": "native",
+        "wave": "native-desktop",
+        "role": "selected"
+      },
+      "root.changed-rust-style": {
+        "routeId": "desktop.linux",
+        "job": "native",
+        "wave": "native-desktop",
+        "role": "selected"
+      },
+      "desktop-app.test.e2e": {
+        "routeId": "desktop.linux",
+        "job": "native",
+        "consumer": "original-desktop-runtime",
+        "role": "selected"
+      }
+    },
+    "externalChecks": {
+      "root.forbidden-strings": {
+        "routeId": "desktop.scanner"
+      },
+      "root.scorecard": {
+        "routeId": "desktop.scorecard",
+        "acceptance": "Retain admission decision, actual live analysis target and allocation; denied analysis is not an executed analysis"
+      },
+      "root.changed-toml-format": {
+        "routeId": "desktop.linux",
+        "job": "native",
+        "consumer": "exact-changed-Cargo-format"
+      },
+      "desktop.macos-native": {
+        "routeId": "desktop.macos",
+        "matrixConsumers": [
+          "macos-15-intel"
+        ]
+      },
+      "desktop.windows-workflow": {
+        "routeId": "desktop.windows"
+      },
+      "desktop.alpine-workflow": {
+        "routeId": "desktop.alpine"
+      }
+    },
+    "originalReviewDispositions": [
+      {
+        "topic": "Root scanner and changed-file format adapters",
+        "disposition": "Static adapter routes are registered; actual final results and artifact-consumer acceptance remain pending",
+        "routeIds": [
+          "desktop.alpine",
+          "desktop.linux",
+          "desktop.macos",
+          "desktop.scanner",
+          "desktop.scorecard",
+          "desktop.windows"
+        ]
+      },
+      {
+        "topic": "Exact-head Windows and Alpine workflow results",
+        "disposition": "Static adapter routes are registered; actual final results and artifact-consumer acceptance remain pending",
+        "routeIds": [
+          "desktop.alpine",
+          "desktop.linux",
+          "desktop.macos",
+          "desktop.scanner",
+          "desktop.scorecard",
+          "desktop.windows"
+        ]
+      },
+      {
+        "topic": "macOS native adapter result",
+        "disposition": "Static adapter routes are registered; actual final results and artifact-consumer acceptance remain pending",
+        "routeIds": [
+          "desktop.alpine",
+          "desktop.linux",
+          "desktop.macos",
+          "desktop.scanner",
+          "desktop.scorecard",
+          "desktop.windows"
+        ]
+      },
+      {
+        "topic": "Desktop e2e fresh compositor and TypeScript dependency prerequisites",
+        "disposition": "Static adapter routes are registered; actual final results and artifact-consumer acceptance remain pending",
+        "routeIds": [
+          "desktop.alpine",
+          "desktop.linux",
+          "desktop.macos",
+          "desktop.scanner",
+          "desktop.scorecard",
+          "desktop.windows"
+        ]
+      },
+      {
+        "topic": "Current-policy Scorecard disposition",
+        "disposition": "Static adapter routes are registered; actual final results and artifact-consumer acceptance remain pending",
+        "routeIds": [
+          "desktop.alpine",
+          "desktop.linux",
+          "desktop.macos",
+          "desktop.scanner",
+          "desktop.scorecard",
+          "desktop.windows"
+        ]
+      }
+    ],
+    "executionAcceptancePending": true
   }
 }
