@@ -1357,7 +1357,7 @@ console.log(JSON.stringify(record))
 
 [tasks."trial:depot:ci:logger-host-source-identity"]
 description = "Retain portable exact logger source inputs before and after native host consumers"
-dir = "/var/mnt/encrypted/temp/agent/depot-native-recovery/../../.."
+dir = "{{config_root}}/../../.."
 shell = "node --input-type=module-typescript -e"
 run = '''
 const { execFileSync } = await import('node:child_process')
@@ -1421,7 +1421,7 @@ console.log(JSON.stringify({event:record.event,phase,sourceRevision:identity.hea
 
 [tasks."trial:depot:ci:logger-host-prerequisites"]
 description = "Build the frozen source Node artifact required by original host consumers"
-dir = "/var/mnt/encrypted/temp/agent/depot-native-recovery/../../.."
+dir = "{{config_root}}/../../.."
 shell = "node --input-type=module-typescript -e"
 run = '''
 const {execFileSync}=await import('node:child_process');const {readFileSync,writeFileSync,mkdirSync}=await import('node:fs');const {join,isAbsolute}=await import('node:path');const {createHash}=await import('node:crypto');const {strict:assert}=await import('node:assert');const source=process.env.SOURCE_ROOT;assert(source&&isAbsolute(source));assert.equal(execFileSync('git',['rev-parse','HEAD'],{cwd:source,encoding:'utf8'}).trim(),'ef01490f5e960f8ca0b424c12242caeb3c5a2b5e');const lock=readFileSync(join(source,'mise.lock'),'utf8');assert(lock.includes('version = \"12.11.2\"'.replaceAll('\\','')));const mise=process.env.MISE_BIN??(process.platform==='win32'?join(process.env.LOCALAPPDATA,'mise','bin','mise.exe'):'mise');execFileSync(mise,['exec','pnpm@12.11.2','--','pnpm','install','--frozen-lockfile'],{cwd:source,stdio:'inherit'});execFileSync(mise,['run','//package/oxlint-plugin/prefer-readonly-parameter-type:build:js:node'],{cwd:source,stdio:'inherit'});const path=join(source,'package/oxlint-plugin/prefer-readonly-parameter-type/dist/final/node/index.mjs');const bytes=readFileSync(path);assert(bytes.length>0);const output=process.env.PROVENANCE_OUTPUT;mkdirSync(output,{recursive:true,mode:0o700});writeFileSync(join(output,'built-artifact.json'),JSON.stringify({sourceRevision:'ef01490f5e960f8ca0b424c12242caeb3c5a2b5e',originalTask:'//package/oxlint-plugin/prefer-readonly-parameter-type:build:js:node',relativePath:'package/oxlint-plugin/prefer-readonly-parameter-type/dist/final/node/index.mjs',bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex'),verifierNode:process.version,platform:process.platform,architecture:process.arch},null,2)+'\n');
@@ -1429,7 +1429,7 @@ const {execFileSync}=await import('node:child_process');const {readFileSync,writ
 
 [tasks."trial:depot:ci:logger-host-results"]
 description = "Retain original host command outcomes without crediting skipped checks"
-dir = "/var/mnt/encrypted/temp/agent/depot-native-recovery/../../.."
+dir = "{{config_root}}/../../.."
 shell = "node --input-type=module-typescript -e"
 run = '''
 const {writeFileSync}=await import('node:fs');const {isAbsolute}=await import('node:path');const {strict:assert}=await import('node:assert');const statuses=Object.fromEntries(['FSID_OUTCOME','FSID_NODE_OUTCOME','PREREQUISITES_OUTCOME','EXTERNAL_OUTCOME','SEMANTIC_OUTCOME','SOURCE_BEFORE_OUTCOME','SOURCE_AFTER_OUTCOME','COHORT_BEFORE_OUTCOME','COHORT_AFTER_OUTCOME'].map(name=>[name,process.env[name]??'unavailable']));const record={schemaVersion:1,event:'logger-original-host-command-outcomes',observedAt:new Date().toISOString(),caseId:'logger',routeId:'logger.hosts',sourceRevision:process.env.SOURCE_HEAD,harnessRevision:process.env.GITHUB_SHA,cohortId:process.env.COHORT_ID,cohortManifestSha256:process.env.COHORT_MANIFEST_SHA256,requestedAt:process.env.COHORT_REQUESTED_AT,providerRunId:process.env.GITHUB_RUN_ID,providerRunAttempt:process.env.GITHUB_RUN_ATTEMPT,providerJobKey:process.env.GITHUB_JOB,platform:process.platform,architecture:process.arch,declaredFsidNode:'26.5.0',setupReportedFsidNode:process.env.FSID_SETUP_VERSION,statuses,checks:[{checkId:'host.fs-id',commands:[{originalCommand:'node package/module/fs-id/src/host-evidence.ts',outcome:statuses.FSID_OUTCOME}]},{checkId:'host.semantic-bridge',commands:[{originalTask:'//package/oxlint-plugin/prefer-readonly-parameter-type:test:external-consumer-host',outcome:statuses.EXTERNAL_OUTCOME},{originalTask:'//package/oxlint-plugin/prefer-readonly-parameter-type:test:semantic-bridge-host',outcome:statuses.SEMANTIC_OUTCOME}]}],classification:'Step outcomes require retained original logs to distinguish authored assertion failures from unmet prerequisites; skipped commands receive no execution credit'};const output=process.env.LOGGER_HOST_RESULT_OUTPUT;assert(output&&isAbsolute(output));writeFileSync(output,JSON.stringify(record,null,2)+'\n');console.log(JSON.stringify(record));assert(Object.values(statuses).every(status=>status==='success'),'An original host command, prerequisite or paired identity boundary did not succeed');assert(/^v?26\.5\.0$/u.test(record.setupReportedFsidNode??''),'Original fs-id runtime differs from its source workflow');
