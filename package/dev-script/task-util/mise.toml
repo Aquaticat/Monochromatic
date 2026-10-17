@@ -1185,4 +1185,3 @@ if (phase === 'after') {
 writeFileSync(join(directory, caseId + '-provenance-' + phase + '.json'), JSON.stringify(record, null, 2) + '\n')
 console.log(JSON.stringify(record))
 '''
-
