@@ -28,8 +28,17 @@ not proof that every retained release remains in use.
 
 The `--owned` build reuses the already emitted qualified Pi graph,
 then regenerates owned transformations.
-The implementation currently copies retained graph content into each release.
-Reducing unchanged-file duplication without mutating old releases is part of the active refactor.
+`native/build-reuse.ts` shares unchanged files with the previous release after CLI verification
+and before publication.
+It pins the previous release once,
+compares device,
+mode,
+size,
+and complete SHA-256 contents,
+then atomically replaces only the new release's matching file with a hard link.
+Changed files retain independent inodes.
+It does not follow dependency symlinks or rewrite an old release.
+The latest checked build shares 1,479 files totaling 11,813,141 bytes.
 
 ## Alternatives and verification
 
@@ -37,6 +46,9 @@ Overwriting the active directory would invalidate running module identities.
 Editing installed upstream output would detach source qualification from deployment.
 Sharing writable generated files between releases would let a later build corrupt an active session.
 Any deduplication must preserve independent immutable module paths and generated import identity.
+Sequential file comparison bounds hashing and file-descriptor use.
+Missing previous files are ordinary non-reuse cases;
+other filesystem failures stop publication.
 
 `build:native`,
 `build:native:owned`,
@@ -45,5 +57,11 @@ and `test:native:build-imports` exercise generation,
 publication rollback,
 and import rewriting.
 The installed command replay verifies the published consumer.
+`native/build.unit.test.ts` publishes disposable successive releases,
+checks an identical license file shares its inode,
+checks changed CLI files remain independent,
+and invokes the previous command after publication.
+Its inode assertion failed before reuse was implemented,
+then passes with the full package units.
 
 Task names use `mise run //package/pi-plugin/auto-mode:<task>`.

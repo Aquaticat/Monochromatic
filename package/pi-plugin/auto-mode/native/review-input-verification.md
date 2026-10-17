@@ -40,3 +40,46 @@ Verification of automatic admission includes execution of both reported tool-cal
 absence of confirmation requests, and inspection of complete outgoing payloads.
 The prohibited-operation control independently checks that actual restrictions still block execution.
 Timing tests admit late answers while separately rejecting cancellation, invalid clocks, and stale inputs.
+
+## Mixed process and Bash groups
+
+The 2026-10-17 report exposes a separate projection branch:
+`process.start.command` contains shell syntax even though its tool name is not `bash`.
+The unchanged captured operation scores approval `0.48` in three live trials.
+Changing only proposed process command copies to the existing parser's structure scores `0.69`
+in three live trials.
+The operating cutoff remains `0.60`.
+
+The built projection now covers Bash and process starts,
+including parent,
+prepared,
+historical,
+and per-question copies.
+Non-start process actions retain their original shape.
+Tests separately check preserved working directory and notification options,
+malformed or missing start commands,
+original execution input identity,
+and nested shell syntax.
+
+Replay resource IDs require original-result correlation.
+The original session's `process.output` names `proc_3121`;
+a disposable replay must use the ID returned by its own actual `process.start`.
+Keeping the original ID tests an unbound resource and can correctly trigger uncertainty.
+The replay changes only that runtime reference,
+retains the original tool-call IDs,
+and records the old-to-new process mapping.
+
+Directly invoking `Agent.continue` bypasses Pi's primary prompt observer and fails before assessment.
+The accepted replay enters through the normal prompt and reproduces all preceding tool groups.
+Neither fixture failure establishes a product regression.
+
+The transport regression separately distinguishes failed HTTP invocation,
+credentials,
+cancellation,
+response-stream failure,
+and HTTP rejection.
+Only the invocation category permits the existing single retry.
+An intentionally changed copy of the built classifier makes the negative cases fail;
+the production build remains unchanged.
+The native fallback regression proves approved recovery executes the group,
+while denied recovery executes no member.

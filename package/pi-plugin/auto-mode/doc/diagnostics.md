@@ -48,6 +48,35 @@ Adding package-specific file retention would duplicate the shared logger's respo
 Storage maintenance must preserve investigation evidence and account for active writers.
 Compression or archival is preferable to discarding captured decisions without an evidence policy.
 
+## Completed historical archive
+
+The 2026-10-17 maintenance archives only unchanged files predating the current boot
+(`2026-10-17T03:34:00.816Z`).
+The shared logger chooses fresh timestamped paths for new sinks;
+current-boot files remain in place.
+No whole-directory cleanup is used.
+
+The archive contains 12,626 files totaling 7,064,174,193 original bytes
+and 194,896,137 gzip bytes.
+Its private location is
+`${HOME}/temp/agent/pi-mimo-lint-approval-20261017/diagnostic-archive`.
+The adjacent `archive-manifest.jsonl` records original paths,
+archive paths,
+SHA-256,
+byte lengths,
+and modification times.
+Each original is removed only after decompression verifies its hash and length,
+the archive and manifest are published,
+and original inode,
+size,
+and modification time remain unchanged.
+
+An independent full reread verifies every manifest entry.
+Its positive control rejects a valid gzip containing changed content of the same length.
+A reference scan checks all 1,670 tracked Markdown files and finds no archived filename references.
+The archive preserves evidence outside the package;
+it does not claim automatic retention for future logger output.
+
 ## Verification
 
 The native fallback tests assert correlated model requests,
