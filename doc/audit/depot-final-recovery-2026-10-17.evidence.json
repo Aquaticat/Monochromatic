@@ -17878,12 +17878,12 @@
     }
   },
   "commonManifestTransportControls": {
-    "verifiedAt": "2026-10-17T06:55:44.608Z",
+    "verifiedAt": "2026-10-17T07:14:51.099Z",
     "method": "GET",
     "mediaType": "application/vnd.github.object+json",
     "encoding": "base64",
     "path": "doc/audit/depot-final-recovery-2026-10-17.evidence.json",
-    "ref": "main",
+    "ref": "8c70741076b02238bc9dab9fc10443dd9aea77e2",
     "bytes": 1043537,
     "sha256": "1a6f6aaee60910a6fe44c653308648ba8a19abf2dc3713ebe05e227ff1390369",
     "rawBytesEqual": true,
@@ -20489,5 +20489,287 @@
       }
     ],
     "finding": "Historical desktop runtime receipts hardcode six routes and omit desktop auto-play. The original unfiltered source selector still includes auto-play; the orchestration hook wraps its generic loop and does not filter session names. Preserve original receipts, reconstruct expected routes from actual immutable source, and replace hardcoded metadata in the final harness. Source runtime coverage still requires actual session and assertion logs."
+  },
+  "commonManifestRawJsonInspection": {
+    "local": {
+      "length": 1043537,
+      "sha256": "1a6f6aaee60910a6fe44c653308648ba8a19abf2dc3713ebe05e227ff1390369"
+    },
+    "committed": {
+      "length": 1043537,
+      "sha256": "1a6f6aaee60910a6fe44c653308648ba8a19abf2dc3713ebe05e227ff1390369"
+    },
+    "rows": [
+      {
+        "ref": "main",
+        "length": 1030081,
+        "sha256": "c33dfcb8b87ba5e45a5d275f82d38ce7d6542d4531eb1b7dbfb47df122a5d0cf",
+        "committedEqual": false,
+        "localEqual": false,
+        "firstDifference": 58924,
+        "remoteRegion": "8d28a6445b76b4b9600b\",\n        \"text\": \"^[[2m2026-10-17T04:42:08.332981Z^[[0m ^[[32m INFO^[[0m ^[[2mnested_wayland_session::backend_select^[[0m^[[2m:^[[0m selec",
+        "localRegion": "8d28a6445b76b4b9600b\",\n        \"text\": \"\\u001b[2m2026-10-17T04:42:08.332981Z\\u001b[0m \\u001b[32m INFO\\u001b[0m \\u001b[2mnested_wayland_session::backend_select\\u",
+        "keys": [
+          "collectedAt",
+          "scope",
+          "scanners",
+          "scorecard",
+          "tomlPatchFailure",
+          "desktopRuntimeRecoveries",
+          "desktopRuntimePidDiagnostics",
+          "desktopRuntimePidRecovery",
+          "desktopRuntimePublishedCompositorControl",
+          "combinedExecutorControls"
+        ]
+      },
+      {
+        "ref": "8c70741076b02238bc9dab9fc10443dd9aea77e2",
+        "length": 1030081,
+        "sha256": "c33dfcb8b87ba5e45a5d275f82d38ce7d6542d4531eb1b7dbfb47df122a5d0cf",
+        "committedEqual": false,
+        "localEqual": false,
+        "firstDifference": 58924,
+        "remoteRegion": "8d28a6445b76b4b9600b\",\n        \"text\": \"^[[2m2026-10-17T04:42:08.332981Z^[[0m ^[[32m INFO^[[0m ^[[2mnested_wayland_session::backend_select^[[0m^[[2m:^[[0m selec",
+        "localRegion": "8d28a6445b76b4b9600b\",\n        \"text\": \"\\u001b[2m2026-10-17T04:42:08.332981Z\\u001b[0m \\u001b[32m INFO\\u001b[0m \\u001b[2mnested_wayland_session::backend_select\\u",
+        "keys": [
+          "collectedAt",
+          "scope",
+          "scanners",
+          "scorecard",
+          "tomlPatchFailure",
+          "desktopRuntimeRecoveries",
+          "desktopRuntimePidDiagnostics",
+          "desktopRuntimePidRecovery",
+          "desktopRuntimePublishedCompositorControl",
+          "combinedExecutorControls"
+        ]
+      }
+    ]
+  },
+  "cohortIncidents": {
+    "discovery": {
+      "searchedAt": "2026-10-17T07:20:31.651Z",
+      "rows": [
+        {
+          "query": "\"raw+json\"",
+          "issues": []
+        },
+        {
+          "query": "\"manifest\" \"base64\"",
+          "issues": [
+            {
+              "body": "## What happened\n\n`@monochromatic-dev/module-translation-repair` began importing\n`@monochromatic-dev/cli-markdown-lint`, to run the `semantic-line-breaks` fix over text\nthe pipeline ships. After that, **every import of the translation-repair package threw\nbefore reaching a line of pipeline code**:\n\n```text\nCannot find native binding. npm has a bug related to optional dependencies\n(https://github.com/npm/cli/issues/4828). Please try `npm i` again after\nremoving both package-lock.json and node_modules directory.\n```\n\nThe message names npm and optional dependencies. Both are red herrings, and the message\nis emitted by Sätteri's napi loader, not by npm or pnpm.\n\n## What is actually going on\n\nSätteri is a napi package. Its loader calls `require(\"@bruits/satteri-<platform>\")` and\nresolves that relative to wherever the loader's own file sits.\n\nThe shared rolldown Node config always bundles `@monochromatic-dev/**` and keeps only\nDECLARED dependencies external\n(`package/config/rolldown/src/index.node.ts`, `package/config/rolldown/README.md`).\nSo importing the markdown-lint workspace package inlined its source, its `satteri`\nimport, and Sätteri's loader, into\n`package/module/translation-repair/dist/final/node/`.\n\nThat directory is not Sätteri's package directory. Resolution from there walks up and\nfinds no `@bruits/*` link, because pnpm links those under Sätteri's own location and\nnowhere else.\n\n## What it is NOT, with the checks that rule each out\n\n**The bindings are installed.** `node_modules/.pnpm` carries\n`@bruits+satteri-linux-x64-gnu@0.9.5` and its siblings for every architecture in\n`supportedArchitectures`.\n\n**Sätteri resolves them correctly from its own location.** Two independent checks:\n`node package/cli/markdown-lint/dist/final/node/cli.mjs <file>` lints and exits 0, and a\nscratch script importing markdown-lint's own `dist` ran the fixer over 64 passages with\nno binding error.\n\n**`packageExtensions` does not apply.** It adds dependencies to another package's\nmanifest so pnpm links them under it, curing the case where a package imports something\nit never declared, which under this workspace's strict isolation\n(`hoist: false`, `nodeLinker: isolated`) is unresolvable FROM THAT PACKAGE'S OWN\nLOCATION. `pnpm-workspace.yaml` carries exactly one such entry, `mitata` reaching for\n`@mitata/counters`, and its comment states that shape precisely. This failure has the\nopposite shape: nothing is missing from Sätteri's location, the code was copied OUT of\nthat location by the bundler. Editing Sätteri's manifest changes what pnpm links under\nSätteri, which the inlined copy in `dist/final/node/` never consults.\n\n## Current workaround, which is why this issue exists rather than a closed bug\n\nDeclaring the transitive dependency in the consumer:\n\n```jsonc\n// package/module/translation-repair/package.json\n\"satteri\": \"catalog:\",\n```\n\nDeclared means external, so the bundle emits a runtime import rather than a copy, and\nnode resolves it from the consuming package's own `node_modules`, where Sätteri sits\nbeside the `@bruits/*` links its loader needs. Verified by reading the built bundle:\n\n```text\ngrep 'from\"satteri\"'                    1 match\ngrep 'Cannot find native binding'       0 files\ngrep '@bruits/satteri-[a-z0-9-]*'       0 matches\n```\n\n**This works and it is a trap.** Any package that imports markdown-lint must declare a\nnative dependency it never mentions in its own source, learned only by hitting the\nfailure. The failure surfaces at import time rather than at build time, so a green build\nsays nothing about it, and the error text points at npm.\n\n## What this issue asks for\n\n1. **Write the troubleshooting doc for the setup as it stands**, so the next person to\n   import markdown-lint recognises the error instead of chasing npm and\n   `packageExtensions`. It needs the symptom verbatim, the bundling cause, the three\n   negative checks above, and the bundle-reading verification.\n\n2. **Then resolve it properly by migrating to an alternative setup**, so the workaround\n   stops being load-bearing.\n\n## Candidate alternatives\n\nRelevant history: `doc/handover/markdown-lint-satteri-benchmark.md` records that Sätteri\nwas adopted as a PARSER SWAP (variant 2) for speed, replacing\n`mdast-util-from-markdown` plus micromark, and that the rule engine kept consuming a\nstandard `mdast.Root`. The rules are therefore already parser-agnostic, which is what\nmakes the first option cheap.\n\n**A. Split markdown-lint so the rule core carries no parser.** A core package exporting\nrules and a fix driver over an `mdast.Root`, with Sätteri confined to the CLI that reads\nfiles.\nPros: consumers importing rules never touch native code, so the trap disappears at its\nsource rather than being documented; the CLI keeps the measured speed; matches the\nparser-agnostic shape the rules already have.\nCons: a new package and a moved subpath; every consumer of `parse` has to say which\nparser it wants; `doc/troubleshooting/satteri-offsets.md` records that Sätteri and\nmicromark offsets differ, so a core used with either parser needs that pinned by a test.\n\n**B. Carve `@monochromatic-dev/cli-markdown-lint` out of `NODE_ALWAYS_BUNDLE`.**\nPros: smallest change, one list entry; fixes every future consumer at once.\nCons: contradicts the deliberate reason `dist/final/node` exists, recorded in\n`package/module/translation-repair/rolldown.node.config.ts`, that the executed thing\nshould be a FILE rather than an import graph; and it treats one package as special\nwithout a rule saying which others are.\n\n**C. Teach the rolldown config to keep any napi package external automatically**, by\ndetecting `.node` loaders or an `optionalDependencies` binding set in the closure of\nwhat it is about to bundle.\nPros: cures the class rather than this instance, and needs no consumer to know anything.\nCons: the detection is a heuristic on other people's package shapes, and a wrong answer\neither re-breaks the bundle or silently externalises something that should be inlined.\n\n**D. Keep the declaration and document it.**\nPros: nothing to build.\nCons: this is the status quo the issue is filed against.\n\nRanking: A > C > B > D.\n\nA over C because A removes the native dependency from the consumer's path entirely,\nwhile C only stops it being copied: with C, a consumer still ships a runtime dependency\non a native package it never asked for, and the install has to keep working everywhere\nthat consumer runs.\nC over B because C states a rule the build applies to every package, where B names one\npackage as special and leaves the next napi dependency to fail the same way.\nB over D because B at least makes the failure impossible rather than merely legible.\n\n## Reproduction\n\n```bash\ngit revert --no-commit <the commit adding \"satteri\": \"catalog:\">\nmise run //package/module/translation-repair:build\nnode -e 'import(\"./package/module/translation-repair/dist/final/node/index.mjs\")'\n```\n",
+              "number": 447,
+              "state": "OPEN",
+              "title": "markdown-lint + Sätteri + rolldown + pnpm: a napi loader bundled out of its own package cannot find its binding",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/447"
+            }
+          ]
+        },
+        {
+          "query": "\"auto-play\" \"receipt\"",
+          "issues": []
+        },
+        {
+          "query": "\"Depot\" \"sessions\"",
+          "issues": [
+            {
+              "body": "## Problem\n\nThe prepared Depot CI desktop filesystem contains the required packages, but fresh consumers do not have the user-session services required by the existing desktop E2E harness.\n\n## Evidence and reproduction\n\n- [Run `6w30pv5zds`](https://depot.dev/orgs/l4zncjjbj5/workflows/6w30pv5zds), attempts `x8b3b4xhkb` and `kpwm36f319`, verified all 23 requested installed package versions and ImageMagick in distinct fresh sandboxes.\n- `mise run //package/music-player/desktop-app:trial:depot:packages:session` recorded PID 1 as `init` and no session-bus environment.\n- `systemctl --user daemon-reload`, starting PipeWire user units, and a minimal `systemd-run --user --wait --pipe true` failed with `Failed to connect to bus: No medium found`.\n- `pactl info` failed with `Connection failure: Connection refused`.\n- Harness requirements are in `package/music-player/desktop-e2e/README.md`; details are in `doc/audit/depot-expanded-cost-2026-10-15.md` and `doc/troubleshooting/depot-snapshot-mise-cache.md`.\n\nThe package reuse checks passed. These probes did not attempt to create a replacement user-session manager, so this is an unimplemented environment boundary, not proof Depot cannot host the suite.\n\n## Acceptance\n\n- Establish a supported, disposable fresh-session bootstrap or document an evidence-backed execution-route decision.\n- Verify a transient user unit, PipeWire graph, PulseAudio-compatible connection, and clean process shutdown in each fresh consumer.\n- Then execute the unchanged desktop interaction suite and retain per-session results.\n- Keep installed-file reuse and live-session readiness as separate checks.\n",
+              "number": 997,
+              "state": "OPEN",
+              "title": "Depot CI: establish fresh user sessions for desktop E2E",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/997"
+            },
+            {
+              "body": "## Problem\n\nThe historical desktop consumer reaches its first wide session,\nthen Rust reports `failed to spawn thread` with OS error 11 (`Resource temporarily unavailable`).\nThe remaining configured sessions are not executed.\nThis is a separate boundary from the fresh user-bus bootstrap tracked in #997.\n\n## Evidence\n\n- Native source `cb95cf6d785c3073c192b95f0632cdae7b910894`:\n  [diagnostic `fs5t4ns6j6`](https://depot.dev/orgs/l4zncjjbj5/workflows/fs5t4ns6j6).\n- Desktop source `3434eaa455d569c18b52cf15100f77f9db251d21`:\n  [diagnostic `tlc73pbmkk`](https://depot.dev/orgs/l4zncjjbj5/workflows/tlc73pbmkk).\n- Both use clean pushed harness `32e1c7290a62c41c314a33894cf8f43f9e0f23b8`.\n- Live `pids.events` counters increased from zero to four in the private user hierarchy.\n  Memory counters recorded no OOM event.\n- The user slice allowed 168 tasks and surviving user-service cgroups allowed 76,\n  inside the declared two-CPU, 2 GiB, 512-task container.\n  Hierarchical event counters do not identify which individual child limit rejected the thread.\n\nRaw samples,\nartifact hashes,\nprovider collection,\nand consumer records are retained in\n`doc/audit/depot-final-recovery-2026-10-17.evidence.json`.\nThe diagnosis is in `doc/troubleshooting/depot-historical-checkout-bootstrap.md`.\n\n## Recovery under verification\n\nTrial harness `4c4063e78bc9aaed8e293c1b478db089d6eef0ce`\nsets private `DefaultTasksMax=256` and user-slice `TasksMax=448`,\nasserts the effective values,\nand retains the outer container budget.\nUnchanged actual consumers are running as `v0xj2z7q66` and `4xgjgr8gbr`.\nTheir results are pending.\n\n## Acceptance\n\n- Verify the effective private limits in fresh consumers without editing historical application source.\n- Execute the original desktop task and retain each session's actual result.\n- Compare PID rejection and memory counters before and after the actual invocation.\n- Retain restored audio state,\n  empty test-unit/process checks,\n  and removal of the private container and overlay writes.\n- Keep any subsequent source assertion failure distinct from the PID-limit repair.\n",
+              "number": 1110,
+              "state": "OPEN",
+              "title": "Depot trial desktop consumer hits private user PID limits before later E2E sessions",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/1110"
+            },
+            {
+              "body": "## Problem\n\nThe browse/ctrl-shift-o check reports no dialog window covered the player, with zero changed pixels.\nThe following focus check sees only the player window.\n\n## Evidence\n\n[Full run 38831098294](https://github.com/Aquaticats/Monochromatic/actions/runs/38831098294) completed all sessions: 116 passes, one chooser failure, one not-injectable check.\nZenity 4.0.1-1build3 was installed.\n[Diagnostic run 38832349057](https://github.com/Aquaticats/Monochromatic/actions/runs/38832349057) reproduced the failure and retained application output.\nThe app logs the shortcut and reports zenity=true and portal=true.\nThe cause is unresolved; package installation alone did not fix it.\n\n## Next diagnostic and acceptance\n\nCapture the chooser subprocess's status and stderr, and distinguish launch failure, portal handling, and window mapping.\nExercise the actual chooser open/close/focus sequence on the same runner and rerun the complete suite after a justified correction.\nDo not suppress the failing assertion or substitute a screenshot for interaction.\n",
+              "number": 1004,
+              "state": "OPEN",
+              "title": "Desktop E2E: folder chooser never appears on the prepared Depot software-rendered runner",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/1004"
+            },
+            {
+              "body": "## Observed boundary\n\nThe prepared Depot desktop consumer completes the interaction suite while its decode-priority request falls back to normal priority.\nThat result does not verify the accepted-priority path.\n\nIn [run `p5rp4p0wvp`](https://depot.dev/orgs/l4zncjjbj5/workflows/vhpw3k8m1f?job=n1jkfcsz5c&attempt=zfwxb30f4m),\nthe dialog session at `2026-10-16T01:55:16.004781Z` logs:\n\n```text\n# music_player::thread_priority\nrtkit refused the decode thread priority; keeping normal priority\norg.freedesktop.DBus.Error.NoReply: Message recipient disconnected from message bus without replying\n```\n\n`package/music-player/desktop-app/src/thread_priority.rs:80`\ncalls `MakeThreadHighPriorityWithPID` with the process ID,\nthread ID,\nand requested nice value.\nIts error branch at line 88 emits the warning and returns false.\nThe diagnostic says “refused”,\nbut this observed D-Bus error establishes a disconnected recipient without a reply,\nnot an explicit policy refusal.\n\nAll seven sessions passed,\nincluding private audio routing,\nand the consumer verified clean shutdown.\nNo audio underrun or application failure was observed or attributed to this warning.\nThe snapshot source is `7b31a6eebec64e193e4165cf7125f781daebf719`;\nthe consumer wrapper is `36d48d72ef7f17a076c6c7b0181e94b108f3a87e`.\nDetails are in `doc/audit/depot-prepared-desktop-2026-10-16.md`.\n\n## Acceptance\n\n- Determine which service or connection ended and retain its runtime diagnostics.\n- Verify the decoder thread's actual nice level after both accepted and failed requests in disposable fixtures.\n- Decide and document whether prepared desktop CI should exercise accepted priority or explicitly cover fallback only.\n- Use operation-specific wording when a request fails without an explicit refusal response.\n- Keep this result separate from the passing interaction assertions and from the core session-manager work in #997.\n",
+              "number": 1053,
+              "state": "OPEN",
+              "title": "Prepared desktop CI: verify decode-priority requests and rtkit fallback",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/1053"
+            },
+            {
+              "body": "## Problem\n\nThe successful Depot desktop interaction run still reports an unavailable accessibility bus inside the nested session.\nThis leaves accessibility integration unverified even though the chooser interaction passes.\n\n## Evidence\n\n[Run 38833901553, job 116758578135](https://github.com/Aquaticats/Monochromatic/actions/runs/38833901553/job/116758578135)\nused source `93560fbb09` and Zenity `4.0.1-1build3`.\nThe retained dialog stderr reports:\n\n```text\nThe name org.a11y.Bus was not provided by any .service files.\nUnable to acquire the address of the accessibility bus\n```\n\nThe app's `zbus::proxy` warning also says its `org.a11y.Status` property cache could not be populated.\nThe chooser opens, cancels, and returns focus successfully; the full run has 117 passes and no failures.\nThis is not evidence that accessibility works or that these warnings caused the previous chooser crash.\n\n`package/cli/nested-wayland-session/README.md` documents that the private bus isolates host services\nand can serve an accessibility bus when `--accessibility` is requested.\nInvestigate that existing fixture boundary before proposing another service owner.\nIssue #997 concerns a missing host user-session manager in Depot CI snapshots,\nnot the isolated client bus used by this successful GitHub runner session.\n\n## Acceptance\n\n- Decide and document the intended accessibility behavior for the chooser and player in these sessions.\n- Exercise the existing accessibility fixture where that behavior requires it,\n  or report the deliberately untested surface explicitly without masking errors.\n- Verify the service/property boundary and repeat the chooser interaction.\n- Preserve private-bus isolation from the developer's host desktop.\n",
+              "number": 1041,
+              "state": "OPEN",
+              "title": "Desktop E2E: verify accessibility service coverage in the isolated chooser session",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/1041"
+            },
+            {
+              "body": "## Observed diagnostic\n\nThe software-rendered prepared Depot consumer passes the desktop interactions while Smithay emits an EGL warning that does not identify the failing EGL operation.\n\nIn [run `p5rp4p0wvp`](https://depot.dev/orgs/l4zncjjbj5/workflows/vhpw3k8m1f?job=n1jkfcsz5c&attempt=zfwxb30f4m),\nthe retained dialog log contains this warning at `2026-10-16T01:55:15.923356Z`,\n`01:55:15.954608Z`,\nand `01:55:15.954746Z`:\n\n```text\n# smithay::backend::egl::error\nErroneous EGL call didn't set EGLError\n```\n\nThe locked Smithay version is `0.7.0`,\nchecksum `740cea6927892bc182d5bf70c8f79806c8bc9f68f2fb96e55a30be171b63af98`,\nin `package/cli/nested-wayland-session/Cargo.lock`.\nThe installed source emits this wording from generic EGL wrappers in `src/backend/egl/error.rs:169`\nand `src/backend/egl/error.rs:184`.\nThe log alone does not identify which wrapped call produced each warning or establish a driver/compositor defect.\n\nAll seven sessions passed,\nincluding light and dark pixel assertions and the file chooser.\nNo rendering failure is attributed to these warnings.\nThe snapshot source is `7b31a6eebec64e193e4165cf7125f781daebf719`;\nthe consumer uses `LIBGL_ALWAYS_SOFTWARE=1` in a private systemd container.\nThe separate logged absence of `EGL_WL_bind_wayland_display` says clients use dmabuf;\nthat line is not evidence of the cause of these warnings.\n\n## Acceptance\n\n- Identify the actual EGL operations and return values producing each warning in the prepared runtime.\n- Record the renderer and driver versions and compare the same workload on an unchanged environment before attributing a regression.\n- Determine whether the operations are expected capability probes or failed work needed by the compositor.\n- Keep successful rendering checks and unresolved diagnostic meaning separate.\n- Preserve useful diagnostics rather than suppressing the warning without identifying the operation.\n",
+              "number": 1055,
+              "state": "OPEN",
+              "title": "Nested compositor: identify EGL operations behind prepared CI warnings",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/1055"
+            },
+            {
+              "body": "## Observed boundary\n\nThe prepared Depot desktop runtime has no answering desktop notification service for analysis progress.\nThe interaction suite passes while that integration falls back to analysis without a progress indicator.\n\nIn [run `p5rp4p0wvp`](https://depot.dev/orgs/l4zncjjbj5/workflows/vhpw3k8m1f?job=n1jkfcsz5c&attempt=zfwxb30f4m),\nthe dialog session at `2026-10-16T01:55:16.015386Z` logs:\n\n```text\n# music_player::analysis_notification\nanalysis progress indicator unavailable (no notification service answered, or a call failed); analysis runs without one for the rest of this run\norg.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.Notifications was not provided by any .service files\n```\n\n`package/music-player/desktop-app/src/analysis_notification.rs:320`\nhandles a failed notification effect by logging this warning,\nclearing the current job and notification,\nand retaining engine-pause effects.\nThis issue records the full application integration boundary missing from this CI runtime;\nit does not claim the intended fallback is a defect or that existing unit/protocol tests are absent.\n\nAll seven interaction sessions passed with 117 checks,\nno failures,\nand the existing one not-injectable held-modifier case.\nThe snapshot source is `7b31a6eebec64e193e4165cf7125f781daebf719`.\n`doc/troubleshooting/plasma-job-view-progress-protocol.md`\nalready documents disposable protocol fixtures that should be assessed before adding another owner.\n\n## Acceptance\n\n- Inventory existing notification and job-view protocol fixtures and application integration coverage.\n- Verify the intended indicator path through the built player against a disposable answering service,\n  including progress and cancellation/pause behavior where supported.\n- Verify the no-service fallback independently.\n- Make the prepared runtime's covered and uncovered notification paths explicit.\n- Preserve private session-bus isolation and avoid invoking the host notification daemon.\n",
+              "number": 1054,
+              "state": "OPEN",
+              "title": "Prepared desktop CI: exercise analysis notifications through the built player",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/1054"
+            },
+            {
+              "body": "## Problem\n\nThe original parent-plus-child software compositor setup passes keyboard, playback, clipboard, and private-audio checks but fails pointer/text checks and aborts the wide session.\n\n## Evidence\n\n[Run 38826827023](https://github.com/Aquaticats/Monochromatic/actions/runs/38826827023) contains the failures.\nThe later direct headless software-compositor route passes those checks in [run 38831098294](https://github.com/Aquaticats/Monochromatic/actions/runs/38831098294).\nThat changed execution topology is a workaround; no coordinate-transform or input-protocol root cause has been established.\nThe unrelated folder-fixture and chooser problems are tracked separately.\n\n## Acceptance\n\nRetain a reproducer for the nested route, identify the failing input boundary, and verify pointer/text behavior at the rendered application state.\nDocument and validate any intentional direct-headless E2E route separately from the documented parent-display route.\n",
+              "number": 1007,
+              "state": "OPEN",
+              "title": "Desktop E2E: nested parent compositor route fails pointer and text checks in the cloud trial",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/1007"
+            },
+            {
+              "body": "## Observed failure\n\nRun `p9r4xl6n12`, attempt `ltfw0kr3cd`, ran the frozen TOML source\n`525d2e09f8168a3bdd7e513e26d4c80b363123e5` through harness `409e6ec10600958a5eba45200944ce25eefe7749`.\nThe file-enforcer container check completed with failure after `79620.70287899999` milliseconds (#1070).\nTOML mutation started at `2026-10-17T04:36:53.885Z`.\nThe provider canceled the job at `2026-10-17T05:04:22.162Z` because it exceeded 30 minutes.\nTOML mutation has no terminal result or retained active log artifact.\nIndependent file-enforcer mutation never ran.\nThat unexecuted task has a separate historical source path failure in #1068.\n\n## Diagnosed harness boundary\n\nThe generic executor buffers stdout/stderr to a file and awaits each child exit without a per-check deadline.\nThe container wave defaults to a single worker and sequences independent checks in one job.\nThe mutation runner permits each container session to last 1800 seconds,\nand its campaign can start further sessions and retries.\nThe outer 30-minute job includes preparation and the preceding container check.\nThe job timeout skipped artifact upload and the final source immutability proof.\nThe mutation campaign's internal cause is not established.\nNeither an out-of-memory kill nor a mutation-source defect has been proved by this timeout.\n\n## Required behavior\n\nEach selected container or mutation gate must run independently,\nretain its exact source command and actual outcome,\nand preserve incremental logs, source identity, provider usage, and scoped container diagnostics.\nA deadline for one gate must leave independent gates eligible to run.\nA source failure remains failed.\nA started gate's bounded timeout remains timed out, never passed.\nA prerequisite timeout before the selected gate starts must retain that distinction.\n\n## Evidence and replay\n\n`doc/audit/depot-toml-reconciliation-2026-10-17.evidence.json` retains the frozen manifest,\nall emitted events, exact diagnostics, artifact digests, and provider intervals.\nThe captured-trace assertion `mise run reconcile-toml -- --assert-complete` fails on missing terminal evidence.\nThe canceled attempt consumed `1816904` provider milliseconds at `16x64`;\nthis failed usage remains in the audit.\n\n## Duplicate search\n\nAn all-state GitHub search for TOML mutation timeout found #247 and #479,\nwhich do not describe this executor deadline, evidence-retention, or independent-check scheduling boundary.\nHistorical #1068 and #1070 remain distinct source failures.\n",
+              "number": 1113,
+              "state": "OPEN",
+              "title": "TOML CI timeout loses active mutation evidence and censors an independent gate",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/1113"
+            },
+            {
+              "body": "## Coverage limitation\n\nThe desktop E2E suite records `double-shift/repeat` as not injectable\ninstead of exercising held-Shift repeat behavior through the application input boundary.\nThe pure detector has repeat tests;\nthose tests do not establish the UI event adapter's behavior for the same sequence.\nThis issue tracks the reported coverage limitation,\nnot an observed application failure or a proven compositor defect.\n\n## Source and execution evidence\n\n- `package/music-player/desktop-e2e/src/wide-double-shift.ts:163`\n  calls `recorder.skip` for `double-shift/repeat`.\n  Its reason says the Wayland client does not repeat modifier keys\n  and refers to pure detector coverage.\n- `package/music-player/desktop-e2e/src/scenario-table.unit.test.ts:115`\n  expects 117 executable checks and this one skipped check.\n- `package/music-player/desktop-app/src/double_shift_tests.rs:95`\n  tests `a_held_shift_with_repeats_is_one_press_and_never_a_double_tap`.\n  The test at line 101 checks `repeats_inside_a_tap_do_not_add_a_tap`.\n- `package/music-player/desktop-app/src/ui_keys.rs:267`\n  forwards `key.repeat` into `ShiftInput::ShiftDown` when the received key is Shift.\n  This is the consumer boundary not exercised by the skipped E2E sequence.\n- Successful [run 38833901553](https://github.com/Aquaticats/Monochromatic/actions/runs/38833901553),\n  job `116758578135`,\n  revision `93560fbb09cbec0e1ebb871137820dfb71bad813`,\n  records this skip at 01:17:27 UTC on 2026-10-16.\n  The wide session reports 75 passes,\n  zero failures,\n  and one not-injectable case.\n  All sessions total 117 passes,\n  zero failures,\n  and the same one not-injectable case.\n- The same run's `seek/alt-right-held` and `seek/hold-repeat-count` checks pass.\n  The latter observes 60 seconds of seeking with repeat enabled versus 10 seconds with repeat disabled.\n  This positive control shows ordinary held-key repeat is exercised;\n  it does not establish held-modifier repeat injection.\n\n`doc/audit/depot-desktop-recovery-2026-10-15.evidence.json`\nretains the individual outcomes and source-log digest.\n\n## Acceptance criteria\n\n- Establish whether the held-Shift repeat sequence can reach the application's input adapter\n  on each supported runtime using deciding source evidence and an appropriate consumer probe.\n- For a reachable sequence,\n  add a bounded test at the actual input adapter or a supported native event boundary,\n  including a positive control that a real double tap opens Search.\n- For an unreachable platform sequence,\n  document its platform-specific exclusion and the layer that owns defensive repeat handling.\n  Do not invent a physical input event solely to turn a skip into a pass.\n- Preserve the existing pure detector tests and distinguish unit,\n  adapter,\n  and interactive coverage in results.\n- Keep `117 passed, 0 failed, 1 not injectable` explicit until the classification or coverage changes.\n  Do not count this skip as an executed pass.\n\nAll-state issue and PR searches found no existing issue for this specific limitation.\n#1004 describes the separate chooser failure and merely mentions the old aggregate skip count.\n",
+              "number": 1044,
+              "state": "OPEN",
+              "title": "Desktop E2E: held-modifier repeat remains outside interactive coverage",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/1044"
+            }
+          ]
+        }
+      ],
+      "existing": [
+        {
+          "body": "## Problem\n\nThe wide session times out waiting for the folder of thirty tracks under the generated fallback library.\nThe fixed click selects the current folder rather than the expected Mmm Tones fixture.\n\n## Evidence\n\n[Run 38830049770](https://github.com/Aquaticats/Monochromatic/actions/runs/38830049770) records 69 wide-session passes before the abort.\nTrial commit aa25cce338 replaces that fixture selection with Alt+1, m, Enter and waits for Mmm Tones.\n[Run 38831098294](https://github.com/Aquaticats/Monochromatic/actions/runs/38831098294) then completes the wide session with 75 passes.\nThis recovery is trial-only; it does not establish correctness for every production library/layout.\n\n## Acceptance\n\nMake fixture selection follow a verified accessible state rather than a layout-specific coordinate.\nExercise generated and external fixture routes and preserve subsequent long-list assertions.\n",
+          "comments": [],
+          "number": 1005,
+          "state": "OPEN",
+          "title": "Desktop E2E: fixed-coordinate folder selection aborts the thirty-track fallback fixture",
+          "url": "https://github.com/Aquaticats/Monochromatic/issues/1005"
+        },
+        {
+          "body": "## Problem\n\nThe original parent-plus-child software compositor setup passes keyboard, playback, clipboard, and private-audio checks but fails pointer/text checks and aborts the wide session.\n\n## Evidence\n\n[Run 38826827023](https://github.com/Aquaticats/Monochromatic/actions/runs/38826827023) contains the failures.\nThe later direct headless software-compositor route passes those checks in [run 38831098294](https://github.com/Aquaticats/Monochromatic/actions/runs/38831098294).\nThat changed execution topology is a workaround; no coordinate-transform or input-protocol root cause has been established.\nThe unrelated folder-fixture and chooser problems are tracked separately.\n\n## Acceptance\n\nRetain a reproducer for the nested route, identify the failing input boundary, and verify pointer/text behavior at the rendered application state.\nDocument and validate any intentional direct-headless E2E route separately from the documented parent-display route.\n",
+          "comments": [
+            {
+              "id": "IC_kwDOKlVnec8AAAABc2MzWQ",
+              "author": {
+                "login": "Aquaticat"
+              },
+              "authorAssociation": "MEMBER",
+              "body": "## Measured display geometry in the unchanged historical consumers\n\nNative run `xdlnfpwhzz` and desktop run `7x5lk9dx9q`,\nat pushed harness `9f4a01f699f09abb25f10258455ac0faed0ecae8`,\nretain wide screenshots whose PNG headers report 1920 by 1080.\nThe authored `WIDE_WINDOW` is 1000 by 800,\nand its pointer targets use fixed coordinates,\nincluding Search at `x: 911`.\n\nThe extra parent is configured as 1920 by 1080.\nThe repository compositor's `handler/xdg_shell.rs` calls `set_fullscreen` for new toplevels,\nsets fullscreen state,\nand assigns its logical screen size to the client.\nThis establishes a harness display-geometry mismatch.\nIt does not establish the cause of every text-input assertion failure.\n\nBoth actual consumers selected the locked published compositor version `0.6.0`,\nELF SHA256 `3ced1113988238dc40b9826265aed4c7f620db3f610971b6e47d9e24953ba6e3`.\nChanging the actual inner-compositor selection from source-built to published preserved every one\nof the 70 assertion identity/status pairs:\n60 passing,\nnine failing,\nand one skipped.\nPID rejection and OOM counters remained zero and cleanup passed.\nThe uncaught folder-setup assertion still prevented later sessions from executing.\n\nThe records and PNG hashes are retained in\n`doc/audit/depot-final-recovery-2026-10-17.evidence.json`,\nfield `desktopRuntimePublishedCompositorControl`.\nThe source trace is in `doc/troubleshooting/depot-desktop-e2e-display-geometry.md`.\nThis comment adds evidence to the existing incident rather than creating a duplicate.\n\n## Consumer control now running\n\nPushed harness `107b968b957dc8cb47540df94edda02e26445749`\nwraps the same locked executable with `--headless --gpu software`,\nremoving the additional fixed-size parent.\nLocal invocation controls pass for version/help probes,\nargument boundaries,\nnonzero child exits,\nmissing-binary rejection,\nand an actual removed-headless negative control.\nThese verify the wrapper contract only.\n\nNative control `rfq31sq4g9` and desktop control `jq7ctm8pb2` are running with before/after source identity capture.\nActual rendered dimensions,\nall configured session results,\nassertion identities,\nresource counters,\nand cleanup still require reconciliation.\nThe issue remains open.\n",
+              "createdAt": "2026-10-17T06:47:01Z",
+              "includesCreatedEdit": false,
+              "isMinimized": false,
+              "minimizedReason": "",
+              "reactionGroups": [],
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/1007#issuecomment-6230848345",
+              "viewerDidAuthor": true
+            }
+          ],
+          "number": 1007,
+          "state": "OPEN",
+          "title": "Desktop E2E: nested parent compositor route fails pointer and text checks in the cloud trial",
+          "url": "https://github.com/Aquaticats/Monochromatic/issues/1007"
+        }
+      ]
+    },
+    "published": {
+      "verifiedAt": "2026-10-17T07:23:34.804Z",
+      "issues": [
+        {
+          "number": 1119,
+          "url": "https://github.com/Aquaticats/Monochromatic/issues/1119",
+          "title": "Depot cohort manifests need byte-preserving API retrieval",
+          "bodySha256": "c85af22d524837cbb58679b56aff950d8e351e67816ec544eac6b157f8245047",
+          "state": "OPEN"
+        },
+        {
+          "number": 1120,
+          "url": "https://github.com/Aquaticats/Monochromatic/issues/1120",
+          "title": "Depot desktop E2E receipts omit the source auto-play session",
+          "bodySha256": "b41d7de5f8467e294dc41b1de9e655472612dcedb0542b789a7571aa9d7d61ff",
+          "state": "OPEN"
+        }
+      ],
+      "comments": [
+        {
+          "number": 1005,
+          "url": "https://github.com/Aquaticats/Monochromatic/issues/1005",
+          "commentUrl": "https://github.com/Aquaticats/Monochromatic/issues/1005#issuecomment-6231175258",
+          "bodySha256": "e9c1a84642ac53a1efd7f3a98fb0f6296f5aeefd3b572237461615cc1eefb554",
+          "existingBodyUnchanged": true,
+          "state": "OPEN"
+        },
+        {
+          "number": 1007,
+          "url": "https://github.com/Aquaticats/Monochromatic/issues/1007",
+          "commentUrl": "https://github.com/Aquaticats/Monochromatic/issues/1007#issuecomment-6231175748",
+          "bodySha256": "752fe5f11c3adbe3971d25c6113e295956214b5b92b6e9e99d8955860d0d13be",
+          "existingBodyUnchanged": true,
+          "state": "OPEN"
+        }
+      ]
+    }
+  },
+  "sourceSessionInventoryControls": {
+    "harnessRevision": "f8d090f36dbbbba5dee6e96a732a7da0cd2bc73e",
+    "directory": "/var/mnt/encrypted/temp/agent/depot-native-recovery/source-session-inventory-aaFzwW",
+    "actualTaskSha256": "36d8c93d8997412498039c7831338263a623e71ddb66fd9650a525490e816ec5",
+    "actualFunctionSha256": "8f7b6075246286f2c7bcf699511efe1045e5e721c033e48f5d0e8402324c81d7",
+    "controls": [
+      {
+        "caseId": "native",
+        "actual": {
+          "relativePath": "package/music-player/desktop-e2e/src/selection.ts",
+          "sourceSha256": "0f6066eb6ea38e22834a5232c26c1b915b8a86c232ae94444d598448a6f27f4f",
+          "filter": "",
+          "sessions": [
+            "wide",
+            "narrow",
+            "dialog",
+            "quit",
+            "states",
+            "visual"
+          ]
+        }
+      },
+      {
+        "caseId": "desktop",
+        "actual": {
+          "relativePath": "package/music-player/desktop-e2e/src/selection.ts",
+          "sourceSha256": "8ebbcf498432cd759e0dd490163f6485089b3e86fcffcacb69c11d80b36e9bb4",
+          "filter": "",
+          "sessions": [
+            "wide",
+            "narrow",
+            "dialog",
+            "auto-play",
+            "quit",
+            "states",
+            "visual"
+          ]
+        }
+      }
+    ],
+    "legacySixRejected": true
+  },
+  "commonManifestTransportSources": {
+    "cli": {
+      "revision": "fc4b137cdef0a6bd28fd461b7cf9c84a5812a8cd",
+      "tag": "v2.102.0"
+    },
+    "goGh": {
+      "revision": "37aa5bbaf1a591aa134913efeb3775f0235dc5ab",
+      "tag": "v2.16.1"
+    },
+    "installedCli": "gh version 2.102.0 (2026-09-30)\nhttps://github.com/cli/cli/releases/tag/v2.102.0"
   }
 }
