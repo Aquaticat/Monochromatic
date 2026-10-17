@@ -497,7 +497,7 @@ Control `m018vgrtcv` failed its fixture typecheck before mutation assertions.
 Its compiler detail was not retained; no false-kill result is claimed.
 Independent observation repeat `j03l179f3x` is dispatched with incremental receipts
 and original PATH commands preserved except the removable Node launcher.
-Terminal wait session `83226` ended; use the newly returned observed-repeat wait session.
+Terminal wait session `83226` ended; observed-repeat terminal wait session `51269` is active.
 
 ## Native recovery assertion tracking
 
