@@ -82,15 +82,12 @@ export function createProgramCallBinding({
 
    @param tools - original callable definitions in declared order
 
-   @param runNative - original fixed native runner
-
    @returns frozen original native slot handles
    */
   function bindProgramCalls({
     group: handle,
     calls,
-    tools,
-    runNative
+    tools
   }: BindProgramCallsInput): readonly NativeCallSlot[] {
     /**
      Original reached-group identity remains independent of copied declaration metadata.
@@ -141,8 +138,7 @@ export function createProgramCallBinding({
         .members;
       if ((!isProgramArray(calls)) || (calls.length !== expected.length)
         || (!isProgramArray(tools))
-        || (tools.length !== expected.length)
-        || ((typeof runNative) !== 'function')) throw new JudgmentConstructionError('Native calls differ from complete reached group');
+        || (tools.length !== expected.length)) throw new JudgmentConstructionError('Native calls differ from complete reached group');
       /**
        Native call identifiers remain unique within the complete original reached group.
        */
@@ -195,7 +191,6 @@ export function createProgramCallBinding({
       );
       group.slots = pending;
       group.consumer = createNativeReturnConsumer({
-        runNative,
         getSlot: readOwnedSlot,
         assertCurrent: assertOriginalGroup,
         assertReturnedMember: readReturnedMember

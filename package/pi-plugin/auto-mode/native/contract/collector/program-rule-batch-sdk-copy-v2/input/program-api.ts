@@ -2,9 +2,7 @@
  Public original program operations preserve prepared inspection, live execution, and retained diagnostics. @module
  */
 import type {
-  NativeReturnInput,
   NativeCallSlot,
-  NativeReturnOutcome
 } from './native-return-types.ts';
 import type { PreparedProgramView } from './program-declaration-types.ts';
 import type {
@@ -57,7 +55,7 @@ export type ProgramReaching = Readonly<{
  Native invocation and guarded value access remain separate operations.
  */
 export type ProgramValueAccess = Readonly<{
-  invokeProgramNative: (input: NativeReturnInput & Readonly<{ group: object }>) => Promise<NativeReturnOutcome>;
+  
   scriptValueFor: (input: Readonly<{
     group: object;
     slot: object;

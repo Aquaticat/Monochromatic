@@ -156,13 +156,7 @@ export type NativeReturnSlot = {
  Fixed owner callbacks keep retained inspection separate from live value use.
  */
 export type NativeReturnOwner = {
-  /**
-   External native runner dictates its positional call signature.
-   */
-  readonly runNative: (
-    call: NativeReturnCall,
-    options: unknown
-  ) => unknown;
+  
   /**
    Original slot reader remains available after native completion and retirement.
    */
@@ -193,10 +187,7 @@ export type NativeReturnInput = {
    Original native call object is passed unchanged to the runner.
    */
   readonly call: NativeReturnCall;
-  /**
-   Original native options are passed unchanged to the runner.
-   */
-  readonly options?: unknown;
+  
 };
 
 /**
@@ -235,10 +226,7 @@ export type NativeReturnInspection = {
 export type NativeReturnConsumer = {
   /** Reserve an actual native call before asynchronous preparation starts. */
   readonly open: (input: NativeReturnInput) => NativeReturnEntry;
-  /**
-   Retain the original native return and conversion.
-   */
-  readonly invoke: (input: NativeReturnInput) => Promise<NativeReturnOutcome>;
+  
   /**
    Read supported text only through current original ownership.
    */

@@ -73,7 +73,6 @@ return createJudgmentAPI({
       reachedGroupFor:programs.reachedGroupFor,
       bindProgramCalls:programs.bindProgramCalls,
       prepareReachedMembers:programs.prepareReachedMembers,
-      invokeProgramNative:programs.invokeProgramNative,
       scriptValueFor:programs.scriptValueFor,
       markProgramGuard:programs.markProgramGuard,
       inspectReachedGroup:programs.inspectReachedGroup,

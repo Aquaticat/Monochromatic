@@ -151,7 +151,7 @@ function retainNativeReturn({
 
  @example
  ```ts
- const consumer = createNativeReturnConsumer({ runNative, getSlot, assertCurrent, assertReturnedMember });
+ const consumer = createNativeReturnConsumer({ getSlot, assertCurrent, assertReturnedMember });
  ```
  */
 export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeReturnConsumer {
@@ -166,13 +166,11 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
    Captured callable identities cannot be replaced through later owner mutation.
    */
   const {
-    runNative,
     getSlot,
     assertCurrent,
     assertReturnedMember
   } = owner;
   if ([
-    runNative,
     getSlot,
     assertCurrent,
     assertReturnedMember
@@ -181,7 +179,6 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
    Guard readers use the same fixed callable identities.
    */
   const fixedOwner = Object.freeze({
-    runNative,
     getSlot,
     assertCurrent,
     assertReturnedMember
@@ -205,17 +202,12 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
    */
   function reserve({
     slot: handle,
-    call,
-    options,
-    start = true
-  }: NativeReturnInput & Readonly<{ start?: boolean }>): {
-    readonly invocation: NativeReturnInvocation;
-    readonly pending: unknown
-  } {
+    call
+  }: NativeReturnInput): NativeReturnInvocation {
     if (entry.active) throw new NativeReturnContractError('Native result consumer cannot reenter through synchronous callbacks');
     entry.active = true;
     /**
-     This lexical scope ends before invoke awaits the native operation.
+     This lexical scope ends before native preparation begins.
      */
     using reservation = {
       [Symbol.dispose]: function releaseEntry(): void {
@@ -256,27 +248,14 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
       conversionCount: 0,
     };
     slot.native = invocation;
-    try {
-      return {
-        invocation,
-        pending: start ? runNative(
-          call,
-          options
-        ) : undefined
-      };
-    }
-    catch (error) {
-      invocation.state = 'threw';
-      invocation.failure = error;
-      throw error;
-    }
+    return invocation;
   }
 
   /** Reserve the actual call before preparation while permitting terminal capture after parent return. */
   function open(input: NativeReturnInput): NativeReturnEntry {
     const ol = tagged({ tag: open.name, l: rl });
     ol.debug('reserving original call for native preparation');
-    const { invocation } = reserve({ ...input, start: false });
+    const invocation = reserve(input);
     function complete(outcome: unknown): NativeReturnOutcome {
       tagged({ tag: complete.name, l: ol }).debug('retaining original native phase completion');
       if (invocation.state !== 'running') throw new NativeReturnContractError('Native call already has a terminal outcome');
@@ -290,48 +269,7 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
     return Object.freeze({ complete, fail });
   }
 
-  /**
-   Retain an initiated operation's completion without consulting live-use readers.
-
-   @param input - original slot, call, and native options
-
-   @returns exact native outcome after capturing its conversion once
-
-   @throws NativeReturnContractError when reservation, identity, or return shape is invalid
-   */
-  async function invoke(input: NativeReturnInput): Promise<NativeReturnOutcome> {
-    /**
-     Native lifecycle logs omit captured result values.
-     */
-    const il = tagged({
-      tag: invoke.name,
-      l: rl
-    });
-    /**
-     The synchronous reservation ends before awaiting native work.
-     */
-    const {
-      invocation,
-      pending
-    } = reserve(input);
-    il.debug('reserved original native invocation');
-    try {
-      /**
-       Retain completion directly after the original native await, even if the parent retired.
-       */
-      const outcome: unknown = await pending;
-      return retainNativeReturn({
-        invocation,
-        outcome
-      });
-    } catch (error) {
-      if (invocation.state === 'running') {
-        invocation.state = 'threw';
-        invocation.failure = error;
-      }
-      throw error;
-    }
-  }
+  
 
   /**
    Read the original converted value while current ownership and member completion hold.
@@ -387,7 +325,6 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
   }
   return Object.freeze({
     open,
-    invoke,
     valueFor,
     inspect
   });

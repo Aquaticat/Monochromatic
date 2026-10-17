@@ -40,7 +40,6 @@ export function createJudgmentAPI<const Source extends JudgmentPreparationSource
     reachedGroupFor,
     bindProgramCalls,
     prepareReachedMembers,
-    invokeProgramNative,
     scriptValueFor,
     markProgramGuard,
     inspectReachedGroup,
@@ -130,7 +129,6 @@ export function createJudgmentAPI<const Source extends JudgmentPreparationSource
         operation,
         run: prepareReachedMembers
       }),
-      invokeProgramNative,
       scriptValueFor,
       markProgramGuard: guardWithInput({
         operation,
