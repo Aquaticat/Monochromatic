@@ -179,7 +179,8 @@ Completed units (findings validated):
  `code-test-fixture-2` (10 findings),
  `code-webapp-productivity-1` (12 findings),
  `docs-troubleshooting-1` (12 findings),
- `docs-audit` (13 findings).
+ `docs-audit` (13 findings),
+ `docs-troubleshooting-2` (15 findings).
 
 Cross-unit leads:
  `doc/planning/music-player-shared-truepeak-core.md` repeats the retired truepeak policy
@@ -234,6 +235,9 @@ Cross-unit leads:
  `.github/workflows/cli-git-trust.yml` and `cli-git-performance.yml` workflows per
  `docs-troubleshooting-1-008`;
  dedupe candidate for that finding's issue.
+ Troubleshooting docs link `github.com/Aquaticat/Monochromatic/...` (singular owner)
+ while the remote is `Aquaticats/Monochromatic`, per `docs-troubleshooting-2` notes;
+ dedupe candidate with `code-config-1-001` and open issue #1124.
  The stale pre-transfer `repository.url` (Aquaticat instead of Aquaticats) spans most
  `package.json` files repo-wide per `code-config-1-001`;
  likely dedupe target is open issue #1124;
@@ -243,20 +247,19 @@ Cross-unit leads:
  hand to the `cross-dependency` reviewer when it launches.
 
 Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
- `docs-troubleshooting-2`,
  `docs-planning`,
  `docs-decision`,
  `docs-handover`,
  `config-root`,
  `config-root-docs`,
  `config-ci`,
- `config-paused-1` (launched as a replacement).
+ `config-paused-1`,
+ `config-paused-2` (launched as a replacement).
 
 Queued units in launch order (flat list; the first entry launches next):
 
 - `code-stub-1`,
 - `docs-troubleshooting-1`,
-- `config-paused-2`,
 - `cross-security`,
 - `cross-dependency`,
 - `cross-duplication`,
