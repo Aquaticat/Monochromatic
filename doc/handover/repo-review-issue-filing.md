@@ -18,7 +18,7 @@ Resume the repository-wide review of this repo without re-deriving its scope,
 - [x] Build the issue filing pipeline (render,
  dedupe,
  paced `gh issue create`).
-- [ ] Validate one pilot reviewer output against the finding schema.
+- [x] Validate one pilot reviewer output against the finding schema.
 - [ ] Fan out the remaining review scopes to subagents.
 - [ ] Deduplicate findings against each other and the 826 open issues.
 - [ ] File one issue per distinct defect and report the issue numbers.
@@ -50,9 +50,13 @@ The review partition and filing tooling are built and unchanged.
 - `dedupe-candidates.ts`:
  groups findings sharing an evidence `path:line` or a near-identical title,
  writes `dedupe/candidates.json` and `dedupe/index.tsv`.
+- `REVIEW-PROMPT.md`:
+ the shared reviewer prompt every fan-out subagent reads before working its unit.
 - `findings/`:
  one `<unit-id>.json` array per completed reviewer unit;
- the pilot `code-ssg-1` writes here first.
+ `code-ssg-1.json` (the pilot) holds 25 findings (1 BLOCKER,
+ 16 WARNING,
+ 8 NIT) and matches the schema.
 - `dedupe/decisions.json`:
  not written yet;
  the filer expects `{ "<finding-id>": { "action": "file" | "skip", "mergeInto": "<id>", "dupOfIssue": n } }`.
@@ -118,16 +122,92 @@ Findings arrive as one JSON array per unit with fields id,
 - GitHub may rate limit bulk issue creation despite 2.5 s pacing.
  `file-issues.ts` backs off and records errors in `filed.jsonl`;
  a rerun continues where it stopped.
-- The pilot has not yet landed,
- so the finding schema is unvalidated at the fan-out boundary.
+- Resolved 2026-10-17:
+ the harness allows at most 8 active subagent children,
+ so the fan-out runs in waves of 8.
+ The pilot validated the finding schema (all fields present,
+ 25 findings from 155 files for `code-ssg-1`).
+
+## Wave queue
+
+Wave 1 in flight on 2026-10-17 (8 units):
+ `code-mp-desktop`,
+ `code-mp-android`,
+ `code-mp-design`,
+ `code-mp-rest`,
+ `code-ide-src`,
+ `code-ide-design`,
+ `code-gitpolicy-src`,
+ `code-gitpolicy-rest`.
+
+Queued units in order,
+ launched 8 at a time as slots free:
+
+1. `code-automode-src`,
+ `code-automode-native`,
+ `code-agent-harness-shared-1`,
+ `code-build-tool-1`,
+ `code-claude-code-plugin-1`,
+ `code-cli-1`,
+ `code-cli-2`,
+ `code-cloudflare-worker-1`.
+2. `code-codex-plugin-1`,
+ `code-config-1`,
+ `code-desktop-app-1`,
+ `code-desktop-daemon-1`,
+ `code-dev-script-1`,
+ `code-figma-1`,
+ `code-git-1`,
+ `code-intellij-plugin-1`.
+3. `code-kwin-1`,
+ `code-learning-1`,
+ `code-linter-1`,
+ `code-mcp-1`,
+ `code-module-1`,
+ `code-module-2`,
+ `code-module-3`,
+ `code-module-4`.
+4. `code-ownership-marker-1`,
+ `code-oxlint-plugin-1`,
+ `code-pi-plugin-1`,
+ `code-pi-plugin-2`,
+ `code-pi-shared-1`,
+ `code-rolldown-plugin-1`,
+ `code-runtime-error-1`,
+ `code-rust-module-1`.
+5. `code-shim-1`,
+ `code-stub-1`,
+ `code-test-fixture-1`,
+ `code-test-fixture-2`,
+ `code-typeface-1`,
+ `code-webapp-productivity-1`,
+ `docs-troubleshooting-1`,
+ `docs-troubleshooting-2`.
+6. `docs-audit`,
+ `docs-planning`,
+ `docs-decision`,
+ `docs-handover`,
+ `config-root`,
+ `config-root-docs`,
+ `config-ci`,
+ `config-paused-1`.
+7. `config-paused-2`,
+ `cross-security`,
+ `cross-dependency`,
+ `cross-duplication`,
+ `cross-testing`,
+ `cross-build`,
+ `cross-rust`,
+ `cross-api`.
+8. `cross-logging` (final unit,
+ runs alone or with any retry slots).
 
 ## Next action
 
-When the pilot subagent for `code-ssg-1` reports,
- validate `findings/code-ssg-1.json` against the schema,
- fix the prompt once if it deviates,
- then fan out the 65 remaining units with the same prompt template.
- After all findings land:
- run `dedupe-candidates.ts`,
+Validate each wave's `findings/<unit-id>.json` as it lands (parse check,
+ field presence,
+ title length).
+ When all 65 remaining units have landed:
+ run `node dedupe-candidates.ts`,
  write `dedupe/decisions.json` from the candidate groups plus `open-issues.txt`,
  then run `node file-issues.ts` and report filed issue numbers.
