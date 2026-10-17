@@ -285,7 +285,7 @@ No Windows application fix or additional VM attempt is included in this diagnosi
 
 ## Terminal source and coverage verification
 
-The successful recovery attempt retains artifact
+The terminal group-recovery attempt retains artifact
 `01a14835-9090-7ae6-9802-21e1bc74a1ee`,
 21,474 bytes,
 SHA-256 `606cb2a627cc1dcf9bc99d4bb310e9e9ae00c05fcd4ef90b4dc951c0559663e1`.
@@ -317,6 +317,43 @@ terminal provider usage,
 and coverage status.
 Final coherent pipeline replay remains a separate measurement step;
 no replay was dispatched as part of this handoff.
+
+## Clean route for final coherent replay
+
+The final route is committed and remotely verified at
+`0cb7b85ec0c70438636f15d43f021d9cf3d52b8e`
+on branch `trial/depot-complete-vm-20261016`.
+Workflow `.depot/workflows/depot-complete-vm-original.yml`,
+job `vm-original`,
+runs `//package/dev-script/task-util:trial:depot:vm:original`.
+The adapter invokes only the authored source command
+`mise run //package/cli/vmsync:test:e2e`.
+That source task owns its existing bundle-build dependency.
+The logger manifest owner corrected the old inherited `test:unit` plus explicit file argument
+to the authored `test:e2e` route and its build prerequisite;
+the historical old manifest remains development provenance.
+
+The final adapter allocates private HOME,
+configuration,
+cache,
+data,
+and runtime directories before invoking the original task.
+It preserves the actual command result,
+both configured test identities,
+and initial/final source identity with input hashes.
+It requires the known helper-resolution failure to remain a failed required check.
+It does not run the supplementary Ubuntu or Windows preparation cycle.
+Those environment capabilities and the Windows limitation remain separate diagnostic evidence.
+
+The workflow retains `logger-vm-original-evidence`
+from `~/temp/agent/depot-complete-vm-original-evidence/`.
+Its declared allocation is 16 CPUs and 64 GiB,
+with a 20-minute provider timeout and 600-second source-command bound.
+The task definition parsed through mise,
+its inline Node module passed syntax checking,
+and its committed workflow/source-task selection matched the corrected route.
+The new adapter's consumer invocation is reserved for the coherent replay;
+these checks do not establish a new provider result.
 
 ## What does not work
 
