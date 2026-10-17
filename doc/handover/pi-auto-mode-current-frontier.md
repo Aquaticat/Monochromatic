@@ -201,6 +201,30 @@ disposable successive-release/publication rollback test,
 and package type check pass.
 This release-size improvement does not complete the requested source architecture reduction.
 
+Commit `799f43d1d8` shares root and child execution/cleanup instead of maintaining separate bodies.
+Its bounded verification passes the 18 native lifecycle cases,
+actual progress callbacks,
+single-call profiles,
+the 24-case fallback matrix,
+and execution/child-lifetime catalogs.
+The former `execute-child.mjs` is removed;
+its provenance entry retains the original path/hash and records the current maintained path and move date.
+
+Commit `167a6e7dfa` consolidates native membership and execution state across automatic and manual review.
+`prepared-group.mjs` owns disposition and scoped confirmation.
+`prepared-group-context.ts` owns the shared root/child member and execution maps.
+The source compiler borrows those exact records and original prepared serialization.
+The separate `manual-group.mjs` owner and automatic/manual execution lookup branches are removed.
+This internal context is never accepted from provider responses or tool arguments.
+Build `native-release-Q1COLq` and types pass,
+but native consumer verification is pending and preparation/constructor fixtures need migration.
+The followup restricts manual entry to the actual scoped Allow response,
+without retaining eligibility from a failed automatic review.
+Next action: finish the fixture migration,
+rebuild,
+run the actual native route and child catalogs,
+then repeat configured-host and payload/prohibition verification before renewing readiness.
+
 A provider-payload audit finds a separate missed shell boundary:
 known process result metadata and `ad-process:notification` details retain raw `command` strings.
 The new regression was committed red;

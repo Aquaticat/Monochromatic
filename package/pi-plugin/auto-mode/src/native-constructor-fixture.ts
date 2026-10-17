@@ -2,6 +2,7 @@
  Original constructor observations use independent identities and fault controls. @module
  */
 import assert from 'node:assert/strict';
+import { createPreparedGroupContext } from '../dist/native/contract/integration/native-batch/prepared-group-context.ts';
 import type { ConstructorFixtureInput } from './native-constructor-module-fixture.ts';
 
 /**
@@ -92,7 +93,7 @@ export function createConstructorFixture(): ConstructorFixture {
     /**
      Original content getter exposes the observation before returning native tool values.
      */
-    get content(): readonly object[] {
+    get content() {
       step('content');
       return [{
         type: 'toolCall',
@@ -194,7 +195,11 @@ export function createConstructorFixture(): ConstructorFixture {
       startedAt: 100,
       signal: controller.signal,
       response,
-      stream
+      stream,
+      group() {
+        return createPreparedGroupContext({ response, stream, signal: controller.signal,
+          readClosure: premature, readJudgment: premature, assertDependenciesCurrent: premature });
+      }
     },
   };
 }

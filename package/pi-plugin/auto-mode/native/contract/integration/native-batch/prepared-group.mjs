@@ -56,7 +56,8 @@ export function createPreparedGroup({response,stream,signal,assertOperationCurre
     const original=createPreparedGroupContext({response,stream,signal,
       assertDependenciesCurrent:current,
       readJudgment(){return state.scope??api;},
-      readClosure(){return {finished:state.bypassed||state.reviewed?.outcome.verdict==='approve',closeFailed:false};}
+      readClosure(){return {finished:state.manual?state.answer?.decision.block===false:
+        !state.automaticFailure&&(state.bypassed||state.reviewed?.outcome.verdict==='approve'),closeFailed:false};}
     });
     const core=original.executions;
     const executions={...core,

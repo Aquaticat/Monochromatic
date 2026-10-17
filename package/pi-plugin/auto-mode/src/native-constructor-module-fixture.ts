@@ -35,6 +35,7 @@ export type ConstructorFixtureInput = Readonly<{
   signal: AbortSignal;
   response: object;
   stream: object;
+  group: () => unknown;
 }>;
 
 /**
