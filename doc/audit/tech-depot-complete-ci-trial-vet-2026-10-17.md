@@ -414,27 +414,35 @@ actual artifact-consumer assertions and the missing allocation boundaries
 
 ### Candidate ledger and vetting boundary
 
-- Depot CI is the explicitly requested managed-service trial candidate.
-  Its open-source CLI is a separate local component;
-  inspecting that client does not make the hosted control plane open source.
-  The trial demonstrates Linux execution and inspectable client behavior at the collected boundaries.
-  It does not complete service terms,
-  retention,
-  security,
-  support,
-  business-continuity or full client maintenance/provenance audits
-  ([client source trace](../troubleshooting/depot-ci-workflow-metadata-accounting.md),
-  [execution evidence](depot-final-gates-and-intervals-2026-10-17.evidence.json)).
-- Retaining GitHub Actions is the measured incumbent path for native platforms and repository gates.
-  It preserves those demonstrated boundaries,
-  but this evaluation does not establish a complete equivalent GitHub-only graph or its comparative latency and spend
-  ([actual GitHub consumers](depot-coherent-github-gates-2026-10-17.evidence.json)).
-- Local execution is an existing consumer path,
-  demonstrated here by Android instrumentation.
-  It adds real device-boundary evidence,
-  but has no complete-graph capacity,
-  isolation or operating-cost comparison in this trial
-  ([Android execution](depot-coherent-android-2026-10-17.evidence.json)).
+#### Depot CI
+
+Depot CI is the explicitly requested managed-service trial candidate.
+Its open-source CLI is a separate local component;
+inspecting that client does not make the hosted control plane open source.
+The trial demonstrates Linux execution and inspectable client behavior at the collected boundaries.
+It does not complete service terms,
+retention,
+security,
+support,
+business-continuity or full client maintenance/provenance audits
+([client source trace](../troubleshooting/depot-ci-workflow-metadata-accounting.md),
+[execution evidence](depot-final-gates-and-intervals-2026-10-17.evidence.json)).
+
+#### GitHub Actions
+
+Retaining GitHub Actions is the measured incumbent path for native platforms and repository gates.
+It preserves those demonstrated boundaries,
+but this evaluation does not establish a complete equivalent GitHub-only graph or its comparative latency and spend
+([actual GitHub consumers](depot-coherent-github-gates-2026-10-17.evidence.json)).
+
+#### Local execution
+
+Local execution is an existing consumer path,
+demonstrated here by Android instrumentation.
+It adds real device-boundary evidence,
+but has no complete-graph capacity,
+isolation or operating-cost comparison in this trial
+([Android execution](depot-coherent-android-2026-10-17.evidence.json)).
 
 Depot currently documents Linux x86/Arm sandboxes and no native macOS or Windows support.
 Therefore the trial's existing mixed-provider arrangement remains necessary for those measured host boundaries.
