@@ -1023,7 +1023,8 @@ const rootfs=mkdtempSync(join(scratch,'depot-vm-bundle-rootfs-'))
 chmodSync(rootfs,0o755)
 const name=`depot-vm-bundle-${process.pid}-${Date.now()}`
 const startedAt=new Date().toISOString()
-const record={schemaVersion:1,kind:'vmsync-standalone-bundle-consumer',status:'failed',cohort:binding.cohort,harnessRevision:binding.harnessRevision,sourceRevision:receipt.sourceRevision,caseManifestSha256:binding.caseManifestSha256,providerJobUrl:process.env.DEPOT_JOB_URL,naturalBuildReceiptSha256:sha256(receiptBytes),artifact:receipt.artifact,node:receipt.node,sourceTask:original?{result:original.result,helperResolutionFailure:original.helperResolutionFailure,configuredTests:original.configuredTests,runtimeCoverage:original.runtimeCoverage}:null,sourceMounted:false,nodeModulesMounted:false,network:'none',resources:{memoryBytes:2147483648,cpus:2,pidsLimit:512},containerMode:mode,containerName:name,rootfs,startedAt,cleanup:{}}
+function inventoryRootfs(){const files=[],directories=[rootfs];while(directories.length){const parent=directories.pop();for(const entry of readdirSync(parent,{withFileTypes:true})){const path=join(parent,entry.name);if(entry.isDirectory())directories.push(path);else if(entry.isFile()){const stat=statSync(path);files.push({path:relative(rootfs,path),type:'file',bytes:stat.size,uid:stat.uid,gid:stat.gid,mode:stat.mode&0o7777,sha256:sha256(readFileSync(path))})}else files.push({path:relative(rootfs,path),type:entry.isSymbolicLink()?'symlink':'other'})}}return files.sort((a,b)=>a.path.localeCompare(b.path))}
+const record={schemaVersion:1,kind:'vmsync-standalone-bundle-consumer',status:'failed',cohort:binding.cohort,harnessRevision:binding.harnessRevision,sourceRevision:receipt.sourceRevision,caseManifestSha256:binding.caseManifestSha256,providerJobUrl:process.env.DEPOT_JOB_URL,naturalBuildReceiptSha256:sha256(receiptBytes),artifact:receipt.artifact,node:receipt.node,sourceTask:original?{result:original.result,helperResolutionFailure:original.helperResolutionFailure,configuredTests:original.configuredTests,runtimeCoverage:original.runtimeCoverage}:null,sourceMounted:false,nodeModulesMounted:false,network:'none',resources:{memoryBytes:2147483648,cpus:2,pidsLimit:512},containerMode:mode,containerName:name,rootfs,rootfsOverlay:true,startedAt,cleanup:{}}
 let failure
 try {
  const ldd=execFileSync('ldd',[receipt.node.path],{encoding:'utf8'})
@@ -1039,10 +1040,7 @@ try {
  copyFileSync(artifact,join(rootfs,'artifact/index.mjs'))
  writeFileSync(join(rootfs,'artifact/receipt.json'),receiptBytes,{mode:0o644})
  mkdirSync(join(rootfs,'home/consumer'),{recursive:true,mode:0o755})
- const files=[]
- const directories=[rootfs]
- while(directories.length){const parent=directories.pop();for(const entry of readdirSync(parent,{withFileTypes:true})){const path=join(parent,entry.name);if(entry.isDirectory())directories.push(path);else{assert(entry.isFile(),'Minimal VM consumer rootfs must contain only copied files and directories');files.push({path:relative(rootfs,path),bytes:statSync(path).size,sha256:sha256(readFileSync(path))})}}}
- record.rootfsFiles=files.sort((a,b)=>a.path.localeCompare(b.path))
+ record.rootfsFiles=inventoryRootfs()
  async function consumeArtifact(){
   const {readFileSync,existsSync}=await import('node:fs')
   const {spawnSync}=await import('node:child_process')
@@ -1067,10 +1065,11 @@ try {
    assert.equal(result.status,0,`${id}: ${result.stderr}`)
    for(const fragment of fragments)assert((result.stdout??'').includes(fragment),`${id}: missing ${fragment}`)
   }
-  console.log(JSON.stringify({artifactSha256:receipt.artifact.sha256,cohort:receipt.cohort,sourceRevision:receipt.sourceRevision,harnessRevision:receipt.harnessRevision,caseManifestSha256:receipt.caseManifestSha256,node:process.versions.node,limits,memoryPeak:readFileSync('/sys/fs/cgroup/memory.peak','utf8').trim(),networkInterfaces:Object.keys(interfaces),results}))
+  const memoryPeak=Number(readFileSync('/sys/fs/cgroup/memory.peak','utf8').trim())
+  console.log(JSON.stringify({artifactSha256:receipt.artifact.sha256,cohort:receipt.cohort,sourceRevision:receipt.sourceRevision,harnessRevision:receipt.harnessRevision,caseManifestSha256:receipt.caseManifestSha256,node:process.versions.node,limits,memoryPeak,memoryPeakFraction:memoryPeak/Number(limits.memoryMax),networkInterfaces:Object.keys(interfaces),results}))
  }
  const body=`await (${consumeArtifact.toString()})()`
- const args=[...prefix,'run','--rm','--name',name,'--cgroupns=private','--memory=2g','--cpus=2','--pids-limit=512','--network=none','--timeout=60','--read-only','--security-opt','label=disable',...(mode==='rootless'?['--userns=keep-id']:[]),'--user',`${process.getuid()}:${process.getgid()}`,'--env','HOME=/home/consumer','--env','PATH=/usr/bin','--env','TZ=UTC','--env','LD_LIBRARY_PATH='+[...new Set(libraries.map(dirname))].join(':'),'--env','DEPOT_VM_EXPECTED_BINDING='+JSON.stringify({cohort:binding.cohort,harnessRevision:binding.harnessRevision,sourceRevision:receipt.sourceRevision,caseManifestSha256:binding.caseManifestSha256}),'--rootfs',rootfs,'/usr/bin/node','--input-type=module-typescript','-e',body]
+ const args=[...prefix,'run','--rm','--name',name,'--cgroupns=private','--memory=2g','--cpus=2','--pids-limit=512','--network=none','--timeout=60','--read-only','--security-opt','label=disable',...(mode==='rootless'?['--userns=keep-id']:[]),'--user',`${process.getuid()}:${process.getgid()}`,'--env','HOME=/home/consumer','--env','PATH=/usr/bin','--env','TZ=UTC','--env','LD_LIBRARY_PATH='+[...new Set(libraries.map(dirname))].join(':'),'--env','DEPOT_VM_EXPECTED_BINDING='+JSON.stringify({cohort:binding.cohort,harnessRevision:binding.harnessRevision,sourceRevision:receipt.sourceRevision,caseManifestSha256:binding.caseManifestSha256}),'--rootfs',rootfs+':O','/usr/bin/node','--input-type=module-typescript','-e',body]
  record.command={command,args}
  const result=spawnSync(command,args,{encoding:'utf8',timeout:90000,maxBuffer:16*1024*1024})
  writeFileSync(join(directory,'bundle-consumer.stdout.log'),result.stdout??'')
@@ -1092,8 +1091,7 @@ finally {
  const absent=spawnSync(command,[...prefix,'container','exists',name],{encoding:'utf8',timeout:15000})
  record.cleanup.finalContainerExistsExit=absent.status
  if(absent.status!==1)failure??=new VmBundleConsumerFailure('Owned standalone VM consumer container remains or its absence is unverified')
- record.cleanup.rootfsInventoryBeforeRemoval=record.rootfsFiles??[]
- try {rmSync(rootfs,{recursive:true});record.cleanup.rootfsRemoved=!existsSync(rootfs)}catch(error){failure??=error;record.cleanup.rootfsError=error.stack??String(error);console.error(error)}
+ try {record.cleanup.rootfsInventoryBeforeRemoval=inventoryRootfs();record.cleanup.rootfsInputsUnchanged=JSON.stringify(record.cleanup.rootfsInventoryBeforeRemoval)===JSON.stringify(record.rootfsFiles);rmSync(rootfs,{recursive:true});record.cleanup.rootfsRemoved=!existsSync(rootfs)}catch(error){failure??=error;record.cleanup.rootfsError=error.stack??String(error);console.error(error)}
  record.finishedAt=new Date().toISOString()
  if(failure)record.status='failed'
  writeFileSync(join(directory,'bundle-consumer.json'),JSON.stringify(record,null,2)+'\n')
