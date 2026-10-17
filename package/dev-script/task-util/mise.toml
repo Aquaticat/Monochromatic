@@ -969,3 +969,160 @@ if(phase==='after')assert.deepEqual(identity,JSON.parse(readFileSync(join(direct
 writeFileSync(join(directory,`${caseId}-source-${phase}.json`),JSON.stringify({phase,collectedAt:new Date().toISOString(),identity},null,2)+'\n');
 console.log(JSON.stringify({event:'immutable-source-verified',phase,caseId,sourceRevision:head,sourceTree:identity.sourceTree,configuredInputs:paths.size,manifestSha256:identity.manifestSha256}));
 '''
+
+[tasks."trial:depot:ci:cohort-identity"]
+description = "Bind each registered root route and immutable source to the shared replay"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { readFileSync, writeFileSync, mkdirSync } = await import('node:fs')
+const { createHash } = await import('node:crypto')
+const { join } = await import('node:path')
+const { homedir } = await import('node:os')
+const { strict: assert } = await import('node:assert')
+const routes = {
+  "native.producers": {
+    "caseId": "native",
+    "workflow": ".depot/workflows/depot-complete-native.yml"
+  },
+  "native.features": {
+    "caseId": "native",
+    "workflow": ".depot/workflows/depot-complete-native-features.yml"
+  },
+  "native.desktop": {
+    "caseId": "native",
+    "workflow": ".depot/workflows/depot-complete-desktop-linux.yml"
+  },
+  "desktop.linux": {
+    "caseId": "desktop",
+    "workflow": ".depot/workflows/depot-complete-desktop-case-linux.yml"
+  },
+  "toml.scanner": {
+    "caseId": "toml",
+    "workflow": ".github/workflows/forbidden-strings.yml"
+  },
+  "toml.scorecard": {
+    "caseId": "toml",
+    "workflow": ".github/workflows/scorecard.yml"
+  },
+  "logger.scanner": {
+    "caseId": "logger",
+    "workflow": ".github/workflows/forbidden-strings.yml"
+  },
+  "logger.scorecard": {
+    "caseId": "logger",
+    "workflow": ".github/workflows/scorecard.yml"
+  },
+  "native.scanner": {
+    "caseId": "native",
+    "workflow": ".github/workflows/forbidden-strings.yml"
+  },
+  "native.scorecard": {
+    "caseId": "native",
+    "workflow": ".github/workflows/scorecard.yml"
+  },
+  "desktop.scanner": {
+    "caseId": "desktop",
+    "workflow": ".github/workflows/forbidden-strings.yml"
+  },
+  "desktop.scorecard": {
+    "caseId": "desktop",
+    "workflow": ".github/workflows/scorecard.yml"
+  }
+}
+const routeId = process.env.DEPOT_CI_ROUTE
+assert(Object.hasOwn(routes, routeId ?? ''), 'Unknown registered root route')
+const route = routes[routeId]
+const { caseId } = route
+assert.equal(process.env.DEPOT_CI_CASE, caseId, 'Route and selected source case differ')
+const source = join(process.env.GITHUB_WORKSPACE, 'source')
+const manifestBytes = readFileSync(join(process.env.GITHUB_WORKSPACE, 'harness/.depot/manifests/' + caseId + '.json'))
+const manifest = JSON.parse(manifestBytes)
+const phase = process.env.DEPOT_CI_IDENTITY_PHASE
+assert(['before', 'after'].includes(phase))
+const cohort = { id: process.env.COHORT_ID, manifestSha256: process.env.COHORT_MANIFEST_SHA256, requestedAt: process.env.COHORT_REQUESTED_AT }
+assert.match(cohort.id ?? '', /^[A-Za-z0-9._-]{1,128}$/)
+assert.match(cohort.manifestSha256 ?? '', /^[a-f0-9]{64}$/)
+assert(Number.isFinite(Date.parse(cohort.requestedAt ?? '')))
+assert.equal(new Date(cohort.requestedAt).toISOString(), cohort.requestedAt, 'Request instant must use canonical UTC ISO form')
+const git = args => execFileSync('git', args, { cwd: source, encoding: 'utf8' }).trim()
+const indexEntries = execFileSync('git', ['ls-files', '-v', '-z'], { cwd: source, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }).split('\0').filter(Boolean)
+assert(indexEntries.every(entry => entry[0] !== 'S' && !/[a-z]/.test(entry[0])), 'Immutable source index must not hide tracked inputs with assume-unchanged or skip-worktree flags')
+const tracked = execFileSync('git', ['ls-files', '-z'], { cwd: source, encoding: 'utf8' }).split('\0').filter(Boolean)
+const packageRoots = [...new Set([...manifest.selectedPackages, ...manifest.externalChecks.flatMap(check => check.artifactPrerequisitePackage ? [check.artifactPrerequisitePackage] : [])])]
+const metadataNames = new Set(['mise.toml', 'mise.no-env.toml', 'mise.lock', 'package.json', 'Cargo.toml', 'Cargo.lock', 'config.toml', 'coverage-baseline.json', 'Containerfile.alpine'])
+const paths = tracked.filter(path => {
+  const name = path.slice(path.lastIndexOf('/') + 1)
+  const rootConfiguration = !path.includes('/') && (metadataNames.has(name) || ['.toml', '.json', '.jsonc', '.yaml', '.yml'].some(extension => name.endsWith(extension)) || name.includes('.config.'))
+  const packageConfiguration = packageRoots.some(prefix => path.startsWith(prefix + '/')) && (metadataNames.has(name) || name.startsWith('tsconfig.') || name.includes('.config.') || path.includes('/.cargo/'))
+  return rootConfiguration || path.startsWith('.cargo/') || ['Cargo.toml', 'Cargo.lock'].includes(name) || packageConfiguration
+}).toSorted()
+const sha256 = bytes => createHash('sha256').update(bytes).digest('hex')
+const identity = { head: git(['rev-parse', 'HEAD']), sourceTree: git(['rev-parse', 'HEAD^{tree}']), trackedStatus: git(['status', '--porcelain', '--untracked-files=no']), inputs: Object.fromEntries(paths.map(path => { const bytes = readFileSync(join(source, path)); assert.deepEqual(bytes, execFileSync('git', ['show', 'HEAD:' + path], { cwd: source, maxBuffer: 16 * 1024 * 1024 }), 'Configured source input differs: ' + path); return [path, sha256(bytes)] })) }
+assert.equal(identity.head, manifest.sourceRevision)
+if (process.env.SOURCE_HEAD) assert.equal(process.env.SOURCE_HEAD, manifest.sourceRevision, 'Workflow source input differs from the bound case')
+if (process.env.SOURCE_BASE) assert.equal(process.env.SOURCE_BASE, manifest.baseRevision, 'Workflow comparison base differs from the bound case')
+assert.equal(identity.trackedStatus, '', 'Historical source changed')
+const harnessRevision = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+if (process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true') assert.match(process.env.GITHUB_SHA ?? '', /^[a-f0-9]{40}$/, 'Provider harness revision is required in CI')
+if (process.env.GITHUB_SHA) assert.equal(harnessRevision, process.env.GITHUB_SHA)
+const localDirectory = process.env.DEPOT_CI_PROVENANCE_DIRECTORY
+if (localDirectory) assert(process.env.CI !== 'true' && process.env.GITHUB_ACTIONS !== 'true', 'Fixture output cannot run in CI')
+const directory = localDirectory ?? join(homedir(), 'temp/agent/depot-complete-ci')
+assert(directory.startsWith('/'))
+mkdirSync(directory, { recursive: true, mode: 0o700 })
+async function readContentsApi({ path }) {
+  const token = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN
+  if (process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true') assert(token, 'Contents API authentication is required in CI')
+  const url = 'https://api.github.com/repos/Aquaticats/Monochromatic/contents/' + path + '?ref=main'
+  const response = await fetch(url, { headers: { Accept: 'application/vnd.github.object+json', 'User-Agent': 'Monochromatic-Depot-Trial', ...(token ? { Authorization: 'Bearer ' + token } : {}) }, signal: AbortSignal.timeout(30000) })
+  assert.equal(response.status, 200, 'Common manifest Contents API request failed')
+  const text = await response.text()
+  assert(Buffer.byteLength(text) < 2 * 1024 * 1024, 'Contents API envelope exceeds the manifest transport bound')
+  const envelope = JSON.parse(text)
+  assert.equal(envelope.encoding, 'base64', 'Contents API must return base64 file bytes')
+  assert.equal(envelope.type, 'file')
+  assert.equal(envelope.path, path)
+  assert.equal(typeof envelope.content, 'string')
+  const encoded = envelope.content.replace(/\s+/g, '')
+  assert.match(encoded, /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/)
+  const bytes = Buffer.from(encoded, 'base64')
+  assert(bytes.length < 1024 * 1024, 'Common manifest must be below one MiB')
+  assert.equal(bytes.length, envelope.size)
+  assert.equal(bytes.toString('base64'), encoded, 'Contents API base64 must preserve exact bytes')
+  return { bytes, path, repository: 'Aquaticats/Monochromatic', ref: 'main', url, gitBlob: envelope.sha, sha256: sha256(bytes) }
+}
+const localCasePath = '.depot/manifests/' + caseId + '.json'
+const localCaseBytes = readFileSync(join(process.cwd(), localCasePath))
+assert.deepEqual(localCaseBytes, execFileSync('git', ['show', 'HEAD:' + localCasePath], { maxBuffer: 1024 * 1024 }), 'Local case manifest must equal its committed harness blob')
+const localCase = JSON.parse(localCaseBytes)
+assert.equal(localCase.completeGraph, true, 'Final route requires a frozen complete case manifest')
+assert.equal(localCase.caseId, caseId)
+assert.equal(localCase.sourceRevision, manifest.sourceRevision, 'Local case source differs from the immutable consumer source')
+const contents = await readContentsApi({ path: 'doc/audit/depot-complete-cohort-' + cohort.id + '.json' })
+assert.equal(contents.sha256, cohort.manifestSha256, 'Common manifest bytes differ from the dispatch digest')
+const common = JSON.parse(contents.bytes)
+assert.equal(common.schemaVersion, 1)
+assert.equal(common.cohortId, cohort.id)
+const selectedCase = common.cases?.[caseId]
+assert.equal(selectedCase?.sourceRevision, manifest.sourceRevision)
+assert.equal(selectedCase.baseRevision, localCase.baseRevision)
+assert.equal(selectedCase.manifestSha256, sha256(localCaseBytes), 'Common case digest differs from the local frozen case')
+const selectedRoute = common.routes?.[routeId]
+assert.equal(selectedRoute?.caseId, caseId)
+assert.equal(selectedRoute.harnessRevision, harnessRevision, 'Common route differs from actual harness HEAD')
+assert.equal(selectedRoute.workflow, route.workflow)
+const commonManifest = { path: contents.path, repository: contents.repository, ref: contents.ref, gitBlob: contents.gitBlob, bytes: contents.bytes.length, sha256: contents.sha256, caseId, routeId, case: selectedCase, route: selectedRoute, localCaseSha256: sha256(localCaseBytes), document: common }
+const record = { schemaVersion: 1, event: 'source-provenance', commonManifest, phase, cohort, identity, harnessRevision, manifestSha256: sha256(manifestBytes), observedAt: new Date().toISOString(), verifierNode: process.version }
+if (phase === 'after') {
+  const before = JSON.parse(readFileSync(join(directory, caseId + '-provenance-before.json'), 'utf8'))
+  assert.deepEqual(before.commonManifest, commonManifest, 'Canonical common manifest changed between consumer boundaries')
+  assert.deepEqual(before.identity, identity)
+  assert.deepEqual(before.cohort, cohort)
+  assert.equal(before.harnessRevision, harnessRevision)
+}
+writeFileSync(join(directory, caseId + '-provenance-' + phase + '.json'), JSON.stringify(record, null, 2) + '\n')
+console.log(JSON.stringify(record))
+'''
+
