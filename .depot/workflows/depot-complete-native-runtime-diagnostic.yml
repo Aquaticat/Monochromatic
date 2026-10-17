@@ -59,6 +59,11 @@ jobs:
     - name: Install exact-head frozen dependencies
       working-directory: source
       run: mise run prepare:pnpm:install -- --frozen-lockfile
+    - name: Retain immutable source inputs before runtime
+      working-directory: harness
+      env:
+        DEPOT_CI_IDENTITY_PHASE: before
+      run: mise run //package/dev-script/task-util:trial:depot:ci:source-identity
     - name: Verify prepared host and bridge authored Clang paths
       working-directory: harness
       run: mise run //package/dev-script/task-util:trial:depot:ci:desktop-host
@@ -72,6 +77,12 @@ jobs:
       if: always()
       working-directory: harness
       run: mise run //package/dev-script/task-util:trial:depot:ci:desktop-runtime
+    - name: Verify immutable source inputs after runtime
+      if: always()
+      working-directory: harness
+      env:
+        DEPOT_CI_IDENTITY_PHASE: after
+      run: mise run //package/dev-script/task-util:trial:depot:ci:source-identity
     - name: Preserve native check evidence and APKs
       if: always()
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -82,6 +93,7 @@ jobs:
           ~/temp/agent/depot-complete-ci/*-resource-samples.json
           ~/temp/agent/depot-complete-ci/check-logs/*.log
           ~/temp/agent/depot-complete-ci/native-tools.json
+          ~/temp/agent/depot-complete-ci/*-source-*.json
           ~/temp/agent/depot-complete-ci/desktop-e2e/**/*
           ~/temp/agent/depot-complete-ci/desktop-runtime-logs/**/*
         if-no-files-found: ignore
