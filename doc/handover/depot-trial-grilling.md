@@ -4,6 +4,23 @@
 
 ### Resumed execution on October 17
 
+The user additionally authorized registering the repository's search/fetch MCP globally in Codex,
+and suggested a shallow `openai/codex` source clone.
+Root is verifying that integration before resuming its remaining replay preparation.
+The existing Depot work remains active:
+logger recovery `dhxhzzvmc3` and independent-leaf recovery preparation belong to the logger owner;
+native platform route preparation belongs to the native owner.
+The runtime-only diagnostics have finished and their artifacts are downloaded.
+Both show PID-controller rejection counters increasing from zero to four inside the private user hierarchy,
+with no memory OOM event.
+The measured default service task limit is 76 and the user slice limit is 168,
+inside the outer 512-task container budget.
+Root must retain this evidence,
+configure bounded private systemd task limits,
+and rerun the affected consumers after completing the requested MCP integration.
+The TOML container wave also reached its job timeout;
+its retained log must be reconciled and its unexecuted independent checks resumed.
+
 The user requested continuation of the authorized trial queue.
 Root is collecting the terminal native,
 Linux,
