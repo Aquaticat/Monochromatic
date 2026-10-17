@@ -286,3 +286,39 @@ The final coherent pipeline replay remains separate work.
 
 [mapping-incident]: https://github.com/Aquaticats/Monochromatic/issues/1116
 [metadata-incident]: https://github.com/Aquaticats/Monochromatic/issues/1117
+
+## Playwright CI environment on 2026-10-17
+
+This is separate from image matching, user mapping and OPFS capability assertions.
+The unchanged root `run_playwright` helper at source
+`ef01490f5e960f8ca0b424c12242caeb3c5a2b5e`
+does not pass `CI` in its `podman run` arguments.
+The matched Playwright `1.64.0` image declares no `CI` environment value.
+Both development requests `x0rb16tjzb` and `jps875l9qs`
+set `CI=true` in the outer job,
+but their raw container-side JSON reports show zero retries for every project.
+
+Podman `v5.8.4` source commit `5431df23c742e5edea35bef34eed696f4db0106b`,
+`docs/source/markdown/podman-run.1.md.in`'s environment section,
+documents image values and explicit host-variable forwarding separately.
+Its `docs/source/markdown/options/env.md` documents explicit variable forwarding.
+The observed missing variable matches that contract;
+no Podman defect is established.
+
+A disposable control copied the exact frozen `playwright.browser.config.ts`
+and `playwright.e2e.config.ts` without edits,
+then ran the real locked Playwright `1.64.0` CLI in list-only mode.
+With `CI` unset, every project has zero retries and browser server reuse is enabled.
+With `CI=true`, every project has two retries and browser server reuse is disabled.
+The unchanged source configuration therefore has a measured positive counterfactual.
+The fixture itself gives no source-test credit.
+
+The audit adapter preserves the authored environment behavior.
+It does not silently enable retries or change the server policy in the frozen-source replay.
+The repository runner needs an explicit CI propagation repair with actual container consumer controls.
+The current full-suite OPFS assertion remains tracked independently by issue `#1052`.
+All 118 configured development cases have retained outcomes:
+116 passed, one OPFS availability assertion failed, and one authored WebKit OPFS case skipped.
+No narrower cause for WebKit's OPFS refusal is established.
+The complete per-case evidence and resource counters are in
+[`depot-logger-complete-2026-10-17.evidence.json`](../audit/depot-logger-complete-2026-10-17.evidence.json).
