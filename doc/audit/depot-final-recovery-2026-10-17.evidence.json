@@ -38469,6 +38469,29 @@
       "pairedProvenanceAccepted": false
     },
     "allProviderRoutesTerminal": true,
-    "loggerArtifactReconciliation": "collection-in-progress"
+    "loggerArtifactReconciliation": "collected-96-artifacts-and-97-logs-generic-primary-719-verified-special-consumers-pending",
+    "loggerGenericReconciliation": {
+      "path": "doc/audit/depot-coherent-logger-2026-10-17.evidence.json",
+      "primaryObservedStatuses": {
+        "passed": 613,
+        "failed": 105,
+        "skipped": 1
+      },
+      "sourcePairs": 94,
+      "cohortPairs": 93,
+      "primaryChecksWithBothPairs": 199,
+      "customConsumersStillPending": [
+        "logger-wg-evidence",
+        "pi-host-evidence",
+        "logger-external-root-lint-evidence"
+      ],
+      "strictAcceptance": false
+    },
+    "coherentDepotAllocation": {
+      "attempts": 108,
+      "vcpuSeconds": 291275.192,
+      "unroundedComputeProrationUsd": 14.5637596,
+      "scope": "Complete coherent Depot allocation only; excludes prior development, GitHub/local consumer allocation, storage, plan allowances and invoice reconciliation"
+    }
   }
 }

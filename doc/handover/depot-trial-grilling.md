@@ -2,6 +2,70 @@
 
 ## Completed trial execution and remaining acceptance gaps
 
+### Logger terminal reconciliation checkpoint
+
+The [logger cohort evidence](../audit/depot-coherent-logger-2026-10-17.evidence.json)
+retains all generic primary observations,
+source/common metadata joins,
+the actual final guard logs,
+and the completed coherent Depot allocation ledger.
+All 719 logger primary check IDs have terminal records with frozen task/argument identities
+and verified retained output hashes.
+They record 613 passes,
+105 failures,
+and one skip.
+Only 199 logical checks have an observation with both source and cohort completion pairs.
+The generic footer declarations are not final acceptance.
+All 650 configured source-input files were independently hashed against frozen Git blobs.
+
+The combined route has 97 terminal jobs,
+96 collected archives,
+and all 97 retained attempt logs.
+There are 94 source pairs and 93 cohort pairs.
+Static and unit jobs rebuild tracked plugin bundle outputs;
+the static job also changes the tracked IntelliJ JAR.
+Their after-source and after-cohort guards correctly reject the resulting tracked differences.
+These observations do not establish a change to authored task definitions.
+The native TOML mutation task passed and retained an authentic-looking native report,
+which still requires independent shard reconciliation in the logger case.
+Its local source pair is available,
+but the later authenticated common-manifest lookup reports `gh: Bad credentials (HTTP 401)`.
+The credential rejection cause is not established.
+This is separate from the TOML case final guard whose diagnostic is unavailable.
+
+Logger generated-consistency job `vkv8rwn4l1`,
+attempt `5d611nw71d`,
+ended with `Sandbox terminated before worker reported completion`.
+It published no archive.
+Its declared runner was `16x64`;
+the provider retains 133 memory samples and a peak memory-utilization value of `0.9975022728697344`.
+That correlation alone does not establish the termination cause.
+Do not retry this resource-consuming job without first reconciling its diagnostics and memory evidence.
+
+All 108 coherent Depot attempt intervals are now closed.
+Their 291275.192 allocated vCPU-seconds prorate to $14.5637596 at the published CI rate.
+This is the coherent Depot compute subtotal.
+Prior development,
+GitHub/local consumer allocation,
+storage,
+plan allowances,
+and invoice reconciliation remain separate.
+
+Next actions:
+
+- File the separate logger credential,
+  rebuilt tracked-output,
+  and terminated-worker findings after duplicate reconciliation.
+- Reconcile logger browser inventories,
+  native mutation shards,
+  custom consumers,
+  source failures and original conditional skips.
+- Finish the external-check registry and overlap-aware allocation/critical paths,
+  including the already retained native macOS retry and Windows carry-forward alias.
+- File or add scoped evidence for the repaired private evidence-construction findings.
+- Check and render the updated documents and inspect their actual output.
+- Await the existing reader-report outline answer before drafting that report.
+
 ### Final guard and unchanged macOS recovery checkpoint
 
 The [final boundary evidence](../audit/depot-coherent-final-boundaries-2026-10-17.evidence.json)
@@ -84,7 +148,8 @@ Remaining independently verifiable work:
 The Codex scope clarification and globally verified search/fetch MCP setup are complete.
 The user selected the Codex document change only;
 `AGENTS.md` remains unchanged.
-The coherent final replay is running.
+The coherent provider replay is terminal;
+artifact and assertion reconciliation continues.
 Common cohort `complete-20261017T111555806Z` was published in `5a52255c8f10d2a2ab06ba50f125152d42227081`.
 Authenticated Contents API decoding verified all 6191 exact bytes
 and SHA256 `ec26a2edd105dc17fb7f27bbafbe3bd92e9d0f479901e9a5f8938a98b963fc50`
