@@ -429,7 +429,10 @@ The source guard is `package/dev-script/task-util/mise.toml:884` on the VM branc
 
 ```js
 // package/dev-script/task-util/mise.toml, VM harness branch
-assert(indexEntries.every(entry=>entry[0]!=='S'&&!/[a-z]/.test(entry[0])),'Immutable source index must not hide tracked inputs with assume-unchanged or skip-worktree flags');
+assert(
+  indexEntries.every(entry=>entry[0]!=='S'&&!/[a-z]/.test(entry[0])),
+  'Immutable source index must not hide tracked inputs with assume-unchanged or skip-worktree flags',
+);
 ```
 
 The before record is taken before dependency preparation and preserved across repeated before checks.

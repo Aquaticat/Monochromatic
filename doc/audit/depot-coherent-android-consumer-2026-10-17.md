@@ -84,13 +84,22 @@ The final pass must verify MediaStore reach and synthetic fixture identities bef
 An unrelated library in the copied AVD is a preparation problem to report,
 not permission to claim synthetic-only coverage.
 
-The offline controls passed historical real APK hashes with explicitly synthetic cohort,
+The original five offline controls passed historical real APK hashes with explicitly synthetic cohort,
 receipt,
 and archive metadata.
 They rejected missing producer input,
 a wrong APK hash,
 a mismatched cohort join,
 and wrong source revision.
+Those controls and their task hash remain separate historical evidence.
+After the common manifest schema settled,
+nine current controls passed,
+including wrong native-case digest,
+producer route,
+producer harness,
+and outer bytes.
+Fixture authorization is revoked in `finally`,
+including when a control fails.
 Those fixtures are not final provider proof.
 Their validated output was replaced with an explicitly invalid fixture marker after the controls,
 so it cannot authorize the prepared device tasks.
@@ -125,14 +134,19 @@ Validation changes only private staging records.
 The required joins are:
 
 - `cohort.id`,
-  `cohort.requestAt`,
+  `cohort.requestedAt`,
   `cohort.manifestSha256`,
   and `cohort.manifestPath` identify the common coherent request and exact manifest bytes.
-- `sourceRevision` must equal the immutable native source.
-  The selected manifest must name that same source.
+- `sourceRevision` must equal the immutable native source and `cases.native.sourceRevision`.
+  The outer manifest must have schema version 1 and matching `cohortId`,
+  remain below 1 MiB,
+  and hash byte-for-byte to `cohort.manifestSha256`.
+  `caseManifestSha256` separately matches `cases.native.manifestSha256`.
 - `harness.producerRevision` names the exact producer harness commit;
   `harness.consumerHarnessSha256` pins the staged local task file.
   The preparation evidence retains both original and adapted task body hashes.
+  `producer.routeId` selects an actual `routes` entry belonging to case `native`;
+  its harness revision and workflow must match the producer input.
 - `producer.runId`,
   `producer.jobId`,
   `producer.attemptId`,
@@ -143,9 +157,11 @@ The required joins are:
   `providerAttempt`,
   `sourceRevision`,
   `harnessRevision`,
+  `routeId`,
+  `caseManifestSha256`,
   `cohortId`,
-  `requestAt`,
-  and `manifestSha256`,
+  `requestedAt`,
+  and `cohortManifestSha256`,
   and provide the individual APK hashes.
 - `archive.path` and `archive.sha256` retain the actual downloaded artifact archive identity.
   Provider collection must also retain its artifact ID/name and producing run/job/attempt relationship.
@@ -156,6 +172,9 @@ The required joins are:
 The root producer owner must verify receipt fields against collected provider metadata,
 the frozen workflow/harness ref,
 and the common cohort manifest before supplying this contract.
+The authoritative path is `doc/audit/depot-complete-cohort-${cohort_id}.json` on `main`.
+Collection uses the contents API object's base64 data and checks the decoded bytes;
+the local validator receives those exact retained bytes.
 The local validator checks consistent joins and byte integrity;
 it does not authenticate self-supplied metadata against the provider API.
 An overall source-case failure does not erase a successfully produced independent APK artifact.

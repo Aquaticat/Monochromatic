@@ -274,6 +274,70 @@
     },
     "deviceOperations": 0
   },
+  "catalogPrefixControl": {
+    "scope": "Actual Mise-parsed catalog prefix only; no adb/emulator/systemd execution",
+    "taskBodySha256": "4e88a843a4b6cea79e7bb206ca8944ed1890b111a2233022ab604f26e02f89a7",
+    "actual": {
+      "accepted": true,
+      "count": 15,
+      "expected": [
+        "dev.monochromatic.musicplayer.NativeBridgeTest#nativePingCrossesJniBoundary",
+        "dev.monochromatic.musicplayer.NativeBridgeTest#fingerprintIsDeterministicOpaqueAndChangeSensitiveOnDevice",
+        "dev.monochromatic.musicplayer.NativeBridgeTest#opusDecoderConstructsOnDevice",
+        "dev.monochromatic.musicplayer.NativeBridgeTest#symphoniaRegistryInitializesOnDevice",
+        "dev.monochromatic.musicplayer.NativeBridgeTest#benchmarkNativeDecode",
+        "dev.monochromatic.musicplayer.NativeBridgeTest#aaudioOutputLatencyOnDevice",
+        "dev.monochromatic.musicplayer.NativeBridgeTest#nativeTruePeakInterpolatesInterSamplePeaks",
+        "dev.monochromatic.musicplayer.NativeBridgeTest#truePeakServiceOpensAndResolvesOnDevice",
+        "dev.monochromatic.musicplayer.NativeBridgeTest#decodeFromContentFd",
+        "dev.monochromatic.musicplayer.PeakSweepWorkerTest#measureAndCacheMeasuresThenCachesOneTrack",
+        "dev.monochromatic.musicplayer.PeakSweepWorkerTest#workerSweepsBoundedShareAndSucceeds",
+        "dev.monochromatic.musicplayer.RustEngineTest#playsPausesSeeksThroughRustEngine",
+        "dev.monochromatic.musicplayer.RustEngineTest#autoAdvancesOnceOnNaturalEnd",
+        "dev.monochromatic.musicplayer.SessionStoreTest#migratesEveryLegacyCombination",
+        "dev.monochromatic.musicplayer.SessionStoreTest#currentPlaybackModeWinsOverLegacyKeys"
+      ]
+    }
+  },
+  "previousContractControls": {
+    "preparationTaskSha256": "6067bb80fedc962ae5c57428ef358622f9694fca48abfd99574404929e50b96c",
+    "scope": "Historical five controls before the settled common manifest schema; retained separately from current acceptance.",
+    "controls": {
+      "scope": "Offline byte/provenance join controls; synthetic cohort/receipt/archive fields, historical real APK bytes. Not final provider proof.",
+      "results": [
+        {
+          "name": "missing-producer",
+          "exitCode": 1,
+          "expected": 1,
+          "deviceOperations": 0
+        },
+        {
+          "name": "historical-apk-hashes-with-fixture-provenance",
+          "exitCode": 0,
+          "expected": 0,
+          "deviceOperations": 0
+        },
+        {
+          "name": "wrong-apk-hash",
+          "exitCode": 1,
+          "expected": 1,
+          "deviceOperations": 0
+        },
+        {
+          "name": "wrong-cohort-join",
+          "exitCode": 1,
+          "expected": 1,
+          "deviceOperations": 0
+        },
+        {
+          "name": "wrong-source",
+          "exitCode": 1,
+          "expected": 1,
+          "deviceOperations": 0
+        }
+      ]
+    }
+  },
   "contractControls": {
     "scope": "Offline byte/provenance join controls; synthetic cohort/receipt/archive fields, historical real APK bytes. Not final provider proof.",
     "results": [
@@ -306,6 +370,30 @@
         "exitCode": 1,
         "expected": 1,
         "deviceOperations": 0
+      },
+      {
+        "name": "wrong-case-manifest",
+        "exitCode": 1,
+        "expected": 1,
+        "deviceOperations": 0
+      },
+      {
+        "name": "wrong-producer-route",
+        "exitCode": 1,
+        "expected": 1,
+        "deviceOperations": 0
+      },
+      {
+        "name": "wrong-producer-harness",
+        "exitCode": 1,
+        "expected": 1,
+        "deviceOperations": 0
+      },
+      {
+        "name": "wrong-outer-bytes",
+        "exitCode": 1,
+        "expected": 1,
+        "deviceOperations": 0
       }
     ]
   },
@@ -314,9 +402,9 @@
     "kind": "coherent",
     "cohort": {
       "id": null,
-      "requestAt": null,
       "manifestSha256": null,
-      "manifestPath": null
+      "manifestPath": null,
+      "requestedAt": null
     },
     "sourceRevision": "cb95cf6d785c3073c192b95f0632cdae7b910894",
     "harness": {
@@ -329,7 +417,8 @@
       "attemptId": null,
       "workflowPath": null,
       "receiptPath": null,
-      "receiptSha256": null
+      "receiptSha256": null,
+      "routeId": null
     },
     "archive": {
       "path": null,
@@ -346,33 +435,9 @@
         "localPath": null,
         "sha256": null
       }
-    ]
+    ],
+    "caseManifestSha256": null
   },
   "preparationTaskPath": "/var/mnt/encrypted/temp/agent/depot-coherent-android-consumer-20261017/mise.toml",
-  "preparationTaskSha256": "6067bb80fedc962ae5c57428ef358622f9694fca48abfd99574404929e50b96c",
-  "catalogPrefixControl": {
-    "scope": "Actual Mise-parsed catalog prefix only; no adb/emulator/systemd execution",
-    "taskBodySha256": "4e88a843a4b6cea79e7bb206ca8944ed1890b111a2233022ab604f26e02f89a7",
-    "actual": {
-      "accepted": true,
-      "count": 15,
-      "expected": [
-        "dev.monochromatic.musicplayer.NativeBridgeTest#nativePingCrossesJniBoundary",
-        "dev.monochromatic.musicplayer.NativeBridgeTest#fingerprintIsDeterministicOpaqueAndChangeSensitiveOnDevice",
-        "dev.monochromatic.musicplayer.NativeBridgeTest#opusDecoderConstructsOnDevice",
-        "dev.monochromatic.musicplayer.NativeBridgeTest#symphoniaRegistryInitializesOnDevice",
-        "dev.monochromatic.musicplayer.NativeBridgeTest#benchmarkNativeDecode",
-        "dev.monochromatic.musicplayer.NativeBridgeTest#aaudioOutputLatencyOnDevice",
-        "dev.monochromatic.musicplayer.NativeBridgeTest#nativeTruePeakInterpolatesInterSamplePeaks",
-        "dev.monochromatic.musicplayer.NativeBridgeTest#truePeakServiceOpensAndResolvesOnDevice",
-        "dev.monochromatic.musicplayer.NativeBridgeTest#decodeFromContentFd",
-        "dev.monochromatic.musicplayer.PeakSweepWorkerTest#measureAndCacheMeasuresThenCachesOneTrack",
-        "dev.monochromatic.musicplayer.PeakSweepWorkerTest#workerSweepsBoundedShareAndSucceeds",
-        "dev.monochromatic.musicplayer.RustEngineTest#playsPausesSeeksThroughRustEngine",
-        "dev.monochromatic.musicplayer.RustEngineTest#autoAdvancesOnceOnNaturalEnd",
-        "dev.monochromatic.musicplayer.SessionStoreTest#migratesEveryLegacyCombination",
-        "dev.monochromatic.musicplayer.SessionStoreTest#currentPlaybackModeWinsOverLegacyKeys"
-      ]
-    }
-  }
+  "preparationTaskSha256": "ba298e6feefe9f6523da4517f611a86587b4e75f0f2f951c9198936c5ae6d2a9"
 }

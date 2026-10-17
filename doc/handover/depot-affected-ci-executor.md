@@ -243,6 +243,12 @@ Preparation verification caught and corrected a stale launch-unit literal before
 [#1115](https://github.com/Aquaticats/Monochromatic/issues/1115) is closed with parsed-command controls.
 The current staged harness hash is recorded in the preparation evidence,
 and every parsed runtime task rejects the legacy unit name.
+The held input validator now binds `cases.native.sourceRevision`,
+the separate native case digest,
+and the selected producer route's harness/workflow in the settled outer manifest.
+Its nine offline controls pass;
+the original five controls remain historical evidence.
+The input/receipt uses `requestedAt` and distinguishes `cohortManifestSha256` from `caseManifestSha256`.
 No emulator,
 adb server,
 or device operation ran during this preparation.
