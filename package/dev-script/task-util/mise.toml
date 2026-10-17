@@ -839,8 +839,8 @@ const outputPath = prefix + '.log'
 const descriptor = openSync(outputPath, 'wx', 0o600)
 const telemetry = []
 const instrumentationErrors = []
-function podman(args) {
-  const result = spawnSync(originalPodman, args, { cwd: source, encoding: 'utf8', timeout: 8000, killSignal: 'SIGKILL', maxBuffer: 4 * 1024 * 1024 })
+function podman(args, budgetMs = 8000) {
+  const result = spawnSync(originalPodman, args, { cwd: source, encoding: 'utf8', timeout: budgetMs, killSignal: 'SIGKILL', maxBuffer: 4 * 1024 * 1024 })
   return { args, status: result.status, signal: result.signal, error: result.error?.message, stdout: result.stdout, stderr: result.stderr }
 }
 function containers() {
@@ -951,7 +951,7 @@ try {
   try { retainProgress() } catch (error) { instrumentationErrors.push(String(error)) }
 }
 const remaining = safeSnapshot() ?? []
-const cleanup = remaining.map(id => ({ id, kill: podman(['kill', '--signal=SIGKILL', id]), remove: podman(['rm', '--force', '--time=0', '--ignore', id]) }))
+const cleanup = remaining.map(id => ({ id, kill: podman(['kill', '--signal=SIGKILL', id], 60000), remove: podman(['rm', '--force', '--time=0', '--ignore', id], 60000) }))
 const processGroupAfter = groupMembers()
 let remainingAfter
 try { remainingAfter = containers() } catch (error) { instrumentationErrors.push(String(error)) }
