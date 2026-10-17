@@ -19,8 +19,20 @@ Resume the repository-wide review of this repo without re-deriving its scope,
  dedupe,
  paced `gh issue create`).
 - [x] Validate one pilot reviewer output against the finding schema.
-- [ ] Fan out the remaining review scopes to subagents.
+- [x] Fan out the remaining review scopes to subagents.
+ All 66 units completed on 2026-10-17;
+ 632 findings landed in `findings/*.json` (66 files).
 - [ ] Deduplicate findings against each other and the 826 open issues.
+ In progress:
+ three dedupe judges (`decisions-a`, `decisions-b`, `decisions-c`) each own a third of
+ the findings files and decide file, merge, or skip per finding;
+ one splitter owns the `cross-duplication-001` aggregate (split into one finding per
+ pattern), the recorded verdicts (`code-pi-plugin-2-002` merges into `cross-build-002`),
+ and authors the three direct-file findings (SKILL.md `PP5` and `TLG` contradictions,
+ `stack-rust.md` stale `MXR` tag).
+ Mechanical candidates:
+ `dedupe/candidates.json` (5 title-similarity groups, 96 shared-evidence-site groups).
+ Judge output merges into `dedupe/decisions.json` (chains resolved) before filing.
 - [ ] File one issue per distinct defect and report the issue numbers.
 
 ## State on 2026-10-17
