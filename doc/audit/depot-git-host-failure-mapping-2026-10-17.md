@@ -33,16 +33,20 @@ No authentic source-matching linter ELF was previously verified in the native/TO
   `real_index_lock_tests.rs:336` expects a diagnostic containing `~pid.lock`.
   The actual value is `Stop("File name too long (os error 36)")`.
 - `real_index_lock::tests::a_replaced_lock_is_never_released`:
-  `real_index_lock_tests.rs:56` expects refusal; release returns `Ok(())`.
+  `real_index_lock_tests.rs:56` expects refusal;
+  release returns `Ok(())`.
 - `real_index_lock::tests::an_install_through_a_replaced_lock_is_refused`:
-  `real_index_lock_tests.rs:240` expects refusal; installation returns `Ok(())`.
+  `real_index_lock_tests.rs:240` expects refusal;
+  installation returns `Ok(())`.
 - `real_index_lock::tests::releasing_after_a_landing_leaves_a_replaced_lock`:
   `real_index_lock_tests.rs:274` cannot read the replacement after release.
   The actual error is `ENOENT`.
 - `transaction_git::tests::input_files_leave_nothing_behind`:
-  `transaction_git_tests.rs:190` observes `nlink() == 1`; it expects zero.
+  `transaction_git_tests.rs:190` observes `nlink() == 1`;
+  it expects zero.
 - `worktree_completion::tests::an_error_that_is_not_a_conflict_fails_the_inspection`:
-  `worktree_completion_tests.rs:321` returns `Conflict`; it expects a long-name error.
+  `worktree_completion_tests.rs:321` returns `Conflict`;
+  it expects a long-name error.
 
 Every named source file is under `package/git-policy/cli/src/native`.
 The machine evidence retains immutable source fragments and all actual panic messages.
@@ -53,7 +57,8 @@ Generic lock names do not justify merging their observed boundaries.
 ## Issue comparison
 
 Exact and broader all-state searches found no matching incident.
-The evidence retains every query and result; no focused result reached the 100-issue limit.
+The evidence retains every query and result;
+no focused result reached the 100-issue limit.
 A separate recent-issue page is explicitly bounded.
 Related `#516` concerns a truncated dependency error and malformed-report attribution.
 Related `#627` concerns different helper divergences.
