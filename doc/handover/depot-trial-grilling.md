@@ -17,6 +17,12 @@ and one check skipped because its prerequisite build failed.
 Only 199 logical checks have an observation with both source and cohort completion pairs.
 The generic footer declarations are not final acceptance.
 All 650 configured source-input files were independently hashed against frozen Git blobs.
+The [primary failure evidence](../audit/depot-logger-primary-failures-2026-10-17.evidence.json)
+now retains all 105 failed-check output files,
+with 10496598 bytes independently rehashed.
+It includes parsed lint/type candidates and the reviewed pending tracker comments.
+Issue mapping remains incomplete;
+deliberately failing child controls are not terminal parent-suite failures.
 
 Independent browser reconciliation now joins all 32 cells to the unchanged full and partition inventories.
 All 118 authored cases have result records:
@@ -112,6 +118,8 @@ Do not retry this resource-consuming job without first reconciling its diagnosti
 
 The [repository accounting checkpoint](../audit/depot-repository-accounting-2026-10-17.evidence.json)
 now retains the complete scoped terminal inventory and precise metrics for its attempts.
+The [metadata troubleshooting record](../troubleshooting/depot-ci-workflow-metadata-accounting.md)
+documents the endpoint precision and no-sandbox boundaries.
 The 391 provider attempt records include 389 observed start-to-finish intervals
 and two successful `no_sandbox` records without a start time.
 Those two records receive no observed allocation interval or assumed invoice charge.
