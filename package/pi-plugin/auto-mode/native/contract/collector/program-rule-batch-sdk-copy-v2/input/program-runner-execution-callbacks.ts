@@ -48,7 +48,8 @@ export function createProgramExecutionCallbacks({
   parentId,
   assessment,
   context,
-  response
+  response,
+  signal
 }: ProgramExecutionCallbacksInput): ProgramExecutionCallbacks {
   /**
    Factory diagnostics retain callback boundary tags.
@@ -118,9 +119,9 @@ export function createProgramExecutionCallbacks({
         const lifetime = slot.open(call);
         const record: ChildNativePhase = {lifetime};
         nativeCalls.set(call.id,record);
-        const signal = nonNullishOrThrow(group.members[ordinal]).signal;
+        const memberSignal = nonNullishOrThrow(group.members[ordinal]).signal ?? signal;
         const pipeline = phaseFactory({tools:bound.tools,context,
-          assistantMessage:response,signal});
+          assistantMessage:response,signal:memberSignal});
         record.pipeline = pipeline;
         record.prepared = await pipeline.prepare({call,before});
         return record.prepared;

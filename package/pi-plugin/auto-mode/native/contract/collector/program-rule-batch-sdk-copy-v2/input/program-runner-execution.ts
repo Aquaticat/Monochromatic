@@ -117,7 +117,8 @@ export async function executeReachedProgramGroup({
       parentId,
       assessment,
       context,
-      response: origin.response
+      response: origin.response,
+      signal: origin.signal
     }),
     ...createProgramRunnerEvents({
       runner,

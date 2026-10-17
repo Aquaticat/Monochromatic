@@ -284,7 +284,7 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
     }
     function fail(error: unknown): void {
       tagged({ tag: fail.name, l: ol }).debug('retaining native phase failure');
-      tagged({ tag: fail.name, l: ol }).debug(error);
+      tagged({ tag: fail.name, l: ol }).debug(caughtValueText(error));
       if (invocation.state === 'running') { invocation.state = 'threw'; invocation.failure = error; }
     }
     return Object.freeze({ complete, fail });

@@ -110,6 +110,7 @@ export type ProgramExecutionCallbacksInput = Pick<ProgramRunnerExecutionInput, '
   bound: Pick<ProgramRunnerBinding<ProgramEventRecorder>, 'ordinals' | 'slots' | 'tools'>;
   context: unknown;
   response: unknown;
+  signal: AbortSignal;
   parentId: string;
   assessment: ProgramAssessment;
 }>;
