@@ -582,7 +582,7 @@ The `2x8` provider consumes 360.034 allocated CPU-seconds, or $0.0180017 before 
 Historical missing reports remain missing.
 
 The verified adapter ref is `392a3ea04128547d9b452dd3bea7a4df1235acd1`.
-The parent owns selective integration of the generated cleanup task/caller,
+Parent commits `d30d88df0d` and `ce052bc29c` integrate the generated cleanup task/caller,
 native-report filesystem imports and snapshot/finally blocks,
 and combined `logger-native-verification/` artifact path.
 The exact block hashes and source strings are retained in the companion evidence.
@@ -614,9 +614,20 @@ The deciding `test-run.ts` and `mutant-loop.ts` files are byte-identical between
 Their source hashes are retained in the companion evidence.
 No caught-spawn occurrence is inferred for the logger campaign, and its CLI totals remain source-native classifications.
 
+Fresh controls at `392a3ea041` verify the candidate's 719 package identities,
+19 external routes, 57 disjoint remainder selectors and 97 expanded combined jobs.
+Both `root.browser` and `root.e2e` are covered by the combined route's 32 disjoint cells;
+the standalone browser workflow is an alternative and must not also run.
+Actual authored browser execution keeps zero retries because the source Podman boundary omits `CI`.
+The configured two-retry CI branch remains unexercised under `#1131`;
+its list-only positive counterfactual gives no source-test credit.
+The VM route retains original `test:e2e` without arguments and its Node build prerequisite;
+both Linux and Windows lifecycle cases remain source-blocked before registration by `#1076`.
+The companion evidence's `freezeReadiness` binds the full receipt,
+exact generated labels, clean remote-matched harness ref and fresh candidate controls.
+
 The remaining execution belongs to the parent:
-integrate the verified blocks,
-regenerate auxiliary digests when freezing the complete manifest,
+regenerate auxiliary digests and stale routing metadata when freezing the complete manifest,
 bind every package/external/GHA/VM route to the same authenticated cohort,
 then collect source failures, actual internal executions and prerequisite blocks separately.
 The development union and these adapter controls establish no single complete passing-pipeline latency.

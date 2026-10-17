@@ -424,10 +424,13 @@
   ],
   "completeGraph": false,
   "pending": [
-    "Parent selectively grafts verified generated cleanup and native-report blocks from392a3ea041, preserving strengthened canonical guards and native/desktop helpers.",
-    "Parent regenerates auxiliary/candidate digests when completeGraph becomes true, verifies every719+19 route including GHA/VM in the authenticated common manifest, and coordinates final cohort dispatch.",
-    "Final common replay collects all per-leaf/native reports, attributes actual executed versus source-blocked internal campaigns and validates fresh selected-package payloads before per-ID aggregation; #1160 stays open until that reconciliation.",
-    "No source fix is claimed for #1145 to #1156, #1135 to #1140, existing#335/#1047/#1052/#1076/#1077/#1078 or classifier#1142; retain actual source failures and scoped blocks rather than repeatedly repairing immutable code."
+    "After reconciling all 719 package and 19 external checks and their internal executions, freeze completeGraph and regenerate the case digest and every auxiliary manifest binding.",
+    "Refresh stale generator-pilot pending strings and sourceIdentityHelper provenance/hash to the actual integrated root helper, preserving the stronger parent guard.",
+    "Keep every active route harness on exactly matching frozen logger manifest bytes, including VM and logger.hosts.",
+    "Bind authenticated common-manifest bytes and identical cohort_id/manifest_sha256/requested_at inputs before and after every route.",
+    "Use default-all external groups and generated labels; no development filters. Dispatch combined browser cells once.",
+    "Retain source failures, source-blocked inner files/sessions, authored capability skips, and historical report omissions separately.",
+    "Collect every fresh native report immediately after its selected invocation, and reconcile source-native classifications without inferring literal assertion kills."
   ],
   "packageDevelopmentReconciliation": {
     "runId": "4x77lb56cs",
@@ -82177,5 +82180,106 @@
     "comment": "https://github.com/Aquaticats/Monochromatic/issues/1162#issuecomment-6232730007",
     "currentState": "CLOSED",
     "retractedInitialNameDirection": true
+  },
+  "freezeReadiness": {
+    "path": "/home/user/temp/agent/depot-logger-freeze-readiness-392a3ea041.json",
+    "sha256": "845678e81c6facf6178f53095ee77903c260712e0c57e0dd2304b46c1d62eef6",
+    "harnessRevision": "392a3ea04128547d9b452dd3bea7a4df1235acd1",
+    "candidateControls": {
+      "path": "/home/user/temp/agent/depot-logger-combined-controls-RNcKBh/results.json",
+      "sha256": "d4652b38da7e98f7cf50f203548d7be79dcfc6d286192dd434e957d2d9c934f1"
+    },
+    "ownedAdapterWorkComplete": true,
+    "finalDispatch": false,
+    "parentGrafts": {
+      "externalAndCleanup": "d30d88df0d",
+      "remainderAndNativeArtifactDirectory": "ce052bc29c",
+      "proofOwner": "/root",
+      "retainParentCanonicalGuards": true
+    },
+    "generatedInvocations": [
+      {
+        "checkId": "root.generated-consistency",
+        "label": "root.generated-consistency.0",
+        "task": "//:sync:files",
+        "args": [],
+        "development": {
+          "runId": "ctg9148f4t",
+          "sourceProcessExitCode": 0,
+          "disposition": "authored-generated-output-drift",
+          "changedTrackedPatchBytes": 2037,
+          "issue": 335
+        }
+      },
+      {
+        "checkId": "sidecar.generated-type-consistency",
+        "label": "sidecar.generated-type-consistency.0",
+        "task": "//package/module/deepmerge-ts.fuzz:generate:type-cases",
+        "args": [],
+        "development": {
+          "runId": "ctg9148f4t",
+          "sourceProcessExitCode": 0,
+          "trackedDrift": false,
+          "disposition": "passed"
+        }
+      },
+      {
+        "checkId": "sidecar.generated-type-consistency",
+        "label": "sidecar.generated-type-consistency.1",
+        "task": "//package/module/deepmerge-ts.fuzz:generate:declared-type-cases",
+        "args": [],
+        "development": {
+          "runId": "62nbb3srhk",
+          "sourceProcessExitCode": 0,
+          "kept": 439,
+          "deliberatelyDropped": 61,
+          "trackedDrift": false,
+          "disposition": "source-consumer-passed-cleanup-failed",
+          "originalSourceConsumerMustNotBeRepeatedForCleanupProof": true,
+          "cleanupRecovery": {
+            "runId": "p3jlkgvl99",
+            "originalSourceCheckCredit": 0,
+            "proof": {
+              "path": "/home/user/temp/agent/depot-complete-accounting-20261016/terminal-p3jlkgvl99-Y1HvYd/collected-p3jlkgvl99/logger-generated-cleanup-verification.json",
+              "sha256": "763d0cbe1e734b231a3cb18c0942877ad918f1843bf1c33ca10211492d8eb376"
+            }
+          }
+        }
+      }
+    ],
+    "browserPolicy": {
+      "issue": 1131,
+      "outerCI": "true",
+      "sourceRunPlaywrightForwardsCI": false,
+      "actualContainerCI": "unset",
+      "actualRetries": 0,
+      "actualBrowserReuseExistingServer": true,
+      "configuredCITrueRetries": 2,
+      "configuredCITrueBrowserReuseExistingServer": false,
+      "configuredCIBranchesExercisedBySourceConsumer": false,
+      "positiveCounterfactual": "list-only, no source-test credit",
+      "sourcePolicyOverrideAuthorized": false,
+      "preserveAuthoredBoundary": true
+    },
+    "vm": {
+      "checkId": "special.package.cli.vmsync.src.lifecycle.expensive.unit.test.ts",
+      "route": "logger.vm",
+      "workflow": ".depot/workflows/depot-complete-vm-original.yml",
+      "adapterTask": "//package/dev-script/task-util:trial:depot:vm:original",
+      "authoredTask": "//package/cli/vmsync:test:e2e",
+      "args": [],
+      "prerequisite": "//package/cli/vmsync:build:js:node",
+      "ownerVerifiedHarnessRevision": "8719ad3db0167574a5a8324132fa9a0bb74fd098",
+      "sourceIssue": 1076,
+      "observedBoundary": "Duplicated package/cli/vmsync/package/cli/mvm/src/cli.ts path; MODULE_NOT_FOUND before either suite registration",
+      "sourceBlockedInternalCases": [
+        "vmsync lifecycle (Linux) / full CLI lifecycle",
+        "vmsync lifecycle (Windows) / full CLI lifecycle"
+      ],
+      "guestAssertionCredit": 0,
+      "diagnosticGuestCapabilityIsSeparate": true,
+      "oldUnitPlusRootRelativeFileRouteIsNotAuthoredE2E": true,
+      "freezeConstraint": "Any selected VM harness must contain the same newly frozen per-case manifest bytes or the common-binding guard must reject it"
+    }
   }
 }

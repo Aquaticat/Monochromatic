@@ -507,8 +507,9 @@ Its original bounded TOML CLI retains a fresh 650-byte native report:
 Both original build prerequisites, strict source identity, 33,427-byte readonly metadata,
 original/copied/archive hashes and actual volume/container cleanup verify.
 The actual `2x8` allocation is 360.034 CPU-seconds, or $0.0180017 before credits.
-The parent has exact selective graft blocks/hashes for the remainder collector and combined native-verification archive path;
-preserve its canonical guards/native/desktop helpers and omit diagnostic-only pilot code.
+Parent commits `d30d88df0d` and `ce052bc29c` integrate the verified external/cleanup and remainder/report blocks,
+including the combined native-verification archive path.
+Its canonical guards/native/desktop helpers remain authoritative; diagnostic-only pilot code is unnecessary.
 Async/matcher/p-map fuzz tasks source-fail in their first differential property file;
 their later fork/limits property file is explicitly unexecuted under the authored fail-fast loop.
 Distinct source boundaries are filed as `#1145` to `#1156`;
@@ -517,8 +518,20 @@ Existing `#335`/`#1047` have additive consumer proofs; `#1160` stays open for fi
 The initial `#1162` field-name direction is explicitly corrected from immutable caller/receiver definitions.
 Classifier `#1142` has byte-identical deciding modules in both relevant source revisions;
 native `killed` totals do not imply literal assertion credit or prove a caught-spawn occurrence here.
-The remaining queue belongs to root: selective integration, complete-manifest digest regeneration,
-coherent authenticated GHA/VM/Depot dispatch and final source/prerequisite/per-ID reconciliation.
+Current-ref candidate controls pass at `392a3ea041`:
+719 package identities, 19 external routes, 57 disjoint remainder selectors and 97 combined jobs.
+The combined route includes both browser checks in all 32 disjoint cells;
+the separate browser workflow duplicates those cells and must not also run.
+The original Podman boundary omits `CI`, so actual authored retries remain zero;
+the intended two-retry CI branch is unexercised and tracked by `#1131`.
+The generated invocation labels are `root.generated-consistency.0`,
+`sidecar.generated-type-consistency.0` and `sidecar.generated-type-consistency.1`.
+The VM route retains original `test:e2e` without arguments and its Node build prerequisite;
+both original lifecycle cases remain source-blocked before registration by `#1076`.
+The companion evidence's `freezeReadiness` binds the exact parent receipt,
+current clean remote-matched ref and fresh controls.
+Root owns the remaining queue: complete-manifest/auxiliary digest regeneration,
+current GHA/VM bindings, coherent authenticated dispatch and final source/prerequisite/per-ID reconciliation.
 No generated outputs will be restored to manufacture a clean receipt.
 Only harness execution failures receive recovery edits;
 historical source failures remain diagnostics.
