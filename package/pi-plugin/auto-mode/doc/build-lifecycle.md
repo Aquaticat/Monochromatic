@@ -12,6 +12,13 @@ The native command depends on this module because the host needs complete-group 
 that the installed third-party extension interface does not supply.
 The package transforms its own qualified source copy rather than editing installed upstream files.
 
+Upstream TypeScript remains in the verified checkout used by the compiler.
+`native/build-emission.ts` compiles from that checkout directly into the fresh release's `dist` directories
+and copies non-TypeScript assets from the same source.
+The emitted package metadata and qualification manifest remain with the runtime.
+This removes the second source tree from each release without changing the compiler or native transformations.
+The change is awaiting byte comparison against the qualified runtime baseline and consumer verification.
+
 ## Invariants and retained releases
 
 The source revision and installed upstream version must match the build's qualification.
