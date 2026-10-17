@@ -276926,6 +276926,2336 @@
             }
           ]
         }
+      },
+      "initialProgress": {
+        "observedAt": "2026-10-17T08:03:38.216Z",
+        "runId": "23dk3nr90f",
+        "attemptId": "jrr8hqzbn7",
+        "purpose": "Finite initial progress export after dispatch; source terminal status remains pending.",
+        "command": [
+          "depot",
+          "ci",
+          "logs",
+          "jrr8hqzbn7",
+          "--org",
+          "l4zncjjbj5",
+          "--output",
+          "json",
+          "--output-file",
+          "toml-full-mutation-retry.initial-progress.jsonl"
+        ],
+        "providerExport": {
+          "path": "toml-full-mutation-retry.initial-progress.jsonl",
+          "bytes": 9430719,
+          "sha256": "aff9fe4432f0c0547038d7427024aa9b4074674585c2dc7ada206ea6193e4408",
+          "events": 22684,
+          "firstAt": "2026-10-17T07:51:01.978Z",
+          "lastAt": "2026-10-17T08:01:13.405Z"
+        },
+        "provenanceBefore": {
+          "schemaVersion": 1,
+          "event": "source-provenance",
+          "developmentOnly": true,
+          "phase": "before",
+          "cohort": {
+            "id": "toml-full-mutation-retry-20261017T075029848Z",
+            "manifestSha256": "4b18266890cb521dfc87256ecd13f8869f39ee35b747186ca16cd53998fe84a0",
+            "requestedAt": "2026-10-17T07:50:29.848Z"
+          },
+          "identity": {
+            "head": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+            "sourceTree": "815e35009780abd2e98bd9bd1ccd92dcb2ef14bf",
+            "trackedStatus": "",
+            "inputs": {
+              ".cargo/config.toml": "7352bfbf249b17aa4293845ef4ef6766227e6ed059d3861556595fa543af01f5",
+              ".pnpmfile.policies.json": "6ea9a99940e8c40e194a7cc0a3627d1c0ccc2d50857b40cb5ff80d7d22001b4a",
+              "bunfig.toml": "433ee4acbd86e36b61ac8606d7dc41be82fdff0f892affd45d32be28c8dba74a",
+              "cli-git.config.ts": "9fd973870c43dfd62f8e897137a2d50a5636af2c9639616856d2c0010f860524",
+              "clippy.toml": "b4ed358ce9e6a485b48b78e88bfe59b0519c5d8c15a1ef97d689492861a447bc",
+              "docker-compose.yml": "92c5ac2157cfed0ad149359ce9986890164463150d5abf23ed90c2cbd5356620",
+              "dprint.json": "9e4ada0fb986fb2a4b7cd023b79d356136564c74bb104d707d4592c111777920",
+              "file-enforcer.config.ts": "cf41571036ccaef87dc45c185215f58834971267c7f371eeef96446fe6bf9ba6",
+              "mise.lock": "5c2f93717958a7401c46775dd5d0e5cc7b07e839a8d3d2f4e139a2a87827d248",
+              "mise.no-env.toml": "0800fb457406cb7eb9b87850cb3758670f0bcd36feba434e0f93625bef20f290",
+              "mise.toml": "22e39e9366f921953f321f0ba378dde13b291240aa1366a4cb25ce5705570464",
+              "node.config.json": "5642c9388056b13923039bd49054c620b969eda1c71f1c9f73790bf34d8feacb",
+              "oxlint.config.ts": "d3a7cc1ee8c002479bc1c9b628ce57e04b6a27a97d891b2715313bfcf5bfa54b",
+              "package.json": "5b0c4ce7596721e7dd77af9b57cf34f0ccd0ee415a52af7173536980f49e8a39",
+              "package/cli/forbidden-strings/Cargo.lock": "4b64d37d5296c2d5a425d8069b4921da3b6a5eaf78e59e12f41b4cb8588ff326",
+              "package/cli/forbidden-strings/Cargo.toml": "9f177f6af455fa0cf9189d32ac02c82333f7595ac9e8604d17f398a52d67de56",
+              "package/cli/nested-wayland-session/Cargo.lock": "0f2abdd3762b9600fecbfde440387b5478f418d20198585ea309a16b6b13c4dc",
+              "package/cli/nested-wayland-session/Cargo.toml": "ca8a975b9fe2313802e543cb837a5bd5405fbaad7a3f91e99f58f705ead19d1f",
+              "package/cli/wg-quicker-exempt/Cargo.lock": "bd3638a5288926b8b864e483fa1324657143c4f2bfe17c6c434f949a8ef9c0d6",
+              "package/cli/wg-quicker-exempt/Cargo.toml": "58e4edd1f049a609ddac57f28ca09e46da89b7a3ef3f33b9f5fc51c9362297db",
+              "package/desktop-app/file-manager-gtk-sticky/Cargo.lock": "79de51d3deda1821dece0b15b8517eb16b2d3d6be39fa572cce3c19e528f5011",
+              "package/desktop-app/file-manager-gtk-sticky/Cargo.toml": "978f882d0063ade072fb954be0eb7c08fd90bcb521b14271caee896696dcab5a",
+              "package/desktop-app/file-manager-qt/Cargo.lock": "07de4e174d187f75c65d91ccdc81e2b5e47870e1190fb1e57bc5c77f1a433817",
+              "package/desktop-app/file-manager-qt/Cargo.toml": "d62d5cadab47f6dfa08f7f961dbcc7bce9a2a3771fa0f4878f0bee4618b881b7",
+              "package/desktop-app/file-manager/Cargo.lock": "9be2ec600240a43680fe70f5330e0c2b465bc4256617329fd7c45c7442d2ad00",
+              "package/desktop-app/file-manager/Cargo.toml": "896ded3cc831394f687e75e8996740e05c65ece5258b78b3fce914ec1c41b48f",
+              "package/desktop-app/terminal/Cargo.lock": "7b961ba4579b9beb5e111c3396197d2d96e774d154e46d4ef4a18caf55eefe03",
+              "package/desktop-app/terminal/Cargo.toml": "cf65476a1b136440c3b77d281736273ef4dcca57696f9223b59eeca09035ce25",
+              "package/dev-script/file-enforcer/mise.toml": "e3cde5df52594c2a59c3ce44409169dced9e002b0a636cc38a1dafbe39140d1c",
+              "package/dev-script/file-enforcer/package.json": "4c39abb2737e49c2c151ef6421e69ff5fb96fd4d8d6eed4c1acd019df0719df4",
+              "package/dev-script/file-enforcer/rolldown.node.config.ts": "4d7006238ff573e484c44dfd3eb35bf95b868585da4764e65d9731f281494487",
+              "package/dev-script/file-enforcer/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/dev-script/vm-builder/mise.toml": "4bb5dbece0deafe7c15ade4bb71067eb06b06553fab4fdcf4c982aa351916586",
+              "package/dev-script/vm-builder/package.json": "573b8b21c97c415b6e5e2c511f278b9ac3a6c1bea9a50217c2e08ec2c244d3e3",
+              "package/dev-script/vm-builder/rolldown.node.config.ts": "b9c187392bfe6601d3580debc7ca2703d1dd2be800385948400d82fdabf2205e",
+              "package/dev-script/vm-builder/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/fuzz/forbidden-strings/Cargo.lock": "038def10192dcfbeb8dd9b5b5058b5825000eccfe13d18a703e8804d72d6fde9",
+              "package/fuzz/forbidden-strings/Cargo.toml": "e5301d702b4b405add68d5ec959db76610820ba5a85d31882fda36bc95fabd9d",
+              "package/linter/rust/Cargo.lock": "aa73aee225f08c4e9ff0693f9e2b5d7b5ffbc16968df1e5706c31db77af20d02",
+              "package/linter/rust/Cargo.toml": "402882fdbe897311a0a1229ea3106475a42660c3794404796bc11009f6d067eb",
+              "package/module/toml-edit.fuzz/coverage-baseline.json": "956fe91d4b10044e95fffd9d8bd68d0a1db09b672d6ad70c81dfa5eab1f8fd2d",
+              "package/module/toml-edit.fuzz/mise.toml": "4f8d9df1bce6a46634a66c45965917ad8b07b75ed3cb023bf9b672925f3558c4",
+              "package/module/toml-edit.fuzz/package.json": "4aaabb48f1acc138b8e8ebb8d1a0c608a22421c1cac96aed20b4f210b007a2fc",
+              "package/module/toml-edit.fuzz/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/module/toml-edit/mise.toml": "d41cfe0f1b723dc8d717b42dc64336609c8e745d228d3c44a077d6c2a5584a91",
+              "package/module/toml-edit/package.json": "98157094dfb0bec11f7388b6fd892bbea706db78edeb26bb40deb1b7839c8893",
+              "package/module/toml-edit/rolldown.browser.config.ts": "b4752a0175d6d6dcd3c7860e3fa48a1e389b9bf46fa09a43af6743704a64acb0",
+              "package/module/toml-edit/rolldown.node.config.ts": "4d7006238ff573e484c44dfd3eb35bf95b868585da4764e65d9731f281494487",
+              "package/module/toml-edit/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/music-player/android-app/rust/Cargo.lock": "b5b622d725df116fb4577185c06a0e7fc6f2b9c56a7761410bc9c76867cc03d8",
+              "package/music-player/android-app/rust/Cargo.toml": "2603e034f31c7d2d3572a51e4538c0cee27ca6698097c6fa255bf867ca70ffe9",
+              "package/music-player/desktop-app/Cargo.lock": "c6a50868db9aa083795c4df72d60f147322c0f4d54653016ab839b0141ff3def",
+              "package/music-player/desktop-app/Cargo.toml": "7066ba35c31fd538afa903b2c2fbb0cf16676443733b7f6cd69f273cc199c00f",
+              "package/music-player/truepeak-core.bench/Cargo.lock": "a78ca43d2e413cdf1364dcc6314335dbc11ad72050c5b1a89602e584bbd69dd9",
+              "package/music-player/truepeak-core.bench/Cargo.toml": "3ff02eea82e53c4158786d2407d66dbc24c3514fb19e198e196e7f53499e7a97",
+              "package/music-player/truepeak-core/Cargo.lock": "774e4ad29f37ea3e6bae54788c25ed7f7cee871ea4319cda0df3c3b2c1aff042",
+              "package/music-player/truepeak-core/Cargo.toml": "94857eddf8d433a27b79207405f6a4f9bf918f5f875241d00efe1f86001e9542",
+              "package/oxlint-plugin/prefer-readonly-parameter-type/mise.toml": "992ee0bb956d5879d6b8232e099a1459463f5f5cdab158222a7e013bfc0ac11a",
+              "package/oxlint-plugin/prefer-readonly-parameter-type/package.json": "eeababb049900694c14bee19bf6ce31e2d5dbb982b91cb5aa55f62056144ad98",
+              "package/oxlint-plugin/prefer-readonly-parameter-type/rolldown.node.config.ts": "4d7006238ff573e484c44dfd3eb35bf95b868585da4764e65d9731f281494487",
+              "package/oxlint-plugin/prefer-readonly-parameter-type/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/rust-linter-plugin/builtin/Cargo.lock": "7fa6d117cc4d2f31399d3e54f0e0422f23bf7ecef48efb9021f07cf7712ee239",
+              "package/rust-linter-plugin/builtin/Cargo.toml": "e06a5a8802f9a3d889f439c520f56d17ea4fc09244f3d5485e380f46be9b0a6c",
+              "package/rust-module/forbidden-regex.bench/Cargo.lock": "5c3ff21c5ab0f68867031ee3b9e43af73888e3e3d9569c7a6f3ce15e177cc31f",
+              "package/rust-module/forbidden-regex.bench/Cargo.toml": "db005ddaaf803830fd3a3943fdb898b930d4351195d695ca73dfef143cd337b2",
+              "package/rust-module/forbidden-regex.fuzz/Cargo.lock": "45ce6561ae598d589c9d1a7bca8aa5ea977a17bb1d6ffde9201f3399221bcc5e",
+              "package/rust-module/forbidden-regex.fuzz/Cargo.toml": "1d53d2a3be62afda4b4b2ad94cc40fbc544a3d2d8db5151dda8a74bd31aca919",
+              "package/rust-module/forbidden-regex/Cargo.lock": "b040aa536cc7b150120fd7105ae8fb6f0c137e9ae85a57a2f4eac06551258653",
+              "package/rust-module/forbidden-regex/Cargo.toml": "ebd9f626f71d1058bd710d523ec3bccfd7f6a56323fcc07bb34ef4c7909a7e72",
+              "package/rust-module/rust-linter-core/Cargo.lock": "680b6120ddc3f5fabc964f859df47be74ca6a6c8dbdfd85aa91e92978bccc30f",
+              "package/rust-module/rust-linter-core/Cargo.toml": "e52002cff0b815da660935492255c50b33d3f02200a2904ac86dcf3c0431cfda",
+              "package/rust-module/rust-linter-pattern/Cargo.lock": "6f9726c883d0314a3a7d5ad427ce133a0283f982342d1e2956e355f96795618d",
+              "package/rust-module/rust-linter-pattern/Cargo.toml": "35dbe8b82d49b0644bf4284e2c07927798a8ea91b4221dd42059c2eecb2904e1",
+              "package/test-fixture/file-enforcer-perf/mise.toml": "cc65f846352414d279b36655eb6cba19d2bed22efb93a50b51293e7daf154813",
+              "package/test-fixture/file-enforcer-perf/package.json": "5a2ec550e7eee8a052790b48939f899e98ba5c516396f677c387e61aaf1c8b36",
+              "package/test-fixture/file-enforcer-perf/src/perf.config.ts": "b4e4c301878811a367395c38e1caaa17bbef6356d2a5421205aaf5e5c09cb508",
+              "package/test-fixture/file-enforcer-perf/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "playwright.browser.config.ts": "22481714fd67d226521833e84b99baa0fe51922d3e2d9c1633ed2d4ae441118f",
+              "playwright.e2e.config.ts": "6b35988518bdae0839af449415228647348ba04322a1c3bc4cf6a255f3a70b6a",
+              "pnpm-lock.yaml": "e8fd3b8edb607d95f3d38249ec0b2c5ffffb18c96c65c6c31fd78c4b0877bc7e",
+              "pnpm-workspace.yaml": "ce536085d10b5e2d278fcad46e686bba77fe0d5031c1ce31255acda43e06a9ff",
+              "slopo.conf.yaml": "8bca4457e283f563a87214a7bd66514b43c168483c6f38394dc2d7333b20673d",
+              "socket.json": "7696f04db14bc1a2b5c90e2989f4dcc5b2ede18b9e187372d2fd76de32684826",
+              "stylelint.config.mjs": "83bc5d30378d7daa500be0d484b0b712cfb220b08ae119524e9a58900c51e71b",
+              "tsconfig.json": "47907a658a585e474edea803471264075658e6c2f9bad7a4c5a3044892bdf1ee"
+            }
+          },
+          "harnessRevision": "0f1ef041a0de2ff6d2db6dd55210b1160c592648",
+          "manifestSha256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+          "observedAt": "2026-10-17T07:52:22.807Z",
+          "verifierNode": "v26.11.1"
+        },
+        "completedShardEvents": 36,
+        "completedShardResultRecords": 509,
+        "unrunRecordsInCompletedShards": 0,
+        "completedShards": [
+          {
+            "shardId": "src__basic-escape.ts-0",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:37.892Z",
+              "timestamp_ms": 1792223617892,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1837,
+              "body": "[info] [2026-10-17T07:53:37.430Z] [mutation-test-container] [runShard] shard src__basic-escape.ts-0 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__basic-escape.ts-1",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:37.892Z",
+              "timestamp_ms": 1792223617892,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1951,
+              "body": "[info] [2026-10-17T07:53:37.728Z] [mutation-test-container] [runShard] shard src__basic-escape.ts-1 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__basic-escape.ts-2",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:53.907Z",
+              "timestamp_ms": 1792223633907,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 6010,
+              "body": "[info] [2026-10-17T07:53:53.196Z] [mutation-test-container] [runShard] shard src__basic-escape.ts-2 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__build-comments.ts-0",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:54:01.914Z",
+              "timestamp_ms": 1792223641914,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 6716,
+              "body": "[info] [2026-10-17T07:54:01.000Z] [mutation-test-container] [runShard] shard src__build-comments.ts-0 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__build-comments.ts-1",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:54:18.927Z",
+              "timestamp_ms": 1792223658927,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 8025,
+              "body": "[info] [2026-10-17T07:54:18.229Z] [mutation-test-container] [runShard] shard src__build-comments.ts-1 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__build-comments.ts-2",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:54:40.945Z",
+              "timestamp_ms": 1792223680945,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 8848,
+              "body": "[info] [2026-10-17T07:54:40.145Z] [mutation-test-container] [runShard] shard src__build-comments.ts-2 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__build-comments.ts-3",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:54:51.955Z",
+              "timestamp_ms": 1792223691955,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 9324,
+              "body": "[info] [2026-10-17T07:54:51.739Z] [mutation-test-container] [runShard] shard src__build-comments.ts-3 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__build-comments.ts-4",
+            "results": 6,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:54:55.959Z",
+              "timestamp_ms": 1792223695959,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 9427,
+              "body": "[info] [2026-10-17T07:54:55.019Z] [mutation-test-container] [runShard] shard src__build-comments.ts-4 done: 6 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__build-document.ts-0",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:55:09.972Z",
+              "timestamp_ms": 1792223709972,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 13311,
+              "body": "[info] [2026-10-17T07:55:09.703Z] [mutation-test-container] [runShard] shard src__build-document.ts-0 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__build-document.ts-1",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:55:14.977Z",
+              "timestamp_ms": 1792223714977,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 13395,
+              "body": "[info] [2026-10-17T07:55:14.207Z] [mutation-test-container] [runShard] shard src__build-document.ts-1 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__build-document.ts-2",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:55:31.992Z",
+              "timestamp_ms": 1792223731992,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 14523,
+              "body": "[info] [2026-10-17T07:55:31.624Z] [mutation-test-container] [runShard] shard src__build-document.ts-2 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__build-document.ts-3",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:55:32.993Z",
+              "timestamp_ms": 1792223732993,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 14529,
+              "body": "[info] [2026-10-17T07:55:32.154Z] [mutation-test-container] [runShard] shard src__build-document.ts-3 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__build-document.ts-5",
+            "results": 9,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:55:46.004Z",
+              "timestamp_ms": 1792223746004,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 14997,
+              "body": "[info] [2026-10-17T07:55:45.641Z] [mutation-test-container] [runShard] shard src__build-document.ts-5 done: 9 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__build-document.ts-4",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:55:50.009Z",
+              "timestamp_ms": 1792223750009,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 15102,
+              "body": "[info] [2026-10-17T07:55:50.006Z] [mutation-test-container] [runShard] shard src__build-document.ts-4 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__build-input.ts-0",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:56:01.017Z",
+              "timestamp_ms": 1792223761017,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 15204,
+              "body": "[info] [2026-10-17T07:56:00.705Z] [mutation-test-container] [runShard] shard src__build-input.ts-0 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__build-input.ts-1",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:56:09.023Z",
+              "timestamp_ms": 1792223769023,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 15339,
+              "body": "[info] [2026-10-17T07:56:08.925Z] [mutation-test-container] [runShard] shard src__build-input.ts-1 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__build-input.ts-2",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:56:20.033Z",
+              "timestamp_ms": 1792223780033,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 15523,
+              "body": "[info] [2026-10-17T07:56:19.329Z] [mutation-test-container] [runShard] shard src__build-input.ts-2 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__build-input.ts-4",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:56:43.053Z",
+              "timestamp_ms": 1792223803053,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 16268,
+              "body": "[info] [2026-10-17T07:56:42.520Z] [mutation-test-container] [runShard] shard src__build-input.ts-4 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__build-input.ts-3",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:56:44.055Z",
+              "timestamp_ms": 1792223804055,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 16317,
+              "body": "[info] [2026-10-17T07:56:43.395Z] [mutation-test-container] [runShard] shard src__build-input.ts-3 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__build-input.ts-6",
+            "results": 8,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:57:12.200Z",
+              "timestamp_ms": 1792223832200,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 17068,
+              "body": "[info] [2026-10-17T07:57:11.429Z] [mutation-test-container] [runShard] shard src__build-input.ts-6 done: 8 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__build-input.ts-5",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:57:18.206Z",
+              "timestamp_ms": 1792223838206,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 17263,
+              "body": "[info] [2026-10-17T07:57:18.074Z] [mutation-test-container] [runShard] shard src__build-input.ts-5 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__build-value.ts-0",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:57:27.214Z",
+              "timestamp_ms": 1792223847214,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 17312,
+              "body": "[info] [2026-10-17T07:57:26.471Z] [mutation-test-container] [runShard] shard src__build-value.ts-0 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__build-value.ts-1",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:57:33.219Z",
+              "timestamp_ms": 1792223853219,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 17359,
+              "body": "[info] [2026-10-17T07:57:32.990Z] [mutation-test-container] [runShard] shard src__build-value.ts-1 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__build-value.ts-2",
+            "results": 3,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:57:36.221Z",
+              "timestamp_ms": 1792223856221,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 17428,
+              "body": "[info] [2026-10-17T07:57:36.095Z] [mutation-test-container] [runShard] shard src__build-value.ts-2 done: 3 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__comments.ts-1",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:57:59.241Z",
+              "timestamp_ms": 1792223879241,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 18651,
+              "body": "[info] [2026-10-17T07:57:59.045Z] [mutation-test-container] [runShard] shard src__comments.ts-1 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__comments.ts-0",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:58:01.242Z",
+              "timestamp_ms": 1792223881242,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 18728,
+              "body": "[info] [2026-10-17T07:58:00.242Z] [mutation-test-container] [runShard] shard src__comments.ts-0 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__conformance__adapter-runtime.ts-0",
+            "results": 3,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:58:08.249Z",
+              "timestamp_ms": 1792223888249,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 19016,
+              "body": "[info] [2026-10-17T07:58:08.217Z] [mutation-test-container] [runShard] shard src__conformance__adapter-runtime.ts-0 done: 3 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__comments.ts-2",
+            "results": 12,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:58:19.259Z",
+              "timestamp_ms": 1792223899259,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 19559,
+              "body": "[info] [2026-10-17T07:58:19.046Z] [mutation-test-container] [runShard] shard src__comments.ts-2 done: 12 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__conformance__decode-leaf.ts-0",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:59:24.315Z",
+              "timestamp_ms": 1792223964315,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 20645,
+              "body": "[info] [2026-10-17T07:59:24.162Z] [mutation-test-container] [runShard] shard src__conformance__decode-leaf.ts-0 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__conformance__decode-leaf.ts-1",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:59:27.317Z",
+              "timestamp_ms": 1792223967317,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 20677,
+              "body": "[info] [2026-10-17T07:59:26.409Z] [mutation-test-container] [runShard] shard src__conformance__decode-leaf.ts-1 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__conformance__decode-leaf.ts-2",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T07:59:39.326Z",
+              "timestamp_ms": 1792223979326,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 20805,
+              "body": "[info] [2026-10-17T07:59:38.692Z] [mutation-test-container] [runShard] shard src__conformance__decode-leaf.ts-2 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__conformance__decode-leaf.ts-3",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T08:00:07.350Z",
+              "timestamp_ms": 1792224007350,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 21233,
+              "body": "[info] [2026-10-17T08:00:07.145Z] [mutation-test-container] [runShard] shard src__conformance__decode-leaf.ts-3 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__conformance__decode-leaf.ts-5",
+            "results": 4,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T08:00:20.362Z",
+              "timestamp_ms": 1792224020362,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 21424,
+              "body": "[info] [2026-10-17T08:00:19.806Z] [mutation-test-container] [runShard] shard src__conformance__decode-leaf.ts-5 done: 4 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__conformance__decode-leaf.ts-4",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T08:00:32.371Z",
+              "timestamp_ms": 1792224032371,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 21623,
+              "body": "[info] [2026-10-17T08:00:32.331Z] [mutation-test-container] [runShard] shard src__conformance__decode-leaf.ts-4 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__conformance__decode-to-tagged.ts-0",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T08:01:01.395Z",
+              "timestamp_ms": 1792224061395,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 22038,
+              "body": "[info] [2026-10-17T08:01:00.554Z] [mutation-test-container] [runShard] shard src__conformance__decode-to-tagged.ts-0 done: 16 results, 0 unrun"
+            }
+          },
+          {
+            "shardId": "src__conformance__decode-to-tagged.ts-1",
+            "results": 16,
+            "unrun": 0,
+            "event": {
+              "type": "line",
+              "timestamp": "2026-10-17T08:01:05.398Z",
+              "timestamp_ms": 1792224065398,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 22080,
+              "body": "[info] [2026-10-17T08:01:04.635Z] [mutation-test-container] [runShard] shard src__conformance__decode-to-tagged.ts-1 done: 16 results, 0 unrun"
+            }
+          }
+        ],
+        "sourceProgressEvents": [
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:53:22.881Z",
+            "timestamp_ms": 1792223602881,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 704,
+            "body": "[info] [2026-10-17T07:53:22.158Z] [mutation-test-container] [runShard] shard src__basic-escape.ts-0: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:53:22.881Z",
+            "timestamp_ms": 1792223602881,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 705,
+            "body": "[info] [2026-10-17T07:53:22.184Z] [mutation-test-container] [runShard] shard src__basic-escape.ts-1: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:53:27.885Z",
+            "timestamp_ms": 1792223607885,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 790,
+            "body": "[info] [2026-10-17T07:53:27.851Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13007ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:53:27.885Z",
+            "timestamp_ms": 1792223607885,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 791,
+            "body": "[info] [2026-10-17T07:53:27.859Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 12982ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:53:37.892Z",
+            "timestamp_ms": 1792223617892,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 1837,
+            "body": "[info] [2026-10-17T07:53:37.430Z] [mutation-test-container] [runShard] shard src__basic-escape.ts-0 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:53:37.892Z",
+            "timestamp_ms": 1792223617892,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 1951,
+            "body": "[info] [2026-10-17T07:53:37.728Z] [mutation-test-container] [runShard] shard src__basic-escape.ts-1 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:53:38.893Z",
+            "timestamp_ms": 1792223618893,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 1955,
+            "body": "[info] [2026-10-17T07:53:37.903Z] [mutation-test-container] [runShard] shard src__basic-escape.ts-2: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:53:38.893Z",
+            "timestamp_ms": 1792223618893,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 1958,
+            "body": "[info] [2026-10-17T07:53:38.173Z] [mutation-test-container] [runShard] shard src__build-comments.ts-0: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:53:43.898Z",
+            "timestamp_ms": 1792223623898,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 2041,
+            "body": "[info] [2026-10-17T07:53:43.594Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13109ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:53:43.898Z",
+            "timestamp_ms": 1792223623898,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 2044,
+            "body": "[info] [2026-10-17T07:53:43.805Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 12834ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:53:53.907Z",
+            "timestamp_ms": 1792223633907,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 6010,
+            "body": "[info] [2026-10-17T07:53:53.196Z] [mutation-test-container] [runShard] shard src__basic-escape.ts-2 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:53:53.907Z",
+            "timestamp_ms": 1792223633907,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 6051,
+            "body": "[info] [2026-10-17T07:53:53.659Z] [mutation-test-container] [runShard] shard src__build-comments.ts-1: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:53:59.912Z",
+            "timestamp_ms": 1792223639912,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 6510,
+            "body": "[info] [2026-10-17T07:53:59.407Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13277ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:54:01.914Z",
+            "timestamp_ms": 1792223641914,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 6716,
+            "body": "[info] [2026-10-17T07:54:01.000Z] [mutation-test-container] [runShard] shard src__build-comments.ts-0 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:54:01.914Z",
+            "timestamp_ms": 1792223641914,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 6757,
+            "body": "[info] [2026-10-17T07:54:01.436Z] [mutation-test-container] [runShard] shard src__build-comments.ts-2: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:54:07.918Z",
+            "timestamp_ms": 1792223647918,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 7178,
+            "body": "[info] [2026-10-17T07:54:07.129Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13221ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:54:18.927Z",
+            "timestamp_ms": 1792223658927,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 8025,
+            "body": "[info] [2026-10-17T07:54:18.229Z] [mutation-test-container] [runShard] shard src__build-comments.ts-1 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:54:18.927Z",
+            "timestamp_ms": 1792223658927,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 8030,
+            "body": "[info] [2026-10-17T07:54:18.708Z] [mutation-test-container] [runShard] shard src__build-comments.ts-3: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:54:24.932Z",
+            "timestamp_ms": 1792223664932,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 8121,
+            "body": "[info] [2026-10-17T07:54:24.561Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13430ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:54:40.945Z",
+            "timestamp_ms": 1792223680945,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 8848,
+            "body": "[info] [2026-10-17T07:54:40.145Z] [mutation-test-container] [runShard] shard src__build-comments.ts-2 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:54:40.945Z",
+            "timestamp_ms": 1792223680945,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 8856,
+            "body": "[info] [2026-10-17T07:54:40.603Z] [mutation-test-container] [runShard] shard src__build-comments.ts-4: 6 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:54:46.950Z",
+            "timestamp_ms": 1792223686950,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 9079,
+            "body": "[info] [2026-10-17T07:54:46.352Z] [mutation-test-container] [runMutantLoop] running 6 mutants, timeout 13168ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:54:51.955Z",
+            "timestamp_ms": 1792223691955,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 9324,
+            "body": "[info] [2026-10-17T07:54:51.739Z] [mutation-test-container] [runShard] shard src__build-comments.ts-3 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:54:52.956Z",
+            "timestamp_ms": 1792223692956,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 9335,
+            "body": "[info] [2026-10-17T07:54:52.180Z] [mutation-test-container] [runShard] shard src__build-document.ts-0: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:54:55.959Z",
+            "timestamp_ms": 1792223695959,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 9427,
+            "body": "[info] [2026-10-17T07:54:55.019Z] [mutation-test-container] [runShard] shard src__build-comments.ts-4 done: 6 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:54:55.959Z",
+            "timestamp_ms": 1792223695959,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 9436,
+            "body": "[info] [2026-10-17T07:54:55.435Z] [mutation-test-container] [runShard] shard src__build-document.ts-1: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:54:58.961Z",
+            "timestamp_ms": 1792223698961,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 9474,
+            "body": "[info] [2026-10-17T07:54:58.079Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13527ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:55:01.965Z",
+            "timestamp_ms": 1792223701965,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 9503,
+            "body": "[info] [2026-10-17T07:55:01.174Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13134ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:55:09.972Z",
+            "timestamp_ms": 1792223709972,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 13311,
+            "body": "[info] [2026-10-17T07:55:09.703Z] [mutation-test-container] [runShard] shard src__build-document.ts-0 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:55:10.973Z",
+            "timestamp_ms": 1792223710973,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 13316,
+            "body": "[info] [2026-10-17T07:55:10.147Z] [mutation-test-container] [runShard] shard src__build-document.ts-2: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:55:14.977Z",
+            "timestamp_ms": 1792223714977,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 13395,
+            "body": "[info] [2026-10-17T07:55:14.207Z] [mutation-test-container] [runShard] shard src__build-document.ts-1 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:55:14.977Z",
+            "timestamp_ms": 1792223714977,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 13403,
+            "body": "[info] [2026-10-17T07:55:14.660Z] [mutation-test-container] [runShard] shard src__build-document.ts-3: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:55:15.977Z",
+            "timestamp_ms": 1792223715977,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 13415,
+            "body": "[info] [2026-10-17T07:55:15.922Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13424ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:55:20.982Z",
+            "timestamp_ms": 1792223720982,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 13499,
+            "body": "[info] [2026-10-17T07:55:20.376Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13200ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:55:31.992Z",
+            "timestamp_ms": 1792223731992,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 14523,
+            "body": "[info] [2026-10-17T07:55:31.624Z] [mutation-test-container] [runShard] shard src__build-document.ts-2 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:55:32.993Z",
+            "timestamp_ms": 1792223732993,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 14528,
+            "body": "[info] [2026-10-17T07:55:32.070Z] [mutation-test-container] [runShard] shard src__build-document.ts-4: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:55:32.993Z",
+            "timestamp_ms": 1792223732993,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 14529,
+            "body": "[info] [2026-10-17T07:55:32.154Z] [mutation-test-container] [runShard] shard src__build-document.ts-3 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:55:32.993Z",
+            "timestamp_ms": 1792223732993,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 14534,
+            "body": "[info] [2026-10-17T07:55:32.598Z] [mutation-test-container] [runShard] shard src__build-document.ts-5: 9 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:55:37.996Z",
+            "timestamp_ms": 1792223737996,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 14614,
+            "body": "[info] [2026-10-17T07:55:37.860Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13308ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:55:38.997Z",
+            "timestamp_ms": 1792223738997,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 14620,
+            "body": "[info] [2026-10-17T07:55:38.442Z] [mutation-test-container] [runMutantLoop] running 9 mutants, timeout 13431ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:55:46.004Z",
+            "timestamp_ms": 1792223746004,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 14997,
+            "body": "[info] [2026-10-17T07:55:45.641Z] [mutation-test-container] [runShard] shard src__build-document.ts-5 done: 9 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:55:47.006Z",
+            "timestamp_ms": 1792223747006,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 15003,
+            "body": "[info] [2026-10-17T07:55:46.087Z] [mutation-test-container] [runShard] shard src__build-input.ts-0: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:55:50.009Z",
+            "timestamp_ms": 1792223750009,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 15102,
+            "body": "[info] [2026-10-17T07:55:50.006Z] [mutation-test-container] [runShard] shard src__build-document.ts-4 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:55:51.010Z",
+            "timestamp_ms": 1792223751010,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 15111,
+            "body": "[info] [2026-10-17T07:55:50.449Z] [mutation-test-container] [runShard] shard src__build-input.ts-1: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:55:52.011Z",
+            "timestamp_ms": 1792223752011,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 15124,
+            "body": "[info] [2026-10-17T07:55:51.811Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13133ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:55:57.014Z",
+            "timestamp_ms": 1792223757014,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 15203,
+            "body": "[info] [2026-10-17T07:55:56.164Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13254ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:56:01.017Z",
+            "timestamp_ms": 1792223761017,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 15204,
+            "body": "[info] [2026-10-17T07:56:00.705Z] [mutation-test-container] [runShard] shard src__build-input.ts-0 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:56:02.016Z",
+            "timestamp_ms": 1792223762016,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 15209,
+            "body": "[info] [2026-10-17T07:56:01.144Z] [mutation-test-container] [runShard] shard src__build-input.ts-2: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:56:07.021Z",
+            "timestamp_ms": 1792223767021,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 15293,
+            "body": "[info] [2026-10-17T07:56:06.832Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13143ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:56:09.023Z",
+            "timestamp_ms": 1792223769023,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 15339,
+            "body": "[info] [2026-10-17T07:56:08.925Z] [mutation-test-container] [runShard] shard src__build-input.ts-1 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:56:10.024Z",
+            "timestamp_ms": 1792223770024,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 15377,
+            "body": "[info] [2026-10-17T07:56:09.369Z] [mutation-test-container] [runShard] shard src__build-input.ts-3: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:56:16.029Z",
+            "timestamp_ms": 1792223776029,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 15463,
+            "body": "[info] [2026-10-17T07:56:15.198Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13356ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:56:20.033Z",
+            "timestamp_ms": 1792223780033,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 15523,
+            "body": "[info] [2026-10-17T07:56:19.329Z] [mutation-test-container] [runShard] shard src__build-input.ts-2 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:56:20.033Z",
+            "timestamp_ms": 1792223780033,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 15533,
+            "body": "[info] [2026-10-17T07:56:19.785Z] [mutation-test-container] [runShard] shard src__build-input.ts-4: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:56:26.038Z",
+            "timestamp_ms": 1792223786038,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 15626,
+            "body": "[info] [2026-10-17T07:56:25.562Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13228ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:56:43.053Z",
+            "timestamp_ms": 1792223803053,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 16268,
+            "body": "[info] [2026-10-17T07:56:42.520Z] [mutation-test-container] [runShard] shard src__build-input.ts-4 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:56:43.053Z",
+            "timestamp_ms": 1792223803053,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 16277,
+            "body": "[info] [2026-10-17T07:56:42.955Z] [mutation-test-container] [runShard] shard src__build-input.ts-5: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:56:44.055Z",
+            "timestamp_ms": 1792223804055,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 16317,
+            "body": "[info] [2026-10-17T07:56:43.395Z] [mutation-test-container] [runShard] shard src__build-input.ts-3 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:56:44.055Z",
+            "timestamp_ms": 1792223804055,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 16322,
+            "body": "[info] [2026-10-17T07:56:43.844Z] [mutation-test-container] [runShard] shard src__build-input.ts-6: 8 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:56:49.180Z",
+            "timestamp_ms": 1792223809180,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 16401,
+            "body": "[info] [2026-10-17T07:56:48.800Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13520ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:56:50.181Z",
+            "timestamp_ms": 1792223810181,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 16409,
+            "body": "[info] [2026-10-17T07:56:49.481Z] [mutation-test-container] [runMutantLoop] running 8 mutants, timeout 13118ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:57:12.200Z",
+            "timestamp_ms": 1792223832200,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 17068,
+            "body": "[info] [2026-10-17T07:57:11.429Z] [mutation-test-container] [runShard] shard src__build-input.ts-6 done: 8 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:57:12.200Z",
+            "timestamp_ms": 1792223832200,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 17076,
+            "body": "[info] [2026-10-17T07:57:11.874Z] [mutation-test-container] [runShard] shard src__build-value.ts-0: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:57:18.206Z",
+            "timestamp_ms": 1792223838206,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 17225,
+            "body": "[info] [2026-10-17T07:57:17.763Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13452ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:57:18.206Z",
+            "timestamp_ms": 1792223838206,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 17263,
+            "body": "[info] [2026-10-17T07:57:18.074Z] [mutation-test-container] [runShard] shard src__build-input.ts-5 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:57:19.206Z",
+            "timestamp_ms": 1792223839206,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 17268,
+            "body": "[info] [2026-10-17T07:57:18.522Z] [mutation-test-container] [runShard] shard src__build-value.ts-1: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:57:25.212Z",
+            "timestamp_ms": 1792223845212,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 17311,
+            "body": "[info] [2026-10-17T07:57:24.409Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13411ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:57:27.214Z",
+            "timestamp_ms": 1792223847214,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 17312,
+            "body": "[info] [2026-10-17T07:57:26.471Z] [mutation-test-container] [runShard] shard src__build-value.ts-0 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:57:27.214Z",
+            "timestamp_ms": 1792223847214,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 17317,
+            "body": "[info] [2026-10-17T07:57:26.943Z] [mutation-test-container] [runShard] shard src__build-value.ts-2: 3 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:57:33.219Z",
+            "timestamp_ms": 1792223853219,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 17359,
+            "body": "[info] [2026-10-17T07:57:32.990Z] [mutation-test-container] [runShard] shard src__build-value.ts-1 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:57:33.219Z",
+            "timestamp_ms": 1792223853219,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 17361,
+            "body": "[info] [2026-10-17T07:57:33.016Z] [mutation-test-container] [runMutantLoop] running 3 mutants, timeout 13911ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:57:34.220Z",
+            "timestamp_ms": 1792223854220,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 17366,
+            "body": "[info] [2026-10-17T07:57:33.440Z] [mutation-test-container] [runShard] shard src__comments.ts-0: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:57:36.221Z",
+            "timestamp_ms": 1792223856221,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 17428,
+            "body": "[info] [2026-10-17T07:57:36.095Z] [mutation-test-container] [runShard] shard src__build-value.ts-2 done: 3 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:57:37.222Z",
+            "timestamp_ms": 1792223857222,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 17438,
+            "body": "[info] [2026-10-17T07:57:36.552Z] [mutation-test-container] [runShard] shard src__comments.ts-1: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:57:40.224Z",
+            "timestamp_ms": 1792223860224,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 17479,
+            "body": "[info] [2026-10-17T07:57:39.472Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13978ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:57:43.227Z",
+            "timestamp_ms": 1792223863227,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 17512,
+            "body": "[info] [2026-10-17T07:57:42.616Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13931ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:57:59.241Z",
+            "timestamp_ms": 1792223879241,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 18651,
+            "body": "[info] [2026-10-17T07:57:59.045Z] [mutation-test-container] [runShard] shard src__comments.ts-1 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:58:00.242Z",
+            "timestamp_ms": 1792223880242,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 18659,
+            "body": "[info] [2026-10-17T07:57:59.500Z] [mutation-test-container] [runShard] shard src__comments.ts-2: 12 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:58:01.242Z",
+            "timestamp_ms": 1792223881242,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 18728,
+            "body": "[info] [2026-10-17T07:58:00.242Z] [mutation-test-container] [runShard] shard src__comments.ts-0 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:58:01.242Z",
+            "timestamp_ms": 1792223881242,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 18733,
+            "body": "[info] [2026-10-17T07:58:00.715Z] [mutation-test-container] [runShard] shard src__conformance__adapter-runtime.ts-0: 3 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:58:06.247Z",
+            "timestamp_ms": 1792223886247,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 18807,
+            "body": "[info] [2026-10-17T07:58:05.274Z] [mutation-test-container] [runMutantLoop] running 12 mutants, timeout 13250ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:58:07.248Z",
+            "timestamp_ms": 1792223887248,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 18861,
+            "body": "[info] [2026-10-17T07:58:06.603Z] [mutation-test-container] [runMutantLoop] running 3 mutants, timeout 13543ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:58:08.249Z",
+            "timestamp_ms": 1792223888249,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 19016,
+            "body": "[info] [2026-10-17T07:58:08.217Z] [mutation-test-container] [runShard] shard src__conformance__adapter-runtime.ts-0 done: 3 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:58:09.250Z",
+            "timestamp_ms": 1792223889250,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 19021,
+            "body": "[info] [2026-10-17T07:58:08.675Z] [mutation-test-container] [runShard] shard src__conformance__decode-leaf.ts-0: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:58:15.255Z",
+            "timestamp_ms": 1792223895255,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 19305,
+            "body": "[info] [2026-10-17T07:58:14.361Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13065ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:58:19.259Z",
+            "timestamp_ms": 1792223899259,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 19559,
+            "body": "[info] [2026-10-17T07:58:19.046Z] [mutation-test-container] [runShard] shard src__comments.ts-2 done: 12 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:58:20.260Z",
+            "timestamp_ms": 1792223900260,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 19567,
+            "body": "[info] [2026-10-17T07:58:19.490Z] [mutation-test-container] [runShard] shard src__conformance__decode-leaf.ts-1: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:58:26.265Z",
+            "timestamp_ms": 1792223906265,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 19656,
+            "body": "[info] [2026-10-17T07:58:25.277Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13207ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:59:24.315Z",
+            "timestamp_ms": 1792223964315,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 20645,
+            "body": "[info] [2026-10-17T07:59:24.162Z] [mutation-test-container] [runShard] shard src__conformance__decode-leaf.ts-0 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:59:25.315Z",
+            "timestamp_ms": 1792223965315,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 20654,
+            "body": "[info] [2026-10-17T07:59:24.598Z] [mutation-test-container] [runShard] shard src__conformance__decode-leaf.ts-2: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:59:27.317Z",
+            "timestamp_ms": 1792223967317,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 20677,
+            "body": "[info] [2026-10-17T07:59:26.409Z] [mutation-test-container] [runShard] shard src__conformance__decode-leaf.ts-1 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:59:27.317Z",
+            "timestamp_ms": 1792223967317,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 20686,
+            "body": "[info] [2026-10-17T07:59:26.848Z] [mutation-test-container] [runShard] shard src__conformance__decode-leaf.ts-3: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:59:30.320Z",
+            "timestamp_ms": 1792223970320,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 20741,
+            "body": "[info] [2026-10-17T07:59:30.258Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13111ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:59:33.322Z",
+            "timestamp_ms": 1792223973322,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 20762,
+            "body": "[info] [2026-10-17T07:59:32.587Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13133ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:59:39.326Z",
+            "timestamp_ms": 1792223979326,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 20805,
+            "body": "[info] [2026-10-17T07:59:38.692Z] [mutation-test-container] [runShard] shard src__conformance__decode-leaf.ts-2 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:59:39.326Z",
+            "timestamp_ms": 1792223979326,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 20810,
+            "body": "[info] [2026-10-17T07:59:39.145Z] [mutation-test-container] [runShard] shard src__conformance__decode-leaf.ts-4: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T07:59:45.332Z",
+            "timestamp_ms": 1792223985332,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 20894,
+            "body": "[info] [2026-10-17T07:59:44.896Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13175ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T08:00:07.350Z",
+            "timestamp_ms": 1792224007350,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 21233,
+            "body": "[info] [2026-10-17T08:00:07.145Z] [mutation-test-container] [runShard] shard src__conformance__decode-leaf.ts-3 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T08:00:08.352Z",
+            "timestamp_ms": 1792224008352,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 21244,
+            "body": "[info] [2026-10-17T08:00:07.593Z] [mutation-test-container] [runShard] shard src__conformance__decode-leaf.ts-5: 4 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T08:00:13.356Z",
+            "timestamp_ms": 1792224013356,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 21338,
+            "body": "[info] [2026-10-17T08:00:13.322Z] [mutation-test-container] [runMutantLoop] running 4 mutants, timeout 13221ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T08:00:20.362Z",
+            "timestamp_ms": 1792224020362,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 21424,
+            "body": "[info] [2026-10-17T08:00:19.806Z] [mutation-test-container] [runShard] shard src__conformance__decode-leaf.ts-5 done: 4 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T08:00:20.362Z",
+            "timestamp_ms": 1792224020362,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 21434,
+            "body": "[info] [2026-10-17T08:00:20.248Z] [mutation-test-container] [runShard] shard src__conformance__decode-to-tagged.ts-0: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T08:00:26.366Z",
+            "timestamp_ms": 1792224026366,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 21526,
+            "body": "[info] [2026-10-17T08:00:25.937Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13157ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T08:00:32.371Z",
+            "timestamp_ms": 1792224032371,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 21623,
+            "body": "[info] [2026-10-17T08:00:32.331Z] [mutation-test-container] [runShard] shard src__conformance__decode-leaf.ts-4 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T08:00:33.372Z",
+            "timestamp_ms": 1792224033372,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 21629,
+            "body": "[info] [2026-10-17T08:00:32.769Z] [mutation-test-container] [runShard] shard src__conformance__decode-to-tagged.ts-1: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T08:00:38.376Z",
+            "timestamp_ms": 1792224038376,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 21714,
+            "body": "[info] [2026-10-17T08:00:38.349Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 12852ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T08:01:01.395Z",
+            "timestamp_ms": 1792224061395,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 22038,
+            "body": "[info] [2026-10-17T08:01:00.554Z] [mutation-test-container] [runShard] shard src__conformance__decode-to-tagged.ts-0 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T08:01:01.395Z",
+            "timestamp_ms": 1792224061395,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 22047,
+            "body": "[info] [2026-10-17T08:01:00.988Z] [mutation-test-container] [runShard] shard src__conformance__decode-to-tagged.ts-2: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T08:01:05.398Z",
+            "timestamp_ms": 1792224065398,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 22080,
+            "body": "[info] [2026-10-17T08:01:04.635Z] [mutation-test-container] [runShard] shard src__conformance__decode-to-tagged.ts-1 done: 16 results, 0 unrun"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T08:01:05.398Z",
+            "timestamp_ms": 1792224065398,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 22089,
+            "body": "[info] [2026-10-17T08:01:05.085Z] [mutation-test-container] [runShard] shard src__conformance__decode-to-tagged.ts-3: 16 mutants"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T08:01:07.400Z",
+            "timestamp_ms": 1792224067400,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 22110,
+            "body": "[info] [2026-10-17T08:01:06.876Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13461ms"
+          },
+          {
+            "type": "line",
+            "timestamp": "2026-10-17T08:01:11.403Z",
+            "timestamp_ms": 1792224071403,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 22177,
+            "body": "[info] [2026-10-17T08:01:11.002Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13594ms"
+          }
+        ],
+        "mutantAssertionInterval": {
+          "reason": "Both initial container mutant loops started before these test outcomes; neither initial shard had completed, so no later shard baseline had started. Per-mutant attribution remains pending native reports.",
+          "loopStarts": [
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:27.885Z",
+              "timestamp_ms": 1792223607885,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 790,
+              "body": "[info] [2026-10-17T07:53:27.851Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 13007ms"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:27.885Z",
+              "timestamp_ms": 1792223607885,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 791,
+              "body": "[info] [2026-10-17T07:53:27.859Z] [mutation-test-container] [runMutantLoop] running 16 mutants, timeout 12982ms"
+            }
+          ],
+          "firstShardCompletion": {
+            "type": "line",
+            "timestamp": "2026-10-17T07:53:37.892Z",
+            "timestamp_ms": 1792223617892,
+            "stream": "stdout",
+            "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+            "line_number": 1837,
+            "body": "[info] [2026-10-17T07:53:37.430Z] [mutation-test-container] [runShard] shard src__basic-escape.ts-0 done: 16 results, 0 unrun"
+          },
+          "assertionEvents": [
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:28.886Z",
+              "timestamp_ms": 1792223608886,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 792,
+              "body": "[error] [2026-10-17T07:53:28.528Z] [basic string escaping] [emits every named control escape and re-parses to the same value] [FAIL] (5.7ms) AssertionError: expected 'value = \"\"\"\\n\\u0008\\u0009\\u000A\\u000C…' to equal 'value = \"\"\"\\n\\b\\t\\n\\f\\r\"\"\"\\n'  @basic-escape.unit.test.ts:45 expect(emitted,).toBe(`value = \"\"\"\\n${String.raw`\\b\\t\\n\\f\\r`}\"\"\"\\n`,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:45:26) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:28.886Z",
+              "timestamp_ms": 1792223608886,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 793,
+              "body": "[error] [2026-10-17T07:53:28.529Z] [basic string escaping] [preserves parsed literal and single-line basic string styles] [FAIL] (9.7ms) AssertionError: expected '\"a\\u0009 b\"' to equal '\"a\\t b\"'  @basic-escape.unit.test.ts:104 expect(emitted,).toBe(expected,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:104:28) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:28.886Z",
+              "timestamp_ms": 1792223608886,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 794,
+              "body": "[info] [2026-10-17T07:53:28.529Z] [basic string escaping] [PASS] uses uppercase padded escapes for unnamed controls and DEL, escapes a quote and backslash in a single-line string, preserves bare quotes and escapes a triple-quote run in multiline strings"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:28.886Z",
+              "timestamp_ms": 1792223608886,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 795,
+              "body": "[error] [2026-10-17T07:53:28.530Z] [basic string escaping] [FAIL] (14ms) AggregateError: 2 children failed in suite \"basic string escaping\" at async file://package/module/toml-edit/src/basic-escape.unit.test.ts:37:1"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:29.886Z",
+              "timestamp_ms": 1792223609886,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 858,
+              "body": "[error] [2026-10-17T07:53:29.141Z] [basic string escaping] [emits every named control escape and re-parses to the same value] [FAIL] (5.7ms) AssertionError: expected 'value = \"\"\"\\n\\t\\n\\f\\r\"\"\"\\n' to equal 'value = \"\"\"\\n\\b\\t\\n\\f\\r\"\"\"\\n'  @basic-escape.unit.test.ts:45 expect(emitted,).toBe(`value = \"\"\"\\n${String.raw`\\b\\t\\n\\f\\r`}\"\"\"\\n`,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:45:26) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:29.887Z",
+              "timestamp_ms": 1792223609887,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 859,
+              "body": "[info] [2026-10-17T07:53:29.142Z] [basic string escaping] [PASS] uses uppercase padded escapes for unnamed controls and DEL, escapes a quote and backslash in a single-line string, preserves bare quotes and escapes a triple-quote run in multiline strings, preserves parsed literal and single-line basic string styles"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:29.887Z",
+              "timestamp_ms": 1792223609887,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 860,
+              "body": "[error] [2026-10-17T07:53:29.143Z] [basic string escaping] [FAIL] (13ms) Error: emits every named control escape and re-parses to the same value"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:29.887Z",
+              "timestamp_ms": 1792223609887,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 893,
+              "body": "[error] [2026-10-17T07:53:29.556Z] [basic string escaping] [escapes a quote and backslash in a single-line string] [FAIL] (5.5ms) AssertionError: expected 'value = \"a\"b\\\\c\"\\n' to equal 'value = \"a\\\"b\\\\c\"\\n'  @basic-escape.unit.test.ts:68 expect(emitAssignedString(value,),).toBe(`${String.raw`value = \"a\\\"b\\\\c\"`}\\n`,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:68:45) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:29.887Z",
+              "timestamp_ms": 1792223609887,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 894,
+              "body": "[error] [2026-10-17T07:53:29.557Z] [basic string escaping] [preserves bare quotes and escapes a triple-quote run in multiline strings] [FAIL] (9.7ms) AssertionError: expected '\"\"\"a\\\"b\"\"\"' to equal '\"\"\"a\"b\"\"\"'  @basic-escape.unit.test.ts:83 expect(emitted,).toBe(expected,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:83:28) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:29.887Z",
+              "timestamp_ms": 1792223609887,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 895,
+              "body": "[info] [2026-10-17T07:53:29.557Z] [basic string escaping] [PASS] emits every named control escape and re-parses to the same value, uses uppercase padded escapes for unnamed controls and DEL, preserves parsed literal and single-line basic string styles"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:29.887Z",
+              "timestamp_ms": 1792223609887,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 896,
+              "body": "[error] [2026-10-17T07:53:29.559Z] [basic string escaping] [FAIL] (14ms) AggregateError: 2 children failed in suite \"basic string escaping\" at async file://package/module/toml-edit/src/basic-escape.unit.test.ts:37:1"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:29.887Z",
+              "timestamp_ms": 1792223609887,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 959,
+              "body": "[error] [2026-10-17T07:53:29.776Z] [basic string escaping] [emits every named control escape and re-parses to the same value] [FAIL] (6.4ms) AssertionError: expected 'value = \"\"\"\\n\\b\\n\\f\\r\"\"\"\\n' to equal 'value = \"\"\"\\n\\b\\t\\n\\f\\r\"\"\"\\n'  @basic-escape.unit.test.ts:45 expect(emitted,).toBe(`value = \"\"\"\\n${String.raw`\\b\\t\\n\\f\\r`}\"\"\"\\n`,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:45:26) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:29.887Z",
+              "timestamp_ms": 1792223609887,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 960,
+              "body": "[error] [2026-10-17T07:53:29.777Z] [basic string escaping] [preserves parsed literal and single-line basic string styles] [FAIL] (12ms) AssertionError: expected '\"a b\"' to equal '\"a\\t b\"'  @basic-escape.unit.test.ts:104 expect(emitted,).toBe(expected,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:104:28) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:29.887Z",
+              "timestamp_ms": 1792223609887,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 961,
+              "body": "[info] [2026-10-17T07:53:29.777Z] [basic string escaping] [PASS] uses uppercase padded escapes for unnamed controls and DEL, escapes a quote and backslash in a single-line string, preserves bare quotes and escapes a triple-quote run in multiline strings"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:29.887Z",
+              "timestamp_ms": 1792223609887,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 962,
+              "body": "[error] [2026-10-17T07:53:29.778Z] [basic string escaping] [FAIL] (15ms) AggregateError: 2 children failed in suite \"basic string escaping\" at async file://package/module/toml-edit/src/basic-escape.unit.test.ts:37:1"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:30.888Z",
+              "timestamp_ms": 1792223610888,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1025,
+              "body": "[error] [2026-10-17T07:53:30.200Z] [basic string escaping] [uses uppercase padded escapes for unnamed controls and DEL] [FAIL] (4.7ms) AssertionError: expected 'value = \"\\\"\\\"\\\"\\\"\"\\n' to equal 'value = \"\\u0000\\u001A\\u001F\\u007F\"\\n'  @basic-escape.unit.test.ts:57 expect(emitted,).toBe(`${String.raw`value = \"\\u0000\\u001A\\u001F\\u007F\"`}\\n`,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:57:26) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:30.888Z",
+              "timestamp_ms": 1792223610888,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1026,
+              "body": "[error] [2026-10-17T07:53:30.200Z] [basic string escaping] [escapes a quote and backslash in a single-line string] [FAIL] (9.6ms) AssertionError: expected 'value = \"\\\"\\\"\\\"\\\\\\\"\"\\n' to equal 'value = \"a\\\"b\\\\c\"\\n'  @basic-escape.unit.test.ts:68 expect(emitAssignedString(value,),).toBe(`${String.raw`value = \"a\\\"b\\\\c\"`}\\n`,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:68:45) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:30.888Z",
+              "timestamp_ms": 1792223610888,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1027,
+              "body": "[error] [2026-10-17T07:53:30.200Z] [basic string escaping] [preserves bare quotes and escapes a triple-quote run in multiline strings] [FAIL] (9.6ms) AssertionError: expected '\"\"\"a\\\"b\"\"\"' to equal '\"\"\"a\"b\"\"\"'  @basic-escape.unit.test.ts:83 expect(emitted,).toBe(expected,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:83:28) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:30.888Z",
+              "timestamp_ms": 1792223610888,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1028,
+              "body": "[error] [2026-10-17T07:53:30.200Z] [basic string escaping] [preserves parsed literal and single-line basic string styles] [FAIL] (9.6ms) AssertionError: expected '\"\\\"\\\"\\\"\\\"\"' to equal '\"a\\t b\"'  @basic-escape.unit.test.ts:104 expect(emitted,).toBe(expected,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:104:28) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:30.888Z",
+              "timestamp_ms": 1792223610888,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1029,
+              "body": "[info] [2026-10-17T07:53:30.201Z] [basic string escaping] [PASS] emits every named control escape and re-parses to the same value"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:30.888Z",
+              "timestamp_ms": 1792223610888,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1030,
+              "body": "[error] [2026-10-17T07:53:30.202Z] [basic string escaping] [FAIL] (14ms) AggregateError: 4 children failed in suite \"basic string escaping\" at async file://package/module/toml-edit/src/basic-escape.unit.test.ts:37:1"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:30.888Z",
+              "timestamp_ms": 1792223610888,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1135,
+              "body": "[error] [2026-10-17T07:53:30.424Z] [basic string escaping] [emits every named control escape and re-parses to the same value] [FAIL] (5.6ms) AssertionError: expected 'value = \"\"\"\\n\\b\\t\\f\\r\"\"\"\\n' to equal 'value = \"\"\"\\n\\b\\t\\n\\f\\r\"\"\"\\n'  @basic-escape.unit.test.ts:45 expect(emitted,).toBe(`value = \"\"\"\\n${String.raw`\\b\\t\\n\\f\\r`}\"\"\"\\n`,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:45:26) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:30.888Z",
+              "timestamp_ms": 1792223610888,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1136,
+              "body": "[info] [2026-10-17T07:53:30.425Z] [basic string escaping] [PASS] uses uppercase padded escapes for unnamed controls and DEL, escapes a quote and backslash in a single-line string, preserves bare quotes and escapes a triple-quote run in multiline strings, preserves parsed literal and single-line basic string styles"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:30.888Z",
+              "timestamp_ms": 1792223610888,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1137,
+              "body": "[error] [2026-10-17T07:53:30.425Z] [basic string escaping] [FAIL] (13ms) Error: emits every named control escape and re-parses to the same value"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:30.889Z",
+              "timestamp_ms": 1792223610889,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1170,
+              "body": "[error] [2026-10-17T07:53:30.830Z] [basic string escaping] [escapes a quote and backslash in a single-line string] [FAIL] (5.7ms) AssertionError: expected 'value = \"a\"b\\\\c\"\\n' to equal 'value = \"a\\\"b\\\\c\"\\n'  @basic-escape.unit.test.ts:68 expect(emitAssignedString(value,),).toBe(`${String.raw`value = \"a\\\"b\\\\c\"`}\\n`,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:68:45) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:30.889Z",
+              "timestamp_ms": 1792223610889,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1171,
+              "body": "[info] [2026-10-17T07:53:30.831Z] [basic string escaping] [PASS] emits every named control escape and re-parses to the same value, uses uppercase padded escapes for unnamed controls and DEL, preserves bare quotes and escapes a triple-quote run in multiline strings, preserves parsed literal and single-line basic string styles"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:30.889Z",
+              "timestamp_ms": 1792223610889,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1172,
+              "body": "[error] [2026-10-17T07:53:30.832Z] [basic string escaping] [FAIL] (14ms) Error: escapes a quote and backslash in a single-line string"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:31.888Z",
+              "timestamp_ms": 1792223611888,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1205,
+              "body": "[error] [2026-10-17T07:53:31.049Z] [basic string escaping] [emits every named control escape and re-parses to the same value] [FAIL] (5.6ms) AssertionError: expected 'value = \"\"\"\\n\\b\\t\\n\\r\"\"\"\\n' to equal 'value = \"\"\"\\n\\b\\t\\n\\f\\r\"\"\"\\n'  @basic-escape.unit.test.ts:45 expect(emitted,).toBe(`value = \"\"\"\\n${String.raw`\\b\\t\\n\\f\\r`}\"\"\"\\n`,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:45:26) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:31.888Z",
+              "timestamp_ms": 1792223611888,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1206,
+              "body": "[info] [2026-10-17T07:53:31.050Z] [basic string escaping] [PASS] uses uppercase padded escapes for unnamed controls and DEL, escapes a quote and backslash in a single-line string, preserves bare quotes and escapes a triple-quote run in multiline strings, preserves parsed literal and single-line basic string styles"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:31.888Z",
+              "timestamp_ms": 1792223611888,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1207,
+              "body": "[error] [2026-10-17T07:53:31.052Z] [basic string escaping] [FAIL] (13ms) Error: emits every named control escape and re-parses to the same value"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:31.888Z",
+              "timestamp_ms": 1792223611888,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1240,
+              "body": "[error] [2026-10-17T07:53:31.474Z] [basic string escaping] [uses uppercase padded escapes for unnamed controls and DEL] [FAIL] (5.4ms) AssertionError: expected 'value = \"\\\"\\\"\\\"\\\"\"\\n' to equal 'value = \"\\u0000\\u001A\\u001F\\u007F\"\\n'  @basic-escape.unit.test.ts:57 expect(emitted,).toBe(`${String.raw`value = \"\\u0000\\u001A\\u001F\\u007F\"`}\\n`,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:57:26) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:31.888Z",
+              "timestamp_ms": 1792223611888,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1241,
+              "body": "[error] [2026-10-17T07:53:31.474Z] [basic string escaping] [escapes a quote and backslash in a single-line string] [FAIL] (9.6ms) AssertionError: expected 'value = \"\\\"\\\"\\\"\\\\\\\"\"\\n' to equal 'value = \"a\\\"b\\\\c\"\\n'  @basic-escape.unit.test.ts:68 expect(emitAssignedString(value,),).toBe(`${String.raw`value = \"a\\\"b\\\\c\"`}\\n`,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:68:45) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:31.888Z",
+              "timestamp_ms": 1792223611888,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1242,
+              "body": "[error] [2026-10-17T07:53:31.474Z] [basic string escaping] [preserves parsed literal and single-line basic string styles] [FAIL] (9.6ms) AssertionError: expected '\"\\\"\\\"\\\"\\\"\"' to equal '\"a\\t b\"'  @basic-escape.unit.test.ts:104 expect(emitted,).toBe(expected,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:104:28) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:31.888Z",
+              "timestamp_ms": 1792223611888,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1243,
+              "body": "[info] [2026-10-17T07:53:31.475Z] [basic string escaping] [PASS] emits every named control escape and re-parses to the same value, preserves bare quotes and escapes a triple-quote run in multiline strings"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:31.888Z",
+              "timestamp_ms": 1792223611888,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1244,
+              "body": "[error] [2026-10-17T07:53:31.476Z] [basic string escaping] [FAIL] (14ms) AggregateError: 3 children failed in suite \"basic string escaping\" at async file://package/module/toml-edit/src/basic-escape.unit.test.ts:37:1"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:31.889Z",
+              "timestamp_ms": 1792223611889,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1328,
+              "body": "[error] [2026-10-17T07:53:31.707Z] [basic string escaping] [emits every named control escape and re-parses to the same value] [FAIL] (5.9ms) AssertionError: expected 'value = \"\"\"\\n\\b\\t\\n\\f\"\"\"\\n' to equal 'value = \"\"\"\\n\\b\\t\\n\\f\\r\"\"\"\\n'  @basic-escape.unit.test.ts:45 expect(emitted,).toBe(`value = \"\"\"\\n${String.raw`\\b\\t\\n\\f\\r`}\"\"\"\\n`,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:45:26) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:31.889Z",
+              "timestamp_ms": 1792223611889,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1329,
+              "body": "[info] [2026-10-17T07:53:31.708Z] [basic string escaping] [PASS] uses uppercase padded escapes for unnamed controls and DEL, escapes a quote and backslash in a single-line string, preserves bare quotes and escapes a triple-quote run in multiline strings, preserves parsed literal and single-line basic string styles"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:31.889Z",
+              "timestamp_ms": 1792223611889,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1330,
+              "body": "[error] [2026-10-17T07:53:31.708Z] [basic string escaping] [FAIL] (14ms) Error: emits every named control escape and re-parses to the same value"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:32.889Z",
+              "timestamp_ms": 1792223612889,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1363,
+              "body": "[error] [2026-10-17T07:53:32.125Z] [basic string escaping] [uses uppercase padded escapes for unnamed controls and DEL] [FAIL] (5.7ms) AssertionError: expected 'value = \"\\\"\\\"\\\"\\\"\"\\n' to equal 'value = \"\\u0000\\u001A\\u001F\\u007F\"\\n'  @basic-escape.unit.test.ts:57 expect(emitted,).toBe(`${String.raw`value = \"\\u0000\\u001A\\u001F\\u007F\"`}\\n`,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:57:26) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:32.889Z",
+              "timestamp_ms": 1792223612889,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1364,
+              "body": "[error] [2026-10-17T07:53:32.125Z] [basic string escaping] [escapes a quote and backslash in a single-line string] [FAIL] (10.0ms) AssertionError: expected 'value = \"\\\"\"\\\"\\\\\\\"\"\\n' to equal 'value = \"a\\\"b\\\\c\"\\n'  @basic-escape.unit.test.ts:68 expect(emitAssignedString(value,),).toBe(`${String.raw`value = \"a\\\"b\\\\c\"`}\\n`,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:68:45) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:32.889Z",
+              "timestamp_ms": 1792223612889,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1365,
+              "body": "[error] [2026-10-17T07:53:32.125Z] [basic string escaping] [preserves parsed literal and single-line basic string styles] [FAIL] (10.0ms) AssertionError: expected '\"\\\"\\\"\\\"\\\"\"' to equal '\"a\\t b\"'  @basic-escape.unit.test.ts:104 expect(emitted,).toBe(expected,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:104:28) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:32.889Z",
+              "timestamp_ms": 1792223612889,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1366,
+              "body": "[info] [2026-10-17T07:53:32.126Z] [basic string escaping] [PASS] emits every named control escape and re-parses to the same value, preserves bare quotes and escapes a triple-quote run in multiline strings"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:32.889Z",
+              "timestamp_ms": 1792223612889,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1367,
+              "body": "[error] [2026-10-17T07:53:32.127Z] [basic string escaping] [FAIL] (14ms) AggregateError: 3 children failed in suite \"basic string escaping\" at async file://package/module/toml-edit/src/basic-escape.unit.test.ts:37:1"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:34.891Z",
+              "timestamp_ms": 1792223614891,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1451,
+              "body": "[error] [2026-10-17T07:53:33.912Z] [basic string escaping] [uses uppercase padded escapes for unnamed controls and DEL] [FAIL] (5.4ms) AssertionError: expected 'value = \"\\u0000\\u001a\\u001f\\u007f\"\\n' to equal 'value = \"\\u0000\\u001A\\u001F\\u007F\"\\n'  @basic-escape.unit.test.ts:57 expect(emitted,).toBe(`${String.raw`value = \"\\u0000\\u001A\\u001F\\u007F\"`}\\n`,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:57:26) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:34.891Z",
+              "timestamp_ms": 1792223614891,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1452,
+              "body": "[info] [2026-10-17T07:53:33.913Z] [basic string escaping] [PASS] emits every named control escape and re-parses to the same value, escapes a quote and backslash in a single-line string, preserves bare quotes and escapes a triple-quote run in multiline strings, preserves parsed literal and single-line basic string styles"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:34.891Z",
+              "timestamp_ms": 1792223614891,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1453,
+              "body": "[error] [2026-10-17T07:53:33.913Z] [basic string escaping] [FAIL] (13ms) Error: uses uppercase padded escapes for unnamed controls and DEL"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:34.891Z",
+              "timestamp_ms": 1792223614891,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1486,
+              "body": "[error] [2026-10-17T07:53:34.330Z] [basic string escaping] [uses uppercase padded escapes for unnamed controls and DEL] [FAIL] (5.7ms) AssertionError: expected 'value = \"\\u0000\\u001a\\u001f\\u007f\"\\n' to equal 'value = \"\\u0000\\u001A\\u001F\\u007F\"\\n'  @basic-escape.unit.test.ts:57 expect(emitted,).toBe(`${String.raw`value = \"\\u0000\\u001A\\u001F\\u007F\"`}\\n`,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:57:26) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:34.891Z",
+              "timestamp_ms": 1792223614891,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1487,
+              "body": "[info] [2026-10-17T07:53:34.330Z] [basic string escaping] [PASS] emits every named control escape and re-parses to the same value, escapes a quote and backslash in a single-line string, preserves bare quotes and escapes a triple-quote run in multiline strings, preserves parsed literal and single-line basic string styles"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:34.891Z",
+              "timestamp_ms": 1792223614891,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1488,
+              "body": "[error] [2026-10-17T07:53:34.332Z] [basic string escaping] [FAIL] (13ms) Error: uses uppercase padded escapes for unnamed controls and DEL"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:34.891Z",
+              "timestamp_ms": 1792223614891,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1521,
+              "body": "[error] [2026-10-17T07:53:34.559Z] [basic string escaping] [uses uppercase padded escapes for unnamed controls and DEL] [FAIL] (5.8ms) AssertionError: expected 'value = \"\\u0\\u1A\\u1F\\u7F\"\\n' to equal 'value = \"\\u0000\\u001A\\u001F\\u007F\"\\n'  @basic-escape.unit.test.ts:57 expect(emitted,).toBe(`${String.raw`value = \"\\u0000\\u001A\\u001F\\u007F\"`}\\n`,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:57:26) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:34.891Z",
+              "timestamp_ms": 1792223614891,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1522,
+              "body": "[info] [2026-10-17T07:53:34.560Z] [basic string escaping] [PASS] emits every named control escape and re-parses to the same value, escapes a quote and backslash in a single-line string, preserves bare quotes and escapes a triple-quote run in multiline strings, preserves parsed literal and single-line basic string styles"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:34.891Z",
+              "timestamp_ms": 1792223614891,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1523,
+              "body": "[error] [2026-10-17T07:53:34.561Z] [basic string escaping] [FAIL] (13ms) Error: uses uppercase padded escapes for unnamed controls and DEL"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:35.891Z",
+              "timestamp_ms": 1792223615891,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1556,
+              "body": "[error] [2026-10-17T07:53:34.955Z] [basic string escaping] [escapes a quote and backslash in a single-line string] [FAIL] (4.8ms) AssertionError: expected 'value = \"\\u0061\\\"\\u0062\\\\\\u0063\"\\n' to equal 'value = \"a\\\"b\\\\c\"\\n'  @basic-escape.unit.test.ts:68 expect(emitAssignedString(value,),).toBe(`${String.raw`value = \"a\\\"b\\\\c\"`}\\n`,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:68:45) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:35.891Z",
+              "timestamp_ms": 1792223615891,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1557,
+              "body": "[error] [2026-10-17T07:53:34.955Z] [basic string escaping] [preserves bare quotes and escapes a triple-quote run in multiline strings] [FAIL] (9.3ms) AssertionError: expected '\"\"\"\\u0061\\u0022\\u0062\"\"\"' to equal '\"\"\"a\"b\"\"\"'  @basic-escape.unit.test.ts:83 expect(emitted,).toBe(expected,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:83:28) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:35.891Z",
+              "timestamp_ms": 1792223615891,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1558,
+              "body": "[error] [2026-10-17T07:53:34.955Z] [basic string escaping] [preserves parsed literal and single-line basic string styles] [FAIL] (9.3ms) AssertionError: expected '\"\\u0061\\t\\u0020\\u0062\"' to equal '\"a\\t b\"'  @basic-escape.unit.test.ts:104 expect(emitted,).toBe(expected,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:104:28) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:35.891Z",
+              "timestamp_ms": 1792223615891,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1559,
+              "body": "[info] [2026-10-17T07:53:34.956Z] [basic string escaping] [PASS] emits every named control escape and re-parses to the same value, uses uppercase padded escapes for unnamed controls and DEL"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:35.891Z",
+              "timestamp_ms": 1792223615891,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1560,
+              "body": "[error] [2026-10-17T07:53:34.958Z] [basic string escaping] [FAIL] (13ms) AggregateError: 3 children failed in suite \"basic string escaping\" at async file://package/module/toml-edit/src/basic-escape.unit.test.ts:37:1"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:35.892Z",
+              "timestamp_ms": 1792223615892,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1644,
+              "body": "[error] [2026-10-17T07:53:35.612Z] [basic string escaping] [uses uppercase padded escapes for unnamed controls and DEL] [FAIL] (5.3ms) AssertionError: expected 'value = \"\\u0000\\u001a\\u001f\\u007F\"\\n' to equal 'value = \"\\u0000\\u001A\\u001F\\u007F\"\\n'  @basic-escape.unit.test.ts:57 expect(emitted,).toBe(`${String.raw`value = \"\\u0000\\u001A\\u001F\\u007F\"`}\\n`,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:57:26) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:35.892Z",
+              "timestamp_ms": 1792223615892,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1645,
+              "body": "[info] [2026-10-17T07:53:35.613Z] [basic string escaping] [PASS] emits every named control escape and re-parses to the same value, escapes a quote and backslash in a single-line string, preserves bare quotes and escapes a triple-quote run in multiline strings, preserves parsed literal and single-line basic string styles"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:35.892Z",
+              "timestamp_ms": 1792223615892,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1646,
+              "body": "[error] [2026-10-17T07:53:35.614Z] [basic string escaping] [FAIL] (14ms) Error: uses uppercase padded escapes for unnamed controls and DEL"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:36.892Z",
+              "timestamp_ms": 1792223616892,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1679,
+              "body": "[error] [2026-10-17T07:53:36.288Z] [basic string escaping] [escapes a quote and backslash in a single-line string] [FAIL] (5.7ms) AssertionError: expected 'value = \"a\\\"b\\c\"\\n' to equal 'value = \"a\\\"b\\\\c\"\\n'  @basic-escape.unit.test.ts:68 expect(emitAssignedString(value,),).toBe(`${String.raw`value = \"a\\\"b\\\\c\"`}\\n`,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:68:45) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:36.892Z",
+              "timestamp_ms": 1792223616892,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1680,
+              "body": "[info] [2026-10-17T07:53:36.289Z] [basic string escaping] [PASS] emits every named control escape and re-parses to the same value, uses uppercase padded escapes for unnamed controls and DEL, preserves bare quotes and escapes a triple-quote run in multiline strings, preserves parsed literal and single-line basic string styles"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:36.892Z",
+              "timestamp_ms": 1792223616892,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1681,
+              "body": "[error] [2026-10-17T07:53:36.291Z] [basic string escaping] [FAIL] (14ms) Error: escapes a quote and backslash in a single-line string"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:36.892Z",
+              "timestamp_ms": 1792223616892,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1714,
+              "body": "[error] [2026-10-17T07:53:36.312Z] [basic string escaping] [escapes a quote and backslash in a single-line string] [FAIL] (4.9ms) AssertionError: expected 'value = \"\\u0061\\\"\\u0062\\\\\\u0063\"\\n' to equal 'value = \"a\\\"b\\\\c\"\\n'  @basic-escape.unit.test.ts:68 expect(emitAssignedString(value,),).toBe(`${String.raw`value = \"a\\\"b\\\\c\"`}\\n`,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:68:45) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:36.892Z",
+              "timestamp_ms": 1792223616892,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1715,
+              "body": "[error] [2026-10-17T07:53:36.313Z] [basic string escaping] [preserves bare quotes and escapes a triple-quote run in multiline strings] [FAIL] (9.8ms) AssertionError: expected '\"\"\"\\u0061\\u0022\\u0062\"\"\"' to equal '\"\"\"a\"b\"\"\"'  @basic-escape.unit.test.ts:83 expect(emitted,).toBe(expected,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:83:28) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:36.892Z",
+              "timestamp_ms": 1792223616892,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1716,
+              "body": "[error] [2026-10-17T07:53:36.313Z] [basic string escaping] [preserves parsed literal and single-line basic string styles] [FAIL] (9.8ms) AssertionError: expected '\"\\u0061\\t\\u0020\\u0062\"' to equal '\"a\\t b\"'  @basic-escape.unit.test.ts:104 expect(emitted,).toBe(expected,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:104:28) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:36.892Z",
+              "timestamp_ms": 1792223616892,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1717,
+              "body": "[info] [2026-10-17T07:53:36.313Z] [basic string escaping] [PASS] emits every named control escape and re-parses to the same value, uses uppercase padded escapes for unnamed controls and DEL"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:36.892Z",
+              "timestamp_ms": 1792223616892,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1718,
+              "body": "[error] [2026-10-17T07:53:36.316Z] [basic string escaping] [FAIL] (14ms) AggregateError: 3 children failed in suite \"basic string escaping\" at async file://package/module/toml-edit/src/basic-escape.unit.test.ts:37:1"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:37.892Z",
+              "timestamp_ms": 1792223617892,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1802,
+              "body": "[error] [2026-10-17T07:53:36.984Z] [basic string escaping] [uses uppercase padded escapes for unnamed controls and DEL] [FAIL] (5.9ms) AssertionError: expected 'value = \"\\u0000\\u001A\\u001f\\u007F\"\\n' to equal 'value = \"\\u0000\\u001A\\u001F\\u007F\"\\n'  @basic-escape.unit.test.ts:57 expect(emitted,).toBe(`${String.raw`value = \"\\u0000\\u001A\\u001F\\u007F\"`}\\n`,); at fn (file://package/module/toml-edit/src/basic-escape.unit.test.ts:57:26) at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:66:14)"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:37.892Z",
+              "timestamp_ms": 1792223617892,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1803,
+              "body": "[info] [2026-10-17T07:53:36.985Z] [basic string escaping] [PASS] emits every named control escape and re-parses to the same value, escapes a quote and backslash in a single-line string, preserves bare quotes and escapes a triple-quote run in multiline strings, preserves parsed literal and single-line basic string styles"
+            },
+            {
+              "type": "line",
+              "timestamp": "2026-10-17T07:53:37.892Z",
+              "timestamp_ms": 1792223617892,
+              "stream": "stdout",
+              "step_key": "fe87d1b5-b422-42d3-9a92-30f3a23b60e9",
+              "line_number": 1804,
+              "body": "[error] [2026-10-17T07:53:36.985Z] [basic string escaping] [FAIL] (14ms) Error: uses uppercase padded escapes for unnamed controls and DEL"
+            }
+          ]
+        },
+        "limitations": [
+          "Partial progress only. Completed shard result records are not distinct mutant identities or a final outcome.",
+          "Intentionally mutated test failures are evidence for mutation classification, not unchanged-source failures.",
+          "Native final statuses, all selected identities, after provenance, resources, cleanup and provider usage remain pending."
+        ]
       }
     },
     "preFullRetryRoute": {
@@ -278572,6 +280902,98 @@
       "performed_via_github_app": null,
       "minimized": null,
       "pin": null
+    }
+  },
+  "verification": {
+    "verifiedCommit": "620674d77d",
+    "checks": [
+      {
+        "command": "mise run lint:dprint -- <three owned audit JSON files>",
+        "exitCode": 0
+      },
+      {
+        "command": "mise run lint:monochromatic-lint -- <five owned Markdown files>",
+        "exitCode": 0
+      },
+      {
+        "command": "mise run lint:monochromatic-lint -- doc/handover/depot-trial-issues.md",
+        "exitCode": 0
+      },
+      {
+        "command": "git diff --check",
+        "exitCode": 0
+      }
+    ],
+    "rendered": {
+      "observedAt": "2026-10-17T08:01:17.196Z",
+      "records": [
+        {
+          "file": "common-manifest-audit.html",
+          "bytes": 5462,
+          "sha256": "740e47ebd1512333884cec9d761755103d1bd3ac8a5c46c173c37230a345091c",
+          "emphasisElements": 0,
+          "relevantRenderedParagraphs": [
+            "The prepared native, Windows, Alpine, and TOML final guards bind source\nand harness identity to the shared canonical cohort manifest. Final\ndispatch remains held because the copied case manifests still have\ncompleteGraph: false. No fake cohort manifest was published. The machine\nevidence retains every disposable invocation and current authenticated\nprovider-byte comparison.",
+            "- native: trial/depot-coherent-native-20261017 at\n  2032975cbad924e63ac98bc69e14a56b20288275, workflow\n  .github/workflows/music-player-windows.yml.\n- windows: trial/depot-coherent-windows-20261017 at\n  e70240dc7317124a0db5b37967c570cf2f3fb6f4, workflow\n  .github/workflows/music-player-windows.yml.\n- alpine: trial/depot-coherent-alpine-20261017 at\n  5152df4debd88f5e0b57802c7c8c958b1a5f6255, workflow\n  .github/workflows/music-player-alpine.yml.\n- toml: trial/depot-toml-continuation-20261017 at\n  0f8ad795aa92d3beb83e3bfa4e4aa54f1bea06f8 (current as of 2026-10-17:\n  0f1ef041a0de2ff6d2db6dd55210b1160c592648), workflow\n  .depot/workflows/depot-complete-toml-bounded.yml.",
+            "The prepared TOML route advanced to\n0f1ef041a0de2ff6d2db6dd55210b1160c592648 for metadata receipts and the\nindependent full retry budget. Its canonical guard block remains\nbyte-identical to the harness exercised by the 20 accepted and 110\nrejected controls. The current native, Windows, and Alpine guard blocks\nare likewise byte-compared against their tested revisions. Fresh\nauthenticated provider reads verify every current workflow, task file\nand provisional case file byte. The case manifests still have\ncompleteGraph: false; final canonical acceptance remains held.\n"
+          ]
+        },
+        {
+          "file": "coherent-routes.html",
+          "bytes": 7900,
+          "sha256": "f70f3339ccd6ac6450d4dbb9d6145752151803f5d5bdbdc5f908d09363d87b51",
+          "emphasisElements": 0,
+          "relevantRenderedParagraphs": [
+            "The historical route hashes remain recorded in the route sections. As of\n2026-10-17, the current clean pushed references and workflow byte hashes\nare in the common-manifest guard audit. The actual guards accepted 20\nallowed and rejected 110 invalid disposable invocations. Authenticated\nbase64 transport was byte-verified against an existing audit; the absent\ncanonical API response was stubbed only for disposable semantic\ncontrols. All provisional case manifests still have completeGraph: false\nand are rejected. Root must provide complete frozen case bytes, publish\nthe canonical manifest with resulting harness hashes, and verify real\ncanonical reads before final dispatch. No final cohort was dispatched.\n"
+          ]
+        },
+        {
+          "file": "toml-audit.html",
+          "bytes": 26247,
+          "sha256": "1800f452caf2622c9e13e2aa04c8a9f365e269150766c11f6e31df3049805eab",
+          "emphasisElements": 0,
+          "relevantRenderedParagraphs": [
+            "The full native report is retained byte-for-byte as\ndepot-toml-mutation-native-2026-10-17.evidence.json.gz. Its uncompressed\nSHA-256 is\ne3b1023242fb838e30ad22ce1aa0c593f412401be141901594af34c484177bce. All\n3062 distinct mutant identities reconcile with 9037 shard manifests and\nattempts. All final statuses are runtimeError, with no source mutation\nassertion completion. Every shard failed rsync --archive with exit 23\nand:",
+            "The common-manifest guard audit retains the current clean pushed route\nreferences and 20 accepted plus 110 rejected controls. The case\nmanifests remain provisional and correctly rejected for final\nacceptance. Final dispatch waits for root's complete frozen case bytes\nand the actual canonical API read.",
+            "Actual trial vlrxjltfkq uses harness\n316e1a8a309e71e456a741eb63e5ff3b94b75646. Its metadata-only deadline is\n60000 milliseconds. The unchanged source consumer retains the complete\nproven container adapter byte-for-byte. An observer-only copy adds\nbefore/after sudo forwarding receipts and preserves actual Podman\narguments. The source correlation wrapper now retains each invocation\nwithout changing its forwarded argument policy. Disposable forwarding,\ntimeout rejection, and removed-timeout detection controls pass. Original\neight-second failures remain retained. Only complete actual source,\nmetadata, correlation, and cleanup evidence permits the full\nimmutable-source retry.",
+            "Actual trial vlrxjltfkq, workflow fkzv9kxx7k, job gz17n0n8q6, attempt\ntfzhj6cztj, finished successfully on immutable harness\n316e1a8a309e71e456a741eb63e5ff3b94b75646. The source command again\nexited zero with the same green baseline and one compileError identity.\nNo mutant assertion execution or full-campaign pass is claimed. All ten\nmetadata operations and all forwarded sudo calls returned zero. The\nlongest list operation took 14100.441549 milliseconds; the Node observer\nrecorded 14077.079173 milliseconds inside its synchronous\nsudo --non-interactive /usr/local/bin/podman call. That call then\nreturned zero. This localizes most observed delay to the forwarded call;\nthe division between sudo and actual Podman remains unresolved. Every\noperation duration is retained. The original eight-second failures\nremain failed historical observations.",
+            "The provider interval was 165081 milliseconds at 16x64, or 2641296\nallocated vCPU-milliseconds. Artifact\n01a148cd-37bb-750c-969a-1d040159af2e has 55933 bytes, SHA-256\n35ab60a4bbd6adb146676b810e3123d3d0fe08a2174873a73736480ee596be19. All 24\nmembers are individually hashed. Issue #1130 records the distinct\nobserver deadline boundary and retained rejection controls. The next\nauthorized action is the full TOML-only immutable-source mutation retry.",
+            "Development run 23dk3nr90f dispatches only\npackage.module.toml-edit.test.mutation. Request time is\n2026-10-17T07:50:29.848Z; the development manifest digest is\n4b18266890cb521dfc87256ecd13f8869f39ee35b747186ca16cd53998fe84a0. The\nclean pushed branch is trial/depot-toml-continuation-20261017, harness\n0f1ef041a0de2ff6d2db6dd55210b1160c592648, workflow\n.depot/workflows/depot-complete-toml-full-mutation.yml. Its 4931\nauthenticated provider bytes match SHA-256\nce2c907be8b7e2bc449a866964869ea87e3ee0a5140c4453faf07ed0c110e954.",
+            "The original source command and defaults remain unchanged: two\ncontainers, 16 mutants per shard, 1800-second sessions, 5000-millisecond\ntest floor, baseline timeout factor three, and one single-container\nretry. The full selector is enumerated again before execution. The\nretained prior inventory has 3062 distinct mutant IDs. The wrapper\nbudget is 18000000 milliseconds and the provider job budget is 360\nminutes. These are execution bounds, not a duration forecast. The\nbounded compilation-only pilot does not establish full-suite mutant\nthroughput. Source shard progress, all actual outcomes, metadata\ndurations, and scoped cleanup remain required for terminal\nreconciliation. The allowed budget and rejected over-limit fixture are\nexercised; removing the exact upper-budget guard makes the rejected\nfixture execute.",
+            "Single terminal wait session 96306 is active. Issue #1130 is closed with\nre-fetched observed-recovery comment 6231392374. Issues #1113 and #1118\nremain open. This independent development run is separate from the held\nfinal coherent cohort.\n"
+          ]
+        },
+        {
+          "file": "toml-completion.html",
+          "bytes": 12410,
+          "sha256": "2915bb051747e3c772e8cc24979eb0980b0f07827aa995e5020fbc7d5341eec3",
+          "emphasisElements": 0,
+          "relevantRenderedParagraphs": [
+            "Development run p6vm5s00w6 completed its independent mutation commands.\nFile-enforcer failed at its existing package-path ENOENT boundary. TOML\nretained 3062 distinct mutant identities across 9037 shard attempts, all\nmarked runtimeError after source copying failed before assertions. Each\nshard reports rsync exit 23 and\nrsync: [generator] chgrp \"/work/.\" failed: Operation not permitted (1).\nThis is the diagnosed root-owned work-tmpfs boundary, separate from\nissues #1116 and #1117.",
+            "Actual pilot 0j8zhbn9n0 ran the unchanged one-file source mutation task\nthrough the complete containers adapter from\nd098532a5b6946231daf3c4f43e38444359a307e. Its baseline is green and the\nonly selected mutant is compileError. This source-terminal result\ncarries no mutant assertion execution credit. It verifies the owned work\nvolume and unchanged generated-metadata bind on a real TOML consumer. It\ndoes not complete the 3062-identity campaign.",
+            "Trial vlrxjltfkq finished successfully with the unchanged source\nconsumer, the same terminal compilation identity, all ten metadata\nresults, source Podman correlation, matching source identities, and\nscoped cleanup. The list observer took 14100.441549 milliseconds once;\nits synchronous sudo forwarding span was 14077.079173 milliseconds and\nreturned zero. The 60000-millisecond bound covers this actual delayed\ncall. The underlying Podman-versus-sudo cause remains unresolved. The\nNode observer's two lifecycle additions are byte-separated from the\nunchanged consumer forwarder. Issue #1130 retains both original\neight-second failures and the verified timeout rejection/removal\ncontrols. This recovery permits a full source mutation retry; the\nbounded compilation result alone does not complete the campaign.",
+            "The verified bounded recovery is followed by development run 23dk3nr90f.\nIt executes only the original full TOML mutation task, with unchanged\nsource defaults. The source wrapper permits five hours, with a\n360-minute provider job budget. This is a declared execution allowance,\nnot a throughput prediction. Original failed usage and source incidents\nremain retained. The next evidence requirement is complete source, shard\nand mutant identity reconciliation, including actual live resource\nsamples and scoped cleanup. Observer issue #1130 is closed after the\nbounded actual recovery; full-campaign issue #1113 remains open.\n"
+          ]
+        },
+        {
+          "file": "toml-handover.html",
+          "bytes": 35686,
+          "sha256": "8a82642b993f72e43eb7de0366609db307ace76e3370919d2533e6712115da25",
+          "emphasisElements": 0,
+          "relevantRenderedParagraphs": [
+            "The TOML audit retains original run p9r4xl6n12 and terminal development\nrun p6vm5s00w6. The latter emitted 3062 distinct mutant IDs across 9037\nattempts, all infrastructure-derived runtimeError before assertions. The\nfull native report, shard identities, artifacts, provider usage, and\ncleanup are retained. File-enforcer mutation repeats #1068; the\ncompleted container failure #1070 remains separate.\nTimeout/independent-check coverage issue #1113 remains open. Source lint\nissues #1111 and #1112 remain distinct from historical panic #1066.",
+            "The canonical guard audit records current pushed route references, 20\naccepted and 110 rejected disposable invocations, and separate actual\nauthenticated transport proof. Only absent canonical API responses are\nstubbed in local controls. Provisional case manifests remain\ncompleteGraph: false and correctly rejected. Root must supply complete\nfrozen case bytes, publish the real canonical manifest with final\nharness hashes, and verify actual canonical reads before final coherent\ndispatch. Final dispatch remains held.",
+            "Bounded metadata forwarding trial vlrxjltfkq succeeded on\n316e1a8a309e71e456a741eb63e5ff3b94b75646. The observer deadline is 60000\nmilliseconds; original source adapter bytes and source arguments are\npreserved. A copied observer forwarder retains sudo lifecycle results,\nand source Podman correlation is now recorded. Terminal collection\nverifies success, all ten metadata results, source correlation and\nscoped cleanup. The longest metadata call was 14100.441549 milliseconds;\nits forwarded sudo call returned zero. Issue #1130 retains this observer\ndeadline boundary, original failures and rejection controls. Its\ncomplete actual result permitted the full TOML-only immutable mutation\nretry.",
+            "Full TOML-only development retry 23dk3nr90f is dispatched at\n0f1ef041a0de2ff6d2db6dd55210b1160c592648. The exact request, provider\nworkflow bytes, source defaults and budget controls are retained in the\nTOML audit. Its source wrapper budget is five hours; provider job budget\nis 360 minutes. These are bounds, not a runtime prediction. Terminal\nwait session 96306 is active. The next action is artifact collection and\nreconciliation against all 3062 prior mutant identities. Issue #1130 is\nclosed after actual bounded source, observer and cleanup recovery; #1113\nand #1118 remain open. Final coherent dispatch remains held."
+          ]
+        }
+      ]
+    },
+    "renderRecovery": {
+      "failedInvocation": "mise run render-common-manifest-audit render-toml-audit render-coherent-routes",
+      "diagnostic": "render-toml-audit: withBinaryFile: does not exist (No such file or directory)",
+      "cause": "Extra task names were passed as pandoc input arguments to the first mise task.",
+      "corrected": "Invoked each render task separately; all returned zero and rendered output was inspected."
     }
   }
 }
