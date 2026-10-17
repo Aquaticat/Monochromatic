@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "caseId": "logger",
+  "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+  "manifestPath": ".depot/manifests/logger.json",
+  "manifestSha256": "f4cbd47f210f5b031d76c5fc1c28fa704b349621f91eefa3f4f3ad575acfedc3",
+  "packageChecks": 719,
+  "externalChecks": 19,
+  "workflow": ".depot/workflows/depot-complete-logger-combined.yml",
+  "completeGraph": false,
+  "status": "Development adapters retained; pending terminal reconciliation, measured shard bounds and root integration for GitHub/VM routes before coherent dispatch",
+  "externalRoutes": [
+    {
+      "checkId": "special.package.cli.vmsync.src.lifecycle.expensive.unit.test.ts",
+      "provider": "depot",
+      "owner": "root-vm-agent",
+      "workflow": ".depot/workflows/depot-complete-vm.yml",
+      "integration": "pending-root-orchestration"
+    },
+    {
+      "checkId": "special.package.pi-plugin.bash-poke.src.tui.expensive.unit.test.ts",
+      "provider": "depot",
+      "job": "logger_pi"
+    },
+    {
+      "checkId": "package.cli.wg-quicker.test.integration.bypass",
+      "provider": "depot",
+      "job": "logger_wg"
+    },
+    {
+      "checkId": "package.cli.wg-quicker.test.integration.route",
+      "provider": "depot",
+      "job": "logger_wg"
+    },
+    {
+      "checkId": "package.desktop-app.electron-counter.test.wayland",
+      "provider": "depot",
+      "job": "logger_external",
+      "matrixGroup": "electron"
+    },
+    {
+      "checkId": "package.desktop-app.file-manager-electron.test.wayland",
+      "provider": "depot",
+      "job": "logger_external",
+      "matrixGroup": "electron"
+    },
+    {
+      "checkId": "package.pi-plugin.agent-settled-notification.verify.pi-runtime",
+      "provider": "depot",
+      "job": "logger_pi"
+    },
+    {
+      "checkId": "package.pi-plugin.ask-user-question.verify.terminal",
+      "provider": "depot",
+      "job": "logger_pi"
+    },
+    {
+      "checkId": "package.pi-plugin.auto-mode.test.native.configured-extensions",
+      "provider": "depot",
+      "job": "logger_pi"
+    },
+    {
+      "checkId": "root.browser",
+      "provider": "depot",
+      "job": "logger_external",
+      "matrixGroup": "browser"
+    },
+    {
+      "checkId": "root.e2e",
+      "provider": "depot",
+      "job": "logger_external",
+      "matrixGroup": "e2e"
+    },
+    {
+      "checkId": "root.forbidden-strings",
+      "provider": "github-actions",
+      "owner": "root",
+      "workflow": ".github/workflows/forbidden-strings.yml",
+      "integration": "pending-root-orchestration"
+    },
+    {
+      "checkId": "root.generated-consistency",
+      "provider": "depot",
+      "job": "logger_external",
+      "matrixGroup": "generated"
+    },
+    {
+      "checkId": "root.scorecard",
+      "provider": "github-actions",
+      "owner": "root",
+      "workflow": ".github/workflows/scorecard.yml",
+      "integration": "pending-root-orchestration",
+      "semantics": "Current policy revision and actual analysis-attempt rate gate"
+    },
+    {
+      "checkId": "root.config-oxlint",
+      "provider": "depot",
+      "job": "logger_external",
+      "matrixGroup": "root-lint"
+    },
+    {
+      "checkId": "host.fs-id",
+      "provider": "github-actions",
+      "owner": "root",
+      "workflow": ".github/workflows/fs-id.yml",
+      "integration": "pending-root-orchestration"
+    },
+    {
+      "checkId": "host.semantic-bridge",
+      "provider": "github-actions",
+      "owner": "root",
+      "workflow": ".github/workflows/fs-id.yml",
+      "integration": "pending-root-orchestration"
+    },
+    {
+      "checkId": "artifact.music-desktop-e2e",
+      "provider": "depot",
+      "job": "logger_external",
+      "matrixGroup": "desktop"
+    },
+    {
+      "checkId": "sidecar.generated-type-consistency",
+      "provider": "depot",
+      "job": "logger_external",
+      "matrixGroup": "generated"
+    }
+  ]
+}
