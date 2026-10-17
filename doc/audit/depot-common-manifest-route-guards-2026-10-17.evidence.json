@@ -2092,5 +2092,307 @@
       "taskBlockSha256": "8c57984f696f6eee94ed2bf46a91ee97bdd1cae6a6e5f2d3b0f2acd619753898",
       "byteIdentical": true
     }
-  ]
+  ],
+  "originalHarnessDirectoryResolution": {
+    "observedAt": "2026-10-17T09:42:43.151Z",
+    "outerInvocation": "mise run verify-original-guard-resolved-directories",
+    "outerDirectory": "/var/mnt/encrypted/temp/agent/depot-complete-accounting-20261016",
+    "outerTaskName": "verify-original-guard-resolved-directories",
+    "records": [
+      {
+        "kind": "native",
+        "revision": "2032975cbad924e63ac98bc69e14a56b20288275",
+        "directory": "/home/user/temp/agent/depot-coherent-native-worktree",
+        "task": "trial:depot:coherent:provenance",
+        "originalTemplate": "{{config_root}}/../../..",
+        "resolvedDirectory": "/var/mnt/encrypted/temp/agent/depot-coherent-native-worktree/package/dev-script/task-util/../../..",
+        "expectedRealDirectory": "/var/mnt/encrypted/temp/agent/depot-coherent-native-worktree",
+        "trackedStatusEmpty": true,
+        "taskInfo": {
+          "name": "//package/dev-script/task-util:trial:depot:coherent:provenance",
+          "aliases": [],
+          "description": "Retain frozen source and manifest/tool/task inputs before and after consumer gates",
+          "source": "/var/mnt/encrypted/temp/agent/depot-coherent-native-worktree/package/dev-script/task-util/mise.toml",
+          "config_sources": [
+            "/var/mnt/encrypted/temp/agent/depot-coherent-native-worktree/package/dev-script/task-util/mise.toml"
+          ],
+          "depends": [],
+          "depends_post": [],
+          "daemons": null,
+          "wait_for": [],
+          "env": [],
+          "dir": "/var/mnt/encrypted/temp/agent/depot-coherent-native-worktree/package/dev-script/task-util/../../..",
+          "hide": false,
+          "raw": false,
+          "interactive": false,
+          "sources": [],
+          "outputs": [],
+          "cache": {
+            "enabled": false,
+            "audit": false,
+            "env": [],
+            "command_inputs": []
+          },
+          "shell": "node --input-type=module-typescript -e",
+          "quiet": false,
+          "silent": false,
+          "tools": {},
+          "run": [
+            "const { execFileSync } = await import('node:child_process')\nconst { createHash } = await import('node:crypto')\nconst { readFileSync, writeFileSync, mkdirSync } = await import('node:fs')\nconst { join, isAbsolute } = await import('node:path')\nconst { strict: assert } = await import('node:assert')\nconst source = process.env.SOURCE_ROOT\nconst expected = process.env.SOURCE_HEAD\nconst phase = process.env.PROVENANCE_PHASE\nconst caseName = process.env.PROVENANCE_CASE\nconst output = process.env.PROVENANCE_OUTPUT\nconst cohort = { id: process.env.COHORT_ID, manifestSha256: process.env.COHORT_MANIFEST_SHA256, requestedAt: process.env.COHORT_REQUESTED_AT }\nassert.match(cohort.id ?? '', /^[A-Za-z0-9._-]{1,128}$/, 'COHORT_ID must name the frozen replay')\nassert.match(cohort.manifestSha256 ?? '', /^[a-f0-9]{64}$/, 'COHORT_MANIFEST_SHA256 must bind the complete manifest')\nassert(Number.isFinite(Date.parse(cohort.requestedAt ?? '')), 'COHORT_REQUESTED_AT must record the shared request instant')\nassert.equal(new Date(cohort.requestedAt).toISOString(), cohort.requestedAt, 'Request instant must use canonical UTC ISO form')\nassert(source && isAbsolute(source), 'SOURCE_ROOT must name an absolute source checkout')\nassert(output && isAbsolute(output), 'PROVENANCE_OUTPUT must name an absolute evidence directory')\nassert.match(expected ?? '', /^[a-f0-9]{40}$/, 'SOURCE_HEAD must be immutable')\nassert(['before', 'after'].includes(phase), 'PROVENANCE_PHASE must be before or after')\nassert(['native', 'windows', 'alpine'].includes(caseName), 'PROVENANCE_CASE must name a frozen route')\nconst git = args => execFileSync('git', args, { cwd: source, encoding: 'utf8' }).trim()\nconst sha256 = value => createHash('sha256').update(value).digest('hex')\nconst indexEntries = execFileSync('git', ['ls-files', '-v', '-z'], { cwd: source, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }).split('\\0').filter(Boolean)\nassert(indexEntries.every(entry => entry[0] !== 'S' && !/[a-z]/.test(entry[0])), 'Immutable source index must not hide tracked inputs with assume-unchanged or skip-worktree flags')\nconst tracked = execFileSync('git', ['ls-files', '-z'], { cwd: source, encoding: 'utf8' }).split('\\0').filter(Boolean)\nconst packageRoots = ['package/music-player/desktop-app', 'package/music-player/truepeak-core', ...(caseName === 'alpine' ? ['package/cli/nested-wayland-session'] : [])]\nconst metadataNames = new Set(['mise.toml', 'mise.no-env.toml', 'mise.lock', 'package.json', 'Cargo.toml', 'Cargo.lock', 'config.toml', 'coverage-baseline.json', 'Containerfile.alpine'])\nconst paths = tracked.filter(path => {\n  const name = path.slice(path.lastIndexOf('/') + 1)\n  const rootConfiguration = !path.includes('/') && (metadataNames.has(name) || ['.toml', '.json', '.jsonc', '.yaml', '.yml'].some(extension => name.endsWith(extension)) || name.includes('.config.'))\n  const packageConfiguration = packageRoots.some(prefix => path.startsWith(prefix + '/')) && (metadataNames.has(name) || name.startsWith('tsconfig.') || name.includes('.config.') || path.includes('/.cargo/'))\n  return rootConfiguration || path.startsWith('.cargo/') || ['Cargo.toml', 'Cargo.lock'].includes(name) || packageConfiguration\n}).toSorted()\nfor (const required of ['mise.toml', 'mise.lock', 'package/music-player/desktop-app/Cargo.toml', 'package/music-player/desktop-app/Cargo.lock', 'package/music-player/desktop-app/mise.toml']) assert(paths.includes(required), 'Required source input is absent: ' + required)\nconst inputs = Object.fromEntries(paths.map(path => { const bytes = readFileSync(join(source, path)); assert.deepEqual(bytes, execFileSync('git', ['show', 'HEAD:' + path], { cwd: source, maxBuffer: 16 * 1024 * 1024 }), 'Configured source input differs: ' + path); return [path, { bytes: bytes.length, sha256: sha256(bytes) }] }))\nconst identity = { head: git(['rev-parse', 'HEAD']), trackedStatus: git(['status', '--porcelain', '--untracked-files=no']), sourceTree: git(['rev-parse', 'HEAD^{tree}']), inputs }\nconst harnessRevision = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()\nif (process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true') assert.match(process.env.GITHUB_SHA ?? '', /^[a-f0-9]{40}$/, 'Provider harness revision is required in CI')\nif (process.env.GITHUB_SHA) assert.equal(harnessRevision, process.env.GITHUB_SHA, 'Provenance harness differs from dispatched workflow revision')\nasync function readContentsApi({ path }) {\n  const token = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN\n  if (process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true') assert(token, 'Contents API authentication is required in CI')\n  const url = 'https://api.github.com/repos/Aquaticats/Monochromatic/contents/' + path + '?ref=main'\n  const response = await fetch(url, { headers: { Accept: 'application/vnd.github.object+json', 'User-Agent': 'Monochromatic-Depot-Trial', ...(token ? { Authorization: 'Bearer ' + token } : {}) }, signal: AbortSignal.timeout(30000) })\n  assert.equal(response.status, 200, 'Common manifest Contents API request failed')\n  const text = await response.text()\n  assert(Buffer.byteLength(text) < 2 * 1024 * 1024, 'Contents API envelope exceeds the manifest transport bound')\n  const envelope = JSON.parse(text)\n  assert.equal(envelope.encoding, 'base64', 'Contents API must return base64 file bytes')\n  assert.equal(envelope.type, 'file')\n  assert.equal(envelope.path, path)\n  assert.equal(typeof envelope.content, 'string')\n  const encoded = envelope.content.replace(/\\s+/g, '')\n  assert.match(encoded, /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/)\n  const bytes = Buffer.from(encoded, 'base64')\n  assert(bytes.length < 1024 * 1024, 'Common manifest must be below one MiB')\n  assert.equal(bytes.length, envelope.size)\n  assert.equal(bytes.toString('base64'), encoded, 'Contents API base64 must preserve exact bytes')\n  return { bytes, path, repository: 'Aquaticats/Monochromatic', ref: 'main', url, gitBlob: envelope.sha, sha256: sha256(bytes) }\n}\nconst caseId = caseName === 'native' && expected === 'cb95cf6d785c3073c192b95f0632cdae7b910894' ? 'native' : 'desktop'\nconst routeId = caseName === 'native' ? caseId === 'native' ? 'native.hosts' : 'desktop.macos' : 'desktop.' + caseName\nconst localCasePath = '.depot/manifests/' + caseId + '.json'\nconst localCaseBytes = readFileSync(join(process.cwd(), localCasePath))\nassert.deepEqual(localCaseBytes, execFileSync('git', ['show', 'HEAD:' + localCasePath], { maxBuffer: 1024 * 1024 }), 'Local case manifest must equal its committed harness blob')\nconst localCase = JSON.parse(localCaseBytes)\nassert.equal(localCase.completeGraph, true, 'Final route requires a frozen complete case manifest')\nassert.equal(localCase.caseId, caseId)\nassert.equal(localCase.sourceRevision, expected, 'Local case source differs from the immutable consumer source')\nconst contents = await readContentsApi({ path: 'doc/audit/depot-complete-cohort-' + cohort.id + '.json' })\nassert.equal(contents.sha256, cohort.manifestSha256, 'Common manifest bytes differ from the dispatch digest')\nconst common = JSON.parse(contents.bytes)\nassert.equal(common.schemaVersion, 1)\nassert.equal(common.cohortId, cohort.id)\nconst selectedCase = common.cases?.[caseId]\nassert.equal(selectedCase?.sourceRevision, expected)\nassert.equal(selectedCase.baseRevision, localCase.baseRevision)\nassert.equal(selectedCase.manifestSha256, sha256(localCaseBytes), 'Common case digest differs from the local frozen case')\nconst selectedRoute = common.routes?.[routeId]\nassert.equal(selectedRoute?.caseId, caseId)\nassert.equal(selectedRoute.harnessRevision, harnessRevision, 'Common route differs from actual harness HEAD')\nassert.equal(selectedRoute.workflow, '.github/workflows/music-player-windows.yml')\nconst commonManifest = { path: contents.path, repository: contents.repository, ref: contents.ref, gitBlob: contents.gitBlob, bytes: contents.bytes.length, sha256: contents.sha256, caseId, routeId, case: selectedCase, route: selectedRoute, localCaseSha256: sha256(localCaseBytes), document: common }\nconst record = { schemaVersion: 1, event: 'source-provenance', commonManifest, caseName, phase, cohort, observedAt: new Date().toISOString(), expectedSource: expected, harnessRevision, verifierNode: process.version, platform: process.platform, architecture: process.arch, identity }\nmkdirSync(output, { recursive: true, mode: 0o700 })\nwriteFileSync(join(output, phase + '.json'), JSON.stringify(record, null, 2) + '\\n')\nconsole.log(JSON.stringify(record))\nassert.equal(identity.head, expected, 'Consumer checkout differs from immutable source revision')\nassert.equal(identity.trackedStatus, '', 'Consumer changed tracked historical source')\nif (phase === 'after') {\n  const before = JSON.parse(readFileSync(join(output, 'before.json'), 'utf8'))\n  assert.equal(before.expectedSource, expected)\n  assert.deepEqual(before.cohort, cohort, 'Replay context changed between consumer boundaries')\n  assert.equal(before.harnessRevision, harnessRevision)\n  assert.deepEqual(before.commonManifest, commonManifest, 'Canonical common manifest changed between consumer boundaries')\n  assert.deepEqual(identity, before.identity, 'Consumer changed frozen source or input hashes')\n}\n"
+          ],
+          "file": null,
+          "usage_spec": {
+            "name": "//package/dev-script/task-util:trial:depot:coherent:provenance",
+            "bin": "//package/dev-script/task-util:trial:depot:coherent:provenance",
+            "cmd": {
+              "full_cmd": [],
+              "usage": "",
+              "subcommands": {},
+              "args": [],
+              "flags": [],
+              "mounts": [],
+              "unknown_flags": null,
+              "hide": false,
+              "args_override_self": true,
+              "help": "Retain frozen source and manifest/tool/task inputs before and after consumer gates",
+              "name": "//package/dev-script/task-util:trial:depot:coherent:provenance",
+              "aliases": [],
+              "hidden_aliases": [],
+              "examples": [],
+              "headings": []
+            },
+            "config": {
+              "props": {},
+              "sources": {},
+              "files": []
+            },
+            "usage": "",
+            "complete": {},
+            "unknown_flags": null
+          }
+        }
+      },
+      {
+        "kind": "windows",
+        "revision": "e70240dc7317124a0db5b37967c570cf2f3fb6f4",
+        "directory": "/home/user/temp/agent/depot-coherent-windows-worktree",
+        "task": "trial:depot:coherent:provenance",
+        "originalTemplate": "{{config_root}}/../../..",
+        "resolvedDirectory": "/var/mnt/encrypted/temp/agent/depot-coherent-windows-worktree/package/dev-script/task-util/../../..",
+        "expectedRealDirectory": "/var/mnt/encrypted/temp/agent/depot-coherent-windows-worktree",
+        "trackedStatusEmpty": true,
+        "taskInfo": {
+          "name": "//package/dev-script/task-util:trial:depot:coherent:provenance",
+          "aliases": [],
+          "description": "Retain frozen source and manifest/tool/task inputs before and after consumer gates",
+          "source": "/var/mnt/encrypted/temp/agent/depot-coherent-windows-worktree/package/dev-script/task-util/mise.toml",
+          "config_sources": [
+            "/var/mnt/encrypted/temp/agent/depot-coherent-windows-worktree/package/dev-script/task-util/mise.toml"
+          ],
+          "depends": [],
+          "depends_post": [],
+          "daemons": null,
+          "wait_for": [],
+          "env": [],
+          "dir": "/var/mnt/encrypted/temp/agent/depot-coherent-windows-worktree/package/dev-script/task-util/../../..",
+          "hide": false,
+          "raw": false,
+          "interactive": false,
+          "sources": [],
+          "outputs": [],
+          "cache": {
+            "enabled": false,
+            "audit": false,
+            "env": [],
+            "command_inputs": []
+          },
+          "shell": "node --input-type=module-typescript -e",
+          "quiet": false,
+          "silent": false,
+          "tools": {},
+          "run": [
+            "const { execFileSync } = await import('node:child_process')\nconst { createHash } = await import('node:crypto')\nconst { readFileSync, writeFileSync, mkdirSync } = await import('node:fs')\nconst { join, isAbsolute } = await import('node:path')\nconst { strict: assert } = await import('node:assert')\nconst source = process.env.SOURCE_ROOT\nconst expected = process.env.SOURCE_HEAD\nconst phase = process.env.PROVENANCE_PHASE\nconst caseName = process.env.PROVENANCE_CASE\nconst output = process.env.PROVENANCE_OUTPUT\nconst cohort = { id: process.env.COHORT_ID, manifestSha256: process.env.COHORT_MANIFEST_SHA256, requestedAt: process.env.COHORT_REQUESTED_AT }\nassert.match(cohort.id ?? '', /^[A-Za-z0-9._-]{1,128}$/, 'COHORT_ID must name the frozen replay')\nassert.match(cohort.manifestSha256 ?? '', /^[a-f0-9]{64}$/, 'COHORT_MANIFEST_SHA256 must bind the complete manifest')\nassert(Number.isFinite(Date.parse(cohort.requestedAt ?? '')), 'COHORT_REQUESTED_AT must record the shared request instant')\nassert.equal(new Date(cohort.requestedAt).toISOString(), cohort.requestedAt, 'Request instant must use canonical UTC ISO form')\nassert(source && isAbsolute(source), 'SOURCE_ROOT must name an absolute source checkout')\nassert(output && isAbsolute(output), 'PROVENANCE_OUTPUT must name an absolute evidence directory')\nassert.match(expected ?? '', /^[a-f0-9]{40}$/, 'SOURCE_HEAD must be immutable')\nassert(['before', 'after'].includes(phase), 'PROVENANCE_PHASE must be before or after')\nassert(['native', 'windows', 'alpine'].includes(caseName), 'PROVENANCE_CASE must name a frozen route')\nconst git = args => execFileSync('git', args, { cwd: source, encoding: 'utf8' }).trim()\nconst sha256 = value => createHash('sha256').update(value).digest('hex')\nconst indexEntries = execFileSync('git', ['ls-files', '-v', '-z'], { cwd: source, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }).split('\\0').filter(Boolean)\nassert(indexEntries.every(entry => entry[0] !== 'S' && !/[a-z]/.test(entry[0])), 'Immutable source index must not hide tracked inputs with assume-unchanged or skip-worktree flags')\nconst tracked = execFileSync('git', ['ls-files', '-z'], { cwd: source, encoding: 'utf8' }).split('\\0').filter(Boolean)\nconst packageRoots = ['package/music-player/desktop-app', 'package/music-player/truepeak-core', ...(caseName === 'alpine' ? ['package/cli/nested-wayland-session'] : [])]\nconst metadataNames = new Set(['mise.toml', 'mise.no-env.toml', 'mise.lock', 'package.json', 'Cargo.toml', 'Cargo.lock', 'config.toml', 'coverage-baseline.json', 'Containerfile.alpine'])\nconst paths = tracked.filter(path => {\n  const name = path.slice(path.lastIndexOf('/') + 1)\n  const rootConfiguration = !path.includes('/') && (metadataNames.has(name) || ['.toml', '.json', '.jsonc', '.yaml', '.yml'].some(extension => name.endsWith(extension)) || name.includes('.config.'))\n  const packageConfiguration = packageRoots.some(prefix => path.startsWith(prefix + '/')) && (metadataNames.has(name) || name.startsWith('tsconfig.') || name.includes('.config.') || path.includes('/.cargo/'))\n  return rootConfiguration || path.startsWith('.cargo/') || ['Cargo.toml', 'Cargo.lock'].includes(name) || packageConfiguration\n}).toSorted()\nfor (const required of ['mise.toml', 'mise.lock', 'package/music-player/desktop-app/Cargo.toml', 'package/music-player/desktop-app/Cargo.lock', 'package/music-player/desktop-app/mise.toml']) assert(paths.includes(required), 'Required source input is absent: ' + required)\nconst inputs = Object.fromEntries(paths.map(path => { const bytes = readFileSync(join(source, path)); assert.deepEqual(bytes, execFileSync('git', ['show', 'HEAD:' + path], { cwd: source, maxBuffer: 16 * 1024 * 1024 }), 'Configured source input differs: ' + path); return [path, { bytes: bytes.length, sha256: sha256(bytes) }] }))\nconst identity = { head: git(['rev-parse', 'HEAD']), trackedStatus: git(['status', '--porcelain', '--untracked-files=no']), sourceTree: git(['rev-parse', 'HEAD^{tree}']), inputs }\nconst harnessRevision = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()\nif (process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true') assert.match(process.env.GITHUB_SHA ?? '', /^[a-f0-9]{40}$/, 'Provider harness revision is required in CI')\nif (process.env.GITHUB_SHA) assert.equal(harnessRevision, process.env.GITHUB_SHA, 'Provenance harness differs from dispatched workflow revision')\nasync function readContentsApi({ path }) {\n  const token = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN\n  if (process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true') assert(token, 'Contents API authentication is required in CI')\n  const url = 'https://api.github.com/repos/Aquaticats/Monochromatic/contents/' + path + '?ref=main'\n  const response = await fetch(url, { headers: { Accept: 'application/vnd.github.object+json', 'User-Agent': 'Monochromatic-Depot-Trial', ...(token ? { Authorization: 'Bearer ' + token } : {}) }, signal: AbortSignal.timeout(30000) })\n  assert.equal(response.status, 200, 'Common manifest Contents API request failed')\n  const text = await response.text()\n  assert(Buffer.byteLength(text) < 2 * 1024 * 1024, 'Contents API envelope exceeds the manifest transport bound')\n  const envelope = JSON.parse(text)\n  assert.equal(envelope.encoding, 'base64', 'Contents API must return base64 file bytes')\n  assert.equal(envelope.type, 'file')\n  assert.equal(envelope.path, path)\n  assert.equal(typeof envelope.content, 'string')\n  const encoded = envelope.content.replace(/\\s+/g, '')\n  assert.match(encoded, /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/)\n  const bytes = Buffer.from(encoded, 'base64')\n  assert(bytes.length < 1024 * 1024, 'Common manifest must be below one MiB')\n  assert.equal(bytes.length, envelope.size)\n  assert.equal(bytes.toString('base64'), encoded, 'Contents API base64 must preserve exact bytes')\n  return { bytes, path, repository: 'Aquaticats/Monochromatic', ref: 'main', url, gitBlob: envelope.sha, sha256: sha256(bytes) }\n}\nconst caseId = caseName === 'native' && expected === 'cb95cf6d785c3073c192b95f0632cdae7b910894' ? 'native' : 'desktop'\nconst routeId = caseName === 'native' ? caseId === 'native' ? 'native.hosts' : 'desktop.macos' : 'desktop.' + caseName\nconst localCasePath = '.depot/manifests/' + caseId + '.json'\nconst localCaseBytes = readFileSync(join(process.cwd(), localCasePath))\nassert.deepEqual(localCaseBytes, execFileSync('git', ['show', 'HEAD:' + localCasePath], { maxBuffer: 1024 * 1024 }), 'Local case manifest must equal its committed harness blob')\nconst localCase = JSON.parse(localCaseBytes)\nassert.equal(localCase.completeGraph, true, 'Final route requires a frozen complete case manifest')\nassert.equal(localCase.caseId, caseId)\nassert.equal(localCase.sourceRevision, expected, 'Local case source differs from the immutable consumer source')\nconst contents = await readContentsApi({ path: 'doc/audit/depot-complete-cohort-' + cohort.id + '.json' })\nassert.equal(contents.sha256, cohort.manifestSha256, 'Common manifest bytes differ from the dispatch digest')\nconst common = JSON.parse(contents.bytes)\nassert.equal(common.schemaVersion, 1)\nassert.equal(common.cohortId, cohort.id)\nconst selectedCase = common.cases?.[caseId]\nassert.equal(selectedCase?.sourceRevision, expected)\nassert.equal(selectedCase.baseRevision, localCase.baseRevision)\nassert.equal(selectedCase.manifestSha256, sha256(localCaseBytes), 'Common case digest differs from the local frozen case')\nconst selectedRoute = common.routes?.[routeId]\nassert.equal(selectedRoute?.caseId, caseId)\nassert.equal(selectedRoute.harnessRevision, harnessRevision, 'Common route differs from actual harness HEAD')\nassert.equal(selectedRoute.workflow, '.github/workflows/music-player-windows.yml')\nconst commonManifest = { path: contents.path, repository: contents.repository, ref: contents.ref, gitBlob: contents.gitBlob, bytes: contents.bytes.length, sha256: contents.sha256, caseId, routeId, case: selectedCase, route: selectedRoute, localCaseSha256: sha256(localCaseBytes), document: common }\nconst record = { schemaVersion: 1, event: 'source-provenance', commonManifest, caseName, phase, cohort, observedAt: new Date().toISOString(), expectedSource: expected, harnessRevision, verifierNode: process.version, platform: process.platform, architecture: process.arch, identity }\nmkdirSync(output, { recursive: true, mode: 0o700 })\nwriteFileSync(join(output, phase + '.json'), JSON.stringify(record, null, 2) + '\\n')\nconsole.log(JSON.stringify(record))\nassert.equal(identity.head, expected, 'Consumer checkout differs from immutable source revision')\nassert.equal(identity.trackedStatus, '', 'Consumer changed tracked historical source')\nif (phase === 'after') {\n  const before = JSON.parse(readFileSync(join(output, 'before.json'), 'utf8'))\n  assert.equal(before.expectedSource, expected)\n  assert.deepEqual(before.cohort, cohort, 'Replay context changed between consumer boundaries')\n  assert.equal(before.harnessRevision, harnessRevision)\n  assert.deepEqual(before.commonManifest, commonManifest, 'Canonical common manifest changed between consumer boundaries')\n  assert.deepEqual(identity, before.identity, 'Consumer changed frozen source or input hashes')\n}\n"
+          ],
+          "file": null,
+          "usage_spec": {
+            "name": "//package/dev-script/task-util:trial:depot:coherent:provenance",
+            "bin": "//package/dev-script/task-util:trial:depot:coherent:provenance",
+            "cmd": {
+              "full_cmd": [],
+              "usage": "",
+              "subcommands": {},
+              "args": [],
+              "flags": [],
+              "mounts": [],
+              "unknown_flags": null,
+              "hide": false,
+              "args_override_self": true,
+              "help": "Retain frozen source and manifest/tool/task inputs before and after consumer gates",
+              "name": "//package/dev-script/task-util:trial:depot:coherent:provenance",
+              "aliases": [],
+              "hidden_aliases": [],
+              "examples": [],
+              "headings": []
+            },
+            "config": {
+              "props": {},
+              "sources": {},
+              "files": []
+            },
+            "usage": "",
+            "complete": {},
+            "unknown_flags": null
+          }
+        }
+      },
+      {
+        "kind": "alpine",
+        "revision": "5152df4debd88f5e0b57802c7c8c958b1a5f6255",
+        "directory": "/home/user/temp/agent/depot-coherent-alpine-worktree",
+        "task": "trial:depot:coherent:provenance",
+        "originalTemplate": "{{config_root}}/../../..",
+        "resolvedDirectory": "/var/mnt/encrypted/temp/agent/depot-coherent-alpine-worktree/package/dev-script/task-util/../../..",
+        "expectedRealDirectory": "/var/mnt/encrypted/temp/agent/depot-coherent-alpine-worktree",
+        "trackedStatusEmpty": true,
+        "taskInfo": {
+          "name": "//package/dev-script/task-util:trial:depot:coherent:provenance",
+          "aliases": [],
+          "description": "Retain frozen source and manifest/tool/task inputs before and after consumer gates",
+          "source": "/var/mnt/encrypted/temp/agent/depot-coherent-alpine-worktree/package/dev-script/task-util/mise.toml",
+          "config_sources": [
+            "/var/mnt/encrypted/temp/agent/depot-coherent-alpine-worktree/package/dev-script/task-util/mise.toml"
+          ],
+          "depends": [],
+          "depends_post": [],
+          "daemons": null,
+          "wait_for": [],
+          "env": [],
+          "dir": "/var/mnt/encrypted/temp/agent/depot-coherent-alpine-worktree/package/dev-script/task-util/../../..",
+          "hide": false,
+          "raw": false,
+          "interactive": false,
+          "sources": [],
+          "outputs": [],
+          "cache": {
+            "enabled": false,
+            "audit": false,
+            "env": [],
+            "command_inputs": []
+          },
+          "shell": "node --input-type=module-typescript -e",
+          "quiet": false,
+          "silent": false,
+          "tools": {},
+          "run": [
+            "const { execFileSync } = await import('node:child_process')\nconst { createHash } = await import('node:crypto')\nconst { readFileSync, writeFileSync, mkdirSync } = await import('node:fs')\nconst { join, isAbsolute } = await import('node:path')\nconst { strict: assert } = await import('node:assert')\nconst source = process.env.SOURCE_ROOT\nconst expected = process.env.SOURCE_HEAD\nconst phase = process.env.PROVENANCE_PHASE\nconst caseName = process.env.PROVENANCE_CASE\nconst output = process.env.PROVENANCE_OUTPUT\nconst cohort = { id: process.env.COHORT_ID, manifestSha256: process.env.COHORT_MANIFEST_SHA256, requestedAt: process.env.COHORT_REQUESTED_AT }\nassert.match(cohort.id ?? '', /^[A-Za-z0-9._-]{1,128}$/, 'COHORT_ID must name the frozen replay')\nassert.match(cohort.manifestSha256 ?? '', /^[a-f0-9]{64}$/, 'COHORT_MANIFEST_SHA256 must bind the complete manifest')\nassert(Number.isFinite(Date.parse(cohort.requestedAt ?? '')), 'COHORT_REQUESTED_AT must record the shared request instant')\nassert.equal(new Date(cohort.requestedAt).toISOString(), cohort.requestedAt, 'Request instant must use canonical UTC ISO form')\nassert(source && isAbsolute(source), 'SOURCE_ROOT must name an absolute source checkout')\nassert(output && isAbsolute(output), 'PROVENANCE_OUTPUT must name an absolute evidence directory')\nassert.match(expected ?? '', /^[a-f0-9]{40}$/, 'SOURCE_HEAD must be immutable')\nassert(['before', 'after'].includes(phase), 'PROVENANCE_PHASE must be before or after')\nassert(['native', 'windows', 'alpine'].includes(caseName), 'PROVENANCE_CASE must name a frozen route')\nconst git = args => execFileSync('git', args, { cwd: source, encoding: 'utf8' }).trim()\nconst sha256 = value => createHash('sha256').update(value).digest('hex')\nconst indexEntries = execFileSync('git', ['ls-files', '-v', '-z'], { cwd: source, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }).split('\\0').filter(Boolean)\nassert(indexEntries.every(entry => entry[0] !== 'S' && !/[a-z]/.test(entry[0])), 'Immutable source index must not hide tracked inputs with assume-unchanged or skip-worktree flags')\nconst tracked = execFileSync('git', ['ls-files', '-z'], { cwd: source, encoding: 'utf8' }).split('\\0').filter(Boolean)\nconst packageRoots = ['package/music-player/desktop-app', 'package/music-player/truepeak-core', ...(caseName === 'alpine' ? ['package/cli/nested-wayland-session'] : [])]\nconst metadataNames = new Set(['mise.toml', 'mise.no-env.toml', 'mise.lock', 'package.json', 'Cargo.toml', 'Cargo.lock', 'config.toml', 'coverage-baseline.json', 'Containerfile.alpine'])\nconst paths = tracked.filter(path => {\n  const name = path.slice(path.lastIndexOf('/') + 1)\n  const rootConfiguration = !path.includes('/') && (metadataNames.has(name) || ['.toml', '.json', '.jsonc', '.yaml', '.yml'].some(extension => name.endsWith(extension)) || name.includes('.config.'))\n  const packageConfiguration = packageRoots.some(prefix => path.startsWith(prefix + '/')) && (metadataNames.has(name) || name.startsWith('tsconfig.') || name.includes('.config.') || path.includes('/.cargo/'))\n  return rootConfiguration || path.startsWith('.cargo/') || ['Cargo.toml', 'Cargo.lock'].includes(name) || packageConfiguration\n}).toSorted()\nfor (const required of ['mise.toml', 'mise.lock', 'package/music-player/desktop-app/Cargo.toml', 'package/music-player/desktop-app/Cargo.lock', 'package/music-player/desktop-app/mise.toml']) assert(paths.includes(required), 'Required source input is absent: ' + required)\nconst inputs = Object.fromEntries(paths.map(path => { const bytes = readFileSync(join(source, path)); assert.deepEqual(bytes, execFileSync('git', ['show', 'HEAD:' + path], { cwd: source, maxBuffer: 16 * 1024 * 1024 }), 'Configured source input differs: ' + path); return [path, { bytes: bytes.length, sha256: sha256(bytes) }] }))\nconst identity = { head: git(['rev-parse', 'HEAD']), trackedStatus: git(['status', '--porcelain', '--untracked-files=no']), sourceTree: git(['rev-parse', 'HEAD^{tree}']), inputs }\nconst harnessRevision = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()\nif (process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true') assert.match(process.env.GITHUB_SHA ?? '', /^[a-f0-9]{40}$/, 'Provider harness revision is required in CI')\nif (process.env.GITHUB_SHA) assert.equal(harnessRevision, process.env.GITHUB_SHA, 'Provenance harness differs from dispatched workflow revision')\nasync function readContentsApi({ path }) {\n  const token = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN\n  if (process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true') assert(token, 'Contents API authentication is required in CI')\n  const url = 'https://api.github.com/repos/Aquaticats/Monochromatic/contents/' + path + '?ref=main'\n  const response = await fetch(url, { headers: { Accept: 'application/vnd.github.object+json', 'User-Agent': 'Monochromatic-Depot-Trial', ...(token ? { Authorization: 'Bearer ' + token } : {}) }, signal: AbortSignal.timeout(30000) })\n  assert.equal(response.status, 200, 'Common manifest Contents API request failed')\n  const text = await response.text()\n  assert(Buffer.byteLength(text) < 2 * 1024 * 1024, 'Contents API envelope exceeds the manifest transport bound')\n  const envelope = JSON.parse(text)\n  assert.equal(envelope.encoding, 'base64', 'Contents API must return base64 file bytes')\n  assert.equal(envelope.type, 'file')\n  assert.equal(envelope.path, path)\n  assert.equal(typeof envelope.content, 'string')\n  const encoded = envelope.content.replace(/\\s+/g, '')\n  assert.match(encoded, /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/)\n  const bytes = Buffer.from(encoded, 'base64')\n  assert(bytes.length < 1024 * 1024, 'Common manifest must be below one MiB')\n  assert.equal(bytes.length, envelope.size)\n  assert.equal(bytes.toString('base64'), encoded, 'Contents API base64 must preserve exact bytes')\n  return { bytes, path, repository: 'Aquaticats/Monochromatic', ref: 'main', url, gitBlob: envelope.sha, sha256: sha256(bytes) }\n}\nconst caseId = caseName === 'native' && expected === 'cb95cf6d785c3073c192b95f0632cdae7b910894' ? 'native' : 'desktop'\nconst routeId = caseName === 'native' ? caseId === 'native' ? 'native.hosts' : 'desktop.macos' : 'desktop.' + caseName\nconst localCasePath = '.depot/manifests/' + caseId + '.json'\nconst localCaseBytes = readFileSync(join(process.cwd(), localCasePath))\nassert.deepEqual(localCaseBytes, execFileSync('git', ['show', 'HEAD:' + localCasePath], { maxBuffer: 1024 * 1024 }), 'Local case manifest must equal its committed harness blob')\nconst localCase = JSON.parse(localCaseBytes)\nassert.equal(localCase.completeGraph, true, 'Final route requires a frozen complete case manifest')\nassert.equal(localCase.caseId, caseId)\nassert.equal(localCase.sourceRevision, expected, 'Local case source differs from the immutable consumer source')\nconst contents = await readContentsApi({ path: 'doc/audit/depot-complete-cohort-' + cohort.id + '.json' })\nassert.equal(contents.sha256, cohort.manifestSha256, 'Common manifest bytes differ from the dispatch digest')\nconst common = JSON.parse(contents.bytes)\nassert.equal(common.schemaVersion, 1)\nassert.equal(common.cohortId, cohort.id)\nconst selectedCase = common.cases?.[caseId]\nassert.equal(selectedCase?.sourceRevision, expected)\nassert.equal(selectedCase.baseRevision, localCase.baseRevision)\nassert.equal(selectedCase.manifestSha256, sha256(localCaseBytes), 'Common case digest differs from the local frozen case')\nconst selectedRoute = common.routes?.[routeId]\nassert.equal(selectedRoute?.caseId, caseId)\nassert.equal(selectedRoute.harnessRevision, harnessRevision, 'Common route differs from actual harness HEAD')\nassert.equal(selectedRoute.workflow, '.github/workflows/music-player-alpine.yml')\nconst commonManifest = { path: contents.path, repository: contents.repository, ref: contents.ref, gitBlob: contents.gitBlob, bytes: contents.bytes.length, sha256: contents.sha256, caseId, routeId, case: selectedCase, route: selectedRoute, localCaseSha256: sha256(localCaseBytes), document: common }\nconst record = { schemaVersion: 1, event: 'source-provenance', commonManifest, caseName, phase, cohort, observedAt: new Date().toISOString(), expectedSource: expected, harnessRevision, verifierNode: process.version, platform: process.platform, architecture: process.arch, identity }\nmkdirSync(output, { recursive: true, mode: 0o700 })\nwriteFileSync(join(output, phase + '.json'), JSON.stringify(record, null, 2) + '\\n')\nconsole.log(JSON.stringify(record))\nassert.equal(identity.head, expected, 'Consumer checkout differs from immutable source revision')\nassert.equal(identity.trackedStatus, '', 'Consumer changed tracked historical source')\nif (phase === 'after') {\n  const before = JSON.parse(readFileSync(join(output, 'before.json'), 'utf8'))\n  assert.equal(before.expectedSource, expected)\n  assert.deepEqual(before.cohort, cohort, 'Replay context changed between consumer boundaries')\n  assert.equal(before.harnessRevision, harnessRevision)\n  assert.deepEqual(before.commonManifest, commonManifest, 'Canonical common manifest changed between consumer boundaries')\n  assert.deepEqual(identity, before.identity, 'Consumer changed frozen source or input hashes')\n}\n"
+          ],
+          "file": null,
+          "usage_spec": {
+            "name": "//package/dev-script/task-util:trial:depot:coherent:provenance",
+            "bin": "//package/dev-script/task-util:trial:depot:coherent:provenance",
+            "cmd": {
+              "full_cmd": [],
+              "usage": "",
+              "subcommands": {},
+              "args": [],
+              "flags": [],
+              "mounts": [],
+              "unknown_flags": null,
+              "hide": false,
+              "args_override_self": true,
+              "help": "Retain frozen source and manifest/tool/task inputs before and after consumer gates",
+              "name": "//package/dev-script/task-util:trial:depot:coherent:provenance",
+              "aliases": [],
+              "hidden_aliases": [],
+              "examples": [],
+              "headings": []
+            },
+            "config": {
+              "props": {},
+              "sources": {},
+              "files": []
+            },
+            "usage": "",
+            "complete": {},
+            "unknown_flags": null
+          }
+        }
+      },
+      {
+        "kind": "toml",
+        "revision": "0f1ef041a0de2ff6d2db6dd55210b1160c592648",
+        "directory": "/home/user/temp/agent/depot-toml-continuation-worktree",
+        "task": "trial:depot:toml:identity",
+        "originalTemplate": "{{config_root}}/../../..",
+        "resolvedDirectory": "/var/mnt/encrypted/temp/agent/depot-toml-continuation-worktree/package/dev-script/task-util/../../..",
+        "expectedRealDirectory": "/var/mnt/encrypted/temp/agent/depot-toml-continuation-worktree",
+        "trackedStatusEmpty": true,
+        "taskInfo": {
+          "name": "//package/dev-script/task-util:trial:depot:toml:identity",
+          "aliases": [],
+          "description": "Bind the frozen TOML source and inputs to the shared replay before and after consumers",
+          "source": "/var/mnt/encrypted/temp/agent/depot-toml-continuation-worktree/package/dev-script/task-util/mise.toml",
+          "config_sources": [
+            "/var/mnt/encrypted/temp/agent/depot-toml-continuation-worktree/package/dev-script/task-util/mise.toml"
+          ],
+          "depends": [],
+          "depends_post": [],
+          "daemons": null,
+          "wait_for": [],
+          "env": [],
+          "dir": "/var/mnt/encrypted/temp/agent/depot-toml-continuation-worktree/package/dev-script/task-util/../../..",
+          "hide": false,
+          "raw": false,
+          "interactive": false,
+          "sources": [],
+          "outputs": [],
+          "cache": {
+            "enabled": false,
+            "audit": false,
+            "env": [],
+            "command_inputs": []
+          },
+          "shell": "node --input-type=module-typescript -e",
+          "quiet": false,
+          "silent": false,
+          "tools": {},
+          "run": [
+            "const { execFileSync } = await import('node:child_process')\nconst { readFileSync, writeFileSync, mkdirSync } = await import('node:fs')\nconst { createHash } = await import('node:crypto')\nconst { join } = await import('node:path')\nconst { homedir } = await import('node:os')\nconst { strict: assert } = await import('node:assert')\nconst source = join(process.env.GITHUB_WORKSPACE, 'source')\nconst manifestBytes = readFileSync(join(process.env.GITHUB_WORKSPACE, 'harness/.depot/manifests/toml.json'))\nconst manifest = JSON.parse(manifestBytes)\nconst phase = process.env.DEPOT_TOML_PHASE\nassert(['before', 'after'].includes(phase))\nconst cohort = { id: process.env.COHORT_ID, manifestSha256: process.env.COHORT_MANIFEST_SHA256, requestedAt: process.env.COHORT_REQUESTED_AT }\nassert.match(cohort.id ?? '', /^[A-Za-z0-9._-]{1,128}$/)\nassert.match(cohort.manifestSha256 ?? '', /^[a-f0-9]{64}$/)\nassert(Number.isFinite(Date.parse(cohort.requestedAt ?? '')))\nassert.equal(new Date(cohort.requestedAt).toISOString(), cohort.requestedAt, 'Request instant must use canonical UTC ISO form')\nconst git = args => execFileSync('git', args, { cwd: source, encoding: 'utf8' }).trim()\nconst indexEntries = execFileSync('git', ['ls-files', '-v', '-z'], { cwd: source, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }).split('\\0').filter(Boolean)\nassert(indexEntries.every(entry => entry[0] !== 'S' && !/[a-z]/.test(entry[0])), 'Immutable source index must not hide tracked inputs with assume-unchanged or skip-worktree flags')\nconst tracked = execFileSync('git', ['ls-files', '-z'], { cwd: source, encoding: 'utf8' }).split('\\0').filter(Boolean)\nconst packageRoots = [...new Set([...manifest.selectedPackages, ...manifest.externalChecks.flatMap(check => check.artifactPrerequisitePackage ? [check.artifactPrerequisitePackage] : [])])]\nconst metadataNames = new Set(['mise.toml', 'mise.no-env.toml', 'mise.lock', 'package.json', 'Cargo.toml', 'Cargo.lock', 'config.toml', 'coverage-baseline.json', 'Containerfile.alpine'])\nconst paths = tracked.filter(path => {\n  const name = path.slice(path.lastIndexOf('/') + 1)\n  const rootConfiguration = !path.includes('/') && (metadataNames.has(name) || ['.toml', '.json', '.jsonc', '.yaml', '.yml'].some(extension => name.endsWith(extension)) || name.includes('.config.'))\n  const packageConfiguration = packageRoots.some(prefix => path.startsWith(prefix + '/')) && (metadataNames.has(name) || name.startsWith('tsconfig.') || name.includes('.config.') || path.includes('/.cargo/'))\n  return rootConfiguration || path.startsWith('.cargo/') || ['Cargo.toml', 'Cargo.lock'].includes(name) || packageConfiguration\n}).toSorted()\nconst sha256 = bytes => createHash('sha256').update(bytes).digest('hex')\nconst identity = { head: git(['rev-parse', 'HEAD']), sourceTree: git(['rev-parse', 'HEAD^{tree}']), trackedStatus: git(['status', '--porcelain', '--untracked-files=no']), inputs: Object.fromEntries(paths.map(path => { const bytes = readFileSync(join(source, path)); assert.deepEqual(bytes, execFileSync('git', ['show', 'HEAD:' + path], { cwd: source, maxBuffer: 16 * 1024 * 1024 }), 'Configured source input differs: ' + path); return [path, sha256(bytes)] })) }\nassert.equal(identity.head, manifest.sourceRevision)\nassert.equal(identity.trackedStatus, '', 'Historical source changed')\nconst harnessRevision = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()\nif (process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true') assert.match(process.env.GITHUB_SHA ?? '', /^[a-f0-9]{40}$/, 'Provider harness revision is required in CI')\nif (process.env.GITHUB_SHA) assert.equal(harnessRevision, process.env.GITHUB_SHA)\nconst localDirectory = process.env.DEPOT_TOML_PROVENANCE_DIRECTORY\nif (localDirectory) assert(process.env.CI !== 'true' && process.env.GITHUB_ACTIONS !== 'true', 'Fixture output cannot run in CI')\nconst directory = localDirectory ?? join(homedir(), 'temp/agent/depot-complete-ci')\nassert(directory.startsWith('/'))\nmkdirSync(directory, { recursive: true, mode: 0o700 })\nasync function readContentsApi({ path }) {\n  const token = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN\n  if (process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true') assert(token, 'Contents API authentication is required in CI')\n  const url = 'https://api.github.com/repos/Aquaticats/Monochromatic/contents/' + path + '?ref=main'\n  const response = await fetch(url, { headers: { Accept: 'application/vnd.github.object+json', 'User-Agent': 'Monochromatic-Depot-Trial', ...(token ? { Authorization: 'Bearer ' + token } : {}) }, signal: AbortSignal.timeout(30000) })\n  assert.equal(response.status, 200, 'Common manifest Contents API request failed')\n  const text = await response.text()\n  assert(Buffer.byteLength(text) < 2 * 1024 * 1024, 'Contents API envelope exceeds the manifest transport bound')\n  const envelope = JSON.parse(text)\n  assert.equal(envelope.encoding, 'base64', 'Contents API must return base64 file bytes')\n  assert.equal(envelope.type, 'file')\n  assert.equal(envelope.path, path)\n  assert.equal(typeof envelope.content, 'string')\n  const encoded = envelope.content.replace(/\\s+/g, '')\n  assert.match(encoded, /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/)\n  const bytes = Buffer.from(encoded, 'base64')\n  assert(bytes.length < 1024 * 1024, 'Common manifest must be below one MiB')\n  assert.equal(bytes.length, envelope.size)\n  assert.equal(bytes.toString('base64'), encoded, 'Contents API base64 must preserve exact bytes')\n  return { bytes, path, repository: 'Aquaticats/Monochromatic', ref: 'main', url, gitBlob: envelope.sha, sha256: sha256(bytes) }\n}\nconst caseId = 'toml'\nconst routeId = 'toml.bounded'\nconst localCasePath = '.depot/manifests/' + caseId + '.json'\nconst localCaseBytes = readFileSync(join(process.cwd(), localCasePath))\nassert.deepEqual(localCaseBytes, execFileSync('git', ['show', 'HEAD:' + localCasePath], { maxBuffer: 1024 * 1024 }), 'Local case manifest must equal its committed harness blob')\nconst localCase = JSON.parse(localCaseBytes)\nassert.equal(localCase.completeGraph, true, 'Final route requires a frozen complete case manifest')\nassert.equal(localCase.caseId, caseId)\nassert.equal(localCase.sourceRevision, manifest.sourceRevision, 'Local case source differs from the immutable consumer source')\nconst contents = await readContentsApi({ path: 'doc/audit/depot-complete-cohort-' + cohort.id + '.json' })\nassert.equal(contents.sha256, cohort.manifestSha256, 'Common manifest bytes differ from the dispatch digest')\nconst common = JSON.parse(contents.bytes)\nassert.equal(common.schemaVersion, 1)\nassert.equal(common.cohortId, cohort.id)\nconst selectedCase = common.cases?.[caseId]\nassert.equal(selectedCase?.sourceRevision, manifest.sourceRevision)\nassert.equal(selectedCase.baseRevision, localCase.baseRevision)\nassert.equal(selectedCase.manifestSha256, sha256(localCaseBytes), 'Common case digest differs from the local frozen case')\nconst selectedRoute = common.routes?.[routeId]\nassert.equal(selectedRoute?.caseId, caseId)\nassert.equal(selectedRoute.harnessRevision, harnessRevision, 'Common route differs from actual harness HEAD')\nassert.equal(selectedRoute.workflow, '.depot/workflows/depot-complete-toml-bounded.yml')\nconst commonManifest = { path: contents.path, repository: contents.repository, ref: contents.ref, gitBlob: contents.gitBlob, bytes: contents.bytes.length, sha256: contents.sha256, caseId, routeId, case: selectedCase, route: selectedRoute, localCaseSha256: sha256(localCaseBytes), document: common }\nconst record = { schemaVersion: 1, event: 'source-provenance', commonManifest, phase, cohort, identity, harnessRevision, manifestSha256: sha256(manifestBytes), observedAt: new Date().toISOString(), verifierNode: process.version }\nif (phase === 'after') {\n  const before = JSON.parse(readFileSync(join(directory, 'toml-provenance-before.json'), 'utf8'))\n  assert.deepEqual(before.commonManifest, commonManifest, 'Canonical common manifest changed between consumer boundaries')\n  assert.deepEqual(before.identity, identity)\n  assert.deepEqual(before.cohort, cohort)\n  assert.equal(before.harnessRevision, harnessRevision)\n}\nwriteFileSync(join(directory, 'toml-provenance-' + phase + '.json'), JSON.stringify(record, null, 2) + '\\n')\nconsole.log(JSON.stringify(record))\n"
+          ],
+          "file": null,
+          "usage_spec": {
+            "name": "//package/dev-script/task-util:trial:depot:toml:identity",
+            "bin": "//package/dev-script/task-util:trial:depot:toml:identity",
+            "cmd": {
+              "full_cmd": [],
+              "usage": "",
+              "subcommands": {},
+              "args": [],
+              "flags": [],
+              "mounts": [],
+              "unknown_flags": null,
+              "hide": false,
+              "args_override_self": true,
+              "help": "Bind the frozen TOML source and inputs to the shared replay before and after consumers",
+              "name": "//package/dev-script/task-util:trial:depot:toml:identity",
+              "aliases": [],
+              "hidden_aliases": [],
+              "examples": [],
+              "headings": []
+            },
+            "config": {
+              "props": {},
+              "sources": {},
+              "files": []
+            },
+            "usage": "",
+            "complete": {},
+            "unknown_flags": null
+          }
+        }
+      }
+    ],
+    "scope": "Actual nested Mise metadata resolution on Linux for unchanged original native, Windows, Alpine and TOML templates. Earlier real guard body controls remain the 20 accepted and 110 rejected cases. This is not a new Windows/macOS provider execution or canonical-cohort read.",
+    "conclusion": "Original task configuration keeps the literal config_root template and resolves to each intended harness. No native guard rewrite was made."
+  }
 }

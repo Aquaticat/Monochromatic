@@ -110,3 +110,20 @@ Fresh authenticated provider reads verify every current workflow,
 task file and provisional case file byte.
 The case manifests still have `completeGraph: false`;
 final canonical acceptance remains held.
+
+## Original harness directory resolution
+
+The unchanged native,
+Windows,
+Alpine,
+and TOML helper templates retain literal `dir = "{{config_root}}/../../.."`.
+Actual nested `mise tasks info` calls resolve each directory to its intended clean harness checkout.
+Their accepted revisions are unchanged.
+Native workflow provenance steps also explicitly select `working-directory: harness`.
+Source Git and file operations use the explicit source checkout.
+Harness Git and local case reads use the pinned task directory.
+No native guard rewrite was made.
+This verifies Linux task-directory resolution;
+it does not claim a new Windows/macOS provider run or actual canonical-cohort read.
+The original body controls remain `20` accepted and `110` rejected cases.
+Final canonical acceptance and coherent dispatch remain held.

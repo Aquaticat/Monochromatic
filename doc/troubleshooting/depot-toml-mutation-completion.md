@@ -418,5 +418,12 @@ The structured `historicalIndependentCoverage` retains each selected identity,
 its exact source task,
 its original disposition,
 and its actual terminal receipt.
-Issue `#1113` closure is prepared against that retained coverage.
+Issue `#1113` is closed against that retained coverage,
+with its exact closing comment and closed state re-fetched.
 The source failures and native outcome limitations remain explicit.
+
+The final closure receipt is
+[comment `6232394931`](https://github.com/Aquaticats/Monochromatic/issues/1113#issuecomment-6232394931).
+Source classifier issue `#1142` remains open.
+Final route preparation remains unchanged;
+complete frozen case bytes and actual canonical retrieval are still required before coherent dispatch.

@@ -552,11 +552,23 @@ Source classifier issue `#1142` is published and verified open with `needs-triag
 All `24` original selected task commands now have retained terminal receipts:
 `20 passed` and `4 failed`,
 with the historical canceled run preserved as incomplete.
-The remaining owned action is to close `#1113` against the verified independent coverage
-and retain its closure receipt.
+Issue `#1113` is closed against verified independent coverage;
+its exact comment `6232394931` and closed state were re-fetched.
 Source failures remain failed;
 this historical union is not final coherent coverage or latency.
 Final common publication and dispatch remain held.
+
+Current owned TOML recovery accounting is complete.
+Source classifier `#1142` and source prototype lookup `#1118` remain open.
+No application source changed.
+The final TOML route stays at `0f1ef041a0de2ff6d2db6dd55210b1160c592648`.
+Native/Windows/Alpine original guard templates resolve to their intended harnesses under actual nested Mise metadata calls;
+no guard rewrite was made.
+Next owned step depends on root supplying complete frozen case bytes and the published canonical manifest.
+Then update the copied case bytes and route hashes,
+verify actual canonical retrieval,
+and return the final route receipts to the common orchestrator.
+Final coherent dispatch remains held.
 
 ## Native recovery assertion tracking
 
