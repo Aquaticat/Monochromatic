@@ -109,7 +109,7 @@ all observed PID rejection and OOM counters remain zero,
 and cleanup is verified.
 The unchanged source still throws the folder-setup timeout before later sessions execute.
 Existing issue `#1005` already records this exact 69-pass fixed-coordinate fixture boundary.
-Root is preparing an explicitly recorded in-memory session-continuation adapter:
+Root added an explicitly recorded in-memory session-continuation adapter:
 retain an ordinary setup failure,
 recheck the original preconditions after cleanup,
 then run fresh independent sessions.
@@ -141,7 +141,7 @@ The initial no-hook fixture's `ReferenceError` and hash-preempted anchor control
 the corrected controls exercise the intended `CheckFailureError` and anchor guards separately.
 Existing issue `#1007` already tracks the nested-route pointer/text boundary;
 the measured geometry belongs there rather than in a duplicate issue.
-No causal claim about the individual interaction failures is made before that control.
+The control establishes an observed route workaround without proving a nested-protocol root cause.
 The evidence field `desktopRuntimeHeadlessGeometryControl` retains the actual comparison and provider allocations.
 
 Root grafted the truthful executor metadata repair while preserving native nextest continuation
@@ -153,12 +153,30 @@ and running-progress controls;
 the legacy executor failed the running-progress negative control as expected.
 The evidence field `combinedExecutorControls` retains all five controls and the graft receipt.
 The native owner reconciled the timed-out TOML wave and filed its uncovered source and harness failures.
-Independent missing mutation gates are running in `p6vm5s00w6` at `274ec49595`;
-file-enforcer is terminal with its retained source failure,
-while TOML continues independently.
-The final TOML route at `c159dd63021f9304ab3e4996b1d054e5f19ea0c9`
-also retains native mutation reports with hashes and explicit stale-output handling.
-It remains held for the common dispatch interval.
+The missing mutation gate wave `p6vm5s00w6` at `274ec49595` is terminal.
+File-enforcer retains its source failure.
+The TOML native report has 3062 identities,
+all `runtimeError`,
+from 9037 shard attempts censored by `rsync` ownership rejection before source assertions.
+The provider allocation is 2834043 ms across both jobs at 16 CPUs and 64 GiB,
+including 45344688 allocated vCPU-ms.
+The native owner retained the full native report compressed with its digest in main commit `893b26838e`.
+Existing issue `#1047` received the observed rootless `/work` ownership boundary;
+it remains distinct from issues `#1116` and `#1117`.
+
+The bounded repaired-adapter pilot `0j8zhbn9n0` at `a6dcb98aaa` crossed that boundary:
+the unchanged source command exited zero,
+its 37-file baseline was green,
+and its sole selected mutant reached `compileError` without infrastructure errors or unrun entries.
+This terminal category supplies no mutant assertion credit.
+The provider job still failed because a metadata-snapshot operation returned null status,
+and its pilot-only terminal-category acceptance was stricter than the authored source CLI.
+The owner is recording exact failed-operation diagnostics,
+aligning acceptance with source terminal categories,
+and rerunning the bounded consumer before the full campaign.
+The distinct inherited-object mutation producer defect is filed as `#1118`;
+it does not explain the ownership-censored cloud failures.
+All final TOML work remains held for the common dispatch interval.
 
 The common cohort contract uses a frozen main-branch file named
 `doc/audit/depot-complete-cohort-<cohort_id>.json`.
@@ -173,8 +191,32 @@ Raw JSON CLI output changed escaped control characters,
 even with `--allow-escape-sequences`,
 so it is not the selected byte-preserving transport.
 The common manifest remains unfrozen and no final dispatch is authorized by a control fixture.
-The native owner is repairing actual-manifest bindings on its prepared routes;
-the VM owner is adding the same contract and adapting Android's manifest lookup to `cases.native`.
+The native owner has implemented actual-manifest bindings on its prepared routes and is verifying disposable controls.
+The VM route is clean and pushed at `b2dcdc40d8ae2cfb1f7e13001db28ad8f17626b3`,
+with 28 actual-task fixture controls and the correct logger case digest.
+Its actual source/provider/guest execution remains held.
+Android's manifest lookup now validates `cases.native` and separate case/cohort digests;
+nine offline controls passed and no emulator operation occurred.
+The logger cohort helper at `040a4814a63e27e392a68c83bceaaff78441c962`
+passed before/after actual-program controls with a 1047160-byte base64 payload,
+including a removed-digest-guard negative control.
+Its authenticated transport proof is separate from those stubbed response controls.
+
+Logger browser pilot `x0rb16tjzb` passed its actual five selected Playwright cases,
+including localStorage,
+IndexedDB,
+and OPFS property reports.
+Its full 84-browser/34-DOM inventories,
+exact disjoint selections,
+source identities,
+resource limits,
+and zero PID/OOM events are retained by the logger owner.
+Remaining-browser run `jps875l9qs` and 35-leaf recovery `1pgpb8qhn6` are terminal with failed provider status;
+their independent collectors are classifying actual source failures and censored work.
+The original Podman browser command does not forward `CI`,
+so the observed source config selects zero retries;
+the owner is documenting that measured policy nuance without silently changing the source.
+Final logger remainder registration is being split into isolated leaves so one group timeout cannot hide other checks.
 
 The user requested continuation of the authorized trial queue.
 Root is collecting the terminal native,
