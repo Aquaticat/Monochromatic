@@ -581,6 +581,25 @@ function run({ args, required = true, inherit = false, input, limit = 45000 }) {
 let suite
 let runtimeCompleted = false
 let failure
+const resourceSamples = []
+const resourceProbe = `
+const {readFileSync,readdirSync}=await import('node:fs');
+const {join}=await import('node:path');
+const text=path=>{try{return readFileSync(path,'utf8').trim()}catch(error){return {error:String(error)}}};
+const groups=[];
+const pending=[['/sys/fs/cgroup',0]];
+while(pending.length&&groups.length<128){
+ const [path,depth]=pending.pop();
+ groups.push({path,pidsCurrent:text(join(path,'pids.current')),pidsMax:text(join(path,'pids.max')),pidsEvents:text(join(path,'pids.events')),memoryEvents:text(join(path,'memory.events'))});
+ if(depth<5)for(const entry of readdirSync(path,{withFileTypes:true}))if(entry.isDirectory())pending.push([join(path,entry.name),depth+1]);
+}
+console.log(JSON.stringify({cgroup:text('/proc/self/cgroup'),limits:text('/proc/self/limits'),groups}));
+`
+function sampleResources(phase) {
+  const probe = run({ args: ['exec', name, 'node', '--input-type=module', '-e', resourceProbe], required: false })
+  resourceSamples.push({ phase, sampledAt: new Date().toISOString(), status: probe.status, stdout: probe.stdout, stderr: probe.stderr })
+  writeFileSync(join(directory, `${manifestName}-desktop-resource-samples.json`), JSON.stringify(resourceSamples, null, 2))
+}
 try {
   run({ args: ['run', '--detach', '--name', name, '--systemd=always', '--cgroupns=private', '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=512', '--timeout=900', '--rootfs', '/:O', '/usr/lib/systemd/systemd', '--unit=basic.target', '--log-target=console'] })
   let ready = false
@@ -607,7 +626,9 @@ try {
     await wait(500)
   }
   assert(display, 'Parent compositor must publish a real Wayland display before E2E starts')
+  sampleResources('before-suite')
   suite = run({ args: [...user, `WAYLAND_DISPLAY=${display}`, `E2E_TMP=${scratch}`, 'mise', 'run', '//package/music-player/desktop-app:test:e2e'], required: false, inherit: true, limit: 780000 })
+  sampleResources('after-suite')
   const output = join(directory, 'desktop-e2e')
   mkdirSync(output, { recursive: true, mode: 0o700 })
   run({ args: ['cp', `${name}:${app}/target/e2e/.`, output], required: false })
