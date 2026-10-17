@@ -276,7 +276,7 @@ const { execFileSync, spawnSync } = await import('node:child_process')
 const { readFileSync, writeFileSync, mkdirSync, existsSync, openSync, closeSync, lstatSync, readlinkSync } = await import('node:fs')
 const { createHash } = await import('node:crypto')
 const { homedir } = await import('node:os')
-const { join } = await import('node:path')
+const { join, delimiter } = await import('node:path')
 const { strict: assert } = await import('node:assert')
 const harness = join(process.env.GITHUB_WORKSPACE, 'harness')
 const source = join(process.env.GITHUB_WORKSPACE, 'source')
@@ -300,6 +300,17 @@ assert(Array.isArray(requested) && requested.length > 0 && new Set(requested).si
 assert(requested.every(id => groups[group].includes(id)), 'External recovery must select known check identities')
 const selected = requested.map(id => manifest.externalChecks.find(check => check.id === id))
 assert(selected.every(Boolean))
+const generatedInventory = group === 'generated' ? groups.generated.flatMap(id => {
+  const check = manifest.externalChecks.find(item => item.id === id)
+  return (check.task ? [check.task] : check.tasks).map((task, index) => ({ label: `${id}.${index}`, checkId: id, task, index }))
+}) : []
+const eligibleGeneratedInvocations = generatedInventory.filter(item => requested.includes(item.checkId))
+const generatedLabels = process.env.DEPOT_LOGGER_GENERATED_INVOCATIONS ? JSON.parse(process.env.DEPOT_LOGGER_GENERATED_INVOCATIONS) : eligibleGeneratedInvocations.map(item => item.label)
+assert(!process.env.DEPOT_LOGGER_GENERATED_INVOCATIONS || group === 'generated', 'Generator invocation selection requires the generated group')
+assert(Array.isArray(generatedLabels) && new Set(generatedLabels).size === generatedLabels.length)
+assert(group !== 'generated' || generatedLabels.length > 0)
+assert(generatedLabels.every(label => eligibleGeneratedInvocations.some(item => item.label === label)), 'Generator recovery must select frozen authored invocations')
+const generatedInvocationScope = group === 'generated' ? { manifestInventory: generatedInventory, requestedCheckIds: requested, requestedInvocationLabels: generatedLabels, coversWholeSelectedChecks: generatedLabels.length === eligibleGeneratedInvocations.length } : undefined
 const browserPartitionId = process.env.DEPOT_LOGGER_BROWSER_PARTITION
 let browserPartition
 let browserScope
@@ -338,7 +349,7 @@ function run({ id, command = 'mise', args, cwd = source, env = process.env, limi
   const output = readFileSync(log)
   const record = { checkId: id, command, args, cwd, startedAt, finishedAt: new Date().toISOString(), exitCode: result.status, signal: result.signal, error: result.error?.message, errorCode: result.error?.code, termination: result.error?.code === 'ETIMEDOUT' ? 'adapter-time-budget' : result.error ? 'spawn-error' : result.signal ? 'signal' : 'process-exit', executionBudgetMs: limit, status: result.status === 0 ? 'passed' : 'failed', ...(browserPartition && id === browserPartition.checkId ? { partitionId: browserPartition.id, partitionFile: browserPartition.file, partitionProject: browserPartition.project, coversWholeCheck: false, browserPartitionManifestSha256 } : {}), outputLog: log, outputSha256: createHash('sha256').update(output).digest('hex'), outputBytes: output.length }
   records.push(record)
-  writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, group, selectedCheckIds: requested, providerJobUrl: process.env.DEPOT_JOB_URL, generatedConsumers, records }, null, 2))
+  writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, completeGraph: manifest.completeGraph, group, selectedCheckIds: requested, generatedInvocationScope, providerJobUrl: process.env.DEPOT_JOB_URL, generatedConsumers, records }, null, 2))
   console.log('\n' + JSON.stringify(record))
   if (result.status !== 0) console.error(output.subarray(-16000).toString())
   return record
@@ -349,8 +360,14 @@ const resultPath = join(directory, 'logger-results.json')
 const prerequisiteResults = prerequisiteIds.length && existsSync(resultPath) ? JSON.parse(readFileSync(resultPath, 'utf8')).results : []
 if (group === 'generated') {
   for (const check of selected) {
+    const failed = (check.prerequisites ?? []).filter(id => prerequisiteResults.find(record => record.checkId === id)?.status !== 'passed')
+    if (failed.length) {
+      records.push({ checkId: check.id, status: 'skipped', failedPrerequisites: failed, finishedAt: new Date().toISOString() })
+      continue
+    }
     for (const [index, task] of (check.task ? [check.task] : check.tasks).entries()) {
       const label = `${check.id}.${index}`, fixture = join(directory, `logger-generated-${label}`)
+      if (!generatedLabels.includes(label)) continue
       const env = { ...process.env, GIT_LFS_SKIP_SMUDGE: '1', MISE_TRUSTED_CONFIG_PATHS: `${process.env.MISE_TRUSTED_CONFIG_PATHS}:${fixture}`, DEPOT_LOGGER_GENERATED_CONSUMER: fixture, DEPOT_LOGGER_GENERATED_LABEL: label }
       const consumer = { checkId: check.id, task, args: ['run', task], fixture, initialIdentityVerified: false, actualCommandExecuted: false, cleanupVerified: false }
       generatedConsumers.push(consumer)
@@ -361,7 +378,13 @@ if (group === 'generated') {
         const before = run({ id: `${label}.identity-before`, args: ['run', '//package/module/logger.fuzz:trial:depot:generated:identity'], cwd: harness, env: { ...env, DEPOT_LOGGER_GENERATED_PHASE: 'before' } })
         assert.equal(before.status, 'passed', 'Generated consumer initial input or dependency identity failed')
         consumer.initialIdentityVerified = true
-        const observed = run({ id: index === 0 ? check.id : `${check.id}.declared`, args: ['run', task], cwd: fixture, env })
+        let commandEnv = env
+        if (task === '//package/module/deepmerge-ts.fuzz:generate:declared-type-cases') {
+          const boundary = run({ id: `${label}.container-adapter`, args: ['run', '//package/dev-script/task-util:trial:depot:ci:containers'], cwd: harness, env })
+          assert.equal(boundary.status, 'passed', 'Declared-type generator requires the verified rootful container adapter')
+          commandEnv = { ...env, PATH: join(directory, 'container-bin') + delimiter + env.PATH }
+        }
+        const observed = run({ id: index === 0 ? check.id : `${check.id}.declared`, args: ['run', task], cwd: fixture, env: commandEnv })
         consumer.actualCommandExecuted = observed.termination !== 'spawn-error'
         observed.parentCheckId = check.id
         const patch = join(directory, `${label}.patch`), descriptor = openSync(patch, 'wx', 0o600)
@@ -395,14 +418,17 @@ if (group === 'generated') {
         consumer.disposition = consumer.actualCommandExecuted ? 'consumer-observation-failed' : 'unexecuted-prerequisite-failed'
       } finally {
         if (existsSync(fixture)) {
-          const observe = (command, args) => { const result = spawnSync(command, args, { cwd: fixture, encoding: 'utf8', timeout: 60000 }); return { command, args, exitCode: result.status, stdout: result.stdout, stderr: result.stderr, error: result.error?.message } }
-          consumer.cleanupIgnoredDryRun = observe('git', ['clean', '--dry-run', '-d', '-X'])
-          consumer.rootGitDirProbe = observe('ls', ['--directory', '--', 'HEAD', 'config', 'hooks', 'objects', 'refs'])
-          consumer.rootGitDirIgnoreProbe = observe('git', ['check-ignore', '--verbose', '--', 'HEAD', 'config', 'hooks', 'objects', 'refs'])
-          const removed = spawnSync('git', ['worktree', 'remove', '--force', fixture], { cwd: source, encoding: 'utf8', timeout: 180000 })
-          consumer.cleanupResult = { exitCode: removed.status, stdout: removed.stdout, stderr: removed.stderr, error: removed.error?.message }
-          const inventory = execFileSync('git', ['worktree', 'list', '--porcelain'], { cwd: source, encoding: 'utf8' })
-          consumer.cleanupVerified = removed.status === 0 && !existsSync(fixture) && !inventory.includes('worktree ' + fixture + '\n')
+          const removed = run({ id: `${label}.cleanup`, args: ['run', '//package/module/logger.fuzz:trial:depot:generated:cleanup'], cwd: harness, env, limit: 300000 })
+          const cleanupPath = join(directory, `generated-${label}-cleanup.json`)
+          if (existsSync(cleanupPath)) {
+            consumer.cleanup = JSON.parse(readFileSync(cleanupPath, 'utf8'))
+            consumer.cleanupIgnoredDryRun = consumer.cleanup.ignoredDryRun
+            consumer.rootGitDirProbe = consumer.cleanup.rootGitDirProbe
+            consumer.rootGitDirIgnoreProbe = consumer.cleanup.rootGitDirIgnoreProbe
+            consumer.cleanupResult = consumer.cleanup.ordinaryRemoval
+            consumer.privilegedCleanupResult = consumer.cleanup.privilegedRemoval
+            consumer.cleanupVerified = removed.status === 'passed' && consumer.cleanup.cleanupVerified
+          }
         }
         writeFileSync(join(directory, `generated-${label}-results.json`), JSON.stringify(consumer, null, 2) + '\n', { flag: 'wx', mode: 0o600 })
       }
@@ -433,7 +459,7 @@ if (group === 'generated') {
   }
 }
 assert.equal(execFileSync('git', ['diff', '--name-only', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), '', 'External checks must preserve tracked source')
-writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, group, selectedCheckIds: requested, browserPartition, browserPartitionManifestSha256, coversWholeCheck: !browserPartition, prerequisiteIds, providerJobUrl: process.env.DEPOT_JOB_URL, generatedConsumers, records }, null, 2))
+writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, completeGraph: manifest.completeGraph, group, selectedCheckIds: requested, generatedInvocationScope, browserPartition, browserPartitionManifestSha256, coversWholeCheck: !browserPartition && (!generatedInvocationScope || generatedInvocationScope.coversWholeSelectedChecks), prerequisiteIds, providerJobUrl: process.env.DEPOT_JOB_URL, generatedConsumers, records }, null, 2))
 assert(generatedConsumers.every(consumer => consumer.initialIdentityVerified && consumer.actualCommandExecuted && consumer.authoritativeAfterVerified && consumer.cleanupVerified && !consumer.error), 'Generated consumer prerequisite, observation or cleanup remained incomplete')
 assert(records.every(record => record.status === 'passed'), 'Logger external checks failed or lack verified prerequisites; see retained records')
 '''
@@ -904,4 +930,67 @@ mkdirSync(directory,{recursive:true,mode:0o700})
 const result={phase,label,sourceRevision:manifest.sourceRevision,manifestSha256:sha256(manifestBytes),authoritative,initialConsumer,workspaceLinks,symlinks,strictAuthoritativeGuard:true}
 writeFileSync(join(directory,`generated-${label}-identity-${phase}.json`),JSON.stringify(result,null,2)+'\n',{flag:'wx',mode:0o600})
 console.log(JSON.stringify({phase,label,trackedAuthoritativeInputs:authoritative.trackedInputs,consumerInputsVerified:phase==='before',workspaceLinks:workspaceLinks.length,dependencySymlinks:symlinks.length}))
+'''
+[tasks."trial:depot:generated:cleanup"]
+description = "Remove only a registered disposable generator worktree, retaining permission and scope proofs"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const {execFileSync,spawnSync}=await import('node:child_process')
+const {readFileSync,writeFileSync,existsSync,lstatSync,realpathSync,readdirSync}=await import('node:fs')
+const {join,resolve}=await import('node:path')
+const {homedir}=await import('node:os')
+const {strict:assert}=await import('node:assert')
+const source=join(process.env.GITHUB_WORKSPACE,'source'),harness=join(process.env.GITHUB_WORKSPACE,'harness')
+const directory=join(homedir(),'temp/agent/depot-complete-ci')
+const manifest=JSON.parse(readFileSync(join(harness,'.depot/manifests/logger.json'),'utf8'))
+const label=process.env.DEPOT_LOGGER_GENERATED_LABEL,fixture=process.env.DEPOT_LOGGER_GENERATED_CONSUMER
+const labels=['root.generated-consistency','sidecar.generated-type-consistency'].flatMap(id=>{const check=manifest.externalChecks.find(item=>item.id===id);return (check.task?[check.task]:check.tasks).map((task,index)=>`${id}.${index}`)})
+assert(labels.includes(label),'Cleanup requires a frozen generated invocation label')
+assert.equal(fixture,join(directory,`logger-generated-${label}`),'Cleanup refuses any other fixture path')
+assert(lstatSync(fixture).isDirectory()&&!lstatSync(fixture).isSymbolicLink(),'Cleanup refuses a symlink fixture')
+const canonicalFixture=realpathSync(fixture),canonicalSource=realpathSync(source)
+assert.equal(canonicalFixture,join(realpathSync(directory),`logger-generated-${label}`),'Cleanup refuses escaped fixture ancestry')
+assert(canonicalFixture!==canonicalSource&&!canonicalFixture.startsWith(canonicalSource+'/')&&!canonicalSource.startsWith(canonicalFixture+'/'),'Cleanup refuses authoritative ancestry')
+const git=(args,cwd=source)=>execFileSync('git',args,{cwd,encoding:'utf8',maxBuffer:16*1024*1024}).trim()
+assert.equal(git(['rev-parse','HEAD']),manifest.sourceRevision,'Cleanup requires the bound authoritative HEAD')
+assert.equal(git(['rev-parse','HEAD'],fixture),manifest.sourceRevision,'Cleanup requires the bound consumer HEAD')
+assert.equal(realpathSync(resolve(fixture,git(['rev-parse','--git-common-dir'],fixture))),realpathSync(resolve(source,git(['rev-parse','--git-common-dir']))),'Cleanup refuses a foreign repository')
+const registration=git(['worktree','list','--porcelain']).split('\n\n').find(block=>block.startsWith(`worktree ${canonicalFixture}\n`))
+assert(registration?.split('\n').includes(`HEAD ${manifest.sourceRevision}`),'Cleanup requires exact worktree registration')
+const authoritativeStatusBefore=git(['status','--porcelain','--untracked-files=normal'])
+const observe=(command,args,cwd=fixture)=>{const result=spawnSync(command,args,{cwd,encoding:'utf8',timeout:180000,maxBuffer:16*1024*1024});return {command,args,exitCode:result.status,stdout:result.stdout,stderr:result.stderr,error:result.error?.message}}
+const ignoredDryRun=observe('git',['clean','--dry-run','-d','-X'])
+assert.equal(ignoredDryRun.exitCode,0,'Cleanup requires an ignored-file inventory')
+const rootGitDirProbe=observe('ls',['--directory','--','HEAD','config','hooks','objects','refs'])
+const rootGitDirIgnoreProbe=observe('git',['check-ignore','--verbose','--','HEAD','config','hooks','objects','refs'])
+assert.equal(rootGitDirProbe.stdout,'','Cleanup refuses root Git-directory entries for inspection')
+const metadata=[]
+const inspect=path=>{const stat=lstatSync(path);metadata.push({path:canonicalFixture===realpathSync(path)?'.':path.slice(fixture.length+1),uid:stat.uid,gid:stat.gid,mode:stat.mode&0o777,type:stat.isDirectory()?'directory':stat.isSymbolicLink()?'symlink':'file',bytes:stat.size});assert(metadata.length<=8192,'Cleanup metadata inventory exceeded its explicit bound');return stat}
+inspect(fixture)
+const output=join(fixture,'package/module/deepmerge-ts.fuzz/dist/declared-type')
+if(existsSync(output)){
+  const pending=[output]
+  while(pending.length){const path=pending.pop(),stat=inspect(path);if(stat.isDirectory()&&!stat.isSymbolicLink())for(const child of readdirSync(path))pending.push(join(path,child))}
+}
+const ordinaryRemoval=observe('git',['worktree','remove','--force',fixture],source)
+const inventoryAfterOrdinary=git(['worktree','list','--porcelain'])
+let privilegedRemoval
+if(ordinaryRemoval.exitCode!==0&&existsSync(fixture)){
+  assert(!inventoryAfterOrdinary.split('\n').includes(`worktree ${canonicalFixture}`),'Preserve a failed cleanup whose worktree registration remains')
+  assert(metadata.some(row=>row.uid!==process.getuid()),'Preserve a cleanup failure without measured foreign-owned generated output')
+  assert(lstatSync(fixture).isDirectory()&&!lstatSync(fixture).isSymbolicLink()&&realpathSync(fixture)===canonicalFixture,'Cleanup orphan path changed after ordinary removal')
+  assert.equal(git(['rev-parse','HEAD']),manifest.sourceRevision)
+  assert.equal(git(['status','--porcelain','--untracked-files=normal']),authoritativeStatusBefore)
+  privilegedRemoval=observe('sudo',['--non-interactive','rm','--recursive','--force','--',fixture],source)
+}
+const inventory=git(['worktree','list','--porcelain'])
+const cleanupVerified=!existsSync(fixture)&&!inventory.split('\n').includes(`worktree ${canonicalFixture}`)&&(privilegedRemoval??ordinaryRemoval).exitCode===0
+const authoritativeStatusAfter=git(['status','--porcelain','--untracked-files=normal'])
+const authoritativeHeadAfter=git(['rev-parse','HEAD'])
+writeFileSync(join(directory,`generated-${label}-cleanup.json`),JSON.stringify({label,fixture,canonicalFixture,sourceRevision:manifest.sourceRevision,registration,ignoredDryRun,rootGitDirProbe,rootGitDirIgnoreProbe,metadata,ordinaryRemoval,inventoryAfterOrdinary,privilegedRemoval,inventory,cleanupVerified,authoritativeStatusBefore,authoritativeStatusAfter,authoritativeHeadAfter},null,2)+'\n',{flag:'wx',mode:0o600})
+assert.equal(authoritativeStatusAfter,authoritativeStatusBefore,'Cleanup changed authoritative source status')
+assert.equal(authoritativeHeadAfter,manifest.sourceRevision,'Cleanup changed authoritative HEAD')
+assert(cleanupVerified,'Disposable generator worktree cleanup remained incomplete')
+console.log(JSON.stringify({label,cleanupVerified,ordinaryExitCode:ordinaryRemoval.exitCode,privilegedExitCode:privilegedRemoval?.exitCode,metadataEntries:metadata.length}))
 '''
