@@ -35,6 +35,8 @@ Bash is parsed locally into command, argument, quoting, control-flow, redirect, 
 Complete Bash source stays local for execution and human confirmation.
 Literal arguments and quoted here-document bodies remain data, including text resembling shell syntax.
 Incomplete or unsupported parsed structure routes the original operation to human confirmation.
+The [review input verification record](native/review-input-verification.md)
+documents request-capture coverage and complete-session replay requirements.
 Complete copies of the root policy in visible messages are replaced by a reference to selected excerpts.
 Older conversation receipts stay local for provenance.
 Each clause question includes the complete proposed operation beside the selected clause.

@@ -45,6 +45,14 @@ No confirmation appeared before termination.
 This incomplete replay does not establish success for the reported later group.
 The retained stderr has no native fatal diagnostic; the termination cause remains unestablished.
 The next step is a final rebuild and a resource-bounded sequential replay with retained termination evidence.
+The bounded replay `pi-hyper-rpc-allow-oNjLac` exits normally and executes all 21 calls,
+including both reported identifiers, without confirmation, with 25 successful Luna requests.
+Its assertion that every command succeeds is invalid: the original transcript includes a failed search.
+The replay also lacks `rg`, producing exit status `127` instead of the original search's exit status `1`.
+The harness now mounts the actual `rg` executable and checks expected tool-error identities.
+The complete replay must be repeated with that corrected shell environment before closure.
+The user chose to keep `TCV` unchanged and document request-capture lessons in
+`package/pi-plugin/auto-mode/native/review-input-verification.md`.
 
 ### Completed permission scope, startup relevance, and resource measurement on 2026-10-16
 
