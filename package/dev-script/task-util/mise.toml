@@ -773,8 +773,8 @@ assert.match(cohort.manifestSha256 ?? '', /^[a-f0-9]{64}$/)
 assert(Number.isFinite(Date.parse(cohort.requestedAt ?? '')))
 const git = args => execFileSync('git', args, { cwd: source, encoding: 'utf8' }).trim()
 const tracked = execFileSync('git', ['ls-files', '-z'], { cwd: source, encoding: 'utf8' }).split('\0').filter(Boolean)
-const globalInputs = ['mise.toml', 'mise.no-env.toml', 'mise.lock', 'pnpm-workspace.yaml', 'pnpm-lock.yaml', 'package.json', 'file-enforcer.config.ts']
-const paths = tracked.filter(path => globalInputs.includes(path) || manifest.selectedPackages.some(prefix => path.startsWith(prefix + '/') && ['package.json', 'mise.toml', 'tsconfig.json', 'oxlint.config.ts', 'oxlint.config.json', 'oxlint.config.jsonc', 'coverage-baseline.json'].includes(path.split('/').at(-1)))).toSorted()
+const globalInputs = ['mise.toml', 'mise.no-env.toml', 'mise.lock', 'pnpm-workspace.yaml', 'pnpm-lock.yaml', 'package.json', 'file-enforcer.config.ts', 'Cargo.toml', 'Cargo.lock']
+const paths = tracked.filter(path => globalInputs.includes(path) || manifest.selectedPackages.some(prefix => path.startsWith(prefix + '/') && ['package.json', 'mise.toml', 'Cargo.toml', 'Cargo.lock', 'tsconfig.json', 'oxlint.config.ts', 'oxlint.config.json', 'oxlint.config.jsonc', 'coverage-baseline.json'].includes(path.split('/').at(-1)))).toSorted()
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex')
 const identity = { head: git(['rev-parse', 'HEAD']), sourceTree: git(['rev-parse', 'HEAD^{tree}']), trackedStatus: git(['status', '--porcelain', '--untracked-files=no']), inputs: Object.fromEntries(paths.map(path => [path, sha256(readFileSync(join(source, path)))])) }
 assert.equal(identity.head, manifest.sourceRevision)
@@ -973,6 +973,7 @@ record.terminalDisposition = record.sourceGateTerminal ? selectedResult.status :
 record.consumerSpawnedAt = consumerSpawnedAt
 record.consumerOutcomeObservedAt = consumerOutcomeObservedAt
 record.containerIdsAfter = remainingAfter
+record.consumer = { command, args, cwd: control ? source : process.cwd(), selectedSourceTask: manifest?.checks.find(row => row.id === checkId)?.task }
 writeFileSync(prefix + '-results.json', JSON.stringify(record, null, 2) + '\n')
 console.log(JSON.stringify(record))
 child.unref()
