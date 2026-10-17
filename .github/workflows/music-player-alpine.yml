@@ -21,18 +21,18 @@ name: music-player-alpine
 on:
   pull_request:
     paths:
-      - 'package/music-player/desktop-app/**'
-      - 'package/music-player/truepeak-core/**'
-      - 'package/cli/nested-wayland-session/**'
-      - '.github/workflows/music-player-alpine.yml'
+    - 'package/music-player/desktop-app/**'
+    - 'package/music-player/truepeak-core/**'
+    - 'package/cli/nested-wayland-session/**'
+    - '.github/workflows/music-player-alpine.yml'
   push:
     branches:
-      - main
+    - main
     paths:
-      - 'package/music-player/desktop-app/**'
-      - 'package/music-player/truepeak-core/**'
-      - 'package/cli/nested-wayland-session/**'
-      - '.github/workflows/music-player-alpine.yml'
+    - 'package/music-player/desktop-app/**'
+    - 'package/music-player/truepeak-core/**'
+    - 'package/cli/nested-wayland-session/**'
+    - '.github/workflows/music-player-alpine.yml'
   workflow_dispatch:
     inputs:
       cohort_id:
@@ -61,10 +61,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - arch: x86_64
-            runner: ubuntu-latest
-          - arch: aarch64
-            runner: ubuntu-24.04-arm
+        - arch: x86_64
+          runner: ubuntu-latest
+        - arch: aarch64
+          runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 90
     permissions:
@@ -79,229 +79,229 @@ jobs:
       BUILD_MEMORY: 12g
       BUILD_CPUS: '4'
     steps:
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          ref: 3434eaa455d569c18b52cf15100f77f9db251d21
-          fetch-depth: 1
-          persist-credentials: false
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        ref: 3434eaa455d569c18b52cf15100f77f9db251d21
+        fetch-depth: 1
+        persist-credentials: false
 
-      - name: Checkout frozen trial provenance harness
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          path: trial-provenance-harness
-          ref: ${{ github.sha }}
-          fetch-depth: 1
-          persist-credentials: false
-      - name: Set up the proven provenance task runner
-        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
-        with:
-          version: 2026.10.9
-          working_directory: trial-provenance-harness
-          install: false
-          cache: false
-          env: false
-          export_path: false
-      - name: Install the source-declared provenance runtime
-        working-directory: trial-provenance-harness
-        env:
-          MISE_AUTO_INSTALL: 'false'
-          MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
-        run: mise install --yes node@26.11.1
-      - name: Record frozen source provenance before consumers
-        id: provenance-before
-        working-directory: trial-provenance-harness
-        env:
-          MISE_AUTO_INSTALL: 'false'
-          MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
-          MISE_NODE_VERSION: '26.11.1'
-          SOURCE_ROOT: ${{ github.workspace }}
-          SOURCE_HEAD: 3434eaa455d569c18b52cf15100f77f9db251d21
-          PROVENANCE_PHASE: before
-          PROVENANCE_CASE: alpine
-          PROVENANCE_OUTPUT: ${{ runner.temp }}/depot-provenance
-          COHORT_ID: ${{ inputs.cohort_id }}
-          COHORT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
-          COHORT_REQUESTED_AT: ${{ inputs.requested_at }}
-        run: mise run //package/dev-script/task-util:trial:depot:coherent:provenance
-      - name: Build the Alpine images
-        run: |
-          set -euo pipefail
-          podman --version
-          context="$(mktemp -d)"
-          for target in build smoke; do
-            podman build \
-              --target "$target" \
-              --tag "music-player-alpine-$target" \
-              --file package/music-player/desktop-app/Containerfile.alpine \
-              "$context"
-          done
+    - name: Checkout frozen trial provenance harness
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        path: trial-provenance-harness
+        ref: ${{ github.sha }}
+        fetch-depth: 1
+        persist-credentials: false
+    - name: Set up the proven provenance task runner
+      uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        version: 2026.10.9
+        working_directory: trial-provenance-harness
+        install: false
+        cache: false
+        env: false
+        export_path: false
+    - name: Install the source-declared provenance runtime
+      working-directory: trial-provenance-harness
+      env:
+        MISE_AUTO_INSTALL: 'false'
+        MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+      run: mise install --yes node@26.11.1
+    - name: Record frozen source provenance before consumers
+      id: provenance-before
+      working-directory: trial-provenance-harness
+      env:
+        MISE_AUTO_INSTALL: 'false'
+        MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+        MISE_NODE_VERSION: '26.11.1'
+        SOURCE_ROOT: ${{ github.workspace }}
+        SOURCE_HEAD: 3434eaa455d569c18b52cf15100f77f9db251d21
+        PROVENANCE_PHASE: before
+        PROVENANCE_CASE: alpine
+        PROVENANCE_OUTPUT: ${{ runner.temp }}/depot-provenance
+        COHORT_ID: ${{ inputs.cohort_id }}
+        COHORT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+        COHORT_REQUESTED_AT: ${{ inputs.requested_at }}
+      run: mise run //package/dev-script/task-util:trial:depot:coherent:provenance
+    - name: Build the Alpine images
+      run: |
+        set -euo pipefail
+        podman --version
+        context="$(mktemp -d)"
+        for target in build smoke; do
+          podman build \
+            --target "$target" \
+            --tag "music-player-alpine-$target" \
+            --file package/music-player/desktop-app/Containerfile.alpine \
+            "$context"
+        done
 
-      - name: Read the toolchain
-        id: toolchain
-        run: |
-          set -euo pipefail
-          # The key names the rustc version and a short hash of the -dev package versions the build links, because the
-          # image pins Alpine by digest but `apk add` installs whatever the stable repository holds on that day.
-          rustc_version="$(podman run --rm music-player-alpine-build rustc --version | tr ' ' '_' | tr -d '()')"
-          packages="$(podman run --rm music-player-alpine-build apk info --installed --verbose rust cargo pipewire-dev alsa-lib-dev fontconfig-dev freetype-dev | sort | sha256sum | cut -c1-12)"
-          echo "key=${rustc_version}-${packages}" >> "$GITHUB_OUTPUT"
-          echo "toolchain: ${rustc_version} packages ${packages}"
+    - name: Read the toolchain
+      id: toolchain
+      run: |
+        set -euo pipefail
+        # The key names the rustc version and a short hash of the -dev package versions the build links, because the
+        # image pins Alpine by digest but `apk add` installs whatever the stable repository holds on that day.
+        rustc_version="$(podman run --rm music-player-alpine-build rustc --version | tr ' ' '_' | tr -d '()')"
+        packages="$(podman run --rm music-player-alpine-build apk info --installed --verbose rust cargo pipewire-dev alsa-lib-dev fontconfig-dev freetype-dev | sort | sha256sum | cut -c1-12)"
+        echo "key=${rustc_version}-${packages}" >> "$GITHUB_OUTPUT"
+        echo "toolchain: ${rustc_version} packages ${packages}"
 
-      - name: Prepare the cache directories
-        run: mkdir --parents "$CI_CACHE/cargo" "$CI_CACHE/target-app" "$CI_CACHE/target-nws" "$CI_CACHE/scratch"
+    - name: Prepare the cache directories
+      run: mkdir --parents "$CI_CACHE/cargo" "$CI_CACHE/target-app" "$CI_CACHE/target-nws" "$CI_CACHE/scratch"
 
-      - name: Restore the cargo and target caches
-        id: cache
-        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae
-        with:
-          path: |
-            .ci-cache/cargo
-            .ci-cache/target-app
-            .ci-cache/target-nws
-          key: music-player-alpine-${{ runner.arch }}-${{ steps.toolchain.outputs.key }}-${{ hashFiles('package/music-player/desktop-app/Cargo.lock', 'package/cli/nested-wayland-session/Cargo.lock') }}
-          restore-keys: |
-            music-player-alpine-${{ runner.arch }}-${{ steps.toolchain.outputs.key }}-
+    - name: Restore the cargo and target caches
+      id: cache
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: |
+          .ci-cache/cargo
+          .ci-cache/target-app
+          .ci-cache/target-nws
+        key: music-player-alpine-${{ runner.arch }}-${{ steps.toolchain.outputs.key }}-${{ hashFiles('package/music-player/desktop-app/Cargo.lock', 'package/cli/nested-wayland-session/Cargo.lock') }}
+        restore-keys: |
+          music-player-alpine-${{ runner.arch }}-${{ steps.toolchain.outputs.key }}-
 
-      - name: Show what the cache restored
-        env:
-          CACHE_HIT: ${{ steps.cache.outputs.cache-hit }}
-          CACHE_MATCHED_KEY: ${{ steps.cache.outputs.cache-matched-key }}
-        run: |
-          echo "cache-hit=$CACHE_HIT matched-key=$CACHE_MATCHED_KEY"
-          du --summarize --human-readable "$CI_CACHE/cargo" "$CI_CACHE/target-app" "$CI_CACHE/target-nws"
+    - name: Show what the cache restored
+      env:
+        CACHE_HIT: ${{ steps.cache.outputs.cache-hit }}
+        CACHE_MATCHED_KEY: ${{ steps.cache.outputs.cache-matched-key }}
+      run: |
+        echo "cache-hit=$CACHE_HIT matched-key=$CACHE_MATCHED_KEY"
+        du --summarize --human-readable "$CI_CACHE/cargo" "$CI_CACHE/target-app" "$CI_CACHE/target-nws"
 
-      - name: Unit tests (cargo nextest)
-        run: |
-          set -euo pipefail
-          # The source is mounted read-only; nextest writes its store under the crate's target directory, so that one
-          # path gets a scratch directory. The Slint variables are the ones mise sets for local runs.
-          podman run --rm \
-            --memory="$BUILD_MEMORY" --cpus="$BUILD_CPUS" --security-opt label=disable \
-            --volume "$GITHUB_WORKSPACE/package/music-player:/src:ro" \
-            --volume "$CI_CACHE/scratch:/src/desktop-app/target" \
-            --volume "$CI_CACHE/cargo:/cargo" \
-            --volume "$CI_CACHE/target-app:/target" \
-            --env CARGO_HOME=/cargo --env CARGO_TARGET_DIR=/target \
-            --env CARGO_INCREMENTAL=0 --env CARGO_PROFILE_DEV_DEBUG=0 \
-            --env SLINT_EMIT_DEBUG_INFO=1 --env SLINT_ENABLE_EXPERIMENTAL_FEATURES=1 \
-            --workdir /src/desktop-app \
-            music-player-alpine-build \
-            cargo nextest run --locked --features alsa-fallback --no-fail-fast
+    - name: Unit tests (cargo nextest)
+      run: |
+        set -euo pipefail
+        # The source is mounted read-only; nextest writes its store under the crate's target directory, so that one
+        # path gets a scratch directory. The Slint variables are the ones mise sets for local runs.
+        podman run --rm \
+          --memory="$BUILD_MEMORY" --cpus="$BUILD_CPUS" --security-opt label=disable \
+          --volume "$GITHUB_WORKSPACE/package/music-player:/src:ro" \
+          --volume "$CI_CACHE/scratch:/src/desktop-app/target" \
+          --volume "$CI_CACHE/cargo:/cargo" \
+          --volume "$CI_CACHE/target-app:/target" \
+          --env CARGO_HOME=/cargo --env CARGO_TARGET_DIR=/target \
+          --env CARGO_INCREMENTAL=0 --env CARGO_PROFILE_DEV_DEBUG=0 \
+          --env SLINT_EMIT_DEBUG_INFO=1 --env SLINT_ENABLE_EXPERIMENTAL_FEATURES=1 \
+          --workdir /src/desktop-app \
+          music-player-alpine-build \
+          cargo nextest run --locked --features alsa-fallback --no-fail-fast
 
-      - name: Build the app
-        run: |
-          set -euo pipefail
-          podman run --rm \
-            --memory="$BUILD_MEMORY" --cpus="$BUILD_CPUS" --security-opt label=disable \
-            --volume "$GITHUB_WORKSPACE/package/music-player:/src:ro" \
-            --volume "$CI_CACHE/cargo:/cargo" \
-            --volume "$CI_CACHE/target-app:/target" \
-            --env CARGO_HOME=/cargo --env CARGO_TARGET_DIR=/target \
-            --env CARGO_INCREMENTAL=0 --env CARGO_PROFILE_DEV_DEBUG=0 \
-            --env SLINT_EMIT_DEBUG_INFO=1 --env SLINT_ENABLE_EXPERIMENTAL_FEATURES=1 \
-            --workdir /src/desktop-app \
-            music-player-alpine-build \
-            cargo build --locked --features alsa-fallback
+    - name: Build the app
+      run: |
+        set -euo pipefail
+        podman run --rm \
+          --memory="$BUILD_MEMORY" --cpus="$BUILD_CPUS" --security-opt label=disable \
+          --volume "$GITHUB_WORKSPACE/package/music-player:/src:ro" \
+          --volume "$CI_CACHE/cargo:/cargo" \
+          --volume "$CI_CACHE/target-app:/target" \
+          --env CARGO_HOME=/cargo --env CARGO_TARGET_DIR=/target \
+          --env CARGO_INCREMENTAL=0 --env CARGO_PROFILE_DEV_DEBUG=0 \
+          --env SLINT_EMIT_DEBUG_INFO=1 --env SLINT_ENABLE_EXPERIMENTAL_FEATURES=1 \
+          --workdir /src/desktop-app \
+          music-player-alpine-build \
+          cargo build --locked --features alsa-fallback
 
-      - name: Build the nested compositor from this repository
-        run: |
-          set -euo pipefail
-          # The package's own release profile is fat LTO with one codegen unit, which is slow on 4 vCPUs; the smoke
-          # test needs a working compositor, not its fastest code, so LTO is off and codegen units are many.
-          podman run --rm \
-            --memory="$BUILD_MEMORY" --cpus="$BUILD_CPUS" --security-opt label=disable \
-            --volume "$GITHUB_WORKSPACE/package/cli/nested-wayland-session:/src:ro" \
-            --volume "$CI_CACHE/cargo:/cargo" \
-            --volume "$CI_CACHE/target-nws:/target" \
-            --env CARGO_HOME=/cargo --env CARGO_TARGET_DIR=/target \
-            --env CARGO_INCREMENTAL=0 \
-            --env CARGO_PROFILE_RELEASE_LTO=false --env CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16 \
-            --workdir /src \
-            music-player-alpine-build \
-            cargo build --release --locked
+    - name: Build the nested compositor from this repository
+      run: |
+        set -euo pipefail
+        # The package's own release profile is fat LTO with one codegen unit, which is slow on 4 vCPUs; the smoke
+        # test needs a working compositor, not its fastest code, so LTO is off and codegen units are many.
+        podman run --rm \
+          --memory="$BUILD_MEMORY" --cpus="$BUILD_CPUS" --security-opt label=disable \
+          --volume "$GITHUB_WORKSPACE/package/cli/nested-wayland-session:/src:ro" \
+          --volume "$CI_CACHE/cargo:/cargo" \
+          --volume "$CI_CACHE/target-nws:/target" \
+          --env CARGO_HOME=/cargo --env CARGO_TARGET_DIR=/target \
+          --env CARGO_INCREMENTAL=0 \
+          --env CARGO_PROFILE_RELEASE_LTO=false --env CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16 \
+          --workdir /src \
+          music-player-alpine-build \
+          cargo build --release --locked
 
-      - name: Stage the binaries for the smoke test
-        run: |
-          set -euo pipefail
-          # The smoke test runs from copies outside the cache directories, because the next step trims the
-          # cache directories of everything this repository's own crates produced.
-          mkdir --parents "$RUNNER_TEMP/bin"
-          cp "$CI_CACHE/target-app/debug/music-player" "$RUNNER_TEMP/bin/music-player"
-          cp "$CI_CACHE/target-nws/release/monochromatic-nested-wayland-session" "$RUNNER_TEMP/bin/nws"
-          ls -l "$RUNNER_TEMP/bin"
+    - name: Stage the binaries for the smoke test
+      run: |
+        set -euo pipefail
+        # The smoke test runs from copies outside the cache directories, because the next step trims the
+        # cache directories of everything this repository's own crates produced.
+        mkdir --parents "$RUNNER_TEMP/bin"
+        cp "$CI_CACHE/target-app/debug/music-player" "$RUNNER_TEMP/bin/music-player"
+        cp "$CI_CACHE/target-nws/release/monochromatic-nested-wayland-session" "$RUNNER_TEMP/bin/nws"
+        ls -l "$RUNNER_TEMP/bin"
 
-      - name: Trim the caches to the dependencies
-        # Same condition as the save step; a run that does not save has nothing to trim.
-        if: ${{ steps.cache.outputs.cache-hit != 'true' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')) }}
-        run: |
-          set -euo pipefail
-          # Keep only what a later run reuses. The three crates of this repository (the player, truepeak-core and the
-          # compositor) are rebuilt on every run because their source changes, so their test executables, rlibs and
-          # binaries are dead weight. The unpacked registry sources are re-extracted from registry/cache in seconds.
-          # Measured on x86_64: the entry shrank from 1.13 GB to 0.89 GB.
-          rm --recursive --force "$CI_CACHE/cargo/registry/src"
-          find "$CI_CACHE/target-app/debug" "$CI_CACHE/target-nws/release" -maxdepth 2 -type f \
-            \( -name 'music_player-*' -o -name 'libmusic_player-*' -o -name 'truepeak_core-*' -o -name 'libtruepeak_core-*' \
-               -o -name 'nested_wayland_session-*' -o -name 'libnested_wayland_session-*' \
-               -o -name 'monochromatic_nested_wayland_session-*' \) -delete
-          rm --force "$CI_CACHE/target-app/debug/music-player" "$CI_CACHE/target-nws/release/monochromatic-nested-wayland-session"
-          du --summarize --human-readable "$CI_CACHE/cargo" "$CI_CACHE/target-app" "$CI_CACHE/target-nws"
+    - name: Trim the caches to the dependencies
+      # Same condition as the save step; a run that does not save has nothing to trim.
+      if: ${{ steps.cache.outputs.cache-hit != 'true' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')) }}
+      run: |
+        set -euo pipefail
+        # Keep only what a later run reuses. The three crates of this repository (the player, truepeak-core and the
+        # compositor) are rebuilt on every run because their source changes, so their test executables, rlibs and
+        # binaries are dead weight. The unpacked registry sources are re-extracted from registry/cache in seconds.
+        # Measured on x86_64: the entry shrank from 1.13 GB to 0.89 GB.
+        rm --recursive --force "$CI_CACHE/cargo/registry/src"
+        find "$CI_CACHE/target-app/debug" "$CI_CACHE/target-nws/release" -maxdepth 2 -type f \
+          \( -name 'music_player-*' -o -name 'libmusic_player-*' -o -name 'truepeak_core-*' -o -name 'libtruepeak_core-*' \
+             -o -name 'nested_wayland_session-*' -o -name 'libnested_wayland_session-*' \
+             -o -name 'monochromatic_nested_wayland_session-*' \) -delete
+        rm --force "$CI_CACHE/target-app/debug/music-player" "$CI_CACHE/target-nws/release/monochromatic-nested-wayland-session"
+        du --summarize --human-readable "$CI_CACHE/cargo" "$CI_CACHE/target-app" "$CI_CACHE/target-nws"
 
-      - name: Save the cargo and target caches
-        # Pull requests never save: a branch can only be read by itself, and
-        # the repository's cache quota is small. The first condition line
-        # that matches is enough; a hit on the exact key has nothing new.
-        if: ${{ steps.cache.outputs.cache-hit != 'true' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')) }}
-        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae
-        with:
-          path: |
-            .ci-cache/cargo
-            .ci-cache/target-app
-            .ci-cache/target-nws
-          key: music-player-alpine-${{ runner.arch }}-${{ steps.toolchain.outputs.key }}-${{ hashFiles('package/music-player/desktop-app/Cargo.lock', 'package/cli/nested-wayland-session/Cargo.lock') }}
+    - name: Save the cargo and target caches
+      # Pull requests never save: a branch can only be read by itself, and
+      # the repository's cache quota is small. The first condition line
+      # that matches is enough; a hit on the exact key has nothing new.
+      if: ${{ steps.cache.outputs.cache-hit != 'true' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')) }}
+      uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: |
+          .ci-cache/cargo
+          .ci-cache/target-app
+          .ci-cache/target-nws
+        key: music-player-alpine-${{ runner.arch }}-${{ steps.toolchain.outputs.key }}-${{ hashFiles('package/music-player/desktop-app/Cargo.lock', 'package/cli/nested-wayland-session/Cargo.lock') }}
 
-      - name: Smoke test (app inside the nested compositor)
-        run: |
-          set -euo pipefail
-          mkdir --parents "$RUNNER_TEMP/smoke-out"
-          podman run --rm \
-            --memory=4g --cpus="$BUILD_CPUS" --security-opt label=disable \
-            --volume "$RUNNER_TEMP/bin/music-player:/opt/music-player/music-player:ro" \
-            --volume "$RUNNER_TEMP/bin/nws:/opt/music-player/nws:ro" \
-            --volume "$GITHUB_WORKSPACE/package/music-player/desktop-app/fixture:/opt/music-player/fixture:ro" \
-            --volume "$RUNNER_TEMP/smoke-out:/tmp/smoke-out" \
-            music-player-alpine-smoke \
-            music-player-smoke
+    - name: Smoke test (app inside the nested compositor)
+      run: |
+        set -euo pipefail
+        mkdir --parents "$RUNNER_TEMP/smoke-out"
+        podman run --rm \
+          --memory=4g --cpus="$BUILD_CPUS" --security-opt label=disable \
+          --volume "$RUNNER_TEMP/bin/music-player:/opt/music-player/music-player:ro" \
+          --volume "$RUNNER_TEMP/bin/nws:/opt/music-player/nws:ro" \
+          --volume "$GITHUB_WORKSPACE/package/music-player/desktop-app/fixture:/opt/music-player/fixture:ro" \
+          --volume "$RUNNER_TEMP/smoke-out:/tmp/smoke-out" \
+          music-player-alpine-smoke \
+          music-player-smoke
 
-      - name: Upload the smoke screenshots and logs
-        if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: music-player-alpine-smoke-${{ matrix.arch }}
-          path: ${{ runner.temp }}/smoke-out
-          retention-days: 7
-          if-no-files-found: ignore
-      - name: Record frozen source provenance after consumers
-        if: ${{ !cancelled() && steps.provenance-before.outcome == 'success' }}
-        working-directory: trial-provenance-harness
-        env:
-          MISE_AUTO_INSTALL: 'false'
-          MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
-          MISE_NODE_VERSION: '26.11.1'
-          SOURCE_ROOT: ${{ github.workspace }}
-          SOURCE_HEAD: 3434eaa455d569c18b52cf15100f77f9db251d21
-          PROVENANCE_PHASE: after
-          PROVENANCE_CASE: alpine
-          PROVENANCE_OUTPUT: ${{ runner.temp }}/depot-provenance
-          COHORT_ID: ${{ inputs.cohort_id }}
-          COHORT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
-          COHORT_REQUESTED_AT: ${{ inputs.requested_at }}
-        run: mise run //package/dev-script/task-util:trial:depot:coherent:provenance
-      - name: Preserve frozen source provenance
-        if: ${{ always() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: depot-alpine-provenance-${{ matrix.arch }}
-          path: ${{ runner.temp }}/depot-provenance
-          if-no-files-found: error
+    - name: Upload the smoke screenshots and logs
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: music-player-alpine-smoke-${{ matrix.arch }}
+        path: ${{ runner.temp }}/smoke-out
+        retention-days: 7
+        if-no-files-found: ignore
+    - name: Record frozen source provenance after consumers
+      if: ${{ !cancelled() && steps.provenance-before.outcome == 'success' }}
+      working-directory: trial-provenance-harness
+      env:
+        MISE_AUTO_INSTALL: 'false'
+        MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+        MISE_NODE_VERSION: '26.11.1'
+        SOURCE_ROOT: ${{ github.workspace }}
+        SOURCE_HEAD: 3434eaa455d569c18b52cf15100f77f9db251d21
+        PROVENANCE_PHASE: after
+        PROVENANCE_CASE: alpine
+        PROVENANCE_OUTPUT: ${{ runner.temp }}/depot-provenance
+        COHORT_ID: ${{ inputs.cohort_id }}
+        COHORT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+        COHORT_REQUESTED_AT: ${{ inputs.requested_at }}
+      run: mise run //package/dev-script/task-util:trial:depot:coherent:provenance
+    - name: Preserve frozen source provenance
+      if: ${{ always() }}
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: depot-alpine-provenance-${{ matrix.arch }}
+        path: ${{ runner.temp }}/depot-provenance
+        if-no-files-found: error
