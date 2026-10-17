@@ -305,11 +305,23 @@ Owned-volume pilot `85fv28fjkl` passed its cloud boundary controls at pushed `bc
 then exposed unreadable baked pnpm metadata in the unchanged CLI integration.
 The log proves the sender's permission denial; actual UID, GID and mode still require capture.
 All 49 shard volumes were verified removed.
-Preserve that distinct adapter prerequisite and repair it with a readonly byte-verified owned-file bind.
+Request `360d91ht6w` at pushed `d098532a5b69` passed the unchanged CLI integration and its two builds.
+All three logs and unchanged source inputs are independently verified.
+Six readonly metadata binds preserve original image bytes and identity;
+actual metadata measured root `0:0`, mode `0600`, and 33,427 bytes.
+All six shard volumes and six inspection containers were verified removed.
+Issues `#1116` and `#1117` retain the distinct incidents and actual consumer closure proofs.
 Executor metadata now distinguishes inventory, requested IDs, prerequisite closure,
 live progress and actual case termination; its five disposable controls passed.
-The next actions are the single generated-metadata mutation pilot,
-only unresolved or repaired-prerequisite leaf recovery,
+The next actions are replacing the stale 37-leaf continuation with the 33 unresolved identities
+plus two remaining ownership repairs;
+do not rerun the passed browser-properties bundle or mutation CLI integration as development recovery.
+The browser routes now declare 32 disjoint file/project cells,
+with generated-program positive,
+source-negative and invalid-inventory controls passed.
+Use two supported `2x8` pilot cells before the remaining 30,
+retaining full and partition inventories and actual case JSON.
+Then complete only unresolved or repaired-prerequisite leaf recovery,
 file/engine browser recovery with a supported `2x8` pilot,
 and supplying the source-required audited Git `2.56.0`
 before replaying the two unchanged native host checks.

@@ -278,11 +278,11 @@
   ],
   "completeGraph": false,
   "pending": [
-    "Repair only generated baked metadata readability with a byte-verified readonly owned-file bind and run one mutation consumer pilot.",
-    "Recover only unresolved or repaired-prerequisite leaves, retaining every per-leaf result and actual provider allocation/cost.",
-    "Prove32 disjoint browser file/project partitions and case JSON, then a supported2x8 pilot before remaining fan-out.",
+    "Replace stale37-leaf continuation with33 unresolved identities plus2 remaining ownership-prerequisite repairs; exclude passed bundle and CLI integration.",
+    "Complete only unresolved or repaired-prerequisite leaf recovery, retaining per-leaf outcomes and actual provider allocation/cost.",
+    "Collect2 browser file/project pilots on2x8 before dispatching remaining30 cells; retain full/partition inventories and actual case JSON.",
     "Supply source-required audited Git2.56.0 and required libraries before unchanged native host checks.",
-    "Duplicate-search and file distinct newly verified harness boundaries and remaining genuine source failures.",
+    "Duplicate-search and file remaining genuine source failures.",
     "Hold final coherent replay until root aligns GHA, VM and shared helper routes."
   ],
   "packageDevelopmentReconciliation": {
@@ -17860,7 +17860,367 @@
     "supportedProviderSizePlanned": "2x8",
     "pilotVerificationPending": true,
     "publishedUsdPerAllocatedCpuSecond": 0.00005,
-    "accountLedgerVerified": false
+    "accountLedgerVerified": false,
+    "frozenPartitionManifestSha256": "22a2d5e05bd7b12196f698679ae5ad2f679314076c915051957e936526e6f798",
+    "frozenPartitions": {
+      "schemaVersion": 1,
+      "caseId": "logger",
+      "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+      "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+      "partitionKind": "file-and-configured-project",
+      "fullCartesianUnionVerified": true,
+      "groups": [
+        {
+          "group": "browser",
+          "checkId": "root.browser",
+          "task": "//:test:browser",
+          "files": [
+            "package/module/fs-path/src/opfs-root-discovery.browser.test.ts",
+            "package/module/logger.fuzz/src/browser/properties.browser.test.ts",
+            "package/module/logger/src/sink/indexed-db.browser.test.ts",
+            "package/module/logger/src/sink/local-storage.browser.test.ts",
+            "package/module/logger/src/sink/opfs.browser.test.ts",
+            "package/module/logger/src/sink/session-storage.browser.test.ts",
+            "package/module/test/src/sinon.browser.test.ts",
+            "package/webapp-productivity/wc/src/page.browser.test.ts"
+          ],
+          "projects": [
+            "chromium",
+            "firefox",
+            "webkit"
+          ],
+          "configPath": "playwright.browser.config.ts",
+          "configSha256": "22481714fd67d226521833e84b99baa0fe51922d3e2d9c1633ed2d4ae441118f"
+        },
+        {
+          "group": "e2e",
+          "checkId": "root.e2e",
+          "task": "//:test:e2e",
+          "files": [
+            "package/module/dom/src/duplicateElement.e2e.test.ts",
+            "package/module/dom/src/prompt.e2e.test.ts",
+            "package/module/dom/src/redirectingTo.e2e.test.ts",
+            "package/module/dom/src/set/cssFromParam.e2e.test.ts"
+          ],
+          "projects": [
+            "chromium",
+            "firefox"
+          ],
+          "configPath": "playwright.e2e.config.ts",
+          "configSha256": "6b35988518bdae0839af449415228647348ba04322a1c3bc4cf6a255f3a70b6a"
+        }
+      ],
+      "partitions": [
+        {
+          "id": "browser.chromium.1",
+          "group": "browser",
+          "checkId": "root.browser",
+          "file": "package/module/fs-path/src/opfs-root-discovery.browser.test.ts",
+          "project": "chromium"
+        },
+        {
+          "id": "browser.chromium.2",
+          "group": "browser",
+          "checkId": "root.browser",
+          "file": "package/module/logger.fuzz/src/browser/properties.browser.test.ts",
+          "project": "chromium"
+        },
+        {
+          "id": "browser.chromium.3",
+          "group": "browser",
+          "checkId": "root.browser",
+          "file": "package/module/logger/src/sink/indexed-db.browser.test.ts",
+          "project": "chromium"
+        },
+        {
+          "id": "browser.chromium.4",
+          "group": "browser",
+          "checkId": "root.browser",
+          "file": "package/module/logger/src/sink/local-storage.browser.test.ts",
+          "project": "chromium"
+        },
+        {
+          "id": "browser.chromium.5",
+          "group": "browser",
+          "checkId": "root.browser",
+          "file": "package/module/logger/src/sink/opfs.browser.test.ts",
+          "project": "chromium"
+        },
+        {
+          "id": "browser.chromium.6",
+          "group": "browser",
+          "checkId": "root.browser",
+          "file": "package/module/logger/src/sink/session-storage.browser.test.ts",
+          "project": "chromium"
+        },
+        {
+          "id": "browser.chromium.7",
+          "group": "browser",
+          "checkId": "root.browser",
+          "file": "package/module/test/src/sinon.browser.test.ts",
+          "project": "chromium"
+        },
+        {
+          "id": "browser.chromium.8",
+          "group": "browser",
+          "checkId": "root.browser",
+          "file": "package/webapp-productivity/wc/src/page.browser.test.ts",
+          "project": "chromium"
+        },
+        {
+          "id": "browser.firefox.1",
+          "group": "browser",
+          "checkId": "root.browser",
+          "file": "package/module/fs-path/src/opfs-root-discovery.browser.test.ts",
+          "project": "firefox"
+        },
+        {
+          "id": "browser.firefox.2",
+          "group": "browser",
+          "checkId": "root.browser",
+          "file": "package/module/logger.fuzz/src/browser/properties.browser.test.ts",
+          "project": "firefox"
+        },
+        {
+          "id": "browser.firefox.3",
+          "group": "browser",
+          "checkId": "root.browser",
+          "file": "package/module/logger/src/sink/indexed-db.browser.test.ts",
+          "project": "firefox"
+        },
+        {
+          "id": "browser.firefox.4",
+          "group": "browser",
+          "checkId": "root.browser",
+          "file": "package/module/logger/src/sink/local-storage.browser.test.ts",
+          "project": "firefox"
+        },
+        {
+          "id": "browser.firefox.5",
+          "group": "browser",
+          "checkId": "root.browser",
+          "file": "package/module/logger/src/sink/opfs.browser.test.ts",
+          "project": "firefox"
+        },
+        {
+          "id": "browser.firefox.6",
+          "group": "browser",
+          "checkId": "root.browser",
+          "file": "package/module/logger/src/sink/session-storage.browser.test.ts",
+          "project": "firefox"
+        },
+        {
+          "id": "browser.firefox.7",
+          "group": "browser",
+          "checkId": "root.browser",
+          "file": "package/module/test/src/sinon.browser.test.ts",
+          "project": "firefox"
+        },
+        {
+          "id": "browser.firefox.8",
+          "group": "browser",
+          "checkId": "root.browser",
+          "file": "package/webapp-productivity/wc/src/page.browser.test.ts",
+          "project": "firefox"
+        },
+        {
+          "id": "browser.webkit.1",
+          "group": "browser",
+          "checkId": "root.browser",
+          "file": "package/module/fs-path/src/opfs-root-discovery.browser.test.ts",
+          "project": "webkit"
+        },
+        {
+          "id": "browser.webkit.2",
+          "group": "browser",
+          "checkId": "root.browser",
+          "file": "package/module/logger.fuzz/src/browser/properties.browser.test.ts",
+          "project": "webkit"
+        },
+        {
+          "id": "browser.webkit.3",
+          "group": "browser",
+          "checkId": "root.browser",
+          "file": "package/module/logger/src/sink/indexed-db.browser.test.ts",
+          "project": "webkit"
+        },
+        {
+          "id": "browser.webkit.4",
+          "group": "browser",
+          "checkId": "root.browser",
+          "file": "package/module/logger/src/sink/local-storage.browser.test.ts",
+          "project": "webkit"
+        },
+        {
+          "id": "browser.webkit.5",
+          "group": "browser",
+          "checkId": "root.browser",
+          "file": "package/module/logger/src/sink/opfs.browser.test.ts",
+          "project": "webkit"
+        },
+        {
+          "id": "browser.webkit.6",
+          "group": "browser",
+          "checkId": "root.browser",
+          "file": "package/module/logger/src/sink/session-storage.browser.test.ts",
+          "project": "webkit"
+        },
+        {
+          "id": "browser.webkit.7",
+          "group": "browser",
+          "checkId": "root.browser",
+          "file": "package/module/test/src/sinon.browser.test.ts",
+          "project": "webkit"
+        },
+        {
+          "id": "browser.webkit.8",
+          "group": "browser",
+          "checkId": "root.browser",
+          "file": "package/webapp-productivity/wc/src/page.browser.test.ts",
+          "project": "webkit"
+        },
+        {
+          "id": "e2e.chromium.1",
+          "group": "e2e",
+          "checkId": "root.e2e",
+          "file": "package/module/dom/src/duplicateElement.e2e.test.ts",
+          "project": "chromium"
+        },
+        {
+          "id": "e2e.chromium.2",
+          "group": "e2e",
+          "checkId": "root.e2e",
+          "file": "package/module/dom/src/prompt.e2e.test.ts",
+          "project": "chromium"
+        },
+        {
+          "id": "e2e.chromium.3",
+          "group": "e2e",
+          "checkId": "root.e2e",
+          "file": "package/module/dom/src/redirectingTo.e2e.test.ts",
+          "project": "chromium"
+        },
+        {
+          "id": "e2e.chromium.4",
+          "group": "e2e",
+          "checkId": "root.e2e",
+          "file": "package/module/dom/src/set/cssFromParam.e2e.test.ts",
+          "project": "chromium"
+        },
+        {
+          "id": "e2e.firefox.1",
+          "group": "e2e",
+          "checkId": "root.e2e",
+          "file": "package/module/dom/src/duplicateElement.e2e.test.ts",
+          "project": "firefox"
+        },
+        {
+          "id": "e2e.firefox.2",
+          "group": "e2e",
+          "checkId": "root.e2e",
+          "file": "package/module/dom/src/prompt.e2e.test.ts",
+          "project": "firefox"
+        },
+        {
+          "id": "e2e.firefox.3",
+          "group": "e2e",
+          "checkId": "root.e2e",
+          "file": "package/module/dom/src/redirectingTo.e2e.test.ts",
+          "project": "firefox"
+        },
+        {
+          "id": "e2e.firefox.4",
+          "group": "e2e",
+          "checkId": "root.e2e",
+          "file": "package/module/dom/src/set/cssFromParam.e2e.test.ts",
+          "project": "firefox"
+        }
+      ]
+    },
+    "reporterControls": {
+      "root": "/home/user/temp/agent/depot-browser-reporters-control-sTO6Pi",
+      "rows": [
+        {
+          "operation": "full-list",
+          "exitCode": 0,
+          "caseCount": 6,
+          "reportPath": "/home/user/temp/agent/depot-browser-reporters-control-sTO6Pi/reports/full-list.json",
+          "configuredReportersPreserved": true,
+          "stats": {
+            "startTime": "2026-10-17T06:34:50.636Z",
+            "duration": 48.93599999999998,
+            "expected": 0,
+            "skipped": 6,
+            "unexpected": 0,
+            "flaky": 0
+          }
+        },
+        {
+          "operation": "partition-list",
+          "exitCode": 0,
+          "caseCount": 2,
+          "reportPath": "/home/user/temp/agent/depot-browser-reporters-control-sTO6Pi/reports/partition-list.json",
+          "configuredReportersPreserved": true,
+          "stats": {
+            "startTime": "2026-10-17T06:34:50.975Z",
+            "duration": 16.322000000000003,
+            "expected": 0,
+            "skipped": 2,
+            "unexpected": 0,
+            "flaky": 0
+          }
+        },
+        {
+          "operation": "actual",
+          "exitCode": 1,
+          "caseCount": 2,
+          "reportPath": "/home/user/temp/agent/depot-browser-reporters-control-sTO6Pi/reports/actual.json",
+          "configuredReportersPreserved": true,
+          "stats": {
+            "startTime": "2026-10-17T06:34:51.267Z",
+            "duration": 263.25199999999995,
+            "expected": 1,
+            "skipped": 0,
+            "unexpected": 1,
+            "flaky": 0
+          }
+        }
+      ]
+    },
+    "generatedProgramControls": {
+      "root": "/home/user/temp/agent/depot-browser-partition-control-mvfIPU",
+      "rows": [
+        {
+          "operation": "passing",
+          "exitCode": 0,
+          "inventoryPartitionVerified": true,
+          "actualCases": 1,
+          "allSelectedCasesDisposed": true
+        },
+        {
+          "operation": "source-failure",
+          "exitCode": 1,
+          "inventoryPartitionVerified": true,
+          "actualCases": 2,
+          "allSelectedCasesDisposed": true
+        },
+        {
+          "operation": "invalid-inventory",
+          "exitCode": 1,
+          "adapterError": {
+            "name": "AssertionError",
+            "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n    'tests/first.spec.ts',\n-   'tests/missing.spec.ts',\n    'tests/second.spec.ts'\n  ]\n",
+            "code": "ERR_ASSERTION"
+          },
+          "actualCases": 0
+        }
+      ]
+    },
+    "providerSize": "2x8",
+    "providerCpuCount": 2,
+    "containerCpuCount": 2,
+    "containerMemoryGiB": 2,
+    "full32DispatchHeld": true
   },
   "gitHostRecovery": {
     "pending": true,
@@ -18585,5 +18945,220 @@
     "allShardVolumesVerifiedRemoved": true,
     "readonlyByteVerifiedOwnedMetadataBindPilotPending": true,
     "originalFileUidGidModeVerified": false
+  },
+  "mutationConsumerRepair": {
+    "runId": "360d91ht6w",
+    "harnessRevision": "d098532a5b6946231daf3c4f43e38444359a307e",
+    "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+    "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+    "sourceInputsVerified": true,
+    "consumer": {
+      "checkId": "package.cli.mutation-test.test.integration",
+      "status": "passed",
+      "outputSha256": "87d9faa14ccc4d93ed77889a373145c3d94eec9f8ffa5a224f775de3761e4933",
+      "outputBytes": 95473
+    },
+    "activeChecks": [
+      {
+        "checkId": "package.module.caught-value.build",
+        "status": "passed"
+      },
+      {
+        "checkId": "package.cli.mutation-test.build",
+        "status": "passed"
+      },
+      {
+        "checkId": "package.cli.mutation-test.test.integration",
+        "status": "passed"
+      }
+    ],
+    "metadataBindings": [
+      {
+        "event": "mutation-owned-metadata",
+        "image": "localhost/mutation-test-runtime:299616bc3856",
+        "imageId": "64a4e35c726e737519cc888de84972de03c718f042b8aea5046dcec15f82ec73",
+        "sourcePath": "/baked/node_modules/.pnpm-workspace-state-v1.json",
+        "original": {
+          "mode": "-rw-------",
+          "uid": 0,
+          "gid": 0,
+          "bytes": 33427
+        },
+        "owned": {
+          "uid": 1001,
+          "gid": 1001,
+          "mode": 384,
+          "bytes": 33427
+        },
+        "sha256": "1b0f6d958e4a1269a2c420b3bf55adb9c1030ba8183bd94629a2c7c7cc14084d",
+        "copiedSha256": "1b0f6d958e4a1269a2c420b3bf55adb9c1030ba8183bd94629a2c7c7cc14084d",
+        "readonly": true,
+        "sourceImageUnchanged": true,
+        "archiveSha256": "ffb1e0c33fe001e73bf9ed4118253d931b9d2d4ce8a87d662f4244bb9a98b7d2"
+      },
+      {
+        "event": "mutation-owned-metadata",
+        "image": "localhost/mutation-test-runtime:299616bc3856",
+        "imageId": "64a4e35c726e737519cc888de84972de03c718f042b8aea5046dcec15f82ec73",
+        "sourcePath": "/baked/node_modules/.pnpm-workspace-state-v1.json",
+        "original": {
+          "mode": "-rw-------",
+          "uid": 0,
+          "gid": 0,
+          "bytes": 33427
+        },
+        "owned": {
+          "uid": 1001,
+          "gid": 1001,
+          "mode": 384,
+          "bytes": 33427
+        },
+        "sha256": "1b0f6d958e4a1269a2c420b3bf55adb9c1030ba8183bd94629a2c7c7cc14084d",
+        "copiedSha256": "1b0f6d958e4a1269a2c420b3bf55adb9c1030ba8183bd94629a2c7c7cc14084d",
+        "readonly": true,
+        "sourceImageUnchanged": true,
+        "archiveSha256": "ffb1e0c33fe001e73bf9ed4118253d931b9d2d4ce8a87d662f4244bb9a98b7d2"
+      },
+      {
+        "event": "mutation-owned-metadata",
+        "image": "localhost/mutation-test-runtime:299616bc3856",
+        "imageId": "64a4e35c726e737519cc888de84972de03c718f042b8aea5046dcec15f82ec73",
+        "sourcePath": "/baked/node_modules/.pnpm-workspace-state-v1.json",
+        "original": {
+          "mode": "-rw-------",
+          "uid": 0,
+          "gid": 0,
+          "bytes": 33427
+        },
+        "owned": {
+          "uid": 1001,
+          "gid": 1001,
+          "mode": 384,
+          "bytes": 33427
+        },
+        "sha256": "1b0f6d958e4a1269a2c420b3bf55adb9c1030ba8183bd94629a2c7c7cc14084d",
+        "copiedSha256": "1b0f6d958e4a1269a2c420b3bf55adb9c1030ba8183bd94629a2c7c7cc14084d",
+        "readonly": true,
+        "sourceImageUnchanged": true,
+        "archiveSha256": "ffb1e0c33fe001e73bf9ed4118253d931b9d2d4ce8a87d662f4244bb9a98b7d2"
+      },
+      {
+        "event": "mutation-owned-metadata",
+        "image": "localhost/mutation-test-runtime:299616bc3856",
+        "imageId": "64a4e35c726e737519cc888de84972de03c718f042b8aea5046dcec15f82ec73",
+        "sourcePath": "/baked/node_modules/.pnpm-workspace-state-v1.json",
+        "original": {
+          "mode": "-rw-------",
+          "uid": 0,
+          "gid": 0,
+          "bytes": 33427
+        },
+        "owned": {
+          "uid": 1001,
+          "gid": 1001,
+          "mode": 384,
+          "bytes": 33427
+        },
+        "sha256": "1b0f6d958e4a1269a2c420b3bf55adb9c1030ba8183bd94629a2c7c7cc14084d",
+        "copiedSha256": "1b0f6d958e4a1269a2c420b3bf55adb9c1030ba8183bd94629a2c7c7cc14084d",
+        "readonly": true,
+        "sourceImageUnchanged": true,
+        "archiveSha256": "ffb1e0c33fe001e73bf9ed4118253d931b9d2d4ce8a87d662f4244bb9a98b7d2"
+      },
+      {
+        "event": "mutation-owned-metadata",
+        "image": "localhost/mutation-test-runtime:299616bc3856",
+        "imageId": "64a4e35c726e737519cc888de84972de03c718f042b8aea5046dcec15f82ec73",
+        "sourcePath": "/baked/node_modules/.pnpm-workspace-state-v1.json",
+        "original": {
+          "mode": "-rw-------",
+          "uid": 0,
+          "gid": 0,
+          "bytes": 33427
+        },
+        "owned": {
+          "uid": 1001,
+          "gid": 1001,
+          "mode": 384,
+          "bytes": 33427
+        },
+        "sha256": "1b0f6d958e4a1269a2c420b3bf55adb9c1030ba8183bd94629a2c7c7cc14084d",
+        "copiedSha256": "1b0f6d958e4a1269a2c420b3bf55adb9c1030ba8183bd94629a2c7c7cc14084d",
+        "readonly": true,
+        "sourceImageUnchanged": true,
+        "archiveSha256": "ffb1e0c33fe001e73bf9ed4118253d931b9d2d4ce8a87d662f4244bb9a98b7d2"
+      },
+      {
+        "event": "mutation-owned-metadata",
+        "image": "localhost/mutation-test-runtime:299616bc3856",
+        "imageId": "64a4e35c726e737519cc888de84972de03c718f042b8aea5046dcec15f82ec73",
+        "sourcePath": "/baked/node_modules/.pnpm-workspace-state-v1.json",
+        "original": {
+          "mode": "-rw-------",
+          "uid": 0,
+          "gid": 0,
+          "bytes": 33427
+        },
+        "owned": {
+          "uid": 1001,
+          "gid": 1001,
+          "mode": 384,
+          "bytes": 33427
+        },
+        "sha256": "1b0f6d958e4a1269a2c420b3bf55adb9c1030ba8183bd94629a2c7c7cc14084d",
+        "copiedSha256": "1b0f6d958e4a1269a2c420b3bf55adb9c1030ba8183bd94629a2c7c7cc14084d",
+        "readonly": true,
+        "sourceImageUnchanged": true,
+        "archiveSha256": "ffb1e0c33fe001e73bf9ed4118253d931b9d2d4ce8a87d662f4244bb9a98b7d2"
+      }
+    ],
+    "verifiedVolumeCleanups": 6,
+    "verifiedMetadataContainerCleanups": 6,
+    "incidents": [
+      {
+        "number": 1116,
+        "state": "CLOSED",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1116"
+      },
+      {
+        "number": 1117,
+        "state": "CLOSED",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1117"
+      }
+    ],
+    "localGeneratedBoundary": {
+      "privateHome": "/home/user/temp/agent/depot-logger-boundary-control-hArhIz",
+      "status": 0,
+      "signal": null,
+      "stdout": "podman version 5.8.7\n\n{\"event\":\"mutation-identity-control\",\"boundary\":\"owned-tmpfs-volume\",\"deniedStatus\":1,\"deniedError\":\"cat: can't open '/manifest/shard-manifest.json': Permission denied\\n\",\"ownedTmpfsStatus\":0,\"ownedTmpfsError\":\"{\\\"event\\\":\\\"mutation-owned-tmpfs-created\\\",\\\"volume\\\":\\\"depot-ci-mutation-a6a9cd41-4c3f-43b5-806c-835bfc7c3c11\\\",\\\"options\\\":\\\"rw,exec,size=1m,mode=1777,uid=1000,gid=1000\\\",\\\"uid\\\":1000,\\\"gid\\\":1000,\\\"capabilityAdditions\\\":[],\\\"userNamespaceMapping\\\":false}\\n{\\\"event\\\":\\\"mutation-owned-tmpfs-cleanup\\\",\\\"volume\\\":\\\"depot-ci-mutation-a6a9cd41-4c3f-43b5-806c-835bfc7c3c11\\\",\\\"cleanupStatus\\\":0,\\\"cleanupError\\\":\\\"\\\",\\\"remainingStatus\\\":1,\\\"cleanupVerified\\\":true}\\n\",\"uid\":1000,\"gid\":1000}\nSTEP 1/2: FROM docker.io/library/alpine:3.22\nSTEP 2/2: COPY state.json /baked/node_modules/.pnpm-workspace-state-v1.json\nCOMMIT localhost/mutation-test-runtime:3539f8f9fe73\n--> 9c790da667e6\nSuccessfully tagged localhost/mutation-test-runtime:3539f8f9fe73\n9c790da667e67fcc846a83f77582ba25d9c1129b8dcb75f019cb37c309f46f49\n\n{\"event\":\"mutation-metadata-control\",\"image\":\"localhost/mutation-test-runtime:3539f8f9fe73\",\"negativeStatus\":1,\"negativeDiagnostic\":\"cat: can't open '/baked/node_modules/.pnpm-workspace-state-v1.json': Permission denied\\n\",\"positiveStatus\":0,\"positiveDiagnostics\":\"{\\\"event\\\":\\\"mutation-owned-tmpfs-created\\\",\\\"volume\\\":\\\"depot-ci-mutation-1fcb89ce-8ee6-4482-9dd8-a3222c97a383\\\",\\\"options\\\":\\\"rw,exec,size=1m,mode=1777,uid=1000,gid=1000\\\",\\\"uid\\\":1000,\\\"gid\\\":1000,\\\"capabilityAdditions\\\":[],\\\"userNamespaceMapping\\\":false}\\n{\\\"event\\\":\\\"mutation-metadata-container-cleanup\\\",\\\"container\\\":\\\"6535e3b3db8db983561258434c8ee35f0900369f3c4199533acc2c750aeb02d5\\\",\\\"removalStatus\\\":0,\\\"remainingStatus\\\":1,\\\"cleanupVerified\\\":true}\\n{\\\"event\\\":\\\"mutation-owned-metadata\\\",\\\"image\\\":\\\"localhost/mutation-test-runtime:3539f8f9fe73\\\",\\\"imageId\\\":\\\"9c790da667e67fcc846a83f77582ba25d9c1129b8dcb75f019cb37c309f46f49\\\",\\\"sourcePath\\\":\\\"/baked/node_modules/.pnpm-workspace-state-v1.json\\\",\\\"original\\\":{\\\"mode\\\":\\\"-rw-------\\\",\\\"uid\\\":0,\\\"gid\\\":0,\\\"bytes\\\":53},\\\"owned\\\":{\\\"uid\\\":1000,\\\"gid\\\":1000,\\\"mode\\\":384,\\\"bytes\\\":53},\\\"sha256\\\":\\\"fb9fe5db7e7f2c33bb739cdd95c1a2788b50af0c7c5c09f84e408946a0cf739e\\\",\\\"copiedSha256\\\":\\\"fb9fe5db7e7f2c33bb739cdd95c1a2788b50af0c7c5c09f84e408946a0cf739e\\\",\\\"readonly\\\":true,\\\"sourceImageUnchanged\\\":true,\\\"archiveSha256\\\":\\\"82e7340d51fb40e6f45b24b5b6facc7f7e84aec8e80a21eacdf8d2dbabf7e3cd\\\"}\\n{\\\"event\\\":\\\"mutation-owned-tmpfs-cleanup\\\",\\\"volume\\\":\\\"depot-ci-mutation-1fcb89ce-8ee6-4482-9dd8-a3222c97a383\\\",\\\"cleanupStatus\\\":0,\\\"cleanupError\\\":\\\"\\\",\\\"remainingStatus\\\":1,\\\"cleanupVerified\\\":true}\\n\",\"unchangedExpectedBytes\":true}\nUntagged: localhost/mutation-test-runtime:3539f8f9fe73\nDeleted: 9c790da667e67fcc846a83f77582ba25d9c1129b8dcb75f019cb37c309f46f49\n\n{\"event\":\"container-boundary-ready\",\"executable\":\"/usr/bin/podman\",\"boundary\":\"sudo --non-interactive\",\"memory\":\"2g\",\"cpus\":2,\"pidsLimit\":512}\n",
+      "stderr": "",
+      "control": {
+        "event": "mutation-identity-control",
+        "boundary": "owned-tmpfs-volume",
+        "deniedStatus": 1,
+        "deniedError": "cat: can't open '/manifest/shard-manifest.json': Permission denied\n",
+        "ownedTmpfsStatus": 0,
+        "ownedTmpfsError": "{\"event\":\"mutation-owned-tmpfs-created\",\"volume\":\"depot-ci-mutation-a6a9cd41-4c3f-43b5-806c-835bfc7c3c11\",\"options\":\"rw,exec,size=1m,mode=1777,uid=1000,gid=1000\",\"uid\":1000,\"gid\":1000,\"capabilityAdditions\":[],\"userNamespaceMapping\":false}\n{\"event\":\"mutation-owned-tmpfs-cleanup\",\"volume\":\"depot-ci-mutation-a6a9cd41-4c3f-43b5-806c-835bfc7c3c11\",\"cleanupStatus\":0,\"cleanupError\":\"\",\"remainingStatus\":1,\"cleanupVerified\":true}\n",
+        "uid": 1000,
+        "gid": 1000
+      },
+      "metadata": {
+        "event": "mutation-metadata-control",
+        "image": "localhost/mutation-test-runtime:3539f8f9fe73",
+        "negativeStatus": 1,
+        "negativeDiagnostic": "cat: can't open '/baked/node_modules/.pnpm-workspace-state-v1.json': Permission denied\n",
+        "positiveStatus": 0,
+        "positiveDiagnostics": "{\"event\":\"mutation-owned-tmpfs-created\",\"volume\":\"depot-ci-mutation-1fcb89ce-8ee6-4482-9dd8-a3222c97a383\",\"options\":\"rw,exec,size=1m,mode=1777,uid=1000,gid=1000\",\"uid\":1000,\"gid\":1000,\"capabilityAdditions\":[],\"userNamespaceMapping\":false}\n{\"event\":\"mutation-metadata-container-cleanup\",\"container\":\"6535e3b3db8db983561258434c8ee35f0900369f3c4199533acc2c750aeb02d5\",\"removalStatus\":0,\"remainingStatus\":1,\"cleanupVerified\":true}\n{\"event\":\"mutation-owned-metadata\",\"image\":\"localhost/mutation-test-runtime:3539f8f9fe73\",\"imageId\":\"9c790da667e67fcc846a83f77582ba25d9c1129b8dcb75f019cb37c309f46f49\",\"sourcePath\":\"/baked/node_modules/.pnpm-workspace-state-v1.json\",\"original\":{\"mode\":\"-rw-------\",\"uid\":0,\"gid\":0,\"bytes\":53},\"owned\":{\"uid\":1000,\"gid\":1000,\"mode\":384,\"bytes\":53},\"sha256\":\"fb9fe5db7e7f2c33bb739cdd95c1a2788b50af0c7c5c09f84e408946a0cf739e\",\"copiedSha256\":\"fb9fe5db7e7f2c33bb739cdd95c1a2788b50af0c7c5c09f84e408946a0cf739e\",\"readonly\":true,\"sourceImageUnchanged\":true,\"archiveSha256\":\"82e7340d51fb40e6f45b24b5b6facc7f7e84aec8e80a21eacdf8d2dbabf7e3cd\"}\n{\"event\":\"mutation-owned-tmpfs-cleanup\",\"volume\":\"depot-ci-mutation-1fcb89ce-8ee6-4482-9dd8-a3222c97a383\",\"cleanupStatus\":0,\"cleanupError\":\"\",\"remainingStatus\":1,\"cleanupVerified\":true}\n",
+        "unchangedExpectedBytes": true
+      },
+      "boundary": {
+        "event": "container-boundary-ready",
+        "executable": "/usr/bin/podman",
+        "boundary": "sudo --non-interactive",
+        "memory": "2g",
+        "cpus": 2,
+        "pidsLimit": 512
+      }
+    }
   }
 }

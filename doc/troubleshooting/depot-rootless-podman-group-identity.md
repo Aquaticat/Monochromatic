@@ -258,5 +258,31 @@ The consumer made 49 failed shard attempts, with every owned volume verified rem
 The proposed repair extracts only that generated file from a stopped disposable image container,
 retains original image identity, bytes and mode evidence,
 and binds an owned byte-identical copy readonly at its original path.
-No passing repaired consumer is established yet.
-The logger audit tracks the single consumer pilot and distinct issue filing.
+Request `360d91ht6w`,
+using pushed trial harness `d098532a5b6946231daf3c4f43e38444359a307e`,
+passed the unchanged mutation CLI integration and both build prerequisites.
+The newly built actual source-image file measured UID `0`, GID `0`, mode `0600`, and 33,427 bytes.
+Its SHA-256 is `1b0f6d958e4a1269a2c420b3bf55adb9c1030ba8183bd94629a2c7c7cc14084d`.
+This proves the new run's file properties, not an unrecorded stat in the failed predecessor.
+
+The adapter streams `podman cp CONTAINER:PATH -` from a stopped disposable container.
+The original TAR retains the file metadata;
+Podman `v5.8.4`'s `cmd/podman/containers/cp.go` sends that archive directly to stdout.
+Normal host-directory copying instead assigns the host caller's UID/GID,
+so that route would not prove original ownership.
+The adapter extracts only the declared regular file,
+retains the original archive,
+and writes an owned mode-`0600` byte-identical copy.
+Only that copy is bound readonly at the original path.
+The original image identity and authored source bytes remain unchanged.
+
+All six original source-image archive/copy pairs were independently byte- and hash-verified.
+The source consumer completed its assertions with six shards and no runtime errors.
+All six work volumes and six inspection containers were verified removed.
+The separate cloud mapping and metadata incidents are retained in
+[issue #1116][mapping-incident] and [issue #1117][metadata-incident],
+closed with the actual source-consumer controls on the trial branch.
+The final coherent pipeline replay remains separate work.
+
+[mapping-incident]: https://github.com/Aquaticats/Monochromatic/issues/1116
+[metadata-incident]: https://github.com/Aquaticats/Monochromatic/issues/1117

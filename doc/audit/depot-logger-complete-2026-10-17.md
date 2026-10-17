@@ -144,8 +144,15 @@ The DOM group selected 34 cases and failed during browser or fixture setup,
 including `pthread_create` resource errors and a missing built DOM artifact.
 These outcomes are distinct from source assertion failures.
 The current candidate adds the missing build dependencies and uses one browser worker.
-Further development recovery will partition the frozen files and configured engines,
-retain case JSON and verify that their union is complete and disjoint.
+The prepared browser routes partition the frozen files and configured engines into 32 disjoint cells.
+Their auxiliary manifest retains the immutable configuration hashes and unchanged primary manifest digest.
+Two `2x8` pilot cells precede the remaining 30 cells; the full 32-cell route remains held.
+Native Playwright `1.64.0` controls verify that adding JSON preserves the configured dot and HTML reporters.
+Actual generated-program controls verify full inventories,
+exact partition inventories,
+normal source failure exit preservation,
+and rejection of an incomplete full inventory before source execution.
+The cloud pilot must still establish actual worker, image and resource behavior before fan-out.
 
 Provider request IDs and workflow IDs name different objects.
 Request `dhxhzzvmc3` contains workflow `fjdhk1bj7r`.
@@ -183,9 +190,22 @@ The log proves `Permission denied (13)` but does not record the file's UID, GID 
 the next control must measure them before attributing the permission cause.
 All 49 shard volumes were removed and verified absent.
 This newly exposed adapter prerequisite is separate from mutant assertion failures.
-The next mutation pilot must preserve the source image bytes and use a readonly,
-byte-verified owned-file bind for that generated metadata.
-The troubleshooting record retains the rejected mapping and the distinct permission boundary.
+Subsequent request `360d91ht6w` used clean pushed harness
+`d098532a5b6946231daf3c4f43e38444359a307e` and passed the unchanged CLI integration and both builds.
+Independent collection verifies all three executed logs and unchanged source inputs.
+The actual source-image metadata measured UID `0`, GID `0`, mode `0600`, and 33,427 bytes.
+Its SHA-256 is `1b0f6d958e4a1269a2c420b3bf55adb9c1030ba8183bd94629a2c7c7cc14084d`.
+Six original TAR archives and owned readonly copies preserve identical bytes and unchanged image identity.
+All six shard volumes and six metadata-inspection containers were verified removed.
+The authored integration assertions passed with 11 killed mutants,
+six survivors,
+two compile errors and no runtime errors.
+This new measurement does not retroactively establish the unrecorded mode in `85fv28fjkl`.
+Distinct incidents [#1116][mapping-incident] and [#1117][metadata-incident]
+were duplicate-searched,
+filed,
+and closed with the actual source-consumer proof on the trial branch.
+The troubleshooting record preserves every rejected boundary and the measured repair.
 Provider execution intervals remain usage proxies until paired with the declared allocation.
 No passing complete graph or whole passing latency is established by this interim record.
 
@@ -206,11 +226,15 @@ before rerunning the unchanged host tasks.
 Any resulting source failures must remain separate from that mismatch
 and from the existing native container baseline failures.
 
-The next actions are the generated-metadata permission control and single mutation pilot,
-only unresolved or repaired-prerequisite leaf recovery,
+The next actions are updating the continuation selection to the 33 unresolved identities
+plus the two remaining ownership-prerequisite repairs,
+then only unresolved or repaired-prerequisite leaf recovery,
 file/engine browser recovery with a supported `2x8` pilot,
 and controlled Git host prerequisite recovery,
 then a combined workflow with root-owned host, scanner, policy and VM routes.
 The final coherent replay is held until the root agent aligns those routes.
 The prepared combined workflow remains incomplete until that integration is verified.
 Historical source failures stay terminal diagnostics for this measurement.
+
+[mapping-incident]: https://github.com/Aquaticats/Monochromatic/issues/1116
+[metadata-incident]: https://github.com/Aquaticats/Monochromatic/issues/1117
