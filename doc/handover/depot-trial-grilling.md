@@ -81,10 +81,11 @@ Both logs retain Rust's thread-creation panic with OS error 11,
 `Resource temporarily unavailable`.
 The declared 512-task container limit is a hypothesis until live cgroup evidence is retained.
 Runtime-only diagnostic routes on `trial/depot-final-recovery-20261017` add those counters;
-root must verify,
-push,
-confirm the remote SHA and clean worktree,
-then dispatch them.
+scoped formatting and both JavaScript parsers passed.
+Root pushed and verified clean harness `32e1c7290a62c41c314a33894cf8f43f9e0f23b8` before dispatch.
+The native runtime diagnostic is `fs5t4ns6j6`;
+the desktop runtime diagnostic is `tlc73pbmkk`.
+Root must collect their terminal artifacts and counters before changing the PID budget.
 Later configured sessions remain unexecuted.
 The diagnosis lives in `doc/troubleshooting/depot-historical-checkout-bootstrap.md`.
 
