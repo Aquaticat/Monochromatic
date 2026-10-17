@@ -388,6 +388,53 @@ not every possible repository path.
 The repaired fixture driver and command logs remain in
 `~/temp/agent/depot-source-identity-repaired-controls-20261017`.
 
+### Index exclusions are rejected
+
+Harness `a07d84a129f0dd16861551adfb76b1a3bbc4083d` adds an independent index invariant before tracked status.
+`package/dev-script/task-util/mise.toml:818` enumerates NUL-delimited status tags:
+
+```javascript
+// package/dev-script/task-util/mise.toml:818 at harness a07d84a129
+const indexEntries=git(['ls-files','-v','-z']).split('\\0').filter(Boolean);
+```
+
+The assertion on line 819 rejects uppercase `S` or lowercase status tags.
+The installed Git `2.56.0` help identifies `-v` as using lowercase tags for `assume-unchanged` files.
+Disposable controls observed `h` after `--assume-unchanged`
+and `S` after `--skip-worktree`.
+The task emits:
+
+```text
+Immutable source index must not hide tracked inputs with assume-unchanged or skip-worktree flags
+```
+
+A fresh focused fixture run completed 12 controls.
+Both historical source before/after pairs passed.
+The ordinary tracked `package/music-player/truepeak-core/src/lib.rs` is outside the selected metadata hash set.
+For each index flag,
+the unchanged ordinary file was rejected,
+then an edited version with empty tracked status was also rejected.
+Restoring the bytes and clearing the fixture-local flags restored a passing after check.
+The unflagged metadata path containing spaces,
+quotes,
+and a newline still passed before/after checks with its exact hash.
+
+The metadata hash list remains a selected evidence subset,
+not an exhaustive byte inventory of every source file.
+The independent flag assertion prevents Git index exclusions from hiding paths outside that subset.
+The tradeoff is deliberate:
+indexed exclusions are incompatible with the fully checked immutable-source policy,
+even when the excluded file currently matches its committed bytes.
+A checkout using `assume-unchanged` or `skip-worktree` cannot pass this gate.
+The controls changed flags only in a disposable clone;
+shared historical source worktrees and the shared harness remained unchanged.
+
+The [index-invariant evidence](../audit/depot-source-identity-index-controls-2026-10-17.evidence.json)
+retains the additional controls separately from the unchanged 15-control and 19-control records.
+The tested task-file SHA-256 is `afb1293dedc5dd4fb398a0684661fc9a56d92cdccc20db8ab164880b8311db4b`.
+The driver and logs remain in `~/temp/agent/depot-source-identity-index-controls-20261017`.
+This verification dispatched no provider run and repeated no broad test suite.
+
 ## Verification catalog
 
 - Passed:
