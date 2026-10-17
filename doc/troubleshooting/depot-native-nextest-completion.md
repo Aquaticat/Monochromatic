@@ -66,13 +66,57 @@ A disposable package control passed through the actual adapter.
 Its dispatcher asserted the exact nextest arguments,
 the package's environment variable,
 and `SLINT_EMIT_DEBUG_INFO=1`.
-The native recovery runs are `38847322477` and `38847322559`;
-their full-suite results remain pending at this documentation checkpoint.
+The terminal native recovery runs are `38847322477` and `38847322559`.
+Their independently reconciled results are retained in
+[the native recovery evidence](../audit/depot-native-recovery-2026-10-17.evidence.json).
+
+- Historical source `cb95cf6d785c3073c192b95f0632cdae7b910894` on macOS Intel:
+  all 1382 eligible identities ran, with 1356 passed and 26 failed.
+  The nextest summary reports one additional ignored case.
+- Later source `3434eaa455d569c18b52cf15100f77f9db251d21` on macOS Intel:
+  all 1433 eligible identities ran, with 1406 passed and 27 failed.
+  The nextest summary reports one additional ignored case.
+- Historical source on Windows:
+  nextest test compilation failed with four `E0433` diagnostics for missing `libc`.
+  No test identity ran.
+  This remains the known historical source boundary in issue `#1061`,
+  whose later-source fix is independently verified.
+
+The reconciliation checks every numbered execution ordinal,
+the denominator,
+unique identity,
+pass/fail status,
+and complete nextest summary.
+Nextest repeats failing records after its summary;
+the retained evidence deduplicates only identical identity/status/ordinal records.
+It retains every original failure output block and the provider log hash.
+Each native job passed release build,
+the real release CLI invocation,
+and matching source/lockfile hash checks before and after execution.
+All required test outcomes are accounted for on the native hosts,
+but source assertions failed.
+
+Provider job intervals were 2884 seconds for historical macOS,
+827 seconds for historical Windows,
+and 2015 seconds for later macOS.
+The retained GitHub allocation evidence identifies four vCPUs for each standard public runner.
+These intervals include setup and gate execution;
+they are not nextest durations or isolated speed comparisons.
+
+Linux recovery `pbg4h8ww6k`,
+workflow revision `af3ccd254d717efd068ad55372c6eeba18fd8938`,
+failed before nextest with Node.js v26.11.1 diagnostic
+`Error: spawnSync slint-viewer ENOENT` for `slint-viewer --version`.
+It produced no test identities or artifacts.
+Its Depot attempt lasted 163.843 seconds on the workflow's `16x64` allocation.
+This is a tool-discovery prerequisite failure,
+not a source compilation failure or evidence that all Linux cases ran.
+Issue `#1073` stays open until Linux recovery covers every eligible case or reaches a genuine source compile blocker.
 
 ## Verified workaround and tradeoff
 
-The adapter's command and environment transformation passed the disposable control.
-Actual historical native execution remains under verification.
+The adapter's command and environment transformation passed the disposable control
+and both macOS recovery sources reached all eligible test identities.
 The supported invocation is `cargo nextest run --no-fail-fast`.
 This schedules remaining tests despite earlier failures and therefore can consume more runner time.
 It preserves failing exit status and default concurrency.
@@ -107,7 +151,13 @@ and requires `cargo clippy --version` before package lint.
 Run `38847322477` passed component installation and `cargo clippy --version`
 on both native hosts;
 the prerequisite incident is closed in issue `#1072`.
-The full test coverage recovery remains open in issue `#1073`.
+Clippy then emitted actual `clippy::implicit_return` source diagnostics:
+seven sites at historical source on each native host,
+and two sites in `src/launcher.rs` at later source on macOS.
+Exact blocks are retained in the native recovery evidence;
+the existing migration is tracked in issue `#372`.
+The full cross-platform test coverage recovery remains open in issue `#1073`
+because the first Linux recovery failed during tool discovery.
 Installing the component adds setup work;
 it cannot turn source Clippy diagnostics into passing lint.
 
@@ -122,7 +172,9 @@ it cannot turn source Clippy diagnostics into passing lint.
 4.  Contribution policy assessment is unnecessary because no upstream change is proposed.
 5.  The observed impact is incomplete trial coverage and failed lint setup.
 6.  The consumer adapter control passed;
-    cloud recovery remains pending.
+    macOS cloud recovery executed every eligible case,
+    historical Windows reached its independently tracked source compile blocker,
+    and Linux recovery remains incomplete after a tool-discovery failure.
 
 The upstream nextest title search for `fail-fast` returned issues `#1955` and `#3624`,
 which concern beta override behavior and stress-run exit status respectively.
