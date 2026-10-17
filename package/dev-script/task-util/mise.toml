@@ -592,7 +592,7 @@ const groups=[];
 const pending=[['/sys/fs/cgroup',0]];
 while(pending.length&&groups.length<128){
  const [path,depth]=pending.pop();
- groups.push({path,pidsCurrent:text(join(path,'pids.current')),pidsMax:text(join(path,'pids.max')),pidsEvents:text(join(path,'pids.events')),memoryEvents:text(join(path,'memory.events'))});
+ groups.push({path,pidsCurrent:text(join(path,'pids.current')),pidsMax:text(join(path,'pids.max')),pidsPeak:text(join(path,'pids.peak')),pidsEvents:text(join(path,'pids.events')),pidsEventsLocal:text(join(path,'pids.events.local')),memoryEvents:text(join(path,'memory.events'))});
  if(depth<5)for(const entry of readdirSync(path,{withFileTypes:true}))if(entry.isDirectory())pending.push([join(path,entry.name),depth+1]);
 }
 console.log(JSON.stringify({cgroup:text('/proc/self/cgroup'),limits:text('/proc/self/limits'),groups}));
@@ -611,8 +611,25 @@ try {
     await wait(500)
   }
   assert(ready, 'Isolated systemd manager must answer before user services start')
+  const overrides = [
+    ['/etc/systemd/user.conf.d/50-depot-trial.conf', '[Manager]\nDefaultTasksMax=256\n'],
+    [`/etc/systemd/system/user-${process.getuid()}.slice.d/50-depot-trial.conf`, '[Slice]\nTasksMax=448\n'],
+  ]
+  const configurePrivateLimits = `
+const {mkdirSync,writeFileSync}=await import('node:fs');
+const {dirname}=await import('node:path');
+for(const [path,contents] of ${JSON.stringify(overrides)}){
+ mkdirSync(dirname(path),{recursive:true});
+ writeFileSync(path,contents);
+}
+`
+  run({ args: ['exec', name, process.execPath, '--input-type=module', '-e', configurePrivateLimits] })
+  run({ args: ['exec', name, 'systemctl', 'daemon-reload'] })
   run({ args: ['exec', name, 'systemctl', 'start', `user@${process.getuid()}.service`] })
   const user = ['exec', '--workdir', app, name, 'runuser', '--user', userInfo().username, '--', 'env', `XDG_RUNTIME_DIR=/run/user/${process.getuid()}`, `DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${process.getuid()}/bus`, `PATH=${process.env.PATH}`, 'MISE_AUTO_INSTALL=false', 'MISE_LOCKED=1', `MISE_RUST_VERSION=${process.env.MISE_RUST_VERSION}`, `MISE_TRUSTED_CONFIG_PATHS=${source}`, 'LIBGL_ALWAYS_SOFTWARE=1', 'E2E_ONLY=', `E2E_COMPOSITOR=${compositor}`]
+  assert.equal(run({ args: [...user, 'systemctl', '--user', 'show', '--property=DefaultTasksMax', '--value'] }).stdout.trim(), '256', 'Private user services must receive the measured trial task budget')
+  assert.equal(run({ args: ['exec', name, 'systemctl', 'show', `user-${process.getuid()}.slice`, '--property=TasksMax', '--value'] }).stdout.trim(), '448', 'Private user slice must retain headroom inside the 512-task container')
+  sampleResources('private-limits-configured')
   run({ args: [...user, 'touch', marker] })
   assert.equal(run({ args: [...user, 'cat'], input: 'container-stdin-positive-control\n' }).stdout, 'container-stdin-positive-control\n')
   run({ args: [...user, 'systemd-run', '--user', '--wait', '--pipe', '--unit=depot-full-desktop-probe', '--property=MemoryMax=256M', '/bin/cat', '/proc/self/cgroup'] })
@@ -657,7 +674,7 @@ try {
   run({ args: ['rm', name], required: false })
   const cleanupVerified = run({ args: ['container', 'exists', name], required: false }).status === 1 && !existsSync(marker)
   runtimeCompleted = runtimeCompleted && cleanupVerified
-  const record = { schemaVersion: 1, event: 'check-finished', caseId: manifest.caseId, sourceRevision: manifest.sourceRevision, manifestSha256: createHash('sha256').update(manifestBytes).digest('hex'), checkId: 'desktop-app.test.e2e', task: '//package/music-player/desktop-app:test:e2e', args: [], startedAt, finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode: suite?.status ?? null, signal: suite?.signal ?? null, status: runtimeCompleted && suite?.status === 0 ? 'passed' : 'failed', runtimeCompleted, cleanupVerified, failure, sessions: ['wide', 'narrow', 'dialog', 'quit', 'states', 'visual'], resources: { cpus: 2, memoryGiB: 2 }, providerJobUrl: process.env.DEPOT_JOB_URL }
+  const record = { schemaVersion: 1, event: 'check-finished', caseId: manifest.caseId, sourceRevision: manifest.sourceRevision, manifestSha256: createHash('sha256').update(manifestBytes).digest('hex'), checkId: 'desktop-app.test.e2e', task: '//package/music-player/desktop-app:test:e2e', args: [], startedAt, finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, exitCode: suite?.status ?? null, signal: suite?.signal ?? null, status: runtimeCompleted && suite?.status === 0 ? 'passed' : 'failed', runtimeCompleted, cleanupVerified, failure, sessions: ['wide', 'narrow', 'dialog', 'quit', 'states', 'visual'], resources: { cpus: 2, memoryGiB: 2, containerPidsMax: 512, privateUserSliceTasksMax: 448, privateServiceTasksMax: 256 }, providerJobUrl: process.env.DEPOT_JOB_URL }
   writeFileSync(join(directory, `${manifestName}-desktop-e2e-results.json`), JSON.stringify(record, null, 2))
   console.log('\n' + JSON.stringify(record))
 }
