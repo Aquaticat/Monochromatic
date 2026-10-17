@@ -558,7 +558,7 @@ shell = "node --input-type=module-typescript -e"
 run = '''
 const {execFileSync,spawnSync} = await import('node:child_process')
 const {readFileSync,writeFileSync,mkdirSync,mkdtempSync,chmodSync,existsSync} = await import('node:fs')
-const {join,delimiter} = await import('node:path')
+const {join} = await import('node:path')
 const {homedir} = await import('node:os')
 const {createHash} = await import('node:crypto')
 const {strict:assert} = await import('node:assert')
@@ -677,7 +677,8 @@ description = "Verify private installed Git ELF, libraries, actual commit and pr
 dir = "{{config_root}}/../../.."
 shell = "node --input-type=module-typescript -e"
 run = '''
-const {execFileSync,spawn,spawnSync} = await import('node:child_process')
+const {execFileSync,spawn} = await import('node:child_process')
+const {once} = await import('node:events')
 const {readFileSync,writeFileSync,mkdirSync,readlinkSync} = await import('node:fs')
 const {join} = await import('node:path')
 const {createHash} = await import('node:crypto')
@@ -697,11 +698,12 @@ git(['add','controlled.txt']);git(['-c','user.name=Git host fixture','-c','user.
 const head=git(['rev-parse','HEAD']);assert.match(head,/^[a-f0-9]{40}$/u)
 const processControl=spawn('/usr/bin/git',['hash-object','--stdin'],{cwd:fixture,env,stdio:['pipe','pipe','pipe']})
 assert(processControl.pid)
+const exited=once(processControl,'exit')
+await once(processControl,'spawn')
 let executable
 try {executable=readlinkSync('/proc/'+processControl.pid+'/exe');assert.equal(executable,'/usr/bin/git')}
 finally {processControl.stdin.end('controlled input\n')}
-for await(const chunk of processControl.stdout) {}
-const exitCode=processControl.exitCode??await new Promise((resolve,reject)=>{processControl.once('error',reject);processControl.once('exit',resolve)})
+const [exitCode]=await exited
 assert.equal(exitCode,0)
 const resources=Object.fromEntries(['cpu.max','memory.max','memory.events','pids.max','pids.events'].map(name=>[name,readFileSync(join('/sys/fs/cgroup',name),'utf8').trim()]))
 writeFileSync(join(base,'git-host-installed-results.json'),JSON.stringify({version,elfSha256:sha,elfBytes:bytes.length,execPath:git(['--exec-path']),sharedLibraries:execFileSync('ldd',['/usr/bin/git'],{encoding:'utf8'}),consumerFixtureHead:head,processExe:executable,processExitCode:exitCode,resources},null,2)+'\n',{flag:'wx',mode:0o600})
