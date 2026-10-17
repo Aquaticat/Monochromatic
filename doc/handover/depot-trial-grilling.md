@@ -44,13 +44,20 @@ Account-wide billing access remains outside scope.
 
 Remaining independently verifiable work:
 
-- Reconcile the completed TOML primary checks, native shards, metadata observations and source failures.
-- Collect and reconcile the remaining logger terminal, artifacts and authored assertions.
-- Scope and file the repaired private macOS-verifier, timestamp-comparison, issue-readback,
+- Reconcile the completed TOML primary checks,
+  native shards,
+  metadata observations and source failures.
+- Collect and reconcile the remaining logger terminal,
+  artifacts and authored assertions.
+- Scope and file the repaired private macOS-verifier,
+  timestamp-comparison,
+  issue-readback,
   pricing-task quoting and JSONL-parsing construction findings.
 - Add actual-cohort evidence to existing source and transport issues without closing unresolved failures.
-- Finish all original and retry allocation intervals, storage limitations and overlap-aware critical paths.
-- Reconcile the complete 770-primary and 33-external registry, preserving blocked and unexecuted branches.
+- Finish all original and retry allocation intervals,
+  storage limitations and overlap-aware critical paths.
+- Reconcile the complete 770-primary and 33-external registry,
+  preserving blocked and unexecuted branches.
 - Await the already-asked reader-report outline answer before drafting that report.
 - Check the changed Markdown and JSON and inspect their actual rendered output.
 
