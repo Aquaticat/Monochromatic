@@ -31,6 +31,24 @@ The original session and eight runtime logs are copied privately to
 The `notify-send` SIGTERM warning concerns notification delivery and does not establish either review failure's cause.
 Next action: replay the exact captured requests and distinguish model ambiguity from transport failure.
 
+The unchanged mixed-group request reproduces `approve: 0.48`, `deny: 0.34`, `unknown: 0.18`
+in three live trials.
+Replacing only proposed `process.start.command` copies with the incumbent parser's structure
+returns `approve: 0.69`, `deny: 0.20`, `unknown: 0.11` in three live trials.
+Commit `ac6b8f5cde` applies that projection to proposed and historical process starts.
+The built projection regression was committed red and then passes,
+including original input retention and non-start process actions.
+Three unchanged replays of the Bash-only final request succeed at `approve: 0.88`.
+Its historical discarded transport cause remains unknown.
+
+Commit `065b2683d2` classifies actual fetch TypeError failures without borrowed text or causes
+and connects the existing original judgment retry owner.
+The native regression first fails with two dispatches instead of three;
+the fix completes an approved group without confirmation after the injected failure,
+and executes no member when the retried answer is denial.
+The expanded fallback matrix and type check pass before architecture consolidation.
+They require a final rerun against the consolidated release.
+
 ### Package size and architecture work authorized on 2026-10-17
 
 The user also requests a size investigation, implementation of a manageable architecture,
@@ -49,6 +67,67 @@ These are apparent filesystem sizes, separate from tracked-source complexity.
 
 The root `TCV` rule stays unchanged as explicitly requested.
 Concurrent unrelated edits remain outside this work.
+
+Completed source consolidation removes the obsolete extension pipeline,
+exclusive tests,
+heuristic catalogs,
+unused model and signal types,
+and the pass-through command-analysis wrapper.
+The canonical native interface now supplies generated runtime and declaration bridges,
+and the public entry reuses its native exports.
+Package-local architecture documents justify host integration,
+instruction collection,
+operation preparation,
+decision review and transport,
+confirmation,
+build lifecycle,
+and diagnostics.
+The previous README is retained as an explicitly historical package-local snapshot.
+
+Commit `9f025a0b64` reuses byte-identical files only in a new verified release before publication.
+It does not rewrite existing release paths.
+The disposable publication regression fails on the expected inode equality before the fix,
+then passes with distinct changed CLI files and a usable previous command.
+The latest build reuses 1,476 files totaling 11,714,237 bytes.
+Current installed release is `native-release-coZmcB`.
+
+The private scratch task `archive-historical-logs` is running in a two-CPU,
+2 GiB container.
+It selects 12,626 unchanged log files predating this boot,
+totaling 7,064,174,193 bytes,
+and writes verified gzip archives plus a source-path and SHA-256 manifest outside the package.
+No original is removed before decompressed content verification and manifest append.
+Root stray Git-directory entries are absent;
+the scoped ignored-file dry run lists only `.cache`, `dist`, and `node_modules`.
+No whole-directory cleanup is performed.
+
+Remaining verification and documentation work:
+
+- Finish archive verification and measure package and archive sizes separately.
+- Run types,
+  complete maintained lint,
+  bounded package units,
+  native interfaces,
+  projection,
+  budget,
+  preparation,
+  confirmation,
+  and fallback regressions after consolidation.
+- Run `replay-process` and `replay-bash` from the private scratch directory.
+  The prepared harness restores each exact original session prefix and uses a fixture command
+  to call original `Agent.continue` without adding a user message that changes visible-context selection.
+  It uses the configured installed command,
+  configured extensions and skills,
+  live Luna,
+  disposable state,
+  and the original two-member group.
+  This new harness has not yet run and must be debugged if its own assertions fail.
+- Audit complete transmitted payloads and run live prohibited-operation controls.
+- Update troubleshooting,
+  package verification lessons,
+  architecture evidence,
+  and the MiMo handoff;
+  render all changed Markdown before the final handoff.
 
 ### Completed advisory timing and operation projection on 2026-10-17
 
