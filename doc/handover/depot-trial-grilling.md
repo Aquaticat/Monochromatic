@@ -52,8 +52,26 @@ logger,
 native,
 and desktop immutable changes respectively.
 Current-policy Scorecard gate `39003200588` passed and denied analysis under its rolling budget;
-its exact budget diagnostic remains pending collection.
+the exact diagnostic was four analyses already executed in the last hour.
+It examined six historical runs using one GraphQL request and one point,
+with no REST history requests.
+The actual scanner path sets,
+job metadata,
+log hashes,
+Scorecard diagnostic,
+and failed TOML patch attempt are retained in
+`doc/audit/depot-final-recovery-2026-10-17.evidence.json`.
 Separate dispatch times must remain visible in whole-case accounting.
+
+Corrected Linux replay `xf4hhngdqg` passed all 1,460 eligible tests;
+one source-declared ignored test remains skipped.
+The native accounting owner is reconciling every emitted identity and ordinal with the final artifact.
+Missing desktop prerequisite selection is tracked separately as issue `#1108`.
+Logger host verification passed all six jobs in `39003180992`,
+including source/lock identities before and after execution.
+The frozen logger candidate now has 719 package checks and 19 external checks;
+the 708-check candidate count in this handover is its historical development state.
+The candidate still declares `completeGraph: false` while terminal reconciliation is unfinished.
 
 TOML attempt `gfklnntq0x` failed in Depot's injected local-patch step in all jobs,
 before historical source setup.
@@ -63,7 +81,10 @@ The retry uses the clean pushed branch and avoids that patch-injection boundary.
 
 The VM diagnostic owner is collecting `22b5683gx8` and its retained daemon logs.
 The exact log identifies virtiofsd's failed user-namespace mapping;
-the deciding identity mismatch and supported recovery remain under investigation.
+the runner's effective GID differs from its passwd primary GID.
+Recovery `vq299blkbw` has crossed the affected final Ubuntu preparation boundary,
+with successful preparation and destruction consumers.
+Its Windows preparation and final evidence collection remain active.
 The logger owner is completing the frozen graph's package and external adapters.
 The native accounting owner is reconciling Windows/macOS results and distinct failure issues.
 Account access remains excluded.
