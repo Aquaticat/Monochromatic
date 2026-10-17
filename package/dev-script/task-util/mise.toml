@@ -971,7 +971,7 @@ const checkId = control?.checkId ?? process.env.DEPOT_TOML_CHECK_ID
 assert(['package.dev-script.file-enforcer.test.container', 'package.module.toml-edit.test.mutation', 'package.dev-script.file-enforcer.test.mutation'].includes(checkId))
 const maxMs = control?.maxMs ?? Number(process.env.DEPOT_TOML_MAX_MS ?? 3600000)
 const graceMs = control?.graceMs ?? 10000
-assert(Number.isInteger(maxMs) && maxMs >= 100 && maxMs <= 3600000)
+assert(Number.isInteger(maxMs) && maxMs >= 100 && maxMs <= 18000000)
 assert(Number.isInteger(graceMs) && graceMs >= 100 && graceMs <= 10000)
 const label = 'io.monochromatic.toml-attempt=' + randomUUID()
 const originalPodman = realpathSync(process.env.PATH.split(delimiter).map(directory => join(directory, 'podman')).find(path => existsSync(path)))

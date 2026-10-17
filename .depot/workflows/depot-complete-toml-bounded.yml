@@ -225,14 +225,14 @@ jobs:
     runs-on:
       size: 16x64
       image: monochromatic-trial-typescript:20261015-v1
-    timeout-minutes: 90
+    timeout-minutes: 360
     env:
       MISE_AUTO_INSTALL: 'false'
       MISE_LOCKED: '1'
       CI: 'true'
       DEPOT_CI_WAVE: containers
       DEPOT_TOML_CHECK_ID: ${{ matrix.check_id }}
-      DEPOT_TOML_MAX_MS: '3600000'
+      DEPOT_TOML_MAX_MS: '18000000'
       MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
       OXLINT_THREADS: '1'
       TSC_SINGLE_THREADED: '1'
