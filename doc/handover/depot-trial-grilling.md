@@ -177,12 +177,30 @@ Next actions:
   Every returned repository is `Aquaticats/Monochromatic`.
   The CLI paginates until the provider's next-page token is empty;
   the requested limit of 1000 was not reached.
-  Reconcile actual attempts and declared resources before pricing those records.
+  The accounting checkpoint joins all attempt metrics and retains verified or provisional resource bindings.
   The oldest indexed record has no workflow,
   so a run record alone proves no allocated CI job.
 - File or add scoped evidence for the repaired private evidence-construction findings.
 - Check and render the updated documents and inspect their actual output.
-- Await the existing reader-report outline answer before drafting that report.
+- The user approved the proposed reader-report sections:
+  decision and acceptance limits;
+  immutable workloads and scope;
+  gate and artifact-consumer results;
+  reliability and source failures;
+  provider allocation,
+  cost and critical paths;
+  adoption conditions and unresolved evidence.
+  Draft that evaluation from the retained evidence without requesting the outline again.
+
+The native desktop inventory has 114 authored cases,
+108 observed original cases and six unexecuted originals.
+Its original outcomes are 106 passes,
+one failure and one authored skip.
+The separate synthetic abort makes 109 total outcome records;
+it does not replace any missing original assertion.
+The desktop-case inventory similarly has 112 observed originals plus one synthetic abort,
+or 113 outcome records for 118 authored cases with six unexecuted originals.
+These counts were rechecked directly against the retained authored inventories and outcome arrays.
 
 ### Final guard and unchanged macOS recovery checkpoint
 
