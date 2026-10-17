@@ -1,6 +1,6 @@
 /** Exercise actual child preparation and terminal capture through the native Codemode consumer. @module */
 import assert from 'node:assert/strict';
-import {wait} from '@monochromatic-dev/module-async-time/ts';
+import {setTimeout as wait} from 'node:timers/promises';
 import {readDomainFixtureSettings} from '../dist/native/contract/integration/native-batch/domain-fixture-settings.mjs';
 import {createDomainFixtureEnvironment} from '../dist/native/contract/integration/native-batch/domain-fixture-environment.mjs';
 import {createDomainFixtureRuntime} from '../dist/native/contract/integration/native-batch/domain-fixture-runtime.mjs';

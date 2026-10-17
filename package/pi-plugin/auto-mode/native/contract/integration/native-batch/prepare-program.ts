@@ -147,7 +147,7 @@ export async function prepareProgram({
      };\n`
     + `import {createReachedRunnerClass} from "./program-runner.mjs";\n`
     + `import {dispatchPreparedBatch} from ${
-     helperUrl('../../collector/result-program-sdk-copy-guarded/input/child-prepared-dispatch.mjs')
+     helperUrl('../../collector/program-rule-batch-sdk-copy-v2/input/prepared-dispatch.mjs')
      };\n`
     + `export const NestedToolCallRunner=createReachedRunnerClass({NestedToolCallRunner:NativeRunner,NestedCallRecorder,dispatchPreparedBatch});\n`;
   /**

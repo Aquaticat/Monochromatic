@@ -136,6 +136,8 @@
     {
       "original": "collector/result-program-sdk-copy-guarded/stage-private/child-prepared-dispatch.mjs",
       "maintained": "collector/result-program-sdk-copy-guarded/input/child-prepared-dispatch.mjs",
+      "currentMaintained": "collector/program-rule-batch-sdk-copy-v2/input/prepared-dispatch.mjs",
+      "movedOn": "2026-10-17",
       "sha256": "4e8f79a98e83d71707ec76e1dcc1b118065ed6bbfc189290ec8687e85e4c677c",
       "origin": "previous-generated-input",
       "relocatedLiterals": 2
