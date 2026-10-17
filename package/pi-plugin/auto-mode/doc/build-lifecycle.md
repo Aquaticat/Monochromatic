@@ -44,7 +44,9 @@ The latest checked build shares 1,479 files totaling 11,813,141 bytes.
 
 Overwriting the active directory would invalidate running module identities.
 Editing installed upstream output would detach source qualification from deployment.
-Sharing writable generated files between releases would let a later build corrupt an active session.
+Rewriting a file shared with an earlier release could corrupt an active session.
+Generation completes in a fresh release before identical files are shared;
+later builds do not rewrite those paths.
 Any deduplication must preserve independent immutable module paths and generated import identity.
 Sequential file comparison bounds hashing and file-descriptor use.
 Missing previous files are ordinary non-reuse cases;

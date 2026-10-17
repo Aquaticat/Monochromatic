@@ -156,6 +156,41 @@ its receipt is required before calling either reported interaction fixed.
 The mocked configured replay `pi-hyper-rpc-allow-tN2zEc` exits `137` without an established cause
 and does not count as passing verification.
 
+The configured live replay now passes against `native-release-J4fNNL`.
+Fixture `pi-hyper-rpc-allow-henGUH` completes all 16 original tool calls,
+including `process.output` and both reported groups,
+without confirmation.
+All 17 actual Luna requests pass the payload audit with no raw structured command fields,
+thinking,
+or signatures;
+the audit's authored positive controls detect excluded fields and preserve literal text.
+Prohibition fixture `pi-hyper-rpc-allow-vDIezK` blocks both process/Bash members without confirmation
+and receives three actual Luna responses.
+The package documents and troubleshooting/frontier render through CommonMark,
+and all local documentation links resolve across the 18 rendered files.
+These proofs complete the reported permission-flow repair at this release;
+the structural redesign,
+final lint handoff,
+and release/storage reduction remain open.
+
+The emitted runtime graph now follows generated imports,
+absolute file URLs,
+loader replacements,
+and type erasure.
+Its `native-release-J4fNNL` baseline has 1,499 regular files totaling 12,743,268 bytes.
+The conservative graph reaches 781 files totaling 5,958,591 bytes.
+It does not prove all remaining files are removable:
+five computed imports and runtime assets require explicit accounting.
+The source and compiled qualified SDK trees are both currently copied into each release.
+Next build change: compile from the verified checkout directly,
+retain emitted runtime/assets and qualification metadata,
+and compare every qualified SDK runtime file against this baseline before consumer verification.
+
+The child dispatcher cannot be replaced with a thin phase adapter alone.
+`program-runner-execution-callbacks.ts` invokes the original child slot around the whole native call;
+its invocation lifetime currently encloses both preparation and execution.
+The private-group consolidation must retain that lifetime through finalization when removing its token protocol.
+
 A provider-payload audit finds a separate missed shell boundary:
 known process result metadata and `ad-process:notification` details retain raw `command` strings.
 The new regression was committed red;
