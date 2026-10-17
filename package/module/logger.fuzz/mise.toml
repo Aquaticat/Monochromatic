@@ -300,7 +300,12 @@ if (group === 'generated') {
     execFileSync('mise', ['run', 'prepare:pnpm:install', '--', '--frozen-lockfile'], { cwd: fixture, env, stdio: 'inherit' })
     const args = check.task ? ['run', check.task] : ['run', check.tasks[0]]
     const first = run({ id: check.id, args, cwd: fixture, env })
-    if (check.tasks?.length > 1) run({ id: `${check.id}.declared`, args: ['run', check.tasks[1]], cwd: fixture, env })
+    if (check.tasks?.length > 1) {
+      const declared = run({ id: `${check.id}.declared`, args: ['run', check.tasks[1]], cwd: fixture, env })
+      declared.parentCheckId = check.id
+      first.requiredDeclaredTaskPassed = declared.status === 'passed'
+      if (declared.status !== 'passed') first.status = 'failed'
+    }
     const diff = execFileSync('git', ['diff', '--binary'], { cwd: fixture, maxBuffer: 32 * 1024 * 1024 })
     writeFileSync(join(directory, `${check.id}.patch`), diff)
     const untracked = execFileSync('git', ['ls-files', '--others', '--exclude-standard'], { cwd: fixture, encoding: 'utf8' }).trim()
