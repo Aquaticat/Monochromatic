@@ -2,6 +2,30 @@
 
 ## Completed trial execution and remaining acceptance gaps
 
+The user-approved reader report is complete:
+[Depot complete CI trial evaluation](../audit/tech-depot-complete-ci-trial-vet-2026-10-17.md).
+It uses the approved sections and makes no adoption recommendation.
+Its [final gate and interval registry](../audit/depot-final-gates-and-intervals-2026-10-17.evidence.json)
+joins all 770 primary gates and 33 external gates to explicit outcomes.
+The primary totals are 654 passes,
+115 failures and one prerequisite-blocked skip.
+The coherent GitHub accounting includes 21 executed job intervals and four skipped analysis jobs,
+with the native macOS repeat counted and the carried-forward Windows alias excluded.
+The common request reaches the final provider terminal after 5851263 milliseconds.
+This is an observed terminal frontier,
+not successful complete-graph latency or a reconstructed dependency critical path.
+
+The report and handover pass targeted Markdown lint and actual CommonMark rendering.
+An independent checker verifies the frozen gate identity sets,
+the provider interval sums,
+the alias exclusion and every internal report link.
+The rendered report was read in full.
+The repaired public-output digest schema is tracked in closed issue
+[#1765](https://github.com/Aquaticats/Monochromatic/issues/1765)
+with exact body readback.
+Its resolution applies to the 105 retained primary failure outputs,
+not an unperformed audit of older artifacts.
+
 ### Logger terminal reconciliation checkpoint
 
 The [logger cohort evidence](../audit/depot-coherent-logger-2026-10-17.evidence.json)
@@ -157,7 +181,7 @@ The reviewed comments for `#1160`,
 The separate physical-shard retention issue `#1434` remains open.
 The older conf red baseline in `#1156` is preserved without a fix claim.
 
-Next actions:
+Acceptance gaps and follow-up boundaries:
 
 - Logger credential issue `#1180`,
   rebuilt tracked-output issue `#1181`,
@@ -182,15 +206,13 @@ Next actions:
   so a run record alone proves no allocated CI job.
 - File or add scoped evidence for the repaired private evidence-construction findings.
 - Check and render the updated documents and inspect their actual output.
-- The user approved the proposed reader-report sections:
-  decision and acceptance limits;
-  immutable workloads and scope;
-  gate and artifact-consumer results;
-  reliability and source failures;
-  provider allocation,
-  cost and critical paths;
-  adoption conditions and unresolved evidence.
-  Draft that evaluation from the retained evidence without requesting the outline again.
+- The reader report is written and verified in the approved structure.
+  Missing assertions,
+  physical shard receipts,
+  complete provenance and billing remain explicit acceptance conditions.
+  The report does not authorize changing the frozen cohort,
+  retrying resource-consuming jobs,
+  source fixes or adoption.
 
 The native desktop inventory has 114 authored cases,
 108 observed original cases and six unexecuted originals.
