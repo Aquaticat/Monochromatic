@@ -202,6 +202,38 @@ A `cat` positive control must echo the exact payload before compositor queries r
 The complete desktop replay is under verification;
 the empty output is not evidence that the compositor cannot publish a display.
 
+## Desktop application cannot create a thread
+
+Runtime-log recovery `km2xkxwpjs` at desktop source `3434eaa455` and `63r0kzrsmn` at native source `cb95cf6d78`
+both retain the first wide session's `wide.log`.
+The application panics in Rust's `std::thread::spawn` with:
+
+```text
+failed to spawn thread: Os { code: 11, kind: WouldBlock, message: "Resource temporarily unavailable" }
+```
+
+The log then reports hosted-client exit code 101.
+Preceding EGL diagnostics did not stop startup:
+the application initialized its analysis,
+watch,
+and measurement paths before the panic.
+Those EGL messages do not establish the panic's cause.
+
+The trial's private systemd container declares two CPUs,
+2 GiB memory,
+and a 512-task PID limit.
+The failing attempts did not retain the live cgroup counters or process limits,
+so the PID-limit explanation is not yet proven.
+The runtime-only diagnostic routes retain `pids.current`,
+`pids.max`,
+`pids.events`,
+`memory.events`,
+and `/proc/self/limits` before and after the actual consumer task.
+The probe runs inside the disposable container and traverses bounded cgroup scope.
+Later configured sessions remain unexecuted when the first session fails.
+The `runtimeCompleted` field means the invocation and cleanup returned,
+not that every configured session passed or executed.
+
 ## Verification catalog
 
 - Passed:

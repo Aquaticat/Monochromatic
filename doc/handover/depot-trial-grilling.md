@@ -63,6 +63,31 @@ and failed TOML patch attempt are retained in
 `doc/audit/depot-final-recovery-2026-10-17.evidence.json`.
 Separate dispatch times must remain visible in whole-case accounting.
 
+After adapter development is reconciled,
+the queue still requires a coherent replay from frozen complete manifests.
+The separate development requests cannot supply whole-pipeline elapsed time.
+The logger owner is preparing a combined package/external workflow and explicit routing for all external checks.
+The native owner is preparing the native Windows/macOS,
+desktop Windows,
+and Alpine routes with source provenance retained.
+Root owns shared dispatch timestamps,
+the Depot native feature and Android producers,
+the headful Android consumer,
+and final cost reconciliation.
+No final coherent replay has been dispatched yet.
+
+Runtime-log recoveries `km2xkxwpjs` and `63r0kzrsmn` failed in their first wide sessions.
+Both logs retain Rust's thread-creation panic with OS error 11,
+`Resource temporarily unavailable`.
+The declared 512-task container limit is a hypothesis until live cgroup evidence is retained.
+Runtime-only diagnostic routes on `trial/depot-final-recovery-20261017` add those counters;
+root must verify,
+push,
+confirm the remote SHA and clean worktree,
+then dispatch them.
+Later configured sessions remain unexecuted.
+The diagnosis lives in `doc/troubleshooting/depot-historical-checkout-bootstrap.md`.
+
 Corrected Linux replay `xf4hhngdqg` passed all 1,460 eligible tests;
 one source-declared ignored test remains skipped.
 The native accounting owner is reconciling every emitted identity and ordinal with the final artifact.
