@@ -1,0 +1,275 @@
+{
+  "schemaVersion": 1,
+  "caseId": "logger",
+  "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+  "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+  "partitionKind": "file-and-configured-project",
+  "fullCartesianUnionVerified": true,
+  "groups": [
+    {
+      "group": "browser",
+      "checkId": "root.browser",
+      "task": "//:test:browser",
+      "files": [
+        "package/module/fs-path/src/opfs-root-discovery.browser.test.ts",
+        "package/module/logger.fuzz/src/browser/properties.browser.test.ts",
+        "package/module/logger/src/sink/indexed-db.browser.test.ts",
+        "package/module/logger/src/sink/local-storage.browser.test.ts",
+        "package/module/logger/src/sink/opfs.browser.test.ts",
+        "package/module/logger/src/sink/session-storage.browser.test.ts",
+        "package/module/test/src/sinon.browser.test.ts",
+        "package/webapp-productivity/wc/src/page.browser.test.ts"
+      ],
+      "projects": [
+        "chromium",
+        "firefox",
+        "webkit"
+      ],
+      "configPath": "playwright.browser.config.ts",
+      "configSha256": "22481714fd67d226521833e84b99baa0fe51922d3e2d9c1633ed2d4ae441118f"
+    },
+    {
+      "group": "e2e",
+      "checkId": "root.e2e",
+      "task": "//:test:e2e",
+      "files": [
+        "package/module/dom/src/duplicateElement.e2e.test.ts",
+        "package/module/dom/src/prompt.e2e.test.ts",
+        "package/module/dom/src/redirectingTo.e2e.test.ts",
+        "package/module/dom/src/set/cssFromParam.e2e.test.ts"
+      ],
+      "projects": [
+        "chromium",
+        "firefox"
+      ],
+      "configPath": "playwright.e2e.config.ts",
+      "configSha256": "6b35988518bdae0839af449415228647348ba04322a1c3bc4cf6a255f3a70b6a"
+    }
+  ],
+  "partitions": [
+    {
+      "id": "browser.chromium.1",
+      "group": "browser",
+      "checkId": "root.browser",
+      "file": "package/module/fs-path/src/opfs-root-discovery.browser.test.ts",
+      "project": "chromium"
+    },
+    {
+      "id": "browser.chromium.2",
+      "group": "browser",
+      "checkId": "root.browser",
+      "file": "package/module/logger.fuzz/src/browser/properties.browser.test.ts",
+      "project": "chromium"
+    },
+    {
+      "id": "browser.chromium.3",
+      "group": "browser",
+      "checkId": "root.browser",
+      "file": "package/module/logger/src/sink/indexed-db.browser.test.ts",
+      "project": "chromium"
+    },
+    {
+      "id": "browser.chromium.4",
+      "group": "browser",
+      "checkId": "root.browser",
+      "file": "package/module/logger/src/sink/local-storage.browser.test.ts",
+      "project": "chromium"
+    },
+    {
+      "id": "browser.chromium.5",
+      "group": "browser",
+      "checkId": "root.browser",
+      "file": "package/module/logger/src/sink/opfs.browser.test.ts",
+      "project": "chromium"
+    },
+    {
+      "id": "browser.chromium.6",
+      "group": "browser",
+      "checkId": "root.browser",
+      "file": "package/module/logger/src/sink/session-storage.browser.test.ts",
+      "project": "chromium"
+    },
+    {
+      "id": "browser.chromium.7",
+      "group": "browser",
+      "checkId": "root.browser",
+      "file": "package/module/test/src/sinon.browser.test.ts",
+      "project": "chromium"
+    },
+    {
+      "id": "browser.chromium.8",
+      "group": "browser",
+      "checkId": "root.browser",
+      "file": "package/webapp-productivity/wc/src/page.browser.test.ts",
+      "project": "chromium"
+    },
+    {
+      "id": "browser.firefox.1",
+      "group": "browser",
+      "checkId": "root.browser",
+      "file": "package/module/fs-path/src/opfs-root-discovery.browser.test.ts",
+      "project": "firefox"
+    },
+    {
+      "id": "browser.firefox.2",
+      "group": "browser",
+      "checkId": "root.browser",
+      "file": "package/module/logger.fuzz/src/browser/properties.browser.test.ts",
+      "project": "firefox"
+    },
+    {
+      "id": "browser.firefox.3",
+      "group": "browser",
+      "checkId": "root.browser",
+      "file": "package/module/logger/src/sink/indexed-db.browser.test.ts",
+      "project": "firefox"
+    },
+    {
+      "id": "browser.firefox.4",
+      "group": "browser",
+      "checkId": "root.browser",
+      "file": "package/module/logger/src/sink/local-storage.browser.test.ts",
+      "project": "firefox"
+    },
+    {
+      "id": "browser.firefox.5",
+      "group": "browser",
+      "checkId": "root.browser",
+      "file": "package/module/logger/src/sink/opfs.browser.test.ts",
+      "project": "firefox"
+    },
+    {
+      "id": "browser.firefox.6",
+      "group": "browser",
+      "checkId": "root.browser",
+      "file": "package/module/logger/src/sink/session-storage.browser.test.ts",
+      "project": "firefox"
+    },
+    {
+      "id": "browser.firefox.7",
+      "group": "browser",
+      "checkId": "root.browser",
+      "file": "package/module/test/src/sinon.browser.test.ts",
+      "project": "firefox"
+    },
+    {
+      "id": "browser.firefox.8",
+      "group": "browser",
+      "checkId": "root.browser",
+      "file": "package/webapp-productivity/wc/src/page.browser.test.ts",
+      "project": "firefox"
+    },
+    {
+      "id": "browser.webkit.1",
+      "group": "browser",
+      "checkId": "root.browser",
+      "file": "package/module/fs-path/src/opfs-root-discovery.browser.test.ts",
+      "project": "webkit"
+    },
+    {
+      "id": "browser.webkit.2",
+      "group": "browser",
+      "checkId": "root.browser",
+      "file": "package/module/logger.fuzz/src/browser/properties.browser.test.ts",
+      "project": "webkit"
+    },
+    {
+      "id": "browser.webkit.3",
+      "group": "browser",
+      "checkId": "root.browser",
+      "file": "package/module/logger/src/sink/indexed-db.browser.test.ts",
+      "project": "webkit"
+    },
+    {
+      "id": "browser.webkit.4",
+      "group": "browser",
+      "checkId": "root.browser",
+      "file": "package/module/logger/src/sink/local-storage.browser.test.ts",
+      "project": "webkit"
+    },
+    {
+      "id": "browser.webkit.5",
+      "group": "browser",
+      "checkId": "root.browser",
+      "file": "package/module/logger/src/sink/opfs.browser.test.ts",
+      "project": "webkit"
+    },
+    {
+      "id": "browser.webkit.6",
+      "group": "browser",
+      "checkId": "root.browser",
+      "file": "package/module/logger/src/sink/session-storage.browser.test.ts",
+      "project": "webkit"
+    },
+    {
+      "id": "browser.webkit.7",
+      "group": "browser",
+      "checkId": "root.browser",
+      "file": "package/module/test/src/sinon.browser.test.ts",
+      "project": "webkit"
+    },
+    {
+      "id": "browser.webkit.8",
+      "group": "browser",
+      "checkId": "root.browser",
+      "file": "package/webapp-productivity/wc/src/page.browser.test.ts",
+      "project": "webkit"
+    },
+    {
+      "id": "e2e.chromium.1",
+      "group": "e2e",
+      "checkId": "root.e2e",
+      "file": "package/module/dom/src/duplicateElement.e2e.test.ts",
+      "project": "chromium"
+    },
+    {
+      "id": "e2e.chromium.2",
+      "group": "e2e",
+      "checkId": "root.e2e",
+      "file": "package/module/dom/src/prompt.e2e.test.ts",
+      "project": "chromium"
+    },
+    {
+      "id": "e2e.chromium.3",
+      "group": "e2e",
+      "checkId": "root.e2e",
+      "file": "package/module/dom/src/redirectingTo.e2e.test.ts",
+      "project": "chromium"
+    },
+    {
+      "id": "e2e.chromium.4",
+      "group": "e2e",
+      "checkId": "root.e2e",
+      "file": "package/module/dom/src/set/cssFromParam.e2e.test.ts",
+      "project": "chromium"
+    },
+    {
+      "id": "e2e.firefox.1",
+      "group": "e2e",
+      "checkId": "root.e2e",
+      "file": "package/module/dom/src/duplicateElement.e2e.test.ts",
+      "project": "firefox"
+    },
+    {
+      "id": "e2e.firefox.2",
+      "group": "e2e",
+      "checkId": "root.e2e",
+      "file": "package/module/dom/src/prompt.e2e.test.ts",
+      "project": "firefox"
+    },
+    {
+      "id": "e2e.firefox.3",
+      "group": "e2e",
+      "checkId": "root.e2e",
+      "file": "package/module/dom/src/redirectingTo.e2e.test.ts",
+      "project": "firefox"
+    },
+    {
+      "id": "e2e.firefox.4",
+      "group": "e2e",
+      "checkId": "root.e2e",
+      "file": "package/module/dom/src/set/cssFromParam.e2e.test.ts",
+      "project": "firefox"
+    }
+  ]
+}

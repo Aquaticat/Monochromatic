@@ -1,0 +1,163 @@
+name: depot-complete-logger-browser-full
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  external:
+    name: Logger browser partition ${{ matrix.partition }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - partition: browser.chromium.1
+          group: browser
+        - partition: browser.chromium.2
+          group: browser
+        - partition: browser.chromium.3
+          group: browser
+        - partition: browser.chromium.4
+          group: browser
+        - partition: browser.chromium.5
+          group: browser
+        - partition: browser.chromium.6
+          group: browser
+        - partition: browser.chromium.7
+          group: browser
+        - partition: browser.chromium.8
+          group: browser
+        - partition: browser.firefox.1
+          group: browser
+        - partition: browser.firefox.2
+          group: browser
+        - partition: browser.firefox.3
+          group: browser
+        - partition: browser.firefox.4
+          group: browser
+        - partition: browser.firefox.5
+          group: browser
+        - partition: browser.firefox.6
+          group: browser
+        - partition: browser.firefox.7
+          group: browser
+        - partition: browser.firefox.8
+          group: browser
+        - partition: browser.webkit.1
+          group: browser
+        - partition: browser.webkit.2
+          group: browser
+        - partition: browser.webkit.3
+          group: browser
+        - partition: browser.webkit.4
+          group: browser
+        - partition: browser.webkit.5
+          group: browser
+        - partition: browser.webkit.6
+          group: browser
+        - partition: browser.webkit.7
+          group: browser
+        - partition: browser.webkit.8
+          group: browser
+        - partition: e2e.chromium.1
+          group: e2e
+        - partition: e2e.chromium.2
+          group: e2e
+        - partition: e2e.chromium.3
+          group: e2e
+        - partition: e2e.chromium.4
+          group: e2e
+        - partition: e2e.firefox.1
+          group: e2e
+        - partition: e2e.firefox.2
+          group: e2e
+        - partition: e2e.firefox.3
+          group: e2e
+        - partition: e2e.firefox.4
+          group: e2e
+    runs-on:
+      size: 2x8
+      image: monochromatic-trial-native-bases:20261016-v1
+    timeout-minutes: 30
+    env:
+      MISE_AUTO_INSTALL: 'false'
+      MISE_LOCKED: '1'
+      CI: 'true'
+      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+      DEPOT_CI_CASE: logger
+      DEPOT_CI_WORKERS: '1'
+      OXLINT_THREADS: '1'
+      TSC_SINGLE_THREADED: '1'
+      DEPOT_CI_WAVE: native-desktop
+      DEPOT_LOGGER_EXTERNAL: ${{ matrix.group }}
+      DEPOT_LOGGER_BROWSER_PARTITION: ${{ matrix.partition }}
+      DEPOT_CI_CPUS: '2'
+      DEPOT_CI_MEMORY_GIB: '8'
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        path: harness
+        persist-credentials: false
+        clean: false
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        path: source
+        ref: ef01490f5e960f8ca0b424c12242caeb3c5a2b5e
+        fetch-depth: 2
+        persist-credentials: false
+        clean: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Retain the preparation bootstrap already exercised by the TOML wave.
+        version: 2026.10.9
+        working_directory: harness
+        install: false
+        env: false
+        export_path: false
+        cache: false
+    - name: Install exact lockfile tool versions outside source
+      working-directory: harness
+      env:
+        MISE_LOCKED: '0'
+      run: mise run //package/dev-script/task-util:trial:depot:ci:native-tools
+    - name: Verify selected source tools and frozen dependency inputs
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:ci:native-tool-gate
+    - name: Install exact-head frozen dependencies
+      working-directory: source
+      run: mise run prepare:pnpm:install -- --frozen-lockfile
+    - name: Prepare locked executables and offline Cargo inputs
+      working-directory: harness
+      continue-on-error: true
+      run: mise run //package/module/logger.fuzz:trial:depot:prerequisites
+    - name: Activate bounded container execution
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:ci:containers
+    - name: Select browsers matching the immutable dependency lockfile
+      if: matrix.group == 'browser' || matrix.group == 'e2e'
+      working-directory: harness
+      run: mise run //package/module/logger.fuzz:trial:depot:browser-image
+    - name: Execute logger external checks
+      working-directory: harness
+      run: mise run //package/module/logger.fuzz:trial:depot:external
+    - name: Preserve native check evidence and APKs
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: logger-browser-${{ matrix.partition }}-evidence
+        path: |
+          ~/temp/agent/depot-complete-ci/*-results.json
+          ~/temp/agent/depot-complete-ci/check-logs/*.log
+          ~/temp/agent/depot-complete-ci/native-tools.json
+          ~/temp/agent/depot-complete-ci/prepare-*.log
+          ~/temp/agent/depot-complete-ci/*.patch
+          ~/temp/agent/depot-complete-ci/desktop-e2e/
+          ~/temp/agent/depot-complete-ci/desktop-runtime-logs/
+          source/playwright-report/
+          source/test-results/
+          source/.cache/depot-browser/
+          ~/temp/agent/depot-complete-ci/container-bin/image-metadata-*/
+
+        if-no-files-found: ignore
