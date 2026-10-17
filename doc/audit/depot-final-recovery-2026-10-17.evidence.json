@@ -37541,7 +37541,18 @@
       },
       "existingDiagnosis": "doc/troubleshooting/github-actions-job-env-runner-context.md",
       "actualCommonPublished": false,
-      "actualFinalProviderAcceptance": false
+      "actualFinalProviderAcceptance": false,
+      "issue": {
+        "number": 1164,
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1164",
+        "title": "Depot logger host workflow uses runner context in the job environment",
+        "state": "CLOSED",
+        "bodySha256": "c45af98ceac416eaa143da99f043f8398b551b691017b1db99daeac08dc11d94",
+        "bodyVerified": true,
+        "closedStateVerified": true,
+        "actualAcceptedParserRun": "39023040772",
+        "actualFinalProviderAcceptance": false
+      }
     }
   }
 }
