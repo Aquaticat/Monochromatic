@@ -125,6 +125,7 @@ jobs:
         COHORT_REQUESTED_AT: ${{ inputs.requested_at }}
       run: mise run //package/dev-script/task-util:trial:depot:coherent:provenance
     - name: Build the Alpine images
+      id: images
       run: |
         set -euo pipefail
         podman --version
@@ -149,6 +150,7 @@ jobs:
         echo "toolchain: ${rustc_version} packages ${packages}"
 
     - name: Prepare the cache directories
+      id: cache-dirs
       run: mkdir --parents "$CI_CACHE/cargo" "$CI_CACHE/target-app" "$CI_CACHE/target-nws" "$CI_CACHE/scratch"
 
     - name: Restore the cargo and target caches
@@ -172,6 +174,8 @@ jobs:
         du --summarize --human-readable "$CI_CACHE/cargo" "$CI_CACHE/target-app" "$CI_CACHE/target-nws"
 
     - name: Unit tests (cargo nextest)
+      id: tests
+      if: ${{ !cancelled() && steps.images.outcome == 'success' && steps.cache-dirs.outcome == 'success' }}
       run: |
         set -euo pipefail
         # The source is mounted read-only; nextest writes its store under the crate's target directory, so that one
@@ -190,6 +194,8 @@ jobs:
           cargo nextest run --locked --features alsa-fallback --no-fail-fast
 
     - name: Build the app
+      id: app-build
+      if: ${{ !cancelled() && steps.images.outcome == 'success' && steps.cache-dirs.outcome == 'success' }}
       run: |
         set -euo pipefail
         podman run --rm \
@@ -205,6 +211,8 @@ jobs:
           cargo build --locked --features alsa-fallback
 
     - name: Build the nested compositor from this repository
+      id: compositor-build
+      if: ${{ !cancelled() && steps.images.outcome == 'success' && steps.cache-dirs.outcome == 'success' }}
       run: |
         set -euo pipefail
         # The package's own release profile is fat LTO with one codegen unit, which is slow on 4 vCPUs; the smoke
@@ -222,6 +230,8 @@ jobs:
           cargo build --release --locked
 
     - name: Stage the binaries for the smoke test
+      id: stage
+      if: ${{ !cancelled() && steps.app-build.outcome == 'success' && steps.compositor-build.outcome == 'success' }}
       run: |
         set -euo pipefail
         # The smoke test runs from copies outside the cache directories, because the next step trims the
@@ -262,6 +272,7 @@ jobs:
         key: music-player-alpine-${{ runner.arch }}-${{ steps.toolchain.outputs.key }}-${{ hashFiles('package/music-player/desktop-app/Cargo.lock', 'package/cli/nested-wayland-session/Cargo.lock') }}
 
     - name: Smoke test (app inside the nested compositor)
+      if: ${{ !cancelled() && steps.stage.outcome == 'success' }}
       run: |
         set -euo pipefail
         mkdir --parents "$RUNNER_TEMP/smoke-out"
