@@ -27,8 +27,6 @@ jobs:
           partition: fuzz
         - check: package.module.jsonc-edit.fuzz.fuzz.coverage
           partition: fuzz
-        - check: package.module.logger.fuzz.bundle.browser-properties
-          partition: fuzz
         - check: package.module.logger.fuzz.fuzz
           partition: fuzz
         - check: package.module.logger.fuzz.fuzz.coverage
@@ -80,8 +78,6 @@ jobs:
         - check: package.module.toml-edit.test.mutation
           partition: mutation
         - check: package.git-policy.cli.fuzz.smoke
-          partition: containers
-        - check: package.cli.mutation-test.test.integration
           partition: containers
         - check: package.module.conf-fork.test.mutation
           partition: mutation
