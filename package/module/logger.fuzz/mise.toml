@@ -265,7 +265,10 @@ const groups = {
   desktop: ['artifact.music-desktop-e2e'],
 }
 assert(Object.hasOwn(groups, group), 'Unknown logger external group')
-const selected = groups[group].map(id => manifest.externalChecks.find(check => check.id === id))
+const requested = process.env.DEPOT_LOGGER_EXTERNAL_IDS ? JSON.parse(process.env.DEPOT_LOGGER_EXTERNAL_IDS) : groups[group]
+assert(Array.isArray(requested) && requested.length > 0 && new Set(requested).size === requested.length)
+assert(requested.every(id => groups[group].includes(id)), 'External recovery must select known check identities')
+const selected = requested.map(id => manifest.externalChecks.find(check => check.id === id))
 assert(selected.every(Boolean))
 const directory = join(homedir(), 'temp/agent/depot-complete-ci')
 mkdirSync(join(directory, 'check-logs'), { recursive: true, mode: 0o700 })
