@@ -406,19 +406,26 @@ The [TOML audit](../audit/depot-toml-reconciliation-2026-10-17.md)
 retains original run `p9r4xl6n12` and terminal development run `p6vm5s00w6`.
 The latter emitted 3062 distinct mutant IDs across 9037 attempts,
 all infrastructure-derived `runtimeError` before assertions.
-The full native report, shard identities, artifacts, provider usage, and cleanup are retained.
+The full native report,
+shard identities,
+artifacts,
+provider usage,
+and cleanup are retained.
 File-enforcer mutation repeats `#1068`;
 the completed container failure `#1070` remains separate.
 Timeout/independent-check coverage issue `#1113` remains open.
 Source lint issues `#1111` and `#1112` remain distinct from historical panic `#1066`.
 
 Actual bounded pilot `0j8zhbn9n0` completed the unchanged source command with exit zero,
-a green baseline, and one source-terminal `compileError` mutant.
+a green baseline,
+and one source-terminal `compileError` mutant.
 No mutant assertion execution or full-campaign credit is claimed.
 Its provider job failed metadata collection with `null !== 0`;
 the old harness did not retain the underlying operation details.
 The complete owned work-volume and generated-metadata adapter crossed both consumer boundaries.
-Exact receipts, artifact hashes, the 167222-millisecond provider interval,
+Exact receipts,
+artifact hashes,
+the 167222-millisecond provider interval,
 and verified cleanup are retained.
 
 Actual bounded receipt repeat `mj128hqwv0` is dispatched on
@@ -427,11 +434,18 @@ Terminal collection and all 20 artifact member hashes are verified.
 The exact observer list operation exceeded eight seconds with `SIGKILL` and `ETIMEDOUT`,
 after three stdout bytes and zero stderr bytes.
 Source command and eight-second metadata budgets are unchanged;
-the harness now retains exact command, signal, error code, and output bytes before assertions.
+the harness now retains exact command,
+signal,
+error code,
+and output bytes before assertions.
 The authorized next action is an isolated metadata-only deadline/forwarding trial,
-rejection controls, and another bounded actual consumer.
-Only a complete source, metadata, and cleanup result permits the full immutable mutation retry.
-Issue `#1118` records the independent, source-consumer-proved inherited-method replacement defect;
+rejection controls,
+and another bounded actual consumer.
+Only a complete source,
+metadata,
+and cleanup result permits the full immutable mutation retry.
+Issue `#1118` records the independent,
+source-consumer-proved inherited-method replacement defect;
 it does not explain the infrastructure failures.
 No application source fix is authorized or applied.
 
@@ -445,6 +459,12 @@ Root must supply complete frozen case bytes,
 publish the real canonical manifest with final harness hashes,
 and verify actual canonical reads before final coherent dispatch.
 Final dispatch remains held.
+
+Bounded metadata forwarding trial `vlrxjltfkq` is dispatched on `316e1a8a309e71e456a741eb63e5ff3b94b75646`.
+The observer deadline is 60000 milliseconds; original source adapter bytes and source arguments are preserved.
+A copied observer forwarder retains sudo lifecycle results, and source Podman correlation is now recorded.
+Terminal collector session `12290` is active.
+After a complete actual result, the authorized queue continues to the full TOML-only immutable mutation retry.
 
 ## Native recovery assertion tracking
 

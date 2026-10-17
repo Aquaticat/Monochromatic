@@ -272374,6 +272374,1564 @@
             "cleanup": "Owned process group and labeled container scope verified empty; periodic samples did not capture a live source container."
           }
         }
+      },
+      "forwardingTrial": {
+        "runId": "vlrxjltfkq",
+        "response": {
+          "org_id": "l4zncjjbj5",
+          "run_id": "vlrxjltfkq"
+        },
+        "manifest": {
+          "schemaVersion": 1,
+          "classification": "Independent development continuation. Not the final common cohort.",
+          "requestedAt": "2026-10-17T07:36:30.839Z",
+          "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "harnessRevision": "316e1a8a309e71e456a741eb63e5ff3b94b75646",
+          "branch": "trial/depot-toml-continuation-20261017",
+          "workflow": "depot-complete-toml-adapter-pilot.yml",
+          "workflowSha256": "635d36a6578aea38264ebbac5579098b3625c94e9f0c53b20a7747b264132b6d",
+          "checks": [
+            "package.module.toml-edit.test.mutation"
+          ],
+          "pilot": {
+            "sourceFiles": [
+              "src/toml-get-comments.ts"
+            ],
+            "expectedMutantsFromPriorInventory": 1,
+            "containers": 1,
+            "shardSize": 1,
+            "fullCampaign": false
+          },
+          "scope": "mutations-only",
+          "limits": {
+            "consumerMilliseconds": 900000,
+            "jobMinutes": 25,
+            "metadataOperationMilliseconds": 60000,
+            "shutdownOperationMilliseconds": 60000
+          },
+          "metadataObserverTrial": {
+            "priorEightSecondRuns": [
+              "0j8zhbn9n0",
+              "mj128hqwv0"
+            ],
+            "sourceConsumerContainerAdapterUnchanged": true,
+            "observerOnlyForwardingReceipts": true,
+            "sourcePodmanCorrelationReceipts": true
+          },
+          "controlsReportSha256": "5405c15eddb12f63cc701c44a6ed42d4952bd9b5a81480bd359840b899636bce"
+        },
+        "manifestSha256": "6fc4ce8ecf53dda8bedaa3769ad86a6540b818ebd4a76d1b6febcca3084525dc",
+        "cohortId": "toml-adapter-pilot-forwarding-20261017T073630839Z",
+        "request": {
+          "schemaVersion": 1,
+          "command": "depot",
+          "args": [
+            "ci",
+            "dispatch",
+            "--repo",
+            "Aquaticats/Monochromatic",
+            "--org",
+            "l4zncjjbj5",
+            "--workflow",
+            "depot-complete-toml-adapter-pilot.yml",
+            "--ref",
+            "trial/depot-toml-continuation-20261017",
+            "--input",
+            "scope=mutations-only",
+            "--input",
+            "cohort_id=toml-adapter-pilot-forwarding-20261017T073630839Z",
+            "--input",
+            "manifest_sha256=6fc4ce8ecf53dda8bedaa3769ad86a6540b818ebd4a76d1b6febcca3084525dc",
+            "--input",
+            "requested_at=2026-10-17T07:36:30.839Z",
+            "--output",
+            "json"
+          ],
+          "cwd": "/home/user/temp/agent/depot-toml-continuation-worktree",
+          "manifestSha256": "6fc4ce8ecf53dda8bedaa3769ad86a6540b818ebd4a76d1b6febcca3084525dc",
+          "cohortId": "toml-adapter-pilot-forwarding-20261017T073630839Z",
+          "requestedAt": "2026-10-17T07:36:30.839Z",
+          "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "harnessRevision": "316e1a8a309e71e456a741eb63e5ff3b94b75646"
+        },
+        "receipt": {
+          "request": {
+            "schemaVersion": 1,
+            "command": "depot",
+            "args": [
+              "ci",
+              "dispatch",
+              "--repo",
+              "Aquaticats/Monochromatic",
+              "--org",
+              "l4zncjjbj5",
+              "--workflow",
+              "depot-complete-toml-adapter-pilot.yml",
+              "--ref",
+              "trial/depot-toml-continuation-20261017",
+              "--input",
+              "scope=mutations-only",
+              "--input",
+              "cohort_id=toml-adapter-pilot-forwarding-20261017T073630839Z",
+              "--input",
+              "manifest_sha256=6fc4ce8ecf53dda8bedaa3769ad86a6540b818ebd4a76d1b6febcca3084525dc",
+              "--input",
+              "requested_at=2026-10-17T07:36:30.839Z",
+              "--output",
+              "json"
+            ],
+            "cwd": "/home/user/temp/agent/depot-toml-continuation-worktree",
+            "manifestSha256": "6fc4ce8ecf53dda8bedaa3769ad86a6540b818ebd4a76d1b6febcca3084525dc",
+            "cohortId": "toml-adapter-pilot-forwarding-20261017T073630839Z",
+            "requestedAt": "2026-10-17T07:36:30.839Z",
+            "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+            "harnessRevision": "316e1a8a309e71e456a741eb63e5ff3b94b75646"
+          },
+          "finishedAt": "2026-10-17T07:36:31.950Z",
+          "status": 0,
+          "signal": null,
+          "stdout": "{\n  \"org_id\": \"l4zncjjbj5\",\n  \"run_id\": \"vlrxjltfkq\"\n}\n",
+          "stderr": ""
+        },
+        "preparation": {
+          "preparedAt": "2026-10-17T07:34:32.346Z",
+          "metadataMilliseconds": 60000,
+          "priorMilliseconds": 8000,
+          "sourceConsumerArgumentsUnchanged": true,
+          "sourceConsumerContainerAdapterUnchanged": true,
+          "observerOnlyForwardingReceipts": true,
+          "sourcePodmanCorrelationReceipt": true,
+          "finalDispatchHeld": true
+        },
+        "forwardingControl": {
+          "observedAt": "2026-10-17T07:35:08.875Z",
+          "root": "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2",
+          "routeRevision": "316e1a8a309e71e456a741eb63e5ff3b94b75646",
+          "classification": "Disposable synthetic generated-forwarder fixture with real noninteractive sudo and fake actual Podman executable; proves receipt layering and argument forwarding, not cloud Podman behavior.",
+          "record": {
+            "schemaVersion": 1,
+            "event": "bounded-gate-finished",
+            "checkId": "package.dev-script.file-enforcer.test.container",
+            "cohort": {},
+            "startedAt": "2026-10-17T07:35:08.443Z",
+            "finishedAt": "2026-10-17T07:35:08.853Z",
+            "elapsedMs": 409.992253,
+            "maxMs": 3000,
+            "graceMs": 10000,
+            "timedOut": false,
+            "exit": {
+              "kind": "exited",
+              "exitCode": 0,
+              "signal": null
+            },
+            "sourceGateTerminal": false,
+            "label": "io.monochromatic.toml-attempt=886b72b4-e5e6-4225-9d6a-1a7623782ae5",
+            "signals": [],
+            "cleanup": [],
+            "cleanupVerified": true,
+            "processGroupAfter": [],
+            "instrumentationErrors": [],
+            "logLimitExceeded": false,
+            "output": {
+              "bytes": 26,
+              "sha256": "5cdf4b1c39e8faf90c30feca576214f7e8b2ed5c974c651445701dc37c82803e"
+            },
+            "wrapperSha256": "cb17628755cea39ed755e8a07d43dc897d65b6f2b6ca06012e2f4afca82fbb3f",
+            "fixtureOnly": true,
+            "selectedInvocationStarted": false,
+            "terminalDisposition": "fixture",
+            "consumerSpawnedAt": "2026-10-17T07:35:08.537Z",
+            "consumerOutcomeObservedAt": "2026-10-17T07:35:08.560Z",
+            "containerIdsAfter": [],
+            "consumer": {
+              "command": "/var/home/user/.local/share/mise/installs/node/26.11.1/bin/node",
+              "args": [
+                "--eval",
+                "process.stdout.write(\"fixture-consumer-completed\")"
+              ],
+              "cwd": "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2"
+            },
+            "adapterOverlay": {
+              "DEPOT_CI_CHECK_IDS": "[\"package.dev-script.file-enforcer.test.container\"]",
+              "DEPOT_CI_WORKERS": "1",
+              "TMPDIR": "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2/output/toml-mutation-shards",
+              "correlatedPodmanSha256": "cb17628755cea39ed755e8a07d43dc897d65b6f2b6ca06012e2f4afca82fbb3f"
+            },
+            "shardEvidence": [],
+            "nativeReports": [],
+            "podmanOperations": [
+              {
+                "executable": "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2/output/toml-metadata-observer-bin/podman",
+                "sourceConsumerPodman": "/var/mnt/encrypted/temp/agent/toml-metadata-forwarding-control-944Vq2/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=886b72b4-e5e6-4225-9d6a-1a7623782ae5",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2",
+                "startedAt": "2026-10-17T07:35:08.444Z",
+                "finishedAt": "2026-10-17T07:35:08.534Z",
+                "elapsedMs": 90.496234,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 3,
+                "stderrBytes": 0,
+                "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2/output/toml-metadata-observer-bin/podman",
+                "sourceConsumerPodman": "/var/mnt/encrypted/temp/agent/toml-metadata-forwarding-control-944Vq2/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=886b72b4-e5e6-4225-9d6a-1a7623782ae5",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2",
+                "startedAt": "2026-10-17T07:35:08.560Z",
+                "finishedAt": "2026-10-17T07:35:08.628Z",
+                "elapsedMs": 68.44259199999999,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 3,
+                "stderrBytes": 0,
+                "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2/output/toml-metadata-observer-bin/podman",
+                "sourceConsumerPodman": "/var/mnt/encrypted/temp/agent/toml-metadata-forwarding-control-944Vq2/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=886b72b4-e5e6-4225-9d6a-1a7623782ae5",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2",
+                "startedAt": "2026-10-17T07:35:08.641Z",
+                "finishedAt": "2026-10-17T07:35:08.708Z",
+                "elapsedMs": 67.189075,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 3,
+                "stderrBytes": 0,
+                "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2/output/toml-metadata-observer-bin/podman",
+                "sourceConsumerPodman": "/var/mnt/encrypted/temp/agent/toml-metadata-forwarding-control-944Vq2/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=886b72b4-e5e6-4225-9d6a-1a7623782ae5",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2",
+                "startedAt": "2026-10-17T07:35:08.720Z",
+                "finishedAt": "2026-10-17T07:35:08.785Z",
+                "elapsedMs": 65.56208800000002,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 3,
+                "stderrBytes": 0,
+                "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2/output/toml-metadata-observer-bin/podman",
+                "sourceConsumerPodman": "/var/mnt/encrypted/temp/agent/toml-metadata-forwarding-control-944Vq2/bin/podman",
+                "args": [
+                  "events",
+                  "--since",
+                  "2026-10-17T07:35:08.443Z",
+                  "--until",
+                  "2026-10-17T07:35:08.785Z",
+                  "--stream=false",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=886b72b4-e5e6-4225-9d6a-1a7623782ae5",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2",
+                "startedAt": "2026-10-17T07:35:08.785Z",
+                "finishedAt": "2026-10-17T07:35:08.853Z",
+                "elapsedMs": 67.40500299999997,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 0,
+                "stderrBytes": 0,
+                "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "",
+                "stderr": ""
+              }
+            ],
+            "sourcePodmanCalls": [],
+            "metadataOperationMs": 60000,
+            "forwardingOverlay": {
+              "originalExecutable": "/var/mnt/encrypted/temp/agent/toml-metadata-forwarding-control-944Vq2/bin/podman",
+              "originalSha256": "6d13d28d41c743da86dcd33ee7f66a374f6c40f8d82d358c0438432a033e540f",
+              "observerExecutable": "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2/output/toml-metadata-observer-bin/podman",
+              "observerSha256": "f234441989c712d39e97bb5f67e422f7e5c4e026926946b6986174650d67889b",
+              "sourceConsumerForwarderUnchanged": true,
+              "scope": "Observer-only copied Node forwarder adds before/after sudo lifecycle receipts. Actual Podman executable and forwarded arguments are unchanged."
+            },
+            "metadataForwarding": [
+              {
+                "event": "metadata-forwarding-started",
+                "observedAt": "2026-10-17T07:35:08.461Z",
+                "nodePid": 428704,
+                "forwardedExecutable": "sudo",
+                "actualPodmanExecutable": "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2/actual-podman-fixture",
+                "args": [
+                  "--non-interactive",
+                  "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2/actual-podman-fixture",
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=886b72b4-e5e6-4225-9d6a-1a7623782ae5",
+                  "--format",
+                  "json"
+                ]
+              },
+              {
+                "event": "metadata-forwarding-returned",
+                "observedAt": "2026-10-17T07:35:08.532Z",
+                "elapsedMs": 70.699848,
+                "nodePid": 428704,
+                "sudoPid": 428711,
+                "sudoStatus": 0,
+                "signal": null,
+                "error": null,
+                "actualPodmanExecutable": "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2/actual-podman-fixture"
+              },
+              {
+                "event": "metadata-forwarding-started",
+                "observedAt": "2026-10-17T07:35:08.579Z",
+                "nodePid": 428730,
+                "forwardedExecutable": "sudo",
+                "actualPodmanExecutable": "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2/actual-podman-fixture",
+                "args": [
+                  "--non-interactive",
+                  "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2/actual-podman-fixture",
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=886b72b4-e5e6-4225-9d6a-1a7623782ae5",
+                  "--format",
+                  "json"
+                ]
+              },
+              {
+                "event": "metadata-forwarding-returned",
+                "observedAt": "2026-10-17T07:35:08.626Z",
+                "elapsedMs": 47.494503,
+                "nodePid": 428730,
+                "sudoPid": 428745,
+                "sudoStatus": 0,
+                "signal": null,
+                "error": null,
+                "actualPodmanExecutable": "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2/actual-podman-fixture"
+              },
+              {
+                "event": "metadata-forwarding-started",
+                "observedAt": "2026-10-17T07:35:08.660Z",
+                "nodePid": 428775,
+                "forwardedExecutable": "sudo",
+                "actualPodmanExecutable": "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2/actual-podman-fixture",
+                "args": [
+                  "--non-interactive",
+                  "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2/actual-podman-fixture",
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=886b72b4-e5e6-4225-9d6a-1a7623782ae5",
+                  "--format",
+                  "json"
+                ]
+              },
+              {
+                "event": "metadata-forwarding-returned",
+                "observedAt": "2026-10-17T07:35:08.706Z",
+                "elapsedMs": 46.318467999999996,
+                "nodePid": 428775,
+                "sudoPid": 428782,
+                "sudoStatus": 0,
+                "signal": null,
+                "error": null,
+                "actualPodmanExecutable": "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2/actual-podman-fixture"
+              },
+              {
+                "event": "metadata-forwarding-started",
+                "observedAt": "2026-10-17T07:35:08.736Z",
+                "nodePid": 428800,
+                "forwardedExecutable": "sudo",
+                "actualPodmanExecutable": "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2/actual-podman-fixture",
+                "args": [
+                  "--non-interactive",
+                  "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2/actual-podman-fixture",
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=886b72b4-e5e6-4225-9d6a-1a7623782ae5",
+                  "--format",
+                  "json"
+                ]
+              },
+              {
+                "event": "metadata-forwarding-returned",
+                "observedAt": "2026-10-17T07:35:08.782Z",
+                "elapsedMs": 46.301238,
+                "nodePid": 428800,
+                "sudoPid": 428816,
+                "sudoStatus": 0,
+                "signal": null,
+                "error": null,
+                "actualPodmanExecutable": "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2/actual-podman-fixture"
+              },
+              {
+                "event": "metadata-forwarding-started",
+                "observedAt": "2026-10-17T07:35:08.807Z",
+                "nodePid": 428826,
+                "forwardedExecutable": "sudo",
+                "actualPodmanExecutable": "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2/actual-podman-fixture",
+                "args": [
+                  "--non-interactive",
+                  "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2/actual-podman-fixture",
+                  "events",
+                  "--since",
+                  "2026-10-17T07:35:08.443Z",
+                  "--until",
+                  "2026-10-17T07:35:08.785Z",
+                  "--stream=false",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=886b72b4-e5e6-4225-9d6a-1a7623782ae5",
+                  "--format",
+                  "json"
+                ]
+              },
+              {
+                "event": "metadata-forwarding-returned",
+                "observedAt": "2026-10-17T07:35:08.850Z",
+                "elapsedMs": 43.170647,
+                "nodePid": 428826,
+                "sudoPid": 428833,
+                "sudoStatus": 0,
+                "signal": null,
+                "error": null,
+                "actualPodmanExecutable": "/home/user/temp/agent/toml-metadata-forwarding-control-944Vq2/actual-podman-fixture"
+              }
+            ]
+          }
+        },
+        "timeoutRejection": {
+          "observedAt": "2026-10-17T07:35:17.653Z",
+          "fixtureDirectory": "/home/user/temp/agent/toml-metadata-receipt-control-ghaTVt",
+          "routeRevision": "316e1a8a309e71e456a741eb63e5ff3b94b75646",
+          "expectedFailure": true,
+          "result": {
+            "status": 1,
+            "signal": null,
+            "output": [
+              null,
+              "",
+              "[//package/dev-script/task-util:trial:depot:toml:bounded] $ const { spawn, spawnSync, execFileSync } = await import('node:child_process')\nnode:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: fixture metadata stderr\n\n\nnull !== 0\n\n    at containers ([eval]:80:10)\n    at [eval]:83:18 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: null,\n  expected: 0,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.11.1\n[//package/dev-script/task-util:trial:depot:toml:bounded] ERROR task failed\n"
+            ],
+            "pid": 428806,
+            "stdout": "",
+            "stderr": "[//package/dev-script/task-util:trial:depot:toml:bounded] $ const { spawn, spawnSync, execFileSync } = await import('node:child_process')\nnode:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: fixture metadata stderr\n\n\nnull !== 0\n\n    at containers ([eval]:80:10)\n    at [eval]:83:18 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: null,\n  expected: 0,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.11.1\n[//package/dev-script/task-util:trial:depot:toml:bounded] ERROR task failed\n"
+          },
+          "operations": [
+            {
+              "executable": "/var/mnt/encrypted/temp/agent/toml-metadata-receipt-control-ghaTVt/bin/podman",
+              "sourceConsumerPodman": "/var/mnt/encrypted/temp/agent/toml-metadata-receipt-control-ghaTVt/bin/podman",
+              "args": [
+                "ps",
+                "--all",
+                "--filter",
+                "label=io.monochromatic.toml-attempt=2b669014-0f0c-4ecb-9966-c68d80ab0fa2",
+                "--format",
+                "json"
+              ],
+              "cwd": "/home/user/temp/agent/toml-metadata-receipt-control-ghaTVt",
+              "startedAt": "2026-10-17T07:35:09.623Z",
+              "finishedAt": "2026-10-17T07:35:17.632Z",
+              "elapsedMs": 8009.823846,
+              "budgetMs": 8000,
+              "status": null,
+              "signal": "SIGKILL",
+              "error": {
+                "name": "Error",
+                "message": "spawnSync /var/mnt/encrypted/temp/agent/toml-metadata-receipt-control-ghaTVt/bin/podman ETIMEDOUT",
+                "code": "ETIMEDOUT",
+                "errno": -110,
+                "syscall": "spawnSync /var/mnt/encrypted/temp/agent/toml-metadata-receipt-control-ghaTVt/bin/podman",
+                "path": "/var/mnt/encrypted/temp/agent/toml-metadata-receipt-control-ghaTVt/bin/podman",
+                "spawnargs": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=2b669014-0f0c-4ecb-9966-c68d80ab0fa2",
+                  "--format",
+                  "json"
+                ]
+              },
+              "stdoutBytes": 24,
+              "stderrBytes": 24,
+              "stdoutSha256": "5e50a88a9ff8a41a348a5fe6c3ab62ffe98c1bbe318dec189135ac5a494dbff0",
+              "stderrSha256": "1e015f4263d93824658a3ed75bf6a1d28ca5e817f6353b094f8fc04faa38e290",
+              "stdout": "fixture metadata stdout\n",
+              "stderr": "fixture metadata stderr\n"
+            }
+          ],
+          "classification": "Local disposable one-process metadata deadline control; source consumer never started. The real null-status operation still needs its own cloud receipt."
+        },
+        "guardRemoval": {
+          "observedAt": "2026-10-17T07:36:05.209Z",
+          "base": "/home/user/temp/agent/toml-metadata-guard-removal-ZhxuAT",
+          "fixture": "/home/user/temp/agent/toml-metadata-guard-removal-ZhxuAT/harness",
+          "removedGuard": "spawnSync metadata timeout option",
+          "expectedHarnessRejection": true,
+          "result": {
+            "status": 1,
+            "signal": null,
+            "output": [
+              null,
+              "",
+              "[control-metadata-receipt] $ const {mkdtempSync,mkdirSync,writeFileSync,readFileSync}=await import('node:fs');\nnode:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n0 !== null\n\n    at [eval]:16:8 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: 0,\n  expected: null,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n[control-metadata-receipt] ERROR task failed\n"
+            ],
+            "pid": 432349,
+            "stdout": "",
+            "stderr": "[control-metadata-receipt] $ const {mkdtempSync,mkdirSync,writeFileSync,readFileSync}=await import('node:fs');\nnode:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n0 !== null\n\n    at [eval]:16:8 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: 0,\n  expected: null,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n[control-metadata-receipt] ERROR task failed\n"
+          }
+        },
+        "developmentControls": {
+          "schemaVersion": 1,
+          "routeRevision": "316e1a8a309e71e456a741eb63e5ff3b94b75646",
+          "root": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO",
+          "source": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO/workspace/source",
+          "cohort": {
+            "COHORT_ID": "toml-local-controls-20261017",
+            "COHORT_MANIFEST_SHA256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+            "COHORT_REQUESTED_AT": "2026-10-17T07:35:39.073Z"
+          },
+          "records": [
+            {
+              "name": "identity",
+              "actualTask": "pilot-identity",
+              "status": 0,
+              "signal": null,
+              "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO/0-identity.log",
+              "sha256": "0fb05ca36bc4c746af30152647507c77c8fbd6a7f5655f194a8bd7eadbfdfdf0"
+            },
+            {
+              "name": "identity",
+              "actualTask": "pilot-identity",
+              "status": 0,
+              "signal": null,
+              "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO/1-identity.log",
+              "sha256": "78ed0714af88864b95f76d88b2d34163123cf7abb60c1d0a071e1c2f4098147e"
+            },
+            {
+              "name": "identity",
+              "actualTask": "pilot-identity",
+              "status": 1,
+              "signal": null,
+              "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO/2-identity.log",
+              "sha256": "bf43063120dc71d46c81cfb5be88343750c486378cf07de42f22477997279e8a"
+            },
+            {
+              "name": "identity",
+              "actualTask": "pilot-identity",
+              "status": 0,
+              "signal": null,
+              "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO/3-identity.log",
+              "sha256": "4ebaaf4db956dcb59d8e3e82c8c969f0f8cae44a3777336620d8c9de5c7a5f71"
+            },
+            {
+              "name": "identity",
+              "actualTask": "pilot-identity",
+              "status": 1,
+              "signal": null,
+              "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO/4-identity.log",
+              "sha256": "04769a5d9456d70861ab08900b92237644a4e4076cfe57114dd7213a3d7e6508"
+            },
+            {
+              "name": "bounded",
+              "actualTask": "bounded",
+              "status": 0,
+              "signal": null,
+              "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO/5-bounded.log",
+              "sha256": "b6d9c6db00a4c13681ca271072b2a7425104a9b75a2265459916b883b57f44a5"
+            },
+            {
+              "name": "bounded",
+              "actualTask": "bounded",
+              "status": 1,
+              "signal": null,
+              "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO/6-bounded.log",
+              "sha256": "674376ab4de6fb521f837635b92a144f27736e7eb6bb4e3738c42bbda37dcfc7"
+            },
+            {
+              "name": "bounded",
+              "actualTask": "bounded",
+              "status": 1,
+              "signal": null,
+              "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO/7-bounded.log",
+              "sha256": "c79df37e9446d4d97c5e255b5e10eac91556e6c2fcb7e982ab52d540c2bc5ffb"
+            },
+            {
+              "name": "bounded",
+              "actualTask": "bounded",
+              "status": 1,
+              "signal": null,
+              "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO/8-bounded.log",
+              "sha256": "ffd63af3ed17c1fb5064f2eb07707d2f737419709310ea83d7b4121a52cda1f5"
+            }
+          ],
+          "pass": {
+            "schemaVersion": 1,
+            "event": "bounded-gate-finished",
+            "checkId": "package.dev-script.file-enforcer.test.container",
+            "cohort": {
+              "id": "toml-local-controls-20261017",
+              "manifestSha256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+              "requestedAt": "2026-10-17T07:35:39.073Z"
+            },
+            "startedAt": "2026-10-17T07:35:46.648Z",
+            "finishedAt": "2026-10-17T07:35:46.829Z",
+            "elapsedMs": 180.424291,
+            "maxMs": 5000,
+            "graceMs": 500,
+            "timedOut": false,
+            "exit": {
+              "kind": "exited",
+              "exitCode": 0,
+              "signal": null
+            },
+            "sourceGateTerminal": false,
+            "label": "io.monochromatic.toml-attempt=df313f39-abdf-4db1-80c2-f70600e5a4f2",
+            "signals": [],
+            "cleanup": [],
+            "cleanupVerified": true,
+            "processGroupAfter": [],
+            "instrumentationErrors": [],
+            "logLimitExceeded": false,
+            "output": {
+              "bytes": 24,
+              "sha256": "3b521b84a81996a67e51ca42c7ae940abab4a1c634ef0af92183a288e83d17b3"
+            },
+            "wrapperSha256": "629c72e2ee8ca9bbce7387aa3d2bd9a6b71ed0cf3038e3a8e9e45f75ae8575e2",
+            "fixtureOnly": true,
+            "selectedInvocationStarted": false,
+            "terminalDisposition": "fixture",
+            "consumerSpawnedAt": "2026-10-17T07:35:46.682Z",
+            "consumerOutcomeObservedAt": "2026-10-17T07:35:46.699Z",
+            "containerIdsAfter": [],
+            "consumer": {
+              "command": "/var/home/user/.local/share/mise/installs/node/26.11.1/bin/node",
+              "args": [
+                "--input-type=module",
+                "-e",
+                "import {mkdirSync,writeFileSync} from \"node:fs\";import {join} from \"node:path\";import {tmpdir} from \"node:os\";for(const kind of [\"manifest\",\"report\"]){const path=join(tmpdir(),\"mutation-\"+kind+\"-positive\");mkdirSync(path);writeFileSync(join(path,\"shard-\"+kind+\".json\"),JSON.stringify({fixtureOnly:true,ids:[\"fixture-one\",\"fixture-two\"]}));}writeFileSync(join(process.cwd(),\"mutation-report.json\"),JSON.stringify({fixtureOnly:true,mutants:[{id:\"fixture-one\"},{id:\"fixture-two\"}]}));console.log(\"positive-control-output\")"
+              ],
+              "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO"
+            },
+            "adapterOverlay": {
+              "DEPOT_CI_CHECK_IDS": "[\"package.dev-script.file-enforcer.test.container\"]",
+              "DEPOT_CI_WORKERS": "1",
+              "TMPDIR": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO/pass/toml-mutation-shards",
+              "correlatedPodmanSha256": "629c72e2ee8ca9bbce7387aa3d2bd9a6b71ed0cf3038e3a8e9e45f75ae8575e2"
+            },
+            "shardEvidence": [
+              {
+                "path": "mutation-manifest-positive/shard-manifest.json",
+                "bytes": 56,
+                "sha256": "f15b267c63f9b77ad26a6ceef6e6c869baee630cd3a6bd80396cf28d00260009"
+              },
+              {
+                "path": "mutation-report-positive/shard-report.json",
+                "bytes": 56,
+                "sha256": "f15b267c63f9b77ad26a6ceef6e6c869baee630cd3a6bd80396cf28d00260009"
+              }
+            ],
+            "nativeReports": [
+              {
+                "path": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO/mutation-report.json",
+                "existedAtStart": false,
+                "artifactPath": "toml-native-report-package.dev-script.file-enforcer.test.container-0.json",
+                "bytes": 74,
+                "sha256": "2e5a56828a30e2011bccf552b3d07f5df2a10b1c6aa1e194d56678713d1e593c",
+                "mtimeMs": 1792222546695.8843,
+                "producedDuringInvocation": true
+              }
+            ],
+            "podmanOperations": [
+              {
+                "executable": "/usr/bin/podman",
+                "sourceConsumerPodman": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=df313f39-abdf-4db1-80c2-f70600e5a4f2",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO",
+                "startedAt": "2026-10-17T07:35:46.649Z",
+                "finishedAt": "2026-10-17T07:35:46.680Z",
+                "elapsedMs": 30.774455000000003,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 3,
+                "stderrBytes": 0,
+                "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "sourceConsumerPodman": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=df313f39-abdf-4db1-80c2-f70600e5a4f2",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO",
+                "startedAt": "2026-10-17T07:35:46.699Z",
+                "finishedAt": "2026-10-17T07:35:46.725Z",
+                "elapsedMs": 26.470710999999994,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 3,
+                "stderrBytes": 0,
+                "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "sourceConsumerPodman": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=df313f39-abdf-4db1-80c2-f70600e5a4f2",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO",
+                "startedAt": "2026-10-17T07:35:46.736Z",
+                "finishedAt": "2026-10-17T07:35:46.761Z",
+                "elapsedMs": 24.60752599999998,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 3,
+                "stderrBytes": 0,
+                "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "sourceConsumerPodman": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=df313f39-abdf-4db1-80c2-f70600e5a4f2",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO",
+                "startedAt": "2026-10-17T07:35:46.772Z",
+                "finishedAt": "2026-10-17T07:35:46.797Z",
+                "elapsedMs": 24.691728000000012,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 3,
+                "stderrBytes": 0,
+                "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "sourceConsumerPodman": "/usr/bin/podman",
+                "args": [
+                  "events",
+                  "--since",
+                  "2026-10-17T07:35:46.648Z",
+                  "--until",
+                  "2026-10-17T07:35:46.797Z",
+                  "--stream=false",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=df313f39-abdf-4db1-80c2-f70600e5a4f2",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO",
+                "startedAt": "2026-10-17T07:35:46.797Z",
+                "finishedAt": "2026-10-17T07:35:46.828Z",
+                "elapsedMs": 31.242549000000025,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 0,
+                "stderrBytes": 0,
+                "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "",
+                "stderr": ""
+              }
+            ],
+            "sourcePodmanCalls": [],
+            "metadataOperationMs": 60000,
+            "metadataForwarding": []
+          },
+          "fail": {
+            "schemaVersion": 1,
+            "event": "bounded-gate-finished",
+            "checkId": "package.dev-script.file-enforcer.test.container",
+            "cohort": {
+              "id": "toml-local-controls-20261017",
+              "manifestSha256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+              "requestedAt": "2026-10-17T07:35:39.073Z"
+            },
+            "startedAt": "2026-10-17T07:35:48.369Z",
+            "finishedAt": "2026-10-17T07:35:48.553Z",
+            "elapsedMs": 184.206352,
+            "maxMs": 5000,
+            "graceMs": 500,
+            "timedOut": false,
+            "exit": {
+              "kind": "exited",
+              "exitCode": 7,
+              "signal": null
+            },
+            "sourceGateTerminal": false,
+            "label": "io.monochromatic.toml-attempt=fe072a79-7fb8-4218-806b-a40eca003ac0",
+            "signals": [],
+            "cleanup": [],
+            "cleanupVerified": true,
+            "processGroupAfter": [],
+            "instrumentationErrors": [],
+            "logLimitExceeded": false,
+            "output": {
+              "bytes": 23,
+              "sha256": "3b3793336b8e2c7de1e594b953c5cec24806e57d37e78c89c60268cd1dae8497"
+            },
+            "wrapperSha256": "ef16d91c7ecf9ba8115da3327bc473b7a630b616be7bb08e7db58104e9e824c5",
+            "fixtureOnly": true,
+            "selectedInvocationStarted": false,
+            "terminalDisposition": "fixture",
+            "consumerSpawnedAt": "2026-10-17T07:35:48.399Z",
+            "consumerOutcomeObservedAt": "2026-10-17T07:35:48.416Z",
+            "containerIdsAfter": [],
+            "consumer": {
+              "command": "/var/home/user/.local/share/mise/installs/node/26.11.1/bin/node",
+              "args": [
+                "--input-type=module",
+                "-e",
+                "console.error(\"source-control-failure\");process.exitCode=7"
+              ],
+              "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO"
+            },
+            "adapterOverlay": {
+              "DEPOT_CI_CHECK_IDS": "[\"package.dev-script.file-enforcer.test.container\"]",
+              "DEPOT_CI_WORKERS": "1",
+              "TMPDIR": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO/fail/toml-mutation-shards",
+              "correlatedPodmanSha256": "ef16d91c7ecf9ba8115da3327bc473b7a630b616be7bb08e7db58104e9e824c5"
+            },
+            "shardEvidence": [],
+            "nativeReports": [
+              {
+                "path": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO/mutation-report.json",
+                "existedAtStart": true,
+                "mtimeMsAtStart": 1792222546695.8843,
+                "artifactPath": "toml-native-report-package.dev-script.file-enforcer.test.container-0.json",
+                "bytes": 74,
+                "sha256": "2e5a56828a30e2011bccf552b3d07f5df2a10b1c6aa1e194d56678713d1e593c",
+                "mtimeMs": 1792222546695.8843,
+                "producedDuringInvocation": false
+              }
+            ],
+            "podmanOperations": [
+              {
+                "executable": "/usr/bin/podman",
+                "sourceConsumerPodman": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=fe072a79-7fb8-4218-806b-a40eca003ac0",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO",
+                "startedAt": "2026-10-17T07:35:48.369Z",
+                "finishedAt": "2026-10-17T07:35:48.397Z",
+                "elapsedMs": 27.428558000000002,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 3,
+                "stderrBytes": 0,
+                "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "sourceConsumerPodman": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=fe072a79-7fb8-4218-806b-a40eca003ac0",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO",
+                "startedAt": "2026-10-17T07:35:48.416Z",
+                "finishedAt": "2026-10-17T07:35:48.443Z",
+                "elapsedMs": 26.496741,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 3,
+                "stderrBytes": 0,
+                "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "sourceConsumerPodman": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=fe072a79-7fb8-4218-806b-a40eca003ac0",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO",
+                "startedAt": "2026-10-17T07:35:48.455Z",
+                "finishedAt": "2026-10-17T07:35:48.482Z",
+                "elapsedMs": 26.977795999999984,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 3,
+                "stderrBytes": 0,
+                "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "sourceConsumerPodman": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=fe072a79-7fb8-4218-806b-a40eca003ac0",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO",
+                "startedAt": "2026-10-17T07:35:48.493Z",
+                "finishedAt": "2026-10-17T07:35:48.521Z",
+                "elapsedMs": 27.807129000000003,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 3,
+                "stderrBytes": 0,
+                "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "sourceConsumerPodman": "/usr/bin/podman",
+                "args": [
+                  "events",
+                  "--since",
+                  "2026-10-17T07:35:48.369Z",
+                  "--until",
+                  "2026-10-17T07:35:48.521Z",
+                  "--stream=false",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=fe072a79-7fb8-4218-806b-a40eca003ac0",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO",
+                "startedAt": "2026-10-17T07:35:48.521Z",
+                "finishedAt": "2026-10-17T07:35:48.553Z",
+                "elapsedMs": 31.68656200000001,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 0,
+                "stderrBytes": 0,
+                "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "",
+                "stderr": ""
+              }
+            ],
+            "sourcePodmanCalls": [],
+            "metadataOperationMs": 60000,
+            "metadataForwarding": []
+          },
+          "timeout": {
+            "schemaVersion": 1,
+            "event": "bounded-gate-finished",
+            "checkId": "package.dev-script.file-enforcer.test.container",
+            "cohort": {
+              "id": "toml-local-controls-20261017",
+              "manifestSha256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+              "requestedAt": "2026-10-17T07:35:39.073Z"
+            },
+            "startedAt": "2026-10-17T07:35:49.363Z",
+            "finishedAt": "2026-10-17T07:36:05.348Z",
+            "elapsedMs": 15984.526689,
+            "maxMs": 15000,
+            "graceMs": 500,
+            "timedOut": true,
+            "exit": {
+              "kind": "exited",
+              "exitCode": null,
+              "signal": "SIGKILL"
+            },
+            "sourceGateTerminal": false,
+            "label": "io.monochromatic.toml-attempt=2e0e2434-706d-4590-a99b-bfa68c750879",
+            "signals": [
+              {
+                "observedAt": "2026-10-17T07:36:04.461Z",
+                "signal": "SIGTERM",
+                "sent": true
+              },
+              {
+                "observedAt": "2026-10-17T07:36:04.961Z",
+                "signal": "SIGKILL",
+                "sent": true
+              }
+            ],
+            "cleanup": [
+              {
+                "id": "d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74",
+                "kill": {
+                  "executable": "/usr/bin/podman",
+                  "sourceConsumerPodman": "/usr/bin/podman",
+                  "args": [
+                    "kill",
+                    "--signal=SIGKILL",
+                    "d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74"
+                  ],
+                  "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO",
+                  "startedAt": "2026-10-17T07:36:05.030Z",
+                  "finishedAt": "2026-10-17T07:36:05.106Z",
+                  "elapsedMs": 75.32973300000049,
+                  "budgetMs": 60000,
+                  "status": 0,
+                  "signal": null,
+                  "error": null,
+                  "stdoutBytes": 65,
+                  "stderrBytes": 0,
+                  "stdoutSha256": "087b484edb08b9a3d9d79790c8c31710edb8f95ed71c0769096b73dab5aa7d04",
+                  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "stdout": "d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74\n",
+                  "stderr": ""
+                },
+                "remove": {
+                  "executable": "/usr/bin/podman",
+                  "sourceConsumerPodman": "/usr/bin/podman",
+                  "args": [
+                    "rm",
+                    "--force",
+                    "--time=0",
+                    "--ignore",
+                    "d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74"
+                  ],
+                  "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO",
+                  "startedAt": "2026-10-17T07:36:05.106Z",
+                  "finishedAt": "2026-10-17T07:36:05.260Z",
+                  "elapsedMs": 154.31052199999976,
+                  "budgetMs": 60000,
+                  "status": 0,
+                  "signal": null,
+                  "error": null,
+                  "stdoutBytes": 65,
+                  "stderrBytes": 0,
+                  "stdoutSha256": "087b484edb08b9a3d9d79790c8c31710edb8f95ed71c0769096b73dab5aa7d04",
+                  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "stdout": "d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74\n",
+                  "stderr": ""
+                }
+              }
+            ],
+            "cleanupVerified": true,
+            "processGroupAfter": [],
+            "instrumentationErrors": [],
+            "logLimitExceeded": false,
+            "output": {
+              "bytes": 31,
+              "sha256": "4fdef45fe3b0c9b884ec602ebdb5db5398f5a1a9bb368b4e6528480515d1553f"
+            },
+            "wrapperSha256": "4a572add4008e4b10ced3d3e9ed0efc6cf0fa6dc9a46581cdc59acbd4bf6c395",
+            "fixtureOnly": true,
+            "selectedInvocationStarted": false,
+            "terminalDisposition": "fixture",
+            "consumerSpawnedAt": "2026-10-17T07:35:49.394Z",
+            "consumerOutcomeObservedAt": "2026-10-17T07:36:04.395Z",
+            "containerIdsAfter": [],
+            "consumer": {
+              "command": "/var/home/user/.local/share/mise/installs/node/26.11.1/bin/node",
+              "args": [
+                "--input-type=module",
+                "-e",
+                "import {spawn,execFileSync} from 'node:child_process';import {writeFileSync} from 'node:fs';process.on('SIGTERM',()=>{});const child=spawn(process.execPath,['--input-type=module','-e','process.on(\"SIGTERM\",()=>{});setInterval(()=>{},1000)'],{stdio:'ignore'});const container=execFileSync('podman',['run','--detach','--pull=never','--network=none','--memory=2g','--cpus=2','--pids-limit=64','--entrypoint=/bin/sleep','0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0','120'],{encoding:'utf8'}).trim();writeFileSync(\"/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO/timeout-pids.json\",JSON.stringify({pid:process.pid,child:child.pid,container}));console.log('timeout-positive-control-ready');setInterval(()=>{},1000)"
+              ],
+              "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO"
+            },
+            "adapterOverlay": {
+              "DEPOT_CI_CHECK_IDS": "[\"package.dev-script.file-enforcer.test.container\"]",
+              "DEPOT_CI_WORKERS": "1",
+              "TMPDIR": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO/timeout/toml-mutation-shards",
+              "correlatedPodmanSha256": "4a572add4008e4b10ced3d3e9ed0efc6cf0fa6dc9a46581cdc59acbd4bf6c395"
+            },
+            "shardEvidence": [],
+            "nativeReports": [
+              {
+                "path": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO/mutation-report.json",
+                "existedAtStart": true,
+                "mtimeMsAtStart": 1792222546695.8843,
+                "artifactPath": "toml-native-report-package.dev-script.file-enforcer.test.container-0.json",
+                "bytes": 74,
+                "sha256": "2e5a56828a30e2011bccf552b3d07f5df2a10b1c6aa1e194d56678713d1e593c",
+                "mtimeMs": 1792222546695.8843,
+                "producedDuringInvocation": false
+              }
+            ],
+            "podmanOperations": [
+              {
+                "executable": "/usr/bin/podman",
+                "sourceConsumerPodman": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=2e0e2434-706d-4590-a99b-bfa68c750879",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO",
+                "startedAt": "2026-10-17T07:35:49.363Z",
+                "finishedAt": "2026-10-17T07:35:49.391Z",
+                "elapsedMs": 27.988665000000005,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 3,
+                "stderrBytes": 0,
+                "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "sourceConsumerPodman": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=2e0e2434-706d-4590-a99b-bfa68c750879",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO",
+                "startedAt": "2026-10-17T07:35:59.394Z",
+                "finishedAt": "2026-10-17T07:35:59.430Z",
+                "elapsedMs": 35.24683600000026,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 998,
+                "stderrBytes": 0,
+                "stdoutSha256": "f725b800d1b54f7f55da06c91437652104abce08fad51a5736ead24d10060917",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[\n  {\n    \"AutoRemove\": false,\n    \"Command\": [\n      \"120\"\n    ],\n    \"CreatedAt\": \"9 seconds ago\",\n    \"CIDFile\": \"\",\n    \"Exited\": false,\n    \"ExitedAt\": -62135596800,\n    \"ExitCode\": 0,\n    \"ExposedPorts\": null,\n    \"Id\": \"d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74\",\n    \"Image\": \"mcr.microsoft.com/powershell:latest\",\n    \"ImageID\": \"0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0\",\n    \"IsInfra\": false,\n    \"Labels\": {\n      \"io.monochromatic.toml-attempt\": \"2e0e2434-706d-4590-a99b-bfa68c750879\",\n      \"org.opencontainers.image.ref.name\": \"ubuntu\",\n      \"org.opencontainers.image.version\": \"22.04\"\n    },\n    \"Mounts\": [],\n    \"Names\": [\n      \"dreamy_babbage\"\n    ],\n    \"Namespaces\": {\n      \n    },\n    \"Networks\": [],\n    \"Pid\": 431800,\n    \"Pod\": \"\",\n    \"PodName\": \"\",\n    \"Ports\": null,\n    \"Restarts\": 0,\n    \"Size\": null,\n    \"StartedAt\": 1792222549,\n    \"State\": \"running\",\n    \"Status\": \"Up 10 seconds\",\n    \"Created\": 1792222549\n  }\n]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "sourceConsumerPodman": "/usr/bin/podman",
+                "args": [
+                  "inspect",
+                  "d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO",
+                "startedAt": "2026-10-17T07:35:59.430Z",
+                "finishedAt": "2026-10-17T07:35:59.463Z",
+                "elapsedMs": 32.7429630000006,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 12425,
+                "stderrBytes": 0,
+                "stdoutSha256": "5d48f681c79d8d8d13281aab3ea5e473c822e1318d8f6815fbec3c169dca4371",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[\n     {\n          \"Id\": \"d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74\",\n          \"Created\": \"2026-10-17T03:35:49.45809475-04:00\",\n          \"Path\": \"/bin/sleep\",\n          \"Args\": [\n               \"120\"\n          ],\n          \"State\": {\n               \"OciVersion\": \"1.2.1\",\n               \"Status\": \"running\",\n               \"Running\": true,\n               \"Paused\": false,\n               \"Restarting\": false,\n               \"OOMKilled\": false,\n               \"Dead\": false,\n               \"Pid\": 431800,\n               \"ConmonPid\": 431798,\n               \"ExitCode\": 0,\n               \"Error\": \"\",\n               \"StartedAt\": \"2026-10-17T03:35:49.505050677-04:00\",\n               \"FinishedAt\": \"0001-01-01T00:00:00Z\",\n               \"CgroupPath\": \"/user.slice/user-1000.slice/user@1000.service/user.slice/libpod-d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74.scope\",\n               \"CheckpointedAt\": \"0001-01-01T00:00:00Z\",\n               \"RestoredAt\": \"0001-01-01T00:00:00Z\"\n          },\n          \"Image\": \"0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0\",\n          \"ImageDigest\": \"sha256:810c4f1e0c9d23022c3ec18c50a6205ee4b60766f1739d329b2948df1fd7d5b0\",\n          \"ImageName\": \"mcr.microsoft.com/powershell:latest\",\n          \"Rootfs\": \"\",\n          \"Pod\": \"\",\n          \"ResolvConfPath\": \"\",\n          \"HostnamePath\": \"/run/user/1000/containers/overlay-containers/d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74/userdata/hostname\",\n          \"HostsPath\": \"/run/user/1000/containers/overlay-containers/d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74/userdata/hosts\",\n          \"StaticDir\": \"/var/home/user/.local/share/containers/storage/overlay-containers/d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74/userdata\",\n          \"OCIConfigPath\": \"/var/home/user/.local/share/containers/storage/overlay-containers/d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74/userdata/config.json\",\n          \"OCIRuntime\": \"crun\",\n          \"ConmonPidFile\": \"/run/user/1000/containers/overlay-containers/d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74/userdata/conmon.pid\",\n          \"PidFile\": \"/run/user/1000/containers/overlay-containers/d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74/userdata/pidfile\",\n          \"Name\": \"dreamy_babbage\",\n          \"RestartCount\": 0,\n          \"Driver\": \"overlay\",\n          \"MountLabel\": \"system_u:object_r:container_file_t:s0:c125,c294\",\n          \"ProcessLabel\": \"system_u:system_r:container_t:s0:c125,c294\",\n          \"AppArmorProfile\": \"\",\n          \"EffectiveCaps\": [\n               \"CAP_CHOWN\",\n               \"CAP_DAC_OVERRIDE\",\n               \"CAP_FOWNER\",\n               \"CAP_FSETID\",\n               \"CAP_KILL\",\n               \"CAP_NET_BIND_SERVICE\",\n               \"CAP_SETFCAP\",\n               \"CAP_SETGID\",\n               \"CAP_SETPCAP\",\n               \"CAP_SETUID\",\n               \"CAP_SYS_CHROOT\"\n          ],\n          \"BoundingCaps\": [\n               \"CAP_CHOWN\",\n               \"CAP_DAC_OVERRIDE\",\n               \"CAP_FOWNER\",\n               \"CAP_FSETID\",\n               \"CAP_KILL\",\n               \"CAP_NET_BIND_SERVICE\",\n               \"CAP_SETFCAP\",\n               \"CAP_SETGID\",\n               \"CAP_SETPCAP\",\n               \"CAP_SETUID\",\n               \"CAP_SYS_CHROOT\"\n          ],\n          \"ExecIDs\": [],\n          \"GraphDriver\": {\n               \"Name\": \"overlay\",\n               \"Data\": {\n                    \"LowerDir\": \"/var/home/user/.local/share/containers/storage/overlay/8f5ff742b8cfe7eefa11cb0b3295450362e17c865ff95d1f7020623fb8524808/diff:/var/home/user/.local/share/containers/storage/overlay/5498e8c22f6996f25ef193ee58617d5b37e2a96decf22e72de13c3b34e147591/diff\",\n                    \"MergedDir\": \"/var/home/user/.local/share/containers/storage/overlay/ad19d997e7f1fa0901bb0ccb0246f31755990801cc92701bc5615ccb0ab0bf9a/merged\",\n                    \"UpperDir\": \"/var/home/user/.local/share/containers/storage/overlay/ad19d997e7f1fa0901bb0ccb0246f31755990801cc92701bc5615ccb0ab0bf9a/diff\",\n                    \"WorkDir\": \"/var/home/user/.local/share/containers/storage/overlay/ad19d997e7f1fa0901bb0ccb0246f31755990801cc92701bc5615ccb0ab0bf9a/work\"\n               }\n          },\n          \"Mounts\": [],\n          \"Dependencies\": [],\n          \"NetworkSettings\": {\n               \"EndpointID\": \"\",\n               \"Gateway\": \"\",\n               \"IPAddress\": \"\",\n               \"IPPrefixLen\": 0,\n               \"IPv6Gateway\": \"\",\n               \"GlobalIPv6Address\": \"\",\n               \"GlobalIPv6PrefixLen\": 0,\n               \"MacAddress\": \"\",\n               \"Bridge\": \"\",\n               \"SandboxID\": \"\",\n               \"HairpinMode\": false,\n               \"LinkLocalIPv6Address\": \"\",\n               \"LinkLocalIPv6PrefixLen\": 0,\n               \"Ports\": {},\n               \"SandboxKey\": \"/proc/431800/ns/net\",\n               \"Networks\": {\n                    \"none\": {\n                         \"EndpointID\": \"\",\n                         \"Gateway\": \"\",\n                         \"IPAddress\": \"\",\n                         \"IPPrefixLen\": 0,\n                         \"IPv6Gateway\": \"\",\n                         \"GlobalIPv6Address\": \"\",\n                         \"GlobalIPv6PrefixLen\": 0,\n                         \"MacAddress\": \"\",\n                         \"NetworkID\": \"none\",\n                         \"DriverOpts\": null,\n                         \"IPAMConfig\": null,\n                         \"Links\": null\n                    }\n               }\n          },\n          \"Namespace\": \"\",\n          \"IsInfra\": false,\n          \"IsService\": false,\n          \"KubeExitCodePropagation\": \"invalid\",\n          \"lockNumber\": 0,\n          \"Config\": {\n               \"Hostname\": \"d098322a9b58\",\n               \"Domainname\": \"\",\n               \"User\": \"\",\n               \"AttachStdin\": false,\n               \"AttachStdout\": false,\n               \"AttachStderr\": false,\n               \"Tty\": false,\n               \"OpenStdin\": false,\n               \"StdinOnce\": false,\n               \"Env\": [\n                    \"container=podman\",\n                    \"LC_ALL=en_US.UTF-8\",\n                    \"LANG=en_US.UTF-8\",\n                    \"PS_INSTALL_FOLDER=/opt/microsoft/powershell/7\",\n                    \"PSModuleAnalysisCachePath=/var/cache/microsoft/powershell/PSModuleAnalysisCache/ModuleAnalysisCache\",\n                    \"POWERSHELL_DISTRIBUTION_CHANNEL=PSDocker-Ubuntu-22.04\",\n                    \"DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false\",\n                    \"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\",\n                    \"HOME=/root\",\n                    \"HOSTNAME=d098322a9b58\"\n               ],\n               \"Cmd\": [\n                    \"120\"\n               ],\n               \"Image\": \"mcr.microsoft.com/powershell:latest\",\n               \"Volumes\": null,\n               \"WorkingDir\": \"/\",\n               \"Entrypoint\": [\n                    \"/bin/sleep\"\n               ],\n               \"OnBuild\": null,\n               \"Labels\": {\n                    \"io.monochromatic.toml-attempt\": \"2e0e2434-706d-4590-a99b-bfa68c750879\",\n                    \"org.opencontainers.image.ref.name\": \"ubuntu\",\n                    \"org.opencontainers.image.version\": \"22.04\"\n               },\n               \"Annotations\": {\n                    \"io.container.manager\": \"libpod\",\n                    \"io.podman.annotations.pids-limit\": \"64\",\n                    \"org.opencontainers.image.stopSignal\": \"15\",\n                    \"org.systemd.property.KillSignal\": \"15\",\n                    \"org.systemd.property.TimeoutStopUSec\": \"uint64 10000000\"\n               },\n               \"StopSignal\": \"SIGTERM\",\n               \"HealthcheckOnFailureAction\": \"none\",\n               \"HealthLogDestination\": \"local\",\n               \"HealthcheckMaxLogCount\": 5,\n               \"HealthcheckMaxLogSize\": 500,\n               \"CreateCommand\": [\n                    \"/usr/bin/podman\",\n                    \"run\",\n                    \"--label\",\n                    \"io.monochromatic.toml-attempt=2e0e2434-706d-4590-a99b-bfa68c750879\",\n                    \"--detach\",\n                    \"--pull=never\",\n                    \"--network=none\",\n                    \"--memory=2g\",\n                    \"--cpus=2\",\n                    \"--pids-limit=64\",\n                    \"--entrypoint=/bin/sleep\",\n                    \"0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0\",\n                    \"120\"\n               ],\n               \"Umask\": \"0022\",\n               \"Timeout\": 0,\n               \"StopTimeout\": 10,\n               \"Passwd\": true,\n               \"sdNotifyMode\": \"container\"\n          },\n          \"HostConfig\": {\n               \"Binds\": [],\n               \"CgroupManager\": \"systemd\",\n               \"CgroupMode\": \"private\",\n               \"ContainerIDFile\": \"\",\n               \"LogConfig\": {\n                    \"Type\": \"k8s-file\",\n                    \"Config\": null,\n                    \"Path\": \"/var/home/user/.local/share/containers/storage/overlay-containers/d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74/userdata/ctr.log\",\n                    \"Tag\": \"\",\n                    \"Size\": \"-1B\"\n               },\n               \"NetworkMode\": \"none\",\n               \"PortBindings\": {},\n               \"RestartPolicy\": {\n                    \"Name\": \"no\",\n                    \"MaximumRetryCount\": 0\n               },\n               \"AutoRemove\": false,\n               \"AutoRemoveImage\": false,\n               \"Annotations\": {\n                    \"io.container.manager\": \"libpod\",\n                    \"io.podman.annotations.pids-limit\": \"64\",\n                    \"org.opencontainers.image.stopSignal\": \"15\",\n                    \"org.systemd.property.KillSignal\": \"15\",\n                    \"org.systemd.property.TimeoutStopUSec\": \"uint64 10000000\"\n               },\n               \"VolumeDriver\": \"\",\n               \"VolumesFrom\": null,\n               \"CapAdd\": [],\n               \"CapDrop\": [],\n               \"Dns\": [],\n               \"DnsOptions\": [],\n               \"DnsSearch\": [],\n               \"ExtraHosts\": [],\n               \"HostsFile\": \"\",\n               \"GroupAdd\": [],\n               \"IpcMode\": \"shareable\",\n               \"Cgroup\": \"\",\n               \"Cgroups\": \"default\",\n               \"Links\": null,\n               \"OomScoreAdj\": 0,\n               \"PidMode\": \"private\",\n               \"Privileged\": false,\n               \"PublishAllPorts\": false,\n               \"ReadonlyRootfs\": false,\n               \"SecurityOpt\": [],\n               \"Tmpfs\": {},\n               \"UTSMode\": \"private\",\n               \"UsernsMode\": \"\",\n               \"ShmSize\": 65536000,\n               \"Runtime\": \"oci\",\n               \"ConsoleSize\": [\n                    0,\n                    0\n               ],\n               \"Isolation\": \"\",\n               \"CpuShares\": 0,\n               \"Memory\": 2147483648,\n               \"NanoCpus\": 2000000000,\n               \"CgroupParent\": \"user.slice\",\n               \"BlkioWeight\": 0,\n               \"BlkioWeightDevice\": null,\n               \"BlkioDeviceReadBps\": null,\n               \"BlkioDeviceWriteBps\": null,\n               \"BlkioDeviceReadIOps\": null,\n               \"BlkioDeviceWriteIOps\": null,\n               \"CpuPeriod\": 100000,\n               \"CpuQuota\": 200000,\n               \"CpuRealtimePeriod\": 0,\n               \"CpuRealtimeRuntime\": 0,\n               \"CpusetCpus\": \"\",\n               \"CpusetMems\": \"\",\n               \"Devices\": [],\n               \"DiskQuota\": 0,\n               \"KernelMemory\": 0,\n               \"MemoryReservation\": 0,\n               \"MemorySwap\": 4294967296,\n               \"MemorySwappiness\": -1,\n               \"OomKillDisable\": false,\n               \"PidsLimit\": 64,\n               \"Ulimits\": [\n                    {\n                         \"Name\": \"RLIMIT_NOFILE\",\n                         \"Soft\": 1048576,\n                         \"Hard\": 1048576\n                    },\n                    {\n                         \"Name\": \"RLIMIT_NPROC\",\n                         \"Soft\": 12288,\n                         \"Hard\": 12288\n                    }\n               ],\n               \"CpuCount\": 0,\n               \"CpuPercent\": 0,\n               \"IOMaximumIOps\": 0,\n               \"IOMaximumBandwidth\": 0,\n               \"CgroupConf\": null\n          },\n          \"UseImageHosts\": false,\n          \"UseImageHostname\": false\n     }\n]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "sourceConsumerPodman": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=2e0e2434-706d-4590-a99b-bfa68c750879",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO",
+                "startedAt": "2026-10-17T07:36:04.395Z",
+                "finishedAt": "2026-10-17T07:36:04.427Z",
+                "elapsedMs": 31.410863999999492,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 999,
+                "stderrBytes": 0,
+                "stdoutSha256": "50852cfa3d27871627148461e953da398b544cb288e0f2df4d5c7e12428a0da0",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[\n  {\n    \"AutoRemove\": false,\n    \"Command\": [\n      \"120\"\n    ],\n    \"CreatedAt\": \"14 seconds ago\",\n    \"CIDFile\": \"\",\n    \"Exited\": false,\n    \"ExitedAt\": -62135596800,\n    \"ExitCode\": 0,\n    \"ExposedPorts\": null,\n    \"Id\": \"d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74\",\n    \"Image\": \"mcr.microsoft.com/powershell:latest\",\n    \"ImageID\": \"0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0\",\n    \"IsInfra\": false,\n    \"Labels\": {\n      \"io.monochromatic.toml-attempt\": \"2e0e2434-706d-4590-a99b-bfa68c750879\",\n      \"org.opencontainers.image.ref.name\": \"ubuntu\",\n      \"org.opencontainers.image.version\": \"22.04\"\n    },\n    \"Mounts\": [],\n    \"Names\": [\n      \"dreamy_babbage\"\n    ],\n    \"Namespaces\": {\n      \n    },\n    \"Networks\": [],\n    \"Pid\": 431800,\n    \"Pod\": \"\",\n    \"PodName\": \"\",\n    \"Ports\": null,\n    \"Restarts\": 0,\n    \"Size\": null,\n    \"StartedAt\": 1792222549,\n    \"State\": \"running\",\n    \"Status\": \"Up 15 seconds\",\n    \"Created\": 1792222549\n  }\n]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "sourceConsumerPodman": "/usr/bin/podman",
+                "args": [
+                  "inspect",
+                  "d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO",
+                "startedAt": "2026-10-17T07:36:04.427Z",
+                "finishedAt": "2026-10-17T07:36:04.460Z",
+                "elapsedMs": 32.99250000000029,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 12425,
+                "stderrBytes": 0,
+                "stdoutSha256": "5d48f681c79d8d8d13281aab3ea5e473c822e1318d8f6815fbec3c169dca4371",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[\n     {\n          \"Id\": \"d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74\",\n          \"Created\": \"2026-10-17T03:35:49.45809475-04:00\",\n          \"Path\": \"/bin/sleep\",\n          \"Args\": [\n               \"120\"\n          ],\n          \"State\": {\n               \"OciVersion\": \"1.2.1\",\n               \"Status\": \"running\",\n               \"Running\": true,\n               \"Paused\": false,\n               \"Restarting\": false,\n               \"OOMKilled\": false,\n               \"Dead\": false,\n               \"Pid\": 431800,\n               \"ConmonPid\": 431798,\n               \"ExitCode\": 0,\n               \"Error\": \"\",\n               \"StartedAt\": \"2026-10-17T03:35:49.505050677-04:00\",\n               \"FinishedAt\": \"0001-01-01T00:00:00Z\",\n               \"CgroupPath\": \"/user.slice/user-1000.slice/user@1000.service/user.slice/libpod-d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74.scope\",\n               \"CheckpointedAt\": \"0001-01-01T00:00:00Z\",\n               \"RestoredAt\": \"0001-01-01T00:00:00Z\"\n          },\n          \"Image\": \"0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0\",\n          \"ImageDigest\": \"sha256:810c4f1e0c9d23022c3ec18c50a6205ee4b60766f1739d329b2948df1fd7d5b0\",\n          \"ImageName\": \"mcr.microsoft.com/powershell:latest\",\n          \"Rootfs\": \"\",\n          \"Pod\": \"\",\n          \"ResolvConfPath\": \"\",\n          \"HostnamePath\": \"/run/user/1000/containers/overlay-containers/d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74/userdata/hostname\",\n          \"HostsPath\": \"/run/user/1000/containers/overlay-containers/d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74/userdata/hosts\",\n          \"StaticDir\": \"/var/home/user/.local/share/containers/storage/overlay-containers/d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74/userdata\",\n          \"OCIConfigPath\": \"/var/home/user/.local/share/containers/storage/overlay-containers/d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74/userdata/config.json\",\n          \"OCIRuntime\": \"crun\",\n          \"ConmonPidFile\": \"/run/user/1000/containers/overlay-containers/d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74/userdata/conmon.pid\",\n          \"PidFile\": \"/run/user/1000/containers/overlay-containers/d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74/userdata/pidfile\",\n          \"Name\": \"dreamy_babbage\",\n          \"RestartCount\": 0,\n          \"Driver\": \"overlay\",\n          \"MountLabel\": \"system_u:object_r:container_file_t:s0:c125,c294\",\n          \"ProcessLabel\": \"system_u:system_r:container_t:s0:c125,c294\",\n          \"AppArmorProfile\": \"\",\n          \"EffectiveCaps\": [\n               \"CAP_CHOWN\",\n               \"CAP_DAC_OVERRIDE\",\n               \"CAP_FOWNER\",\n               \"CAP_FSETID\",\n               \"CAP_KILL\",\n               \"CAP_NET_BIND_SERVICE\",\n               \"CAP_SETFCAP\",\n               \"CAP_SETGID\",\n               \"CAP_SETPCAP\",\n               \"CAP_SETUID\",\n               \"CAP_SYS_CHROOT\"\n          ],\n          \"BoundingCaps\": [\n               \"CAP_CHOWN\",\n               \"CAP_DAC_OVERRIDE\",\n               \"CAP_FOWNER\",\n               \"CAP_FSETID\",\n               \"CAP_KILL\",\n               \"CAP_NET_BIND_SERVICE\",\n               \"CAP_SETFCAP\",\n               \"CAP_SETGID\",\n               \"CAP_SETPCAP\",\n               \"CAP_SETUID\",\n               \"CAP_SYS_CHROOT\"\n          ],\n          \"ExecIDs\": [],\n          \"GraphDriver\": {\n               \"Name\": \"overlay\",\n               \"Data\": {\n                    \"LowerDir\": \"/var/home/user/.local/share/containers/storage/overlay/8f5ff742b8cfe7eefa11cb0b3295450362e17c865ff95d1f7020623fb8524808/diff:/var/home/user/.local/share/containers/storage/overlay/5498e8c22f6996f25ef193ee58617d5b37e2a96decf22e72de13c3b34e147591/diff\",\n                    \"MergedDir\": \"/var/home/user/.local/share/containers/storage/overlay/ad19d997e7f1fa0901bb0ccb0246f31755990801cc92701bc5615ccb0ab0bf9a/merged\",\n                    \"UpperDir\": \"/var/home/user/.local/share/containers/storage/overlay/ad19d997e7f1fa0901bb0ccb0246f31755990801cc92701bc5615ccb0ab0bf9a/diff\",\n                    \"WorkDir\": \"/var/home/user/.local/share/containers/storage/overlay/ad19d997e7f1fa0901bb0ccb0246f31755990801cc92701bc5615ccb0ab0bf9a/work\"\n               }\n          },\n          \"Mounts\": [],\n          \"Dependencies\": [],\n          \"NetworkSettings\": {\n               \"EndpointID\": \"\",\n               \"Gateway\": \"\",\n               \"IPAddress\": \"\",\n               \"IPPrefixLen\": 0,\n               \"IPv6Gateway\": \"\",\n               \"GlobalIPv6Address\": \"\",\n               \"GlobalIPv6PrefixLen\": 0,\n               \"MacAddress\": \"\",\n               \"Bridge\": \"\",\n               \"SandboxID\": \"\",\n               \"HairpinMode\": false,\n               \"LinkLocalIPv6Address\": \"\",\n               \"LinkLocalIPv6PrefixLen\": 0,\n               \"Ports\": {},\n               \"SandboxKey\": \"/proc/431800/ns/net\",\n               \"Networks\": {\n                    \"none\": {\n                         \"EndpointID\": \"\",\n                         \"Gateway\": \"\",\n                         \"IPAddress\": \"\",\n                         \"IPPrefixLen\": 0,\n                         \"IPv6Gateway\": \"\",\n                         \"GlobalIPv6Address\": \"\",\n                         \"GlobalIPv6PrefixLen\": 0,\n                         \"MacAddress\": \"\",\n                         \"NetworkID\": \"none\",\n                         \"DriverOpts\": null,\n                         \"IPAMConfig\": null,\n                         \"Links\": null\n                    }\n               }\n          },\n          \"Namespace\": \"\",\n          \"IsInfra\": false,\n          \"IsService\": false,\n          \"KubeExitCodePropagation\": \"invalid\",\n          \"lockNumber\": 0,\n          \"Config\": {\n               \"Hostname\": \"d098322a9b58\",\n               \"Domainname\": \"\",\n               \"User\": \"\",\n               \"AttachStdin\": false,\n               \"AttachStdout\": false,\n               \"AttachStderr\": false,\n               \"Tty\": false,\n               \"OpenStdin\": false,\n               \"StdinOnce\": false,\n               \"Env\": [\n                    \"container=podman\",\n                    \"LC_ALL=en_US.UTF-8\",\n                    \"LANG=en_US.UTF-8\",\n                    \"PS_INSTALL_FOLDER=/opt/microsoft/powershell/7\",\n                    \"PSModuleAnalysisCachePath=/var/cache/microsoft/powershell/PSModuleAnalysisCache/ModuleAnalysisCache\",\n                    \"POWERSHELL_DISTRIBUTION_CHANNEL=PSDocker-Ubuntu-22.04\",\n                    \"DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false\",\n                    \"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\",\n                    \"HOME=/root\",\n                    \"HOSTNAME=d098322a9b58\"\n               ],\n               \"Cmd\": [\n                    \"120\"\n               ],\n               \"Image\": \"mcr.microsoft.com/powershell:latest\",\n               \"Volumes\": null,\n               \"WorkingDir\": \"/\",\n               \"Entrypoint\": [\n                    \"/bin/sleep\"\n               ],\n               \"OnBuild\": null,\n               \"Labels\": {\n                    \"io.monochromatic.toml-attempt\": \"2e0e2434-706d-4590-a99b-bfa68c750879\",\n                    \"org.opencontainers.image.ref.name\": \"ubuntu\",\n                    \"org.opencontainers.image.version\": \"22.04\"\n               },\n               \"Annotations\": {\n                    \"io.container.manager\": \"libpod\",\n                    \"io.podman.annotations.pids-limit\": \"64\",\n                    \"org.opencontainers.image.stopSignal\": \"15\",\n                    \"org.systemd.property.KillSignal\": \"15\",\n                    \"org.systemd.property.TimeoutStopUSec\": \"uint64 10000000\"\n               },\n               \"StopSignal\": \"SIGTERM\",\n               \"HealthcheckOnFailureAction\": \"none\",\n               \"HealthLogDestination\": \"local\",\n               \"HealthcheckMaxLogCount\": 5,\n               \"HealthcheckMaxLogSize\": 500,\n               \"CreateCommand\": [\n                    \"/usr/bin/podman\",\n                    \"run\",\n                    \"--label\",\n                    \"io.monochromatic.toml-attempt=2e0e2434-706d-4590-a99b-bfa68c750879\",\n                    \"--detach\",\n                    \"--pull=never\",\n                    \"--network=none\",\n                    \"--memory=2g\",\n                    \"--cpus=2\",\n                    \"--pids-limit=64\",\n                    \"--entrypoint=/bin/sleep\",\n                    \"0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0\",\n                    \"120\"\n               ],\n               \"Umask\": \"0022\",\n               \"Timeout\": 0,\n               \"StopTimeout\": 10,\n               \"Passwd\": true,\n               \"sdNotifyMode\": \"container\"\n          },\n          \"HostConfig\": {\n               \"Binds\": [],\n               \"CgroupManager\": \"systemd\",\n               \"CgroupMode\": \"private\",\n               \"ContainerIDFile\": \"\",\n               \"LogConfig\": {\n                    \"Type\": \"k8s-file\",\n                    \"Config\": null,\n                    \"Path\": \"/var/home/user/.local/share/containers/storage/overlay-containers/d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74/userdata/ctr.log\",\n                    \"Tag\": \"\",\n                    \"Size\": \"-1B\"\n               },\n               \"NetworkMode\": \"none\",\n               \"PortBindings\": {},\n               \"RestartPolicy\": {\n                    \"Name\": \"no\",\n                    \"MaximumRetryCount\": 0\n               },\n               \"AutoRemove\": false,\n               \"AutoRemoveImage\": false,\n               \"Annotations\": {\n                    \"io.container.manager\": \"libpod\",\n                    \"io.podman.annotations.pids-limit\": \"64\",\n                    \"org.opencontainers.image.stopSignal\": \"15\",\n                    \"org.systemd.property.KillSignal\": \"15\",\n                    \"org.systemd.property.TimeoutStopUSec\": \"uint64 10000000\"\n               },\n               \"VolumeDriver\": \"\",\n               \"VolumesFrom\": null,\n               \"CapAdd\": [],\n               \"CapDrop\": [],\n               \"Dns\": [],\n               \"DnsOptions\": [],\n               \"DnsSearch\": [],\n               \"ExtraHosts\": [],\n               \"HostsFile\": \"\",\n               \"GroupAdd\": [],\n               \"IpcMode\": \"shareable\",\n               \"Cgroup\": \"\",\n               \"Cgroups\": \"default\",\n               \"Links\": null,\n               \"OomScoreAdj\": 0,\n               \"PidMode\": \"private\",\n               \"Privileged\": false,\n               \"PublishAllPorts\": false,\n               \"ReadonlyRootfs\": false,\n               \"SecurityOpt\": [],\n               \"Tmpfs\": {},\n               \"UTSMode\": \"private\",\n               \"UsernsMode\": \"\",\n               \"ShmSize\": 65536000,\n               \"Runtime\": \"oci\",\n               \"ConsoleSize\": [\n                    0,\n                    0\n               ],\n               \"Isolation\": \"\",\n               \"CpuShares\": 0,\n               \"Memory\": 2147483648,\n               \"NanoCpus\": 2000000000,\n               \"CgroupParent\": \"user.slice\",\n               \"BlkioWeight\": 0,\n               \"BlkioWeightDevice\": null,\n               \"BlkioDeviceReadBps\": null,\n               \"BlkioDeviceWriteBps\": null,\n               \"BlkioDeviceReadIOps\": null,\n               \"BlkioDeviceWriteIOps\": null,\n               \"CpuPeriod\": 100000,\n               \"CpuQuota\": 200000,\n               \"CpuRealtimePeriod\": 0,\n               \"CpuRealtimeRuntime\": 0,\n               \"CpusetCpus\": \"\",\n               \"CpusetMems\": \"\",\n               \"Devices\": [],\n               \"DiskQuota\": 0,\n               \"KernelMemory\": 0,\n               \"MemoryReservation\": 0,\n               \"MemorySwap\": 4294967296,\n               \"MemorySwappiness\": -1,\n               \"OomKillDisable\": false,\n               \"PidsLimit\": 64,\n               \"Ulimits\": [\n                    {\n                         \"Name\": \"RLIMIT_NOFILE\",\n                         \"Soft\": 1048576,\n                         \"Hard\": 1048576\n                    },\n                    {\n                         \"Name\": \"RLIMIT_NPROC\",\n                         \"Soft\": 12288,\n                         \"Hard\": 12288\n                    }\n               ],\n               \"CpuCount\": 0,\n               \"CpuPercent\": 0,\n               \"IOMaximumIOps\": 0,\n               \"IOMaximumBandwidth\": 0,\n               \"CgroupConf\": null\n          },\n          \"UseImageHosts\": false,\n          \"UseImageHostname\": false\n     }\n]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "sourceConsumerPodman": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=2e0e2434-706d-4590-a99b-bfa68c750879",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO",
+                "startedAt": "2026-10-17T07:36:04.963Z",
+                "finishedAt": "2026-10-17T07:36:04.997Z",
+                "elapsedMs": 33.63785900000039,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 999,
+                "stderrBytes": 0,
+                "stdoutSha256": "3feab07af043f914257963bddc260e4843508084e771a29eedd19b5dbe7afea7",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[\n  {\n    \"AutoRemove\": false,\n    \"Command\": [\n      \"120\"\n    ],\n    \"CreatedAt\": \"15 seconds ago\",\n    \"CIDFile\": \"\",\n    \"Exited\": false,\n    \"ExitedAt\": -62135596800,\n    \"ExitCode\": 0,\n    \"ExposedPorts\": null,\n    \"Id\": \"d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74\",\n    \"Image\": \"mcr.microsoft.com/powershell:latest\",\n    \"ImageID\": \"0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0\",\n    \"IsInfra\": false,\n    \"Labels\": {\n      \"io.monochromatic.toml-attempt\": \"2e0e2434-706d-4590-a99b-bfa68c750879\",\n      \"org.opencontainers.image.ref.name\": \"ubuntu\",\n      \"org.opencontainers.image.version\": \"22.04\"\n    },\n    \"Mounts\": [],\n    \"Names\": [\n      \"dreamy_babbage\"\n    ],\n    \"Namespaces\": {\n      \n    },\n    \"Networks\": [],\n    \"Pid\": 431800,\n    \"Pod\": \"\",\n    \"PodName\": \"\",\n    \"Ports\": null,\n    \"Restarts\": 0,\n    \"Size\": null,\n    \"StartedAt\": 1792222549,\n    \"State\": \"running\",\n    \"Status\": \"Up 15 seconds\",\n    \"Created\": 1792222549\n  }\n]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "sourceConsumerPodman": "/usr/bin/podman",
+                "args": [
+                  "inspect",
+                  "d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO",
+                "startedAt": "2026-10-17T07:36:04.997Z",
+                "finishedAt": "2026-10-17T07:36:05.030Z",
+                "elapsedMs": 32.71222200000011,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 12425,
+                "stderrBytes": 0,
+                "stdoutSha256": "5d48f681c79d8d8d13281aab3ea5e473c822e1318d8f6815fbec3c169dca4371",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[\n     {\n          \"Id\": \"d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74\",\n          \"Created\": \"2026-10-17T03:35:49.45809475-04:00\",\n          \"Path\": \"/bin/sleep\",\n          \"Args\": [\n               \"120\"\n          ],\n          \"State\": {\n               \"OciVersion\": \"1.2.1\",\n               \"Status\": \"running\",\n               \"Running\": true,\n               \"Paused\": false,\n               \"Restarting\": false,\n               \"OOMKilled\": false,\n               \"Dead\": false,\n               \"Pid\": 431800,\n               \"ConmonPid\": 431798,\n               \"ExitCode\": 0,\n               \"Error\": \"\",\n               \"StartedAt\": \"2026-10-17T03:35:49.505050677-04:00\",\n               \"FinishedAt\": \"0001-01-01T00:00:00Z\",\n               \"CgroupPath\": \"/user.slice/user-1000.slice/user@1000.service/user.slice/libpod-d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74.scope\",\n               \"CheckpointedAt\": \"0001-01-01T00:00:00Z\",\n               \"RestoredAt\": \"0001-01-01T00:00:00Z\"\n          },\n          \"Image\": \"0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0\",\n          \"ImageDigest\": \"sha256:810c4f1e0c9d23022c3ec18c50a6205ee4b60766f1739d329b2948df1fd7d5b0\",\n          \"ImageName\": \"mcr.microsoft.com/powershell:latest\",\n          \"Rootfs\": \"\",\n          \"Pod\": \"\",\n          \"ResolvConfPath\": \"\",\n          \"HostnamePath\": \"/run/user/1000/containers/overlay-containers/d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74/userdata/hostname\",\n          \"HostsPath\": \"/run/user/1000/containers/overlay-containers/d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74/userdata/hosts\",\n          \"StaticDir\": \"/var/home/user/.local/share/containers/storage/overlay-containers/d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74/userdata\",\n          \"OCIConfigPath\": \"/var/home/user/.local/share/containers/storage/overlay-containers/d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74/userdata/config.json\",\n          \"OCIRuntime\": \"crun\",\n          \"ConmonPidFile\": \"/run/user/1000/containers/overlay-containers/d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74/userdata/conmon.pid\",\n          \"PidFile\": \"/run/user/1000/containers/overlay-containers/d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74/userdata/pidfile\",\n          \"Name\": \"dreamy_babbage\",\n          \"RestartCount\": 0,\n          \"Driver\": \"overlay\",\n          \"MountLabel\": \"system_u:object_r:container_file_t:s0:c125,c294\",\n          \"ProcessLabel\": \"system_u:system_r:container_t:s0:c125,c294\",\n          \"AppArmorProfile\": \"\",\n          \"EffectiveCaps\": [\n               \"CAP_CHOWN\",\n               \"CAP_DAC_OVERRIDE\",\n               \"CAP_FOWNER\",\n               \"CAP_FSETID\",\n               \"CAP_KILL\",\n               \"CAP_NET_BIND_SERVICE\",\n               \"CAP_SETFCAP\",\n               \"CAP_SETGID\",\n               \"CAP_SETPCAP\",\n               \"CAP_SETUID\",\n               \"CAP_SYS_CHROOT\"\n          ],\n          \"BoundingCaps\": [\n               \"CAP_CHOWN\",\n               \"CAP_DAC_OVERRIDE\",\n               \"CAP_FOWNER\",\n               \"CAP_FSETID\",\n               \"CAP_KILL\",\n               \"CAP_NET_BIND_SERVICE\",\n               \"CAP_SETFCAP\",\n               \"CAP_SETGID\",\n               \"CAP_SETPCAP\",\n               \"CAP_SETUID\",\n               \"CAP_SYS_CHROOT\"\n          ],\n          \"ExecIDs\": [],\n          \"GraphDriver\": {\n               \"Name\": \"overlay\",\n               \"Data\": {\n                    \"LowerDir\": \"/var/home/user/.local/share/containers/storage/overlay/8f5ff742b8cfe7eefa11cb0b3295450362e17c865ff95d1f7020623fb8524808/diff:/var/home/user/.local/share/containers/storage/overlay/5498e8c22f6996f25ef193ee58617d5b37e2a96decf22e72de13c3b34e147591/diff\",\n                    \"MergedDir\": \"/var/home/user/.local/share/containers/storage/overlay/ad19d997e7f1fa0901bb0ccb0246f31755990801cc92701bc5615ccb0ab0bf9a/merged\",\n                    \"UpperDir\": \"/var/home/user/.local/share/containers/storage/overlay/ad19d997e7f1fa0901bb0ccb0246f31755990801cc92701bc5615ccb0ab0bf9a/diff\",\n                    \"WorkDir\": \"/var/home/user/.local/share/containers/storage/overlay/ad19d997e7f1fa0901bb0ccb0246f31755990801cc92701bc5615ccb0ab0bf9a/work\"\n               }\n          },\n          \"Mounts\": [],\n          \"Dependencies\": [],\n          \"NetworkSettings\": {\n               \"EndpointID\": \"\",\n               \"Gateway\": \"\",\n               \"IPAddress\": \"\",\n               \"IPPrefixLen\": 0,\n               \"IPv6Gateway\": \"\",\n               \"GlobalIPv6Address\": \"\",\n               \"GlobalIPv6PrefixLen\": 0,\n               \"MacAddress\": \"\",\n               \"Bridge\": \"\",\n               \"SandboxID\": \"\",\n               \"HairpinMode\": false,\n               \"LinkLocalIPv6Address\": \"\",\n               \"LinkLocalIPv6PrefixLen\": 0,\n               \"Ports\": {},\n               \"SandboxKey\": \"/proc/431800/ns/net\",\n               \"Networks\": {\n                    \"none\": {\n                         \"EndpointID\": \"\",\n                         \"Gateway\": \"\",\n                         \"IPAddress\": \"\",\n                         \"IPPrefixLen\": 0,\n                         \"IPv6Gateway\": \"\",\n                         \"GlobalIPv6Address\": \"\",\n                         \"GlobalIPv6PrefixLen\": 0,\n                         \"MacAddress\": \"\",\n                         \"NetworkID\": \"none\",\n                         \"DriverOpts\": null,\n                         \"IPAMConfig\": null,\n                         \"Links\": null\n                    }\n               }\n          },\n          \"Namespace\": \"\",\n          \"IsInfra\": false,\n          \"IsService\": false,\n          \"KubeExitCodePropagation\": \"invalid\",\n          \"lockNumber\": 0,\n          \"Config\": {\n               \"Hostname\": \"d098322a9b58\",\n               \"Domainname\": \"\",\n               \"User\": \"\",\n               \"AttachStdin\": false,\n               \"AttachStdout\": false,\n               \"AttachStderr\": false,\n               \"Tty\": false,\n               \"OpenStdin\": false,\n               \"StdinOnce\": false,\n               \"Env\": [\n                    \"container=podman\",\n                    \"LC_ALL=en_US.UTF-8\",\n                    \"LANG=en_US.UTF-8\",\n                    \"PS_INSTALL_FOLDER=/opt/microsoft/powershell/7\",\n                    \"PSModuleAnalysisCachePath=/var/cache/microsoft/powershell/PSModuleAnalysisCache/ModuleAnalysisCache\",\n                    \"POWERSHELL_DISTRIBUTION_CHANNEL=PSDocker-Ubuntu-22.04\",\n                    \"DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false\",\n                    \"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\",\n                    \"HOME=/root\",\n                    \"HOSTNAME=d098322a9b58\"\n               ],\n               \"Cmd\": [\n                    \"120\"\n               ],\n               \"Image\": \"mcr.microsoft.com/powershell:latest\",\n               \"Volumes\": null,\n               \"WorkingDir\": \"/\",\n               \"Entrypoint\": [\n                    \"/bin/sleep\"\n               ],\n               \"OnBuild\": null,\n               \"Labels\": {\n                    \"io.monochromatic.toml-attempt\": \"2e0e2434-706d-4590-a99b-bfa68c750879\",\n                    \"org.opencontainers.image.ref.name\": \"ubuntu\",\n                    \"org.opencontainers.image.version\": \"22.04\"\n               },\n               \"Annotations\": {\n                    \"io.container.manager\": \"libpod\",\n                    \"io.podman.annotations.pids-limit\": \"64\",\n                    \"org.opencontainers.image.stopSignal\": \"15\",\n                    \"org.systemd.property.KillSignal\": \"15\",\n                    \"org.systemd.property.TimeoutStopUSec\": \"uint64 10000000\"\n               },\n               \"StopSignal\": \"SIGTERM\",\n               \"HealthcheckOnFailureAction\": \"none\",\n               \"HealthLogDestination\": \"local\",\n               \"HealthcheckMaxLogCount\": 5,\n               \"HealthcheckMaxLogSize\": 500,\n               \"CreateCommand\": [\n                    \"/usr/bin/podman\",\n                    \"run\",\n                    \"--label\",\n                    \"io.monochromatic.toml-attempt=2e0e2434-706d-4590-a99b-bfa68c750879\",\n                    \"--detach\",\n                    \"--pull=never\",\n                    \"--network=none\",\n                    \"--memory=2g\",\n                    \"--cpus=2\",\n                    \"--pids-limit=64\",\n                    \"--entrypoint=/bin/sleep\",\n                    \"0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0\",\n                    \"120\"\n               ],\n               \"Umask\": \"0022\",\n               \"Timeout\": 0,\n               \"StopTimeout\": 10,\n               \"Passwd\": true,\n               \"sdNotifyMode\": \"container\"\n          },\n          \"HostConfig\": {\n               \"Binds\": [],\n               \"CgroupManager\": \"systemd\",\n               \"CgroupMode\": \"private\",\n               \"ContainerIDFile\": \"\",\n               \"LogConfig\": {\n                    \"Type\": \"k8s-file\",\n                    \"Config\": null,\n                    \"Path\": \"/var/home/user/.local/share/containers/storage/overlay-containers/d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74/userdata/ctr.log\",\n                    \"Tag\": \"\",\n                    \"Size\": \"-1B\"\n               },\n               \"NetworkMode\": \"none\",\n               \"PortBindings\": {},\n               \"RestartPolicy\": {\n                    \"Name\": \"no\",\n                    \"MaximumRetryCount\": 0\n               },\n               \"AutoRemove\": false,\n               \"AutoRemoveImage\": false,\n               \"Annotations\": {\n                    \"io.container.manager\": \"libpod\",\n                    \"io.podman.annotations.pids-limit\": \"64\",\n                    \"org.opencontainers.image.stopSignal\": \"15\",\n                    \"org.systemd.property.KillSignal\": \"15\",\n                    \"org.systemd.property.TimeoutStopUSec\": \"uint64 10000000\"\n               },\n               \"VolumeDriver\": \"\",\n               \"VolumesFrom\": null,\n               \"CapAdd\": [],\n               \"CapDrop\": [],\n               \"Dns\": [],\n               \"DnsOptions\": [],\n               \"DnsSearch\": [],\n               \"ExtraHosts\": [],\n               \"HostsFile\": \"\",\n               \"GroupAdd\": [],\n               \"IpcMode\": \"shareable\",\n               \"Cgroup\": \"\",\n               \"Cgroups\": \"default\",\n               \"Links\": null,\n               \"OomScoreAdj\": 0,\n               \"PidMode\": \"private\",\n               \"Privileged\": false,\n               \"PublishAllPorts\": false,\n               \"ReadonlyRootfs\": false,\n               \"SecurityOpt\": [],\n               \"Tmpfs\": {},\n               \"UTSMode\": \"private\",\n               \"UsernsMode\": \"\",\n               \"ShmSize\": 65536000,\n               \"Runtime\": \"oci\",\n               \"ConsoleSize\": [\n                    0,\n                    0\n               ],\n               \"Isolation\": \"\",\n               \"CpuShares\": 0,\n               \"Memory\": 2147483648,\n               \"NanoCpus\": 2000000000,\n               \"CgroupParent\": \"user.slice\",\n               \"BlkioWeight\": 0,\n               \"BlkioWeightDevice\": null,\n               \"BlkioDeviceReadBps\": null,\n               \"BlkioDeviceWriteBps\": null,\n               \"BlkioDeviceReadIOps\": null,\n               \"BlkioDeviceWriteIOps\": null,\n               \"CpuPeriod\": 100000,\n               \"CpuQuota\": 200000,\n               \"CpuRealtimePeriod\": 0,\n               \"CpuRealtimeRuntime\": 0,\n               \"CpusetCpus\": \"\",\n               \"CpusetMems\": \"\",\n               \"Devices\": [],\n               \"DiskQuota\": 0,\n               \"KernelMemory\": 0,\n               \"MemoryReservation\": 0,\n               \"MemorySwap\": 4294967296,\n               \"MemorySwappiness\": -1,\n               \"OomKillDisable\": false,\n               \"PidsLimit\": 64,\n               \"Ulimits\": [\n                    {\n                         \"Name\": \"RLIMIT_NOFILE\",\n                         \"Soft\": 1048576,\n                         \"Hard\": 1048576\n                    },\n                    {\n                         \"Name\": \"RLIMIT_NPROC\",\n                         \"Soft\": 12288,\n                         \"Hard\": 12288\n                    }\n               ],\n               \"CpuCount\": 0,\n               \"CpuPercent\": 0,\n               \"IOMaximumIOps\": 0,\n               \"IOMaximumBandwidth\": 0,\n               \"CgroupConf\": null\n          },\n          \"UseImageHosts\": false,\n          \"UseImageHostname\": false\n     }\n]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "sourceConsumerPodman": "/usr/bin/podman",
+                "args": [
+                  "kill",
+                  "--signal=SIGKILL",
+                  "d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO",
+                "startedAt": "2026-10-17T07:36:05.030Z",
+                "finishedAt": "2026-10-17T07:36:05.106Z",
+                "elapsedMs": 75.32973300000049,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 65,
+                "stderrBytes": 0,
+                "stdoutSha256": "087b484edb08b9a3d9d79790c8c31710edb8f95ed71c0769096b73dab5aa7d04",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "sourceConsumerPodman": "/usr/bin/podman",
+                "args": [
+                  "rm",
+                  "--force",
+                  "--time=0",
+                  "--ignore",
+                  "d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO",
+                "startedAt": "2026-10-17T07:36:05.106Z",
+                "finishedAt": "2026-10-17T07:36:05.260Z",
+                "elapsedMs": 154.31052199999976,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 65,
+                "stderrBytes": 0,
+                "stdoutSha256": "087b484edb08b9a3d9d79790c8c31710edb8f95ed71c0769096b73dab5aa7d04",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "sourceConsumerPodman": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=2e0e2434-706d-4590-a99b-bfa68c750879",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO",
+                "startedAt": "2026-10-17T07:36:05.273Z",
+                "finishedAt": "2026-10-17T07:36:05.300Z",
+                "elapsedMs": 27.2189529999996,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 3,
+                "stderrBytes": 0,
+                "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "sourceConsumerPodman": "/usr/bin/podman",
+                "args": [
+                  "events",
+                  "--since",
+                  "2026-10-17T07:35:49.363Z",
+                  "--until",
+                  "2026-10-17T07:36:05.300Z",
+                  "--stream=false",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=2e0e2434-706d-4590-a99b-bfa68c750879",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ode4UO",
+                "startedAt": "2026-10-17T07:36:05.300Z",
+                "finishedAt": "2026-10-17T07:36:05.346Z",
+                "elapsedMs": 45.84191499999906,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 2870,
+                "stderrBytes": 0,
+                "stdoutSha256": "67422e0832905517b39c21b3dbf6716982af2f21037490bf49438b20dc699baa",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "{\"ID\":\"d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74\",\"Image\":\"mcr.microsoft.com/powershell:latest\",\"Name\":\"dreamy_babbage\",\"Status\":\"create\",\"time\":1792222549,\"timeNano\":1792222549470255974,\"Type\":\"container\",\"Attributes\":{\"io.monochromatic.toml-attempt\":\"2e0e2434-706d-4590-a99b-bfa68c750879\",\"org.opencontainers.image.ref.name\":\"ubuntu\",\"org.opencontainers.image.version\":\"22.04\"}}\n{\"ID\":\"d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74\",\"Image\":\"mcr.microsoft.com/powershell:latest\",\"Name\":\"dreamy_babbage\",\"Status\":\"init\",\"time\":1792222549,\"timeNano\":1792222549503021388,\"Type\":\"container\",\"Attributes\":{\"io.monochromatic.toml-attempt\":\"2e0e2434-706d-4590-a99b-bfa68c750879\",\"org.opencontainers.image.ref.name\":\"ubuntu\",\"org.opencontainers.image.version\":\"22.04\"}}\n{\"ID\":\"d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74\",\"Image\":\"mcr.microsoft.com/powershell:latest\",\"Name\":\"dreamy_babbage\",\"Status\":\"start\",\"time\":1792222549,\"timeNano\":1792222549505053167,\"Type\":\"container\",\"Attributes\":{\"io.monochromatic.toml-attempt\":\"2e0e2434-706d-4590-a99b-bfa68c750879\",\"org.opencontainers.image.ref.name\":\"ubuntu\",\"org.opencontainers.image.version\":\"22.04\"}}\n{\"ID\":\"d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74\",\"Image\":\"mcr.microsoft.com/powershell:latest\",\"Name\":\"dreamy_babbage\",\"Status\":\"kill\",\"time\":1792222565,\"timeNano\":1792222565067452829,\"Type\":\"container\",\"Attributes\":{\"io.monochromatic.toml-attempt\":\"2e0e2434-706d-4590-a99b-bfa68c750879\",\"org.opencontainers.image.ref.name\":\"ubuntu\",\"org.opencontainers.image.version\":\"22.04\"}}\n{\"ContainerExitCode\":137,\"ID\":\"d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74\",\"Image\":\"mcr.microsoft.com/powershell:latest\",\"Name\":\"dreamy_babbage\",\"Status\":\"died\",\"time\":1792222565,\"timeNano\":1792222565096880546,\"Type\":\"container\",\"Attributes\":{\"io.monochromatic.toml-attempt\":\"2e0e2434-706d-4590-a99b-bfa68c750879\",\"org.opencontainers.image.ref.name\":\"ubuntu\",\"org.opencontainers.image.version\":\"22.04\"}}\n{\"ID\":\"d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74\",\"Image\":\"mcr.microsoft.com/powershell:latest\",\"Name\":\"dreamy_babbage\",\"Status\":\"cleanup\",\"time\":1792222565,\"timeNano\":1792222565246629894,\"Type\":\"container\",\"Attributes\":{\"io.monochromatic.toml-attempt\":\"2e0e2434-706d-4590-a99b-bfa68c750879\",\"org.opencontainers.image.ref.name\":\"ubuntu\",\"org.opencontainers.image.version\":\"22.04\"}}\n{\"ContainerExitCode\":137,\"ID\":\"d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74\",\"Image\":\"mcr.microsoft.com/powershell:latest\",\"Name\":\"dreamy_babbage\",\"Status\":\"remove\",\"time\":1792222565,\"timeNano\":1792222565259978583,\"Type\":\"container\",\"Attributes\":{\"io.monochromatic.toml-attempt\":\"2e0e2434-706d-4590-a99b-bfa68c750879\",\"org.opencontainers.image.ref.name\":\"ubuntu\",\"org.opencontainers.image.version\":\"22.04\"}}\n",
+                "stderr": ""
+              }
+            ],
+            "sourcePodmanCalls": [
+              {
+                "event": "source-podman-call",
+                "observedAt": "2026-10-17T07:35:49.428Z",
+                "pid": 431762,
+                "command": "run",
+                "args": [
+                  "--detach",
+                  "--pull=never",
+                  "--network=none",
+                  "--memory=2g",
+                  "--cpus=2",
+                  "--pids-limit=64",
+                  "--entrypoint=/bin/sleep",
+                  "0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0",
+                  "120"
+                ],
+                "forwardedArgs": [
+                  "run",
+                  "--label",
+                  "io.monochromatic.toml-attempt=2e0e2434-706d-4590-a99b-bfa68c750879",
+                  "--detach",
+                  "--pull=never",
+                  "--network=none",
+                  "--memory=2g",
+                  "--cpus=2",
+                  "--pids-limit=64",
+                  "--entrypoint=/bin/sleep",
+                  "0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0",
+                  "120"
+                ]
+              },
+              {
+                "event": "source-podman-returned",
+                "observedAt": "2026-10-17T07:35:49.510Z",
+                "pid": 431762,
+                "command": "run",
+                "status": 0,
+                "signal": null,
+                "error": null
+              }
+            ],
+            "metadataOperationMs": 60000,
+            "metadataForwarding": []
+          },
+          "pids": {
+            "pid": 431754,
+            "child": 431761,
+            "container": "d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74"
+          },
+          "observed": {
+            "id": "d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74",
+            "name": "dreamy_babbage",
+            "image": "0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0",
+            "created": "2026-10-17T03:35:49.45809475-04:00",
+            "state": {
+              "OciVersion": "1.2.1",
+              "Status": "running",
+              "Running": true,
+              "Paused": false,
+              "Restarting": false,
+              "OOMKilled": false,
+              "Dead": false,
+              "Pid": 431800,
+              "ConmonPid": 431798,
+              "ExitCode": 0,
+              "Error": "",
+              "StartedAt": "2026-10-17T03:35:49.505050677-04:00",
+              "FinishedAt": "0001-01-01T00:00:00Z",
+              "CgroupPath": "/user.slice/user-1000.slice/user@1000.service/user.slice/libpod-d098322a9b58947b01f91c2f7fde6e54a32c6befd2cc7a878d7386c7a323df74.scope",
+              "CheckpointedAt": "0001-01-01T00:00:00Z",
+              "RestoredAt": "0001-01-01T00:00:00Z"
+            },
+            "bounds": {
+              "memory": 2147483648,
+              "cpuQuota": 200000,
+              "cpuPeriod": 100000,
+              "nanoCpus": 2000000000,
+              "pidsLimit": 64
+            }
+          },
+          "eventsSha256": "67422e0832905517b39c21b3dbf6716982af2f21037490bf49438b20dc699baa"
+        },
+        "state": "Dispatched bounded observer repair trial; await terminal source, metadata forwarding, correlation and cleanup evidence before full mutation retry."
       }
     },
     "preCommonBindingRoute": {

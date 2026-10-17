@@ -263,10 +263,15 @@ Final coherent dispatch remains held.
 
 ## Bounded consumer outcome and metadata receipt repeat
 
-Pilot `0j8zhbn9n0`, workflow `qrmzdmwf4q`, job `kvg78klbhn`, attempt `4m0vbp3309`,
+Pilot `0j8zhbn9n0`,
+workflow `qrmzdmwf4q`,
+job `kvg78klbhn`,
+attempt `4m0vbp3309`,
 completed its original source command with exit zero.
 The actual baseline was green over the retained 37-file full-suite selection.
-The only mutant, `9cd1056a095eaea1`, reached source status `compileError` at `src/toml-get-comments.ts:28:26`.
+The only mutant,
+`9cd1056a095eaea1`,
+reached source status `compileError` at `src/toml-get-comments.ts:28:26`.
 This is a terminal compilation result with no mutant assertion execution credit.
 The native report has no infrastructure errors or unrun identities.
 Its 650 bytes have SHA-256 `692e5dd934f799518de76762ee34a0f22558a66a2832188cf5b074dfc37d7825`.
@@ -274,7 +279,10 @@ The retained shard baseline records tests at `4237.252068` milliseconds and type
 The mutant records `499.24852199999987` milliseconds.
 
 Provider status remains failed because the wrapper's metadata operation asserted `null !== 0`.
-The old wrapper did not retain the underlying command, signal, error code, or output byte counts;
+The old wrapper did not retain the underlying command,
+signal,
+error code,
+or output byte counts;
 its exact cause remains unproved.
 Scoped cleanup passed with no owned process group or labeled container remaining.
 The wrapper observed `59945.775575` milliseconds.
@@ -295,8 +303,14 @@ it does not complete the full mutation campaign or erase the historical infrastr
 
 Harness `0f8ad795aa92d3beb83e3bfa4e4aa54f1bea06f8` now writes each exact Podman operation
 to an incremental JSONL receipt before assertions,
-including signal, error code, complete arguments, timings, output byte counts, and hashes.
-A disposable eight-second timeout control observed `SIGKILL`, `ETIMEDOUT`,
+including signal,
+error code,
+complete arguments,
+timings,
+output byte counts,
+and hashes.
+A disposable eight-second timeout control observed `SIGKILL`,
+`ETIMEDOUT`,
 and 24 bytes in each output stream.
 That control proves receipt coverage and does not diagnose the historical cloud operation.
 Actual repeat `mj128hqwv0` uses the same source command and eight-second metadata budget.
@@ -309,11 +323,16 @@ Issue [#1118](https://github.com/Aquaticats/Monochromatic/issues/1118)
 records a separate source operator lookup defect.
 The unchanged source consumer emits string `endsWith` for mapped `startsWith`,
 nothing for an unmapped name,
-and function-valued replacements for inherited `toString`, `constructor`, and `hasOwnProperty`.
+and function-valued replacements for inherited `toString`,
+`constructor`,
+and `hasOwnProperty`.
 The plain-object lookup at `package/cli/mutation-test/src/engine/operator/chain-method.ts:173`
 accepts inherited Object functions.
 Three original cloud candidates consequently omit `replacement` in JSON.
-Their identities, direct source probe, duplicate searches, and re-fetched issue body are retained.
+Their identities,
+direct source probe,
+duplicate searches,
+and re-fetched issue body are retained.
 This producer defect did not cause the earlier source-copy failures.
 No application source change is included.
 
@@ -326,7 +345,10 @@ Final dispatch waits for root's complete frozen case bytes and the actual canoni
 
 ## Exact metadata repeat failure
 
-Repeat `mj128hqwv0`, workflow `t8wq69b56g`, job `h4c49btlhq`, attempt `3wnf82gzb8`,
+Repeat `mj128hqwv0`,
+workflow `t8wq69b56g`,
+job `h4c49btlhq`,
+attempt `3wnf82gzb8`,
 again completed the source command with exit zero and the same `compileError` identity.
 Its retained green baseline has no unrun mutant or infrastructure error.
 The wrapper remained failed because this exact metadata command exceeded its unchanged budget:
@@ -335,15 +357,28 @@ The wrapper remained failed because this exact metadata command exceeded its unc
 
 The operation ran from `2026-10-17T07:25:23.786Z` to `2026-10-17T07:25:31.793Z`,
 observed `8006.465648000001` milliseconds against an `8000`-millisecond budget,
-and ended with null status, `SIGKILL`, `ETIMEDOUT`, and errno `-110`.
-Stdout contained three bytes, `[]\n`; stderr contained zero bytes.
+and ended with null status,
+`SIGKILL`,
+`ETIMEDOUT`,
+and errno `-110`.
+Stdout contained three bytes,
+`[]\n`;
+stderr contained zero bytes.
 Printing an empty list does not prove the forwarding process completed.
 The generated Node adapter synchronously forwards to `sudo --non-interactive`
 and the resolved actual Podman executable,
 then propagates the returned status after its conditional cleanup.
-The underlying Podman, sudo, and Node forwarding lifecycles are not yet isolated.
+The underlying Podman,
+sudo,
+and Node forwarding lifecycles are not yet isolated.
 Seven other list operations and the final event query returned zero.
-All operation arguments, statuses, timings, signals, error fields, output bytes, and hashes are retained.
+All operation arguments,
+statuses,
+timings,
+signals,
+error fields,
+output bytes,
+and hashes are retained.
 
 Scoped cleanup passed.
 The provider interval is `165116` milliseconds at `16x64`,
@@ -352,4 +387,16 @@ Artifact `01a148c0-c29e-7644-a0ec-f546f5caf3e8` is 46389 bytes,
 SHA-256 `3e12339c854c28f69ef9ecdc29e03b2f1f0efe2959ad66bfd23347e1d75df2bb`,
 with 20 individually verified members.
 The authorized next trial may increase only the metadata deadline with explicit forwarding receipts,
-retain rejection controls, then repeat the bounded actual consumer before the full campaign.
+retain rejection controls,
+then repeat the bounded actual consumer before the full campaign.
+
+## Bounded forwarding trial request
+
+Actual trial `vlrxjltfkq` uses harness `316e1a8a309e71e456a741eb63e5ff3b94b75646`.
+Its metadata-only deadline is 60000 milliseconds.
+The unchanged source consumer retains the complete proven container adapter byte-for-byte.
+An observer-only copy adds before/after sudo forwarding receipts and preserves actual Podman arguments.
+The source correlation wrapper now retains each invocation without changing its forwarded argument policy.
+Disposable forwarding, timeout rejection, and removed-timeout detection controls pass.
+Original eight-second failures remain retained.
+Only complete actual source, metadata, correlation, and cleanup evidence permits the full immutable-source retry.

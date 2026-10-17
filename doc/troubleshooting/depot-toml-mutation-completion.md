@@ -122,7 +122,8 @@ The complete current container adapter was exercised by the bounded actual TOML 
 
 Pilot `0j8zhbn9n0` now exercises that complete adapter through the unchanged source task
 with one existing source-file selector and the full unit suite.
-Its actual source command completed with exit zero; the wrapper metadata failure remains separate.
+Its actual source command completed with exit zero;
+the wrapper metadata failure remains separate.
 
 ## Consumer recovery and metadata observation failure
 
@@ -134,14 +135,22 @@ It verifies the owned work volume and unchanged generated-metadata bind on a rea
 It does not complete the 3062-identity campaign.
 
 The provider job failed when metadata collection asserted `null !== 0`.
-That harness omitted the operation, signal, error code, and stdout/stderr byte counts,
+That harness omitted the operation,
+signal,
+error code,
+and stdout/stderr byte counts,
 so a timeout is not yet a diagnosis of the historical operation.
 The replacement receipt harness logs those fields incrementally before asserting success.
-Its disposable timeout control captures `SIGKILL`, `ETIMEDOUT`, and both output streams.
+Its disposable timeout control captures `SIGKILL`,
+`ETIMEDOUT`,
+and both output streams.
 Actual repeat `mj128hqwv0` preserves the eight-second operation budget and original source command.
 Collect that result before selecting a remedy or retrying the full campaign.
 The [TOML audit](../audit/depot-toml-reconciliation-2026-10-17.md)
-retains exact requests, source/harness revisions, cleanup intervals, and provider usage.
+retains exact requests,
+source/harness revisions,
+cleanup intervals,
+and provider usage.
 
 ## Inherited method lookup emits invalid replacement values
 
@@ -149,7 +158,9 @@ Issue [#1118](https://github.com/Aquaticats/Monochromatic/issues/1118)
 is a distinct source producer defect in `package/cli/mutation-test/src/engine/operator/chain-method.ts`.
 The unchanged source lookup accepts inherited Object functions as method-swap replacements.
 A real source consumer proves mapped-string and unmapped negative controls,
-then function-valued `toString`, `constructor`, and `hasOwnProperty` replacements.
+then function-valued `toString`,
+`constructor`,
+and `hasOwnProperty` replacements.
 JSON omits the function-valued replacement property on three retained cloud candidates.
 This does not explain the container source-copy failure;
 all of those earlier attempts failed before mutant assertions.
@@ -159,11 +170,21 @@ No source-body remedy was applied.
 ## Exact observer deadline receipt
 
 Actual repeat `mj128hqwv0` retains the failing `container-bin/podman ps --all --filter label=... --format json`
-operation with null status, `SIGKILL`, `ETIMEDOUT`, three stdout bytes, and zero stderr bytes.
+operation with null status,
+`SIGKILL`,
+`ETIMEDOUT`,
+three stdout bytes,
+and zero stderr bytes.
 It observed `8006.465648000001` milliseconds against an `8000`-millisecond deadline.
 Stdout `[]\n` establishes output bytes only.
-The Node forwarder, its synchronous sudo child, and actual Podman exit remain distinct lifecycle boundaries.
-The source command still completed with exit zero, green baseline, and the same terminal compilation result.
+The Node forwarder,
+its synchronous sudo child,
+and actual Podman exit remain distinct lifecycle boundaries.
+The source command still completed with exit zero,
+green baseline,
+and the same terminal compilation result.
 Both original eight-second failures remain retained.
 The next bounded trial may extend the metadata-only deadline while preserving source commands,
-timeout rejection controls, complete operation durations, and scoped cleanup.
+timeout rejection controls,
+complete operation durations,
+and scoped cleanup.
