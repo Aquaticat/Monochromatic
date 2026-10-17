@@ -1,5 +1,5 @@
 import {tagged} from '@monochromatic-dev/module-logger/ts';
-import {captureApprovalHostSource,finishWithApproval} from './approval.mjs';
+import {captureApprovalHostSource} from './approval.mjs';
 import {capturePolicyInputs} from './inputs.mjs';
 import {captureAuthorizationInputs,captureAuthorizationOwnerFactory} from './authorization-inputs.mjs';
 import {capturePendingSessionApproval} from './pending-session-approval.ts';
@@ -23,7 +23,7 @@ export class EstablishedPolicyDecisionError extends Error {}
 
 const l=tagged({tag:'auto-mode-decision-core'});
 
-//region A single owner plans, assesses, resolves, and confirms the original prepared operation.
+//region A single owner plans, assesses, and resolves the original prepared operation.
 /** Same-source incorporation needs the original single-member clause interpretation. */
 function captureUnitScope({inputs,unitPolicy,scope}){
  const inspected=semanticAdmissionScope({policy:unitPolicy,inputs});
@@ -115,24 +115,16 @@ async function decide({judgment,sourceContext,effectOwnerFor,authorizationOwnerF
  judgment.assertDependenciesCurrent();
  judgment.checkpoint();
  const closure=judgment.finalize();
- const approvalContext=approvalHost?Object.freeze({
-   ...approvalHost,
-   producerOwner:sourceContext.producerOwner,
-   observer:sourceContext.observer,
-   collector:sourceContext.collector,
-   response:sourceContext.response,
-   stream:sourceContext.stream
- }):undefined;
- const result=await finishWithApproval({
-   judgment,
-   decision:Object.freeze({outcome,automaticOutcome,operationDecision,closure,program:compiled.program}),
-   approvalContext
+ const result=Object.freeze({outcome,automaticOutcome,operationDecision,closure,program:compiled.program,
+  assertCurrent(){
+   if(judgment.inspect().finalRecord!==closure)throw new PolicyReviewPhaseError('Policy decision belongs to another original evidence closure');
+   judgment.assertDependenciesCurrent();
+  }
  });
  function assertCurrent(){
-  inputs.assertCurrent();
-  authorizationInputs.assertCurrent();
-  pendingSessionApproval.assertCurrent();
-  result.assertCurrent();
+  try{
+   inputs.assertCurrent();authorizationInputs.assertCurrent();pendingSessionApproval.assertCurrent();result.assertCurrent();
+  }catch(error){throw new EstablishedPolicyDecisionError('The established policy decision is no longer current; propose the operation again',{cause:error});}
  }
  assertCurrent();
  recordDecision({judgment,event:'review-complete',details:{outcome:result.outcome,confirmation:result.approval!==undefined}});

@@ -6,6 +6,7 @@ import {caughtValueText} from '@monochromatic-dev/module-caught-value/ts';
 import {bindPreparedTuiApproval} from '../../lifecycle/incumbent-tui-group/approval-presentation.mjs';
 import {projectOperationSummary} from '../action-policy/wire-material.mjs';
 import {EstablishedPolicyDecisionError} from '../action-policy/decision-core.mjs';
+import {resolveConfirmedOutcome} from '../action-policy/review-outcome.ts';
 import {createPreparedGroupContext} from './prepared-group-context.ts';
 
 //region Native ownership exists before automatic source collection can fail.
@@ -17,7 +18,7 @@ export function createPreparedGroup({response,stream,signal,assertOperationCurre
   const l=tagged({tag:createPreparedGroup.name,l:tagged({tag:'auto-mode-prepared-group'})});
   const parentJSON=JSON.stringify(response.content);
   const bypass=readBypass();
-  const state={context:undefined,scope:undefined,reviewed:undefined,automaticFailure:undefined,
+  const state={context:undefined,scope:undefined,reviewed:undefined,automaticReview:undefined,automaticFailure:undefined,
     manual:false,bypassed:false,closed:false,approval:undefined,answer:undefined};
 
   /** Original operation identity remains independent of automatic evidence availability. */
@@ -39,6 +40,7 @@ export function createPreparedGroup({response,stream,signal,assertOperationCurre
     tagged({tag:current.name,l}).debug('checking original group eligibility');
     baseCurrent();
     if(state.manual){
+      state.automaticReview?.assertCurrent();
       if(state.answer&&!state.answer.decision.block)state.approval.assertOriginalAllow(state.answer);
       return;
     }
@@ -59,6 +61,12 @@ export function createPreparedGroup({response,stream,signal,assertOperationCurre
       return;
     }
     context().assertSourceCurrent();
+  }
+  /** Confirmation checks original source dependencies directly, including when a compiler operation owns its wrapper. */
+  function confirmationCurrent(){
+    tagged({tag:confirmationCurrent.name,l}).debug('checking original confirmation scope');
+    baseCurrent();
+    if(state.automaticReview)context().assertSourceCurrent();
   }
   /** One context is shared with the policy compiler and every reached child. */
   function context(){
@@ -94,16 +102,26 @@ export function createPreparedGroup({response,stream,signal,assertOperationCurre
     baseCurrent();
     if(state.closed||state.approval)throw new PreparedGroupError('Manual approval requires one complete unreviewed group');
     const host=captureHost();
+    if(state.automaticReview&&state.automaticReview.outcome.state!=='resolved'&&!host?.ctx.hasUI){
+      state.manual=false;return state.automaticReview;
+    }
     if(!host)throw new PreparedGroupError('Automatic assessment is unavailable and this session has no manual approval interface',{cause:error});
+    state.automaticReview?.assertCurrent();
     const scope=JSON.stringify({parentProgram:projectOperationSummary(JSON.parse(parentJSON)),preparedGroup:members});
     state.approval=bindPreparedTuiApproval({...host,action:`Complete prepared group:\n${scope}`,
       approvalFingerprint:createHash('sha256').update(scope).digest('hex'),
-      closure:Object.freeze({kind:'manual-prepared-group'}),signal,assertPreparedCurrent:baseCurrent,
-      explanation:`Auto-mode could not assess this operation: ${caughtValueText(error)}. Review the complete prepared operation and choose Allow or Stop.`});
+      closure:state.automaticReview?.closure??Object.freeze({kind:'manual-prepared-group'}),signal,
+      assertPreparedCurrent:confirmationCurrent,
+      explanation:error===undefined
+        ?`Automatic review could not establish whether this operation is allowed. ${state.automaticReview.outcome.reason} Review the complete prepared operation and choose Allow or Stop.`
+        :`Auto-mode could not assess this operation: ${caughtValueText(error)}. Review the complete prepared operation and choose Allow or Stop.`});
     state.answer=await state.approval.request();
-    if(!state.answer.decision.block)state.approval.assertOriginalAllow(state.answer);
-    return Object.freeze({manualFallback:true,approval:state.answer,
-      outcome:Object.freeze({state:'resolved',verdict:state.answer.decision.block?'deny':'approve',reason:state.answer.decision.reason}),
+    if(!state.answer.decision.block){state.automaticReview?.assertCurrent();state.approval.assertOriginalAllow(state.answer);}
+    const outcome=state.answer.decision.block||!state.automaticReview
+      ?Object.freeze({state:'resolved',verdict:state.answer.decision.block?'deny':'approve',reason:state.answer.decision.reason})
+      :resolveConfirmedOutcome({program:state.automaticReview.compiledPolicy,reconsideredOutcome:state.automaticReview.operationDecision?.outcome});
+    return Object.freeze({...state.automaticReview,manualFallback:state.automaticReview===undefined,approval:state.answer,
+      automaticOutcome:state.automaticReview?.outcome,outcome,
       assertCurrent:current});
   }
   /** Complete native preparation precedes either review route and never allocates alternate execution records. */
@@ -134,6 +152,10 @@ export function createPreparedGroup({response,stream,signal,assertOperationCurre
       catch(error){tagged({tag:assess.name,l}).debug(`automatic evidence closure failed: ${inspect(error,{depth:8})}`);}
       state.manual=true;
       state.reviewed=await requestManual(state.automaticFailure.error,members);
+    }else if(!state.bypassed&&(state.reviewed.outcome.state!=='resolved'||state.reviewed.outcome.verdict==='ask')){
+      state.automaticReview=state.reviewed;
+      state.manual=true;
+      state.reviewed=await requestManual(undefined,members);
     }
     return state.bypassed||state.reviewed?.outcome.verdict==='approve'?{block:false}:{block:true,
       reason:state.reviewed.outcome.reason??'Execution is withheld because the complete group has no established policy outcome'};

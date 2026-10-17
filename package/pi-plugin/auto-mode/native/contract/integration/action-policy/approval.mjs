@@ -1,6 +1,4 @@
 import {isProxy} from 'node:util/types';
-import {bindOriginalTuiApproval} from '../../lifecycle/incumbent-tui-group/approval.mjs';
-import {resolveConfirmedOutcome} from './review-outcome.ts';
 
 export class PolicyApprovalError extends Error {
  constructor(message){super(message);this.name=this.constructor
@@ -66,81 +64,4 @@ export function captureApprovalHostSource(input){
  }
  const host=captureApprovalHost(input);
  return function captureFixedApprovalHost(){return host;};
-}
-
-/**
- Route an approval requirement or uncertain assessment to the existing original-group TUI.
- Bootstrap supplies native context capabilities; this module selects the existing binder.
- The adopted manual-review fallback preserves original group identity and dependency checks.
- */
-export async function finishWithApproval({
-  judgment,
-  decision,
-  approvalContext
-}){
- function assertDecisionIdentity(){
-  if(judgment.inspect()
-    .finalRecord
-    !==decision.closure)throw new PolicyApprovalError('Policy decision belongs to a different original judgment closure');
- }
- function current(){
-  assertDecisionIdentity();
-  judgment.assertDependenciesCurrent();
- }
- current();
- const uncertain=decision.outcome
-   .state
-   !=='resolved';
- if((!uncertain)&&(decision.outcome
-   .verdict
-   !=='ask')){
-  return Object.freeze({
-    ...decision,
-    assertCurrent:current
-  });
- }
- if(uncertain&&(!approvalContext?.ctx
-   .hasUI))return Object.freeze({
-   ...decision,
-   assertCurrent:current
- });
- if(approvalContext===undefined)throw new PolicyApprovalError('The original group requires approval, but no native approval host and original source context are configured');
- const approval=bindOriginalTuiApproval({
-   ...approvalContext,
-   judgment,
-   explanation:uncertain
-     ?`Automatic review could not establish whether this operation is allowed. ${decision.outcome
-       .reason} Review the complete prepared operation and choose Allow or Stop.`
-     :decision.outcome
-       .reason
-       ??'Applicable instructions require approval'
- });
- const response=await approval.request();
- if(response.closure!==decision.closure)throw new PolicyApprovalError('Approval belongs to a different original group');
- if(response.decision
-   .block)return Object.freeze({
-  ...decision,
-  automaticOutcome:decision.outcome,
-  outcome:Object.freeze({
-    state:'resolved',
-    verdict:'deny',
-    reason:response.decision
-      .reason
-      ??'The user did not approve the original group'
-  }),
-  approval:response,
-  assertCurrent:current
- });
- function assertOriginalApproval(){
-  assertDecisionIdentity();
-  approval.assertOriginalAllow(response);
- }
- assertOriginalApproval();
- return Object.freeze({
-  ...decision,
-  automaticOutcome:decision.outcome,
-  outcome:resolveConfirmedOutcome({program:decision.program,reconsideredOutcome:decision.operationDecision?.outcome}),
-  approval:response,
-  assertCurrent:assertOriginalApproval
- });
 }
