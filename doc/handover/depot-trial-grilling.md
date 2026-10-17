@@ -6,7 +6,16 @@
 
 The user additionally authorized registering the repository's search/fetch MCP globally in Codex,
 and suggested a shallow `openai/codex` source clone.
-Root is verifying that integration before resuming its remaining replay preparation.
+The global `search_fetch` registration is installed in the user's Codex configuration.
+Fresh Codex 0.163.0 app-server clients discovered both tools and completed real search and fetch calls,
+including a client launched outside this repository.
+The registration enables `mcp_2026_07_28` and opts this stdio server into revision `2026-07-28`.
+A temporary client override disabling the feature reproduced JSON-RPC `-32601` for `initialize`;
+the saved global configuration remains enabled.
+Root is documenting the setup before resuming its remaining replay preparation.
+The user clarified that `.out-of-scope/codex-harness.md` describes no ongoing maintenance guarantee,
+not a prohibition on Codex work.
+The document now explicitly permits work authorized by the active task without a separate policy exception.
 The existing Depot work remains active:
 logger recovery `dhxhzzvmc3` and independent-leaf recovery preparation belong to the logger owner;
 native platform route preparation belongs to the native owner.
