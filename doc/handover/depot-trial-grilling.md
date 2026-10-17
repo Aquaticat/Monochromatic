@@ -18,8 +18,10 @@ Only 199 logical checks have an observation with both source and cohort completi
 The generic footer declarations are not final acceptance.
 All 650 configured source-input files were independently hashed against frozen Git blobs.
 The [primary failure evidence](../audit/depot-logger-primary-failures-2026-10-17.evidence.json)
-now retains all 105 failed-check output files,
-with 10496598 bytes independently rehashed.
+now retains the text of all 105 failed-check outputs
+with original byte counts and hashes independently verified across 10496598 bytes.
+Personal home paths are redacted from public text;
+the retained text has separate byte counts and hashes.
 It includes parsed lint/type candidates and the reviewed tracker comments.
 Issue mapping remains incomplete;
 deliberately failing child controls are not terminal parent-suite failures.
