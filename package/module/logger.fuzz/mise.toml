@@ -339,7 +339,7 @@ dir = "{{config_root}}/../../.."
 shell = "node --input-type=module-typescript -e"
 run = '''
 const { spawnSync, execFileSync } = await import('node:child_process')
-const { readFileSync, writeFileSync, mkdirSync } = await import('node:fs')
+const { readFileSync, writeFileSync, mkdirSync, appendFileSync } = await import('node:fs')
 const { homedir } = await import('node:os')
 const { join } = await import('node:path')
 const { createHash } = await import('node:crypto')
@@ -362,10 +362,15 @@ function run({ name, args, cwd = source, env = process.env, limit = 300000 }) {
   console.log(JSON.stringify(record))
   if (result.status !== 0) console.error(output.slice(-8000))
 }
-for (const name of ['bun', 'npm:pagefind', 'cargo:cargo-fuzz']) {
+for (const name of ['bun', 'npm:pagefind', 'cargo:cargo-fuzz', 'cargo:monochromatic-nested-wayland-session']) {
   assert(versions.has(name))
   run({ name: name.replaceAll(':', '-'), args: ['install', `${name}@${versions.get(name)}`], cwd: harness, env: { ...process.env, MISE_LOCKED: '0' } })
 }
+const snapshotDirectory = join(homedir(), 'temp/agent/depot-package-snapshot')
+const snapshot = JSON.parse(readFileSync(join(snapshotDirectory, 'manifest.json'), 'utf8'))
+const imageMagick = join(snapshotDirectory, 'bin/magick')
+assert.equal(execFileSync(imageMagick, ['--version'], { encoding: 'utf8' }), snapshot.magickVersion)
+appendFileSync(process.env.GITHUB_PATH, `${join(snapshotDirectory, 'bin')}\n`)
 // The historical task selects latest without a lock entry. Retain the same 2.2.0 conformance executable already exercised in the TOML case.
 run({ name: 'toml-test-install', args: ['install', 'github:toml-lang/toml-test@2.2.0'], cwd: harness, env: { ...process.env, MISE_LOCKED: '0' } })
 run({ name: 'toml-test-version', args: ['exec', 'github:toml-lang/toml-test@2.2.0', '--', 'toml-test', 'version'] })
@@ -383,7 +388,7 @@ dir = "{{config_root}}/../../.."
 shell = "node --input-type=module-typescript -e"
 run = '''
 const { execFileSync } = await import('node:child_process')
-const { readFileSync, writeFileSync, mkdirSync } = await import('node:fs')
+const { readFileSync, writeFileSync, mkdirSync, appendFileSync } = await import('node:fs')
 const { createHash } = await import('node:crypto')
 const { homedir } = await import('node:os')
 const { join } = await import('node:path')
@@ -399,3 +404,8 @@ const directory = join(homedir(), 'temp/agent/depot-complete-ci')
 mkdirSync(directory, { recursive: true, mode: 0o700 })
 writeFileSync(join(directory, 'logger-browser-image-results.json'), JSON.stringify({ sourceRevision: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), image, inspect, pnpmLockSha256: createHash('sha256').update(lock).digest('hex'), originalDockerfileSha256: createHash('sha256').update(readFileSync(join(source, 'playwright.Dockerfile'))).digest('hex'), originalDockerfileMismatchIssue: 1045, adaptation: 'Populate the source task image name with the exact Playwright 1.64.0 browser image; retain historical Dockerfile unchanged' }, null, 2))
 '''
+
+[tasks."trial:depot:format"]
+description = "Format explicitly named trial configuration files"
+dir = "{{config_root}}/../../.."
+run = "dprint fmt"
