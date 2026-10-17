@@ -271,6 +271,21 @@ not that every configured session passed or executed.
 
 ## Source identity input coverage
 
+The helper-specific incident is tracked in
+[#1114](https://github.com/Aquaticats/Monochromatic/issues/1114),
+closed after the metadata/path and independent index-invariant controls met its acceptance criteria.
+The issue keeps the original gap,
+both repair stages,
+the indexed-exclusion tradeoff,
+and unchanged historical-source bytes distinct.
+Its body and `bug` label were fresh-read before closing;
+the final read verified its body,
+[closure comment](https://github.com/Aquaticats/Monochromatic/issues/1114#issuecomment-6230481503),
+label,
+and closed state at `2026-10-17T06:04:17Z`.
+The closure applies to the isolated trial helper,
+without claiming production adoption or a provider replay.
+
 The actual `trial:depot:ci:source-identity` task at harness `4c4063e78bc9aaed8e293c1b478db089d6eef0ce`
 passed before/after controls against clean historical sources `cb95cf6d78` and `3434eaa455`.
 The controls used private workspace directories with source/harness symlinks,
@@ -325,8 +340,8 @@ This demonstrates a hash coverage gap under index-hidden edits;
 it does not establish that a real provider run changed one of these files or set an index flag.
 Ordinary tracked edits were rejected.
 Untracked files and ignored build outputs remain outside the helper contract.
-The root harness owner retains any repair;
-the verification agent changed only disposable fixtures and documentation.
+The harness owner implemented the repairs documented in Verified repair and Index exclusions are rejected.
+The verification agent changed only disposable fixtures and documentation.
 The final workflow must retain the helper's actual input set and avoid claiming omitted config hashes.
 
 The [fixture evidence](../audit/depot-source-identity-controls-2026-10-17.evidence.json)

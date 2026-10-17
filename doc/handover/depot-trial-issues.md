@@ -281,6 +281,39 @@ harness,
 and environment boundaries.
 The macOS watch symptoms remain separate until a shared cause is verified.
 
+## Source identity helper incident
+
+- [#1114](https://github.com/Aquaticats/Monochromatic/issues/1114):
+  the original trial source-identity helper omitted root Cargo config and nested Android Cargo metadata,
+  and lacked an independent check for index exclusions hiding tracked paths.
+  Closed as fixed for the isolated helper after actual metadata/path and index-invariant controls passed.
+
+The original `4c4063e78b` metadata omissions,
+the `faf388e838` metadata/path repair,
+and the `a07d84a129` independent index invariant remain distinct in the issue body.
+The [original 15 controls](../audit/depot-source-identity-controls-2026-10-17.evidence.json),
+[metadata/path 19 controls](../audit/depot-source-identity-repaired-controls-2026-10-17.evidence.json),
+and [index-invariant 12 controls](../audit/depot-source-identity-index-controls-2026-10-17.evidence.json)
+remain separate unchanged evidence records.
+Both historical before/after source pairs passed;
+ordinary source outside the metadata subset rejected unchanged flags and hidden edits for both index exclusions.
+The acceptance tradeoff rejects indexed exclusions even when their file bytes equal HEAD.
+Shared historical source bytes remained unchanged.
+
+All-state searches for source identity,
+immutable checkout,
+and index-masking terms found no matching incident before filing.
+The created body and `bug` label were fresh-read before closure.
+A final read verified the matching body,
+[closure evidence comment](https://github.com/Aquaticats/Monochromatic/issues/1114#issuecomment-6230481503),
+label,
+and closed state at `2026-10-17T06:04:17Z`.
+This helper-specific closure does not establish production workflow integration,
+passing application checks,
+or a coherent provider replay.
+The [source identity diagnosis](../troubleshooting/depot-historical-checkout-bootstrap.md#source-identity-input-coverage)
+retains the tested revisions and input boundaries.
+
 ## Pending final reconciliation
 
 The totals in this handover predate the latest complete-graph replays.
