@@ -215,16 +215,32 @@ Structured workflow/result controls preserve the original commands and matrix,
 accept a complete result,
 reject seven failed/skipped/wrong-runtime outcomes,
 and detect invalid acceptance after removing the result failure gate.
-The first host source fixture failed because its inherited Mise task directory resolved outside the harness checkout.
-Root `bcc683bd85` binds source-case reads and harness Git operations to explicit `GITHUB_WORKSPACE/harness` paths.
-The corrected host binding/source controls are pending.
-Retain that initial fixture failure separately,
-verify native host prerequisites with a bounded development route,
-and then freeze static registration.
+The initial generator expanded its own literal Mise template before writing the three helper definitions,
+embedding a local absolute scratch path in every task directory.
+This is a generator defect,
+not an inherited-context defect in the native owner's portable guard.
+Root `bcc683bd85` first bound source-case reads and harness Git operations to explicit `GITHUB_WORKSPACE/harness` paths.
+Root `d05781e816` preserves the portable task directory template in all three definitions;
+the preparer now constructs template delimiters at runtime.
+Actual Mise probes reach the correct harness directory for every helper,
+while the three legacy definitions reach the wrong directory.
+The repaired root passes four host/source acceptances and nine rejection controls,
+and the workflow/result controls still pass.
+The source and lock prerequisite prefix passes without installing dependencies or running the source build.
+An isolated development-only host workflow is prepared on `trial/depot-logger-host-development-20261017`.
+It has no common-manifest inputs or cohort API steps,
+retains exact source checks,
+and marks receipts as development-only with no cohort binding.
+Verify its actual native host prerequisites before final static freeze.
 No actual final common manifest has been published.
 
 The logger owner's bounded development recovery `lt7qwlz6h1` is terminal with all three artifacts downloaded.
-The owner is reconciling its original source outcomes and resource records.
+All three original task terminal records are verified:
+conf-fork fuzz and TOML mutation pass;
+conf mutation fails on one red baseline in `src/conf.cache.unit.test.ts`.
+No task remains incomplete.
+The historical run retained exact logs but omitted native per-mutant report files;
+the owner is adding and verifying report retention before the final helper graft.
 It
 uses clean pushed harness `f69a78a3b31f81cbfe47496bcdc6e2ac75549777`.
 Only conf fuzz and TOML/conf mutation are replayed,
@@ -283,7 +299,11 @@ the full campaign contains no matching diagnostic at that specific branch.
 The campaign's source arguments remain unchanged,
 source identities and cleanup pass,
 and four auxiliary inspect failures remain separately retained.
-The native owner is completing durable accounting and the distinct classifier incident filing.
+The native owner filed source classifier issue `#1142` and retained its actual-source control.
+Harness recovery `#1113` is closed with all 24 historical task terminals reconciled:
+20 passed and four failed.
+The original canceled run remains incomplete,
+and source failures `#1068` and `#1070` remain unresolved.
 The prior failed campaigns and separate source-producer issue `#1118` remain retained.
 
 The remaining queue is explicit:

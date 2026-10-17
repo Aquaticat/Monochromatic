@@ -600,6 +600,42 @@ The `rootLoggerIntegrationPreparation` field in
 These fixtures do not publish a fake common manifest or establish actual provider acceptance.
 Actual case manifests remain provisional until the complete static registration is frozen.
 
+## Generated logger host task directories freeze a local path
+
+Root preparer `7d487813bfe559b0fa5299e36aba010d71439b34` embedded a literal Mise directory template
+inside its own inline task body.
+Mise expanded that template before the Node generator wrote the new helper definitions.
+The source identity,
+prerequisite,
+and result helpers consequently contained the generator's local absolute directory,
+followed by `/../../..`.
+The generated file establishes this cause;
+the native owner's original portable template is unaffected.
+
+The first actual source preflight reported Node `ENOENT` reading `.depot/manifests/logger.json`
+outside the harness checkout.
+Root `bcc683bd85` addressed that symptom by binding case reads and harness Git calls to
+the explicit `GITHUB_WORKSPACE/harness` checkout.
+That repair alone did not make the generated task directories portable.
+
+Root `d05781e816` preserves the directory template in all three definitions.
+The preparation task constructs the template delimiters at Node runtime,
+after Mise has rendered the generator task.
+Actual Mise directory probes reach the disposable harness for each corrected helper;
+the same probes reach the wrong directory with each committed legacy definition.
+Fresh source/cohort controls accept four valid boundaries and reject nine altered inputs.
+The existing result gate accepts a complete receipt and rejects seven failure,
+skip,
+and runtime variants;
+removing the result gate admits a failed source command.
+
+These are Linux harness controls.
+The source and lock prerequisite prefix passes,
+but this proof neither installs dependencies nor executes the original source build.
+Native platform prerequisite verification remains a separate development workflow.
+`rootLoggerHostPreparation` in `doc/audit/depot-final-recovery-2026-10-17.evidence.json`
+retains the initial failure and corrected controls separately from actual provider acceptance.
+
 ## Prepared Android launch retained a legacy unit
 
 The initial local Android staging adapter updated standalone `depot-trial-fold` literals,
