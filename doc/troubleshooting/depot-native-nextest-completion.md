@@ -294,7 +294,8 @@ This control used source `cb95cf6d785c3073c192b95f0632cdae7b910894` on macOS Int
 it gives no actual Windows/source3434 or accepted canonical-cohort execution credit.
 The pilot differs from the held workflow only in its 20-minute job bound.
 
-Repository issue [#1165][native-common-prerequisite] tracks this consumer dependency boundary.
+Repository issue [#1165][native-common-prerequisite]
+is closed after the measured consumer dependency repair.
 It differs from exact-byte transport issue `#1119`,
 the logger guard predicate in `#1141`,
 and expression-field scope issue `#1164`.

@@ -366,15 +366,28 @@ retains the helper,
 control driver,
 receipts,
 and verified Mise install isolation.
-The native host workflow's complete conditions also permit source consumers after a failed common guard:
-they use `!cancelled()` and source-identity success without requiring the common-before step.
-This is a conclusion from the committed conditions and current documented expression semantics,
-not an observed rejected-cohort provider run.
-The native owner is repairing those conditions and preparing a bounded negative provider control.
-Neither finding receives final acceptance credit from a task count.
+
+The native host workflow's complete conditions at `2032975cba` omitted common-before success.
+The execution consequence at that revision remains a source/documentation inference.
+Held trial repair `8c1eac43273b0b0d468a54affd15dc9612d7fe49` requires it for build,
+Clippy,
+nextest,
+and smoke while preserving independent source-after identity.
+Development run `39025557306` actually rejected the provisional native case on macOS Intel:
+all four consumers and common-after were skipped,
+and ordinary source identity passed before and after with equal recorded lock hashes.
+The separate artifact-upload failure remains retained because rejection produced no provenance directory.
+[The guard audit](../audit/depot-common-manifest-route-guards-2026-10-17.md)
+and [original provider archive](../audit/depot-native-common-before-negative-2026-10-17.evidence.zip)
+retain full outcomes,
+usage,
+and scope.
+Issue `#1165` is closed with the exact body and closing comment re-fetched.
+This control gives no source-consumer execution or common-bound credit.
+Final coherent dispatch remains held.
 
 The remaining queue is explicit:
-integrate the original-label logger host correction and retain the native guard negative proof;
+integrate the original-label logger host correction;
 use the completed terminal logger accounting and incident reconciliation;
 complete every case's registration and copy its final bytes to every owner;
 freeze and publish the actual common manifest before the shared request clock;

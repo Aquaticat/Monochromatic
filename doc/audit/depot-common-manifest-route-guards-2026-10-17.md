@@ -155,7 +155,7 @@ Final coherent dispatch remains held.
 ## Native consumer dependency repair
 
 Repository issue [#1165](https://github.com/Aquaticats/Monochromatic/issues/1165)
-tracks the native workflow consumer conditions.
+is closed after the native workflow consumer dependency repair and actual rejection proof.
 The original predicates use `!cancelled()` and ordinary identity or build success.
 GitHub documents that a status function overrides implicit prior-success gating.
 Held repair `8c1eac43273b0b0d468a54affd15dc9612d7fe49` explicitly requires common-before success

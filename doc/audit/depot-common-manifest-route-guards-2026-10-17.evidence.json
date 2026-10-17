@@ -2837,8 +2837,79 @@
     "incident": {
       "number": 1165,
       "url": "https://github.com/Aquaticats/Monochromatic/issues/1165",
-      "observedState": "OPEN",
-      "exactCreatedBodyVerified": true
+      "observedState": "CLOSED",
+      "exactCreatedBodyVerified": true,
+      "initialObservedState": "OPEN",
+      "initialIssue": {
+        "body": "## Configuration boundary\n\nThe held native-host workflow at `2032975cbad924e63ac98bc69e14a56b20288275`\nruns ordinary source identity before the canonical `provenance-before` step.\nIts build, Clippy and nextest conditions explicitly use\n`!cancelled() && steps.identity.outcome == 'success'`.\nThe smoke condition checks cancellation and build success.\nNone checks canonical-before success.\nNo job or step declares `continue-on-error`.\n\nCurrent GitHub expression documentation states that a status-check function overrides implicit `success()`.\nThe complete configuration therefore allows these conditions to remain true after canonical-before fails,\nprovided their named prerequisites succeed and the workflow is not canceled.\nThis is a source/documentation inference, not a historical provider observation of rejected-cohort source execution.\nNo false common-bound execution credit is established.\n\nThe affected final routes share this workflow:\n`native.hosts` for source `cb95cf6d785c3073c192b95f0632cdae7b910894`,\nand `desktop.macos` for source `3434eaa455d569c18b52cf15100f77f9db251d21`.\n\n## Trial repair and controls\n\nHeld repair `8c1eac43273b0b0d468a54affd15dc9612d7fe49`\nadds `steps.provenance-before.outcome == 'success'` to those four conditions.\nOriginal source commands, independent source-identity recording, canonical helper,\nand provisional case bytes are unchanged.\n\nFive local configured-condition fixtures pass:\naccepted common-before, failed common-before, skipped common-before, cancellation,\nand a failed build that preserves independent Clippy/nextest eligibility while withholding smoke.\nRemoving the predicates in a disposable in-memory workflow again admits all four consumers after failed common-before.\nThese controls evaluate the exact restricted configured boolean forms;\nthey do not emulate the whole GitHub expression language.\n\nDevelopment-only [run39025557306](https://github.com/Aquaticats/Monochromatic/actions/runs/39025557306)\nuses a clean pushed pilot ref with the same conditions and commands,\nand only a20-minute job bound in place of the held route's90-minute bound.\nThe actual provisional native case remains `completeGraph: false`.\nThe canonical guard must reject it before original consumers execute.\nTerminal step reconciliation is pending.\nNo fake common manifest was published and no final coherent dispatch occurred.\n\n## Acceptance\n\n- Accepted common-before preserves original source eligibility and independent failure continuation.\n- Failed or skipped common-before withholds build, Clippy, nextest and smoke.\n- Actual provider rejection leaves the original consumer steps skipped.\n- Independent source identity remains recorded after rejection.\n- Common-bound credit still requires successful exact-bound before/after receipts and complete selected coverage.\n- Preserve historical source failures and all development provider usage separately.\n\n## Distinct boundary and evidence\n\nAll-state searches for `provenance-before`, `common-before` and `cohort guard` were read.\nCompared the complete bodies of #1119, #1141, #1144, #1160, #1161, #1157 and #1113.\n#1141 repairs a guard accepting a provisional logger case;\nthis native workflow must respect a guard that rejects the case.\n#1119 concerns exact-byte retrieval and #1164 concerns unsupported expression scope.\nNo GitHub service defect or upstream filing is proposed.\n\nDurable route evidence is maintained in\n`doc/audit/depot-common-manifest-route-guards-2026-10-17.evidence.json`.\nThe final coherent cohort remains held.\n",
+        "closedAt": null,
+        "comments": [],
+        "labels": [
+          {
+            "id": "LA_kwDOKlVnec8AAAACjIzCDw",
+            "name": "needs-triage",
+            "description": "Maintainer needs to evaluate",
+            "color": "fbca04"
+          }
+        ],
+        "number": 1165,
+        "state": "OPEN",
+        "title": "Native trial consumers lack a successful common-provenance prerequisite",
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1165"
+      },
+      "closure": {
+        "observedAt": "2026-10-17T10:52:50.448Z",
+        "exactBodyVerified": true,
+        "exactClosingCommentVerified": true,
+        "issue": {
+          "body": "## Configuration boundary\n\nThe held native-host workflow at `2032975cbad924e63ac98bc69e14a56b20288275`\nruns ordinary source identity before the canonical `provenance-before` step.\nIts build, Clippy and nextest conditions explicitly use\n`!cancelled() && steps.identity.outcome == 'success'`.\nThe smoke condition checks cancellation and build success.\nNone checks canonical-before success.\nNo job or step declares `continue-on-error`.\n\nCurrent GitHub expression documentation states that a status-check function overrides implicit `success()`.\nThe complete configuration therefore allows these conditions to remain true after canonical-before fails,\nprovided their named prerequisites succeed and the workflow is not canceled.\nThis is a source/documentation inference, not a historical provider observation of rejected-cohort source execution.\nNo false common-bound execution credit is established.\n\nThe affected final routes share this workflow:\n`native.hosts` for source `cb95cf6d785c3073c192b95f0632cdae7b910894`,\nand `desktop.macos` for source `3434eaa455d569c18b52cf15100f77f9db251d21`.\n\n## Trial repair and controls\n\nHeld repair `8c1eac43273b0b0d468a54affd15dc9612d7fe49`\nadds `steps.provenance-before.outcome == 'success'` to those four conditions.\nOriginal source commands, independent source-identity recording, canonical helper,\nand provisional case bytes are unchanged.\n\nFive local configured-condition fixtures pass:\naccepted common-before, failed common-before, skipped common-before, cancellation,\nand a failed build that preserves independent Clippy/nextest eligibility while withholding smoke.\nRemoving the predicates in a disposable in-memory workflow again admits all four consumers after failed common-before.\nThese controls evaluate the exact restricted configured boolean forms;\nthey do not emulate the whole GitHub expression language.\n\nDevelopment-only [run39025557306](https://github.com/Aquaticats/Monochromatic/actions/runs/39025557306)\nuses a clean pushed pilot ref with the same conditions and commands,\nand only a 20-minute job bound in place of the held route's 90-minute bound.\nThe actual provisional native case remains `completeGraph: false`.\nThe canonical guard must reject it before original consumers execute.\nThe guard rejected the actual provisional case with `AssertionError [ERR_ASSERTION]: Final route requires a frozen complete case manifest`.\nBuild, Clippy, nextest and smoke were all skipped.\nIndependent source identity before and after succeeded with matching recorded lock hashes; common-after was skipped.\nThe artifact action separately failed with `No files were found with the provided path`; no provenance directory was produced.\nThe overall development run is failed, as retained in the provider receipt.\nThis actual control covers native source cb95 on macOS Intel only; accepted-common, Windows and desktop-source behavior are not actual provider observations from this pilot.\nThe job used 111 seconds, corresponding to 444 allocated vCPU-seconds at the documented public Intel allocation.\nNo source-consumer execution or common-bound credit is awarded.\nAll steps, both diagnostics, immutable source identities and the original provider ZIP are retained in committed audit `9c112c357a`.\nScoped JSON/Markdown checks and rendered-doc inspection passed; the Markdown check retains an existing rustdoc warning from the historical Rust example.\nNo fake common manifest was published and no final coherent dispatch occurred.\n\n## Acceptance\n\n- Accepted common-before preserves original source eligibility and independent failure continuation.\n- Failed or skipped common-before withholds build, Clippy, nextest and smoke.\n- Actual provider rejection leaves the original consumer steps skipped.\n- Independent source identity remains recorded after rejection.\n- Common-bound credit still requires successful exact-bound before/after receipts and complete selected coverage.\n- Preserve historical source failures and all development provider usage separately.\n\n## Distinct boundary and evidence\n\nAll-state searches for `provenance-before`, `common-before` and `cohort guard` were read.\nCompared the complete bodies of #1119, #1141, #1144, #1160, #1161, #1157 and #1113.\n#1141 repairs a guard accepting a provisional logger case;\nthis native workflow must respect a guard that rejects the case.\n#1119 concerns exact-byte retrieval and #1164 concerns unsupported expression scope.\nNo GitHub service defect or upstream filing is proposed.\n\nDurable route evidence is maintained in\n`doc/audit/depot-common-manifest-route-guards-2026-10-17.evidence.json`.\nThe final coherent cohort remains held.\n",
+          "closedAt": "2026-10-17T10:52:49Z",
+          "comments": [
+            {
+              "id": "IC_kwDOKlVnec8AAAABc4Ss9g",
+              "author": {
+                "login": "Aquaticat"
+              },
+              "authorAssociation": "MEMBER",
+              "body": "Repaired on held trial ref `trial/depot-coherent-native-20261017` at `8c1eac43273b0b0d468a54affd15dc9612d7fe49`.\n\nActual development [run 39025557306](https://github.com/Aquaticats/Monochromatic/actions/runs/39025557306) rejected the provisional case before original consumers. Build, Clippy, nextest and smoke were skipped. Independent source identity succeeded before and after; common-after was skipped. The artifact action separately failed because no provenance directory was produced. The overall negative-control run remains failed.\n\nFive configured-condition controls passed, including accepted, failed and skipped common-before; removing the new predicates admitted all four consumers after failure. Original source commands and the canonical guard are unchanged.\n\nCommitted audit `9c112c357a` retains full provider metadata, the 111-second job interval, source identities and the original 60,781-byte log ZIP (SHA256 `927514e26567d5ffc53d11e3bbcd03eb140bc00722652c73b07ce5b91e610463`). Scoped checks and rendered-doc inspection passed with an existing historical-example rustdoc warning.\n\nActual provider scope is native cb95 on macOS Intel. This closes the trial consumer-dependency repair, with no source execution or canonical-cohort credit. The final coherent dispatch remains held.\n",
+              "createdAt": "2026-10-17T10:52:47Z",
+              "includesCreatedEdit": false,
+              "isMinimized": false,
+              "minimizedReason": "",
+              "reactionGroups": [],
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/1165#issuecomment-6233042166",
+              "viewerDidAuthor": true
+            }
+          ],
+          "labels": [
+            {
+              "id": "LA_kwDOKlVnec8AAAACjIzCDw",
+              "name": "needs-triage",
+              "description": "Maintainer needs to evaluate",
+              "color": "fbca04"
+            }
+          ],
+          "number": 1165,
+          "state": "CLOSED",
+          "title": "Native trial consumers lack a successful common-provenance prerequisite",
+          "url": "https://github.com/Aquaticats/Monochromatic/issues/1165"
+        },
+        "closingComment": {
+          "id": "IC_kwDOKlVnec8AAAABc4Ss9g",
+          "author": {
+            "login": "Aquaticat"
+          },
+          "authorAssociation": "MEMBER",
+          "body": "Repaired on held trial ref `trial/depot-coherent-native-20261017` at `8c1eac43273b0b0d468a54affd15dc9612d7fe49`.\n\nActual development [run 39025557306](https://github.com/Aquaticats/Monochromatic/actions/runs/39025557306) rejected the provisional case before original consumers. Build, Clippy, nextest and smoke were skipped. Independent source identity succeeded before and after; common-after was skipped. The artifact action separately failed because no provenance directory was produced. The overall negative-control run remains failed.\n\nFive configured-condition controls passed, including accepted, failed and skipped common-before; removing the new predicates admitted all four consumers after failure. Original source commands and the canonical guard are unchanged.\n\nCommitted audit `9c112c357a` retains full provider metadata, the 111-second job interval, source identities and the original 60,781-byte log ZIP (SHA256 `927514e26567d5ffc53d11e3bbcd03eb140bc00722652c73b07ce5b91e610463`). Scoped checks and rendered-doc inspection passed with an existing historical-example rustdoc warning.\n\nActual provider scope is native cb95 on macOS Intel. This closes the trial consumer-dependency repair, with no source execution or canonical-cohort credit. The final coherent dispatch remains held.\n",
+          "createdAt": "2026-10-17T10:52:47Z",
+          "includesCreatedEdit": false,
+          "isMinimized": false,
+          "minimizedReason": "",
+          "reactionGroups": [],
+          "url": "https://github.com/Aquaticats/Monochromatic/issues/1165#issuecomment-6233042166",
+          "viewerDidAuthor": true
+        }
+      }
     },
     "originalRevision": "2032975cbad924e63ac98bc69e14a56b20288275",
     "heldRevision": "8c1eac43273b0b0d468a54affd15dc9612d7fe49",
@@ -3636,6 +3707,48 @@
       "reason": "The stored jobs response is a paginated page array. The first selector printed null page-level fields; no absence or count conclusion was taken from it."
     },
     "originalSourceFailuresPreserved": true,
-    "finalCoherentDispatch": false
+    "finalCoherentDispatch": false,
+    "verification": {
+      "evidenceCommit": "9c112c357a",
+      "jsonDprint": "PASS",
+      "markdownLint": {
+        "result": "PASS with existing warning",
+        "tool": "monochromatic-lint",
+        "warning": {
+          "code": "rust/require-rustdoc",
+          "message": "Missing rustdoc on file.",
+          "path": "doc/troubleshooting/depot-native-nextest-completion.md",
+          "line": 40,
+          "unchangedHistoricalRustFenceVerifiedAgainst": "9c112c357a^"
+        }
+      },
+      "renderedInspection": [
+        {
+          "path": "doc/audit/depot-common-manifest-route-guards-2026-10-17.md",
+          "output": "native-common-proof-audit.html",
+          "header": "native-consumer-dependency-repair",
+          "bytes": 9508,
+          "sha256": "cf860ea8cb6f00368690c5f874d7eb5a7cf3004732374e96c43909b2ccd0e3f7",
+          "emphasisElements": 0
+        },
+        {
+          "path": "doc/troubleshooting/depot-native-nextest-completion.md",
+          "output": "native-common-proof-troubleshooting.html",
+          "header": "common-provenance-must-gate-independent-consumers",
+          "bytes": 17769,
+          "sha256": "5c2196c466a457683771554d44dc5bf71b4c4859aa58a5d8ef8c6979f1b9e232",
+          "emphasisElements": 0
+        }
+      ],
+      "diffCheck": "PASS",
+      "scope": "Rendered and checked committed rejection evidence before incident closure; closure-only doc updates receive a subsequent scoped check."
+    },
+    "handoverUpdate": {
+      "beforeSha256": "fec48c5f5eec150f299ef14b5ddcd2bf36f1e9dcb84b1c80abe5d3582413e5a3",
+      "afterSha256": "cf38ab35fe36896a6fc7d8d94267559d02fe3fa11704ef09997a37e558407eec",
+      "scope": "Native guard paragraph and completed native-negative-proof queue clause only",
+      "originalParagraph": "The native host workflow's complete conditions also permit source consumers after a failed common guard:\nthey use `!cancelled()` and source-identity success without requiring the common-before step.\nThis is a conclusion from the committed conditions and current documented expression semantics,\nnot an observed rejected-cohort provider run.\nThe native owner is repairing those conditions and preparing a bounded negative provider control.\nNeither finding receives final acceptance credit from a task count.\n",
+      "replacementParagraph": "\nThe native host workflow's complete conditions at `2032975cba` omitted common-before success.\nThe execution consequence at that revision remains a source/documentation inference.\nHeld trial repair `8c1eac43273b0b0d468a54affd15dc9612d7fe49` requires it for build,\nClippy,\nnextest,\nand smoke while preserving independent source-after identity.\nDevelopment run `39025557306` actually rejected the provisional native case on macOS Intel:\nall four consumers and common-after were skipped,\nand ordinary source identity passed before and after with equal recorded lock hashes.\nThe separate artifact-upload failure remains retained because rejection produced no provenance directory.\n[The guard audit](../audit/depot-common-manifest-route-guards-2026-10-17.md)\nand [original provider archive](../audit/depot-native-common-before-negative-2026-10-17.evidence.zip)\nretain full outcomes,\nusage,\nand scope.\nIssue `#1165` is closed with the exact body and closing comment re-fetched.\nThis control gives no source-consumer execution or common-bound credit.\nFinal coherent dispatch remains held.\n"
+    }
   }
 }
