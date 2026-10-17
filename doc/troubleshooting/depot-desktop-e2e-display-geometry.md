@@ -103,8 +103,30 @@ an application argument named `--version`,
 nonzero child exit propagation,
 and missing-binary failure.
 A disposable wrapper with the headless arguments removed fails the argument control.
-These controls verify the wrapper contract only.
-Actual E2E geometry and assertion outcomes remain pending the cloud consumer control.
+The actual source consumers then exercised this route at harness commit
+`107b968b957dc8cb47540df94edda02e26445749`:
+
+- Native run `rfq31sq4g9`,
+  attempt `qrrjtgscj9`.
+- Desktop run `jq7ctm8pb2`,
+  attempt `h1dr9gdvbl`.
+
+Each emitted 69 passing assertions,
+zero failing assertions,
+and one skip.
+The full ordered identity comparison restored all nine prior failures to passing,
+with every other verdict unchanged.
+All 20 retained screenshots per case are 1000 by 800 pixels.
+Source identities match before and after,
+all observed PID rejection and OOM counters are zero,
+and cleanup is verified.
+The evidence lives in `desktopRuntimeHeadlessGeometryControl` in
+`doc/audit/depot-final-recovery-2026-10-17.evidence.json`.
+
+The unchanged source still throws its folder-setup timeout before later sessions execute.
+Existing [issue #1005](https://github.com/Aquaticats/Monochromatic/issues/1005)
+records this same 69-pass fixture boundary.
+The geometry workaround therefore restores observed assertions without establishing a complete suite pass.
 
 The tradeoff is an intentional change from a parent-window backend to a headless software backend.
 Source commands,
