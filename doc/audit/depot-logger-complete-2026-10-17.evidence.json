@@ -82280,6 +82280,15 @@
       "diagnosticGuestCapabilityIsSeparate": true,
       "oldUnitPlusRootRelativeFileRouteIsNotAuthoredE2E": true,
       "freezeConstraint": "Any selected VM harness must contain the same newly frozen per-case manifest bytes or the common-binding guard must reject it"
+    },
+    "documentationVerification": {
+      "path": "/home/user/temp/agent/depot-logger-final-docs-ANGwrJ/results.json",
+      "sha256": "3b7b03120b89f39db7dda763d587c173a69bf6346559585c25efcc9d027e7398",
+      "markdownDocumentsRendered": 4,
+      "jsonParsed": true,
+      "scopedFormattingPassed": true,
+      "gitDiffWhitespacePassed": true,
+      "verificationBeforeThisMetadataAppend": true
     }
   }
 }
