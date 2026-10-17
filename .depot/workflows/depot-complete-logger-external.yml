@@ -63,10 +63,17 @@ jobs:
     - name: Install exact-head frozen dependencies
       working-directory: source
       run: mise run prepare:pnpm:install -- --frozen-lockfile
+    - name: Prepare locked executables and offline Cargo inputs
+      working-directory: harness
+      continue-on-error: true
+      run: mise run //package/module/logger.fuzz:trial:depot:prerequisites
     - name: Activate bounded container execution
-      if: matrix.group == 'browser' || matrix.group == 'e2e'
       working-directory: harness
       run: mise run //package/dev-script/task-util:trial:depot:ci:containers
+    - name: Select browsers matching the immutable dependency lockfile
+      if: matrix.group == 'browser' || matrix.group == 'e2e'
+      working-directory: harness
+      run: mise run //package/module/logger.fuzz:trial:depot:browser-image
     - name: Execute logger external checks
       working-directory: harness
       run: mise run //package/module/logger.fuzz:trial:depot:external
@@ -79,6 +86,7 @@ jobs:
           ~/temp/agent/depot-complete-ci/*-results.json
           ~/temp/agent/depot-complete-ci/check-logs/*.log
           ~/temp/agent/depot-complete-ci/native-tools.json
+          ~/temp/agent/depot-complete-ci/prepare-*.log
           ~/temp/agent/depot-complete-ci/*.patch
           ~/temp/agent/depot-complete-ci/desktop-e2e/
           ~/temp/agent/depot-complete-ci/desktop-runtime-logs/
