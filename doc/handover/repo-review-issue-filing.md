@@ -156,7 +156,8 @@ Completed units (findings validated):
  `code-dev-script-1` (13 findings),
  `code-git-1` (7 findings),
  `code-figma-1` (18 findings),
- `code-learning-1` (3 findings).
+ `code-learning-1` (3 findings),
+ `code-kwin-1` (12 findings).
 
 Cross-unit leads:
  `doc/planning/music-player-shared-truepeak-core.md` repeats the retired truepeak policy
@@ -195,18 +196,17 @@ Cross-unit leads:
  hand to the `cross-dependency` reviewer when it launches.
 
 Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
- `code-kwin-1`,
  `code-linter-1`,
  `code-mcp-1`,
  `code-module-1`,
  `code-module-2`,
  `code-module-3`,
  `code-module-4`,
- `code-ownership-marker-1` (launched as a replacement).
+ `code-ownership-marker-1`,
+ `code-oxlint-plugin-1` (launched as a replacement).
 
 Queued units in launch order (flat list; the first entry launches next):
 
-- `code-oxlint-plugin-1`,
 - `code-pi-plugin-1`,
 - `code-pi-plugin-2`,
 - `code-pi-shared-1`,
