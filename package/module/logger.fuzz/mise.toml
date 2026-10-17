@@ -92,7 +92,16 @@ const partitions = JSON.parse(readFileSync(join(harness, '.depot/manifests/logge
 assert.equal(partitions.manifestSha256, createHash('sha256').update(manifestBytes).digest('hex'))
 assert.equal(partitions.sourceRevision, manifest.sourceRevision)
 assert.equal(execFileSync('git', ['rev-parse', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), manifest.sourceRevision)
-const partition = partitions.partitions.find(item => item.name === process.env.DEPOT_CI_PARTITION)
+const continuationId = process.env.DEPOT_LOGGER_CONTINUATION_ID
+const continuationManifest = continuationId ? JSON.parse(readFileSync(join(harness, '.depot/manifests/logger-continuation.json'), 'utf8')) : undefined
+if (continuationManifest) {
+  assert.equal(continuationManifest.manifestSha256, partitions.manifestSha256)
+  assert.equal(continuationManifest.sourceRevision, manifest.sourceRevision)
+}
+const continuation = continuationManifest?.checks.find(item => item.name === continuationId)
+if (continuationId) assert(continuation, 'Unknown logger continuation identity')
+if (continuation) assert.equal(continuation.partition, process.env.DEPOT_CI_PARTITION)
+const partition = continuation ? { name: continuation.partition, selectedCheckIds: continuation.selectedCheckIds, activeCheckIds: continuation.activeCheckIds } : partitions.partitions.find(item => item.name === process.env.DEPOT_CI_PARTITION)
 assert(partition, 'Unknown logger remainder partition')
 assert.equal(new Set(partition.selectedCheckIds).size, partition.selectedCheckIds.length)
 assert(partition.selectedCheckIds.every(id => manifest.checks.some(check => check.id === id)))
@@ -114,6 +123,8 @@ chmodSync(directory, 0o700)
 writeFileSync(join(directory, 'logger-partition.json'), JSON.stringify({ ...partition, manifestSha256: partitions.manifestSha256, sourceRevision: partitions.sourceRevision, providerJobUrl: process.env.DEPOT_JOB_URL }, null, 2))
 const suiteEnv = { ...process.env, DEPOT_CI_CASE: 'logger', DEPOT_CI_CHECK_IDS: JSON.stringify(partition.selectedCheckIds), DEPOT_CI_WORKERS: '1', DEPOT_CI_WAVE: 'all' }
 const task = '//package/dev-script/task-util:trial:depot:ci:execute'
+let executionError
+try {
 if (partition.name !== 'fuzz') {
   execFileSync('mise', ['run', task], { cwd: harness, env: suiteEnv, stdio: 'inherit', timeout: 1440000 })
 } else {
@@ -153,6 +164,20 @@ if (partition.name !== 'fuzz') {
 }
 const preparation = JSON.parse(readFileSync(join(directory, 'logger-remainder-preparation-results.json'), 'utf8'))
 assert(!preparation.records.some(record => record.status === 'failed'), 'Independent checks completed, but preparation failures remain infrastructure failures')
+} catch (error) {
+  executionError = { name: error.name, message: error.message, code: error.code, status: error.status, signal: error.signal }
+  throw error
+} finally {
+  if (continuation) {
+    const resultPath = join(directory, 'logger-results.json')
+    const results = existsSync(resultPath) ? JSON.parse(readFileSync(resultPath, 'utf8')).results : []
+    const records = partition.selectedCheckIds.map(checkId => {
+      const result = results.find(record => record.checkId === checkId)
+      return result ? { checkId, status: result.status, skipReason: result.skipReason, startedAt: result.startedAt, finishedAt: result.finishedAt, exitCode: result.exitCode, signal: result.signal, outputSha256: result.outputSha256 } : { checkId, status: existsSync(join(directory, 'check-logs', `${checkId}.log`)) ? 'started-without-terminal-record' : 'unstarted' }
+    })
+    writeFileSync(join(directory, 'logger-continuation-results.json'), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: partitions.manifestSha256, continuationId, partition: partition.name, selectedCheckIds: partition.selectedCheckIds, activeCheckIds: partition.activeCheckIds, executionError, executionBudgetMs: 1440000, records, providerJobUrl: process.env.DEPOT_JOB_URL }, null, 2))
+  }
+}
 '''
 
 [tasks."trial:depot:remainder:prepare"]

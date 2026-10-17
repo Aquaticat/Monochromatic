@@ -1,0 +1,463 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+  "manifestSha256": "4f9bcf0a94e09ecda8eae84c8e5ff9d89f15f0bd398df8136f0771011d3931f7",
+  "previousDevelopmentRun": "4x77lb56cs",
+  "scope": "One unchanged leaf task per job plus prerequisite closure; prior passed leaf checks are excluded",
+  "checks": [
+    {
+      "name": "package.module.conf-fork.fuzz.fuzz",
+      "partition": "fuzz",
+      "reason": "started-without-terminal-record",
+      "selectedCheckIds": [
+        "package.module.conf-fork.fuzz.fuzz"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.conf-fork.build",
+        "package.module.conf-fork.fuzz.fuzz"
+      ]
+    },
+    {
+      "name": "package.module.conf-fork.fuzz.fuzz.coverage",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.conf-fork.fuzz.fuzz.coverage"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.conf-fork.build",
+        "package.module.conf-fork.fuzz.fuzz.coverage"
+      ]
+    },
+    {
+      "name": "package.module.css-edit.fuzz.fuzz",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.css-edit.fuzz.fuzz"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.const.build",
+        "package.module.css-edit.fuzz.fuzz"
+      ]
+    },
+    {
+      "name": "package.module.css-edit.fuzz.fuzz.coverage",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.css-edit.fuzz.fuzz.coverage"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.const.build",
+        "package.module.css-edit.fuzz.fuzz.coverage"
+      ]
+    },
+    {
+      "name": "package.module.deepmerge-ts.fuzz.fuzz.coverage",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.deepmerge-ts.fuzz.fuzz.coverage"
+      ],
+      "activeCheckIds": [
+        "package.module.deepmerge-ts.fuzz.fuzz.coverage"
+      ]
+    },
+    {
+      "name": "package.module.jsonc-edit.fuzz.fuzz",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.jsonc-edit.fuzz.fuzz"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.jsonc-edit.fuzz.fuzz"
+      ]
+    },
+    {
+      "name": "package.module.jsonc-edit.fuzz.fuzz.coverage",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.jsonc-edit.fuzz.fuzz.coverage"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.jsonc-edit.fuzz.fuzz.coverage"
+      ]
+    },
+    {
+      "name": "package.module.logger.fuzz.bundle.browser-properties",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.logger.fuzz.bundle.browser-properties"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.logger.build",
+        "package.module.logger.fuzz.bundle.browser-properties"
+      ]
+    },
+    {
+      "name": "package.module.logger.fuzz.fuzz",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.logger.fuzz.fuzz"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.logger.build",
+        "package.module.logger.fuzz.fuzz"
+      ]
+    },
+    {
+      "name": "package.module.logger.fuzz.fuzz.coverage",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.logger.fuzz.fuzz.coverage"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.logger.build",
+        "package.module.logger.fuzz.fuzz.coverage"
+      ]
+    },
+    {
+      "name": "package.module.make-asynchronous-fork.fuzz.fuzz",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.make-asynchronous-fork.fuzz.fuzz"
+      ],
+      "activeCheckIds": [
+        "package.module.make-asynchronous-fork.fuzz.fuzz"
+      ]
+    },
+    {
+      "name": "package.module.make-asynchronous-fork.fuzz.fuzz.coverage",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.make-asynchronous-fork.fuzz.fuzz.coverage"
+      ],
+      "activeCheckIds": [
+        "package.module.make-asynchronous-fork.fuzz.fuzz.coverage"
+      ]
+    },
+    {
+      "name": "package.module.matcher-fork.fuzz.fuzz",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.matcher-fork.fuzz.fuzz"
+      ],
+      "activeCheckIds": [
+        "package.module.matcher-fork.fuzz.fuzz"
+      ]
+    },
+    {
+      "name": "package.module.matcher-fork.fuzz.fuzz.coverage",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.matcher-fork.fuzz.fuzz.coverage"
+      ],
+      "activeCheckIds": [
+        "package.module.matcher-fork.fuzz.fuzz.coverage"
+      ]
+    },
+    {
+      "name": "package.module.matcher-fork.test.mutation",
+      "partition": "mutation",
+      "reason": "started-without-terminal-record",
+      "selectedCheckIds": [
+        "package.module.matcher-fork.test.mutation"
+      ],
+      "activeCheckIds": [
+        "package.module.matcher-fork.build",
+        "package.module.matcher-fork.test.mutation"
+      ]
+    },
+    {
+      "name": "package.module.p-limit-fork.fuzz.fuzz",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.p-limit-fork.fuzz.fuzz"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.p-limit-fork.fuzz.fuzz"
+      ]
+    },
+    {
+      "name": "package.module.p-limit-fork.fuzz.fuzz.coverage",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.p-limit-fork.fuzz.fuzz.coverage"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.p-limit-fork.fuzz.fuzz.coverage"
+      ]
+    },
+    {
+      "name": "package.module.p-limit-fork.test.mutation",
+      "partition": "mutation",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.p-limit-fork.test.mutation"
+      ],
+      "activeCheckIds": [
+        "package.module.p-limit-fork.build",
+        "package.module.p-limit-fork.test.mutation"
+      ]
+    },
+    {
+      "name": "package.module.p-map-fork.fuzz.fuzz",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.p-map-fork.fuzz.fuzz"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.p-map-fork.fuzz.fuzz"
+      ]
+    },
+    {
+      "name": "package.module.p-map-fork.fuzz.fuzz.coverage",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.p-map-fork.fuzz.fuzz.coverage"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.p-map-fork.fuzz.fuzz.coverage"
+      ]
+    },
+    {
+      "name": "package.module.p-map-fork.test.mutation",
+      "partition": "mutation",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.p-map-fork.test.mutation"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.p-map-fork.build",
+        "package.module.p-map-fork.test.mutation"
+      ]
+    },
+    {
+      "name": "package.module.p-memoize-fork.fuzz.fuzz",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.p-memoize-fork.fuzz.fuzz"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.p-memoize-fork.build",
+        "package.module.p-memoize-fork.fuzz.fuzz"
+      ]
+    },
+    {
+      "name": "package.module.p-memoize-fork.fuzz.fuzz.coverage",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.p-memoize-fork.fuzz.fuzz.coverage"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.p-memoize-fork.build",
+        "package.module.p-memoize-fork.fuzz.fuzz.coverage"
+      ]
+    },
+    {
+      "name": "package.module.p-memoize-fork.test.mutation",
+      "partition": "mutation",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.p-memoize-fork.test.mutation"
+      ],
+      "activeCheckIds": [
+        "package.module.p-memoize-fork.build",
+        "package.module.p-memoize-fork.test.mutation"
+      ]
+    },
+    {
+      "name": "package.module.pify-fork.fuzz.fuzz",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.pify-fork.fuzz.fuzz"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.pify-fork.fuzz.fuzz"
+      ]
+    },
+    {
+      "name": "package.module.pify-fork.fuzz.fuzz.coverage",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.pify-fork.fuzz.fuzz.coverage"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.pify-fork.fuzz.fuzz.coverage"
+      ]
+    },
+    {
+      "name": "package.module.pify-fork.test.mutation",
+      "partition": "mutation",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.pify-fork.test.mutation"
+      ],
+      "activeCheckIds": [
+        "package.module.pify-fork.build",
+        "package.module.pify-fork.test.mutation"
+      ]
+    },
+    {
+      "name": "package.module.quick-lru-fork.fuzz.fuzz",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.quick-lru-fork.fuzz.fuzz"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.quick-lru-fork.fuzz.fuzz"
+      ]
+    },
+    {
+      "name": "package.module.quick-lru-fork.fuzz.fuzz.coverage",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.quick-lru-fork.fuzz.fuzz.coverage"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.quick-lru-fork.fuzz.fuzz.coverage"
+      ]
+    },
+    {
+      "name": "package.module.quick-lru-fork.test.mutation",
+      "partition": "mutation",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.quick-lru-fork.test.mutation"
+      ],
+      "activeCheckIds": [
+        "package.module.quick-lru-fork.build",
+        "package.module.quick-lru-fork.test.mutation"
+      ]
+    },
+    {
+      "name": "package.module.toml-edit.fuzz.fuzz",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.toml-edit.fuzz.fuzz"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.toml-edit.build",
+        "package.module.toml-edit.fuzz.fuzz"
+      ]
+    },
+    {
+      "name": "package.module.toml-edit.fuzz.fuzz.coverage",
+      "partition": "fuzz",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.toml-edit.fuzz.fuzz.coverage"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.toml-edit.build",
+        "package.module.toml-edit.fuzz.fuzz.coverage"
+      ]
+    },
+    {
+      "name": "package.module.toml-edit.test.mutation",
+      "partition": "mutation",
+      "reason": "unstarted",
+      "selectedCheckIds": [
+        "package.module.toml-edit.test.mutation"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.toml-edit.build",
+        "package.module.toml-edit.test.mutation"
+      ]
+    },
+    {
+      "name": "package.git-policy.cli.fuzz.smoke",
+      "partition": "containers",
+      "reason": "started-without-terminal-record",
+      "selectedCheckIds": [
+        "package.git-policy.cli.fuzz.smoke"
+      ],
+      "activeCheckIds": [
+        "package.git-policy.cli.fuzz.build",
+        "package.git-policy.cli.fuzz.smoke"
+      ]
+    },
+    {
+      "name": "package.cli.mutation-test.test.integration",
+      "partition": "containers",
+      "reason": "rsync ownership infrastructure failure",
+      "selectedCheckIds": [
+        "package.cli.mutation-test.test.integration"
+      ],
+      "activeCheckIds": [
+        "package.cli.mutation-test.build",
+        "package.cli.mutation-test.test.integration",
+        "package.module.caught-value.build"
+      ]
+    },
+    {
+      "name": "package.module.conf-fork.test.mutation",
+      "partition": "mutation",
+      "reason": "rsync ownership infrastructure failure",
+      "selectedCheckIds": [
+        "package.module.conf-fork.test.mutation"
+      ],
+      "activeCheckIds": [
+        "package.module.caught-value.build",
+        "package.module.conf-fork.build",
+        "package.module.conf-fork.test.mutation"
+      ]
+    },
+    {
+      "name": "package.module.make-asynchronous-fork.test.mutation",
+      "partition": "mutation",
+      "reason": "rsync ownership infrastructure failure",
+      "selectedCheckIds": [
+        "package.module.make-asynchronous-fork.test.mutation"
+      ],
+      "activeCheckIds": [
+        "package.module.make-asynchronous-fork.build",
+        "package.module.make-asynchronous-fork.test.mutation"
+      ]
+    }
+  ]
+}
