@@ -126,6 +126,7 @@ assert.deepEqual(localCaseBytes, execFileSync('git', ['show', 'HEAD:' + localCas
 const localCase = JSON.parse(localCaseBytes)
 assert.equal(localCase.completeGraph, true, 'Final route requires a frozen complete case manifest')
 assert.equal(localCase.caseId, caseId)
+assert.equal(localCase.sourceRevision, expected, 'Local case source differs from the immutable consumer source')
 const contents = await readContentsApi({ path: 'doc/audit/depot-complete-cohort-' + cohort.id + '.json' })
 assert.equal(contents.sha256, cohort.manifestSha256, 'Common manifest bytes differ from the dispatch digest')
 const common = JSON.parse(contents.bytes)
