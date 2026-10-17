@@ -382,13 +382,17 @@ retain the measurement and adoption boundaries.
 
 ## TOML reconciliation queue
 
-Run `p9r4xl6n12` has 22 terminal package checks, one started mutation without a result,
-and one unexecuted independent file-enforcer mutation check.
+Run `p9r4xl6n12` has 19 passed and three failed package checks, one started mutation without a result,
+and one unexecuted independent mutation.
 Both available artifacts are downloaded and hash-reconciled in
 [the TOML audit](../audit/depot-toml-reconciliation-2026-10-17.md).
-The generator actually ran and found ambient package-bin PATH drift, matching existing issue `#335`.
-Container failure and whole-job timeout remain distinct observations.
-Isolated bounded continuation routing is being prepared; application source stays immutable.
+Generated PATH drift remains `#335`; current lint diagnostics are `#1111` and `#1112`,
+separate from the historical panic `#1066`.
+The executor deadline and missing-evidence boundary is `#1113`.
+Trial branch `trial/depot-toml-continuation-20261017` at `274ec49595d60f663249d61ab35a0806fe29aff0`
+has independent routes, immutable source/cohort proofs, retained shard identities, and verified timeout cleanup.
+The two missing mutation development gates are the next authorized dispatch.
+Completed container failure `#1070` remains separate; application source stays immutable.
 Final coherent dispatch remains held.
 
 ## Native recovery assertion tracking
