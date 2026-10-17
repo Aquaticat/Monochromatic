@@ -37554,5 +37554,226 @@
         "actualFinalProviderAcceptance": false
       }
     }
+  },
+  "loggerOriginalHostDevelopmentAcceptance": {
+    "retainedAt": "2026-10-17T10:22:51.618Z",
+    "runId": "39023040772",
+    "url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39023040772",
+    "harnessRevision": "a4a8e2501c02d590056a9f53991025f8aa93e5af",
+    "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+    "artifactCount": 3,
+    "artifacts": [
+      {
+        "id": 12097805150,
+        "name": "logger-hosts-development-macOS-ARM64-logger-host-source-20261017-a4a8e2501c",
+        "platform": "darwin",
+        "archiveBytes": 48711,
+        "archiveSha256": "41d3b5c5ec969b4951642adb8930a1b82c6898d846289d994e1d169e62b5e250",
+        "providerDigestMatched": true,
+        "members": [
+          {
+            "path": "logger-host-source/after.json",
+            "bytes": 121307,
+            "sha256": "b79e06ea5533fd70db92ebef192c5405020dc85c6ba9a76d4785d84d7cbf1901"
+          },
+          {
+            "path": "logger-host-source/before.json",
+            "bytes": 121309,
+            "sha256": "012403cb983b1811d0e56037b229e02b165529a180d3f01b0dde1172076acf0f"
+          },
+          {
+            "path": "logger-host-source/built-artifact.json",
+            "bytes": 436,
+            "sha256": "a39e8241c6caadcab02a4bb2cb0660f4ce43d24b465795ed7dc8781d839afd57"
+          },
+          {
+            "path": "logger-host-results.json",
+            "bytes": 1687,
+            "sha256": "fd4b8cb7fe5076a14ec183f0a635e57cf56db103b70a4b6a8cc8e63de7dacd8f"
+          }
+        ]
+      },
+      {
+        "id": 12097527342,
+        "name": "logger-hosts-development-Linux-X64-logger-host-source-20261017-a4a8e2501c",
+        "platform": "linux",
+        "archiveBytes": 48702,
+        "archiveSha256": "a33e6f273eb74968d5a9e4d4c2e800c009d894e754e670af20a3ab505c2f58a3",
+        "providerDigestMatched": true,
+        "members": [
+          {
+            "path": "logger-host-source/after.json",
+            "bytes": 121304,
+            "sha256": "83cd409dcdbea8b6e59bc8277980b80f1454d89010304544f145577126cee611"
+          },
+          {
+            "path": "logger-host-source/built-artifact.json",
+            "bytes": 433,
+            "sha256": "dce4bef1907bd2da3adb9f91e19e4a2e3556140e4ce15fcdf66cafc729e7472e"
+          },
+          {
+            "path": "logger-host-source/before.json",
+            "bytes": 121306,
+            "sha256": "d57106c3dd1e6c3850b219cf3aeb2a8cff799bfc15bc2a33cd3cf733ee867283"
+          },
+          {
+            "path": "logger-host-results.json",
+            "bytes": 1684,
+            "sha256": "5a4268c9f2768f7a48f4e27ea8f0d8652c783c0ab138aa01bbaaab5fd37e22f1"
+          }
+        ]
+      },
+      {
+        "id": 12097074343,
+        "name": "logger-hosts-development-Windows-X64-logger-host-source-20261017-a4a8e2501c",
+        "platform": "win32",
+        "archiveBytes": 48704,
+        "archiveSha256": "3a1d86d278406acb047d90636e871fcf563ac56a6ae392ccd0aaa77329c0c147",
+        "providerDigestMatched": true,
+        "members": [
+          {
+            "path": "logger-host-source/after.json",
+            "bytes": 121304,
+            "sha256": "c0a6d6ff9ecfc5a797d12e343f0c394af8b980d3a2526e840f14555cafa071c3"
+          },
+          {
+            "path": "logger-host-source/before.json",
+            "bytes": 121306,
+            "sha256": "2fdedb314009e941f061c55767563efd996fb1d33bb49a26456aa62c18aa95cf"
+          },
+          {
+            "path": "logger-host-source/built-artifact.json",
+            "bytes": 433,
+            "sha256": "166073aa5cf7b16d1cf722ebaec3a5d4eb00dcc5b3c6f3f8ec70c769e2caf4de"
+          },
+          {
+            "path": "logger-host-results.json",
+            "bytes": 1684,
+            "sha256": "b8c69cce698f548f604c3995ca71dedd6b4b5075f7c48d3c835337104c656edc"
+          }
+        ]
+      }
+    ],
+    "allOriginalHostCommandsSucceeded": true,
+    "sourceBeforeAfterIdentitiesVerified": true,
+    "verifierNodesByPhase": {
+      "before": "26.11.1",
+      "after": "26.5.0"
+    },
+    "originalFsidNode": "26.5.0",
+    "workflowLogs": {
+      "bytes": 155817,
+      "sha256": "7cd1943a8596773d2babec412324db3c29b3c0ec0873e6b7a252ef582ddaabd2",
+      "memberCount": 69
+    },
+    "archive": {
+      "path": "doc/audit/depot-logger-host-development-2026-10-17.evidence.json.gz",
+      "bytes": 289319,
+      "sha256": "58e75b45f568d90249987c092fd60ed766455bb7b5cfede1344d94808333693c"
+    },
+    "actualCohortBinding": false,
+    "actualFinalProviderAcceptance": false
+  },
+  "loggerFinalAdapterIntegration": {
+    "generatedCleanup": {
+      "integratedAt": "2026-10-17T10:15:00.331Z",
+      "sourceRevision": "53514e17d6ca27fa74efb0bc8d0a731ec7707a84",
+      "harnessRevision": "d30d88df0de27e7af86680dfe220c4ba431b3a02",
+      "externalDefinitionSha256": "9f3ab40d51c4ebeca117cf7db66bfa7d0fefd10338834e2fc0fb71a5775776f4",
+      "cleanupDefinitionSha256": "566ee493f6a02da8b3b70950578bb2db3b41fb8413e622b387acaf0f81662803",
+      "generatedIdentityUnchanged": true,
+      "nonGeneratedExternalBranchesUnchanged": true,
+      "strongerRootCohortTaskUnchanged": true,
+      "actualProviderControl": "p3jlkgvl99",
+      "actualFinalProviderAcceptance": false
+    },
+    "nativeReportRetention": {
+      "integratedAt": "2026-10-17T10:16:59.942Z",
+      "sourceHarness": "392a3ea04128547d9b452dd3bea7a4df1235acd1",
+      "harnessRevision": "ce052bc29c4df4f801fa2d5bf5016b6614411f01",
+      "beforeBlockSha256": "a1887f97b1d84bd593730944b79c7507c25d4ab12a3550713ac008ac133547f1",
+      "afterFinallyBlockSha256": "8c439e52cb870102913b52692f66accd2b02b7a549e534472f19e38ffedb08db",
+      "remainderDefinitionMatchesVerifiedOwner": true,
+      "otherFuzzDefinitionsUnchanged": true,
+      "workflowArtifactPath": "~/temp/agent/depot-complete-ci/logger-native-verification/",
+      "workflowArtifactOccurrences": 1,
+      "authenticProviderControl": "knsghczl71",
+      "actualFinalProviderAcceptance": false
+    },
+    "actualIntegratedControls": {
+      "observedAt": "2026-10-17T10:21:09.009Z",
+      "harnessRevision": "ce052bc29c4df4f801fa2d5bf5016b6614411f01",
+      "protectedTasks": [
+        {
+          "task": "trial:depot:ci:execute",
+          "sha256": "b2c65d09eb45c868fc5e03454d28136438c932035484a207a1e97cdcc63fde84"
+        },
+        {
+          "task": "trial:depot:ci:native-tools",
+          "sha256": "8358ee66ad4f37061503f747e9f609251e2e6063e8fd6a1a9225ce39a52b4baa"
+        },
+        {
+          "task": "trial:depot:ci:native-tool-gate",
+          "sha256": "cfb13861ee36cd6712d72a03027d5bb875e03e615d6658688ca0b02ab538cf83"
+        },
+        {
+          "task": "trial:depot:ci:desktop-runtime",
+          "sha256": "6d7c9e052666f2cc83a06e1fca37f1b616d2f1f935316b94124acd52ff319fe1"
+        },
+        {
+          "task": "trial:depot:ci:source-identity",
+          "sha256": "caef258649a6df85a47b416df957fcd3a0c6736fd51ac65f337752f4062af057"
+        },
+        {
+          "task": "trial:depot:ci:cohort-identity",
+          "sha256": "f1a2d6489f984819a5b22cc4d2645dcc9917b6dbc27875b6dc91126881c03c6a"
+        },
+        {
+          "task": "trial:depot:ci:native-features",
+          "sha256": "992eb93c19b5fbf8db3d9ca83f073ecb20ab4d1261ac3ec7191c9cfa34a199d1"
+        },
+        {
+          "task": "trial:depot:linux-nextest",
+          "sha256": "abe5979ee970606d3e7773d1531c0498117833adb8bb2688d6f229ae401b12f8"
+        }
+      ],
+      "parsedTasks": [
+        {
+          "task": "//package/module/logger.fuzz:trial:depot:external",
+          "resolvedDirectory": "/var/mnt/encrypted/temp/agent/depot-cohort-root-worktree-20261017/package/module/logger.fuzz/../../..",
+          "runBodySha256": "961e1a0979ee899ed08d68398128dac51e76c2b5dd6acde1ff31b28fd6cc5ae5",
+          "syntax": "passed"
+        },
+        {
+          "task": "//package/module/logger.fuzz:trial:depot:generated:identity",
+          "resolvedDirectory": "/var/mnt/encrypted/temp/agent/depot-cohort-root-worktree-20261017/package/module/logger.fuzz/../../..",
+          "runBodySha256": "4062bb9971273891d567eb577d8801e4d6f10cbe5cf8911ac9295f46550d1d4c",
+          "syntax": "passed"
+        },
+        {
+          "task": "//package/module/logger.fuzz:trial:depot:generated:cleanup",
+          "resolvedDirectory": "/var/mnt/encrypted/temp/agent/depot-cohort-root-worktree-20261017/package/module/logger.fuzz/../../..",
+          "runBodySha256": "7fa63ccf2e12ec5f3436928c44fe9ead6c8a00cf8a7339a6d3976fc0100df905",
+          "syntax": "passed"
+        },
+        {
+          "task": "//package/module/logger.fuzz:trial:depot:remainder",
+          "resolvedDirectory": "/var/mnt/encrypted/temp/agent/depot-cohort-root-worktree-20261017/package/module/logger.fuzz/../../..",
+          "runBodySha256": "20c49eb2cc4764cf2fed9b473c88d7e5339c4a915906cafda189d14bfb834f92",
+          "syntax": "passed"
+        },
+        {
+          "task": "//package/module/logger.fuzz:trial:depot:cohort-identity",
+          "resolvedDirectory": "/var/mnt/encrypted/temp/agent/depot-cohort-root-worktree-20261017/package/module/logger.fuzz/../../..",
+          "runBodySha256": "d5119860a4592094991f848c554002c855079a0e34c87fea50a608dc94bf7797",
+          "syntax": "passed"
+        }
+      ],
+      "rootCohortUnchanged": true,
+      "generatedIdentityUnchanged": true,
+      "remainderBodyMatchesAuthenticallyControlledOwner": true,
+      "actualFinalProviderAcceptance": false
+    },
+    "actualFinalProviderAcceptance": false
   }
 }
