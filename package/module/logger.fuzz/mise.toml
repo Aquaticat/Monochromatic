@@ -602,7 +602,7 @@ const child=task=>['exec','--user',process.getuid()+':'+process.getgid(),'--work
 let suite,error,cleanupVerified=false,evidenceCopied=true,phase='prepared'
 const copied=[]
 try {
- execute({args:['run','--detach','--init','--name',name,'--network=none','--memory=2g','--cpus=2','--pids-limit=512','--timeout=3300','--rootfs','/:O','/usr/bin/sleep','3240']})
+ execute({args:['run','--detach','--init','--name',name,'--network=none','--memory=2g','--cpus=2','--pids-limit=512','--timeout=5100','--rootfs','/:O','/usr/bin/sleep','5040']})
  execute({args:['exec','--user',process.getuid()+':'+process.getgid(),name,'touch',marker]});assert(!existsSync(marker),'Worker source must remain outside overlay writes')
  phase='buildingGit';execute({args:child('//package/module/logger.fuzz:trial:depot:git-host:build'),inherit:true,limit:1860000})
  phase='installingPrivateGit';execute({args:['exec','--user','0',name,'rsync','--archive','--hard-links','--chown=root:root','--delay-updates',join(base,'stage/usr/'),'/usr/'],inherit:true})

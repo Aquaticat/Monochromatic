@@ -11,7 +11,7 @@ jobs:
     runs-on:
       size: 2x8
       image: monochromatic-trial-native-bases:20261016-v1
-    timeout-minutes: 60
+    timeout-minutes: 90
     env:
       MISE_AUTO_INSTALL: 'false'
       MISE_LOCKED: '1'
@@ -60,7 +60,7 @@ jobs:
       working-directory: harness
       continue-on-error: true
       run: mise run //package/module/logger.fuzz:trial:depot:prerequisites
-    - name: Build and verify private Git then run unchanged host tasks
+    - name: Gate private Git and authentic source linter then run unchanged host tasks
       working-directory: harness
       run: mise run //package/module/logger.fuzz:trial:depot:git-host
     - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -69,4 +69,9 @@ jobs:
         name: logger-git-host-pilot-evidence
         include-hidden-files: true
         path: |
-          ~/temp/agent/depot-complete-ci/
+          ~/temp/agent/depot-complete-ci/*.json
+          ~/temp/agent/depot-complete-ci/*.log
+          ~/temp/agent/depot-complete-ci/*.sha256
+          ~/temp/agent/depot-complete-ci/check-logs/
+          ~/temp/agent/depot-complete-ci/git-host-2.56.0-elf
+          ~/temp/agent/depot-complete-ci/git-host-linter-elf
