@@ -144,7 +144,8 @@ Completed units (findings validated):
  `code-automode-native` (5 findings),
  `code-automode-src` (11 findings),
  `code-cli-1` (9 findings),
- `code-claude-code-plugin-1` (16 findings).
+ `code-claude-code-plugin-1` (16 findings),
+ `code-cloudflare-worker-1` (9 findings).
 
 Cross-unit leads:
  `doc/planning/music-player-shared-truepeak-core.md` repeats the retired truepeak policy
@@ -167,16 +168,15 @@ Cross-unit leads:
 Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
  `code-agent-harness-shared-1`,
  `code-cli-2`,
- `code-cloudflare-worker-1`,
  `code-codex-plugin-1`,
  `code-config-1`,
  `code-desktop-app-1`,
  `code-desktop-daemon-1`,
- `code-dev-script-1` (launched as a replacement).
+ `code-dev-script-1` (launched as a replacement),
+ `code-figma-1` (next launch; the 8-child cap was full when its slot came up).
 
 Queued units in launch order (flat list; the first entry launches next):
 
-- `code-figma-1`,
 - `code-git-1`,
 - `code-intellij-plugin-1`,
 - `code-kwin-1`,
