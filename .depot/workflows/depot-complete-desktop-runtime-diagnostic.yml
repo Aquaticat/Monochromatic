@@ -67,9 +67,6 @@ jobs:
       env:
         DEPOT_CI_IDENTITY_PHASE: before
       run: mise run //package/dev-script/task-util:trial:depot:ci:source-identity
-    - name: Build exact-head compositor prerequisite
-      working-directory: source
-      run: mise run //package/cli/nested-wayland-session:build
     - name: Build unchanged application for runtime diagnosis
       working-directory: source
       run: mise run //package/music-player/desktop-app:build

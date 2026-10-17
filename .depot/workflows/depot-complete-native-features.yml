@@ -2,6 +2,19 @@ name: depot-complete-native-features
 
 on:
   workflow_dispatch:
+    inputs:
+      cohort_id:
+        description: Frozen shared replay identity
+        required: true
+        type: string
+      manifest_sha256:
+        description: SHA256 of the exact published common manifest bytes
+        required: true
+        type: string
+      requested_at:
+        description: Shared canonical UTC request instant after publication
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -23,6 +36,11 @@ jobs:
       CI: 'true'
       MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
       DEPOT_CI_CASE: native
+      DEPOT_CI_ROUTE: native.features
+      COHORT_ID: ${{ inputs.cohort_id }}
+      COHORT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+      COHORT_REQUESTED_AT: ${{ inputs.requested_at }}
+      GH_TOKEN: ${{ github.token }}
       DEPOT_CI_WORKERS: '4'
       OXLINT_THREADS: '1'
       TSC_SINGLE_THREADED: '1'
@@ -51,6 +69,12 @@ jobs:
         env: false
         export_path: false
         cache: false
+    - name: Bind immutable source and shared cohort before consumers
+      id: cohort_before
+      working-directory: harness
+      env:
+        DEPOT_CI_IDENTITY_PHASE: before
+      run: mise run //package/dev-script/task-util:trial:depot:ci:cohort-identity
     - name: Install exact lockfile tool versions outside source
       working-directory: harness
       env:
@@ -65,6 +89,12 @@ jobs:
     - name: Execute unchanged historical package checks
       working-directory: harness
       run: mise run //package/dev-script/task-util:trial:depot:ci:native-features
+    - name: Verify immutable source and shared cohort after consumers
+      if: ${{ always() && steps.cohort_before.outcome == 'success' }}
+      working-directory: harness
+      env:
+        DEPOT_CI_IDENTITY_PHASE: after
+      run: mise run //package/dev-script/task-util:trial:depot:ci:cohort-identity
     - name: Preserve native check evidence and APKs
       if: always()
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -72,6 +102,8 @@ jobs:
         name: native-features-evidence
         path: |
           ~/temp/agent/depot-complete-ci/*-results.json
+          ~/temp/agent/depot-complete-ci/*-provenance-*.json
+          ~/temp/agent/depot-complete-ci/*-resource-samples.json
           ~/temp/agent/depot-complete-ci/check-logs/*.log
           ~/temp/agent/depot-complete-ci/native-tools.json
 
