@@ -718,3 +718,53 @@ console.log('\n' + JSON.stringify(record))
 [tasks."trial:depot:ci:render-doc"]
 description = "Render requested Markdown evidence using the installed document renderer"
 run = "pandoc --from=commonmark --to=html"
+
+[tasks."trial:depot:vm:original"]
+description = "Record the exact immutable authored VM task without repeating diagnostic guest preparation"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync, spawnSync } = await import('node:child_process')
+const { mkdirSync, chmodSync, mkdtempSync, readFileSync, writeFileSync, readdirSync } = await import('node:fs')
+const { homedir } = await import('node:os')
+const { join } = await import('node:path')
+const { createHash } = await import('node:crypto')
+const { strict: assert } = await import('node:assert')
+const source = join(process.env.GITHUB_WORKSPACE, 'source')
+const originalHome = homedir()
+const scratch = join(originalHome, 'temp/agent')
+mkdirSync(scratch, { recursive: true, mode: 0o700 })
+chmodSync(scratch, 0o700)
+const evidence = join(scratch, 'depot-complete-vm-original-evidence')
+mkdirSync(evidence, { recursive: true, mode: 0o700 })
+chmodSync(evidence, 0o700)
+const privateHome = mkdtempSync(join(scratch, 'depot-vm-original-'))
+const runtime = join(privateHome, 'runtime')
+mkdirSync(runtime, { mode: 0o700 })
+const env = { ...process.env, HOME: privateHome, XDG_CONFIG_HOME: join(privateHome, '.config'), XDG_CACHE_HOME: join(privateHome, '.cache'), XDG_DATA_HOME: join(privateHome, '.local/share'), XDG_RUNTIME_DIR: runtime, MISE_DATA_DIR: join(originalHome, '.local/share/mise'), MISE_CONFIG_DIR: join(originalHome, '.config/mise'), MISE_CACHE_DIR: join(originalHome, '.cache/mise') }
+const revision = 'ef01490f5e960f8ca0b424c12242caeb3c5a2b5e'
+const identity = () => ({ head: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), trackedStatus: execFileSync('git', ['status', '--porcelain', '--untracked-files=no'], { cwd: source, encoding: 'utf8' }).trim(), inputs: ['mise.lock', 'pnpm-lock.yaml', 'mise.toml', 'package/cli/vmsync/mise.toml', 'package/cli/vmsync/src/lifecycle.expensive.unit.test.ts'].map(path => ({ path, sha256: createHash('sha256').update(readFileSync(join(source, path))).digest('hex') })) })
+const initialIdentity = identity()
+assert.equal(initialIdentity.head, revision)
+assert.equal(initialIdentity.trackedStatus, '')
+const command = 'mise'
+const args = ['run', '//package/cli/vmsync:test:e2e']
+const startedAt = new Date().toISOString()
+const result = spawnSync(command, args, { cwd: source, env, encoding: 'utf8', timeout: 600000, maxBuffer: 32 * 1024 * 1024 })
+const finishedAt = new Date().toISOString()
+writeFileSync(join(evidence, 'original-package-task.stdout.log'), result.stdout ?? '')
+writeFileSync(join(evidence, 'original-package-task.stderr.log'), result.stderr ?? '')
+const finalIdentity = identity()
+const helperResolutionFailure = result.status === 1 && (result.stderr ?? '').includes('MODULE_NOT_FOUND') && (result.stderr ?? '').includes('/package/cli/vmsync/package/cli/mvm/src/cli.ts')
+const testNames = [...readFileSync(join(source, 'package/cli/vmsync/src/lifecycle.expensive.unit.test.ts'), 'utf8').matchAll(/^\s*name: '([^']+)',/gm)].map(match => match[1])
+assert.deepEqual(testNames, ['vmsync lifecycle (Linux)', 'full CLI lifecycle', 'vmsync lifecycle (Windows)', 'full CLI lifecycle'])
+const configuredTests = [0, 2].map(index => ({ suite: testNames[index], name: testNames[index + 1], executed: false, status: helperResolutionFailure ? 'unexecuted because original top-level setup failed' : 'unverified' }))
+const record = { sourceRevision: revision, checkId: 'special.package.cli.vmsync.src.lifecycle.expensive.unit.test.ts', selectedTask: '//package/cli/vmsync:test:e2e', selectedArgs: [], expectedFiles: ['package/cli/vmsync/src/lifecycle.expensive.unit.test.ts'], expectedFileCount: 1, initialIdentity, finalIdentity, providerJobUrl: process.env.DEPOT_JOB_URL, resources: { cpus: 16, memoryGiB: 64 }, result: { command, args, cwd: source, startedAt, finishedAt, exitCode: result.status, signal: result.signal, error: result.error?.message }, helperResolutionFailure, configuredTests, runtimeEntries: readdirSync(runtime), diagnosticGuestPreparationExecuted: false, runtimeCoverage: 'unexercised; final route invokes the authored task before any diagnostic guest preparation' }
+writeFileSync(join(evidence, 'results.json'), JSON.stringify(record, null, 2))
+console.log(JSON.stringify(record))
+if (result.status !== 0) console.error(result.stderr ?? '')
+assert.deepEqual(finalIdentity, initialIdentity, 'The authored VM task must preserve immutable source and tracked inputs')
+if (result.error) throw result.error
+assert(helperResolutionFailure, 'Unexpected source-task result; inspect retained output before accepting coverage')
+throw new Error('Original selected vmsync task failed before either lifecycle test body; retained source failure must remain a failed required check')
+'''
