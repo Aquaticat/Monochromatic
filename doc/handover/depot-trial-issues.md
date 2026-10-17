@@ -428,7 +428,7 @@ artifact hashes,
 the 167222-millisecond provider interval,
 and verified cleanup are retained.
 
-Actual bounded receipt repeat `mj128hqwv0` is dispatched on
+Actual bounded receipt repeat `mj128hqwv0` finished on
 `0f8ad795aa92d3beb83e3bfa4e4aa54f1bea06f8`.
 Terminal collection and all 20 artifact member hashes are verified.
 The exact observer list operation exceeded eight seconds with `SIGKILL` and `ETIMEDOUT`,
@@ -438,12 +438,7 @@ the harness now retains exact command,
 signal,
 error code,
 and output bytes before assertions.
-The authorized next action is an isolated metadata-only deadline/forwarding trial,
-rejection controls,
-and another bounded actual consumer.
-Only a complete source,
-metadata,
-and cleanup result permits the full immutable mutation retry.
+The subsequent metadata-only forwarding trial retains the failure and its rejection controls.
 Issue `#1118` records the independent,
 source-consumer-proved inherited-method replacement defect;
 it does not explain the infrastructure failures.
@@ -460,7 +455,7 @@ publish the real canonical manifest with final harness hashes,
 and verify actual canonical reads before final coherent dispatch.
 Final dispatch remains held.
 
-Bounded metadata forwarding trial `vlrxjltfkq` is dispatched on `316e1a8a309e71e456a741eb63e5ff3b94b75646`.
+Bounded metadata forwarding trial `vlrxjltfkq` succeeded on `316e1a8a309e71e456a741eb63e5ff3b94b75646`.
 The observer deadline is 60000 milliseconds;
 original source adapter bytes and source arguments are preserved.
 A copied observer forwarder retains sudo lifecycle results,
@@ -472,8 +467,7 @@ The longest metadata call was 14100.441549 milliseconds;
 its forwarded sudo call returned zero.
 Issue `#1130` retains this observer deadline boundary,
 original failures and rejection controls.
-After a complete actual result,
-the authorized queue continues to the full TOML-only immutable mutation retry.
+Its complete actual result permitted the full TOML-only immutable mutation retry.
 
 Full TOML-only development retry `23dk3nr90f` is dispatched at `0f1ef041a0de2ff6d2db6dd55210b1160c592648`.
 The exact request,
