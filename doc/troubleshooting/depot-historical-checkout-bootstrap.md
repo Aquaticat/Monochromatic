@@ -338,6 +338,56 @@ and changed/original hashes for each omitted input.
 The fixture driver and complete command output remain in
 `~/temp/agent/depot-source-identity-controls-20261017`.
 
+### Verified repair
+
+Harness commit `c0baaeb1d6` expands the input enumeration to root configuration,
+root `.cargo/` files,
+and nested metadata inside selected or artifact-prerequisite packages.
+Commit `faf388e838737e6b08b9a8075cdcbf4b34f02b2b` changes tracked path enumeration to NUL boundaries:
+
+```javascript
+// package/dev-script/task-util/mise.toml:817 at harness faf388e838
+const trackedFiles=new Set(git(['ls-files','-z']).split('\\0').filter(Boolean));
+```
+
+A fresh fixture run through the actual task verified the repaired helper with 19 terminal controls.
+Both historical before/after pairs passed with unchanged source heads and clean tracked status.
+The native identity now retained 36 input hashes;
+the desktop identity retained 26.
+Every formerly omitted input named in Source identity input coverage was hashed,
+and each index-hidden byte change was rejected with `Configured source input differs`.
+The original wrong-source,
+dirty-source,
+hashed-input,
+manifest-change,
+invalid-phase,
+and missing-baseline controls also retained their expected rejection outcomes.
+
+An additional disposable source commit added nested `Cargo.toml` metadata whose directory name contains
+spaces,
+single and double quotes,
+and a newline.
+The actual before/after task included its exact path and correct byte hash.
+An index-hidden edit to that file was rejected;
+restoring it produced a passing after check and clean tracked status.
+This exercises the NUL path boundary through Git enumeration,
+filesystem reads,
+Git blob reads,
+JSON persistence,
+and final identity comparison.
+
+The [repaired fixture evidence](../audit/depot-source-identity-repaired-controls-2026-10-17.evidence.json)
+is separate from the unchanged original 15-control record.
+It retains harness revision `faf388e838737e6b08b9a8075cdcbf4b34f02b2b`
+and task-file SHA-256 `d769e393662c59fef7c00216fe302912f46610520c9ca1de709c1da836f8da8e`.
+The shared harness task file remained byte-identical throughout the repaired verification.
+Only disposable fixture state and documentation were changed;
+no cloud run or production test suite was dispatched.
+These controls verify the named input and path boundaries,
+not every possible repository path.
+The repaired fixture driver and command logs remain in
+`~/temp/agent/depot-source-identity-repaired-controls-20261017`.
+
 ## Verification catalog
 
 - Passed:
