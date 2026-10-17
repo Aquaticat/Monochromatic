@@ -2,6 +2,108 @@
 
 ## Completed trial execution and remaining acceptance gaps
 
+### Execution checkpoint at 07:36 UTC on October 17
+
+The Codex scope clarification and globally verified search/fetch MCP setup are complete.
+The user selected the Codex document change only;
+`AGENTS.md` remains unchanged.
+No coherent final replay has been dispatched,
+and the case manifests remain provisional with `completeGraph: false`.
+
+Desktop continuation controls at harness `bb475f636f51a00864710454c6499fcd3db6b8a4`
+are terminal and fully collected:
+native `s3cmrhf2kp` recorded 106 passes,
+two failures,
+and one skip;
+desktop `wxq11xm2hd` recorded 110 passes,
+two failures,
+and one skip.
+Actual summary identities reach every source-selected route,
+including the desktop source's four Auto-play checks.
+The failures remain the source folder setup in `#1005`
+and the zero-pixel folder chooser boundary already tracked in `#1004`.
+The synthetic `trial/session-aborted/wide` outcome preserves the setup error;
+checks after that setup failure within the wide session remain source-blocked.
+All retained PID/OOM counters are zero,
+source identities match before and after,
+and cleanup is verified.
+Provider allocations were 603.265 seconds and 575.693 seconds at `16x64`.
+These development allocations do not constitute a coherent whole-case latency measurement.
+The complete receipts are in the `desktopRuntimeSessionContinuationControl` evidence field.
+
+The source controller writes its summary and then removes its scratch base.
+Completed source session logs therefore disappear before the current post-command collector copies them.
+The summary and 106 native or 110 desktop screenshots are retained,
+but the missing raw session logs remain an evidence gap.
+Root must archive those logs before the original cleanup,
+preserve that cleanup even when archiving fails,
+and verify the actual consumer again.
+The clean pushed final root worktree is
+`~/temp/agent/depot-cohort-root-worktree-20261017`,
+branch `trial/depot-cohort-root-20261017`.
+Its `f8d090f36dbbbba5dee6e96a732a7da0cd2bc73e` preparation derives the receipt inventory
+from each committed source selector.
+Actual function controls accept six native and seven desktop routes;
+the legacy six-route desktop negative fails.
+Provider verification of this corrected receipt remains pending under `#1120`.
+
+The canonical common-manifest contract is in the plan's shared cohort identity section.
+`#1119` tracks byte-preserving transport through every final route.
+The authenticated object/base64 API control verifies exact bytes at a frozen repository ref;
+raw JSON from GitHub CLI 2.102.0 changes escaped controls through its sanitizing transport.
+`doc/troubleshooting/gh-api-json-byte-preservation.md` records the deciding source and verified workaround.
+Root is adapting the native owner's guarded reader from
+`0f8ad795aa92d3beb83e3bfa4e4aa54f1bea06f8`
+to trusted native,
+desktop Linux,
+scanner,
+and Scorecard route bindings.
+
+The logger owner's bounded development recovery `lt7qwlz6h1`
+uses clean pushed harness `f69a78a3b31f81cbfe47496bcdc6e2ac75549777`.
+Only conf fuzz and TOML/conf mutation are replayed,
+with unchanged source arguments,
+two-hour check budgets,
+and 150-minute jobs.
+Fuzz uses `2x8`;
+mutation uses `4x16` for the authored two concurrent `2 CPU/2 GiB` containers.
+The prior 35-leaf recovery has 26 passing,
+six source-failed,
+and three incomplete checks.
+The independent browser development union covers all 118 configured cases:
+116 passed,
+one failed on OPFS availability in WebKit,
+and one authored skip.
+Its 32 partitions retain zero PID rejection and OOM samples.
+The logger owner continues final registration,
+issue reconciliation,
+and a real Git executable pilot in a bounded disposable worker-userland overlay.
+
+The TOML observer incident is separately filed as `#1130`.
+The source pilot exits zero with a green baseline and one retained compile-error mutant,
+but an eight-second metadata command deadline failed the wrapper.
+The bounded observer trial `vlrxjltfkq` at
+`316e1a8a309e71e456a741eb63e5ff3b94b75646`
+uses a 60-second metadata deadline with forwarding receipts and timeout controls.
+The original source consumer helper remains byte-identical to `d098532a`.
+The native owner must prove complete metadata,
+correlation,
+source outcome,
+and cleanup before dispatching the full unchanged-source mutation retry.
+The prior failed campaigns and separate source-producer issue `#1118` remain retained.
+
+The remaining queue is explicit:
+finish the log archive and root route controls;
+reconcile the running logger and TOML work;
+complete every case's registration and copy its final bytes to every owner;
+freeze and publish the actual common manifest before the shared request clock;
+dispatch and collect all bound routes;
+join the matching Android producer to the held headful consumer;
+and compute allocation cost and overlap-aware critical paths.
+The VM owner is also assessing a natural-build consumer bridge for the source cwd failure `#1076`,
+while preserving the original authored gate's result and avoiding Windows fixtures.
+No final artifact consumer may use a mismatched development producer.
+
 ### Resumed execution on October 17
 
 The user additionally authorized registering the repository's search/fetch MCP globally in Codex,
