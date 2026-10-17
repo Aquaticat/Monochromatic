@@ -1,5 +1,5 @@
 [tasks.analysis]
-shell = "node --input-type=module -e"
+shell = "node --input-type=module-typescript -e"
 run = '''
 const {execFileSync,spawnSync} = await import('node:child_process');
 const {mkdirSync,readFileSync,writeFileSync} = await import('node:fs');
