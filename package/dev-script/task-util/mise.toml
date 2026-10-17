@@ -815,6 +815,8 @@ const sha256=value=>createHash('sha256').update(value).digest('hex');
 const packages=new Set([...manifest.selectedPackages,...manifest.externalChecks.flatMap(check=>check.artifactPrerequisitePackage?[check.artifactPrerequisitePackage]:[])]);
 const paths=new Set(['mise.lock','mise.toml','pnpm-lock.yaml','pnpm-workspace.yaml','package.json']);
 const trackedFiles=new Set(git(['ls-files','-z']).split('\0').filter(Boolean));
+const indexEntries=git(['ls-files','-v','-z']).split('\0').filter(Boolean);
+assert(indexEntries.every(entry=>entry[0]!=='S'&&!/[a-z]/.test(entry[0])),'Immutable source index must not hide tracked inputs with assume-unchanged or skip-worktree flags');
 const packageRoots=[...packages];
 const metadataNames=new Set(['mise.toml','mise.lock','package.json','Cargo.toml','Cargo.lock','config.toml']);
 for(const path of trackedFiles){
