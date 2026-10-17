@@ -1365,6 +1365,9 @@ const { createHash } = await import('node:crypto')
 const { readFileSync, writeFileSync, mkdirSync } = await import('node:fs')
 const { join, isAbsolute } = await import('node:path')
 const { strict: assert } = await import('node:assert')
+const workspace = process.env.GITHUB_WORKSPACE
+assert(workspace && isAbsolute(workspace), 'GITHUB_WORKSPACE must name the explicit native host checkout root')
+const harness = join(workspace, 'harness')
 const source = process.env.SOURCE_ROOT
 const expected = process.env.SOURCE_HEAD
 const phase = process.env.PROVENANCE_PHASE
@@ -1386,8 +1389,8 @@ const indexEntries = execFileSync('git', ['ls-files', '-v', '-z'], { cwd: source
 assert(indexEntries.every(entry => entry[0] !== 'S' && !/[a-z]/.test(entry[0])), 'Immutable source index must not hide tracked inputs with assume-unchanged or skip-worktree flags')
 const tracked = execFileSync('git', ['ls-files', '-z'], { cwd: source, encoding: 'utf8' }).split('\0').filter(Boolean)
 const casePath = '.depot/manifests/logger.json'
-const caseBytes = readFileSync(join(process.cwd(), casePath))
-assert.deepEqual(caseBytes, execFileSync('git', ['show', 'HEAD:' + casePath], {maxBuffer: 1024 * 1024}))
+const caseBytes = readFileSync(join(harness, casePath))
+assert.deepEqual(caseBytes, execFileSync('git', ['show', 'HEAD:' + casePath], {cwd:harness,maxBuffer: 1024 * 1024}))
 const localCase = JSON.parse(caseBytes)
 assert.equal(localCase.caseId, 'logger')
 assert.equal(localCase.sourceRevision, expected)
@@ -1405,7 +1408,7 @@ const inputs = Object.fromEntries(paths.map(path => { const bytes = readFileSync
 const identity = { head: git(['rev-parse', 'HEAD']), trackedStatus: git(['status', '--porcelain', '--untracked-files=no']), sourceTree: git(['rev-parse', 'HEAD^{tree}']), inputs }
 assert.equal(identity.head, expected, 'Host source differs from the frozen case')
 assert.equal(identity.trackedStatus, '', 'Host source has tracked modifications')
-const harnessRevision = execFileSync('git', ['rev-parse', 'HEAD'], {encoding:'utf8'}).trim()
+const harnessRevision = execFileSync('git', ['rev-parse', 'HEAD'], {cwd:harness,encoding:'utf8'}).trim()
 if (process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true') assert.match(process.env.GITHUB_SHA ?? '', /^[a-f0-9]{40}$/)
 if (process.env.GITHUB_SHA) assert.equal(harnessRevision, process.env.GITHUB_SHA)
 const record = {schemaVersion:1, event:'logger-host-source-identity', phase, caseName, cohort, harnessRevision, expectedSource:expected, verifierNode:process.version, platform:process.platform, architecture:process.arch, identity}
