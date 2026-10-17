@@ -332,3 +332,70 @@ assert.equal(execFileSync('git', ['diff', '--name-only', 'HEAD'], { cwd: source,
 writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, group, selectedCheckIds: groups[group], prerequisiteIds, providerJobUrl: process.env.DEPOT_JOB_URL, records }, null, 2))
 assert(records.every(record => record.status === 'passed'), 'Logger external checks failed or lack verified prerequisites; see retained records')
 '''
+
+[tasks."trial:depot:prerequisites"]
+description = "Prepare locked logger executables and offline Cargo inputs before selected checks"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawnSync, execFileSync } = await import('node:child_process')
+const { readFileSync, writeFileSync, mkdirSync } = await import('node:fs')
+const { homedir } = await import('node:os')
+const { join } = await import('node:path')
+const { createHash } = await import('node:crypto')
+const { strict: assert } = await import('node:assert')
+const source = join(process.env.GITHUB_WORKSPACE, 'source')
+const harness = join(process.env.GITHUB_WORKSPACE, 'harness')
+const lock = readFileSync(join(source, 'mise.lock'), 'utf8')
+const versions = new Map([...lock.matchAll(/^\[\[tools\.(?:"([^"]+)"|([^\]]+))\]\]\nversion = "([^"]+)"/gm)].map(match => [match[1] ?? match[2], match[3]]))
+const directory = join(homedir(), 'temp/agent/depot-complete-ci')
+mkdirSync(directory, { recursive: true, mode: 0o700 })
+const records = []
+function run({ name, args, cwd = source, env = process.env, limit = 300000 }) {
+  const startedAt = new Date().toISOString()
+  const result = spawnSync('mise', args, { cwd, env, timeout: limit, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 })
+  const output = `${result.stdout ?? ''}${result.stderr ?? ''}`
+  writeFileSync(join(directory, `prepare-${name}.log`), output, { mode: 0o600 })
+  const record = { name, args, startedAt, finishedAt: new Date().toISOString(), exitCode: result.status, signal: result.signal, error: result.error?.message, status: result.status === 0 ? 'passed' : 'failed', outputSha256: createHash('sha256').update(output).digest('hex') }
+  records.push(record)
+  writeFileSync(join(directory, 'logger-global-preparation-results.json'), JSON.stringify({ sourceRevision: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), sourceLockSha256: createHash('sha256').update(lock).digest('hex'), records }, null, 2))
+  console.log(JSON.stringify(record))
+  if (result.status !== 0) console.error(output.slice(-8000))
+}
+for (const name of ['bun', 'npm:pagefind', 'cargo:cargo-fuzz']) {
+  assert(versions.has(name))
+  run({ name: name.replaceAll(':', '-'), args: ['install', `${name}@${versions.get(name)}`], cwd: harness, env: { ...process.env, MISE_LOCKED: '0' } })
+}
+// The historical task selects latest without a lock entry. Retain the same 2.2.0 conformance executable already exercised in the TOML case.
+run({ name: 'toml-test-install', args: ['install', 'github:toml-lang/toml-test@2.2.0'], cwd: harness, env: { ...process.env, MISE_LOCKED: '0' } })
+run({ name: 'toml-test-version', args: ['exec', 'github:toml-lang/toml-test@2.2.0', '--', 'toml-test', 'version'] })
+for (const owner of ['package/git-policy/cli', 'package/git-policy/cli.fuzz', 'package/linter/monochromatic-lint']) {
+  run({ name: `cargo-fetch-${owner.split('/').slice(1).join('-')}`, args: ['exec', '--', 'cargo', 'fetch', '--locked', '--manifest-path', join(source, owner, 'Cargo.toml')], env: { ...process.env, CARGO_NET_OFFLINE: 'false' } })
+}
+assert.equal(readFileSync(join(source, 'mise.lock'), 'utf8'), lock)
+assert.equal(execFileSync('git', ['diff', '--name-only', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), '')
+assert(records.every(record => record.status === 'passed'), 'Logger prerequisite preparation failed; independent checks still need execution')
+'''
+
+[tasks."trial:depot:browser-image"]
+description = "Select the immutable browser image matching the historical Playwright dependency without editing source"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process')
+const { readFileSync, writeFileSync, mkdirSync } = await import('node:fs')
+const { createHash } = await import('node:crypto')
+const { homedir } = await import('node:os')
+const { join } = await import('node:path')
+const { strict: assert } = await import('node:assert')
+const source = join(process.env.GITHUB_WORKSPACE, 'source')
+const lock = readFileSync(join(source, 'pnpm-lock.yaml'), 'utf8')
+assert(lock.includes("'@playwright/test@1.64.0':"))
+const image = 'mcr.microsoft.com/playwright:v1.64.0-noble@sha256:06a9939e57531807f8d5fd76ce44b53165ffb7d7501d87ab10e285c20b1e971f'
+execFileSync('podman', ['pull', image], { stdio: 'inherit' })
+execFileSync('podman', ['tag', image, 'monochromatic-playwright'], { stdio: 'inherit' })
+const inspect = JSON.parse(execFileSync('podman', ['image', 'inspect', 'monochromatic-playwright'], { encoding: 'utf8' }))
+const directory = join(homedir(), 'temp/agent/depot-complete-ci')
+mkdirSync(directory, { recursive: true, mode: 0o700 })
+writeFileSync(join(directory, 'logger-browser-image-results.json'), JSON.stringify({ sourceRevision: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), image, inspect, pnpmLockSha256: createHash('sha256').update(lock).digest('hex'), originalDockerfileSha256: createHash('sha256').update(readFileSync(join(source, 'playwright.Dockerfile'))).digest('hex'), originalDockerfileMismatchIssue: 1045, adaptation: 'Populate the source task image name with the exact Playwright 1.64.0 browser image; retain historical Dockerfile unchanged' }, null, 2))
+'''
