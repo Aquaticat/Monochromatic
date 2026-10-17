@@ -4318,6 +4318,16 @@
           }
         }
       ]
+    },
+    "issueVerification": {
+      "number": 1134,
+      "state": "CLOSED",
+      "labels": [
+        "needs-triage"
+      ],
+      "bodySha256": "888412a4fd2f295e8173a72d6a5c0b77f3b99b679ff461e85e4c2ec67b493ec1",
+      "commentCount": 1,
+      "verifiedAt": "2026-10-17T08:52:35.864Z"
     }
   },
   "limitations": [
@@ -4327,5 +4337,42 @@
     "Smoke consumption does not prove guest runtime, import, status, config or sync.",
     "No final common cohort receipt or provider accounting exists for these local controls."
   ],
-  "providerRunsDispatched": []
+  "providerRunsDispatched": [],
+  "documentationVerification": {
+    "revision": "8719ad3db0167574a5a8324132fa9a0bb74fd098",
+    "results": [
+      {
+        "file": "doc/troubleshooting/vmsync-lifecycle-working-directory.md",
+        "renderedBytes": 13111,
+        "linesOver120": []
+      },
+      {
+        "file": "doc/troubleshooting/depot-vm-runtime-paths.md",
+        "renderedBytes": 44647,
+        "linesOver120": [
+          {
+            "line": 10,
+            "length": 181
+          },
+          {
+            "line": 126,
+            "length": 236
+          }
+        ]
+      },
+      {
+        "file": "doc/handover/depot-affected-ci-executor.md",
+        "renderedBytes": 39168,
+        "linesOver120": [
+          {
+            "line": 333,
+            "length": 121
+          }
+        ]
+      }
+    ],
+    "evidenceVerified": true,
+    "fixtureTask": "/var/mnt/encrypted/temp/agent/depot-coherent-android-consumer-20261017/unit-issue/mise.toml",
+    "fixtureTaskSha256": "52eb9b6b06572a721549dafae5a7a3f75a1d8dd8cfbd6a2ae8d9f5dddd1f72c0"
+  }
 }
