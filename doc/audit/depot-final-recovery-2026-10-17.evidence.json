@@ -17889,5 +17889,2605 @@
     "rawBytesEqual": true,
     "mismatchedDigestRejected": true,
     "finalCohortManifest": "not yet frozen or published"
+  },
+  "desktopSessionContinuationPreparation": {
+    "harnessRevision": "bb475f636f51a00864710454c6499fcd3db6b8a4",
+    "controls": [
+      {
+        "caseId": "native",
+        "sourceRevision": "cb95cf6d785c3073c192b95f0632cdae7b910894",
+        "names": [
+          "wide",
+          "narrow",
+          "dialog",
+          "quit",
+          "states",
+          "visual"
+        ],
+        "directory": "/var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s",
+        "actualTaskSha256": "75220a91fbccc2e96b885b1c3519b26f6234475168706b2134c60911669f8512",
+        "originalRunSourceSha256": "4e68b92d908b12266455af5a4b062fd1e80310c6c235ff95e5674a551a03617f",
+        "originalSessionSha256": "1f71c35934e8a85bb268e4322ccd9768eb054ef30d82652ea34fbb59ace6fa53",
+        "actualRecorderSourceSha256": "fdaaf2b77dc59217bb3fd9d767ef91183ce8f5176a94985bd0c35ecaeee24050",
+        "removedGuardRejected": true,
+        "controls": [
+          {
+            "name": "all-pass",
+            "mode": "pass",
+            "status": 0,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "info:running the narrow session",
+                "session:narrow",
+                "info:running the dialog session",
+                "session:dialog",
+                "info:running the quit session",
+                "session:quit",
+                "info:running the states session",
+                "session:states",
+                "info:running the visual session",
+                "session:visual",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture",
+                "PASS fixture/wide fixture reached",
+                "PASS fixture/narrow fixture reached",
+                "PASS fixture/dialog fixture reached",
+                "PASS fixture/quit fixture reached",
+                "PASS fixture/states fixture reached",
+                "PASS fixture/visual fixture reached"
+              ],
+              "outcomes": [
+                {
+                  "id": "fixture/wide",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/narrow",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/dialog",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/quit",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/states",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/visual",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                }
+              ]
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/all-pass/runner.ts",
+                "sourceSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+                "loadedSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+                "patchedSha256": "d720bcfa1fe0c9f86faced54fff5e01cf550ecde2815c78d7c2496bcbf127423",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/all-pass/runner.ts\",\"sourceSha256\":\"25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b\",\"loadedSha256\":\"25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b\",\"patchedSha256\":\"d720bcfa1fe0c9f86faced54fff5e01cf550ecde2815c78d7c2496bcbf127423\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "fixtureFinalSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "hookSha256": "57889765ae8041f38d922b723cb83ca9354418d89e47a055685cb08249db7cec"
+          },
+          {
+            "name": "ordinary",
+            "mode": "ordinary",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "info:running the narrow session",
+                "session:narrow",
+                "info:running the dialog session",
+                "session:dialog",
+                "info:running the quit session",
+                "session:quit",
+                "info:running the states session",
+                "session:states",
+                "info:running the visual session",
+                "session:visual",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture",
+                "FAIL trial/session-aborted/wide Trial adapter retained the aborted wide session :: CheckFailureError: fixture ordinary setup failed",
+                "PASS fixture/narrow fixture reached",
+                "PASS fixture/dialog fixture reached",
+                "PASS fixture/quit fixture reached",
+                "PASS fixture/states fixture reached",
+                "PASS fixture/visual fixture reached"
+              ],
+              "outcomes": [
+                {
+                  "id": "trial/session-aborted/wide",
+                  "title": "Trial adapter retained the aborted wide session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/narrow",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/dialog",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/quit",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/states",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/visual",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                }
+              ]
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/ordinary/runner.ts",
+                "sourceSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+                "loadedSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+                "patchedSha256": "d720bcfa1fe0c9f86faced54fff5e01cf550ecde2815c78d7c2496bcbf127423",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/ordinary/runner.ts\",\"sourceSha256\":\"25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b\",\"loadedSha256\":\"25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b\",\"patchedSha256\":\"d720bcfa1fe0c9f86faced54fff5e01cf550ecde2815c78d7c2496bcbf127423\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "fixtureFinalSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "hookSha256": "c769433d1d1fcad779d3a872ea6dc5d4641923c7a5ee6961541a6c36467e381f"
+          },
+          {
+            "name": "every-ordinary",
+            "mode": "every-ordinary",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "info:running the narrow session",
+                "session:narrow",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "info:running the dialog session",
+                "session:dialog",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "info:running the quit session",
+                "session:quit",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "info:running the states session",
+                "session:states",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "info:running the visual session",
+                "session:visual",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture",
+                "FAIL trial/session-aborted/wide Trial adapter retained the aborted wide session :: CheckFailureError: fixture ordinary setup failed",
+                "FAIL trial/session-aborted/narrow Trial adapter retained the aborted narrow session :: CheckFailureError: fixture ordinary setup failed",
+                "FAIL trial/session-aborted/dialog Trial adapter retained the aborted dialog session :: CheckFailureError: fixture ordinary setup failed",
+                "FAIL trial/session-aborted/quit Trial adapter retained the aborted quit session :: CheckFailureError: fixture ordinary setup failed",
+                "FAIL trial/session-aborted/states Trial adapter retained the aborted states session :: CheckFailureError: fixture ordinary setup failed",
+                "FAIL trial/session-aborted/visual Trial adapter retained the aborted visual session :: CheckFailureError: fixture ordinary setup failed"
+              ],
+              "outcomes": [
+                {
+                  "id": "trial/session-aborted/wide",
+                  "title": "Trial adapter retained the aborted wide session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                },
+                {
+                  "id": "trial/session-aborted/narrow",
+                  "title": "Trial adapter retained the aborted narrow session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                },
+                {
+                  "id": "trial/session-aborted/dialog",
+                  "title": "Trial adapter retained the aborted dialog session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                },
+                {
+                  "id": "trial/session-aborted/quit",
+                  "title": "Trial adapter retained the aborted quit session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                },
+                {
+                  "id": "trial/session-aborted/states",
+                  "title": "Trial adapter retained the aborted states session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                },
+                {
+                  "id": "trial/session-aborted/visual",
+                  "title": "Trial adapter retained the aborted visual session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                }
+              ]
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/every-ordinary/runner.ts",
+                "sourceSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+                "loadedSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+                "patchedSha256": "d720bcfa1fe0c9f86faced54fff5e01cf550ecde2815c78d7c2496bcbf127423",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/every-ordinary/runner.ts\",\"sourceSha256\":\"25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b\",\"loadedSha256\":\"25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b\",\"patchedSha256\":\"d720bcfa1fe0c9f86faced54fff5e01cf550ecde2815c78d7c2496bcbf127423\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "fixtureFinalSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "hookSha256": "c2c664438b5ab1ec8f30af0bec5d526d9ffbfc1567f286f9988bf15121894b70"
+          },
+          {
+            "name": "safety",
+            "mode": "safety",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture"
+              ],
+              "outcomes": [],
+              "fatal": {
+                "name": "SafetyStopError",
+                "message": "SafetyStopError: fixture safety stop"
+              }
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/safety/runner.ts",
+                "sourceSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+                "loadedSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+                "patchedSha256": "d720bcfa1fe0c9f86faced54fff5e01cf550ecde2815c78d7c2496bcbf127423",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/safety/runner.ts\",\"sourceSha256\":\"25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b\",\"loadedSha256\":\"25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b\",\"patchedSha256\":\"d720bcfa1fe0c9f86faced54fff5e01cf550ecde2815c78d7c2496bcbf127423\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "fixtureFinalSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "hookSha256": "35fa2b21a01713f0e998310d03bd1657e26fce178caa2937e0a1016edd939de1"
+          },
+          {
+            "name": "unknown",
+            "mode": "unknown",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture"
+              ],
+              "outcomes": [],
+              "fatal": {
+                "name": "Error",
+                "message": "Error: fixture unknown error"
+              }
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/unknown/runner.ts",
+                "sourceSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+                "loadedSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+                "patchedSha256": "d720bcfa1fe0c9f86faced54fff5e01cf550ecde2815c78d7c2496bcbf127423",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/unknown/runner.ts\",\"sourceSha256\":\"25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b\",\"loadedSha256\":\"25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b\",\"patchedSha256\":\"d720bcfa1fe0c9f86faced54fff5e01cf550ecde2815c78d7c2496bcbf127423\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "fixtureFinalSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "hookSha256": "5bc45e83e6682b7a2df0790b8a7efee4889ddc407f10abda899481d70920afc6"
+          },
+          {
+            "name": "numeric",
+            "mode": "numeric",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture"
+              ],
+              "outcomes": [],
+              "fatal": {
+                "name": "number",
+                "message": "23"
+              }
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/numeric/runner.ts",
+                "sourceSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+                "loadedSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+                "patchedSha256": "d720bcfa1fe0c9f86faced54fff5e01cf550ecde2815c78d7c2496bcbf127423",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/numeric/runner.ts\",\"sourceSha256\":\"25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b\",\"loadedSha256\":\"25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b\",\"patchedSha256\":\"d720bcfa1fe0c9f86faced54fff5e01cf550ecde2815c78d7c2496bcbf127423\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "fixtureFinalSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "hookSha256": "1a569b0ec6fea9cbd06dbc73fef24c8c097bce061e8e44bf5d7afedac4e1d176"
+          },
+          {
+            "name": "suppressed",
+            "mode": "suppressed",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture"
+              ],
+              "outcomes": [],
+              "fatal": {
+                "name": "SuppressedError",
+                "message": "SuppressedError"
+              }
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/suppressed/runner.ts",
+                "sourceSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+                "loadedSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+                "patchedSha256": "d720bcfa1fe0c9f86faced54fff5e01cf550ecde2815c78d7c2496bcbf127423",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/suppressed/runner.ts\",\"sourceSha256\":\"25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b\",\"loadedSha256\":\"25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b\",\"patchedSha256\":\"d720bcfa1fe0c9f86faced54fff5e01cf550ecde2815c78d7c2496bcbf127423\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "fixtureFinalSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "hookSha256": "1d2f0b188f655a32eccbf2aa7f73a5629f68791b73188da63f288754fc1b1cf0"
+          },
+          {
+            "name": "cleanup-error",
+            "mode": "cleanup-error",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture",
+                "FAIL trial/session-aborted/wide Trial adapter retained the aborted wide session :: CheckFailureError: fixture ordinary setup failed"
+              ],
+              "outcomes": [
+                {
+                  "id": "trial/session-aborted/wide",
+                  "title": "Trial adapter retained the aborted wide session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                }
+              ],
+              "fatal": {
+                "name": "CheckFailureError",
+                "message": "CheckFailureError: fixture cleanup refused"
+              }
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/cleanup-error/runner.ts",
+                "sourceSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+                "loadedSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+                "patchedSha256": "d720bcfa1fe0c9f86faced54fff5e01cf550ecde2815c78d7c2496bcbf127423",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/cleanup-error/runner.ts\",\"sourceSha256\":\"25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b\",\"loadedSha256\":\"25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b\",\"patchedSha256\":\"d720bcfa1fe0c9f86faced54fff5e01cf550ecde2815c78d7c2496bcbf127423\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "fixtureFinalSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "hookSha256": "35501590ac98f868f529203b3fbe0d0a310b5d7cc5fb80e95d0ef6c1c85dab0f"
+          },
+          {
+            "name": "dispose-error",
+            "mode": "dispose-error",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "info:running the narrow session",
+                "session:narrow",
+                "info:running the dialog session",
+                "session:dialog",
+                "info:running the quit session",
+                "session:quit",
+                "info:running the states session",
+                "session:states",
+                "info:running the visual session",
+                "session:visual",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture",
+                "PASS fixture/wide fixture reached",
+                "PASS fixture/narrow fixture reached",
+                "PASS fixture/dialog fixture reached",
+                "PASS fixture/quit fixture reached",
+                "PASS fixture/states fixture reached",
+                "PASS fixture/visual fixture reached"
+              ],
+              "outcomes": [
+                {
+                  "id": "fixture/wide",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/narrow",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/dialog",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/quit",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/states",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/visual",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                }
+              ],
+              "fatal": {
+                "name": "SafetyStopError",
+                "message": "SafetyStopError: fixture disposal failed"
+              }
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/dispose-error/runner.ts",
+                "sourceSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+                "loadedSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+                "patchedSha256": "d720bcfa1fe0c9f86faced54fff5e01cf550ecde2815c78d7c2496bcbf127423",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/dispose-error/runner.ts\",\"sourceSha256\":\"25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b\",\"loadedSha256\":\"25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b\",\"patchedSha256\":\"d720bcfa1fe0c9f86faced54fff5e01cf550ecde2815c78d7c2496bcbf127423\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "fixtureFinalSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "hookSha256": "7f040f399fe708efaf6a963d2342f59a60e3dcfc727e3aab89af04604be05d91"
+          },
+          {
+            "name": "changed-source",
+            "mode": "ordinary",
+            "status": 1,
+            "signal": null,
+            "applied": [],
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Loaded E2E source differs from the verified immutable input\n+ actual - expected\n\n+ '9771625133b1f1465d09687b653115613d036a51d815eb901c5f139241f1733e'\n- '25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b'\n\n    at load (file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/changed-source/preload.mts:14:10)\n    at nextStep (node:internal/modules/customization_hooks:189:26)\n    at loadWithHooks (node:internal/modules/customization_hooks:374:18)\n    at #loadSync (node:internal/modules/esm/loader:876:16)\n    at ModuleLoader.load (node:internal/modules/esm/loader:834:26)\n    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:540:31)\n    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:606:36)\n    at afterResolve (node:internal/modules/esm/loader:658:52)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:664:12)\n    at node:internal/modules/esm/loader:683:32 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: '9771625133b1f1465d09687b653115613d036a51d815eb901c5f139241f1733e',\n  expected: '25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "originalFixtureSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "fixtureFinalSha256": "9771625133b1f1465d09687b653115613d036a51d815eb901c5f139241f1733e",
+            "hookSha256": "3a3932de8487b23ff468f108e8d26ca423bfdf3d477c2b98b99d485a3095a76a"
+          },
+          {
+            "name": "missing-anchor",
+            "mode": "ordinary",
+            "status": 1,
+            "signal": null,
+            "applied": [],
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n1 !== 2\n\n    at load (file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/missing-anchor/preload.mts:18:10)\n    at nextStep (node:internal/modules/customization_hooks:189:26)\n    at loadWithHooks (node:internal/modules/customization_hooks:374:18)\n    at #loadSync (node:internal/modules/esm/loader:876:16)\n    at ModuleLoader.load (node:internal/modules/esm/loader:834:26)\n    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:540:31)\n    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:606:36)\n    at afterResolve (node:internal/modules/esm/loader:658:52)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:664:12)\n    at node:internal/modules/esm/loader:683:32 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: 1,\n  expected: 2,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "originalFixtureSha256": "8254d1e01ef150deaaf20e334a33abc6080ab96eb144ee037b153be319d554f1",
+            "fixtureFinalSha256": "8254d1e01ef150deaaf20e334a33abc6080ab96eb144ee037b153be319d554f1",
+            "hookSha256": "48d418b0eab62bc6cd596d03d0cea2fdae253d605fb4b6cec5b2f9a969f54dc1"
+          },
+          {
+            "name": "duplicate-anchor",
+            "mode": "ordinary",
+            "status": 1,
+            "signal": null,
+            "applied": [],
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n3 !== 2\n\n    at load (file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/duplicate-anchor/preload.mts:18:10)\n    at nextStep (node:internal/modules/customization_hooks:189:26)\n    at loadWithHooks (node:internal/modules/customization_hooks:374:18)\n    at #loadSync (node:internal/modules/esm/loader:876:16)\n    at ModuleLoader.load (node:internal/modules/esm/loader:834:26)\n    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:540:31)\n    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:606:36)\n    at afterResolve (node:internal/modules/esm/loader:658:52)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:664:12)\n    at node:internal/modules/esm/loader:683:32 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: 3,\n  expected: 2,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "originalFixtureSha256": "eff988d02f3ea026ac45fe2df20c78207d62172c5f8cacbe57397e4c93eea687",
+            "fixtureFinalSha256": "eff988d02f3ea026ac45fe2df20c78207d62172c5f8cacbe57397e4c93eea687",
+            "hookSha256": "2e44515cd5d2c65dd2896663f666f51a63876ff55c8f696845ed857908551975"
+          },
+          {
+            "name": "missing-import",
+            "mode": "ordinary",
+            "status": 1,
+            "signal": null,
+            "applied": [],
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n1 !== 2\n\n    at load (file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/missing-import/preload.mts:17:10)\n    at nextStep (node:internal/modules/customization_hooks:189:26)\n    at loadWithHooks (node:internal/modules/customization_hooks:374:18)\n    at #loadSync (node:internal/modules/esm/loader:876:16)\n    at ModuleLoader.load (node:internal/modules/esm/loader:834:26)\n    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:540:31)\n    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:606:36)\n    at afterResolve (node:internal/modules/esm/loader:658:52)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:664:12)\n    at node:internal/modules/esm/loader:683:32 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: 1,\n  expected: 2,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "originalFixtureSha256": "b71964c18e1a357b846c3760471f68a297053932312390184eb8e90001019304",
+            "fixtureFinalSha256": "b71964c18e1a357b846c3760471f68a297053932312390184eb8e90001019304",
+            "hookSha256": "984e6536dd28b4f9e5ef06791b475874e3efa7e688398e7e4f3fd2925fd51804"
+          },
+          {
+            "name": "wrong-format",
+            "mode": "ordinary",
+            "status": 1,
+            "signal": null,
+            "applied": [],
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'module'\n- 'module-typescript'\n         ^\n\n    at load (file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/wrong-format/preload.mts:11:10)\n    at nextStep (node:internal/modules/customization_hooks:189:26)\n    at loadWithHooks (node:internal/modules/customization_hooks:374:18)\n    at #loadSync (node:internal/modules/esm/loader:876:16)\n    at ModuleLoader.load (node:internal/modules/esm/loader:834:26)\n    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:540:31)\n    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:606:36)\n    at afterResolve (node:internal/modules/esm/loader:658:52)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:664:12)\n    at node:internal/modules/esm/loader:683:32 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: 'module',\n  expected: 'module-typescript',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "originalFixtureSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "fixtureFinalSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "hookSha256": "827114fc66048fe17e80b3fd6256de4071477a005320b38f18e2ef93df742620"
+          },
+          {
+            "name": "filtered",
+            "mode": "ordinary",
+            "status": 1,
+            "signal": null,
+            "applied": [],
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Trial continuation requires the unfiltered authored suite\n\n'folded' !== ''\n\n    at load (file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/filtered/preload.mts:10:10)\n    at nextStep (node:internal/modules/customization_hooks:189:26)\n    at loadWithHooks (node:internal/modules/customization_hooks:374:18)\n    at #loadSync (node:internal/modules/esm/loader:876:16)\n    at ModuleLoader.load (node:internal/modules/esm/loader:834:26)\n    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:540:31)\n    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:606:36)\n    at afterResolve (node:internal/modules/esm/loader:658:52)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:664:12)\n    at node:internal/modules/esm/loader:683:32 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'folded',\n  expected: '',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "originalFixtureSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "fixtureFinalSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "hookSha256": "fb0753b2b6066f840af59ac89a51161d21eacfa70a289aeb030f8de6a47cf5f0"
+          },
+          {
+            "name": "original-without-hook",
+            "mode": "ordinary",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture"
+              ],
+              "outcomes": [],
+              "fatal": {
+                "name": "CheckFailureError",
+                "message": "CheckFailureError: fixture ordinary setup failed"
+              }
+            },
+            "applied": [],
+            "stderr": "",
+            "originalFixtureSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "fixtureFinalSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "hookSha256": "4dc49a28181cf915b82196311700298f446246d52b15b1aeadeb29e77531f96f"
+          },
+          {
+            "name": "removed-type-guard",
+            "mode": "unknown",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "error:Error: fixture unknown error",
+                "cleanup-guard",
+                "info:running the narrow session",
+                "session:narrow",
+                "info:running the dialog session",
+                "session:dialog",
+                "info:running the quit session",
+                "session:quit",
+                "info:running the states session",
+                "session:states",
+                "info:running the visual session",
+                "session:visual",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture",
+                "FAIL trial/session-aborted/wide Trial adapter retained the aborted wide session :: Error: fixture unknown error",
+                "PASS fixture/narrow fixture reached",
+                "PASS fixture/dialog fixture reached",
+                "PASS fixture/quit fixture reached",
+                "PASS fixture/states fixture reached",
+                "PASS fixture/visual fixture reached"
+              ],
+              "outcomes": [
+                {
+                  "id": "trial/session-aborted/wide",
+                  "title": "Trial adapter retained the aborted wide session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "Error: fixture unknown error",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/narrow",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/dialog",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/quit",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/states",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/visual",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                }
+              ]
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/removed-type-guard/runner.ts",
+                "sourceSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+                "loadedSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+                "patchedSha256": "520bf333e7eb78667a2c07b05fa9faa88f4a08e47b86862ecc68ef7d5158f5ec",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-KZIE8s/removed-type-guard/runner.ts\",\"sourceSha256\":\"25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b\",\"loadedSha256\":\"25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b\",\"patchedSha256\":\"520bf333e7eb78667a2c07b05fa9faa88f4a08e47b86862ecc68ef7d5158f5ec\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "fixtureFinalSha256": "25191b0f257449936ae1d5acb185d5f2d7e48dce7bae535e087dfd63be9b5e4b",
+            "hookSha256": "caf063e73e1cfc2b14d4cd411db4c90ec8200afbe176d59ac33f07f4b2410acb"
+          }
+        ]
+      },
+      {
+        "caseId": "desktop",
+        "sourceRevision": "3434eaa455d569c18b52cf15100f77f9db251d21",
+        "names": [
+          "wide",
+          "narrow",
+          "dialog",
+          "auto-play",
+          "quit",
+          "states",
+          "visual"
+        ],
+        "directory": "/var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv",
+        "actualTaskSha256": "75220a91fbccc2e96b885b1c3519b26f6234475168706b2134c60911669f8512",
+        "originalRunSourceSha256": "2eae3531e07b01b6a2220ddd91054c30af535ec89698b05c6d20e64cecebf708",
+        "originalSessionSha256": "1f71c35934e8a85bb268e4322ccd9768eb054ef30d82652ea34fbb59ace6fa53",
+        "actualRecorderSourceSha256": "fdaaf2b77dc59217bb3fd9d767ef91183ce8f5176a94985bd0c35ecaeee24050",
+        "removedGuardRejected": true,
+        "controls": [
+          {
+            "name": "all-pass",
+            "mode": "pass",
+            "status": 0,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "info:running the narrow session",
+                "session:narrow",
+                "info:running the dialog session",
+                "session:dialog",
+                "info:running the auto-play session",
+                "session:auto-play",
+                "info:running the quit session",
+                "session:quit",
+                "info:running the states session",
+                "session:states",
+                "info:running the visual session",
+                "session:visual",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture",
+                "PASS fixture/wide fixture reached",
+                "PASS fixture/narrow fixture reached",
+                "PASS fixture/dialog fixture reached",
+                "PASS fixture/auto-play fixture reached",
+                "PASS fixture/quit fixture reached",
+                "PASS fixture/states fixture reached",
+                "PASS fixture/visual fixture reached"
+              ],
+              "outcomes": [
+                {
+                  "id": "fixture/wide",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/narrow",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/dialog",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/auto-play",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/quit",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/states",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/visual",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                }
+              ]
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/all-pass/runner.ts",
+                "sourceSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+                "loadedSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+                "patchedSha256": "9431ee1b58e01daa9b96b789ce6ca9923c80de0d9c45e2191d690a27443b5d7e",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/all-pass/runner.ts\",\"sourceSha256\":\"47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7\",\"loadedSha256\":\"47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7\",\"patchedSha256\":\"9431ee1b58e01daa9b96b789ce6ca9923c80de0d9c45e2191d690a27443b5d7e\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "fixtureFinalSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "hookSha256": "4fb4250155fa9d0829b1ee6949b4996b2a5aba69cefe9b2c2bf74973ccd2a3e9"
+          },
+          {
+            "name": "ordinary",
+            "mode": "ordinary",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "info:running the narrow session",
+                "session:narrow",
+                "info:running the dialog session",
+                "session:dialog",
+                "info:running the auto-play session",
+                "session:auto-play",
+                "info:running the quit session",
+                "session:quit",
+                "info:running the states session",
+                "session:states",
+                "info:running the visual session",
+                "session:visual",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture",
+                "FAIL trial/session-aborted/wide Trial adapter retained the aborted wide session :: CheckFailureError: fixture ordinary setup failed",
+                "PASS fixture/narrow fixture reached",
+                "PASS fixture/dialog fixture reached",
+                "PASS fixture/auto-play fixture reached",
+                "PASS fixture/quit fixture reached",
+                "PASS fixture/states fixture reached",
+                "PASS fixture/visual fixture reached"
+              ],
+              "outcomes": [
+                {
+                  "id": "trial/session-aborted/wide",
+                  "title": "Trial adapter retained the aborted wide session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/narrow",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/dialog",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/auto-play",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/quit",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/states",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/visual",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                }
+              ]
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/ordinary/runner.ts",
+                "sourceSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+                "loadedSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+                "patchedSha256": "9431ee1b58e01daa9b96b789ce6ca9923c80de0d9c45e2191d690a27443b5d7e",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/ordinary/runner.ts\",\"sourceSha256\":\"47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7\",\"loadedSha256\":\"47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7\",\"patchedSha256\":\"9431ee1b58e01daa9b96b789ce6ca9923c80de0d9c45e2191d690a27443b5d7e\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "fixtureFinalSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "hookSha256": "1275a5e2b1790038b052342957ac778a9c00946e451149295ced9dd6a884c657"
+          },
+          {
+            "name": "every-ordinary",
+            "mode": "every-ordinary",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "info:running the narrow session",
+                "session:narrow",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "info:running the dialog session",
+                "session:dialog",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "info:running the auto-play session",
+                "session:auto-play",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "info:running the quit session",
+                "session:quit",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "info:running the states session",
+                "session:states",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "info:running the visual session",
+                "session:visual",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture",
+                "FAIL trial/session-aborted/wide Trial adapter retained the aborted wide session :: CheckFailureError: fixture ordinary setup failed",
+                "FAIL trial/session-aborted/narrow Trial adapter retained the aborted narrow session :: CheckFailureError: fixture ordinary setup failed",
+                "FAIL trial/session-aborted/dialog Trial adapter retained the aborted dialog session :: CheckFailureError: fixture ordinary setup failed",
+                "FAIL trial/session-aborted/auto-play Trial adapter retained the aborted auto-play session :: CheckFailureError: fixture ordinary setup failed",
+                "FAIL trial/session-aborted/quit Trial adapter retained the aborted quit session :: CheckFailureError: fixture ordinary setup failed",
+                "FAIL trial/session-aborted/states Trial adapter retained the aborted states session :: CheckFailureError: fixture ordinary setup failed",
+                "FAIL trial/session-aborted/visual Trial adapter retained the aborted visual session :: CheckFailureError: fixture ordinary setup failed"
+              ],
+              "outcomes": [
+                {
+                  "id": "trial/session-aborted/wide",
+                  "title": "Trial adapter retained the aborted wide session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                },
+                {
+                  "id": "trial/session-aborted/narrow",
+                  "title": "Trial adapter retained the aborted narrow session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                },
+                {
+                  "id": "trial/session-aborted/dialog",
+                  "title": "Trial adapter retained the aborted dialog session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                },
+                {
+                  "id": "trial/session-aborted/auto-play",
+                  "title": "Trial adapter retained the aborted auto-play session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                },
+                {
+                  "id": "trial/session-aborted/quit",
+                  "title": "Trial adapter retained the aborted quit session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                },
+                {
+                  "id": "trial/session-aborted/states",
+                  "title": "Trial adapter retained the aborted states session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                },
+                {
+                  "id": "trial/session-aborted/visual",
+                  "title": "Trial adapter retained the aborted visual session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                }
+              ]
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/every-ordinary/runner.ts",
+                "sourceSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+                "loadedSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+                "patchedSha256": "9431ee1b58e01daa9b96b789ce6ca9923c80de0d9c45e2191d690a27443b5d7e",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/every-ordinary/runner.ts\",\"sourceSha256\":\"47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7\",\"loadedSha256\":\"47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7\",\"patchedSha256\":\"9431ee1b58e01daa9b96b789ce6ca9923c80de0d9c45e2191d690a27443b5d7e\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "fixtureFinalSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "hookSha256": "cff937c41fd633139efae3d46408a2b4746d9ee890c9ca5d130241ab30d249dd"
+          },
+          {
+            "name": "safety",
+            "mode": "safety",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture"
+              ],
+              "outcomes": [],
+              "fatal": {
+                "name": "SafetyStopError",
+                "message": "SafetyStopError: fixture safety stop"
+              }
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/safety/runner.ts",
+                "sourceSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+                "loadedSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+                "patchedSha256": "9431ee1b58e01daa9b96b789ce6ca9923c80de0d9c45e2191d690a27443b5d7e",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/safety/runner.ts\",\"sourceSha256\":\"47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7\",\"loadedSha256\":\"47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7\",\"patchedSha256\":\"9431ee1b58e01daa9b96b789ce6ca9923c80de0d9c45e2191d690a27443b5d7e\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "fixtureFinalSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "hookSha256": "38eb64e58ee201178f905172634f938bed55bf7d38516a3fb711f96dc1623266"
+          },
+          {
+            "name": "unknown",
+            "mode": "unknown",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture"
+              ],
+              "outcomes": [],
+              "fatal": {
+                "name": "Error",
+                "message": "Error: fixture unknown error"
+              }
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/unknown/runner.ts",
+                "sourceSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+                "loadedSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+                "patchedSha256": "9431ee1b58e01daa9b96b789ce6ca9923c80de0d9c45e2191d690a27443b5d7e",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/unknown/runner.ts\",\"sourceSha256\":\"47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7\",\"loadedSha256\":\"47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7\",\"patchedSha256\":\"9431ee1b58e01daa9b96b789ce6ca9923c80de0d9c45e2191d690a27443b5d7e\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "fixtureFinalSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "hookSha256": "e8d0c314fbbf1dcbff4a90290e44cccf76bf06e92b0a02385ed41f165cd26507"
+          },
+          {
+            "name": "numeric",
+            "mode": "numeric",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture"
+              ],
+              "outcomes": [],
+              "fatal": {
+                "name": "number",
+                "message": "23"
+              }
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/numeric/runner.ts",
+                "sourceSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+                "loadedSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+                "patchedSha256": "9431ee1b58e01daa9b96b789ce6ca9923c80de0d9c45e2191d690a27443b5d7e",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/numeric/runner.ts\",\"sourceSha256\":\"47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7\",\"loadedSha256\":\"47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7\",\"patchedSha256\":\"9431ee1b58e01daa9b96b789ce6ca9923c80de0d9c45e2191d690a27443b5d7e\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "fixtureFinalSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "hookSha256": "964decdf1310d3ad1999993cf929c5d1a56a4e33c064c7b093a0390527d242b1"
+          },
+          {
+            "name": "suppressed",
+            "mode": "suppressed",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture"
+              ],
+              "outcomes": [],
+              "fatal": {
+                "name": "SuppressedError",
+                "message": "SuppressedError"
+              }
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/suppressed/runner.ts",
+                "sourceSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+                "loadedSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+                "patchedSha256": "9431ee1b58e01daa9b96b789ce6ca9923c80de0d9c45e2191d690a27443b5d7e",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/suppressed/runner.ts\",\"sourceSha256\":\"47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7\",\"loadedSha256\":\"47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7\",\"patchedSha256\":\"9431ee1b58e01daa9b96b789ce6ca9923c80de0d9c45e2191d690a27443b5d7e\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "fixtureFinalSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "hookSha256": "cd3c5c5a56d118834ee86312355de3a03cce6ce55e9d968abad8c094e27053ef"
+          },
+          {
+            "name": "cleanup-error",
+            "mode": "cleanup-error",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture",
+                "FAIL trial/session-aborted/wide Trial adapter retained the aborted wide session :: CheckFailureError: fixture ordinary setup failed"
+              ],
+              "outcomes": [
+                {
+                  "id": "trial/session-aborted/wide",
+                  "title": "Trial adapter retained the aborted wide session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                }
+              ],
+              "fatal": {
+                "name": "CheckFailureError",
+                "message": "CheckFailureError: fixture cleanup refused"
+              }
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/cleanup-error/runner.ts",
+                "sourceSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+                "loadedSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+                "patchedSha256": "9431ee1b58e01daa9b96b789ce6ca9923c80de0d9c45e2191d690a27443b5d7e",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/cleanup-error/runner.ts\",\"sourceSha256\":\"47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7\",\"loadedSha256\":\"47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7\",\"patchedSha256\":\"9431ee1b58e01daa9b96b789ce6ca9923c80de0d9c45e2191d690a27443b5d7e\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "fixtureFinalSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "hookSha256": "f2d5cc52b916c5add98e92c13496a3250ba71a818d0a913efe1656e581fed76f"
+          },
+          {
+            "name": "dispose-error",
+            "mode": "dispose-error",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "info:running the narrow session",
+                "session:narrow",
+                "info:running the dialog session",
+                "session:dialog",
+                "info:running the auto-play session",
+                "session:auto-play",
+                "info:running the quit session",
+                "session:quit",
+                "info:running the states session",
+                "session:states",
+                "info:running the visual session",
+                "session:visual",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture",
+                "PASS fixture/wide fixture reached",
+                "PASS fixture/narrow fixture reached",
+                "PASS fixture/dialog fixture reached",
+                "PASS fixture/auto-play fixture reached",
+                "PASS fixture/quit fixture reached",
+                "PASS fixture/states fixture reached",
+                "PASS fixture/visual fixture reached"
+              ],
+              "outcomes": [
+                {
+                  "id": "fixture/wide",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/narrow",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/dialog",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/auto-play",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/quit",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/states",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/visual",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                }
+              ],
+              "fatal": {
+                "name": "SafetyStopError",
+                "message": "SafetyStopError: fixture disposal failed"
+              }
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/dispose-error/runner.ts",
+                "sourceSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+                "loadedSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+                "patchedSha256": "9431ee1b58e01daa9b96b789ce6ca9923c80de0d9c45e2191d690a27443b5d7e",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/dispose-error/runner.ts\",\"sourceSha256\":\"47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7\",\"loadedSha256\":\"47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7\",\"patchedSha256\":\"9431ee1b58e01daa9b96b789ce6ca9923c80de0d9c45e2191d690a27443b5d7e\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "fixtureFinalSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "hookSha256": "19277213deb609b7977c51240cfce6137ea46e61e4bdbf0a45afe7f472efc9b3"
+          },
+          {
+            "name": "changed-source",
+            "mode": "ordinary",
+            "status": 1,
+            "signal": null,
+            "applied": [],
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Loaded E2E source differs from the verified immutable input\n+ actual - expected\n\n+ '80f016210bdd774589babc56cf275939d8897a0cd4b80b3f7485e81a3c987c1e'\n- '47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7'\n\n    at load (file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/changed-source/preload.mts:14:10)\n    at nextStep (node:internal/modules/customization_hooks:189:26)\n    at loadWithHooks (node:internal/modules/customization_hooks:374:18)\n    at #loadSync (node:internal/modules/esm/loader:876:16)\n    at ModuleLoader.load (node:internal/modules/esm/loader:834:26)\n    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:540:31)\n    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:606:36)\n    at afterResolve (node:internal/modules/esm/loader:658:52)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:664:12)\n    at node:internal/modules/esm/loader:683:32 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: '80f016210bdd774589babc56cf275939d8897a0cd4b80b3f7485e81a3c987c1e',\n  expected: '47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "originalFixtureSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "fixtureFinalSha256": "80f016210bdd774589babc56cf275939d8897a0cd4b80b3f7485e81a3c987c1e",
+            "hookSha256": "9223abc51305bf650fb7c0f44d1271fbdd1ed8205def7a259ded4d3f3efde079"
+          },
+          {
+            "name": "missing-anchor",
+            "mode": "ordinary",
+            "status": 1,
+            "signal": null,
+            "applied": [],
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n1 !== 2\n\n    at load (file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/missing-anchor/preload.mts:18:10)\n    at nextStep (node:internal/modules/customization_hooks:189:26)\n    at loadWithHooks (node:internal/modules/customization_hooks:374:18)\n    at #loadSync (node:internal/modules/esm/loader:876:16)\n    at ModuleLoader.load (node:internal/modules/esm/loader:834:26)\n    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:540:31)\n    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:606:36)\n    at afterResolve (node:internal/modules/esm/loader:658:52)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:664:12)\n    at node:internal/modules/esm/loader:683:32 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: 1,\n  expected: 2,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "originalFixtureSha256": "2c43a389f49d0add72b184e8c6d3e993bcc5908ce70f4f5200176f7d6a1f0773",
+            "fixtureFinalSha256": "2c43a389f49d0add72b184e8c6d3e993bcc5908ce70f4f5200176f7d6a1f0773",
+            "hookSha256": "57442cda74b6361c6725cb8b7b111e8bb4634a4a2da6bf92b847344a66d42fa1"
+          },
+          {
+            "name": "duplicate-anchor",
+            "mode": "ordinary",
+            "status": 1,
+            "signal": null,
+            "applied": [],
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n3 !== 2\n\n    at load (file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/duplicate-anchor/preload.mts:18:10)\n    at nextStep (node:internal/modules/customization_hooks:189:26)\n    at loadWithHooks (node:internal/modules/customization_hooks:374:18)\n    at #loadSync (node:internal/modules/esm/loader:876:16)\n    at ModuleLoader.load (node:internal/modules/esm/loader:834:26)\n    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:540:31)\n    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:606:36)\n    at afterResolve (node:internal/modules/esm/loader:658:52)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:664:12)\n    at node:internal/modules/esm/loader:683:32 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: 3,\n  expected: 2,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "originalFixtureSha256": "33f05990c79a5364a4a812ddd31e6eef093c72a7d0d3a05383a00c7c946891cb",
+            "fixtureFinalSha256": "33f05990c79a5364a4a812ddd31e6eef093c72a7d0d3a05383a00c7c946891cb",
+            "hookSha256": "01a9bf2b01f64c993681ad55ffd576342ced2f5f6ffdfa869e07b8786433688d"
+          },
+          {
+            "name": "missing-import",
+            "mode": "ordinary",
+            "status": 1,
+            "signal": null,
+            "applied": [],
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n1 !== 2\n\n    at load (file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/missing-import/preload.mts:17:10)\n    at nextStep (node:internal/modules/customization_hooks:189:26)\n    at loadWithHooks (node:internal/modules/customization_hooks:374:18)\n    at #loadSync (node:internal/modules/esm/loader:876:16)\n    at ModuleLoader.load (node:internal/modules/esm/loader:834:26)\n    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:540:31)\n    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:606:36)\n    at afterResolve (node:internal/modules/esm/loader:658:52)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:664:12)\n    at node:internal/modules/esm/loader:683:32 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: 1,\n  expected: 2,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "originalFixtureSha256": "3b253faaef8570516d248c2d0565bfda2bfe0b1175cc609e690d724f5ce0a5de",
+            "fixtureFinalSha256": "3b253faaef8570516d248c2d0565bfda2bfe0b1175cc609e690d724f5ce0a5de",
+            "hookSha256": "39a6afa0ec2cf4bd874d537577400d0c8ff5834d5f38ee1ea304aa8aaa7e9325"
+          },
+          {
+            "name": "wrong-format",
+            "mode": "ordinary",
+            "status": 1,
+            "signal": null,
+            "applied": [],
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'module'\n- 'module-typescript'\n         ^\n\n    at load (file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/wrong-format/preload.mts:11:10)\n    at nextStep (node:internal/modules/customization_hooks:189:26)\n    at loadWithHooks (node:internal/modules/customization_hooks:374:18)\n    at #loadSync (node:internal/modules/esm/loader:876:16)\n    at ModuleLoader.load (node:internal/modules/esm/loader:834:26)\n    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:540:31)\n    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:606:36)\n    at afterResolve (node:internal/modules/esm/loader:658:52)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:664:12)\n    at node:internal/modules/esm/loader:683:32 {\n  generatedMessage: true,\n  code: 'ERR_ASSERTION',\n  actual: 'module',\n  expected: 'module-typescript',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "originalFixtureSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "fixtureFinalSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "hookSha256": "cf7136d0530d61ef0d9921f752d8a24e6690ce29f21ce72e2060b284769b1394"
+          },
+          {
+            "name": "filtered",
+            "mode": "ordinary",
+            "status": 1,
+            "signal": null,
+            "applied": [],
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Trial continuation requires the unfiltered authored suite\n\n'folded' !== ''\n\n    at load (file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/filtered/preload.mts:10:10)\n    at nextStep (node:internal/modules/customization_hooks:189:26)\n    at loadWithHooks (node:internal/modules/customization_hooks:374:18)\n    at #loadSync (node:internal/modules/esm/loader:876:16)\n    at ModuleLoader.load (node:internal/modules/esm/loader:834:26)\n    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:540:31)\n    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:606:36)\n    at afterResolve (node:internal/modules/esm/loader:658:52)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:664:12)\n    at node:internal/modules/esm/loader:683:32 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'folded',\n  expected: '',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "originalFixtureSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "fixtureFinalSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "hookSha256": "904c272890653a0d177e020709733b7d87b72894b7c16ecb4531056aa0b73ce9"
+          },
+          {
+            "name": "original-without-hook",
+            "mode": "ordinary",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture"
+              ],
+              "outcomes": [],
+              "fatal": {
+                "name": "CheckFailureError",
+                "message": "CheckFailureError: fixture ordinary setup failed"
+              }
+            },
+            "applied": [],
+            "stderr": "",
+            "originalFixtureSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "fixtureFinalSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "hookSha256": "753dd95229e31e926c0efa49f407b3e9a96b2ca0b353bd829d8d22ed2c27c171"
+          },
+          {
+            "name": "removed-type-guard",
+            "mode": "unknown",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "error:Error: fixture unknown error",
+                "cleanup-guard",
+                "info:running the narrow session",
+                "session:narrow",
+                "info:running the dialog session",
+                "session:dialog",
+                "info:running the auto-play session",
+                "session:auto-play",
+                "info:running the quit session",
+                "session:quit",
+                "info:running the states session",
+                "session:states",
+                "info:running the visual session",
+                "session:visual",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture",
+                "FAIL trial/session-aborted/wide Trial adapter retained the aborted wide session :: Error: fixture unknown error",
+                "PASS fixture/narrow fixture reached",
+                "PASS fixture/dialog fixture reached",
+                "PASS fixture/auto-play fixture reached",
+                "PASS fixture/quit fixture reached",
+                "PASS fixture/states fixture reached",
+                "PASS fixture/visual fixture reached"
+              ],
+              "outcomes": [
+                {
+                  "id": "trial/session-aborted/wide",
+                  "title": "Trial adapter retained the aborted wide session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "Error: fixture unknown error",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/narrow",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/dialog",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/auto-play",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/quit",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/states",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/visual",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                }
+              ]
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/removed-type-guard/runner.ts",
+                "sourceSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+                "loadedSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+                "patchedSha256": "0c6c366cba01d11b368c96ab2759e549b1d05da24d5c533206e1793958e69b0d",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-BHvqEv/removed-type-guard/runner.ts\",\"sourceSha256\":\"47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7\",\"loadedSha256\":\"47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7\",\"patchedSha256\":\"0c6c366cba01d11b368c96ab2759e549b1d05da24d5c533206e1793958e69b0d\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "fixtureFinalSha256": "47c071fcf523b9935074888a9aa8c1bdf7387426cb540051c1792d2c7bf77be7",
+            "hookSha256": "3066828ac64de3ef697e9a4ddf16d2ae3ff447a6475d8d6a30a949f89cf07a16"
+          }
+        ]
+      }
+    ],
+    "actualSourceInputs": [
+      {
+        "relative": "package/music-player/desktop-e2e/src/run.ts",
+        "candidates": [
+          {
+            "caseId": "native",
+            "revision": "cb95cf6d785c3073c192b95f0632cdae7b910894",
+            "sha256": "4e68b92d908b12266455af5a4b062fd1e80310c6c235ff95e5674a551a03617f",
+            "sessionFunctionSha256": "1f71c35934e8a85bb268e4322ccd9768eb054ef30d82652ea34fbb59ace6fa53"
+          },
+          {
+            "caseId": "desktop",
+            "revision": "3434eaa455d569c18b52cf15100f77f9db251d21",
+            "sha256": "2eae3531e07b01b6a2220ddd91054c30af535ec89698b05c6d20e64cecebf708",
+            "sessionFunctionSha256": "1f71c35934e8a85bb268e4322ccd9768eb054ef30d82652ea34fbb59ace6fa53"
+          }
+        ]
+      },
+      {
+        "relative": "package/music-player/desktop-e2e/src/errors.ts",
+        "candidates": [
+          {
+            "caseId": "native",
+            "revision": "cb95cf6d785c3073c192b95f0632cdae7b910894",
+            "sha256": "ec8b70bcbe828f4b3f6e4efa391f2c4dbf964c058f8403f772707d776080d2ec"
+          },
+          {
+            "caseId": "desktop",
+            "revision": "3434eaa455d569c18b52cf15100f77f9db251d21",
+            "sha256": "ec8b70bcbe828f4b3f6e4efa391f2c4dbf964c058f8403f772707d776080d2ec"
+          }
+        ]
+      },
+      {
+        "relative": "package/music-player/desktop-e2e/src/selection.ts",
+        "candidates": [
+          {
+            "caseId": "native",
+            "revision": "cb95cf6d785c3073c192b95f0632cdae7b910894",
+            "sha256": "0f6066eb6ea38e22834a5232c26c1b915b8a86c232ae94444d598448a6f27f4f"
+          },
+          {
+            "caseId": "desktop",
+            "revision": "3434eaa455d569c18b52cf15100f77f9db251d21",
+            "sha256": "8ebbcf498432cd759e0dd490163f6485089b3e86fcffcacb69c11d80b36e9bb4"
+          }
+        ]
+      },
+      {
+        "relative": "package/music-player/desktop-e2e/src/recorder.ts",
+        "candidates": [
+          {
+            "caseId": "native",
+            "revision": "cb95cf6d785c3073c192b95f0632cdae7b910894",
+            "sha256": "fdaaf2b77dc59217bb3fd9d767ef91183ce8f5176a94985bd0c35ecaeee24050"
+          },
+          {
+            "caseId": "desktop",
+            "revision": "3434eaa455d569c18b52cf15100f77f9db251d21",
+            "sha256": "fdaaf2b77dc59217bb3fd9d767ef91183ce8f5176a94985bd0c35ecaeee24050"
+          }
+        ]
+      }
+    ],
+    "dispatches": [
+      {
+        "caseId": "native",
+        "revision": "bb475f636f51a00864710454c6499fcd3db6b8a4",
+        "remote": "bb475f636f51a00864710454c6499fcd3db6b8a4",
+        "requestedAt": "2026-10-17T07:08:28.017Z",
+        "status": 0,
+        "stdout": "Repo: Aquaticats/Monochromatic\nJobs: (all) native\nHEAD: bb475f636f51a00864710454c6499fcd3db6b8a4\n\nOrg: l4zncjjbj5\nRun: s3cmrhf2kp\n\nCheck status:  depot ci status s3cmrhf2kp --org l4zncjjbj5\nView in Depot: https://depot.dev/orgs/l4zncjjbj5/workflows/s3cmrhf2kp\n",
+        "stderr": ""
+      },
+      {
+        "caseId": "desktop",
+        "revision": "bb475f636f51a00864710454c6499fcd3db6b8a4",
+        "remote": "bb475f636f51a00864710454c6499fcd3db6b8a4",
+        "requestedAt": "2026-10-17T07:09:14.083Z",
+        "status": 0,
+        "stdout": "Repo: Aquaticats/Monochromatic\nJobs: (all) native\nHEAD: bb475f636f51a00864710454c6499fcd3db6b8a4\n\nOrg: l4zncjjbj5\nRun: wxq11xm2hd\n\nCheck status:  depot ci status wxq11xm2hd --org l4zncjjbj5\nView in Depot: https://depot.dev/orgs/l4zncjjbj5/workflows/wxq11xm2hd\n",
+        "stderr": ""
+      }
+    ],
+    "rejectedInitialFixture": {
+      "reason": "The initial no-hook fixture threw ReferenceError because its stub depended on the import supplied by the hook. This did not exercise the intended original CheckFailureError. A separate original error-module import now gives the exact intended class and the corrected control passes. Initial anchor control also stopped at the source hash; corrected matching-hash fixtures separately reject missing/duplicate call anchors and missing import.",
+      "receipt": {
+        "directory": "/var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-OWEUjJ",
+        "actualTaskSha256": "75220a91fbccc2e96b885b1c3519b26f6234475168706b2134c60911669f8512",
+        "originalRunSourceSha256": "4e68b92d908b12266455af5a4b062fd1e80310c6c235ff95e5674a551a03617f",
+        "originalSessionSha256": "1f71c35934e8a85bb268e4322ccd9768eb054ef30d82652ea34fbb59ace6fa53",
+        "actualRecorderSourceSha256": "fdaaf2b77dc59217bb3fd9d767ef91183ce8f5176a94985bd0c35ecaeee24050",
+        "removedGuardRejected": true,
+        "controls": [
+          {
+            "name": "all-pass",
+            "mode": "pass",
+            "status": 0,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "info:running the narrow session",
+                "session:narrow",
+                "info:running the dialog session",
+                "session:dialog",
+                "info:running the quit session",
+                "session:quit",
+                "info:running the states session",
+                "session:states",
+                "info:running the visual session",
+                "session:visual",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture",
+                "PASS fixture/wide fixture reached",
+                "PASS fixture/narrow fixture reached",
+                "PASS fixture/dialog fixture reached",
+                "PASS fixture/quit fixture reached",
+                "PASS fixture/states fixture reached",
+                "PASS fixture/visual fixture reached"
+              ],
+              "outcomes": [
+                {
+                  "id": "fixture/wide",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/narrow",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/dialog",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/quit",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/states",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/visual",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                }
+              ]
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-OWEUjJ/all-pass/runner.ts",
+                "sourceSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+                "loadedSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+                "patchedSha256": "040c15020ca27009702f716908e22396c1f9b2e5a6ff58f499eec943bae24458",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-OWEUjJ/all-pass/runner.ts\",\"sourceSha256\":\"03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76\",\"loadedSha256\":\"03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76\",\"patchedSha256\":\"040c15020ca27009702f716908e22396c1f9b2e5a6ff58f499eec943bae24458\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "fixtureFinalSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "hookSha256": "834af728baca2369df2796d9c6c730c15b8c09bcc4fec3a9a68491bf746b8134"
+          },
+          {
+            "name": "ordinary",
+            "mode": "ordinary",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "info:running the narrow session",
+                "session:narrow",
+                "info:running the dialog session",
+                "session:dialog",
+                "info:running the quit session",
+                "session:quit",
+                "info:running the states session",
+                "session:states",
+                "info:running the visual session",
+                "session:visual",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture",
+                "FAIL trial/session-aborted/wide Trial adapter retained the aborted wide session :: CheckFailureError: fixture ordinary setup failed",
+                "PASS fixture/narrow fixture reached",
+                "PASS fixture/dialog fixture reached",
+                "PASS fixture/quit fixture reached",
+                "PASS fixture/states fixture reached",
+                "PASS fixture/visual fixture reached"
+              ],
+              "outcomes": [
+                {
+                  "id": "trial/session-aborted/wide",
+                  "title": "Trial adapter retained the aborted wide session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/narrow",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/dialog",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/quit",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/states",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/visual",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                }
+              ]
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-OWEUjJ/ordinary/runner.ts",
+                "sourceSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+                "loadedSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+                "patchedSha256": "040c15020ca27009702f716908e22396c1f9b2e5a6ff58f499eec943bae24458",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-OWEUjJ/ordinary/runner.ts\",\"sourceSha256\":\"03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76\",\"loadedSha256\":\"03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76\",\"patchedSha256\":\"040c15020ca27009702f716908e22396c1f9b2e5a6ff58f499eec943bae24458\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "fixtureFinalSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "hookSha256": "73fa833e1d20f8aa06f24522cabb22698c8bfc053eb4b3e7141f46ad0cb6ad83"
+          },
+          {
+            "name": "every-ordinary",
+            "mode": "every-ordinary",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "info:running the narrow session",
+                "session:narrow",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "info:running the dialog session",
+                "session:dialog",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "info:running the quit session",
+                "session:quit",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "info:running the states session",
+                "session:states",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "info:running the visual session",
+                "session:visual",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture",
+                "FAIL trial/session-aborted/wide Trial adapter retained the aborted wide session :: CheckFailureError: fixture ordinary setup failed",
+                "FAIL trial/session-aborted/narrow Trial adapter retained the aborted narrow session :: CheckFailureError: fixture ordinary setup failed",
+                "FAIL trial/session-aborted/dialog Trial adapter retained the aborted dialog session :: CheckFailureError: fixture ordinary setup failed",
+                "FAIL trial/session-aborted/quit Trial adapter retained the aborted quit session :: CheckFailureError: fixture ordinary setup failed",
+                "FAIL trial/session-aborted/states Trial adapter retained the aborted states session :: CheckFailureError: fixture ordinary setup failed",
+                "FAIL trial/session-aborted/visual Trial adapter retained the aborted visual session :: CheckFailureError: fixture ordinary setup failed"
+              ],
+              "outcomes": [
+                {
+                  "id": "trial/session-aborted/wide",
+                  "title": "Trial adapter retained the aborted wide session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                },
+                {
+                  "id": "trial/session-aborted/narrow",
+                  "title": "Trial adapter retained the aborted narrow session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                },
+                {
+                  "id": "trial/session-aborted/dialog",
+                  "title": "Trial adapter retained the aborted dialog session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                },
+                {
+                  "id": "trial/session-aborted/quit",
+                  "title": "Trial adapter retained the aborted quit session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                },
+                {
+                  "id": "trial/session-aborted/states",
+                  "title": "Trial adapter retained the aborted states session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                },
+                {
+                  "id": "trial/session-aborted/visual",
+                  "title": "Trial adapter retained the aborted visual session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                }
+              ]
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-OWEUjJ/every-ordinary/runner.ts",
+                "sourceSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+                "loadedSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+                "patchedSha256": "040c15020ca27009702f716908e22396c1f9b2e5a6ff58f499eec943bae24458",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-OWEUjJ/every-ordinary/runner.ts\",\"sourceSha256\":\"03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76\",\"loadedSha256\":\"03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76\",\"patchedSha256\":\"040c15020ca27009702f716908e22396c1f9b2e5a6ff58f499eec943bae24458\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "fixtureFinalSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "hookSha256": "5979cbc407c182ed4be3317068a82192dfba2988e1123ce1abc091bd75282329"
+          },
+          {
+            "name": "safety",
+            "mode": "safety",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture"
+              ],
+              "outcomes": [],
+              "fatal": {
+                "name": "SafetyStopError",
+                "message": "SafetyStopError: fixture safety stop"
+              }
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-OWEUjJ/safety/runner.ts",
+                "sourceSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+                "loadedSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+                "patchedSha256": "040c15020ca27009702f716908e22396c1f9b2e5a6ff58f499eec943bae24458",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-OWEUjJ/safety/runner.ts\",\"sourceSha256\":\"03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76\",\"loadedSha256\":\"03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76\",\"patchedSha256\":\"040c15020ca27009702f716908e22396c1f9b2e5a6ff58f499eec943bae24458\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "fixtureFinalSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "hookSha256": "2b5f62214486d2368d38eeb143ea9d854342863c257ce5af1e2363dd72cf0be4"
+          },
+          {
+            "name": "unknown",
+            "mode": "unknown",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture"
+              ],
+              "outcomes": [],
+              "fatal": {
+                "name": "Error",
+                "message": "Error: fixture unknown error"
+              }
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-OWEUjJ/unknown/runner.ts",
+                "sourceSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+                "loadedSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+                "patchedSha256": "040c15020ca27009702f716908e22396c1f9b2e5a6ff58f499eec943bae24458",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-OWEUjJ/unknown/runner.ts\",\"sourceSha256\":\"03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76\",\"loadedSha256\":\"03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76\",\"patchedSha256\":\"040c15020ca27009702f716908e22396c1f9b2e5a6ff58f499eec943bae24458\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "fixtureFinalSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "hookSha256": "b1e6986fc03524faafa6953b58dadf213d958215880e47983b54e6ff9775cac1"
+          },
+          {
+            "name": "numeric",
+            "mode": "numeric",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture"
+              ],
+              "outcomes": [],
+              "fatal": {
+                "name": "number",
+                "message": "23"
+              }
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-OWEUjJ/numeric/runner.ts",
+                "sourceSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+                "loadedSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+                "patchedSha256": "040c15020ca27009702f716908e22396c1f9b2e5a6ff58f499eec943bae24458",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-OWEUjJ/numeric/runner.ts\",\"sourceSha256\":\"03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76\",\"loadedSha256\":\"03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76\",\"patchedSha256\":\"040c15020ca27009702f716908e22396c1f9b2e5a6ff58f499eec943bae24458\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "fixtureFinalSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "hookSha256": "e199e37e01b5b45b0f8c2231489f0ed6c75942597f598edb03338ab11be27983"
+          },
+          {
+            "name": "suppressed",
+            "mode": "suppressed",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture"
+              ],
+              "outcomes": [],
+              "fatal": {
+                "name": "SuppressedError",
+                "message": "SuppressedError"
+              }
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-OWEUjJ/suppressed/runner.ts",
+                "sourceSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+                "loadedSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+                "patchedSha256": "040c15020ca27009702f716908e22396c1f9b2e5a6ff58f499eec943bae24458",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-OWEUjJ/suppressed/runner.ts\",\"sourceSha256\":\"03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76\",\"loadedSha256\":\"03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76\",\"patchedSha256\":\"040c15020ca27009702f716908e22396c1f9b2e5a6ff58f499eec943bae24458\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "fixtureFinalSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "hookSha256": "4dcee112a680b472e734d067cf8625a9f2b90091aec9bbb77752dda30ca9f6fc"
+          },
+          {
+            "name": "cleanup-error",
+            "mode": "cleanup-error",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "error:CheckFailureError: fixture ordinary setup failed",
+                "cleanup-guard",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture",
+                "FAIL trial/session-aborted/wide Trial adapter retained the aborted wide session :: CheckFailureError: fixture ordinary setup failed"
+              ],
+              "outcomes": [
+                {
+                  "id": "trial/session-aborted/wide",
+                  "title": "Trial adapter retained the aborted wide session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "CheckFailureError: fixture ordinary setup failed",
+                  "ms": 0
+                }
+              ],
+              "fatal": {
+                "name": "CheckFailureError",
+                "message": "CheckFailureError: fixture cleanup refused"
+              }
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-OWEUjJ/cleanup-error/runner.ts",
+                "sourceSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+                "loadedSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+                "patchedSha256": "040c15020ca27009702f716908e22396c1f9b2e5a6ff58f499eec943bae24458",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-OWEUjJ/cleanup-error/runner.ts\",\"sourceSha256\":\"03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76\",\"loadedSha256\":\"03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76\",\"patchedSha256\":\"040c15020ca27009702f716908e22396c1f9b2e5a6ff58f499eec943bae24458\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "fixtureFinalSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "hookSha256": "d4becffea09b15a6d9ef7fd5cb9f3465b16f550a968709078ebdc8b0fc630370"
+          },
+          {
+            "name": "dispose-error",
+            "mode": "dispose-error",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "info:running the narrow session",
+                "session:narrow",
+                "info:running the dialog session",
+                "session:dialog",
+                "info:running the quit session",
+                "session:quit",
+                "info:running the states session",
+                "session:states",
+                "info:running the visual session",
+                "session:visual",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture",
+                "PASS fixture/wide fixture reached",
+                "PASS fixture/narrow fixture reached",
+                "PASS fixture/dialog fixture reached",
+                "PASS fixture/quit fixture reached",
+                "PASS fixture/states fixture reached",
+                "PASS fixture/visual fixture reached"
+              ],
+              "outcomes": [
+                {
+                  "id": "fixture/wide",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/narrow",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/dialog",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/quit",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/states",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/visual",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                }
+              ],
+              "fatal": {
+                "name": "SafetyStopError",
+                "message": "SafetyStopError: fixture disposal failed"
+              }
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-OWEUjJ/dispose-error/runner.ts",
+                "sourceSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+                "loadedSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+                "patchedSha256": "040c15020ca27009702f716908e22396c1f9b2e5a6ff58f499eec943bae24458",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-OWEUjJ/dispose-error/runner.ts\",\"sourceSha256\":\"03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76\",\"loadedSha256\":\"03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76\",\"patchedSha256\":\"040c15020ca27009702f716908e22396c1f9b2e5a6ff58f499eec943bae24458\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "fixtureFinalSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "hookSha256": "eb53431e451068adb852b08971e29cceb63b2038f6af2e063593ac8be41a56e6"
+          },
+          {
+            "name": "changed-source",
+            "mode": "ordinary",
+            "status": 1,
+            "signal": null,
+            "applied": [],
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Loaded E2E source differs from the verified immutable input\n+ actual - expected\n\n+ '05e49bdc8e02ea312b95148ca8f0adb0e8d78a145ac7196e8b1fa294c15f23a5'\n- '03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76'\n\n    at load (file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-OWEUjJ/changed-source/preload.mts:14:10)\n    at nextStep (node:internal/modules/customization_hooks:189:26)\n    at loadWithHooks (node:internal/modules/customization_hooks:374:18)\n    at #loadSync (node:internal/modules/esm/loader:876:16)\n    at ModuleLoader.load (node:internal/modules/esm/loader:834:26)\n    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:540:31)\n    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:606:36)\n    at afterResolve (node:internal/modules/esm/loader:658:52)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:664:12)\n    at node:internal/modules/esm/loader:683:32 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: '05e49bdc8e02ea312b95148ca8f0adb0e8d78a145ac7196e8b1fa294c15f23a5',\n  expected: '03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "originalFixtureSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "fixtureFinalSha256": "05e49bdc8e02ea312b95148ca8f0adb0e8d78a145ac7196e8b1fa294c15f23a5",
+            "hookSha256": "fc08d1ce3f6d98317535f2ca65267189adde1d2d136b901e5b3d9cff99fbec07"
+          },
+          {
+            "name": "missing-anchor",
+            "mode": "ordinary",
+            "status": 1,
+            "signal": null,
+            "applied": [],
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Loaded E2E source differs from the verified immutable input\n+ actual - expected\n\n+ '3aaf82a9d332392780b1ae91c12955ff1f7a08758651d7ac3c66bfe718839eb9'\n- '03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76'\n\n    at load (file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-OWEUjJ/missing-anchor/preload.mts:14:10)\n    at nextStep (node:internal/modules/customization_hooks:189:26)\n    at loadWithHooks (node:internal/modules/customization_hooks:374:18)\n    at #loadSync (node:internal/modules/esm/loader:876:16)\n    at ModuleLoader.load (node:internal/modules/esm/loader:834:26)\n    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:540:31)\n    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:606:36)\n    at afterResolve (node:internal/modules/esm/loader:658:52)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:664:12)\n    at node:internal/modules/esm/loader:683:32 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: '3aaf82a9d332392780b1ae91c12955ff1f7a08758651d7ac3c66bfe718839eb9',\n  expected: '03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "originalFixtureSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "fixtureFinalSha256": "3aaf82a9d332392780b1ae91c12955ff1f7a08758651d7ac3c66bfe718839eb9",
+            "hookSha256": "b9060c8bb267ef3a339f4f6c99b6683bb2f28076fb449f9aa8381ce6d1caf3a9"
+          },
+          {
+            "name": "filtered",
+            "mode": "ordinary",
+            "status": 1,
+            "signal": null,
+            "applied": [],
+            "stderr": "node:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: Trial continuation requires the unfiltered authored suite\n\n'folded' !== ''\n\n    at load (file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-OWEUjJ/filtered/preload.mts:10:10)\n    at nextStep (node:internal/modules/customization_hooks:189:26)\n    at loadWithHooks (node:internal/modules/customization_hooks:374:18)\n    at #loadSync (node:internal/modules/esm/loader:876:16)\n    at ModuleLoader.load (node:internal/modules/esm/loader:834:26)\n    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:540:31)\n    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:606:36)\n    at afterResolve (node:internal/modules/esm/loader:658:52)\n    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:664:12)\n    at node:internal/modules/esm/loader:683:32 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 'folded',\n  expected: '',\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.12.0\n",
+            "originalFixtureSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "fixtureFinalSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "hookSha256": "25c718667bb940bcc4692c459a9eff6ed77f2d50cba386e7528f968f7b66258a"
+          },
+          {
+            "name": "original-without-hook",
+            "mode": "ordinary",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture"
+              ],
+              "outcomes": [],
+              "fatal": {
+                "name": "ReferenceError",
+                "message": "ReferenceError: CheckFailureError is not defined"
+              }
+            },
+            "applied": [],
+            "stderr": "",
+            "originalFixtureSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "fixtureFinalSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "hookSha256": "e9a3c0a63b0f9b4a4fc4b2ca00c3a2c416f74b438d12a5f07a3b73266cba865c"
+          },
+          {
+            "name": "removed-type-guard",
+            "mode": "unknown",
+            "status": 1,
+            "signal": null,
+            "parsed": {
+              "events": [
+                "sink-created",
+                "info:running the wide session",
+                "session:wide",
+                "error:Error: fixture unknown error",
+                "cleanup-guard",
+                "info:running the narrow session",
+                "session:narrow",
+                "info:running the dialog session",
+                "session:dialog",
+                "info:running the quit session",
+                "session:quit",
+                "info:running the states session",
+                "session:states",
+                "info:running the visual session",
+                "session:visual",
+                "sink-disposed"
+              ],
+              "lines": [
+                "private null sink fixture is node 1; scratch fixture",
+                "FAIL trial/session-aborted/wide Trial adapter retained the aborted wide session :: Error: fixture unknown error",
+                "PASS fixture/narrow fixture reached",
+                "PASS fixture/dialog fixture reached",
+                "PASS fixture/quit fixture reached",
+                "PASS fixture/states fixture reached",
+                "PASS fixture/visual fixture reached"
+              ],
+              "outcomes": [
+                {
+                  "id": "trial/session-aborted/wide",
+                  "title": "Trial adapter retained the aborted wide session",
+                  "ok": false,
+                  "skipped": false,
+                  "detail": "Error: fixture unknown error",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/narrow",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/dialog",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/quit",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/states",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                },
+                {
+                  "id": "fixture/visual",
+                  "title": "fixture reached",
+                  "ok": true,
+                  "skipped": false,
+                  "detail": "",
+                  "ms": 0
+                }
+              ]
+            },
+            "applied": [
+              {
+                "event": "trial-session-continuation-applied",
+                "target": "file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-OWEUjJ/removed-type-guard/runner.ts",
+                "sourceSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+                "loadedSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+                "patchedSha256": "9fc71ddb89d9fb43828afdabc38dd3feb0982de8e55c32d75a3306450c143426",
+                "catches": "CheckFailureError only",
+                "cleanupGuard": "original checkPreconditions before continuation"
+              }
+            ],
+            "stderr": "{\"event\":\"trial-session-continuation-applied\",\"target\":\"file:///var/mnt/encrypted/temp/agent/depot-native-recovery/continuation-controls-OWEUjJ/removed-type-guard/runner.ts\",\"sourceSha256\":\"03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76\",\"loadedSha256\":\"03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76\",\"patchedSha256\":\"9fc71ddb89d9fb43828afdabc38dd3feb0982de8e55c32d75a3306450c143426\",\"catches\":\"CheckFailureError only\",\"cleanupGuard\":\"original checkPreconditions before continuation\"}\n",
+            "originalFixtureSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "fixtureFinalSha256": "03cde63b3761533e56929f94cbf6ea11e03ade7dd22598599e4f950536fecf76",
+            "hookSha256": "61c93d4e017e2bc2c71c7a3bb7d222f4344aa42170a67af87ffeec1e9a377f3e"
+          }
+        ]
+      }
+    },
+    "providerOutcome": "pending; disposable controls are not actual all-session coverage"
+  },
+  "desktopRuntimeSessionInventoryCorrection": {
+    "discoveredAt": "2026-10-17T07:14:51.443Z",
+    "source": "actual immutable selection.ts and run.ts on each source revision",
+    "cases": [
+      {
+        "caseId": "native",
+        "sourceRevision": "cb95cf6d785c3073c192b95f0632cdae7b910894",
+        "declaredSessionRoutes": [
+          "wide",
+          "narrow",
+          "dialog",
+          "quit",
+          "states",
+          "visual"
+        ]
+      },
+      {
+        "caseId": "desktop",
+        "sourceRevision": "3434eaa455d569c18b52cf15100f77f9db251d21",
+        "declaredSessionRoutes": [
+          "wide",
+          "narrow",
+          "dialog",
+          "auto-play",
+          "quit",
+          "states",
+          "visual"
+        ]
+      }
+    ],
+    "finding": "Historical desktop runtime receipts hardcode six routes and omit desktop auto-play. The original unfiltered source selector still includes auto-play; the orchestration hook wraps its generic loop and does not filter session names. Preserve original receipts, reconstruct expected routes from actual immutable source, and replace hardcoded metadata in the final harness. Source runtime coverage still requires actual session and assertion logs."
   }
 }
