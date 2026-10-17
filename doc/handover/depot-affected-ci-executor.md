@@ -303,7 +303,7 @@ All 37 collected logs prove the same user-namespace `/sys/kernel/debug` prefligh
 with no source execution; all 37 artifacts are hashed.
 Owned-volume pilot `85fv28fjkl` passed its cloud boundary controls at pushed `bc6889aaaa8d`,
 then exposed unreadable baked pnpm metadata in the unchanged CLI integration.
-The log proves the sender's permission denial; actual UID, GID and mode still require capture.
+That log proves the sender's permission denial without measuring UID, GID or mode.
 All 49 shard volumes were verified removed.
 Request `360d91ht6w` at pushed `d098532a5b69` passed the unchanged CLI integration and its two builds.
 All three logs and unchanged source inputs are independently verified.
@@ -313,13 +313,18 @@ All six shard volumes and six inspection containers were verified removed.
 Issues `#1116` and `#1117` retain the distinct incidents and actual consumer closure proofs.
 Executor metadata now distinguishes inventory, requested IDs, prerequisite closure,
 live progress and actual case termination; its five disposable controls passed.
-The next actions are replacing the stale 37-leaf continuation with the 33 unresolved identities
-plus two remaining ownership repairs;
-do not rerun the passed browser-properties bundle or mutation CLI integration as development recovery.
+Continuation `1pgpb8qhn6` started at `2026-10-17T06:53:35Z`
+from clean pushed `51d5a2fd69507d9346d7fe6eb6345a4ee9929383`, matching the provider's source and head revision.
+Its 35 selectors are exactly the 33 unresolved identities plus two remaining ownership repairs,
+with frozen prerequisite closures verified.
+The passed browser-properties bundle and mutation CLI integration are excluded from development recovery.
+Retain its actual `16x64` allocation when accounting for compute.
 The browser routes now declare 32 disjoint file/project cells,
 with generated-program positive,
 source-negative and invalid-inventory controls passed.
-Use two supported `2x8` pilot cells before the remaining 30,
+Two supported `2x8` pilot cells are running in `x0rb16tjzb`,
+with provider source and head revision matching clean pushed `c0eefbea382ef41c4667e90242010757eb5f759f`.
+Collect those cells before the remaining 30,
 retaining full and partition inventories and actual case JSON.
 Then complete only unresolved or repaired-prerequisite leaf recovery,
 file/engine browser recovery with a supported `2x8` pilot,
@@ -327,6 +332,12 @@ and supplying the source-required audited Git `2.56.0`
 before replaying the two unchanged native host checks.
 The root agent must align GHA, VM and shared helper routes before final combined dispatch.
 The prepared combined workflow remains incomplete until that integration and bounded check coverage are verified.
+The settled common manifest lives at `doc/audit/depot-complete-cohort-${cohort_id}.json` on `main`.
+Authenticate through GitHub's base64 object response and hash the decoded bytes.
+Bind the three common inputs before and after execution,
+distinguishing the outer cohort SHA-256 from `cases.logger.manifestSha256`.
+Validate the logger source/base and selected route's actual harness revision.
+The logger cohort receipt task and final manifest freeze remain pending.
 Only harness execution failures receive recovery edits;
 historical source failures remain diagnostics.
 The requests were launched separately and do not establish a single complete passing pipeline latency.

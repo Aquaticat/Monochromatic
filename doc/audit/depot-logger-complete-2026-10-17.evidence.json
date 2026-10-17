@@ -278,7 +278,7 @@
   ],
   "completeGraph": false,
   "pending": [
-    "Replace stale37-leaf continuation with33 unresolved identities plus2 remaining ownership-prerequisite repairs; exclude passed bundle and CLI integration.",
+    "Collect35-leaf1pgpb8qhn6 recovery with exact per-leaf status, output hashes, source eligibility and provider16x64 allocation/cost.",
     "Complete only unresolved or repaired-prerequisite leaf recovery, retaining per-leaf outcomes and actual provider allocation/cost.",
     "Collect2 browser file/project pilots on2x8 before dispatching remaining30 cells; retain full/partition inventories and actual case JSON.",
     "Supply source-required audited Git2.56.0 and required libraries before unchanged native host checks.",
@@ -17843,6 +17843,73 @@
           "genericCaseStarted": false
         }
       ]
+    },
+    "currentDevelopmentRecovery": {
+      "providerIdentity": {
+        "org_id": "l4zncjjbj5",
+        "run_id": "1pgpb8qhn6",
+        "repo": "Aquaticats/Monochromatic",
+        "ref": "refs/heads/trial/depot-complete-ci-20261016",
+        "sha": "51d5a2fd69507d9346d7fe6eb6345a4ee9929383",
+        "head_sha": "51d5a2fd69507d9346d7fe6eb6345a4ee9929383",
+        "trigger": "workflow_dispatch",
+        "status": "running",
+        "created_at": "2026-10-17T06:53:35Z",
+        "started_at": "2026-10-17T06:53:35Z"
+      },
+      "continuationSha256": "056435ab1d25555015a0526ec2076d73b513c44862e7ebe8436727eb82ebcf6d",
+      "manifestSha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9",
+      "globalUnresolved": 33,
+      "ownershipRepairs": [
+        "package.module.conf-fork.test.mutation",
+        "package.module.make-asynchronous-fork.test.mutation"
+      ],
+      "selectedChecks": [
+        "package.module.conf-fork.fuzz.fuzz",
+        "package.module.conf-fork.fuzz.fuzz.coverage",
+        "package.module.css-edit.fuzz.fuzz",
+        "package.module.css-edit.fuzz.fuzz.coverage",
+        "package.module.deepmerge-ts.fuzz.fuzz.coverage",
+        "package.module.jsonc-edit.fuzz.fuzz",
+        "package.module.jsonc-edit.fuzz.fuzz.coverage",
+        "package.module.logger.fuzz.fuzz",
+        "package.module.logger.fuzz.fuzz.coverage",
+        "package.module.make-asynchronous-fork.fuzz.fuzz",
+        "package.module.make-asynchronous-fork.fuzz.fuzz.coverage",
+        "package.module.matcher-fork.fuzz.fuzz",
+        "package.module.matcher-fork.fuzz.fuzz.coverage",
+        "package.module.matcher-fork.test.mutation",
+        "package.module.p-limit-fork.fuzz.fuzz",
+        "package.module.p-limit-fork.fuzz.fuzz.coverage",
+        "package.module.p-limit-fork.test.mutation",
+        "package.module.p-map-fork.fuzz.fuzz",
+        "package.module.p-map-fork.fuzz.fuzz.coverage",
+        "package.module.p-map-fork.test.mutation",
+        "package.module.p-memoize-fork.fuzz.fuzz",
+        "package.module.p-memoize-fork.fuzz.fuzz.coverage",
+        "package.module.p-memoize-fork.test.mutation",
+        "package.module.pify-fork.fuzz.fuzz",
+        "package.module.pify-fork.fuzz.fuzz.coverage",
+        "package.module.pify-fork.test.mutation",
+        "package.module.quick-lru-fork.fuzz.fuzz",
+        "package.module.quick-lru-fork.fuzz.fuzz.coverage",
+        "package.module.quick-lru-fork.test.mutation",
+        "package.module.toml-edit.fuzz.fuzz",
+        "package.module.toml-edit.fuzz.fuzz.coverage",
+        "package.module.toml-edit.test.mutation",
+        "package.git-policy.cli.fuzz.smoke",
+        "package.module.conf-fork.test.mutation",
+        "package.module.make-asynchronous-fork.test.mutation"
+      ],
+      "prerequisiteClosuresVerified": true,
+      "excludedAlreadyPassed": [
+        "package.module.logger.fuzz.bundle.browser-properties",
+        "package.cli.mutation-test.test.integration"
+      ],
+      "providerSize": "16x64",
+      "allocatedCpuCount": 16,
+      "originalContainerBoundsRetained": true,
+      "terminalCollectionPending": true
     }
   },
   "browserRecovery": {
@@ -18220,7 +18287,19 @@
     "providerCpuCount": 2,
     "containerCpuCount": 2,
     "containerMemoryGiB": 2,
-    "full32DispatchHeld": true
+    "full32DispatchHeld": true,
+    "pilotProviderIdentity": {
+      "org_id": "l4zncjjbj5",
+      "run_id": "x0rb16tjzb",
+      "repo": "Aquaticats/Monochromatic",
+      "ref": "refs/heads/trial/depot-complete-ci-20261016",
+      "sha": "c0eefbea382ef41c4667e90242010757eb5f759f",
+      "head_sha": "c0eefbea382ef41c4667e90242010757eb5f759f",
+      "trigger": "workflow_dispatch",
+      "status": "running",
+      "created_at": "2026-10-17T06:47:04Z",
+      "started_at": "2026-10-17T06:47:04Z"
+    }
   },
   "gitHostRecovery": {
     "pending": true,
@@ -19160,5 +19239,30 @@
         "pidsLimit": 512
       }
     }
+  },
+  "cohortContract": {
+    "schemaVersion": 1,
+    "authoritativePathTemplate": "doc/audit/depot-complete-cohort-${cohort_id}.json",
+    "repositoryRef": "main",
+    "transport": "Authenticated GitHub contents object, base64 content decoded before SHA256",
+    "outerManifestDigestDistinctFromCaseDigest": true,
+    "requiredWorkflowInputs": [
+      "cohort_id",
+      "manifest_sha256",
+      "requested_at"
+    ],
+    "caseBindings": [
+      "cases.logger.sourceRevision",
+      "cases.logger.baseRevision",
+      "cases.logger.manifestSha256"
+    ],
+    "routeBindings": [
+      "routes[route].caseId",
+      "routes[route].harnessRevision",
+      "routes[route].workflow"
+    ],
+    "sameRequestTimestampBeforeAfter": true,
+    "implementationPending": true,
+    "finalFreezeHeld": true
   }
 }

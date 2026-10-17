@@ -152,7 +152,10 @@ Actual generated-program controls verify full inventories,
 exact partition inventories,
 normal source failure exit preservation,
 and rejection of an incomplete full inventory before source execution.
-The cloud pilot must still establish actual worker, image and resource behavior before fan-out.
+Cloud pilot `x0rb16tjzb` started at `2026-10-17T06:47:04Z` from clean pushed harness
+`c0eefbea382ef41c4667e90242010757eb5f759f`.
+The provider confirms that exact source and head revision.
+Its terminal collection must establish actual worker, image and resource behavior before fan-out.
 
 Provider request IDs and workflow IDs name different objects.
 Request `dhxhzzvmc3` contains workflow `fjdhk1bj7r`.
@@ -226,13 +229,25 @@ before rerunning the unchanged host tasks.
 Any resulting source failures must remain separate from that mismatch
 and from the existing native container baseline failures.
 
-The next actions are updating the continuation selection to the 33 unresolved identities
-plus the two remaining ownership-prerequisite repairs,
-then only unresolved or repaired-prerequisite leaf recovery,
-file/engine browser recovery with a supported `2x8` pilot,
-and controlled Git host prerequisite recovery,
-then a combined workflow with root-owned host, scanner, policy and VM routes.
+Continuation `1pgpb8qhn6` started at `2026-10-17T06:53:35Z` from clean pushed harness
+`51d5a2fd69507d9346d7fe6eb6345a4ee9929383`, independently confirmed by the provider.
+Its 35 disjoint selectors contain the 33 globally unresolved identities
+and the two remaining ownership-prerequisite repairs.
+Their frozen prerequisite closures are verified.
+The passed browser-properties bundle and CLI integration are excluded from this development recovery.
+This request retains `16x64` provider allocation and original container bounds;
+compute must count the allocated 16 CPUs.
+The next actions are terminal leaf reconciliation,
+file/engine browser recovery after its supported `2x8` pilot,
+controlled Git host prerequisite recovery,
+and a combined workflow with root-owned host, scanner, policy and VM routes.
 The final coherent replay is held until the root agent aligns those routes.
+The common cohort manifest will be a separate authenticated, byte-verified file on `main`.
+Its outer SHA-256 differs from the single-case logger manifest digest.
+The combined workflow must bind the same cohort ID,
+outer digest and request timestamp before and after execution,
+and validate the common manifest's logger source, base, case digest and route harness revision.
+That receipt implementation and final freeze remain pending.
 The prepared combined workflow remains incomplete until that integration is verified.
 Historical source failures stay terminal diagnostics for this measurement.
 
