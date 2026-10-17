@@ -19,6 +19,10 @@ not a claim that a prompt replaces model or harness fixes.
 You are implementing lint fixes in `package/pi-plugin/auto-mode` in the current repository.
 Finish the remaining maintained-code lint queue while preserving Pi's working native behavior.
 Work autonomously through verified changes until the queue is complete or a concrete blocker requires user input.
+The installed baseline is verified for this handoff:
+the complete reported interaction reaches all 21 calls across 12 groups without confirmation,
+and the independent prohibited-read control blocks both reads.
+The complete lint queue still needs a fresh measurement.
 
 ### Establish the current state
 
@@ -81,10 +85,16 @@ Do not move semantic profile preparation back ahead of the bypass branch.
 The former `evaluate.mjs`, `index.mjs`, and `reviewer.mjs` forwarding paths were removed on 2026-10-15.
 Preserve this consolidation rather than restoring a parallel decision framework.
 Assessment context selects the legacy five-message floor or complete latest-user span before candidate issuance.
-Keep complete current instructions and complete selected messages;
+Review covers execution permission and required consent.
+Its inputs are the proposed operation, selected readable project policy excerpts, and selected visible messages.
+Pi's hidden prompts, tool metadata, and skill catalog stay outside Luna review.
+Initialization and reload refresh changed or missing tagged policy-rule relevance through the incumbent cache.
+Rules scoring below `0.60`, including uncertain rules, are culled from operation review.
+Complete policy documents remain local for original-source and freshness checks.
+Keep complete selected messages;
 retained archives and the raw provider request must not return as additional model input.
 Each clause question also carries the complete proposed operation.
-The regression is `test:native:decision-context`.
+The regressions are `test:visible-context`, `test:native:shell-projection`, and `test:native:startup-relevance`.
 
 Prerequisite estimates and first-pass prohibition estimates must reach the decision model
 rather than becoming terminal restrictions.
@@ -99,11 +109,10 @@ and validate CLI loading before changing the active link.
 Use `test:native:build-activation` for changes to build publication.
 Do not relocate or delete a release referenced by a running process.
 
-The corrected installed release is `native-release-ikWviS` as of 2026-10-16.
-Its 22 fallback cases,
-live reported-command replay,
-live prohibition control,
-and persisted JSONL integrity check passed.
+The earlier corrected release was `native-release-ikWviS` as of 2026-10-16.
+The current installed release is `native-release-b8o8BL`, verified on 2026-10-17.
+Its 22 fallback cases, complete configured-session replay, live prohibition control,
+and audit of all 25 outgoing replay requests pass.
 Fresh Pi sessions load this release;
 already-running processes retain their loaded modules.
 
@@ -113,8 +122,12 @@ Keep explicit cycle detection, accessor/proxy rejection, source ownership, and f
 The capture regression is `test:native:prompt-capacity`.
 
 Direct native Bash calls now receive automatic review alongside inspected programs.
-Preserve complete command strings and whole-group assessment,
-including mixed direct Bash and codemode groups.
+Preserve complete command strings locally for execution, ownership, and human confirmation.
+Luna receives locally parsed Bash structure, including argument and quoting roles,
+control flow, redirects, assignments, and nested execution.
+Assistant thinking and provider signatures are excluded from proposed operations and historical conversation.
+Whole-group assessment covers mixed direct Bash and codemode groups.
+The package-local lesson is `package/pi-plugin/auto-mode/native/review-input-verification.md`.
 Live Luna dispatch has been exercised with all 140 cached MCP tools;
 model uncertainty still uses scoped confirmation.
 Use `test:native:direct-bash` and `test:semantic-operating-policy` when changing admission.
@@ -131,8 +144,10 @@ Substituting a synthetic working-directory policy omitted the later false-prereq
 
 Complete assessments use at most three sequential bundles of up to three parallel provider calls.
 Each provider request contains at most 200 questions and complete shared context.
-Keep exact question names, answer ordering, shared cancellation, retired capability rejection,
-and the original fifteen-second preparation-inclusive deadline.
+Keep exact question names, answer ordering, shared cancellation, and retired capability rejection.
+Fifteen seconds is a preparation-inclusive performance guideline.
+Elapsed time alone cannot expire evidence, cancel a provider request, or trigger confirmation.
+Constructor, preparation, transport, and startup relevance retain advisory timing without an enforced timer.
 Failed bundles and eligible retries consume the same allowance.
 The average USD 0.001 per judgment cost limit was removed.
 The built regression is `test:assessment-bundles`.

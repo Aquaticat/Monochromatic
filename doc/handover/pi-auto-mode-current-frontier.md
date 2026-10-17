@@ -5,7 +5,7 @@
 Resume the axiom-based migration without reopening settled choices or replaying completed phases.
 This current summary complements the
 [historical evidence ledger](pi-auto-mode-axiom-evaluation.md).
-Updated 2026-10-16.
+Updated 2026-10-17.
 
 ## Active work on 2026-10-15
 
@@ -44,7 +44,7 @@ and fifteen successful Luna requests before the native process exited with statu
 No confirmation appeared before termination.
 This incomplete replay does not establish success for the reported later group.
 The retained stderr has no native fatal diagnostic; the termination cause remains unestablished.
-The next step is a final rebuild and a resource-bounded sequential replay with retained termination evidence.
+The retry used a final rebuild and a resource-bounded sequential replay with retained termination evidence.
 The bounded replay `pi-hyper-rpc-allow-oNjLac` exits normally and executes all 21 calls,
 including both reported identifiers, without confirmation, with 25 successful Luna requests.
 Its assertion that every command succeeds is invalid: the original transcript includes a failed search.
@@ -70,6 +70,8 @@ This closes the reported failure and input-boundary corrections;
 the first replay's exit-status `137` cause remains unestablished.
 The user chose to keep `TCV` unchanged and document request-capture lessons in
 `package/pi-plugin/auto-mode/native/review-input-verification.md`.
+The MiMo lint handoff is refreshed for the verified release and current input and timing contracts.
+The remaining handoff task is measuring and fixing the complete maintained lint queue while preserving that baseline.
 
 ### Completed permission scope, startup relevance, and resource measurement on 2026-10-16
 
