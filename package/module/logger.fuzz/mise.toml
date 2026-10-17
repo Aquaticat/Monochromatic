@@ -467,3 +467,84 @@ writeFileSync(join(directory, 'logger-browser-image-results.json'), JSON.stringi
 description = "Format explicitly named trial configuration files"
 dir = "{{config_root}}/../../.."
 run = "dprint fmt"
+
+[tasks."trial:depot:cohort-identity"]
+description = "Verify authenticated common cohort bytes and paired immutable logger route identities"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const {execFileSync}=await import('node:child_process');
+const {readFileSync,writeFileSync,mkdirSync}=await import('node:fs');
+const {createHash}=await import('node:crypto');
+const {homedir,cpus,availableParallelism,totalmem}=await import('node:os');
+const {join,posix}=await import('node:path');
+const {strict:assert}=await import('node:assert');
+const workspace=process.env.GITHUB_WORKSPACE;
+assert(workspace,'GITHUB_WORKSPACE required');
+const phase=process.env.DEPOT_CI_IDENTITY_PHASE;
+assert(['before','after'].includes(phase),'Identity phase must be before or after');
+const cohortId=process.env.DEPOT_COHORT_ID;
+assert(typeof cohortId==='string'&&/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/u.test(cohortId),'A safe common cohort ID is required');
+const expectedSha256=process.env.DEPOT_COHORT_MANIFEST_SHA256;
+assert(typeof expectedSha256==='string'&&/^[a-f0-9]{64}$/u.test(expectedSha256),'A complete common manifest SHA256 is required');
+const requestedAt=process.env.DEPOT_COHORT_REQUESTED_AT;
+assert(typeof requestedAt==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/u.test(requestedAt)&&Number.isFinite(Date.parse(requestedAt)),'A common UTC request timestamp is required');
+const routeId=process.env.DEPOT_COHORT_ROUTE;
+assert(['logger.combined','logger.browser'].includes(routeId),'A declared logger cohort route is required');
+const workflowPath=process.env.DEPOT_COHORT_WORKFLOW;
+assert(typeof workflowPath==='string'&&workflowPath.startsWith('.depot/workflows/')&&workflowPath.endsWith('.yml')&&posix.normalize(workflowPath)===workflowPath&&!workflowPath.split('/').includes('..'),'A canonical logger workflow path is required');
+const sha256=bytes=>createHash('sha256').update(bytes).digest('hex');
+const manifestPath=`doc/audit/depot-complete-cohort-${cohortId}.json`;
+const endpoint=`repos/Aquaticats/Monochromatic/contents/${manifestPath.split('/').map(encodeURIComponent).join('/')}?ref=main`;
+const object=JSON.parse(execFileSync('gh',['api','--method','GET','--header','Accept: application/vnd.github.object+json',endpoint],{encoding:'utf8',maxBuffer:4*1024*1024}));
+assert.equal(object.type,'file');
+assert.equal(object.path,manifestPath);
+assert.equal(object.encoding,'base64');
+assert(Number.isInteger(object.size)&&object.size>0&&object.size<1024*1024,'Common manifest must be smaller than1MiB');
+assert.equal(typeof object.content,'string');
+const encoded=object.content.replaceAll('\r','').replaceAll('\n','');
+const commonBytes=Buffer.from(encoded,'base64');
+assert.equal(commonBytes.toString('base64'),encoded,'GitHub content must be canonical base64');
+assert.equal(commonBytes.length,object.size);
+assert.equal(sha256(commonBytes),expectedSha256,'Downloaded common cohort bytes differ from requested digest');
+const blobSha=createHash('sha1').update(`blob ${commonBytes.length}\0`).update(commonBytes).digest('hex');
+assert.equal(object.sha,blobSha,'GitHub content blob identity differs from decoded bytes');
+const cohort=JSON.parse(commonBytes.toString('utf8'));
+assert.equal(cohort.schemaVersion,1);
+assert.equal(cohort.cohortId,cohortId);
+const binding=cohort.cases?.logger;
+const route=cohort.routes?.[routeId];
+assert(binding&&route,'Common manifest must contain logger case and selected route');
+assert.equal(route.caseId,'logger');
+assert.equal(route.workflow,workflowPath);
+assert(/^[a-f0-9]{40}$/u.test(route.harnessRevision),'Common route must pin a complete harness revision');
+const harness=join(workspace,'harness');
+const source=join(workspace,'source');
+const git=(cwd,args)=>execFileSync('git',args,{cwd,encoding:'utf8',maxBuffer:16*1024*1024}).trim();
+const harnessRevision=git(harness,['rev-parse','HEAD']);
+assert.equal(harnessRevision,route.harnessRevision,'Actual harness HEAD differs from selected common route');
+const index=git(harness,['ls-files','-v','-z']).split('\0').filter(Boolean);
+assert(index.every(entry=>entry[0]!=='S'&&!/[a-z]/u.test(entry[0])),'Harness index must not hide tracked inputs');
+const harnessStatus=git(harness,['status','--porcelain','--untracked-files=no']);
+assert.equal(harnessStatus,'','Cohort harness has tracked modifications');
+const loggerBytes=readFileSync(join(harness,'.depot/manifests/logger.json'));
+assert.deepEqual(loggerBytes,execFileSync('git',['show',`${harnessRevision}:.depot/manifests/logger.json`],{cwd:harness,maxBuffer:16*1024*1024}));
+const logger=JSON.parse(loggerBytes.toString('utf8'));
+assert.equal(logger.caseId,'logger');
+assert.equal(binding.sourceRevision,logger.sourceRevision);
+assert.equal(binding.baseRevision,logger.baseRevision);
+assert.equal(binding.manifestSha256,sha256(loggerBytes));
+const workflowBytes=readFileSync(join(harness,workflowPath));
+assert.deepEqual(workflowBytes,execFileSync('git',['show',`${harnessRevision}:${workflowPath}`],{cwd:harness,maxBuffer:16*1024*1024}));
+const sourceRevision=git(source,['rev-parse','HEAD']);
+assert.equal(sourceRevision,binding.sourceRevision);
+const sourceStatus=git(source,['status','--porcelain','--untracked-files=no']);
+assert.equal(sourceStatus,'','Cohort source has tracked modifications');
+const identity={cohortId,cohortManifestPath:manifestPath,cohortManifestSha256:expectedSha256,cohortManifestBlobSha:blobSha,requestedAt,routeId,workflowPath,workflowSha256:sha256(workflowBytes),caseId:'logger',sourceRevision,baseRevision:logger.baseRevision,sourceTree:git(source,['rev-parse','HEAD^{tree}']),manifestSha256:sha256(loggerBytes),harnessRevision,harnessTree:git(harness,['rev-parse','HEAD^{tree}']),harnessStatus,sourceStatus};
+const directory=process.env.DEPOT_COHORT_IDENTITY_OUTPUT_DIRECTORY??join(homedir(),'temp/agent/depot-complete-ci');
+mkdirSync(directory,{recursive:true,mode:0o700});
+if(phase==='after')assert.deepEqual(identity,JSON.parse(readFileSync(join(directory,'logger-cohort-before-results.json'),'utf8')).identity,'Before and after common cohort bindings differ');
+const receipt={schemaVersion:1,phase,collectedAt:new Date().toISOString(),identity,host:{logicalCpus:cpus().length,availableParallelism:availableParallelism(),physicalMemoryBytes:totalmem()},runtimeProviderJobUrl:process.env.DEPOT_JOB_URL,providerUrlAssociationRequiresCollectedAttemptVerification:true};
+writeFileSync(join(directory,`logger-cohort-${phase}-results.json`),JSON.stringify(receipt,null,2)+'\n',{flag:'wx',mode:0o600});
+console.log(JSON.stringify({event:'common-cohort-verified',phase,cohortId,routeId,requestedAt,cohortManifestSha256:expectedSha256,manifestSha256:identity.manifestSha256,harnessRevision,sourceRevision}));
+'''
