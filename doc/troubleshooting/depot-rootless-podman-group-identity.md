@@ -248,9 +248,11 @@ rsync: [sender] send_files failed to open "/baked/node_modules/.pnpm-workspace-s
 rsync error: some files/attrs were not transferred (see previous errors) (code 23)
 ```
 
-The generated image metadata is owned by root with mode `0600`.
-The authored image's default root identity can read it;
-the trial adapter's source-owner UID cannot.
+The retained log proves that the trial adapter's source-owner UID cannot read the generated image metadata.
+It does not print the file's UID, GID or mode.
+Root-owned mode `0600` is a hypothesis from the image and package-manager setup,
+not a measured cloud fact.
+The next extraction control must capture those properties before attributing the permission cause.
 The failure happens before mutant assertions and is an adapter prerequisite gap.
 The consumer made 49 failed shard attempts, with every owned volume verified removed.
 The proposed repair extracts only that generated file from a stopped disposable image container,

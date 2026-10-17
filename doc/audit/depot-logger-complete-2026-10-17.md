@@ -177,8 +177,10 @@ Owned-tmpfs-volume pilot `85fv28fjkl` used clean pushed revision
 Its cloud preflight passed the private-manifest denial and source-owner positive control,
 with verified volume cleanup and no added capabilities or user-namespace mapping.
 The unchanged mutation CLI integration then reached 49 shards.
-Its `rsync` sender could not read root-owned mode `0600`
-`/baked/node_modules/.pnpm-workspace-state-v1.json` under the adapter's nonroot UID.
+Its `rsync` sender could not read `/baked/node_modules/.pnpm-workspace-state-v1.json`
+under the adapter's nonroot UID.
+The log proves `Permission denied (13)` but does not record the file's UID, GID or mode;
+the next control must measure them before attributing the permission cause.
 All 49 shard volumes were removed and verified absent.
 This newly exposed adapter prerequisite is separate from mutant assertion failures.
 The next mutation pilot must preserve the source image bytes and use a readonly,

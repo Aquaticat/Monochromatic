@@ -298,7 +298,8 @@ Continuation `1wzr86fssk` failed at clean pushed revision
 All 37 collected logs prove the same user-namespace `/sys/kernel/debug` preflight failure,
 with no source execution; all 37 artifacts are hashed.
 Owned-volume pilot `85fv28fjkl` passed its cloud boundary controls at pushed `bc6889aaaa8d`,
-then exposed unreadable root-owned `0600` baked pnpm metadata in the unchanged CLI integration.
+then exposed unreadable baked pnpm metadata in the unchanged CLI integration.
+The log proves the sender's permission denial; actual UID, GID and mode still require capture.
 All 49 shard volumes were verified removed.
 Preserve that distinct adapter prerequisite and repair it with a readonly byte-verified owned-file bind.
 Executor metadata now distinguishes inventory, requested IDs, prerequisite closure,

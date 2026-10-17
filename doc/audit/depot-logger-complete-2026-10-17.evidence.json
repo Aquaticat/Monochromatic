@@ -18579,10 +18579,11 @@
     "capabilityAdditions": [],
     "sourceConsumer": "package.cli.mutation-test.test.integration",
     "sourceConsumerPassed": false,
-    "diagnostic": "rsync sender cannot read root-owned0600 /baked/node_modules/.pnpm-workspace-state-v1.json",
+    "diagnostic": "rsync sender Permission denied(13) reading /baked/node_modules/.pnpm-workspace-state-v1.json",
     "sourceAssertionCredit": false,
     "shardVolumes": 49,
     "allShardVolumesVerifiedRemoved": true,
-    "readonlyByteVerifiedOwnedMetadataBindPilotPending": true
+    "readonlyByteVerifiedOwnedMetadataBindPilotPending": true,
+    "originalFileUidGidModeVerified": false
   }
 }
