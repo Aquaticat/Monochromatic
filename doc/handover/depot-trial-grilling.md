@@ -116,6 +116,29 @@ then run fresh independent sessions.
 Safety-stop,
 unknown,
 and cleanup errors must still stop the run.
+The adapter is committed and pushed at `bb475f636f51a00864710454c6499fcd3db6b8a4`.
+Native control `s3cmrhf2kp` and desktop control `wxq11xm2hd` are dispatched at that exact SHA;
+one terminal waiter owns both.
+Each source version passed 17 actual-loop/recorder fixture controls,
+including retained ordinary failures,
+fatal safety/unknown/cleanup errors,
+source-hash and anchor rejection,
+unfiltered-only enforcement,
+and a removed-type-guard negative control.
+These are adapter controls,
+not actual all-session coverage.
+
+The native source declares six default session routes.
+The desktop source additionally declares `auto-play`,
+for seven routes.
+Their `runSessions` function and recorder bytes match,
+but their complete `run.ts` and `selection.ts` bytes do not.
+The unfiltered authored selector remains authoritative and automatically includes `auto-play`.
+The trial receipt's hardcoded six-name array is incomplete metadata and must be replaced in the final harness.
+Preserve original receipts and reconstruct expected coverage from each actual immutable source.
+The corrected fixture consumes each source's actual selector and exercises every returned route.
+The initial no-hook fixture's `ReferenceError` and hash-preempted anchor control are retained as rejected controls;
+the corrected controls exercise the intended `CheckFailureError` and anchor guards separately.
 Existing issue `#1007` already tracks the nested-route pointer/text boundary;
 the measured geometry belongs there rather than in a duplicate issue.
 No causal claim about the individual interaction failures is made before that control.
