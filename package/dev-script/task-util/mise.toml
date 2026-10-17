@@ -1282,7 +1282,7 @@ import { stripVTControlCharacters } from 'node:util';
 const directory = join(homedir(),'temp/agent/depot-complete-ci');
 const source = join(process.env.GITHUB_WORKSPACE,'source');
 const startedAt = new Date().toISOString();
-const pilot = JSON.parse(readFileSync(join(directory,'toml-bounded-package.module.toml-edit.test.mutation.json'),'utf8'));
+const pilot = JSON.parse(readFileSync(join(directory,'toml-bounded-package.module.toml-edit.test.mutation-results.json'),'utf8'));
 assert.equal(pilot.pilot.sourceConsumerTerminal,true);
 assert.equal(pilot.cleanupVerified,true);
 const images = [...new Set(pilot.sourcePodmanCalls.filter(row=>row.event==='source-podman-call'&&row.command==='run').flatMap(row=>row.args.filter(arg=>/^localhost\/mutation-test-runtime:[a-f0-9]{12}$/.test(arg))))];
