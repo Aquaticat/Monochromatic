@@ -701,11 +701,16 @@ The separate transport and changed-Rust source-style incidents are tracked in th
 
 ## Source style and separate macOS transport incidents on October 17
 
-- `#1173`: native changed-Rust prose-style errors.
-- `#1174`: desktop changed-Rust prose-style and missing-rustdoc errors.
-- `#1175`: native macOS after-provenance connection timeout at the Contents API.
-- `#1176`: native macOS artifact-service CreateArtifact retry exhaustion.
-- `#1177` is closed: the private verifier now distinguishes Alpine smoke/provenance archives
+- `#1173`:
+  native changed-Rust prose-style errors.
+- `#1174`:
+  desktop changed-Rust prose-style and missing-rustdoc errors.
+- `#1175`:
+  native macOS after-provenance connection timeout at the Contents API.
+- `#1176`:
+  native macOS artifact-service CreateArtifact retry exhaustion.
+- `#1177` is closed:
+  the private verifier now distinguishes Alpine smoke/provenance archives
   and actual Scorecard output from echoed task source.
 
 The [host consumer evidence](../audit/depot-coherent-host-consumers-2026-10-17.evidence.json)
