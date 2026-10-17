@@ -29,7 +29,6 @@ permissions:
   contents: read
 
 jobs:
-
   pilot:
     name: Bounded exact-source TOML adapter consumer pilot
     runs-on:

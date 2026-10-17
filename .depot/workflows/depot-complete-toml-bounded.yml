@@ -103,6 +103,8 @@ jobs:
       with:
         name: toml-${{ github.job }}-evidence
         path: |
+          ~/temp/agent/depot-complete-ci/container-bin/*/*.json
+          ~/temp/agent/depot-complete-ci/container-bin/*/*.tar
           ~/temp/agent/depot-complete-ci/*-results.json
           ~/temp/agent/depot-complete-ci/toml*.json
           ~/temp/agent/depot-complete-ci/toml*.log
@@ -192,6 +194,8 @@ jobs:
       with:
         name: toml-file-enforcer-container-bounded-evidence
         path: |
+          ~/temp/agent/depot-complete-ci/container-bin/*/*.json
+          ~/temp/agent/depot-complete-ci/container-bin/*/*.tar
           ~/temp/agent/depot-complete-ci/*-results.json
           ~/temp/agent/depot-complete-ci/toml*.json
           ~/temp/agent/depot-complete-ci/toml*.log
@@ -288,6 +292,8 @@ jobs:
       with:
         name: toml-${{ matrix.name }}-bounded-evidence
         path: |
+          ~/temp/agent/depot-complete-ci/container-bin/*/*.json
+          ~/temp/agent/depot-complete-ci/container-bin/*/*.tar
           ~/temp/agent/depot-complete-ci/*-results.json
           ~/temp/agent/depot-complete-ci/toml*.json
           ~/temp/agent/depot-complete-ci/toml*.log
@@ -371,6 +377,8 @@ jobs:
       with:
         name: toml-${{ github.job }}-evidence
         path: |
+          ~/temp/agent/depot-complete-ci/container-bin/*/*.json
+          ~/temp/agent/depot-complete-ci/container-bin/*/*.tar
           ~/temp/agent/depot-complete-ci/*-results.json
           ~/temp/agent/depot-complete-ci/toml*.json
           ~/temp/agent/depot-complete-ci/toml*.log
