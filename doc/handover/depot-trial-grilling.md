@@ -38,7 +38,16 @@ The distinct physical-shard retention gap is filed as `#1434` with exact body re
 A read-only probe of the known completed logger TOML sandbox returned
 `sandbox "gbwhw0dz0jzdgd6n346m" was not found`;
 it recovered no temporary shard files.
-The Rust native verification format is separate and still needs its retained manifest and source-gate reconciliation.
+The Rust native verification format is separate.
+Its original mutation task stops at the parent Rust gate:
+1806 library tests pass,
+six fail,
+and four are ignored.
+The retained manifest declares two CPUs,
+two GiB,
+128 PIDs and no network.
+The later mutation phase receives no execution credit.
+Deliberately failing child controls are not additional parent-suite failures.
 JSONC and file-enforcer mutation tasks failed without native JSON.
 The logger TOML selection exactly matches the 3062-ID source fixture;
 removing an ID fails the comparison.
@@ -51,6 +60,27 @@ four timed out,
 and no reported runtime error.
 Its older red baseline in `#1156` remains a separate historical observation without an established fix.
 Aggregate killed status receives no assertion credit.
+
+Custom consumer reconciliation now verifies both source/common pairs and retained outputs.
+Both Electron Wayland tasks pass through the private software compositor.
+WireGuard route integration passes;
+bypass reaches the known reserved-mark teardown failure `#1077`.
+The Pi fixture loads all 22 configured extensions and no fixture extensions.
+The original serializer assertion fails as `#1078`;
+terminal answer/cancellation,
+notification delivery and the offline tmux consumer pass.
+The root Oxlint gate fails after its original full command.
+
+The logger desktop consumer independently matches the 118-case authored inventory.
+It observes 112 original checks:
+110 pass,
+the known folder-dialog assertion fails,
+and one authored case skips.
+The continued wide-session abort is a separate synthetic failure.
+Six original wide-session assertions remain unexecuted.
+All 17 retained session logs match their archived hashes and compositor calls.
+The resource samples show zero recorded OOM and PID-limit rejections.
+Removing an observed case changes the missing-case count from six to seven.
 
 The combined route has 97 terminal jobs,
 96 collected archives,
@@ -96,15 +126,15 @@ Next actions:
   and terminated-worker issue `#1182` are filed with exact body readback.
   The [completion troubleshooting record](../troubleshooting/depot-logger-final-completion-gaps.md)
   keeps their boundaries separate.
-- Reconcile Rust and custom consumers,
-  source failures and prerequisite-blocked checks.
+- Reconcile source failures and prerequisite-blocked checks with existing issue threads.
 - Add the current per-ID aggregate-JSON proof to `#1160`,
   preserving its historical missing artifacts and the distinct physical retention gap `#1434`.
 - File scoped follow-up evidence for the repaired private verifier assumptions:
   zero-based native columns,
   separate ignored records,
   Rust's distinct archive format,
-  and browser versus DOM report roots.
+  browser versus DOM report roots,
+  and captured desktop output versus provider progress logs.
 - Finish the external-check registry and overlap-aware allocation/critical paths,
   including the already retained native macOS retry and Windows carry-forward alias.
 - The repository-filtered Depot index contains 276 terminal records from the trial period.
