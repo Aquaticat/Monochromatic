@@ -35,9 +35,13 @@ Resume the repository-wide review of this repo without re-deriving its scope,
  Merged result: `dedupe/decisions.json` (chains resolved, validated by
  `merge-decisions.ts`).
 - [ ] File one issue per distinct defect and report the issue numbers.
- In progress:
- `node file-issues.ts` files the 581 findings with paced `gh issue create`,
- resumable through `filed.jsonl`.
+ 570 of 581 filed as issues #1183 to #1753 on 2026-10-17 (`filed.jsonl` ledger,
+ zero duplicate numbers, zero errors in that pass except the 11 below).
+ 11 findings failed with `gh` exiting zero and printing no URL (cross-logging-004,
+ cross-rust-001 to 003, cross-security-001 and 002, cross-testing-001 to 004,
+ direct-004); tracker searches confirm none of those attempts created a ghost issue,
+ and issue #1434 in the number range belongs to a concurrent session.
+ A resume run of `node file-issues.ts` retries exactly those 11.
 
 ## State on 2026-10-17
 
