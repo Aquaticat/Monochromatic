@@ -783,7 +783,7 @@ shell = "node --input-type=module-typescript -e"
 run = '''
 const {execFileSync}=await import('node:child_process')
 const {readFileSync,writeFileSync,mkdirSync,lstatSync,readlinkSync,realpathSync,readdirSync,existsSync}=await import('node:fs')
-const {join,relative,resolve}=await import('node:path')
+const {join,relative,resolve,dirname}=await import('node:path')
 const {homedir}=await import('node:os')
 const {createHash}=await import('node:crypto')
 const {strict:assert}=await import('node:assert')
@@ -792,6 +792,7 @@ const label=process.env.DEPOT_LOGGER_GENERATED_LABEL,phase=process.env.DEPOT_LOG
 assert(workspace&&consumer&&/^[a-zA-Z0-9._-]+$/.test(label??''))
 assert(['before','after'].includes(phase))
 const source=join(workspace,'source'),manifestBytes=readFileSync(join(workspace,'harness/.depot/manifests/logger.json')),manifest=JSON.parse(manifestBytes.toString())
+assert.notEqual(realpathSync(consumer),realpathSync(source),'Generated consumer must be a distinct checkout')
 const sha256=bytes=>createHash('sha256').update(bytes).digest('hex')
 const git=({cwd,args})=>execFileSync('git',args,{cwd,encoding:'utf8',maxBuffer:64*1024*1024})
 const entries=git({cwd:source,args:['ls-tree','--full-tree','--recursive','-z','HEAD']}).split('\0').filter(Boolean).map(entry=>{
@@ -832,14 +833,17 @@ if(phase==='before'){
  const roots=[consumer,...packages.map(entry=>entry.directory)].map(path=>join(path,'node_modules')).filter(existsSync)
  const stack=[...roots]
  const authoritativeRoot=realpathSync(source)
+ for(const root of roots){const actual=realpathSync(root);assert(actual!==authoritativeRoot&&!actual.startsWith(authoritativeRoot+'/'),'Dependency directory resolves into authoritative source')}
  while(stack.length){
   const directory=stack.pop()
   for(const entry of readdirSync(directory,{withFileTypes:true})){
    const path=join(directory,entry.name)
    if(entry.isSymbolicLink()){
-    const target=realpathSync(path)
-    assert(target!==authoritativeRoot&&!target.startsWith(authoritativeRoot+'/'),`Dependency link resolves into authoritative source: ${path}`)
-    symlinks.push({path:relative(consumer,path),link:readlinkSync(path),resolved:target})
+    const link=readlinkSync(path),lexicalTarget=resolve(dirname(path),link)
+    let target,resolutionError
+    try {target=realpathSync(path)}catch(error){if(error.code!=='ENOENT')throw error;resolutionError={code:error.code,message:error.message}}
+    for(const candidate of [target,lexicalTarget].filter(Boolean))assert(candidate!==authoritativeRoot&&!candidate.startsWith(authoritativeRoot+'/'),`Dependency link resolves into authoritative source: ${path}`)
+    symlinks.push({path:relative(consumer,path),link,resolved:target,lexicalTarget,resolutionError})
    }else if(entry.isDirectory())stack.push(path)
   }
  }
