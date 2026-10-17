@@ -349,5 +349,30 @@
     ]
   },
   "preparationTaskPath": "/var/mnt/encrypted/temp/agent/depot-coherent-android-consumer-20261017/mise.toml",
-  "preparationTaskSha256": "6067bb80fedc962ae5c57428ef358622f9694fca48abfd99574404929e50b96c"
+  "preparationTaskSha256": "6067bb80fedc962ae5c57428ef358622f9694fca48abfd99574404929e50b96c",
+  "catalogPrefixControl": {
+    "scope": "Actual Mise-parsed catalog prefix only; no adb/emulator/systemd execution",
+    "taskBodySha256": "4e88a843a4b6cea79e7bb206ca8944ed1890b111a2233022ab604f26e02f89a7",
+    "actual": {
+      "accepted": true,
+      "count": 15,
+      "expected": [
+        "dev.monochromatic.musicplayer.NativeBridgeTest#nativePingCrossesJniBoundary",
+        "dev.monochromatic.musicplayer.NativeBridgeTest#fingerprintIsDeterministicOpaqueAndChangeSensitiveOnDevice",
+        "dev.monochromatic.musicplayer.NativeBridgeTest#opusDecoderConstructsOnDevice",
+        "dev.monochromatic.musicplayer.NativeBridgeTest#symphoniaRegistryInitializesOnDevice",
+        "dev.monochromatic.musicplayer.NativeBridgeTest#benchmarkNativeDecode",
+        "dev.monochromatic.musicplayer.NativeBridgeTest#aaudioOutputLatencyOnDevice",
+        "dev.monochromatic.musicplayer.NativeBridgeTest#nativeTruePeakInterpolatesInterSamplePeaks",
+        "dev.monochromatic.musicplayer.NativeBridgeTest#truePeakServiceOpensAndResolvesOnDevice",
+        "dev.monochromatic.musicplayer.NativeBridgeTest#decodeFromContentFd",
+        "dev.monochromatic.musicplayer.PeakSweepWorkerTest#measureAndCacheMeasuresThenCachesOneTrack",
+        "dev.monochromatic.musicplayer.PeakSweepWorkerTest#workerSweepsBoundedShareAndSucceeds",
+        "dev.monochromatic.musicplayer.RustEngineTest#playsPausesSeeksThroughRustEngine",
+        "dev.monochromatic.musicplayer.RustEngineTest#autoAdvancesOnceOnNaturalEnd",
+        "dev.monochromatic.musicplayer.SessionStoreTest#migratesEveryLegacyCombination",
+        "dev.monochromatic.musicplayer.SessionStoreTest#currentPlaybackModeWinsOverLegacyKeys"
+      ]
+    }
+  }
 }

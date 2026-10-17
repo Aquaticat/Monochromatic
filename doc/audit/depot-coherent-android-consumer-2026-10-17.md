@@ -21,6 +21,13 @@ Its tracked status remains clean.
 Fresh catalog extraction matches every identity and test-file hash in the historical evidence:
 15 instrumented tests across four Kotlin classes.
 The later 16-test catalog is not substituted.
+A separate read-only control evaluated the current Mise-parsed `complete-instrument` catalog prefix
+and returned all 15 exact source identities.
+It excluded the device-command portion;
+no `adb`,
+emulator,
+or systemd command ran.
+The `catalogPrefixControl` evidence retains the parsed task-body hash and returned identities.
 
 The existing harness is `~/temp/agent/depot-android-device/mise.toml`.
 Its `complete-install` verifies APK hashes before installation,
