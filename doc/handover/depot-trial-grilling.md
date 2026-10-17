@@ -27,6 +27,33 @@ It was pushed and its remote SHA verified before all new dispatches.
 Root owns its TOML full replay,
 native and desktop runtime log-retrieval replays,
 and Linux nextest recovery.
+Their current run IDs are `p9r4xl6n12`,
+`63r0kzrsmn`,
+`km2xkxwpjs`,
+and `xf4hhngdqg` respectively.
+The terminal collector waits for these runs and retains each final provider status.
+
+The current frozen logger package graph,
+Pi,
+and WireGuard run is `4x77lb56cs`.
+Its separate external-adapter run is `j4m7gw8mwg`.
+That external matrix adds browser,
+DOM E2E,
+Electron,
+generated consistency,
+full root Oxlint,
+and the logger revision's desktop artifact and runtime consumers.
+Logger host run `39003180992` supplies the six operating-system host gates.
+Scanner runs `39003219313`,
+`39003221137`,
+`39003222894`,
+and `39003225054` cover the TOML,
+logger,
+native,
+and desktop immutable changes respectively.
+Current-policy Scorecard gate `39003200588` passed and denied analysis under its rolling budget;
+its exact budget diagnostic remains pending collection.
+Separate dispatch times must remain visible in whole-case accounting.
 
 TOML attempt `gfklnntq0x` failed in Depot's injected local-patch step in all jobs,
 before historical source setup.
