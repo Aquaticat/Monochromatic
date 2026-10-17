@@ -26,7 +26,7 @@ Static and unit jobs rebuild tracked plugin bundle outputs;
 the static job also changes the tracked IntelliJ JAR.
 Their after-source and after-cohort guards correctly reject the resulting tracked differences.
 These observations do not establish a change to authored task definitions.
-The native TOML mutation task passed and retained an authentic-looking native report,
+The native TOML mutation task passed and retained a native report,
 which still requires independent shard reconciliation in the logger case.
 Its local source pair is available,
 but the later authenticated common-manifest lookup reports `gh: Bad credentials (HTTP 401)`.
