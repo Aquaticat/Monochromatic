@@ -59,7 +59,7 @@ both the actual transport and the disposable positive fixture caught that harnes
   `trial/depot-coherent-alpine-20261017` at `5152df4debd88f5e0b57802c7c8c958b1a5f6255`,
   workflow `.github/workflows/music-player-alpine.yml`.
 - toml:
-  `trial/depot-toml-continuation-20261017` at `0f8ad795aa92d3beb83e3bfa4e4aa54f1bea06f8`,
+  `trial/depot-toml-continuation-20261017` at `0f8ad795aa92d3beb83e3bfa4e4aa54f1bea06f8` (current as of 2026-10-17: `0f1ef041a0de2ff6d2db6dd55210b1160c592648`),
   workflow `.depot/workflows/depot-complete-toml-bounded.yml`.
 
 Each final route takes `cohort_id`,
@@ -97,3 +97,11 @@ Untracked outputs,
 ignored artifacts,
 and installed executable contents remain outside this metadata inventory.
 TOML's explicitly named development pilot identity does not claim canonical cohort acceptance.
+
+## Current guard block verification
+
+The prepared TOML route advanced to `0f1ef041a0de2ff6d2db6dd55210b1160c592648` for metadata receipts and the independent full retry budget.
+Its canonical guard block remains byte-identical to the harness exercised by the 20 accepted and 110 rejected controls.
+The current native, Windows, and Alpine guard blocks are likewise byte-compared against their tested revisions.
+Fresh authenticated provider reads verify every current workflow, task file and provisional case file byte.
+The case manifests still have `completeGraph: false`; final canonical acceptance remains held.

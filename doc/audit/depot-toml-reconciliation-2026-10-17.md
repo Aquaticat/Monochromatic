@@ -91,7 +91,7 @@ This audit records the isolated bounded continuation and its controls.
 
 ## Bounded continuation route
 
-The pushed trial branch `trial/depot-toml-continuation-20261017` freezes harness `640a576ade81c4edfee6a603543a7fbd18faa46b`.
+The pushed trial branch `trial/depot-toml-continuation-20261017` freezes harness `640a576ade81c4edfee6a603543a7fbd18faa46b` (current prepared route as of 2026-10-17: `0f1ef041a0de2ff6d2db6dd55210b1160c592648`).
 Its workflow is `.depot/workflows/depot-complete-toml-bounded.yml`,
 with required inputs
 `cohort_id`,
@@ -196,7 +196,7 @@ Final coherent dispatch remains held.
 
 ## Final source guard recovery
 
-The prepared route now uses `640a576ade81c4edfee6a603543a7fbd18faa46b`.
+The prepared route now uses `640a576ade81c4edfee6a603543a7fbd18faa46b` (current prepared route as of 2026-10-17: `0f1ef041a0de2ff6d2db6dd55210b1160c592648`).
 Its previous native-report recovery revision remains `c159dd63021f9304ab3e4996b1d054e5f19ea0c9`.
 The [source guard audit](depot-route-source-guards-2026-10-17.md)
 retains direct committed-byte checks for root configuration,
@@ -434,3 +434,39 @@ All 24 members are individually hashed.
 Issue [#1130](https://github.com/Aquaticats/Monochromatic/issues/1130)
 records the distinct observer deadline boundary and retained rejection controls.
 The next authorized action is the full TOML-only immutable-source mutation retry.
+
+## Full immutable-source mutation retry request
+
+Development run `23dk3nr90f` dispatches only `package.module.toml-edit.test.mutation`.
+Request time is `2026-10-17T07:50:29.848Z`;
+the development manifest digest is `4b18266890cb521dfc87256ecd13f8869f39ee35b747186ca16cd53998fe84a0`.
+The clean pushed branch is `trial/depot-toml-continuation-20261017`,
+harness `0f1ef041a0de2ff6d2db6dd55210b1160c592648`,
+workflow `.depot/workflows/depot-complete-toml-full-mutation.yml`.
+Its 4931 authenticated provider bytes match SHA-256
+`ce2c907be8b7e2bc449a866964869ea87e3ee0a5140c4453faf07ed0c110e954`.
+
+The original source command and defaults remain unchanged:
+two containers,
+16 mutants per shard,
+1800-second sessions,
+5000-millisecond test floor,
+baseline timeout factor three,
+and one single-container retry.
+The full selector is enumerated again before execution.
+The retained prior inventory has 3062 distinct mutant IDs.
+The wrapper budget is 18000000 milliseconds and the provider job budget is 360 minutes.
+These are execution bounds,
+not a duration forecast.
+The bounded compilation-only pilot does not establish full-suite mutant throughput.
+Source shard progress,
+all actual outcomes,
+metadata durations,
+and scoped cleanup remain required for terminal reconciliation.
+The allowed budget and rejected over-limit fixture are exercised;
+removing the exact upper-budget guard makes the rejected fixture execute.
+
+Single terminal wait session `96306` is active.
+Issue `#1130` is closed with re-fetched observed-recovery comment `6231392374`.
+Issues `#1113` and `#1118` remain open.
+This independent development run is separate from the held final coherent cohort.

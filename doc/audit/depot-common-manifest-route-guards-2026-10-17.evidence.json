@@ -3,7 +3,7 @@
   "observedAt": "2026-10-17T07:26:27.374Z",
   "state": "Prepared with provisional case manifests. Final canonical acceptance remains unexecuted.",
   "inventory": {
-    "observedAt": "2026-10-17T07:24:37.655Z",
+    "observedAt": "2026-10-17T07:50:06.348Z",
     "routes": [
       {
         "kind": "native",
@@ -161,21 +161,21 @@
           ".depot/manifests/toml.json"
         ],
         "finalDispatchHeld": true,
-        "revision": "0f8ad795aa92d3beb83e3bfa4e4aa54f1bea06f8",
+        "revision": "0f1ef041a0de2ff6d2db6dd55210b1160c592648",
         "branch": "trial/depot-toml-continuation-20261017",
         "files": [
           {
             "path": ".depot/workflows/depot-complete-toml-bounded.yml",
-            "bytes": 15374,
-            "sha256": "f71af79c529c1e6d93d9c2c7e87543eb02053644976354cc5dead78ec822dc98",
-            "gitBlob": "7b5bb3a48d0c78f7f6f3fca15fa1cc3da359b60f",
+            "bytes": 15924,
+            "sha256": "d5ac756bd43bf5d644f322c5da91fc43073acbd51c3447fc5b7b374d44150793",
+            "gitBlob": "74516ab7fff057796c4ffae350b0ae526a5ba3d1",
             "providerBytesVerified": true
           },
           {
             "path": "package/dev-script/task-util/mise.toml",
-            "bytes": 96456,
-            "sha256": "e499d1485e147eee2f0de74d5bcb3abcfe2fece2f5bba4706063e1a0de09e112",
-            "gitBlob": "100892e9cbcb33ba52dfade8d16d244dacb68ff8",
+            "bytes": 100600,
+            "sha256": "f30675105725b1de814ca07654796cfc9e064205fd428e908e96c89fcdbdb7ba",
+            "gitBlob": "db2264a34e91f506f53e43bc6c1d65562bf04fe9",
             "providerBytesVerified": true
           },
           {
@@ -1849,7 +1849,6 @@
     "exactLocalBytesVerified": true
   },
   "sourceGuardAuditSha256": "32bcc9636ab3883cffb6f4701f2998a08b3f4a9469ce22fc6f365f9eb2cbba24",
-  "sourceGuardAuditRevisions": null,
   "scope": {
     "source": "Frozen source revision, full tracked Git status, NUL-safe exclusion-index rejection, configured metadata direct bytes against HEAD, before/after equality.",
     "canonical": "Authenticated base64 Contents API bytes; <1MiB; schema/cohort/case source/base/digest/route/workflow/harness checks; committed completeGraph=true case required.",
@@ -1865,5 +1864,233 @@
     "Commit/push case files and update route harness revisions and case digests in the canonical common manifest.",
     "Publish the real canonical manifest, then run actual authenticated canonical reads before final dispatch.",
     "Use one shared canonical requested_at input and retain the same value before/after."
+  ],
+  "previousInventories": [
+    {
+      "observedAt": "2026-10-17T07:24:37.655Z",
+      "routes": [
+        {
+          "kind": "native",
+          "root": "/home/user/temp/agent/depot-coherent-native-worktree",
+          "taskPath": "package/dev-script/task-util/mise.toml",
+          "workflow": ".github/workflows/music-player-windows.yml",
+          "provisionalCasePaths": [
+            ".depot/manifests/native.json",
+            ".depot/manifests/desktop.json"
+          ],
+          "finalDispatchHeld": true,
+          "revision": "2032975cbad924e63ac98bc69e14a56b20288275",
+          "branch": "trial/depot-coherent-native-20261017",
+          "files": [
+            {
+              "path": ".github/workflows/music-player-windows.yml",
+              "bytes": 6630,
+              "sha256": "8405dfb1c339351a005ee36116ac918629ca045ddab7656a314bc65bf4e9ccb6",
+              "gitBlob": "c54bbe388d9be98341cf1e96ce8285b8f983ec84",
+              "providerBytesVerified": true
+            },
+            {
+              "path": "package/dev-script/task-util/mise.toml",
+              "bytes": 18160,
+              "sha256": "741805a6a26fcd974551f2cb5c66848b0485ac405754015dcb288aa5c1f6de8d",
+              "gitBlob": "47f512d02af5b4cded95f4ac0838cccdcd432093",
+              "providerBytesVerified": true
+            },
+            {
+              "path": ".depot/manifests/native.json",
+              "bytes": 13942,
+              "sha256": "0ab869b0e2095a9d9cb13d24380f0c48d4aa00d7733b71c8df5ad4a7183db473",
+              "gitBlob": "c7241fadc448450d8b8edbe62610852f028c712b",
+              "providerBytesVerified": true,
+              "completeGraph": false,
+              "sourceRevision": "cb95cf6d785c3073c192b95f0632cdae7b910894"
+            },
+            {
+              "path": ".depot/manifests/desktop.json",
+              "bytes": 7633,
+              "sha256": "41b74e753e3687928985ebf787cc8fc242ded799eb6f40211e68006f45b377f9",
+              "gitBlob": "9883185aa2199d01b249e2be5f34681927ddd8ee",
+              "providerBytesVerified": true,
+              "completeGraph": false,
+              "sourceRevision": "3434eaa455d569c18b52cf15100f77f9db251d21"
+            }
+          ],
+          "clean": true,
+          "pushed": true
+        },
+        {
+          "kind": "windows",
+          "root": "/home/user/temp/agent/depot-coherent-windows-worktree",
+          "taskPath": "package/dev-script/task-util/mise.toml",
+          "workflow": ".github/workflows/music-player-windows.yml",
+          "provisionalCasePaths": [
+            ".depot/manifests/native.json",
+            ".depot/manifests/desktop.json"
+          ],
+          "finalDispatchHeld": true,
+          "revision": "e70240dc7317124a0db5b37967c570cf2f3fb6f4",
+          "branch": "trial/depot-coherent-windows-20261017",
+          "files": [
+            {
+              "path": ".github/workflows/music-player-windows.yml",
+              "bytes": 31269,
+              "sha256": "ea2fbf3804afac723c97a313c0e6a2acdb8d73c9a0da1d924fe1c887d0fa9ba7",
+              "gitBlob": "fb6ce6e3ef7adf9a3c84db389501044d7e6ab74d",
+              "providerBytesVerified": true
+            },
+            {
+              "path": "package/dev-script/task-util/mise.toml",
+              "bytes": 10942,
+              "sha256": "b4a715b29eaf5f172b049fee04d5a6d5c1fe68964f0ad13b4249a35d56c243e8",
+              "gitBlob": "aac9e3e73247edbeeb198fe77c1c0f64164e26c9",
+              "providerBytesVerified": true
+            },
+            {
+              "path": ".depot/manifests/native.json",
+              "bytes": 13942,
+              "sha256": "0ab869b0e2095a9d9cb13d24380f0c48d4aa00d7733b71c8df5ad4a7183db473",
+              "gitBlob": "c7241fadc448450d8b8edbe62610852f028c712b",
+              "providerBytesVerified": true,
+              "completeGraph": false,
+              "sourceRevision": "cb95cf6d785c3073c192b95f0632cdae7b910894"
+            },
+            {
+              "path": ".depot/manifests/desktop.json",
+              "bytes": 7633,
+              "sha256": "41b74e753e3687928985ebf787cc8fc242ded799eb6f40211e68006f45b377f9",
+              "gitBlob": "9883185aa2199d01b249e2be5f34681927ddd8ee",
+              "providerBytesVerified": true,
+              "completeGraph": false,
+              "sourceRevision": "3434eaa455d569c18b52cf15100f77f9db251d21"
+            }
+          ],
+          "clean": true,
+          "pushed": true
+        },
+        {
+          "kind": "alpine",
+          "root": "/home/user/temp/agent/depot-coherent-alpine-worktree",
+          "taskPath": "package/dev-script/task-util/mise.toml",
+          "workflow": ".github/workflows/music-player-alpine.yml",
+          "provisionalCasePaths": [
+            ".depot/manifests/native.json",
+            ".depot/manifests/desktop.json"
+          ],
+          "finalDispatchHeld": true,
+          "revision": "5152df4debd88f5e0b57802c7c8c958b1a5f6255",
+          "branch": "trial/depot-coherent-alpine-20261017",
+          "files": [
+            {
+              "path": ".github/workflows/music-player-alpine.yml",
+              "bytes": 15147,
+              "sha256": "04552da97fc4bc3a79393e5f6cda1d740e81e183207ad4203114f39d355b673b",
+              "gitBlob": "ee002ffa9a624fb2b3c4434909e68ba256ad9c64",
+              "providerBytesVerified": true
+            },
+            {
+              "path": "package/dev-script/task-util/mise.toml",
+              "bytes": 10941,
+              "sha256": "6b13064299fab706b35ac0c49488da7b6f0eac3f30742643e8a4758d7d97781d",
+              "gitBlob": "1260e5207908b9c233d883231db21970291ed37a",
+              "providerBytesVerified": true
+            },
+            {
+              "path": ".depot/manifests/native.json",
+              "bytes": 13942,
+              "sha256": "0ab869b0e2095a9d9cb13d24380f0c48d4aa00d7733b71c8df5ad4a7183db473",
+              "gitBlob": "c7241fadc448450d8b8edbe62610852f028c712b",
+              "providerBytesVerified": true,
+              "completeGraph": false,
+              "sourceRevision": "cb95cf6d785c3073c192b95f0632cdae7b910894"
+            },
+            {
+              "path": ".depot/manifests/desktop.json",
+              "bytes": 7633,
+              "sha256": "41b74e753e3687928985ebf787cc8fc242ded799eb6f40211e68006f45b377f9",
+              "gitBlob": "9883185aa2199d01b249e2be5f34681927ddd8ee",
+              "providerBytesVerified": true,
+              "completeGraph": false,
+              "sourceRevision": "3434eaa455d569c18b52cf15100f77f9db251d21"
+            }
+          ],
+          "clean": true,
+          "pushed": true
+        },
+        {
+          "kind": "toml",
+          "root": "/home/user/temp/agent/depot-toml-continuation-worktree",
+          "taskPath": "package/dev-script/task-util/mise.toml",
+          "workflow": ".depot/workflows/depot-complete-toml-bounded.yml",
+          "provisionalCasePaths": [
+            ".depot/manifests/toml.json"
+          ],
+          "finalDispatchHeld": true,
+          "revision": "0f8ad795aa92d3beb83e3bfa4e4aa54f1bea06f8",
+          "branch": "trial/depot-toml-continuation-20261017",
+          "files": [
+            {
+              "path": ".depot/workflows/depot-complete-toml-bounded.yml",
+              "bytes": 15374,
+              "sha256": "f71af79c529c1e6d93d9c2c7e87543eb02053644976354cc5dead78ec822dc98",
+              "gitBlob": "7b5bb3a48d0c78f7f6f3fca15fa1cc3da359b60f",
+              "providerBytesVerified": true
+            },
+            {
+              "path": "package/dev-script/task-util/mise.toml",
+              "bytes": 96456,
+              "sha256": "e499d1485e147eee2f0de74d5bcb3abcfe2fece2f5bba4706063e1a0de09e112",
+              "gitBlob": "100892e9cbcb33ba52dfade8d16d244dacb68ff8",
+              "providerBytesVerified": true
+            },
+            {
+              "path": ".depot/manifests/toml.json",
+              "bytes": 22919,
+              "sha256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+              "gitBlob": "ced99c6831ba22ad82d0d13314bb9d10aee1e341",
+              "providerBytesVerified": true,
+              "completeGraph": false,
+              "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5"
+            }
+          ],
+          "clean": true,
+          "pushed": true
+        }
+      ]
+    }
+  ],
+  "sourceGuardAudit": "doc/audit/depot-route-source-guards-2026-10-17.evidence.json",
+  "currentGuardBlocks": [
+    {
+      "kind": "native",
+      "task": "trial:depot:coherent:provenance",
+      "testedHarnessRevision": "2032975cbad924e63ac98bc69e14a56b20288275",
+      "currentHarnessRevision": "2032975cbad924e63ac98bc69e14a56b20288275",
+      "taskBlockSha256": "0693b9e32203198cf6dc19d357eb3b191564863f3f52c5e5cd27e1563a4d2af8",
+      "byteIdentical": true
+    },
+    {
+      "kind": "windows",
+      "task": "trial:depot:coherent:provenance",
+      "testedHarnessRevision": "e70240dc7317124a0db5b37967c570cf2f3fb6f4",
+      "currentHarnessRevision": "e70240dc7317124a0db5b37967c570cf2f3fb6f4",
+      "taskBlockSha256": "0693b9e32203198cf6dc19d357eb3b191564863f3f52c5e5cd27e1563a4d2af8",
+      "byteIdentical": true
+    },
+    {
+      "kind": "alpine",
+      "task": "trial:depot:coherent:provenance",
+      "testedHarnessRevision": "5152df4debd88f5e0b57802c7c8c958b1a5f6255",
+      "currentHarnessRevision": "5152df4debd88f5e0b57802c7c8c958b1a5f6255",
+      "taskBlockSha256": "15981f3538d03874d47d256cc128d7a64f0b913d969b8a614069a288d98b2389",
+      "byteIdentical": true
+    },
+    {
+      "kind": "toml",
+      "task": "trial:depot:toml:identity",
+      "testedHarnessRevision": "d6c6e44e1ab67ba0206d0a5c03b570dbad6a1aca",
+      "currentHarnessRevision": "0f1ef041a0de2ff6d2db6dd55210b1160c592648",
+      "taskBlockSha256": "8c57984f696f6eee94ed2bf46a91ee97bdd1cae6a6e5f2d3b0f2acd619753898",
+      "byteIdentical": true
+    }
   ]
 }
