@@ -309,8 +309,10 @@ Final source-case reconciliation still requires the corrected manifests and late
 VM replay `rv6hfj76w9` is collected with proof of template boot and a separate final-guest virtiofs failure.
 Its next diagnostic retry remains queued for collection after dispatch.
 Native recovery runs `38847322477` and `38847322559` are collected and independently reconciled.
-Historical macOS ran every eligible case: 1356 passed and 26 failed.
-Later macOS ran every eligible case: 1406 passed and 27 failed.
+Historical macOS ran every eligible case:
+1356 passed and 26 failed.
+Later macOS ran every eligible case:
+1406 passed and 27 failed.
 Historical Windows reached the known `E0433` missing-`libc` test compile boundary.
 Linux desktop nextest recovery `pbg4h8ww6k` failed during `slint-viewer --version` discovery before tests.
 Root dispatched corrected Linux recovery `xf4hhngdqg`;
