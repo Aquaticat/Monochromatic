@@ -273,7 +273,7 @@ dir = "{{config_root}}/../../.."
 shell = "node --input-type=module-typescript -e"
 run = '''
 const { execFileSync, spawnSync } = await import('node:child_process')
-const { readFileSync, writeFileSync, mkdirSync, existsSync, openSync, closeSync } = await import('node:fs')
+const { readFileSync, writeFileSync, mkdirSync, existsSync, openSync, closeSync, lstatSync, readlinkSync } = await import('node:fs')
 const { createHash } = await import('node:crypto')
 const { homedir } = await import('node:os')
 const { join } = await import('node:path')
@@ -327,6 +327,7 @@ if (browserPartitionId) {
 const directory = join(homedir(), 'temp/agent/depot-complete-ci')
 mkdirSync(join(directory, 'check-logs'), { recursive: true, mode: 0o700 })
 const records = []
+const generatedConsumers = []
 function run({ id, command = 'mise', args, cwd = source, env = process.env, limit = 1200000 }) {
   const startedAt = new Date().toISOString()
   const log = join(directory, 'check-logs', `${id}.log`)
@@ -337,7 +338,7 @@ function run({ id, command = 'mise', args, cwd = source, env = process.env, limi
   const output = readFileSync(log)
   const record = { checkId: id, command, args, cwd, startedAt, finishedAt: new Date().toISOString(), exitCode: result.status, signal: result.signal, error: result.error?.message, errorCode: result.error?.code, termination: result.error?.code === 'ETIMEDOUT' ? 'adapter-time-budget' : result.error ? 'spawn-error' : result.signal ? 'signal' : 'process-exit', executionBudgetMs: limit, status: result.status === 0 ? 'passed' : 'failed', ...(browserPartition && id === browserPartition.checkId ? { partitionId: browserPartition.id, partitionFile: browserPartition.file, partitionProject: browserPartition.project, coversWholeCheck: false, browserPartitionManifestSha256 } : {}), outputLog: log, outputSha256: createHash('sha256').update(output).digest('hex'), outputBytes: output.length }
   records.push(record)
-  writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, group, selectedCheckIds: requested, providerJobUrl: process.env.DEPOT_JOB_URL, records }, null, 2))
+  writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, group, selectedCheckIds: requested, providerJobUrl: process.env.DEPOT_JOB_URL, generatedConsumers, records }, null, 2))
   console.log('\n' + JSON.stringify(record))
   if (result.status !== 0) console.error(output.subarray(-16000).toString())
   return record
@@ -348,24 +349,64 @@ const resultPath = join(directory, 'logger-results.json')
 const prerequisiteResults = prerequisiteIds.length && existsSync(resultPath) ? JSON.parse(readFileSync(resultPath, 'utf8')).results : []
 if (group === 'generated') {
   for (const check of selected) {
-    const fixture = join(directory, `logger-generated-${check.id}`)
-    const env = { ...process.env, GIT_LFS_SKIP_SMUDGE: '1', MISE_TRUSTED_CONFIG_PATHS: `${process.env.MISE_TRUSTED_CONFIG_PATHS}:${fixture}` }
-    execFileSync('git', ['worktree', 'add', '--detach', fixture, manifest.sourceRevision], { cwd: source, env, stdio: 'inherit' })
-    execFileSync('mise', ['run', 'prepare:pnpm:install', '--', '--frozen-lockfile'], { cwd: fixture, env, stdio: 'inherit' })
-    const args = check.task ? ['run', check.task] : ['run', check.tasks[0]]
-    const first = run({ id: check.id, args, cwd: fixture, env })
-    if (check.tasks?.length > 1) {
-      const declared = run({ id: `${check.id}.declared`, args: ['run', check.tasks[1]], cwd: fixture, env })
-      declared.parentCheckId = check.id
-      first.requiredDeclaredTaskPassed = declared.status === 'passed'
-      if (declared.status !== 'passed') first.status = 'failed'
+    for (const [index, task] of (check.task ? [check.task] : check.tasks).entries()) {
+      const label = `${check.id}.${index}`, fixture = join(directory, `logger-generated-${label}`)
+      const env = { ...process.env, GIT_LFS_SKIP_SMUDGE: '1', MISE_TRUSTED_CONFIG_PATHS: `${process.env.MISE_TRUSTED_CONFIG_PATHS}:${fixture}`, DEPOT_LOGGER_GENERATED_CONSUMER: fixture, DEPOT_LOGGER_GENERATED_LABEL: label }
+      const consumer = { checkId: check.id, task, args: ['run', task], fixture, initialIdentityVerified: false, actualCommandExecuted: false, cleanupVerified: false }
+      generatedConsumers.push(consumer)
+      try {
+        execFileSync('git', ['worktree', 'add', '--detach', fixture, manifest.sourceRevision], { cwd: source, env, stdio: 'inherit' })
+        const prepare = run({ id: `${label}.frozen-install`, args: ['run', 'prepare:pnpm:install', '--', '--frozen-lockfile'], cwd: fixture, env })
+        assert.equal(prepare.status, 'passed', 'Generated consumer frozen dependency preparation failed')
+        const before = run({ id: `${label}.identity-before`, args: ['run', '//package/module/logger.fuzz:trial:depot:generated:identity'], cwd: harness, env: { ...env, DEPOT_LOGGER_GENERATED_PHASE: 'before' } })
+        assert.equal(before.status, 'passed', 'Generated consumer initial input or dependency identity failed')
+        consumer.initialIdentityVerified = true
+        const observed = run({ id: index === 0 ? check.id : `${check.id}.declared`, args: ['run', task], cwd: fixture, env })
+        consumer.actualCommandExecuted = true
+        observed.parentCheckId = check.id
+        const patch = join(directory, `${label}.patch`), descriptor = openSync(patch, 'wx', 0o600)
+        try { execFileSync('git', ['diff', '--binary', manifest.sourceRevision], { cwd: fixture, stdio: ['ignore', descriptor, 'inherit'] }) }
+        finally { closeSync(descriptor) }
+        const diff = readFileSync(patch)
+        const changedPaths = execFileSync('git', ['diff', '--name-only', '-z', manifest.sourceRevision], { cwd: fixture, encoding: 'utf8' }).split('\0').filter(Boolean)
+        const changedFiles = changedPaths.map(path => {
+          const absolute = join(fixture, path)
+          if (!existsSync(absolute)) return { path, deleted: true }
+          const stat = lstatSync(absolute), bytes = stat.isSymbolicLink() ? Buffer.from(readlinkSync(absolute)) : readFileSync(absolute)
+          return { path, sha256: createHash('sha256').update(bytes).digest('hex'), bytes: bytes.length, mode: stat.mode & 0o777 }
+        })
+        const untracked = execFileSync('git', ['ls-files', '--others', '--exclude-standard', '-z'], { cwd: fixture, encoding: 'utf8' }).split('\0').filter(Boolean)
+        const headAfter = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: fixture, encoding: 'utf8' }).trim()
+        consumer.processExitCode = observed.exitCode
+        consumer.processTermination = observed.termination
+        consumer.headAfter = headAfter
+        consumer.changedTrackedBytes = diff.length
+        consumer.diffSha256 = createHash('sha256').update(diff).digest('hex')
+        consumer.changedFiles = changedFiles
+        consumer.untracked = untracked
+        consumer.authoredGeneratedOutputDrift = Boolean(diff.length || untracked.length || headAfter !== manifest.sourceRevision)
+        observed.changedTrackedBytes = diff.length
+        observed.generatedConsumer = label
+        if (consumer.authoredGeneratedOutputDrift) observed.status = 'failed'
+        const after = run({ id: `${label}.identity-after`, args: ['run', '//package/module/logger.fuzz:trial:depot:generated:identity'], cwd: harness, env: { ...env, DEPOT_LOGGER_GENERATED_PHASE: 'after' } })
+        consumer.authoritativeAfterVerified = after.status === 'passed'
+      } catch (error) {
+        consumer.error = { name: error.name, message: error.message, code: error.code }
+        consumer.disposition = consumer.actualCommandExecuted ? 'consumer-observation-failed' : 'unexecuted-prerequisite-failed'
+      } finally {
+        if (existsSync(fixture)) {
+          const observe = (command, args) => { const result = spawnSync(command, args, { cwd: fixture, encoding: 'utf8', timeout: 60000 }); return { command, args, exitCode: result.status, stdout: result.stdout, stderr: result.stderr, error: result.error?.message } }
+          consumer.cleanupIgnoredDryRun = observe('git', ['clean', '--dry-run', '-d', '-X'])
+          consumer.rootGitDirProbe = observe('ls', ['--directory', '--', 'HEAD', 'config', 'hooks', 'objects', 'refs'])
+          consumer.rootGitDirIgnoreProbe = observe('git', ['check-ignore', '--verbose', '--', 'HEAD', 'config', 'hooks', 'objects', 'refs'])
+          const removed = spawnSync('git', ['worktree', 'remove', '--force', fixture], { cwd: source, encoding: 'utf8', timeout: 180000 })
+          consumer.cleanupResult = { exitCode: removed.status, stdout: removed.stdout, stderr: removed.stderr, error: removed.error?.message }
+          const inventory = execFileSync('git', ['worktree', 'list', '--porcelain'], { cwd: source, encoding: 'utf8' })
+          consumer.cleanupVerified = removed.status === 0 && !existsSync(fixture) && !inventory.includes('worktree ' + fixture + '\n')
+        }
+        writeFileSync(join(directory, `generated-${label}-results.json`), JSON.stringify(consumer, null, 2) + '\n', { flag: 'wx', mode: 0o600 })
+      }
     }
-    const diff = execFileSync('git', ['diff', '--binary'], { cwd: fixture, maxBuffer: 32 * 1024 * 1024 })
-    writeFileSync(join(directory, `${check.id}.patch`), diff)
-    const untracked = execFileSync('git', ['ls-files', '--others', '--exclude-standard'], { cwd: fixture, encoding: 'utf8' }).trim()
-    first.changedTrackedBytes = diff.length
-    first.untracked = untracked
-    if (diff.length || untracked) first.status = 'failed'
   }
 } else if (group === 'desktop') {
   run({ id: 'external-desktop-host', args: ['run', '//package/dev-script/task-util:trial:depot:ci:desktop-host'], cwd: harness })
@@ -392,7 +433,8 @@ if (group === 'generated') {
   }
 }
 assert.equal(execFileSync('git', ['diff', '--name-only', 'HEAD'], { cwd: source, encoding: 'utf8' }).trim(), '', 'External checks must preserve tracked source')
-writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, group, selectedCheckIds: requested, browserPartition, browserPartitionManifestSha256, coversWholeCheck: !browserPartition, prerequisiteIds, providerJobUrl: process.env.DEPOT_JOB_URL, records }, null, 2))
+writeFileSync(join(directory, `logger-external-${group}-results.json`), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: digest, group, selectedCheckIds: requested, browserPartition, browserPartitionManifestSha256, coversWholeCheck: !browserPartition, prerequisiteIds, providerJobUrl: process.env.DEPOT_JOB_URL, generatedConsumers, records }, null, 2))
+assert(generatedConsumers.every(consumer => consumer.initialIdentityVerified && consumer.actualCommandExecuted && consumer.authoritativeAfterVerified && consumer.cleanupVerified && !consumer.error), 'Generated consumer prerequisite, observation or cleanup remained incomplete')
 assert(records.every(record => record.status === 'passed'), 'Logger external checks failed or lack verified prerequisites; see retained records')
 '''
 
