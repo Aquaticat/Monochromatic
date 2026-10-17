@@ -249,7 +249,7 @@ const wrapper = [
   "const limits = command === 'run' ? ['--memory=2g', '--cpus=2', '--pids-limit=512'] : [];",
   "const mutation = command === 'run' && args.some((arg) => arg.includes(':/manifest:'));",
   "const identity = mutation ? ['--user', `${process.getuid()}:${process.getgid()}`] : [];",
-  "const mappedArgs = args.map((arg, index) => mutation && args[index - 1] === '--tmpfs' ? `${arg},mode=1777` : arg);",
+  "const mappedArgs = args.map((arg, index) => mutation && args[index - 1] === '--tmpfs' ? `${arg},uid=${process.getuid()},gid=${process.getgid()},mode=1777` : arg);",
   `const result = spawnSync('sudo', ['--non-interactive', ${JSON.stringify(podman)}, command, ...limits, ...identity, ...mappedArgs], { stdio: 'inherit' });`,
   'if (result.error) throw result.error;',
   'process.exitCode = result.status ?? 1;',
@@ -266,9 +266,10 @@ const controlArgs = ['run', '--rm', '--network=none', '--read-only', '--cap-drop
 const denied = spawnSync('sudo', ['--non-interactive', podman, ...controlArgs, 'docker.io/library/alpine:3.22', 'cat', '/manifest/shard-manifest.json'], { encoding: 'utf8', timeout: 45000 })
 assert.notEqual(denied.status, 0, 'Unmapped root without capabilities must demonstrate the private-directory permission boundary')
 assert(denied.stderr.includes('Permission denied'), 'Negative control must fail on fixture access')
-const allowed = spawnSync(join(base, 'podman'), [...controlArgs, '--tmpfs', '/work:rw,exec,size=1m', 'docker.io/library/alpine:3.22', 'sh', '-c', 'cp /manifest/shard-manifest.json /work/input && cp /work/input /manifest/result.json'], { encoding: 'utf8', timeout: 45000 })
+const allowed = spawnSync(join(base, 'podman'), [...controlArgs, '--tmpfs', '/work:rw,exec,size=1m', 'docker.io/library/alpine:3.22', 'sh', '-c', 'stat -c %u:%g /work && cp /manifest/shard-manifest.json /work/input && cp /work/input /manifest/result.json'], { encoding: 'utf8', timeout: 45000 })
 console.log('\n' + JSON.stringify({ event: 'mutation-identity-control', deniedStatus: denied.status, deniedError: denied.stderr, mappedStatus: allowed.status, mappedError: allowed.stderr, uid: process.getuid(), gid: process.getgid() }))
 assert.equal(allowed.status, 0, allowed.stderr)
+assert.equal(allowed.stdout.trim(), `${process.getuid()}:${process.getgid()}`, 'Mutation work tmpfs must belong to the mapped source owner')
 assert.equal(readFileSync(join(fixture, 'result.json'), 'utf8'), 'mutation-private-input\n')
 assert.equal(statSync(join(fixture, 'result.json')).uid, process.getuid())
 appendFileSync(process.env.GITHUB_PATH, `${base}\n`)
