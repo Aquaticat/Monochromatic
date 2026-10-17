@@ -9,8 +9,8 @@ retains all generic primary observations,
 source/common metadata joins,
 the actual final guard logs,
 and the completed coherent Depot allocation ledger.
-All 719 logger primary check IDs have terminal records with frozen task/argument identities
-and verified retained output hashes.
+All 719 logger primary check IDs have terminal records with frozen task/argument identities.
+Retained outputs have independently verified hashes.
 They record 613 passes,
 105 failures,
 and one check skipped because its prerequisite build failed.
@@ -38,7 +38,7 @@ attempt `5d611nw71d`,
 ended with `Sandbox terminated before worker reported completion`.
 It published no archive.
 Its raw log retains exit-zero root generation and one sidecar command,
-then a sidecar container adapter receiving SIGKILL.
+then a sidecar container adapter receiving `SIGKILL`.
 The external driver and final source guard later report shell exit code 137.
 These partial observations do not recover the full generated-difference evidence or final bindings.
 Its declared runner was `16x64`;

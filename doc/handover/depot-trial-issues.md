@@ -34,7 +34,7 @@ with the six reused issues remaining separate.
   their clean-tree guards reject the differences.
 - [#1182](https://github.com/Aquaticats/Monochromatic/issues/1182):
   generated-consistency worker terminates without an artifact.
-  Partial command outcomes and SIGKILL observations survive in the provider log.
+  Partial command outcomes and `SIGKILL` observations survive in the provider log.
   Neither OOM nor another termination cause is established.
 
 These additions do not change the historical completed-batch counts.

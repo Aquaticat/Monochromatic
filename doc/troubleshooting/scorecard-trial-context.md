@@ -182,7 +182,13 @@ The generated fixture exits successfully and prints the exact GitHub expression.
 A positive control replacing `always()` with `failure()` changes that output.
 
 The private logger incident-body preparer repeats this syntax boundary with a literal Actions token expression.
-`mise` reports `Variable `github` is not defined` before Node executes or any issue is created.
+`mise` reports this diagnostic before Node executes or any issue is created:
+
+```text
+# Private incident-body preparer's mise.toml
+Variable `github` is not defined
+```
+
 The repaired preparer describes the token context in plain text and successfully renders the issue bodies.
 An attempted string-replacement repair also used JavaScript's special dollar-single-quote replacement token,
 which expanded the original suffix and corrupted only the private task file.
