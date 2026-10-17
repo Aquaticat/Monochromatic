@@ -46,7 +46,7 @@ jobs:
       matrix:
         runner: ${{ fromJSON(inputs.hosts == 'macos' && '["macos-15-intel"]' || '["windows-2025", "macos-15-intel"]') }}
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 90
+    timeout-minutes: 20
     defaults:
       run:
         shell: bash
