@@ -839,12 +839,14 @@ const outputPath = prefix + '.log'
 const descriptor = openSync(outputPath, 'wx', 0o600)
 const telemetry = []
 const instrumentationErrors = []
-function podman(args, budgetMs = 8000) {
+function podman({ args, budgetMs = 8000 }) {
+  const startedAt = new Date().toISOString()
+  const started = performance.now()
   const result = spawnSync(originalPodman, args, { cwd: source, encoding: 'utf8', timeout: budgetMs, killSignal: 'SIGKILL', maxBuffer: 4 * 1024 * 1024 })
-  return { args, status: result.status, signal: result.signal, error: result.error?.message, stdout: result.stdout, stderr: result.stderr }
+  return { args, startedAt, finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, budgetMs, status: result.status, signal: result.signal, error: result.error?.message, stdout: result.stdout, stderr: result.stderr }
 }
 function containers() {
-  const result = podman(['ps', '--all', '--filter', 'label=' + label, '--format', 'json'])
+  const result = podman({ args: ['ps', '--all', '--filter', 'label=' + label, '--format', 'json'] })
   assert.equal(result.status, 0, result.stderr)
   return JSON.parse(result.stdout).map(row => row.Id ?? row.ID ?? row.id)
 }
@@ -853,7 +855,7 @@ function snapshot() {
   const ids = containers()
   const inspected = ids.map(id => {
     assert.match(id, /^[a-f0-9]{12,64}$/)
-    const result = podman(['inspect', id])
+    const result = podman({ args: ['inspect', id] })
     if (result.status !== 0) return { id, error: result.stderr }
     const state = JSON.parse(result.stdout)[0]
     return { id, name: state.Name, image: state.Image, created: state.Created, state: state.State, bounds: { memory: state.HostConfig.Memory, cpuQuota: state.HostConfig.CpuQuota, cpuPeriod: state.HostConfig.CpuPeriod, nanoCpus: state.HostConfig.NanoCpus, pidsLimit: state.HostConfig.PidsLimit } }
@@ -869,6 +871,7 @@ function safeSnapshot() {
 const command = control ? process.execPath : 'mise'
 const args = control ? control.args : ['run', '//package/dev-script/task-util:trial:depot:ci:execute']
 const child = spawn(command, args, { cwd: control ? source : process.cwd(), env, detached: true, stdio: ['ignore', descriptor, descriptor] })
+const consumerSpawnedAt = new Date().toISOString()
 closeSync(descriptor)
 async function childExit() {
   try {
@@ -877,8 +880,9 @@ async function childExit() {
   } catch (error) { return { kind: 'spawn-error', error: String(error) } }
 }
 function groupSignal(signal) {
-  try { process.kill(-child.pid, signal); return { signal, sent: true } }
-  catch (error) { return { signal, sent: false, error: String(error) } }
+  const observedAt = new Date().toISOString()
+  try { process.kill(-child.pid, signal); return { observedAt, signal, sent: true } }
+  catch (error) { return { observedAt, signal, sent: false, error: String(error) } }
 }
 function groupMembers() {
   return readdirSync('/proc').filter(name => /^[0-9]+$/.test(name)).flatMap(name => {
@@ -924,6 +928,7 @@ const timerController = new AbortController()
 const timer = delay(maxMs, { kind: 'deadline' }, { signal: timerController.signal })
 const exited = childExit()
 const outcome = await Promise.race([exited, timer])
+const consumerOutcomeObservedAt = new Date().toISOString()
 const timedOut = outcome.kind === 'deadline'
 const signals = []
 let exit = outcome
@@ -951,12 +956,12 @@ try {
   try { retainProgress() } catch (error) { instrumentationErrors.push(String(error)) }
 }
 const remaining = safeSnapshot() ?? []
-const cleanup = remaining.map(id => ({ id, kill: podman(['kill', '--signal=SIGKILL', id], 60000), remove: podman(['rm', '--force', '--time=0', '--ignore', id], 60000) }))
+const cleanup = remaining.map(id => ({ id, kill: podman({ args: ['kill', '--signal=SIGKILL', id], budgetMs: 60000 }), remove: podman({ args: ['rm', '--force', '--time=0', '--ignore', id], budgetMs: 60000 }) }))
 const processGroupAfter = groupMembers()
 let remainingAfter
 try { remainingAfter = containers() } catch (error) { instrumentationErrors.push(String(error)) }
 const cleanupVerified = remainingAfter?.length === 0 && cleanup.every(row => row.remove.status === 0) && processGroupAfter.every(row => row.state === 'Z')
-const events = podman(['events', '--since', startedAt, '--until', new Date().toISOString(), '--stream=false', '--filter', 'label=' + label, '--format', 'json'])
+const events = podman({ args: ['events', '--since', startedAt, '--until', new Date().toISOString(), '--stream=false', '--filter', 'label=' + label, '--format', 'json'] })
 writeFileSync(prefix + '-events.json', JSON.stringify(events, null, 2) + '\n')
 const stdout = readFileSync(outputPath)
 let selectedResult
@@ -965,6 +970,9 @@ if (!control && existsSync(resultsPath)) selectedResult = JSON.parse(readFileSyn
 const record = { schemaVersion: 1, event: 'bounded-gate-finished', checkId, sourceRevision: manifest?.sourceRevision, cohort: { id: process.env.COHORT_ID, manifestSha256: process.env.COHORT_MANIFEST_SHA256, requestedAt: process.env.COHORT_REQUESTED_AT }, startedAt, finishedAt: new Date().toISOString(), elapsedMs: performance.now() - started, maxMs, graceMs, timedOut, exit, selectedResult, sourceGateTerminal: !!selectedResult && ['passed', 'failed'].includes(selectedResult.status), label, signals, cleanup, cleanupVerified, processGroupAfter, instrumentationErrors, logLimitExceeded, output: { bytes: stdout.length, sha256: createHash('sha256').update(stdout).digest('hex') }, wrapperSha256: createHash('sha256').update(wrapper).digest('hex'), fixtureOnly: !!control }
 record.selectedInvocationStarted = !control && existsSync(join(directory, 'check-logs', checkId + '.log'))
 record.terminalDisposition = record.sourceGateTerminal ? selectedResult.status : timedOut && record.selectedInvocationStarted ? 'timed-out' : control ? 'fixture' : 'incomplete'
+record.consumerSpawnedAt = consumerSpawnedAt
+record.consumerOutcomeObservedAt = consumerOutcomeObservedAt
+record.containerIdsAfter = remainingAfter
 writeFileSync(prefix + '-results.json', JSON.stringify(record, null, 2) + '\n')
 console.log(JSON.stringify(record))
 child.unref()
