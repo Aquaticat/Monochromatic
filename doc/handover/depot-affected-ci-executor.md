@@ -230,6 +230,26 @@ Cloud jobs are bounded to the declared `16x64` runner with a 30-minute job limit
 Container wrappers retain the reviewed 2 GiB memory and 2 CPU limits per container.
 No cloud Android emulator is authorized by this task arrangement.
 
+The final Android consumer is prepared separately at
+`~/temp/agent/depot-coherent-android-consumer-20261017/mise.toml`.
+The [consumer preparation](../audit/depot-coherent-android-consumer-2026-10-17.md)
+and [input evidence](../audit/depot-coherent-android-consumer-2026-10-17.evidence.json)
+retain the immutable native 15-test catalog,
+reused APK-hash/full-status capture,
+private headful launch bindings,
+and required producer/cohort/source/harness joins.
+The historical 13-pass/two-failure record remains separate.
+No emulator,
+adb server,
+or device operation ran during this preparation.
+Root must supply the final producer run/job/attempt,
+provider receipt/archive/APK hashes,
+and the common cohort request/manifest binding before input validation and live consumer execution.
+The final consumer must retain actual settings/resources,
+all unfiltered test statuses,
+graceful cleanup,
+and local phase timing separately from provider compute.
+
 Inspect manifest reach, complete check records, original diagnostics,
 and source/input hashes when assessing the result. Report missing checks as missing evidence.
 
