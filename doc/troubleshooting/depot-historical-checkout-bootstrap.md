@@ -554,6 +554,51 @@ The tested task-file SHA-256 is `afb1293dedc5dd4fb398a0684661fc9a56d92cdccc20db8
 The driver and logs remain in `~/temp/agent/depot-source-identity-index-controls-20261017`.
 This verification dispatched no provider run and repeated no broad test suite.
 
+## Logger cohort preflight accepts a provisional case
+
+The actual logger cohort guard at trial harness `673ab92e49885dd61fcf08e168ed9c59bf29c6be`
+accepts its committed case manifest with `completeGraph: false`.
+The source,
+harness,
+route,
+and outer common-manifest digest can all match while the static case registration remains provisional.
+This is separate from the byte-preserving transport boundary in `#1119`.
+
+Root trial harness `ae3aad924c7b74c83d27ad0f286832008195eebf` adds the missing assertion to
+`package/module/logger.fuzz/mise.toml`,
+task `trial:depot:cohort-identity`:
+
+```text
+Final route requires a frozen complete case manifest
+```
+
+The assertion reads the actual committed local case bytes before accepting the shared cohort.
+The integration retains the existing exact-byte,
+Git-blob,
+workflow,
+clean-harness,
+and harness-index checks.
+It also rejects conflicting selected cases and provider revisions,
+requires the provider revision in CI,
+validates canonical dispatch inputs,
+and sets a 30-second timeout on the Contents API subprocess.
+
+Disposable clones execute the real task with a fixture supplying only the absent canonical Contents API response.
+The unmodified guard accepts the actual provisional manifest.
+The repaired guard rejects that manifest,
+accepts valid before/after complete-case fixtures,
+and rejects 21 additional malformed binding/input/harness controls.
+Removing only the new complete-case predicate restores invalid acceptance.
+The source and all harness fixtures finish with clean tracked state.
+The current root task body equals the controlled task body,
+with SHA256 `ce2425d4b0d3e84f3f4370976dc10f9a61f7b4c0ce66513c8c40ef52f4edf9ca`.
+
+Issue `#1141` is filed and closed with fresh body/state verification.
+The `rootLoggerIntegrationPreparation` field in
+`doc/audit/depot-final-recovery-2026-10-17.evidence.json` retains the controls and issue receipt.
+These fixtures do not publish a fake common manifest or establish actual provider acceptance.
+Actual case manifests remain provisional until the complete static registration is frozen.
+
 ## Prepared Android launch retained a legacy unit
 
 The initial local Android staging adapter updated standalone `depot-trial-fold` literals,

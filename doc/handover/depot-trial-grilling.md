@@ -145,29 +145,63 @@ The retained proof fields are `rootCommonCohortPreparation`
 and `rootGitHubWorkflowPreparation`.
 The verified local GitHub-expression template collision is added to the existing Scorecard troubleshooting document.
 
-The logger owner has prepared a combined candidate at `18e8c13173f244316ef528467ae0ccbf1fe38c80`:
+Root `ae3aad924c7b74c83d27ad0f286832008195eebf` integrates the logger candidate from
+`673ab92e49885dd61fcf08e168ed9c59bf29c6be`:
 97 expanded jobs,
 with 57 disjoint remainder partitions covering 155 checks,
 plus the existing producers and 32 browser partitions.
 Its 155 remainder identities and 564 other active identities exactly cover the 719-check graph.
-Integrate its workflow and used logger helpers into the root while preserving the root's verified native,
+The root's verified native,
 desktop,
-and common-identity task bodies.
+and common-identity task bodies remain preserved.
+The combined workflow uses its separate logger cohort helper.
+The old helper accepts a committed `completeGraph: false` case;
+the strengthened root helper rejects it,
+accepts valid before/after fixtures,
+and rejects 21 other invalid binding/input/harness controls.
+Removing the complete-case predicate restores invalid acceptance.
+Distinct issue `#1141` is filed and verified closed.
+`rootLoggerIntegrationPreparation` retains this fixture proof separately from actual provider acceptance.
 The authentic linter pilot `q10910cxfm` completes both formerly unmet Markdown prerequisites;
-its six remaining library assertion failures match the native owner's mapping.
+its six remaining library assertion failures match the native owner's mapping and have separate issues
+`#1135` through `#1140`.
 The generator pilot `vt8vzj154t` failed before source execution because its development environment used
 `DEPOT_LOGGER_EXTERNAL_GROUP` while the adapter reads `DEPOT_LOGGER_EXTERNAL`.
-The owner is verifying the correction before retrying;
-the combined candidate already uses the correct variable.
+The combined candidate already uses the correct variable.
+The next pilot exposed a guard-model defect:
+the frozen pnpm workspace enables `dedupeDirectDeps`,
+so valid consumer links can resolve from the consumer's ancestor workspace root.
+Root `ea0306a772` takes the owner's controlled ancestor-resolution helper from
+`8b64f790134bf0cc4485a9842071760cbc355f08`.
+The real retry `ctg9148f4t` invokes all three original generators in separate consumers.
+The declared-type generator then stops at an unmet rootful container prerequisite before corpus execution.
+The owner is adapting the existing validated container forwarder and replaying only that unfinished invocation.
+Take only the resulting used-helper changes before the final root freeze.
 These are development results,
 not final cohort coverage.
 
 The VM artifact-consumer route is prepared at `8719ad3db0167574a5a8324132fa9a0bb74fd098`.
-The owner's actual 19-control suite and separate default rootful consumer pass.
+The owner's actual 49 controls pass,
+including artifact,
+default rootful,
+and cohort controls.
 The original task still fails `#1076`,
 and both lifecycle identities remain unexecuted.
-The owner is completing cohort regressions and the `#1134` cleanup-incident record before static-readiness handoff.
+The route is statically ready;
+the separate `#1134` cleanup incident is repaired and closed with retained evidence.
 No additional guest or emulator has launched.
+
+The logger's external host route remains a separate static-registration item.
+Prepare the existing `.github/workflows/fs-id.yml` as a manually bound `logger.hosts` trial route
+for Linux,
+macOS,
+and Windows.
+Retain the original fs-id host command and both original semantic-bridge consumer tasks.
+Adapt the native owner's portable provenance guard from
+`2032975cbad924e63ac98bc69e14a56b20288275`,
+including selected logger metadata and the actual host workflow binding.
+Do not replace the root's verified POSIX guard or the stronger logger cohort helper.
+Verify Windows checkout byte preservation and real source prerequisites before final static freeze.
 
 The logger owner's bounded development recovery `lt7qwlz6h1`
 uses clean pushed harness `f69a78a3b31f81cbfe47496bcdc6e2ac75549777`.
