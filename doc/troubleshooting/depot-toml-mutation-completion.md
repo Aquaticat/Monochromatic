@@ -238,3 +238,33 @@ Do not infer an executed assertion from this native label alone.
 Retain actual test output and inspect complete logs for spawn diagnostics.
 A separate actual-source disposable control is being prepared to test this classification boundary.
 Its preparation does not establish that the active cloud run encountered the failure.
+
+## NanoSpawn inherits an eval carrier
+
+Observation repeat `j03l179f3x` retained the failed fixture typecheck detail:
+`Error: EEXIST: file already exists, mkdir '/work/control-bin'`.
+The stack points into the control's eval body,
+rather than a compiler diagnostic.
+
+Installed `nano-spawn` 2.1.0 implements this behavior in
+`node_modules/.pnpm/nano-spawn@2.1.0/node_modules/nano-spawn/source/spawn.js`.
+For a literal `node` command it uses `process.execPath`
+and prepends the parent's `process.execArgv`.
+An inline eval caller therefore re-enters its own eval body when it requests a Node file child.
+This explains the disposable control's repeated directory creation.
+It does not establish a failure in the separate full mutation campaign.
+
+Actual local controls prove the distinction:
+a file caller executes its requested child,
+while the same eval caller re-enters the guarded carrier.
+The negative fixture has an environment recursion guard and cannot recursively fan out.
+The revised cloud control mounts an actual TypeScript module entry file
+and verifies an empty `process.execArgv`.
+The immutable source dispatcher in root `mise.toml` also calls Node with a file entry.
+No application source body was changed.
+
+File-based development control `699f9lg5zm` is dispatched on
+`f636b13af902ed6abe5cd8758da4cb8ba99f2175`.
+It removes only a disposable PATH symlink named `node` after its green baseline.
+NanoSpawn retains its actual absolute Node executable for the compiler.
+The actual cloud classification result remains pending.

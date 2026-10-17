@@ -283528,7 +283528,1464 @@
         "stdout": "{\n  \"org_id\": \"l4zncjjbj5\",\n  \"run_id\": \"j03l179f3x\"\n}\n",
         "stderr": ""
       },
-      "state": "Dispatched independent observation repair; original source bodies and accepted final refs unchanged. Adds incremental phases and compiler stdout/stderr receipts, and mirrors original PATH commands while keeping only node removable."
+      "state": "Terminal fixture carrier failure before mutation assertions. The actual source gate invokes NanoSpawn, which inherits the parent eval flags and re-enters the control, producing EEXIST. No false-kill reproduction is claimed.",
+      "terminal": {
+        "collection": {
+          "collectedAt": "2026-10-17T09:03:32.335Z",
+          "org": "l4zncjjbj5",
+          "runId": "j03l179f3x",
+          "revision": "b951351e898867524caba76f8a45f8d65a6603db",
+          "status": "failed",
+          "attempts": [
+            {
+              "workflowId": "z2s2lbwzlx",
+              "jobId": "3tqnmtv0js",
+              "jobKey": "depot-complete-toml-spawn-control.yml:pilot",
+              "attemptId": "cs1f7v29h7",
+              "attempt": 1,
+              "status": "failed",
+              "metricsPath": "metrics-cs1f7v29h7.json",
+              "logPath": "logs-cs1f7v29h7.jsonl",
+              "logSha256": "beb01176f3714389a9bfcfb120cf82c380824c5025e4ee4c1563f26c82897ad2",
+              "logRecords": 1167,
+              "providerAttempt": {
+                "attempt_id": "cs1f7v29h7",
+                "attempt": 1,
+                "status": "failed",
+                "conclusion": "failure",
+                "sandbox_id": "0rs5sjfhnzw8npnckw8c",
+                "session_id": "5ab9703e-11d9-43b8-bc2d-ca5954e319a3",
+                "created_at": "2026-10-17T09:00:08.762Z",
+                "started_at": "2026-10-17T09:00:12.346Z",
+                "finished_at": "2026-10-17T09:03:15.338Z"
+              }
+            }
+          ],
+          "artifactCount": 1,
+          "scope": "Read-only collection. Provider intervals require declared resources before pricing. Gate completion needs independent manifest reconciliation."
+        },
+        "artifactIndex": {
+          "collectedAt": "2026-10-17T09:03:44.555Z",
+          "extractionPolicy": "Validated relative member names; unzip -p bytes are written as fresh regular files, never archive symlinks; 64MiB per-member and 128MiB total expansion bounds. Exact member counts and expanded byte sums are measured separately for each artifact.",
+          "artifacts": [
+            {
+              "artifact_id": "01a14919-dfc5-7c23-b90f-4ebb366541f1",
+              "run_id": "j03l179f3x",
+              "workflow_id": "z2s2lbwzlx",
+              "workflow_path": "depot-complete-toml-spawn-control.yml",
+              "job_id": "3tqnmtv0js",
+              "job_key": "depot-complete-toml-spawn-control.yml:pilot",
+              "attempt_id": "cs1f7v29h7",
+              "attempt": 1,
+              "name": "toml-spawn-control-evidence",
+              "size_bytes": 82290,
+              "created_at": "2026-10-17T09:03:14Z",
+              "archive": "artifact-01a14919-dfc5-7c23-b90f-4ebb366541f1.zip",
+              "sha256": "932ea73ee9832f46da8e6cbfd1ab87bdf0f2c970e176339de413fa3c37c2009d",
+              "extraction": "artifact-toml-spawn-control-evidence",
+              "members": [
+                {
+                  "name": "container-bin/image-metadata-8Rs6Ut/metadata-evidence.json",
+                  "bytes": 731,
+                  "sha256": "6592f796f7c0a2a10c6d1e499aa6e2be5f6ce44da693f06a432602fa955e6841"
+                },
+                {
+                  "name": "container-bin/image-metadata-8Rs6Ut/owned-state.json",
+                  "bytes": 53,
+                  "sha256": "fb9fe5db7e7f2c33bb739cdd95c1a2788b50af0c7c5c09f84e408946a0cf739e"
+                },
+                {
+                  "name": "container-bin/image-metadata-RxfriE/metadata-evidence.json",
+                  "bytes": 737,
+                  "sha256": "b982d387f5aa4efa9b01da65caf8ff723bf87171f365b755ad06531b9ba6cbdc"
+                },
+                {
+                  "name": "container-bin/image-metadata-8Rs6Ut/source.tar",
+                  "bytes": 2048,
+                  "sha256": "63e9084f7f1bebbaa682c30de0377b48fb3758d7a40ce6bb80cce8d581153004"
+                },
+                {
+                  "name": "container-bin/image-metadata-RxfriE/owned-state.json",
+                  "bytes": 29934,
+                  "sha256": "258ebc86ccb79bef8d9252d3a852d21dd74c2404c46062d9f40a15925cb841ca"
+                },
+                {
+                  "name": "container-bin/image-metadata-RxfriE/source.tar",
+                  "bytes": 31744,
+                  "sha256": "c312ab21902b27f8546f84641367cd0674294ffe8ab950ba2d82ba76ab035560"
+                },
+                {
+                  "name": "container-bin/image-metadata-YMwV6W/metadata-evidence.json",
+                  "bytes": 737,
+                  "sha256": "b982d387f5aa4efa9b01da65caf8ff723bf87171f365b755ad06531b9ba6cbdc"
+                },
+                {
+                  "name": "container-bin/image-metadata-YMwV6W/owned-state.json",
+                  "bytes": 29934,
+                  "sha256": "258ebc86ccb79bef8d9252d3a852d21dd74c2404c46062d9f40a15925cb841ca"
+                },
+                {
+                  "name": "container-bin/image-metadata-YMwV6W/source.tar",
+                  "bytes": 31744,
+                  "sha256": "c312ab21902b27f8546f84641367cd0674294ffe8ab950ba2d82ba76ab035560"
+                },
+                {
+                  "name": "container-bin/metadata-control-5AIV1l/state.json",
+                  "bytes": 53,
+                  "sha256": "fb9fe5db7e7f2c33bb739cdd95c1a2788b50af0c7c5c09f84e408946a0cf739e"
+                },
+                {
+                  "name": "container-bin/mutation-private-fixture/result.json",
+                  "bytes": 23,
+                  "sha256": "9f5b3078bc99086112ea426748346ba4976559df35c07238dc36162fbe0c23c0"
+                },
+                {
+                  "name": "container-bin/mutation-private-fixture/shard-manifest.json",
+                  "bytes": 23,
+                  "sha256": "9f5b3078bc99086112ea426748346ba4976559df35c07238dc36162fbe0c23c0"
+                },
+                {
+                  "name": "container-bin/podman",
+                  "bytes": 9142,
+                  "sha256": "8e056c1965b80014c7b9198f65e1efe59055d3e268f51ea8e8355501ed8f6e70"
+                },
+                {
+                  "name": "toml-bounded-package.module.toml-edit.test.mutation-containers.json",
+                  "bytes": 687,
+                  "sha256": "cdf0ecc097b03d5f4ceb4de1ad5d4bf73eec56d928b21f72b2f1411e45e73e78"
+                },
+                {
+                  "name": "toml-bounded-package.module.toml-edit.test.mutation-events.json",
+                  "bytes": 962,
+                  "sha256": "4be22a729ea9b49712be5069b78f2068370557deb45242fa96818f2585f4d623"
+                },
+                {
+                  "name": "toml-bounded-package.module.toml-edit.test.mutation-podman-operations.jsonl",
+                  "bytes": 9162,
+                  "sha256": "db3905399cf5ed1ca4547382f382ea2f3bf09c063b3128c28d2ab4d9f1245c88"
+                },
+                {
+                  "name": "toml-bounded-package.module.toml-edit.test.mutation-results.json",
+                  "bytes": 30407,
+                  "sha256": "7ce6d5a99de64673cdfe1cde172a8716499f8b310cd1b0ee6005c265c1269217"
+                },
+                {
+                  "name": "toml-bounded-package.module.toml-edit.test.mutation.log",
+                  "bytes": 72624,
+                  "sha256": "60a49d529d56e5c32122e28e103a596059203239902ea501ba31347ad0ed9303"
+                },
+                {
+                  "name": "toml-metadata-forwarding.jsonl",
+                  "bytes": 6951,
+                  "sha256": "fdbb8bf04a9b904586af6fadb436135ef2f441d0818e2897b98c5ba24b22ee59"
+                },
+                {
+                  "name": "toml-metadata-observer-bin/podman",
+                  "bytes": 10057,
+                  "sha256": "a314bcb90029c73d7bbb78d709d59b70c46451f511212bbec8b7a5293894a699"
+                },
+                {
+                  "name": "toml-mutant-evidence-index.json",
+                  "bytes": 397,
+                  "sha256": "2e3eeaf2186f4edb981b1614e3ed33e33d27f75b435491d728f3335026f9bec7"
+                },
+                {
+                  "name": "toml-mutation-shards/mutation-report-3d1aZ1/shard-report.json",
+                  "bytes": 415,
+                  "sha256": "363eea7d551658e715d3bf91afc3c26366550f36893b3b6c2907e1ae7097c38c"
+                },
+                {
+                  "name": "toml-native-report-package.module.toml-edit.test.mutation-0.json",
+                  "bytes": 650,
+                  "sha256": "692e5dd934f799518de76762ee34a0f22558a66a2832188cf5b074dfc37d7825"
+                },
+                {
+                  "name": "toml-mutation-shards/mutation-manifest-VG7ry5/shard-manifest.json",
+                  "bytes": 1919,
+                  "sha256": "21c37a776646ed5fe5a92416ba1072b1b1f0734bebcfe8a47609b7597e4d0983"
+                },
+                {
+                  "name": "toml-provenance-after.json",
+                  "bytes": 10659,
+                  "sha256": "a375025c8eb6d9387439159ca29cdee283c742a17f51f17b14e04b97e861617f"
+                },
+                {
+                  "name": "toml-source-podman-calls.jsonl",
+                  "bytes": 3260,
+                  "sha256": "1273f40583504bb0b7eada438a3c4f5525f1606b73974b6f7ed27cf0deb33b80"
+                },
+                {
+                  "name": "toml-provenance-before.json",
+                  "bytes": 10660,
+                  "sha256": "a5064eb854da7a7aa72ad7ea52a034dc5e24642691951f920889386a4edb522f"
+                },
+                {
+                  "name": "toml-spawn-control-control-phases.jsonl",
+                  "bytes": 1949,
+                  "sha256": "d04e81b12edee84174f7a0c2f410fbf5c544d327741af6656b8ff17ab51257d3"
+                },
+                {
+                  "name": "toml-spawn-control-results.json",
+                  "bytes": 61915,
+                  "sha256": "fc53e502ff612ed78cf2017c1d363f408fad4fe5280e58378c6a3f9f2c449468"
+                },
+                {
+                  "name": "toml-spawn-control.stderr.log",
+                  "bytes": 2325,
+                  "sha256": "a425530bc1bd3995e714c587908549bda00b2d9e622e58b7c5a4cc54dff54b07"
+                },
+                {
+                  "name": "toml-spawn-control.stdout.log",
+                  "bytes": 1949,
+                  "sha256": "d04e81b12edee84174f7a0c2f410fbf5c544d327741af6656b8ff17ab51257d3"
+                }
+              ]
+            }
+          ]
+        },
+        "control": {
+          "schemaVersion": 1,
+          "developmentOnly": true,
+          "startedAt": "2026-10-17T09:03:12.921Z",
+          "finishedAt": "2026-10-17T09:03:13.567Z",
+          "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "harnessRevision": "b951351e898867524caba76f8a45f8d65a6603db",
+          "cohort": {
+            "id": "toml-spawn-control-observed-20261017T085957693Z",
+            "manifestSha256": "08bc4480b994e7c5608b76bf0266a1ebb9e1a0cafd46c6966a59f3c7859eee00",
+            "requestedAt": "2026-10-17T08:59:57.693Z"
+          },
+          "resourceBounds": {
+            "memoryBytes": 2147483648,
+            "cpus": 2,
+            "pids": 512,
+            "network": "none",
+            "rootFilesystem": "readonly",
+            "sourceUid": 1001,
+            "sourceGid": 1001
+          },
+          "name": "toml-spawn-control-af125e42-e4c3-4f6f-b91c-5b38fb693f41",
+          "label": "io.monochromatic.toml-spawn-control=af125e42-e4c3-4f6f-b91c-5b38fb693f41",
+          "consumerProgram": {
+            "bytes": 9900,
+            "sha256": "ed8f9fd3d8ba8bab23cd9df6d178b244619f91663a097eedea5a2ed72baadd2c",
+            "text": "import { strict as assert } from 'node:assert';\nimport { accessSync, appendFileSync, chmodSync, constants, existsSync, mkdirSync, readFileSync, readdirSync, symlinkSync, writeFileSync } from 'node:fs';\nimport { join } from 'node:path';\nimport { createHash } from 'node:crypto';\nimport { setTimeout as wait } from 'node:timers/promises';\nimport { runTests } from '/baked/package/cli/mutation-test/src/container/test-run.ts';\nimport { tsgoCheck } from '/baked/package/cli/mutation-test/src/container/tsgo-check.ts';\nimport { runMutantLoop } from '/baked/package/cli/mutation-test/src/container/mutant-loop.ts';\n\nconst startedAt = new Date().toISOString();\nconst cgroup = () => Object.fromEntries(['memory.max', 'memory.events', 'cpu.max', 'pids.max', 'pids.events'].map(name => [name, readFileSync('/sys/fs/cgroup/' + name, 'utf8').trim()]));\nconst cgroupBefore = cgroup();\nassert.equal(cgroupBefore['memory.max'], '2147483648');\nassert.equal(cgroupBefore['pids.max'], '512');\nconst cpu = cgroupBefore['cpu.max'].split(/\\s+/).map(Number);\nassert.equal(cpu[0] / cpu[1], 2);\nconst root = '/work/spawn-fixture';\nconst bin = '/work/control-bin';\nconst output = '/out/spawn-control.json';\nfunction phase(name, value) {\n  const row = { phase: name, observedAt: new Date().toISOString(), value };\n  appendFileSync('/out/control-phases.jsonl', JSON.stringify(row) + '\\n');\n  console.log(JSON.stringify(row));\n}\nmkdirSync(root, { recursive: true });\nmkdirSync(bin);\nconst originalPath = process.env.PATH;\nconst source = 'export const value: number = 1;\\n';\nwriteFileSync(join(root, 'subject.ts'), source);\nwriteFileSync(join(root, 'tsconfig.json'), JSON.stringify({ compilerOptions: { target: 'ESNext', module: 'NodeNext', strict: true, types: [], noEmit: true }, include: ['subject.ts'] }));\nwriteFileSync(join(root, 'package.json'), JSON.stringify({ type: 'module' }));\nwriteFileSync(join(root, 'subject.unit.test.mjs'), \"import {value} from './subject.ts'; import{strict as assert}from'node:assert'; import{appendFileSync}from'node:fs'; appendFileSync('/work/test-invocations.jsonl', JSON.stringify({token:process.env.CONTROL_TOKEN,value})+'\\\\n'); assert.equal(value,1);\\n\");\nconst sourceModules = ['container/test-run.ts', 'container/mutant-loop.ts', 'container/tsgo-check.ts', 'container/build-step.ts', 'engine/splice.ts'].map(relative => {\n  const path = '/baked/package/cli/mutation-test/src/' + relative;\n  const bytes = readFileSync(path);\n  return { relative, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') };\n});\nconst compilerVersion = JSON.parse(readFileSync('/baked/node_modules/typescript/package.json', 'utf8')).version;\nphase('fixture-prepared', { sourceModules, cgroupBefore, compilerVersion, nodeExecutable: process.execPath, nodeVersion: process.version, originalPath });\nconst preflightType = await tsgoCheck({ cwd: root });\nphase('original-path-typecheck', preflightType);\nassert.equal(preflightType.clean, true, preflightType.detail);\nconst mirroredCommands = new Set(['node']);\nfor (const directory of originalPath.split(':').filter(Boolean)) {\n  if (!existsSync(directory)) continue;\n  for (const name of readdirSync(directory)) {\n    if (mirroredCommands.has(name)) continue;\n    const path = join(directory, name);\n    try { accessSync(path, constants.X_OK); }\n    catch (error) { phase('path-entry-not-executable', {path, error: String(error)}); continue; }\n    symlinkSync(path, join(bin, name));\n    mirroredCommands.add(name);\n  }\n}\nphase('original-path-commands-mirrored', { mirroredCommands: [...mirroredCommands].toSorted() });\nconst launcher = join(bin, 'node');\nconst shim = '#!' + process.execPath + '\\n' + `import{spawnSync}from'node:child_process';import{appendFileSync,existsSync,unlinkSync,writeSync}from'node:fs';const args=process.argv.slice(2);const result=spawnSync(${JSON.stringify(process.execPath)},args,{env:process.env,maxBuffer:1048576});const row={event:'real-node-forward-return',args,status:result.status,signal:result.signal,error:result.error?{name:result.error.name,message:result.error.message,code:result.error.code,errno:result.error.errno}:undefined,stdoutBytes:result.stdout?.length??0,stderrBytes:result.stderr?.length??0,stdoutBase64:result.stdout?.toString('base64'),stderrBase64:result.stderr?.toString('base64')};appendFileSync('/out/node-forwards.jsonl',JSON.stringify(row)+'\\\\n');if(result.stdout?.length)writeSync(1,result.stdout);if(result.stderr?.length)writeSync(2,result.stderr);if(args[0]==='/baked/node_modules/typescript/lib/tsc.js'&&result.status===0&&existsSync('/work/remove-node-after-compiler')){unlinkSync(${JSON.stringify(launcher)});appendFileSync('/out/node-forwards.jsonl',JSON.stringify({event:'disposable-node-launcher-removed-after-real-compiler',status:result.status})+'\\\\n');}process.exit(result.status??1);\\n`;\nwriteFileSync(launcher, shim);\nchmodSync(launcher, 0o755);\nprocess.env.PATH = bin;\nconst baselineType = await tsgoCheck({ cwd: root });\nphase('forwarded-typecheck', baselineType);\nassert.equal(baselineType.clean, true, baselineType.detail);\nprocess.env.CONTROL_TOKEN = 'baseline';\nconst baselineTests = await runTests({ cwd: root, tests: ['subject.unit.test.mjs'], timeoutMs: 5000 });\nphase('baseline-tests', baselineTests);\nassert.equal(baselineTests.kind, 'passed');\nconst start = source.indexOf('1');\nconst manifest = {\n  schemaVersion: 1,\n  shardId: 'disposable-source-spawn-control',\n  packagePath: 'spawn-fixture',\n  timeoutFloorMs: 5000,\n  timeoutFactor: 3,\n  tests: ['subject.unit.test.mjs'],\n  mutants: [{ id: 'c000000000000001', file: 'subject.ts', line: 1, column: start + 1, start, end: start + 1, operator: 'disposable-numeric-control', original: '1', replacement: '2', description: 'Fixture changes 1 to 2' }],\n};\nprocess.env.CONTROL_TOKEN = 'genuine-kill';\nconst positive = await runMutantLoop({ packageCwd: root, manifest, baselineTestsMs: baselineTests.durationMs });\nphase('genuine-assertion-kill', positive);\nassert.equal(positive.results[0].status, 'killed');\nassert.equal(readFileSync(join(root, 'subject.ts'), 'utf8'), source);\nconst invocationsBeforeFault = readFileSync('/work/test-invocations.jsonl', 'utf8').trim().split('\\n').map(JSON.parse);\nassert(invocationsBeforeFault.some(row => row.token === 'genuine-kill' && row.value === 2));\nwriteFileSync('/work/remove-node-after-compiler', 'fault only in disposable launcher\\n');\nprocess.env.CONTROL_TOKEN = 'spawn-failure';\nconst fault = await runMutantLoop({ packageCwd: root, manifest, baselineTestsMs: baselineTests.durationMs });\nphase('missing-node-false-kill', fault);\nassert.equal(fault.results[0].status, 'killed');\nassert.equal(fault.anomaly, '');\nassert.deepEqual(fault.unrun, []);\nassert.equal(existsSync(launcher), false);\nassert.equal(readFileSync(join(root, 'subject.ts'), 'utf8'), source);\nconst invocationsAfterFault = readFileSync('/work/test-invocations.jsonl', 'utf8').trim().split('\\n').map(JSON.parse);\nassert.deepEqual(invocationsAfterFault, invocationsBeforeFault, 'Fault test must never have launched');\nconst forwards = readFileSync('/out/node-forwards.jsonl', 'utf8').trim().split('\\n').map(JSON.parse);\nassert(forwards.some(row => row.event === 'disposable-node-launcher-removed-after-real-compiler' && row.status === 0));\nassert(forwards.filter(row => row.args?.[0] === '/baked/node_modules/typescript/lib/tsc.js').every(row => row.status === 0));\nconst directSpawnFailure = await runTests({ cwd: root, tests: ['subject.unit.test.mjs'], timeoutMs: 5000 });\nphase('source-spawn-error-detail', directSpawnFailure);\nassert.equal(directSpawnFailure.kind, 'failed');\nassert(directSpawnFailure.detail.includes('spawn node ENOENT'));\nprocess.env.PATH = originalPath;\nconst marker = '/work/ordered-test-markers';\nwriteFileSync(join(root, 'first.mjs'), \"import{appendFileSync}from'node:fs';appendFileSync('/work/ordered-test-markers','first\\\\n');\\n\");\nwriteFileSync(join(root, 'second.mjs'), \"import{appendFileSync}from'node:fs';appendFileSync('/work/ordered-test-markers','second\\\\n');\\n\");\nconst orderedPositive = await runTests({ cwd: root, tests: ['first.mjs', 'second.mjs'], timeoutMs: 5000 });\nassert.equal(orderedPositive.kind, 'passed');\nassert.equal(readFileSync(marker, 'utf8'), 'first\\nsecond\\n');\nwriteFileSync(marker, '');\nappendFileSync(join(root, 'first.mjs'), \"throw new Error('expected independent early-stop control');\\n\");\nconst earlyStop = await runTests({ cwd: root, tests: ['first.mjs', 'second.mjs'], timeoutMs: 5000 });\nassert.equal(earlyStop.kind, 'failed');\nassert.equal(readFileSync(marker, 'utf8'), 'first\\n');\nwriteFileSync(join(root, 'slow.mjs'), 'setInterval(()=>{},1000);\\n');\nconst timeout = await runTests({ cwd: root, tests: ['slow.mjs'], timeoutMs: 100 });\nassert.equal(timeout.kind, 'timeout');\nconst result = { schemaVersion: 1, developmentOnly: true, startedAt, finishedAt: new Date().toISOString(), nodeVersion: process.version, nodeExecutable: process.execPath, compilerVersion, sourceModules, cgroupBefore, cgroupAfter: cgroup(), fixtureSource: source, fixtureManifest: manifest, preflightType, baselineType, baselineTests, genuineAssertionKill: positive, missingNodeFalseKill: fault, directSpawnFailure, testInvocations: invocationsAfterFault, realNodeForwards: forwards, earlyStop: { positive: orderedPositive, failedFirst: earlyStop, remainingTestUnexecuted: true }, timeout, sourceRestored: readFileSync(join(root, 'subject.ts'), 'utf8') === source, interpretation: 'The source returns killed even though the test child never started after the real compiler passed. This is a disposable fault control, not evidence that the separate cloud mutation campaign encountered a spawn failure.' };\nwriteFileSync(output, JSON.stringify(result, null, 2) + '\\n');\nawait wait(200);\nconsole.log(JSON.stringify({ event: 'actual-source-spawn-control-complete', falseKill: fault.results[0].status, testStartedForFault: false, sourceRestored: true }));\n"
+          },
+          "imageBefore": {
+            "Id": "79e3e727a15b32ffb4a7692e1bf43bc8ce843f521a117202ed66c065343191d0",
+            "Digest": "sha256:86cd6ff9a906b74dadbf7cf4bc7c5d878155b1475a02600ad5960b5a1df231a9",
+            "RepoTags": [
+              "localhost/mutation-test-runtime:24de541ad936"
+            ],
+            "RepoDigests": [
+              "localhost/mutation-test-runtime@sha256:86cd6ff9a906b74dadbf7cf4bc7c5d878155b1475a02600ad5960b5a1df231a9"
+            ],
+            "Parent": "405fba325d21910850176062a9a492cfc02452d48c69483f54c8905aa5d9471e",
+            "Comment": "",
+            "Created": "2026-10-17T09:03:03.809673044Z",
+            "Config": {
+              "Env": [
+                "container=oci",
+                "MISE_DATA_DIR=/mise",
+                "MISE_CONFIG_DIR=/mise",
+                "MISE_CACHE_DIR=/mise/cache",
+                "PATH=/usr/local/bin:/baked/node_modules/.bin:/usr/local/bin:/usr/bin"
+              ],
+              "Cmd": [
+                "node",
+                "--version"
+              ],
+              "WorkingDir": "/baked",
+              "Labels": {
+                "io.buildah.version": "1.43.2",
+                "org.opencontainers.image.licenses": "MIT",
+                "org.opencontainers.image.title": "fedora",
+                "org.opencontainers.image.url": "https://fedoraproject.org/",
+                "org.opencontainers.image.vendor": "Fedora Project",
+                "org.opencontainers.image.version": "44"
+              }
+            },
+            "Version": "",
+            "Author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+            "Architecture": "amd64",
+            "Os": "linux",
+            "Size": 3768368300,
+            "VirtualSize": 3768368300,
+            "GraphDriver": {
+              "Name": "overlay",
+              "Data": {
+                "LowerDir": "/var/lib/containers/storage/overlay/bcb8fce2a8d425b56aa3cdf15db7bcd0ba55c53424f935ea60fdf421cf9aeba4/diff:/var/lib/containers/storage/overlay/a22b2f7847bc6cb7b351bd6e40f5cd0cc138ee934f8d13a6a0ce02ed659e7f7d/diff:/var/lib/containers/storage/overlay/5caf54cded652c824a21896b20048eccb11bb8cdce3ca774c3560cd32e1f61cc/diff",
+                "UpperDir": "/var/lib/containers/storage/overlay/2a2a260ea378c181ab5c85e87485f64e85abbe453db9e851c23b2cf133aff9b4/diff",
+                "WorkDir": "/var/lib/containers/storage/overlay/2a2a260ea378c181ab5c85e87485f64e85abbe453db9e851c23b2cf133aff9b4/work"
+              }
+            },
+            "RootFS": {
+              "Type": "layers",
+              "Layers": [
+                "sha256:5caf54cded652c824a21896b20048eccb11bb8cdce3ca774c3560cd32e1f61cc",
+                "sha256:7473028e0bfd956ab3692df0a93b3c8ce384f38f432aa10364450575d579a7ec",
+                "sha256:68d4c7e71cceed5bf6b962f3655250b3f87adf9fb64fdf27e58ed43d5aaa3427",
+                "sha256:d64a15bf1352140c76eedd9207d0e7d902be434b497ade4bb1990d661a8c9ce4"
+              ]
+            },
+            "Labels": {
+              "io.buildah.version": "1.43.2",
+              "org.opencontainers.image.licenses": "MIT",
+              "org.opencontainers.image.title": "fedora",
+              "org.opencontainers.image.url": "https://fedoraproject.org/",
+              "org.opencontainers.image.vendor": "Fedora Project",
+              "org.opencontainers.image.version": "44"
+            },
+            "Annotations": {
+              "org.opencontainers.image.base.digest": "sha256:a58bfac2282d9d234f130f1231ae464017bd13d207ed37abfd6f30e1aa07ed9c",
+              "org.opencontainers.image.base.name": "registry.fedoraproject.org/fedora:latest",
+              "org.opencontainers.image.created": "2026-10-17T09:03:03.809673044Z"
+            },
+            "ManifestType": "application/vnd.oci.image.manifest.v1+json",
+            "User": "",
+            "History": [
+              {
+                "created": "2026-10-17T06:48:51.864654782Z",
+                "created_by": "KIWI 11.1.1",
+                "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>"
+              },
+              {
+                "created": "2026-10-17T09:01:51.694275144Z",
+                "created_by": "/bin/sh -c #(nop) ENV MISE_DATA_DIR=/mise",
+                "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+                "comment": "FROM registry.fedoraproject.org/fedora:latest",
+                "empty_layer": true
+              },
+              {
+                "created": "2026-10-17T09:01:51.711530974Z",
+                "created_by": "/bin/sh -c #(nop) ENV MISE_CONFIG_DIR=/mise",
+                "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+                "empty_layer": true
+              },
+              {
+                "created": "2026-10-17T09:01:51.728414204Z",
+                "created_by": "/bin/sh -c #(nop) ENV MISE_CACHE_DIR=/mise/cache",
+                "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+                "empty_layer": true
+              },
+              {
+                "created": "2026-10-17T09:01:51.745611314Z",
+                "created_by": "/bin/sh -c #(nop) ENV PATH=/usr/local/bin:/baked/node_modules/.bin:$PATH",
+                "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+                "empty_layer": true
+              },
+              {
+                "created": "2026-10-17T09:02:20.722656506Z",
+                "created_by": "/bin/sh -c dnf install --assumeyes dnf-plugins-core ca-certificates curl git libatomic procps-ng rsync which   && dnf copr enable --assumeyes jdxcode/mise   && dnf install --assumeyes mise   && dnf clean all   && rm --recursive --force /var/cache/dnf",
+                "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>"
+              },
+              {
+                "created": "2026-10-17T09:02:21.790034885Z",
+                "created_by": "/bin/sh -c #(nop) SHELL [\"/bin/bash\", \"-o\", \"pipefail\", \"-c\"]",
+                "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+                "empty_layer": true
+              },
+              {
+                "created": "2026-10-17T09:02:21.807913195Z",
+                "created_by": "/bin/sh -c #(nop) WORKDIR /baked",
+                "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+                "empty_layer": true
+              },
+              {
+                "created": "2026-10-17T09:02:26.349822294Z",
+                "created_by": "/bin/sh -c #(nop) COPY dir:4949d3c68d029caaf88389121260e5ea32c1dfe4bcc4b23d37164675b5b47b42 in /baked      ",
+                "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>"
+              },
+              {
+                "created": "2026-10-17T09:02:54.840450116Z",
+                "created_by": "/bin/sh -c export MISE_NPM_PACKAGE_MANAGER=npm   && mise trust /baked/mise.toml   && mise install --yes node npm:pnpm   && ln --symbolic --force \"$(mise exec node -- which node)\" /usr/local/bin/node   && ln --symbolic --force \"$(mise exec node -- which npm)\" /usr/local/bin/npm   && ln --symbolic --force \"$(mise exec node npm:pnpm -- which pnpm)\" /usr/local/bin/pnpm   && mise exec node npm:pnpm -- pnpm install --frozen-lockfile",
+                "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>"
+              },
+              {
+                "created": "2026-10-17T09:03:03.809755554Z",
+                "created_by": "/bin/sh -c #(nop) CMD [\"node\", \"--version\"]",
+                "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+                "empty_layer": true
+              }
+            ],
+            "NamesHistory": [
+              "localhost/mutation-test-runtime:24de541ad936"
+            ]
+          },
+          "imageAfter": {
+            "Id": "79e3e727a15b32ffb4a7692e1bf43bc8ce843f521a117202ed66c065343191d0",
+            "Digest": "sha256:86cd6ff9a906b74dadbf7cf4bc7c5d878155b1475a02600ad5960b5a1df231a9",
+            "RepoTags": [
+              "localhost/mutation-test-runtime:24de541ad936"
+            ],
+            "RepoDigests": [
+              "localhost/mutation-test-runtime@sha256:86cd6ff9a906b74dadbf7cf4bc7c5d878155b1475a02600ad5960b5a1df231a9"
+            ],
+            "Parent": "405fba325d21910850176062a9a492cfc02452d48c69483f54c8905aa5d9471e",
+            "Comment": "",
+            "Created": "2026-10-17T09:03:03.809673044Z",
+            "Config": {
+              "Env": [
+                "container=oci",
+                "MISE_DATA_DIR=/mise",
+                "MISE_CONFIG_DIR=/mise",
+                "MISE_CACHE_DIR=/mise/cache",
+                "PATH=/usr/local/bin:/baked/node_modules/.bin:/usr/local/bin:/usr/bin"
+              ],
+              "Cmd": [
+                "node",
+                "--version"
+              ],
+              "WorkingDir": "/baked",
+              "Labels": {
+                "io.buildah.version": "1.43.2",
+                "org.opencontainers.image.licenses": "MIT",
+                "org.opencontainers.image.title": "fedora",
+                "org.opencontainers.image.url": "https://fedoraproject.org/",
+                "org.opencontainers.image.vendor": "Fedora Project",
+                "org.opencontainers.image.version": "44"
+              }
+            },
+            "Version": "",
+            "Author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+            "Architecture": "amd64",
+            "Os": "linux",
+            "Size": 3768368300,
+            "VirtualSize": 3768368300,
+            "GraphDriver": {
+              "Name": "overlay",
+              "Data": {
+                "LowerDir": "/var/lib/containers/storage/overlay/bcb8fce2a8d425b56aa3cdf15db7bcd0ba55c53424f935ea60fdf421cf9aeba4/diff:/var/lib/containers/storage/overlay/a22b2f7847bc6cb7b351bd6e40f5cd0cc138ee934f8d13a6a0ce02ed659e7f7d/diff:/var/lib/containers/storage/overlay/5caf54cded652c824a21896b20048eccb11bb8cdce3ca774c3560cd32e1f61cc/diff",
+                "UpperDir": "/var/lib/containers/storage/overlay/2a2a260ea378c181ab5c85e87485f64e85abbe453db9e851c23b2cf133aff9b4/diff",
+                "WorkDir": "/var/lib/containers/storage/overlay/2a2a260ea378c181ab5c85e87485f64e85abbe453db9e851c23b2cf133aff9b4/work"
+              }
+            },
+            "RootFS": {
+              "Type": "layers",
+              "Layers": [
+                "sha256:5caf54cded652c824a21896b20048eccb11bb8cdce3ca774c3560cd32e1f61cc",
+                "sha256:7473028e0bfd956ab3692df0a93b3c8ce384f38f432aa10364450575d579a7ec",
+                "sha256:68d4c7e71cceed5bf6b962f3655250b3f87adf9fb64fdf27e58ed43d5aaa3427",
+                "sha256:d64a15bf1352140c76eedd9207d0e7d902be434b497ade4bb1990d661a8c9ce4"
+              ]
+            },
+            "Labels": {
+              "io.buildah.version": "1.43.2",
+              "org.opencontainers.image.licenses": "MIT",
+              "org.opencontainers.image.title": "fedora",
+              "org.opencontainers.image.url": "https://fedoraproject.org/",
+              "org.opencontainers.image.vendor": "Fedora Project",
+              "org.opencontainers.image.version": "44"
+            },
+            "Annotations": {
+              "org.opencontainers.image.base.digest": "sha256:a58bfac2282d9d234f130f1231ae464017bd13d207ed37abfd6f30e1aa07ed9c",
+              "org.opencontainers.image.base.name": "registry.fedoraproject.org/fedora:latest",
+              "org.opencontainers.image.created": "2026-10-17T09:03:03.809673044Z"
+            },
+            "ManifestType": "application/vnd.oci.image.manifest.v1+json",
+            "User": "",
+            "History": [
+              {
+                "created": "2026-10-17T06:48:51.864654782Z",
+                "created_by": "KIWI 11.1.1",
+                "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>"
+              },
+              {
+                "created": "2026-10-17T09:01:51.694275144Z",
+                "created_by": "/bin/sh -c #(nop) ENV MISE_DATA_DIR=/mise",
+                "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+                "comment": "FROM registry.fedoraproject.org/fedora:latest",
+                "empty_layer": true
+              },
+              {
+                "created": "2026-10-17T09:01:51.711530974Z",
+                "created_by": "/bin/sh -c #(nop) ENV MISE_CONFIG_DIR=/mise",
+                "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+                "empty_layer": true
+              },
+              {
+                "created": "2026-10-17T09:01:51.728414204Z",
+                "created_by": "/bin/sh -c #(nop) ENV MISE_CACHE_DIR=/mise/cache",
+                "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+                "empty_layer": true
+              },
+              {
+                "created": "2026-10-17T09:01:51.745611314Z",
+                "created_by": "/bin/sh -c #(nop) ENV PATH=/usr/local/bin:/baked/node_modules/.bin:$PATH",
+                "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+                "empty_layer": true
+              },
+              {
+                "created": "2026-10-17T09:02:20.722656506Z",
+                "created_by": "/bin/sh -c dnf install --assumeyes dnf-plugins-core ca-certificates curl git libatomic procps-ng rsync which   && dnf copr enable --assumeyes jdxcode/mise   && dnf install --assumeyes mise   && dnf clean all   && rm --recursive --force /var/cache/dnf",
+                "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>"
+              },
+              {
+                "created": "2026-10-17T09:02:21.790034885Z",
+                "created_by": "/bin/sh -c #(nop) SHELL [\"/bin/bash\", \"-o\", \"pipefail\", \"-c\"]",
+                "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+                "empty_layer": true
+              },
+              {
+                "created": "2026-10-17T09:02:21.807913195Z",
+                "created_by": "/bin/sh -c #(nop) WORKDIR /baked",
+                "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+                "empty_layer": true
+              },
+              {
+                "created": "2026-10-17T09:02:26.349822294Z",
+                "created_by": "/bin/sh -c #(nop) COPY dir:4949d3c68d029caaf88389121260e5ea32c1dfe4bcc4b23d37164675b5b47b42 in /baked      ",
+                "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>"
+              },
+              {
+                "created": "2026-10-17T09:02:54.840450116Z",
+                "created_by": "/bin/sh -c export MISE_NPM_PACKAGE_MANAGER=npm   && mise trust /baked/mise.toml   && mise install --yes node npm:pnpm   && ln --symbolic --force \"$(mise exec node -- which node)\" /usr/local/bin/node   && ln --symbolic --force \"$(mise exec node -- which npm)\" /usr/local/bin/npm   && ln --symbolic --force \"$(mise exec node npm:pnpm -- which pnpm)\" /usr/local/bin/pnpm   && mise exec node npm:pnpm -- pnpm install --frozen-lockfile",
+                "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>"
+              },
+              {
+                "created": "2026-10-17T09:03:03.809755554Z",
+                "created_by": "/bin/sh -c #(nop) CMD [\"node\", \"--version\"]",
+                "author": "Fedora Project Contributors <devel@lists.fedoraproject.org>",
+                "empty_layer": true
+              }
+            ],
+            "NamesHistory": [
+              "localhost/mutation-test-runtime:24de541ad936"
+            ]
+          },
+          "cleanupVerified": true,
+          "operations": [
+            {
+              "command": "podman",
+              "args": [
+                "image",
+                "inspect",
+                "localhost/mutation-test-runtime:24de541ad936"
+              ],
+              "startedAt": "2026-10-17T09:03:12.922Z",
+              "finishedAt": "2026-10-17T09:03:12.964Z",
+              "elapsedMs": 42.14326,
+              "timeoutMs": 60000,
+              "status": 0,
+              "signal": null,
+              "stdoutBytes": 8060,
+              "stderrBytes": 0,
+              "stdout": "[\n     {\n          \"Id\": \"79e3e727a15b32ffb4a7692e1bf43bc8ce843f521a117202ed66c065343191d0\",\n          \"Digest\": \"sha256:86cd6ff9a906b74dadbf7cf4bc7c5d878155b1475a02600ad5960b5a1df231a9\",\n          \"RepoTags\": [\n               \"localhost/mutation-test-runtime:24de541ad936\"\n          ],\n          \"RepoDigests\": [\n               \"localhost/mutation-test-runtime@sha256:86cd6ff9a906b74dadbf7cf4bc7c5d878155b1475a02600ad5960b5a1df231a9\"\n          ],\n          \"Parent\": \"405fba325d21910850176062a9a492cfc02452d48c69483f54c8905aa5d9471e\",\n          \"Comment\": \"\",\n          \"Created\": \"2026-10-17T09:03:03.809673044Z\",\n          \"Config\": {\n               \"Env\": [\n                    \"container=oci\",\n                    \"MISE_DATA_DIR=/mise\",\n                    \"MISE_CONFIG_DIR=/mise\",\n                    \"MISE_CACHE_DIR=/mise/cache\",\n                    \"PATH=/usr/local/bin:/baked/node_modules/.bin:/usr/local/bin:/usr/bin\"\n               ],\n               \"Cmd\": [\n                    \"node\",\n                    \"--version\"\n               ],\n               \"WorkingDir\": \"/baked\",\n               \"Labels\": {\n                    \"io.buildah.version\": \"1.43.2\",\n                    \"org.opencontainers.image.licenses\": \"MIT\",\n                    \"org.opencontainers.image.title\": \"fedora\",\n                    \"org.opencontainers.image.url\": \"https://fedoraproject.org/\",\n                    \"org.opencontainers.image.vendor\": \"Fedora Project\",\n                    \"org.opencontainers.image.version\": \"44\"\n               }\n          },\n          \"Version\": \"\",\n          \"Author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n          \"Architecture\": \"amd64\",\n          \"Os\": \"linux\",\n          \"Size\": 3768368300,\n          \"VirtualSize\": 3768368300,\n          \"GraphDriver\": {\n               \"Name\": \"overlay\",\n               \"Data\": {\n                    \"LowerDir\": \"/var/lib/containers/storage/overlay/bcb8fce2a8d425b56aa3cdf15db7bcd0ba55c53424f935ea60fdf421cf9aeba4/diff:/var/lib/containers/storage/overlay/a22b2f7847bc6cb7b351bd6e40f5cd0cc138ee934f8d13a6a0ce02ed659e7f7d/diff:/var/lib/containers/storage/overlay/5caf54cded652c824a21896b20048eccb11bb8cdce3ca774c3560cd32e1f61cc/diff\",\n                    \"UpperDir\": \"/var/lib/containers/storage/overlay/2a2a260ea378c181ab5c85e87485f64e85abbe453db9e851c23b2cf133aff9b4/diff\",\n                    \"WorkDir\": \"/var/lib/containers/storage/overlay/2a2a260ea378c181ab5c85e87485f64e85abbe453db9e851c23b2cf133aff9b4/work\"\n               }\n          },\n          \"RootFS\": {\n               \"Type\": \"layers\",\n               \"Layers\": [\n                    \"sha256:5caf54cded652c824a21896b20048eccb11bb8cdce3ca774c3560cd32e1f61cc\",\n                    \"sha256:7473028e0bfd956ab3692df0a93b3c8ce384f38f432aa10364450575d579a7ec\",\n                    \"sha256:68d4c7e71cceed5bf6b962f3655250b3f87adf9fb64fdf27e58ed43d5aaa3427\",\n                    \"sha256:d64a15bf1352140c76eedd9207d0e7d902be434b497ade4bb1990d661a8c9ce4\"\n               ]\n          },\n          \"Labels\": {\n               \"io.buildah.version\": \"1.43.2\",\n               \"org.opencontainers.image.licenses\": \"MIT\",\n               \"org.opencontainers.image.title\": \"fedora\",\n               \"org.opencontainers.image.url\": \"https://fedoraproject.org/\",\n               \"org.opencontainers.image.vendor\": \"Fedora Project\",\n               \"org.opencontainers.image.version\": \"44\"\n          },\n          \"Annotations\": {\n               \"org.opencontainers.image.base.digest\": \"sha256:a58bfac2282d9d234f130f1231ae464017bd13d207ed37abfd6f30e1aa07ed9c\",\n               \"org.opencontainers.image.base.name\": \"registry.fedoraproject.org/fedora:latest\",\n               \"org.opencontainers.image.created\": \"2026-10-17T09:03:03.809673044Z\"\n          },\n          \"ManifestType\": \"application/vnd.oci.image.manifest.v1+json\",\n          \"User\": \"\",\n          \"History\": [\n               {\n                    \"created\": \"2026-10-17T06:48:51.864654782Z\",\n                    \"created_by\": \"KIWI 11.1.1\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\"\n               },\n               {\n                    \"created\": \"2026-10-17T09:01:51.694275144Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) ENV MISE_DATA_DIR=/mise\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"comment\": \"FROM registry.fedoraproject.org/fedora:latest\",\n                    \"empty_layer\": true\n               },\n               {\n                    \"created\": \"2026-10-17T09:01:51.711530974Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) ENV MISE_CONFIG_DIR=/mise\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"empty_layer\": true\n               },\n               {\n                    \"created\": \"2026-10-17T09:01:51.728414204Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) ENV MISE_CACHE_DIR=/mise/cache\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"empty_layer\": true\n               },\n               {\n                    \"created\": \"2026-10-17T09:01:51.745611314Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) ENV PATH=/usr/local/bin:/baked/node_modules/.bin:$PATH\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"empty_layer\": true\n               },\n               {\n                    \"created\": \"2026-10-17T09:02:20.722656506Z\",\n                    \"created_by\": \"/bin/sh -c dnf install --assumeyes dnf-plugins-core ca-certificates curl git libatomic procps-ng rsync which   && dnf copr enable --assumeyes jdxcode/mise   && dnf install --assumeyes mise   && dnf clean all   && rm --recursive --force /var/cache/dnf\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\"\n               },\n               {\n                    \"created\": \"2026-10-17T09:02:21.790034885Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) SHELL [\\\"/bin/bash\\\", \\\"-o\\\", \\\"pipefail\\\", \\\"-c\\\"]\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"empty_layer\": true\n               },\n               {\n                    \"created\": \"2026-10-17T09:02:21.807913195Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) WORKDIR /baked\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"empty_layer\": true\n               },\n               {\n                    \"created\": \"2026-10-17T09:02:26.349822294Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) COPY dir:4949d3c68d029caaf88389121260e5ea32c1dfe4bcc4b23d37164675b5b47b42 in /baked      \",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\"\n               },\n               {\n                    \"created\": \"2026-10-17T09:02:54.840450116Z\",\n                    \"created_by\": \"/bin/sh -c export MISE_NPM_PACKAGE_MANAGER=npm   && mise trust /baked/mise.toml   && mise install --yes node npm:pnpm   && ln --symbolic --force \\\"$(mise exec node -- which node)\\\" /usr/local/bin/node   && ln --symbolic --force \\\"$(mise exec node -- which npm)\\\" /usr/local/bin/npm   && ln --symbolic --force \\\"$(mise exec node npm:pnpm -- which pnpm)\\\" /usr/local/bin/pnpm   && mise exec node npm:pnpm -- pnpm install --frozen-lockfile\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\"\n               },\n               {\n                    \"created\": \"2026-10-17T09:03:03.809755554Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) CMD [\\\"node\\\", \\\"--version\\\"]\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"empty_layer\": true\n               }\n          ],\n          \"NamesHistory\": [\n               \"localhost/mutation-test-runtime:24de541ad936\"\n          ]\n     }\n]\n",
+              "stderr": ""
+            },
+            {
+              "command": "podman",
+              "args": [
+                "run",
+                "--rm",
+                "--name",
+                "toml-spawn-control-af125e42-e4c3-4f6f-b91c-5b38fb693f41",
+                "--label",
+                "io.monochromatic.toml-spawn-control=af125e42-e4c3-4f6f-b91c-5b38fb693f41",
+                "--memory=2g",
+                "--cpus=2",
+                "--pids-limit=512",
+                "--network=none",
+                "--read-only",
+                "--cap-drop=ALL",
+                "--security-opt=no-new-privileges",
+                "--user",
+                "1001:1001",
+                "--tmpfs",
+                "/work:rw,exec,size=2g",
+                "--tmpfs",
+                "/tmp:rw,exec,size=128m",
+                "--volume",
+                "/home/runner/temp/agent/depot-complete-ci/toml-spawn-control-Utppo0/manifest:/manifest:ro",
+                "--volume",
+                "/home/runner/temp/agent/depot-complete-ci/toml-spawn-control-Utppo0/out:/out:rw",
+                "--workdir",
+                "/work",
+                "--entrypoint",
+                "node",
+                "localhost/mutation-test-runtime:24de541ad936",
+                "--input-type=module-typescript",
+                "-e",
+                "import { strict as assert } from 'node:assert';\nimport { accessSync, appendFileSync, chmodSync, constants, existsSync, mkdirSync, readFileSync, readdirSync, symlinkSync, writeFileSync } from 'node:fs';\nimport { join } from 'node:path';\nimport { createHash } from 'node:crypto';\nimport { setTimeout as wait } from 'node:timers/promises';\nimport { runTests } from '/baked/package/cli/mutation-test/src/container/test-run.ts';\nimport { tsgoCheck } from '/baked/package/cli/mutation-test/src/container/tsgo-check.ts';\nimport { runMutantLoop } from '/baked/package/cli/mutation-test/src/container/mutant-loop.ts';\n\nconst startedAt = new Date().toISOString();\nconst cgroup = () => Object.fromEntries(['memory.max', 'memory.events', 'cpu.max', 'pids.max', 'pids.events'].map(name => [name, readFileSync('/sys/fs/cgroup/' + name, 'utf8').trim()]));\nconst cgroupBefore = cgroup();\nassert.equal(cgroupBefore['memory.max'], '2147483648');\nassert.equal(cgroupBefore['pids.max'], '512');\nconst cpu = cgroupBefore['cpu.max'].split(/\\s+/).map(Number);\nassert.equal(cpu[0] / cpu[1], 2);\nconst root = '/work/spawn-fixture';\nconst bin = '/work/control-bin';\nconst output = '/out/spawn-control.json';\nfunction phase(name, value) {\n  const row = { phase: name, observedAt: new Date().toISOString(), value };\n  appendFileSync('/out/control-phases.jsonl', JSON.stringify(row) + '\\n');\n  console.log(JSON.stringify(row));\n}\nmkdirSync(root, { recursive: true });\nmkdirSync(bin);\nconst originalPath = process.env.PATH;\nconst source = 'export const value: number = 1;\\n';\nwriteFileSync(join(root, 'subject.ts'), source);\nwriteFileSync(join(root, 'tsconfig.json'), JSON.stringify({ compilerOptions: { target: 'ESNext', module: 'NodeNext', strict: true, types: [], noEmit: true }, include: ['subject.ts'] }));\nwriteFileSync(join(root, 'package.json'), JSON.stringify({ type: 'module' }));\nwriteFileSync(join(root, 'subject.unit.test.mjs'), \"import {value} from './subject.ts'; import{strict as assert}from'node:assert'; import{appendFileSync}from'node:fs'; appendFileSync('/work/test-invocations.jsonl', JSON.stringify({token:process.env.CONTROL_TOKEN,value})+'\\\\n'); assert.equal(value,1);\\n\");\nconst sourceModules = ['container/test-run.ts', 'container/mutant-loop.ts', 'container/tsgo-check.ts', 'container/build-step.ts', 'engine/splice.ts'].map(relative => {\n  const path = '/baked/package/cli/mutation-test/src/' + relative;\n  const bytes = readFileSync(path);\n  return { relative, bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') };\n});\nconst compilerVersion = JSON.parse(readFileSync('/baked/node_modules/typescript/package.json', 'utf8')).version;\nphase('fixture-prepared', { sourceModules, cgroupBefore, compilerVersion, nodeExecutable: process.execPath, nodeVersion: process.version, originalPath });\nconst preflightType = await tsgoCheck({ cwd: root });\nphase('original-path-typecheck', preflightType);\nassert.equal(preflightType.clean, true, preflightType.detail);\nconst mirroredCommands = new Set(['node']);\nfor (const directory of originalPath.split(':').filter(Boolean)) {\n  if (!existsSync(directory)) continue;\n  for (const name of readdirSync(directory)) {\n    if (mirroredCommands.has(name)) continue;\n    const path = join(directory, name);\n    try { accessSync(path, constants.X_OK); }\n    catch (error) { phase('path-entry-not-executable', {path, error: String(error)}); continue; }\n    symlinkSync(path, join(bin, name));\n    mirroredCommands.add(name);\n  }\n}\nphase('original-path-commands-mirrored', { mirroredCommands: [...mirroredCommands].toSorted() });\nconst launcher = join(bin, 'node');\nconst shim = '#!' + process.execPath + '\\n' + `import{spawnSync}from'node:child_process';import{appendFileSync,existsSync,unlinkSync,writeSync}from'node:fs';const args=process.argv.slice(2);const result=spawnSync(${JSON.stringify(process.execPath)},args,{env:process.env,maxBuffer:1048576});const row={event:'real-node-forward-return',args,status:result.status,signal:result.signal,error:result.error?{name:result.error.name,message:result.error.message,code:result.error.code,errno:result.error.errno}:undefined,stdoutBytes:result.stdout?.length??0,stderrBytes:result.stderr?.length??0,stdoutBase64:result.stdout?.toString('base64'),stderrBase64:result.stderr?.toString('base64')};appendFileSync('/out/node-forwards.jsonl',JSON.stringify(row)+'\\\\n');if(result.stdout?.length)writeSync(1,result.stdout);if(result.stderr?.length)writeSync(2,result.stderr);if(args[0]==='/baked/node_modules/typescript/lib/tsc.js'&&result.status===0&&existsSync('/work/remove-node-after-compiler')){unlinkSync(${JSON.stringify(launcher)});appendFileSync('/out/node-forwards.jsonl',JSON.stringify({event:'disposable-node-launcher-removed-after-real-compiler',status:result.status})+'\\\\n');}process.exit(result.status??1);\\n`;\nwriteFileSync(launcher, shim);\nchmodSync(launcher, 0o755);\nprocess.env.PATH = bin;\nconst baselineType = await tsgoCheck({ cwd: root });\nphase('forwarded-typecheck', baselineType);\nassert.equal(baselineType.clean, true, baselineType.detail);\nprocess.env.CONTROL_TOKEN = 'baseline';\nconst baselineTests = await runTests({ cwd: root, tests: ['subject.unit.test.mjs'], timeoutMs: 5000 });\nphase('baseline-tests', baselineTests);\nassert.equal(baselineTests.kind, 'passed');\nconst start = source.indexOf('1');\nconst manifest = {\n  schemaVersion: 1,\n  shardId: 'disposable-source-spawn-control',\n  packagePath: 'spawn-fixture',\n  timeoutFloorMs: 5000,\n  timeoutFactor: 3,\n  tests: ['subject.unit.test.mjs'],\n  mutants: [{ id: 'c000000000000001', file: 'subject.ts', line: 1, column: start + 1, start, end: start + 1, operator: 'disposable-numeric-control', original: '1', replacement: '2', description: 'Fixture changes 1 to 2' }],\n};\nprocess.env.CONTROL_TOKEN = 'genuine-kill';\nconst positive = await runMutantLoop({ packageCwd: root, manifest, baselineTestsMs: baselineTests.durationMs });\nphase('genuine-assertion-kill', positive);\nassert.equal(positive.results[0].status, 'killed');\nassert.equal(readFileSync(join(root, 'subject.ts'), 'utf8'), source);\nconst invocationsBeforeFault = readFileSync('/work/test-invocations.jsonl', 'utf8').trim().split('\\n').map(JSON.parse);\nassert(invocationsBeforeFault.some(row => row.token === 'genuine-kill' && row.value === 2));\nwriteFileSync('/work/remove-node-after-compiler', 'fault only in disposable launcher\\n');\nprocess.env.CONTROL_TOKEN = 'spawn-failure';\nconst fault = await runMutantLoop({ packageCwd: root, manifest, baselineTestsMs: baselineTests.durationMs });\nphase('missing-node-false-kill', fault);\nassert.equal(fault.results[0].status, 'killed');\nassert.equal(fault.anomaly, '');\nassert.deepEqual(fault.unrun, []);\nassert.equal(existsSync(launcher), false);\nassert.equal(readFileSync(join(root, 'subject.ts'), 'utf8'), source);\nconst invocationsAfterFault = readFileSync('/work/test-invocations.jsonl', 'utf8').trim().split('\\n').map(JSON.parse);\nassert.deepEqual(invocationsAfterFault, invocationsBeforeFault, 'Fault test must never have launched');\nconst forwards = readFileSync('/out/node-forwards.jsonl', 'utf8').trim().split('\\n').map(JSON.parse);\nassert(forwards.some(row => row.event === 'disposable-node-launcher-removed-after-real-compiler' && row.status === 0));\nassert(forwards.filter(row => row.args?.[0] === '/baked/node_modules/typescript/lib/tsc.js').every(row => row.status === 0));\nconst directSpawnFailure = await runTests({ cwd: root, tests: ['subject.unit.test.mjs'], timeoutMs: 5000 });\nphase('source-spawn-error-detail', directSpawnFailure);\nassert.equal(directSpawnFailure.kind, 'failed');\nassert(directSpawnFailure.detail.includes('spawn node ENOENT'));\nprocess.env.PATH = originalPath;\nconst marker = '/work/ordered-test-markers';\nwriteFileSync(join(root, 'first.mjs'), \"import{appendFileSync}from'node:fs';appendFileSync('/work/ordered-test-markers','first\\\\n');\\n\");\nwriteFileSync(join(root, 'second.mjs'), \"import{appendFileSync}from'node:fs';appendFileSync('/work/ordered-test-markers','second\\\\n');\\n\");\nconst orderedPositive = await runTests({ cwd: root, tests: ['first.mjs', 'second.mjs'], timeoutMs: 5000 });\nassert.equal(orderedPositive.kind, 'passed');\nassert.equal(readFileSync(marker, 'utf8'), 'first\\nsecond\\n');\nwriteFileSync(marker, '');\nappendFileSync(join(root, 'first.mjs'), \"throw new Error('expected independent early-stop control');\\n\");\nconst earlyStop = await runTests({ cwd: root, tests: ['first.mjs', 'second.mjs'], timeoutMs: 5000 });\nassert.equal(earlyStop.kind, 'failed');\nassert.equal(readFileSync(marker, 'utf8'), 'first\\n');\nwriteFileSync(join(root, 'slow.mjs'), 'setInterval(()=>{},1000);\\n');\nconst timeout = await runTests({ cwd: root, tests: ['slow.mjs'], timeoutMs: 100 });\nassert.equal(timeout.kind, 'timeout');\nconst result = { schemaVersion: 1, developmentOnly: true, startedAt, finishedAt: new Date().toISOString(), nodeVersion: process.version, nodeExecutable: process.execPath, compilerVersion, sourceModules, cgroupBefore, cgroupAfter: cgroup(), fixtureSource: source, fixtureManifest: manifest, preflightType, baselineType, baselineTests, genuineAssertionKill: positive, missingNodeFalseKill: fault, directSpawnFailure, testInvocations: invocationsAfterFault, realNodeForwards: forwards, earlyStop: { positive: orderedPositive, failedFirst: earlyStop, remainingTestUnexecuted: true }, timeout, sourceRestored: readFileSync(join(root, 'subject.ts'), 'utf8') === source, interpretation: 'The source returns killed even though the test child never started after the real compiler passed. This is a disposable fault control, not evidence that the separate cloud mutation campaign encountered a spawn failure.' };\nwriteFileSync(output, JSON.stringify(result, null, 2) + '\\n');\nawait wait(200);\nconsole.log(JSON.stringify({ event: 'actual-source-spawn-control-complete', falseKill: fault.results[0].status, testStartedForFault: false, sourceRestored: true }));\n"
+              ],
+              "startedAt": "2026-10-17T09:03:12.965Z",
+              "finishedAt": "2026-10-17T09:03:13.447Z",
+              "elapsedMs": 482.03385999999995,
+              "timeoutMs": 120000,
+              "status": 1,
+              "signal": null,
+              "stdoutBytes": 1949,
+              "stderrBytes": 2325,
+              "stdout": "{\"phase\":\"fixture-prepared\",\"observedAt\":\"2026-10-17T09:03:13.316Z\",\"value\":{\"sourceModules\":[{\"relative\":\"container/test-run.ts\",\"bytes\":5205,\"sha256\":\"d808824fdba60983af9983b110e089ab4245c38df9e6b2dc92afa4e60f750def\"},{\"relative\":\"container/mutant-loop.ts\",\"bytes\":7246,\"sha256\":\"dc8006a0c3b212f3550427c1ece3af69caa7d2c9aaac92445701a51261e643a4\"},{\"relative\":\"container/tsgo-check.ts\",\"bytes\":3107,\"sha256\":\"88d57ae89ff70ee132cb649671fcf676c0372ebad9ce2eb07445edb060f00f3c\"},{\"relative\":\"container/build-step.ts\",\"bytes\":3650,\"sha256\":\"f094e09eaa8075d4c2069284c54a370784edc97c366c0cd69b897df4c009ca78\"},{\"relative\":\"engine/splice.ts\",\"bytes\":1310,\"sha256\":\"441df683711120749e8c3562d1a80edd296cedc2bc5f32c916b1d171a478c468\"}],\"cgroupBefore\":{\"memory.max\":\"2147483648\",\"memory.events\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\",\"cpu.max\":\"200000 100000\",\"pids.max\":\"512\",\"pids.events\":\"max 0\"},\"compilerVersion\":\"7.0.2\",\"nodeExecutable\":\"/mise/installs/node/26.10.0/bin/node\",\"nodeVersion\":\"v26.10.0\",\"originalPath\":\"/usr/local/bin:/baked/node_modules/.bin:/usr/local/bin:/usr/bin\"}}\n{\"phase\":\"original-path-typecheck\",\"observedAt\":\"2026-10-17T09:03:13.389Z\",\"value\":{\"clean\":false,\"durationMs\":72.07191,\"detail\":\"SubprocessError: Command failed with exit code 1: node /baked/node_modules/typescript/lib/tsc.js --noEmit --project . node:fs:1756\\n  const result = binding.mkdir(\\n                         ^\\n\\nError: EEXIST: file already exists, mkdir '/work/control-bin'\\n    at mkdirSync (node:fs:1756:26)\\n    at [eval]:26:1\\n    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)\\n    at async node:internal/modules/esm/loader:226:26\\n    at async ModuleLoader.executeModuleJob (node:internal/modules/esm/loader:223:20)\\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:105:5) {\\n  errno: -17,\\n  code: 'EEXIST',\\n  syscall: 'mkdir',\\n  path: '/work/control-bin'\\n}\\n\\nNode.js v26.10.0\"}}\n",
+              "stderr": "{\"event\":\"mutation-owned-tmpfs-created\",\"volume\":\"depot-ci-mutation-f4a58102-ea6d-4e88-a79b-88bbb51c3ecc\",\"options\":\"rw,exec,size=2g,mode=1777,uid=1001,gid=1001\",\"uid\":1001,\"gid\":1001,\"capabilityAdditions\":[],\"userNamespaceMapping\":false}\n{\"event\":\"mutation-metadata-container-cleanup\",\"container\":\"68a97f0eaf6dc6ead611ce9798f18b375ec9855f0c41ad10713dc85be3f628df\",\"removalStatus\":0,\"remainingStatus\":1,\"cleanupVerified\":true}\n{\"event\":\"mutation-owned-metadata\",\"image\":\"localhost/mutation-test-runtime:24de541ad936\",\"imageId\":\"79e3e727a15b32ffb4a7692e1bf43bc8ce843f521a117202ed66c065343191d0\",\"sourcePath\":\"/baked/node_modules/.pnpm-workspace-state-v1.json\",\"original\":{\"mode\":\"-rw-------\",\"uid\":0,\"gid\":0,\"bytes\":29934},\"owned\":{\"uid\":1001,\"gid\":1001,\"mode\":384,\"bytes\":29934},\"sha256\":\"258ebc86ccb79bef8d9252d3a852d21dd74c2404c46062d9f40a15925cb841ca\",\"copiedSha256\":\"258ebc86ccb79bef8d9252d3a852d21dd74c2404c46062d9f40a15925cb841ca\",\"readonly\":true,\"sourceImageUnchanged\":true,\"archiveSha256\":\"c312ab21902b27f8546f84641367cd0674294ffe8ab950ba2d82ba76ab035560\"}\nnode:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: SubprocessError: Command failed with exit code 1: node /baked/node_modules/typescript/lib/tsc.js --noEmit --project . node:fs:1756\n  const result = binding.mkdir(\n                         ^\n\nError: EEXIST: file already exists, mkdir '/work/control-bin'\n    at mkdirSync (node:fs:1756:26)\n    at [eval]:26:1\n    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)\n    at async node:internal/modules/esm/loader:226:26\n    at async ModuleLoader.executeModuleJob (node:internal/modules/esm/loader:223:20)\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:105:5) {\n  errno: -17,\n  code: 'EEXIST',\n  syscall: 'mkdir',\n  path: '/work/control-bin'\n}\n\nNode.js v26.10.0\n\nfalse !== true\n\n    at [eval]:42:8\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: false,\n  expected: true,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.10.0\n{\"event\":\"mutation-owned-tmpfs-cleanup\",\"volume\":\"depot-ci-mutation-f4a58102-ea6d-4e88-a79b-88bbb51c3ecc\",\"cleanupStatus\":0,\"cleanupError\":\"\",\"remainingStatus\":1,\"cleanupVerified\":true}\n"
+            },
+            {
+              "command": "podman",
+              "args": [
+                "ps",
+                "--all",
+                "--filter",
+                "label=io.monochromatic.toml-spawn-control=af125e42-e4c3-4f6f-b91c-5b38fb693f41",
+                "--format",
+                "json"
+              ],
+              "startedAt": "2026-10-17T09:03:13.447Z",
+              "finishedAt": "2026-10-17T09:03:13.485Z",
+              "elapsedMs": 37.217269999999985,
+              "timeoutMs": 60000,
+              "status": 0,
+              "signal": null,
+              "stdoutBytes": 3,
+              "stderrBytes": 0,
+              "stdout": "[]\n",
+              "stderr": ""
+            },
+            {
+              "command": "podman",
+              "args": [
+                "ps",
+                "--all",
+                "--filter",
+                "label=io.monochromatic.toml-spawn-control=af125e42-e4c3-4f6f-b91c-5b38fb693f41",
+                "--format",
+                "json"
+              ],
+              "startedAt": "2026-10-17T09:03:13.485Z",
+              "finishedAt": "2026-10-17T09:03:13.524Z",
+              "elapsedMs": 39.26356999999996,
+              "timeoutMs": 60000,
+              "status": 0,
+              "signal": null,
+              "stdoutBytes": 3,
+              "stderrBytes": 0,
+              "stdout": "[]\n",
+              "stderr": ""
+            },
+            {
+              "command": "podman",
+              "args": [
+                "image",
+                "inspect",
+                "localhost/mutation-test-runtime:24de541ad936"
+              ],
+              "startedAt": "2026-10-17T09:03:13.524Z",
+              "finishedAt": "2026-10-17T09:03:13.566Z",
+              "elapsedMs": 41.60534999999993,
+              "timeoutMs": 60000,
+              "status": 0,
+              "signal": null,
+              "stdoutBytes": 8060,
+              "stderrBytes": 0,
+              "stdout": "[\n     {\n          \"Id\": \"79e3e727a15b32ffb4a7692e1bf43bc8ce843f521a117202ed66c065343191d0\",\n          \"Digest\": \"sha256:86cd6ff9a906b74dadbf7cf4bc7c5d878155b1475a02600ad5960b5a1df231a9\",\n          \"RepoTags\": [\n               \"localhost/mutation-test-runtime:24de541ad936\"\n          ],\n          \"RepoDigests\": [\n               \"localhost/mutation-test-runtime@sha256:86cd6ff9a906b74dadbf7cf4bc7c5d878155b1475a02600ad5960b5a1df231a9\"\n          ],\n          \"Parent\": \"405fba325d21910850176062a9a492cfc02452d48c69483f54c8905aa5d9471e\",\n          \"Comment\": \"\",\n          \"Created\": \"2026-10-17T09:03:03.809673044Z\",\n          \"Config\": {\n               \"Env\": [\n                    \"container=oci\",\n                    \"MISE_DATA_DIR=/mise\",\n                    \"MISE_CONFIG_DIR=/mise\",\n                    \"MISE_CACHE_DIR=/mise/cache\",\n                    \"PATH=/usr/local/bin:/baked/node_modules/.bin:/usr/local/bin:/usr/bin\"\n               ],\n               \"Cmd\": [\n                    \"node\",\n                    \"--version\"\n               ],\n               \"WorkingDir\": \"/baked\",\n               \"Labels\": {\n                    \"io.buildah.version\": \"1.43.2\",\n                    \"org.opencontainers.image.licenses\": \"MIT\",\n                    \"org.opencontainers.image.title\": \"fedora\",\n                    \"org.opencontainers.image.url\": \"https://fedoraproject.org/\",\n                    \"org.opencontainers.image.vendor\": \"Fedora Project\",\n                    \"org.opencontainers.image.version\": \"44\"\n               }\n          },\n          \"Version\": \"\",\n          \"Author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n          \"Architecture\": \"amd64\",\n          \"Os\": \"linux\",\n          \"Size\": 3768368300,\n          \"VirtualSize\": 3768368300,\n          \"GraphDriver\": {\n               \"Name\": \"overlay\",\n               \"Data\": {\n                    \"LowerDir\": \"/var/lib/containers/storage/overlay/bcb8fce2a8d425b56aa3cdf15db7bcd0ba55c53424f935ea60fdf421cf9aeba4/diff:/var/lib/containers/storage/overlay/a22b2f7847bc6cb7b351bd6e40f5cd0cc138ee934f8d13a6a0ce02ed659e7f7d/diff:/var/lib/containers/storage/overlay/5caf54cded652c824a21896b20048eccb11bb8cdce3ca774c3560cd32e1f61cc/diff\",\n                    \"UpperDir\": \"/var/lib/containers/storage/overlay/2a2a260ea378c181ab5c85e87485f64e85abbe453db9e851c23b2cf133aff9b4/diff\",\n                    \"WorkDir\": \"/var/lib/containers/storage/overlay/2a2a260ea378c181ab5c85e87485f64e85abbe453db9e851c23b2cf133aff9b4/work\"\n               }\n          },\n          \"RootFS\": {\n               \"Type\": \"layers\",\n               \"Layers\": [\n                    \"sha256:5caf54cded652c824a21896b20048eccb11bb8cdce3ca774c3560cd32e1f61cc\",\n                    \"sha256:7473028e0bfd956ab3692df0a93b3c8ce384f38f432aa10364450575d579a7ec\",\n                    \"sha256:68d4c7e71cceed5bf6b962f3655250b3f87adf9fb64fdf27e58ed43d5aaa3427\",\n                    \"sha256:d64a15bf1352140c76eedd9207d0e7d902be434b497ade4bb1990d661a8c9ce4\"\n               ]\n          },\n          \"Labels\": {\n               \"io.buildah.version\": \"1.43.2\",\n               \"org.opencontainers.image.licenses\": \"MIT\",\n               \"org.opencontainers.image.title\": \"fedora\",\n               \"org.opencontainers.image.url\": \"https://fedoraproject.org/\",\n               \"org.opencontainers.image.vendor\": \"Fedora Project\",\n               \"org.opencontainers.image.version\": \"44\"\n          },\n          \"Annotations\": {\n               \"org.opencontainers.image.base.digest\": \"sha256:a58bfac2282d9d234f130f1231ae464017bd13d207ed37abfd6f30e1aa07ed9c\",\n               \"org.opencontainers.image.base.name\": \"registry.fedoraproject.org/fedora:latest\",\n               \"org.opencontainers.image.created\": \"2026-10-17T09:03:03.809673044Z\"\n          },\n          \"ManifestType\": \"application/vnd.oci.image.manifest.v1+json\",\n          \"User\": \"\",\n          \"History\": [\n               {\n                    \"created\": \"2026-10-17T06:48:51.864654782Z\",\n                    \"created_by\": \"KIWI 11.1.1\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\"\n               },\n               {\n                    \"created\": \"2026-10-17T09:01:51.694275144Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) ENV MISE_DATA_DIR=/mise\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"comment\": \"FROM registry.fedoraproject.org/fedora:latest\",\n                    \"empty_layer\": true\n               },\n               {\n                    \"created\": \"2026-10-17T09:01:51.711530974Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) ENV MISE_CONFIG_DIR=/mise\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"empty_layer\": true\n               },\n               {\n                    \"created\": \"2026-10-17T09:01:51.728414204Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) ENV MISE_CACHE_DIR=/mise/cache\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"empty_layer\": true\n               },\n               {\n                    \"created\": \"2026-10-17T09:01:51.745611314Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) ENV PATH=/usr/local/bin:/baked/node_modules/.bin:$PATH\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"empty_layer\": true\n               },\n               {\n                    \"created\": \"2026-10-17T09:02:20.722656506Z\",\n                    \"created_by\": \"/bin/sh -c dnf install --assumeyes dnf-plugins-core ca-certificates curl git libatomic procps-ng rsync which   && dnf copr enable --assumeyes jdxcode/mise   && dnf install --assumeyes mise   && dnf clean all   && rm --recursive --force /var/cache/dnf\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\"\n               },\n               {\n                    \"created\": \"2026-10-17T09:02:21.790034885Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) SHELL [\\\"/bin/bash\\\", \\\"-o\\\", \\\"pipefail\\\", \\\"-c\\\"]\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"empty_layer\": true\n               },\n               {\n                    \"created\": \"2026-10-17T09:02:21.807913195Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) WORKDIR /baked\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"empty_layer\": true\n               },\n               {\n                    \"created\": \"2026-10-17T09:02:26.349822294Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) COPY dir:4949d3c68d029caaf88389121260e5ea32c1dfe4bcc4b23d37164675b5b47b42 in /baked      \",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\"\n               },\n               {\n                    \"created\": \"2026-10-17T09:02:54.840450116Z\",\n                    \"created_by\": \"/bin/sh -c export MISE_NPM_PACKAGE_MANAGER=npm   && mise trust /baked/mise.toml   && mise install --yes node npm:pnpm   && ln --symbolic --force \\\"$(mise exec node -- which node)\\\" /usr/local/bin/node   && ln --symbolic --force \\\"$(mise exec node -- which npm)\\\" /usr/local/bin/npm   && ln --symbolic --force \\\"$(mise exec node npm:pnpm -- which pnpm)\\\" /usr/local/bin/pnpm   && mise exec node npm:pnpm -- pnpm install --frozen-lockfile\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\"\n               },\n               {\n                    \"created\": \"2026-10-17T09:03:03.809755554Z\",\n                    \"created_by\": \"/bin/sh -c #(nop) CMD [\\\"node\\\", \\\"--version\\\"]\",\n                    \"author\": \"Fedora Project Contributors <devel@lists.fedoraproject.org>\",\n                    \"empty_layer\": true\n               }\n          ],\n          \"NamesHistory\": [\n               \"localhost/mutation-test-runtime:24de541ad936\"\n          ]\n     }\n]\n",
+              "stderr": ""
+            }
+          ],
+          "phaseArtifacts": [
+            {
+              "artifactPath": "toml-spawn-control-control-phases.jsonl",
+              "bytes": 1949,
+              "sha256": "d04e81b12edee84174f7a0c2f410fbf5c544d327741af6656b8ff17ab51257d3",
+              "text": "{\"phase\":\"fixture-prepared\",\"observedAt\":\"2026-10-17T09:03:13.316Z\",\"value\":{\"sourceModules\":[{\"relative\":\"container/test-run.ts\",\"bytes\":5205,\"sha256\":\"d808824fdba60983af9983b110e089ab4245c38df9e6b2dc92afa4e60f750def\"},{\"relative\":\"container/mutant-loop.ts\",\"bytes\":7246,\"sha256\":\"dc8006a0c3b212f3550427c1ece3af69caa7d2c9aaac92445701a51261e643a4\"},{\"relative\":\"container/tsgo-check.ts\",\"bytes\":3107,\"sha256\":\"88d57ae89ff70ee132cb649671fcf676c0372ebad9ce2eb07445edb060f00f3c\"},{\"relative\":\"container/build-step.ts\",\"bytes\":3650,\"sha256\":\"f094e09eaa8075d4c2069284c54a370784edc97c366c0cd69b897df4c009ca78\"},{\"relative\":\"engine/splice.ts\",\"bytes\":1310,\"sha256\":\"441df683711120749e8c3562d1a80edd296cedc2bc5f32c916b1d171a478c468\"}],\"cgroupBefore\":{\"memory.max\":\"2147483648\",\"memory.events\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\",\"cpu.max\":\"200000 100000\",\"pids.max\":\"512\",\"pids.events\":\"max 0\"},\"compilerVersion\":\"7.0.2\",\"nodeExecutable\":\"/mise/installs/node/26.10.0/bin/node\",\"nodeVersion\":\"v26.10.0\",\"originalPath\":\"/usr/local/bin:/baked/node_modules/.bin:/usr/local/bin:/usr/bin\"}}\n{\"phase\":\"original-path-typecheck\",\"observedAt\":\"2026-10-17T09:03:13.389Z\",\"value\":{\"clean\":false,\"durationMs\":72.07191,\"detail\":\"SubprocessError: Command failed with exit code 1: node /baked/node_modules/typescript/lib/tsc.js --noEmit --project . node:fs:1756\\n  const result = binding.mkdir(\\n                         ^\\n\\nError: EEXIST: file already exists, mkdir '/work/control-bin'\\n    at mkdirSync (node:fs:1756:26)\\n    at [eval]:26:1\\n    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)\\n    at async node:internal/modules/esm/loader:226:26\\n    at async ModuleLoader.executeModuleJob (node:internal/modules/esm/loader:223:20)\\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:105:5) {\\n  errno: -17,\\n  code: 'EEXIST',\\n  syscall: 'mkdir',\\n  path: '/work/control-bin'\\n}\\n\\nNode.js v26.10.0\"}}\n"
+            }
+          ]
+        },
+        "sourceBefore": {
+          "schemaVersion": 1,
+          "event": "source-provenance",
+          "developmentOnly": true,
+          "phase": "before",
+          "cohort": {
+            "id": "toml-spawn-control-observed-20261017T085957693Z",
+            "manifestSha256": "08bc4480b994e7c5608b76bf0266a1ebb9e1a0cafd46c6966a59f3c7859eee00",
+            "requestedAt": "2026-10-17T08:59:57.693Z"
+          },
+          "identity": {
+            "head": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+            "sourceTree": "815e35009780abd2e98bd9bd1ccd92dcb2ef14bf",
+            "trackedStatus": "",
+            "inputs": {
+              ".cargo/config.toml": "7352bfbf249b17aa4293845ef4ef6766227e6ed059d3861556595fa543af01f5",
+              ".pnpmfile.policies.json": "6ea9a99940e8c40e194a7cc0a3627d1c0ccc2d50857b40cb5ff80d7d22001b4a",
+              "bunfig.toml": "433ee4acbd86e36b61ac8606d7dc41be82fdff0f892affd45d32be28c8dba74a",
+              "cli-git.config.ts": "9fd973870c43dfd62f8e897137a2d50a5636af2c9639616856d2c0010f860524",
+              "clippy.toml": "b4ed358ce9e6a485b48b78e88bfe59b0519c5d8c15a1ef97d689492861a447bc",
+              "docker-compose.yml": "92c5ac2157cfed0ad149359ce9986890164463150d5abf23ed90c2cbd5356620",
+              "dprint.json": "9e4ada0fb986fb2a4b7cd023b79d356136564c74bb104d707d4592c111777920",
+              "file-enforcer.config.ts": "cf41571036ccaef87dc45c185215f58834971267c7f371eeef96446fe6bf9ba6",
+              "mise.lock": "5c2f93717958a7401c46775dd5d0e5cc7b07e839a8d3d2f4e139a2a87827d248",
+              "mise.no-env.toml": "0800fb457406cb7eb9b87850cb3758670f0bcd36feba434e0f93625bef20f290",
+              "mise.toml": "22e39e9366f921953f321f0ba378dde13b291240aa1366a4cb25ce5705570464",
+              "node.config.json": "5642c9388056b13923039bd49054c620b969eda1c71f1c9f73790bf34d8feacb",
+              "oxlint.config.ts": "d3a7cc1ee8c002479bc1c9b628ce57e04b6a27a97d891b2715313bfcf5bfa54b",
+              "package.json": "5b0c4ce7596721e7dd77af9b57cf34f0ccd0ee415a52af7173536980f49e8a39",
+              "package/cli/forbidden-strings/Cargo.lock": "4b64d37d5296c2d5a425d8069b4921da3b6a5eaf78e59e12f41b4cb8588ff326",
+              "package/cli/forbidden-strings/Cargo.toml": "9f177f6af455fa0cf9189d32ac02c82333f7595ac9e8604d17f398a52d67de56",
+              "package/cli/nested-wayland-session/Cargo.lock": "0f2abdd3762b9600fecbfde440387b5478f418d20198585ea309a16b6b13c4dc",
+              "package/cli/nested-wayland-session/Cargo.toml": "ca8a975b9fe2313802e543cb837a5bd5405fbaad7a3f91e99f58f705ead19d1f",
+              "package/cli/wg-quicker-exempt/Cargo.lock": "bd3638a5288926b8b864e483fa1324657143c4f2bfe17c6c434f949a8ef9c0d6",
+              "package/cli/wg-quicker-exempt/Cargo.toml": "58e4edd1f049a609ddac57f28ca09e46da89b7a3ef3f33b9f5fc51c9362297db",
+              "package/desktop-app/file-manager-gtk-sticky/Cargo.lock": "79de51d3deda1821dece0b15b8517eb16b2d3d6be39fa572cce3c19e528f5011",
+              "package/desktop-app/file-manager-gtk-sticky/Cargo.toml": "978f882d0063ade072fb954be0eb7c08fd90bcb521b14271caee896696dcab5a",
+              "package/desktop-app/file-manager-qt/Cargo.lock": "07de4e174d187f75c65d91ccdc81e2b5e47870e1190fb1e57bc5c77f1a433817",
+              "package/desktop-app/file-manager-qt/Cargo.toml": "d62d5cadab47f6dfa08f7f961dbcc7bce9a2a3771fa0f4878f0bee4618b881b7",
+              "package/desktop-app/file-manager/Cargo.lock": "9be2ec600240a43680fe70f5330e0c2b465bc4256617329fd7c45c7442d2ad00",
+              "package/desktop-app/file-manager/Cargo.toml": "896ded3cc831394f687e75e8996740e05c65ece5258b78b3fce914ec1c41b48f",
+              "package/desktop-app/terminal/Cargo.lock": "7b961ba4579b9beb5e111c3396197d2d96e774d154e46d4ef4a18caf55eefe03",
+              "package/desktop-app/terminal/Cargo.toml": "cf65476a1b136440c3b77d281736273ef4dcca57696f9223b59eeca09035ce25",
+              "package/dev-script/file-enforcer/mise.toml": "e3cde5df52594c2a59c3ce44409169dced9e002b0a636cc38a1dafbe39140d1c",
+              "package/dev-script/file-enforcer/package.json": "4c39abb2737e49c2c151ef6421e69ff5fb96fd4d8d6eed4c1acd019df0719df4",
+              "package/dev-script/file-enforcer/rolldown.node.config.ts": "4d7006238ff573e484c44dfd3eb35bf95b868585da4764e65d9731f281494487",
+              "package/dev-script/file-enforcer/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/dev-script/vm-builder/mise.toml": "4bb5dbece0deafe7c15ade4bb71067eb06b06553fab4fdcf4c982aa351916586",
+              "package/dev-script/vm-builder/package.json": "573b8b21c97c415b6e5e2c511f278b9ac3a6c1bea9a50217c2e08ec2c244d3e3",
+              "package/dev-script/vm-builder/rolldown.node.config.ts": "b9c187392bfe6601d3580debc7ca2703d1dd2be800385948400d82fdabf2205e",
+              "package/dev-script/vm-builder/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/fuzz/forbidden-strings/Cargo.lock": "038def10192dcfbeb8dd9b5b5058b5825000eccfe13d18a703e8804d72d6fde9",
+              "package/fuzz/forbidden-strings/Cargo.toml": "e5301d702b4b405add68d5ec959db76610820ba5a85d31882fda36bc95fabd9d",
+              "package/linter/rust/Cargo.lock": "aa73aee225f08c4e9ff0693f9e2b5d7b5ffbc16968df1e5706c31db77af20d02",
+              "package/linter/rust/Cargo.toml": "402882fdbe897311a0a1229ea3106475a42660c3794404796bc11009f6d067eb",
+              "package/module/toml-edit.fuzz/coverage-baseline.json": "956fe91d4b10044e95fffd9d8bd68d0a1db09b672d6ad70c81dfa5eab1f8fd2d",
+              "package/module/toml-edit.fuzz/mise.toml": "4f8d9df1bce6a46634a66c45965917ad8b07b75ed3cb023bf9b672925f3558c4",
+              "package/module/toml-edit.fuzz/package.json": "4aaabb48f1acc138b8e8ebb8d1a0c608a22421c1cac96aed20b4f210b007a2fc",
+              "package/module/toml-edit.fuzz/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/module/toml-edit/mise.toml": "d41cfe0f1b723dc8d717b42dc64336609c8e745d228d3c44a077d6c2a5584a91",
+              "package/module/toml-edit/package.json": "98157094dfb0bec11f7388b6fd892bbea706db78edeb26bb40deb1b7839c8893",
+              "package/module/toml-edit/rolldown.browser.config.ts": "b4752a0175d6d6dcd3c7860e3fa48a1e389b9bf46fa09a43af6743704a64acb0",
+              "package/module/toml-edit/rolldown.node.config.ts": "4d7006238ff573e484c44dfd3eb35bf95b868585da4764e65d9731f281494487",
+              "package/module/toml-edit/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/music-player/android-app/rust/Cargo.lock": "b5b622d725df116fb4577185c06a0e7fc6f2b9c56a7761410bc9c76867cc03d8",
+              "package/music-player/android-app/rust/Cargo.toml": "2603e034f31c7d2d3572a51e4538c0cee27ca6698097c6fa255bf867ca70ffe9",
+              "package/music-player/desktop-app/Cargo.lock": "c6a50868db9aa083795c4df72d60f147322c0f4d54653016ab839b0141ff3def",
+              "package/music-player/desktop-app/Cargo.toml": "7066ba35c31fd538afa903b2c2fbb0cf16676443733b7f6cd69f273cc199c00f",
+              "package/music-player/truepeak-core.bench/Cargo.lock": "a78ca43d2e413cdf1364dcc6314335dbc11ad72050c5b1a89602e584bbd69dd9",
+              "package/music-player/truepeak-core.bench/Cargo.toml": "3ff02eea82e53c4158786d2407d66dbc24c3514fb19e198e196e7f53499e7a97",
+              "package/music-player/truepeak-core/Cargo.lock": "774e4ad29f37ea3e6bae54788c25ed7f7cee871ea4319cda0df3c3b2c1aff042",
+              "package/music-player/truepeak-core/Cargo.toml": "94857eddf8d433a27b79207405f6a4f9bf918f5f875241d00efe1f86001e9542",
+              "package/oxlint-plugin/prefer-readonly-parameter-type/mise.toml": "992ee0bb956d5879d6b8232e099a1459463f5f5cdab158222a7e013bfc0ac11a",
+              "package/oxlint-plugin/prefer-readonly-parameter-type/package.json": "eeababb049900694c14bee19bf6ce31e2d5dbb982b91cb5aa55f62056144ad98",
+              "package/oxlint-plugin/prefer-readonly-parameter-type/rolldown.node.config.ts": "4d7006238ff573e484c44dfd3eb35bf95b868585da4764e65d9731f281494487",
+              "package/oxlint-plugin/prefer-readonly-parameter-type/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/rust-linter-plugin/builtin/Cargo.lock": "7fa6d117cc4d2f31399d3e54f0e0422f23bf7ecef48efb9021f07cf7712ee239",
+              "package/rust-linter-plugin/builtin/Cargo.toml": "e06a5a8802f9a3d889f439c520f56d17ea4fc09244f3d5485e380f46be9b0a6c",
+              "package/rust-module/forbidden-regex.bench/Cargo.lock": "5c3ff21c5ab0f68867031ee3b9e43af73888e3e3d9569c7a6f3ce15e177cc31f",
+              "package/rust-module/forbidden-regex.bench/Cargo.toml": "db005ddaaf803830fd3a3943fdb898b930d4351195d695ca73dfef143cd337b2",
+              "package/rust-module/forbidden-regex.fuzz/Cargo.lock": "45ce6561ae598d589c9d1a7bca8aa5ea977a17bb1d6ffde9201f3399221bcc5e",
+              "package/rust-module/forbidden-regex.fuzz/Cargo.toml": "1d53d2a3be62afda4b4b2ad94cc40fbc544a3d2d8db5151dda8a74bd31aca919",
+              "package/rust-module/forbidden-regex/Cargo.lock": "b040aa536cc7b150120fd7105ae8fb6f0c137e9ae85a57a2f4eac06551258653",
+              "package/rust-module/forbidden-regex/Cargo.toml": "ebd9f626f71d1058bd710d523ec3bccfd7f6a56323fcc07bb34ef4c7909a7e72",
+              "package/rust-module/rust-linter-core/Cargo.lock": "680b6120ddc3f5fabc964f859df47be74ca6a6c8dbdfd85aa91e92978bccc30f",
+              "package/rust-module/rust-linter-core/Cargo.toml": "e52002cff0b815da660935492255c50b33d3f02200a2904ac86dcf3c0431cfda",
+              "package/rust-module/rust-linter-pattern/Cargo.lock": "6f9726c883d0314a3a7d5ad427ce133a0283f982342d1e2956e355f96795618d",
+              "package/rust-module/rust-linter-pattern/Cargo.toml": "35dbe8b82d49b0644bf4284e2c07927798a8ea91b4221dd42059c2eecb2904e1",
+              "package/test-fixture/file-enforcer-perf/mise.toml": "cc65f846352414d279b36655eb6cba19d2bed22efb93a50b51293e7daf154813",
+              "package/test-fixture/file-enforcer-perf/package.json": "5a2ec550e7eee8a052790b48939f899e98ba5c516396f677c387e61aaf1c8b36",
+              "package/test-fixture/file-enforcer-perf/src/perf.config.ts": "b4e4c301878811a367395c38e1caaa17bbef6356d2a5421205aaf5e5c09cb508",
+              "package/test-fixture/file-enforcer-perf/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "playwright.browser.config.ts": "22481714fd67d226521833e84b99baa0fe51922d3e2d9c1633ed2d4ae441118f",
+              "playwright.e2e.config.ts": "6b35988518bdae0839af449415228647348ba04322a1c3bc4cf6a255f3a70b6a",
+              "pnpm-lock.yaml": "e8fd3b8edb607d95f3d38249ec0b2c5ffffb18c96c65c6c31fd78c4b0877bc7e",
+              "pnpm-workspace.yaml": "ce536085d10b5e2d278fcad46e686bba77fe0d5031c1ce31255acda43e06a9ff",
+              "slopo.conf.yaml": "8bca4457e283f563a87214a7bd66514b43c168483c6f38394dc2d7333b20673d",
+              "socket.json": "7696f04db14bc1a2b5c90e2989f4dcc5b2ede18b9e187372d2fd76de32684826",
+              "stylelint.config.mjs": "83bc5d30378d7daa500be0d484b0b712cfb220b08ae119524e9a58900c51e71b",
+              "tsconfig.json": "47907a658a585e474edea803471264075658e6c2f9bad7a4c5a3044892bdf1ee"
+            }
+          },
+          "harnessRevision": "b951351e898867524caba76f8a45f8d65a6603db",
+          "manifestSha256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+          "observedAt": "2026-10-17T09:01:47.137Z",
+          "verifierNode": "v26.11.1"
+        },
+        "sourceAfter": {
+          "schemaVersion": 1,
+          "event": "source-provenance",
+          "developmentOnly": true,
+          "phase": "after",
+          "cohort": {
+            "id": "toml-spawn-control-observed-20261017T085957693Z",
+            "manifestSha256": "08bc4480b994e7c5608b76bf0266a1ebb9e1a0cafd46c6966a59f3c7859eee00",
+            "requestedAt": "2026-10-17T08:59:57.693Z"
+          },
+          "identity": {
+            "head": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+            "sourceTree": "815e35009780abd2e98bd9bd1ccd92dcb2ef14bf",
+            "trackedStatus": "",
+            "inputs": {
+              ".cargo/config.toml": "7352bfbf249b17aa4293845ef4ef6766227e6ed059d3861556595fa543af01f5",
+              ".pnpmfile.policies.json": "6ea9a99940e8c40e194a7cc0a3627d1c0ccc2d50857b40cb5ff80d7d22001b4a",
+              "bunfig.toml": "433ee4acbd86e36b61ac8606d7dc41be82fdff0f892affd45d32be28c8dba74a",
+              "cli-git.config.ts": "9fd973870c43dfd62f8e897137a2d50a5636af2c9639616856d2c0010f860524",
+              "clippy.toml": "b4ed358ce9e6a485b48b78e88bfe59b0519c5d8c15a1ef97d689492861a447bc",
+              "docker-compose.yml": "92c5ac2157cfed0ad149359ce9986890164463150d5abf23ed90c2cbd5356620",
+              "dprint.json": "9e4ada0fb986fb2a4b7cd023b79d356136564c74bb104d707d4592c111777920",
+              "file-enforcer.config.ts": "cf41571036ccaef87dc45c185215f58834971267c7f371eeef96446fe6bf9ba6",
+              "mise.lock": "5c2f93717958a7401c46775dd5d0e5cc7b07e839a8d3d2f4e139a2a87827d248",
+              "mise.no-env.toml": "0800fb457406cb7eb9b87850cb3758670f0bcd36feba434e0f93625bef20f290",
+              "mise.toml": "22e39e9366f921953f321f0ba378dde13b291240aa1366a4cb25ce5705570464",
+              "node.config.json": "5642c9388056b13923039bd49054c620b969eda1c71f1c9f73790bf34d8feacb",
+              "oxlint.config.ts": "d3a7cc1ee8c002479bc1c9b628ce57e04b6a27a97d891b2715313bfcf5bfa54b",
+              "package.json": "5b0c4ce7596721e7dd77af9b57cf34f0ccd0ee415a52af7173536980f49e8a39",
+              "package/cli/forbidden-strings/Cargo.lock": "4b64d37d5296c2d5a425d8069b4921da3b6a5eaf78e59e12f41b4cb8588ff326",
+              "package/cli/forbidden-strings/Cargo.toml": "9f177f6af455fa0cf9189d32ac02c82333f7595ac9e8604d17f398a52d67de56",
+              "package/cli/nested-wayland-session/Cargo.lock": "0f2abdd3762b9600fecbfde440387b5478f418d20198585ea309a16b6b13c4dc",
+              "package/cli/nested-wayland-session/Cargo.toml": "ca8a975b9fe2313802e543cb837a5bd5405fbaad7a3f91e99f58f705ead19d1f",
+              "package/cli/wg-quicker-exempt/Cargo.lock": "bd3638a5288926b8b864e483fa1324657143c4f2bfe17c6c434f949a8ef9c0d6",
+              "package/cli/wg-quicker-exempt/Cargo.toml": "58e4edd1f049a609ddac57f28ca09e46da89b7a3ef3f33b9f5fc51c9362297db",
+              "package/desktop-app/file-manager-gtk-sticky/Cargo.lock": "79de51d3deda1821dece0b15b8517eb16b2d3d6be39fa572cce3c19e528f5011",
+              "package/desktop-app/file-manager-gtk-sticky/Cargo.toml": "978f882d0063ade072fb954be0eb7c08fd90bcb521b14271caee896696dcab5a",
+              "package/desktop-app/file-manager-qt/Cargo.lock": "07de4e174d187f75c65d91ccdc81e2b5e47870e1190fb1e57bc5c77f1a433817",
+              "package/desktop-app/file-manager-qt/Cargo.toml": "d62d5cadab47f6dfa08f7f961dbcc7bce9a2a3771fa0f4878f0bee4618b881b7",
+              "package/desktop-app/file-manager/Cargo.lock": "9be2ec600240a43680fe70f5330e0c2b465bc4256617329fd7c45c7442d2ad00",
+              "package/desktop-app/file-manager/Cargo.toml": "896ded3cc831394f687e75e8996740e05c65ece5258b78b3fce914ec1c41b48f",
+              "package/desktop-app/terminal/Cargo.lock": "7b961ba4579b9beb5e111c3396197d2d96e774d154e46d4ef4a18caf55eefe03",
+              "package/desktop-app/terminal/Cargo.toml": "cf65476a1b136440c3b77d281736273ef4dcca57696f9223b59eeca09035ce25",
+              "package/dev-script/file-enforcer/mise.toml": "e3cde5df52594c2a59c3ce44409169dced9e002b0a636cc38a1dafbe39140d1c",
+              "package/dev-script/file-enforcer/package.json": "4c39abb2737e49c2c151ef6421e69ff5fb96fd4d8d6eed4c1acd019df0719df4",
+              "package/dev-script/file-enforcer/rolldown.node.config.ts": "4d7006238ff573e484c44dfd3eb35bf95b868585da4764e65d9731f281494487",
+              "package/dev-script/file-enforcer/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/dev-script/vm-builder/mise.toml": "4bb5dbece0deafe7c15ade4bb71067eb06b06553fab4fdcf4c982aa351916586",
+              "package/dev-script/vm-builder/package.json": "573b8b21c97c415b6e5e2c511f278b9ac3a6c1bea9a50217c2e08ec2c244d3e3",
+              "package/dev-script/vm-builder/rolldown.node.config.ts": "b9c187392bfe6601d3580debc7ca2703d1dd2be800385948400d82fdabf2205e",
+              "package/dev-script/vm-builder/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/fuzz/forbidden-strings/Cargo.lock": "038def10192dcfbeb8dd9b5b5058b5825000eccfe13d18a703e8804d72d6fde9",
+              "package/fuzz/forbidden-strings/Cargo.toml": "e5301d702b4b405add68d5ec959db76610820ba5a85d31882fda36bc95fabd9d",
+              "package/linter/rust/Cargo.lock": "aa73aee225f08c4e9ff0693f9e2b5d7b5ffbc16968df1e5706c31db77af20d02",
+              "package/linter/rust/Cargo.toml": "402882fdbe897311a0a1229ea3106475a42660c3794404796bc11009f6d067eb",
+              "package/module/toml-edit.fuzz/coverage-baseline.json": "956fe91d4b10044e95fffd9d8bd68d0a1db09b672d6ad70c81dfa5eab1f8fd2d",
+              "package/module/toml-edit.fuzz/mise.toml": "4f8d9df1bce6a46634a66c45965917ad8b07b75ed3cb023bf9b672925f3558c4",
+              "package/module/toml-edit.fuzz/package.json": "4aaabb48f1acc138b8e8ebb8d1a0c608a22421c1cac96aed20b4f210b007a2fc",
+              "package/module/toml-edit.fuzz/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/module/toml-edit/mise.toml": "d41cfe0f1b723dc8d717b42dc64336609c8e745d228d3c44a077d6c2a5584a91",
+              "package/module/toml-edit/package.json": "98157094dfb0bec11f7388b6fd892bbea706db78edeb26bb40deb1b7839c8893",
+              "package/module/toml-edit/rolldown.browser.config.ts": "b4752a0175d6d6dcd3c7860e3fa48a1e389b9bf46fa09a43af6743704a64acb0",
+              "package/module/toml-edit/rolldown.node.config.ts": "4d7006238ff573e484c44dfd3eb35bf95b868585da4764e65d9731f281494487",
+              "package/module/toml-edit/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/music-player/android-app/rust/Cargo.lock": "b5b622d725df116fb4577185c06a0e7fc6f2b9c56a7761410bc9c76867cc03d8",
+              "package/music-player/android-app/rust/Cargo.toml": "2603e034f31c7d2d3572a51e4538c0cee27ca6698097c6fa255bf867ca70ffe9",
+              "package/music-player/desktop-app/Cargo.lock": "c6a50868db9aa083795c4df72d60f147322c0f4d54653016ab839b0141ff3def",
+              "package/music-player/desktop-app/Cargo.toml": "7066ba35c31fd538afa903b2c2fbb0cf16676443733b7f6cd69f273cc199c00f",
+              "package/music-player/truepeak-core.bench/Cargo.lock": "a78ca43d2e413cdf1364dcc6314335dbc11ad72050c5b1a89602e584bbd69dd9",
+              "package/music-player/truepeak-core.bench/Cargo.toml": "3ff02eea82e53c4158786d2407d66dbc24c3514fb19e198e196e7f53499e7a97",
+              "package/music-player/truepeak-core/Cargo.lock": "774e4ad29f37ea3e6bae54788c25ed7f7cee871ea4319cda0df3c3b2c1aff042",
+              "package/music-player/truepeak-core/Cargo.toml": "94857eddf8d433a27b79207405f6a4f9bf918f5f875241d00efe1f86001e9542",
+              "package/oxlint-plugin/prefer-readonly-parameter-type/mise.toml": "992ee0bb956d5879d6b8232e099a1459463f5f5cdab158222a7e013bfc0ac11a",
+              "package/oxlint-plugin/prefer-readonly-parameter-type/package.json": "eeababb049900694c14bee19bf6ce31e2d5dbb982b91cb5aa55f62056144ad98",
+              "package/oxlint-plugin/prefer-readonly-parameter-type/rolldown.node.config.ts": "4d7006238ff573e484c44dfd3eb35bf95b868585da4764e65d9731f281494487",
+              "package/oxlint-plugin/prefer-readonly-parameter-type/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/rust-linter-plugin/builtin/Cargo.lock": "7fa6d117cc4d2f31399d3e54f0e0422f23bf7ecef48efb9021f07cf7712ee239",
+              "package/rust-linter-plugin/builtin/Cargo.toml": "e06a5a8802f9a3d889f439c520f56d17ea4fc09244f3d5485e380f46be9b0a6c",
+              "package/rust-module/forbidden-regex.bench/Cargo.lock": "5c3ff21c5ab0f68867031ee3b9e43af73888e3e3d9569c7a6f3ce15e177cc31f",
+              "package/rust-module/forbidden-regex.bench/Cargo.toml": "db005ddaaf803830fd3a3943fdb898b930d4351195d695ca73dfef143cd337b2",
+              "package/rust-module/forbidden-regex.fuzz/Cargo.lock": "45ce6561ae598d589c9d1a7bca8aa5ea977a17bb1d6ffde9201f3399221bcc5e",
+              "package/rust-module/forbidden-regex.fuzz/Cargo.toml": "1d53d2a3be62afda4b4b2ad94cc40fbc544a3d2d8db5151dda8a74bd31aca919",
+              "package/rust-module/forbidden-regex/Cargo.lock": "b040aa536cc7b150120fd7105ae8fb6f0c137e9ae85a57a2f4eac06551258653",
+              "package/rust-module/forbidden-regex/Cargo.toml": "ebd9f626f71d1058bd710d523ec3bccfd7f6a56323fcc07bb34ef4c7909a7e72",
+              "package/rust-module/rust-linter-core/Cargo.lock": "680b6120ddc3f5fabc964f859df47be74ca6a6c8dbdfd85aa91e92978bccc30f",
+              "package/rust-module/rust-linter-core/Cargo.toml": "e52002cff0b815da660935492255c50b33d3f02200a2904ac86dcf3c0431cfda",
+              "package/rust-module/rust-linter-pattern/Cargo.lock": "6f9726c883d0314a3a7d5ad427ce133a0283f982342d1e2956e355f96795618d",
+              "package/rust-module/rust-linter-pattern/Cargo.toml": "35dbe8b82d49b0644bf4284e2c07927798a8ea91b4221dd42059c2eecb2904e1",
+              "package/test-fixture/file-enforcer-perf/mise.toml": "cc65f846352414d279b36655eb6cba19d2bed22efb93a50b51293e7daf154813",
+              "package/test-fixture/file-enforcer-perf/package.json": "5a2ec550e7eee8a052790b48939f899e98ba5c516396f677c387e61aaf1c8b36",
+              "package/test-fixture/file-enforcer-perf/src/perf.config.ts": "b4e4c301878811a367395c38e1caaa17bbef6356d2a5421205aaf5e5c09cb508",
+              "package/test-fixture/file-enforcer-perf/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "playwright.browser.config.ts": "22481714fd67d226521833e84b99baa0fe51922d3e2d9c1633ed2d4ae441118f",
+              "playwright.e2e.config.ts": "6b35988518bdae0839af449415228647348ba04322a1c3bc4cf6a255f3a70b6a",
+              "pnpm-lock.yaml": "e8fd3b8edb607d95f3d38249ec0b2c5ffffb18c96c65c6c31fd78c4b0877bc7e",
+              "pnpm-workspace.yaml": "ce536085d10b5e2d278fcad46e686bba77fe0d5031c1ce31255acda43e06a9ff",
+              "slopo.conf.yaml": "8bca4457e283f563a87214a7bd66514b43c168483c6f38394dc2d7333b20673d",
+              "socket.json": "7696f04db14bc1a2b5c90e2989f4dcc5b2ede18b9e187372d2fd76de32684826",
+              "stylelint.config.mjs": "83bc5d30378d7daa500be0d484b0b712cfb220b08ae119524e9a58900c51e71b",
+              "tsconfig.json": "47907a658a585e474edea803471264075658e6c2f9bad7a4c5a3044892bdf1ee"
+            }
+          },
+          "harnessRevision": "b951351e898867524caba76f8a45f8d65a6603db",
+          "manifestSha256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+          "observedAt": "2026-10-17T09:03:14.070Z",
+          "verifierNode": "v26.11.1"
+        },
+        "phases": [
+          {
+            "phase": "fixture-prepared",
+            "observedAt": "2026-10-17T09:03:13.316Z",
+            "value": {
+              "sourceModules": [
+                {
+                  "relative": "container/test-run.ts",
+                  "bytes": 5205,
+                  "sha256": "d808824fdba60983af9983b110e089ab4245c38df9e6b2dc92afa4e60f750def"
+                },
+                {
+                  "relative": "container/mutant-loop.ts",
+                  "bytes": 7246,
+                  "sha256": "dc8006a0c3b212f3550427c1ece3af69caa7d2c9aaac92445701a51261e643a4"
+                },
+                {
+                  "relative": "container/tsgo-check.ts",
+                  "bytes": 3107,
+                  "sha256": "88d57ae89ff70ee132cb649671fcf676c0372ebad9ce2eb07445edb060f00f3c"
+                },
+                {
+                  "relative": "container/build-step.ts",
+                  "bytes": 3650,
+                  "sha256": "f094e09eaa8075d4c2069284c54a370784edc97c366c0cd69b897df4c009ca78"
+                },
+                {
+                  "relative": "engine/splice.ts",
+                  "bytes": 1310,
+                  "sha256": "441df683711120749e8c3562d1a80edd296cedc2bc5f32c916b1d171a478c468"
+                }
+              ],
+              "cgroupBefore": {
+                "memory.max": "2147483648",
+                "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0",
+                "cpu.max": "200000 100000",
+                "pids.max": "512",
+                "pids.events": "max 0"
+              },
+              "compilerVersion": "7.0.2",
+              "nodeExecutable": "/mise/installs/node/26.10.0/bin/node",
+              "nodeVersion": "v26.10.0",
+              "originalPath": "/usr/local/bin:/baked/node_modules/.bin:/usr/local/bin:/usr/bin"
+            }
+          },
+          {
+            "phase": "original-path-typecheck",
+            "observedAt": "2026-10-17T09:03:13.389Z",
+            "value": {
+              "clean": false,
+              "durationMs": 72.07191,
+              "detail": "SubprocessError: Command failed with exit code 1: node /baked/node_modules/typescript/lib/tsc.js --noEmit --project . node:fs:1756\n  const result = binding.mkdir(\n                         ^\n\nError: EEXIST: file already exists, mkdir '/work/control-bin'\n    at mkdirSync (node:fs:1756:26)\n    at [eval]:26:1\n    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)\n    at async node:internal/modules/esm/loader:226:26\n    at async ModuleLoader.executeModuleJob (node:internal/modules/esm/loader:223:20)\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:105:5) {\n  errno: -17,\n  code: 'EEXIST',\n  syscall: 'mkdir',\n  path: '/work/control-bin'\n}\n\nNode.js v26.10.0"
+            }
+          }
+        ],
+        "providerMetrics": {
+          "type": "attempt",
+          "snapshot_at": "2026-10-17T09:03:28.194Z",
+          "run": {
+            "run_id": "j03l179f3x",
+            "repo": "Aquaticats/Monochromatic",
+            "ref": "refs/heads/trial/depot-toml-spawn-control-20261017",
+            "sha": "b951351e898867524caba76f8a45f8d65a6603db",
+            "head_sha": "b951351e898867524caba76f8a45f8d65a6603db",
+            "trigger": "workflow_dispatch",
+            "status": "failed",
+            "created_at": "2026-10-17T08:59:58.729Z",
+            "started_at": "2026-10-17T08:59:58.955Z",
+            "finished_at": "2026-10-17T09:03:16.109Z"
+          },
+          "workflow": {
+            "workflow_id": "z2s2lbwzlx",
+            "workflow_path": "depot-complete-toml-spawn-control.yml",
+            "name": "depot-complete-toml-spawn-control",
+            "status": "failed",
+            "created_at": "2026-10-17T09:00:07.821Z",
+            "started_at": "2026-10-17T09:00:07.819Z",
+            "finished_at": "2026-10-17T09:03:15.676Z"
+          },
+          "job": {
+            "job_id": "3tqnmtv0js",
+            "job_key": "depot-complete-toml-spawn-control.yml:pilot",
+            "status": "failed",
+            "conclusion": "failure",
+            "current_attempt": 1,
+            "created_at": "2026-10-17T09:00:07.834Z",
+            "started_at": "2026-10-17T09:00:12.346Z",
+            "finished_at": "2026-10-17T09:03:15.338Z"
+          },
+          "attempt": {
+            "attempt": {
+              "attempt_id": "cs1f7v29h7",
+              "attempt": 1,
+              "status": "failed",
+              "conclusion": "failure",
+              "sandbox_id": "0rs5sjfhnzw8npnckw8c",
+              "session_id": "5ab9703e-11d9-43b8-bc2d-ca5954e319a3",
+              "created_at": "2026-10-17T09:00:08.762Z",
+              "started_at": "2026-10-17T09:00:12.346Z",
+              "finished_at": "2026-10-17T09:03:15.338Z"
+            },
+            "availability": {
+              "code": "available",
+              "reason": "available"
+            },
+            "stats": {
+              "sample_count": 35,
+              "cpu_sample_count": 34,
+              "memory_sample_count": 35,
+              "peak_cpu_utilization": 0.10044977511244378,
+              "average_cpu_utilization": 0.030604763701794213,
+              "peak_memory_utilization": 0.040289440424573525,
+              "average_memory_utilization": 0.025107055860914877,
+              "observed_started_at": "2026-10-17T09:00:29Z",
+              "observed_finished_at": "2026-10-17T09:03:14Z"
+            },
+            "cap": {
+              "raw_sample_count": 35,
+              "returned_sample_count": 35,
+              "max_returned_sample_count": 5000,
+              "downsampled": false,
+              "downsample_strategy": ""
+            },
+            "samples": [
+              {
+                "timestamp": "2026-10-17T09:00:29Z",
+                "memory_utilization": 0.013619725448026235
+              },
+              {
+                "timestamp": "2026-10-17T09:00:30Z",
+                "cpu_utilization": 0.016321406151914627,
+                "memory_utilization": 0.014835182322782975
+              },
+              {
+                "timestamp": "2026-10-17T09:00:34Z",
+                "cpu_utilization": 0.0004689698296076286,
+                "memory_utilization": 0.01414372457143468
+              },
+              {
+                "timestamp": "2026-10-17T09:00:39Z",
+                "cpu_utilization": 0.012875,
+                "memory_utilization": 0.014136192881240794
+              },
+              {
+                "timestamp": "2026-10-17T09:00:44Z",
+                "cpu_utilization": 0.02101313320825516,
+                "memory_utilization": 0.014266600452581693
+              },
+              {
+                "timestamp": "2026-10-17T09:00:49Z",
+                "cpu_utilization": 0.0196176433837311,
+                "memory_utilization": 0.014619375102953346
+              },
+              {
+                "timestamp": "2026-10-17T09:00:54Z",
+                "cpu_utilization": 0.04555097965805566,
+                "memory_utilization": 0.02462710844807823
+              },
+              {
+                "timestamp": "2026-10-17T09:00:59Z",
+                "cpu_utilization": 0.013741411617738912,
+                "memory_utilization": 0.02966726693427653
+              },
+              {
+                "timestamp": "2026-10-17T09:01:04Z",
+                "cpu_utilization": 0.0012496875781054736,
+                "memory_utilization": 0.030009655140913066
+              },
+              {
+                "timestamp": "2026-10-17T09:01:09Z",
+                "cpu_utilization": 0.00025003125390673836,
+                "memory_utilization": 0.02986430566805849
+              },
+              {
+                "timestamp": "2026-10-17T09:01:14Z",
+                "cpu_utilization": 0.00024978144123891593,
+                "memory_utilization": 0.02977198172374635
+              },
+              {
+                "timestamp": "2026-10-17T09:01:19Z",
+                "cpu_utilization": 0.00024990628514307136,
+                "memory_utilization": 0.030687750216110917
+              },
+              {
+                "timestamp": "2026-10-17T09:01:24Z",
+                "cpu_utilization": 0.0005001250312578145,
+                "memory_utilization": 0.029629365525558914
+              },
+              {
+                "timestamp": "2026-10-17T09:01:29Z",
+                "cpu_utilization": 0.0006253908692933083,
+                "memory_utilization": 0.03043744299603833
+              },
+              {
+                "timestamp": "2026-10-17T09:01:34Z",
+                "cpu_utilization": 0.0008766437069505323,
+                "memory_utilization": 0.030492229968255142
+              },
+              {
+                "timestamp": "2026-10-17T09:01:39Z",
+                "cpu_utilization": 0.047131665403083146,
+                "memory_utilization": 0.017483239559741123
+              },
+              {
+                "timestamp": "2026-10-17T09:01:44Z",
+                "cpu_utilization": 0.02287581699346405,
+                "memory_utilization": 0.01870355558946166
+              },
+              {
+                "timestamp": "2026-10-17T09:01:49Z",
+                "cpu_utilization": 0.10044977511244378,
+                "memory_utilization": 0.02112554064172916
+              },
+              {
+                "timestamp": "2026-10-17T09:01:54Z",
+                "cpu_utilization": 0.031019387116948093,
+                "memory_utilization": 0.0222775248047713
+              },
+              {
+                "timestamp": "2026-10-17T09:01:59Z",
+                "cpu_utilization": 0.058448060075093865,
+                "memory_utilization": 0.02597473433785024
+              },
+              {
+                "timestamp": "2026-10-17T09:02:04Z",
+                "cpu_utilization": 0.0008755472170106316,
+                "memory_utilization": 0.024823843484674955
+              },
+              {
+                "timestamp": "2026-10-17T09:02:09Z",
+                "cpu_utilization": 0.0021236727045596503,
+                "memory_utilization": 0.024603723764814955
+              },
+              {
+                "timestamp": "2026-10-17T09:02:14Z",
+                "cpu_utilization": 0.011046949535525985,
+                "memory_utilization": 0.027474330299115002
+              },
+              {
+                "timestamp": "2026-10-17T09:02:19Z",
+                "cpu_utilization": 0.02581777165058278,
+                "memory_utilization": 0.023709821469787475
+              },
+              {
+                "timestamp": "2026-10-17T09:02:24Z",
+                "cpu_utilization": 0.06546189814229748,
+                "memory_utilization": 0.02178668941399077
+              },
+              {
+                "timestamp": "2026-10-17T09:02:29Z",
+                "cpu_utilization": 0.03512084592145015,
+                "memory_utilization": 0.02866421587087476
+              },
+              {
+                "timestamp": "2026-10-17T09:02:34Z",
+                "cpu_utilization": 0.06270543615676359,
+                "memory_utilization": 0.040289440424573525
+              },
+              {
+                "timestamp": "2026-10-17T09:02:39Z",
+                "cpu_utilization": 0.037400831129580654,
+                "memory_utilization": 0.031386739657653095
+              },
+              {
+                "timestamp": "2026-10-17T09:02:44Z",
+                "cpu_utilization": 0.03393893515013879,
+                "memory_utilization": 0.03247768068646254
+              },
+              {
+                "timestamp": "2026-10-17T09:02:49Z",
+                "cpu_utilization": 0.038485804416403785,
+                "memory_utilization": 0.03278599406891545
+              },
+              {
+                "timestamp": "2026-10-17T09:02:54Z",
+                "cpu_utilization": 0.046126627069379506,
+                "memory_utilization": 0.030107020458500146
+              },
+              {
+                "timestamp": "2026-10-17T09:02:59Z",
+                "cpu_utilization": 0.06172839506172839,
+                "memory_utilization": 0.03882385854805534
+              },
+              {
+                "timestamp": "2026-10-17T09:03:04Z",
+                "cpu_utilization": 0.07875984498062258,
+                "memory_utilization": 0.02491817183040966
+              },
+              {
+                "timestamp": "2026-10-17T09:03:09Z",
+                "cpu_utilization": 0.07122364974429338,
+                "memory_utilization": 0.025042505458045813
+              },
+              {
+                "timestamp": "2026-10-17T09:03:14Z",
+                "cpu_utilization": 0.07623094226443389,
+                "memory_utilization": 0.01548041736253815
+              }
+            ]
+          }
+        },
+        "usage": {
+          "providerMilliseconds": 182992,
+          "allocatedVcpuMilliseconds": 2927872,
+          "runner": "16x64",
+          "scope": "Whole failed development job, including source prerequisite and disposable fixture."
+        }
+      }
+    },
+    "fileCarrierRepeat": {
+      "runId": "699f9lg5zm",
+      "response": {
+        "org_id": "l4zncjjbj5",
+        "run_id": "699f9lg5zm"
+      },
+      "manifest": {
+        "schemaVersion": 1,
+        "classification": "Independent development actual-source classification control; not a final common cohort.",
+        "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+        "harnessRevision": "f636b13af902ed6abe5cd8758da4cb8ba99f2175",
+        "branch": "trial/depot-toml-spawn-control-20261017",
+        "workflow": "depot-complete-toml-spawn-control.yml",
+        "requestedAt": "2026-10-17T09:08:39.794Z",
+        "providerFiles": [
+          {
+            "path": ".depot/workflows/depot-complete-toml-spawn-control.yml",
+            "gitBlob": "93dd1aded49d3753af0d0bc14b4b706453f78053",
+            "bytes": 5200,
+            "sha256": "755aece267fa3a3b4f4f007b42a662788cc71d7f9c31a104350eb00bdbd7bb6d",
+            "exactProviderBytesVerified": true
+          },
+          {
+            "path": "package/dev-script/task-util/mise.toml",
+            "gitBlob": "6ab02b4181b22ffba2dcf04fe961d8567aeebf4f",
+            "bytes": 115950,
+            "sha256": "6a8b22258b0ea3938429d4640fdf38041041ef004b8c833991166ac3d7c10ac3",
+            "exactProviderBytesVerified": true
+          }
+        ],
+        "prepared": {
+          "observedAt": "2026-10-17T09:08:25.364Z",
+          "harnessRevision": "f636b13af902ed6abe5cd8758da4cb8ba99f2175",
+          "driverSyntaxPassed": true,
+          "consumerSyntaxPassed": true,
+          "originalTaskBytesUnchanged": true,
+          "trackedStatusEmpty": true,
+          "diffCheckPassed": true
+        },
+        "prerequisite": {
+          "command": [
+            "mise",
+            "run",
+            "//package/module/toml-edit:test:mutation",
+            "--",
+            "src/toml-get-comments.ts",
+            "--containers",
+            "1",
+            "--shard-size",
+            "1"
+          ],
+          "sourceBodyUnchanged": true
+        },
+        "control": {
+          "task": "trial:depot:toml:spawn-control",
+          "sourceBodiesUnchanged": true,
+          "actualCompiler": true,
+          "genuineAssertionPositiveControl": true,
+          "disposableFault": "Remove only the disposable node symlink after a green baseline. NanoSpawn typechecks retain the actual absolute Node executable.",
+          "resources": {
+            "memoryBytes": 2147483648,
+            "cpus": 2,
+            "pids": 512,
+            "network": "none"
+          },
+          "milliseconds": 120000
+        },
+        "scope": "mutations-only"
+      },
+      "manifestSha256": "22e05d9d333ae4af089b8672edb2f6eb8842b780d6b1c0498b7ec34b4062318e",
+      "cohortId": "toml-spawn-control-file-20261017T090839794Z",
+      "request": {
+        "command": "depot",
+        "args": [
+          "ci",
+          "dispatch",
+          "--repo",
+          "Aquaticats/Monochromatic",
+          "--org",
+          "l4zncjjbj5",
+          "--workflow",
+          "depot-complete-toml-spawn-control.yml",
+          "--ref",
+          "trial/depot-toml-spawn-control-20261017",
+          "--input",
+          "scope=mutations-only",
+          "--input",
+          "cohort_id=toml-spawn-control-file-20261017T090839794Z",
+          "--input",
+          "manifest_sha256=22e05d9d333ae4af089b8672edb2f6eb8842b780d6b1c0498b7ec34b4062318e",
+          "--input",
+          "requested_at=2026-10-17T09:08:39.794Z",
+          "--output",
+          "json"
+        ],
+        "cwd": "/home/user/temp/agent/depot-toml-spawn-control-worktree",
+        "requestedAt": "2026-10-17T09:08:39.794Z",
+        "cohortId": "toml-spawn-control-file-20261017T090839794Z",
+        "manifestSha256": "22e05d9d333ae4af089b8672edb2f6eb8842b780d6b1c0498b7ec34b4062318e",
+        "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+        "harnessRevision": "f636b13af902ed6abe5cd8758da4cb8ba99f2175"
+      },
+      "receipt": {
+        "request": {
+          "command": "depot",
+          "args": [
+            "ci",
+            "dispatch",
+            "--repo",
+            "Aquaticats/Monochromatic",
+            "--org",
+            "l4zncjjbj5",
+            "--workflow",
+            "depot-complete-toml-spawn-control.yml",
+            "--ref",
+            "trial/depot-toml-spawn-control-20261017",
+            "--input",
+            "scope=mutations-only",
+            "--input",
+            "cohort_id=toml-spawn-control-file-20261017T090839794Z",
+            "--input",
+            "manifest_sha256=22e05d9d333ae4af089b8672edb2f6eb8842b780d6b1c0498b7ec34b4062318e",
+            "--input",
+            "requested_at=2026-10-17T09:08:39.794Z",
+            "--output",
+            "json"
+          ],
+          "cwd": "/home/user/temp/agent/depot-toml-spawn-control-worktree",
+          "requestedAt": "2026-10-17T09:08:39.794Z",
+          "cohortId": "toml-spawn-control-file-20261017T090839794Z",
+          "manifestSha256": "22e05d9d333ae4af089b8672edb2f6eb8842b780d6b1c0498b7ec34b4062318e",
+          "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "harnessRevision": "f636b13af902ed6abe5cd8758da4cb8ba99f2175"
+        },
+        "finishedAt": "2026-10-17T09:08:40.953Z",
+        "status": 0,
+        "signal": null,
+        "stdout": "{\n  \"org_id\": \"l4zncjjbj5\",\n  \"run_id\": \"699f9lg5zm\"\n}\n",
+        "stderr": ""
+      },
+      "carrierControls": {
+        "observedAt": "2026-10-17T09:08:24.946Z",
+        "directory": "/home/user/temp/agent/nano-spawn-carrier-0P3Emd",
+        "nodeVersion": "v26.12.0",
+        "nanoSpawnVersion": "2.1.0",
+        "nanoSpawnSource": {
+          "path": "/home/user/Monochromatic/node_modules/.pnpm/nano-spawn@2.1.0/node_modules/nano-spawn/source/spawn.js",
+          "bytes": 2839,
+          "sha256": "f46b8b556c02718229f41891b648a46de570bd0a6459a1f44f007ae4c33fc57c",
+          "text": "import {spawn} from 'node:child_process';\nimport {once} from 'node:events';\nimport process from 'node:process';\nimport {applyForceShell} from './windows.js';\nimport {getResultError} from './result.js';\n\nexport const spawnSubprocess = async (file, commandArguments, options, context) => {\n\ttry {\n\t\t// When running `node`, keep the current Node version and CLI flags.\n\t\t// Not applied with file paths to `.../node` since those indicate a clear intent to use a specific Node version.\n\t\t// This also provides a way to opting out, e.g. using `process.execPath` instead of `node` to discard current CLI flags.\n\t\t// Does not work with shebangs, but those don't work cross-platform anyway.\n\t\tif (['node', 'node.exe'].includes(file.toLowerCase())) {\n\t\t\tfile = process.execPath;\n\t\t\tcommandArguments = [...process.execArgv.filter(flag => !flag.startsWith('--inspect')), ...commandArguments];\n\t\t}\n\n\t\t[file, commandArguments, options] = await applyForceShell(file, commandArguments, options);\n\t\t[file, commandArguments, options] = concatenateShell(file, commandArguments, options);\n\t\tconst instance = spawn(file, commandArguments, options);\n\t\tbufferOutput(instance.stdout, context, 'stdout');\n\t\tbufferOutput(instance.stderr, context, 'stderr');\n\n\t\t// The `error` event is caught by `once(instance, 'spawn')` and `once(instance, 'close')`.\n\t\t// But it creates an uncaught exception if it happens exactly one tick after 'spawn'.\n\t\t// This prevents that.\n\t\tinstance.once('error', () => {});\n\n\t\tawait once(instance, 'spawn');\n\t\treturn instance;\n\t} catch (error) {\n\t\tthrow getResultError(error, {}, context, options);\n\t}\n};\n\n// When the `shell` option is set, any command argument is concatenated as a single string by Node.js:\n// https://github.com/nodejs/node/blob/e38ce27f3ca0a65f68a31cedd984cddb927d4002/lib/child_process.js#L614-L624\n// However, since Node 24, it also prints a deprecation warning.\n// To avoid this warning, we perform that same operation before calling `node:child_process`.\n// Shells only understand strings, which is why Node.js performs that concatenation.\n// However, we rely on users splitting command arguments as an array.\n// For example, this allows us to easily detect whether the binary file is `node` or `node.exe`.\n// So we do want users to pass array of arguments even with `shell: true`, but we also want to avoid any warning.\nconst concatenateShell = (file, commandArguments, options) => options.shell && commandArguments.length > 0\n\t? [[file, ...commandArguments].join(' '), [], options]\n\t: [file, commandArguments, options];\n\nconst bufferOutput = (stream, {state}, streamName) => {\n\tif (stream) {\n\t\tstream.setEncoding('utf8');\n\t\tif (!state.isIterating[streamName]) {\n\t\t\tstate.isIterating[streamName] = false;\n\t\t\tstream.on('data', chunk => {\n\t\t\t\tstate[streamName] += chunk;\n\t\t\t\tstate.output += chunk;\n\t\t\t});\n\t\t}\n\t}\n};\n"
+        },
+        "recursionGuard": "NANO_CARRIER_CHILD stops after one child even when eval carrier is inherited.",
+        "positive": {
+          "status": 0,
+          "signal": null,
+          "output": [
+            null,
+            "{\"stdout\":\"REQUESTED_CHILD\",\"flags\":[]}\n",
+            ""
+          ],
+          "pid": 705456,
+          "stdout": "{\"stdout\":\"REQUESTED_CHILD\",\"flags\":[]}\n",
+          "stderr": ""
+        },
+        "negative": {
+          "status": 0,
+          "signal": null,
+          "output": [
+            null,
+            "{\"stdout\":\"CARRIER_REENTERED\",\"flags\":[\"--input-type=module\",\"--eval\",\"import spawn from \\\"file:///home/user/Monochromatic/node_modules/.pnpm/nano-spawn@2.1.0/node_modules/nano-spawn/source/index.js\\\";if(process.env.NANO_CARRIER_CHILD===\\\"1\\\"){console.log(\\\"CARRIER_REENTERED\\\");}else{const result=await spawn(\\\"node\\\",[process.env.NANO_CARRIER_TARGET],{env:{...process.env,NANO_CARRIER_CHILD:\\\"1\\\"}});console.log(JSON.stringify({stdout:result.stdout,flags:process.execArgv}));}\"]}\n",
+            ""
+          ],
+          "pid": 705470,
+          "stdout": "{\"stdout\":\"CARRIER_REENTERED\",\"flags\":[\"--input-type=module\",\"--eval\",\"import spawn from \\\"file:///home/user/Monochromatic/node_modules/.pnpm/nano-spawn@2.1.0/node_modules/nano-spawn/source/index.js\\\";if(process.env.NANO_CARRIER_CHILD===\\\"1\\\"){console.log(\\\"CARRIER_REENTERED\\\");}else{const result=await spawn(\\\"node\\\",[process.env.NANO_CARRIER_TARGET],{env:{...process.env,NANO_CARRIER_CHILD:\\\"1\\\"}});console.log(JSON.stringify({stdout:result.stdout,flags:process.execArgv}));}\"]}\n",
+          "stderr": ""
+        },
+        "interpretation": "Actual file entry executes requested child. Eval entry is inherited by NanoSpawn and re-enters the carrier. This is local carrier behavior, not an actual cloud mutation classification result."
+      },
+      "state": "Dispatched real-file actual-source classification control. Canonical final cohort held; source bodies and full run inputs unchanged."
+    },
+    "duplicateSearch": {
+      "observedAt": "2026-10-17T09:01:53.582Z",
+      "repository": "Aquaticats/Monochromatic",
+      "results": [
+        {
+          "query": "\"mutation\" \"spawn\"",
+          "rows": [
+            {
+              "body": "## Status\n\nThe consumer-side changes have not been reviewed.\nThis tracks comparison cancellation ownership separately from logger callback observation in #509.\nThe repair is committed on `translation-repair-rebased`;\nfinal qualification of its internal exports and combined terminal-warning control is in progress.\nDo not close this issue based on tests or scoped review feedback alone.\n\n## Reproduced failure\n\nAt `3707322f2`,\na genuine `AbortController.signal` with an own `aborted` getter could throw a comparison-shaped error.\n`runProducerInputComparison` returned that caller's `storage` kind and foreign directory before preflight.\nThe owned error boundary was therefore incomplete despite initial request-value capture.\n\nThe retained `comparison-signal-origin-j3YwJS` probe on Node `26.8.2` observed the foreign directory\nand `messageContainsCallerLocator: true`.\n`devtest-bMMex9` records six ordinary failing assertions before the ownership repair.\n`devtest-tlwWg1` separately records child creation before interruption setup could be trusted.\n`devtest-Qm6PXT` records four later failing precedence/cleanup assertions.\n\n## Implemented repair\n\n- `producer-input-comparison-signal.ts` owns a live native signal,\n  avoids caller state/reason/registration/removal overrides,\n  preserves propagation resistance and ignores synthetic or replayed events.\n- `producer-input-comparison-interrupt.ts` registers interruption before spawn,\n  then attaches the child only after actual-close observation is active.\n- `producer-input-comparison.ts` retains proven native cancellation over an unreadable observation,\n  releases the subscription before terminal error decoration,\n  and observes a fixed cleanup warning without replacing primary metadata.\n- Existing production cancellation helpers are marked `@internal`\n  and re-exported from the dedicated inert comparison barrel under `AGENTS.md` XPT.\n  No general command executor or paid acquisition mode is added.\n\nThe source files are under `package/module/translation-repair/src/corpus-run/`.\nImplementation commits include `2b5f8aebd`,\n`bef628ba3`,\n`1e45ca2cf`,\n`9721f39d2` and `929f6671b`.\nThe last commit also adds combined cleanup-warning and built internal-export regressions.\n\n## Evidence and remaining boundaries\n\nThe R6 artifact passed fresh builds,\ntypes,\nfocused and full-unit checks,\nread-only lint,\nsealing,\nmutation controls,\nactual provider-free native cases and a relocated consumer.\nThe ledger distinguishes those bytes from the subsequent internal-export artifact.\nFinal qualification must also detect a terminal snapshot taken before a throwing cleanup warning.\n\nDurable private evidence is under\n`package/module/translation-repair/node_modules/.monochromatic/comparison-evidence/`.\nThe tracked ledger is `doc/planning/translation-repair-preparation-plan-and-journal-2026-09-14.md`.\nThe source trace and rejected approaches are in `doc/troubleshooting/node-abort-signal-owned-observation.md`.\n\nThis is a repository consumer-ownership defect,\nnot a claim that Node authenticates our operation metadata.\nNo Node issue or installed-dependency patch is proposed.\nThe checks do not establish hostile-runtime/internal-slot immunity,\nwhole-change review,\npreparation approval or publication readiness.\nNo paid model invocation is part of this repair.\n",
+              "number": 527,
+              "state": "OPEN",
+              "title": "module-translation-repair: unreviewed live cancellation ownership repair",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/527"
+            },
+            {
+              "body": "Follow-up to #583, which fixed only the `errorOrThrow` docs.\n\n## Settled: which detector\n\n`Error.isError` is the repo's Error detector.\n`no-restricted-syntax/prefer-error-is-error`\n(`package/oxlint-plugin/no-restricted-syntax/src/rule/prefer-error-is-error.ts`)\nflags four idioms and autofixes the plain cases:\n\n```ts\n// flagged idioms\nvalue instanceof Error;\nvalue.constructor === Error;\nObject.prototype.toString.call(value) === '[object Error]';\nutil.types.isNativeError(value);\n```\n\n## Open: whether the current lint scope is right\n\nThe rule ships at `warn`, not `error`.\n`package/config/oxlint/src/rule/restriction.ts:81` to `:84` says\n\"Initial severity is warn because the workspace has existing violations;\nthe rule autofixes ordinary cases for migration\".\n`ignorePatterns` (`package/config/oxlint/src/config-base.ts:63` onward) hides whole trees from it:\n`**/package-paused/**`, `**/package-deprecated/**`, `**/*.js`, `**/*.cjs`,\n`**/fixture/**`, `**/fixtures/**`, `**/invalid/**`, `**/test-fixture/**`,\n`**/*.generated.ts`, `**/bundle`, `**/dist`.\n\nSome exclusions look deliberate (rule fixtures),\nsome look incidental (embedded `mise.toml` task code is unlintable at any scope).\nThis issue is the evidence for the scope decision: every legacy Error detection site in the worktree,\ngrouped by why the lint does not see it today.\nNothing below is a prescribed fix; a site needs work only if its category comes into scope, or already is.\n\n## How this list was gathered\n\n```sh\n# every occurrence in the worktree, including ignored trees\nrg --no-ignore --hidden -n \\\n  \"instanceof Error|isNativeError|\\[object Error\\]|constructor === Error|constructor !== Error\" \\\n  --glob '!**/node_modules/**' --glob '!**/.git/**' --glob '!**/dist/**' --glob '!**/.cache/**' .\n```\n\nplus a duck-type sweep (`'message' in x`, `typeof x.message`),\nthen `git ls-files` / `git check-ignore --verbose` per hit to separate tracked sources\nfrom ignored or generated artifacts.\n\n## What the lint sees today (2 warnings)\n\n`mise run lint:oxlint` at the repo root lints 4082 files and reports exactly 2 `prefer-error-is-error` warnings\n(the run exits nonzero on unrelated pre-existing findings):\n\n- `file-enforcer.config.ts:296`: `errorHasCode` guards with `error instanceof Error`.\n- `package/module/conf-fork.fuzz/upstream-conf/index.ts:757`: vendored upstream migration code.\n  This one may want a justified `oxlint-disable` rather than a rewrite, since it mirrors upstream.\n\n## Sites no scope change reaches\n\n- `package/config/tofu/mise.toml:110`: `malformedRecordRejected = error instanceof Error` inside a task body\n  (`shell = \"node --input-type=module-typescript -e\"`).\n  Oxlint only sees files, so `mise.toml` bodies escape every lint run regardless of `ignorePatterns`.\n  Scope question: extract the body to a lintable module, or record these bodies as a known unlintable exception class.\n\n## Categories hidden by `ignorePatterns`\n\nEach category comes with the scope question it raises, not a fix plan.\n\n### `**/package-paused/**` (22 sites in 20 files)\n\n- `package-paused/desktop-daemon/editord/src/server/index-routes.ts:112`\n- `package-paused/desktop-daemon/editord/src/server/lsp/lsp-manager-requests.ts:100`\n- `package-paused/desktop-daemon/editord/src/server/operations/write-file-atomic.ts:135`\n- `package-paused/desktop-daemon/editord/src/server/ws-send.ts:27`\n- `package-paused/dev-script/inference-canary/src/container-base.ts:164`\n- `package-paused/dev-script/inference-canary/src/linter-exec.ts:43`\n- `package-paused/dev-script/inference-canary/src/mise.migrate-labels.ts:154`\n- `package-paused/dev-script/inference-canary/src/runner-failure.ts:81`\n- `package-paused/dev-script/inference-canary/src/runner-probe-artifacts.ts:274`\n- `package-paused/dev-script/inference-canary/src/runner-probe-fix.ts:182`\n- `package-paused/dev-script/inference-canary-viewer/src/data/read-artifacts.ts:61`\n- `package-paused/webapp-content/messages-demo/src/client/composer/send.ts:120`\n- `package-paused/webapp-content/messages-demo/src/client/composer.worker.ts:132`\n- `package-paused/webapp-content/messages-demo/src/client/composer.worker.ts:460`\n- `package-paused/webapp-content/messages-demo/src/client/editor/buffer.worker.ts:264`\n- `package-paused/webapp-content/messages-demo/src/server/api/import.ts:230`\n- `package-paused/webapp-edu/paper2vn/src/client/screens/lecture-ask.ts:243`\n- `package-paused/webapp-edu/paper2vn/src/client/screens/select-topic.ts:153`\n- `package-paused/webapp-edu/paper2vn/src/smoke.ts:253`\n- `package-paused/webapp-forge/server/src/git/iso-server.ts:224`\n- `package-paused/webapp-forge/server/src/git/iso-server-refs.ts:287`\n- `package-paused/webapp-forge/server/src/git/iso-server-refs.ts:304`\n\nScope question: the tree is paused, and `config-base.ts:75` to `:79` also cites a two-rule autofix oscillation\nin one file there (see `doc/troubleshooting/oxlint-multi-fix-convergence.md`).\nDoes the pause justify staying excluded, or should resumed work land clean?\n\n### `**/package-deprecated/**` (3 sites)\n\n- `package-deprecated/mcp/nvim/src/oxlint-spawn.ts:133`\n- `package-deprecated/mcp/nvim/src/tool-get-all-diagnostics.ts:134`\n- `package-deprecated/mcp/nvim/src/tool-get-diagnostics.ts:188`\n\nScope question: deprecated tree; staying excluded looks consistent, but that is a scope call, not a fact.\n\n### `**/*.js` (and `.gitignore:57` `*.js`)\n\n5 sites each in `package/music-player/design/support.js` (`:929`, `:952`, `:1088`, `:1244`, `:1721`)\nand `package/music-player/design/candidates/support.js` (same lines).\nBoth files are untracked local scratch (`git check-ignore` matches `.gitignore:57:*.js`).\nScope question: they only matter if they become tracked; browser runtime support for `Error.isError`\nwould need checking before any change there.\n\n### Duck-typed caught-error check (no rule covers this shape at any scope)\n\n- `package/pi-plugin/advisor/src/advisor-completion.ts:307` to `:312`:\n  extracts `error.message` through `typeof error === 'object' && 'message' in error`,\n  so it also accepts plain `{ message }` objects.\n\nScope question: should the rule grow a duck-type detector, or does this site change on its own merits?\nSeparate from the ignore-pattern decisions.\n\n## Generated, fixture, and local artifacts (evidence only, not fix targets)\n\n- `package-paused/dev-script/inference-canary/src/canary-lint/` (gitignored via `.gitignore:90` `canary-lint/`):\n  108 recorded model-run files (`canary.ts`, `response.txt`, `meta.json`) containing the idiom.\n  Recorded outputs, not maintained code.\n- `package/desktop-daemon/hall-monitor/index.js.map` (gitignored via `.gitignore:58` `*.map`):\n  stale generated source map whose embedded `sourcesContent` shows `src/infra/notification.ts`\n  and `src/cycle.ts` with the idiom, while both files on disk now call `caughtValueText`.\n  Regenerate rather than edit.\n- `doc/planning/promises-teaching*.local.html` (gitignored via `.gitignore:11` `*.local.*`):\n  6 local planning artifacts with 9 to 11 occurrences each.\n\n## Doc snippets with the idiom (prose, optional)\n\n- `doc/dependency-blocklist.md:401` (probe command)\n- `doc/troubleshooting/npm-cli-parsers-partial-git-argv.md:219`\n- `doc/troubleshooting/pi-advisor-long-session-provider-failure.md:250`\n- `doc/troubleshooting/pi-synthetic-provider-startup-model-scope.md:119`\n- `doc/troubleshooting/rolldown-1-2-typescript-trust-tsconfig-discovery.md:505`\n- `doc/troubleshooting/sinon-context-owned-stubs.patch:166` and `:247`\n  (patch against sinon upstream tests)\n\nSome reproduce upstream or external code and should stay literal.\n\n## Deliberate exceptions at any scope (must not change)\n\n- `package/oxlint-plugin/no-restricted-syntax/src/rule/prefer-error-is-error.ts`\n  and siblings (`prefer-error-is-error.detectors.ts`, `.node-util.ts`, `.object-tag.ts`, `.syntax.ts`, `.globals.ts`),\n  plus `package/oxlint-plugin/no-restricted-syntax/src/oxlint-no-restricted-syntax.unit.test.ts`:\n  the rule and its tests.\n- `package/test-fixture/oxlint-no-restricted-syntax/src/valid/prefer-error-is-error.ts`\n  and `package/test-fixture/oxlint-no-restricted-syntax/src/invalid/prefer-error-is-error.ts`:\n  rule fixtures (`**/test-fixture/**` and `**/invalid/**` are lint-ignored on purpose).\n\n## Subclass checks: never targets for this rule\n\nThese discriminate subclasses (`instanceof TypeError`, `instanceof RangeError`, `instanceof ParseError`),\nwhich `Error.isError` cannot do; the rule cannot replace them and no scope change makes it able to:\n\n- `package/git-policy/markdown-lint/src/rewrite-candidates.ts:449`\n- `package/module/conf-fork.fuzz/src/store-adapters.ts:309`\n- `package/module/conf-fork/src/errors.unit.test.ts:141`, `:154`, `:198`, `:211`, `:224`, `:237`\n- `package/module/deepmerge-ts.fuzz/src/mutation-canon.ts:171`\n- `package/module/deepmerge-ts.fuzz/src/recall-ledger-runtime.ts:253`\n- `package/module/matcher-fork.fuzz/src/limits.property.unit.test.ts:205`\n- `package/module/p-limit-fork.fuzz/src/limits.property.unit.test.ts:236`\n- `package/module/pify-fork.fuzz/src/pify-adapters.ts:107`\n- `package/module/toml-edit.fuzz/src/parse-toml-edit.property.unit.test.ts:206`\n- Fork packages documenting caller reliance on `instanceof TypeError`,\n  each at `src/errors.ts:5`:\n  `package/module/quick-lru-fork`, `package/module/matcher-fork`,\n  `package/module/p-memoize-fork`, `package/module/p-limit-fork`, `package/module/pify-fork`\n\n## Decision checklist\n\n1. Per category above: in scope or out, and why (fixtures and deprecated trees may correctly stay out).\n2. Whatever lands in scope gets fixed or carries a justified `oxlint-disable` comment.\n3. Only then consider raising `no-restricted-syntax/prefer-error-is-error` from `warn` to `error`\n   at `package/config/oxlint/src/rule/restriction.ts:84`.\n",
+              "number": 584,
+              "state": "OPEN",
+              "title": "prefer-error-is-error: is the lint scope right? full legacy Error detection inventory",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/584"
+            },
+            {
+              "body": "## What to build\n\nLet several `git commit` invocations against the same worktree and branch run at the same time, and land each as its own sequential commit, instead of failing every overlapping commit after the first with `index.lock` `EEXIST` (the #560 collision).\n\nAccepted design: `doc/decision/cli-git-concurrent-commits.md` on branch `feat/cli-git-concurrent-commits`. Evidence and per-question rationale: `doc/planning/cli-git-concurrent-commits.md`. Execution record: `doc/handover/cli-git-concurrent-commits.md`.\n\nWork happens in the `feat/cli-git-concurrent-commits` worktree and merges to `main` after verification.\n\n## Acceptance criteria\n\n- [ ] Per-transaction journals; startup recovery handles every prepared, reserved, or landing transaction, including crashed owners.\n- [ ] Parallel preparation: native `git commit` against a private index and private admin dir `HEAD`, pending commit protected by a `refs/cli-git/` ref, hooks through the dispatcher shim (absolute `GIT_WORK_TREE`, `post-commit` held back, config-based hooks covered, no shell scripts).\n- [ ] Per-repository hook lock by default; `hooks: { concurrentCommits: true }` opts into parallel hooks.\n- [ ] Serial landing: landing lock plus real `index.lock`, compare-and-swap ref update with nonce reflog message, real index computed at landing, unmoved `HEAD` lands the prepared commit itself.\n- [ ] Replay via `git merge-tree --write-tree --merge-base` and `git commit-tree` (re-signed when signed); conflicts fail as `core-finding` exit `1` naming paths and the winning commit.\n- [ ] `--amend`, merge/cherry-pick/revert conclusions, and branch switches fail when `HEAD` or its symbolic target moved.\n- [ ] Policy `inputs?: 'unrestricted' | { external: PolicyInput[] }` (default `'unrestricted'`), lazy read-set tracking, fingerprinted external inputs; shipped plugins declare their inputs.\n- [ ] `pre-commit` re-runs outside the landing lock when the replayed tree differs; `post-commit` runs once after landing with native-equivalent env.\n- [ ] Reservation after `landing.reserveAfterLostRaces` lost races (default 2).\n- [ ] `core.lockfilePid=true` injected into every forwarded and spawned Git; proven-live `index.lock` owners get unbounded waits; others get Git-style backoff up to `indexLock.unprovenOwnerTimeoutMs` (default 1000); cli-git never deletes a lock.\n- [ ] Forwarded index writers wait under the same rules and re-forward only when fixtures prove failure before side effects; `git cli-git fix` holds the landing lock across install and verification.\n- [ ] Single-flight auto-push per branch; each commit exits only once the remote contains its OID.\n- [ ] No opt-out switch.\n- [ ] Disposable real-Git fixtures and packed shadow-bin fixtures for concurrent commits, replay, conflicts, crashes, hooks, and locks; concurrent-commit lifecycle benchmark confirms the reservation default.\n- [ ] Container end-to-end suite, inherent to verifying concurrent mutation of shared Git state (unit and shadow-bin fixtures cannot show interleavings, crash recovery, or lock contention): a mise task packs the tarball and runs inside bounded `podman` against freshly created dummy repositories and a local bare remote, at the minimum and current Git versions, replaying realistic workloads (commit-shape traces mined from this repository's history plus a concurrent-agent scenario catalog: shared-file hunks, interleaved index writers, hookdir/config/stash hooks, signing, amend, branch switch, foreign lock holders, `gc --prune=now`, `SIGKILL` at every phase). Seeded and replayable; invariants checked after every run (each successful commit lands once with its captured bytes, no lost edits, no staged reverts, remote has every landed OID, no leftover refs/transactions/locks, `git fsck` clean, exit codes match JSONL).\n- [ ] `SPEC.md` and `README.md` describe the new protocol, config keys, `inputs`, and JSONL events.\n\n",
+              "number": 571,
+              "state": "CLOSED",
+              "title": "feat(cli-git): land concurrent commits with parallel preparation and serial landing",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/571"
+            },
+            {
+              "body": "Follow-up from `doc/decision/private-npm-registry.md` (\"Verification\").\n\nThe first rollout of the private pnpr registry (`https://pnpr.c.aquati.cat/~monochromatic-dev/`) only verifies, from a throwaway consumer:\n\n- anonymous install and use of `@monochromatic-dev/oxlint-plugin-tsdoc`, `@monochromatic-dev/config-typescript`, and `@monochromatic-dev/module-or-throw`;\n- install of `@monochromatic-dev/module-logger`;\n- that a publish without the OIDC workload credential is rejected, and the workflow's OIDC publish succeeds.\n\nThe other published packages (128 qualified on 2026-09-14: every workspace package outside `package/test-fixture/` whose manifest declares `exports`, `main`, `module`, or `bin`) are not checked.\n\n## Task\n\nBlocked until the registry is deployed (`doc/runbook/deploy-pnpr-registry.md`) and the first publish run completes.\n\n- In a throwaway consumer that routes `@monochromatic-dev` to pnpr and adds `@monochromatic-dev/*` to `minimumReleaseAgeExclude`, install every package pnpr serves, one at a time.\n- For each package with a runtime entry point, import or execute it under Node; for type-only or TypeScript-source packages, type-check an import.\n- Record each failure with the package, the command, and the exact error (for example an undeclared runtime or type dependency, or a `workspace:` specifier that pnpm pack left unresolved).\n- Decide per failure whether to fix the manifest or add the package to the reviewed exclusion list.\n\n",
+              "number": 521,
+              "state": "CLOSED",
+              "title": "Verify installability of every package published to pnpr",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/521"
+            },
+            {
+              "body": "## Status\n\nPlan drafted and posted: https://github.com/Aquaticat/Monochromatic/issues/247#issuecomment-4887670850 (scope grew beyond the body below: ground-up rewrite as packages/cli/mutation-test with sharded disposable containers; the plan comment supersedes the rough shape here). Implementation in progress.\n\n## Motivation\n\nOwn the mutation tester the same way `@monochromatic-dev/module-test` replaced Vitest, and shed the StrykerJS + Babel dependency footprint entirely.\n\nThis is not about `convert-source-map`. That transitive edge is already neutralized and inert: Stryker's instrumenter is parse-only and never enters Babel's `transform` pipeline (the only place `@babel/core` requires `convert-source-map`), so the throwing stub is never loaded at runtime. See `docs/troubleshooting/dependencies.md` (the `convert-source-map` deep-dive) and `docs/troubleshooting/stryker-container-runtime.md`. The driver here is footprint and control, not a runtime bug.\n\n## Goal\n\nA container-native mutation testing framework, built on oxc, that replaces the Stryker-spawn core of `@monochromatic-dev/dev-script-mutation-test`, reusing that package's existing orchestration.\n\nContainer-native means the engine is designed to run inside the existing per-source Podman container (worktree, isolation, resource caps, no network), not as a host tool wrapped to look containerized. It integrates with the current container worktree, source/test selection, and JSON reporting rather than assuming a host runtime.\n\nNo Babel. The whole `@babel` subtree goes away; oxc owns parsing.\n\n## Rough shape (to be designed, not prescriptive)\n\n- Parse with oxc (`oxc-parser`). Locate mutable nodes by their source spans and apply each mutation by splicing replacement text at the node's byte offsets, which avoids a separate code-generation step entirely. Fall back to oxc transform/codegen only if span-splicing proves insufficient for some operator.\n- Mutation operators reimplemented against oxc's ESTree-style AST, covering the same families as the ~15 Stryker mutators (arithmetic, equality, logical, conditional, boolean, string, unary, update, array, object, optional chaining, block statement, method expression, arrow function, regex).\n- Per-mutant generate-and-run against `module-test` with kill detection (killed / survived / timeout / error), instead of mutation-switching.\n- Optional TypeScript type-check filter to drop non-compiling mutants (Stryker's typescript-checker value-add). This is the hardest, riskiest piece and needs incremental tsc for acceptable speed.\n- Reuse the existing container isolation, source/test selection, and report aggregation in `packages/dev-script/mutation-test/src` as-is.\n\n## Measured baselines\n\n- `packages/dev-script/mutation-test/src`: 3,516 code lines; only 218 are Stryker-spawn glue (`stryker-config.ts`, `container-stryker.ts`, `inline-nu.ts`). The other ~3,300 (container, selection, reporting, CLI, runtime image) is reusable.\n- `packages/module/test/src` precedent: 2,829 code lines.\n- `@stryker-mutator/instrumenter` (engine to reimplement, complexity proxy only; we port operator logic, not Babel-specific code): 2,447 compiled lines (mutators 566, mutant-placers 215, transformers 374, parsers 422, util 341, top-level 307, printers 71, frameworks 88).\n- Footprint dropped: 5 `@stryker-mutator` packages and the entire `@babel` subtree (~44 packages). oxc replaces parsing; span-splicing removes the need for a JS code generator.\n\n## LoC estimate (engineering estimate, not measured)\n\n- Minimum viable, no type-check filter: ~1,100 production + ~700 test new code lines; net production delta ~+900 after deleting the 218 glue lines. (oxc span-splicing keeps the parse/codegen glue small, since no generator is written.)\n- Feature parity, with type-check filter: ~1,500 production + ~900 test new code lines.\n- In raw file lines (TSDoc-everywhere house style, ~0.6 to 0.7 comments per code line): roughly 2,900 to 3,800 raw lines across new files.\n\n## References\n\n- `docs/troubleshooting/dependencies.md`\n- `docs/troubleshooting/stryker-container-runtime.md`\n- `packages/dev-script/mutation-test/`\n- `packages/module/test/` (precedent)\n",
+              "number": 247,
+              "state": "CLOSED",
+              "title": "Replace Stryker with our own container-native mutation testing framework (no plan drafted yet)",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/247"
+            },
+            {
+              "body": "## Status: approved (2026-06-10)\n\nResolved via a grilling session; see the resolution comment below for the decided design. The original A/B/C framing in the plan doc is superseded. Implementation has not started.\n\n## Plan document\n\nSee `docs/migration/mise-nushell-to-node.md` (committed locally as `f82d872d`, pending push to the remote).\n\n## Summary\n\nWe are migrating the repo's primary runtime to Node. This issue tracks the question of whether to set mise's task shell to Node and migrate every task body off nushell.\n\nKey constraint, verified on Node `v26.3.0`: an inline shell of `node -e` evaluates the body as JavaScript. It handles TS type stripping, ESM imports, top-level await, and fail-fast cleanly, but a plain command line such as `cargo build --release` is not valid JS and would have to be routed through `node:child_process`. Most of the repo's task bodies are exactly such command runners.\n\nMeasured scope: 121 `mise.toml` files, 74 with inline `run`, 263 inline bodies. Only ~8 files carry real nushell logic (root, terminal, tofu, music-player, forbidden-strings, rust); the rest are command runners.\n\n## Decisions needed before any work starts\n\n- Which approach: B (logic to Node-run `mise.*.ts`, command runners stay shell; recommended), A (literal `node -e` everywhere), or C (Node shell-in-JS layer such as zx). Plan ranks B > C > A.\n- File-task interpreter policy: `#!/usr/bin/env node` shebang, `use_file_shell_for_executable_tasks = true`, or non-executable `.ts`.\n- Whether file-enforcer's own `bun` invocation moves to `node` in the same migration.\n\n## Follow-ups bundled in the plan\n\n- Flip the four `*_default_*_shell_args` settings only after bodies are converted.\n- Remove the `aqua:nushell/nushell` pin and update stale \"primary runtime\"/\"Bun shell\" comments.\n- Rewrite AGENTS.md `CM2` and `SCR`, which currently mandate nushell.\n",
+              "number": 246,
+              "state": "CLOSED",
+              "title": "Plan: migrate mise task shell from nushell to Node (approved)",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/246"
+            },
+            {
+              "body": "> *This was generated by AI during triage.*\n\n## Summary\n\nMany TSDoc comments were changed from inline links to plain text references, for example:\n\n```diff\n- * @throws {@link JsoncParseError} on malformed input or a non-container top level.\n+ * @throws JsoncParseError on malformed input or a non-container top level.\n```\n\nThat shape loses cross-reference semantics. TSDoc comments should link to other declarations with inline links where that improves navigation, especially for referenced error types, helper functions, constants, and related APIs.\n\n## Context\n\nThe oxlint TSDoc `no-types` rule had been flagging `{@link TypeName}` inside tags like `@throws` as though it were a JSDoc-style `{TypeName}` annotation. That false positive encouraged or forced comments to be rewritten as plain text. The false positive is now fixed for the scanner, but existing comments may still have been downgraded.\n\n## What to do\n\n- Audit TSDoc comments for places where declaration names should be `{@link ...}` rather than plain text.\n- Restore valid inline links in `@throws`, `@returns`, `@param`, summaries, and remarks when they refer to actual declarations.\n- Prefer links that resolve to real symbols. Do not add links for generic prose words or names that do not resolve.\n- Add coverage or lint safeguards if needed so valid inline links stay accepted.\n\n## Acceptance criteria\n\n- Existing plain-text declaration references introduced as workarounds are restored to TSDoc inline links.\n- The TSDoc lint plugin accepts those links without requiring downgrade to plain text.\n- Tests or fixtures cover representative linked comments, including `@throws {@link SomeError}`.\n",
+              "number": 265,
+              "state": "CLOSED",
+              "title": "Restore TSDoc inline links removed from comments",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/265"
+            }
+          ]
+        },
+        {
+          "query": "\"killed\" \"infrastructure\"",
+          "rows": [
+            {
+              "body": "## Status\n\nPlan drafted and posted: https://github.com/Aquaticat/Monochromatic/issues/247#issuecomment-4887670850 (scope grew beyond the body below: ground-up rewrite as packages/cli/mutation-test with sharded disposable containers; the plan comment supersedes the rough shape here). Implementation in progress.\n\n## Motivation\n\nOwn the mutation tester the same way `@monochromatic-dev/module-test` replaced Vitest, and shed the StrykerJS + Babel dependency footprint entirely.\n\nThis is not about `convert-source-map`. That transitive edge is already neutralized and inert: Stryker's instrumenter is parse-only and never enters Babel's `transform` pipeline (the only place `@babel/core` requires `convert-source-map`), so the throwing stub is never loaded at runtime. See `docs/troubleshooting/dependencies.md` (the `convert-source-map` deep-dive) and `docs/troubleshooting/stryker-container-runtime.md`. The driver here is footprint and control, not a runtime bug.\n\n## Goal\n\nA container-native mutation testing framework, built on oxc, that replaces the Stryker-spawn core of `@monochromatic-dev/dev-script-mutation-test`, reusing that package's existing orchestration.\n\nContainer-native means the engine is designed to run inside the existing per-source Podman container (worktree, isolation, resource caps, no network), not as a host tool wrapped to look containerized. It integrates with the current container worktree, source/test selection, and JSON reporting rather than assuming a host runtime.\n\nNo Babel. The whole `@babel` subtree goes away; oxc owns parsing.\n\n## Rough shape (to be designed, not prescriptive)\n\n- Parse with oxc (`oxc-parser`). Locate mutable nodes by their source spans and apply each mutation by splicing replacement text at the node's byte offsets, which avoids a separate code-generation step entirely. Fall back to oxc transform/codegen only if span-splicing proves insufficient for some operator.\n- Mutation operators reimplemented against oxc's ESTree-style AST, covering the same families as the ~15 Stryker mutators (arithmetic, equality, logical, conditional, boolean, string, unary, update, array, object, optional chaining, block statement, method expression, arrow function, regex).\n- Per-mutant generate-and-run against `module-test` with kill detection (killed / survived / timeout / error), instead of mutation-switching.\n- Optional TypeScript type-check filter to drop non-compiling mutants (Stryker's typescript-checker value-add). This is the hardest, riskiest piece and needs incremental tsc for acceptable speed.\n- Reuse the existing container isolation, source/test selection, and report aggregation in `packages/dev-script/mutation-test/src` as-is.\n\n## Measured baselines\n\n- `packages/dev-script/mutation-test/src`: 3,516 code lines; only 218 are Stryker-spawn glue (`stryker-config.ts`, `container-stryker.ts`, `inline-nu.ts`). The other ~3,300 (container, selection, reporting, CLI, runtime image) is reusable.\n- `packages/module/test/src` precedent: 2,829 code lines.\n- `@stryker-mutator/instrumenter` (engine to reimplement, complexity proxy only; we port operator logic, not Babel-specific code): 2,447 compiled lines (mutators 566, mutant-placers 215, transformers 374, parsers 422, util 341, top-level 307, printers 71, frameworks 88).\n- Footprint dropped: 5 `@stryker-mutator` packages and the entire `@babel` subtree (~44 packages). oxc replaces parsing; span-splicing removes the need for a JS code generator.\n\n## LoC estimate (engineering estimate, not measured)\n\n- Minimum viable, no type-check filter: ~1,100 production + ~700 test new code lines; net production delta ~+900 after deleting the 218 glue lines. (oxc span-splicing keeps the parse/codegen glue small, since no generator is written.)\n- Feature parity, with type-check filter: ~1,500 production + ~900 test new code lines.\n- In raw file lines (TSDoc-everywhere house style, ~0.6 to 0.7 comments per code line): roughly 2,900 to 3,800 raw lines across new files.\n\n## References\n\n- `docs/troubleshooting/dependencies.md`\n- `docs/troubleshooting/stryker-container-runtime.md`\n- `packages/dev-script/mutation-test/`\n- `packages/module/test/` (precedent)\n",
+              "number": 247,
+              "state": "CLOSED",
+              "title": "Replace Stryker with our own container-native mutation testing framework (no plan drafted yet)",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/247"
+            }
+          ]
+        },
+        {
+          "query": "\"runOneTest\"",
+          "rows": []
+        },
+        {
+          "query": "\"mutation\" \"compileError\"",
+          "rows": [
+            {
+              "body": "## Observed failure\n\nThe unchanged source TOML mutation task completes with exit zero,\ngreen baseline and one source-terminal compileError mutant,\nbut the trial job fails an independent metadata observer.\nNo mutant assertion execution or full-campaign pass is claimed.\n\nThis repeated in run mj128hqwv0,\nworkflow t8wq69b56g,\njob h4c49btlhq,\nattempt 3wnf82gzb8,\nsource 525d2e09f8168a3bdd7e513e26d4c80b363123e5,\nharness 0f8ad795aa92d3beb83e3bfa4e4aa54f1bea06f8.\nThe earlier bounded run 0j8zhbn9n0 retained the same null-status assertion without underlying operation details.\n\n## Exact observer receipt\n\nThe command was container-bin/podman ps --all --filter label=io.monochromatic.toml-attempt=7185dde1-5802-43c2-b296-e257b9f313cf --format json,\nworking in the immutable source checkout.\n\nIt ran from 2026-10-17T07:25:23.786Z to 2026-10-17T07:25:31.793Z,\nobserved 8006.465648000001 milliseconds against an 8000-millisecond budget,\nand returned null status,\nSIGKILL,\nETIMEDOUT,\nerrno -110.\nStdout was three bytes ([] plus newline); stderr was zero bytes.\nThe wrapper assertion was null !== 0.\n\nThe generated Node container adapter forwards synchronously to sudo --non-interactive and the resolved actual Podman executable,\nthen propagates returned status after conditional cleanup.\nAn empty list on stdout does not establish wrapper or underlying Podman completion.\nPodman,\nsudo and Node lifecycle ownership remains unresolved; no database-lock or upstream lifecycle cause is claimed.\nSeven other list operations and the final event query returned zero.\nSource cleanup guards passed.\n\n## Immutable evidence\n\nArtifact 01a148c0-c29e-7644-a0ec-f546f5caf3e8 has 46389 bytes,\nSHA-256 3e12339c854c28f69ef9ecdc29e03b2f1f0efe2959ad66bfd23347e1d75df2bb.\nAll 20 members are individually verified.\nExact operation JSONL,\nsource-native report,\nshard identities,\nbefore/after source proof,\nlogs and cleanup are retained in doc/audit/depot-toml-reconciliation-2026-10-17.evidence.json,\ncommit 7555eb5a89.\nProvider interval 165116 milliseconds at 16x64 remains failed usage.\n\n## Trial recovery and acceptance\n\nThe authorized metadata-only trial uses a 60000-millisecond bound,\nan observer-only copied forwarder with before/after sudo lifecycle receipts,\nand complete metadata durations.\nThe source consumer keeps the proven d098532a container adapter byte-for-byte and unchanged source arguments.\nDisposable controls prove forwarding,\ntimeout rejection,\nand detection after removing the timeout guard.\nActual bounded repeat vlrxjltfkq is dispatched at 316e1a8a309e71e456a741eb63e5ff3b94b75646.\n\nAcceptance requires actual source completion,\nall metadata operation receipts,\nexplicit forwarded results,\nsource correlation and scoped cleanup,\nwhile preserving original failures and timeout rejection.\nNo application source change is included.\nFull mutation completion remains separate.\n\n## Duplicate search\n\nAll-state current-repository searches covered TOML metadata,\npodman ETIMEDOUT,\nand mutation observer.\nIssue #1113 is the separate outer job timeout that lost active mutation evidence and censored an independent gate.\nIssue #1114 concerns immutable input guards,\n#1070 concerns the source logger sink timeout/SIGKILL,\nand #1116/#1117 concern other container prerequisites.\nNo matching metadata-observer deadline incident was found.\n",
+              "number": 1130,
+              "state": "CLOSED",
+              "title": "TOML metadata observer deadline fails a completed source consumer",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/1130"
+            },
+            {
+              "body": "## Status\n\nPlan drafted and posted: https://github.com/Aquaticat/Monochromatic/issues/247#issuecomment-4887670850 (scope grew beyond the body below: ground-up rewrite as packages/cli/mutation-test with sharded disposable containers; the plan comment supersedes the rough shape here). Implementation in progress.\n\n## Motivation\n\nOwn the mutation tester the same way `@monochromatic-dev/module-test` replaced Vitest, and shed the StrykerJS + Babel dependency footprint entirely.\n\nThis is not about `convert-source-map`. That transitive edge is already neutralized and inert: Stryker's instrumenter is parse-only and never enters Babel's `transform` pipeline (the only place `@babel/core` requires `convert-source-map`), so the throwing stub is never loaded at runtime. See `docs/troubleshooting/dependencies.md` (the `convert-source-map` deep-dive) and `docs/troubleshooting/stryker-container-runtime.md`. The driver here is footprint and control, not a runtime bug.\n\n## Goal\n\nA container-native mutation testing framework, built on oxc, that replaces the Stryker-spawn core of `@monochromatic-dev/dev-script-mutation-test`, reusing that package's existing orchestration.\n\nContainer-native means the engine is designed to run inside the existing per-source Podman container (worktree, isolation, resource caps, no network), not as a host tool wrapped to look containerized. It integrates with the current container worktree, source/test selection, and JSON reporting rather than assuming a host runtime.\n\nNo Babel. The whole `@babel` subtree goes away; oxc owns parsing.\n\n## Rough shape (to be designed, not prescriptive)\n\n- Parse with oxc (`oxc-parser`). Locate mutable nodes by their source spans and apply each mutation by splicing replacement text at the node's byte offsets, which avoids a separate code-generation step entirely. Fall back to oxc transform/codegen only if span-splicing proves insufficient for some operator.\n- Mutation operators reimplemented against oxc's ESTree-style AST, covering the same families as the ~15 Stryker mutators (arithmetic, equality, logical, conditional, boolean, string, unary, update, array, object, optional chaining, block statement, method expression, arrow function, regex).\n- Per-mutant generate-and-run against `module-test` with kill detection (killed / survived / timeout / error), instead of mutation-switching.\n- Optional TypeScript type-check filter to drop non-compiling mutants (Stryker's typescript-checker value-add). This is the hardest, riskiest piece and needs incremental tsc for acceptable speed.\n- Reuse the existing container isolation, source/test selection, and report aggregation in `packages/dev-script/mutation-test/src` as-is.\n\n## Measured baselines\n\n- `packages/dev-script/mutation-test/src`: 3,516 code lines; only 218 are Stryker-spawn glue (`stryker-config.ts`, `container-stryker.ts`, `inline-nu.ts`). The other ~3,300 (container, selection, reporting, CLI, runtime image) is reusable.\n- `packages/module/test/src` precedent: 2,829 code lines.\n- `@stryker-mutator/instrumenter` (engine to reimplement, complexity proxy only; we port operator logic, not Babel-specific code): 2,447 compiled lines (mutators 566, mutant-placers 215, transformers 374, parsers 422, util 341, top-level 307, printers 71, frameworks 88).\n- Footprint dropped: 5 `@stryker-mutator` packages and the entire `@babel` subtree (~44 packages). oxc replaces parsing; span-splicing removes the need for a JS code generator.\n\n## LoC estimate (engineering estimate, not measured)\n\n- Minimum viable, no type-check filter: ~1,100 production + ~700 test new code lines; net production delta ~+900 after deleting the 218 glue lines. (oxc span-splicing keeps the parse/codegen glue small, since no generator is written.)\n- Feature parity, with type-check filter: ~1,500 production + ~900 test new code lines.\n- In raw file lines (TSDoc-everywhere house style, ~0.6 to 0.7 comments per code line): roughly 2,900 to 3,800 raw lines across new files.\n\n## References\n\n- `docs/troubleshooting/dependencies.md`\n- `docs/troubleshooting/stryker-container-runtime.md`\n- `packages/dev-script/mutation-test/`\n- `packages/module/test/` (precedent)\n",
+              "number": 247,
+              "state": "CLOSED",
+              "title": "Replace Stryker with our own container-native mutation testing framework (no plan drafted yet)",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/247"
+            }
+          ]
+        }
+      ]
     }
   }
 }

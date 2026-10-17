@@ -501,6 +501,15 @@ and original PATH commands preserved except the removable Node launcher.
 Terminal wait session `83226` ended;
 observed-repeat terminal wait session `51269` is active.
 
+Observation repeat `j03l179f3x` ended at the control eval-carrier `EEXIST` boundary.
+NanoSpawn inherited its parent eval flags;
+actual local file/eval controls verify this behavior.
+File-based cloud control `699f9lg5zm` is dispatched on
+`f636b13af902ed6abe5cd8758da4cb8ba99f2175`.
+Observed-repeat wait session `51269` ended;
+file-carrier terminal wait session `32240` is active.
+No false-kill reproduction is claimed until this actual source control completes.
+
 ## Native recovery assertion tracking
 
 The coherent replay routes are prepared and pushed,

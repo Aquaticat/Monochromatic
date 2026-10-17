@@ -524,3 +524,14 @@ or `2460560` allocated vCPU-milliseconds.
 Repeat `j03l179f3x` adds incremental phase and real-compiler stdout/stderr receipts,
 and preserves original PATH commands except the deliberately removable Node launcher.
 Its exact request is retained separately from the unchanged full campaign.
+
+Observation repeat `j03l179f3x` retained the actual `EEXIST` detail.
+NanoSpawn 2.1.0 inherited the control eval body into its compiler invocation,
+so the control re-entered itself before any mutation assertion.
+Its five actual source module hashes match immutable source.
+The provider interval was `182992` milliseconds at `16x64`,
+or `2927872` allocated vCPU-milliseconds.
+Actual local positive and guarded negative controls verify file-versus-eval carrier behavior.
+File-based cloud repeat `699f9lg5zm` is dispatched separately,
+on clean harness `f636b13af902ed6abe5cd8758da4cb8ba99f2175`.
+The original full campaign retains its file-based source dispatcher and unchanged inputs.
