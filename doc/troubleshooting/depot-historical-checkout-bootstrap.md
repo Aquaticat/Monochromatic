@@ -262,8 +262,35 @@ It retains the outer two-CPU,
 512-task boundary and adds local PID-event and peak counters to subsequent samples.
 The actual unchanged consumer reruns are `v0xj2z7q66` for native source `cb95cf6d78`
 and `4xgjgr8gbr` for desktop source `3434eaa455`.
-Their results remain pending;
-the configuration change is not yet a verified consumer fix.
+Both runs crossed the original thread-creation boundary and verified cleanup.
+All retained samples,
+including the outer cgroup before and after the consumer,
+show zero PID rejections and zero OOM events.
+This verifies the private-limit repair at the original failing boundary.
+Each consumer emitted 60 passing,
+nine failing,
+and one skipped wide-session assertions.
+An uncaught `CheckFailureError` while waiting for a folder containing 30 tracks then ended the task.
+The remaining configured sessions did not execute and the E2E summary file was not produced.
+The evidence record retains every emitted assertion identity,
+counter sample,
+artifact digest,
+and provider allocation interval.
+Issue [#1110](https://github.com/Aquaticats/Monochromatic/issues/1110) remains open for full independent coverage.
+
+These interaction failures remain a separate boundary from the repaired PID limit.
+The harness had overridden `E2E_COMPOSITOR` with a binary built from the historical source checkout.
+The authored task normally selects the published compositor declared in that source's `mise.lock`.
+Both declare version `0.6.0`,
+which does not establish that their executable bytes or implementation match.
+Harness `9f4a01f699f09abb25f10258455ac0faed0ecae8`
+installs the locked published tool,
+retains its ELF SHA-256 and actual version output,
+and clears the inherited override before running the unchanged authored task.
+The source-built software parent and resource bounds remain the same.
+Controls `xdlnfpwhzz` and `7x5lk9dx9q` are running for the native and desktop historical sources respectively.
+Their outcomes are pending;
+the compositor selection is not yet an established cause of the interaction failures.
 
 Later configured sessions remain unexecuted when the first session fails.
 The `runtimeCompleted` field means the invocation and cleanup returned,

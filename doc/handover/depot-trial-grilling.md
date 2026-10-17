@@ -22,8 +22,13 @@ The user chose to keep this clarification only in the Codex scope document;
 the proposed general `AUT` clarification was declined,
 and `AGENTS.md` remains unchanged.
 The existing Depot work remains active:
-logger recovery `dhxhzzvmc3` and independent-leaf recovery preparation belong to the logger owner;
-the native owner completed platform route preparation and now owns TOML timeout reconciliation;
+logger continuation `1wzr86fssk` failed before source checks in all 37 jobs,
+at Podman's `cannot unmount /sys/kernel/debug: device or resource busy` user-namespace boundary.
+The logger owner is retaining every failed attempt and preparing a single cloud pilot of a private owned tmpfs volume,
+before another continuation fan-out.
+Browser and DOM recovery still require complete per-file and per-engine coverage.
+The native owner completed platform route preparation and now owns the two missing TOML mutation gates,
+including complete retained mutant identities and acknowledged timeout cleanup;
 the VM owner completed the push-wait-notice verification and now owns source-identity fixture controls.
 The runtime-only diagnostics have finished and their artifacts are downloaded.
 Both show PID-controller rejection counters increasing from zero to four inside the private user hierarchy,
@@ -35,8 +40,26 @@ Root retained the raw counter samples and provider metadata in
 Clean pushed harness `4c4063e78bc9aaed8e293c1b478db089d6eef0ce`
 now configures private default-service limits of 256 and a user-slice limit of 448,
 retaining the outer 512-task budget.
-Actual consumer reruns `v0xj2z7q66` and `4xgjgr8gbr` are waiting to terminal state;
-their outcomes are not yet known.
+Actual consumer reruns `v0xj2z7q66` and `4xgjgr8gbr` are terminal.
+Both crossed the thread-creation boundary with zero retained PID rejections and zero OOM events,
+and both verified cleanup.
+Each emitted 60 passing,
+nine failing,
+and one skipped wide-session assertions before an uncaught folder-setup `CheckFailureError`.
+No later configured session executed and no summary file was produced.
+Root retained all assertion identities,
+raw counter samples,
+artifact hashes,
+and full provider allocation intervals in the `desktopRuntimePidRecovery` evidence field.
+Issue `#1110` remains open while independent desktop coverage is recovered.
+The prior harness explicitly supplied a source-built compositor to the E2E consumer.
+Harness `9f4a01f699f09abb25f10258455ac0faed0ecae8`
+installs the immutable lockfile's published compositor and leaves `E2E_COMPOSITOR` unset,
+while preserving the same source-built software parent and resource bounds.
+It retains the published ELF hash and version output in `native-tools.json`.
+Controlled native run `xdlnfpwhzz` and desktop run `7x5lk9dx9q` are waiting to terminal state.
+Both dispatches printed the pushed clean harness SHA.
+No cause has yet been assigned to the interaction failures.
 The TOML container wave also reached its job timeout;
 its retained log must be reconciled and its unexecuted independent checks resumed.
 
