@@ -37865,6 +37865,192 @@
     ],
     "exactSemanticMacos15BindingVerified": false,
     "finalRouteCorrection": "Retain the four-label union, with each source workflow command and runtime applicable only to its original labels",
-    "finalProviderAcceptance": false
-  }
+    "finalProviderAcceptance": false,
+    "finalRouteCorrectionIntegratedAt": "1042e35209",
+    "correctedCaseFrozenAt": "3d976fe06d22ae01c54aa206cf021a78374a3b06"
+  },
+  "completeStaticCaseRegistration": {
+    "frozenAt": "2026-10-17T11:08:10.651Z",
+    "caseCopies": 24,
+    "harnesses": {
+      "root": {
+        "ref": "trial/depot-cohort-root-20261017",
+        "preparationRevision": "1042e3520983d0557935e0ac5baff5444cc677ce",
+        "harnessRevision": "3d976fe06d22ae01c54aa206cf021a78374a3b06",
+        "casePaths": [
+          ".depot/manifests/toml.json",
+          ".depot/manifests/logger.json",
+          ".depot/manifests/native.json",
+          ".depot/manifests/desktop.json"
+        ]
+      },
+      "native-hosts": {
+        "ref": "trial/depot-coherent-native-20261017",
+        "preparationRevision": "8c1eac43273b0b0d468a54affd15dc9612d7fe49",
+        "harnessRevision": "467dc0002d6080f8aa951f488430450debf3df3c",
+        "casePaths": [
+          ".depot/manifests/toml.json",
+          ".depot/manifests/logger.json",
+          ".depot/manifests/native.json",
+          ".depot/manifests/desktop.json"
+        ]
+      },
+      "windows": {
+        "ref": "trial/depot-coherent-windows-20261017",
+        "preparationRevision": "e70240dc7317124a0db5b37967c570cf2f3fb6f4",
+        "harnessRevision": "4f7ff1a739976a3b781e6056dd3b71b84f1e082f",
+        "casePaths": [
+          ".depot/manifests/toml.json",
+          ".depot/manifests/logger.json",
+          ".depot/manifests/native.json",
+          ".depot/manifests/desktop.json"
+        ]
+      },
+      "alpine": {
+        "ref": "trial/depot-coherent-alpine-20261017",
+        "preparationRevision": "5152df4debd88f5e0b57802c7c8c958b1a5f6255",
+        "harnessRevision": "16ee27b3d6b115baa5f1bb4046d52d01057172cd",
+        "casePaths": [
+          ".depot/manifests/toml.json",
+          ".depot/manifests/logger.json",
+          ".depot/manifests/native.json",
+          ".depot/manifests/desktop.json"
+        ]
+      },
+      "toml-bounded": {
+        "ref": "trial/depot-toml-continuation-20261017",
+        "preparationRevision": "0f1ef041a0de2ff6d2db6dd55210b1160c592648",
+        "harnessRevision": "9cc7f28fb8db201d9774ff7cf5404ebec3ffc260",
+        "casePaths": [
+          ".depot/manifests/toml.json",
+          ".depot/manifests/logger.json",
+          ".depot/manifests/native.json",
+          ".depot/manifests/desktop.json"
+        ]
+      },
+      "vm": {
+        "ref": "trial/depot-complete-vm-20261016",
+        "preparationRevision": "8719ad3db0167574a5a8324132fa9a0bb74fd098",
+        "harnessRevision": "0fbf23d77e5a9b616763990845e36dc2c453f6d6",
+        "casePaths": [
+          ".depot/manifests/toml.json",
+          ".depot/manifests/logger.json",
+          ".depot/manifests/native.json",
+          ".depot/manifests/desktop.json"
+        ]
+      }
+    },
+    "routeCount": 20,
+    "primaryCheckCount": 770,
+    "externalCheckCount": 33,
+    "caseManifests": [
+      {
+        "caseId": "toml",
+        "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+        "baseRevision": "cf9fcb48047d86e0af01ac9c73c1c7bf26fb277f",
+        "manifestSha256": "e43e84682a895efc0ab4a1eb664ddd147f10e14add7686ecec6f617f85c90185",
+        "bytes": 28266,
+        "primaryChecks": 24,
+        "externalChecks": 3,
+        "routeIds": [
+          "toml.bounded",
+          "toml.scanner",
+          "toml.scorecard"
+        ]
+      },
+      {
+        "caseId": "logger",
+        "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+        "baseRevision": "20dbaca6c2bb39d5d7e51fac447d76393c21a32e",
+        "manifestSha256": "c7adf82827d17abb798e0af917e6237fe876160411ba72ce3364ebbc7c2c347e",
+        "bytes": 738559,
+        "primaryChecks": 719,
+        "externalChecks": 19,
+        "routeIds": [
+          "logger.combined",
+          "logger.hosts",
+          "logger.scanner",
+          "logger.scorecard",
+          "logger.vm"
+        ]
+      },
+      {
+        "caseId": "native",
+        "sourceRevision": "cb95cf6d785c3073c192b95f0632cdae7b910894",
+        "baseRevision": "45795584ff2dcf830dc505e121f0cc92c77860e5",
+        "manifestSha256": "7ae6ca9ed89b7de913b2a5e80b85bc343893892223e98a5bc91d1d2cfc7092bf",
+        "bytes": 21468,
+        "primaryChecks": 21,
+        "externalChecks": 5,
+        "routeIds": [
+          "native.desktop",
+          "native.features",
+          "native.hosts",
+          "native.producers",
+          "native.scanner",
+          "native.scorecard"
+        ]
+      },
+      {
+        "caseId": "desktop",
+        "sourceRevision": "3434eaa455d569c18b52cf15100f77f9db251d21",
+        "baseRevision": "a9b4a681d21907ecc5eb208a754e7b9a0f6e9168",
+        "manifestSha256": "6cf9154e4fd73174e6b8677bdf700908852ffab027fe04b6c6bf2ca9ffea3363",
+        "bytes": 12309,
+        "primaryChecks": 6,
+        "externalChecks": 6,
+        "routeIds": [
+          "desktop.alpine",
+          "desktop.linux",
+          "desktop.macos",
+          "desktop.scanner",
+          "desktop.scorecard",
+          "desktop.windows"
+        ]
+      }
+    ],
+    "allCaseCopiesByteEqual": true,
+    "authoredPrimaryDefinitionsAndClosureUnchanged": true,
+    "detail": {
+      "path": "doc/audit/depot-complete-static-registration-2026-10-17.evidence.json",
+      "bytes": 131756,
+      "sha256": "5dfbdf8cd6e2a2445916a1e75bf20752a2609626014f4b31f946ffd674ef3f79"
+    },
+    "commonManifestPublished": false,
+    "actualFinalProviderAcceptance": false
+  },
+  "formatterPreparationIncidents": [
+    {
+      "key": "changed-cargo-registration",
+      "body": "## Observed boundary\n\nThe native and desktop provisional case manifests declare an exact changed-file formatting check,\nbut the prepared final workflows had no consumer bound to that check.\nThe affected files are package/music-player/truepeak-core/Cargo.toml and\npackage/music-player/desktop-app/Cargo.toml at their immutable trial source revisions.\nNo task-count total can establish this gate's execution.\n\n## Implemented correction\n\nTrial harness 6aefa5d651b8754cbd2d330704e5513cc1157650 adds the exact-file adapter in\npackage/dev-script/task-util/mise.toml and calls it from native.producers wave native-core\nand desktop.linux. Terminal verification propagates a retained failed format result.\nThe source revision, committed manifest bytes, exact selected file, source-locked dprint version,\nand source lock identity are checked without editing authored source files.\n\n## Verification and acceptance limit\n\nThe actual Mise helper passes 20 control rows, including valid native/desktop fixtures,\nunselected-file positive controls, malformed selected input, symlink/scope rejection,\nand a removed-source-guard sensitivity control that restores invalid acceptance.\nBoth source lockfiles remain unchanged.\nThese are synthetic Cargo fixtures, not authored Cargo formatting results or final provider acceptance.\nThe actual final cohort remains held until every static case binding is frozen.\n\nEvidence: doc/audit/depot-changed-cargo-format-controls-2026-10-17.evidence.json.\n",
+      "labels": [
+        {
+          "id": "LA_kwDOKlVnec8AAAACjIzCDw",
+          "name": "needs-triage",
+          "description": "Maintainer needs to evaluate",
+          "color": "fbca04"
+        }
+      ],
+      "number": 1166,
+      "state": "OPEN",
+      "title": "Depot native and desktop final routes omitted the changed-Cargo formatting gate",
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1166"
+    },
+    {
+      "key": "named-dprint-lock-refresh",
+      "body": "## Observed boundary\n\nLocal Mise 2026.10.0 linux-x64 (2026-10-02) ran mise install dprint@0.61.1\ninside the prepared trial harness with MISE_LOCKED=0.\nAlthough the command names dprint, mise.lock changed its Rust entry from nightly-2026-10-13\nto nightly-2026-10-17. The before/after SHA256 values are\n95704fad9023cea1b8b530d5de696cfbd839f912aba7c0dc2c1c46519ebef733 and\n716878be8e23f6ac111c743951b5003743e81d26af0825d1a794311d06b99186.\nThe tracked diff proves the lock change, not installation of an unrelated compiler.\nOnly that exact owned diff was restored, then the worktree verified clean.\n\n## Verified repository workaround\n\nThe actual mise --no-config install dprint@0.61.1 invocation exits zero in a disposable fixture\nand preserves the original lock SHA256. The formatter adapter at trial harness\n6aefa5d651b8754cbd2d330704e5513cc1157650 uses --no-config for installation and execution.\nIts actual Mise controls exercise the selected files with source dprint configuration\nand preserve source lockfiles. The provider bootstrap's Mise 2026.10.9 remains a separate live boundary.\n\nThis tracks the repository preparer and its supported local workaround.\nNo upstream Mise defect or unrelated compiler installation is inferred from this observation.\n\nEvidence: doc/audit/depot-changed-cargo-format-controls-2026-10-17.evidence.json.\nTroubleshooting: doc/troubleshooting/depot-historical-checkout-bootstrap.md,\nsection Named formatter install refreshes an unrelated lock entry.\n",
+      "labels": [
+        {
+          "id": "LA_kwDOKlVnec8AAAACjIzCDw",
+          "name": "needs-triage",
+          "description": "Maintainer needs to evaluate",
+          "color": "fbca04"
+        }
+      ],
+      "number": 1167,
+      "state": "OPEN",
+      "title": "Depot formatter preparer named install refreshed an unrelated Rust lock entry",
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1167"
+    }
+  ]
 }

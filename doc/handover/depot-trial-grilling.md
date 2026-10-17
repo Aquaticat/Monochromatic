@@ -7,8 +7,29 @@
 The Codex scope clarification and globally verified search/fetch MCP setup are complete.
 The user selected the Codex document change only;
 `AGENTS.md` remains unchanged.
-No coherent final replay has been dispatched,
-and the case manifests remain provisional with `completeGraph: false`.
+No coherent final replay has been dispatched.
+The four case manifests now have complete static registrations with `completeGraph: true`.
+Their 24 committed copies are byte-identical across six isolated harnesses.
+The registry binds 770 primary and 33 external checks to 20 routes.
+Primary task definitions,
+arguments,
+selection closure,
+and exclusions remain unchanged.
+The logger semantic platform row now includes the authored macOS requirement,
+and TOML now explicitly records the selected current Scorecard policy.
+Execution acceptance remains pending.
+The [static registration evidence](../audit/depot-complete-static-registration-2026-10-17.evidence.json)
+retains each case digest,
+harness revision,
+route,
+and actual helper-selection proof.
+Root is `3d976fe06d22ae01c54aa206cf021a78374a3b06`;
+native hosts `467dc0002d6080f8aa951f488430450debf3df3c`;
+Windows `4f7ff1a739976a3b781e6056dd3b71b84f1e082f`;
+Alpine `16ee27b3d6b115baa5f1bb4046d52d01057172cd`;
+TOML `9cc7f28fb8db201d9774ff7cf5404ebec3ffc260`;
+and VM `0fbf23d77e5a9b616763990845e36dc2c453f6d6`.
+Verify clean remote equality before each actual dispatch.
 
 Desktop continuation controls at harness `bb475f636f51a00864710454c6499fcd3db6b8a4`
 are terminal and fully collected:
@@ -350,7 +371,14 @@ The proposal to skip macOS semantic validation is withdrawn.
 The final host adapter must preserve the four-label union and each original runtime.
 Development run `39023040772` retains its actual successful commands and artifacts;
 its `macos-latest` label does not establish the explicit `macos-15` binding.
-The logger owner is preparing this isolated correction without a development redispatch.
+The isolated correction is integrated through `1042e35209`,
+including distinct artifacts for the two macOS labels.
+Four valid fixtures,
+70 rejections,
+and a guard-removal sensitivity control pass under simulated platform metadata.
+The artifact-name positive control reproduces the legacy alias and verifies four distinct revised names.
+No development redispatch occurred.
+Issue `#1168` remains open for actual final `macos-15` execution.
 
 Root `6aefa5d651b8754cbd2d330704e5513cc1157650` adds the exact changed-Cargo-file formatter
 to `native.producers` wave `native-core` and `desktop.linux`.
@@ -387,10 +415,9 @@ This control gives no source-consumer execution or common-bound credit.
 Final coherent dispatch remains held.
 
 The remaining queue is explicit:
-integrate the original-label logger host correction;
-use the completed terminal logger accounting and incident reconciliation;
-complete every case's registration and copy its final bytes to every owner;
-freeze and publish the actual common manifest before the shared request clock;
+push and verify every frozen harness;
+retain formatter incident closure and the completed terminal accounting;
+publish the actual common manifest before the shared request clock;
 dispatch and collect all bound routes;
 join the matching Android producer to the held headful consumer;
 and compute allocation cost and overlap-aware critical paths.
@@ -403,7 +430,8 @@ provider allocation,
 cost,
 and critical paths;
 and adoption conditions and unresolved evidence.
-Ask this optional structure question while continuing technical work;
+The question tool has submitted this section list and the answer remains pending.
+Continue technical execution independently;
 do not draft the reader report before confirmation.
 
 The VM owner's natural-build consumer bridge for source cwd failure `#1076` is statically ready,
