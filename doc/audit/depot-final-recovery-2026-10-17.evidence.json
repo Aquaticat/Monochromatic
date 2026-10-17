@@ -37668,8 +37668,10 @@
     },
     "archive": {
       "path": "doc/audit/depot-logger-host-development-2026-10-17.evidence.json.gz",
-      "bytes": 289319,
-      "sha256": "58e75b45f568d90249987c092fd60ed766455bb7b5cfede1344d94808333693c"
+      "bytes": 426661,
+      "sha256": "adc0a5e7a443843c07362fb479e5f7d951a71bcd6996e4d6166ea6de80eeb0ef",
+      "includesExactOriginalProviderArchives": true,
+      "includesExactOriginalWorkflowLogArchive": true
     },
     "actualCohortBinding": false,
     "actualFinalProviderAcceptance": false
