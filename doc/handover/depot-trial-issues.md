@@ -349,6 +349,17 @@ retain the measurement and adoption boundaries.
 
 ## Native recovery assertion tracking
 
+The next authorized measurement prepares a coherent replay,
+with one frozen complete manifest and a shared request interval.
+Independent development runs remain supporting evidence rather than a combined latency result.
+Native route preparation covers historical macOS and Windows,
+later-source macOS,
+the complete original desktop Windows variants with an independent no-fail-fast test gate,
+and both exact-source Alpine routes.
+Route preparation uses a new private scratch worktree and trial-only pushed branch.
+Dispatch waits for the common orchestrator from root.
+No application source fixes are authorized by this preparation.
+
 The native recovery evidence retains every eligible test identity,
 exact failing output block,
 source hash proof,
