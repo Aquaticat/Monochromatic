@@ -343,7 +343,9 @@ All 35 jobs/artifacts are collected: 26 provider successes and nine failures.
 Six failures expose source diagnostics; conf fuzz, TOML mutation and conf mutation remain incomplete
 after the 24-minute adapter budget, with explicit `started-without-terminal-record` receipts.
 The two mutation campaigns still completed assertions and shards at cutoff.
-Prepared long recovery at `f69a78a3b3` selects only those three unfinished tasks with a bounded two-hour allowance,
+Long recovery `lt7qwlz6h1`, requested at `2026-10-17T07:35:35Z`, selects only those three unfinished tasks
+with a bounded two-hour allowance at clean pushed `f69a78a3b31f81cbfe47496bcdc6e2ac75549777`,
+which matches both provider revisions,
 using `2x8` for the single fuzz container and `4x16` for the authored two mutation containers.
 The browser routes now declare 32 disjoint file/project cells,
 with generated-program positive,
@@ -355,7 +357,16 @@ all three logger backend properties passed,
 full 84/34-case inventories and exact partitions,
 and actual two-CPU/two-GiB/512-PID bounds without PID or OOM events.
 The remaining 30 cells ran in `jps875l9qs` at pushed `51d5a2fd69507d9346d7fe6eb6345a4ee9929383`;
-its 29 successful jobs and one failed job still need case-level reconciliation.
+independent reconciliation of both requests verifies all 118 configured cases:
+116 passed, one failed and one authored skip, with none unexecuted.
+WebKit's logger OPFS availability assertion received `false` where it expected `true`;
+the other WebKit OPFS consumers explicitly skip an unavailable backend.
+Every prerequisite/external log hash and actual attempt URL matches,
+and all resource samples have zero PID rejection and OOM events.
+The 32 actual `2x8` jobs consumed 9,363.94 allocated CPU-seconds,
+or $0.468197 published compute before credits.
+The separately verified 35-leaf request consumed 177,819.248 allocated CPU-seconds,
+or $8.8909624 published compute before credits, including incomplete attempts.
 Then reconcile every selected leaf and browser case,
 finish only the three unfinished campaigns,
 and supply the source-required audited Git `2.56.0`

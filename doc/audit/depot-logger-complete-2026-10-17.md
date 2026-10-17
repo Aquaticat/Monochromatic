@@ -168,8 +168,18 @@ The two `2x8` jobs consumed 443.551 provider-job seconds and 887.102 allocated C
 corresponding to $0.0443551 published compute before plan credits.
 The account ledger and physical host RAM were not directly verified.
 Remaining-partition request `jps875l9qs` used clean pushed `51d5a2fd69507d9346d7fe6eb6345a4ee9929383`.
-All 30 jobs are terminal, with 29 provider successes and one failure;
-per-case reconciliation remains required.
+All 30 jobs are terminal, with 29 provider successes and one failure.
+Independent reconciliation of both requests verifies the disjoint 32-partition union against every full inventory:
+all 118 configured cases have outcomes, with 116 passed, one failed and one authored skip.
+The failure is WebKit's logger OPFS `verify detects OPFS availability` assertion,
+which expected `true` but received `false`.
+The WebKit fs-path case explicitly skips after OPFS refuses `getDirectory` with `UnknownError`;
+the logger property also explicitly skips its OPFS backend while its other backends pass.
+This evidence does not establish why WebKit refused OPFS.
+All sampled cgroup memory and PID rejection counters remain zero.
+Every prerequisite and external log hash and actual provider attempt URL is verified.
+The 32 actual `2x8` jobs consumed 4,681.97 provider-job seconds and 9,363.94 allocated CPU-seconds,
+corresponding to $0.468197 published compute before credits.
 The authored source Podman command does not forward `CI`;
 the retained Playwright configuration therefore reports zero retries despite the outer workflow's `CI=true`.
 No adapter silently changes that source behavior.
@@ -255,6 +265,12 @@ The passed browser-properties bundle and CLI integration are excluded from this 
 This request retains `16x64` provider allocation and original container bounds;
 compute must count the allocated 16 CPUs.
 All 35 jobs and artifacts are collected, with 26 provider successes and nine failures.
+Independent source/task/argument, closure, log-hash and attempt-URL reconciliation verifies 75 terminal logs,
+26 selected tasks passed, six selected tasks failed and three selected tasks incomplete.
+All retained fuzz runtime records verify evidence copying and container cleanup.
+Their actual `16x64` allocation consumed 11,113.703 provider-job seconds
+and 177,819.248 allocated CPU-seconds,
+corresponding to $8.8909624 published compute before credits.
 Six failed jobs contain actual source errors:
 missing conf coverage baseline,
 JSON-C and logger coverage gates,
@@ -266,7 +282,12 @@ TOML mutation and conf mutation.
 Their continuation records explicitly say `started-without-terminal-record`.
 Both mutation logs continue completing source assertions and shards at cutoff;
 the budget does not establish a source failure.
-Only those three unfinished tasks are selected for the prepared bounded two-hour recovery.
+Only those three unfinished tasks are selected in bounded two-hour recovery `lt7qwlz6h1`,
+requested at `2026-10-17T07:35:35Z`.
+Both provider revisions equal clean explicitly pushed `f69a78a3b31f81cbfe47496bcdc6e2ac75549777`.
+The first immediate dispatch returned `not_found`;
+an unchanged-ref reprobe succeeded without a source or workflow edit.
+No server-side cause is inferred from that observation.
 The mutation jobs use `4x16`, matching the authored two concurrent two-CPU containers;
 the single fuzz container uses `2x8`.
 The next actions are terminal leaf reconciliation,
