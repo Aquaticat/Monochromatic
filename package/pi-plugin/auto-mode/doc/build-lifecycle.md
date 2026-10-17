@@ -49,7 +49,26 @@ and complete SHA-256 contents,
 then atomically replaces only the new release's matching file with a hard link.
 Changed files retain independent inodes.
 It does not follow dependency symlinks or rewrite an old release.
-The latest checked build shares 1,479 files totaling 11,813,141 bytes.
+The final checked build `native-release-qWSxFz` shares 1,000 files totaling 7,518,255 bytes.
+It contains 1,030 regular files totaling 8,211,396 bytes.
+The emitted graph records five computed import sites and finds no missing static targets.
+Its 794 conservatively reachable files total 6,099,319 bytes.
+Contract fixtures and generation inputs remain because native tasks load them directly;
+literal graph absence does not establish that they can be deleted.
+
+Cleanup dry-run lists ignored cache,
+dist,
+and node_modules trees.
+Root `HEAD`,
+`config`,
+`hooks`,
+`objects`,
+and `refs` do not exist despite matching ignore patterns.
+Live Node/Pi process inspection and a complete repository package-consumer scan precede maintenance.
+Maintenance removes 43 inactive releases and retains active `native-release-qWSxFz`
+plus verified `native-release-mHAoem`.
+Dependency links and source are preserved.
+This is reviewed maintenance rather than automatic eviction of a running session's output.
 
 ## Alternatives and verification
 

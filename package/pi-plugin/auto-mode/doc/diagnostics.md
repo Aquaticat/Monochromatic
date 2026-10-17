@@ -82,6 +82,14 @@ A reference scan checks all 1,670 tracked Markdown files and finds no archived f
 The archive preserves evidence outside the package;
 it does not claim automatic retention for future logger output.
 
+The final batch contains 622 additional files unchanged since inventory,
+with no writes after 08:03 UTC.
+The same decompressed-hash and length checks preserve their 265,115,894 original bytes
+as 10,014,676 compressed bytes in the existing private archive.
+The combined manifest retains both batches.
+Routine package tasks now route diagnostics outside the package through the shared sink setting.
+The package diagnostic directory is empty at the final footprint measurement.
+
 ## Verification
 
 The native fallback tests assert correlated model requests,

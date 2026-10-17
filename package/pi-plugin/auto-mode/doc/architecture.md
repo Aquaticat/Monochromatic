@@ -8,9 +8,24 @@ and scoped human confirmation when automatic review cannot resolve the operation
 
 ## Refactor status
 
-The user rejects the initial consolidation as insufficient for implementation maintainability.
-The [compact prepared-group design](compact-review-design.md) records the deeper replacement now being implemented.
-The measurements and module documents in this index describe the current baseline until that replacement is verified.
+The [compact prepared-group implementation](compact-review-design.md) shares actual native phases,
+group ownership,
+confirmation,
+and terminal result retention across direct and child execution.
+The former extension pipeline and duplicated execution protocols are removed.
+Full units,
+type checking,
+native lifecycle and fallback catalogs,
+and configured MiMo replay pass.
+Lint cleanup remains a separate measured task.
+
+The final package measurement is 22,897,968 regular-file bytes,
+including the active 8,211,396-byte native release and a verified rollback.
+Shared dependency symlink targets are excluded.
+The parser inventory counts 65,692 nonblank code lines across 813 tracked source files,
+including 28,596 verification lines.
+Full lint reports 83 errors and 13,686 warnings across 813 files and 486 rules.
+Warnings are diagnostics rather than a code-line count or an accepted size target.
 
 The user authorized consolidation and package-local justification on 2026-10-17.
 The refactor preserves the installed native host's behavior and removes the superseded extension pipeline.
@@ -77,7 +92,7 @@ and executable verification.
 An existing implementation is evidence of a responsibility,
 not sufficient justification for its current decomposition.
 
-## Implemented consolidation and measurements
+## Historical extension consolidation measurements
 
 The [retired extension pipeline](retired-extension.md) no longer supplies another execution-permission path.
 The tracked inventory changes from 881 files to 847 files,
@@ -92,7 +107,7 @@ this refactor does not claim that every retained internal module is minimal.
 The generated runtime bridge,
 declaration bridge,
 and public entry derive their exports from that interface instead of maintaining separate lists.
-The final literal-import graph reaches 63 native policy modules and 237 native integration modules.
+That consolidation's literal-import graph reaches 63 native policy modules and 237 native integration modules.
 The public entry adds only its two facades beyond the native policy graph.
 Types and literal imports count in this inventory;
 dynamic generation is verified separately by the build and installed replay.
@@ -117,9 +132,8 @@ two-CPU,
 2 GiB `test:unit` run passes,
 including release publication and native lifecycle regressions.
 `lint:types` passes.
-Complete maintained lint checks 825 files with 486 rules on one thread:
-30 errors and 13,163 warnings remain for the lint handoff.
-This is not a zero-lint completion claim.
+Current maintained lint scope and remaining debt are recorded in `compact-review-design.md`.
+Historical lint totals in investigation records describe their named source snapshots.
 
 The native integration graph remains substantial because it includes host transformation,
 source custody,

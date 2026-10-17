@@ -7,7 +7,9 @@ It captures selected instruction and authorization inputs,
 assesses applicable clause meanings,
 compiles admitted meanings,
 and requests complete-operation review when the clause path remains unresolved.
-Its caller is the native batch handler.
+Its caller is the prepared group created by the native batch handler.
+The compiler returns review data and currentness checks;
+the prepared group owns the final confirmation route.
 
 `src/semantic-operating-policy.ts` fixes the model,
 supported labels,
@@ -53,7 +55,9 @@ The current implementation instead preserves separate capture,
 estimate admission,
 resolution,
 and fallback responsibilities.
-Its internal ownership plumbing remains subject to consolidation under this interface.
+Question and evidence ownership remains inside the source compiler's operation boundary.
+These checks authenticate source and model responses;
+they do not create a second native execution owner.
 
 ## Verification
 
