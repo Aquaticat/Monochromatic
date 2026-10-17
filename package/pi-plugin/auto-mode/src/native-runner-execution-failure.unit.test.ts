@@ -28,7 +28,7 @@ await describe({ name: '', children: [
   }),
   //endregion
   //region Borrowed callback failures retain opaque values and prior prepared-member publication.
-  ...['prepare', 'after', 'parent', 'current', 'native', 'assess'].map(function callbackFailure(point) {
+  ...['prepare', 'after', 'parent', 'current', 'assess'].map(function callbackFailure(point) {
     return it({ name: `retains original ${point} callback failure without replacing admitted handles`, fn: async () => {
       const fixture = createRunnerExecutionFixture();
       await fixture.execute();
@@ -46,7 +46,6 @@ await describe({ name: '', children: [
         if (point === 'prepare') dispatch.prepare({});
         else if (point === 'after') dispatch.after({});
         else if ((point === 'parent') || (point === 'current')) dispatch.assertFresh();
-        else if (point === 'native') dispatch.runToolCall(call, {});
         else dispatch.assess({ members });
       } catch (error) { 
         caught = error; 

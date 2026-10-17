@@ -252,7 +252,30 @@ The factory import now has an explicit generated-loop override in `prepare-sessi
 TypeScript also rejects an unknown logger argument and an optional child signal;
 the fixes use the existing caught-value formatter and original parent-signal fallback.
 The corrected type check passes.
-The corrected build and actual child consumer verification remain pending.
+The corrected build `native-release-5QqLSO` passes the existing bounded native catalogs.
+The direct dispatcher import subsequently builds as `native-release-1DiyGD`.
+The maintained phase suite now also runs genuine Codemode child contrasts:
+normal completion,
+a before-hook block on the second parallel member,
+a hidden argument property added by an actual extension callback,
+and cancellation inside child preparation.
+All 22 modes pass with the original caller,
+actual SDK phases,
+and captured cleanup stderr.
+The hidden-property case proves that the peer is withheld,
+the invalid slot records `threw` without conversion,
+and already prepared peers retain one native error conversion.
+The positive control executes all three children.
+The first new fixture run fails before construction because a suggested workspace wait package is not installed;
+the fixture now uses the same Node timer import as the existing native phase consumer.
+The full bounded unit run reaches the 22 passing modes and publication rollback case,
+but two old runner test files still call the removed whole-call dispatcher callback.
+Those assertions are retired after their replacement passes through the actual SDK;
+the remaining queue,
+host callback,
+member association,
+and failure tests stay in place.
+Full unit verification must rerun after that test migration.
 
 A provider-payload audit finds a separate missed shell boundary:
 known process result metadata and `ad-process:notification` details retain raw `command` strings.

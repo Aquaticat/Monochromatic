@@ -5,7 +5,7 @@ import { createRunnerExecutionFixture } from './native-runner-execution-fixture.
 
 await describe({ name: '', children: [
   //region Complete dispatch retains original borrowed identities and callback return values.
-  it({ name: 'dispatches original parallel group and forwards original native callbacks without copying', fn: async () => {
+  it({ name: 'dispatches the original parallel group and forwards host preparation and completion', fn: async () => {
     const fixture = createRunnerExecutionFixture();
     const originalTail = fixture.input.runner.queueTail;
     await fixture.execute();
@@ -28,19 +28,7 @@ await describe({ name: '', children: [
     dispatch.assertFresh();
     assert.deepEqual(fixture.steps.slice(-2), ['parent', 'current']);
     assert.equal(fixture.observations.at(-1)?.[1], fixture.input.group.handle);
-    const [first, second] = fixture.input.bound.calls;
-    assert.ok(first);
-    assert.ok(second);
-    const options = Object.freeze({ original: 'options' });
-    assert.equal(dispatch.runToolCall(second, options), fixture.value);
-    const invocation = fixture.observations.at(-1)?.[1];
-    assert.ok((invocation !== null) && ((typeof invocation) === 'object') && ('call' in invocation) && ('options' in invocation) && ('slot' in invocation) && ('group' in invocation));
-    assert.equal(invocation.call, second);
-    assert.equal(invocation.options, options);
-    assert.equal(invocation.slot, fixture.input.bound.slots[1]);
-    assert.equal(invocation.group, fixture.input.group.handle);
-    assert.equal(dispatch.runToolCall(first, undefined), fixture.value);
-    assert.deepEqual(fixture.observations.at(-1), ['native', { group: fixture.input.group.handle, slot: fixture.input.bound.slots[0], call: first, options: undefined }]);
+
   } }),
   it({ name: 'publishes original prepared handles only after complete admission and replaces them after later assessment', fn: async () => {
     const fixture = createRunnerExecutionFixture();
@@ -99,10 +87,9 @@ await describe({ name: '', children: [
   } }),
   //endregion
   //region Callback publication cannot replace associations captured before host context lookup.
-  it({ name: 'retains original judgment and native slot association across host context replacement', fn: async () => {
+  it({ name: 'retains original judgment and member ordinals across host context replacement', fn: async () => {
     const fixture = createRunnerExecutionFixture();
     const {judgment} = fixture.input.origin;
-    const {slots} = fixture.input.bound;
     fixture.control.onStep = function replaceAtContext(point) {
       if (point !== 'context') return;
       fixture.input.origin.judgment = {
@@ -124,8 +111,6 @@ await describe({ name: '', children: [
     assert.equal(dispatch.executionJudgment, judgment);
     const [call] = fixture.input.bound.calls;
     assert.ok(call);
-    assert.equal(dispatch.runToolCall(call, undefined), fixture.value);
-    assert.deepEqual(fixture.observations.at(-1), ['native', { group: fixture.input.group.handle, slot: slots[0], call, options: undefined }]);
     dispatch.assertFresh();
     assert.deepEqual(dispatch.assess({ members: [] }), { block: false });
     assert.equal(dispatch.memberForExecution(call.id), fixture.control.handles[0]);
