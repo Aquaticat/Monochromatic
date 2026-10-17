@@ -21989,11 +21989,11 @@
     "state": "Both independent missing development consumers reached failed terminal commands; TOML failed before assertions on adapter infrastructure. Final coherent dispatch and repaired TOML pilot remain pending.",
     "route": {
       "branch": "trial/depot-toml-continuation-20261017",
-      "harnessRevision": "640a576ade81c4edfee6a603543a7fbd18faa46b",
+      "harnessRevision": "0f8ad795aa92d3beb83e3bfa4e4aa54f1bea06f8",
       "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
       "workflow": ".depot/workflows/depot-complete-toml-bounded.yml",
-      "workflowSha256": "f24f5f1443a5d6b68fb885920214750c400f570f3a654565421a82ed098d6f26",
-      "taskFileSha256": "50670f65a63b66aa677d62cf53a3dae6d29fbb2c3676970de4be92ea51932ed9",
+      "workflowSha256": "f71af79c529c1e6d93d9c2c7e87543eb02053644976354cc5dead78ec822dc98",
+      "taskFileSha256": "e499d1485e147eee2f0de74d5bcb3abcfe2fece2f5bba4706063e1a0de09e112",
       "manifestSha256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
       "inputs": {
         "scope": [
@@ -22034,8 +22034,9 @@
         "Private TMPDIR for raw shard manifest/report retention",
         "Explicit single selected check and prerequisite closure"
       ],
-      "finalDispatch": "Held",
-      "nativeReportRetention": "Copies every available default mutation-report.json outside source and records hash, baseline presence, mtime, and producedDuringInvocation. Stale reports remain explicitly marked."
+      "finalDispatch": "Held: provisional completeGraph=false case must be replaced before canonical acceptance",
+      "nativeReportRetention": "Copies every available default mutation-report.json outside source and records hash, baseline presence, mtime, and producedDuringInvocation. Stale reports remain explicitly marked.",
+      "commonManifestGuardEvidence": "doc/audit/depot-common-manifest-route-guards-2026-10-17.evidence.json"
     },
     "controls": {
       "path": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-51kdeS/report.json",
@@ -268839,7 +268840,7 @@
       }
     },
     "pilotRecovery": {
-      "state": "bounded actual TOML pilot dispatched; terminal wait62945",
+      "state": "Source consumer completed with green baseline and compileError; provider wrapper failed metadata collection.",
       "runId": "0j8zhbn9n0",
       "response": {
         "org_id": "l4zncjjbj5",
@@ -269385,7 +269386,1871 @@
         "minimized": null,
         "pin": null
       },
-      "finalCoherentDispatch": false
+      "finalCoherentDispatch": false,
+      "terminal": {
+        "collection": {
+          "collectedAt": "2026-10-17T07:17:48.993Z",
+          "org": "l4zncjjbj5",
+          "runId": "0j8zhbn9n0",
+          "revision": "a6dcb98aaa415c49633474e46acc2a3c366e31df",
+          "status": "failed",
+          "attempts": [
+            {
+              "workflowId": "qrmzdmwf4q",
+              "jobId": "kvg78klbhn",
+              "jobKey": "depot-complete-toml-adapter-pilot.yml:pilot",
+              "attemptId": "4m0vbp3309",
+              "attempt": 1,
+              "status": "failed",
+              "metricsPath": "metrics-4m0vbp3309.json",
+              "logPath": "logs-4m0vbp3309.jsonl",
+              "logSha256": "af8594a7c22230500c86971ec022f87d88f96d3b42c6eb57f3aefc9918f63955",
+              "logRecords": 1143,
+              "providerAttempt": {
+                "attempt_id": "4m0vbp3309",
+                "attempt": 1,
+                "status": "failed",
+                "conclusion": "failure",
+                "sandbox_id": "x43l5mgw9wzdrwwq55b6",
+                "session_id": "6ffb955e-90b9-4bf2-8374-7e28db0c0193",
+                "created_at": "2026-10-17T07:08:51.357Z",
+                "started_at": "2026-10-17T07:08:55.179Z",
+                "finished_at": "2026-10-17T07:11:42.401Z"
+              }
+            }
+          ],
+          "artifactCount": 1,
+          "scope": "Read-only collection. Provider intervals require declared resources before pricing. Gate completion needs independent manifest reconciliation."
+        },
+        "artifactIndex": {
+          "collectedAt": "2026-10-17T07:18:07.671Z",
+          "extractionPolicy": "Validated relative member names; fresh regular-file writes; no archive symlink extraction; 64MiB per-member and 128MiB total bounds. This pilot archive has 19 members; the larger p6vm5s00w6 measurements belong only to that separate archive.",
+          "artifacts": [
+            {
+              "artifact_id": "01a148b3-bf92-7122-bdc0-926d81d5263d",
+              "run_id": "0j8zhbn9n0",
+              "workflow_id": "qrmzdmwf4q",
+              "workflow_path": "depot-complete-toml-adapter-pilot.yml",
+              "job_id": "kvg78klbhn",
+              "job_key": "depot-complete-toml-adapter-pilot.yml:pilot",
+              "attempt_id": "4m0vbp3309",
+              "attempt": 1,
+              "name": "toml-adapter-consumer-pilot-evidence",
+              "size_bytes": 44242,
+              "created_at": "2026-10-17T07:11:41Z",
+              "archive": "artifact-01a148b3-bf92-7122-bdc0-926d81d5263d.zip",
+              "sha256": "fc3178d5e8528b08884098f65f88db305aa41bd202b08369325769135fee6fb9",
+              "extraction": "artifact-toml-adapter-consumer-pilot-evidence",
+              "members": [
+                {
+                  "name": "container-bin/image-metadata-4R39Ta/metadata-evidence.json",
+                  "bytes": 737,
+                  "sha256": "5dfa1a30d5f50d829893d96fc43f4f466ecafaf8feac17b2b22d9228701b6047"
+                },
+                {
+                  "name": "container-bin/image-metadata-4R39Ta/owned-state.json",
+                  "bytes": 29934,
+                  "sha256": "e82c7a5e4404440e121fffb742f4cde0c444843a3f69dd74707e55789cab66a7"
+                },
+                {
+                  "name": "container-bin/image-metadata-4R39Ta/source.tar",
+                  "bytes": 31744,
+                  "sha256": "828d26b2bf5122e6491e613359bfdf84dfe86981949bcfe3eb844d16d26564ab"
+                },
+                {
+                  "name": "container-bin/image-metadata-vXb6mK/metadata-evidence.json",
+                  "bytes": 731,
+                  "sha256": "cbdb5422f0bf69025f668b27a5ac97104f1bf2d3f57f623293797ca6efb8bec2"
+                },
+                {
+                  "name": "container-bin/image-metadata-vXb6mK/owned-state.json",
+                  "bytes": 53,
+                  "sha256": "fb9fe5db7e7f2c33bb739cdd95c1a2788b50af0c7c5c09f84e408946a0cf739e"
+                },
+                {
+                  "name": "container-bin/image-metadata-vXb6mK/source.tar",
+                  "bytes": 2048,
+                  "sha256": "218ea2312a35d8e025c2aa1e04dcd0727a67c82d08d5403e75ae0bde3ff78963"
+                },
+                {
+                  "name": "container-bin/metadata-control-ppjlXz/state.json",
+                  "bytes": 53,
+                  "sha256": "fb9fe5db7e7f2c33bb739cdd95c1a2788b50af0c7c5c09f84e408946a0cf739e"
+                },
+                {
+                  "name": "container-bin/mutation-private-fixture/result.json",
+                  "bytes": 23,
+                  "sha256": "9f5b3078bc99086112ea426748346ba4976559df35c07238dc36162fbe0c23c0"
+                },
+                {
+                  "name": "container-bin/mutation-private-fixture/shard-manifest.json",
+                  "bytes": 23,
+                  "sha256": "9f5b3078bc99086112ea426748346ba4976559df35c07238dc36162fbe0c23c0"
+                },
+                {
+                  "name": "toml-bounded-package.module.toml-edit.test.mutation-containers.json",
+                  "bytes": 459,
+                  "sha256": "d708b6c8c7543eb2f328f3b026be3daa1950a412c3c1ffefd184df0baa211474"
+                },
+                {
+                  "name": "toml-bounded-package.module.toml-edit.test.mutation-events.json",
+                  "bytes": 479,
+                  "sha256": "bb47fe43e991d7ddaa66e18c6ae3ad441d4312bfd6c7d616c1d4eb2dfc854b7f"
+                },
+                {
+                  "name": "toml-bounded-package.module.toml-edit.test.mutation-results.json",
+                  "bytes": 3937,
+                  "sha256": "5c5554a7a7210f3a4cbfe9d45f18e3e30b4b8e137bf46bbfd3da30a1987e1f45"
+                },
+                {
+                  "name": "toml-bounded-package.module.toml-edit.test.mutation.log",
+                  "bytes": 71695,
+                  "sha256": "f0d71ddb4d81777053f381f217a797428ffb45294f84ab2cb768e7f6690ccdf9"
+                },
+                {
+                  "name": "toml-mutant-evidence-index.json",
+                  "bytes": 397,
+                  "sha256": "855a5d9c3520c418979900dc43b0cbead3a954021a5a6fcff09d8893727d7a21"
+                },
+                {
+                  "name": "toml-mutation-shards/mutation-manifest-KKSpaM/shard-manifest.json",
+                  "bytes": 1919,
+                  "sha256": "21c37a776646ed5fe5a92416ba1072b1b1f0734bebcfe8a47609b7597e4d0983"
+                },
+                {
+                  "name": "toml-mutation-shards/mutation-report-wj0Skg/shard-report.json",
+                  "bytes": 401,
+                  "sha256": "061d49363834064d6b3d5d6924ccd64451e960533f38a55dcb213a62fcc018c6"
+                },
+                {
+                  "name": "toml-native-report-package.module.toml-edit.test.mutation-0.json",
+                  "bytes": 650,
+                  "sha256": "692e5dd934f799518de76762ee34a0f22558a66a2832188cf5b074dfc37d7825"
+                },
+                {
+                  "name": "toml-provenance-after.json",
+                  "bytes": 10623,
+                  "sha256": "6d87396042b0c4e6c5e131b7b642edf108a4a2e717e1bbca22e1d7f8e07f52b1"
+                },
+                {
+                  "name": "toml-provenance-before.json",
+                  "bytes": 10624,
+                  "sha256": "38dfeb2d8217dbeb9c53f3fe3757fc01b5f8837994fc45f58099d517a9cbfaad"
+                }
+              ]
+            }
+          ]
+        },
+        "result": {
+          "schemaVersion": 1,
+          "event": "bounded-gate-finished",
+          "checkId": "package.module.toml-edit.test.mutation",
+          "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "cohort": {
+            "id": "toml-adapter-pilot-20261017T070841567Z",
+            "manifestSha256": "46ffce5a013656d8a36ad6c5a7f65aa63b25b8e49c58ea338df21648a61cbeac",
+            "requestedAt": "2026-10-17T07:08:41.567Z"
+          },
+          "startedAt": "2026-10-17T07:10:40.806Z",
+          "finishedAt": "2026-10-17T07:11:40.752Z",
+          "elapsedMs": 59945.775575,
+          "maxMs": 900000,
+          "graceMs": 10000,
+          "timedOut": false,
+          "exit": {
+            "kind": "exited",
+            "exitCode": 0,
+            "signal": null
+          },
+          "sourceGateTerminal": false,
+          "label": "io.monochromatic.toml-attempt=31981b05-9e60-497a-ad7c-99391b45f401",
+          "signals": [],
+          "cleanup": [],
+          "cleanupVerified": true,
+          "processGroupAfter": [],
+          "instrumentationErrors": [
+            "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nnull !== 0\n"
+          ],
+          "logLimitExceeded": false,
+          "output": {
+            "bytes": 71695,
+            "sha256": "f0d71ddb4d81777053f381f217a797428ffb45294f84ab2cb768e7f6690ccdf9"
+          },
+          "wrapperSha256": "e24d1b16e2c3e2f8ca6d72458f900a97ae60eae6a6dc64f92b5e37f4b6b6f603",
+          "fixtureOnly": false,
+          "selectedInvocationStarted": true,
+          "terminalDisposition": "pilot-command-passed",
+          "consumerSpawnedAt": "2026-10-17T07:10:40.844Z",
+          "consumerOutcomeObservedAt": "2026-10-17T07:11:40.606Z",
+          "containerIdsAfter": [],
+          "consumer": {
+            "command": "mise",
+            "args": [
+              "run",
+              "//package/module/toml-edit:test:mutation",
+              "--",
+              "src/toml-get-comments.ts",
+              "--containers",
+              "1",
+              "--shard-size",
+              "1"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/source",
+            "selectedSourceTask": "//package/module/toml-edit:test:mutation"
+          },
+          "adapterOverlay": {
+            "DEPOT_CI_CHECK_IDS": "[\"package.module.toml-edit.test.mutation\"]",
+            "DEPOT_CI_WORKERS": "1",
+            "TMPDIR": "/home/runner/temp/agent/depot-complete-ci/toml-mutation-shards",
+            "correlatedPodmanSha256": "e24d1b16e2c3e2f8ca6d72458f900a97ae60eae6a6dc64f92b5e37f4b6b6f603"
+          },
+          "shardEvidence": [
+            {
+              "path": "mutation-manifest-KKSpaM/shard-manifest.json",
+              "bytes": 1919,
+              "sha256": "21c37a776646ed5fe5a92416ba1072b1b1f0734bebcfe8a47609b7597e4d0983"
+            },
+            {
+              "path": "mutation-report-wj0Skg/shard-report.json",
+              "bytes": 401,
+              "sha256": "061d49363834064d6b3d5d6924ccd64451e960533f38a55dcb213a62fcc018c6"
+            }
+          ],
+          "nativeReports": [
+            {
+              "path": "/home/runner/work/Monochromatic/Monochromatic/source/mutation-report.json",
+              "existedAtStart": false,
+              "artifactPath": "toml-native-report-package.module.toml-edit.test.mutation-0.json",
+              "bytes": 650,
+              "sha256": "692e5dd934f799518de76762ee34a0f22558a66a2832188cf5b074dfc37d7825",
+              "mtimeMs": 1792221100585.7996,
+              "producedDuringInvocation": true
+            }
+          ],
+          "pilot": {
+            "developmentOnly": true,
+            "sourceFiles": [
+              "src/toml-get-comments.ts"
+            ],
+            "fullSuite": true,
+            "containers": 1,
+            "shardSize": 1,
+            "nativeReport": {
+              "schemaVersion": 1,
+              "packagePath": "package/module/toml-edit",
+              "totals": {
+                "killed": 0,
+                "survived": 0,
+                "timeout": 0,
+                "compileError": 1,
+                "runtimeError": 0,
+                "ignored": 0
+              },
+              "mutants": [
+                {
+                  "id": "9cd1056a095eaea1",
+                  "file": "src/toml-get-comments.ts",
+                  "line": 28,
+                  "column": 26,
+                  "operator": "block",
+                  "original": "{\n  return edit.comments;\n}",
+                  "replacement": "{}",
+                  "description": "emptied block",
+                  "status": "compileError",
+                  "position": 1,
+                  "rerunCount": 0,
+                  "confirmed": true
+                }
+              ],
+              "ignored": [],
+              "infraErrors": [],
+              "shardCount": 1
+            },
+            "sourceConsumerTerminal": true
+          }
+        },
+        "manifest": {
+          "schemaVersion": 1,
+          "shardId": "src__toml-get-comments.ts-0",
+          "packagePath": "package/module/toml-edit",
+          "mutants": [
+            {
+              "id": "9cd1056a095eaea1",
+              "file": "src/toml-get-comments.ts",
+              "start": 680,
+              "end": 707,
+              "line": 28,
+              "column": 26,
+              "operator": "block",
+              "original": "{\n  return edit.comments;\n}",
+              "replacement": "{}",
+              "description": "emptied block"
+            }
+          ],
+          "tests": [
+            "src/basic-escape.unit.test.ts",
+            "src/canonical.unit.test.ts",
+            "src/comments.unit.test.ts",
+            "src/cross-path-effective.unit.test.ts",
+            "src/document-state.unit.test.ts",
+            "src/effective-value.unit.test.ts",
+            "src/emit-content-node.unit.test.ts",
+            "src/emit-value-node.unit.test.ts",
+            "src/errors.unit.test.ts",
+            "src/fixtures.unit.test.ts",
+            "src/inline-entry-state.unit.test.ts",
+            "src/input-state.unit.test.ts",
+            "src/issue-252.unit.test.ts",
+            "src/js-value-text.unit.test.ts",
+            "src/keys.unit.test.ts",
+            "src/parse-toml-edit.unit.test.ts",
+            "src/parsed-comment-state.unit.test.ts",
+            "src/path-prefix.unit.test.ts",
+            "src/path.unit.test.ts",
+            "src/resolve.unit.test.ts",
+            "src/toml-clean-path.unit.test.ts",
+            "src/toml-comment-access.unit.test.ts",
+            "src/toml-delete.path.unit.test.ts",
+            "src/toml-delete.unit.test.ts",
+            "src/toml-get-comments.unit.test.ts",
+            "src/toml-get-node.unit.test.ts",
+            "src/toml-get-raw.unit.test.ts",
+            "src/toml-has.unit.test.ts",
+            "src/toml-insert-comment-after.unit.test.ts",
+            "src/toml-insert-comment-before.unit.test.ts",
+            "src/toml-keys.unit.test.ts",
+            "src/toml-set-diagnostics.unit.test.ts",
+            "src/toml-set-header-comment.unit.test.ts",
+            "src/toml-set.path.unit.test.ts",
+            "src/toml-set.unit.test.ts",
+            "src/value-encoders.unit.test.ts",
+            "src/values.unit.test.ts"
+          ],
+          "timeoutFloorMs": 5000,
+          "timeoutFactor": 3
+        },
+        "shard": {
+          "schemaVersion": 1,
+          "shardId": "src__toml-get-comments.ts-0",
+          "baseline": {
+            "green": true,
+            "testsMs": 4237.252068,
+            "tsgoMs": 271.928494,
+            "detail": ""
+          },
+          "results": [
+            {
+              "id": "9cd1056a095eaea1",
+              "status": "compileError",
+              "position": 1,
+              "durationMs": 499.24852199999987,
+              "detail": "emptied block"
+            }
+          ],
+          "unrun": [],
+          "anomaly": ""
+        },
+        "native": {
+          "schemaVersion": 1,
+          "packagePath": "package/module/toml-edit",
+          "totals": {
+            "killed": 0,
+            "survived": 0,
+            "timeout": 0,
+            "compileError": 1,
+            "runtimeError": 0,
+            "ignored": 0
+          },
+          "mutants": [
+            {
+              "id": "9cd1056a095eaea1",
+              "file": "src/toml-get-comments.ts",
+              "line": 28,
+              "column": 26,
+              "operator": "block",
+              "original": "{\n  return edit.comments;\n}",
+              "replacement": "{}",
+              "description": "emptied block",
+              "status": "compileError",
+              "position": 1,
+              "rerunCount": 0,
+              "confirmed": true
+            }
+          ],
+          "ignored": [],
+          "infraErrors": [],
+          "shardCount": 1
+        },
+        "sourceBefore": {
+          "schemaVersion": 1,
+          "event": "source-provenance",
+          "phase": "before",
+          "cohort": {
+            "id": "toml-adapter-pilot-20261017T070841567Z",
+            "manifestSha256": "46ffce5a013656d8a36ad6c5a7f65aa63b25b8e49c58ea338df21648a61cbeac",
+            "requestedAt": "2026-10-17T07:08:41.567Z"
+          },
+          "identity": {
+            "head": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+            "sourceTree": "815e35009780abd2e98bd9bd1ccd92dcb2ef14bf",
+            "trackedStatus": "",
+            "inputs": {
+              ".cargo/config.toml": "7352bfbf249b17aa4293845ef4ef6766227e6ed059d3861556595fa543af01f5",
+              ".pnpmfile.policies.json": "6ea9a99940e8c40e194a7cc0a3627d1c0ccc2d50857b40cb5ff80d7d22001b4a",
+              "bunfig.toml": "433ee4acbd86e36b61ac8606d7dc41be82fdff0f892affd45d32be28c8dba74a",
+              "cli-git.config.ts": "9fd973870c43dfd62f8e897137a2d50a5636af2c9639616856d2c0010f860524",
+              "clippy.toml": "b4ed358ce9e6a485b48b78e88bfe59b0519c5d8c15a1ef97d689492861a447bc",
+              "docker-compose.yml": "92c5ac2157cfed0ad149359ce9986890164463150d5abf23ed90c2cbd5356620",
+              "dprint.json": "9e4ada0fb986fb2a4b7cd023b79d356136564c74bb104d707d4592c111777920",
+              "file-enforcer.config.ts": "cf41571036ccaef87dc45c185215f58834971267c7f371eeef96446fe6bf9ba6",
+              "mise.lock": "5c2f93717958a7401c46775dd5d0e5cc7b07e839a8d3d2f4e139a2a87827d248",
+              "mise.no-env.toml": "0800fb457406cb7eb9b87850cb3758670f0bcd36feba434e0f93625bef20f290",
+              "mise.toml": "22e39e9366f921953f321f0ba378dde13b291240aa1366a4cb25ce5705570464",
+              "node.config.json": "5642c9388056b13923039bd49054c620b969eda1c71f1c9f73790bf34d8feacb",
+              "oxlint.config.ts": "d3a7cc1ee8c002479bc1c9b628ce57e04b6a27a97d891b2715313bfcf5bfa54b",
+              "package.json": "5b0c4ce7596721e7dd77af9b57cf34f0ccd0ee415a52af7173536980f49e8a39",
+              "package/cli/forbidden-strings/Cargo.lock": "4b64d37d5296c2d5a425d8069b4921da3b6a5eaf78e59e12f41b4cb8588ff326",
+              "package/cli/forbidden-strings/Cargo.toml": "9f177f6af455fa0cf9189d32ac02c82333f7595ac9e8604d17f398a52d67de56",
+              "package/cli/nested-wayland-session/Cargo.lock": "0f2abdd3762b9600fecbfde440387b5478f418d20198585ea309a16b6b13c4dc",
+              "package/cli/nested-wayland-session/Cargo.toml": "ca8a975b9fe2313802e543cb837a5bd5405fbaad7a3f91e99f58f705ead19d1f",
+              "package/cli/wg-quicker-exempt/Cargo.lock": "bd3638a5288926b8b864e483fa1324657143c4f2bfe17c6c434f949a8ef9c0d6",
+              "package/cli/wg-quicker-exempt/Cargo.toml": "58e4edd1f049a609ddac57f28ca09e46da89b7a3ef3f33b9f5fc51c9362297db",
+              "package/desktop-app/file-manager-gtk-sticky/Cargo.lock": "79de51d3deda1821dece0b15b8517eb16b2d3d6be39fa572cce3c19e528f5011",
+              "package/desktop-app/file-manager-gtk-sticky/Cargo.toml": "978f882d0063ade072fb954be0eb7c08fd90bcb521b14271caee896696dcab5a",
+              "package/desktop-app/file-manager-qt/Cargo.lock": "07de4e174d187f75c65d91ccdc81e2b5e47870e1190fb1e57bc5c77f1a433817",
+              "package/desktop-app/file-manager-qt/Cargo.toml": "d62d5cadab47f6dfa08f7f961dbcc7bce9a2a3771fa0f4878f0bee4618b881b7",
+              "package/desktop-app/file-manager/Cargo.lock": "9be2ec600240a43680fe70f5330e0c2b465bc4256617329fd7c45c7442d2ad00",
+              "package/desktop-app/file-manager/Cargo.toml": "896ded3cc831394f687e75e8996740e05c65ece5258b78b3fce914ec1c41b48f",
+              "package/desktop-app/terminal/Cargo.lock": "7b961ba4579b9beb5e111c3396197d2d96e774d154e46d4ef4a18caf55eefe03",
+              "package/desktop-app/terminal/Cargo.toml": "cf65476a1b136440c3b77d281736273ef4dcca57696f9223b59eeca09035ce25",
+              "package/dev-script/file-enforcer/mise.toml": "e3cde5df52594c2a59c3ce44409169dced9e002b0a636cc38a1dafbe39140d1c",
+              "package/dev-script/file-enforcer/package.json": "4c39abb2737e49c2c151ef6421e69ff5fb96fd4d8d6eed4c1acd019df0719df4",
+              "package/dev-script/file-enforcer/rolldown.node.config.ts": "4d7006238ff573e484c44dfd3eb35bf95b868585da4764e65d9731f281494487",
+              "package/dev-script/file-enforcer/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/dev-script/vm-builder/mise.toml": "4bb5dbece0deafe7c15ade4bb71067eb06b06553fab4fdcf4c982aa351916586",
+              "package/dev-script/vm-builder/package.json": "573b8b21c97c415b6e5e2c511f278b9ac3a6c1bea9a50217c2e08ec2c244d3e3",
+              "package/dev-script/vm-builder/rolldown.node.config.ts": "b9c187392bfe6601d3580debc7ca2703d1dd2be800385948400d82fdabf2205e",
+              "package/dev-script/vm-builder/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/fuzz/forbidden-strings/Cargo.lock": "038def10192dcfbeb8dd9b5b5058b5825000eccfe13d18a703e8804d72d6fde9",
+              "package/fuzz/forbidden-strings/Cargo.toml": "e5301d702b4b405add68d5ec959db76610820ba5a85d31882fda36bc95fabd9d",
+              "package/linter/rust/Cargo.lock": "aa73aee225f08c4e9ff0693f9e2b5d7b5ffbc16968df1e5706c31db77af20d02",
+              "package/linter/rust/Cargo.toml": "402882fdbe897311a0a1229ea3106475a42660c3794404796bc11009f6d067eb",
+              "package/module/toml-edit.fuzz/coverage-baseline.json": "956fe91d4b10044e95fffd9d8bd68d0a1db09b672d6ad70c81dfa5eab1f8fd2d",
+              "package/module/toml-edit.fuzz/mise.toml": "4f8d9df1bce6a46634a66c45965917ad8b07b75ed3cb023bf9b672925f3558c4",
+              "package/module/toml-edit.fuzz/package.json": "4aaabb48f1acc138b8e8ebb8d1a0c608a22421c1cac96aed20b4f210b007a2fc",
+              "package/module/toml-edit.fuzz/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/module/toml-edit/mise.toml": "d41cfe0f1b723dc8d717b42dc64336609c8e745d228d3c44a077d6c2a5584a91",
+              "package/module/toml-edit/package.json": "98157094dfb0bec11f7388b6fd892bbea706db78edeb26bb40deb1b7839c8893",
+              "package/module/toml-edit/rolldown.browser.config.ts": "b4752a0175d6d6dcd3c7860e3fa48a1e389b9bf46fa09a43af6743704a64acb0",
+              "package/module/toml-edit/rolldown.node.config.ts": "4d7006238ff573e484c44dfd3eb35bf95b868585da4764e65d9731f281494487",
+              "package/module/toml-edit/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/music-player/android-app/rust/Cargo.lock": "b5b622d725df116fb4577185c06a0e7fc6f2b9c56a7761410bc9c76867cc03d8",
+              "package/music-player/android-app/rust/Cargo.toml": "2603e034f31c7d2d3572a51e4538c0cee27ca6698097c6fa255bf867ca70ffe9",
+              "package/music-player/desktop-app/Cargo.lock": "c6a50868db9aa083795c4df72d60f147322c0f4d54653016ab839b0141ff3def",
+              "package/music-player/desktop-app/Cargo.toml": "7066ba35c31fd538afa903b2c2fbb0cf16676443733b7f6cd69f273cc199c00f",
+              "package/music-player/truepeak-core.bench/Cargo.lock": "a78ca43d2e413cdf1364dcc6314335dbc11ad72050c5b1a89602e584bbd69dd9",
+              "package/music-player/truepeak-core.bench/Cargo.toml": "3ff02eea82e53c4158786d2407d66dbc24c3514fb19e198e196e7f53499e7a97",
+              "package/music-player/truepeak-core/Cargo.lock": "774e4ad29f37ea3e6bae54788c25ed7f7cee871ea4319cda0df3c3b2c1aff042",
+              "package/music-player/truepeak-core/Cargo.toml": "94857eddf8d433a27b79207405f6a4f9bf918f5f875241d00efe1f86001e9542",
+              "package/oxlint-plugin/prefer-readonly-parameter-type/mise.toml": "992ee0bb956d5879d6b8232e099a1459463f5f5cdab158222a7e013bfc0ac11a",
+              "package/oxlint-plugin/prefer-readonly-parameter-type/package.json": "eeababb049900694c14bee19bf6ce31e2d5dbb982b91cb5aa55f62056144ad98",
+              "package/oxlint-plugin/prefer-readonly-parameter-type/rolldown.node.config.ts": "4d7006238ff573e484c44dfd3eb35bf95b868585da4764e65d9731f281494487",
+              "package/oxlint-plugin/prefer-readonly-parameter-type/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/rust-linter-plugin/builtin/Cargo.lock": "7fa6d117cc4d2f31399d3e54f0e0422f23bf7ecef48efb9021f07cf7712ee239",
+              "package/rust-linter-plugin/builtin/Cargo.toml": "e06a5a8802f9a3d889f439c520f56d17ea4fc09244f3d5485e380f46be9b0a6c",
+              "package/rust-module/forbidden-regex.bench/Cargo.lock": "5c3ff21c5ab0f68867031ee3b9e43af73888e3e3d9569c7a6f3ce15e177cc31f",
+              "package/rust-module/forbidden-regex.bench/Cargo.toml": "db005ddaaf803830fd3a3943fdb898b930d4351195d695ca73dfef143cd337b2",
+              "package/rust-module/forbidden-regex.fuzz/Cargo.lock": "45ce6561ae598d589c9d1a7bca8aa5ea977a17bb1d6ffde9201f3399221bcc5e",
+              "package/rust-module/forbidden-regex.fuzz/Cargo.toml": "1d53d2a3be62afda4b4b2ad94cc40fbc544a3d2d8db5151dda8a74bd31aca919",
+              "package/rust-module/forbidden-regex/Cargo.lock": "b040aa536cc7b150120fd7105ae8fb6f0c137e9ae85a57a2f4eac06551258653",
+              "package/rust-module/forbidden-regex/Cargo.toml": "ebd9f626f71d1058bd710d523ec3bccfd7f6a56323fcc07bb34ef4c7909a7e72",
+              "package/rust-module/rust-linter-core/Cargo.lock": "680b6120ddc3f5fabc964f859df47be74ca6a6c8dbdfd85aa91e92978bccc30f",
+              "package/rust-module/rust-linter-core/Cargo.toml": "e52002cff0b815da660935492255c50b33d3f02200a2904ac86dcf3c0431cfda",
+              "package/rust-module/rust-linter-pattern/Cargo.lock": "6f9726c883d0314a3a7d5ad427ce133a0283f982342d1e2956e355f96795618d",
+              "package/rust-module/rust-linter-pattern/Cargo.toml": "35dbe8b82d49b0644bf4284e2c07927798a8ea91b4221dd42059c2eecb2904e1",
+              "package/test-fixture/file-enforcer-perf/mise.toml": "cc65f846352414d279b36655eb6cba19d2bed22efb93a50b51293e7daf154813",
+              "package/test-fixture/file-enforcer-perf/package.json": "5a2ec550e7eee8a052790b48939f899e98ba5c516396f677c387e61aaf1c8b36",
+              "package/test-fixture/file-enforcer-perf/src/perf.config.ts": "b4e4c301878811a367395c38e1caaa17bbef6356d2a5421205aaf5e5c09cb508",
+              "package/test-fixture/file-enforcer-perf/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "playwright.browser.config.ts": "22481714fd67d226521833e84b99baa0fe51922d3e2d9c1633ed2d4ae441118f",
+              "playwright.e2e.config.ts": "6b35988518bdae0839af449415228647348ba04322a1c3bc4cf6a255f3a70b6a",
+              "pnpm-lock.yaml": "e8fd3b8edb607d95f3d38249ec0b2c5ffffb18c96c65c6c31fd78c4b0877bc7e",
+              "pnpm-workspace.yaml": "ce536085d10b5e2d278fcad46e686bba77fe0d5031c1ce31255acda43e06a9ff",
+              "slopo.conf.yaml": "8bca4457e283f563a87214a7bd66514b43c168483c6f38394dc2d7333b20673d",
+              "socket.json": "7696f04db14bc1a2b5c90e2989f4dcc5b2ede18b9e187372d2fd76de32684826",
+              "stylelint.config.mjs": "83bc5d30378d7daa500be0d484b0b712cfb220b08ae119524e9a58900c51e71b",
+              "tsconfig.json": "47907a658a585e474edea803471264075658e6c2f9bad7a4c5a3044892bdf1ee"
+            }
+          },
+          "harnessRevision": "a6dcb98aaa415c49633474e46acc2a3c366e31df",
+          "manifestSha256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+          "observedAt": "2026-10-17T07:10:38.855Z",
+          "verifierNode": "v26.11.1"
+        },
+        "sourceAfter": {
+          "schemaVersion": 1,
+          "event": "source-provenance",
+          "phase": "after",
+          "cohort": {
+            "id": "toml-adapter-pilot-20261017T070841567Z",
+            "manifestSha256": "46ffce5a013656d8a36ad6c5a7f65aa63b25b8e49c58ea338df21648a61cbeac",
+            "requestedAt": "2026-10-17T07:08:41.567Z"
+          },
+          "identity": {
+            "head": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+            "sourceTree": "815e35009780abd2e98bd9bd1ccd92dcb2ef14bf",
+            "trackedStatus": "",
+            "inputs": {
+              ".cargo/config.toml": "7352bfbf249b17aa4293845ef4ef6766227e6ed059d3861556595fa543af01f5",
+              ".pnpmfile.policies.json": "6ea9a99940e8c40e194a7cc0a3627d1c0ccc2d50857b40cb5ff80d7d22001b4a",
+              "bunfig.toml": "433ee4acbd86e36b61ac8606d7dc41be82fdff0f892affd45d32be28c8dba74a",
+              "cli-git.config.ts": "9fd973870c43dfd62f8e897137a2d50a5636af2c9639616856d2c0010f860524",
+              "clippy.toml": "b4ed358ce9e6a485b48b78e88bfe59b0519c5d8c15a1ef97d689492861a447bc",
+              "docker-compose.yml": "92c5ac2157cfed0ad149359ce9986890164463150d5abf23ed90c2cbd5356620",
+              "dprint.json": "9e4ada0fb986fb2a4b7cd023b79d356136564c74bb104d707d4592c111777920",
+              "file-enforcer.config.ts": "cf41571036ccaef87dc45c185215f58834971267c7f371eeef96446fe6bf9ba6",
+              "mise.lock": "5c2f93717958a7401c46775dd5d0e5cc7b07e839a8d3d2f4e139a2a87827d248",
+              "mise.no-env.toml": "0800fb457406cb7eb9b87850cb3758670f0bcd36feba434e0f93625bef20f290",
+              "mise.toml": "22e39e9366f921953f321f0ba378dde13b291240aa1366a4cb25ce5705570464",
+              "node.config.json": "5642c9388056b13923039bd49054c620b969eda1c71f1c9f73790bf34d8feacb",
+              "oxlint.config.ts": "d3a7cc1ee8c002479bc1c9b628ce57e04b6a27a97d891b2715313bfcf5bfa54b",
+              "package.json": "5b0c4ce7596721e7dd77af9b57cf34f0ccd0ee415a52af7173536980f49e8a39",
+              "package/cli/forbidden-strings/Cargo.lock": "4b64d37d5296c2d5a425d8069b4921da3b6a5eaf78e59e12f41b4cb8588ff326",
+              "package/cli/forbidden-strings/Cargo.toml": "9f177f6af455fa0cf9189d32ac02c82333f7595ac9e8604d17f398a52d67de56",
+              "package/cli/nested-wayland-session/Cargo.lock": "0f2abdd3762b9600fecbfde440387b5478f418d20198585ea309a16b6b13c4dc",
+              "package/cli/nested-wayland-session/Cargo.toml": "ca8a975b9fe2313802e543cb837a5bd5405fbaad7a3f91e99f58f705ead19d1f",
+              "package/cli/wg-quicker-exempt/Cargo.lock": "bd3638a5288926b8b864e483fa1324657143c4f2bfe17c6c434f949a8ef9c0d6",
+              "package/cli/wg-quicker-exempt/Cargo.toml": "58e4edd1f049a609ddac57f28ca09e46da89b7a3ef3f33b9f5fc51c9362297db",
+              "package/desktop-app/file-manager-gtk-sticky/Cargo.lock": "79de51d3deda1821dece0b15b8517eb16b2d3d6be39fa572cce3c19e528f5011",
+              "package/desktop-app/file-manager-gtk-sticky/Cargo.toml": "978f882d0063ade072fb954be0eb7c08fd90bcb521b14271caee896696dcab5a",
+              "package/desktop-app/file-manager-qt/Cargo.lock": "07de4e174d187f75c65d91ccdc81e2b5e47870e1190fb1e57bc5c77f1a433817",
+              "package/desktop-app/file-manager-qt/Cargo.toml": "d62d5cadab47f6dfa08f7f961dbcc7bce9a2a3771fa0f4878f0bee4618b881b7",
+              "package/desktop-app/file-manager/Cargo.lock": "9be2ec600240a43680fe70f5330e0c2b465bc4256617329fd7c45c7442d2ad00",
+              "package/desktop-app/file-manager/Cargo.toml": "896ded3cc831394f687e75e8996740e05c65ece5258b78b3fce914ec1c41b48f",
+              "package/desktop-app/terminal/Cargo.lock": "7b961ba4579b9beb5e111c3396197d2d96e774d154e46d4ef4a18caf55eefe03",
+              "package/desktop-app/terminal/Cargo.toml": "cf65476a1b136440c3b77d281736273ef4dcca57696f9223b59eeca09035ce25",
+              "package/dev-script/file-enforcer/mise.toml": "e3cde5df52594c2a59c3ce44409169dced9e002b0a636cc38a1dafbe39140d1c",
+              "package/dev-script/file-enforcer/package.json": "4c39abb2737e49c2c151ef6421e69ff5fb96fd4d8d6eed4c1acd019df0719df4",
+              "package/dev-script/file-enforcer/rolldown.node.config.ts": "4d7006238ff573e484c44dfd3eb35bf95b868585da4764e65d9731f281494487",
+              "package/dev-script/file-enforcer/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/dev-script/vm-builder/mise.toml": "4bb5dbece0deafe7c15ade4bb71067eb06b06553fab4fdcf4c982aa351916586",
+              "package/dev-script/vm-builder/package.json": "573b8b21c97c415b6e5e2c511f278b9ac3a6c1bea9a50217c2e08ec2c244d3e3",
+              "package/dev-script/vm-builder/rolldown.node.config.ts": "b9c187392bfe6601d3580debc7ca2703d1dd2be800385948400d82fdabf2205e",
+              "package/dev-script/vm-builder/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/fuzz/forbidden-strings/Cargo.lock": "038def10192dcfbeb8dd9b5b5058b5825000eccfe13d18a703e8804d72d6fde9",
+              "package/fuzz/forbidden-strings/Cargo.toml": "e5301d702b4b405add68d5ec959db76610820ba5a85d31882fda36bc95fabd9d",
+              "package/linter/rust/Cargo.lock": "aa73aee225f08c4e9ff0693f9e2b5d7b5ffbc16968df1e5706c31db77af20d02",
+              "package/linter/rust/Cargo.toml": "402882fdbe897311a0a1229ea3106475a42660c3794404796bc11009f6d067eb",
+              "package/module/toml-edit.fuzz/coverage-baseline.json": "956fe91d4b10044e95fffd9d8bd68d0a1db09b672d6ad70c81dfa5eab1f8fd2d",
+              "package/module/toml-edit.fuzz/mise.toml": "4f8d9df1bce6a46634a66c45965917ad8b07b75ed3cb023bf9b672925f3558c4",
+              "package/module/toml-edit.fuzz/package.json": "4aaabb48f1acc138b8e8ebb8d1a0c608a22421c1cac96aed20b4f210b007a2fc",
+              "package/module/toml-edit.fuzz/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/module/toml-edit/mise.toml": "d41cfe0f1b723dc8d717b42dc64336609c8e745d228d3c44a077d6c2a5584a91",
+              "package/module/toml-edit/package.json": "98157094dfb0bec11f7388b6fd892bbea706db78edeb26bb40deb1b7839c8893",
+              "package/module/toml-edit/rolldown.browser.config.ts": "b4752a0175d6d6dcd3c7860e3fa48a1e389b9bf46fa09a43af6743704a64acb0",
+              "package/module/toml-edit/rolldown.node.config.ts": "4d7006238ff573e484c44dfd3eb35bf95b868585da4764e65d9731f281494487",
+              "package/module/toml-edit/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/music-player/android-app/rust/Cargo.lock": "b5b622d725df116fb4577185c06a0e7fc6f2b9c56a7761410bc9c76867cc03d8",
+              "package/music-player/android-app/rust/Cargo.toml": "2603e034f31c7d2d3572a51e4538c0cee27ca6698097c6fa255bf867ca70ffe9",
+              "package/music-player/desktop-app/Cargo.lock": "c6a50868db9aa083795c4df72d60f147322c0f4d54653016ab839b0141ff3def",
+              "package/music-player/desktop-app/Cargo.toml": "7066ba35c31fd538afa903b2c2fbb0cf16676443733b7f6cd69f273cc199c00f",
+              "package/music-player/truepeak-core.bench/Cargo.lock": "a78ca43d2e413cdf1364dcc6314335dbc11ad72050c5b1a89602e584bbd69dd9",
+              "package/music-player/truepeak-core.bench/Cargo.toml": "3ff02eea82e53c4158786d2407d66dbc24c3514fb19e198e196e7f53499e7a97",
+              "package/music-player/truepeak-core/Cargo.lock": "774e4ad29f37ea3e6bae54788c25ed7f7cee871ea4319cda0df3c3b2c1aff042",
+              "package/music-player/truepeak-core/Cargo.toml": "94857eddf8d433a27b79207405f6a4f9bf918f5f875241d00efe1f86001e9542",
+              "package/oxlint-plugin/prefer-readonly-parameter-type/mise.toml": "992ee0bb956d5879d6b8232e099a1459463f5f5cdab158222a7e013bfc0ac11a",
+              "package/oxlint-plugin/prefer-readonly-parameter-type/package.json": "eeababb049900694c14bee19bf6ce31e2d5dbb982b91cb5aa55f62056144ad98",
+              "package/oxlint-plugin/prefer-readonly-parameter-type/rolldown.node.config.ts": "4d7006238ff573e484c44dfd3eb35bf95b868585da4764e65d9731f281494487",
+              "package/oxlint-plugin/prefer-readonly-parameter-type/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "package/rust-linter-plugin/builtin/Cargo.lock": "7fa6d117cc4d2f31399d3e54f0e0422f23bf7ecef48efb9021f07cf7712ee239",
+              "package/rust-linter-plugin/builtin/Cargo.toml": "e06a5a8802f9a3d889f439c520f56d17ea4fc09244f3d5485e380f46be9b0a6c",
+              "package/rust-module/forbidden-regex.bench/Cargo.lock": "5c3ff21c5ab0f68867031ee3b9e43af73888e3e3d9569c7a6f3ce15e177cc31f",
+              "package/rust-module/forbidden-regex.bench/Cargo.toml": "db005ddaaf803830fd3a3943fdb898b930d4351195d695ca73dfef143cd337b2",
+              "package/rust-module/forbidden-regex.fuzz/Cargo.lock": "45ce6561ae598d589c9d1a7bca8aa5ea977a17bb1d6ffde9201f3399221bcc5e",
+              "package/rust-module/forbidden-regex.fuzz/Cargo.toml": "1d53d2a3be62afda4b4b2ad94cc40fbc544a3d2d8db5151dda8a74bd31aca919",
+              "package/rust-module/forbidden-regex/Cargo.lock": "b040aa536cc7b150120fd7105ae8fb6f0c137e9ae85a57a2f4eac06551258653",
+              "package/rust-module/forbidden-regex/Cargo.toml": "ebd9f626f71d1058bd710d523ec3bccfd7f6a56323fcc07bb34ef4c7909a7e72",
+              "package/rust-module/rust-linter-core/Cargo.lock": "680b6120ddc3f5fabc964f859df47be74ca6a6c8dbdfd85aa91e92978bccc30f",
+              "package/rust-module/rust-linter-core/Cargo.toml": "e52002cff0b815da660935492255c50b33d3f02200a2904ac86dcf3c0431cfda",
+              "package/rust-module/rust-linter-pattern/Cargo.lock": "6f9726c883d0314a3a7d5ad427ce133a0283f982342d1e2956e355f96795618d",
+              "package/rust-module/rust-linter-pattern/Cargo.toml": "35dbe8b82d49b0644bf4284e2c07927798a8ea91b4221dd42059c2eecb2904e1",
+              "package/test-fixture/file-enforcer-perf/mise.toml": "cc65f846352414d279b36655eb6cba19d2bed22efb93a50b51293e7daf154813",
+              "package/test-fixture/file-enforcer-perf/package.json": "5a2ec550e7eee8a052790b48939f899e98ba5c516396f677c387e61aaf1c8b36",
+              "package/test-fixture/file-enforcer-perf/src/perf.config.ts": "b4e4c301878811a367395c38e1caaa17bbef6356d2a5421205aaf5e5c09cb508",
+              "package/test-fixture/file-enforcer-perf/tsconfig.json": "8f1adee70182041462af87afa3b8b9f4c4f5d49cb3c4c579a7480c013459e8cd",
+              "playwright.browser.config.ts": "22481714fd67d226521833e84b99baa0fe51922d3e2d9c1633ed2d4ae441118f",
+              "playwright.e2e.config.ts": "6b35988518bdae0839af449415228647348ba04322a1c3bc4cf6a255f3a70b6a",
+              "pnpm-lock.yaml": "e8fd3b8edb607d95f3d38249ec0b2c5ffffb18c96c65c6c31fd78c4b0877bc7e",
+              "pnpm-workspace.yaml": "ce536085d10b5e2d278fcad46e686bba77fe0d5031c1ce31255acda43e06a9ff",
+              "slopo.conf.yaml": "8bca4457e283f563a87214a7bd66514b43c168483c6f38394dc2d7333b20673d",
+              "socket.json": "7696f04db14bc1a2b5c90e2989f4dcc5b2ede18b9e187372d2fd76de32684826",
+              "stylelint.config.mjs": "83bc5d30378d7daa500be0d484b0b712cfb220b08ae119524e9a58900c51e71b",
+              "tsconfig.json": "47907a658a585e474edea803471264075658e6c2f9bad7a4c5a3044892bdf1ee"
+            }
+          },
+          "harnessRevision": "a6dcb98aaa415c49633474e46acc2a3c366e31df",
+          "manifestSha256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+          "observedAt": "2026-10-17T07:11:41.204Z",
+          "verifierNode": "v26.11.1"
+        },
+        "metadataEvidence": [
+          {
+            "artifactPath": "container-bin/image-metadata-4R39Ta/metadata-evidence.json",
+            "event": "mutation-owned-metadata",
+            "image": "localhost/mutation-test-runtime:24de541ad936",
+            "imageId": "f1db542a036ec7822c38bebc4ae42519941c0500186d5aabf3a88e70f24e7328",
+            "sourcePath": "/baked/node_modules/.pnpm-workspace-state-v1.json",
+            "original": {
+              "mode": "-rw-------",
+              "uid": 0,
+              "gid": 0,
+              "bytes": 29934
+            },
+            "owned": {
+              "uid": 1001,
+              "gid": 1001,
+              "mode": 384,
+              "bytes": 29934
+            },
+            "sha256": "e82c7a5e4404440e121fffb742f4cde0c444843a3f69dd74707e55789cab66a7",
+            "copiedSha256": "e82c7a5e4404440e121fffb742f4cde0c444843a3f69dd74707e55789cab66a7",
+            "readonly": true,
+            "sourceImageUnchanged": true,
+            "archiveSha256": "828d26b2bf5122e6491e613359bfdf84dfe86981949bcfe3eb844d16d26564ab"
+          },
+          {
+            "artifactPath": "container-bin/image-metadata-vXb6mK/metadata-evidence.json",
+            "event": "mutation-owned-metadata",
+            "image": "localhost/mutation-test-runtime:3fc4032dcc4e",
+            "imageId": "7e0000d0e92c6412e23b83b8f79fe76d392adf298dfb837ea42926835e1c45ef",
+            "sourcePath": "/baked/node_modules/.pnpm-workspace-state-v1.json",
+            "original": {
+              "mode": "-rw-------",
+              "uid": 0,
+              "gid": 0,
+              "bytes": 53
+            },
+            "owned": {
+              "uid": 1001,
+              "gid": 1001,
+              "mode": 384,
+              "bytes": 53
+            },
+            "sha256": "fb9fe5db7e7f2c33bb739cdd95c1a2788b50af0c7c5c09f84e408946a0cf739e",
+            "copiedSha256": "fb9fe5db7e7f2c33bb739cdd95c1a2788b50af0c7c5c09f84e408946a0cf739e",
+            "readonly": true,
+            "sourceImageUnchanged": true,
+            "archiveSha256": "218ea2312a35d8e025c2aa1e04dcd0727a67c82d08d5403e75ae0bde3ff78963"
+          }
+        ],
+        "emittedPassGroups": [
+          "[info] [2026-10-17T07:11:35.883Z] [basic string escaping] [PASS] emits every named control escape and re-parses to the same value, uses uppercase padded escapes for unnamed controls and DEL, escapes a quote and backslash in a single-line string, preserves bare quotes and escapes a triple-quote run in multiline strings, preserves parsed literal and single-line basic string styles (6.0ms)",
+          "[info] [2026-10-17T07:11:36.001Z] [canonical emission via emptyTomlEdit] [PASS] emits valid TOML that re-parses without error, defaults to explicit rather than dotted key creation, canonical overrides retain an empty source, omits the final newline in a synthetic canonical document when disabled, omits the final newline in a parsed canonical document when disabled, adds the final newline in a parsed canonical document when enabled, keeps empty canonical output empty, omits terminal newlines in a header-only canonical document, omits multiple terminal newlines without changing multiline string content, honors the newline preference in an empty-source splice state, preserves the final newline in an untouched splice document, preserves the final newline after editing a nonempty splice document, multiple sets accumulate in the output, header comment lands above the body (7.7ms)",
+          "[info] [2026-10-17T07:11:36.121Z] [tomlGetCommentsBefore / tomlGetCommentAfter] [PASS] two consecutive # lines attach as a block, locates comments on an indexed array-of-tables header, a blank line between comment and key breaks attachment, trailing inline comment on same line, trailing comment attaches when the hash immediately follows a value, trailing comment attaches at end of file without a newline, does not mistake a preceding comment for a trailing comment, does not attach a comment on the following line, trailing inline comment absent yields no comment field (7.2ms)",
+          "[info] [2026-10-17T07:11:36.127Z] [isAttachedGap] [PASS] empty string is not a gap, a single newline attaches, spaces and tabs around one newline still attach, leading-only and trailing-only whitespace attach, two newlines (blank line) do not attach, whitespace with no newline does not attach, a non-whitespace char breaks the gap, carriage return is not gap whitespace, a long whitespace run with one newline attaches, a long whitespace run with two newlines does not attach (4.6ms)",
+          "[info] [2026-10-17T07:11:36.129Z] [attached comment block collection] [PASS] collects a long contiguous comment block, a blank line splits the block; only the lower run attaches, no preceding comment yields an empty block, a comment after the key does not attach (2.2ms)",
+          "[info] [2026-10-17T07:11:36.242Z] [cross-path effective-value resolution] [PASS] reads a sub-path after inline-table Case C extension, reads both new and existing entries after inline-table extension, reads intermediate object after deep top-level path-create, most-specific pending edit wins over an ancestor edit, inline-table Case C extension is readable at the parent path, array-element delete: sub-path read returns post-delete value (5.3ms)",
+          "[info] [2026-10-17T07:11:36.360Z] [parsed document blocks] [PASS] tiles adjacent key-values without empty filler blocks, retains a trailing comment on a parsed table header, keeps distinct parsed indices for every array-of-tables header, tracks nested array-of-tables indices after every header segment (4.3ms)",
+          "[info] [2026-10-17T07:11:36.476Z] [effective-value (read-through-edits)] [PASS] tomlGetValue on a state returns the value set on that state, tomlGetValue on the original state is unchanged after a derived set, tomlGetValue on a deleted path returns undefined, path-create set is visible on the derived state, branching: trial set on a state is invisible to siblings (4.3ms)",
+          "[info] [2026-10-17T07:11:36.594Z] [emitContentNode] [PASS] preserves both boolean spellings, uses the inclusive array element and column limits, indents nested multiline arrays by their depth, keeps dotted keys and nested array depth inside inline tables, rejects a parsed table node with a specific diagnostic, retains empty containers and quoted inline-table keys (7.6ms)",
+          "[info] [2026-10-17T07:11:36.711Z] [synthetic value-node emission] [PASS] indents nested synthetic arrays relative to each parent, indents an array inside a synthetic inline table, keeps a clean array sibling in its original numeric spelling (4.7ms)",
+          "[info] [2026-10-17T07:11:36.825Z] [public TOML error classes] [PASS] retain their names and shared base type, retains the supplied cause (2.1ms)",
+          "[info] [2026-10-17T07:11:36.985Z] [fixtures] [valid round-trip] [PASS] array-of-table-sample01-input.toml, array-of-table-sample02-sub-table-input.toml, array-of-table-sample08-with-inline-table-input.toml, array-sample01-input.toml, array-sample02-multi-line-and-trailing-comma-input.toml, array-teble-keys01-input.toml, boolean-sample01-input.toml, comment-sample01-input.toml, date-time01-fraction-input.toml, date-time02-fraction-input.toml, date-time03-min-input.toml, date01-leading-zero-input.toml, datetime01-input.toml, empty-inline-table01-input.toml, float-sample01-input.toml, float-sample05-underscore-input.toml, float-sample06-inf-and-nan-input.toml, float01-minus-input.toml, float01-zoro-input.toml, float03-e-input.toml, inline-table-sample01-1.1-input.toml, inline-table-sample01-input.toml, inline-table-sample02-1.1-for-table-input.toml, inline-table-sample02-for-table-input.toml, inline-table-sample03-sub-table-input.toml, inline-table-sample05-sub-table-input.toml, integer-sample01-positive-negative-number-input.toml, integer-sample02-underscore-input.toml, integer-sample03-hex-octal-binary-input.toml, integer01-zoro-input.toml, key-value-pair-sample01-input.toml, keys-sample01-bare-keys-input.toml, keys-sample02-1.1-quoted-keys-input.toml, keys-sample02-quoted-keys-input.toml, keys-sample04-1-empty-key-input.toml, keys-sample04-2-empty-key-input.toml, keys-sample05-dotted-keys-input.toml, keys-sample06-dotted-keys-input.toml, keys-sample09-hash-input.toml, keys-sample11-out-of-order-input.toml, keys-sample12-fixed-out-of-order-input.toml, keys-sample13-float-like-input.toml, leap-second01-input.toml, leap-year01-input.toml, leap-year02-input.toml, local-date-sample01-input.toml, local-date-time-sample01-input.toml, local-date-time-sample02-omitted-seconds-input.toml, local-time-sample01-input.toml, local-time-sample02-omitted-seconds-input.toml, multi-line-basic-string01-valid-end-input.toml, multi-line-basic-string02-valid-end-input.toml, number-exponent01-with-sign-input.toml, offset-date-time-sample01-input.toml, offset-date-time-sample02-with-space-input.toml, offset-date-time-sample03-omitted-seconds-input.toml, sample01-this-is-a-toml-document-input.toml, sample02-comments-input.toml, sample03-powerful-strings-input.toml, sample04-multi-line-basic-strings-input.toml, sample05-literal-strings-input.toml, sample06-multi-line-literal-strings-input.toml, sample07-numbers-input.toml, sample08-dates-and-times-input.toml, string-sample01-1.1-basic-strings-input.toml, string-sample01-basic-strings-input.toml, string-sample02-ml-basic-strings-input.toml, string-sample03-ml-basic-strings-input.toml, string-sample04-ml-basic-strings-line-ending-backslash-input.toml, string-sample05-basic-strings-with-quote-input.toml, string-sample10-literal-strings-input.toml, string-sample11-ml-literal-strings-input.toml, string-sample12-ml-literal-strings-with-quote-input.toml, table-sample01-input.toml, table-sample02-input.toml, table-sample03-keys-input.toml, table-sample04-with-spaces-input.toml, table-sample05-without-super-table-input.toml, table-sample06-without-super-table-alt-input.toml, table-sample09-out-of-order-input.toml, table-sample10-fixed-out-of-order-input.toml, table-sample11-top-level-table-input.toml, table-sample12-keys-input.toml, table-sample13-subtable-input.toml, time01-input.toml, toml10-invalid-toml11-valid-invalid24-newline-in-inline-table-input.toml, toml10-invalid-toml11-valid-invalid25-newline-in-inline-table-input.toml, toml10-invalid-toml11-valid-invalid26-newline-in-inline-table-input.toml, toml10-invalid-toml11-valid-invalid27-newline-in-inline-table-input.toml, toml10-invalid-toml11-valid-invalid28-inline-table-trailing-comma-input.toml, unicode01-input.toml (45ms)",
+          "[info] [2026-10-17T07:11:36.989Z] [fixtures] [invalid parse failures] [PASS] array-of-table-sample03-invalid-input.toml, array-of-table-sample04-invalid-input.toml, array-of-table-sample05-invalid-input.toml, array-of-table-sample06-invalid-alt-input.toml, array-of-table-sample07-invalid-alt-input.toml, float-sample02-invalid-input.toml, float-sample03-invalid-input.toml, float-sample04-invalid-input.toml, inline-table-sample04-invalid-sub-table-input.toml, inline-table-sample06-invalid-sub-table-input.toml, invalid01-array-of-table-input.toml, invalid02-array-of-table-input.toml, invalid03-table-empty-key-input.toml, invalid04-table-empty-key-input.toml, invalid05-table-empty-key-input.toml, invalid06-table-empty-key-input.toml, invalid07-table-empty-key-input.toml, invalid08-table-empty-key-input.toml, invalid09-unterminated-table-input.toml, invalid10-unterminated-table-input.toml, invalid11-unterminated-table-input.toml, invalid12-only-key-input.toml, invalid13-missing-value-input.toml, invalid14-key-newline-value-input.toml, invalid15-key-newline-value-input.toml, invalid16-array-missing-comma-input.toml, invalid17-unterminated-array-input.toml, invalid18-unterminated-inline-table-input.toml, invalid19-unterminated-inline-table-input.toml, invalid20-inline-table-unexpected-char-input.toml, invalid21-only-key-in-inline-table-input.toml, invalid22-key-newline-value-in-inline-table-input.toml, invalid23-key-newline-value-in-inline-table-input.toml, invalid29-unterminated-inline-table-input.toml, invalid30-unexpected-token-in-inline-table-input.toml, invalid31-unterminated-inline-table-input.toml, invalid32-missing-comma-in-inline-table-input.toml, invalid33-unicode-input.toml, invalid34-escape-u-input.toml, invalid35-escape-u-input.toml, invalid36-unexpected-multiline-string-input.toml, invalid37-unexpected-multiline-string-input.toml, invalid38-unexpected-multiline-string-input.toml, invalid39-unexpected-multiline-string-input.toml, invalid40-unexpected-multiline-string-input.toml, invalid41-unexpected-multiline-string-input.toml, invalid42-escape-input.toml, invalid43-escape-input.toml, invalid44-top-level-unexpected-char-input.toml, invalid45-unterminated-literal-string-input.toml, invalid46-unterminated-literal-string-input.toml, invalid47-sign-input.toml, invalid48-sign-input.toml, invalid49-number-input.toml, invalid50-hex-sign-input.toml, invalid51-t-input.toml, invalid52-f-input.toml, invalid53-date-input.toml, invalid54-date-input.toml, invalid55-date-input.toml, invalid56-date-input.toml, invalid57-date-input.toml, invalid58-invalid-date-input.toml, invalid59-invalid-date-input.toml, invalid60-invalid-date-time-input.toml, invalid61-invalid-date-time-input.toml, invalid62-invalid-date-time-input.toml, invalid63-invalid-date-time-input.toml, invalid64-invalid-date-time-input.toml, invalid65-invalid-date-time-input.toml, invalid66-invalid-date-time-input.toml, invalid67-invalid-date-time-input.toml, invalid68-invalid-date-time-input.toml, invalid69-invalid-date-time-input.toml, invalid70-invalid-date-time-input.toml, invalid71-invalid-date-time-input.toml, invalid72-invalid-date-time-input.toml, invalid73-invalid-date-time-input.toml, invalid74-invalid-date-time-input.toml, invalid75-invalid-date-time-input.toml, invalid76-invalid-date-time-input.toml, invalid77-invalid-date-time-input.toml, invalid78-number-underscore-input.toml, invalid79-number-underscore-input.toml, invalid80-number-underscore-input.toml, invalid81-month-input.toml, invalid82-leap-year-input.toml, invalid83-dot-input.toml, invalid84-dot-input.toml, invalid85-dot-input.toml, key-value-pair-sample02-invalid-input.toml, key-value-pair-sample03-invalid-input.toml, keys-sample01-1.1-bare-keys-input.toml, keys-sample03-1.1-invalid-quoted-key-input.toml, keys-sample03-invalid-empty-key-input.toml, keys-sample05-1.1-dotted-keys-input.toml, keys-sample07-invalid-dupe-keys-input.toml, keys-sample08-invalid-dupe-keys-input.toml, keys-sample10-invalid-hash-input.toml, multi-line-basic-string03-invalid-end-input.toml, multi-line-basic-string04-invalid-end-input.toml, multi-line-basic-string05-invalid-end-input.toml, string-sample06-invalid-basic-strings-with-quote-input.toml, string-sample13-invalid-ml-literal-strings-with-quote-input.toml, table-sample07-invalid-input.toml, table-sample08-invalid-input.toml, table-sample14-invalid-subtable-input.toml, table-sample15-invalid-subtable-input.toml (49ms)",
+          "[info] [2026-10-17T07:11:36.989Z] [fixtures] [PASS] valid round-trip, invalid parse failures (50ms)",
+          "[info] [2026-10-17T07:11:37.100Z] [parsed inline-table state] [PASS] does not attach phantom comments to inline entries, does not add comments to synthetic inline-table entries, does not attach comments to an appended inline-table entry (3.8ms)",
+          "[info] [2026-10-17T07:11:37.214Z] [synthetic scalar state] [PASS] records the TOML kind of each accepted JS scalar (3.2ms)",
+          "[info] [2026-10-17T07:11:37.327Z] [issue #252 delta-accumulation regressions] [PASS] repeated path-create set replaces, not duplicates, the key, repeated in-table path-create set replaces the key, implicit dotted-key parent reads as an object, delete of an implicit dotted-key parent removes the bytes, delete of an implicit parent removes every dotted key under it, set a scalar over an implicit parent throws TomlTypeError, set an object over an implicit parent replaces its entries, delete of a mixed implicit parent removes dotted key and sub-table, delete into a prior edit is honored (no reparse), repeated whole-table-replace does not accumulate (no reparse) (8.4ms)",
+          "[info] [2026-10-17T07:11:37.438Z] [jsValueToTomlText] [PASS] emits both boolean values and nonfinite bare numbers, formats empty and inline arrays and inline tables, uses inclusive array layout thresholds and nested indentation, preserves parse-time numeric spelling inside an equal array, preserves parsed numeric spelling only for an equal value, keeps a parsed literal style only when string content is unchanged, rejects unsupported JS inputs with a named type error (5.6ms)",
+          "[info] [2026-10-17T07:11:37.558Z] [encodeKey] [PASS] bare key of letters returns unquoted, single bare char returns unquoted, ASCII letter and digit endpoints remain bare keys, digits, underscore, and hyphen are bare, empty key quotes to an empty basic string, interior space forces quoting, dot forces quoting, leading and trailing spaces force quoting, backslash is escaped inside the quoted form, double quote is escaped inside the quoted form, astral (non-ASCII) char forces quoting without escaping, a long all-bare run stays unquoted, a long run ending in one non-bare char quotes (13ms)",
+          "[info] [2026-10-17T07:11:37.668Z] [parseTomlEdit] [PASS] rejects bare carriage returns, including a trailing one, normalizes CRLF before storing and emitting the document, retains parser rejection as the cause of a package error, forwards the selected TOML version to the parser (6.1ms)",
+          "[info] [2026-10-17T07:11:37.780Z] [parsed comment state] [PASS] retains attached lines and a hash adjacent to the value, retains attached lines without requiring a trailing comment, retains a trailing comment at end of file without a newline, does not attach a comment from the following line (3.6ms)",
+          "[info] [2026-10-17T07:11:37.887Z] [isStrictPrefix] [PASS] accepts a matching shorter path, rejects equal and longer paths, rejects a partially matching candidate (1.9ms)",
+          "[info] [2026-10-17T07:11:37.993Z] [formatPath] [PASS] formats string and numeric segments without extra separators, formats empty and single-segment paths (1.8ms)",
+          "[info] [2026-10-17T07:11:38.103Z] [resolveByPath via tomlGetValue] [PASS] dotted-key form resolves under separate path segments, quoted key with dots resolves under the literal dotted segment, mixed quoted and bare key segments, array-of-tables: index resolves the correct instance, inline table key access, array element by index, nested table: [a.b] (5.8ms)",
+          "[info] [2026-10-17T07:11:38.214Z] [clean nested read paths] [PASS] selects the matching standard table when siblings share a key name, descends through array elements to clean inline-table values, descends through nested inline-table key segments, descends through a nested indexed array-of-tables header (4.7ms)",
+          "[info] [2026-10-17T07:11:38.326Z] [comment accessor boundaries] [PASS] reports the missing path in both comment accessors, rejects missing insertion paths with a named diagnostic, inserts comments inside a standard table without touching sibling tables, keeps earlier top-level entries when inserting before a later key, does not borrow an unrelated comment for a synthetic array-table header, reads an attached block and same-line comment on a standard table header, reads the selected array-of-tables header instead of another instance (7.1ms)",
+          "[info] [2026-10-17T07:11:38.438Z] [nested deletion paths] [PASS] treats an empty path as a no-op without changing the original state, removes a field from only the selected array-of-tables instance, descends through nested standard-table headers, does not delete the same key under a different table header, descends through an inline-table entry before removing a nested field, leaves a sibling inline-table entry intact during nested deletion, ignores array indices outside the current bounds (7.8ms)",
+          "[info] [2026-10-17T07:11:38.557Z] [tomlDelete] [PASS] removes a top-level key plus its trailing newline, absorbs a same-line trailing inline comment, preserves a comment line on an unrelated key, is a no-op for a missing path, effective read returns undefined for a deleted key, immutable: deletion on derived state leaves original intact, deletes a standard [foo] table including its body, deletes [foo] while leaving sibling [bar] intact, deletes every [[foo]] instance by path [\"foo\"], deletes [[foo]] instances while a sibling [bar] survives, deletes every sibling [a.x] / [a.y] sharing path [\"a\"], effective read after AOT delete returns undefined, deletes a middle array element by index, deleting the only element produces an empty array, preserves a trailing inline comment after the array value bytes, effective whole-array read after element delete reflects new array, effective sub-path read after element delete reflects new index, nested-array element delete re-emits the outer array without the targeted element, nested-array element delete: leftmost element of the inner array, nested-array element delete: only-element collapses to empty inner array, 3-level nested-array element delete, nested-array delete removes an inline-table element, effective whole-outer-array read after nested delete reflects new shape, immutable: nested-array element delete on derived state leaves original intact, immutable: array-element delete on derived state leaves original intact (14ms)",
+          "[info] [2026-10-17T07:11:38.663Z] [tomlGetComments] [PASS] returns every Block comment in source order, returns empty array when source has no comments (3.1ms)",
+          "[info] [2026-10-17T07:11:38.773Z] [tomlGetNode] [PASS] returns the value AST node for an existing keyvalue, returns clean array-of-tables instance and nested value nodes, throws TomlPathNotFoundError for missing path, throws for an edited path (no parse-time node after tomlSet) (4.7ms)",
+          "[info] [2026-10-17T07:11:38.885Z] [tomlGetRaw] [PASS] returns the source slice for an existing keyvalue, preserves integer raw spelling (hex), returns only the clean standard table header bytes, spans every clean array-of-tables header in a collection, reads a clean indexed array-of-tables header and its child value, throws TomlPathNotFoundError for missing path, throws TomlSpliceUnavailableError in canonical mode, throws for an edited path (no clean source slice after tomlSet) (7.1ms)",
+          "[info] [2026-10-17T07:11:38.995Z] [tomlHas] [PASS] true for an existing top-level key, false for a missing path, false after delete, true after path-create set, rejects negative and out-of-range array indices, true for a nested table path (5.3ms)",
+          "[info] [2026-10-17T07:11:39.102Z] [tomlInsertCommentAfter] [PASS] appends an inline trailing comment on the same line, appends a trailing comment at end of file without adding a newline, throws TomlPathNotFoundError for missing path (3.3ms)",
+          "[info] [2026-10-17T07:11:39.209Z] [tomlInsertCommentBefore] [PASS] inserts a single comment line before a top-level key, inserts multiple lines, throws TomlPathNotFoundError for missing path (3.7ms)",
+          "[info] [2026-10-17T07:11:39.319Z] [tomlKeys] [PASS] lists top-level keys when no path given, lists keys inside a named table, lists array indices for an inline array, lists indices for array-of-tables, returns empty array for a scalar path, returns empty array for a missing path (4.9ms)",
+          "[info] [2026-10-17T07:11:39.429Z] [set rejection diagnostics] [PASS] names the failing path and the unsupported edit (4.8ms)",
+          "[info] [2026-10-17T07:11:39.537Z] [tomlSetHeaderComment] [PASS] string comment lands above the body in canonical mode, array of lines emits one comment line each, empty comment omits a synthetic header, omitting comment clears the header comment (3.0ms)",
+          "[info] [2026-10-17T07:11:39.655Z] [indexed and nested set paths] [PASS] updates only the addressed array-of-tables instance, rejects an absent array-of-tables index instead of editing a sibling, replaces a nested array-of-tables collection in place among siblings, keeps a deeper array-of-tables header when replacing its parent collection, creates under the deepest matching standard-table header, prefers a nested standard table over its explicit parent, chooses the deepest table even when its parent appears later, replaces a standard table following a top-level key, rejects replacing a mixed dotted-key and table parent, replaces implicit dotted keys before an unrelated table, retains comment filler when replacing an implicit parent, preserves a partial-prefix sibling during implicit replacement, separates a created key from an unterminated final source line, updates the matching table without changing another table with the same key, replaces a nested inline-table value without changing siblings, rejects nullish values with the path-specific outer diagnostic (14ms)",
+          "[info] [2026-10-17T07:11:39.779Z] [tomlSet] [PASS] no-op set with the same value is byte-identical, preserves a comment line on another key, preserves trailing inline comment on the mutated key, preserves literal quote style on re-set with same value, preserves hex integer raw spelling on re-set with same value, underscore-formatted integers normalise on re-set (parser drops _), tomlInteger() forces integer emission for whole numbers, tomlFloat() forces float emission with .0 suffix, path-create adds a new top-level key at end, path-create inserts inside an existing table, immutable: setting on a derived state leaves the original unchanged, throws TomlTypeError on null, throws TomlTypeError on undefined, replaces a [foo] table body with the new object entries, replaces [foo] body while preserving [foo.sub], absorbs a trailing inline comment when deleting body keys, top-level replace keeps sub-tables intact, array-of-tables wholesale replace emits one [[foo]] block per array element, array-of-tables replace shrinks the instance count (2 to 1), array-of-tables replace grows the instance count (2 to 3), array-of-tables replace with empty array clears every instance, array-of-tables replace preserves a sibling [bar] table, array-of-tables replace at a nested path [[a.b]], array-of-tables replace with non-array value throws TomlTypeError, array-of-tables replace with a non-object element throws TomlTypeError, sibling-tables wholesale replace still throws TomlImmutableNodeError, effective sub-path read after AOT replace returns new element value, whole-AOT read after replace returns the new instances, immutable: AOT replace on derived state leaves original intact, non-object value on a table throws TomlTypeError, empty object {} clears body and inserts nothing, nested object value becomes an inline table, immutable: table replace on derived state leaves original intact, deep path-create from empty doc emits dotted key at top-level, deep path-create into existing [a] inserts dotted key inside, inline-table extension appends a new entry, inline-table multi-segment extension uses dotted-key form, object value at deep path becomes an inline table, numeric segment in the missing tail throws TomlImmutableNodeError, top-level dotted-key insert lands before sibling table headers, rejects inline-table extension that conflicts with a deeper existing key, rejects inline-table extension that conflicts with a shorter existing key, allows deep dotted key when sibling table is strictly deeper, allows top-level dotted key when sibling table prefix is sibling-only, allows inline-table extension to a sibling dotted leaf (20ms)",
+          "[info] [2026-10-17T07:11:39.887Z] [tagged and styled value encoding] [PASS] spells integer and every nonfinite float explicitly, treats a non-string tomlKind as an ordinary inline table, accepts a plain object with a null prototype, retains multiline literal spelling on an equal string re-set (3.4ms)",
+          "[info] [2026-10-17T07:11:40.001Z] [JS-to-TOML value coercion] [PASS] tomlLocalDate produces a local-date assignment, tomlLocalDateTime produces a local-date-time assignment, tomlLocalTime produces a local-time assignment, boolean coerces to true/false, array of primitives renders inline, array re-set preserves the raw spelling of equal parsed elements, wrapped scalar reads expose plain JS values, coerces a structurally tagged float string to a numeric read, null and undefined throw TomlTypeError, rejects null and undefined nested inside arrays and tables (7.1ms)"
+        ],
+        "provider": {
+          "runner": "16x64",
+          "milliseconds": 167222,
+          "allocatedVcpuMilliseconds": 2675552
+        },
+        "classification": {
+          "providerJob": "failed",
+          "sourceCommand": "exit zero",
+          "baseline": "green",
+          "mutant": "source-terminal compileError; no mutant assertion execution credit",
+          "fullCampaign": "incomplete",
+          "instrumentation": "Metadata null-status operation failed the wrapper; underlying operation, signal and error code were not retained by this old harness.",
+          "actualRuntimeBounds": "No live source container was captured in the six periodic metadata samples; inner resource flags are declared, not a runtime-inspected measurement."
+        }
+      },
+      "receiptRepeat": {
+        "runId": "mj128hqwv0",
+        "response": {
+          "org_id": "l4zncjjbj5",
+          "run_id": "mj128hqwv0"
+        },
+        "manifest": {
+          "schemaVersion": 1,
+          "classification": "Independent development continuation. Not the final common cohort.",
+          "requestedAt": "2026-10-17T07:22:55.253Z",
+          "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "harnessRevision": "0f8ad795aa92d3beb83e3bfa4e4aa54f1bea06f8",
+          "branch": "trial/depot-toml-continuation-20261017",
+          "workflow": "depot-complete-toml-adapter-pilot.yml",
+          "workflowSha256": "87c22811e73bc79b6d09017370abf9516e02726283ac482006d584703e36a3a4",
+          "checks": [
+            "package.module.toml-edit.test.mutation"
+          ],
+          "pilot": {
+            "sourceFiles": [
+              "src/toml-get-comments.ts"
+            ],
+            "expectedMutantsFromPriorInventory": 1,
+            "containers": 1,
+            "shardSize": 1,
+            "fullCampaign": false
+          },
+          "scope": "mutations-only",
+          "limits": {
+            "consumerMilliseconds": 900000,
+            "jobMinutes": 25,
+            "shutdownOperationMilliseconds": 60000
+          },
+          "controlsReportSha256": "a1818023365fc91b13341a6a98f7ebfa576cd31a31b75f8f3b83a56551cccbdf"
+        },
+        "manifestSha256": "76229fa7aaffde2f51839f21c7428721a786bf6778fa41b9f6fc3e77a2093424",
+        "cohortId": "toml-adapter-pilot-receipts-20261017T072255253Z",
+        "request": {
+          "schemaVersion": 1,
+          "command": "depot",
+          "args": [
+            "ci",
+            "dispatch",
+            "--repo",
+            "Aquaticats/Monochromatic",
+            "--org",
+            "l4zncjjbj5",
+            "--workflow",
+            "depot-complete-toml-adapter-pilot.yml",
+            "--ref",
+            "trial/depot-toml-continuation-20261017",
+            "--input",
+            "scope=mutations-only",
+            "--input",
+            "cohort_id=toml-adapter-pilot-receipts-20261017T072255253Z",
+            "--input",
+            "manifest_sha256=76229fa7aaffde2f51839f21c7428721a786bf6778fa41b9f6fc3e77a2093424",
+            "--input",
+            "requested_at=2026-10-17T07:22:55.253Z",
+            "--output",
+            "json"
+          ],
+          "cwd": "/home/user/temp/agent/depot-toml-continuation-worktree",
+          "manifestSha256": "76229fa7aaffde2f51839f21c7428721a786bf6778fa41b9f6fc3e77a2093424",
+          "cohortId": "toml-adapter-pilot-receipts-20261017T072255253Z",
+          "requestedAt": "2026-10-17T07:22:55.253Z",
+          "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+          "harnessRevision": "0f8ad795aa92d3beb83e3bfa4e4aa54f1bea06f8"
+        },
+        "receipt": {
+          "request": {
+            "schemaVersion": 1,
+            "command": "depot",
+            "args": [
+              "ci",
+              "dispatch",
+              "--repo",
+              "Aquaticats/Monochromatic",
+              "--org",
+              "l4zncjjbj5",
+              "--workflow",
+              "depot-complete-toml-adapter-pilot.yml",
+              "--ref",
+              "trial/depot-toml-continuation-20261017",
+              "--input",
+              "scope=mutations-only",
+              "--input",
+              "cohort_id=toml-adapter-pilot-receipts-20261017T072255253Z",
+              "--input",
+              "manifest_sha256=76229fa7aaffde2f51839f21c7428721a786bf6778fa41b9f6fc3e77a2093424",
+              "--input",
+              "requested_at=2026-10-17T07:22:55.253Z",
+              "--output",
+              "json"
+            ],
+            "cwd": "/home/user/temp/agent/depot-toml-continuation-worktree",
+            "manifestSha256": "76229fa7aaffde2f51839f21c7428721a786bf6778fa41b9f6fc3e77a2093424",
+            "cohortId": "toml-adapter-pilot-receipts-20261017T072255253Z",
+            "requestedAt": "2026-10-17T07:22:55.253Z",
+            "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+            "harnessRevision": "0f8ad795aa92d3beb83e3bfa4e4aa54f1bea06f8"
+          },
+          "finishedAt": "2026-10-17T07:22:56.608Z",
+          "status": 0,
+          "signal": null,
+          "stdout": "{\n  \"org_id\": \"l4zncjjbj5\",\n  \"run_id\": \"mj128hqwv0\"\n}\n",
+          "stderr": ""
+        },
+        "localMetadataDeadlineControl": {
+          "observedAt": "2026-10-17T07:21:16.128Z",
+          "fixtureDirectory": "/home/user/temp/agent/toml-metadata-receipt-control-ChJI8h",
+          "routeRevision": "0f8ad795aa92d3beb83e3bfa4e4aa54f1bea06f8",
+          "expectedFailure": true,
+          "result": {
+            "status": 1,
+            "signal": null,
+            "output": [
+              null,
+              "",
+              "[//package/dev-script/task-util:trial:depot:toml:bounded] $ const { spawn, spawnSync, execFileSync } = await import('node:child_process')\nnode:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: fixture metadata stderr\n\n\nnull !== 0\n\n    at containers ([eval]:59:10)\n    at [eval]:62:18 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: null,\n  expected: 0,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.11.1\n[//package/dev-script/task-util:trial:depot:toml:bounded] ERROR task failed\n"
+            ],
+            "pid": 407437,
+            "stdout": "",
+            "stderr": "[//package/dev-script/task-util:trial:depot:toml:bounded] $ const { spawn, spawnSync, execFileSync } = await import('node:child_process')\nnode:internal/modules/run_main:111\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: fixture metadata stderr\n\n\nnull !== 0\n\n    at containers ([eval]:59:10)\n    at [eval]:62:18 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: null,\n  expected: 0,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v26.11.1\n[//package/dev-script/task-util:trial:depot:toml:bounded] ERROR task failed\n"
+          },
+          "operations": [
+            {
+              "executable": "/var/mnt/encrypted/temp/agent/toml-metadata-receipt-control-ChJI8h/bin/podman",
+              "args": [
+                "ps",
+                "--all",
+                "--filter",
+                "label=io.monochromatic.toml-attempt=e890501f-65f3-4289-80ac-3b6c3d3c1e70",
+                "--format",
+                "json"
+              ],
+              "cwd": "/home/user/temp/agent/toml-metadata-receipt-control-ChJI8h",
+              "startedAt": "2026-10-17T07:21:08.101Z",
+              "finishedAt": "2026-10-17T07:21:16.111Z",
+              "elapsedMs": 8010.007381,
+              "budgetMs": 8000,
+              "status": null,
+              "signal": "SIGKILL",
+              "error": {
+                "name": "Error",
+                "message": "spawnSync /var/mnt/encrypted/temp/agent/toml-metadata-receipt-control-ChJI8h/bin/podman ETIMEDOUT",
+                "code": "ETIMEDOUT",
+                "errno": -110,
+                "syscall": "spawnSync /var/mnt/encrypted/temp/agent/toml-metadata-receipt-control-ChJI8h/bin/podman",
+                "path": "/var/mnt/encrypted/temp/agent/toml-metadata-receipt-control-ChJI8h/bin/podman",
+                "spawnargs": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=e890501f-65f3-4289-80ac-3b6c3d3c1e70",
+                  "--format",
+                  "json"
+                ]
+              },
+              "stdoutBytes": 24,
+              "stderrBytes": 24,
+              "stdoutSha256": "5e50a88a9ff8a41a348a5fe6c3ab62ffe98c1bbe318dec189135ac5a494dbff0",
+              "stderrSha256": "1e015f4263d93824658a3ed75bf6a1d28ca5e817f6353b094f8fc04faa38e290",
+              "stdout": "fixture metadata stdout\n",
+              "stderr": "fixture metadata stderr\n"
+            }
+          ],
+          "classification": "Local disposable one-process metadata deadline control; source consumer never started. The real null-status operation still needs its own cloud receipt."
+        },
+        "developmentControls": {
+          "schemaVersion": 1,
+          "routeRevision": "0f8ad795aa92d3beb83e3bfa4e4aa54f1bea06f8",
+          "root": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc",
+          "source": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc/workspace/source",
+          "cohort": {
+            "COHORT_ID": "toml-local-controls-20261017",
+            "COHORT_MANIFEST_SHA256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+            "COHORT_REQUESTED_AT": "2026-10-17T07:21:47.225Z"
+          },
+          "records": [
+            {
+              "name": "identity",
+              "actualTask": "pilot-identity",
+              "status": 0,
+              "signal": null,
+              "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc/0-identity.log",
+              "sha256": "9618ce84620a577ba600b47ae05b218fa7ffe212373878151afd39ac2d42ca3b"
+            },
+            {
+              "name": "identity",
+              "actualTask": "pilot-identity",
+              "status": 0,
+              "signal": null,
+              "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc/1-identity.log",
+              "sha256": "fcca76a0825c693350049495f00b7248b5af4aee52c20524e7ac7317a3d55a19"
+            },
+            {
+              "name": "identity",
+              "actualTask": "pilot-identity",
+              "status": 1,
+              "signal": null,
+              "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc/2-identity.log",
+              "sha256": "bf43063120dc71d46c81cfb5be88343750c486378cf07de42f22477997279e8a"
+            },
+            {
+              "name": "identity",
+              "actualTask": "pilot-identity",
+              "status": 0,
+              "signal": null,
+              "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc/3-identity.log",
+              "sha256": "4981d6e28d61c2acc251a4bf65962e28293046c26dd60acff08d6f6cd09070f7"
+            },
+            {
+              "name": "identity",
+              "actualTask": "pilot-identity",
+              "status": 1,
+              "signal": null,
+              "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc/4-identity.log",
+              "sha256": "04769a5d9456d70861ab08900b92237644a4e4076cfe57114dd7213a3d7e6508"
+            },
+            {
+              "name": "bounded",
+              "actualTask": "bounded",
+              "status": 0,
+              "signal": null,
+              "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc/5-bounded.log",
+              "sha256": "9529b92e2776c73fbf0dd86e84c9aa9cc86ff41db246f113cc572c35bb446a0b"
+            },
+            {
+              "name": "bounded",
+              "actualTask": "bounded",
+              "status": 1,
+              "signal": null,
+              "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc/6-bounded.log",
+              "sha256": "674376ab4de6fb521f837635b92a144f27736e7eb6bb4e3738c42bbda37dcfc7"
+            },
+            {
+              "name": "bounded",
+              "actualTask": "bounded",
+              "status": 1,
+              "signal": null,
+              "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc/7-bounded.log",
+              "sha256": "f2dc11262c71fcf9ea513aa867f25ec7f7810b548229bb1ad74551346cd3ee7c"
+            },
+            {
+              "name": "bounded",
+              "actualTask": "bounded",
+              "status": 1,
+              "signal": null,
+              "log": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc/8-bounded.log",
+              "sha256": "3982d90fc9c9ac93068efd6c0a9b33995577312d02fd88704c3bdd4853278bf3"
+            }
+          ],
+          "pass": {
+            "schemaVersion": 1,
+            "event": "bounded-gate-finished",
+            "checkId": "package.dev-script.file-enforcer.test.container",
+            "cohort": {
+              "id": "toml-local-controls-20261017",
+              "manifestSha256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+              "requestedAt": "2026-10-17T07:21:47.225Z"
+            },
+            "startedAt": "2026-10-17T07:21:54.947Z",
+            "finishedAt": "2026-10-17T07:21:55.944Z",
+            "elapsedMs": 996.1860250000001,
+            "maxMs": 5000,
+            "graceMs": 500,
+            "timedOut": false,
+            "exit": {
+              "kind": "exited",
+              "exitCode": 0,
+              "signal": null
+            },
+            "sourceGateTerminal": false,
+            "label": "io.monochromatic.toml-attempt=aeba523f-4205-42f3-805b-d2e496ca36f8",
+            "signals": [],
+            "cleanup": [],
+            "cleanupVerified": true,
+            "processGroupAfter": [],
+            "instrumentationErrors": [],
+            "logLimitExceeded": false,
+            "output": {
+              "bytes": 24,
+              "sha256": "3b521b84a81996a67e51ca42c7ae940abab4a1c634ef0af92183a288e83d17b3"
+            },
+            "wrapperSha256": "3bf0878ef8bf6f5e0f31ca837cf0d682957f19855c04fab9fc4ec5cbca977387",
+            "fixtureOnly": true,
+            "selectedInvocationStarted": false,
+            "terminalDisposition": "fixture",
+            "consumerSpawnedAt": "2026-10-17T07:21:54.980Z",
+            "consumerOutcomeObservedAt": "2026-10-17T07:21:54.996Z",
+            "containerIdsAfter": [],
+            "consumer": {
+              "command": "/var/home/user/.local/share/mise/installs/node/26.11.1/bin/node",
+              "args": [
+                "--input-type=module",
+                "-e",
+                "import {mkdirSync,writeFileSync} from \"node:fs\";import {join} from \"node:path\";import {tmpdir} from \"node:os\";for(const kind of [\"manifest\",\"report\"]){const path=join(tmpdir(),\"mutation-\"+kind+\"-positive\");mkdirSync(path);writeFileSync(join(path,\"shard-\"+kind+\".json\"),JSON.stringify({fixtureOnly:true,ids:[\"fixture-one\",\"fixture-two\"]}));}writeFileSync(join(process.cwd(),\"mutation-report.json\"),JSON.stringify({fixtureOnly:true,mutants:[{id:\"fixture-one\"},{id:\"fixture-two\"}]}));console.log(\"positive-control-output\")"
+              ],
+              "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc"
+            },
+            "adapterOverlay": {
+              "DEPOT_CI_CHECK_IDS": "[\"package.dev-script.file-enforcer.test.container\"]",
+              "DEPOT_CI_WORKERS": "1",
+              "TMPDIR": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc/pass/toml-mutation-shards",
+              "correlatedPodmanSha256": "3bf0878ef8bf6f5e0f31ca837cf0d682957f19855c04fab9fc4ec5cbca977387"
+            },
+            "shardEvidence": [
+              {
+                "path": "mutation-manifest-positive/shard-manifest.json",
+                "bytes": 56,
+                "sha256": "f15b267c63f9b77ad26a6ceef6e6c869baee630cd3a6bd80396cf28d00260009"
+              },
+              {
+                "path": "mutation-report-positive/shard-report.json",
+                "bytes": 56,
+                "sha256": "f15b267c63f9b77ad26a6ceef6e6c869baee630cd3a6bd80396cf28d00260009"
+              }
+            ],
+            "nativeReports": [
+              {
+                "path": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc/mutation-report.json",
+                "existedAtStart": false,
+                "artifactPath": "toml-native-report-package.dev-script.file-enforcer.test.container-0.json",
+                "bytes": 74,
+                "sha256": "2e5a56828a30e2011bccf552b3d07f5df2a10b1c6aa1e194d56678713d1e593c",
+                "mtimeMs": 1792221714993.9272,
+                "producedDuringInvocation": true
+              }
+            ],
+            "podmanOperations": [
+              {
+                "executable": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=aeba523f-4205-42f3-805b-d2e496ca36f8",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc",
+                "startedAt": "2026-10-17T07:21:54.948Z",
+                "finishedAt": "2026-10-17T07:21:54.977Z",
+                "elapsedMs": 29.567741000000005,
+                "budgetMs": 8000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 3,
+                "stderrBytes": 0,
+                "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=aeba523f-4205-42f3-805b-d2e496ca36f8",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc",
+                "startedAt": "2026-10-17T07:21:54.996Z",
+                "finishedAt": "2026-10-17T07:21:55.022Z",
+                "elapsedMs": 25.99376699999999,
+                "budgetMs": 8000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 3,
+                "stderrBytes": 0,
+                "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=aeba523f-4205-42f3-805b-d2e496ca36f8",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc",
+                "startedAt": "2026-10-17T07:21:55.036Z",
+                "finishedAt": "2026-10-17T07:21:55.089Z",
+                "elapsedMs": 53.14854699999998,
+                "budgetMs": 8000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 3,
+                "stderrBytes": 0,
+                "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=aeba523f-4205-42f3-805b-d2e496ca36f8",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc",
+                "startedAt": "2026-10-17T07:21:55.099Z",
+                "finishedAt": "2026-10-17T07:21:55.137Z",
+                "elapsedMs": 37.56106300000002,
+                "budgetMs": 8000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 3,
+                "stderrBytes": 0,
+                "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "args": [
+                  "events",
+                  "--since",
+                  "2026-10-17T07:21:54.947Z",
+                  "--until",
+                  "2026-10-17T07:21:55.137Z",
+                  "--stream=false",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=aeba523f-4205-42f3-805b-d2e496ca36f8",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc",
+                "startedAt": "2026-10-17T07:21:55.137Z",
+                "finishedAt": "2026-10-17T07:21:55.942Z",
+                "elapsedMs": 805.6239290000001,
+                "budgetMs": 8000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 0,
+                "stderrBytes": 0,
+                "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "",
+                "stderr": ""
+              }
+            ]
+          },
+          "fail": {
+            "schemaVersion": 1,
+            "event": "bounded-gate-finished",
+            "checkId": "package.dev-script.file-enforcer.test.container",
+            "cohort": {
+              "id": "toml-local-controls-20261017",
+              "manifestSha256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+              "requestedAt": "2026-10-17T07:21:47.225Z"
+            },
+            "startedAt": "2026-10-17T07:21:57.451Z",
+            "finishedAt": "2026-10-17T07:21:57.634Z",
+            "elapsedMs": 182.08844,
+            "maxMs": 5000,
+            "graceMs": 500,
+            "timedOut": false,
+            "exit": {
+              "kind": "exited",
+              "exitCode": 7,
+              "signal": null
+            },
+            "sourceGateTerminal": false,
+            "label": "io.monochromatic.toml-attempt=76bbc2da-dc98-4f75-b5ef-72ea8c9913b0",
+            "signals": [],
+            "cleanup": [],
+            "cleanupVerified": true,
+            "processGroupAfter": [],
+            "instrumentationErrors": [],
+            "logLimitExceeded": false,
+            "output": {
+              "bytes": 23,
+              "sha256": "3b3793336b8e2c7de1e594b953c5cec24806e57d37e78c89c60268cd1dae8497"
+            },
+            "wrapperSha256": "5b7b4e5b8c784bd1c97a1fbc794dc107af14f057b0f18650bd77a17f27923cfe",
+            "fixtureOnly": true,
+            "selectedInvocationStarted": false,
+            "terminalDisposition": "fixture",
+            "consumerSpawnedAt": "2026-10-17T07:21:57.484Z",
+            "consumerOutcomeObservedAt": "2026-10-17T07:21:57.499Z",
+            "containerIdsAfter": [],
+            "consumer": {
+              "command": "/var/home/user/.local/share/mise/installs/node/26.11.1/bin/node",
+              "args": [
+                "--input-type=module",
+                "-e",
+                "console.error(\"source-control-failure\");process.exitCode=7"
+              ],
+              "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc"
+            },
+            "adapterOverlay": {
+              "DEPOT_CI_CHECK_IDS": "[\"package.dev-script.file-enforcer.test.container\"]",
+              "DEPOT_CI_WORKERS": "1",
+              "TMPDIR": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc/fail/toml-mutation-shards",
+              "correlatedPodmanSha256": "5b7b4e5b8c784bd1c97a1fbc794dc107af14f057b0f18650bd77a17f27923cfe"
+            },
+            "shardEvidence": [],
+            "nativeReports": [
+              {
+                "path": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc/mutation-report.json",
+                "existedAtStart": true,
+                "mtimeMsAtStart": 1792221714993.9272,
+                "artifactPath": "toml-native-report-package.dev-script.file-enforcer.test.container-0.json",
+                "bytes": 74,
+                "sha256": "2e5a56828a30e2011bccf552b3d07f5df2a10b1c6aa1e194d56678713d1e593c",
+                "mtimeMs": 1792221714993.9272,
+                "producedDuringInvocation": false
+              }
+            ],
+            "podmanOperations": [
+              {
+                "executable": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=76bbc2da-dc98-4f75-b5ef-72ea8c9913b0",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc",
+                "startedAt": "2026-10-17T07:21:57.452Z",
+                "finishedAt": "2026-10-17T07:21:57.482Z",
+                "elapsedMs": 29.721455,
+                "budgetMs": 8000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 3,
+                "stderrBytes": 0,
+                "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=76bbc2da-dc98-4f75-b5ef-72ea8c9913b0",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc",
+                "startedAt": "2026-10-17T07:21:57.499Z",
+                "finishedAt": "2026-10-17T07:21:57.524Z",
+                "elapsedMs": 25.509173000000004,
+                "budgetMs": 8000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 3,
+                "stderrBytes": 0,
+                "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=76bbc2da-dc98-4f75-b5ef-72ea8c9913b0",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc",
+                "startedAt": "2026-10-17T07:21:57.536Z",
+                "finishedAt": "2026-10-17T07:21:57.566Z",
+                "elapsedMs": 29.295432000000005,
+                "budgetMs": 8000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 3,
+                "stderrBytes": 0,
+                "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=76bbc2da-dc98-4f75-b5ef-72ea8c9913b0",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc",
+                "startedAt": "2026-10-17T07:21:57.577Z",
+                "finishedAt": "2026-10-17T07:21:57.602Z",
+                "elapsedMs": 25.88097300000001,
+                "budgetMs": 8000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 3,
+                "stderrBytes": 0,
+                "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "args": [
+                  "events",
+                  "--since",
+                  "2026-10-17T07:21:57.451Z",
+                  "--until",
+                  "2026-10-17T07:21:57.603Z",
+                  "--stream=false",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=76bbc2da-dc98-4f75-b5ef-72ea8c9913b0",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc",
+                "startedAt": "2026-10-17T07:21:57.603Z",
+                "finishedAt": "2026-10-17T07:21:57.633Z",
+                "elapsedMs": 30.722133999999983,
+                "budgetMs": 8000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 0,
+                "stderrBytes": 0,
+                "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "",
+                "stderr": ""
+              }
+            ]
+          },
+          "timeout": {
+            "schemaVersion": 1,
+            "event": "bounded-gate-finished",
+            "checkId": "package.dev-script.file-enforcer.test.container",
+            "cohort": {
+              "id": "toml-local-controls-20261017",
+              "manifestSha256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+              "requestedAt": "2026-10-17T07:21:47.225Z"
+            },
+            "startedAt": "2026-10-17T07:21:58.507Z",
+            "finishedAt": "2026-10-17T07:22:14.421Z",
+            "elapsedMs": 15913.377668,
+            "maxMs": 15000,
+            "graceMs": 500,
+            "timedOut": true,
+            "exit": {
+              "kind": "exited",
+              "exitCode": null,
+              "signal": "SIGKILL"
+            },
+            "sourceGateTerminal": false,
+            "label": "io.monochromatic.toml-attempt=074dc63c-8516-4494-b12c-351a15b3b6f0",
+            "signals": [
+              {
+                "observedAt": "2026-10-17T07:22:13.605Z",
+                "signal": "SIGTERM",
+                "sent": true
+              },
+              {
+                "observedAt": "2026-10-17T07:22:14.105Z",
+                "signal": "SIGKILL",
+                "sent": true
+              }
+            ],
+            "cleanup": [
+              {
+                "id": "32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b",
+                "kill": {
+                  "executable": "/usr/bin/podman",
+                  "args": [
+                    "kill",
+                    "--signal=SIGKILL",
+                    "32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b"
+                  ],
+                  "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc",
+                  "startedAt": "2026-10-17T07:22:14.168Z",
+                  "finishedAt": "2026-10-17T07:22:14.236Z",
+                  "elapsedMs": 67.74715099999958,
+                  "budgetMs": 60000,
+                  "status": 0,
+                  "signal": null,
+                  "error": null,
+                  "stdoutBytes": 65,
+                  "stderrBytes": 0,
+                  "stdoutSha256": "c78d479aab4e92624db704bd99a95624cd4fe02e83fc0764402e45fbeeaf8b08",
+                  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "stdout": "32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b\n",
+                  "stderr": ""
+                },
+                "remove": {
+                  "executable": "/usr/bin/podman",
+                  "args": [
+                    "rm",
+                    "--force",
+                    "--time=0",
+                    "--ignore",
+                    "32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b"
+                  ],
+                  "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc",
+                  "startedAt": "2026-10-17T07:22:14.236Z",
+                  "finishedAt": "2026-10-17T07:22:14.319Z",
+                  "elapsedMs": 83.05294800000047,
+                  "budgetMs": 60000,
+                  "status": 0,
+                  "signal": null,
+                  "error": null,
+                  "stdoutBytes": 65,
+                  "stderrBytes": 0,
+                  "stdoutSha256": "c78d479aab4e92624db704bd99a95624cd4fe02e83fc0764402e45fbeeaf8b08",
+                  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                  "stdout": "32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b\n",
+                  "stderr": ""
+                }
+              }
+            ],
+            "cleanupVerified": true,
+            "processGroupAfter": [],
+            "instrumentationErrors": [],
+            "logLimitExceeded": false,
+            "output": {
+              "bytes": 31,
+              "sha256": "4fdef45fe3b0c9b884ec602ebdb5db5398f5a1a9bb368b4e6528480515d1553f"
+            },
+            "wrapperSha256": "75c35021519f4f8b537c449ffb5472bf9e1c1983c44aa1bde49a90dfbcec9362",
+            "fixtureOnly": true,
+            "selectedInvocationStarted": false,
+            "terminalDisposition": "fixture",
+            "consumerSpawnedAt": "2026-10-17T07:21:58.535Z",
+            "consumerOutcomeObservedAt": "2026-10-17T07:22:13.537Z",
+            "containerIdsAfter": [],
+            "consumer": {
+              "command": "/var/home/user/.local/share/mise/installs/node/26.11.1/bin/node",
+              "args": [
+                "--input-type=module",
+                "-e",
+                "import {spawn,execFileSync} from 'node:child_process';import {writeFileSync} from 'node:fs';process.on('SIGTERM',()=>{});const child=spawn(process.execPath,['--input-type=module','-e','process.on(\"SIGTERM\",()=>{});setInterval(()=>{},1000)'],{stdio:'ignore'});const container=execFileSync('podman',['run','--detach','--pull=never','--network=none','--memory=2g','--cpus=2','--pids-limit=64','--entrypoint=/bin/sleep','0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0','120'],{encoding:'utf8'}).trim();writeFileSync(\"/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc/timeout-pids.json\",JSON.stringify({pid:process.pid,child:child.pid,container}));console.log('timeout-positive-control-ready');setInterval(()=>{},1000)"
+              ],
+              "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc"
+            },
+            "adapterOverlay": {
+              "DEPOT_CI_CHECK_IDS": "[\"package.dev-script.file-enforcer.test.container\"]",
+              "DEPOT_CI_WORKERS": "1",
+              "TMPDIR": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc/timeout/toml-mutation-shards",
+              "correlatedPodmanSha256": "75c35021519f4f8b537c449ffb5472bf9e1c1983c44aa1bde49a90dfbcec9362"
+            },
+            "shardEvidence": [],
+            "nativeReports": [
+              {
+                "path": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc/mutation-report.json",
+                "existedAtStart": true,
+                "mtimeMsAtStart": 1792221714993.9272,
+                "artifactPath": "toml-native-report-package.dev-script.file-enforcer.test.container-0.json",
+                "bytes": 74,
+                "sha256": "2e5a56828a30e2011bccf552b3d07f5df2a10b1c6aa1e194d56678713d1e593c",
+                "mtimeMs": 1792221714993.9272,
+                "producedDuringInvocation": false
+              }
+            ],
+            "podmanOperations": [
+              {
+                "executable": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=074dc63c-8516-4494-b12c-351a15b3b6f0",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc",
+                "startedAt": "2026-10-17T07:21:58.508Z",
+                "finishedAt": "2026-10-17T07:21:58.533Z",
+                "elapsedMs": 25.404360000000004,
+                "budgetMs": 8000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 3,
+                "stderrBytes": 0,
+                "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=074dc63c-8516-4494-b12c-351a15b3b6f0",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc",
+                "startedAt": "2026-10-17T07:22:08.537Z",
+                "finishedAt": "2026-10-17T07:22:08.569Z",
+                "elapsedMs": 32.01834100000087,
+                "budgetMs": 8000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 1001,
+                "stderrBytes": 0,
+                "stdoutSha256": "e73c37b1d63c1058b1ab12a88c9b38f3dd79d173953b899c111cd2e6a902f715",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[\n  {\n    \"AutoRemove\": false,\n    \"Command\": [\n      \"120\"\n    ],\n    \"CreatedAt\": \"9 seconds ago\",\n    \"CIDFile\": \"\",\n    \"Exited\": false,\n    \"ExitedAt\": -62135596800,\n    \"ExitCode\": 0,\n    \"ExposedPorts\": null,\n    \"Id\": \"32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b\",\n    \"Image\": \"mcr.microsoft.com/powershell:latest\",\n    \"ImageID\": \"0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0\",\n    \"IsInfra\": false,\n    \"Labels\": {\n      \"io.monochromatic.toml-attempt\": \"074dc63c-8516-4494-b12c-351a15b3b6f0\",\n      \"org.opencontainers.image.ref.name\": \"ubuntu\",\n      \"org.opencontainers.image.version\": \"22.04\"\n    },\n    \"Mounts\": [],\n    \"Names\": [\n      \"loving_williamson\"\n    ],\n    \"Namespaces\": {\n      \n    },\n    \"Networks\": [],\n    \"Pid\": 410692,\n    \"Pod\": \"\",\n    \"PodName\": \"\",\n    \"Ports\": null,\n    \"Restarts\": 0,\n    \"Size\": null,\n    \"StartedAt\": 1792221718,\n    \"State\": \"running\",\n    \"Status\": \"Up 10 seconds\",\n    \"Created\": 1792221718\n  }\n]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "args": [
+                  "inspect",
+                  "32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc",
+                "startedAt": "2026-10-17T07:22:08.570Z",
+                "finishedAt": "2026-10-17T07:22:08.606Z",
+                "elapsedMs": 36.3594379999995,
+                "budgetMs": 8000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 12428,
+                "stderrBytes": 0,
+                "stdoutSha256": "9b0be513fa67e075f046b438492e410823cc921e7b64679359133bc167289d68",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[\n     {\n          \"Id\": \"32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b\",\n          \"Created\": \"2026-10-17T03:21:58.606291255-04:00\",\n          \"Path\": \"/bin/sleep\",\n          \"Args\": [\n               \"120\"\n          ],\n          \"State\": {\n               \"OciVersion\": \"1.2.1\",\n               \"Status\": \"running\",\n               \"Running\": true,\n               \"Paused\": false,\n               \"Restarting\": false,\n               \"OOMKilled\": false,\n               \"Dead\": false,\n               \"Pid\": 410692,\n               \"ConmonPid\": 410690,\n               \"ExitCode\": 0,\n               \"Error\": \"\",\n               \"StartedAt\": \"2026-10-17T03:21:58.65867919-04:00\",\n               \"FinishedAt\": \"0001-01-01T00:00:00Z\",\n               \"CgroupPath\": \"/user.slice/user-1000.slice/user@1000.service/user.slice/libpod-32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b.scope\",\n               \"CheckpointedAt\": \"0001-01-01T00:00:00Z\",\n               \"RestoredAt\": \"0001-01-01T00:00:00Z\"\n          },\n          \"Image\": \"0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0\",\n          \"ImageDigest\": \"sha256:810c4f1e0c9d23022c3ec18c50a6205ee4b60766f1739d329b2948df1fd7d5b0\",\n          \"ImageName\": \"mcr.microsoft.com/powershell:latest\",\n          \"Rootfs\": \"\",\n          \"Pod\": \"\",\n          \"ResolvConfPath\": \"\",\n          \"HostnamePath\": \"/run/user/1000/containers/overlay-containers/32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b/userdata/hostname\",\n          \"HostsPath\": \"/run/user/1000/containers/overlay-containers/32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b/userdata/hosts\",\n          \"StaticDir\": \"/var/home/user/.local/share/containers/storage/overlay-containers/32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b/userdata\",\n          \"OCIConfigPath\": \"/var/home/user/.local/share/containers/storage/overlay-containers/32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b/userdata/config.json\",\n          \"OCIRuntime\": \"crun\",\n          \"ConmonPidFile\": \"/run/user/1000/containers/overlay-containers/32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b/userdata/conmon.pid\",\n          \"PidFile\": \"/run/user/1000/containers/overlay-containers/32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b/userdata/pidfile\",\n          \"Name\": \"loving_williamson\",\n          \"RestartCount\": 0,\n          \"Driver\": \"overlay\",\n          \"MountLabel\": \"system_u:object_r:container_file_t:s0:c603,c976\",\n          \"ProcessLabel\": \"system_u:system_r:container_t:s0:c603,c976\",\n          \"AppArmorProfile\": \"\",\n          \"EffectiveCaps\": [\n               \"CAP_CHOWN\",\n               \"CAP_DAC_OVERRIDE\",\n               \"CAP_FOWNER\",\n               \"CAP_FSETID\",\n               \"CAP_KILL\",\n               \"CAP_NET_BIND_SERVICE\",\n               \"CAP_SETFCAP\",\n               \"CAP_SETGID\",\n               \"CAP_SETPCAP\",\n               \"CAP_SETUID\",\n               \"CAP_SYS_CHROOT\"\n          ],\n          \"BoundingCaps\": [\n               \"CAP_CHOWN\",\n               \"CAP_DAC_OVERRIDE\",\n               \"CAP_FOWNER\",\n               \"CAP_FSETID\",\n               \"CAP_KILL\",\n               \"CAP_NET_BIND_SERVICE\",\n               \"CAP_SETFCAP\",\n               \"CAP_SETGID\",\n               \"CAP_SETPCAP\",\n               \"CAP_SETUID\",\n               \"CAP_SYS_CHROOT\"\n          ],\n          \"ExecIDs\": [],\n          \"GraphDriver\": {\n               \"Name\": \"overlay\",\n               \"Data\": {\n                    \"LowerDir\": \"/var/home/user/.local/share/containers/storage/overlay/8f5ff742b8cfe7eefa11cb0b3295450362e17c865ff95d1f7020623fb8524808/diff:/var/home/user/.local/share/containers/storage/overlay/5498e8c22f6996f25ef193ee58617d5b37e2a96decf22e72de13c3b34e147591/diff\",\n                    \"MergedDir\": \"/var/home/user/.local/share/containers/storage/overlay/f8957dc57420f939efc6b1d20e77def9a913294e4674c58fce5276e2f89ea67e/merged\",\n                    \"UpperDir\": \"/var/home/user/.local/share/containers/storage/overlay/f8957dc57420f939efc6b1d20e77def9a913294e4674c58fce5276e2f89ea67e/diff\",\n                    \"WorkDir\": \"/var/home/user/.local/share/containers/storage/overlay/f8957dc57420f939efc6b1d20e77def9a913294e4674c58fce5276e2f89ea67e/work\"\n               }\n          },\n          \"Mounts\": [],\n          \"Dependencies\": [],\n          \"NetworkSettings\": {\n               \"EndpointID\": \"\",\n               \"Gateway\": \"\",\n               \"IPAddress\": \"\",\n               \"IPPrefixLen\": 0,\n               \"IPv6Gateway\": \"\",\n               \"GlobalIPv6Address\": \"\",\n               \"GlobalIPv6PrefixLen\": 0,\n               \"MacAddress\": \"\",\n               \"Bridge\": \"\",\n               \"SandboxID\": \"\",\n               \"HairpinMode\": false,\n               \"LinkLocalIPv6Address\": \"\",\n               \"LinkLocalIPv6PrefixLen\": 0,\n               \"Ports\": {},\n               \"SandboxKey\": \"/proc/410692/ns/net\",\n               \"Networks\": {\n                    \"none\": {\n                         \"EndpointID\": \"\",\n                         \"Gateway\": \"\",\n                         \"IPAddress\": \"\",\n                         \"IPPrefixLen\": 0,\n                         \"IPv6Gateway\": \"\",\n                         \"GlobalIPv6Address\": \"\",\n                         \"GlobalIPv6PrefixLen\": 0,\n                         \"MacAddress\": \"\",\n                         \"NetworkID\": \"none\",\n                         \"DriverOpts\": null,\n                         \"IPAMConfig\": null,\n                         \"Links\": null\n                    }\n               }\n          },\n          \"Namespace\": \"\",\n          \"IsInfra\": false,\n          \"IsService\": false,\n          \"KubeExitCodePropagation\": \"invalid\",\n          \"lockNumber\": 0,\n          \"Config\": {\n               \"Hostname\": \"32f95f94b2a2\",\n               \"Domainname\": \"\",\n               \"User\": \"\",\n               \"AttachStdin\": false,\n               \"AttachStdout\": false,\n               \"AttachStderr\": false,\n               \"Tty\": false,\n               \"OpenStdin\": false,\n               \"StdinOnce\": false,\n               \"Env\": [\n                    \"LANG=en_US.UTF-8\",\n                    \"PS_INSTALL_FOLDER=/opt/microsoft/powershell/7\",\n                    \"PSModuleAnalysisCachePath=/var/cache/microsoft/powershell/PSModuleAnalysisCache/ModuleAnalysisCache\",\n                    \"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\",\n                    \"container=podman\",\n                    \"POWERSHELL_DISTRIBUTION_CHANNEL=PSDocker-Ubuntu-22.04\",\n                    \"DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false\",\n                    \"LC_ALL=en_US.UTF-8\",\n                    \"HOME=/root\",\n                    \"HOSTNAME=32f95f94b2a2\"\n               ],\n               \"Cmd\": [\n                    \"120\"\n               ],\n               \"Image\": \"mcr.microsoft.com/powershell:latest\",\n               \"Volumes\": null,\n               \"WorkingDir\": \"/\",\n               \"Entrypoint\": [\n                    \"/bin/sleep\"\n               ],\n               \"OnBuild\": null,\n               \"Labels\": {\n                    \"io.monochromatic.toml-attempt\": \"074dc63c-8516-4494-b12c-351a15b3b6f0\",\n                    \"org.opencontainers.image.ref.name\": \"ubuntu\",\n                    \"org.opencontainers.image.version\": \"22.04\"\n               },\n               \"Annotations\": {\n                    \"io.container.manager\": \"libpod\",\n                    \"io.podman.annotations.pids-limit\": \"64\",\n                    \"org.opencontainers.image.stopSignal\": \"15\",\n                    \"org.systemd.property.KillSignal\": \"15\",\n                    \"org.systemd.property.TimeoutStopUSec\": \"uint64 10000000\"\n               },\n               \"StopSignal\": \"SIGTERM\",\n               \"HealthcheckOnFailureAction\": \"none\",\n               \"HealthLogDestination\": \"local\",\n               \"HealthcheckMaxLogCount\": 5,\n               \"HealthcheckMaxLogSize\": 500,\n               \"CreateCommand\": [\n                    \"/usr/bin/podman\",\n                    \"run\",\n                    \"--label\",\n                    \"io.monochromatic.toml-attempt=074dc63c-8516-4494-b12c-351a15b3b6f0\",\n                    \"--detach\",\n                    \"--pull=never\",\n                    \"--network=none\",\n                    \"--memory=2g\",\n                    \"--cpus=2\",\n                    \"--pids-limit=64\",\n                    \"--entrypoint=/bin/sleep\",\n                    \"0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0\",\n                    \"120\"\n               ],\n               \"Umask\": \"0022\",\n               \"Timeout\": 0,\n               \"StopTimeout\": 10,\n               \"Passwd\": true,\n               \"sdNotifyMode\": \"container\"\n          },\n          \"HostConfig\": {\n               \"Binds\": [],\n               \"CgroupManager\": \"systemd\",\n               \"CgroupMode\": \"private\",\n               \"ContainerIDFile\": \"\",\n               \"LogConfig\": {\n                    \"Type\": \"k8s-file\",\n                    \"Config\": null,\n                    \"Path\": \"/var/home/user/.local/share/containers/storage/overlay-containers/32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b/userdata/ctr.log\",\n                    \"Tag\": \"\",\n                    \"Size\": \"-1B\"\n               },\n               \"NetworkMode\": \"none\",\n               \"PortBindings\": {},\n               \"RestartPolicy\": {\n                    \"Name\": \"no\",\n                    \"MaximumRetryCount\": 0\n               },\n               \"AutoRemove\": false,\n               \"AutoRemoveImage\": false,\n               \"Annotations\": {\n                    \"io.container.manager\": \"libpod\",\n                    \"io.podman.annotations.pids-limit\": \"64\",\n                    \"org.opencontainers.image.stopSignal\": \"15\",\n                    \"org.systemd.property.KillSignal\": \"15\",\n                    \"org.systemd.property.TimeoutStopUSec\": \"uint64 10000000\"\n               },\n               \"VolumeDriver\": \"\",\n               \"VolumesFrom\": null,\n               \"CapAdd\": [],\n               \"CapDrop\": [],\n               \"Dns\": [],\n               \"DnsOptions\": [],\n               \"DnsSearch\": [],\n               \"ExtraHosts\": [],\n               \"HostsFile\": \"\",\n               \"GroupAdd\": [],\n               \"IpcMode\": \"shareable\",\n               \"Cgroup\": \"\",\n               \"Cgroups\": \"default\",\n               \"Links\": null,\n               \"OomScoreAdj\": 0,\n               \"PidMode\": \"private\",\n               \"Privileged\": false,\n               \"PublishAllPorts\": false,\n               \"ReadonlyRootfs\": false,\n               \"SecurityOpt\": [],\n               \"Tmpfs\": {},\n               \"UTSMode\": \"private\",\n               \"UsernsMode\": \"\",\n               \"ShmSize\": 65536000,\n               \"Runtime\": \"oci\",\n               \"ConsoleSize\": [\n                    0,\n                    0\n               ],\n               \"Isolation\": \"\",\n               \"CpuShares\": 0,\n               \"Memory\": 2147483648,\n               \"NanoCpus\": 2000000000,\n               \"CgroupParent\": \"user.slice\",\n               \"BlkioWeight\": 0,\n               \"BlkioWeightDevice\": null,\n               \"BlkioDeviceReadBps\": null,\n               \"BlkioDeviceWriteBps\": null,\n               \"BlkioDeviceReadIOps\": null,\n               \"BlkioDeviceWriteIOps\": null,\n               \"CpuPeriod\": 100000,\n               \"CpuQuota\": 200000,\n               \"CpuRealtimePeriod\": 0,\n               \"CpuRealtimeRuntime\": 0,\n               \"CpusetCpus\": \"\",\n               \"CpusetMems\": \"\",\n               \"Devices\": [],\n               \"DiskQuota\": 0,\n               \"KernelMemory\": 0,\n               \"MemoryReservation\": 0,\n               \"MemorySwap\": 4294967296,\n               \"MemorySwappiness\": -1,\n               \"OomKillDisable\": false,\n               \"PidsLimit\": 64,\n               \"Ulimits\": [\n                    {\n                         \"Name\": \"RLIMIT_NOFILE\",\n                         \"Soft\": 1048576,\n                         \"Hard\": 1048576\n                    },\n                    {\n                         \"Name\": \"RLIMIT_NPROC\",\n                         \"Soft\": 12288,\n                         \"Hard\": 12288\n                    }\n               ],\n               \"CpuCount\": 0,\n               \"CpuPercent\": 0,\n               \"IOMaximumIOps\": 0,\n               \"IOMaximumBandwidth\": 0,\n               \"CgroupConf\": null\n          },\n          \"UseImageHosts\": false,\n          \"UseImageHostname\": false\n     }\n]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=074dc63c-8516-4494-b12c-351a15b3b6f0",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc",
+                "startedAt": "2026-10-17T07:22:13.537Z",
+                "finishedAt": "2026-10-17T07:22:13.568Z",
+                "elapsedMs": 31.204287999998996,
+                "budgetMs": 8000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 1002,
+                "stderrBytes": 0,
+                "stdoutSha256": "ae95ea0c03de8df12bff59bc32d55ae03c0e848a37b957cf53ce3dc165915c4d",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[\n  {\n    \"AutoRemove\": false,\n    \"Command\": [\n      \"120\"\n    ],\n    \"CreatedAt\": \"14 seconds ago\",\n    \"CIDFile\": \"\",\n    \"Exited\": false,\n    \"ExitedAt\": -62135596800,\n    \"ExitCode\": 0,\n    \"ExposedPorts\": null,\n    \"Id\": \"32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b\",\n    \"Image\": \"mcr.microsoft.com/powershell:latest\",\n    \"ImageID\": \"0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0\",\n    \"IsInfra\": false,\n    \"Labels\": {\n      \"io.monochromatic.toml-attempt\": \"074dc63c-8516-4494-b12c-351a15b3b6f0\",\n      \"org.opencontainers.image.ref.name\": \"ubuntu\",\n      \"org.opencontainers.image.version\": \"22.04\"\n    },\n    \"Mounts\": [],\n    \"Names\": [\n      \"loving_williamson\"\n    ],\n    \"Namespaces\": {\n      \n    },\n    \"Networks\": [],\n    \"Pid\": 410692,\n    \"Pod\": \"\",\n    \"PodName\": \"\",\n    \"Ports\": null,\n    \"Restarts\": 0,\n    \"Size\": null,\n    \"StartedAt\": 1792221718,\n    \"State\": \"running\",\n    \"Status\": \"Up 15 seconds\",\n    \"Created\": 1792221718\n  }\n]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "args": [
+                  "inspect",
+                  "32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc",
+                "startedAt": "2026-10-17T07:22:13.568Z",
+                "finishedAt": "2026-10-17T07:22:13.604Z",
+                "elapsedMs": 36.11315099999956,
+                "budgetMs": 8000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 12428,
+                "stderrBytes": 0,
+                "stdoutSha256": "9b0be513fa67e075f046b438492e410823cc921e7b64679359133bc167289d68",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[\n     {\n          \"Id\": \"32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b\",\n          \"Created\": \"2026-10-17T03:21:58.606291255-04:00\",\n          \"Path\": \"/bin/sleep\",\n          \"Args\": [\n               \"120\"\n          ],\n          \"State\": {\n               \"OciVersion\": \"1.2.1\",\n               \"Status\": \"running\",\n               \"Running\": true,\n               \"Paused\": false,\n               \"Restarting\": false,\n               \"OOMKilled\": false,\n               \"Dead\": false,\n               \"Pid\": 410692,\n               \"ConmonPid\": 410690,\n               \"ExitCode\": 0,\n               \"Error\": \"\",\n               \"StartedAt\": \"2026-10-17T03:21:58.65867919-04:00\",\n               \"FinishedAt\": \"0001-01-01T00:00:00Z\",\n               \"CgroupPath\": \"/user.slice/user-1000.slice/user@1000.service/user.slice/libpod-32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b.scope\",\n               \"CheckpointedAt\": \"0001-01-01T00:00:00Z\",\n               \"RestoredAt\": \"0001-01-01T00:00:00Z\"\n          },\n          \"Image\": \"0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0\",\n          \"ImageDigest\": \"sha256:810c4f1e0c9d23022c3ec18c50a6205ee4b60766f1739d329b2948df1fd7d5b0\",\n          \"ImageName\": \"mcr.microsoft.com/powershell:latest\",\n          \"Rootfs\": \"\",\n          \"Pod\": \"\",\n          \"ResolvConfPath\": \"\",\n          \"HostnamePath\": \"/run/user/1000/containers/overlay-containers/32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b/userdata/hostname\",\n          \"HostsPath\": \"/run/user/1000/containers/overlay-containers/32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b/userdata/hosts\",\n          \"StaticDir\": \"/var/home/user/.local/share/containers/storage/overlay-containers/32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b/userdata\",\n          \"OCIConfigPath\": \"/var/home/user/.local/share/containers/storage/overlay-containers/32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b/userdata/config.json\",\n          \"OCIRuntime\": \"crun\",\n          \"ConmonPidFile\": \"/run/user/1000/containers/overlay-containers/32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b/userdata/conmon.pid\",\n          \"PidFile\": \"/run/user/1000/containers/overlay-containers/32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b/userdata/pidfile\",\n          \"Name\": \"loving_williamson\",\n          \"RestartCount\": 0,\n          \"Driver\": \"overlay\",\n          \"MountLabel\": \"system_u:object_r:container_file_t:s0:c603,c976\",\n          \"ProcessLabel\": \"system_u:system_r:container_t:s0:c603,c976\",\n          \"AppArmorProfile\": \"\",\n          \"EffectiveCaps\": [\n               \"CAP_CHOWN\",\n               \"CAP_DAC_OVERRIDE\",\n               \"CAP_FOWNER\",\n               \"CAP_FSETID\",\n               \"CAP_KILL\",\n               \"CAP_NET_BIND_SERVICE\",\n               \"CAP_SETFCAP\",\n               \"CAP_SETGID\",\n               \"CAP_SETPCAP\",\n               \"CAP_SETUID\",\n               \"CAP_SYS_CHROOT\"\n          ],\n          \"BoundingCaps\": [\n               \"CAP_CHOWN\",\n               \"CAP_DAC_OVERRIDE\",\n               \"CAP_FOWNER\",\n               \"CAP_FSETID\",\n               \"CAP_KILL\",\n               \"CAP_NET_BIND_SERVICE\",\n               \"CAP_SETFCAP\",\n               \"CAP_SETGID\",\n               \"CAP_SETPCAP\",\n               \"CAP_SETUID\",\n               \"CAP_SYS_CHROOT\"\n          ],\n          \"ExecIDs\": [],\n          \"GraphDriver\": {\n               \"Name\": \"overlay\",\n               \"Data\": {\n                    \"LowerDir\": \"/var/home/user/.local/share/containers/storage/overlay/8f5ff742b8cfe7eefa11cb0b3295450362e17c865ff95d1f7020623fb8524808/diff:/var/home/user/.local/share/containers/storage/overlay/5498e8c22f6996f25ef193ee58617d5b37e2a96decf22e72de13c3b34e147591/diff\",\n                    \"MergedDir\": \"/var/home/user/.local/share/containers/storage/overlay/f8957dc57420f939efc6b1d20e77def9a913294e4674c58fce5276e2f89ea67e/merged\",\n                    \"UpperDir\": \"/var/home/user/.local/share/containers/storage/overlay/f8957dc57420f939efc6b1d20e77def9a913294e4674c58fce5276e2f89ea67e/diff\",\n                    \"WorkDir\": \"/var/home/user/.local/share/containers/storage/overlay/f8957dc57420f939efc6b1d20e77def9a913294e4674c58fce5276e2f89ea67e/work\"\n               }\n          },\n          \"Mounts\": [],\n          \"Dependencies\": [],\n          \"NetworkSettings\": {\n               \"EndpointID\": \"\",\n               \"Gateway\": \"\",\n               \"IPAddress\": \"\",\n               \"IPPrefixLen\": 0,\n               \"IPv6Gateway\": \"\",\n               \"GlobalIPv6Address\": \"\",\n               \"GlobalIPv6PrefixLen\": 0,\n               \"MacAddress\": \"\",\n               \"Bridge\": \"\",\n               \"SandboxID\": \"\",\n               \"HairpinMode\": false,\n               \"LinkLocalIPv6Address\": \"\",\n               \"LinkLocalIPv6PrefixLen\": 0,\n               \"Ports\": {},\n               \"SandboxKey\": \"/proc/410692/ns/net\",\n               \"Networks\": {\n                    \"none\": {\n                         \"EndpointID\": \"\",\n                         \"Gateway\": \"\",\n                         \"IPAddress\": \"\",\n                         \"IPPrefixLen\": 0,\n                         \"IPv6Gateway\": \"\",\n                         \"GlobalIPv6Address\": \"\",\n                         \"GlobalIPv6PrefixLen\": 0,\n                         \"MacAddress\": \"\",\n                         \"NetworkID\": \"none\",\n                         \"DriverOpts\": null,\n                         \"IPAMConfig\": null,\n                         \"Links\": null\n                    }\n               }\n          },\n          \"Namespace\": \"\",\n          \"IsInfra\": false,\n          \"IsService\": false,\n          \"KubeExitCodePropagation\": \"invalid\",\n          \"lockNumber\": 0,\n          \"Config\": {\n               \"Hostname\": \"32f95f94b2a2\",\n               \"Domainname\": \"\",\n               \"User\": \"\",\n               \"AttachStdin\": false,\n               \"AttachStdout\": false,\n               \"AttachStderr\": false,\n               \"Tty\": false,\n               \"OpenStdin\": false,\n               \"StdinOnce\": false,\n               \"Env\": [\n                    \"LANG=en_US.UTF-8\",\n                    \"PS_INSTALL_FOLDER=/opt/microsoft/powershell/7\",\n                    \"PSModuleAnalysisCachePath=/var/cache/microsoft/powershell/PSModuleAnalysisCache/ModuleAnalysisCache\",\n                    \"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\",\n                    \"container=podman\",\n                    \"POWERSHELL_DISTRIBUTION_CHANNEL=PSDocker-Ubuntu-22.04\",\n                    \"DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false\",\n                    \"LC_ALL=en_US.UTF-8\",\n                    \"HOME=/root\",\n                    \"HOSTNAME=32f95f94b2a2\"\n               ],\n               \"Cmd\": [\n                    \"120\"\n               ],\n               \"Image\": \"mcr.microsoft.com/powershell:latest\",\n               \"Volumes\": null,\n               \"WorkingDir\": \"/\",\n               \"Entrypoint\": [\n                    \"/bin/sleep\"\n               ],\n               \"OnBuild\": null,\n               \"Labels\": {\n                    \"io.monochromatic.toml-attempt\": \"074dc63c-8516-4494-b12c-351a15b3b6f0\",\n                    \"org.opencontainers.image.ref.name\": \"ubuntu\",\n                    \"org.opencontainers.image.version\": \"22.04\"\n               },\n               \"Annotations\": {\n                    \"io.container.manager\": \"libpod\",\n                    \"io.podman.annotations.pids-limit\": \"64\",\n                    \"org.opencontainers.image.stopSignal\": \"15\",\n                    \"org.systemd.property.KillSignal\": \"15\",\n                    \"org.systemd.property.TimeoutStopUSec\": \"uint64 10000000\"\n               },\n               \"StopSignal\": \"SIGTERM\",\n               \"HealthcheckOnFailureAction\": \"none\",\n               \"HealthLogDestination\": \"local\",\n               \"HealthcheckMaxLogCount\": 5,\n               \"HealthcheckMaxLogSize\": 500,\n               \"CreateCommand\": [\n                    \"/usr/bin/podman\",\n                    \"run\",\n                    \"--label\",\n                    \"io.monochromatic.toml-attempt=074dc63c-8516-4494-b12c-351a15b3b6f0\",\n                    \"--detach\",\n                    \"--pull=never\",\n                    \"--network=none\",\n                    \"--memory=2g\",\n                    \"--cpus=2\",\n                    \"--pids-limit=64\",\n                    \"--entrypoint=/bin/sleep\",\n                    \"0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0\",\n                    \"120\"\n               ],\n               \"Umask\": \"0022\",\n               \"Timeout\": 0,\n               \"StopTimeout\": 10,\n               \"Passwd\": true,\n               \"sdNotifyMode\": \"container\"\n          },\n          \"HostConfig\": {\n               \"Binds\": [],\n               \"CgroupManager\": \"systemd\",\n               \"CgroupMode\": \"private\",\n               \"ContainerIDFile\": \"\",\n               \"LogConfig\": {\n                    \"Type\": \"k8s-file\",\n                    \"Config\": null,\n                    \"Path\": \"/var/home/user/.local/share/containers/storage/overlay-containers/32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b/userdata/ctr.log\",\n                    \"Tag\": \"\",\n                    \"Size\": \"-1B\"\n               },\n               \"NetworkMode\": \"none\",\n               \"PortBindings\": {},\n               \"RestartPolicy\": {\n                    \"Name\": \"no\",\n                    \"MaximumRetryCount\": 0\n               },\n               \"AutoRemove\": false,\n               \"AutoRemoveImage\": false,\n               \"Annotations\": {\n                    \"io.container.manager\": \"libpod\",\n                    \"io.podman.annotations.pids-limit\": \"64\",\n                    \"org.opencontainers.image.stopSignal\": \"15\",\n                    \"org.systemd.property.KillSignal\": \"15\",\n                    \"org.systemd.property.TimeoutStopUSec\": \"uint64 10000000\"\n               },\n               \"VolumeDriver\": \"\",\n               \"VolumesFrom\": null,\n               \"CapAdd\": [],\n               \"CapDrop\": [],\n               \"Dns\": [],\n               \"DnsOptions\": [],\n               \"DnsSearch\": [],\n               \"ExtraHosts\": [],\n               \"HostsFile\": \"\",\n               \"GroupAdd\": [],\n               \"IpcMode\": \"shareable\",\n               \"Cgroup\": \"\",\n               \"Cgroups\": \"default\",\n               \"Links\": null,\n               \"OomScoreAdj\": 0,\n               \"PidMode\": \"private\",\n               \"Privileged\": false,\n               \"PublishAllPorts\": false,\n               \"ReadonlyRootfs\": false,\n               \"SecurityOpt\": [],\n               \"Tmpfs\": {},\n               \"UTSMode\": \"private\",\n               \"UsernsMode\": \"\",\n               \"ShmSize\": 65536000,\n               \"Runtime\": \"oci\",\n               \"ConsoleSize\": [\n                    0,\n                    0\n               ],\n               \"Isolation\": \"\",\n               \"CpuShares\": 0,\n               \"Memory\": 2147483648,\n               \"NanoCpus\": 2000000000,\n               \"CgroupParent\": \"user.slice\",\n               \"BlkioWeight\": 0,\n               \"BlkioWeightDevice\": null,\n               \"BlkioDeviceReadBps\": null,\n               \"BlkioDeviceWriteBps\": null,\n               \"BlkioDeviceReadIOps\": null,\n               \"BlkioDeviceWriteIOps\": null,\n               \"CpuPeriod\": 100000,\n               \"CpuQuota\": 200000,\n               \"CpuRealtimePeriod\": 0,\n               \"CpuRealtimeRuntime\": 0,\n               \"CpusetCpus\": \"\",\n               \"CpusetMems\": \"\",\n               \"Devices\": [],\n               \"DiskQuota\": 0,\n               \"KernelMemory\": 0,\n               \"MemoryReservation\": 0,\n               \"MemorySwap\": 4294967296,\n               \"MemorySwappiness\": -1,\n               \"OomKillDisable\": false,\n               \"PidsLimit\": 64,\n               \"Ulimits\": [\n                    {\n                         \"Name\": \"RLIMIT_NOFILE\",\n                         \"Soft\": 1048576,\n                         \"Hard\": 1048576\n                    },\n                    {\n                         \"Name\": \"RLIMIT_NPROC\",\n                         \"Soft\": 12288,\n                         \"Hard\": 12288\n                    }\n               ],\n               \"CpuCount\": 0,\n               \"CpuPercent\": 0,\n               \"IOMaximumIOps\": 0,\n               \"IOMaximumBandwidth\": 0,\n               \"CgroupConf\": null\n          },\n          \"UseImageHosts\": false,\n          \"UseImageHostname\": false\n     }\n]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=074dc63c-8516-4494-b12c-351a15b3b6f0",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc",
+                "startedAt": "2026-10-17T07:22:14.107Z",
+                "finishedAt": "2026-10-17T07:22:14.137Z",
+                "elapsedMs": 30.234739999999874,
+                "budgetMs": 8000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 1002,
+                "stderrBytes": 0,
+                "stdoutSha256": "370ed2051f6ca1a4a070743c160f2fd00421a1c1aa9f62e12424699a71f29848",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[\n  {\n    \"AutoRemove\": false,\n    \"Command\": [\n      \"120\"\n    ],\n    \"CreatedAt\": \"15 seconds ago\",\n    \"CIDFile\": \"\",\n    \"Exited\": false,\n    \"ExitedAt\": -62135596800,\n    \"ExitCode\": 0,\n    \"ExposedPorts\": null,\n    \"Id\": \"32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b\",\n    \"Image\": \"mcr.microsoft.com/powershell:latest\",\n    \"ImageID\": \"0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0\",\n    \"IsInfra\": false,\n    \"Labels\": {\n      \"io.monochromatic.toml-attempt\": \"074dc63c-8516-4494-b12c-351a15b3b6f0\",\n      \"org.opencontainers.image.ref.name\": \"ubuntu\",\n      \"org.opencontainers.image.version\": \"22.04\"\n    },\n    \"Mounts\": [],\n    \"Names\": [\n      \"loving_williamson\"\n    ],\n    \"Namespaces\": {\n      \n    },\n    \"Networks\": [],\n    \"Pid\": 410692,\n    \"Pod\": \"\",\n    \"PodName\": \"\",\n    \"Ports\": null,\n    \"Restarts\": 0,\n    \"Size\": null,\n    \"StartedAt\": 1792221718,\n    \"State\": \"running\",\n    \"Status\": \"Up 16 seconds\",\n    \"Created\": 1792221718\n  }\n]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "args": [
+                  "inspect",
+                  "32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc",
+                "startedAt": "2026-10-17T07:22:14.138Z",
+                "finishedAt": "2026-10-17T07:22:14.168Z",
+                "elapsedMs": 30.18007899999975,
+                "budgetMs": 8000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 12428,
+                "stderrBytes": 0,
+                "stdoutSha256": "9b0be513fa67e075f046b438492e410823cc921e7b64679359133bc167289d68",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[\n     {\n          \"Id\": \"32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b\",\n          \"Created\": \"2026-10-17T03:21:58.606291255-04:00\",\n          \"Path\": \"/bin/sleep\",\n          \"Args\": [\n               \"120\"\n          ],\n          \"State\": {\n               \"OciVersion\": \"1.2.1\",\n               \"Status\": \"running\",\n               \"Running\": true,\n               \"Paused\": false,\n               \"Restarting\": false,\n               \"OOMKilled\": false,\n               \"Dead\": false,\n               \"Pid\": 410692,\n               \"ConmonPid\": 410690,\n               \"ExitCode\": 0,\n               \"Error\": \"\",\n               \"StartedAt\": \"2026-10-17T03:21:58.65867919-04:00\",\n               \"FinishedAt\": \"0001-01-01T00:00:00Z\",\n               \"CgroupPath\": \"/user.slice/user-1000.slice/user@1000.service/user.slice/libpod-32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b.scope\",\n               \"CheckpointedAt\": \"0001-01-01T00:00:00Z\",\n               \"RestoredAt\": \"0001-01-01T00:00:00Z\"\n          },\n          \"Image\": \"0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0\",\n          \"ImageDigest\": \"sha256:810c4f1e0c9d23022c3ec18c50a6205ee4b60766f1739d329b2948df1fd7d5b0\",\n          \"ImageName\": \"mcr.microsoft.com/powershell:latest\",\n          \"Rootfs\": \"\",\n          \"Pod\": \"\",\n          \"ResolvConfPath\": \"\",\n          \"HostnamePath\": \"/run/user/1000/containers/overlay-containers/32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b/userdata/hostname\",\n          \"HostsPath\": \"/run/user/1000/containers/overlay-containers/32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b/userdata/hosts\",\n          \"StaticDir\": \"/var/home/user/.local/share/containers/storage/overlay-containers/32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b/userdata\",\n          \"OCIConfigPath\": \"/var/home/user/.local/share/containers/storage/overlay-containers/32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b/userdata/config.json\",\n          \"OCIRuntime\": \"crun\",\n          \"ConmonPidFile\": \"/run/user/1000/containers/overlay-containers/32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b/userdata/conmon.pid\",\n          \"PidFile\": \"/run/user/1000/containers/overlay-containers/32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b/userdata/pidfile\",\n          \"Name\": \"loving_williamson\",\n          \"RestartCount\": 0,\n          \"Driver\": \"overlay\",\n          \"MountLabel\": \"system_u:object_r:container_file_t:s0:c603,c976\",\n          \"ProcessLabel\": \"system_u:system_r:container_t:s0:c603,c976\",\n          \"AppArmorProfile\": \"\",\n          \"EffectiveCaps\": [\n               \"CAP_CHOWN\",\n               \"CAP_DAC_OVERRIDE\",\n               \"CAP_FOWNER\",\n               \"CAP_FSETID\",\n               \"CAP_KILL\",\n               \"CAP_NET_BIND_SERVICE\",\n               \"CAP_SETFCAP\",\n               \"CAP_SETGID\",\n               \"CAP_SETPCAP\",\n               \"CAP_SETUID\",\n               \"CAP_SYS_CHROOT\"\n          ],\n          \"BoundingCaps\": [\n               \"CAP_CHOWN\",\n               \"CAP_DAC_OVERRIDE\",\n               \"CAP_FOWNER\",\n               \"CAP_FSETID\",\n               \"CAP_KILL\",\n               \"CAP_NET_BIND_SERVICE\",\n               \"CAP_SETFCAP\",\n               \"CAP_SETGID\",\n               \"CAP_SETPCAP\",\n               \"CAP_SETUID\",\n               \"CAP_SYS_CHROOT\"\n          ],\n          \"ExecIDs\": [],\n          \"GraphDriver\": {\n               \"Name\": \"overlay\",\n               \"Data\": {\n                    \"LowerDir\": \"/var/home/user/.local/share/containers/storage/overlay/8f5ff742b8cfe7eefa11cb0b3295450362e17c865ff95d1f7020623fb8524808/diff:/var/home/user/.local/share/containers/storage/overlay/5498e8c22f6996f25ef193ee58617d5b37e2a96decf22e72de13c3b34e147591/diff\",\n                    \"MergedDir\": \"/var/home/user/.local/share/containers/storage/overlay/f8957dc57420f939efc6b1d20e77def9a913294e4674c58fce5276e2f89ea67e/merged\",\n                    \"UpperDir\": \"/var/home/user/.local/share/containers/storage/overlay/f8957dc57420f939efc6b1d20e77def9a913294e4674c58fce5276e2f89ea67e/diff\",\n                    \"WorkDir\": \"/var/home/user/.local/share/containers/storage/overlay/f8957dc57420f939efc6b1d20e77def9a913294e4674c58fce5276e2f89ea67e/work\"\n               }\n          },\n          \"Mounts\": [],\n          \"Dependencies\": [],\n          \"NetworkSettings\": {\n               \"EndpointID\": \"\",\n               \"Gateway\": \"\",\n               \"IPAddress\": \"\",\n               \"IPPrefixLen\": 0,\n               \"IPv6Gateway\": \"\",\n               \"GlobalIPv6Address\": \"\",\n               \"GlobalIPv6PrefixLen\": 0,\n               \"MacAddress\": \"\",\n               \"Bridge\": \"\",\n               \"SandboxID\": \"\",\n               \"HairpinMode\": false,\n               \"LinkLocalIPv6Address\": \"\",\n               \"LinkLocalIPv6PrefixLen\": 0,\n               \"Ports\": {},\n               \"SandboxKey\": \"/proc/410692/ns/net\",\n               \"Networks\": {\n                    \"none\": {\n                         \"EndpointID\": \"\",\n                         \"Gateway\": \"\",\n                         \"IPAddress\": \"\",\n                         \"IPPrefixLen\": 0,\n                         \"IPv6Gateway\": \"\",\n                         \"GlobalIPv6Address\": \"\",\n                         \"GlobalIPv6PrefixLen\": 0,\n                         \"MacAddress\": \"\",\n                         \"NetworkID\": \"none\",\n                         \"DriverOpts\": null,\n                         \"IPAMConfig\": null,\n                         \"Links\": null\n                    }\n               }\n          },\n          \"Namespace\": \"\",\n          \"IsInfra\": false,\n          \"IsService\": false,\n          \"KubeExitCodePropagation\": \"invalid\",\n          \"lockNumber\": 0,\n          \"Config\": {\n               \"Hostname\": \"32f95f94b2a2\",\n               \"Domainname\": \"\",\n               \"User\": \"\",\n               \"AttachStdin\": false,\n               \"AttachStdout\": false,\n               \"AttachStderr\": false,\n               \"Tty\": false,\n               \"OpenStdin\": false,\n               \"StdinOnce\": false,\n               \"Env\": [\n                    \"LANG=en_US.UTF-8\",\n                    \"PS_INSTALL_FOLDER=/opt/microsoft/powershell/7\",\n                    \"PSModuleAnalysisCachePath=/var/cache/microsoft/powershell/PSModuleAnalysisCache/ModuleAnalysisCache\",\n                    \"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\",\n                    \"container=podman\",\n                    \"POWERSHELL_DISTRIBUTION_CHANNEL=PSDocker-Ubuntu-22.04\",\n                    \"DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false\",\n                    \"LC_ALL=en_US.UTF-8\",\n                    \"HOME=/root\",\n                    \"HOSTNAME=32f95f94b2a2\"\n               ],\n               \"Cmd\": [\n                    \"120\"\n               ],\n               \"Image\": \"mcr.microsoft.com/powershell:latest\",\n               \"Volumes\": null,\n               \"WorkingDir\": \"/\",\n               \"Entrypoint\": [\n                    \"/bin/sleep\"\n               ],\n               \"OnBuild\": null,\n               \"Labels\": {\n                    \"io.monochromatic.toml-attempt\": \"074dc63c-8516-4494-b12c-351a15b3b6f0\",\n                    \"org.opencontainers.image.ref.name\": \"ubuntu\",\n                    \"org.opencontainers.image.version\": \"22.04\"\n               },\n               \"Annotations\": {\n                    \"io.container.manager\": \"libpod\",\n                    \"io.podman.annotations.pids-limit\": \"64\",\n                    \"org.opencontainers.image.stopSignal\": \"15\",\n                    \"org.systemd.property.KillSignal\": \"15\",\n                    \"org.systemd.property.TimeoutStopUSec\": \"uint64 10000000\"\n               },\n               \"StopSignal\": \"SIGTERM\",\n               \"HealthcheckOnFailureAction\": \"none\",\n               \"HealthLogDestination\": \"local\",\n               \"HealthcheckMaxLogCount\": 5,\n               \"HealthcheckMaxLogSize\": 500,\n               \"CreateCommand\": [\n                    \"/usr/bin/podman\",\n                    \"run\",\n                    \"--label\",\n                    \"io.monochromatic.toml-attempt=074dc63c-8516-4494-b12c-351a15b3b6f0\",\n                    \"--detach\",\n                    \"--pull=never\",\n                    \"--network=none\",\n                    \"--memory=2g\",\n                    \"--cpus=2\",\n                    \"--pids-limit=64\",\n                    \"--entrypoint=/bin/sleep\",\n                    \"0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0\",\n                    \"120\"\n               ],\n               \"Umask\": \"0022\",\n               \"Timeout\": 0,\n               \"StopTimeout\": 10,\n               \"Passwd\": true,\n               \"sdNotifyMode\": \"container\"\n          },\n          \"HostConfig\": {\n               \"Binds\": [],\n               \"CgroupManager\": \"systemd\",\n               \"CgroupMode\": \"private\",\n               \"ContainerIDFile\": \"\",\n               \"LogConfig\": {\n                    \"Type\": \"k8s-file\",\n                    \"Config\": null,\n                    \"Path\": \"/var/home/user/.local/share/containers/storage/overlay-containers/32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b/userdata/ctr.log\",\n                    \"Tag\": \"\",\n                    \"Size\": \"-1B\"\n               },\n               \"NetworkMode\": \"none\",\n               \"PortBindings\": {},\n               \"RestartPolicy\": {\n                    \"Name\": \"no\",\n                    \"MaximumRetryCount\": 0\n               },\n               \"AutoRemove\": false,\n               \"AutoRemoveImage\": false,\n               \"Annotations\": {\n                    \"io.container.manager\": \"libpod\",\n                    \"io.podman.annotations.pids-limit\": \"64\",\n                    \"org.opencontainers.image.stopSignal\": \"15\",\n                    \"org.systemd.property.KillSignal\": \"15\",\n                    \"org.systemd.property.TimeoutStopUSec\": \"uint64 10000000\"\n               },\n               \"VolumeDriver\": \"\",\n               \"VolumesFrom\": null,\n               \"CapAdd\": [],\n               \"CapDrop\": [],\n               \"Dns\": [],\n               \"DnsOptions\": [],\n               \"DnsSearch\": [],\n               \"ExtraHosts\": [],\n               \"HostsFile\": \"\",\n               \"GroupAdd\": [],\n               \"IpcMode\": \"shareable\",\n               \"Cgroup\": \"\",\n               \"Cgroups\": \"default\",\n               \"Links\": null,\n               \"OomScoreAdj\": 0,\n               \"PidMode\": \"private\",\n               \"Privileged\": false,\n               \"PublishAllPorts\": false,\n               \"ReadonlyRootfs\": false,\n               \"SecurityOpt\": [],\n               \"Tmpfs\": {},\n               \"UTSMode\": \"private\",\n               \"UsernsMode\": \"\",\n               \"ShmSize\": 65536000,\n               \"Runtime\": \"oci\",\n               \"ConsoleSize\": [\n                    0,\n                    0\n               ],\n               \"Isolation\": \"\",\n               \"CpuShares\": 0,\n               \"Memory\": 2147483648,\n               \"NanoCpus\": 2000000000,\n               \"CgroupParent\": \"user.slice\",\n               \"BlkioWeight\": 0,\n               \"BlkioWeightDevice\": null,\n               \"BlkioDeviceReadBps\": null,\n               \"BlkioDeviceWriteBps\": null,\n               \"BlkioDeviceReadIOps\": null,\n               \"BlkioDeviceWriteIOps\": null,\n               \"CpuPeriod\": 100000,\n               \"CpuQuota\": 200000,\n               \"CpuRealtimePeriod\": 0,\n               \"CpuRealtimeRuntime\": 0,\n               \"CpusetCpus\": \"\",\n               \"CpusetMems\": \"\",\n               \"Devices\": [],\n               \"DiskQuota\": 0,\n               \"KernelMemory\": 0,\n               \"MemoryReservation\": 0,\n               \"MemorySwap\": 4294967296,\n               \"MemorySwappiness\": -1,\n               \"OomKillDisable\": false,\n               \"PidsLimit\": 64,\n               \"Ulimits\": [\n                    {\n                         \"Name\": \"RLIMIT_NOFILE\",\n                         \"Soft\": 1048576,\n                         \"Hard\": 1048576\n                    },\n                    {\n                         \"Name\": \"RLIMIT_NPROC\",\n                         \"Soft\": 12288,\n                         \"Hard\": 12288\n                    }\n               ],\n               \"CpuCount\": 0,\n               \"CpuPercent\": 0,\n               \"IOMaximumIOps\": 0,\n               \"IOMaximumBandwidth\": 0,\n               \"CgroupConf\": null\n          },\n          \"UseImageHosts\": false,\n          \"UseImageHostname\": false\n     }\n]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "args": [
+                  "kill",
+                  "--signal=SIGKILL",
+                  "32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc",
+                "startedAt": "2026-10-17T07:22:14.168Z",
+                "finishedAt": "2026-10-17T07:22:14.236Z",
+                "elapsedMs": 67.74715099999958,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 65,
+                "stderrBytes": 0,
+                "stdoutSha256": "c78d479aab4e92624db704bd99a95624cd4fe02e83fc0764402e45fbeeaf8b08",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "args": [
+                  "rm",
+                  "--force",
+                  "--time=0",
+                  "--ignore",
+                  "32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc",
+                "startedAt": "2026-10-17T07:22:14.236Z",
+                "finishedAt": "2026-10-17T07:22:14.319Z",
+                "elapsedMs": 83.05294800000047,
+                "budgetMs": 60000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 65,
+                "stderrBytes": 0,
+                "stdoutSha256": "c78d479aab4e92624db704bd99a95624cd4fe02e83fc0764402e45fbeeaf8b08",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "args": [
+                  "ps",
+                  "--all",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=074dc63c-8516-4494-b12c-351a15b3b6f0",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc",
+                "startedAt": "2026-10-17T07:22:14.331Z",
+                "finishedAt": "2026-10-17T07:22:14.360Z",
+                "elapsedMs": 28.716465999999855,
+                "budgetMs": 8000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 3,
+                "stderrBytes": 0,
+                "stdoutSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "[]\n",
+                "stderr": ""
+              },
+              {
+                "executable": "/usr/bin/podman",
+                "args": [
+                  "events",
+                  "--since",
+                  "2026-10-17T07:21:58.507Z",
+                  "--until",
+                  "2026-10-17T07:22:14.360Z",
+                  "--stream=false",
+                  "--filter",
+                  "label=io.monochromatic.toml-attempt=074dc63c-8516-4494-b12c-351a15b3b6f0",
+                  "--format",
+                  "json"
+                ],
+                "cwd": "/home/user/temp/agent/depot-complete-accounting-20261016/toml-route-controls-Ey8Ntc",
+                "startedAt": "2026-10-17T07:22:14.360Z",
+                "finishedAt": "2026-10-17T07:22:14.420Z",
+                "elapsedMs": 60.42761900000005,
+                "budgetMs": 8000,
+                "status": 0,
+                "signal": null,
+                "error": null,
+                "stdoutBytes": 2891,
+                "stderrBytes": 0,
+                "stdoutSha256": "c06c038b440c163610871739816a5e3d05195f25860febc163b47bf1c7bc8be2",
+                "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "stdout": "{\"ID\":\"32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b\",\"Image\":\"mcr.microsoft.com/powershell:latest\",\"Name\":\"loving_williamson\",\"Status\":\"create\",\"time\":1792221718,\"timeNano\":1792221718619575031,\"Type\":\"container\",\"Attributes\":{\"io.monochromatic.toml-attempt\":\"074dc63c-8516-4494-b12c-351a15b3b6f0\",\"org.opencontainers.image.ref.name\":\"ubuntu\",\"org.opencontainers.image.version\":\"22.04\"}}\n{\"ID\":\"32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b\",\"Image\":\"mcr.microsoft.com/powershell:latest\",\"Name\":\"loving_williamson\",\"Status\":\"init\",\"time\":1792221718,\"timeNano\":1792221718656944569,\"Type\":\"container\",\"Attributes\":{\"io.monochromatic.toml-attempt\":\"074dc63c-8516-4494-b12c-351a15b3b6f0\",\"org.opencontainers.image.ref.name\":\"ubuntu\",\"org.opencontainers.image.version\":\"22.04\"}}\n{\"ID\":\"32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b\",\"Image\":\"mcr.microsoft.com/powershell:latest\",\"Name\":\"loving_williamson\",\"Status\":\"start\",\"time\":1792221718,\"timeNano\":1792221718658681030,\"Type\":\"container\",\"Attributes\":{\"io.monochromatic.toml-attempt\":\"074dc63c-8516-4494-b12c-351a15b3b6f0\",\"org.opencontainers.image.ref.name\":\"ubuntu\",\"org.opencontainers.image.version\":\"22.04\"}}\n{\"ID\":\"32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b\",\"Image\":\"mcr.microsoft.com/powershell:latest\",\"Name\":\"loving_williamson\",\"Status\":\"kill\",\"time\":1792221734,\"timeNano\":1792221734198694550,\"Type\":\"container\",\"Attributes\":{\"io.monochromatic.toml-attempt\":\"074dc63c-8516-4494-b12c-351a15b3b6f0\",\"org.opencontainers.image.ref.name\":\"ubuntu\",\"org.opencontainers.image.version\":\"22.04\"}}\n{\"ContainerExitCode\":137,\"ID\":\"32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b\",\"Image\":\"mcr.microsoft.com/powershell:latest\",\"Name\":\"loving_williamson\",\"Status\":\"died\",\"time\":1792221734,\"timeNano\":1792221734227870050,\"Type\":\"container\",\"Attributes\":{\"io.monochromatic.toml-attempt\":\"074dc63c-8516-4494-b12c-351a15b3b6f0\",\"org.opencontainers.image.ref.name\":\"ubuntu\",\"org.opencontainers.image.version\":\"22.04\"}}\n{\"ID\":\"32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b\",\"Image\":\"mcr.microsoft.com/powershell:latest\",\"Name\":\"loving_williamson\",\"Status\":\"cleanup\",\"time\":1792221734,\"timeNano\":1792221734303984705,\"Type\":\"container\",\"Attributes\":{\"io.monochromatic.toml-attempt\":\"074dc63c-8516-4494-b12c-351a15b3b6f0\",\"org.opencontainers.image.ref.name\":\"ubuntu\",\"org.opencontainers.image.version\":\"22.04\"}}\n{\"ContainerExitCode\":137,\"ID\":\"32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b\",\"Image\":\"mcr.microsoft.com/powershell:latest\",\"Name\":\"loving_williamson\",\"Status\":\"remove\",\"time\":1792221734,\"timeNano\":1792221734317040385,\"Type\":\"container\",\"Attributes\":{\"io.monochromatic.toml-attempt\":\"074dc63c-8516-4494-b12c-351a15b3b6f0\",\"org.opencontainers.image.ref.name\":\"ubuntu\",\"org.opencontainers.image.version\":\"22.04\"}}\n",
+                "stderr": ""
+              }
+            ]
+          },
+          "pids": {
+            "pid": 410648,
+            "child": 410655,
+            "container": "32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b"
+          },
+          "observed": {
+            "id": "32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b",
+            "name": "loving_williamson",
+            "image": "0feac0f6bbe6480c2f7fa5c93d8b9e9d14d3219ed83d98cd66bf7242735c90b0",
+            "created": "2026-10-17T03:21:58.606291255-04:00",
+            "state": {
+              "OciVersion": "1.2.1",
+              "Status": "running",
+              "Running": true,
+              "Paused": false,
+              "Restarting": false,
+              "OOMKilled": false,
+              "Dead": false,
+              "Pid": 410692,
+              "ConmonPid": 410690,
+              "ExitCode": 0,
+              "Error": "",
+              "StartedAt": "2026-10-17T03:21:58.65867919-04:00",
+              "FinishedAt": "0001-01-01T00:00:00Z",
+              "CgroupPath": "/user.slice/user-1000.slice/user@1000.service/user.slice/libpod-32f95f94b2a27492a14cbd0a4a1dcfbe8a81feba93a6cf22c59da8ee46194a5b.scope",
+              "CheckpointedAt": "0001-01-01T00:00:00Z",
+              "RestoredAt": "0001-01-01T00:00:00Z"
+            },
+            "bounds": {
+              "memory": 2147483648,
+              "cpuQuota": 200000,
+              "cpuPeriod": 100000,
+              "nanoCpus": 2000000000,
+              "pidsLimit": 64
+            }
+          },
+          "eventsSha256": "c06c038b440c163610871739816a5e3d05195f25860febc163b47bf1c7bc8be2"
+        },
+        "state": "Actual bounded repeat dispatched; source command and eight-second metadata budget unchanged. Await terminal exact operation receipts before any remedy or full retry."
+      }
+    },
+    "preCommonBindingRoute": {
+      "branch": "trial/depot-toml-continuation-20261017",
+      "harnessRevision": "640a576ade81c4edfee6a603543a7fbd18faa46b",
+      "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+      "workflow": ".depot/workflows/depot-complete-toml-bounded.yml",
+      "workflowSha256": "f24f5f1443a5d6b68fb885920214750c400f570f3a654565421a82ed098d6f26",
+      "taskFileSha256": "50670f65a63b66aa677d62cf53a3dae6d29fbb2c3676970de4be92ea51932ed9",
+      "manifestSha256": "2abc0724dccaf5ac15abe587c2ef9bad8c1ed23d5fa1404f59466f7cc3752d62",
+      "inputs": {
+        "scope": [
+          "complete",
+          "mutations-only"
+        ],
+        "cohort_id": "Shared request identifier",
+        "manifest_sha256": "SHA-256 of the frozen request manifest",
+        "requested_at": "Shared ISO8601 request time"
+      },
+      "jobs": {
+        "toml": "Original core package checks; complete scope only",
+        "generated": "Original generated-file consumer; complete scope only",
+        "container": "Independent completed-historically file-enforcer container gate; complete scope only",
+        "mutations": [
+          "package.module.toml-edit.test.mutation",
+          "package.dev-script.file-enforcer.test.mutation"
+        ]
+      },
+      "limits": {
+        "runner": "16x64",
+        "consumerMilliseconds": 3600000,
+        "jobMinutes": 90,
+        "terminationGraceMilliseconds": 10000,
+        "metadataOperationMilliseconds": 8000,
+        "shutdownOperationMilliseconds": 60000,
+        "sourceMutationContainerDefaults": {
+          "memory": "2g",
+          "cpus": 2,
+          "pids": 512,
+          "sessionSeconds": 1800
+        }
+      },
+      "sourceCommandsUnchanged": true,
+      "overlays": [
+        "Rootful bounded-container identity adapter retained",
+        "Label-only Podman correlation",
+        "Private TMPDIR for raw shard manifest/report retention",
+        "Explicit single selected check and prerequisite closure"
+      ],
+      "finalDispatch": "Held",
+      "nativeReportRetention": "Copies every available default mutation-report.json outside source and records hash, baseline presence, mtime, and producedDuringInvocation. Stale reports remain explicitly marked."
+    },
+    "commonManifestGuard": {
+      "prepared": true,
+      "finalCanonicalAcceptance": false,
+      "evidence": "doc/audit/depot-common-manifest-route-guards-2026-10-17.evidence.json"
     }
   },
   "sourceDiagnostics": {
@@ -270334,6 +272199,21 @@
       "state": "OPEN",
       "title": "TOML CI timeout loses active mutation evidence and censors an independent gate",
       "url": "https://github.com/Aquaticats/Monochromatic/issues/1113"
+    },
+    {
+      "body": "## Actual source producer failure\n\nAt immutable source `525d2e09f8168a3bdd7e513e26d4c80b363123e5`, the unchanged `chainMethodReplacements` function emits non-string replacement text for inherited Object prototype names. A direct source consumer on Node `v26.12.0` uses structurally valid call/member AST nodes and measures:\n\n- `startsWith`: one string replacement, `endsWith` (positive control).\n- `unmappedMethod`: no replacement (ordinary unmapped control).\n- `toString`, `constructor`, and `hasOwnProperty`: one function-valued replacement each.\n\n`METHOD_SWAPS` is a plain object. `METHOD_SWAPS[name]` reads inherited prototype properties, and the `!== undefined` check accepts those functions. This violates the declared string replacement contract in `package/cli/mutation-test/src/engine/types.ts`. The same lookup remains present in current main source. No application source edit is included.\n\n## Observed serialized consequence\n\nThe full native report from TOML run `p6vm5s00w6` contains these three `method` candidates with original `toString` and no serialized `replacement` property:\n\n- `583eb11824f58d9f`: `src/basic-escape.ts:76:14`.\n- `21d87c25edc6d4b7`: `src/conformance/decode-leaf.ts:144:9`.\n- `e6fbbc25cf51fa14`: `src/values.ts:133:17`.\n\nTheir description includes `swapped .toString with .function toString() { [native code] }`. JSON serialization omits a function-valued property. The complete native report is retained byte-for-byte in `doc/audit/depot-toml-mutation-native-2026-10-17.evidence.json.gz`, with raw SHA256 `e3b1023242fb838e30ad22ce1aa0c593f412401be141901594af34c484177bce`.\n\nAll cloud shard attempts failed copying into `/work` before mutant assertions. Their `runtimeError` statuses are infrastructure-derived; this report does not attribute those cloud failures to the invalid replacement. The direct source operator consumer proves the independent producer defect.\n\n## Acceptance\n\n- Only declared method-swap entries emit replacement strings.\n- Inherited Object names remain outside the swap family.\n- Native mutant serialization retains a valid string replacement for every emitted candidate.\n- Positive mapped-method and unmapped-method controls continue to exercise the boundary.\n- Preserve the historical three malformed candidates and the separate container infrastructure failure.\n\n## Duplicate search\n\nAll-state current-repository searches covered `mutation toString`, `mutation prototype`, and `mutation replacement`. No matching operator-lookup incident was found. Issues `#1116` and `#1117` concern independent container prerequisites.\n",
+      "labels": [
+        {
+          "id": "LA_kwDOKlVnec8AAAACjIzCDw",
+          "name": "needs-triage",
+          "description": "Maintainer needs to evaluate",
+          "color": "fbca04"
+        }
+      ],
+      "number": 1118,
+      "state": "OPEN",
+      "title": "Mutation method lookup emits inherited Object functions as replacement text",
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1118"
     }
   ],
   "repeatIssueComments": [
@@ -270367,5 +272247,322 @@
     "characters": 153,
     "words": 24,
     "state": "Proposed only; existing FCH handle retained"
+  },
+  "sourceMethodLookupIncident": {
+    "probe": {
+      "observedAt": "2026-10-17T07:16:44.418Z",
+      "sourceRevision": "525d2e09f8168a3bdd7e513e26d4c80b363123e5",
+      "sourcePath": "package/cli/mutation-test/src/engine/operator/chain-method.ts",
+      "sourceSha256": "996fe512a45b069efaf7a4b783159edfdb0a37c8a77f756479e623a25266833d",
+      "node": "v26.12.0",
+      "rows": [
+        {
+          "name": "startsWith",
+          "source": "value.startsWith()",
+          "replacements": [
+            {
+              "start": 6,
+              "end": 16,
+              "text": "endsWith",
+              "operator": "method",
+              "description": "swapped .startsWith with .endsWith",
+              "textType": "string",
+              "textString": "endsWith",
+              "serialized": "{\"start\":6,\"end\":16,\"text\":\"endsWith\",\"operator\":\"method\",\"description\":\"swapped .startsWith with .endsWith\"}"
+            }
+          ]
+        },
+        {
+          "name": "unmappedMethod",
+          "source": "value.unmappedMethod()",
+          "replacements": []
+        },
+        {
+          "name": "toString",
+          "source": "value.toString()",
+          "replacements": [
+            {
+              "start": 6,
+              "end": 14,
+              "operator": "method",
+              "description": "swapped .toString with .function toString() { [native code] }",
+              "textType": "function",
+              "textString": "function toString() { [native code] }",
+              "serialized": "{\"start\":6,\"end\":14,\"operator\":\"method\",\"description\":\"swapped .toString with .function toString() { [native code] }\"}"
+            }
+          ]
+        },
+        {
+          "name": "constructor",
+          "source": "value.constructor()",
+          "replacements": [
+            {
+              "start": 6,
+              "end": 17,
+              "operator": "method",
+              "description": "swapped .constructor with .function Object() { [native code] }",
+              "textType": "function",
+              "textString": "function Object() { [native code] }",
+              "serialized": "{\"start\":6,\"end\":17,\"operator\":\"method\",\"description\":\"swapped .constructor with .function Object() { [native code] }\"}"
+            }
+          ]
+        },
+        {
+          "name": "hasOwnProperty",
+          "source": "value.hasOwnProperty()",
+          "replacements": [
+            {
+              "start": 6,
+              "end": 20,
+              "operator": "method",
+              "description": "swapped .hasOwnProperty with .function hasOwnProperty() { [native code] }",
+              "textType": "function",
+              "textString": "function hasOwnProperty() { [native code] }",
+              "serialized": "{\"start\":6,\"end\":20,\"operator\":\"method\",\"description\":\"swapped .hasOwnProperty with .function hasOwnProperty() { [native code] }\"}"
+            }
+          ]
+        }
+      ],
+      "actualCloudSerializedMissingReplacements": [
+        {
+          "id": "583eb11824f58d9f",
+          "file": "src/basic-escape.ts",
+          "line": 76,
+          "column": 14,
+          "operator": "method",
+          "original": "toString",
+          "description": "swapped .toString with .function toString() { [native code] }",
+          "status": "runtimeError",
+          "position": 1,
+          "rerunCount": 6,
+          "confirmed": true
+        },
+        {
+          "id": "21d87c25edc6d4b7",
+          "file": "src/conformance/decode-leaf.ts",
+          "line": 144,
+          "column": 9,
+          "operator": "method",
+          "original": "toString",
+          "description": "swapped .toString with .function toString() { [native code] }",
+          "status": "runtimeError",
+          "position": 1,
+          "rerunCount": 6,
+          "confirmed": true
+        },
+        {
+          "id": "e6fbbc25cf51fa14",
+          "file": "src/values.ts",
+          "line": 133,
+          "column": 17,
+          "operator": "method",
+          "original": "toString",
+          "description": "swapped .toString with .function toString() { [native code] }",
+          "status": "runtimeError",
+          "position": 1,
+          "rerunCount": 6,
+          "confirmed": true
+        }
+      ],
+      "scope": "Direct unchanged source operator consumer with structurally valid AST nodes. Cloud report independently contains three toString candidates without a serialized replacement. The cloud shard copy infrastructure failed before these candidates could execute; no cloud mutant assertion failure is attributed to this lookup defect."
+    },
+    "duplicateSearch": {
+      "searchedAt": "2026-10-17T07:17:26.190Z",
+      "searches": [
+        {
+          "query": "\"mutation\" \"toString\"",
+          "results": [
+            {
+              "number": 584,
+              "state": "OPEN",
+              "title": "prefer-error-is-error: is the lint scope right? full legacy Error detection inventory",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/584"
+            },
+            {
+              "number": 422,
+              "state": "CLOSED",
+              "title": "prefer-readonly-parameter-types: 47 findings say \"or accept it\" and acceptance cannot be expressed",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/422"
+            }
+          ]
+        },
+        {
+          "query": "\"mutation\" \"prototype\"",
+          "results": [
+            {
+              "number": 991,
+              "state": "OPEN",
+              "title": "Test suites leave 310 localhost/* images and 467 dangling images in rootless podman storage",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/991"
+            },
+            {
+              "number": 464,
+              "state": "OPEN",
+              "title": "design(prefer-readonly): decide mutable-identity escape enforcement",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/464"
+            },
+            {
+              "number": 423,
+              "state": "OPEN",
+              "title": "Enable extracted readonly effect rules after workspace remediation",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/423"
+            },
+            {
+              "number": 646,
+              "state": "OPEN",
+              "title": "refactor(*): internal duplication inside the fuzz sidecars, including two names for one enumerability test (26 clusters)",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/646"
+            },
+            {
+              "number": 427,
+              "state": "OPEN",
+              "title": "prefer-readonly-parameter-types: foreign provenance is lost through map callbacks, and three related defects",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/427"
+            },
+            {
+              "number": 584,
+              "state": "OPEN",
+              "title": "prefer-error-is-error: is the lint scope right? full legacy Error detection inventory",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/584"
+            },
+            {
+              "number": 677,
+              "state": "OPEN",
+              "title": "Agent workflow: prevent expanding verification queues and invented delivery authorization barriers",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/677"
+            },
+            {
+              "number": 422,
+              "state": "CLOSED",
+              "title": "prefer-readonly-parameter-types: 47 findings say \"or accept it\" and acceptance cannot be expressed",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/422"
+            },
+            {
+              "number": 252,
+              "state": "CLOSED",
+              "title": "toml-edit: repeated path-create set and implicit-parent delete leave reads and serialization inconsistent",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/252"
+            },
+            {
+              "number": 424,
+              "state": "CLOSED",
+              "title": "prefer-readonly-parameter-type: diagnostics point at the consumer when the fix is at the producer",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/424"
+            },
+            {
+              "number": 415,
+              "state": "CLOSED",
+              "title": "prefer-readonly-parameter-types: decide the trust baseline for collection dispatch, species and iteration",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/415"
+            }
+          ]
+        },
+        {
+          "query": "\"mutation\" \"replacement\"",
+          "results": [
+            {
+              "number": 423,
+              "state": "OPEN",
+              "title": "Enable extracted readonly effect rules after workspace remediation",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/423"
+            },
+            {
+              "number": 509,
+              "state": "OPEN",
+              "title": "module-logger: unreviewed callback-observation workaround for throwing loggers",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/509"
+            },
+            {
+              "number": 1116,
+              "state": "CLOSED",
+              "title": "Depot mutation user-namespace adapter fails unmounting /sys/kernel/debug",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/1116"
+            },
+            {
+              "number": 1117,
+              "state": "CLOSED",
+              "title": "Depot nonroot mutation adapter cannot read baked pnpm workspace state",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/1117"
+            },
+            {
+              "number": 455,
+              "state": "OPEN",
+              "title": "feat(config-oxlint): enforce functional semantics instead of functional-looking syntax",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/455"
+            },
+            {
+              "number": 677,
+              "state": "OPEN",
+              "title": "Agent workflow: prevent expanding verification queues and invented delivery authorization barriers",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/677"
+            },
+            {
+              "number": 617,
+              "state": "OPEN",
+              "title": "refactor(*): one shared ASCII character-class and text-scan module (16 clusters, 70 call sites)",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/617"
+            },
+            {
+              "number": 427,
+              "state": "OPEN",
+              "title": "prefer-readonly-parameter-types: foreign provenance is lost through map callbacks, and three related defects",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/427"
+            },
+            {
+              "number": 658,
+              "state": "OPEN",
+              "title": "chore(slopo): propose 30 structural-idiom dismissals; hold 15 pending the i18n factory in #639 and the two-sided-habit policy",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/658"
+            },
+            {
+              "number": 422,
+              "state": "CLOSED",
+              "title": "prefer-readonly-parameter-types: 47 findings say \"or accept it\" and acceptance cannot be expressed",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/422"
+            },
+            {
+              "number": 420,
+              "state": "CLOSED",
+              "title": "fix(oxlint-plugin-prefer-readonly-parameter-type): report the outgoing overlay so an unsaved buffer cannot serve a stale decode",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/420"
+            },
+            {
+              "number": 247,
+              "state": "CLOSED",
+              "title": "Replace Stryker with our own container-native mutation testing framework (no plan drafted yet)",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/247"
+            },
+            {
+              "number": 346,
+              "state": "CLOSED",
+              "title": "feat(cli-git): add recursive snapshot trust and cascading revocation",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/346"
+            },
+            {
+              "number": 424,
+              "state": "CLOSED",
+              "title": "prefer-readonly-parameter-type: diagnostics point at the consumer when the fix is at the producer",
+              "url": "https://github.com/Aquaticats/Monochromatic/issues/424"
+            }
+          ]
+        }
+      ],
+      "matchingIncidentFound": false
+    },
+    "issue": {
+      "body": "## Actual source producer failure\n\nAt immutable source `525d2e09f8168a3bdd7e513e26d4c80b363123e5`, the unchanged `chainMethodReplacements` function emits non-string replacement text for inherited Object prototype names. A direct source consumer on Node `v26.12.0` uses structurally valid call/member AST nodes and measures:\n\n- `startsWith`: one string replacement, `endsWith` (positive control).\n- `unmappedMethod`: no replacement (ordinary unmapped control).\n- `toString`, `constructor`, and `hasOwnProperty`: one function-valued replacement each.\n\n`METHOD_SWAPS` is a plain object. `METHOD_SWAPS[name]` reads inherited prototype properties, and the `!== undefined` check accepts those functions. This violates the declared string replacement contract in `package/cli/mutation-test/src/engine/types.ts`. The same lookup remains present in current main source. No application source edit is included.\n\n## Observed serialized consequence\n\nThe full native report from TOML run `p6vm5s00w6` contains these three `method` candidates with original `toString` and no serialized `replacement` property:\n\n- `583eb11824f58d9f`: `src/basic-escape.ts:76:14`.\n- `21d87c25edc6d4b7`: `src/conformance/decode-leaf.ts:144:9`.\n- `e6fbbc25cf51fa14`: `src/values.ts:133:17`.\n\nTheir description includes `swapped .toString with .function toString() { [native code] }`. JSON serialization omits a function-valued property. The complete native report is retained byte-for-byte in `doc/audit/depot-toml-mutation-native-2026-10-17.evidence.json.gz`, with raw SHA256 `e3b1023242fb838e30ad22ce1aa0c593f412401be141901594af34c484177bce`.\n\nAll cloud shard attempts failed copying into `/work` before mutant assertions. Their `runtimeError` statuses are infrastructure-derived; this report does not attribute those cloud failures to the invalid replacement. The direct source operator consumer proves the independent producer defect.\n\n## Acceptance\n\n- Only declared method-swap entries emit replacement strings.\n- Inherited Object names remain outside the swap family.\n- Native mutant serialization retains a valid string replacement for every emitted candidate.\n- Positive mapped-method and unmapped-method controls continue to exercise the boundary.\n- Preserve the historical three malformed candidates and the separate container infrastructure failure.\n\n## Duplicate search\n\nAll-state current-repository searches covered `mutation toString`, `mutation prototype`, and `mutation replacement`. No matching operator-lookup incident was found. Issues `#1116` and `#1117` concern independent container prerequisites.\n",
+      "labels": [
+        {
+          "id": "LA_kwDOKlVnec8AAAACjIzCDw",
+          "name": "needs-triage",
+          "description": "Maintainer needs to evaluate",
+          "color": "fbca04"
+        }
+      ],
+      "number": 1118,
+      "state": "OPEN",
+      "title": "Mutation method lookup emits inherited Object functions as replacement text",
+      "url": "https://github.com/Aquaticats/Monochromatic/issues/1118"
+    }
   }
 }

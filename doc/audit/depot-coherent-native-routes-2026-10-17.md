@@ -160,3 +160,18 @@ Earlier prepared native,
 Windows,
 and Alpine hashes remain in the evidence revision history.
 Their consumer workflow command bodies are unchanged.
+
+## Canonical manifest guard preparation
+
+The historical route hashes remain recorded in the route sections.
+As of 2026-10-17,
+the current clean pushed references and workflow byte hashes are in the
+[common-manifest guard audit](depot-common-manifest-route-guards-2026-10-17.md).
+The actual guards accepted 20 allowed and rejected 110 invalid disposable invocations.
+Authenticated base64 transport was byte-verified against an existing audit;
+the absent canonical API response was stubbed only for disposable semantic controls.
+All provisional case manifests still have `completeGraph: false` and are rejected.
+Root must provide complete frozen case bytes,
+publish the canonical manifest with resulting harness hashes,
+and verify real canonical reads before final dispatch.
+No final cohort was dispatched.

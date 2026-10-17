@@ -253,11 +253,73 @@ which has one mutant in the retained full inventory.
 It first emits an actual dry-run enumeration,
 then runs the full unit suite with one container and shard size one.
 The consumer budget is `900000` milliseconds in a `25`-minute job.
-Its terminal collector is active;
-no successful TOML consumer result is claimed yet.
+Its terminal evidence is now reconciled in the bounded consumer outcome section.
 The exact request,
 inputs,
 receipt,
 controls,
 and additive observed-proof comment on issue `#1047` are retained.
 Final coherent dispatch remains held.
+
+## Bounded consumer outcome and metadata receipt repeat
+
+Pilot `0j8zhbn9n0`, workflow `qrmzdmwf4q`, job `kvg78klbhn`, attempt `4m0vbp3309`,
+completed its original source command with exit zero.
+The actual baseline was green over the retained 37-file full-suite selection.
+The only mutant, `9cd1056a095eaea1`, reached source status `compileError` at `src/toml-get-comments.ts:28:26`.
+This is a terminal compilation result with no mutant assertion execution credit.
+The native report has no infrastructure errors or unrun identities.
+Its 650 bytes have SHA-256 `692e5dd934f799518de76762ee34a0f22558a66a2832188cf5b074dfc37d7825`.
+The retained shard baseline records tests at `4237.252068` milliseconds and type checking at `271.928494` milliseconds.
+The mutant records `499.24852199999987` milliseconds.
+
+Provider status remains failed because the wrapper's metadata operation asserted `null !== 0`.
+The old wrapper did not retain the underlying command, signal, error code, or output byte counts;
+its exact cause remains unproved.
+Scoped cleanup passed with no owned process group or labeled container remaining.
+The wrapper observed `59945.775575` milliseconds.
+The provider interval was `167222` milliseconds at `16x64`,
+or `2675552` allocated vCPU-milliseconds.
+Artifact `01a148b3-bf92-7122-bdc0-926d81d5263d` is 44242 bytes,
+SHA-256 `fc3178d5e8528b08884098f65f88db305aa41bd202b08369325769135fee6fb9`.
+All 19 members are individually hashed.
+The six periodic metadata samples missed the live source container;
+declared inner resource flags are not presented as runtime-inspected limits.
+
+The actual owned metadata bind preserved 29934 source bytes,
+SHA-256 `e82c7a5e4404440e121fffb742f4cde0c444843a3f69dd74707e55789cab66a7`,
+changing ownership from root to source UID/GID `1001:1001` with mode `0600` and a read-only bind.
+The source image remained unchanged.
+This green baseline crosses the original source-copy and baked-metadata boundaries;
+it does not complete the full mutation campaign or erase the historical infrastructure results.
+
+Harness `0f8ad795aa92d3beb83e3bfa4e4aa54f1bea06f8` now writes each exact Podman operation
+to an incremental JSONL receipt before assertions,
+including signal, error code, complete arguments, timings, output byte counts, and hashes.
+A disposable eight-second timeout control observed `SIGKILL`, `ETIMEDOUT`,
+and 24 bytes in each output stream.
+That control proves receipt coverage and does not diagnose the historical cloud operation.
+Actual repeat `mj128hqwv0` uses the same source command and eight-second metadata budget.
+Its exact request and inputs are retained;
+terminal collection must precede any remedy or full retry.
+
+## Independent mutation producer failure
+
+Issue [#1118](https://github.com/Aquaticats/Monochromatic/issues/1118)
+records a separate source operator lookup defect.
+The unchanged source consumer emits string `endsWith` for mapped `startsWith`,
+nothing for an unmapped name,
+and function-valued replacements for inherited `toString`, `constructor`, and `hasOwnProperty`.
+The plain-object lookup at `package/cli/mutation-test/src/engine/operator/chain-method.ts:173`
+accepts inherited Object functions.
+Three original cloud candidates consequently omit `replacement` in JSON.
+Their identities, direct source probe, duplicate searches, and re-fetched issue body are retained.
+This producer defect did not cause the earlier source-copy failures.
+No application source change is included.
+
+## Canonical final route binding
+
+The [common-manifest guard audit](depot-common-manifest-route-guards-2026-10-17.md)
+retains the current clean pushed route references and 20 accepted plus 110 rejected controls.
+The case manifests remain provisional and correctly rejected for final acceptance.
+Final dispatch waits for root's complete frozen case bytes and the actual canonical API read.

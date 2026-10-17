@@ -118,8 +118,40 @@ The combined provider interval is `2834043` milliseconds at `16x64`.
 The full native report is retained as compressed byte-identical evidence in
 [the terminal audit](../audit/depot-toml-reconciliation-2026-10-17.md#terminal-toml-infrastructure-outcome).
 These infrastructure-derived statuses do not establish source mutation completion or passing tests.
-The complete current container adapter and a bounded actual TOML consumer pilot remain required.
+The complete current container adapter was exercised by the bounded actual TOML pilot described in the consumer recovery section.
 
 Pilot `0j8zhbn9n0` now exercises that complete adapter through the unchanged source task
 with one existing source-file selector and the full unit suite.
-Its actual outcome remains pending.
+Its actual source command completed with exit zero; the wrapper metadata failure remains separate.
+
+## Consumer recovery and metadata observation failure
+
+Actual pilot `0j8zhbn9n0` ran the unchanged one-file source mutation task
+through the complete containers adapter from `d098532a5b6946231daf3c4f43e38444359a307e`.
+Its baseline is green and the only selected mutant is `compileError`.
+This source-terminal result carries no mutant assertion execution credit.
+It verifies the owned work volume and unchanged generated-metadata bind on a real TOML consumer.
+It does not complete the 3062-identity campaign.
+
+The provider job failed when metadata collection asserted `null !== 0`.
+That harness omitted the operation, signal, error code, and stdout/stderr byte counts,
+so a timeout is not yet a diagnosis of the historical operation.
+The replacement receipt harness logs those fields incrementally before asserting success.
+Its disposable timeout control captures `SIGKILL`, `ETIMEDOUT`, and both output streams.
+Actual repeat `mj128hqwv0` preserves the eight-second operation budget and original source command.
+Collect that result before selecting a remedy or retrying the full campaign.
+The [TOML audit](../audit/depot-toml-reconciliation-2026-10-17.md)
+retains exact requests, source/harness revisions, cleanup intervals, and provider usage.
+
+## Inherited method lookup emits invalid replacement values
+
+Issue [#1118](https://github.com/Aquaticats/Monochromatic/issues/1118)
+is a distinct source producer defect in `package/cli/mutation-test/src/engine/operator/chain-method.ts`.
+The unchanged source lookup accepts inherited Object functions as method-swap replacements.
+A real source consumer proves mapped-string and unmapped negative controls,
+then function-valued `toString`, `constructor`, and `hasOwnProperty` replacements.
+JSON omits the function-valued replacement property on three retained cloud candidates.
+This does not explain the container source-copy failure;
+all of those earlier attempts failed before mutant assertions.
+The audit retains exact candidate identities and the verified issue body.
+No source-body remedy was applied.

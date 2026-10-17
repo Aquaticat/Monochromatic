@@ -402,48 +402,46 @@ retain the measurement and adoption boundaries.
 
 ## TOML reconciliation queue
 
-Run `p9r4xl6n12` has 19 passed and three failed package checks,
-one started mutation without a result,
-and one unexecuted independent mutation.
-Both available artifacts are downloaded and hash-reconciled in
-[the TOML audit](../audit/depot-toml-reconciliation-2026-10-17.md).
-Generated PATH drift remains `#335`;
-current lint diagnostics are `#1111` and `#1112`,
-separate from the historical panic `#1066`.
-The executor deadline and missing-evidence boundary is `#1113`.
-Trial branch `trial/depot-toml-continuation-20261017` at `640a576ade81c4edfee6a603543a7fbd18faa46b`
-has independent routes,
-immutable source/cohort proofs,
-retained shard identities,
-and verified timeout cleanup.
-Development run `p6vm5s00w6` requests only the two missing mutation gates.
-File-enforcer mutation now has a failed terminal result matching `#1068`,
-with verified artifact and clean source proofs.
-TOML mutation finished with `3062` infrastructure-derived `runtimeError` identities
-across `9037` shard attempts before assertions.
-Its full native report,
-provider allocation,
-artifacts,
+The [TOML audit](../audit/depot-toml-reconciliation-2026-10-17.md)
+retains original run `p9r4xl6n12` and terminal development run `p6vm5s00w6`.
+The latter emitted 3062 distinct mutant IDs across 9037 attempts,
+all infrastructure-derived `runtimeError` before assertions.
+The full native report, shard identities, artifacts, provider usage, and cleanup are retained.
+File-enforcer mutation repeats `#1068`;
+the completed container failure `#1070` remains separate.
+Timeout/independent-check coverage issue `#1113` remains open.
+Source lint issues `#1111` and `#1112` remain distinct from historical panic `#1066`.
+
+Actual bounded pilot `0j8zhbn9n0` completed the unchanged source command with exit zero,
+a green baseline, and one source-terminal `compileError` mutant.
+No mutant assertion execution or full-campaign credit is claimed.
+Its provider job failed metadata collection with `null !== 0`;
+the old harness did not retain the underlying operation details.
+The complete owned work-volume and generated-metadata adapter crossed both consumer boundaries.
+Exact receipts, artifact hashes, the 167222-millisecond provider interval,
 and verified cleanup are retained.
-Bounded actual TOML pilot `0j8zhbn9n0` is dispatched on `a6dcb98aaa415c49633474e46acc2a3c366e31df`;
-terminal collection is active in session `62945`;
-the full campaign remains incomplete.
-Completed container failure `#1070` remains separate;
-application source stays immutable.
-Final coherent dispatch remains held.
 
-The prepared harness also copies the native default mutation report with a freshness guard.
-The active development run keeps its original harness hash;
-the read-only native-report observer completed with verified bytes and digest.
+Actual bounded receipt repeat `mj128hqwv0` is dispatched on
+`0f8ad795aa92d3beb83e3bfa4e4aa54f1bea06f8`.
+Terminal collector session `8468` has completed with provider failure;
+artifact reconciliation is the next action.
+Source command and eight-second metadata budgets are unchanged;
+the harness now retains exact command, signal, error code, and output bytes before assertions.
+The next action is terminal collection and diagnosis before any remedy or full mutation retry.
+Issue `#1118` records the independent, source-consumer-proved inherited-method replacement defect;
+it does not explain the infrastructure failures.
+No application source fix is authorized or applied.
 
-The [source guard controls](../audit/depot-route-source-guards-2026-10-17.md)
-verify the final route against hidden index exclusions and direct committed metadata bytes.
-These local controls do not replace provider before/after evidence.
-
-The common-manifest guard extension is queued on the isolated final refs.
-Provisional case bytes must be replaced by the real frozen complete case manifests.
-No fake common manifest will be published;
-local response stubs will remain distinct from actual authenticated API transport.
+The [canonical guard audit](../audit/depot-common-manifest-route-guards-2026-10-17.md)
+records current pushed route references,
+20 accepted and 110 rejected disposable invocations,
+and separate actual authenticated transport proof.
+Only absent canonical API responses are stubbed in local controls.
+Provisional case manifests remain `completeGraph: false` and correctly rejected.
+Root must supply complete frozen case bytes,
+publish the real canonical manifest with final harness hashes,
+and verify actual canonical reads before final coherent dispatch.
+Final dispatch remains held.
 
 ## Native recovery assertion tracking
 

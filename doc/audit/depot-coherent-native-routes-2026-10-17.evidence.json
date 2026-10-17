@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "preparedAt": "2026-10-17T05:21:05.647Z",
-  "state": "prepared and pushed; not dispatched",
+  "state": "Prepared and pushed; provisional case graphs correctly rejected; canonical freeze and actual read required before final dispatch.",
   "source": {
     "historical": "cb95cf6d785c3073c192b95f0632cdae7b910894",
     "desktop": "3434eaa455d569c18b52cf15100f77f9db251d21"
@@ -10,16 +10,16 @@
     {
       "kind": "native",
       "ref": "trial/depot-coherent-native-20261017",
-      "harnessRevision": "0cc63fdf5768a69a7d42c55f48adfe63e3c3341a",
+      "harnessRevision": "2032975cbad924e63ac98bc69e14a56b20288275",
       "workflow": ".github/workflows/music-player-windows.yml",
       "workflowName": "depot-complete-native-hosts",
-      "workflowSha256": "88e8d71e76c9c80abc2e33724993611550d5f1c2f4d489dc5f2f9dca2b93ee78",
-      "workflowGitBlob": "e83f36b38c078aa0fadafeaf5e96bc4ea0e8d37d",
+      "workflowSha256": "8405dfb1c339351a005ee36116ac918629ca045ddab7656a314bc65bf4e9ccb6",
+      "workflowGitBlob": "c54bbe388d9be98341cf1e96ce8285b8f983ec84",
       "providerBytesVerified": true,
       "taskFile": "package/dev-script/task-util/mise.toml",
-      "taskFileSha256": "5e87e40a4a3a2c5eddebbdf1f35a7ffdb2802524adab761cde75f2d8b376183d",
+      "taskFileSha256": "741805a6a26fcd974551f2cb5c66848b0485ac405754015dcb288aa5c1f6de8d",
       "provenanceTask": "//package/dev-script/task-util:trial:depot:coherent:provenance",
-      "provenanceTaskBlockSha256": "1929e9caed5c7ebf550b5edeb68d550bb961e01f7d36a09fa234f90af95a9dbd",
+      "provenanceTaskBlockSha256": null,
       "commonInputs": [
         "cohort_id",
         "manifest_sha256",
@@ -48,21 +48,22 @@
       },
       "nextestPolicy": "Exact source package test task and cargo dispatcher with only --no-fail-fast inserted in memory. Original/adapted hashes are emitted by the proven adapter; tracked source is untouched.",
       "previousHarnessRevision": "65ffc5cc26e794a8317d404a9db25dcc2e9daec2",
-      "providerTaskBytesVerified": true
+      "providerTaskBytesVerified": true,
+      "currentCommonBindingEvidence": "doc/audit/depot-common-manifest-route-guards-2026-10-17.evidence.json"
     },
     {
       "kind": "windows",
       "ref": "trial/depot-coherent-windows-20261017",
-      "harnessRevision": "f994e3f6902ad4c4b887822f18695d57da736ca4",
+      "harnessRevision": "e70240dc7317124a0db5b37967c570cf2f3fb6f4",
       "workflow": ".github/workflows/music-player-windows.yml",
       "workflowName": "depot-complete-windows-test-recovery",
-      "workflowSha256": "b65e49ea07de8c0537a83a91d1394a933aaa48dd636fa68ddaf3c1f04fe63b9f",
-      "workflowGitBlob": "0e6e9cf83a89fa8158089451ab266f8dd7b5b6f0",
+      "workflowSha256": "ea2fbf3804afac723c97a313c0e6a2acdb8d73c9a0da1d924fe1c887d0fa9ba7",
+      "workflowGitBlob": "fb6ce6e3ef7adf9a3c84db389501044d7e6ab74d",
       "providerBytesVerified": true,
       "taskFile": "package/dev-script/task-util/mise.toml",
-      "taskFileSha256": "7384f60e577dac814a69e57da4a033af99e0a29c1fb57c45a4f670c38627fe2e",
+      "taskFileSha256": "b4a715b29eaf5f172b049fee04d5a6d5c1fe68964f0ad13b4249a35d56c243e8",
       "provenanceTask": "//package/dev-script/task-util:trial:depot:coherent:provenance",
-      "provenanceTaskBlockSha256": "1929e9caed5c7ebf550b5edeb68d550bb961e01f7d36a09fa234f90af95a9dbd",
+      "provenanceTaskBlockSha256": null,
       "commonInputs": [
         "cohort_id",
         "manifest_sha256",
@@ -120,21 +121,22 @@
       },
       "originalFileAssertion": "Unchanged. Failure remains a source consumer failure even if independent continuation probes pass.",
       "previousHarnessRevision": "c8abb557b6fb8444cc65a5892802d9aab01d1130",
-      "providerTaskBytesVerified": true
+      "providerTaskBytesVerified": true,
+      "currentCommonBindingEvidence": "doc/audit/depot-common-manifest-route-guards-2026-10-17.evidence.json"
     },
     {
       "kind": "alpine",
       "ref": "trial/depot-coherent-alpine-20261017",
-      "harnessRevision": "30ceb0c1f8e215988e53fee6389b12b78b215a6f",
+      "harnessRevision": "5152df4debd88f5e0b57802c7c8c958b1a5f6255",
       "workflow": ".github/workflows/music-player-alpine.yml",
       "workflowName": "music-player-alpine",
-      "workflowSha256": "b7560318b8c6a08355ab064a52c3eb51e9bb662b762ab6f3ba01be70d1bd14cc",
-      "workflowGitBlob": "6cea50486370157dd27e8251c453bcd03e152829",
+      "workflowSha256": "04552da97fc4bc3a79393e5f6cda1d740e81e183207ad4203114f39d355b673b",
+      "workflowGitBlob": "ee002ffa9a624fb2b3c4434909e68ba256ad9c64",
       "providerBytesVerified": true,
       "taskFile": "package/dev-script/task-util/mise.toml",
-      "taskFileSha256": "7384f60e577dac814a69e57da4a033af99e0a29c1fb57c45a4f670c38627fe2e",
+      "taskFileSha256": "6b13064299fab706b35ac0c49488da7b6f0eac3f30742643e8a4758d7d97781d",
       "provenanceTask": "//package/dev-script/task-util:trial:depot:coherent:provenance",
-      "provenanceTaskBlockSha256": "1929e9caed5c7ebf550b5edeb68d550bb961e01f7d36a09fa234f90af95a9dbd",
+      "provenanceTaskBlockSha256": null,
       "commonInputs": [
         "cohort_id",
         "manifest_sha256",
@@ -162,7 +164,8 @@
       "nextestPolicy": "Original source command includes --locked --features alsa-fallback --no-fail-fast.",
       "independence": "Tests, app build, and compositor build require images/cache directories. Staging requires both successful builds; smoke requires staged binaries. Failed test assertions do not censor independent builds or smoke.",
       "previousHarnessRevision": "707162e5b43edf04703c9e28bf905ba6eb3fc45e",
-      "providerTaskBytesVerified": true
+      "providerTaskBytesVerified": true,
+      "currentCommonBindingEvidence": "doc/audit/depot-common-manifest-route-guards-2026-10-17.evidence.json"
     }
   ],
   "dispatchChecklist": [
@@ -1065,5 +1068,168 @@
     "rejected": 40,
     "issue": 1114,
     "observedAt": "2026-10-17T06:56:39.843Z"
-  }
+  },
+  "preCommonBindingRoutes": [
+    {
+      "kind": "native",
+      "ref": "trial/depot-coherent-native-20261017",
+      "harnessRevision": "2032975cbad924e63ac98bc69e14a56b20288275",
+      "workflow": ".github/workflows/music-player-windows.yml",
+      "workflowName": "depot-complete-native-hosts",
+      "workflowSha256": "8405dfb1c339351a005ee36116ac918629ca045ddab7656a314bc65bf4e9ccb6",
+      "workflowGitBlob": "c54bbe388d9be98341cf1e96ce8285b8f983ec84",
+      "providerBytesVerified": true,
+      "taskFile": "package/dev-script/task-util/mise.toml",
+      "taskFileSha256": "741805a6a26fcd974551f2cb5c66848b0485ac405754015dcb288aa5c1f6de8d",
+      "provenanceTask": "//package/dev-script/task-util:trial:depot:coherent:provenance",
+      "provenanceTaskBlockSha256": null,
+      "commonInputs": [
+        "cohort_id",
+        "manifest_sha256",
+        "requested_at"
+      ],
+      "additionalInputs": [
+        "source_head",
+        "hosts"
+      ],
+      "sourceRevision": "source_head input",
+      "consumerCommands": {
+        "kind": "native",
+        "path": ".github/workflows/music-player-windows.yml",
+        "originalRunCommands": 10,
+        "allOriginalCommandsPreserved": true,
+        "addedVerifierCommands": 2
+      },
+      "runnerSelection": {
+        "both": [
+          "windows-2025",
+          "macos-15-intel"
+        ],
+        "macos": [
+          "macos-15-intel"
+        ]
+      },
+      "nextestPolicy": "Exact source package test task and cargo dispatcher with only --no-fail-fast inserted in memory. Original/adapted hashes are emitted by the proven adapter; tracked source is untouched.",
+      "previousHarnessRevision": "65ffc5cc26e794a8317d404a9db25dcc2e9daec2",
+      "providerTaskBytesVerified": true,
+      "currentCommonBindingEvidence": "doc/audit/depot-common-manifest-route-guards-2026-10-17.evidence.json"
+    },
+    {
+      "kind": "windows",
+      "ref": "trial/depot-coherent-windows-20261017",
+      "harnessRevision": "e70240dc7317124a0db5b37967c570cf2f3fb6f4",
+      "workflow": ".github/workflows/music-player-windows.yml",
+      "workflowName": "depot-complete-windows-test-recovery",
+      "workflowSha256": "ea2fbf3804afac723c97a313c0e6a2acdb8d73c9a0da1d924fe1c887d0fa9ba7",
+      "workflowGitBlob": "fb6ce6e3ef7adf9a3c84db389501044d7e6ab74d",
+      "providerBytesVerified": true,
+      "taskFile": "package/dev-script/task-util/mise.toml",
+      "taskFileSha256": "b4a715b29eaf5f172b049fee04d5a6d5c1fe68964f0ad13b4249a35d56c243e8",
+      "provenanceTask": "//package/dev-script/task-util:trial:depot:coherent:provenance",
+      "provenanceTaskBlockSha256": null,
+      "commonInputs": [
+        "cohort_id",
+        "manifest_sha256",
+        "requested_at"
+      ],
+      "additionalInputs": [],
+      "sourceRevision": "3434eaa455d569c18b52cf15100f77f9db251d21",
+      "consumerCommands": {
+        "kind": "windows",
+        "path": ".github/workflows/music-player-windows.yml",
+        "originalRunCommands": 16,
+        "allOriginalCommandsPreserved": true,
+        "addedVerifierCommands": 5
+      },
+      "matrix": [
+        {
+          "name": "msvc-x64",
+          "runner": "windows-2025",
+          "target": "x86_64-pc-windows-msvc"
+        },
+        {
+          "name": "msvc-arm64",
+          "runner": "windows-11-arm",
+          "target": "aarch64-pc-windows-msvc"
+        },
+        {
+          "name": "gnu-x64-ucrt64",
+          "runner": "windows-2025",
+          "target": "x86_64-pc-windows-gnu"
+        }
+      ],
+      "nextestPolicy": "Original source command already includes --no-fail-fast; independent execution requires successful test compilation.",
+      "independentPowerShellProbes": {
+        "source": "3434eaa455d569c18b52cf15100f77f9db251d21",
+        "originalStepBody": "$ErrorActionPreference = 'Stop'\n$PSNativeCommandUseErrorActionPreference = $true\n$exe = Join-Path (Get-Location) \"target/$env:TARGET/debug/music-player.exe\"\n$version = (Select-String -Path Cargo.toml -Pattern '^version = \"(.*)\"$' | Select-Object -First 1).Matches.Groups[1].Value\n$expected = \"music-player $version\"\n# The output is captured, so PowerShell waits for the program and the text reaches the step output.\n$captured = (& $exe --version | Out-String).Trim()\nWrite-Output \"captured in the pipeline: $captured\"\nif ($captured -cne $expected) { throw \"captured '$captured', expected '$expected'\" }\n# The output goes to a file through PowerShell's redirection operator.\n$file = Join-Path $env:RUNNER_TEMP 'out.txt'\n& $exe --version > $file\n$fromFile = (Get-Content -Raw -Path $file).Trim()\nWrite-Output \"out.txt holds: $fromFile\"\nif ($fromFile -cne $expected) { throw \"out.txt holds '$fromFile', expected '$expected'\" }\n# The same through the 2>&1 merge that scripts use to log both streams.\n$merged = (& $exe --version 2>&1 | Out-String).Trim()\nWrite-Output \"merged streams: $merged\"\nif ($merged -cne $expected) { throw \"merged '$merged', expected '$expected'\" }\n# Not captured: PowerShell does not wait for a GUI program, but the program writes to the handle it inherited, so\n# the text still lands in this step's log. The sleep keeps this step open until the program has written.\nWrite-Output 'uncaptured run follows; the next line is printed by the program itself'\n& $exe --version\nStart-Sleep -Seconds 5",
+        "probes": [
+          {
+            "name": "merged-stream",
+            "label": "powershell-merged-stream",
+            "original": "# The same through the 2>&1 merge that scripts use to log both streams.\n$merged = (& $exe --version 2>&1 | Out-String).Trim()\nWrite-Output \"merged streams: $merged\"\nif ($merged -cne $expected) { throw \"merged '$merged', expected '$expected'\" }",
+            "originalSha256": "70254e9a8a0d74be169da3e90243fb9bb60046be08551fd5d1153a822a8c5c90",
+            "script": "$ErrorActionPreference = 'Stop'\n$PSNativeCommandUseErrorActionPreference = $true\n$exe = Join-Path (Get-Location) \"target/$env:TARGET/debug/music-player.exe\"\n$version = (Select-String -Path Cargo.toml -Pattern '^version = \"(.*)\"$' | Select-Object -First 1).Matches.Groups[1].Value\n$expected = \"music-player $version\"\n$probeStatus = 'failed'\n$merged = ''\ntry {\n  # The same through the 2>&1 merge that scripts use to log both streams.\n  $merged = (& $exe --version 2>&1 | Out-String).Trim()\n  Write-Output \"merged streams: $merged\"\n  if ($merged -cne $expected) { throw \"merged '$merged', expected '$expected'\" }\n  $probeStatus = 'passed'\n}\nfinally {\n  $evidenceDirectory = Join-Path $env:RUNNER_TEMP 'depot-provenance'\n  New-Item -ItemType Directory -Path $evidenceDirectory -Force | Out-Null\n  $record = @{\n    schemaVersion = 1\n    event = 'independent-consumer-result'\n    probe = 'powershell-merged-stream'\n    status = $probeStatus\n    expectedVersion = $expected\n    actualCaptured = $merged\n    requiresStepLogVersionCheck = $false\n    sourceRevision = $env:SOURCE_HEAD\n    harnessRevision = $env:GITHUB_SHA\n    cohortId = $env:COHORT_ID\n    manifestSha256 = $env:COHORT_MANIFEST_SHA256\n    requestedAt = $env:COHORT_REQUESTED_AT\n    originalProbeSha256 = '70254e9a8a0d74be169da3e90243fb9bb60046be08551fd5d1153a822a8c5c90'\n    beforeProvenance = 'before.json'\n    afterProvenance = 'after.json'\n    powershellVersion = $PSVersionTable.PSVersion.ToString()\n  }\n  $recordPath = Join-Path $evidenceDirectory 'powershell-merged-stream.json'\n  $record | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $recordPath -Encoding utf8\n}",
+            "scriptSha256": "ccf0ff885f25f6215d244ee6980e01e712cf8d5806d38124b79ad7b3b555dd55"
+          },
+          {
+            "name": "uncaptured-console",
+            "label": "powershell-uncaptured-console",
+            "original": "# Not captured: PowerShell does not wait for a GUI program, but the program writes to the handle it inherited, so\n# the text still lands in this step's log. The sleep keeps this step open until the program has written.\nWrite-Output 'uncaptured run follows; the next line is printed by the program itself'\n& $exe --version\nStart-Sleep -Seconds 5",
+            "originalSha256": "563a0bb5973b5781378dd00666cc9d59d245449fd8ec4189ba5d690feb09c69d",
+            "script": "$ErrorActionPreference = 'Stop'\n$PSNativeCommandUseErrorActionPreference = $true\n$exe = Join-Path (Get-Location) \"target/$env:TARGET/debug/music-player.exe\"\n$version = (Select-String -Path Cargo.toml -Pattern '^version = \"(.*)\"$' | Select-Object -First 1).Matches.Groups[1].Value\n$expected = \"music-player $version\"\n$probeStatus = 'failed'\ntry {\n  # Not captured: PowerShell does not wait for a GUI program, but the program writes to the handle it inherited, so\n  # the text still lands in this step's log. The sleep keeps this step open until the program has written.\n  Write-Output 'uncaptured run follows; the next line is printed by the program itself'\n  & $exe --version\n  Start-Sleep -Seconds 5\n  $probeStatus = 'completed'\n}\nfinally {\n  $evidenceDirectory = Join-Path $env:RUNNER_TEMP 'depot-provenance'\n  New-Item -ItemType Directory -Path $evidenceDirectory -Force | Out-Null\n  $record = @{\n    schemaVersion = 1\n    event = 'independent-consumer-result'\n    probe = 'powershell-uncaptured-console'\n    status = $probeStatus\n    expectedVersion = $expected\n    actualCaptured = $null\n    requiresStepLogVersionCheck = $true\n    sourceRevision = $env:SOURCE_HEAD\n    harnessRevision = $env:GITHUB_SHA\n    cohortId = $env:COHORT_ID\n    manifestSha256 = $env:COHORT_MANIFEST_SHA256\n    requestedAt = $env:COHORT_REQUESTED_AT\n    originalProbeSha256 = '563a0bb5973b5781378dd00666cc9d59d245449fd8ec4189ba5d690feb09c69d'\n    beforeProvenance = 'before.json'\n    afterProvenance = 'after.json'\n    powershellVersion = $PSVersionTable.PSVersion.ToString()\n  }\n  $recordPath = Join-Path $evidenceDirectory 'powershell-uncaptured-console.json'\n  $record | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $recordPath -Encoding utf8\n}",
+            "scriptSha256": "a933e0dc3264c2bb2640a7f800a2163c5a59631b73913eddaff101923865cfda"
+          }
+        ],
+        "acceptance": "Merged-stream probe must pass its original assertion. Uncaptured-console probe completion additionally requires the exact expected version line in its own provider step log. Shared route before/after provenance must match."
+      },
+      "originalFileAssertion": "Unchanged. Failure remains a source consumer failure even if independent continuation probes pass.",
+      "previousHarnessRevision": "c8abb557b6fb8444cc65a5892802d9aab01d1130",
+      "providerTaskBytesVerified": true,
+      "currentCommonBindingEvidence": "doc/audit/depot-common-manifest-route-guards-2026-10-17.evidence.json"
+    },
+    {
+      "kind": "alpine",
+      "ref": "trial/depot-coherent-alpine-20261017",
+      "harnessRevision": "5152df4debd88f5e0b57802c7c8c958b1a5f6255",
+      "workflow": ".github/workflows/music-player-alpine.yml",
+      "workflowName": "music-player-alpine",
+      "workflowSha256": "04552da97fc4bc3a79393e5f6cda1d740e81e183207ad4203114f39d355b673b",
+      "workflowGitBlob": "ee002ffa9a624fb2b3c4434909e68ba256ad9c64",
+      "providerBytesVerified": true,
+      "taskFile": "package/dev-script/task-util/mise.toml",
+      "taskFileSha256": "6b13064299fab706b35ac0c49488da7b6f0eac3f30742643e8a4758d7d97781d",
+      "provenanceTask": "//package/dev-script/task-util:trial:depot:coherent:provenance",
+      "provenanceTaskBlockSha256": null,
+      "commonInputs": [
+        "cohort_id",
+        "manifest_sha256",
+        "requested_at"
+      ],
+      "additionalInputs": [],
+      "sourceRevision": "3434eaa455d569c18b52cf15100f77f9db251d21",
+      "consumerCommands": {
+        "kind": "alpine",
+        "path": ".github/workflows/music-player-alpine.yml",
+        "originalRunCommands": 10,
+        "allOriginalCommandsPreserved": true,
+        "addedVerifierCommands": 3
+      },
+      "matrix": [
+        {
+          "arch": "x86_64",
+          "runner": "ubuntu-latest"
+        },
+        {
+          "arch": "aarch64",
+          "runner": "ubuntu-24.04-arm"
+        }
+      ],
+      "nextestPolicy": "Original source command includes --locked --features alsa-fallback --no-fail-fast.",
+      "independence": "Tests, app build, and compositor build require images/cache directories. Staging requires both successful builds; smoke requires staged binaries. Failed test assertions do not censor independent builds or smoke.",
+      "previousHarnessRevision": "707162e5b43edf04703c9e28bf905ba6eb3fc45e",
+      "providerTaskBytesVerified": true,
+      "currentCommonBindingEvidence": "doc/audit/depot-common-manifest-route-guards-2026-10-17.evidence.json"
+    }
+  ],
+  "commonManifestGuardEvidence": "doc/audit/depot-common-manifest-route-guards-2026-10-17.evidence.json"
 }
