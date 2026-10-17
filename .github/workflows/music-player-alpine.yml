@@ -69,9 +69,45 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
+          ref: 3434eaa455d569c18b52cf15100f77f9db251d21
           fetch-depth: 1
           persist-credentials: false
 
+      - name: Checkout frozen trial provenance harness
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          path: trial-provenance-harness
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Set up the proven provenance task runner
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+        with:
+          version: 2026.10.9
+          working_directory: trial-provenance-harness
+          install: false
+          cache: false
+          env: false
+          export_path: false
+      - name: Install the source-declared provenance runtime
+        working-directory: trial-provenance-harness
+        env:
+          MISE_AUTO_INSTALL: 'false'
+          MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+        run: mise install --yes node@26.11.1
+      - name: Record frozen source provenance before consumers
+        id: provenance-before
+        working-directory: trial-provenance-harness
+        env:
+          MISE_AUTO_INSTALL: 'false'
+          MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+          MISE_NODE_VERSION: '26.11.1'
+          SOURCE_ROOT: ${{ github.workspace }}
+          SOURCE_HEAD: 3434eaa455d569c18b52cf15100f77f9db251d21
+          PROVENANCE_PHASE: before
+          PROVENANCE_CASE: alpine
+          PROVENANCE_OUTPUT: ${{ runner.temp }}/depot-provenance
+        run: mise run //package/dev-script/task-util:trial:depot:coherent:provenance
       - name: Build the Alpine images
         run: |
           set -euo pipefail
@@ -230,3 +266,23 @@ jobs:
           path: ${{ runner.temp }}/smoke-out
           retention-days: 7
           if-no-files-found: ignore
+      - name: Record frozen source provenance after consumers
+        if: ${{ !cancelled() && steps.provenance-before.outcome == 'success' }}
+        working-directory: trial-provenance-harness
+        env:
+          MISE_AUTO_INSTALL: 'false'
+          MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+          MISE_NODE_VERSION: '26.11.1'
+          SOURCE_ROOT: ${{ github.workspace }}
+          SOURCE_HEAD: 3434eaa455d569c18b52cf15100f77f9db251d21
+          PROVENANCE_PHASE: after
+          PROVENANCE_CASE: alpine
+          PROVENANCE_OUTPUT: ${{ runner.temp }}/depot-provenance
+        run: mise run //package/dev-script/task-util:trial:depot:coherent:provenance
+      - name: Preserve frozen source provenance
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: depot-alpine-provenance-${{ matrix.arch }}
+          path: ${{ runner.temp }}/depot-provenance
+          if-no-files-found: error
