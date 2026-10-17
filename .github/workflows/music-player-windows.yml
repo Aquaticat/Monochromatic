@@ -498,6 +498,148 @@ jobs:
       if: ${{ !cancelled() && steps.build-tests.outcome == 'success' }}
       working-directory: package/music-player/desktop-app
       run: cargo nextest run --locked --target "$TARGET" --no-fail-fast
+    - name: Run independent original PowerShell merged-stream probe
+      id: powershell-merged-stream
+      if: ${{ !cancelled() && steps.build-binary.outcome == 'success' }}
+      shell: pwsh
+      working-directory: package/music-player/desktop-app
+      env:
+        SOURCE_HEAD: 3434eaa455d569c18b52cf15100f77f9db251d21
+        COHORT_ID: ${{ inputs.cohort_id }}
+        COHORT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+        COHORT_REQUESTED_AT: ${{ inputs.requested_at }}
+      run: |
+        $ErrorActionPreference = 'Stop'
+        $PSNativeCommandUseErrorActionPreference = $true
+        $exe = Join-Path (Get-Location) "target/$env:TARGET/debug/music-player.exe"
+        $version = (Select-String -Path Cargo.toml -Pattern '^version = "(.*)"      if: ${{ !cancelled() && steps.provenance-before.outcome == 'success' }}
+      working-directory: trial-provenance-harness
+      env:
+        MISE_AUTO_INSTALL: 'false'
+        MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+        MISE_NODE_VERSION: '26.11.1'
+        SOURCE_ROOT: ${{ github.workspace }}
+        SOURCE_HEAD: 3434eaa455d569c18b52cf15100f77f9db251d21
+        PROVENANCE_PHASE: after
+        PROVENANCE_CASE: windows
+        PROVENANCE_OUTPUT: ${{ runner.temp }}/depot-provenance
+        COHORT_ID: ${{ inputs.cohort_id }}
+        COHORT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+        COHORT_REQUESTED_AT: ${{ inputs.requested_at }}
+      run: mise run //package/dev-script/task-util:trial:depot:coherent:provenance
+    - name: Preserve frozen source provenance
+      if: ${{ always() }}
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: depot-windows-provenance-${{ matrix.name }}
+        path: ${{ runner.temp }}/depot-provenance
+        if-no-files-found: error
+ | Select-Object -First 1).Matches.Groups[1].Value
+        $expected = "music-player $version"
+        $probeStatus = 'failed'
+        $merged = ''
+        try {
+          # The same through the 2>&1 merge that scripts use to log both streams.
+          $merged = (& $exe --version 2>&1 | Out-String).Trim()
+          Write-Output "merged streams: $merged"
+          if ($merged -cne $expected) { throw "merged '$merged', expected '$expected'" }
+          $probeStatus = 'passed'
+        }
+        finally {
+          $evidenceDirectory = Join-Path $env:RUNNER_TEMP 'depot-provenance'
+          New-Item -ItemType Directory -Path $evidenceDirectory -Force | Out-Null
+          $record = @{
+            schemaVersion = 1
+            event = 'independent-consumer-result'
+            probe = 'powershell-merged-stream'
+            status = $probeStatus
+            expectedVersion = $expected
+            actualCaptured = $merged
+            requiresStepLogVersionCheck = $false
+            sourceRevision = $env:SOURCE_HEAD
+            harnessRevision = $env:GITHUB_SHA
+            cohortId = $env:COHORT_ID
+            manifestSha256 = $env:COHORT_MANIFEST_SHA256
+            requestedAt = $env:COHORT_REQUESTED_AT
+            originalProbeSha256 = '70254e9a8a0d74be169da3e90243fb9bb60046be08551fd5d1153a822a8c5c90'
+            beforeProvenance = 'before.json'
+            afterProvenance = 'after.json'
+            powershellVersion = $PSVersionTable.PSVersion.ToString()
+          }
+          $recordPath = Join-Path $evidenceDirectory 'powershell-merged-stream.json'
+          $record | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $recordPath -Encoding utf8
+        }
+    - name: Run independent original PowerShell uncaptured-console probe
+      id: powershell-uncaptured-console
+      if: ${{ !cancelled() && steps.build-binary.outcome == 'success' }}
+      shell: pwsh
+      working-directory: package/music-player/desktop-app
+      env:
+        SOURCE_HEAD: 3434eaa455d569c18b52cf15100f77f9db251d21
+        COHORT_ID: ${{ inputs.cohort_id }}
+        COHORT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+        COHORT_REQUESTED_AT: ${{ inputs.requested_at }}
+      run: |
+        $ErrorActionPreference = 'Stop'
+        $PSNativeCommandUseErrorActionPreference = $true
+        $exe = Join-Path (Get-Location) "target/$env:TARGET/debug/music-player.exe"
+        $version = (Select-String -Path Cargo.toml -Pattern '^version = "(.*)"      if: ${{ !cancelled() && steps.provenance-before.outcome == 'success' }}
+      working-directory: trial-provenance-harness
+      env:
+        MISE_AUTO_INSTALL: 'false'
+        MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+        MISE_NODE_VERSION: '26.11.1'
+        SOURCE_ROOT: ${{ github.workspace }}
+        SOURCE_HEAD: 3434eaa455d569c18b52cf15100f77f9db251d21
+        PROVENANCE_PHASE: after
+        PROVENANCE_CASE: windows
+        PROVENANCE_OUTPUT: ${{ runner.temp }}/depot-provenance
+        COHORT_ID: ${{ inputs.cohort_id }}
+        COHORT_MANIFEST_SHA256: ${{ inputs.manifest_sha256 }}
+        COHORT_REQUESTED_AT: ${{ inputs.requested_at }}
+      run: mise run //package/dev-script/task-util:trial:depot:coherent:provenance
+    - name: Preserve frozen source provenance
+      if: ${{ always() }}
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: depot-windows-provenance-${{ matrix.name }}
+        path: ${{ runner.temp }}/depot-provenance
+        if-no-files-found: error
+ | Select-Object -First 1).Matches.Groups[1].Value
+        $expected = "music-player $version"
+        $probeStatus = 'failed'
+        try {
+          # Not captured: PowerShell does not wait for a GUI program, but the program writes to the handle it inherited, so
+          # the text still lands in this step's log. The sleep keeps this step open until the program has written.
+          Write-Output 'uncaptured run follows; the next line is printed by the program itself'
+          & $exe --version
+          Start-Sleep -Seconds 5
+          $probeStatus = 'completed'
+        }
+        finally {
+          $evidenceDirectory = Join-Path $env:RUNNER_TEMP 'depot-provenance'
+          New-Item -ItemType Directory -Path $evidenceDirectory -Force | Out-Null
+          $record = @{
+            schemaVersion = 1
+            event = 'independent-consumer-result'
+            probe = 'powershell-uncaptured-console'
+            status = $probeStatus
+            expectedVersion = $expected
+            actualCaptured = $null
+            requiresStepLogVersionCheck = $true
+            sourceRevision = $env:SOURCE_HEAD
+            harnessRevision = $env:GITHUB_SHA
+            cohortId = $env:COHORT_ID
+            manifestSha256 = $env:COHORT_MANIFEST_SHA256
+            requestedAt = $env:COHORT_REQUESTED_AT
+            originalProbeSha256 = '563a0bb5973b5781378dd00666cc9d59d245449fd8ec4189ba5d690feb09c69d'
+            beforeProvenance = 'before.json'
+            afterProvenance = 'after.json'
+            powershellVersion = $PSVersionTable.PSVersion.ToString()
+          }
+          $recordPath = Join-Path $evidenceDirectory 'powershell-uncaptured-console.json'
+          $record | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $recordPath -Encoding utf8
+        }
     - name: Record frozen source provenance after consumers
       if: ${{ !cancelled() && steps.provenance-before.outcome == 'success' }}
       working-directory: trial-provenance-harness
