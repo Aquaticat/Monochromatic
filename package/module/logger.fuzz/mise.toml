@@ -698,6 +698,8 @@ git(['add','controlled.txt']);git(['-c','user.name=Git host fixture','-c','user.
 const head=git(['rev-parse','HEAD']);assert.match(head,/^[a-f0-9]{40}$/u)
 const processControl=spawn('/usr/bin/git',['hash-object','--stdin'],{cwd:fixture,env,stdio:['pipe','pipe','pipe']})
 assert(processControl.pid)
+processControl.stdout.resume()
+processControl.stderr.resume()
 const exited=once(processControl,'exit')
 await once(processControl,'spawn')
 let executable
