@@ -90,9 +90,12 @@ and creates an ephemeral thread without starting a model turn.
 
 The passing cases were:
 
-- Temporary configuration: discovery returned `web_search` and `web_fetch`.
-- Temporary configuration: both tools completed real provider calls.
-- Saved global configuration from outside the repository: discovery and both provider calls passed.
+- Temporary configuration:
+  discovery returned `web_search` and `web_fetch`.
+- Temporary configuration:
+  both tools completed real provider calls.
+- Saved global configuration from outside the repository:
+  discovery and both provider calls passed.
 - Search returned documentation URLs from `developers.openai.com`.
 - Fetch returned the actual MCP documentation content.
 
@@ -120,13 +123,20 @@ The maintenance statement in `.out-of-scope/codex-harness.md` is not a prohibiti
 or an automatic exemption from investigating a Codex issue.
 The user clarified that meaning on October 17, 2026.
 
-- Upstream fault: no demonstrated defect remains; the required opt-in configuration works.
-- Fixability: an upstream code change is unnecessary for the verified configuration.
-- Supported use case: the audited source explicitly supports this stdio protocol combination.
-- Contribution policy: not assessed because no upstream contribution is proposed.
-- Upstream movement: an issue search for `mcp_2026_07_28 stdio` found other MCP reports,
+- Upstream fault:
+  no demonstrated defect remains;
+  the required opt-in configuration works.
+- Fixability:
+  an upstream code change is unnecessary for the verified configuration.
+- Supported use case:
+  the audited source explicitly supports this stdio protocol combination.
+- Contribution policy:
+  not assessed because no upstream contribution is proposed.
+- Upstream movement:
+  an issue search for `mcp_2026_07_28 stdio` found other MCP reports,
   but this investigation has no unresolved defect to report.
-- Prototype: configuration controls reproduced failure and success without an upstream patch.
+- Prototype:
+  configuration controls reproduced failure and success without an upstream patch.
 
 There is nothing to file for this configuration finding.
 The official configuration reference is [MCP configuration](https://developers.openai.com/codex/mcp).
