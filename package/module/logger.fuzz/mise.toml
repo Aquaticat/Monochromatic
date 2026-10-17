@@ -123,10 +123,12 @@ chmodSync(directory, 0o700)
 writeFileSync(join(directory, 'logger-partition.json'), JSON.stringify({ ...partition, manifestSha256: partitions.manifestSha256, sourceRevision: partitions.sourceRevision, providerJobUrl: process.env.DEPOT_JOB_URL }, null, 2))
 const suiteEnv = { ...process.env, DEPOT_CI_CASE: 'logger', DEPOT_CI_CHECK_IDS: JSON.stringify(partition.selectedCheckIds), DEPOT_CI_WORKERS: '1', DEPOT_CI_WAVE: 'all' }
 const task = '//package/dev-script/task-util:trial:depot:ci:execute'
+const executionBudgetMs = Number(process.env.DEPOT_LOGGER_EXECUTION_BUDGET_MS ?? 1440000)
+assert(Number.isInteger(executionBudgetMs) && executionBudgetMs > 0 && executionBudgetMs <= 7200000, 'Logger execution budget must be a positive integer no greater than two hours')
 let executionError
 try {
 if (partition.name !== 'fuzz') {
-  execFileSync('mise', ['run', task], { cwd: harness, env: suiteEnv, stdio: 'inherit', timeout: 1440000 })
+  execFileSync('mise', ['run', task], { cwd: harness, env: suiteEnv, stdio: 'inherit', timeout: executionBudgetMs })
 } else {
   const name = `depot-logger-fuzz-${process.pid}`
   const marker = join(homedir(), `temp/agent/depot-fuzz-overlay-${process.pid}`)
@@ -141,11 +143,11 @@ if (partition.name !== 'fuzz') {
   let cleanupVerified = false
   let evidenceCopied = true
   try {
-    podman({ args: ['run', '--detach', '--init', '--name', name, '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=512', '--timeout=1560', '--rootfs', '/:O', '/usr/bin/sleep', '1500'] })
+    podman({ args: ['run', '--detach', '--init', '--name', name, '--network=none', '--memory=2g', '--cpus=2', '--pids-limit=512', `--timeout=${Math.ceil(executionBudgetMs / 1000) + 120}`, '--rootfs', '/:O', '/usr/bin/sleep', String(Math.ceil(executionBudgetMs / 1000) + 60)] })
     podman({ args: ['exec', '--user', `${process.getuid()}:${process.getgid()}`, name, 'touch', marker] })
     const allowedKeys = ['HOME', 'PATH', 'MISE_DATA_DIR', 'MISE_CONFIG_DIR', 'MISE_STATE_DIR', 'MISE_NODE_VERSION', 'MISE_PNPM_VERSION', 'MISE_BUN_VERSION', 'MISE_DENO_VERSION', 'MISE_LOCKED', 'MISE_AUTO_INSTALL', 'MISE_TRUSTED_CONFIG_PATHS', 'GITHUB_WORKSPACE', 'DEPOT_JOB_URL', 'DEPOT_CI_CASE', 'DEPOT_CI_CHECK_IDS', 'DEPOT_CI_WORKERS', 'DEPOT_CI_WAVE', 'OXLINT_THREADS', 'TSC_SINGLE_THREADED']
     const environment = allowedKeys.filter(key => suiteEnv[key] !== undefined).map(key => `${key}=${suiteEnv[key]}`)
-    suite = podman({ args: ['exec', '--user', `${process.getuid()}:${process.getgid()}`, '--workdir', harness, name, 'env', '-i', ...environment, 'DEPOT_CI_CPUS=2', 'DEPOT_CI_MEMORY_GIB=2', 'CI=true', 'LANG=C.UTF-8', 'mise', 'run', task], required: false, inherit: true, limit: 1440000 })
+    suite = podman({ args: ['exec', '--user', `${process.getuid()}:${process.getgid()}`, '--workdir', harness, name, 'env', '-i', ...environment, 'DEPOT_CI_CPUS=2', 'DEPOT_CI_MEMORY_GIB=2', 'CI=true', 'LANG=C.UTF-8', 'mise', 'run', task], required: false, inherit: true, limit: executionBudgetMs })
     for (const file of ['logger-results.json', 'check-logs']) {
       const copied = podman({ args: ['cp', `${name}:${directory}/${file}`, join(directory, file)], required: false })
       if (copied.status !== 0) evidenceCopied = false
@@ -175,7 +177,7 @@ assert(!preparation.records.some(record => record.status === 'failed'), 'Indepen
       const result = results.find(record => record.checkId === checkId)
       return result ? { checkId, status: result.status, skipReason: result.skipReason, startedAt: result.startedAt, finishedAt: result.finishedAt, exitCode: result.exitCode, signal: result.signal, outputSha256: result.outputSha256 } : { checkId, status: existsSync(join(directory, 'check-logs', `${checkId}.log`)) ? 'started-without-terminal-record' : 'unstarted' }
     })
-    writeFileSync(join(directory, 'logger-continuation-results.json'), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: partitions.manifestSha256, continuationId, partition: partition.name, selectedCheckIds: partition.selectedCheckIds, activeCheckIds: partition.activeCheckIds, executionError, executionBudgetMs: 1440000, records, providerJobUrl: process.env.DEPOT_JOB_URL }, null, 2))
+    writeFileSync(join(directory, 'logger-continuation-results.json'), JSON.stringify({ sourceRevision: manifest.sourceRevision, manifestSha256: partitions.manifestSha256, continuationId, partition: partition.name, selectedCheckIds: partition.selectedCheckIds, activeCheckIds: partition.activeCheckIds, executionError, executionBudgetMs, records, providerJobUrl: process.env.DEPOT_JOB_URL }, null, 2))
   }
 }
 '''
