@@ -316,7 +316,14 @@ Later macOS ran every eligible case:
 Historical Windows reached the known `E0433` missing-`libc` test compile boundary.
 Linux desktop nextest recovery `pbg4h8ww6k` failed during `slint-viewer --version` discovery before tests.
 Root dispatched corrected Linux recovery `xf4hhngdqg`;
-its terminal collection and independent full-suite reconciliation remain required.
+its terminal artifact is collected and every eligible test identity is independently reconciled.
+All 1460 passed,
+with one separate ignored benchmark.
+Matching before/after source hashes and immutable Git-object hashes verify the source stayed unchanged.
+This completes the nextest coverage recovery `#1073`
+and verifies the missing Slint viewer wave repair `#1108`.
+Historical Windows still has its genuine source test-compilation blocker;
+complete coverage accounting does not mean passing cross-platform CI.
 The next terminal batch has been collected:
 mutation attempts `70p38v12d7` and `0snqhv0rhl`,
 scheduler controls `m00504dz4c`,
@@ -351,8 +358,13 @@ and allocation in
 The 29 distinct failed identities include the existing issues `#1062` through `#1065`.
 The remaining assertions have separate issues because a shared cause has not been established.
 The existing fleet-wide Clippy issue `#372` now has the exact native source diagnostics.
-The missing Clippy component incident `#1072` remains closed;
-coverage issue `#1073` stays open for Linux recovery.
+The missing Clippy component incident `#1072` remains closed.
+Coverage issue `#1073` has complete native and Linux execution evidence,
+with the historical Windows source compile blocker retained as such.
+Linux watcher issues `#1079`,
+`#1080`,
+and `#1081` retain their original failures plus a separately observed successful repeat;
+their causes are not resolved by that later pass.
 
 - [#1082](https://github.com/Aquaticats/Monochromatic/issues/1082):
   a file that is not listed lands where the walk would put it.
@@ -404,3 +416,6 @@ coverage issue `#1073` stays open for Linux recovery.
   the keyboard ring hugs the switch row with the group corners.
 - [#1107](https://github.com/Aquaticats/Monochromatic/issues/1107):
   the switch shows its state by thumb position track fill and mark.
+- [#1108](https://github.com/Aquaticats/Monochromatic/issues/1108):
+  the Linux trial omitted the source-selected Slint viewer tool wave;
+  the corrected tool gate and every eligible Linux test now pass.

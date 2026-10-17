@@ -113,7 +113,40 @@ It produced no test identities or artifacts.
 Its Depot attempt lasted 163.843 seconds on the workflow's `16x64` allocation.
 This is a tool-discovery prerequisite failure,
 not a source compilation failure or evidence that all Linux cases ran.
-Issue `#1073` stays open until Linux recovery covers every eligible case or reaches a genuine source compile blocker.
+Corrected Linux recovery `xf4hhngdqg`,
+workflow revision `409e6ec10600958a5eba45200944ce25eefe7749`,
+passed the source-selected Slint viewer gate and ran every eligible test:
+
+```text
+Summary [  29.563s] 1460 tests run: 1460 passed, 1 skipped
+```
+
+Artifact `01a14827-9611-7704-bf87-fad55d354312` retains complete stdout,
+stderr,
+and source identity records.
+Its SHA-256 is `28d345887f4f8f4c1336da7b2b9ce91362eb0b57d018b270b6f7427e4ed89e2b`.
+Independent reconciliation found 1460 unique passed identities,
+every numbered ordinal from 1 to 1460,
+the exact 1460 denominator,
+and no unexecuted eligible case.
+All recorded source and input hashes match both before/after records
+and the independently read immutable Git objects.
+The original/adapted task body hashes match the later macOS source-task adapter.
+The provider interval was 269.099 seconds on 16 vCPUs and 64 GB RAM,
+or 4305.584 vCPU-seconds.
+The adapter interval was 120.842 seconds;
+the nextest summary reports 29.563 seconds.
+These are different boundaries and do not establish an isolated speed comparison.
+
+The fail-fast coverage omission now has complete execution evidence on macOS and Linux,
+plus the genuine historical Windows source compile blocker.
+This satisfies issue `#1073`'s recovery boundary.
+It does not establish passing cross-platform CI:
+macOS assertions,
+native Clippy diagnostics,
+and historical Windows compilation remain separately recorded.
+The missing Slint viewer wave in the initial Linux attempt is tracked separately in issue `#1108`;
+the corrected tool gate and complete Linux test run verify that harness repair.
 
 ## Verified workaround and tradeoff
 
@@ -158,8 +191,9 @@ seven sites at historical source on each native host,
 and two sites in `src/launcher.rs` at later source on macOS.
 Exact blocks are retained in the native recovery evidence;
 the existing migration is tracked in issue `#372`.
-The full cross-platform test coverage recovery remains open in issue `#1073`
-because the first Linux recovery failed during tool discovery.
+The cross-platform nextest execution accounting is complete for issue `#1073`,
+including the historical Windows source compile blocker.
+The first Linux attempt's tool-discovery failure remains retained as development usage.
 Installing the component adds setup work;
 it cannot turn source Clippy diagnostics into passing lint.
 
@@ -176,7 +210,7 @@ it cannot turn source Clippy diagnostics into passing lint.
 6.  The consumer adapter control passed;
     macOS cloud recovery executed every eligible case,
     historical Windows reached its independently tracked source compile blocker,
-    and Linux recovery remains incomplete after a tool-discovery failure.
+    and corrected Linux recovery executed and passed all 1460 eligible tests.
 
 The upstream nextest title search for `fail-fast` returned issues `#1955` and `#3624`,
 which concern beta override behavior and stress-run exit status respectively.
