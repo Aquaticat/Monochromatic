@@ -722,3 +722,56 @@ assert.deepEqual(libraryFiles,build.libraryFiles)
 writeFileSync(join(base,'git-host-installed-results.json'),JSON.stringify({version,elfSha256:sha,elfBytes:bytes.length,execPath:git(['--exec-path']),sharedLibraries:libraries,libraryFiles,consumerFixtureHead:head,processExe:executable,processExitCode:exitCode,resources},null,2)+'\n',{flag:'wx',mode:0o600})
 console.log(JSON.stringify({installedVersion:version,elfSha256:sha,processExe:executable,consumerCommit:head}))
 '''
+
+[tasks."trial:depot:git-host:linter"]
+description = "Build the authentic immutable-source linter and gate its real Markdown fix consumer"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const {execFileSync} = await import('node:child_process')
+const {readFileSync,writeFileSync,mkdirSync,openSync,closeSync,statSync} = await import('node:fs')
+const {join} = await import('node:path')
+const {createHash} = await import('node:crypto')
+const {strict:assert} = await import('node:assert')
+const base=process.env.DEPOT_GIT_HOST_DIRECTORY,workspace=process.env.GITHUB_WORKSPACE
+assert(base&&workspace)
+const source=join(workspace,'source'),owner=join(source,'package/linter/monochromatic-lint')
+const executable=join(base,'linter-target/debug/monochromatic-lint')
+assert.equal(process.env.GIT_POLICY_NATIVE_TEST_LINTER,executable)
+assert.equal(execFileSync('git',['rev-parse','HEAD'],{cwd:source,encoding:'utf8'}).trim(),'ef01490f5e960f8ca0b424c12242caeb3c5a2b5e')
+const hash=bytes=>createHash('sha256').update(bytes).digest('hex')
+const paths=execFileSync('git',['ls-files','-z','--','.cargo','package/linter/monochromatic-lint','package/rust-module/jsonc-edit'],{cwd:source,encoding:'utf8'}).split('\0').filter(Boolean).sort()
+const snapshot=()=>paths.map(path=>{const absolute=join(source,path),bytes=readFileSync(absolute);return {path,sha256:hash(bytes),bytes:bytes.length,mode:statSync(absolute).mode&0o777}})
+const before=snapshot()
+const environment={...process.env,CARGO_TARGET_DIR:join(base,'linter-target'),CARGO_NET_OFFLINE:'true',CARGO_BUILD_JOBS:'2',CARGO_PROFILE_DEV_DEBUG:'0',CARGO_INCREMENTAL:'0'}
+const args=['build','--offline','--locked','--bin','monochromatic-lint']
+const log=openSync(join(base,'git-host-linter-build.log'),'wx',0o600)
+try {execFileSync('cargo',args,{cwd:owner,env:environment,stdio:['ignore',log,log],timeout:1080000})}
+finally {closeSync(log)}
+assert.deepEqual(snapshot(),before)
+execFileSync('git',['diff','--exit-code','HEAD','--',...paths],{cwd:source,stdio:'pipe'})
+const bytes=readFileSync(executable)
+assert.equal(bytes.subarray(0,4).toString('hex'),'7f454c46')
+const libraries=execFileSync('ldd',[executable],{encoding:'utf8'})
+const libraryFiles=[...new Set([...libraries.matchAll(/(?:=>\s+)?(\/\S+)\s+\(/gu)].map(match=>match[1]))].sort().map(path=>{const bytes=readFileSync(path);return {path,sha256:hash(bytes),bytes:bytes.length}})
+const rules=execFileSync(executable,['--rules'],{cwd:owner,env:environment,encoding:'utf8',timeout:60000})
+assert(rules.includes('markdown/lfs-image-url'))
+const fixture=join(base,'consumer'),config=join(base,'linter-consumer.config.json')
+mkdirSync(join(fixture,'pkg/asset'),{recursive:true,mode:0o700})
+writeFileSync(join(fixture,'.lfsconfig'),'[lfs]\n\turl = https://lfs.example.com/org/repo\n',{flag:'wx'})
+writeFileSync(join(fixture,'.gitattributes'),'*.png filter=lfs diff=lfs merge=lfs -text\n',{flag:'wx'})
+writeFileSync(join(fixture,'pkg/asset/shot.png'),'image bytes',{flag:'wx'})
+writeFileSync(config,JSON.stringify([{files:['**/*.md','**/*.mdx'],rules:{'markdown/lfs-image-url':{severity:'warn',exclude:[]}}}]),{flag:'wx',mode:0o600})
+const input='# T\n\n![shot](asset/shot.png)\n'
+const expected='# T\n\n![shot](https://lfs.example.com/org/repo/de7030234493a8bea844dbe1d8676e68a2c1a4b014c721f0425a22b6df66faec/pkg/asset/shot.png)\n'
+const consumerArgs=['--config='+config,'--stdin','--stdin-filename=pkg/README.md','--fix']
+const fixed=execFileSync(executable,consumerArgs,{cwd:fixture,env:environment,input,encoding:'utf8',timeout:60000})
+assert.equal(fixed,expected)
+const unchanged=execFileSync(executable,consumerArgs,{cwd:fixture,env:environment,input:expected,encoding:'utf8',timeout:60000})
+assert.equal(unchanged,expected)
+assert.deepEqual(snapshot(),before)
+const tools={rustc:execFileSync('rustc',['--version','--verbose'],{encoding:'utf8'}),cargo:execFileSync('cargo',['--version'],{encoding:'utf8'})}
+const resources=Object.fromEntries(['cpu.max','memory.max','memory.events','pids.max','pids.events'].map(name=>[name,readFileSync(join('/sys/fs/cgroup',name),'utf8').trim()]))
+writeFileSync(join(base,'git-host-linter-results.json'),JSON.stringify({sourceRevision:'ef01490f5e960f8ca0b424c12242caeb3c5a2b5e',originalStage:'package/git-policy/cli/bin/native-linter-snapshot.mjs',compilerArgs:args,compilerEnvironment:{CARGO_NET_OFFLINE:'true',CARGO_BUILD_JOBS:'2',CARGO_PROFILE_DEV_DEBUG:'0',CARGO_INCREMENTAL:'0'},tools,sourceInputs:before,sourceInputsBeforeAfterEqual:true,sourceInputDigest:hash(Buffer.from(JSON.stringify(before))),executable,elfSha256:hash(bytes),elfBytes:bytes.length,sharedLibraries:libraries,libraryFiles,ruleCatalogSha256:hash(Buffer.from(rules)),consumer:{args:consumerArgs,input,expected,actual:fixed,fixedInputUnchanged:unchanged===expected},resources},null,2)+'\n',{flag:'wx',mode:0o600})
+console.log(JSON.stringify({linterElfSha256:hash(bytes),sourceInputsVerified:before.length,actualMarkdownFixConsumer:true,fixedInputUnchanged:true}))
+'''
