@@ -20,7 +20,9 @@ const events=[];
 /** Model and execution counters distinguish missing coverage from successful withholding. */
 const observations={assessments:0,httpCalls:0,attempts:0,selections:0,executions:0,active:0,maximumActive:0};
 /** Native cancellation and asynchronous update completion stay drainable. */
-const state={abortTask:undefined,updates:new Map()};
+const state={abortTask:undefined,updates:new Map(),sawNotification:false};
+/** Notifications must reach a subsequent real model request and permit its fresh operation. */
+const notification=mode.startsWith('notification-');
 const env=await createEnvironment({
   policyText:'RUL:\n The complete proposed local inspection is permitted.\n',useNativeProvider:true,
   extensionFactories:[function originalCallbacks(pi){
@@ -91,10 +93,15 @@ const runtime=bindNativePolicyRuntime({
     if(mode==='policy-change'&&observations.attempts===2)await writeFile(join(env.options.cwd,'AGENTS.md'),'RUL:\n The proposed inspection is prohibited.\n');
     return await sendAssessment(input);
   },
-  async terminalFetch(){
-    const proposed=requests.count++===0;
+  async terminalFetch(url,options){
+    const request=url instanceof Request?url:new Request(url,options);
+    const body=await request.clone().text();
+    if(body.includes('Authored process completion'))state.sawNotification=true;
+    const ordinal=requests.count++;
+    const proposed=ordinal===0||(notification&&ordinal===1);
+    const selected=ordinal===0?calls:[{index:0,id:'phase-3',type:'function',function:{name:'bash',arguments:JSON.stringify({command:'printf PHASE_FOLLOWUP'})}}];
     const chunk={id:'native-phase-fixture',object:'chat.completion.chunk',created:0,model:'fixture'};
-    const first={...chunk,choices:[{index:0,delta:proposed?{role:'assistant',tool_calls:calls}:{role:'assistant',content:'done'},finish_reason:null}]};
+    const first={...chunk,choices:[{index:0,delta:proposed?{role:'assistant',tool_calls:selected}:{role:'assistant',content:'done'},finish_reason:null}]};
     const last={...chunk,choices:[{index:0,delta:{},finish_reason:proposed?'tool_calls':'stop'}],usage:{prompt_tokens:100,completion_tokens:10,total_tokens:110}};
     return new Response(`data: ${JSON.stringify(first)}\n\ndata: ${JSON.stringify(last)}\n\ndata: [DONE]\n\n`,{headers:{'content-type':'text/event-stream'}});
   }
@@ -103,23 +110,25 @@ await using cleanup={async [Symbol.asyncDispose](){await state.abortTask;session
 await session.prompt('Perform the complete proposed local inspection.');
 await state.abortTask;
 const withheld=['invalid','before-block','deny','steer-user','policy-change'].includes(mode);
-assert.equal(observations.executions,withheld?0:mode==='cancel'?1:3);
-assert.equal(observations.attempts,['invalid','before-block'].includes(mode)?0:2);
+assert.equal(observations.executions,withheld?0:mode==='cancel'?1:notification?4:3);
+assert.equal(observations.attempts,['invalid','before-block'].includes(mode)?0:notification?4:2);
 assert.equal(observations.active,0);
-assert.equal(events.filter(event=>event==='prepare').length,3);
-assert.deepEqual(events.filter(event=>event.startsWith('message:')),['message:phase-0','message:phase-1','message:phase-2']);
-assert.deepEqual(events.filter(event=>event.startsWith('start:')),['start:phase-0','start:phase-1','start:phase-2']);
-assert.deepEqual(events.filter(event=>event.startsWith('before:')),mode==='invalid'?['before:phase-0','before:phase-2']:['before:phase-0','before:phase-1','before:phase-2']);
-for(const id of ['phase-0','phase-1','phase-2']){
+assert.equal(events.filter(event=>event==='prepare').length,notification?4:3);
+const ids=['phase-0','phase-1','phase-2',...(notification?['phase-3']:[])];
+assert.deepEqual(events.filter(event=>event.startsWith('message:')),ids.map(id=>`message:${id}`));
+assert.deepEqual(events.filter(event=>event.startsWith('start:')),ids.map(id=>`start:${id}`));
+assert.deepEqual(events.filter(event=>event.startsWith('before:')),ids.filter(id=>mode!=='invalid'||id!=='phase-1').map(id=>`before:${id}`));
+for(const id of ids){
   assert.equal(events.filter(event=>event.startsWith(`finish:${id}:`)).length,1);
   if(!events.includes(`execute:${id}`))continue;
   assert.ok(events.indexOf(`before:${id}`)<events.indexOf(`execute:${id}`));
-  assert.ok(events.lastIndexOf('assess')<events.indexOf(`execute:${id}`));
+  assert.equal(events.slice(0,events.indexOf(`execute:${id}`)).filter(event=>event==='assess').length,id==='phase-3'?4:2);
   assert.ok(events.indexOf(`updated:${id}`)>events.indexOf(`returned:${id}`));
   assert.ok(events.indexOf(`after:${id}`)>events.indexOf(`updated:${id}`));
   assert.equal(events.filter(event=>event===`after:${id}`).length,1);
 }
 if(!withheld&&mode!=='cancel')assert.equal(observations.maximumActive,['sequential','implicit-sequential'].includes(mode)?1:3);
 if(withheld)assert.equal(events.some(event=>event.startsWith('after:')),false);
+if(notification)assert.equal(state.sawNotification,true,'Captured custom data must reach the next real primary request');
 console.log(JSON.stringify({complete:true,mode,...observations,events}));
 //endregion
