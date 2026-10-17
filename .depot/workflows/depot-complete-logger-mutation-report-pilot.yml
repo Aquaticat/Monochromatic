@@ -10,64 +10,64 @@ jobs:
       image: monochromatic-trial-native-bases:20261016-v1
     timeout-minutes: 20
     env:
-      MISE_AUTO_INSTALL: "false"
-      MISE_LOCKED: "1"
+      MISE_AUTO_INSTALL: 'false'
+      MISE_LOCKED: '1'
       MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
       DEPOT_CI_CASE: logger
-      DEPOT_CI_CPUS: "2"
-      DEPOT_CI_MEMORY_GIB: "8"
+      DEPOT_CI_CPUS: '2'
+      DEPOT_CI_MEMORY_GIB: '8'
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          path: harness
-          persist-credentials: false
-          clean: false
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          path: source
-          ref: ef01490f5e960f8ca0b424c12242caeb3c5a2b5e
-          persist-credentials: false
-          clean: false
-      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
-        with:
-          version: 2026.10.9
-          working_directory: harness
-          install: false
-          env: false
-          export_path: false
-          cache: false
-      - name: Install exact source tool versions outside authoritative source
-        working-directory: harness
-        env:
-          MISE_LOCKED: "0"
-        run: mise run //package/dev-script/task-util:trial:depot:ci:native-tools
-      - name: Verify selected source tools and dependency inputs
-        working-directory: harness
-        run: mise run //package/dev-script/task-util:trial:depot:ci:native-tool-gate
-      - name: Verify immutable authoritative inputs before source diagnostic
-        working-directory: harness
-        env:
-          DEPOT_CI_IDENTITY_PHASE: before
-        run: mise run //package/dev-script/task-util:trial:depot:ci:source-identity
-      - name: Prepare cloud-verified owned container boundary
-        working-directory: harness
-        run: mise run //package/dev-script/task-util:trial:depot:ci:containers
-      - name: Exercise bounded authentic source mutation report consumer
-        working-directory: harness
-        run: mise run //package/module/logger.fuzz:trial:depot:mutation-report-pilot
-      - name: Verify immutable authoritative inputs after source diagnostic
-        if: always()
-        working-directory: harness
-        env:
-          DEPOT_CI_IDENTITY_PHASE: after
-        run: mise run //package/dev-script/task-util:trial:depot:ci:source-identity
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        if: always()
-        with:
-          name: logger-mutation-report-pilot-evidence
-          include-hidden-files: true
-          path: |
-            ~/temp/agent/depot-complete-ci/*.json
-            ~/temp/agent/depot-complete-ci/*.log
-            ~/temp/agent/depot-complete-ci/*.ts
-            ~/temp/agent/depot-complete-ci/container-bin/
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        path: harness
+        persist-credentials: false
+        clean: false
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        path: source
+        ref: ef01490f5e960f8ca0b424c12242caeb3c5a2b5e
+        persist-credentials: false
+        clean: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        version: 2026.10.9
+        working_directory: harness
+        install: false
+        env: false
+        export_path: false
+        cache: false
+    - name: Install exact source tool versions outside authoritative source
+      working-directory: harness
+      env:
+        MISE_LOCKED: '0'
+      run: mise run //package/dev-script/task-util:trial:depot:ci:native-tools
+    - name: Verify selected source tools and dependency inputs
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:ci:native-tool-gate
+    - name: Verify immutable authoritative inputs before source diagnostic
+      working-directory: harness
+      env:
+        DEPOT_CI_IDENTITY_PHASE: before
+      run: mise run //package/dev-script/task-util:trial:depot:ci:source-identity
+    - name: Prepare cloud-verified owned container boundary
+      working-directory: harness
+      run: mise run //package/dev-script/task-util:trial:depot:ci:containers
+    - name: Exercise bounded authentic source mutation report consumer
+      working-directory: harness
+      run: mise run //package/module/logger.fuzz:trial:depot:mutation-report-pilot
+    - name: Verify immutable authoritative inputs after source diagnostic
+      if: always()
+      working-directory: harness
+      env:
+        DEPOT_CI_IDENTITY_PHASE: after
+      run: mise run //package/dev-script/task-util:trial:depot:ci:source-identity
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      if: always()
+      with:
+        name: logger-mutation-report-pilot-evidence
+        include-hidden-files: true
+        path: |
+          ~/temp/agent/depot-complete-ci/*.json
+          ~/temp/agent/depot-complete-ci/*.log
+          ~/temp/agent/depot-complete-ci/*.ts
+          ~/temp/agent/depot-complete-ci/container-bin/
