@@ -1240,5 +1240,110 @@
     "No source-caused explanation is inferred from generic lock names, filesystem behavior, or an actual Git gate pass.",
     "No authentic ef014 linter ELF was previously verified in the native/TOML-owned routes.",
     "Final coherent dispatch remains held."
-  ]
+  ],
+  "gitGate": {
+    "build": {
+      "upstreamRevision": "a018953688f1b10bddf91bff8747068f5f4746a4",
+      "upstreamTree": "96aa7b9f343426cd28cf6c2da737b9f847a2919d",
+      "sourceArchiveSha256": "f9fe8e8e154798639bb00f7d50144e8f5b2ca6a5d891e245c4330000197fd5f8",
+      "sourceArchiveBytes": 54056960,
+      "originalSourceInputs": 4966,
+      "sourceInputsBeforeAfterEqual": true,
+      "sourceInputDigest": "11c4c764c83e9a5df9493f71f567f3d07cf327928cf3688e204baff4b8aec501",
+      "makeArgs": [
+        "--jobs=2",
+        "prefix=/usr",
+        "NO_GETTEXT=YesPlease",
+        "NO_TCLTK=YesPlease",
+        "PYTHON_PATH=/usr/bin/python3",
+        "CARGO_ARGS=--offline --release",
+        "DESTDIR=/home/runner/temp/agent/depot-git-host-wi0iEP/stage",
+        "install"
+      ],
+      "tools": {
+        "make": "GNU Make 4.3\nBuilt for x86_64-pc-linux-gnu\nCopyright (C) 1988-2020 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.",
+        "cc": "cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0\nCopyright (C) 2023 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.",
+        "cargo": "cargo 1.101.0-nightly (29c5daa1a 2026-10-07)",
+        "rustc": "rustc 1.101.0-nightly (e9bbadf68 2026-10-12)",
+        "rsync": "rsync  version 3.2.7  protocol version 31\nCopyright (C) 1996-2022 by Andrew Tridgell, Wayne Davison, and others.\nWeb site: https://rsync.samba.org/\nCapabilities:\n    64-bit files, 64-bit inums, 64-bit timestamps, 64-bit long ints,\n    socketpairs, symlinks, symtimes, hardlinks, hardlink-specials,\n    hardlink-symlinks, IPv6, atimes, batchfiles, inplace, append, ACLs,\n    xattrs, optional secluded-args, iconv, prealloc, stop-at, no crtimes\nOptimizations:\n    SIMD-roll, no asm-roll, openssl-crypto, no asm-MD5\nChecksum list:\n    xxh128 xxh3 xxh64 (xxhash) md5 md4 sha1 none\nCompress list:\n    zstd lz4 zlibx zlib none\nDaemon auth list:\n    sha512 sha256 sha1 md5 md4\n\nrsync comes with ABSOLUTELY NO WARRANTY.  This is free software, and you\nare welcome to redistribute it under certain conditions.  See the GNU\nGeneral Public Licence for details."
+      },
+      "version": "git version 2.56.0",
+      "elfSha256": "8c7b36571efa3e7daa5230ec86ab3c2f681d76e09f00eda3261424621cbe45c8",
+      "elfBytes": 20315424,
+      "sharedLibraries": "\tlinux-vdso.so.1 (0x00007ff420feb000)\n\tlibz.so.1 => /lib/x86_64-linux-gnu/libz.so.1 (0x00007ff420fbc000)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007ff420600000)\n\t/lib64/ld-linux-x86-64.so.2 (0x00007ff420fed000)\n",
+      "libraryFiles": [
+        {
+          "path": "/lib/x86_64-linux-gnu/libc.so.6",
+          "sha256": "3a15d66867d83762c7f2f1e37359cb8f6c5743edb369c65285cb0b1c4f7498bf",
+          "bytes": 2129424
+        },
+        {
+          "path": "/lib/x86_64-linux-gnu/libz.so.1",
+          "sha256": "86200da370f20476a2507e9097a789b5ef97269b4ca8d5e164ad82dab9d99892",
+          "bytes": 113000
+        },
+        {
+          "path": "/lib64/ld-linux-x86-64.so.2",
+          "sha256": "c20a2dc8917c755f02b94049356320fe1f62ac7d9f8994731f807d9df39302da",
+          "bytes": 236616
+        }
+      ],
+      "osRelease": "PRETTY_NAME=\"Ubuntu 24.04.5 LTS\"\nNAME=\"Ubuntu\"\nVERSION_ID=\"24.04\"\nVERSION=\"24.04.5 LTS (Noble Numbat)\"\nVERSION_CODENAME=noble\nID=ubuntu\nID_LIKE=debian\nHOME_URL=\"https://www.ubuntu.com/\"\nSUPPORT_URL=\"https://help.ubuntu.com/\"\nBUG_REPORT_URL=\"https://bugs.launchpad.net/ubuntu/\"\nPRIVACY_POLICY_URL=\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"\nUBUNTU_CODENAME=noble\nLOGO=ubuntu-logo\n",
+      "resources": {
+        "logicalCpus": 2,
+        "availableParallelism": 2,
+        "files": {
+          "cpu.max": "200000 100000",
+          "memory.max": "2147483648",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0",
+          "pids.max": "512",
+          "pids.events": "max 0"
+        }
+      }
+    },
+    "installed": {
+      "version": "git version 2.56.0",
+      "elfSha256": "8c7b36571efa3e7daa5230ec86ab3c2f681d76e09f00eda3261424621cbe45c8",
+      "elfBytes": 20315424,
+      "execPath": "/usr/libexec/git-core",
+      "sharedLibraries": "\tlinux-vdso.so.1 (0x00007f1a39c9b000)\n\tlibz.so.1 => /lib/x86_64-linux-gnu/libz.so.1 (0x00007f1a397e4000)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f1a39400000)\n\t/lib64/ld-linux-x86-64.so.2 (0x00007f1a39c9d000)\n",
+      "libraryFiles": [
+        {
+          "path": "/lib/x86_64-linux-gnu/libc.so.6",
+          "sha256": "3a15d66867d83762c7f2f1e37359cb8f6c5743edb369c65285cb0b1c4f7498bf",
+          "bytes": 2129424
+        },
+        {
+          "path": "/lib/x86_64-linux-gnu/libz.so.1",
+          "sha256": "86200da370f20476a2507e9097a789b5ef97269b4ca8d5e164ad82dab9d99892",
+          "bytes": 113000
+        },
+        {
+          "path": "/lib64/ld-linux-x86-64.so.2",
+          "sha256": "c20a2dc8917c755f02b94049356320fe1f62ac7d9f8994731f807d9df39302da",
+          "bytes": 236616
+        }
+      ],
+      "consumerFixtureHead": "485c8e2e7384536416725f71fcfafb91085efd91",
+      "processExe": "/usr/bin/git",
+      "processExitCode": 0,
+      "resources": {
+        "cpu.max": "200000 100000",
+        "memory.max": "2147483648",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0",
+        "pids.max": "512",
+        "pids.events": "max 0"
+      }
+    }
+  },
+  "verification": {
+    "verifiedCommit": "295f763a0f",
+    "jsonLintExitCode": 0,
+    "markdownLintExitCode": 0,
+    "renderExitCode": 0,
+    "renderedOutputRead": true,
+    "htmlBytes": 4187,
+    "htmlSha256": "cfd83da7bc8709d8afb8ffc6544f20384c69207e61cb03bda44d6af69ee2fd33",
+    "emphasisElements": 0
+  }
 }

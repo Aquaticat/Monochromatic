@@ -57,8 +57,8 @@ Generic lock names do not justify merging their observed boundaries.
 ## Issue comparison
 
 Exact and broader all-state searches found no matching incident.
-The evidence retains every query and result;
-no focused result reached the 100-issue limit.
+The evidence retains the focused query responses;
+no listed result reached the 100-issue limit.
 A separate recent-issue page is explicitly bounded.
 Related `#516` concerns a truncated dependency error and malformed-report attribution.
 Related `#627` concerns different helper divergences.
