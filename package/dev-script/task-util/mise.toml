@@ -403,7 +403,7 @@ const lock = readFileSync(join(source, 'mise.lock'), 'utf8')
 const tools = new Map([...lock.matchAll(/^\[\[tools\.(?:"([^"]+)"|([^\]]+))\]\]\nversion = "([^"]+)"/gm)].map((match) => [match[1] ?? match[2], match[3]]))
 const requested = ['node', 'pnpm', 'rust', 'cargo-binstall', 'cargo:cargo-nextest', 'cargo:monochromatic-lint', 'cargo:monochromatic-git-policy-cli']
 if (process.env.DEPOT_CI_WAVE === 'native-android') requested.push('java', 'android-sdk', 'cargo:cargo-ndk', 'cmake')
-if (process.env.DEPOT_CI_WAVE === 'native-desktop') requested.push('cargo:slint-viewer', 'cmake')
+if (process.env.DEPOT_CI_WAVE === 'native-desktop') requested.push('cargo:slint-viewer', 'cargo:monochromatic-nested-wayland-session', 'cmake')
 const selected = requested.map((name) => {
   assert(tools.has(name), `Required tool missing from exact source lockfile: ${name}`)
   return { name, version: tools.get(name) }
@@ -427,7 +427,14 @@ const directory = join(homedir(), 'temp/agent/depot-complete-ci')
 mkdirSync(directory, { recursive: true, mode: 0o700 })
 chmodSync(directory, 0o700)
 const selectedManifest = JSON.parse(readFileSync(join(process.env.GITHUB_WORKSPACE, `harness/.depot/manifests/${process.env.DEPOT_CI_CASE ?? 'native'}.json`), 'utf8'))
-const record = { source: selectedManifest.sourceRevision, lockSha256: createHash('sha256').update(lock).digest('hex'), tools: selected, policyBinary, policyLink }
+let publishedCompositor
+if (process.env.DEPOT_CI_WAVE === 'native-desktop') {
+  const name = 'cargo:monochromatic-nested-wayland-session'
+  const root = execFileSync('mise', ['where', `${name}@${tools.get(name)}`], { cwd: source, env, encoding: 'utf8' }).trim()
+  const path = join(root, 'bin/monochromatic-nested-wayland-session')
+  publishedCompositor = { path, lockedVersion: tools.get(name), sha256: createHash('sha256').update(readFileSync(path)).digest('hex'), versionOutput: execFileSync(path, ['--version'], { encoding: 'utf8' }).trim() }
+}
+const record = { source: selectedManifest.sourceRevision, lockSha256: createHash('sha256').update(lock).digest('hex'), tools: selected, policyBinary, policyLink, publishedCompositor }
 writeFileSync(join(directory, 'native-tools.json'), JSON.stringify(record, null, 2))
 appendFileSync(process.env.GITHUB_ENV, `MISE_RUST_VERSION=${rust}\n`)
 assert.equal(readFileSync(join(source, 'mise.lock'), 'utf8'), lock, 'Tool installation changed source lockfile')
@@ -562,6 +569,9 @@ const app = join(source, 'package/music-player/desktop-app')
 const compositor = join(source, 'package/cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session')
 assert(existsSync(compositor), 'The exact-head repository compositor must be built before runtime validation')
 const directory = join(homedir(), 'temp/agent/depot-complete-ci')
+const { publishedCompositor } = JSON.parse(readFileSync(join(directory, 'native-tools.json'), 'utf8'))
+assert(publishedCompositor?.path, 'The authored desktop task requires its locked published compositor')
+assert.equal(createHash('sha256').update(readFileSync(publishedCompositor.path)).digest('hex'), publishedCompositor.sha256, 'Published compositor bytes changed after prerequisite preparation')
 const manifestName = process.env.DEPOT_CI_CASE ?? 'native'
 const manifestBytes = readFileSync(join(process.env.GITHUB_WORKSPACE, `harness/.depot/manifests/${manifestName}.json`))
 const manifest = JSON.parse(manifestBytes)
@@ -626,7 +636,7 @@ for(const [path,contents] of ${JSON.stringify(overrides)}){
   run({ args: ['exec', name, process.execPath, '--input-type=module', '-e', configurePrivateLimits] })
   run({ args: ['exec', name, 'systemctl', 'daemon-reload'] })
   run({ args: ['exec', name, 'systemctl', 'start', `user@${process.getuid()}.service`] })
-  const user = ['exec', '--workdir', app, name, 'runuser', '--user', userInfo().username, '--', 'env', `XDG_RUNTIME_DIR=/run/user/${process.getuid()}`, `DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${process.getuid()}/bus`, `PATH=${process.env.PATH}`, 'MISE_AUTO_INSTALL=false', 'MISE_LOCKED=1', `MISE_RUST_VERSION=${process.env.MISE_RUST_VERSION}`, `MISE_TRUSTED_CONFIG_PATHS=${source}`, 'LIBGL_ALWAYS_SOFTWARE=1', 'E2E_ONLY=', `E2E_COMPOSITOR=${compositor}`]
+  const user = ['exec', '--workdir', app, name, 'runuser', '--user', userInfo().username, '--', 'env', '--unset=E2E_COMPOSITOR', `XDG_RUNTIME_DIR=/run/user/${process.getuid()}`, `DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${process.getuid()}/bus`, `PATH=${process.env.PATH}`, 'MISE_AUTO_INSTALL=false', 'MISE_LOCKED=1', `MISE_RUST_VERSION=${process.env.MISE_RUST_VERSION}`, `MISE_TRUSTED_CONFIG_PATHS=${source}`, 'LIBGL_ALWAYS_SOFTWARE=1', 'E2E_ONLY=']
   assert.equal(run({ args: [...user, 'systemctl', '--user', 'show', '--property=DefaultTasksMax', '--value'] }).stdout.trim(), '256', 'Private user services must receive the measured trial task budget')
   assert.equal(run({ args: ['exec', name, 'systemctl', 'show', `user-${process.getuid()}.slice`, '--property=TasksMax', '--value'] }).stdout.trim(), '448', 'Private user slice must retain headroom inside the 512-task container')
   sampleResources('private-limits-configured')
