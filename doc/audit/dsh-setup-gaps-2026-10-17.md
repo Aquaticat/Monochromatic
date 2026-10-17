@@ -384,13 +384,24 @@ DSH ships an MCP client.
 The `@deepseek-ai/dsh-mcp-client` package describes itself as
 "MCP client bridge:
 connects to MCP servers and registers their tools on ctx.tools".
-It is not composed into the `web` profile.
-Searching the 203 plugin entries returns no `mcp-client` row.
-The only reachable paths to the package run through
+At the time of the first measurement it was not composed into the `web`
+profile.
+Searching the 203 plugin entries returned no `mcp-client` row.
+The only reachable paths to the package ran through
 `@deepseek-ai/dsh-acp` and `@deepseek-ai/dsh-acp-app`,
 and both of those bundles report `enabled: false` in `list_bundles`.
 `include:mcp-resources` is active but is a resource-exposure plugin,
 not a server bridge.
+
+Status changed during this audit:
+one bridge is now composed.
+`package/dsh-plugin/search-fetch` inserts a `dsh-mcp-client` row over stdio,
+and the web search section below records what it provides and how it was
+verified.
+The gap that remains is breadth,
+not the absence of a mechanism:
+one server is connected,
+and the seven Claude Code namespaces below are not.
 
 What the other two harnesses have:
 
@@ -427,6 +438,204 @@ against every request.
 DSH mounts all 52 tools unconditionally.
 Pi also sets `defaultTools: ["+codemode", "+tool_search"]`,
 which is the same context-economy motive.
+
+## Web search had exactly one provider and it needed an account this machine lacks
+
+Severity:
+high before remediation,
+closed for search,
+with one policy question left open.
+
+### The gap
+
+DSH ships one web search provider.
+Searching the 292 `@deepseek-ai/dsh-*` packages for `search` returns four
+names,
+and only one is a web search provider:
+`dsh-web-search-deepseek`,
+described as "DeepSeek-backed search provider (native web_search via the
+Anthropic-compatible API) for the DeepSeek Harness web capability seam
+(ctx.web)".
+The other three are `dsh-client-ui-settings-web-search` (its settings page),
+`dsh-experimental-session-search` (session history),
+and `dsh-tool-fs-search` (`glob` and `grep`).
+
+The `dsh-base` bundle hardwires it as the only search backend,
+at `cordis.patch.yml:465-474` of that package:
+
+```yaml
+# @deepseek-ai/dsh-base/cordis.patch.yml:465-474
+- id: web
+  name: '@deepseek-ai/dsh-web'
+  config:
+    searchProvider: deepseek-official
+    fetchProvider: http
+
+- id: web-search-deepseek
+  name: '@deepseek-ai/dsh-web-search-deepseek'
+  config:
+    apiKeyEnv: DEEPSEEK_API_KEY
+```
+
+The provider's own module documentation states the authentication route:
+a search on the DeepSeek account route uses the account token,
+and "every other search reuses `DEEPSEEK_API_KEY`".
+
+Neither credential exists here.
+`~/.dsh/.credentials.yaml` holds five references:
+`QWEN_TOKEN_PLAN_INDIVIDUAL_API_KEY`,
+`OPENCODE_GO_API_KEY`,
+`SYNTHETIC_API_KEY`,
+`LLMGATEWAY_DEVPASS_API_KEY`,
+and `NEURALWATT_API_KEY`.
+No `DEEPSEEK_API_KEY`,
+and no DeepSeek name appears in the process environment.
+
+The consequence is asymmetric,
+and the asymmetry is the reason this rates high.
+`fetchProvider: http` points at `dsh-web-fetch-http`,
+described as an "Anonymous public HTTP(S) fetch provider",
+which needs no account,
+so `web_fetch` worked.
+Search had no equivalent fallback.
+A DSH agent on this machine could retrieve a URL it already had
+and could not discover one.
+
+Both other harnesses have working search.
+Claude Code allows `WebSearch` and `mcp__claude_ai_linkup__linkup-search`.
+Pi carries three configurations:
+`extensions/pi-search-fetch.json` (an Exa key plus a 23-entry host blocklist),
+`extensions/exa-mcp.json` (`https://mcp.exa.ai/mcp`,
+tools `web_search_exa` and `get_code_context_exa`),
+and `extensions/firecrawl.json` (`https://api.firecrawl.dev`,
+tools `firecrawl_scrape`,
+`firecrawl_map`,
+and `firecrawl_search`).
+
+### Remediation
+
+The repo already owned the right component.
+`package/mcp/search-fetch` is described as an "MCP server exposing the shared
+search and fetch tools with truncated responses as resources",
+and its README states the design rule that decided the approach:
+the Pi extension "serves pi hosts",
+this server "serves every other MCP host with the identical behavior",
+and "Both surfaces delegate to
+`@monochromatic-dev/agent-harness-shared-search-fetch`,
+so behavior has exactly one implementation."
+
+DSH is such a host.
+Authoring a native `ctx.web` provider instead would have created a third
+surface,
+against that stated design.
+
+So the fix is a configuration-only bundle,
+`package/dsh-plugin/search-fetch`,
+which inserts one `@deepseek-ai/dsh-mcp-client` row with
+`transport: stdio`,
+`serverName: search-fetch`,
+and `failOnStartupError: true`.
+It was installed through `plugin_manager` with `action: install_bundle`,
+which reported `application: "applied"`,
+package install exit code 0,
+and no warnings.
+
+Two details of the row are worth recording because both were measured rather
+than assumed.
+
+`command` is `!!js process.execPath`,
+the host's own Node,
+so the spawn does not depend on `PATH` resolution.
+The single `args` entry resolves the built server through this bundle's own
+`package.json` with `createRequire(baseUrl)`,
+then walks to `../../mcp/search-fetch/dist/final/node/index.mjs`,
+which keeps the wiring relative to the checkout rather than hardcoding a
+workspace path or a username.
+
+No credential is copied into the bundle.
+The server resolves its own config from
+`$HOME/.pi/agent/extensions/pi-search-fetch.json`,
+through `options.home ?? process.env.HOME ?? homedir()` at
+`package/agent-harness-shared/search-fetch/src/config.ts:79-95`.
+`HOME` reaches the child because the harness subprocess scrub in
+`@deepseek-ai/dsh-subprocess` drops only names matching
+`/KEY|PASSWORD|SECRET|TOKEN/i` and names beginning with `DSH_`,
+and its own documentation states that `PATH`,
+`HOME`,
+locale,
+and proxy variables survive.
+`PATH` surviving is also what makes the `gh` CLI route work.
+
+The `cordis` preset override described in the instruction budget section
+additionally sets `tool-web` `search: false`,
+so the native `web_search` is not offered to the model as a tool that can only
+fail.
+`@deepseek-ai/dsh-tool-web` declares `search` and `fetch` as independent
+booleans both defaulting to true,
+and its source comment states the intent directly:
+"a product that wants only one disables the other in config".
+The shipped `dsh-base` comment at `cordis.patch.yml:454-456` names the same
+mechanism:
+"The Web app disables this host row and composes both tools per agent preset;
+products with a stricter network policy override `tool-web`."
+
+`include:web-search-deepseek` and `include:ui-settings-web-search` were also
+disabled,
+the second because its settings page configures the first provider's API key,
+endpoint,
+and search budget,
+and would otherwise be an orphaned page.
+
+### Verification
+
+Four probes,
+all at the tool boundary rather than from configuration.
+
+`mcp__search-fetch__web_search` on a real query returned ten ranked results as
+JSONL from Exa,
+which proves the spawn path,
+the `createRequire(baseUrl)` resolution,
+and that `HOME` reached the child so the Exa key was found.
+
+`mcp__search-fetch__web_fetch` on `https://exa.ai/docs/search/quickstart`
+returned full page text with `"source": "cached"`.
+This is the positive control:
+it proves the probe can succeed,
+so the next result is meaningful.
+
+The same tool on `https://www.geeksforgeeks.org/` returned
+`Error: Tool execution failed: Blocked by pi-search-fetch blocklist:
+geeksforgeeks.org`.
+`geeksforgeeks.org` is one of the 23 blocklist entries,
+and the rejection happens before any provider is called.
+
+`mcp__search-fetch__web_fetch` on a GitHub blob URL returned raw YAML file
+content rather than an HTML page render,
+which confirms the `gh` CLI route and therefore that `PATH` survived the scrub.
+
+Not verified:
+Linkup fallback.
+It needs a key that is not configured on this machine
+(no `~/.pi/agent/extensions/pi-linkup.json`),
+so search runs Exa-only.
+Also not verified:
+what a session created before the install sees,
+since existing sessions keep the plugin revision they started with.
+
+### Open policy question
+
+Two fetch tools are now live with different policies.
+The native `web_fetch` from `dsh-web-fetch-http` accepts any public HTTP(S)
+destination.
+`mcp__search-fetch__web_fetch` enforces the 23-entry blocklist,
+routes mapped GitHub URLs through `gh`,
+and strips base64 data-URL images.
+
+An agent that wants a blocklisted host can get it through the native tool.
+That is a real hole in the blocklist's purpose,
+and closing it means setting `fetch: false` on the `tool-web` preset row.
+The tradeoff is losing an account-free fetch path.
+This is left as an owner decision rather than settled here.
 
 ## Five Claude Code lifecycle hooks have no DSH counterpart
 
@@ -702,13 +911,17 @@ Measured from the active plugin list:
 
 ## Priorities
 
-Items 1 and 4 were actioned while this audit was being written and are
-recorded as done rather than open.
+Items 1,
+3,
+and 4 were actioned while this audit was being written and are recorded as
+done rather than open.
 
 1. Done:
-   the instruction budget cap was raised to 131072 in
-   `~/.dsh/profiles/web/cordis.patch.yml`,
+   the instruction budget cap was raised to 131072,
    which stops `AGENTS.md` being omitted.
+   It lives in the `preset-cordis` override rather than a host-level row,
+   because `dsh-web-app` sets the host `agent-instructions` row to
+   `disabled: true`.
    Still open:
    DSH agents continue to receive Claude Code's 49-line preamble,
    and only a DSH-specific instruction file removes that contradiction.
@@ -724,15 +937,32 @@ recorded as done rather than open.
    Owner decision recorded as "leave as an audit finding",
    so this stays open by choice rather than by oversight.
 
-3. Compose an MCP bridge if the seven Claude Code integrations matter.
-   `@deepseek-ai/dsh-mcp-client` already exists in the install tree.
-   Start with `morph` for code intelligence,
+3. Done for search,
+   open for breadth.
+   One MCP bridge is composed:
+   `package/dsh-plugin/search-fetch` connects the repo's shared search and
+   fetch server,
+   which restores the web search capability this machine had no route to.
+   The web search section records the four boundary probes that verified it.
+   Still open:
+   the other Claude Code integrations.
+   `morph` is the next candidate for code intelligence,
    since Pi deliberately sets `serena` to `"enabled": false`
    and its Claude Code allow-list entries are historical.
    Copy Pi's deferred-exposure idea rather than mounting every
    server's schema eagerly.
 
-4. Done:
+4. Decide which fetch tool agents should use.
+   Two are live with different policies:
+   the native `web_fetch` accepts any public HTTP(S) destination,
+   while `mcp__search-fetch__web_fetch` enforces the 23-entry blocklist,
+   routes GitHub URLs through `gh`,
+   and strips base64 data-URL images.
+   The native tool is therefore a route around the blocklist.
+   Closing it means `fetch: false` on the `tool-web` preset row,
+   at the cost of an account-free fetch path.
+
+5. Done:
    the 24 inert `disabled: false` patch entries were reverted,
    and the patch file again carries only rows that change profile behavior.
    Two rows that ended `disabled: true` for cause were removed with them,
@@ -745,17 +975,17 @@ recorded as done rather than open.
    and `serviceVersion` that are not configured,
    which leaves `product-analytics` pending on a service that never arrives.
 
-5. Port `bash-output-filter` behavior if Bash output volume is a context
+6. Port `bash-output-filter` behavior if Bash output volume is a context
    problem in DSH sessions.
    It is the one hook with a direct,
    measurable context cost.
 
-6. Rotate the plaintext `llmgateway-devpass` API key in
+7. Rotate the plaintext `llmgateway-devpass` API key in
    `~/.pi/agent/models.json` and move it to an environment variable.
    This is a Pi defect surfaced by the comparison,
    and the file is mode `0644`.
 
-7. Fix the stale `enabledMcpjsonServers` entries in
+8. Fix the stale `enabledMcpjsonServers` entries in
    `.claude/settings.local.json`,
    which name two servers with no
    `.mcp.json` behind them.
@@ -834,3 +1064,37 @@ Markdown rules were checked with `mise run lint:monochromatic-lint`,
 which passes clean,
 and the document was rendered through `pandoc` to confirm both YAML fences
 highlight and no emphasis marker leaks as literal text.
+
+The web search remediation was verified differently,
+by exercising the tools rather than reading configuration.
+Installation reported `application: "applied"` with no warnings,
+and `failOnStartupError: true` means a server that failed to start would have
+blocked activation rather than silently omitting tools.
+That is necessary but not sufficient,
+so four boundary probes followed:
+a real search,
+a fetch positive control,
+a blocklist rejection,
+and a `gh`-routed GitHub fetch.
+The positive control matters because a rejection proves nothing on its own;
+the same tool succeeding on an allowed host moments earlier is what makes the
+blocklist result meaningful.
+
+One methodological error was made and corrected during this audit,
+and it is recorded because the same trap is easy to fall into again.
+Mid-way through,
+the claim was made that `mcp__search-fetch__web_search` had been available
+since the first turn,
+which would have meant the bundle duplicated an existing connection.
+It was wrong.
+The DSH system prompt regenerates every turn,
+so the tool list and the "MCP resource servers" section visible at any moment
+describe the current composition,
+not the composition at session start.
+Recalling an earlier turn's context is not evidence.
+`session_event_search` settled it:
+the earliest occurrence of that tool name in this session is a `listTools`
+result logged after the install,
+and every earlier "search-fetch" hit is the Pi plugin path.
+Any claim about what an earlier turn could see has to be checked against
+session events.
