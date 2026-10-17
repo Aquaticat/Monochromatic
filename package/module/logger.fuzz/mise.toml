@@ -520,6 +520,36 @@ assert(cleanupVerified,'Disposable generator worktree cleanup remained incomplet
 console.log(JSON.stringify({label,cleanupVerified,ordinaryExitCode:ordinaryRemoval.exitCode,privilegedExitCode:privilegedRemoval?.exitCode,metadataEntries:metadata.length}))
 '''
 
+[tasks."trial:depot:generated:cleanup-control"]
+description = "Prove confined cleanup after an actual bounded rootful container creates disposable output"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const {execFileSync}=await import('node:child_process')
+const {readFileSync,writeFileSync,mkdirSync,existsSync,lstatSync}=await import('node:fs')
+const {join}=await import('node:path')
+const {homedir}=await import('node:os')
+const {strict:assert}=await import('node:assert')
+const workspace=process.env.GITHUB_WORKSPACE,source=join(workspace,'source'),harness=join(workspace,'harness')
+const manifest=JSON.parse(readFileSync(join(harness,'.depot/manifests/logger.json'),'utf8'))
+const directory=join(homedir(),'temp/agent/depot-complete-ci'),label='sidecar.generated-type-consistency.1',fixture=join(directory,`logger-generated-${label}`)
+mkdirSync(directory,{recursive:true,mode:0o700});assert(!existsSync(fixture))
+execFileSync('git',['worktree','add','--detach',fixture,manifest.sourceRevision],{cwd:source,stdio:'inherit'})
+const output=join(fixture,'package/module/deepmerge-ts.fuzz/dist/declared-type');mkdirSync(output,{recursive:true,mode:0o700})
+const image='docker.io/library/node:26-slim',containerLabel='io.monochromatic.logger.generated-cleanup-control=1'
+const args=['--non-interactive','podman','run','--memory=2g','--cpus=2','--pids-limit=512','--rm','--network=none','--label',containerLabel,'--volume',`${fixture}:/repo:ro`,'--volume',`${output}:/repo/package/module/deepmerge-ts.fuzz/dist/declared-type:rw`,'--workdir','/repo/package/module/deepmerge-ts.fuzz',image,'node','--input-type=module','--eval',"import {mkdirSync,writeFileSync} from 'node:fs';mkdirSync('dist/declared-type/corpus',{recursive:true,mode:0o755});writeFileSync('dist/declared-type/corpus/root-owned.txt','bounded disposable cleanup control\\n',{mode:0o644});console.log(JSON.stringify({uid:process.getuid(),gid:process.getgid(),node:process.version}));"]
+const containerOutput=execFileSync('sudo',args,{cwd:harness,encoding:'utf8',timeout:300000,maxBuffer:8*1024*1024})
+const inspect=JSON.parse(execFileSync('sudo',['--non-interactive','podman','image','inspect',image],{cwd:harness,encoding:'utf8'}))
+assert.equal(inspect[0].Id,'7a0d2c0c30811c393f278a255613b2a78cac778438bc06464e4a8b6979c3d4a9','Cleanup control must use the same actual declared-corpus image config')
+const path=join(output,'corpus/root-owned.txt'),stat=lstatSync(path);assert.equal(stat.uid,0);assert.equal(stat.gid,0);assert.equal(stat.mode&0o777,0o644)
+const cleanupOutput=execFileSync('mise',['run','//package/module/logger.fuzz:trial:depot:generated:cleanup'],{cwd:harness,env:{...process.env,DEPOT_LOGGER_GENERATED_CONSUMER:fixture,DEPOT_LOGGER_GENERATED_LABEL:label},encoding:'utf8',timeout:300000,maxBuffer:8*1024*1024})
+const receipt=JSON.parse(readFileSync(join(directory,`generated-${label}-cleanup.json`),'utf8'))
+assert.notEqual(receipt.ordinaryRemoval.exitCode,0);assert(/Permission denied/i.test(receipt.ordinaryRemoval.stderr));assert.equal(receipt.privilegedRemoval.exitCode,0);assert(receipt.cleanupVerified);assert(!existsSync(fixture));assert.equal(receipt.authoritativeStatusAfter,receipt.authoritativeStatusBefore);assert(receipt.metadata.some(row=>row.path.endsWith('corpus/root-owned.txt')&&row.uid===0&&row.mode===0o644))
+const remaining=execFileSync('sudo',['--non-interactive','podman','ps','--all','--filter',`label=${containerLabel}`,'--format','{{.ID}}'],{cwd:harness,encoding:'utf8'}).trim();assert.equal(remaining,'')
+writeFileSync(join(directory,'logger-generated-cleanup-control.json'),JSON.stringify({sourceRevision:manifest.sourceRevision,label,originalSourceConsumerRepeated:false,actualSourceCheckCredit:0,containerArgs:args,containerOutput,imageInspect:inspect,rootOwnedFileStat:{uid:stat.uid,gid:stat.gid,mode:stat.mode&0o777,bytes:stat.size},cleanupOutput,cleanupReceipt:receipt,remainingContainers:remaining},null,2)+'\n',{flag:'wx',mode:0o600})
+console.log(JSON.stringify({rootOwnedUid:stat.uid,ordinaryExitCode:receipt.ordinaryRemoval.exitCode,privilegedExitCode:receipt.privilegedRemoval.exitCode,cleanupVerified:true,originalSourceConsumerRepeated:false,remainingContainers:remaining}))
+'''
+
 [tasks."trial:depot:prerequisites"]
 description = "Prepare locked logger executables and offline Cargo inputs before selected checks"
 dir = "{{config_root}}/../../.."
