@@ -55,7 +55,7 @@ Its `stage` task reads and stages inputs without device operations;
 `controls` exercises only offline input checks.
 The staged runtime task file is
 `~/temp/agent/depot-coherent-android-consumer-20261017/runtime/mise.toml`.
-Its SHA-256 is `d229f7af50416d54b2cca276d638f6d61f3a9b9bef81e81922e7807c182aef91`.
+Its SHA-256 is `f7450a475640ff27bfad6bef131591d7420e3f9793d392019af11a89b227174c`.
 It contains private variants of `prepare`,
 `launch`,
 `boot`,
@@ -88,7 +88,19 @@ Those fixtures are not final provider proof.
 Their validated output was replaced with an explicitly invalid fixture marker after the controls,
 so it cannot authorize the prepared device tasks.
 The adapted task bodies passed Node syntax checks.
+Every generated task was also parsed through the actual `mise tasks info` boundary,
+and its parsed body hash matched the checked module.
 Their live device behavior remains unexercised in this preparation.
+
+The initial preparation in commit `5d5544da6a` published task-file hash
+`d229f7af50416d54b2cca276d638f6d61f3a9b9bef81e81922e7807c182aef91`.
+Parsed-command verification then exposed an unrewritten `--unit=depot-trial-fold` launch argument,
+while boot checked the unique prepared unit.
+The claim that this initial launch already used the unique unit was retracted.
+The exact launch argument was corrected on 2026-10-17 before any launch.
+The preparation evidence retains the original/repaired parsed-body hashes and unit mismatch control.
+Both the actual parsed launch and boot tasks now name `depot-coherent-android-a038cc3c`,
+and every parsed runtime body rejects residual legacy-unit references.
 
 ## Final producer input contract
 

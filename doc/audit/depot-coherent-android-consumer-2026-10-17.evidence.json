@@ -1,5 +1,5 @@
 {
-  "preparedAt": "2026-10-17T06:22:01.791Z",
+  "preparedAt": "2026-10-17T06:27:26.200Z",
   "state": "prepared-no-device-operations",
   "sourceRevision": "cb95cf6d785c3073c192b95f0632cdae7b910894",
   "sourceTree": "ee83d524cb9dbd385bddd2e745b3624873290f58",
@@ -7,7 +7,7 @@
   "legacyHarness": "/home/user/temp/agent/depot-android-device/mise.toml",
   "legacyHarnessSha256": "0f83f853d6df0439ca56c530699e6b0e14516f68fd893105e85fad41a10f31cc",
   "stagedHarness": "/var/mnt/encrypted/temp/agent/depot-coherent-android-consumer-20261017/runtime/mise.toml",
-  "stagedHarnessSha256": "d229f7af50416d54b2cca276d638f6d61f3a9b9bef81e81922e7807c182aef91",
+  "stagedHarnessSha256": "f7450a475640ff27bfad6bef131591d7420e3f9793d392019af11a89b227174c",
   "bodies": {
     "prepare": {
       "originalSha256": "ccae89f5877d524df028d13587ac1752bc36aa8e28fec0e34a6b75e44f04af6d",
@@ -15,7 +15,7 @@
     },
     "launch": {
       "originalSha256": "9e89085c49b0e99f99ca657f0b634605eb372054f4dacdd3efb4b48288cc6040",
-      "adaptedSha256": "07126c292b95fcd74361a9244edc0997b2370f33daf38933c23cc26d00a8f346"
+      "adaptedSha256": "fc209af22d08ae2ec95215d44ace936695b633ebae1036f17e4f15dcbc1d290b"
     },
     "boot": {
       "originalSha256": "f16ebe2f71ffece72b278a1d7491a55010ace2362acaac9b7134cabe38069d95",
@@ -36,6 +36,36 @@
     "shutdown": {
       "originalSha256": "8dc2392c87197d86850bbee9db5b90b94ddb0cde73d84e3b38bed6fffc37bdfb",
       "adaptedSha256": "748d378b425138bb62af82f664ed0b544a788614a97fcbf7afe70e6391c6fa67"
+    }
+  },
+  "parsedTasks": {
+    "prepare": {
+      "sha256": "e107966035912057269c101119ff0be9f58264bed0455bab6e5639e02804daa5",
+      "noLegacyUnit": true
+    },
+    "launch": {
+      "sha256": "fc209af22d08ae2ec95215d44ace936695b633ebae1036f17e4f15dcbc1d290b",
+      "noLegacyUnit": true
+    },
+    "boot": {
+      "sha256": "6bc4f003f8ee6872a09ea53f8f015116fa9c60ea7c99e14958268223401579b0",
+      "noLegacyUnit": true
+    },
+    "complete-install": {
+      "sha256": "4499e01ff45b1c228a1f96f15e985eb4160b0b2b061f4090bb1f357848a28ddd",
+      "noLegacyUnit": true
+    },
+    "fixtures": {
+      "sha256": "0a00c8c5d022b7e948d9229c8bad98e50519e2e67d79dfbb203fec0fe59bbbc8",
+      "noLegacyUnit": true
+    },
+    "complete-instrument": {
+      "sha256": "4e88a843a4b6cea79e7bb206ca8944ed1890b111a2233022ab604f26e02f89a7",
+      "noLegacyUnit": true
+    },
+    "shutdown": {
+      "sha256": "748d378b425138bb62af82f664ed0b544a788614a97fcbf7afe70e6391c6fa67",
+      "noLegacyUnit": true
     }
   },
   "expected": [
@@ -223,9 +253,27 @@
   "limitations": [
     "No final coherent producer was supplied.",
     "No emulator, adb server, install, fixture push, instrumentation, or shutdown was run.",
-    "Fresh runtime task bodies were syntax-checked but require the actual final producer/device boundary.",
+    "Fresh runtime task bodies were syntax-checked and parsed through mise but require the actual final producer/device boundary.",
     "Current guest settings and resource peaks are unmeasured; owned config and historical guest values are not fresh guest evidence."
   ],
+  "unitBindingCorrection": {
+    "scope": "Parsed task boundary only; no emulator, adb, or systemd-run execution.",
+    "beforeHarnessSha256": "d229f7af50416d54b2cca276d638f6d61f3a9b9bef81e81922e7807c182aef91",
+    "afterHarnessSha256": "f7450a475640ff27bfad6bef131591d7420e3f9793d392019af11a89b227174c",
+    "beforeLaunchSha256": "07126c292b95fcd74361a9244edc0997b2370f33daf38933c23cc26d00a8f346",
+    "afterLaunchSha256": "fc209af22d08ae2ec95215d44ace936695b633ebae1036f17e4f15dcbc1d290b",
+    "before": {
+      "launchUnit": "depot-trial-fold",
+      "bootUnit": "depot-coherent-android-a038cc3c",
+      "mismatch": true
+    },
+    "after": {
+      "launchUnit": "depot-coherent-android-a038cc3c",
+      "bootUnit": "depot-coherent-android-a038cc3c",
+      "mismatch": false
+    },
+    "deviceOperations": 0
+  },
   "contractControls": {
     "scope": "Offline byte/provenance join controls; synthetic cohort/receipt/archive fields, historical real APK bytes. Not final provider proof.",
     "results": [
@@ -273,7 +321,7 @@
     "sourceRevision": "cb95cf6d785c3073c192b95f0632cdae7b910894",
     "harness": {
       "producerRevision": null,
-      "consumerHarnessSha256": "d229f7af50416d54b2cca276d638f6d61f3a9b9bef81e81922e7807c182aef91"
+      "consumerHarnessSha256": "f7450a475640ff27bfad6bef131591d7420e3f9793d392019af11a89b227174c"
     },
     "producer": {
       "runId": null,
@@ -301,5 +349,5 @@
     ]
   },
   "preparationTaskPath": "/var/mnt/encrypted/temp/agent/depot-coherent-android-consumer-20261017/mise.toml",
-  "preparationTaskSha256": "498234bbb681dfc36ae5291cecc2b61954031b0b8a971f9e365cd4e7f963bff5"
+  "preparationTaskSha256": "6067bb80fedc962ae5c57428ef358622f9694fca48abfd99574404929e50b96c"
 }
