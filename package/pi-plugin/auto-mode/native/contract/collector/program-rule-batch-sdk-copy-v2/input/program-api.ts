@@ -3,6 +3,7 @@
  */
 import type {
   NativeReturnInput,
+  NativeCallSlot,
   NativeReturnOutcome
 } from './native-return-types.ts';
 import type { PreparedProgramView } from './program-declaration-types.ts';
@@ -80,6 +81,6 @@ export type ProgramInspection = Readonly<{
  Original judgment exposes one frozen surface for program ownership and native group publication.
  */
 export type JudgmentPrograms = ProgramOpening & ProgramReaching & ProgramValueAccess & ProgramInspection & Readonly<{
-  bindProgramCalls: (input: BindProgramCallsInput) => readonly object[];
+  bindProgramCalls: (input: BindProgramCallsInput) => readonly NativeCallSlot[];
   prepareReachedMembers: (input: PrepareReachedMembersInput) => readonly object[];
 }>;

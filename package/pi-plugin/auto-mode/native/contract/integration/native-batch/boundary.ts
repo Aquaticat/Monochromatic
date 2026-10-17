@@ -9,7 +9,17 @@
 /**
  Delegate the complete native group or withhold every member while retaining native outcome emission.
  */
-export const batchBoundary: string = `async function executeToolCalls(currentContext, assistantMessage, config, signal, emit) {
+export const batchBoundary: string = `export function createOwnedToolPhases({context,assistantMessage,signal,tools=context.tools??[]}) {
+    return Object.freeze({
+        prepare:async ({call,before}) => prepareToolCall(context,assistantMessage,call,{beforeToolCall:before},signal,tools),
+        run:async ({prepared,execute,onUpdate,after}) => {
+            const executable={...prepared,tool:{...prepared.tool,execute}};
+            const result=await executePreparedToolCall(executable,signal,onUpdate??(()=>{}));
+            return finalizeExecutedToolCall(context,assistantMessage,prepared,result,{afterToolCall:after},signal);
+        }
+    });
+}
+async function executeToolCalls(currentContext, assistantMessage, config, signal, emit) {
     const calls = assistantMessage.content.filter(part => part.type === "toolCall");
     const started = new Set();
     const finished = new Map();
@@ -27,14 +37,7 @@ export const batchBoundary: string = `async function executeToolCalls(currentCon
         if (!signal) throw new Error("Original run cancellation is unavailable for these tool calls.");
         await config.executeToolBatch({
             assistantMessage,context:currentContext,signal,
-            nativePhases:{
-                prepare:async ({call,before}) => prepareToolCall(currentContext,assistantMessage,call,{beforeToolCall:before},signal),
-                run:async ({prepared,execute,onUpdate,after}) => {
-                    const executable={...prepared,tool:{...prepared.tool,execute}};
-                    const result=await executePreparedToolCall(executable,signal,onUpdate??(()=>{}));
-                    return finalizeExecutedToolCall(currentContext,assistantMessage,prepared,result,{afterToolCall:after},signal);
-                }
-            },
+            nativePhases:createOwnedToolPhases({context:currentContext,assistantMessage,signal}),
             executionMode:config.toolExecution ?? "parallel",
             beforeToolCall:config.beforeToolCall ? async (context,signal) => {
                 const result = await config.beforeToolCall(context,signal);

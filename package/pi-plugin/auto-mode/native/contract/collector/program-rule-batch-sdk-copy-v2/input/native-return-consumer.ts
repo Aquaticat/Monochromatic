@@ -10,6 +10,7 @@ import { NativeReturnContractError } from './native-return-errors.ts';
 import { currentReturnConversion } from './native-return-access.ts';
 import type {
   NativeReturnConsumer,
+  NativeReturnEntry,
   NativeReturnInput,
   NativeReturnInspection,
   NativeReturnInvocation,
@@ -205,8 +206,9 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
   function reserve({
     slot: handle,
     call,
-    options
-  }: NativeReturnInput): {
+    options,
+    start = true
+  }: NativeReturnInput & Readonly<{ start?: boolean }>): {
     readonly invocation: NativeReturnInvocation;
     readonly pending: unknown
   } {
@@ -257,10 +259,10 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
     try {
       return {
         invocation,
-        pending: runNative(
+        pending: start ? runNative(
           call,
           options
-        )
+        ) : undefined
       };
     }
     catch (error) {
@@ -268,6 +270,24 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
       invocation.failure = error;
       throw error;
     }
+  }
+
+  /** Reserve the actual call before preparation while permitting terminal capture after parent return. */
+  function open(input: NativeReturnInput): NativeReturnEntry {
+    const ol = tagged({ tag: open.name, l: rl });
+    ol.debug('reserving original call for native preparation');
+    const { invocation } = reserve({ ...input, start: false });
+    function complete(outcome: unknown): NativeReturnOutcome {
+      tagged({ tag: complete.name, l: ol }).debug('retaining original native phase completion');
+      if (invocation.state !== 'running') throw new NativeReturnContractError('Native call already has a terminal outcome');
+      return retainNativeReturn({ invocation, outcome });
+    }
+    function fail(error: unknown): void {
+      tagged({ tag: fail.name, l: ol }).debug('retaining native phase failure');
+      tagged({ tag: fail.name, l: ol }).debug(error);
+      if (invocation.state === 'running') { invocation.state = 'threw'; invocation.failure = error; }
+    }
+    return Object.freeze({ complete, fail });
   }
 
   /**
@@ -366,6 +386,7 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
     });
   }
   return Object.freeze({
+    open,
     invoke,
     valueFor,
     inspect
