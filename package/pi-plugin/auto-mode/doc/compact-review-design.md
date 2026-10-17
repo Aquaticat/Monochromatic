@@ -186,6 +186,53 @@ The current literal `copiedModules: 13` receipt is not a verified module invento
 
 ## Verification and deletion order
 
+### Implemented main-group phase seam
+
+The main dispatcher now receives actual native preparation and execution closures
+from `native/contract/integration/native-batch/boundary.ts`.
+It retains returned prepared records instead of suspending `runToolCall` inside a before hook.
+Sequential execution iterates those records;
+parallel execution drains their settlements.
+The original native execution and finalization functions retain updates,
+after hooks,
+and native result conversion.
+A local executable adapter still supplies the incumbent fifth context argument.
+
+The comparison against immutable baseline `native-release-1voz8z`
+matches nine three-member traces,
+including validation failure,
+native hook blocking,
+tool failure,
+after-hook failure,
+denial,
+and cancellation.
+The first prototype omitted the canceled prepared member's after hook
+and changed validation-failure result order.
+The corrected comparison exercises those differences explicitly.
+
+The maintained `test:native:phases` task runs real disposable SDK sessions,
+actual native Bash definitions,
+original extension callbacks,
+awaited update subscribers,
+and authored external model responses.
+Its sequential and parallel cases provide positive controls for actual execution concurrency.
+The eight initial modes pass,
+as does the 24-case decision-fallback matrix.
+
+The obsolete executable,
+member,
+lifecycle,
+and completion protocols and their private-mechanism tests are deleted:
+22 files,
+3,093 physical lines.
+This is an intermediate implementation cut.
+The child dispatcher,
+separate manual ownership,
+and judgment/evidence handoffs still require consolidation.
+The process-notification freshness investigation remains open.
+
+### Remaining migration
+
 First compare current and replacement native phase traces in disposable builds.
 Cover sequential and parallel groups,
 before/after hooks,

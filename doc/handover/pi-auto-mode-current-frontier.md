@@ -113,6 +113,46 @@ quoted literal data,
 and original stored metadata remain intact.
 The final installed payload audit remains required.
 
+The process-result fix's configured replay `pi-hyper-rpc-allow-QaT10o`
+transmits 17 assessment requests with no raw structured `command` fields.
+The same audit detects nine fields in the older `jZsxRg` capture,
+so its null result has a positive control.
+Both reported groups execute without confirmation;
+the separate intermediate `process.output` freshness failure still prevents a complete replay pass.
+The error proves a different run-composition view,
+not changed instruction text.
+Current investigation distinguishes genuine run replacement from metadata-only publication changes.
+
+The production main-group dispatcher now uses actual native preparation and execution phases.
+Its three-member traces match immutable baseline `native-release-1voz8z`
+across nine cases including cancellation and validation/hook failures.
+`test:native:phases` covers real disposable SDK sessions and original native Bash definitions;
+all eight initial cases pass,
+including awaited updates,
+serialized and parallel execution,
+complete-group blocking,
+and cancellation.
+The existing 24-case fallback matrix also passes against `native-release-MDBPSM`.
+The superseded executable/member/lifecycle/completion protocols and their exclusive tests are removed:
+22 files and 3,093 physical lines.
+Their four task entries are removed.
+The rebuilt deletion candidate and its type check complete successfully.
+
+Next actions:
+
+- Finish the new notification-during-review cases and identify the exact run-view change.
+- Demonstrate the native denial guard fails under a copied-build mutation.
+- Consolidate the child dispatcher and manual/automatic execution state into the same private group record.
+- Remove internal judgment/evidence publication protocols after their guarantees move to native interface tests.
+- Emit only runtime contents in clean releases;
+  measure implementation and build contents again.
+- Complete package justification updates,
+  troubleshooting evidence,
+  rendered Markdown checks,
+  configured-host replay,
+  final lint/types/tests,
+  and the corrected MiMo handoff.
+
 The existing inventory labels roughly 66,000 lines as production source,
 including comments and types;
 its filename-based categories are not executable-line or runtime-reachability proof.

@@ -83,3 +83,33 @@ An intentionally changed copy of the built classifier makes the negative cases f
 the production build remains unchanged.
 The native fallback regression proves approved recovery executes the group,
 while denied recovery executes no member.
+
+## Process result and notification metadata
+
+The first process-start correction still missed a historical-message branch.
+Actual provider requests contained shell source in `details.process.command`
+and `ad-process:notification` messages' `details.command`.
+The original request audit detects nine such fields across the saved 17-request replay.
+It is the positive control for the corrected audit,
+which finds none across the next 17 actual transmitted requests.
+Those counts describe structured command fields;
+literal tool output and unrelated data remain complete.
+
+`review-process-result.ts` handles the installed start,
+list,
+stop,
+write,
+and notification metadata shapes through the incumbent shell parser.
+The regression was committed red before the correction.
+Its cases also check quoted literal data,
+unchanged stored metadata,
+and command-looking data from unrelated tools and custom messages.
+All 19 visible-context cases pass after rebuilding.
+
+This incident shows why proposed-operation tests alone do not establish the provider boundary.
+The package's branch inventory includes historical calls,
+tool-result metadata,
+notifications,
+prepared operations,
+and each question's selected data.
+The complete request capture supplies evidence of both required and excluded material.
