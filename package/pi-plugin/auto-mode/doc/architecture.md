@@ -29,39 +29,39 @@ These independent contributors require independent remedies.
 
 ## Major modules and their required justification
 
-- Host integration connects the qualified Pi session,
+- [Host integration](host-integration.md) connects the qualified Pi session,
   complete-group dispatch,
   extension tools,
   and session disposal.
-- Instruction collection preserves readable source identity,
+- [Instruction collection](instruction-collection.md) preserves readable source identity,
   selected excerpts,
   relevance refresh,
   and freshness across asynchronous callbacks.
-- Operation preparation preserves original tool identity,
+- [Operation preparation](operation-preparation.md) preserves original tool identity,
   complete arguments,
   group membership,
   parsed shell structure,
   and actual execution order.
-- Decision review owns Luna question binding,
+- [Decision review](decision-review.md) owns Luna question binding,
   model attribution,
   categorical admission,
   instruction interpretation,
   and operation outcomes.
-- Confirmation owns exact-group Allow and Stop,
+- [Confirmation](confirmation.md) owns exact-group Allow and Stop,
   headless withholding,
   cancellation,
   and explicit session bypass.
-- Build lifecycle owns qualified upstream source,
+- [Build lifecycle](build-lifecycle.md) owns qualified upstream source,
   generated transformations,
   immutable release publication,
   and executable resolution.
-- Diagnostics preserve the source,
+- [Diagnostics](diagnostics.md) preserve the source,
   operation,
   scores,
   routing reasons,
   and failures needed to reconstruct a decision.
 
-Each retained major module receives a package-local document covering its callers,
+Each retained major module has a package-local document covering its callers,
 interface,
 invariants,
 alternatives,
@@ -71,9 +71,9 @@ not sufficient justification for its current decomposition.
 
 ## Work remaining
 
-- Remove the superseded extension pipeline and its exclusive tests and exports.
+- Measure the completed [retirement of the old extension](retired-extension.md) and exclusive tests and exports.
 - Consolidate retained implementations around the major module interfaces.
-- Complete the individual module justifications and link their verification tasks.
+- Verify the individual module justifications against the refactored implementation and executable tasks.
 - Reduce build duplication while retaining stable module paths for running sessions.
 - Address accumulated diagnostics without discarding investigation evidence.
 - Measure the resulting source graph and generated footprint.
