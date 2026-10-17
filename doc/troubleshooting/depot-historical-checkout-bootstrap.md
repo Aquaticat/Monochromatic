@@ -222,14 +222,49 @@ Those EGL messages do not establish the panic's cause.
 The trial's private systemd container declares two CPUs,
 2 GiB memory,
 and a 512-task PID limit.
-The failing attempts did not retain the live cgroup counters or process limits,
-so the PID-limit explanation is not yet proven.
-The runtime-only diagnostic routes retain `pids.current`,
+The initial failing attempts did not retain live cgroup counters or process limits.
+Subsequent runtime-only diagnostics `fs5t4ns6j6` and `tlc73pbmkk`
+retain `pids.current`,
 `pids.max`,
 `pids.events`,
 `memory.events`,
 and `/proc/self/limits` before and after the actual consumer task.
 The probe runs inside the disposable container and traverses bounded cgroup scope.
+Both consumers increased PID-controller rejection counters from zero to four inside the private user hierarchy.
+Their memory counters recorded no OOM event.
+The measured user slice limit was 168 tasks,
+and the measured default service limit was 76 tasks,
+inside the declared 512-task container.
+The hierarchy therefore has tighter limits than the outer container budget.
+Because `pids.events` aggregates descendant events,
+these samples do not establish which individual child limit rejected the thread.
+The earlier hypothesis that the outer 512-task limit itself was exhausted remains unproven.
+
+The trial helper at harness `4c4063e78bc9aaed8e293c1b478db089d6eef0ce`
+writes overrides only inside the disposable rootfs overlay,
+before starting the private user manager:
+
+```toml
+# Private /etc/systemd/user.conf.d/50-depot-trial.conf
+[Manager]
+DefaultTasksMax=256
+```
+
+```toml
+# Private /etc/systemd/system/user-<source-uid>.slice.d/50-depot-trial.conf
+[Slice]
+TasksMax=448
+```
+
+The helper reloads the private system manager and asserts both effective limits before running E2E.
+It retains the outer two-CPU,
+2 GiB,
+512-task boundary and adds local PID-event and peak counters to subsequent samples.
+The actual unchanged consumer reruns are `v0xj2z7q66` for native source `cb95cf6d78`
+and `4xgjgr8gbr` for desktop source `3434eaa455`.
+Their results remain pending;
+the configuration change is not yet a verified consumer fix.
+
 Later configured sessions remain unexecuted when the first session fails.
 The `runtimeCompleted` field means the invocation and cleanup returned,
 not that every configured session passed or executed.

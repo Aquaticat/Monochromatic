@@ -5615,5 +5615,1635 @@
         "pidsLimitHypothesis": 512
       }
     }
-  ]
+  ],
+  "desktopRuntimePidDiagnostics": {
+    "retainedAt": "2026-10-17T05:41:04.016Z",
+    "harnessRevision": "32e1c7290a62c41c314a33894cf8f43f9e0f23b8",
+    "rows": [
+      {
+        "runId": "fs5t4ns6j6",
+        "caseId": "native",
+        "providerCollection": {
+          "collectedAt": "2026-10-17T05:06:57.468Z",
+          "org": "l4zncjjbj5",
+          "runId": "fs5t4ns6j6",
+          "revision": "32e1c7290a62c41c314a33894cf8f43f9e0f23b8",
+          "status": "failed",
+          "attempts": [
+            {
+              "workflowId": "923c524j4v",
+              "jobId": "3kbc0q8bqf",
+              "jobKey": "_inline_0.yaml:native:matrix-0",
+              "attemptId": "50x5p63h8m",
+              "attempt": 1,
+              "status": "failed",
+              "metricsPath": "metrics-50x5p63h8m.json",
+              "logPath": "logs-50x5p63h8m.jsonl",
+              "logSha256": "8ce6f1367092c796c31643e47aef944a14c1c9461b021aa3e67172b20a363c55",
+              "logRecords": 1364,
+              "providerAttempt": {
+                "attempt_id": "50x5p63h8m",
+                "attempt": 1,
+                "status": "failed",
+                "conclusion": "failure",
+                "sandbox_id": "w2lv148d99v1zldt8t66",
+                "session_id": "68bd2482-7c34-46cd-92d1-7f094bed9c74",
+                "created_at": "2026-10-17T04:54:40.904Z",
+                "started_at": "2026-10-17T04:54:45.298Z",
+                "finished_at": "2026-10-17T05:01:16.292Z"
+              }
+            }
+          ],
+          "artifactCount": 1,
+          "scope": "Read-only collection. Provider intervals require declared resources before pricing. Gate completion needs independent manifest reconciliation."
+        },
+        "artifactDownload": {
+          "artifact": {
+            "artifact_id": "01a1483c-54b0-7b7c-a066-b9d6dd30948b",
+            "run_id": "fs5t4ns6j6",
+            "workflow_id": "923c524j4v",
+            "workflow_path": "",
+            "job_id": "3kbc0q8bqf",
+            "job_key": "_inline_0.yaml:native:matrix-0",
+            "attempt_id": "50x5p63h8m",
+            "attempt": 1,
+            "name": "native-native-desktop-evidence",
+            "size_bytes": 3809150,
+            "created_at": "2026-10-17T05:01:15Z"
+          },
+          "file": "collected-fs5t4ns6j6/native-native-desktop-evidence.zip",
+          "sha256": "93bb46ed882af070265518542bbf2cba6172b262ea5bed041de2c96081852d82",
+          "members": [
+            "desktop-runtime-logs/run-9gs6Nx/bin/xdg-open",
+            "desktop-runtime-logs/run-9gs6Nx/library/Aaa Tones/02 Bravo tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Aaa Tones/03 Charlie tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Aaa Tones/01 Alpha tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Aaa Tones/04 Delta tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 01.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 02.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 03.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 04.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 05.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 06.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 07.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 08.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 09.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 10.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 11.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 12.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 13.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 14.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 15.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 16.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 17.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 18.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 19.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 20.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 21.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 22.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 23.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 24.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 25.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 26.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 27.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 28.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 29.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/01 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Fallback 30.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/02 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/03 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/04 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/05 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/06 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/07 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/08 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/09 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/10 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/11 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/12 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/13 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/14 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/15 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/16 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/17 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/18 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/19 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/20 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/21 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/22 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/24 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/23 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/25 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/26 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/27 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/28 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/29 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Mmm Tones/30 Mid tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Zzz Tones/01 Omega tone.wav",
+            "desktop-runtime-logs/run-9gs6Nx/library/Zzz Tones/99 Trash me.wav",
+            "desktop-runtime-logs/run-9gs6Nx/wide-xdg/cache/mesa_shader_cache/1d/0fae73be899e7d51c541170d8e12e089e6787f",
+            "desktop-runtime-logs/run-9gs6Nx/wide-xdg/cache/mesa_shader_cache/27/545cf7673808b21401befaeb0351ed51315302",
+            "desktop-runtime-logs/run-9gs6Nx/wide-xdg/cache/mesa_shader_cache/29/9979b128724c7fb71bb5daa657bab6e8de966f",
+            "desktop-runtime-logs/run-9gs6Nx/wide-xdg/cache/mesa_shader_cache/36/8854311416a334b617ebd6c5ae011e9fb8e081",
+            "desktop-runtime-logs/run-9gs6Nx/wide-xdg/cache/mesa_shader_cache/45/8a325e89ef2199207806489b1899b3c84f4fcd",
+            "desktop-runtime-logs/run-9gs6Nx/wide-xdg/cache/mesa_shader_cache/5b/e56d3402964e1d9c9ce1fed8f1650c867deca4",
+            "desktop-runtime-logs/run-9gs6Nx/wide-xdg/cache/mesa_shader_cache/83/7480f998e99b3eb414a2350f396475c0730b6d",
+            "desktop-runtime-logs/run-9gs6Nx/wide-xdg/cache/mesa_shader_cache/86/7637a60a95bda44ef9638126f4033487a9ca64",
+            "desktop-runtime-logs/run-9gs6Nx/wide-xdg/cache/mesa_shader_cache/89/dc01a8eff0f05fecf018157d1584b8aab6df56",
+            "desktop-runtime-logs/run-9gs6Nx/wide-xdg/cache/mesa_shader_cache/8f/3f4f787e1aea175bbee78c2fea1df373594443",
+            "desktop-runtime-logs/run-9gs6Nx/wide-xdg/cache/mesa_shader_cache/a7/3c88af1c58196db838f2ab298f29cc989eb641",
+            "desktop-runtime-logs/run-9gs6Nx/wide-xdg/cache/mesa_shader_cache/c6/9d29d624f76a594b705236f7d81d78c6fc08f3",
+            "desktop-runtime-logs/run-9gs6Nx/wide-xdg/cache/mesa_shader_cache/ce/75c95881d041e3c0970c030898aaff7493a47b",
+            "desktop-runtime-logs/run-9gs6Nx/wide-xdg/cache/mesa_shader_cache/df/6fbddeba9fa69b2b714a203a7b235027818a77",
+            "desktop-runtime-logs/run-9gs6Nx/wide-xdg/cache/mesa_shader_cache/f0/a0905276bc790b88e307dc4071a34392aaf057",
+            "desktop-runtime-logs/run-9gs6Nx/wide-xdg/cache/mesa_shader_cache/index",
+            "desktop-runtime-logs/run-9gs6Nx/wide-xdg/cache/mesa_shader_cache/marker",
+            "desktop-runtime-logs/run-9gs6Nx/wide-xdg/config/musicplayer/decisions.db",
+            "desktop-runtime-logs/run-9gs6Nx/wide-xdg/config/musicplayer/decisions.db-wal",
+            "desktop-runtime-logs/run-9gs6Nx/wide.log",
+            "desktop-runtime-logs/run-9gs6Nx/xdg-open.record",
+            "native-desktop-e2e-results.json",
+            "native-desktop-resource-samples.json",
+            "native-tools.json"
+          ]
+        },
+        "resourcesPath": "/home/user/temp/agent/depot-complete-accounting-20261016/collected-fs5t4ns6j6/artifact/native-desktop-resource-samples.json",
+        "resourcesSha256": "68ebe35255030a03062ea807f8b848930b196876549046efdae17d4a50077bc0",
+        "consumerResult": {
+          "schemaVersion": 1,
+          "event": "check-finished",
+          "caseId": "native",
+          "sourceRevision": "cb95cf6d785c3073c192b95f0632cdae7b910894",
+          "manifestSha256": "0ab869b0e2095a9d9cb13d24380f0c48d4aa00d7733b71c8df5ad4a7183db473",
+          "checkId": "desktop-app.test.e2e",
+          "task": "//package/music-player/desktop-app:test:e2e",
+          "args": [],
+          "startedAt": "2026-10-17T05:00:44.217Z",
+          "finishedAt": "2026-10-17T05:01:14.834Z",
+          "elapsedMs": 30606.907551999997,
+          "exitCode": 1,
+          "signal": null,
+          "status": "failed",
+          "runtimeCompleted": true,
+          "cleanupVerified": true,
+          "sessions": [
+            "wide",
+            "narrow",
+            "dialog",
+            "quit",
+            "states",
+            "visual"
+          ],
+          "resources": {
+            "cpus": 2,
+            "memoryGiB": 2
+          },
+          "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/923c524j4v?job=3kbc0q8bqf&attempt=50x5p63h8m"
+        },
+        "eventsBefore": [
+          {
+            "path": "/sys/fs/cgroup",
+            "max": 0,
+            "pidsMax": "512",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice",
+            "max": 0,
+            "pidsMax": "max",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice",
+            "max": 0,
+            "pidsMax": "168",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service",
+            "max": 0,
+            "pidsMax": "max",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice",
+            "max": 0,
+            "pidsMax": "max",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/wireplumber.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/pipewire.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/pipewire-pulse.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/filter-chain.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/dbus.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/init.scope",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice",
+            "max": 0,
+            "pidsMax": "max",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/gpg-agent-ssh.socket",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/depot-full-desktop-parent.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/dbus.socket",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice",
+            "max": 0,
+            "pidsMax": "max",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice/systemd-logind.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice/systemd-journald.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice/system-modprobe.slice",
+            "max": 0,
+            "pidsMax": "max",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice/snapd.socket",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice/docker.socket",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice/dbus.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/init.scope",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          }
+        ],
+        "eventsAfter": [
+          {
+            "path": "/sys/fs/cgroup",
+            "max": 4,
+            "pidsMax": "512",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice",
+            "max": 4,
+            "pidsMax": "max",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice",
+            "max": 4,
+            "pidsMax": "168",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service",
+            "max": 4,
+            "pidsMax": "max",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice",
+            "max": 0,
+            "pidsMax": "max",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/wireplumber.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/pipewire.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/pipewire-pulse.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/filter-chain.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/dbus.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/init.scope",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice",
+            "max": 4,
+            "pidsMax": "max",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/gpg-agent-ssh.socket",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/depot-full-desktop-parent.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/dbus.socket",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice",
+            "max": 0,
+            "pidsMax": "max",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice/systemd-logind.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice/systemd-journald.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice/system-modprobe.slice",
+            "max": 0,
+            "pidsMax": "max",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice/snapd.socket",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice/docker.socket",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice/dbus.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/init.scope",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          }
+        ],
+        "samples": [
+          {
+            "phase": "before-suite",
+            "sampledAt": "2026-10-17T05:00:49.651Z",
+            "status": 0,
+            "stdout": "{\"cgroup\":\"0::/init.scope\",\"limits\":\"Limit                     Soft Limit           Hard Limit           Units     \\nMax cpu time              unlimited            unlimited            seconds   \\nMax file size             unlimited            unlimited            bytes     \\nMax data size             unlimited            unlimited            bytes     \\nMax stack size            8388608              unlimited            bytes     \\nMax core file size        0                    0                    bytes     \\nMax resident set          unlimited            unlimited            bytes     \\nMax processes             257198               257198               processes \\nMax open files            1048576              1048576              files     \\nMax locked memory         8388608              8388608              bytes     \\nMax address space         unlimited            unlimited            bytes     \\nMax file locks            unlimited            unlimited            locks     \\nMax pending signals       257198               257198               signals   \\nMax msgqueue size         819200               819200               bytes     \\nMax nice priority         0                    0                    \\nMax realtime priority     0                    0                    \\nMax realtime timeout      unlimited            unlimited            us\",\"groups\":[{\"path\":\"/sys/fs/cgroup\",\"pidsCurrent\":\"66\",\"pidsMax\":\"512\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice\",\"pidsCurrent\":\"55\",\"pidsMax\":\"max\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice\",\"pidsCurrent\":\"55\",\"pidsMax\":\"168\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service\",\"pidsCurrent\":\"55\",\"pidsMax\":\"max\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice\",\"pidsCurrent\":\"17\",\"pidsMax\":\"max\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/wireplumber.service\",\"pidsCurrent\":\"7\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/pipewire.service\",\"pidsCurrent\":\"3\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/pipewire-pulse.service\",\"pidsCurrent\":\"3\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/filter-chain.service\",\"pidsCurrent\":\"3\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/dbus.service\",\"pidsCurrent\":\"1\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/init.scope\",\"pidsCurrent\":\"2\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice\",\"pidsCurrent\":\"36\",\"pidsMax\":\"max\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/gpg-agent-ssh.socket\",\"pidsCurrent\":\"0\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/depot-full-desktop-parent.service\",\"pidsCurrent\":\"36\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/dbus.socket\",\"pidsCurrent\":\"0\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice\",\"pidsCurrent\":\"3\",\"pidsMax\":\"max\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice/systemd-logind.service\",\"pidsCurrent\":\"1\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice/systemd-journald.service\",\"pidsCurrent\":\"1\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice/system-modprobe.slice\",\"pidsCurrent\":\"0\",\"pidsMax\":\"max\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice/snapd.socket\",\"pidsCurrent\":\"0\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice/docker.socket\",\"pidsCurrent\":\"0\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice/dbus.service\",\"pidsCurrent\":\"1\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/init.scope\",\"pidsCurrent\":\"8\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"}]}\n",
+            "stderr": "",
+            "parsed": {
+              "cgroup": "0::/init.scope",
+              "limits": "Limit                     Soft Limit           Hard Limit           Units     \nMax cpu time              unlimited            unlimited            seconds   \nMax file size             unlimited            unlimited            bytes     \nMax data size             unlimited            unlimited            bytes     \nMax stack size            8388608              unlimited            bytes     \nMax core file size        0                    0                    bytes     \nMax resident set          unlimited            unlimited            bytes     \nMax processes             257198               257198               processes \nMax open files            1048576              1048576              files     \nMax locked memory         8388608              8388608              bytes     \nMax address space         unlimited            unlimited            bytes     \nMax file locks            unlimited            unlimited            locks     \nMax pending signals       257198               257198               signals   \nMax msgqueue size         819200               819200               bytes     \nMax nice priority         0                    0                    \nMax realtime priority     0                    0                    \nMax realtime timeout      unlimited            unlimited            us",
+              "groups": [
+                {
+                  "path": "/sys/fs/cgroup",
+                  "pidsCurrent": "66",
+                  "pidsMax": "512",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice",
+                  "pidsCurrent": "55",
+                  "pidsMax": "max",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice",
+                  "pidsCurrent": "55",
+                  "pidsMax": "168",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service",
+                  "pidsCurrent": "55",
+                  "pidsMax": "max",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice",
+                  "pidsCurrent": "17",
+                  "pidsMax": "max",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/wireplumber.service",
+                  "pidsCurrent": "7",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/pipewire.service",
+                  "pidsCurrent": "3",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/pipewire-pulse.service",
+                  "pidsCurrent": "3",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/filter-chain.service",
+                  "pidsCurrent": "3",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/dbus.service",
+                  "pidsCurrent": "1",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/init.scope",
+                  "pidsCurrent": "2",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice",
+                  "pidsCurrent": "36",
+                  "pidsMax": "max",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/gpg-agent-ssh.socket",
+                  "pidsCurrent": "0",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/depot-full-desktop-parent.service",
+                  "pidsCurrent": "36",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/dbus.socket",
+                  "pidsCurrent": "0",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice",
+                  "pidsCurrent": "3",
+                  "pidsMax": "max",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice/systemd-logind.service",
+                  "pidsCurrent": "1",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice/systemd-journald.service",
+                  "pidsCurrent": "1",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice/system-modprobe.slice",
+                  "pidsCurrent": "0",
+                  "pidsMax": "max",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice/snapd.socket",
+                  "pidsCurrent": "0",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice/docker.socket",
+                  "pidsCurrent": "0",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice/dbus.service",
+                  "pidsCurrent": "1",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/init.scope",
+                  "pidsCurrent": "8",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                }
+              ]
+            }
+          },
+          {
+            "phase": "after-suite",
+            "sampledAt": "2026-10-17T05:01:13.948Z",
+            "status": 0,
+            "stdout": "{\"cgroup\":\"0::/init.scope\",\"limits\":\"Limit                     Soft Limit           Hard Limit           Units     \\nMax cpu time              unlimited            unlimited            seconds   \\nMax file size             unlimited            unlimited            bytes     \\nMax data size             unlimited            unlimited            bytes     \\nMax stack size            8388608              unlimited            bytes     \\nMax core file size        0                    0                    bytes     \\nMax resident set          unlimited            unlimited            bytes     \\nMax processes             257198               257198               processes \\nMax open files            1048576              1048576              files     \\nMax locked memory         8388608              8388608              bytes     \\nMax address space         unlimited            unlimited            bytes     \\nMax file locks            unlimited            unlimited            locks     \\nMax pending signals       257198               257198               signals   \\nMax msgqueue size         819200               819200               bytes     \\nMax nice priority         0                    0                    \\nMax realtime priority     0                    0                    \\nMax realtime timeout      unlimited            unlimited            us\",\"groups\":[{\"path\":\"/sys/fs/cgroup\",\"pidsCurrent\":\"66\",\"pidsMax\":\"512\",\"pidsEvents\":\"max 4\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice\",\"pidsCurrent\":\"55\",\"pidsMax\":\"max\",\"pidsEvents\":\"max 4\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice\",\"pidsCurrent\":\"55\",\"pidsMax\":\"168\",\"pidsEvents\":\"max 4\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service\",\"pidsCurrent\":\"55\",\"pidsMax\":\"max\",\"pidsEvents\":\"max 4\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice\",\"pidsCurrent\":\"16\",\"pidsMax\":\"max\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/wireplumber.service\",\"pidsCurrent\":\"6\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/pipewire.service\",\"pidsCurrent\":\"3\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/pipewire-pulse.service\",\"pidsCurrent\":\"3\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/filter-chain.service\",\"pidsCurrent\":\"3\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/dbus.service\",\"pidsCurrent\":\"1\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/init.scope\",\"pidsCurrent\":\"2\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice\",\"pidsCurrent\":\"37\",\"pidsMax\":\"max\",\"pidsEvents\":\"max 4\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/gpg-agent-ssh.socket\",\"pidsCurrent\":\"0\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/depot-full-desktop-parent.service\",\"pidsCurrent\":\"37\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/dbus.socket\",\"pidsCurrent\":\"0\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice\",\"pidsCurrent\":\"3\",\"pidsMax\":\"max\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice/systemd-logind.service\",\"pidsCurrent\":\"1\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice/systemd-journald.service\",\"pidsCurrent\":\"1\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice/system-modprobe.slice\",\"pidsCurrent\":\"0\",\"pidsMax\":\"max\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice/snapd.socket\",\"pidsCurrent\":\"0\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice/docker.socket\",\"pidsCurrent\":\"0\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice/dbus.service\",\"pidsCurrent\":\"1\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/init.scope\",\"pidsCurrent\":\"8\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"}]}\n",
+            "stderr": "",
+            "parsed": {
+              "cgroup": "0::/init.scope",
+              "limits": "Limit                     Soft Limit           Hard Limit           Units     \nMax cpu time              unlimited            unlimited            seconds   \nMax file size             unlimited            unlimited            bytes     \nMax data size             unlimited            unlimited            bytes     \nMax stack size            8388608              unlimited            bytes     \nMax core file size        0                    0                    bytes     \nMax resident set          unlimited            unlimited            bytes     \nMax processes             257198               257198               processes \nMax open files            1048576              1048576              files     \nMax locked memory         8388608              8388608              bytes     \nMax address space         unlimited            unlimited            bytes     \nMax file locks            unlimited            unlimited            locks     \nMax pending signals       257198               257198               signals   \nMax msgqueue size         819200               819200               bytes     \nMax nice priority         0                    0                    \nMax realtime priority     0                    0                    \nMax realtime timeout      unlimited            unlimited            us",
+              "groups": [
+                {
+                  "path": "/sys/fs/cgroup",
+                  "pidsCurrent": "66",
+                  "pidsMax": "512",
+                  "pidsEvents": "max 4",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice",
+                  "pidsCurrent": "55",
+                  "pidsMax": "max",
+                  "pidsEvents": "max 4",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice",
+                  "pidsCurrent": "55",
+                  "pidsMax": "168",
+                  "pidsEvents": "max 4",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service",
+                  "pidsCurrent": "55",
+                  "pidsMax": "max",
+                  "pidsEvents": "max 4",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice",
+                  "pidsCurrent": "16",
+                  "pidsMax": "max",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/wireplumber.service",
+                  "pidsCurrent": "6",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/pipewire.service",
+                  "pidsCurrent": "3",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/pipewire-pulse.service",
+                  "pidsCurrent": "3",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/filter-chain.service",
+                  "pidsCurrent": "3",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/dbus.service",
+                  "pidsCurrent": "1",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/init.scope",
+                  "pidsCurrent": "2",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice",
+                  "pidsCurrent": "37",
+                  "pidsMax": "max",
+                  "pidsEvents": "max 4",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/gpg-agent-ssh.socket",
+                  "pidsCurrent": "0",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/depot-full-desktop-parent.service",
+                  "pidsCurrent": "37",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/dbus.socket",
+                  "pidsCurrent": "0",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice",
+                  "pidsCurrent": "3",
+                  "pidsMax": "max",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice/systemd-logind.service",
+                  "pidsCurrent": "1",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice/systemd-journald.service",
+                  "pidsCurrent": "1",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice/system-modprobe.slice",
+                  "pidsCurrent": "0",
+                  "pidsMax": "max",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice/snapd.socket",
+                  "pidsCurrent": "0",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice/docker.socket",
+                  "pidsCurrent": "0",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice/dbus.service",
+                  "pidsCurrent": "1",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/init.scope",
+                  "pidsCurrent": "8",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "The actual consumer caused PID-controller rejection within the private user hierarchy. Hierarchical counters do not identify the exact child limit hit; no memory OOM event was recorded."
+      },
+      {
+        "runId": "tlc73pbmkk",
+        "caseId": "desktop",
+        "providerCollection": {
+          "collectedAt": "2026-10-17T05:06:57.434Z",
+          "org": "l4zncjjbj5",
+          "runId": "tlc73pbmkk",
+          "revision": "32e1c7290a62c41c314a33894cf8f43f9e0f23b8",
+          "status": "failed",
+          "attempts": [
+            {
+              "workflowId": "7g2z6r29d1",
+              "jobId": "5636g3rm61",
+              "jobKey": "_inline_0.yaml:native:matrix-0",
+              "attemptId": "g5cc1r4lb6",
+              "attempt": 1,
+              "status": "failed",
+              "metricsPath": "metrics-g5cc1r4lb6.json",
+              "logPath": "logs-g5cc1r4lb6.jsonl",
+              "logSha256": "9654cda234b07b4a77154a2310ec5d011a8f330cac6d9fafba5d80a6ab6a5abf",
+              "logRecords": 1392,
+              "providerAttempt": {
+                "attempt_id": "g5cc1r4lb6",
+                "attempt": 1,
+                "status": "failed",
+                "conclusion": "failure",
+                "sandbox_id": "vlr5sjwmpz43w52lst41",
+                "session_id": "81b69e1c-f72e-4ffa-a231-9234255300a4",
+                "created_at": "2026-10-17T04:54:40.769Z",
+                "started_at": "2026-10-17T04:54:46.578Z",
+                "finished_at": "2026-10-17T05:01:27.702Z"
+              }
+            }
+          ],
+          "artifactCount": 1,
+          "scope": "Read-only collection. Provider intervals require declared resources before pricing. Gate completion needs independent manifest reconciliation."
+        },
+        "artifactDownload": {
+          "artifact": {
+            "artifact_id": "01a1483c-813b-7c34-a325-612970e8b873",
+            "run_id": "tlc73pbmkk",
+            "workflow_id": "7g2z6r29d1",
+            "workflow_path": "",
+            "job_id": "5636g3rm61",
+            "job_key": "_inline_0.yaml:native:matrix-0",
+            "attempt_id": "g5cc1r4lb6",
+            "attempt": 1,
+            "name": "desktop-native-desktop-evidence",
+            "size_bytes": 3814555,
+            "created_at": "2026-10-17T05:01:27Z"
+          },
+          "file": "collected-tlc73pbmkk/desktop-native-desktop-evidence.zip",
+          "sha256": "40300293babfbfd1eb33323d3e85e731135615b33141d50e3b0afa1c6d3dbd2e",
+          "members": [
+            "desktop-desktop-e2e-results.json",
+            "desktop-desktop-resource-samples.json",
+            "desktop-runtime-logs/run-I2u0K1/bin/xdg-open",
+            "desktop-runtime-logs/run-I2u0K1/library/Aaa Tones/01 Alpha tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Aaa Tones/02 Bravo tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Aaa Tones/03 Charlie tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Aaa Tones/04 Delta tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 01.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 02.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 03.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 04.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 05.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 06.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 07.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 08.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 09.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 10.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 11.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 13.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 12.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 14.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 15.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 16.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 17.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 18.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 19.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 20.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 21.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 22.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 23.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 24.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 25.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 26.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 27.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 28.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 29.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Fallback 30.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/01 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/02 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/04 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/03 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/05 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/06 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/07 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/08 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/09 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/10 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/11 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/13 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/12 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/14 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/15 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/16 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/17 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/18 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/19 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/20 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/21 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/22 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/23 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/24 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/25 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/26 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/27 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/28 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/29 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Mmm Tones/30 Mid tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Zzz Tones/01 Omega tone.wav",
+            "desktop-runtime-logs/run-I2u0K1/library/Zzz Tones/99 Trash me.wav",
+            "desktop-runtime-logs/run-I2u0K1/wide-xdg/cache/mesa_shader_cache/1d/0fae73be899e7d51c541170d8e12e089e6787f",
+            "desktop-runtime-logs/run-I2u0K1/wide-xdg/cache/mesa_shader_cache/29/9979b128724c7fb71bb5daa657bab6e8de966f",
+            "desktop-runtime-logs/run-I2u0K1/wide-xdg/cache/mesa_shader_cache/27/545cf7673808b21401befaeb0351ed51315302",
+            "desktop-runtime-logs/run-I2u0K1/wide-xdg/cache/mesa_shader_cache/36/8854311416a334b617ebd6c5ae011e9fb8e081",
+            "desktop-runtime-logs/run-I2u0K1/wide-xdg/cache/mesa_shader_cache/45/8a325e89ef2199207806489b1899b3c84f4fcd",
+            "desktop-runtime-logs/run-I2u0K1/wide-xdg/cache/mesa_shader_cache/5b/e56d3402964e1d9c9ce1fed8f1650c867deca4",
+            "desktop-runtime-logs/run-I2u0K1/wide-xdg/cache/mesa_shader_cache/83/7480f998e99b3eb414a2350f396475c0730b6d",
+            "desktop-runtime-logs/run-I2u0K1/wide-xdg/cache/mesa_shader_cache/86/7637a60a95bda44ef9638126f4033487a9ca64",
+            "desktop-runtime-logs/run-I2u0K1/wide-xdg/cache/mesa_shader_cache/89/dc01a8eff0f05fecf018157d1584b8aab6df56",
+            "desktop-runtime-logs/run-I2u0K1/wide-xdg/cache/mesa_shader_cache/8f/3f4f787e1aea175bbee78c2fea1df373594443",
+            "desktop-runtime-logs/run-I2u0K1/wide-xdg/cache/mesa_shader_cache/a7/3c88af1c58196db838f2ab298f29cc989eb641",
+            "desktop-runtime-logs/run-I2u0K1/wide-xdg/cache/mesa_shader_cache/c6/9d29d624f76a594b705236f7d81d78c6fc08f3",
+            "desktop-runtime-logs/run-I2u0K1/wide-xdg/cache/mesa_shader_cache/ce/75c95881d041e3c0970c030898aaff7493a47b",
+            "desktop-runtime-logs/run-I2u0K1/wide-xdg/cache/mesa_shader_cache/df/6fbddeba9fa69b2b714a203a7b235027818a77",
+            "desktop-runtime-logs/run-I2u0K1/wide-xdg/cache/mesa_shader_cache/f0/a0905276bc790b88e307dc4071a34392aaf057",
+            "desktop-runtime-logs/run-I2u0K1/wide-xdg/cache/mesa_shader_cache/index",
+            "desktop-runtime-logs/run-I2u0K1/wide-xdg/cache/mesa_shader_cache/marker",
+            "desktop-runtime-logs/run-I2u0K1/wide-xdg/config/musicplayer/decisions.db",
+            "desktop-runtime-logs/run-I2u0K1/wide.log",
+            "desktop-runtime-logs/run-I2u0K1/wide-xdg/config/musicplayer/decisions.db-wal",
+            "desktop-runtime-logs/run-I2u0K1/xdg-open.record",
+            "native-tools.json"
+          ]
+        },
+        "resourcesPath": "/home/user/temp/agent/depot-complete-accounting-20261016/collected-tlc73pbmkk/artifact/desktop-desktop-resource-samples.json",
+        "resourcesSha256": "e1da2c44040fc54199dfb5002e3c4a851638adaf8fa56683a6151086cdb432c2",
+        "consumerResult": {
+          "schemaVersion": 1,
+          "event": "check-finished",
+          "caseId": "desktop",
+          "sourceRevision": "3434eaa455d569c18b52cf15100f77f9db251d21",
+          "manifestSha256": "41b74e753e3687928985ebf787cc8fc242ded799eb6f40211e68006f45b377f9",
+          "checkId": "desktop-app.test.e2e",
+          "task": "//package/music-player/desktop-app:test:e2e",
+          "args": [],
+          "startedAt": "2026-10-17T05:00:53.349Z",
+          "finishedAt": "2026-10-17T05:01:26.136Z",
+          "elapsedMs": 32719.141981,
+          "exitCode": 1,
+          "signal": null,
+          "status": "failed",
+          "runtimeCompleted": true,
+          "cleanupVerified": true,
+          "sessions": [
+            "wide",
+            "narrow",
+            "dialog",
+            "quit",
+            "states",
+            "visual"
+          ],
+          "resources": {
+            "cpus": 2,
+            "memoryGiB": 2
+          },
+          "providerJobUrl": "https://depot.dev/orgs/l4zncjjbj5/workflows/7g2z6r29d1?job=5636g3rm61&attempt=g5cc1r4lb6"
+        },
+        "eventsBefore": [
+          {
+            "path": "/sys/fs/cgroup",
+            "max": 0,
+            "pidsMax": "512",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice",
+            "max": 0,
+            "pidsMax": "max",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice",
+            "max": 0,
+            "pidsMax": "168",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service",
+            "max": 0,
+            "pidsMax": "max",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice",
+            "max": 0,
+            "pidsMax": "max",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/wireplumber.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/pipewire.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/pipewire-pulse.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/filter-chain.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/dbus.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/init.scope",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice",
+            "max": 0,
+            "pidsMax": "max",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/gpg-agent-ssh.socket",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/depot-full-desktop-parent.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/dbus.socket",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice",
+            "max": 0,
+            "pidsMax": "max",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice/systemd-logind.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice/systemd-journald.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice/system-modprobe.slice",
+            "max": 0,
+            "pidsMax": "max",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice/snapd.socket",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice/docker.socket",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice/dbus.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/init.scope",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          }
+        ],
+        "eventsAfter": [
+          {
+            "path": "/sys/fs/cgroup",
+            "max": 4,
+            "pidsMax": "512",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice",
+            "max": 4,
+            "pidsMax": "max",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice",
+            "max": 4,
+            "pidsMax": "168",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service",
+            "max": 4,
+            "pidsMax": "max",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice",
+            "max": 0,
+            "pidsMax": "max",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/wireplumber.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/pipewire.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/pipewire-pulse.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/filter-chain.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/dbus.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/init.scope",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice",
+            "max": 4,
+            "pidsMax": "max",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/gpg-agent-ssh.socket",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/depot-full-desktop-parent.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/dbus.socket",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice",
+            "max": 0,
+            "pidsMax": "max",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice/systemd-logind.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice/systemd-journald.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice/system-modprobe.slice",
+            "max": 0,
+            "pidsMax": "max",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice/snapd.socket",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice/docker.socket",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/system.slice/dbus.service",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          },
+          {
+            "path": "/sys/fs/cgroup/init.scope",
+            "max": 0,
+            "pidsMax": "76",
+            "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+          }
+        ],
+        "samples": [
+          {
+            "phase": "before-suite",
+            "sampledAt": "2026-10-17T05:01:00.766Z",
+            "status": 0,
+            "stdout": "{\"cgroup\":\"0::/init.scope\",\"limits\":\"Limit                     Soft Limit           Hard Limit           Units     \\nMax cpu time              unlimited            unlimited            seconds   \\nMax file size             unlimited            unlimited            bytes     \\nMax data size             unlimited            unlimited            bytes     \\nMax stack size            8388608              unlimited            bytes     \\nMax core file size        0                    0                    bytes     \\nMax resident set          unlimited            unlimited            bytes     \\nMax processes             257198               257198               processes \\nMax open files            1048576              1048576              files     \\nMax locked memory         8388608              8388608              bytes     \\nMax address space         unlimited            unlimited            bytes     \\nMax file locks            unlimited            unlimited            locks     \\nMax pending signals       257198               257198               signals   \\nMax msgqueue size         819200               819200               bytes     \\nMax nice priority         0                    0                    \\nMax realtime priority     0                    0                    \\nMax realtime timeout      unlimited            unlimited            us\",\"groups\":[{\"path\":\"/sys/fs/cgroup\",\"pidsCurrent\":\"66\",\"pidsMax\":\"512\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice\",\"pidsCurrent\":\"55\",\"pidsMax\":\"max\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice\",\"pidsCurrent\":\"55\",\"pidsMax\":\"168\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service\",\"pidsCurrent\":\"55\",\"pidsMax\":\"max\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice\",\"pidsCurrent\":\"17\",\"pidsMax\":\"max\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/wireplumber.service\",\"pidsCurrent\":\"7\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/pipewire.service\",\"pidsCurrent\":\"3\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/pipewire-pulse.service\",\"pidsCurrent\":\"3\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/filter-chain.service\",\"pidsCurrent\":\"3\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/dbus.service\",\"pidsCurrent\":\"1\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/init.scope\",\"pidsCurrent\":\"2\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice\",\"pidsCurrent\":\"36\",\"pidsMax\":\"max\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/gpg-agent-ssh.socket\",\"pidsCurrent\":\"0\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/depot-full-desktop-parent.service\",\"pidsCurrent\":\"36\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/dbus.socket\",\"pidsCurrent\":\"0\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice\",\"pidsCurrent\":\"3\",\"pidsMax\":\"max\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice/systemd-logind.service\",\"pidsCurrent\":\"1\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice/systemd-journald.service\",\"pidsCurrent\":\"1\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice/system-modprobe.slice\",\"pidsCurrent\":\"0\",\"pidsMax\":\"max\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice/snapd.socket\",\"pidsCurrent\":\"0\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice/docker.socket\",\"pidsCurrent\":\"0\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice/dbus.service\",\"pidsCurrent\":\"1\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/init.scope\",\"pidsCurrent\":\"8\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"}]}\n",
+            "stderr": "",
+            "parsed": {
+              "cgroup": "0::/init.scope",
+              "limits": "Limit                     Soft Limit           Hard Limit           Units     \nMax cpu time              unlimited            unlimited            seconds   \nMax file size             unlimited            unlimited            bytes     \nMax data size             unlimited            unlimited            bytes     \nMax stack size            8388608              unlimited            bytes     \nMax core file size        0                    0                    bytes     \nMax resident set          unlimited            unlimited            bytes     \nMax processes             257198               257198               processes \nMax open files            1048576              1048576              files     \nMax locked memory         8388608              8388608              bytes     \nMax address space         unlimited            unlimited            bytes     \nMax file locks            unlimited            unlimited            locks     \nMax pending signals       257198               257198               signals   \nMax msgqueue size         819200               819200               bytes     \nMax nice priority         0                    0                    \nMax realtime priority     0                    0                    \nMax realtime timeout      unlimited            unlimited            us",
+              "groups": [
+                {
+                  "path": "/sys/fs/cgroup",
+                  "pidsCurrent": "66",
+                  "pidsMax": "512",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice",
+                  "pidsCurrent": "55",
+                  "pidsMax": "max",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice",
+                  "pidsCurrent": "55",
+                  "pidsMax": "168",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service",
+                  "pidsCurrent": "55",
+                  "pidsMax": "max",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice",
+                  "pidsCurrent": "17",
+                  "pidsMax": "max",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/wireplumber.service",
+                  "pidsCurrent": "7",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/pipewire.service",
+                  "pidsCurrent": "3",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/pipewire-pulse.service",
+                  "pidsCurrent": "3",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/filter-chain.service",
+                  "pidsCurrent": "3",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/dbus.service",
+                  "pidsCurrent": "1",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/init.scope",
+                  "pidsCurrent": "2",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice",
+                  "pidsCurrent": "36",
+                  "pidsMax": "max",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/gpg-agent-ssh.socket",
+                  "pidsCurrent": "0",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/depot-full-desktop-parent.service",
+                  "pidsCurrent": "36",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/dbus.socket",
+                  "pidsCurrent": "0",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice",
+                  "pidsCurrent": "3",
+                  "pidsMax": "max",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice/systemd-logind.service",
+                  "pidsCurrent": "1",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice/systemd-journald.service",
+                  "pidsCurrent": "1",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice/system-modprobe.slice",
+                  "pidsCurrent": "0",
+                  "pidsMax": "max",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice/snapd.socket",
+                  "pidsCurrent": "0",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice/docker.socket",
+                  "pidsCurrent": "0",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice/dbus.service",
+                  "pidsCurrent": "1",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/init.scope",
+                  "pidsCurrent": "8",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                }
+              ]
+            }
+          },
+          {
+            "phase": "after-suite",
+            "sampledAt": "2026-10-17T05:01:25.136Z",
+            "status": 0,
+            "stdout": "{\"cgroup\":\"0::/init.scope\",\"limits\":\"Limit                     Soft Limit           Hard Limit           Units     \\nMax cpu time              unlimited            unlimited            seconds   \\nMax file size             unlimited            unlimited            bytes     \\nMax data size             unlimited            unlimited            bytes     \\nMax stack size            8388608              unlimited            bytes     \\nMax core file size        0                    0                    bytes     \\nMax resident set          unlimited            unlimited            bytes     \\nMax processes             257198               257198               processes \\nMax open files            1048576              1048576              files     \\nMax locked memory         8388608              8388608              bytes     \\nMax address space         unlimited            unlimited            bytes     \\nMax file locks            unlimited            unlimited            locks     \\nMax pending signals       257198               257198               signals   \\nMax msgqueue size         819200               819200               bytes     \\nMax nice priority         0                    0                    \\nMax realtime priority     0                    0                    \\nMax realtime timeout      unlimited            unlimited            us\",\"groups\":[{\"path\":\"/sys/fs/cgroup\",\"pidsCurrent\":\"66\",\"pidsMax\":\"512\",\"pidsEvents\":\"max 4\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice\",\"pidsCurrent\":\"55\",\"pidsMax\":\"max\",\"pidsEvents\":\"max 4\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice\",\"pidsCurrent\":\"55\",\"pidsMax\":\"168\",\"pidsEvents\":\"max 4\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service\",\"pidsCurrent\":\"55\",\"pidsMax\":\"max\",\"pidsEvents\":\"max 4\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice\",\"pidsCurrent\":\"16\",\"pidsMax\":\"max\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/wireplumber.service\",\"pidsCurrent\":\"6\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/pipewire.service\",\"pidsCurrent\":\"3\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/pipewire-pulse.service\",\"pidsCurrent\":\"3\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/filter-chain.service\",\"pidsCurrent\":\"3\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/dbus.service\",\"pidsCurrent\":\"1\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/init.scope\",\"pidsCurrent\":\"2\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice\",\"pidsCurrent\":\"37\",\"pidsMax\":\"max\",\"pidsEvents\":\"max 4\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/gpg-agent-ssh.socket\",\"pidsCurrent\":\"0\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/depot-full-desktop-parent.service\",\"pidsCurrent\":\"37\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/dbus.socket\",\"pidsCurrent\":\"0\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice\",\"pidsCurrent\":\"3\",\"pidsMax\":\"max\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice/systemd-logind.service\",\"pidsCurrent\":\"1\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice/systemd-journald.service\",\"pidsCurrent\":\"1\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice/system-modprobe.slice\",\"pidsCurrent\":\"0\",\"pidsMax\":\"max\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice/snapd.socket\",\"pidsCurrent\":\"0\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice/docker.socket\",\"pidsCurrent\":\"0\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/system.slice/dbus.service\",\"pidsCurrent\":\"1\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"},{\"path\":\"/sys/fs/cgroup/init.scope\",\"pidsCurrent\":\"8\",\"pidsMax\":\"76\",\"pidsEvents\":\"max 0\",\"memoryEvents\":\"low 0\\nhigh 0\\nmax 0\\noom 0\\noom_kill 0\\noom_group_kill 0\"}]}\n",
+            "stderr": "",
+            "parsed": {
+              "cgroup": "0::/init.scope",
+              "limits": "Limit                     Soft Limit           Hard Limit           Units     \nMax cpu time              unlimited            unlimited            seconds   \nMax file size             unlimited            unlimited            bytes     \nMax data size             unlimited            unlimited            bytes     \nMax stack size            8388608              unlimited            bytes     \nMax core file size        0                    0                    bytes     \nMax resident set          unlimited            unlimited            bytes     \nMax processes             257198               257198               processes \nMax open files            1048576              1048576              files     \nMax locked memory         8388608              8388608              bytes     \nMax address space         unlimited            unlimited            bytes     \nMax file locks            unlimited            unlimited            locks     \nMax pending signals       257198               257198               signals   \nMax msgqueue size         819200               819200               bytes     \nMax nice priority         0                    0                    \nMax realtime priority     0                    0                    \nMax realtime timeout      unlimited            unlimited            us",
+              "groups": [
+                {
+                  "path": "/sys/fs/cgroup",
+                  "pidsCurrent": "66",
+                  "pidsMax": "512",
+                  "pidsEvents": "max 4",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice",
+                  "pidsCurrent": "55",
+                  "pidsMax": "max",
+                  "pidsEvents": "max 4",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice",
+                  "pidsCurrent": "55",
+                  "pidsMax": "168",
+                  "pidsEvents": "max 4",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service",
+                  "pidsCurrent": "55",
+                  "pidsMax": "max",
+                  "pidsEvents": "max 4",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice",
+                  "pidsCurrent": "16",
+                  "pidsMax": "max",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/wireplumber.service",
+                  "pidsCurrent": "6",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/pipewire.service",
+                  "pidsCurrent": "3",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/pipewire-pulse.service",
+                  "pidsCurrent": "3",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/filter-chain.service",
+                  "pidsCurrent": "3",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/session.slice/dbus.service",
+                  "pidsCurrent": "1",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/init.scope",
+                  "pidsCurrent": "2",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice",
+                  "pidsCurrent": "37",
+                  "pidsMax": "max",
+                  "pidsEvents": "max 4",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/gpg-agent-ssh.socket",
+                  "pidsCurrent": "0",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/depot-full-desktop-parent.service",
+                  "pidsCurrent": "37",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/user.slice/user-1001.slice/user@1001.service/app.slice/dbus.socket",
+                  "pidsCurrent": "0",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice",
+                  "pidsCurrent": "3",
+                  "pidsMax": "max",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice/systemd-logind.service",
+                  "pidsCurrent": "1",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice/systemd-journald.service",
+                  "pidsCurrent": "1",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice/system-modprobe.slice",
+                  "pidsCurrent": "0",
+                  "pidsMax": "max",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice/snapd.socket",
+                  "pidsCurrent": "0",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice/docker.socket",
+                  "pidsCurrent": "0",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/system.slice/dbus.service",
+                  "pidsCurrent": "1",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                },
+                {
+                  "path": "/sys/fs/cgroup/init.scope",
+                  "pidsCurrent": "8",
+                  "pidsMax": "76",
+                  "pidsEvents": "max 0",
+                  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+                }
+              ]
+            }
+          }
+        ],
+        "conclusion": "The actual consumer caused PID-controller rejection within the private user hierarchy. Hierarchical counters do not identify the exact child limit hit; no memory OOM event was recorded."
+      }
+    ]
+  }
 }

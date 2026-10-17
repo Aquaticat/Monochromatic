@@ -12,7 +12,9 @@ including a client launched outside this repository.
 The registration enables `mcp_2026_07_28` and opts this stdio server into revision `2026-07-28`.
 A temporary client override disabling the feature reproduced JSON-RPC `-32601` for `initialize`;
 the saved global configuration remains enabled.
-Root is documenting the setup before resuming its remaining replay preparation.
+The setup is documented in `doc/troubleshooting/codex-search-fetch-mcp.md`;
+scoped Markdown lint and actual rendered HTML inspection passed,
+with the linter's existing `rust/require-rustdoc` warning on the quoted upstream Rust excerpt.
 The user clarified that `.out-of-scope/codex-harness.md` describes no ongoing maintenance guarantee,
 not a prohibition on Codex work.
 The document now explicitly permits work authorized by the active task without a separate policy exception.
@@ -21,15 +23,20 @@ the proposed general `AUT` clarification was declined,
 and `AGENTS.md` remains unchanged.
 The existing Depot work remains active:
 logger recovery `dhxhzzvmc3` and independent-leaf recovery preparation belong to the logger owner;
-native platform route preparation belongs to the native owner.
+the native owner completed platform route preparation and now owns TOML timeout reconciliation;
+the VM owner completed the push-wait-notice verification and now owns source-identity fixture controls.
 The runtime-only diagnostics have finished and their artifacts are downloaded.
 Both show PID-controller rejection counters increasing from zero to four inside the private user hierarchy,
 with no memory OOM event.
 The measured default service task limit is 76 and the user slice limit is 168,
 inside the outer 512-task container budget.
-Root must retain this evidence,
-configure bounded private systemd task limits,
-and rerun the affected consumers after completing the requested MCP integration.
+Root retained the raw counter samples and provider metadata in
+`doc/audit/depot-final-recovery-2026-10-17.evidence.json`.
+Clean pushed harness `4c4063e78bc9aaed8e293c1b478db089d6eef0ce`
+now configures private default-service limits of 256 and a user-slice limit of 448,
+retaining the outer 512-task budget.
+Actual consumer reruns `v0xj2z7q66` and `4xgjgr8gbr` are waiting to terminal state;
+their outcomes are not yet known.
 The TOML container wave also reached its job timeout;
 its retained log must be reconciled and its unexecuted independent checks resumed.
 
