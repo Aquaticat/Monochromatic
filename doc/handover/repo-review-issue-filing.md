@@ -259,21 +259,18 @@ Cross-unit leads:
  hand to the `cross-dependency` reviewer when it launches.
 
 Wave 1 in flight on 2026-10-17 (slots held at the 8-child cap):
- `docs-planning`,
- `config-paused-1`,
  `config-paused-2`,
  `cross-dependency`,
  `cross-duplication`,
  `cross-testing`,
  `cross-build`,
  `cross-rust`,
- `cross-api` (launched as a replacement; carries the export-map and TQ2 leads).
+ `cross-api`,
+ `cross-logging` (launched as the final queued unit).
 
 Queued units in launch order (flat list; the first entry launches next):
 
-- `code-stub-1`,
-- `docs-troubleshooting-1`,
-- `cross-logging`.
+(Empty; every unit has launched.)
 
 Replacement rule:
  as each running unit reports,
