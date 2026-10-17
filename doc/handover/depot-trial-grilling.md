@@ -122,10 +122,10 @@ The 283 prior attempt metric records and 108 coherent records reconcile without 
 All 108 coherent Depot attempt intervals are now closed.
 Their 291275.192 allocated vCPU-seconds prorate to $14.5637596 at the published CI rate.
 This is the coherent Depot compute subtotal.
-Historical resource candidates produce a separate provisional compute proration of $47.1717936
-across 261 observed intervals.
+Historical resource candidates produce a separate provisional compute proration of $47.2234074
+across 263 observed intervals.
 Exact historical uploaded workflow bytes are not established;
-20 other allocated attempts remain unpriced because their resource sizes are unbound.
+18 other allocated attempts remain unpriced because their resource sizes are unbound.
 Do not present the provisional figure as verified historical spend.
 The union of all observed attempt intervals is 28061005 milliseconds,
 with peak concurrency of 108 attempts.
