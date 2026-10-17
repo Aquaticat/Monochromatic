@@ -775,3 +775,78 @@ const resources=Object.fromEntries(['cpu.max','memory.max','memory.events','pids
 writeFileSync(join(base,'git-host-linter-results.json'),JSON.stringify({sourceRevision:'ef01490f5e960f8ca0b424c12242caeb3c5a2b5e',originalStage:'package/git-policy/cli/bin/native-linter-snapshot.mjs',compilerArgs:args,compilerEnvironment:{CARGO_NET_OFFLINE:'true',CARGO_BUILD_JOBS:'2',CARGO_PROFILE_DEV_DEBUG:'0',CARGO_INCREMENTAL:'0'},tools,sourceInputs:before,sourceInputsBeforeAfterEqual:true,sourceInputDigest:hash(Buffer.from(JSON.stringify(before))),executable,elfSha256:hash(bytes),elfBytes:bytes.length,sharedLibraries:libraries,libraryFiles,ruleCatalogSha256:hash(Buffer.from(rules)),consumer:{args:consumerArgs,input,expected,actual:fixed,fixedInputUnchanged:unchanged===expected},resources},null,2)+'\n',{flag:'wx',mode:0o600})
 console.log(JSON.stringify({linterElfSha256:hash(bytes),sourceInputsVerified:before.length,actualMarkdownFixConsumer:true,fixedInputUnchanged:true}))
 '''
+
+[tasks."trial:depot:generated:identity"]
+description = "Verify disposable generator input bytes and frozen workspace links without relaxing authoritative guards"
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const {execFileSync}=await import('node:child_process')
+const {readFileSync,writeFileSync,mkdirSync,lstatSync,readlinkSync,realpathSync,readdirSync,existsSync}=await import('node:fs')
+const {join,relative,resolve}=await import('node:path')
+const {homedir}=await import('node:os')
+const {createHash}=await import('node:crypto')
+const {strict:assert}=await import('node:assert')
+const workspace=process.env.GITHUB_WORKSPACE,consumer=process.env.DEPOT_LOGGER_GENERATED_CONSUMER
+const label=process.env.DEPOT_LOGGER_GENERATED_LABEL,phase=process.env.DEPOT_LOGGER_GENERATED_PHASE
+assert(workspace&&consumer&&/^[a-zA-Z0-9._-]+$/.test(label??''))
+assert(['before','after'].includes(phase))
+const source=join(workspace,'source'),manifestBytes=readFileSync(join(workspace,'harness/.depot/manifests/logger.json')),manifest=JSON.parse(manifestBytes.toString())
+const sha256=bytes=>createHash('sha256').update(bytes).digest('hex')
+const git=({cwd,args})=>execFileSync('git',args,{cwd,encoding:'utf8',maxBuffer:64*1024*1024})
+const entries=git({cwd:source,args:['ls-tree','--full-tree','--recursive','-z','HEAD']}).split('\0').filter(Boolean).map(entry=>{
+ const boundary=entry.indexOf('\t'),[mode,type,blob]=entry.slice(0,boundary).split(' ')
+ assert.equal(type,'blob','Generator identity supports only frozen tracked blobs')
+ return {mode,blob,path:entry.slice(boundary+1)}
+})
+function verify({cwd}){
+ assert.equal(git({cwd,args:['rev-parse','HEAD']}).trim(),manifest.sourceRevision)
+ assert(git({cwd,args:['ls-files','-v','-z']}).split('\0').filter(Boolean).every(entry=>entry[0]!=='S'&&!/[a-z]/.test(entry[0])),'Index flags must not hide tracked inputs')
+ assert.equal(git({cwd,args:['status','--porcelain','--untracked-files=no']}).trim(),'','Tracked generator input drift')
+ const inputs=entries.map(entry=>{
+  const path=join(cwd,entry.path),stat=lstatSync(path)
+  const bytes=entry.mode==='120000'?Buffer.from(readlinkSync(path)):readFileSync(path)
+  assert.equal(stat.isSymbolicLink(),entry.mode==='120000',`Tracked input kind differs: ${entry.path}`)
+  if(entry.mode!=='120000')assert.equal(Boolean(stat.mode&0o111),entry.mode==='100755',`Tracked input executable mode differs: ${entry.path}`)
+  const blob=createHash('sha1').update('blob '+bytes.length+'\0').update(bytes).digest('hex')
+  assert.equal(blob,entry.blob,`Tracked generator input bytes differ: ${entry.path}`)
+  return {...entry,sha256:sha256(bytes),bytes:bytes.length}
+ })
+ return {head:manifest.sourceRevision,tree:git({cwd,args:['rev-parse','HEAD^{tree}']}).trim(),trackedInputs:inputs.length,inputDigest:sha256(Buffer.from(JSON.stringify(inputs)))}
+}
+const authoritative=verify({cwd:source})
+let initialConsumer,workspaceLinks=[],symlinks=[]
+if(phase==='before'){
+ initialConsumer=verify({cwd:consumer});assert.deepEqual(initialConsumer,authoritative)
+ const packages=entries.filter(entry=>/^package\/[^/]+\/[^/]+\/package\.json$/.test(entry.path)).map(entry=>({directory:join(consumer,entry.path.slice(0,-13)),document:JSON.parse(readFileSync(join(consumer,entry.path),'utf8'))}))
+ const names=new Map(packages.map(entry=>[entry.document.name,entry.directory]));assert.equal(names.size,packages.length)
+ const owners=[{directory:consumer,document:JSON.parse(readFileSync(join(consumer,'package.json'),'utf8'))},...packages]
+ assert(existsSync(join(consumer,'node_modules')),'Own frozen dependency installation is required')
+ for(const owner of owners)for(const [name,version] of Object.entries({...owner.document.dependencies,...owner.document.devDependencies,...owner.document.optionalDependencies})){
+  if(!names.has(name)&&!String(version).startsWith('workspace:'))continue
+  assert(names.has(name),`Unknown frozen workspace dependency: ${name}`)
+  const path=join(owner.directory,'node_modules',name),actual=realpathSync(path)
+  assert.equal(actual,realpathSync(names.get(name)),`Workspace dependency must resolve to its consumer checkout: ${path}`)
+  workspaceLinks.push({path:relative(consumer,path),name,target:relative(consumer,actual)})
+ }
+ const roots=[consumer,...packages.map(entry=>entry.directory)].map(path=>join(path,'node_modules')).filter(existsSync)
+ const stack=[...roots]
+ const authoritativeRoot=realpathSync(source)
+ while(stack.length){
+  const directory=stack.pop()
+  for(const entry of readdirSync(directory,{withFileTypes:true})){
+   const path=join(directory,entry.name)
+   if(entry.isSymbolicLink()){
+    const target=realpathSync(path)
+    assert(target!==authoritativeRoot&&!target.startsWith(authoritativeRoot+'/'),`Dependency link resolves into authoritative source: ${path}`)
+    symlinks.push({path:relative(consumer,path),link:readlinkSync(path),resolved:target})
+   }else if(entry.isDirectory())stack.push(path)
+  }
+ }
+}
+const directory=process.env.DEPOT_LOGGER_GENERATED_RECEIPT_DIRECTORY??join(homedir(),'temp/agent/depot-complete-ci')
+mkdirSync(directory,{recursive:true,mode:0o700})
+const result={phase,label,sourceRevision:manifest.sourceRevision,manifestSha256:sha256(manifestBytes),authoritative,initialConsumer,workspaceLinks,symlinks,strictAuthoritativeGuard:true}
+writeFileSync(join(directory,`generated-${label}-identity-${phase}.json`),JSON.stringify(result,null,2)+'\n',{flag:'wx',mode:0o600})
+console.log(JSON.stringify({phase,label,trackedAuthoritativeInputs:authoritative.trackedInputs,consumerInputsVerified:phase==='before',workspaceLinks:workspaceLinks.length,dependencySymlinks:symlinks.length}))
+'''
