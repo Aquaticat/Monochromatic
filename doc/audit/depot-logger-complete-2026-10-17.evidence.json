@@ -82329,8 +82329,8 @@
     "actualMacos15ProviderProof": false,
     "primaryManifestCorrectionParentOwned": true,
     "documentationVerification": {
-      "path": "/home/user/temp/agent/depot-logger-host-scope-docs-6P7f0Z/results.json",
-      "sha256": "d0a5c4147bb8b4ba6ecca7a281d2f711c711cee3439ec3c94f22053494bb9b9f",
+      "path": "/home/user/temp/agent/depot-logger-host-scope-docs-NBtcNt/results.json",
+      "sha256": "087c347f2d0c1a47af4c51cc8535bb9a776eb9f7be31c3d826b4e08ce2e1dea4",
       "markdownRendered": 3,
       "jsonParsed": true,
       "scopedDprintPassed": true,
