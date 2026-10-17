@@ -37018,5 +37018,236 @@
       ]
     },
     "scope": "Prepared final root workflow bindings only. Selected scanner commands and Scorecard quota/analysis adapter bodies are preserved; only adapter task shell and cohort metadata differ. No actual final common manifest or provider acceptance is claimed."
+  },
+  "rootLoggerIntegrationPreparation": {
+    "preparedAt": "2026-10-17T09:08:54.625Z",
+    "harnessRevision": "ea0306a772c6ac7c0792bfdbf8350cb948e350ea",
+    "workflowPreparation": {
+      "preparedAt": "2026-10-17T08:58:17.106Z",
+      "selectedLoggerRevision": "673ab92e49885dd61fcf08e168ed9c59bf29c6be",
+      "copies": [
+        {
+          "path": ".depot/workflows/depot-complete-logger-combined.yml",
+          "bytes": 46296,
+          "sha256": "4fb92c754b8e5ab2b03a74159ef113c20645553c9addb7059a69f1c92f6e4fbe"
+        },
+        {
+          "path": ".depot/manifests/logger.json",
+          "bytes": 591018,
+          "sha256": "d8cf02e46bafd03ab4f410ccf2a259a29c68c757af1cddf81735258372025af9"
+        },
+        {
+          "path": ".depot/manifests/logger-partitions.json",
+          "bytes": 51877,
+          "sha256": "9d9e271125d05282f0334a3118cec0c230dfe8d028d57a0711fc0ce378dfd214"
+        },
+        {
+          "path": ".depot/manifests/logger-complete-selectors.json",
+          "bytes": 65368,
+          "sha256": "68195b3f027feca71123a827a349b4bc88389400fc69950c746fd72e4d4ef596"
+        },
+        {
+          "path": ".depot/manifests/logger-continuation.json",
+          "bytes": 13968,
+          "sha256": "056435ab1d25555015a0526ec2076d73b513c44862e7ebe8436727eb82ebcf6d"
+        },
+        {
+          "path": ".depot/manifests/logger-browser-partitions.json",
+          "bytes": 8262,
+          "sha256": "22a2d5e05bd7b12196f698679ae5ad2f679314076c915051957e936526e6f798"
+        },
+        {
+          "path": ".depot/manifests/logger-orchestrator.json",
+          "bytes": 5113,
+          "sha256": "ef41987ed99389089b659fd213a9d215006d909990d5f560057797f2bd2e0d87"
+        },
+        {
+          "path": ".depot/manifests/logger-external-routing.json",
+          "bytes": 8104,
+          "sha256": "8225a26ae2555a3992b021a87f017b80f97c6c4771acecdc111733ed03193723"
+        }
+      ],
+      "loggerTaskNames": [
+        "trial:depot:remainder",
+        "trial:depot:remainder:prepare",
+        "trial:depot:external",
+        "trial:depot:prerequisites",
+        "trial:depot:browser-image",
+        "trial:depot:cohort-identity",
+        "trial:depot:git-host",
+        "trial:depot:git-host:build",
+        "trial:depot:git-host:gate",
+        "trial:depot:git-host:linter",
+        "trial:depot:generated:identity"
+      ],
+      "selectedCohortBlockSha256": "8e9bcd77b97191cda822b880e70032c477c499f03e1196c50b141a635d7d527a",
+      "preparedCohortBlockSha256": "96d765d996551b6152ccf5aebd2874e77fe9d40bf4c4a30eea5afb5af2c969a0",
+      "cohortGuardAdditions": [
+        "Canonical cohort ID and UTC request instant",
+        "Bounded 30-second Contents API subprocess",
+        "Provider harness revision in CI",
+        "Selected logger case",
+        "Frozen complete case requirement"
+      ],
+      "protectedRootTaskNames": [
+        "execute",
+        "native-tools",
+        "native-tool-gate",
+        "desktop-runtime",
+        "source-identity",
+        "cohort-identity",
+        "native-features",
+        "linux-nextest"
+      ],
+      "containerTaskCopiedExactly": true,
+      "completeGraph": false,
+      "actualProviderAcceptance": false
+    },
+    "protectedRootTasks": [
+      {
+        "name": "trial:depot:ci:execute",
+        "definitionSha256": "5d7a37673c3df5fba9e897fd9cfcf9d690b5dc926ba8e9a9967e7d241b88908b",
+        "equalsVerifiedBaseline": true
+      },
+      {
+        "name": "trial:depot:ci:native-tools",
+        "definitionSha256": "f4edeef6bab0badcfdd0b24be352e667daa5670702d81e455f2ee2e850410134",
+        "equalsVerifiedBaseline": true
+      },
+      {
+        "name": "trial:depot:ci:native-tool-gate",
+        "definitionSha256": "7a3146d101fd2af3798cf63e5b763251fe240e01e23e10ec06c88a60473a281a",
+        "equalsVerifiedBaseline": true
+      },
+      {
+        "name": "trial:depot:ci:desktop-runtime",
+        "definitionSha256": "bb5d61e4319e33df6a3c502aad1044f3d5870f6a52b7b9a424c940a3b4b23fc4",
+        "equalsVerifiedBaseline": true
+      },
+      {
+        "name": "trial:depot:ci:source-identity",
+        "definitionSha256": "0073a1a5cff2287f829293fac45b84310d931240a20b168e99eda14072f0e6d4",
+        "equalsVerifiedBaseline": true
+      },
+      {
+        "name": "trial:depot:ci:cohort-identity",
+        "definitionSha256": "135c8524272316069fb2e8c1bee1465a627e512d06052ebbd19c35e5cd432f2a",
+        "equalsVerifiedBaseline": true
+      },
+      {
+        "name": "trial:depot:ci:native-features",
+        "definitionSha256": "7c3b21ecd8cd586ff4fe46a8da1ccf756e1ff6566202819b62889e3b546bf90a",
+        "equalsVerifiedBaseline": true
+      },
+      {
+        "name": "trial:depot:linux-nextest",
+        "definitionSha256": "f64a6d4f308aa96d5bf57a80526153525ede9b9bb43ef16312a97a04cea73194",
+        "equalsVerifiedBaseline": true
+      }
+    ],
+    "actualLoggerTasks": [
+      {
+        "task": "//package/module/logger.fuzz:trial:depot:remainder",
+        "runSha256": "2f88302c10cd5a4392b9c30a99951875315c8af6eda9656456bd8babfb1b849f",
+        "commands": 1
+      },
+      {
+        "task": "//package/module/logger.fuzz:trial:depot:remainder:prepare",
+        "runSha256": "a56ab7ec7db1131c7305c9488a9ddc37f1c205cc66fb4f38a96ef525a1d186d8",
+        "commands": 1
+      },
+      {
+        "task": "//package/module/logger.fuzz:trial:depot:external",
+        "runSha256": "0ce6ed832d90842b50ff571f3b6830c0619189a4d23d30adf6c70df334e6c168",
+        "commands": 1
+      },
+      {
+        "task": "//package/module/logger.fuzz:trial:depot:prerequisites",
+        "runSha256": "768c4180d61a2184b2c744c87e4593a6a9e4bdd5634e3ed6672b194a37d1420c",
+        "commands": 1
+      },
+      {
+        "task": "//package/module/logger.fuzz:trial:depot:browser-image",
+        "runSha256": "478d128bc2e5b62eef54aad13eb9db347995cbfa713229bb1b8e416246c6d57d",
+        "commands": 1
+      },
+      {
+        "task": "//package/module/logger.fuzz:trial:depot:cohort-identity",
+        "runSha256": "fd816622c6005dcc2b77870f3117c5cc6ef241f0aa009ff362ebae5673d01b9d",
+        "commands": 1
+      },
+      {
+        "task": "//package/module/logger.fuzz:trial:depot:git-host",
+        "runSha256": "f0016830063cc6de7316ede599bebef1453c7dc0b864933f1dd063eb6aea157c",
+        "commands": 1
+      },
+      {
+        "task": "//package/module/logger.fuzz:trial:depot:git-host:build",
+        "runSha256": "264ddd2c61267125fdcb46daac06b081cab15a622d61977636a2c5d426debac0",
+        "commands": 1
+      },
+      {
+        "task": "//package/module/logger.fuzz:trial:depot:git-host:gate",
+        "runSha256": "aaba9ddc7581c243302b926a598aed30402c1ea1c2db47318b0f742303c91bd3",
+        "commands": 1
+      },
+      {
+        "task": "//package/module/logger.fuzz:trial:depot:git-host:linter",
+        "runSha256": "0b5666d96936ff25e588d8cde828a04b5ff0bd8217056c8902cfe3cf96ae99aa",
+        "commands": 1
+      },
+      {
+        "task": "//package/module/logger.fuzz:trial:depot:generated:identity",
+        "runSha256": "fe24fa8fda0f7ac395cc2ca2caef28f6eec7294a51d5cefcc4bbff5a9c5342e9",
+        "commands": 1
+      }
+    ],
+    "cohortGuard": {
+      "actualRunSha256": "ce2425d4b0d3e84f3f4370976dc10f9a61f7b4c0ce66513c8c40ef52f4edf9ca",
+      "normalAccepted": 2,
+      "rejected": 22,
+      "legacyInvalidAccepted": true,
+      "removedGuardInvalidAccepted": true,
+      "sourceAndHarnessesClean": true,
+      "actualCurrentTaskEqualsControlledTask": true,
+      "controls": {
+        "rawBytes": 38523,
+        "rawSha256": "1f91eb8e5dacb3ed95f96ae5c3b3e2e8a864c81b6fd976e42fcff45da00b10b0",
+        "privateClonePathsRedacted": true,
+        "sanitizedBytes": 38486,
+        "sanitizedSha256": "2f66a3afa7da5f84d2d343a0c64c58101a9a5767e3148511773fb19fde74d6d9",
+        "encoding": "gzip+base64",
+        "data": "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"
+      },
+      "issue": {
+        "number": 1141,
+        "url": "https://github.com/Aquaticats/Monochromatic/issues/1141",
+        "title": "Depot logger cohort guard accepts provisional case manifests",
+        "bodySha256": "adc4ee547da7c5be2c851f279abc858c924e14136517bdbdfc639a6fcc84b417",
+        "bodyVerified": true,
+        "currentTaskEqualsControlledTask": true,
+        "actualTaskSha256": "ce2425d4b0d3e84f3f4370976dc10f9a61f7b4c0ce66513c8c40ef52f4edf9ca",
+        "state": "CLOSED",
+        "closedStateVerified": true
+      }
+    },
+    "generatorGuardIntegration": {
+      "preparedAt": "2026-10-17T09:03:39.485Z",
+      "selectedRevision": "8b64f790134bf0cc4485a9842071760cbc355f08",
+      "path": "package/module/logger.fuzz/mise.toml",
+      "task": "trial:depot:generated:identity",
+      "selectedBlockSha256": "90a3a207eb9257529b20273b9ca5470ed1089f3104624fb025597957df9c637e",
+      "integratedBlockSha256": "90a3a207eb9257529b20273b9ca5470ed1089f3104624fb025597957df9c637e",
+      "cohortGuardPreserved": true,
+      "scope": "Copies the independently controlled ancestor workspace-resolution guard. Actual frozen-source generator pilot remains owner-held."
+    },
+    "actualCompleteGraph": false,
+    "actualProviderAcceptance": false,
+    "next": [
+      "Reconcile the rootful prerequisite for the unfinished original generator invocation",
+      "Verify desktop continuation/archive against the logger source",
+      "Prepare logger.hosts on all original GitHub host platforms",
+      "Freeze exact final case bytes and all route bindings only after complete static registration"
+    ]
   }
 }
