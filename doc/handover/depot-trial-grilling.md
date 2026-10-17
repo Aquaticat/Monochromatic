@@ -21,15 +21,23 @@ The document now explicitly permits work authorized by the active task without a
 The user chose to keep this clarification only in the Codex scope document;
 the proposed general `AUT` clarification was declined,
 and `AGENTS.md` remains unchanged.
+
 The existing Depot work remains active:
 logger continuation `1wzr86fssk` failed before source checks in all 37 jobs,
 at Podman's `cannot unmount /sys/kernel/debug: device or resource busy` user-namespace boundary.
-The logger owner is retaining every failed attempt and preparing a single cloud pilot of a private owned tmpfs volume,
-before another continuation fan-out.
+The logger owner retained every failed attempt and crossed that boundary with a private owned tmpfs volume.
+Cloud pilot `360d91ht6w` passed the unchanged mutation integration consumer and its build prerequisites.
+Actual source-image metadata was measured as root-owned mode `0600`;
+the wrapper binds a byte-identical private owned copy read-only without changing the source or image.
+All six shard volumes and inspection containers were removed.
+The logger owner is continuing repaired or unexecuted leaves and preparing per-file browser controls.
 Browser and DOM recovery still require complete per-file and per-engine coverage.
 The native owner completed platform route preparation and now owns the two missing TOML mutation gates,
 including complete retained mutant identities and acknowledged timeout cleanup;
-the VM owner completed the push-wait-notice verification and now owns source-identity fixture controls.
+the VM owner completed source-identity controls and prepared the exact 15-identity Android consumer contract.
+No new emulator launch has occurred;
+the final matching producer receipt and APKs remain required.
+
 The runtime-only diagnostics have finished and their artifacts are downloaded.
 Both show PID-controller rejection counters increasing from zero to four inside the private user hierarchy,
 with no memory OOM event.
@@ -37,6 +45,7 @@ The measured default service task limit is 76 and the user slice limit is 168,
 inside the outer 512-task container budget.
 Root retained the raw counter samples and provider metadata in
 `doc/audit/depot-final-recovery-2026-10-17.evidence.json`.
+
 Clean pushed harness `4c4063e78bc9aaed8e293c1b478db089d6eef0ce`
 now configures private default-service limits of 256 and a user-slice limit of 448,
 retaining the outer 512-task budget.
@@ -52,6 +61,7 @@ raw counter samples,
 artifact hashes,
 and full provider allocation intervals in the `desktopRuntimePidRecovery` evidence field.
 Issue `#1110` remains open while independent desktop coverage is recovered.
+
 The prior harness explicitly supplied a source-built compositor to the E2E consumer.
 Harness `9f4a01f699f09abb25f10258455ac0faed0ecae8`
 installs the immutable lockfile's published compositor and leaves `E2E_COMPOSITOR` unset,
@@ -70,6 +80,7 @@ Provider allocations were 506.565 seconds and 499.738 seconds,
 each at 16 vCPUs and 64 GiB;
 these are separate development attempts.
 The evidence field `desktopRuntimePublishedCompositorControl` preserves their complete records.
+
 The retained wide screenshots are 1920 by 1080,
 although authored `WIDE_WINDOW` is 1000 by 800 and pointer targets use those fixed coordinates.
 The source compositor's `handler/xdg_shell.rs` deliberately fullscreens children to its screen size
@@ -97,6 +108,7 @@ Existing issue `#1007` already tracks the nested-route pointer/text boundary;
 the measured geometry belongs there rather than in a duplicate issue.
 No causal claim about the individual interaction failures is made before that control.
 The proposed in-memory session-continuation adapter is deferred pending geometry recovery.
+
 Root grafted the truthful executor metadata repair while preserving native nextest continuation
 at `100452c7c6b9078d01f20ab5a086f13edeaf49d9`.
 The combined executor passed its actual disposable passing,
@@ -105,8 +117,13 @@ deferred-prerequisite,
 and running-progress controls;
 the legacy executor failed the running-progress negative control as expected.
 The evidence field `combinedExecutorControls` retains all five controls and the graft receipt.
-The TOML container wave also reached its job timeout;
-its retained log must be reconciled and its unexecuted independent checks resumed.
+The native owner reconciled the timed-out TOML wave and filed its uncovered source and harness failures.
+Independent missing mutation gates are running in `p6vm5s00w6` at `274ec49595`;
+file-enforcer is terminal with its retained source failure,
+while TOML continues independently.
+The final TOML route at `c159dd63021f9304ab3e4996b1d054e5f19ea0c9`
+also retains native mutation reports with hashes and explicit stale-output handling.
+It remains held for the common dispatch interval.
 
 The user requested continuation of the authorized trial queue.
 Root is collecting the terminal native,
