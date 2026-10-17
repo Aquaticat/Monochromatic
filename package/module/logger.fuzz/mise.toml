@@ -484,7 +484,7 @@ assert.equal(fixture,join(directory,`logger-generated-${label}`),'Cleanup refuse
 assert(lstatSync(fixture).isDirectory()&&!lstatSync(fixture).isSymbolicLink(),'Cleanup refuses a symlink fixture')
 const canonicalFixture=realpathSync(fixture),canonicalSource=realpathSync(source)
 assert.equal(canonicalFixture,join(realpathSync(directory),`logger-generated-${label}`),'Cleanup refuses escaped fixture ancestry')
-assert(!canonicalFixture.startsWith(canonicalSource+'/')&&!canonicalSource.startsWith(canonicalFixture+'/'),'Cleanup refuses authoritative ancestry')
+assert(canonicalFixture!==canonicalSource&&!canonicalFixture.startsWith(canonicalSource+'/')&&!canonicalSource.startsWith(canonicalFixture+'/'),'Cleanup refuses authoritative ancestry')
 const git=(args,cwd=source)=>execFileSync('git',args,{cwd,encoding:'utf8',maxBuffer:16*1024*1024}).trim()
 assert.equal(git(['rev-parse','HEAD']),manifest.sourceRevision,'Cleanup requires the bound authoritative HEAD')
 assert.equal(git(['rev-parse','HEAD'],fixture),manifest.sourceRevision,'Cleanup requires the bound consumer HEAD')
