@@ -95,6 +95,7 @@ for (const required of ['mise.toml', 'mise.lock', 'package/music-player/desktop-
 const inputs = Object.fromEntries(paths.map(path => { const bytes = readFileSync(join(source, path)); assert.deepEqual(bytes, execFileSync('git', ['show', 'HEAD:' + path], { cwd: source, maxBuffer: 16 * 1024 * 1024 }), 'Configured source input differs: ' + path); return [path, { bytes: bytes.length, sha256: sha256(bytes) }] }))
 const identity = { head: git(['rev-parse', 'HEAD']), trackedStatus: git(['status', '--porcelain', '--untracked-files=no']), sourceTree: git(['rev-parse', 'HEAD^{tree}']), inputs }
 const harnessRevision = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+if (process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true') assert.match(process.env.GITHUB_SHA ?? '', /^[a-f0-9]{40}$/, 'Provider harness revision is required in CI')
 if (process.env.GITHUB_SHA) assert.equal(harnessRevision, process.env.GITHUB_SHA, 'Provenance harness differs from dispatched workflow revision')
 async function readContentsApi({ path }) {
   const token = process.env.GH_TOKEN ?? process.env.GITHUB_TOKEN
@@ -109,7 +110,7 @@ async function readContentsApi({ path }) {
   assert.equal(envelope.type, 'file')
   assert.equal(envelope.path, path)
   assert.equal(typeof envelope.content, 'string')
-  const encoded = envelope.content.replace(/s+/g, '')
+  const encoded = envelope.content.replace(/\s+/g, '')
   assert.match(encoded, /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/)
   const bytes = Buffer.from(encoded, 'base64')
   assert(bytes.length < 1024 * 1024, 'Common manifest must be below one MiB')
