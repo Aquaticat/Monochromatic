@@ -11,11 +11,13 @@ import type {
 import { isStringLiteral, } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
+import { isDeclarationFileName, } from './declaration-file-name.ts';
 import type { EffectProjectFingerprint, } from './effect-project-fingerprint.ts';
 import {
   analyzerDigest,
   contentDigest,
 } from './effect-summary-cache-identity.ts';
+import { isWorkspaceSourceFileName, } from './workspace-source-path.ts';
 import {
   recordSharedClosure,
   recordSharedEligible,
@@ -84,6 +86,44 @@ type ModuleTargets =
     readonly reason: string;
     readonly detail?: string;
   };
+
+/**
+ Tests whether the effect analysis treats a program file as owned source it can inspect.
+ 
+ This is the classification `indexedSourceFileMap` and the owned-callable resolution apply,
+ not the raw library flag: a workspace package reached through a symlink in
+ `node_modules` is classified as external while its source stays inspectable,
+ so a package's own project and a project importing it must agree on it.
+ 
+ @param fileName - Program file path.
+ 
+ @param isFromExternalLibrary - Program metadata flag for the file.
+ 
+ @param analysisRoot - External implementation root included despite library classification.
+ 
+ @returns whether the analysis indexes the file.
+ 
+ @example
+ ```ts
+ const owned = isOwnedSource({ fileName, isFromExternalLibrary: false });
+ ```
+ */
+function isOwnedSource({
+  fileName,
+  isFromExternalLibrary,
+  analysisRoot,
+}: {
+  readonly fileName: string;
+  readonly isFromExternalLibrary: boolean;
+  readonly analysisRoot?: string;
+},): boolean {
+  if (isDeclarationFileName(fileName,))
+    return false;
+  return (!isFromExternalLibrary)
+    || isWorkspaceSourceFileName(fileName,)
+    || ((analysisRoot !== undefined) && fileName
+      .startsWith(analysisRoot,));
+}
 
 /**
  Renders one specifier node for a diagnostic.
@@ -319,7 +359,11 @@ export function createSharedKeyResolver({
       : [
         fileName,
         digest,
-        String(metadata.isFromExternalLibrary,),
+        String(isOwnedSource({
+          fileName,
+          isFromExternalLibrary: metadata.isFromExternalLibrary,
+          ...(analysisRoot === undefined) ? {} : { analysisRoot, },
+        },),),
         String(metadata.isDefaultLibrary,),
         String(metadata.impliedNodeFormat,),
         metadata.packageJsonType,
