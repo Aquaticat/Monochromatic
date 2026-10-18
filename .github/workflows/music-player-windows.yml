@@ -7,7 +7,7 @@ on:
       phase:
         type: choice
         required: true
-        options: [cold, seed, warm, branch]
+        options: [off, cold, seed, warm, branch]
       scope:
         type: string
         required: true
@@ -38,7 +38,7 @@ jobs:
         - pool: depot
           runner: depot-ubuntu-24.04-4
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 12
+    timeout-minutes: 5
     env:
       CI: 'true'
       MISE_AUTO_INSTALL: 'false'
@@ -67,6 +67,7 @@ jobs:
       run: mise run //package/dev-script/task-util:research:depot:pnpm:prepare
     - name: Restore pnpm store through the runner's actual cache backend
       id: cache
+      if: ${{ inputs.phase != 'off' }}
       uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae
       with:
         path: .research-depot/pnpm-store
@@ -82,6 +83,7 @@ jobs:
       run: mise run //package/dev-script/task-util:research:depot:pnpm:install
     - name: Bound the experimental archive before saving
       id: guard
+      timeout-minutes: 2
       if: ${{ always() && inputs.phase == 'seed' && steps.install.outcome == 'success' }}
       run: mise run //package/dev-script/task-util:research:depot:pnpm:guard
     - name: Save only the successful trusted dependency preparation

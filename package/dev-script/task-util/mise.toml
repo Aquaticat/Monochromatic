@@ -145,17 +145,31 @@ shell = "node --input-type=module-typescript -e"
 run = '''
 const { spawn } = await import('node:child_process');
 const { once } = await import('node:events');
+const { pipeline } = await import('node:stream/promises');
 const { statSync, writeFileSync, unlinkSync } = await import('node:fs');
 const { join } = await import('node:path');
 const { strict: assert } = await import('node:assert');
 const directory = join(process.env.GITHUB_WORKSPACE, '.research-depot');
 const archive = join(process.env.RUNNER_TEMP, 'research-pnpm-quota-check.tar.zst');
-const compressor = spawn('zstd', ['--threads=2', '--quiet', '--force', '--output', archive], { stdio: ['pipe', 'ignore', 'inherit'] });
+const compressor = spawn('zstd', ['--threads=2', '--quiet', '--force', '-o', archive], { stdio: ['pipe', 'ignore', 'inherit'] });
 const packer = spawn('tar', ['--create', '--file', '-', '--directory', join(directory, 'pnpm-store'), '.'], { stdio: ['ignore', 'pipe', 'inherit'] });
-packer.stdout.pipe(compressor.stdin);
-const [packed, compressed] = await Promise.all([once(packer, 'close'), once(compressor, 'close')]);
-assert.equal(packed[0], 0, 'Cache quota tar failed');
-assert.equal(compressed[0], 0, 'Cache quota compression failed');
+const packClosed = once(packer, 'close');
+const compressionClosed = once(compressor, 'close');
+try {
+  const [packed, compressed] = await Promise.all([
+    packClosed,
+    compressionClosed,
+    pipeline(packer.stdout, compressor.stdin, { signal: AbortSignal.timeout(90_000) }),
+  ]);
+  assert.equal(packed[0], 0, 'Cache quota tar failed');
+  assert.equal(compressed[0], 0, 'Cache quota compression failed');
+} catch (error) {
+  packer.kill('SIGTERM');
+  compressor.kill('SIGTERM');
+  await Promise.allSettled([packClosed, compressionClosed]);
+  writeFileSync(join(directory, 'evidence/archive-size-guard-error.json'), JSON.stringify({ error: String(error) }, null, 2) + '\n');
+  throw error;
+}
 const result = { compressedBytes: statSync(archive).size, maximumBytes: 500_000_000, checkOnly: true, savedPathIsOriginalStore: true };
 writeFileSync(join(directory, 'evidence/archive-size-guard.json'), JSON.stringify(result, null, 2) + '\n');
 unlinkSync(archive);
