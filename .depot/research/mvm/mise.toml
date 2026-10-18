@@ -143,7 +143,19 @@ const passwd = execFileSync('getent', ['passwd', String(process.getuid())], { en
 const passwdGid = Number(passwd[3]);
 if (!Number.isSafeInteger(passwdGid) || passwdGid < 0 || Number(passwd[2]) !== process.getuid()) throw new LifecycleProbeFailure('Current passwd identity is not a numeric matching UID/GID');
 const identity = { uid: process.getuid(), gid: process.getgid(), groups: process.getgroups(), passwdGid };
-fs.writeFileSync(join(evidence, process.env.MVM_GROUP_NORMALIZED ? 'identity-normalized.json' : 'identity-initial.json'), JSON.stringify(identity, null, 2) + '\n');
+fs.writeFileSync(join(evidence, process.env.MVM_KVM_GROUP_REEXEC ? 'identity-kvm-supplemental.json' : process.env.MVM_GROUP_NORMALIZED ? 'identity-normalized.json' : 'identity-initial.json'), JSON.stringify(identity, null, 2) + '\n');
+if (process.env.MVM_RESEARCH_KVM_GROUP === 'device') {
+  if (process.env.GITHUB_ACTIONS !== 'true' || process.env.PROBE_PLATFORM_PROVIDER !== 'github-hosted-ubuntu-24.04') throw new LifecycleProbeFailure('Supplemental KVM group control is restricted to this owned ephemeral GitHub VM');
+  const deviceGroup = fs.statSync('/dev/kvm').gid;
+  if (!identity.groups.includes(deviceGroup)) {
+    if (process.env.MVM_KVM_GROUP_REEXEC) throw new LifecycleProbeFailure('Supplemental device-group control must not recurse');
+    execFileSync('setpriv', ['--help'], { stdio: 'inherit' });
+    const groups = [...new Set([...identity.groups, deviceGroup])].join(',');
+    const grouped = spawnSync('sudo', ['--non-interactive', '--preserve-env', 'setpriv', '--reuid', String(identity.uid), '--regid', String(passwdGid), '--groups', groups, '/usr/bin/env', 'HOME=' + originalHome, 'PATH=' + process.env.PATH, process.execPath, ...process.execArgv], { env: { ...process.env, MVM_KVM_GROUP_REEXEC: '1' }, stdio: 'inherit', timeout: 17 * 60 * 1000 });
+    if (grouped.error || grouped.status !== 0) throw new LifecycleProbeFailure('Supplemental device-group VM consumer failed; retained receipts identify the boundary');
+    process.exit(0);
+  }
+}
 if (identity.gid !== passwdGid) {
   if (process.env.MVM_GROUP_NORMALIZED) throw new LifecycleProbeFailure('Owned primary-group normalization must not recurse');
   execFileSync('setpriv', ['--help'], { stdio: 'inherit' });
@@ -252,6 +264,7 @@ try {
   primaryFailure = { message: String(error), stack: error.stack };
 } finally {
   const daemonLogs = [];
+  try {
   const roots = [join(privateHome, '.cache/libvirt'), join(privateConfig, 'libvirt'), join(runtime, 'libvirt')];
   for (const [index, root] of roots.entries()) {
     if (!fs.existsSync(root)) continue;
@@ -266,6 +279,7 @@ try {
     }
   }
   fs.writeFileSync(join(evidence, 'daemon-log-inventory.json'), JSON.stringify({ roots, daemonLogs }, null, 2) + '\n');
+  } catch (error) { cleanupErrors.push('Daemon log capture failed before lifecycle cleanup: ' + String(error)); }
   try {
     const list = requireSuccess(virsh('domains-cleanup', ['list', '--all', '--name'], { cleanup: true }));
     for (const domain of list.stdout.trim().split('\n').filter(Boolean)) {
