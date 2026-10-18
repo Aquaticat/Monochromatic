@@ -11,6 +11,25 @@ An owned Git-wrapper defect or UX issue should be filed in this repository's Git
 
 ### Active workers and ownership
 
+### Logger destination decision and remaining delivery
+
+The human selected project-local default files with a per-user state fallback when the project is unavailable.
+Explicit directory arguments and `MONOCHROMATIC_LOG_DIRECTORY` remain strict destinations.
+Fallback must identify the actual destination visibly.
+Implement this as logger `0.4.3`, preserving lazy initialization and the existing append-completion contract.
+The full shared-analyzer lint reports zero warnings and errors on 21 files,
+but its fixture omitted that package's private log mount and exposed a real read-only default-file failure.
+Repair both the fixture and the logger behavior; preserve the original stderr as evidence.
+
+Default JavaScript and native `kFkBoY` now build from frozen `f56d63b688` inputs.
+Their final consumer checks remain pending.
+The source lint checkpoint still has 1,037 warnings and 47 errors.
+All recorded RPC workers are closed; resume owned source and native repair assignments after delivery checks.
+Shared analyzer `0.0.2` publication is not verified:
+GitHub run `39139032024` failed with registry `E401` diagnostics, requiring source-backed investigation.
+
+### Worker records
+
 The real Pi RPC workers use `llmgateway-devpass/mimo-v2.6-pro`,
 thinking high,
 2 GiB memory,
