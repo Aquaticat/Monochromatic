@@ -9096,3 +9096,40 @@ The failures belong to our completion accounting,
 serialization ordering,
 file ownership,
 and invocation setup.
+
+## Native cancellation controls are not ordinary event data
+
+The extra `test:native:session-actions` run against `native-release-mmaT8k` fails during tree navigation.
+The retained error is `SessionInputCaptureError` with cause
+`SourceCollectionError: Run message data has an unsupported prototype`.
+A diagnostic-only private copy identifies `field=signal`,
+`[object AbortSignal]`,
+constructor `AbortSignal`.
+The qualified Pi source declares that top-level field on both `SessionBeforeTreeEvent`
+and `SessionBeforeCompactEvent` in `packages/coding-agent/src/core/extensions/types.ts`.
+Its `AgentSession.navigateTree` constructs the controller and passes its signal to the original event emission.
+
+`native/contract/collector/run-prompt-custody/messages.mjs` intentionally accepts ordinary data only.
+`loaded-event-inputs.mjs` applies that same copier to every native event field,
+so a valid host control object is rejected at our capture boundary.
+The passive observer preserves actual extension callbacks and stores the capture failure for assessment readers.
+Consequently,
+successful native navigation alone does not verify retained event evidence.
+The committed `test:native:event-controls` first checks the original callbacks and signal identity,
+then fails when reading that retained evidence.
+
+### Actual Node signal behavior
+
+The Node `v26.12.0` probe uses the installed runtime's own `internal/abort_controller` source.
+Its `validateThisAbortSignal` checks a reflectable symbol property.
+A shallow copy preserving the prototype and all own descriptors passes the intrinsic `aborted` getter.
+That getter therefore does not prove constructor ownership.
+The same probe confirms that calling the captured intrinsic getter bypasses a user-defined own `aborted` accessor,
+and that default cancellation creates a `DOMException` reason rather than ordinary data.
+
+The provenance boundary remains the original native event emission and callback positions,
+not a signal's name or prototype.
+The repair needs a narrowly scoped native-control representation while leaving ordinary message/tool copying strict.
+`node26-abort-signal-probe.log` and `node26-abort-controller-source.js` in
+`${HOME}/temp/agent/pi-mimo-preparation-failure-20261018` preserve the probe and deciding source.
+The source repair and its final consumer verification remain open in the canonical frontier.
