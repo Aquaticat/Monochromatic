@@ -417,7 +417,10 @@ The authorized recovery used a fresh five-minute request guard,
 the same builder sizes,
 and the same USD 1 timestamp-compute ceiling.
 That model is not proof of an invoice cap or aggregate account expenditure.
-The shared images and project remain held for independent native CI and GitHub consumers.
+The shared images and project were held for independent native CI and GitHub consumers.
+The parent's final consumer cohort completed and released that hold on 2026-10-18.
+The builder project remains solely for the remaining bounded source/lifecycle probes,
+followed by exact owned-resource cleanup.
 
 Build `d0xtstnptt` exercised a multi-node local filesystem exporter with the base stage forced to execute.
 The exported x64 identity reports 16 CPUs,
@@ -493,10 +496,7 @@ After positive authenticated reads,
 an owned empty blob-upload initiation returned HTTP 403 with registry error `DENIED`.
 No upload was created.
 
-The next action is the independent GitHub and native CI job-container consumer,
-while forwarding,
-remote source,
-and firstparty cache-mount campaigns continue.
+That checkpoint preceded the Node26 correction and the completed Cargo/forwarding controls.
 The timestamp-compute model covers 139,103 milliseconds across native requests,
 giving USD 0.1854707 at the declared two-builder rate.
 This is a request-window estimate,
@@ -611,9 +611,42 @@ builder CNI isolation,
 separate historical build-minute and GitHub-minute caps,
 and Datadog's transition to general availability.
 Their applicability and deciding-current-source reconciliation are active work.
-Secret/SSH forwarding,
-the reviewed multi-target Bake graph,
-and immutable remote Git contexts remain pending runtime probes.
+The secret/SSH and multi-target Bake controls are now exercised in the forwarding campaign.
+Immutable remote Git contexts remain pending runtime probes.
+
+## Actual Bake graph, mount lifetime and CNI controls
+
+Build `tf3tp8b4tx`,
+source `b0e3247a279507c759964162ec9eb816e3dcc402`,
+ran the reviewed `forwarding-graph` Bake group rather than only printing its configuration.
+Its source and named-context evidence targets executed on AMD64 and Arm64.
+Both architectures consumed the expected synthetic secret hash and forwarded SSH-agent identity.
+The following `RUN` had no secret file and no `SSH_AUTH_SOCK`.
+The owned keyless agent answered only identity-list requests and closed without errors.
+No private key or SSH signing operation was used;
+authenticated Git-over-SSH is outside this result.
+
+Separate terminal controls rejected the missing required mounts:
+
+- Build `c92mvpvs0t`: `secret fixture: not found`.
+- Build `mqpxcrcbgn`: `unset ssh forward key fixture`.
+  The initial assertion expected different wording;
+  the retained terminal log was reconciled without another allocation.
+
+The graph's independent AMD64 network targets each bound loopback port `38429`.
+Their successful bind intervals overlapped by 20,008 milliseconds,
+their hashed kernel boot identities matched,
+and their network-namespace identities differed.
+A local same-namespace collision first produced `EADDRINUSE`.
+This is actual concurrent build-container network-isolation evidence.
+It does not establish separate hardware per target,
+host-escape resistance,
+or cross-organization cache isolation.
+
+The graph finished in 34,293 milliseconds.
+The generated programs passed an annotated-input syntax preflight,
+with the [Node check-path correction](../troubleshooting/node-eval-module-detection.md) retained separately.
+The positive and rejected-mount receipts are in the BuildKit evidence archive.
 
 ## Unreleased CLI changes expose additional research cases
 
