@@ -1,0 +1,49 @@
+// Isolated research configuration. No credential is placed in Gradle's script or output.
+
+// What: Import Gradle's HTTP task-output cache type; the local directory cache is its sibling.
+// Why: Remote reuse must be separated from local task-output reuse in fresh sandboxes.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// import { HttpBuildCache } from 'gradle';
+// ```
+import org.gradle.caching.http.HttpBuildCache
+
+// What: This Groovy callback receives settings after the project's own settings file is evaluated.
+// Why: Apply experimental cache configuration without editing the frozen project's settings.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// gradle.settingsEvaluated((settings) => configureCache(settings));
+// ```
+gradle.settingsEvaluated { settings ->
+    // Configure this settings object's cache; nested callbacks receive their configuration object implicitly.
+    settings.buildCache {
+        // Disable directory-cache reads and writes so a remote hit has an identifiable backend.
+        local { enabled = false }
+        // Use Gradle's HTTP protocol through the private loopback recorder.
+        remote(HttpBuildCache) {
+            // The recorder forwards to Depot over TLS and supplies only the automatic job credential.
+            url = System.getenv('REUSE_CACHE_URL')
+            // This exception applies to the sandbox's loopback recorder, not the remote Depot connection.
+            allowInsecureProtocol = true
+            // Only the dedicated successful producer may populate this experiment's salted task keys.
+            push = System.getenv('REUSE_CACHE_PUSH') == 'true'
+        }
+    }
+}
+
+// What: This callback observes each project before its tasks are configured.
+// Why: Salt task-input fingerprints without relying on an undocumented remote URL namespace.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// gradle.beforeProject((project) => project.tasks.configureEach((task) => addNamespace(task)));
+// ```
+gradle.beforeProject { project ->
+    // Configure tasks lazily as the project's plugins create them.
+    project.tasks.configureEach { task ->
+        // The same trusted experiment scope is used by producers and unchanged consumers.
+        task.inputs.property('researchReuseNamespace', System.getenv('REUSE_CACHE_SCOPE'))
+    }
+}
