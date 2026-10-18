@@ -34,7 +34,7 @@ It was read without modifying or executing upstream project code.
 `get_affected_task_list` builds the workspace graph before resolving and diffing the requested revisions:
 
 ```rust
-//! jdx/mise/src/cli/run.rs:375
+//! jdx/mise/src/cli/run.rs:373
 let graph = config.workspace_project_graph()?;
 let revisions = crate::task::workspace::git::WorkspaceGitRevisions::resolve(base, head);
 let changed_paths = revisions.changed_paths(&workspace_root)?;
