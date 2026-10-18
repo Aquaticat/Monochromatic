@@ -124,6 +124,21 @@ Preserve failed outcomes and include their compute exposure.
 
 ## Campaign work queue
 
+The first preparation run is `xkmm08vpjs`,
+dispatched from pushed harness `e65f3ccf26781999717cfd9c17e1bd361f42183a`.
+It requests one `depot-ubuntu-24.04-8` sandbox and a 15-minute timeout.
+Its proposed image destination is `l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r1`.
+That reference is not a verified reusable image until capture and fresh-consumer checks finish.
+The helper's official release resolver supplies a pinned Depot S3 archive;
+authenticated lookup of public `depot/snapshot` source returned HTTP `404`.
+The helper's internal source/build provenance is therefore unverified,
+even though the snapshot action's download and invocation code is inspected.
+
+Parent work separately owns Android APK/instrumented builds,
+headful device consumption,
+default-image graphics/KVM and prepared-image portability to GitHub Actions.
+This campaign does not launch or delegate emulator work.
+
 - Verify snapshot capture/upload and fresh installed-tool reuse,
   including source/secret marker controls and missing-tool behavior.
 - Compare pnpm content-store reuse with installed dependency/virtual-store restoration,
