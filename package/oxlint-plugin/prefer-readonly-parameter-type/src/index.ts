@@ -159,6 +159,13 @@ export { formalArgumentIndexes, } from './prefer-readonly-parameter-types/effect
 export { ancestorDirectories, } from './prefer-readonly-parameter-types/ancestor-directories.ts';
 
 /**
+ Persistent cache bound enforcement, exported so its test can exercise built output.
+
+ @internal
+ */
+export { maintainPersistentEffectCache, } from './prefer-readonly-parameter-types/effect-summary-cache-maintenance.ts';
+
+/**
  Reachability of the structural projection helper, exported for its built-artifact test.
  
  @internal
