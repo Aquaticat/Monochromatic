@@ -126,8 +126,9 @@ export component SettingsPage inherits Rectangle {
     callback toggle-auto-play();
     // Fires when the Licenses row is clicked, or Space or Enter is pressed on it; the host opens the Licenses page.
     callback open-licenses();
-    // True when the page opens with the keyboard on the Licenses row, as when the Licenses page was just closed.
-    in property <bool> start-on-licenses: false;
+    // True when the page opens with the keyboard on the Licenses row, as when the Licenses page was just closed. The page
+    // clears it as it uses it, so a later page that opens Settings again (the editor page's Back) starts on the first row.
+    in-out property <bool> start-on-licenses: false;
     // True when the list should take keyboard focus: when the page opens and each time `focus-tick` changes (Escape out
     // of the template field returns here).
     in property <bool> wants-focus: false;
@@ -197,6 +198,7 @@ export component SettingsPage inherits Rectangle {
     init => {
         if (root.start-on-licenses) {
             root.focus-index = root.rows.length + 1;
+            root.start-on-licenses = false;
         }
         list-focus.focus();
     }

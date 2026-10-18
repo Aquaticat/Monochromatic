@@ -178,7 +178,7 @@ export component AppWindow inherits Window {
     in property <bool> auto-play-on-select: false;
     in property <string> auto-play-on-select-text: "";
     // True while the Settings page should open with the keyboard on its Licenses row, as when Licenses was just closed.
-    in property <bool> settings-start-on-licenses: false;
+    in-out property <bool> settings-start-on-licenses: false;
     // The notice text of the Licenses page, one source line per entry; empty while the page is closed, so the text is
     // built when the page opens and released when it closes.
     in property <[string]> licenses-lines: [];
@@ -605,7 +605,7 @@ export component AppWindow inherits Window {
         selected-index: root.settings-selected;
         auto-play-enabled: root.auto-play-on-select;
         auto-play-text: root.auto-play-on-select-text;
-        start-on-licenses: root.settings-start-on-licenses;
+        start-on-licenses <=> root.settings-start-on-licenses;
         toggle-auto-play => { root.settings-toggle-auto-play(); }
         open-licenses => { root.settings-open-licenses(); }
         open-template(i) => { root.settings-open-template(i); }

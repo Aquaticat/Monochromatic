@@ -240,7 +240,7 @@ before saying it matches, QAB):
   `music-player-licrow`, code head `7cf2831df7`, `main` merged in at `5994c324b9`. The owner decided on 2026-10-18
   (question tool): the desktop releases use Slint under its Royalty-free license 2.0 instead of GPL-3.0-only, and Settings
   gets a Licenses row on both platforms without mockups. This branch is the desktop half; the Android row is another
-  agent's. It depends on `feat/music-player-license-notices` (the notice tooling it changes): merge that branch first.
+  agent's. It builds on the notice tooling of `feat/music-player-license-notices`, which is already an ancestor of `main`.
   Done: `about.toml` accepts `LicenseRef-Slint-Royalty-free-2.0` and no longer `GPL-3.0-only`; cargo-about 0.9.2 drops the
   text of a `LicenseRef-*` license (`doc/troubleshooting/cargo-about-licenseref-text-is-dropped.md`), so
   `bin/third-party-notices.mjs` adds a Slint section from `notices/slint-royalty-free-2.0.md` after a SHA-256 check of

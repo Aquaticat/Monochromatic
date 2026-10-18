@@ -283,6 +283,22 @@ fn settings_opened_afresh_starts_on_the_first_row_not_on_licenses() {
     assert_eq!(app.get_route(), Route::TemplateEditor.to_int(), "Enter acts on the first row after a fresh open");
 }
 
+#[test]
+fn a_template_editor_visited_after_licenses_returns_to_the_first_row_not_to_licenses() {
+    let app = open_settings_at(443.0);
+    open_licenses_by_keyboard(&app);
+    assert!(escape(&app));
+    assert_eq!(app.get_route(), Route::Settings.to_int());
+    tap(&app, "Home");
+    tap(&app, "Enter");
+    assert_eq!(app.get_route(), Route::TemplateEditor.to_int(), "Home then Enter opens the first template");
+    app.invoke_editor_back();
+    settle();
+    assert_eq!(app.get_route(), Route::Settings.to_int());
+    tap(&app, "Enter");
+    assert_eq!(app.get_route(), Route::TemplateEditor.to_int(), "the keyboard is on the first row again, not on Licenses");
+}
+
 //endregion
 
 //region The ring
