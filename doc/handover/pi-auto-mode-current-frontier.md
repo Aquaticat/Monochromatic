@@ -214,7 +214,14 @@ The new maintained `test:native:compaction-inputs` regression uses the installed
 an actual original event runner,
 an ordinary-data positive control,
 callback mutation snapshots and strict wrong-role/output controls.
-Its first run is pending.
+Commit `aec426c873` preserves the first regression before repair.
+The ordinary-data positive control passes,
+then actual SDK file sets fail with the same unsupported-prototype capture error on `hGuAfo`.
+Evidence is `compaction-inputs-red.log`.
+Additional committed cases reject non-string members,
+extra set properties,
+proxies,
+prototype lookalikes and preparation accessors without invoking them.
 Do not broaden arbitrary message/tool metadata to accept platform containers.
 At this checkpoint,
 Git shows no MiMo source edits yet;

@@ -46,9 +46,27 @@ for(const kind of ['session_before_tree','tool_call']){
  await wrong.runner.emit({type:kind,preparation:{fileOps}});
  assert.throws(function rejectWrongEventRole(){wrong.records();});
 }
-const output=fixture({kind:'session_before_compact',handlers:[function returnUnsupportedCollections(){return {fileOps};}]});
+const output=fixture({kind:'session_before_compact',handlers:[function returnUnsupportedCollections(){return {preparation:{fileOps}};}]});
 await output.runner.emit({type:'session_before_compact',preparation:{note:'Ordinary input'}});
 assert.throws(function outputStillRejectsSets(){output.records();});
+const noSignal=fixture({kind:'session_before_compact',handlers:[function preserveNoSignal(){}]});
+await noSignal.runner.emit({type:'session_before_compact',preparation:{fileOps:createFileOps()}});
+assert.deepEqual(noSignal.records()[0][0].value.value.preparation.fileOps.read,{nativeCollection:'file-path-set',values:[]});
+const reads={unexpected:0};
+const accessorSet=Object.defineProperty(new Set(['path']),'extra',{get(){reads.unexpected++;return 'hidden data';}});
+const proxySet=new Proxy(new Set(['path']),{getPrototypeOf(){reads.unexpected++;return Set.prototype;}});
+for(const invalid of [new Set([{}]),accessorSet,proxySet,Object.create(Set.prototype)]){
+ const invalidOps=createFileOps();invalidOps.read=invalid;
+ const rejected=fixture({kind:'session_before_compact',handlers:[function preserveInvalidData(){}]});
+ await rejected.runner.emit({type:'session_before_compact',preparation:{fileOps:invalidOps}});
+ assert.throws(function rejectUnsupportedNativeCollection(){rejected.records();});
+}
+const getterInput={type:'session_before_compact'};
+Object.defineProperty(getterInput,'preparation',{enumerable:true,get(){reads.unexpected++;return {fileOps};}});
+const getter=fixture({kind:'session_before_compact',handlers:[function preserveAccessorData(){}]});
+await getter.runner.emit(getterInput);
+assert.throws(function rejectPreparationAccessor(){getter.records();});
+assert.equal(reads.unexpected,0,'Capture must not invoke collection properties, proxy traps or preparation accessors');
 console.log(JSON.stringify({complete:true,actualSdkFileOperations:true,callbackIdentityPreserved:true,phaseSnapshotsIndependent:true,ordinarySetRejection:true}));
 
 //endregion Original SDK file-operation sets cross only their declared event input boundary
