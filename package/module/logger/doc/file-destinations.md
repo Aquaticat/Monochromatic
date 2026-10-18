@@ -6,6 +6,12 @@ Default Node logging first tries the nearest ancestor `node_modules/.monochromat
 A missing project or a failed project-file probe falls back to persistent user state.
 The fallback is verified before one console notice identifies the destination and why it was needed.
 The notice uses a direct host console because logging through the sink itself would recurse.
+Both fallback notices and direct internal error diagnostics use the console sink's terminal-control neutralizer.
+The adversarial filename catalog fails on the published `0.4.3` artifact before that repair.
+Logger `0.4.4` includes the repair;
+its build,
+fresh-cache types,
+full units and full package lint pass locally.
 
 An explicit `createFileSink({ directory })` argument or nonempty `MONOCHROMATIC_LOG_DIRECTORY`
 selects a strict destination.
