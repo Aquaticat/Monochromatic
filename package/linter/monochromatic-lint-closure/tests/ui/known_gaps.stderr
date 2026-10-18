@@ -87,4 +87,12 @@ LL |     g(Box::new(move || drop(s)));
    |
    = help: replace the closure with a named function that takes the state as parameters, or with a loop; if the callee keeps the state past the call, attach #[cfg_attr(dylint_lib = "monochromatic_lint_closure", expect(avoidable_closure, reason = "..."))] to the closure argument or to an enclosing item
 
-warning: 11 warnings emitted
+warning: this closure captures no variables, so a named function can take its place; also, it is not a direct argument of a call or method call
+  --> $DIR/known_gaps.rs:111:28
+   |
+LL |     keep_static_reference(&|| 1);
+   |                            ^^^^
+   |
+   = help: move the body into a named function and pass the function's path; a closure is accepted only when it captures a variable and the callee keeps it past the call
+
+warning: 12 warnings emitted

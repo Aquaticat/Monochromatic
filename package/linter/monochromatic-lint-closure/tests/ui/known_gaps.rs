@@ -104,4 +104,11 @@ fn gap_callee_is_a_function_pointer(g: fn(Box<dyn FnOnce() + 'static>)) {
     g(Box::new(move || drop(s)));
 }
 
+fn reported_capture_free_reference_closure_for_static_reference_parameter() {
+    // The closure captures nothing, so it is reported whatever the parameter requires (the unwrapped twin of the
+    // leaked-reference gap above).
+    // verdict: reported
+    keep_static_reference(&|| 1);
+}
+
 fn main() {}
