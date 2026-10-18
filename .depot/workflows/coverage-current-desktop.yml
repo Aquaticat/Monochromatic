@@ -1,4 +1,4 @@
-name: Research same frozen desktop producers with supported headless boundary
+name: Research remaining unchanged frozen desktop source sessions
 on:
   workflow_dispatch: null
 permissions:
@@ -162,10 +162,10 @@ jobs:
           rsion']);\\\\nfunction
           forwarderMain({compositor,log}){const{spawnSync}=require('node:child_\
           process'),{appendFileSync}=require('node:fs'),args=process.argv.slice\
-          (2),information=args.some(arg=>['--version','-V','--help','-h'].inclu\
-          des(arg)),actual=information?args:['--headless',...args];appendFileSy\
-          nc(log,JSON.stringify({args,actual,informationForwardedWithoutChange:\
-          information})+String.fromCharCode(10));const
+          (2),information=args.length===1&&['--version','-V','--help','-h'].inc\
+          ludes(args[0]),actual=information?args:['--headless',...args];appendF\
+          ileSync(log,JSON.stringify({args,actual,informationForwardedWithoutCh\
+          ange:information})+String.fromCharCode(10));const
           result=spawnSync(compositor,actual,{stdio:'inherit'});if(result.error\
           )throw result.error;process.exitCode=result.status??1}\\\\nconst
           forwarder=join(root,'.research-desktop/compositor-headless.cjs'),forw\
@@ -209,7 +209,101 @@ jobs:
           teHashes:true,files,actualWorkingBytes:workingBytes},null,2));receipt\
           .materializedConsumerInputs={files:files.length,actualWorkingBytes:wo\
           rkingBytes,producerByteEquivalenceClaimed:false};save()})({root,evide\
-          nce,receipt,save,sha});\\\\n const
+          nce,receipt,save,sha});\\\\n await (async function
+          prepareSessionCopies({root,evidence,receipt,save,sha,schedulerSource}\
+          ){const{readFileSync,writeFileSync,appendFileSync}=await
+          import('node:fs'),{join}=await
+          import('node:path'),{stripTypeScriptTypes}=await
+          import('node:module'),{strict:assert}=await
+          import('node:assert');const
+          src=join(root,'package/music-player/desktop-e2e/src'),originalRun=rea\
+          dFileSync(join(src,'run.ts'),'utf8'),originalCli=readFileSync(join(sr\
+          c,'cli.ts'),'utf8'),loop='for (const name of sessionsFor({ only:
+          config.only, },)) {',importPath=\\\\\\\"from
+          './run.ts'\\\\\\\";assert.equal(originalRun.split(loop).length,2);ass\
+          ert.equal(originalCli.split(importPath).length,2);const
+          selected=originalRun.replace(loop,'for (const name of sessionsFor({
+          only: config.only, },).filter(name => name ===
+          process.env.COVERAGE_DESKTOP_SESSION))
+          {'),cli=originalCli.replace(importPath,\\\\\\\"from
+          './.coverage-remaining-run.mjs'\\\\\\\"),runJs=stripTypeScriptTypes(s\
+          elected,{mode:'strip'}),cliJs=stripTypeScriptTypes(cli,{mode:'strip'}\
+          );writeFileSync(join(src,'.coverage-remaining-run.mjs'),runJs);writeF\
+          ileSync(join(src,'.coverage-remaining-cli.mjs'),cliJs);const
+          task='\\\\\\\\n[tasks.\\\\\\\"desktop:remaining-sessions\\\\\\\"]\\\\\
+          \\\\ndir =
+          '+JSON.stringify(join(root,'package/music-player/desktop-e2e'))+'\\\\\
+          \\\\nquiet = true\\\\\\\\nshell = \\\\\\\"node
+          --input-type=module-typescript -e\\\\\\\"\\\\\\\\nrun =
+          '+JSON.stringify(schedulerSource)+'\\\\\\\\n';appendFileSync(join(roo\
+          t,'package/dev-script/coverage-research/mise.toml'),task);receipt.rem\
+          ainingSessionHarness={originalRunSha256:sha(originalRun),originalCliS\
+          ha256:sha(originalCli),generatedRunSha256:sha(runJs),generatedCliSha2\
+          56:sha(cliJs),schedulerSha256:sha(schedulerSource),sourceChanges:[{fi\
+          le:'run.ts',onlyChange:'Filter session loop to one explicitly named
+          remaining
+          session',originalEdited:false},{file:'cli.ts',onlyChange:'Import
+          research copy of source run
+          module',originalEdited:false}],typeScriptConversion:'Node
+          stripTypeScriptTypes mode
+          strip',assertionEdits:false,independentFreshLibraries:true,perSession\
+          TimeoutMs:90000};writeFileSync(join(evidence,'remaining-session-harne\
+          ss.json'),JSON.stringify(receipt.remainingSessionHarness,null,2));wri\
+          teFileSync(join(evidence,'remaining-session-run.mjs'),runJs);writeFil\
+          eSync(join(evidence,'remaining-session-cli.mjs'),cliJs);assert.equal(\
+          sha(readFileSync(join(src,'run.ts'))),sha(originalRun));assert.equal(\
+          sha(readFileSync(join(src,'cli.ts'))),sha(originalCli));save()})({roo\
+          t,evidence,receipt,save,sha,schedulerSource:\\\\\\\"await (async
+          function
+          sessionScheduler(){const{readFileSync,writeFileSync,mkdirSync}=await
+          import('node:fs'),{spawnSync}=await
+          import('node:child_process'),{join}=await
+          import('node:path'),{strict:assert}=await import('node:assert');const
+          root=process.cwd(),output=process.env.E2E_OUT,sessions=['narrow','dia\
+          log','auto-play','quit','states','visual'],rows=[];assert(output);mkd\
+          irSync(output,{recursive:true});for(const session of sessions){const
+          child=spawnSync(process.execPath,['src/.coverage-remaining-cli.mjs','\
+          --app-dir','../desktop-app'],{cwd:root,env:{...process.env,COVERAGE_D\
+          ESKTOP_SESSION:session,E2E_ONLY:'',E2E_OUT:join(output,session)},enco\
+          ding:'utf8',timeout:90000,maxBuffer:16*1024*1024}),text=(child.stdout\
+          ??'')+(child.stderr??'');writeFileSync(join(output,session+'.log'),te\
+          xt);process.stdout.write('COVERAGE_SESSION_BEGIN
+          '+session+String.fromCharCode(10)+text);const
+          units=spawnSync('systemctl',['--user','list-units','--state=active,ac\
+          tivating','--plain','--no-legend','music-player-e2e-'+child.pid+'-*']\
+          ,{encoding:'utf8',timeout:5000});assert.equal(units.status,0);const
+          active=(units.stdout??'').trim().split(String.fromCharCode(10)).filte\
+          r(Boolean).map(line=>line.trim().split(/\\\\\\\\\\\\\\\\s+/)[0]);for(\
+          const unit of
+          active){assert(unit.startsWith('music-player-e2e-'+child.pid+'-'));co\
+          nst
+          stopped=spawnSync('systemctl',['--user','stop',unit],{encoding:'utf8'\
+          ,timeout:5000});assert.equal(stopped.status,0)}const
+          modules=spawnSync('pactl',['list','short','modules'],{encoding:'utf8'\
+          ,timeout:5000});assert.equal(modules.status,0);const
+          unloaded=[];for(const line
+          of(modules.stdout??'').split(String.fromCharCode(10))){if(!line.split\
+          (/\\\\\\\\\\\\\\\\s+/).includes('sink_name=music_player_e2e_'+child.p\
+          id))continue;const
+          id=line.split(/\\\\\\\\\\\\\\\\s+/)[0];assert(/^[0-9]+$/.test(id));co\
+          nst
+          cleanup=spawnSync('pactl',['unload-module',id],{encoding:'utf8',timeo\
+          ut:5000});assert.equal(cleanup.status,0);unloaded.push(id)}const
+          row={session,nodePid:child.pid,exitCode:child.status,signal:child.sig\
+          nal,error:child.error?.message??null,passed:(text.match(/^PASS
+          /gm)??[]).length,failed:(text.match(/^FAIL
+          /gm)??[]).length,skipped:(text.match(/^SKIP
+          /gm)??[]).length,sourcePreconditionFailures:(text.match(/^CheckFailur\
+          eError:/gm)??[]).length,forcedOwnedUnitStops:active,forcedOwnedNullSi\
+          nkUnloads:unloaded};rows.push(row);writeFileSync(join(output,'remaini\
+          ng-session-results.json'),JSON.stringify({sessions:rows,perSessionTim\
+          eoutMs:90000,sourceAssertionsEdited:false,independentFreshLibraries:t\
+          rue,originalDefaultOwnerWasNotReplaced:true},null,2));process.stdout.\
+          write('COVERAGE_SESSION_END
+          '+JSON.stringify(row)+String.fromCharCode(10))}assert.equal(rows.leng\
+          th,sessions.length);assert(rows.every(row=>row.exitCode===0),'Remaini\
+          ng source sessions retained failures; inspect per-session
+          receipts')})()\\\\\\\"});\\\\n const
           name='coverage-desktop-'+process.env.GITHUB_RUN_ID+'-'+process.pid,po\
           dman=['--non-interactive','podman','--cgroup-manager=cgroupfs'],p=(su\
           ffix,args,opts={})=>run('runtime-'+suffix,'sudo',[...podman,...args],\
@@ -241,11 +335,12 @@ jobs:
           before=p('sinks-before',[...user,'pactl','list','short','sinks']);con\
           st
           suite=p('actual-frozen-desktop-suite',[...user,'mise','run','//packag\
-          e/music-player/desktop-e2e:run'],{budgetMs:480000,required:false});p(\
-          'copy-authored-output',['cp',name+':'+join(root,'.research-desktop/au\
-          thored-output'),join(evidence,'authored-output')],{required:false});p\
-          ('copy-forwarded-argv',['cp',name+':'+forwardedLog,join(evidence,'com\
-          positor-forwarded-argv.jsonl')],{required:false});const
+          e/dev-script/coverage-research:desktop:remaining-sessions'],{budgetMs\
+          :580000,required:false});p('copy-authored-output',['cp',name+':'+join\
+          (root,'.research-desktop/authored-output'),join(evidence,'authored-ou\
+          tput')],{required:false});p('copy-forwarded-argv',['cp',name+':'+forw\
+          ardedLog,join(evidence,'compositor-forwarded-argv.jsonl')],{required:\
+          false});const
           after=p('sinks-after',[...user,'pactl','list','short','sinks']);const
           names=text=>text.trim().split('\\\\\\\\n').filter(Boolean).map(row=>r\
           ow.split('\\\\\\\\t')[1]).sort();assert.deepEqual(names(after.stdout)\
