@@ -1,5 +1,44 @@
 # Depot trial interview
 
+## Published research and pending first interview round on 2026-10-18
+
+Research tip `64d814b21cae7399270cfcc244ad98c78aa905ec` is published through the isolated merge worktree.
+Direct remote readback is `3bd497b16a46b08f45a06d09b8c767ce83dbcad4`;
+the requested tip is verified in its ancestry.
+Publication used a normal push without force.
+The private controller journal is
+`latest-research-publication-64d814b21cae7399270cfcc244ad98c78aa905ec.private.json`.
+The finite factual execution and reconciliation queue is closed with the limits retained in the report.
+This does not assert complete product-feature or source-branch coverage.
+No fresh independent whole-report review ran after the agent service quota was exhausted.
+
+The first interview round is posted through the question tool and awaits answers:
+
+- Q1: enforcement of existing source failures.
+  Recommend a regression ratchet over fixing all failures before enforcement,
+  then an advisory rollout.
+  Setup,
+  discovery and artifact-integrity failures always block in the recommended proposal.
+  Existing source failures require exact baselines;
+  raw `FAIL` log tokens are insufficient because the passing harness controls deliberately emit them.
+- Q2: workflow cadence.
+  Recommend PR static/build/unit checks plus nightly breadth over everything per PR,
+  then PR checks plus weekly breadth.
+  Private personal fixtures stay local.
+  Dependency-based selection still needs qualification because the frozen task graph has a cycle.
+- Q3: Linux orchestration order.
+  Recommend GitHub orchestration with Depot runners first and explicit native promotion criteria,
+  over keeping GitHub as the default indefinitely,
+  then immediately making native CI the eligible Linux default.
+  Both products remain in scope;
+  native paused-session attachment is still unqualified.
+
+The Developer baseline,
+additional-pool approach and USD 200 all-provider planning ceiling remain settled.
+No production implementation is unlocked by posting this round.
+The next action is to record the answers,
+recompute the dependent interview frontier and obtain confirmation of shared understanding before implementation.
+
 ## Final local capture and publication checkpoint on 2026-10-18
 
 The corrected capture is terminal and its owned container is absent.
