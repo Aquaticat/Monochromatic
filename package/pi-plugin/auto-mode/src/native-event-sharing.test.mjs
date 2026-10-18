@@ -76,11 +76,26 @@ for(const [index,record] of records.entries()){
 const singleBytes=sourceBytes(single.manager);
 const repeatedBytes=sourceBytes(repeated.manager);
 const boundaryText='"quoted" \\ escaped\n../traversal ; && $(literal) \\u0022';
-const boundary=fixture({kind:'turn_start',handlers:passiveHandlers(2)});
-await boundary.runner.emit({type:'turn_start',text:boundaryText});
+const boundary=fixture({
+  kind:'turn_start',
+  handlers:passiveHandlers(2)
+});
+await boundary.runner
+  .emit({
+    type:'turn_start',
+    text:boundaryText
+  });
 const [boundaryRecords]=boundary.records();
-assert.equal(boundaryRecords.length,4);
-for(const record of boundaryRecords)assert.equal(record.value.value.text,boundaryText);
+assert.equal(
+  boundaryRecords.length,
+  4
+);
+for(const record of boundaryRecords)assert.equal(
+  record.value
+    .value
+    .text,
+  boundaryText
+);
 assert.ok(
   repeatedBytes>singleBytes,
   'Positive control: every additional native phase retains its own metadata'
