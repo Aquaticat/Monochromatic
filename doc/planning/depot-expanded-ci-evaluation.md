@@ -52,8 +52,12 @@ Counts of source files,
 owning task invocations,
 enumerated tests,
 executed bodies and result-upload events remain separate.
-The current-source inventory has 227 package roots,
-including 211 active and sixteen inactive roots,
+The current-source tree has 223 package directories:
+208 active,
+13 paused and two archived.
+The initial 227-candidate census included four documentation blobs;
+the corrected directory count does not change task or execution counts.
+It has
 and 2,425 source-owned Mise tasks across 13,860 tracked paths.
 Its source-language inventory includes JavaScript/TypeScript,
 Kotlin,
