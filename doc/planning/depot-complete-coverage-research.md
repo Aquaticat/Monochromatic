@@ -1247,3 +1247,43 @@ actual current-source Mac/Windows desktop and logger host contexts,
 source troubleshooting notes,
 and semantic feature/assertion classification.
 Historical cohorts are not carried forward as current-source executions.
+
+## Same-producer headless desktop admission desktop-headless-format
+
+The proper packed producer run `39130630504` is terminal.
+It reaches actual source-owned builds and pnpr packing,
+then pnpm emits `ERR_PNPM_NO_OFFLINE_META` after reporting that the isolated fixture's
+`pnpm.overrides` in `package.json` is ignored.
+Its retained tarballs will feed a separate corrected isolated consumer;
+no installed positive consumer is credited to that failed install.
+The original dependency-free negative control and exact packed outputs remain retained.
+
+The next immutable desktop harness is `8070a3c83ec41a63ae8614ffe93dfcdbcd3ae435`.
+It restores the hash-verified archive from `9zvpr3t592`,
+compares source metadata and both binary hashes,
+and adds the compositor's supported `--headless` argument through `E2E_COMPOSITOR`.
+It repeats no Rust build or unit suite.
+A real local executable control verifies unchanged version forwarding,
+the ordinary-argument insertion,
+and the actual archive's 75-member separator handling.
+The first generated wrapper failed this local control and caused no cloud allocation;
+the corrected function-based generator passes it.
+The job is bounded to 15 minutes on 8 vCPU and 32 GiB;
+the private graphical consumer is bounded to 2 vCPU,
+2 GiB,
+512 PIDs,
+600 seconds,
+and no network.
+Its one-artifact transport uses the previously exercised repository-only secret variant pattern,
+containing a five-minute signed GET URL and removed after the attempt.
+No branch or workflow secret isolation is claimed.
+The API's measured URL lifetime is 299 seconds at receipt time.
+
+The refreshed ledger records 38 completed job rows and USD4.3200
+committed and reserved compute against USD5,
+including the USD0.36 next reservation.
+The independent remaining queue retains proper installed consumers,
+actual current-source Mac/Windows desktop and logger host contexts,
+source troubleshooting notes,
+and semantic feature/assertion classification.
+Historical cohorts are not carried forward as current-source executions.
