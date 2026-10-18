@@ -129,6 +129,49 @@ and 10,544,896 to 10,612,824 bytes after it.
 The difference exceeds the observed spread on unchanged test inputs.
 The latest package and selected root Markdown rendering checks 28 files with no broken rendered links.
 Native formatter convergence remains supervisor-owned and will use an isolated snapshot before live adoption.
+That private run is now complete on frozen `57b2baacd2`:
+`native-format-fixture.json` identifies `bounded-native-test-Pq1pGv`.
+Only its private native tree is writable;
+the working tree is unchanged.
+Safe `format:oxlint native` changes 149 files with 5,948 insertions and 1,448 deletions.
+The post-format oracle reports 10,086 warnings and 90 errors across 494 native files.
+The baseline native subset has 11,819 warnings and 85 errors.
+The private output introduces `readonly #state` into `integration/policy-source/system-slot.mjs`:
+`TS(8009)` and `typescript(TS8009)` reject that JavaScript syntax.
+It also exposes six max-lines findings after expansion.
+Do not adopt this output wholesale.
+`native-private-post-format-findings.json` and `native-private-post-format-rule-summary.log`
+retain the reconciled results.
+Most remaining findings are unsafe member access,
+assignment and invocation;
+formatter convergence is not the typed-interface refactor.
+
+An explicit JSON reporter probe resolves the formerly opaque long-line warning:
+Oxlint `1.88.0` reports `eslint(prefer-template)` at `clause-relation.mjs:15:15`,
+`Unexpected string concatenation.`
+`clause-relation-json-lint.log` retains that actual output.
+The original graphical record remains unchanged rather than inventing a code for it.
+
+The module-load census is prepared for the final configured faithful replay:
+`prepare-module-census-replay` generates `census-final-faithful-replay.ts`.
+Do not run it as final verification before lint changes reach a coherent committed snapshot.
+Its independent bounded controls observe imported ESM,
+CommonJS and JSON files and exclude an unimported sibling:
+`module-load-census-controls.json`.
+The first harness attempt wrongly assumed `/usr/bin/node` existed;
+the corrected harness uses its actual `process.execPath` and passes.
+The census records successful Node load hooks by process;
+bootstrap imports,
+non-module assets and unexercised paths remain excluded.
+
+Supervisory `steer` and `follow_up` messages during active review are followed by manual selectors.
+The retained failure chain includes `RequestObservationStaleError: Observed request is no longer current`
+and `SourceCollectionError: Native run prompt was replaced after this source snapshot`.
+`mimo-review-failure-evidence.json` retains the first complete chain.
+The inspected groups contain authorized read-only harness and diff commands;
+the supervisor supplies exact-group Allow through RPC.
+Do not claim a provider failure or a fixed cause from subsequent recovery.
+Send further task guidance at idle boundaries to avoid replacing active review inputs.
 
 ### Original worker and completed progress repair
 
