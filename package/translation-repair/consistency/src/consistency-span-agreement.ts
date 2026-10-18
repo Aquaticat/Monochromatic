@@ -15,10 +15,11 @@ import type { ConsistencyVoice, } from './consistency-count-types.ts';
 // the run of TianqiChen66625, group 2: three judges quoted three nested spans of the chosen place, and no one text was a strict
 // majority of the quotes, so the chosen place was located by none and the group was lost to `chosen-unlocated`).
 //
-// A QUOTE IS EVIDENCE FOR EVERY QUOTE THAT CONTAINS IT. A candidate span is one of the place's quotes, read in the fold
-// (`consistency-fold.ts`), that a strict majority of the usable ballots' quotes of that place contain, itself included, at the
-// edges of words; a ballot that gave no quote of the place counts against every candidate, as it did when one text had to be
-// given by a strict majority of the usable ballots. The place is located by the longest candidate that stands exactly once in its
+// A QUOTE IS EVIDENCE FOR EVERY QUOTE IT CONTAINS: the longer quote `wanted to stay` supports the shorter candidate `to stay`, and the
+// shorter supports no longer one. A candidate span is one of the place's quotes, read in the fold (`consistency-fold.ts`), that the
+// quotes of more than half of all the usable ballots contain, itself included, at the edges of words; the count is over every
+// usable ballot and not over the quotes of the place, so a ballot that gave no quote of the place counts against every candidate,
+// as it did when one text had to be given by a strict majority of the usable ballots. The place is located by the longest candidate that stands exactly once in its
 // English; a candidate that stands nowhere or more than once is passed over for the next longest. The slot words of a frame are
 // agreed by the same containment (`agreedSlotWordsOf`, `consistency-majority.ts`), through the one test of it
 // (`consistency-contains-words.ts`). THE RISK, which the owner may veto: the span located is the
