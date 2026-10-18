@@ -55,6 +55,12 @@ not a claim that all are independent,
 currently passing,
 safe to invoke with every optional integration,
 or appropriate on every platform.
+This is the frozen starting inventory.
+A later observation at `2026-10-18T05:37:36Z` finds 2,424 tasks after concurrent auto-mode work
+adds native source-binding,
+review-retirement,
+and pool-append capacity checks.
+The proof retains that source and task delta separately.
 
 The package inventory contains 180 canonical Node manifests and 785 declared workspace dependency edges,
 including development,
@@ -618,6 +624,7 @@ speedup,
 fork isolation,
 OIDC publication,
 merge-queue enforcement,
+automatic supersession,
 cross-orchestrator status bridging,
 or non-Linux runner cancellation.
 
