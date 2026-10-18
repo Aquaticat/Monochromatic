@@ -182,6 +182,21 @@ export {
 export { formalArgumentIndexes, } from './prefer-readonly-parameter-types/effect-external-application.ts';
 
 /**
+ Per-snapshot request memo, exported so its test can exercise built output.
+
+ @internal
+ */
+export {
+  MAXIMUM_MEMOIZED_RESPONSES_PER_SNAPSHOT,
+  MEMOIZED_SNAPSHOT_REQUESTS,
+  memoizeApiSnapshotRequests,
+  memoizeSnapshotRequests,
+  type SnapshotRequestClient,
+  type SnapshotRequestMemo,
+  type SnapshotRequestMemoStats,
+} from './prefer-readonly-parameter-types/semantic-request-memo.ts';
+
+/**
  Ancestor directory walk, exported so its test can exercise built output.
  
  @internal
