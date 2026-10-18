@@ -438,6 +438,79 @@
     {
       "name": "inspect-pricing-matrix-and-budget-envelopes",
       "miseToml": "[tasks.inspect-pricing-matrix-and-budget-envelopes]\nquiet = true\nshell = \"node --input-type=module-typescript -e\"\nrun = '''\nconst {readFileSync,writeFileSync}=await import('node:fs');const html=readFileSync('pricing.html','utf8');for(const label of ['Windows Runners','macOS M2 Runners','Egress Filtering','Usage caps','API Access','Agent Sandboxes']){const re=new RegExp('<tr[^>]*>(?:(?!<tr)[\\\\s\\\\S])*?'+label.replace(/[.*+?^${}()|[\\]\\\\]/gu,'\\\\$&')+'(?:(?!<tr)[\\\\s\\\\S])*?</tr>','u');const row=html.match(re)?.[0];console.log(JSON.stringify({label,row:row??null}));}const ceiling=200,base=20,available=ceiling-base;const envelope={assumptions:'USD, only this product incurs overage; zero other providers, taxes and extra products; no active job or storage overshoot',ceiling,base,available,ciBaseMinutes:2000+available/0.006,defaultBuilderMinutes:500+available/0.04,linuxBaseRunnerMinutes:2000+available/0.006,windows4CpuWallMinutes:2000/4+available/0.016,agentMinutes:available/0.01,averageSharedStorageGb:25+available/0.2,passingResults:1000000+available/0.000001,fastRegistryEgressGb:available/0.1};writeFileSync('public-one-product-budget-envelopes.json',JSON.stringify(envelope,null,2)+'\\n');console.log(JSON.stringify(envelope));\n'''\n"
+    },
+    {
+      "name": "verify-published-capability-documents",
+      "miseToml": "[tasks.verify-published-capability-documents]\nquiet = true\nshell = \"node --input-type=module-typescript -e\"\nrun = '''\nconst {readFileSync,writeFileSync,existsSync,realpathSync}=await import('node:fs');const {homedir}=await import('node:os');const {join,dirname,resolve}=await import('node:path');const {execFileSync}=await import('node:child_process');const {strict:assert}=await import('node:assert');const root=realpathSync(join(homedir(),'Monochromatic'));const docs=['doc/planning/depot-developer-pool-capabilities-research.md','doc/troubleshooting/depot-documentation-source-drift.md','doc/troubleshooting/depot-sandbox-runtime-registry-boundary.md'];const rows=[];for(const path of docs){const source=readFileSync(join(root,path),'utf8');const name=path.slice(path.lastIndexOf('/')+1,-3);const html=execFileSync('pandoc',['--from=commonmark','--to=html5',join(root,path)],{encoding:'utf8'});writeFileSync(name+'.rendered.html',html);const headings=[...html.matchAll(/<h[1-4][^>]*>(.*?)<[/]h[1-4]>/gsu)].map(match=>match[1]);assert(headings.length>=7);assert(!html.includes('<table'));assert(!html.includes('<em>'));assert(!source.includes(String.fromCharCode(0x2013)));assert(!source.includes(String.fromCharCode(0x2014)));const links=[...html.matchAll(/href=\"([^\"]+)\"/gu)].map(match=>match[1]);for(const href of links.filter(href=>!/^https?:/u.test(href)))assert(existsSync(resolve(dirname(join(root,path)),href.split('#')[0])),'Broken local link: '+href);assert(!html.includes('[sdk-evidence]'));rows.push({path,headings,renderedBytes:Buffer.byteLength(html),localLinksChecked:links.filter(href=>!/^https?:/u.test(href)).length});}const jsons=['doc/audit/depot-developer-sandbox-sdk-2026-10-18.evidence.json','doc/audit/depot-developer-platform-research-2026-10-18.evidence.json'];for(const path of jsons){const content=readFileSync(join(root,path),'utf8');JSON.parse(content);assert(!content.includes(homedir()));assert(!/eyJ[a-zA-Z0-9_-]{20,}[.]/u.test(content));}execFileSync('dprint',['check','--config',join(root,'package/config/dprint/index.json'),'--',...jsons.map(path=>join(root,path))],{cwd:root,stdio:'inherit'});const receipt={checkedAt:new Date().toISOString(),markdown:rows,jsonFiles:jsons};writeFileSync('published-capability-documents-verification.json',JSON.stringify(receipt,null,2)+'\\n');console.log(JSON.stringify(receipt));\n'''\n"
     }
-  ]
+  ],
+  "documentationVerification": {
+    "checkedAt": "2026-10-18T05:21:18.380Z",
+    "markdown": [
+      {
+        "path": "doc/planning/depot-developer-pool-capabilities-research.md",
+        "headings": [
+          "Depot Developer platform capabilities research",
+          "Plan and independent usage pools",
+          "Depot CI orchestration and coverage expansion",
+          "GitHub Actions runners and network controls",
+          "Cache mechanisms and their different trust boundaries",
+          "Remote builds, registries, and artifact consumers",
+          "Test reporting, history, and timing-based splitting",
+          "Generic Sandbox SDK and remote agents",
+          "Debugging, APIs, credentials, and source hosting",
+          "Budget enforcement and trial transition limits",
+          "Evidence limits and remaining research decisions"
+        ],
+        "renderedBytes": 28636,
+        "localLinksChecked": 5
+      },
+      {
+        "path": "doc/troubleshooting/depot-documentation-source-drift.md",
+        "headings": [
+          "Depot docs e40bfe1: source mirror yields obsolete capability\nexclusions",
+          "Symptom",
+          "Root cause and evidence",
+          "Verification",
+          "Verified workaround",
+          "What does not work",
+          "Upstream filing decision"
+        ],
+        "renderedBytes": 7947,
+        "localLinksChecked": 9
+      },
+      {
+        "path": "doc/troubleshooting/depot-sandbox-runtime-registry-boundary.md",
+        "headings": [
+          "Depot Sandbox SDK 0.1.0-beta.7: public OCI runtime rejected at\ncreate",
+          "Symptom",
+          "Root cause and source trace",
+          "Verification",
+          "Verified workaround",
+          "Separate listing and device observations",
+          "What does not work",
+          "Upstream filing decision"
+        ],
+        "renderedBytes": 13459,
+        "localLinksChecked": 28
+      }
+    ],
+    "jsonFiles": [
+      "doc/audit/depot-developer-sandbox-sdk-2026-10-18.evidence.json",
+      "doc/audit/depot-developer-platform-research-2026-10-18.evidence.json"
+    ],
+    "monochromaticLint": {
+      "argv": [
+        "mise",
+        "run",
+        "lint:monochromatic-lint",
+        "--",
+        "doc/planning/depot-developer-pool-capabilities-research.md",
+        "doc/troubleshooting/depot-documentation-source-drift.md",
+        "doc/troubleshooting/depot-sandbox-runtime-registry-boundary.md"
+      ],
+      "exitCode": 0
+    },
+    "renderedOutputInspected": true
+  }
 }
