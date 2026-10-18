@@ -87,11 +87,6 @@ type ShownIndex = {
 };
 
 /**
- The index of each list of shown labels already read, so a ballot naming many places reads the list once, not once per name.
- */
-const INDEXES = new WeakMap<readonly string[], ShownIndex>();
-
-/**
  Appends a label to the list a key holds, in place, starting the list where the key has none.
 
  @param map - lookup being built
@@ -144,12 +139,6 @@ function appendTo(
  */
 function shownIndexOf({ shown, }: { readonly shown: readonly string[]; },): ShownIndex {
   /**
-   The index built when this list was first read.
-   */
-  const known = INDEXES.get(shown,);
-  if (known !== undefined)
-    return known;
-  /**
    Labels by comparison form, built once.
    */
   const byForm = new Map<string, string[]>();
@@ -174,18 +163,64 @@ function shownIndexOf({ shown, }: { readonly shown: readonly string[]; },): Show
         label,
       },);
   }
-  /**
-   The index to keep.
-   */
-  const index: ShownIndex = {
+  return {
     byForm,
     byNumber,
   };
-  INDEXES.set(
-    shown,
-    index,
-  );
-  return index;
+}
+
+/**
+ Builds the lookup of the one shown label a name stands for, over a list of shown labels read once, so a caller that looks up
+ many names of one sheet pays for the list once. The lookup keeps nothing between calls of this function: it answers for the
+ labels the list held when it was built.
+
+ @param shown - labels the sheet showed, the only labels a reply may use
+
+ @returns A function from what the judge wrote as a label to the shown label, as a list of one, none when the name stands for no
+ shown label or for more than one
+
+ @example
+ ```ts
+ const labelOf = shownLabelReaderOf({ shown: ['OCCURRENCE 3', 'OCCURRENCE 4',], },);
+ const [label,] = labelOf('4',); // 'OCCURRENCE 4'
+ ```
+ */
+export function shownLabelReaderOf({ shown, }: { readonly shown: readonly string[]; },): (name: string) => readonly string[] {
+  /**
+   The shown labels by comparison form and by trailing number, read from the list once however many names are looked up.
+   */
+  const {
+    byForm: formTable,
+    byNumber: numberTable,
+  } = shownIndexOf({ shown, },);
+  return function shownLabelFor(name: string,): readonly string[] {
+    /**
+     The name in the form labels are compared in.
+     */
+    const form = comparisonFormOf({ text: name, },);
+    /**
+     Whether the name is only a number.
+     */
+    const isNumber = isAsciiDigits({ text: form, },);
+    /**
+     The shown labels in the name's comparison form.
+     */
+    const byForm = formTable.get(form,) ?? [];
+    /**
+     The shown labels ending in the number, when the name is only a number.
+     */
+    const byNumber = isNumber ? (numberTable.get(form,) ?? []) : [];
+    /**
+     Every distinct shown label the name stands for.
+     */
+    const standsFor = [
+      ...new Set([
+        ...byForm,
+        ...byNumber,
+      ],),
+    ];
+    return (standsFor.length === 1) ? standsFor : [];
+  };
 }
 
 /**
@@ -211,39 +246,7 @@ export function shownLabelOf(
     readonly shown: readonly string[];
   },
 ): readonly string[] {
-  /**
-   The name in the form labels are compared in.
-   */
-  const form = comparisonFormOf({ text: name, },);
-  /**
-   Whether the name is only a number.
-   */
-  const isNumber = isAsciiDigits({ text: form, },);
-  /**
-   The shown labels by comparison form and by trailing number, read from the list once however many names are looked up.
-   */
-  const {
-    byForm: formTable,
-    byNumber: numberTable,
-  } = shownIndexOf({ shown, },);
-  /**
-   The shown labels in the name's comparison form.
-   */
-  const byForm = formTable.get(form,) ?? [];
-  /**
-   The shown labels ending in the number, when the name is only a number.
-   */
-  const byNumber = isNumber ? (numberTable.get(form,) ?? []) : [];
-  /**
-   Every distinct shown label the name stands for.
-   */
-  const standsFor = [
-    ...new Set([
-      ...byForm,
-      ...byNumber,
-    ],),
-  ];
-  return (standsFor.length === 1) ? standsFor : [];
+  return shownLabelReaderOf({ shown, },)(name,);
 }
 
 //endregion Consistency label form

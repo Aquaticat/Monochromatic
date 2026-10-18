@@ -1,5 +1,8 @@
 import type { JsonSchemaResponseFormat, } from '@monochromatic-dev/translation-repair-provider/ts';
-import { shownLabelOf, } from './consistency-label-form.ts';
+import {
+  shownLabelOf,
+  shownLabelReaderOf,
+} from './consistency-label-form.ts';
 import {
   isJsonArray,
   isJsonRecord,
@@ -202,13 +205,14 @@ function shownOnceLabelsOf(
   },
 ): readonly (readonly string[])[] {
   /**
+   The lookup of a shown label by name, over the list read once for all the names.
+   */
+  const shownLabelFor = shownLabelReaderOf({ shown, },);
+  /**
    The shown label each name stands for, none when it stands for none.
    */
   const found = names.map(function labelOf(name,): readonly string[] {
-    return shownLabelOf({
-      name,
-      shown,
-    },);
+    return shownLabelFor(name,);
   },);
   /**
    The labels of the names that stood for one.
