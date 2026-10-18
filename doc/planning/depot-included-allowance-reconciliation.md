@@ -143,13 +143,15 @@ The 32-CPU/64-GB rate is USD 0.08 with multiplier 2;
 Larger builders require Startup or Business.
 Both the pricing page and build overview bill per minute tracked per second.
 
-The earlier BuildKit campaign used USD 0.08/minute as a conservative timestamp-compute proxy
-for its bounded 16-CPU/32-GB builders.
-Its retained 403,938 milliseconds produce USD 0.538584 under that historical proxy,
-or USD 0.269292 at the current default list rate.
-Neither is an invoice or complete billable-lifetime observation.
-Retain the historical reservation;
-do not present its assumed rate as the current advertised default price.
+The earlier BuildKit campaign correctly reserved two builders at USD 0.04/minute each.
+Its retained 403,938 milliseconds are container-build request windows,
+not summed per-architecture builder intervals.
+Multiplying every request window by the maximum two builders produces the conservative USD 0.538584 proxy.
+This note's first publication incorrectly treated that as a USD 0.08 single-builder assumption
+and proposed USD 0.269292 as a repricing.
+That interpretation is withdrawn.
+The original campaign model remains unchanged.
+This reservation is not an invoice or an observation of each architecture's billable lifetime.
 
 The expanded `Am I charged for build usage and storage?` FAQ explicitly defines one combined total for
 container build cache,

@@ -175,10 +175,25 @@
     "defaultMemoryGb": 32,
     "elapsedMinuteUsd": 0.04,
     "multiplier": 1,
-    "historicalConservativeProxyPerMinuteUsd": 0.08,
-    "historicalTimestampMilliseconds": 403938,
-    "historicalTimestampProxyUsd": 0.5385840000000001,
-    "currentListTimestampProxyUsd": 0.26929200000000003,
+    "originalCampaignSource": "doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json",
+    "originalTimestampComputeModel": {
+      "observedNativeRequestMilliseconds": 403938,
+      "maximumArchitectureBuilders": 2,
+      "cpusPerBuilder": 16,
+      "memoryGiBPerBuilder": 32,
+      "publicRateUsdPerBuilderMinute": 0.04,
+      "nominalWindowEstimateUsd": 0.5385840000000001,
+      "ceilingUsd": 2,
+      "invoiceOrAccountCapProven": false,
+      "initialExpiredWallClockRetained": true
+    },
+    "reservationInterpretation": "403938 milliseconds are summed request windows, multiplied by maximum two simultaneous builders at USD0.04 per builder-minute; architecture-specific billable intervals were not observed",
+    "withdrawnInterpretation": {
+      "publishedIn": "17e2aeb0f3",
+      "mistakenSingleBuilderRateUsd": 0.08,
+      "mistakenSingleBuilderRepricingUsd": 0.269292,
+      "retracted": true
+    },
     "actualInvoiceClaimed": false
   },
   "storage": {

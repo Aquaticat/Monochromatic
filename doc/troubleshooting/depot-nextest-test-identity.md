@@ -21,7 +21,7 @@ commit `cd1d6d5467322dbc0d39a80cb671d000ac302798`,
 creates the case name from the runnable test name and the classname from its binary ID.
 `nextest-runner/src/reporter/aggregator/junit.rs:217` contains:
 
-```rust
+```text
 // nextest-runner/src/reporter/aggregator/junit.rs:217
 let mut testcase = TestCase::new(test_instance.test_name.as_str(), testcase_status);
 testcase
@@ -41,7 +41,7 @@ and `flaky_fail_status`.
 It has no classname-format field.
 The source fixes the classname independently of those settings:
 
-```rust
+```text
 // nextest-runner/src/reporter/aggregator/junit.rs:262
 testcase.set_classname(test_instance.binary_id.as_str());
 ```
