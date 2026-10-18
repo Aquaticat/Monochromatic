@@ -66,8 +66,23 @@ Q4 accepts standing bounded authority for recurring overage.
 Q5 accepts one reserved automatic recovery attempt for classified infrastructure failures.
 Q6 keeps the correction in CI documents and leaves `AUT` unchanged.
 The [concrete rollout plan](../planning/depot-expanded-ci-rollout.md) consolidates these answers.
-The next action is to verify its rendered form,
-publish the owned documentation and obtain confirmation of shared understanding before implementation.
+The plan and accepted operating policies are published at `a08edd938abdcffb84cf902a458f14b42ca340a3`.
+The publication journal verifies the exact requested tip and direct remote readback with a normal push.
+The plan,
+updated report and handover pass scoped Markdown lint and rendered checks;
+all local links exist and no italic spans occur.
+The complete rendered rollout plan has been read.
+The private renderer now registers the new plan explicitly.
+
+Q7 is posted through the question tool for confirmation of the linked concrete rollout plan.
+No further preference branch is currently open after Q1 through Q6.
+Implementation has not started while the required shared-understanding confirmation is pending.
+The next action is to record Q7.
+If confirmed,
+start the plan's independently verifiable work items without requesting the already granted spend
+or recovery authority again.
+If revised,
+update the affected branch of the plan and ask only newly unsettled decisions.
 
 The posted second round covers independent decisions:
 
