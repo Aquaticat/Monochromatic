@@ -49,7 +49,7 @@ async function builtFilesOf({ distDirectory, }: { readonly distDirectory: string
     throw new StatedRefusalError({
       says: `${distDirectory} could not be listed (${listing.reason}), so no build has written it there; run the `
         + 'census from the package directory through mise run '
-        + '//package/module/translation-repair:coverage-census, which builds with maps first',
+        + '//package/translation-repair/coverage-census:coverage-census, which builds with maps first',
     },);
   return listing.names;
 }

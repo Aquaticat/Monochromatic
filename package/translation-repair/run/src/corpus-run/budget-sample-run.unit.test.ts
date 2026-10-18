@@ -46,7 +46,7 @@ const CREDIT_VARIABLE = 'TRANSLATION_REPAIR_BEDROCK_CREDIT_USD';
  Sentence the summary closes with.
  */
 const SUMMARY_CLOSING = '. The reading this command logged is the record; read a collection of them with '
-  + '`mise run //package/module/translation-repair:meter-report`';
+  + '`mise run //package/translation-repair/run:meter-report`';
 
 /**
  Transport whose every provider refuses the key, so no meter can be read.

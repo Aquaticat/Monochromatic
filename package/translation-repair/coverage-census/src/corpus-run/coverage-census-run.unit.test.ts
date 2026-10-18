@@ -561,7 +561,7 @@ await describe({
         catch (error) {
           expect(String(error,),).toBe(
             `StatedRefusalError: ${built.distDirectory} holds no bundle, so no build has written it; run the `
-              + 'census through mise run //package/module/translation-repair:coverage-census, which builds with '
+              + 'census through mise run //package/translation-repair/coverage-census:coverage-census, which builds with '
               + 'maps first',
           );
           expect(calls.commits,).toEqual([],);

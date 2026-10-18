@@ -33,7 +33,7 @@ const DIST = '/cats/dist/final/node';
 /**
  How every refusal here tells the reader to run the census.
  */
-const RUN_THE_TASK = 'run the census through mise run //package/module/translation-repair:coverage-census';
+const RUN_THE_TASK = 'run the census through mise run //package/translation-repair/coverage-census:coverage-census';
 
 /**
  A chunk as the unminified coverage build writes it: each module's code

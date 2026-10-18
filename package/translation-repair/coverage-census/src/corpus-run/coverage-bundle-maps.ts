@@ -90,7 +90,7 @@ export function bundleMapsOf(
   if (bundles.length === 0) {
     throw new StatedRefusalError({
       says: `${distDirectory} holds no bundle, so no build has written it; run the census through `
-        + 'mise run //package/module/translation-repair:coverage-census, which builds with maps first',
+        + 'mise run //package/translation-repair/coverage-census:coverage-census, which builds with maps first',
     },);
   }
   if (mapped.length === 0) {
@@ -103,7 +103,7 @@ export function bundleMapsOf(
         },)
       } and no source map beside any of them, `
         + 'so it is the normal build; run the census through '
-        + 'mise run //package/module/translation-repair:coverage-census, which builds with maps first',
+        + 'mise run //package/translation-repair/coverage-census:coverage-census, which builds with maps first',
     },);
   }
   return {
@@ -165,7 +165,7 @@ export function requireMapFor(
       + 'cannot say which sources it carries';
   throw new StatedRefusalError({
     says: `${loss}; the coverage build writes a map for every bundle that holds code, so this one came from `
-      + 'another build: run the census through mise run //package/module/translation-repair:coverage-census, '
+      + 'another build: run the census through mise run //package/translation-repair/coverage-census:coverage-census, '
       + 'which builds with maps first',
   },);
 }
@@ -245,7 +245,7 @@ export function requireUnminifiedBuild(
     } with a source map and no module region `
       + 'comment in any of them, so the build was minified, and minification folds guards into expressions '
       + 'the coverage gives no range, which would read as run (ledger M79): run the census through '
-      + 'mise run //package/module/translation-repair:coverage-census, whose build keeps the code as written, '
+      + 'mise run //package/translation-repair/coverage-census:coverage-census, whose build keeps the code as written, '
       + 'or restore minify: false in rolldown.coverage.config.ts if it was changed',
   },);
 }

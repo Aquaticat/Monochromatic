@@ -230,7 +230,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(StatedRefusalError,);
             expect(String(refusal,),).toBe(
               'StatedRefusalError: no cache version is declared under src; run this from the package directory, '
-              + 'as mise run //package/module/translation-repair:cache-account-audit does.',
+              + 'as mise run //package/translation-repair/slice-cache:cache-account-audit does.',
             );
           },
         },),
@@ -472,7 +472,7 @@ await describe({
             },);
             expect(run.stderr,).toBe(
               'cache-account-audit: no cache version is declared under src; run this from the package directory, '
-              + 'as mise run //package/module/translation-repair:cache-account-audit does.\n',
+              + 'as mise run //package/translation-repair/slice-cache:cache-account-audit does.\n',
             );
             expect(run.code,).toBe(REFUSED_AS_STATED,);
           },

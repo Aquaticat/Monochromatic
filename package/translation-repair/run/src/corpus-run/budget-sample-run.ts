@@ -131,7 +131,7 @@ export async function sampleBudgets(
   },);
   rl.info(
     `SAMPLED: routing would ${verdicts.join(', ',)}. The reading this command logged is the record; `
-      + 'read a collection of them with `mise run //package/module/translation-repair:meter-report`',
+      + 'read a collection of them with `mise run //package/translation-repair/run:meter-report`',
   );
 }
 

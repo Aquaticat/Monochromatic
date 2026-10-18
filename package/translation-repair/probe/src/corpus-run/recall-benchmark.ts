@@ -18,7 +18,7 @@ import { readStageSettings, } from '@monochromatic-dev/translation-repair-stage/
 // runs directory, the pinned corpus, the repository's head, the run client
 // and the clock.
 //
-// Run with `mise run //package/module/translation-repair:recall-benchmark`
+// Run with `mise run //package/translation-repair/probe:recall-benchmark`
 // (append `-- --plan` for a zero-quota setup check).
 
 /**

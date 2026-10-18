@@ -33,7 +33,7 @@ import {
 /**
  The task that builds with maps, which every refusal sends the operator to.
  */
-const TASK = 'mise run //package/module/translation-repair:coverage-census';
+const TASK = 'mise run //package/translation-repair/coverage-census:coverage-census';
 
 /**
  What checking a build directory refuses with.

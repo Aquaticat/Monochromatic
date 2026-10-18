@@ -230,7 +230,7 @@ await describe({
           stdout: '',
           stderr: `coverage-census: ${distOf({ packageDirectory: scratch.path, },)} could not be listed (ENOENT), so `
             + 'no build has written it there; run the census from the package directory through mise run '
-            + '//package/module/translation-repair:coverage-census, which builds with maps first\n',
+            + '//package/translation-repair/coverage-census:coverage-census, which builds with maps first\n',
         },);
       },
     },),
@@ -250,7 +250,7 @@ await describe({
           code: REFUSED_AS_STATED,
           stdout: '',
           stderr: `coverage-census: ${distOf({ packageDirectory: scratch.path, },)} holds no bundle, so no build `
-            + 'has written it; run the census through mise run //package/module/translation-repair:coverage-census, '
+            + 'has written it; run the census through mise run //package/translation-repair/coverage-census:coverage-census, '
             + 'which builds with maps first\n',
         },);
       },
@@ -283,7 +283,7 @@ await describe({
           code: REFUSED_AS_STATED,
           stdout: '',
           stderr: `coverage-census: ${dist} holds 1 bundle and no source map beside any of them, so it is the `
-            + 'normal build; run the census through mise run //package/module/translation-repair:coverage-census, '
+            + 'normal build; run the census through mise run //package/translation-repair/coverage-census:coverage-census, '
             + 'which builds with maps first\n',
         },);
       },
@@ -327,7 +327,7 @@ await describe({
           stderr: `coverage-census: ${dist} holds 1 bundle with a source map and no module region comment in any `
             + 'of them, so the build was minified, and minification folds guards into expressions the coverage '
             + 'gives no range, which would read as run (ledger M79): run the census through mise run '
-            + '//package/module/translation-repair:coverage-census, whose build keeps the code as written, or '
+            + '//package/translation-repair/coverage-census:coverage-census, whose build keeps the code as written, or '
             + 'restore minify: false in rolldown.coverage.config.ts if it was changed\n',
         },);
       },

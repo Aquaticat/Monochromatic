@@ -36,7 +36,7 @@ import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage
 // the denominator is defects that certainly exist rather than defects the
 // pipeline chose to report.
 //
-// Run with `mise run //package/module/translation-repair:recall-benchmark`
+// Run with `mise run //package/translation-repair/probe:recall-benchmark`
 // (append `-- --plan` for a zero-quota setup check).
 
 /**

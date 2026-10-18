@@ -14,7 +14,7 @@ import { readStageSettings, } from '@monochromatic-dev/translation-repair-stage/
 // Runs a set of named, known-behavior corpus entries through the pipeline and
 // prints one PROBE line each (status, issue counts, findings). Wiring only:
 // the walk is `sentinel-probe-run.ts` and the line is `sentinel-probe-line.ts`.
-// Run it with `mise run //package/module/translation-repair:sentinel-probe -- Anilovr Aniloviraw`.
+// Run it with `mise run //package/translation-repair/bench:sentinel-probe -- Anilovr Aniloviraw`.
 
 if (import.meta.main)
   await reportingRefusals({

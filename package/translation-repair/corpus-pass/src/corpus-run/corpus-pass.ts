@@ -40,7 +40,7 @@ import { RUN_PICTURE_SOURCES, } from './pass-visual-evidence.ts';
 // Runs the pipeline over every complete zh/en corpus pair at the pinned commit
 // (`corpus-pass-run.ts`). This file is the wiring only: it reads what a process
 // has (the environment, the clock, the git tip, the client) and hands it over.
-// Run it with `mise run //package/module/translation-repair:corpus-pass` (append
+// Run it with `mise run //package/translation-repair/corpus-pass:corpus-pass` (append
 // `-- --plan` for a zero-quota setup check).
 
 /**
