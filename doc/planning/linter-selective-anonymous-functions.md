@@ -103,6 +103,50 @@ Either a callee allow-list option covers the generated setters and `Timer::start
 or the executable gains a build-generated load mode, which runs the project's build script.
 Files outside the loaded target need a defined fallback (report, as today).
 
+## Research results
+
+Fetched on 2026-10-18 by a research agent; the owner's oxlint setup was read by the coordinating session.
+
+- Change 1 is already decided.
+  `doc/planning/rust-linter-oxlint-parity.md`, decision D2 (answered 2026-07-25), chose comment directives
+  (`<tool>-disable|-enable|-disable-line|-disable-next-line`), a mandatory `--` justification (a directive
+  without one suppresses nothing and is itself reported), `--report-unused-disable-directives`, and rules that
+  declare themselves non-suppressible (`max-lines`, `require-rustdoc`).
+  It also settled that directives are comments, not attributes: a tool attribute needs `register_tool`, which is
+  nightly-only, and the other tool namespaces (`clippy::`, `rust_analyzer::`) belong to other tools.
+  The mechanism is not built yet (`package/linter/monochromatic-lint/src` has no directive code).
+  `doc/planning/unified-linter.md` line 290 ("No rule can be suppressed") predates D2.
+- The owner's oxlint setup (`package/config/oxlint/src/config-base.ts`): `reportUnusedDisableDirectives: 'warn'` with
+  `denyWarnings: true`; 698 of 734 next-line directives carry a reason; an audit removed 301 unused directives; the
+  `no-restricted-syntax` plugin forbids disabling selected rules, including the TypeScript arrow ban, whose
+  replacement is a named function expression; tests are exempted from that ban by an override
+  (`package/config/oxlint/src/overrides.ts`, line 201).
+- Precedent for the spelling and audit: Biome requires an explanation (`MissingReason`) and reports unused
+  suppressions by default; ESLint and oxlint accept `--` descriptions and report unused directives when asked;
+  Ruff reports unused `noqa` only with `RUF100`; ast-grep requires the keyword to start the comment and gates the
+  unused report; golangci-lint `nolintlint` has `require-explanation` and `require-specific`.
+  Scope is the literal next physical line in oxlint, ESLint and Biome.
+  An unused-directive report must say "not verifiable" for a site that a semantic rule could not analyse.
+- No linter found decides "unavoidable" by captures plus the callee's `'static` bound.
+  Clippy uses captures and `'static` only as false-positive guards (`redundant_closure`, `redundant_async_block`);
+  ESLint `prefer-arrow-callback` skips cases where the arrow would change semantics; unicorn
+  `consistent-function-scoping` decides by captured values.
+  So the criterion is a new design either way.
+- A rustc-driver route (Dylint, 6.2.0 released 2026-10-16) was probed on nightly-2026-10-17: the criterion
+  (captures from `upvars_mentioned`, `'static` from the callee's `TypeOutlives` clauses) passed all controls, native
+  `#[cfg_attr(dylint_lib = "..", expect(.., reason = ".."))]` suppresses and `unfulfilled_lint_expectations`
+  reports unused expectations, and the extra time was about 0.15 s on a 19.5 kloc crate.
+  Costs: `rustc-dev` in the root toolchain components, lockstep with the floating nightly (the shipped Dylint
+  template lagged two months), a second tool and result channel beside `monochromatic-lint`, per-package
+  `check-cfg`, and only compiling code is linted. Whether Dylint resolves the Slint-generated setters is
+  unverified (the IDE build script needs its runtime preparation first).
+- A fourth shape: a syntactic callee allow-list option (last path segment or method name: `spawn`, `start`,
+  `on_*`), no session, today's speed. Risk: a name collision lets a non-`'static` callee through, and it needs a
+  positive-control test because the TypeScript `no-class` allow-list option was once silently ignored
+  (`doc/troubleshooting/oxlint-class-and-callback-bans.md`).
+- rust-analyzer offers no supported custom semantic check; its `ide` API is documented as unstable.
+  The linter's `BuildGenerated` mode exists (`src/rust_workspace.rs`) but the executable only requests `SourceOnly`.
+
 ## Rejected for now
 
 - Allowing every `move` closure that is a call argument: coarse, and adding `move` is an easy escape.
