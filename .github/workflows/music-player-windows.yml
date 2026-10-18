@@ -1,313 +1,14 @@
-name: Research compiled host hidden-resource restoration
+name: Research source-owned activation topology control
 on:
   workflow_dispatch: null
 permissions:
   contents: read
 concurrency:
-  group: research-native-restored-${{ github.ref }}
+  group: research-native-topology-${{ github.ref }}
   cancel-in-progress: false
 jobs:
-  producer:
-    name: Frozen native compiled producer with hidden resources
-    runs-on: depot-ubuntu-24.04-8
-    timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      max-parallel: 1
-      matrix:
-        shard:
-          - b
-    env:
-      COVERAGE_SOURCE: e02be6c8b8fe9efb41a7f8f1a0b311c17796588a
-      COVERAGE_SHARD: ${{ matrix.shard }}
-      MISE_AUTO_INSTALL: "false"
-      MISE_JOBS: "2"
-      NODE_OPTIONS: --max-old-space-size=2048
-      OXLINT_THREADS: "2"
-      CI: "true"
-      COVERAGE_TASK_NAMES_SHA256: 149afd917a4fa10f4b5846fc2c02a4ed69f89401ab9230c4869ff34c3cd76e7c
-      GOMAXPROCS: "2"
-      GOMEMLIMIT: 768MiB
-      PI_AUTO_MODE_SOURCE: ${{ github.workspace }}/.research-coverage/upstream-pi
-    steps:
-      - name: Checkout immutable application source
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          ref: e02be6c8b8fe9efb41a7f8f1a0b311c17796588a
-          persist-credentials: false
-      - name: Initialize source-bound receipt before setup
-        shell: node {0}
-        run: >
-          const { mkdirSync, writeFileSync, readFileSync } = require('node:fs');
-
-          const { execFileSync } = require('node:child_process');
-
-          const { cpus, totalmem, arch, platform } = require('node:os');
-
-          const path = process.env.RUNNER_TEMP + '/coverage-' + process.env.COVERAGE_SHARD;
-
-          mkdirSync(path, { recursive: true });
-
-          const source = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
-
-          if (source !== process.env.COVERAGE_SOURCE) throw new Error('Application checkout differs
-          from frozen source');
-
-          const metadata = {
-            source, workflowCommit: process.env.GITHUB_SHA, run: process.env.GITHUB_RUN_ID,
-            attempt: process.env.GITHUB_RUN_ATTEMPT, shard: process.env.COVERAGE_SHARD,
-            runner: process.env.RUNNER_NAME, imageOS: process.env.ImageOS ?? null, imageVersion: process.env.ImageVersion ?? null, platform: platform(), arch: arch(),
-            uid: process.getuid(), gid: process.getgid(), cpuCount: cpus().length, memoryBytes: totalmem(),
-            osRelease: readFileSync('/etc/os-release', 'utf8'),
-            startedAt: new Date().toISOString(), state: 'setup_pending',
-            limits: { taskMilliseconds: 180000, campaignMilliseconds: 540000, jobMinutes: 15 },
-          };
-
-          writeFileSync(path + '/source.json', JSON.stringify(metadata, null, 2));
-      - name: Set up frozen Mise parser without global tool installation
-        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
-        with:
-          version: 2026.10.0
-          install: false
-      - name: Install only Node and pnpm
-        timeout-minutes: 3
-        run: mise install --locked node pnpm
-      - name: Install immutable dependencies without the prepare umbrella
-        timeout-minutes: 4
-        run: mise exec node pnpm -- pnpm install --frozen-lockfile
-      - name: Verify source-filtered cloud task inventory
-        shell: node {0}
-        run: >-
-          (async function captureTaskInventory() {
-           const { execFileSync } = await import('node:child_process')
-           const { writeFileSync } = await import('node:fs')
-           const { relative, join } = await import('node:path')
-           const { createHash } = await import('node:crypto')
-           const root = process.cwd()
-           const tasks = JSON.parse(execFileSync('mise', ['tasks','ls','--all','--hidden','--json'], { encoding:'utf8', maxBuffer: 64*1024*1024 }))
-           const repositoryTasks = tasks.filter(task => task.source.startsWith(root + '/')).map(task => ({ name:task.name, source:relative(root,task.source), configSources:task.config_sources.map(source => relative(root,source)), directory:relative(root,task.dir), runTemplate:task.run, tools:task.tools, environmentKeys:Object.keys(task.env ?? {}) }))
-           const namesHash = createHash('sha256').update(repositoryTasks.map(task => task.name).sort().join('\n')).digest('hex')
-           const evidence = { source: process.env.COVERAGE_SOURCE, repositoryTaskCount: repositoryTasks.length, repositoryTaskNamesSha256: namesHash, outsideRepositoryTaskCount: tasks.length - repositoryTasks.length, tasks: repositoryTasks }
-           writeFileSync(join(process.env.RUNNER_TEMP,'coverage-' + process.env.COVERAGE_SHARD,'task-inventory.json'), JSON.stringify(evidence,null,2))
-           if (namesHash !== process.env.COVERAGE_TASK_NAMES_SHA256) throw new Error('Cloud task inventory differs from source-filtered frozen local inventory')
-           console.log('Matched ' + repositoryTasks.length + ' frozen repository task names')
-          })()
-      - name: Checkout qualified public original Pi source
-        if: matrix.shard == 'b'
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          repository: earendil-works/pi
-          ref: 06a466935536f8c9bcacb2d5efc0fc021be1bdff
-          path: .research-coverage/upstream-pi
-          persist-credentials: false
-      - name: Write disposable owning research tasks
-        shell: node {0}
-        run: |
-          const { mkdirSync, writeFileSync } = require('node:fs');
-          async function consumeArtifact() {
-            const { cp, mkdtemp, readFile, readdir, writeFile } = await import('node:fs/promises');
-            const { join } = await import('node:path');
-            const { pathToFileURL } = await import('node:url');
-            const { strict: assert } = await import('node:assert');
-            const root = process.env.MISE_MONOREPO_ROOT;
-            const packagePath = process.env.COVERAGE_PACKAGE;
-            if (!root || !/^package\/module\/[a-z-]+$/.test(packagePath ?? '')) throw new Error('Invalid artifact consumer package');
-            const pkg = JSON.parse(await readFile(join(root, packagePath, 'package.json'), 'utf8'));
-            const fixture = await mkdtemp(join(process.env.RUNNER_TEMP, 'artifact-consumer-'));
-            await cp(join(root, packagePath, 'dist'), join(fixture, 'dist'), { recursive: true });
-            await writeFile(join(fixture, 'package.json'), JSON.stringify(pkg));
-            const mainExport = pkg.exports?.['.'];
-            const entry = typeof mainExport === 'string' ? mainExport : mainExport?.default ?? pkg.module ?? pkg.main;
-            if (!entry) throw new Error('No default artifact export for ' + packagePath);
-            process.chdir(fixture);
-            const mod = await import(pathToFileURL(join(fixture, entry)).href);
-            assert.ok(Object.keys(mod).length > 0, 'Built module must expose runtime exports');
-            const assertions = ['isolated_dist_import', 'nonempty_runtime_exports'];
-            if (packagePath.endsWith('/array-at')) {
-              assert.equal(mod.arrayAt({ array: [10, 20], index: -1 }), 20);
-              assert.throws(() => mod.arrayAt({ array: [], index: 0 }), mod.ArrayAtError);
-              assertions.push('negative_index', 'empty_array_rejection');
-            }
-            if (packagePath.endsWith('/function-arity')) {
-              assert.deepEqual(['10', '10'].map(mod.unary(Number.parseInt)), [10, 10]);
-              assertions.push('callback_arity');
-            }
-            if (packagePath.endsWith('/caught-value')) {
-              assert.equal(mod.caughtValueText(new Error('offline')), 'offline');
-              assert.equal(mod.caughtValueText(404), '404');
-              assertions.push('error_message', 'primitive_conversion');
-            }
-            console.log(JSON.stringify({ packagePath, entry, assertions, fixtureOutsideWorkspace: !fixture.startsWith(root + '/') }));
-          }
-          async function campaign() {
-           const { glob } = await import("node:fs/promises");
-            const { spawn, execFileSync } = await import('node:child_process');
-            const { once } = await import('node:events');
-            const { openSync, closeSync, readFileSync, writeFileSync, existsSync, cpSync, readdirSync, mkdirSync } = await import('node:fs');
-            const { join } = await import('node:path');
-            const { createHash } = await import('node:crypto');
-            const root = process.env.MISE_MONOREPO_ROOT;
-            const shard = process.env.COVERAGE_SHARD;
-            const receipt = join(process.env.RUNNER_TEMP, 'coverage-' + shard);
-            const plans = JSON.parse(readFileSync(join(root, 'package/dev-script/coverage-research/plan.json'), 'utf8'));
-            const plan = plans[shard];
-            if (!plan || plan.source !== process.env.COVERAGE_SOURCE) throw new Error('Source or shard plan mismatch');
-            const packages = plan.packages;
-            const commands = plan.commands;
-            const sourceReceipt = JSON.parse(readFileSync(join(receipt, 'source.json'), 'utf8'));
-            const deadline = Math.min(Date.now() + 540000, Date.parse(sourceReceipt.startedAt) + 780000);
-            const manifest = { source: process.env.COVERAGE_SOURCE, workflowCommit: process.env.GITHUB_SHA, shard, profile: plan.profile, commands, outcomes: [] };
-            const save = () => writeFileSync(join(receipt, 'campaign.json'), JSON.stringify(manifest, null, 2));
-            manifest.toolVersions = Object.fromEntries([['mise', ['--version']], ['node', ['--version']], ['pnpm', ['--version']]].map(([tool, args]) => [tool, execFileSync(tool, args, { cwd: root, encoding: 'utf8' }).trim()]));
-            save();
-            
-              async function packageSnapshot() {
-                const {realpathSync,lstatSync}=await import('node:fs');
-                const records=[];
-                for (const name of ['pi-agent-core','pi-ai','pi-coding-agent','pi-codemode','pi-tui']) {
-                  const installedSdk=realpathSync(join(root,'package/pi-plugin/auto-mode/node_modules/@earendil-works/pi-coding-agent'));
-                  const candidates=[join(installedSdk,'..',name)];
-                  const candidate=candidates.find(path=>existsSync(join(path,'package.json')));
-                  if (!candidate) throw new Error('Installed qualified SDK package is absent: '+name);
-                  const actual=realpathSync(candidate),metadata=JSON.parse(readFileSync(join(actual,'package.json'),'utf8'));
-                  const files=[];
-                  const queue=[actual];
-                  while(queue.length){const directory=queue.pop();for(const entry of readdirSync(directory,{withFileTypes:true})){if(entry.name==='node_modules')continue;const path=join(directory,entry.name);if(entry.isDirectory())queue.push(path);else if(entry.isFile()){const bytes=readFileSync(path);files.push({path:path.slice(actual.length+1),bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')});}else if(!lstatSync(path).isSymbolicLink())throw new Error('Unexpected installed package entry: '+path);}}
-                  records.push({name:metadata.name,version:metadata.version,path:actual,files:files.toSorted((a,b)=>a.path.localeCompare(b.path))});
-                }
-                return records;
-              }
-              if (shard==='b') {
-                const upstream=process.env.PI_AUTO_MODE_SOURCE;
-                const commit=execFileSync('git',['-C',upstream,'rev-parse','HEAD'],{encoding:'utf8'}).trim();
-                if(commit!=='06a466935536f8c9bcacb2d5efc0fc021be1bdff')throw new Error('Qualified original Pi source mismatch');
-                const files=execFileSync('git',['-C',upstream,'ls-files'],{encoding:'utf8'}).trim().split('\n');
-                const miseConfigs=files.filter(path=>/(^|\/)(\.mise\.toml|mise\.toml|\.mise\.local\.toml|mise\.local\.toml)$/.test(path));
-                if(miseConfigs.length)throw new Error('Unexpected original Pi Mise task influence');
-                manifest.qualifiedOriginalSource={repository:'earendil-works/pi',commit,trackedFiles:files.length,miseConfigs,initialTrackedChanges:execFileSync('git',['-C',upstream,'diff','--name-only'],{encoding:'utf8'}).trim().split('\n').filter(Boolean)};
-                manifest.installedSdkBefore=await packageSnapshot();
-              }
-
-           save();
-          for (const [index, command] of commands.entries()) {
-              const remaining = deadline - Date.now();
-              if (remaining < 20000) {
-                manifest.outcomes.push({ ...command, state: 'not_started_campaign_budget' });
-                save();
-                continue;
-              }
-              const logName = String(index).padStart(3, '0') + '.log';
-              const logPath = join(receipt, logName);
-              const fd = openSync(logPath, 'w');
-              const started = Date.now();
-              const outcome = { ...command, log: logName, startedAt: new Date(started).toISOString(), state: 'running' };
-              manifest.outcomes.push(outcome);
-           if (command.kind === "default_typescript_unit") {
-           const discovered=[]; const pkg=join(root, command.packagePath);
-           for await (const file of glob("**/*.unit.test.ts", {cwd:pkg, exclude:name=>name.includes("node_modules")})) { if (!file.includes(".expensive.") && !file.includes("/deprecated/") && !file.startsWith("package-deprecated/") && !file.includes("/package-deprecated/") && !file.startsWith("package-paused/") && !file.includes("/package-paused/")) { const path=command.packagePath+"/"+file; discovered.push({path,sha256:createHash("sha256").update(readFileSync(join(root,path))).digest("hex")}); } }
-           const sort=rows=>rows.toSorted((a,b)=>a.path.localeCompare(b.path));
-           outcome.actualFilesystemDiscovery=sort(discovered);
-           if (JSON.stringify(sort(discovered)) !== JSON.stringify(sort(command.expectedFiles))) throw new Error("Actual owning-template discovery differs from frozen expected file set: " + command.task);
-           }
-              save();
-              const proc = spawn('mise', ['run', command.task, ...(command.args ?? [])], { cwd: root, env: { ...process.env, COVERAGE_PACKAGE: command.packagePath }, detached: true, stdio: ['ignore', fd, fd] });
-              let timedOut = false;
-              let killTimer;
-              const stopGroup = signal => {
-                try { process.kill(-proc.pid, signal); }
-                catch (error) { if (error.code !== 'ESRCH') throw error; }
-              };
-              const timer = setTimeout(() => {
-                timedOut = true;
-                stopGroup('SIGTERM');
-                killTimer = setTimeout(() => stopGroup('SIGKILL'), 3000);
-              }, Math.min(180000, remaining - 10000));
-              try {
-                const [code, signal] = await once(proc, 'close');
-                outcome.exitCode = code;
-                outcome.signal = signal;
-                outcome.state = timedOut ? 'task_budget_exhausted' : code === 0 ? 'command_succeeded' : 'command_failed_requires_classification';
-              } catch (error) {
-                outcome.state = 'harness_spawn_failed';
-                outcome.error = String(error);
-              } finally {
-                clearTimeout(timer);
-                clearTimeout(killTimer);
-                closeSync(fd);
-              }
-              outcome.durationMilliseconds = Date.now() - started;
-              const log = readFileSync(logPath);
-              outcome.logSha256 = createHash('sha256').update(log).digest('hex');
-              outcome.logBytes = log.length;
-              outcome.discovery = { basis: 'tracked_test_file_candidates_not_runtime_case_counts', files: execFileSync('git', ['ls-files', '--', command.packagePath], { cwd: root, encoding: 'utf8' }).trim().split('\n').filter(path => path.endsWith('.unit.test.ts') && !path.includes('.expensive.')) };
-              save();
-              console.log(command.task + ' ' + outcome.state + ' ' + outcome.durationMilliseconds + 'ms');
-            }
-            manifest.completedAt = new Date().toISOString();
-            manifest.artifactFiles = [];
-            for (const name of packages) {
-              const dist = join(root, name, 'dist');
-              if (!existsSync(dist)) continue;
-              const destination = join(receipt, 'artifacts', name, 'dist');
-              mkdirSync(join(receipt, 'artifacts', name), { recursive: true });
-              cpSync(dist, destination, { recursive: true });
-              cpSync(join(root, name, 'package.json'), join(receipt, 'artifacts', name, 'package.json'));
-              const pending = [destination];
-              while (pending.length) {
-                const dir = pending.pop();
-                for (const entry of readdirSync(dir, { withFileTypes: true })) {
-                  const path = join(dir, entry.name);
-                  if (entry.isDirectory()) pending.push(path);
-                  else if (entry.isFile()) {
-                    const bytes = readFileSync(path);
-                    manifest.artifactFiles.push({ path: path.slice(receipt.length + 1), bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') });
-                  }
-                }
-              }
-            }
-            
-              if(shard==='b'){
-                manifest.installedSdkAfter=await packageSnapshot();
-                manifest.installedSdkBytesUnchanged=JSON.stringify(manifest.installedSdkBefore)===JSON.stringify(manifest.installedSdkAfter);
-                manifest.qualifiedOriginalSource.finalTrackedChanges=execFileSync('git',['-C',process.env.PI_AUTO_MODE_SOURCE,'diff','--name-only'],{encoding:'utf8'}).trim().split('\n').filter(Boolean);
-                const release=join(root,'package/pi-plugin/auto-mode/dist/native');
-                manifest.nativeReleaseManifestCandidates=[];
-                if(existsSync(release)){for(const name of ['source-manifest.json','pi-source-manifest.json','build-manifest.json']){const path=join(release,name);if(existsSync(path)){const bytes=readFileSync(path);manifest.nativeReleaseManifestCandidates.push({path:'package/pi-plugin/auto-mode/dist/native/'+name,sha256:createHash('sha256').update(bytes).digest('hex'),contents:bytes.toString()});}}}
-                if(!manifest.installedSdkBytesUnchanged||manifest.qualifiedOriginalSource.finalTrackedChanges.length)throw new Error('Original installed SDK or qualified upstream source was modified');
-              }
-
-          manifest.changedTrackedFiles = execFileSync('git', ['diff', '--name-only'], { cwd: root, encoding: 'utf8' }).trim().split('\n').filter(Boolean);
-            save();
-            if (manifest.outcomes.some(outcome => outcome.state !== 'command_succeeded')) throw new Error('Frozen coverage commands did not all succeed; inspect source-bound receipts');
-          }
-          const dir = 'package/dev-script/coverage-research';
-          mkdirSync(dir, { recursive: true });
-          const task = (name, fn) => '[tasks.' + JSON.stringify(name) + ']\nshell = "node --input-type=module-typescript -e"\nrun = ' + JSON.stringify('await (' + fn.toString() + ')()') + '\n';
-          writeFileSync(dir + '/mise.toml', task('campaign', campaign) + '\n' + task('test:artifact-consumer', consumeArtifact));
-
-
-
-
-
-
-
-          writeFileSync(dir + "/plan.json", "{\"b\":{\"source\":\"e02be6c8b8fe9efb41a7f8f1a0b311c17796588a\",\"profile\":\"native_compiled_producer_explicit_hidden_inclusion\",\"packages\":[\"package/pi-plugin/auto-mode\"],\"ownedTestPackages\":[\"package/pi-plugin/auto-mode\"],\"commands\":[{\"task\":\"//package/module/test:build\",\"packagePath\":\"package/module/test\",\"kind\":\"shared_harness_build\"},{\"task\":\"//package/module/logger:build\",\"packagePath\":\"package/module/logger\",\"kind\":\"shared_logger_build\"},{\"task\":\"//package/config/oxlint:build:js:node\",\"packagePath\":\"package/config/oxlint\",\"kind\":\"shared_static_prerequisite\"},{\"task\":\"//package/module/array-at:build\",\"packagePath\":\"package/module/array-at\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/async-iter:build\",\"packagePath\":\"package/module/async-iter\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/async-time:build\",\"packagePath\":\"package/module/async-time\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/caught-value:build\",\"packagePath\":\"package/module/caught-value\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/conf-fork:build\",\"packagePath\":\"package/module/conf-fork\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/const:build\",\"packagePath\":\"package/module/const\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/css-edit:build\",\"packagePath\":\"package/module/css-edit\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/dom:build\",\"packagePath\":\"package/module/dom\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/fs-id:build\",\"packagePath\":\"package/module/fs-id\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/fs-path:build\",\"packagePath\":\"package/module/fs-path\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/function-arity:build\",\"packagePath\":\"package/module/function-arity\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/hyperscript:build\",\"packagePath\":\"package/module/hyperscript\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/i18n-compose:build\",\"packagePath\":\"package/module/i18n-compose\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/image-diff:build\",\"packagePath\":\"package/module/image-diff\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/jsonc-edit:build\",\"packagePath\":\"package/module/jsonc-edit\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/kv-store:build\",\"packagePath\":\"package/module/kv-store\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/llm-type:build\",\"packagePath\":\"package/module/llm-type\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/make-asynchronous-fork:build\",\"packagePath\":\"package/module/make-asynchronous-fork\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/matcher-fork:build\",\"packagePath\":\"package/module/matcher-fork\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/matrix:build\",\"packagePath\":\"package/module/matrix\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/memoize:build\",\"packagePath\":\"package/module/memoize\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/numeric-format:build\",\"packagePath\":\"package/module/numeric-format\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/observable:build\",\"packagePath\":\"package/module/observable\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/or-throw:build\",\"packagePath\":\"package/module/or-throw\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/p-limit-fork:build\",\"packagePath\":\"package/module/p-limit-fork\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/p-map-fork:build\",\"packagePath\":\"package/module/p-map-fork\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/p-memoize-fork:build\",\"packagePath\":\"package/module/p-memoize-fork\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/pify-fork:build\",\"packagePath\":\"package/module/pify-fork\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/pipe:build\",\"packagePath\":\"package/module/pipe\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/pnpm-workspace-catalog:build\",\"packagePath\":\"package/module/pnpm-workspace-catalog\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/quick-lru-fork:build\",\"packagePath\":\"package/module/quick-lru-fork\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/test-diagnostic:build\",\"packagePath\":\"package/module/test-diagnostic\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/test-expect:build\",\"packagePath\":\"package/module/test-expect\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/test-sandbox:build\",\"packagePath\":\"package/module/test-sandbox\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/throws:build\",\"packagePath\":\"package/module/throws\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/token-count:build\",\"packagePath\":\"package/module/token-count\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/toml-edit:build\",\"packagePath\":\"package/module/toml-edit\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/wg-allowedips:build\",\"packagePath\":\"package/module/wg-allowedips\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/zip-writer:build\",\"packagePath\":\"package/module/zip-writer\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/pi-plugin/auto-mode:build:js\",\"packagePath\":\"package/pi-plugin/auto-mode\",\"kind\":\"reviewed_node_exports_build\"},{\"task\":\"//package/pi-plugin/auto-mode:build:native\",\"packagePath\":\"package/pi-plugin/auto-mode\",\"kind\":\"qualified_original_host_build\"}]}}");
-      - name: Execute owning frozen tasks with bounded command budgets
-        run: mise run //package/dev-script/coverage-research:campaign
-      - name: Preserve source-bound receipts and task logs
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: frozen-native-producer-${{ github.run_id }}
-          path: ${{ runner.temp }}/coverage-${{ matrix.shard }}
-          if-no-files-found: error
-          retention-days: 14
-          include-hidden-files: true
-        id: compiled
-    outputs:
-      artifact-id: ${{ steps.compiled.outputs.artifact-id }}
   consumer:
-    name: Fresh restored compiled native host consumer
+    name: Same artifact flattened versus source-owned activation topology
     runs-on: depot-ubuntu-24.04-4
     timeout-minutes: 15
     strategy:
@@ -328,6 +29,8 @@ jobs:
       GOMAXPROCS: "2"
       GOMEMLIMIT: 768MiB
       PI_AUTO_MODE_SOURCE: ${{ github.workspace }}/.research-coverage/upstream-pi
+      COVERAGE_PRODUCER_RUN: "39124269347"
+      COVERAGE_PRODUCER_HARNESS: 28bf38b0281f3bcace40b70d8b989d6e0ef7f875
     steps:
       - name: Checkout immutable application source
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -367,10 +70,10 @@ jobs:
         shell: node {0}
         env:
           GH_TOKEN: ${{ github.token }}
-          COVERAGE_ARTIFACT_ID: ${{ needs.producer.outputs.artifact-id }}
+          COVERAGE_ARTIFACT_ID: "12135985129"
         run: >-
           (async function download(){
-           const {execFileSync}=await import('node:child_process'),{writeFileSync,readFileSync}=await import('node:fs'),{join}=await import('node:path'),{createHash}=await import('node:crypto'),{strict:assert}=await import('node:assert');const id=process.env.COVERAGE_ARTIFACT_ID;assert(/^[0-9]+$/u.test(id??''));const prefix='repos/'+process.env.GITHUB_REPOSITORY+'/actions/artifacts/'+id,env={...process.env};delete env.GH_DEBUG;const metadata=JSON.parse(execFileSync('gh',['api',prefix],{env,encoding:'utf8'}));assert.equal(metadata.workflow_run.id,Number(process.env.GITHUB_RUN_ID));assert.equal(metadata.workflow_run.head_sha,process.env.GITHUB_SHA);assert.equal(metadata.name,'frozen-native-producer-'+process.env.GITHUB_RUN_ID);assert.equal(metadata.expired,false);assert(metadata.size_in_bytes<128*1024*1024);const zip=execFileSync('gh',['api',prefix+'/zip'],{env,maxBuffer:128*1024*1024});assert.equal(zip.length,metadata.size_in_bytes);const sha256=createHash('sha256').update(zip).digest('hex');assert.equal(metadata.digest,'sha256:'+sha256);const directory=join(process.env.RUNNER_TEMP,'coverage-b');writeFileSync(join(directory,'producer.zip'),zip);writeFileSync(join(directory,'producer-artifact.json'),JSON.stringify({...metadata,downloadedSha256:sha256},null,2)+'\n');console.log(JSON.stringify({artifactId:id,bytes:zip.length,sha256,sourceHarness:metadata.workflow_run.head_sha}))
+           const {execFileSync}=await import('node:child_process'),{writeFileSync,readFileSync}=await import('node:fs'),{join}=await import('node:path'),{createHash}=await import('node:crypto'),{strict:assert}=await import('node:assert');const id=process.env.COVERAGE_ARTIFACT_ID;assert(/^[0-9]+$/u.test(id??''));const prefix='repos/'+process.env.GITHUB_REPOSITORY+'/actions/artifacts/'+id,env={...process.env};delete env.GH_DEBUG;const metadata=JSON.parse(execFileSync('gh',['api',prefix],{env,encoding:'utf8'}));assert.equal(metadata.workflow_run.id,Number(process.env.COVERAGE_PRODUCER_RUN));assert.equal(metadata.workflow_run.head_sha,process.env.COVERAGE_PRODUCER_HARNESS);assert.equal(metadata.name,'frozen-native-producer-'+process.env.COVERAGE_PRODUCER_RUN);assert.equal(metadata.expired,false);assert(metadata.size_in_bytes<128*1024*1024);const zip=execFileSync('gh',['api',prefix+'/zip'],{env,maxBuffer:128*1024*1024});assert.equal(zip.length,metadata.size_in_bytes);const sha256=createHash('sha256').update(zip).digest('hex');assert.equal(metadata.digest,'sha256:'+sha256);const directory=join(process.env.RUNNER_TEMP,'coverage-b');writeFileSync(join(directory,'producer.zip'),zip);writeFileSync(join(directory,'producer-artifact.json'),JSON.stringify({...metadata,downloadedSha256:sha256},null,2)+'\n');console.log(JSON.stringify({artifactId:id,bytes:zip.length,sha256,sourceHarness:metadata.workflow_run.head_sha}))
           })().catch(error=>{console.error(error);process.exitCode=1})
       - name: Set up frozen Mise parser without global tool installation
         uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
@@ -602,8 +305,11 @@ jobs:
 
 
 
-          require("node:fs").appendFileSync(dir + "/mise.toml", "\n[tasks.\"test:restore-native\"]\nshell = \"node --input-type=module-typescript -e\"\nrun = \"await (async function restore(){\\n const {readFileSync,writeFileSync,mkdirSync,openSync,closeSync,writeSync,cpSync,existsSync}=await import('node:fs'),{join}=await import('node:path'),{createHash}=await import('node:crypto'),{createRequire}=await import('node:module'),{strict:assert}=await import('node:assert');const root=process.env.MISE_MONOREPO_ROOT,receipt=join(process.env.RUNNER_TEMP,'coverage-b'),destination=join(receipt,'restored-producer'),hash=bytes=>createHash('sha256').update(bytes).digest('hex'),require=createRequire(root+'/package.json'),library=root+'/node_modules/.pnpm/fflate@0.8.3/node_modules/fflate';assert.equal(JSON.parse(readFileSync(library+'/package.json','utf8')).version,'0.8.3');const{Unzip,UnzipInflate,zipSync}=require(library+'/lib/node.cjs')\\n function extract(bytes,directory){const members=[],names=new Set();let expanded=0,started=0,finished=0;mkdirSync(directory,{recursive:true});const stream=new Unzip(file=>{const name=file.name;assert(name&&!name.startsWith('/')&&!/^[A-Za-z]:/u.test(name)&&!name.includes('\\\\\\\\')&&!name.includes('\\\\0'));assert(!name.split('/').includes('..')&&!name.split('/').includes('.'));assert(!names.has(name));names.add(name);assert(++started<100000);const path=join(directory,name),isDirectory=name.endsWith('/');if(isDirectory)mkdirSync(path,{recursive:true});else mkdirSync(join(path,'..'),{recursive:true});const fd=isDirectory?null:openSync(path,'wx'),digest=createHash('sha256');let length=0;file.ondata=(error,data,final)=>{if(error)throw error;expanded+=data.length;length+=data.length;assert(expanded<=512*1024*1024);digest.update(data);if(fd!==null)writeSync(fd,data);if(final){if(fd!==null)closeSync(fd);finished++;if(!isDirectory)members.push({path:name,bytes:length,sha256:digest.digest('hex')})}};file.start()});stream.register(UnzipInflate);for(let offset=0;offset<bytes.length;offset+=65536)stream.push(bytes.subarray(offset,Math.min(offset+65536,bytes.length)),offset+65536>=bytes.length);assert.equal(started,finished);return{members,expanded}}\\n const control=join(receipt,'archive-boundary-controls');assert.throws(()=>extract(zipSync({'../escape.bin':new Uint8Array([1])}),control+'/bad'));const good=extract(zipSync({'nested/.fixture.json':new TextEncoder().encode('{\\\"positive\\\":true}')}),control+'/good');assert.equal(good.members.length,1);assert.equal(readFileSync(control+'/good/nested/.fixture.json','utf8'),'{\\\"positive\\\":true}');const metadata=JSON.parse(readFileSync(join(receipt,'producer-artifact.json'),'utf8')),bytes=readFileSync(join(receipt,'producer.zip'));assert.equal(hash(bytes),metadata.downloadedSha256);const extracted=extract(bytes,destination),source=JSON.parse(readFileSync(join(destination,'source.json'),'utf8')),campaign=JSON.parse(readFileSync(join(destination,'campaign.json'),'utf8'));assert.equal(source.source,process.env.COVERAGE_SOURCE);assert.equal(campaign.workflowCommit,process.env.GITHUB_SHA);assert.equal(campaign.outcomes.length,44);assert(campaign.outcomes.every(row=>row.state==='command_succeeded'));assert.equal(campaign.installedSdkBytesUnchanged,true)\\n const absent=[];for(const file of campaign.artifactFiles){assert(file.path.startsWith('artifacts/package/pi-plugin/auto-mode/dist/'));const path=join(destination,file.path);if(!existsSync(path)){absent.push(file.path);continue}const actual=readFileSync(path);assert.equal(actual.length,file.bytes);assert.equal(hash(actual),file.sha256)}assert.deepEqual(absent,[]);const hidden=campaign.artifactFiles.filter(file=>file.path.endsWith('/.manifest.json'));assert(hidden.length>0);assert(extracted.members.some(file=>file.path.endsWith('/.manifest.json')));const target=join(root,'package/pi-plugin/auto-mode/dist');assert.equal(existsSync(target),false);cpSync(join(destination,'artifacts/package/pi-plugin/auto-mode/dist'),target,{recursive:true});for(const file of campaign.artifactFiles){const path=join(root,file.path.slice('artifacts/'.length));assert.equal(hash(readFileSync(path)),file.sha256)}\\n const proof={source:source.source,producerHarness:campaign.workflowCommit,producerArtifact:metadata.id,producerZipSha256:metadata.downloadedSha256,allDeclaredArtifactFilesVerified:campaign.artifactFiles.length,declaredArtifactAbsences:absent,hiddenDeclaredResources: hidden,archiveMembers:extracted.members,expandedBytes:extracted.expanded,pathTraversalPositiveControlRejected:true,hiddenChildPositiveControlAccepted:true,sourceBuildInvokedInConsumer:false,installedSdkBefore:campaign.installedSdkBefore,consumerTask:'//package/pi-plugin/auto-mode:test:native:domain',runtimeOutcome:'not_yet_invoked_at_restoration'};writeFileSync(join(receipt,'restoration.json'),JSON.stringify(proof,null,2)+'\\\\n');console.log(JSON.stringify({...proof,archiveMembers:proof.archiveMembers.length,installedSdkBefore:'retained in receipt'}))\\n})()\"\n");
-          writeFileSync(dir + "/plan.json", "{\"b\":{\"source\":\"e02be6c8b8fe9efb41a7f8f1a0b311c17796588a\",\"profile\":\"fresh_restored_native_host_actual_domain_consumer\",\"packages\":[],\"ownedTestPackages\":[\"package/pi-plugin/auto-mode\"],\"commands\":[{\"task\":\"//package/pi-plugin/auto-mode:test:native:domain\",\"packagePath\":\"package/pi-plugin/auto-mode\",\"kind\":\"actual_restored_native_domain_owner\",\"expectedSourceFailure\":\"none frontier actual unresolved versus expected unspecified; preserve it\"}]}}");
+          require("node:fs").appendFileSync(dir + "/mise.toml", "\n[tasks.\"test:restore-native\"]\nshell = \"node --input-type=module-typescript -e\"\nrun = \"await (async function restore(){\\n const {readFileSync,writeFileSync,mkdirSync,openSync,closeSync,writeSync,cpSync,existsSync}=await import('node:fs'),{join}=await import('node:path'),{createHash}=await import('node:crypto'),{createRequire}=await import('node:module'),{strict:assert}=await import('node:assert');const root=process.env.MISE_MONOREPO_ROOT,receipt=join(process.env.RUNNER_TEMP,'coverage-b'),destination=join(receipt,'restored-producer'),hash=bytes=>createHash('sha256').update(bytes).digest('hex'),require=createRequire(root+'/package.json'),library=root+'/node_modules/.pnpm/fflate@0.8.3/node_modules/fflate';assert.equal(JSON.parse(readFileSync(library+'/package.json','utf8')).version,'0.8.3');const{Unzip,UnzipInflate,zipSync}=require(library+'/lib/node.cjs')\\n function extract(bytes,directory){const members=[],names=new Set();let expanded=0,started=0,finished=0;mkdirSync(directory,{recursive:true});const stream=new Unzip(file=>{const name=file.name;assert(name&&!name.startsWith('/')&&!/^[A-Za-z]:/u.test(name)&&!name.includes('\\\\\\\\')&&!name.includes('\\\\0'));assert(!name.split('/').includes('..')&&!name.split('/').includes('.'));assert(!names.has(name));names.add(name);assert(++started<100000);const path=join(directory,name),isDirectory=name.endsWith('/');if(isDirectory)mkdirSync(path,{recursive:true});else mkdirSync(join(path,'..'),{recursive:true});const fd=isDirectory?null:openSync(path,'wx'),digest=createHash('sha256');let length=0;file.ondata=(error,data,final)=>{if(error)throw error;expanded+=data.length;length+=data.length;assert(expanded<=512*1024*1024);digest.update(data);if(fd!==null)writeSync(fd,data);if(final){if(fd!==null)closeSync(fd);finished++;if(!isDirectory)members.push({path:name,bytes:length,sha256:digest.digest('hex')})}};file.start()});stream.register(UnzipInflate);for(let offset=0;offset<bytes.length;offset+=65536)stream.push(bytes.subarray(offset,Math.min(offset+65536,bytes.length)),offset+65536>=bytes.length);assert.equal(started,finished);return{members,expanded}}\\n const control=join(receipt,'archive-boundary-controls');assert.throws(()=>extract(zipSync({'../escape.bin':new Uint8Array([1])}),control+'/bad'));const good=extract(zipSync({'nested/.fixture.json':new TextEncoder().encode('{\\\"positive\\\":true}')}),control+'/good');assert.equal(good.members.length,1);assert.equal(readFileSync(control+'/good/nested/.fixture.json','utf8'),'{\\\"positive\\\":true}');const metadata=JSON.parse(readFileSync(join(receipt,'producer-artifact.json'),'utf8')),bytes=readFileSync(join(receipt,'producer.zip'));assert.equal(hash(bytes),metadata.downloadedSha256);const extracted=extract(bytes,destination),source=JSON.parse(readFileSync(join(destination,'source.json'),'utf8')),campaign=JSON.parse(readFileSync(join(destination,'campaign.json'),'utf8'));assert.equal(source.source,process.env.COVERAGE_SOURCE);assert.equal(campaign.workflowCommit,process.env.COVERAGE_PRODUCER_HARNESS);assert.equal(campaign.outcomes.length,44);assert(campaign.outcomes.every(row=>row.state==='command_succeeded'));assert.equal(campaign.installedSdkBytesUnchanged,true)\\n const absent=[];for(const file of campaign.artifactFiles){assert(file.path.startsWith('artifacts/package/pi-plugin/auto-mode/dist/'));const path=join(destination,file.path);if(!existsSync(path)){absent.push(file.path);continue}const actual=readFileSync(path);assert.equal(actual.length,file.bytes);assert.equal(hash(actual),file.sha256)}assert.deepEqual(absent,[]);const hidden=campaign.artifactFiles.filter(file=>file.path.endsWith('/.manifest.json'));assert(hidden.length>0);assert(extracted.members.some(file=>file.path.endsWith('/.manifest.json')));const target=join(root,'package/pi-plugin/auto-mode/dist');assert.equal(existsSync(target),false);cpSync(join(destination,'artifacts/package/pi-plugin/auto-mode/dist'),target,{recursive:true});for(const file of campaign.artifactFiles){const path=join(root,file.path.slice('artifacts/'.length));assert.equal(hash(readFileSync(path)),file.sha256)}\\n const proof={source:source.source,producerHarness:campaign.workflowCommit,producerArtifact:metadata.id,producerZipSha256:metadata.downloadedSha256,allDeclaredArtifactFilesVerified:campaign.artifactFiles.length,declaredArtifactAbsences:absent,hiddenDeclaredResources: hidden,archiveMembers:extracted.members,expandedBytes:extracted.expanded,pathTraversalPositiveControlRejected:true,hiddenChildPositiveControlAccepted:true,sourceBuildInvokedInConsumer:false,installedSdkBefore:campaign.installedSdkBefore,consumerTask:'//package/pi-plugin/auto-mode:test:native:domain',runtimeOutcome:'not_yet_invoked_at_restoration'};writeFileSync(join(receipt,'restoration.json'),JSON.stringify(proof,null,2)+'\\\\n');console.log(JSON.stringify({...proof,archiveMembers:proof.archiveMembers.length,installedSdkBefore:'retained in receipt'}))\\n})()\"\n");
+
+          require("node:fs").appendFileSync(dir+"/mise.toml","\n[tasks.\"test:topology-flattened\"]\nshell = \"node --input-type=module-typescript -e\"\nrun = \"await (async function inspect(phase){\\n const {readFileSync,writeFileSync,lstatSync,readlinkSync,realpathSync}=await import('node:fs'),{join}=await import('node:path'),{pathToFileURL}=await import('node:url'),{createHash}=await import('node:crypto'),{strict:assert}=await import('node:assert');const root=process.env.MISE_MONOREPO_ROOT,pkg=join(root,'package/pi-plugin/auto-mode'),active=join(pkg,'dist/native'),receipt=join(process.env.RUNNER_TEMP,'coverage-b'),loader=pathToFileURL(join(active,'loader.mjs')).href;const stat=lstatSync(active),paths=await import(pathToFileURL(join(active,'contract/integration/current-sdk/paths.mjs')).href),emitter=readFileSync(join(active,'contract/integration/native-batch/generated/run-emitter.mjs'),'utf8'),match=emitter.match(/import \\\\{nativeCreateContext,nativeAssertActive,nativeEmitError\\\\} from (\\\"[^\\\\n]+\\\");/u);assert(match);const requestedRunnerUrl=JSON.parse(match[1]),expectedRunnerUrl=pathToFileURL(join(paths.sdk,'dist/core/extensions/runner.js')).href;await import(loader);let namespace=null,namespaceError=null;try{namespace=Object.keys(await import(requestedRunnerUrl)).toSorted()}catch(error){namespaceError=String(error)}const proof={phase,activeIsSymlink:stat.isSymbolicLink(),activeLink:stat.isSymbolicLink()?readlinkSync(active):null,activeRealpath:realpathSync(active),loader,requestedRunnerUrl,hookMapRunnerUrl:expectedRunnerUrl,runnerIdentityMatches:requestedRunnerUrl===expectedRunnerUrl,runnerSha256:createHash('sha256').update(readFileSync(new URL(requestedRunnerUrl))).digest('hex'),nativeRoot:paths.nativeRoot,namespace,namespaceError,node:process.version,execPath:process.execPath,execArgv:process.execArgv,environment:Object.fromEntries(['NODE_OPTIONS','NODE_PATH','NODE_PRESERVE_SYMLINKS','NODE_PRESERVE_SYMLINKS_MAIN','NODE_COMPILE_CACHE','PI_AUTO_MODE_SOURCE','PI_AUTO_MODE_NATIVE_BUILD','CI'].map(key=>[key,process.env[key]??null]))};writeFileSync(join(receipt,'topology-'+phase+'.json'),JSON.stringify(proof,null,2)+'\\\\n');console.log(JSON.stringify(proof,null,2));assert(namespace);assert.equal(proof.runnerIdentityMatches,phase==='activated');assert.equal(namespace.includes('nativeAssertActive'),phase==='activated')\\n})(\\\"flattened\\\")\"\n\n[tasks.\"test:activate-existing-artifact\"]\nshell = \"node --input-type=module-typescript -e\"\nrun = \"await (async function activate(){\\n const {readFileSync,lstatSync,realpathSync,readlinkSync,existsSync,writeFileSync}=await import('node:fs'),{join,basename}=await import('node:path'),{pathToFileURL}=await import('node:url'),{strict:assert}=await import('node:assert');const root=process.env.MISE_MONOREPO_ROOT,pkg=join(root,'package/pi-plugin/auto-mode'),receipt=join(process.env.RUNNER_TEMP,'coverage-b'),restoration=JSON.parse(readFileSync(join(receipt,'restoration.json'),'utf8')),versions=[...new Set(restoration.hiddenDeclaredResources.map(file=>file.path.split('/dist/')[1].split('/')[0]))];assert.equal(versions.length,1);assert(/^native-release-[A-Za-z0-9]+$/u.test(versions[0]));const output=join(pkg,'dist',versions[0]),active=join(pkg,'dist/native'),backup=join(pkg,'dist',basename(output)+'-previous');assert(lstatSync(active).isDirectory());assert(!existsSync(backup));const {activateNativeBuild}=await import(pathToFileURL(join(pkg,'native/build-activation.ts')).href);await activateNativeBuild({output,active});assert(lstatSync(active).isSymbolicLink());assert.equal(realpathSync(active),realpathSync(output));assert(lstatSync(backup).isDirectory());writeFileSync(join(receipt,'activation-control.json'),JSON.stringify({sourceOwner:'package/pi-plugin/auto-mode/native/build-activation.ts',output,active,activeLink:readlinkSync(active),backup,previousMaterializedDirectoryRetained:true,sourceBuildInvoked:false},null,2)+'\\\\n')\\n})()\"\n\n[tasks.\"test:topology-activated\"]\nshell = \"node --input-type=module-typescript -e\"\nrun = \"await (async function inspect(phase){\\n const {readFileSync,writeFileSync,lstatSync,readlinkSync,realpathSync}=await import('node:fs'),{join}=await import('node:path'),{pathToFileURL}=await import('node:url'),{createHash}=await import('node:crypto'),{strict:assert}=await import('node:assert');const root=process.env.MISE_MONOREPO_ROOT,pkg=join(root,'package/pi-plugin/auto-mode'),active=join(pkg,'dist/native'),receipt=join(process.env.RUNNER_TEMP,'coverage-b'),loader=pathToFileURL(join(active,'loader.mjs')).href;const stat=lstatSync(active),paths=await import(pathToFileURL(join(active,'contract/integration/current-sdk/paths.mjs')).href),emitter=readFileSync(join(active,'contract/integration/native-batch/generated/run-emitter.mjs'),'utf8'),match=emitter.match(/import \\\\{nativeCreateContext,nativeAssertActive,nativeEmitError\\\\} from (\\\"[^\\\\n]+\\\");/u);assert(match);const requestedRunnerUrl=JSON.parse(match[1]),expectedRunnerUrl=pathToFileURL(join(paths.sdk,'dist/core/extensions/runner.js')).href;await import(loader);let namespace=null,namespaceError=null;try{namespace=Object.keys(await import(requestedRunnerUrl)).toSorted()}catch(error){namespaceError=String(error)}const proof={phase,activeIsSymlink:stat.isSymbolicLink(),activeLink:stat.isSymbolicLink()?readlinkSync(active):null,activeRealpath:realpathSync(active),loader,requestedRunnerUrl,hookMapRunnerUrl:expectedRunnerUrl,runnerIdentityMatches:requestedRunnerUrl===expectedRunnerUrl,runnerSha256:createHash('sha256').update(readFileSync(new URL(requestedRunnerUrl))).digest('hex'),nativeRoot:paths.nativeRoot,namespace,namespaceError,node:process.version,execPath:process.execPath,execArgv:process.execArgv,environment:Object.fromEntries(['NODE_OPTIONS','NODE_PATH','NODE_PRESERVE_SYMLINKS','NODE_PRESERVE_SYMLINKS_MAIN','NODE_COMPILE_CACHE','PI_AUTO_MODE_SOURCE','PI_AUTO_MODE_NATIVE_BUILD','CI'].map(key=>[key,process.env[key]??null]))};writeFileSync(join(receipt,'topology-'+phase+'.json'),JSON.stringify(proof,null,2)+'\\\\n');console.log(JSON.stringify(proof,null,2));assert(namespace);assert.equal(proof.runnerIdentityMatches,phase==='activated');assert.equal(namespace.includes('nativeAssertActive'),phase==='activated')\\n})(\\\"activated\\\")\"\n");
+
+          writeFileSync(dir+"/plan.json","{\"b\":{\"source\":\"e02be6c8b8fe9efb41a7f8f1a0b311c17796588a\",\"profile\":\"same_artifact_loader_topology_counterfactual\",\"packages\":[],\"commands\":[{\"task\":\"//package/dev-script/coverage-research:test:topology-flattened\",\"packagePath\":\"package/pi-plugin/auto-mode\",\"kind\":\"actual_flattened_loader_namespace_control\"},{\"task\":\"//package/pi-plugin/auto-mode:test:native:domain\",\"packagePath\":\"package/pi-plugin/auto-mode\",\"kind\":\"original_flattened_domain_failure_preserved\"},{\"task\":\"//package/dev-script/coverage-research:test:activate-existing-artifact\",\"packagePath\":\"package/pi-plugin/auto-mode\",\"kind\":\"existing_source_owned_activation_without_build\"},{\"task\":\"//package/dev-script/coverage-research:test:topology-activated\",\"packagePath\":\"package/pi-plugin/auto-mode\",\"kind\":\"actual_activated_loader_namespace_positive_control\"},{\"task\":\"//package/pi-plugin/auto-mode:test:native:domain\",\"packagePath\":\"package/pi-plugin/auto-mode\",\"kind\":\"activated_domain_owner_failure_preserved\"}]}}");
       - name: Restore and verify compiled inputs before any runtime consumer
         run: mise run //package/dev-script/coverage-research:test:restore-native
       - name: Execute owning frozen tasks with bounded command budgets
@@ -612,7 +318,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: frozen-native-restored-consumer-${{ github.run_id }}
+          name: frozen-native-topology-${{ github.run_id }}
           path: |-
             ${{ runner.temp }}/coverage-b/source.json
             ${{ runner.temp }}/coverage-b/task-inventory.json
@@ -620,12 +326,12 @@ jobs:
             ${{ runner.temp }}/coverage-b/restoration.json
             ${{ runner.temp }}/coverage-b/producer-artifact.json
             ${{ runner.temp }}/coverage-b/*.log
+            ${{ runner.temp }}/coverage-b/topology-*.json
+            ${{ runner.temp }}/coverage-b/activation-control.json
           if-no-files-found: error
           retention-days: 14
           include-hidden-files: true
         id: consumer
-    needs:
-      - producer
     permissions:
       contents: read
       actions: read
