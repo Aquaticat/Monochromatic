@@ -223,8 +223,14 @@ fn assert_current(reader: &Reader, name: &str) -> SharedPixelBuffer<Rgba8Pixel> 
         !inks.is_empty(),
         "{name}: no fully covered selected glyph pixels"
     );
+    let mut all_chosen = true;
+    for ink in inks.iter() {
+        if *ink != selected {
+            all_chosen = false;
+        }
+    }
     assert!(
-        inks.iter().all(|ink| return *ink == selected),
+        all_chosen,
         "{name}: selected glyphs are not painted with the ink chosen from the selection fill"
     );
     return live;

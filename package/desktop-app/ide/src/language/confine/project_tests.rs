@@ -203,17 +203,15 @@ fn read_only_directories_below_replaced_locations_are_bound_back_read_only() {
         "the tool directories must come after the replacements and before the state bind: {args:?}"
     );
     // A directory elsewhere is visible through the read-only root and gets no mount of its own.
-    assert!(
-        !args.iter().any(|part| return part == "/usr/local/tools"),
-        "{args:?}"
-    );
+    assert!(!args.contains(&"/usr/local/tools".to_string()), "{args:?}");
     // No tool directory is ever mounted writable.
-    assert!(
-        !args.windows(3).any(|window| {
-            return window[0] == "--bind" && window[1].contains("/mise data/");
-        }),
-        "{args:?}"
-    );
+    let mut writable_tool = false;
+    for window in args.windows(3) {
+        if window[0] == "--bind" && window[1].contains("/mise data/") {
+            writable_tool = true;
+        }
+    }
+    assert!(!writable_tool, "{args:?}");
 }
 
 #[test]

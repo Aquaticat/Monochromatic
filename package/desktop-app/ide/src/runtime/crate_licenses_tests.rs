@@ -55,14 +55,14 @@ fn long_crate_lists_wrap_under_the_prefix_and_keep_long_names_whole() {
         assert!(line.len() <= 78, "{line}");
     }
     assert!(lines[1].starts_with("         crate-"), "{lines:?}");
-    assert_eq!(
-        lines
-            .join(" ")
-            .split_whitespace()
-            .filter(|word| return word.starts_with("crate-"))
-            .count(),
-        30
-    );
+    let joined = lines.join(" ");
+    let mut crate_words = 0;
+    for word in joined.split_whitespace() {
+        if word.starts_with("crate-") {
+            crate_words += 1;
+        }
+    }
+    assert_eq!(crate_words, 30);
     let long = vec!["x".repeat(100)];
     assert_eq!(
         wrap("Used by: ", &long),

@@ -285,12 +285,13 @@ fn leaving_the_overscan_tile_re_centers_on_the_worker_thread() {
         Some(view.viewport.first as i32 + 1),
         "the first line number belongs to the swapped-in tile"
     );
+    let mut visual_rows = 0usize;
+    for row in view.rows.iter() {
+        visual_rows += row.visual_rows();
+    }
     assert_eq!(
         window.get_row_tops().row_count(),
-        view.rows
-            .iter()
-            .map(|row| return row.visual_rows())
-            .sum::<usize>(),
+        visual_rows,
         "one gutter entry per visual row of the swapped-in tile"
     );
     assert_eq!(

@@ -116,7 +116,7 @@ fn mise_runs_in_the_servers_sandbox_without_network_and_with_a_cleared_environme
         "--clearenv",
     ] {
         assert!(
-            args.iter().any(|argument| return argument == flag),
+            args.contains(&flag.to_string()),
             "{flag} is missing from {args:?}"
         );
     }
@@ -136,12 +136,13 @@ fn mise_runs_in_the_servers_sandbox_without_network_and_with_a_cleared_environme
         }
     }
     assert_eq!(writable.len(), 2, "{writable:?}");
-    assert!(
-        writable
-            .iter()
-            .all(|window| return window[1].starts_with("/state/")),
-        "{writable:?}"
-    );
+    let mut inside_state = true;
+    for window in writable.iter() {
+        if !window[1].starts_with("/state/") {
+            inside_state = false;
+        }
+    }
+    assert!(inside_state, "{writable:?}");
     let after = separator(&args);
     assert_eq!(
         args[after + 1..],
@@ -165,13 +166,13 @@ fn the_project_is_never_an_argument_of_mise_so_a_dashed_name_cannot_become_an_op
             "mise got more than its command for {root}"
         );
         // The root appears only as a bind source and destination, each its own argument.
-        assert_eq!(
-            args.iter()
-                .filter(|argument| return argument.as_str() == root)
-                .count(),
-            2,
-            "{args:?}"
-        );
+        let mut mentions = 0;
+        for argument in args.iter() {
+            if argument.as_str() == root {
+                mentions += 1;
+            }
+        }
+        assert_eq!(mentions, 2, "{args:?}");
     }
 }
 
@@ -191,11 +192,13 @@ fn location_variables_reach_mise_and_nothing_else_of_the_application_does() {
         Some("/custom/config")
     );
     // A credential-like variable is not on the list of locations.
-    assert!(
-        LOCATION_VARIABLES
-            .iter()
-            .all(|name| return !name.contains("TOKEN") && !name.contains("KEY"))
-    );
+    let mut credential_free = true;
+    for name in LOCATION_VARIABLES.iter() {
+        if name.contains("TOKEN") || name.contains("KEY") {
+            credential_free = false;
+        }
+    }
+    assert!(credential_free);
     assert!(setenv(&args, "MISE_GITHUB_TOKEN").is_none());
 }
 

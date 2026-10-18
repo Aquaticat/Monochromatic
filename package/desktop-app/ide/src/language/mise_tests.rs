@@ -153,11 +153,14 @@ fn mise_is_never_asked_to_install_trust_run_or_name_the_project() {
             "trust", "install", "exec", "run", "use", "set", "activate", "env", "--cd", "--yes",
             "/work",
         ] {
+            let mut contained = false;
+            for argument in invocation.arguments.iter() {
+                if argument.contains(forbidden) {
+                    contained = true;
+                }
+            }
             assert!(
-                !invocation
-                    .arguments
-                    .iter()
-                    .any(|argument| return argument.contains(forbidden)),
+                !contained,
                 "mise was asked `{command}`, which contains {forbidden}"
             );
         }
@@ -308,10 +311,13 @@ fn all_runs_share_one_time_limit() {
         limits[0] <= TIME_LIMIT && limits[0] > TIME_LIMIT - Duration::from_secs(2),
         "{limits:?}"
     );
-    assert!(
-        limits.windows(2).all(|pair| return pair[1] <= pair[0]),
-        "{limits:?}"
-    );
+    let mut never_longer = true;
+    for pair in limits.windows(2) {
+        if pair[1] > pair[0] {
+            never_longer = false;
+        }
+    }
+    assert!(never_longer, "{limits:?}");
 }
 
 #[test]

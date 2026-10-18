@@ -222,10 +222,7 @@ fn the_gutter_numbers_first_rows_and_marks_continuation_rows() {
     let tops: Vec<f32> = window.get_row_tops().iter().collect();
     assert_eq!(numbers.len(), tops.len());
     assert_eq!(numbers.first(), Some(&1));
-    assert!(
-        numbers.iter().any(|number| return *number == 0),
-        "continuation rows exist"
-    );
+    assert!(numbers.contains(&0), "continuation rows exist");
     let current = opened.source.borrow();
     let view = current.shaped.as_ref().expect("shaped view");
     let mut entry = 0;
@@ -377,12 +374,14 @@ fn the_extent_settles_as_chunks_arrive() {
         extents.last() > extents.first(),
         "unmeasured lines count as one row, so the extent grew: {extents:?}"
     );
+    let mut steps = 0;
+    for pair in extents.windows(2) {
+        if pair[1] > pair[0] {
+            steps += 1;
+        }
+    }
     assert!(
-        extents
-            .windows(2)
-            .filter(|pair| return pair[1] > pair[0])
-            .count()
-            >= 2,
+        steps >= 2,
         "the extent grew in more than one step: {extents:?}"
     );
     assert_eq!(
@@ -570,7 +569,13 @@ fn a_recenter_while_the_pass_runs_is_built_on_the_worker() {
     for row in &view.rows {
         assert_eq!(current.row_map.rows_of(row.row), row.visual_rows());
     }
-    assert!(view.rows.iter().any(|row| return row.visual_rows() > 1));
+    let mut wrapped = false;
+    for row in view.rows.iter() {
+        if row.visual_rows() > 1 {
+            wrapped = true;
+        }
+    }
+    assert!(wrapped);
     drop(current);
     drop(release);
     window.hide().expect("close wrap window");

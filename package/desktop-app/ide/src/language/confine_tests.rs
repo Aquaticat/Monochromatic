@@ -7,7 +7,7 @@ use super::recipe::{confined_settings, recipe};
 use super::{confine_with, private_state, state_directory};
 use crate::language::launch::LaunchRequest;
 use serde_json::json;
-use std::{collections::HashMap, path::Path, path::PathBuf};
+use std::{collections::HashMap, ffi::OsStr, path::Path, path::PathBuf};
 
 fn request(server: &str, environment: &[(&str, &str)]) -> LaunchRequest {
     let mut variables = HashMap::new();
@@ -238,7 +238,7 @@ fn state_directory_is_per_project_and_per_server() {
         "two projects with one name shared private state"
     );
     assert_eq!(
-        first.file_name().and_then(|name| return name.to_str()),
+        first.file_name().and_then(OsStr::to_str),
         Some("rust-analyzer")
     );
     assert_eq!(
@@ -254,10 +254,7 @@ fn state_directory_is_per_project_and_per_server() {
     );
     let odd = state_directory(root, Path::new("/x/we ird:..name"), "../escape");
     assert!(odd.starts_with(root));
-    assert_eq!(
-        odd.file_name().and_then(|text| return text.to_str()),
-        Some(".._escape")
-    );
+    assert_eq!(odd.file_name().and_then(OsStr::to_str), Some(".._escape"));
     assert_eq!(
         odd.components().count(),
         4,

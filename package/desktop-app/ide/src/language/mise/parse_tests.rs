@@ -133,12 +133,13 @@ fn the_refused_tracking_link_in_the_read_only_state_directory_is_dropped() {
 #[test]
 fn control_characters_that_move_the_cursor_or_ring_a_bell_are_removed() {
     let text = message("mise ERROR bad\u{7}\u{8}\u{0}\rname\u{1b}]0;title\u{7}\n");
-    assert!(
-        !text
-            .chars()
-            .any(|character| return character.is_control() && character != '\n'),
-        "{text:?}"
-    );
+    let mut controls = false;
+    for character in text.chars() {
+        if character.is_control() && character != '\n' {
+            controls = true;
+        }
+    }
+    assert!(!controls, "{text:?}");
     assert!(text.starts_with("mise ERROR bad"), "{text:?}");
     assert!(!text.contains("title"), "{text:?}");
 }

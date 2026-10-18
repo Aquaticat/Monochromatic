@@ -507,10 +507,13 @@ fn the_picture_is_built_on_the_worker_and_stays_inside_its_bounds() {
         stats.lines <= stats.pixel_rows,
         "no more lines are drawn than the picture has rows"
     );
-    assert!(
-        image.as_slice().iter().any(|pixel| return pixel.a > 0),
-        "the picture holds ink"
-    );
+    let mut inked = false;
+    for pixel in image.as_slice().iter() {
+        if pixel.a > 0 {
+            inked = true;
+        }
+    }
+    assert!(inked, "the picture holds ink");
     window.hide().expect("close minimap window");
 }
 

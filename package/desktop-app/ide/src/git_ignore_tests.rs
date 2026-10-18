@@ -42,16 +42,22 @@ fn listing(workspace: &Workspace, folder: &str) -> (std::path::PathBuf, Vec<Dire
     return (path, entries);
 }
 
-/// The ignored names of one folder,
+/// The ignored names of one answer as text,
 ///  sorted.
-fn ignored(matcher: &mut IgnoreMatcher, workspace: &Workspace, folder: &str) -> Vec<String> {
-    let (path, entries) = listing(workspace, folder);
-    let answer = matcher.evaluate(&path, &entries);
+fn named(answer: &IgnoreAnswer) -> Vec<String> {
     let mut texts: Vec<String> = Vec::new();
     for name in answer.names.iter() {
         texts.push(name.to_string_lossy().into_owned());
     }
     return texts;
+}
+
+/// The ignored names of one folder,
+///  sorted.
+fn ignored(matcher: &mut IgnoreMatcher, workspace: &Workspace, folder: &str) -> Vec<String> {
+    let (path, entries) = listing(workspace, folder);
+    let answer = matcher.evaluate(&path, &entries);
+    return named(&answer);
 }
 
 /// A matcher with no global excludes file.
@@ -268,28 +274,14 @@ fn an_edited_rule_file_is_compiled_again_and_changes_the_stamps() {
         first, again,
         "an unchanged rule file gives an identical answer"
     );
-    assert_eq!(
-        first
-            .names
-            .iter()
-            .map(|name| return name.to_string_lossy().into_owned())
-            .collect::<Vec<_>>(),
-        vec!["app.log"]
-    );
+    assert_eq!(named(&first), vec!["app.log"]);
     put(root, ".gitignore", "*.txt\n# a longer file\n");
     let changed = matcher.evaluate(&path, &entries);
     assert_ne!(
         changed.stamps, first.stamps,
         "the stamp of .gitignore moved"
     );
-    assert_eq!(
-        changed
-            .names
-            .iter()
-            .map(|name| return name.to_string_lossy().into_owned())
-            .collect::<Vec<_>>(),
-        vec!["app.txt"]
-    );
+    assert_eq!(named(&changed), vec!["app.txt"]);
 }
 
 /// A directory with more entries than the bound shows nothing ignored,

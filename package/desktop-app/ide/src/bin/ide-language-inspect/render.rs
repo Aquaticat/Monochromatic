@@ -7,6 +7,7 @@ use ide_app::json_value;
 use ide_app::language::{
     diagnostics::DiagnosticsSnapshot,
     hints::HintsSnapshot,
+    identity::ServerIdentity,
     reply::{LanguageReply, RequestOutcome, Target},
     status::LanguageStatus,
 };
@@ -20,6 +21,8 @@ use ide_app::language::{
 /// type Value = unknown;
 /// ```
 use serde_json::Value;
+/// Debug formatting names the states and kinds the record shows.
+use std::fmt::Debug;
 
 /// Longest text copied into the record,
 ///  in characters.
@@ -29,6 +32,22 @@ const SHOWN_CHARS: usize = 2000;
 fn shown(text: &str) -> String {
     // `chars().take(n).collect()` keeps at most `n` characters in a new owned `String`.
     return text.chars().take(SHOWN_CHARS).collect();
+}
+
+/// Format a value that may be absent with its debug formatting,
+///  keeping the absence.
+fn debugged<T: Debug>(value: Option<T>) -> Option<String> {
+    // The trailing `?` returns `None` when the value is absent.
+    let present = value?;
+    return Some(format!("{present:?}"));
+}
+
+/// Name the server that answered as `name#instance`,
+///  keeping the absence of one.
+fn identified(server: Option<&ServerIdentity>) -> Option<String> {
+    // The trailing `?` returns `None` when no server answered.
+    let answering = server?;
+    return Some(format!("{}#{}", answering.name, answering.instance));
 }
 
 /// Render the outcome of one reply.
@@ -86,8 +105,8 @@ pub fn reply(found: &LanguageReply) -> Value {
         "request": found.request,
         "file": found.stamp.file,
         "revision": found.stamp.revision,
-        // `as_ref().map(...)` renders the server only when one answered.
-        "server": found.server.as_ref().map(|server| return format!("{}#{}", server.name, server.instance)),
+        // The server is rendered only when one answered.
+        "server": identified(found.server.as_ref()),
         "remaining": found.remaining,
         "outcome": outcome(&found.outcome),
     });
@@ -100,7 +119,7 @@ pub fn status(found: &LanguageStatus) -> Value {
         servers.push(json_value!({
             "server": format!("{}#{}", row.server.name, row.server.instance),
             "state": format!("{:?}", row.state),
-            "features": row.features.map(|features| return format!("{features:?}")),
+            "features": debugged(row.features),
             "progress": row.progress,
         }));
     }
@@ -121,7 +140,7 @@ pub fn diagnostics(found: &DiagnosticsSnapshot, text: &helix_core::Rope) -> Valu
             let start = item.start.min(end);
             items.push(json_value!({
                 "source": group.source,
-                "severity": item.severity.map(|severity| return format!("{severity:?}")),
+                "severity": debugged(item.severity),
                 "code": item.code,
                 "freshness": format!("{:?}", item.freshness),
                 "server": format!("{}#{}", item.server.name, item.server.instance),
@@ -144,7 +163,7 @@ pub fn hints(found: &HintsSnapshot, text: &helix_core::Rope) -> Value {
             "position": hint.position,
             "line": line,
             "label": hint.label,
-            "kind": hint.kind.map(|kind| return format!("{kind:?}")),
+            "kind": debugged(hint.kind),
             "paddingLeft": hint.padding_left,
             "paddingRight": hint.padding_right,
             // The text from the line start to the hint shows where it is drawn.

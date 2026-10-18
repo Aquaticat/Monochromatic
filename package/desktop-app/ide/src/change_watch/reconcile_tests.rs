@@ -299,10 +299,9 @@ fn a_user_retry_skips_the_backoff() {
         !outcome.everything,
         "a user retry under the limit reread everything"
     );
-    assert!(
-        watches
-            .limit
-            .is_some_and(|backoff| return backoff.may_retry(start + FIRST_LIMIT_RETRY)),
-        "a failed user retry lengthened the backoff"
-    );
+    let may_retry = match watches.limit {
+        Some(backoff) => backoff.may_retry(start + FIRST_LIMIT_RETRY),
+        None => false,
+    };
+    assert!(may_retry, "a failed user retry lengthened the backoff");
 }

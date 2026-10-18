@@ -154,7 +154,7 @@ impl Wire {
     /// ```
     pub fn record(&self, mut entry: Value) {
         // What: `SystemTime::now().duration_since(UNIX_EPOCH)` is the time since 1970 as a
-        //       `Result`; `map_or` turns it into fractional milliseconds, or zero for a clock set
+        //       `Result`; the `match` turns it into fractional milliseconds, or zero for a clock set
         //       before 1970. `as_secs_f64` gives seconds as a 64-bit floating-point number.
         // Why: JSON numbers are floating-point; milliseconds with a fraction keep sub-millisecond order.
         //
@@ -162,11 +162,11 @@ impl Wire {
         // ```ts
         // entry.at = Date.now();
         // ```
-        entry["at"] = json_value!(
-            SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .map_or(0.0, |since| return since.as_secs_f64() * 1000.0)
-        );
+        let at = match SystemTime::now().duration_since(UNIX_EPOCH) {
+            Ok(since) => since.as_secs_f64() * 1000.0,
+            Err(_) => 0.0,
+        };
+        entry["at"] = json_value!(at);
         let mut report = self.report.lock().expect("report lock is not poisoned");
         // `as_mut()` borrows the file inside the `Option` for writing.
         if let Some(file) = report.as_mut() {

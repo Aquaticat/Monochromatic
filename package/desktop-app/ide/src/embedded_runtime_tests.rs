@@ -53,13 +53,13 @@ fn every_embedded_file_matches_its_build_digest_and_the_table_is_sorted() {
             .required(&format!("runtime/grammars/{name}.so"))
             .expect("listed grammar library");
         let prefix = format!("runtime/licenses/{name}/");
-        assert!(
-            EMBEDDED_RUNTIME
-                .files
-                .iter()
-                .any(|file| return file.path.starts_with(&prefix)),
-            "no license notice embedded for {name}"
-        );
+        let mut noticed = false;
+        for file in EMBEDDED_RUNTIME.files.iter() {
+            if file.path.starts_with(&prefix) {
+                noticed = true;
+            }
+        }
+        assert!(noticed, "no license notice embedded for {name}");
     }
     for path in [
         "runtime/Helix-LICENSE",

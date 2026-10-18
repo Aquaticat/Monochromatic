@@ -35,7 +35,13 @@ fn a_long_line_is_cut_at_a_character_boundary_and_marked() {
     assert!(line.ends_with(" [cut]"), "{line}");
     let body = line.trim_end_matches(" [cut]");
     assert!(body.len() <= CAUSE_LINE_BYTES, "{} bytes", body.len());
-    assert!(body.chars().all(|character| return character == 'é'));
+    let mut accents_only = true;
+    for character in body.chars() {
+        if character != 'é' {
+            accents_only = false;
+        }
+    }
+    assert!(accents_only, "{body}");
 }
 
 #[test]

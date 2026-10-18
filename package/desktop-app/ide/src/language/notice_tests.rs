@@ -23,6 +23,32 @@ fn identity(name: &str) -> ServerIdentity {
     };
 }
 
+/// Whether some line contains every one of the texts.
+fn has_line_with(lines: &[String], needles: &[&str]) -> bool {
+    for line in lines {
+        let mut contains_all = true;
+        for needle in needles {
+            if !line.contains(needle) {
+                contains_all = false;
+            }
+        }
+        if contains_all {
+            return true;
+        }
+    }
+    return false;
+}
+
+/// Whether some line begins with the text.
+fn has_line_starting(lines: &[String], prefix: &str) -> bool {
+    for line in lines {
+        if line.starts_with(prefix) {
+            return true;
+        }
+    }
+    return false;
+}
+
 fn row(name: &str, state: ServerState, features: Option<Features>) -> ServerStatus {
     return ServerStatus {
         server: identity(name),
@@ -96,8 +122,10 @@ fn a_failed_start_and_a_refused_launch_each_give_their_cause() {
         &[],
     );
     assert!(
-        failed.iter().any(|line| return line
-            .starts_with("rust-analyzer failed to start: the server process ended")),
+        has_line_starting(
+            &failed,
+            "rust-analyzer failed to start: the server process ended"
+        ),
         "{failed:?}"
     );
     let refused = lines(
@@ -118,9 +146,7 @@ fn a_failed_start_and_a_refused_launch_each_give_their_cause() {
     );
     // A refused launch is not retried by displaying the file again, so no such advice is given.
     assert!(
-        !refused
-            .iter()
-            .any(|line| return line.contains("open the file again")),
+        !has_line_with(&refused, &["open the file again"]),
         "{refused:?}"
     );
 }
@@ -262,10 +288,10 @@ fn a_server_rooted_outside_the_project_names_that_directory() {
         &[],
     );
     assert!(
-        shown
-            .iter()
-            .any(|line| return line.contains("/srv/enclosing")
-                && line.contains("Open the IDE on that directory")),
+        has_line_with(
+            &shown,
+            &["/srv/enclosing", "Open the IDE on that directory"]
+        ),
         "{shown:?}"
     );
 }

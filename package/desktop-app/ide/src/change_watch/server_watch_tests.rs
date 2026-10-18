@@ -320,10 +320,12 @@ fn the_servers_wait_while_the_tree_waits() {
         tree_limited: true,
     };
     reconcile_servers(&mut servers, &BTreeSet::new(), still, later, &mut fake);
+    let waiting = match servers.limit {
+        Some(backoff) => !backoff.may_retry(later),
+        None => false,
+    };
     assert!(
-        servers
-            .limit
-            .is_some_and(|backoff| return !backoff.may_retry(later)),
+        waiting,
         "the servers' wait did not grow while they waited for the tree, so the watch thread would wake every 50 ms"
     );
 }
