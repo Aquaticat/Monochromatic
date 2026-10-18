@@ -69,11 +69,36 @@ The public BuildKit evidence retains:
   its initial incorrect absolute-path failure,
   and corrected canonical finding/direct-pattern controls.
 
-A further disposable CLI source prototype will pair the engine,
+A further disposable CLI source prototype paired the engine,
 its actual executable,
 and explicit file selection against missing-user and user-present controls.
-That local command-boundary prototype is pending.
+That local command-boundary prototype passed 14 controls:
+
+- `CMD` and `ENTRYPOINT` without `USER` each produce the selected finding for canonical and suffixed filenames.
+- User-present `CMD`,
+  user-present `ENTRYPOINT`,
+  and no-command inputs produce no findings,
+  with every target actually scanned.
+- Omitting `--scan-unknown-extensions` on the same current image/rules keeps the canonical positive
+  but excludes each selected suffix target.
+
+Each invocation was mount-free,
+network-disabled,
+limited to 2 CPU and 2 GiB,
+and given a 60-second container lifetime.
+The executable and arguments were extracted from the original/patched Go source.
+The local process launcher replaces the BuildKit gateway;
+the modified Go package was not compiled in this prototype.
 It does not allocate another remote builder or establish BuildKit process-status propagation.
+
+The [invocation evidence](../audit/depot-semgrep-invocation-2026-10-18.evidence.json)
+and its linked source archive retain the exact patch,
+fixtures,
+rules,
+image digest,
+actual invocations,
+raw JSON,
+and local issue draft.
 
 ## Verified workarounds
 
@@ -111,10 +136,17 @@ The process-wait and chunk-decoding source observations do not prove the inciden
     the fresh disposable clone's contribution-policy filename search and all-state AI tracker search found no ban.
 5.  Maintainer refusal:
     not established.
-    A targeted duplicate/history review for this integration remains pending.
+    The all-state `semgrep` issue search returned no matches.
+    Path history shows Semgrep integration on `2023-08-01`
+    and the last listed source change on `2024-06-05`.
+    Neither proves future maintainer acceptance.
 6.  Prototype:
-    pending the local source-bound command comparison.
-    Current-engine success alone is not complete built-in-wrapper qualification.
+    the source-derived invocation candidate passed the 14 local controls.
+    This qualifies its scanner/image/filename boundary;
+    complete BuildKit gateway,
+    process failure,
+    output chunking,
+    and compiled integration behavior remain unqualified.
 
 No upstream issue or PR has been sent.
 No current Semgrep bug report is justified by a reproduction confined to the unsupported old engine.

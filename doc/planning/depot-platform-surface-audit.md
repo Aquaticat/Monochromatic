@@ -1219,13 +1219,17 @@ and the solely owned image/project deletion has fresh absence controls.
   Preserve the native OCI empty attestation subject-array distinction,
   unexecuted autoscaling,
   and lack of measured lazy-pull startup improvement.
-- Finish the built-in Dockerfile lint diagnosis:
+- Preserve the built-in Dockerfile lint qualification boundary:
   Hadolint has a working positive control,
   but the configured old Semgrep image did not match the selected missing-user control.
   The separate current pinned scanner detects the same control.
-  Finish source and upstream recording without counting it as a repaired built-in integration.
-- Document the verified empty image-catalog `--output json` plaintext branch
-  and complete its upstream contribution gate.
+  The [source and diagnostic record](../troubleshooting/depot-builtin-semgrep-engine.md)
+  now includes a source-derived invocation candidate and 14 local controls.
+  This does not count as a compiled or repaired complete BuildKit integration.
+- The [empty image-catalog JSON diagnostic](../troubleshooting/depot-image-list-empty-output.md)
+  now includes the minimal upstream source patch and 14 passing actual-command controls.
+  The contribution gates and local draft are recorded;
+  the installed CLI is unchanged and no external issue or PR was sent.
 - Keep successful service/job-container receipts separate from the
   [parent's orchestration evidence](../audit/depot-native-orchestration-2026-10-18.evidence.json)
   and [isolated job-policy/history controls](../audit/depot-job-policy-history-2026-10-18.evidence.json).
