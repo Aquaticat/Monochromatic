@@ -1617,14 +1617,14 @@ that is verification, not a decision for the user.
   `slopo.ignore.txt`. Windows: user decision, port later, branches marked `UNTESTED ON WINDOWS`. The dead
   `policy_patch.rs` and `policy_patch_validate.rs` are deleted on `main`, and the replay-core campaign is closed
   (`doc/handover/cli-git-native-replay-core.md`). State on 2026-10-18:
-  the 0.1.5 crate version is on `main` but NOT published: the `gpc-publish-crate` job of run 38779754310 fails with
-  "No Trusted Publishing config found for repository Aquaticats/Monochromatic" because the GitHub repository moved
-  from `Aquaticat` to `Aquaticats` and the crates.io trusted-publisher configs still name the old owner. The token in
-  `~/.cargo/credentials.toml` is revoked (`/api/v1/me` answers 403), as the runbook intends. Needs a token with the
-  trusted-publishing scope stored by the user with `cargo login`; then create or replace the GitHub config of each
-  published crate through `/api/v1/trusted_publishing/github_configs` (fields `crate`, `repository_owner`,
-  `repository_name`, `workflow_filename`), rerun the failed job, verify crates.io and the GitHub release, run
-  `mise upgrade cargo:monochromatic-git-policy-cli`, then `git checkout -- mise.lock`. Fuzz: 3 of 15 targets passed
+  wrapper 0.1.5 is published (run 38779754310 rerun green, crates.io, GitHub release with both archives) and installed
+  through mise. The first attempt failed with "No Trusted Publishing config found for repository
+  Aquaticats/Monochromatic" because the GitHub repository moved from `Aquaticat` to `Aquaticats`; on 2026-10-18 a
+  trusted-publisher config for `Aquaticats/Monochromatic` (workflow `cargo-publish.yml`) was added through
+  `/api/v1/trusted_publishing/github_configs` for all six crates (forbidden-strings, forbidden-regex,
+  monochromatic-jsonc-edit, monochromatic-lint, monochromatic-git-policy-cli, monochromatic-nested-wayland-session).
+  The six old `Aquaticat/Monochromatic` configs (ids 8489, 12122, 13293, 21762, 24613, 25357) are still there and
+  can be deleted. A revoked token in `~/.cargo/credentials.toml` answers 403 on every call. Fuzz: 3 of 15 targets passed
   900 s each; the fourth failed on an output-buffer limit that is fixed (target output now streams to files, option
   `--targets=`); the other 12 run as the unit `cli-git-fuzz-campaign` (log `~/temp/agent/fuzz-campaign-20261017.log`).
   Issue 1757: host tasks, the gate image, planted controls and mutation of `git-policy/cli` run through
