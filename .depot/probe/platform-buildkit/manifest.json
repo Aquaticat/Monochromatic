@@ -122,5 +122,34 @@
     "cumulativeWorstCaseTimestampComputeUsd": 1.4654706666666666,
     "ceilingUsd": 2,
     "excludes": "Unseen account charges; invoice or hard-cap enforcement is not proven"
+  },
+  "node26CiImageCorrection": {
+    "base": "registry.depot.dev/27m5m3vjlv@sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346",
+    "packages": [
+      "libatomic1"
+    ],
+    "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+    "rootMiseLockSha256": "80b1dda5ef694b0d19f9dd5a9d755057702833b82d56433250033b5e02a9ecc4",
+    "archives": {
+      "x64": {
+        "url": "https://nodejs.org/dist/v26.12.0/node-v26.12.0-linux-x64.tar.gz",
+        "sha256": "d9f88af72ad34f7ddf8e67289829f1698f54b6254f7d4f54b7453117ff1a3d2c"
+      },
+      "arm64": {
+        "url": "https://nodejs.org/dist/v26.12.0/node-v26.12.0-linux-arm64.tar.gz",
+        "sha256": "ec53c915c3fdd8786c5685abd25ae3fe9fba0692307f9811d7caaadea1bcaf03"
+      }
+    },
+    "checks": [
+      "Exact archive SHA256",
+      "ELF machine",
+      "ldd resolves libatomic.so.1",
+      "Node26 TypeScript/crypto/top-level await"
+    ],
+    "retainedSecondNodeInstallation": false,
+    "maximumRequestMilliseconds": 180000,
+    "priorMissingLibraryDiagnostic": "error while loading shared libraries: libatomic.so.1: cannot open shared object file: No such file or directory",
+    "originalServiceUnchanged": true,
+    "priorCiImageRetained": true
   }
 }

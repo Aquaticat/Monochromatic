@@ -53,3 +53,13 @@ target "cargo" {
   args = { BUILD_HARNESS_SHA = HARNESS_SHA }
   output = ["type=local,dest=${OUTPUT_DIRECTORY}/cargo-proof"]
 }
+
+target "ci-node26" {
+  context = "ci-node26-context"
+  dockerfile = "Dockerfile"
+  platforms = ["linux/amd64", "linux/arm64"]
+  project_id = PROJECT
+  args = { CI_NODE26_HARNESS_SHA = HARNESS_SHA }
+  output = ["type=image"]
+  attest = ["type=provenance,mode=max", "type=sbom,generator=docker.io/docker/buildkit-syft-scanner@sha256:ae4f3b554449e7e25548e7d8ccc029d17357348e30c6e3df01b92bc93654d6a9"]
+}
