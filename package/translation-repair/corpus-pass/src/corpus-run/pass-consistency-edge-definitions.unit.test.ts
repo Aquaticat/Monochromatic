@@ -69,6 +69,48 @@ function placesOn({ page, }: { readonly page?: string; }): readonly ConsistencyP
   },);
 }
 
+/**
+ The English of the receiving place whose words end in a mark after closing emphasis that pairs only where `[b*]` is a reference.
+ */
+const WORDS_ENGLISH = 'Later *a [b*] c*’ naps.';
+
+/**
+ The definition of that reference, which stands in another slice of the page.
+ */
+const WORDS_DEFINITION = '[b*]: https://cats.example/b';
+
+/**
+ Two places for the case of words whose reading needs a definition: the chosen words end in an apostrophe of their word, and the
+ receiving place stands in a page that defines `[b*]` in another slice.
+
+ @returns The two places
+
+ @example
+ ```ts
+ const places = wordsPlaces();
+ ```
+ */
+function wordsPlaces(): readonly ConsistencyPlace[] {
+  return [0, 1,].map(function placeAt(position,): ConsistencyPlace {
+    return {
+      startOffset: position * 10,
+      endOffset: (position * 10) + 3,
+      line: position + 1,
+      slice: {
+        sliceIndex: position,
+        sourceIndex: position,
+        sourceText: '小猫打盹',
+        sourceStart: position * 10,
+        nodes: [],
+        current: { kind: 'present', text: (position === 0) ? 'Fill the dogs’ bowl.' : WORDS_ENGLISH, },
+        lineStructured: false,
+        disputedWordings: [],
+        ...((position === 1) ? { page: { text: `${WORDS_ENGLISH}\n\n${WORDS_DEFINITION}`, offset: 0, }, } : {}),
+      },
+    };
+  },);
+}
+
 await describe({
   name: '',
   concurrency: 1,
@@ -139,6 +181,45 @@ await describe({
               ['kept-current', ['replace',], undefined,],
               ['kept-current', ['replace',], undefined,],
               ['kept-current', ['unavailable',], 'edge-reading-changes',],
+            ],);
+          },
+        },),
+        it({
+          name: 'PLANS A PLACE WHOSE WORDS NEED THE DEFINITION OF A REFERENCE TO READ AS THEY DO ON THE PAGE with the definitions its '
+            + 'rendering records: the mark after `c*` is an apostrophe of its word on the page, so the chosen apostrophe moves in '
+            + 'by code and the replacement carries the definitions the apply stage reads the words with',
+          fn: async () => {
+            const [chosenRendering, rendering,] = renderingsOf({
+              chosen: { english: 'Fill the dogs’ bowl.', quote: 'the dogs’', },
+              receiving: {
+                english: WORDS_ENGLISH,
+                quote: 'a [b*] c*’',
+                page: `${WORDS_ENGLISH}\n\n${WORDS_DEFINITION}`,
+              },
+            },);
+            /**
+             The count of the group: the chosen words and the receiving words.
+             */
+            const count: ConsistencyCount = {
+              usable: 3,
+              renderings: [chosenRendering, rendering,],
+              kept: [false, false,],
+              winner: { kind: 'chosen', label: 'OCCURRENCE 1', },
+              finalists: [],
+            };
+            const places = wordsPlaces();
+            const { receiver, edge, } = plannedPlace({
+              chosen: chosenPlaceOf({ places, renderings: [chosenRendering, rendering,], position: 0, },),
+              place: nonNullishOrThrow(places[1],),
+              position: 1,
+              count,
+              framed: false,
+            },);
+            expect([receiver.map(function planOf({ plan, },): unknown {
+              return plan;
+            },), edge,],).toEqual([
+              [{ kind: 'replace', start: 7, end: 17, text: 'the dogs’', definitions: WORDS_DEFINITION, },],
+              undefined,
             ],);
           },
         },),

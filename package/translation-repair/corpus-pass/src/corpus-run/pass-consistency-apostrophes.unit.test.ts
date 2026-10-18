@@ -26,6 +26,7 @@ import {
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication';
 import {
+  ARTIFACT_SCHEMA_VERSION_V19,
   type ArtifactConsistency,
   parseConsistency,
 } from '@monochromatic-dev/translation-repair-artifact';
@@ -180,6 +181,27 @@ function readBack({ consistency, }: { readonly consistency: ArtifactConsistency;
   return parseConsistency({
     path: 'cat.consistency',
     generation: 17,
+    sliceIndexes: new Set([0, 1,],),
+    value: structuredClone(consistency,),
+  },);
+}
+
+/**
+ The section as a reader of generation nineteen reads it back from a copy of the file, which reads the words of a place with the
+ page definitions the place records.
+
+ @param consistency - the section the pass wrote
+ @returns What the reader makes of it, which is the section itself when it reads back
+ @throws {@link Error} when the reader refuses the section
+ @example
+ ```ts
+ expect(readBackWithDefinitions({ consistency, },),).toEqual(consistency,);
+ ```
+ */
+function readBackWithDefinitions({ consistency, }: { readonly consistency: ArtifactConsistency; },): ArtifactConsistency {
+  return parseConsistency({
+    path: 'cat.consistency',
+    generation: ARTIFACT_SCHEMA_VERSION_V19,
     sliceIndexes: new Set([0, 1,],),
     value: structuredClone(consistency,),
   },);
@@ -384,6 +406,34 @@ await describe({
           ],
         },);
         expect(readBack({ consistency, },),).toEqual(consistency,);
+      },
+    },),
+    it({
+      name: 'PLANS, MAKES AND READS BACK ALIKE WORDS WHOSE READING NEEDS A DEFINITION OF ANOTHER SLICE: the mark after `c*` is an '
+        + 'apostrophe of its word only where the page defines `[b*]`, so the place records that definition, the chosen apostrophe is '
+        + 'carried into it, and a reader of generation nineteen, which holds no page, reads the words with the recorded definition',
+      fn: async () => {
+        const { consistency, } = await apostropheRun({
+          first: 'Fill the dogs’ bowl. Later *a [b*] c*’ naps.',
+          second: 'Then the family naps.\n\n[b*]: https://cats.example/b',
+          quotes: ['the dogs', 'a [b*] c*', 'the family',],
+          choice: 1,
+        },);
+        expect([
+          seenIn({ consistency, },),
+          nonNullishOrThrow(consistency.groups[0],).occurrences[1]?.rendering,
+        ],).toEqual([
+          {
+            outcomes: ['chosen', 'replaced', 'replaced',],
+            changed: [
+              [0, '## One\n\nFill the dogs’ bowl. Later *the dogs’ naps.',],
+              [1, '## Two\n\nThen the dogs’ naps.\n\n[b*]: https://cats.example/b',],
+            ],
+            leftOut: [],
+          },
+          { kind: 'located', quote: 'a [b*] c*’', start: 7, definitions: '[b*]: https://cats.example/b', },
+        ],);
+        expect(readBackWithDefinitions({ consistency, },),).toEqual(consistency,);
       },
     },),
     it({
