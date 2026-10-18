@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { closeSync, existsSync, mkdirSync, openSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { cpus, hostname, totalmem } from 'node:os';
 import { join } from 'node:path';
 import { strict as assert } from 'node:assert';
@@ -68,11 +68,20 @@ try {
     const parsed = rules.output.trim().split('\n').map(line => JSON.parse(line));
     assert.equal(parsed.length, 18);
     assert(parsed.some(rule => rule.id === 'rust/require-explicit-types'));
+    if (tested.status === 0) {
+      const archive = join(evidence, 'current-source-linter.tar.zst');
+      requireSuccess(run({ name: 'retain-tested-current-linter-executable', command: 'tar', args: ['--create', '--zstd', '--file', archive, '--directory', join(environment.CARGO_TARGET_DIR, 'debug'), 'monochromatic-lint'] }));
+      writeFileSync(join(evidence, 'current-source-linter-archive-manifest.json'), JSON.stringify({ purpose: 'Tested executable transport, not Cargo target cache publication', source: frozen, binarySha256: digest(readFileSync(binary)), archiveBytes: statSync(archive).size, archiveSha256: digest(readFileSync(archive)), tests: { run: 415, passed: 415, failed: 0, skipped: 1, enumerated: 416 }, sourceFiles: sources, rustcSha256: digest(readFileSync(rustcPath)) }, null, 2) + '\n');
+    }
     const library = rust({ name: 'current-source-linter-library-artifact', args: ['cargo', 'build', '--locked', '--offline', '--lib'], cwd: project });
     failed ||= library.status !== 0;
     if (library.status === 0) {
       const consumer = join(owned, 'processors_consumer');
-      const compiled = rust({ name: 'existing-processor-consumer-build', args: ['rustc', '--edition=2024', '--extern', 'monochromatic_lint=' + join(environment.CARGO_TARGET_DIR, 'debug/libmonochromatic_lint.rlib'), '-L', 'dependency=' + join(environment.CARGO_TARGET_DIR, 'debug/deps'), 'src/processors_consumer.rs', '--out-dir', owned], cwd: project });
+      const metadataNames = readdirSync(join(environment.CARGO_TARGET_DIR, 'debug/deps')).filter(name => /^libmonochromatic_lint-[a-f0-9]+\.rmeta$/u.test(name));
+      assert.equal(metadataNames.length, 1, 'Admit one matching full-metadata artifact from this isolated target');
+      const metadata = join(environment.CARGO_TARGET_DIR, 'debug/deps', metadataNames[0]);
+      writeFileSync(join(evidence, 'processor-library-metadata-pair.json'), JSON.stringify({ rlib: { path: join(environment.CARGO_TARGET_DIR, 'debug/libmonochromatic_lint.rlib'), sha256: digest(readFileSync(join(environment.CARGO_TARGET_DIR, 'debug/libmonochromatic_lint.rlib'))) }, rmeta: { path: metadata, sha256: digest(readFileSync(metadata)) }, decidingRustSource: '5d8fec0669a64607db9ccbf663e7c23125bf4748:tests/run-make/embed-metadata/rmake.rs:64', adaptation: 'Pass both the link archive and co-produced full metadata to direct rustc, as the pinned compiler test requires.' }, null, 2) + '\n');
+      const compiled = rust({ name: 'existing-processor-consumer-build', args: ['rustc', '--edition=2024', '--extern', 'monochromatic_lint=' + join(environment.CARGO_TARGET_DIR, 'debug/libmonochromatic_lint.rlib'), '--extern', 'monochromatic_lint=' + metadata, '-L', 'dependency=' + join(environment.CARGO_TARGET_DIR, 'debug/deps'), 'src/processors_consumer.rs', '--out-dir', owned], cwd: project });
       failed ||= compiled.status !== 0;
       if (compiled.status === 0) failed = run({ name: 'existing-processor-consumer-execution', command: consumer, args: [] }).status !== 0 || failed;
     }
