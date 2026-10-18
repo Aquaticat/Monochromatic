@@ -15,6 +15,8 @@ The MiMo lint handoff is **not ready**.
 The user reports at least five premature readiness claims and explicitly requires continuing until the work is done.
 Treat passing narrow catalogs as evidence for their exercised boundaries only.
 Inspect actual Pi, Node, Linux, dependencies, and the configured consumer wherever the evidence points.
+The user clarified that their concern is platform behavior exposing defects in our code,
+not suspected defects in Pi, Node, or Linux themselves.
 The user authorizes shared logger repairs and requires a version bump to trigger auto-publish if it changes.
 The measured logger version is `0.4.1`; no logger repair is applied in the current memory investigation.
 Root `TCV` stays unchanged; missed-boundary guidance belongs in package-local docs.
@@ -186,6 +188,18 @@ This is preliminary evidence, not an accepted implementation:
 the class changes the plain-record prototype and constructor surface.
 The scratch harness also emits a read-only default-log-directory error;
 set `MONOCHROMATIC_LOG_DIRECTORY` to its disposable writable home before trusting repeated measurements.
+
+The old bundled policy lacks that environment support;
+the corrected probe mounts its discovered log directory writable and preserves every diagnostic.
+Three unchanged runs retain 48,742,376 to 48,742,952 bytes.
+The plain-record shared-method probe retains 30,762,600 to 30,763,960 bytes across three runs.
+The committed red test `c6ece26944` fails at 48,724,128 bytes against its 36 MiB budget.
+Source repair `23f24480de` preserves plain records and checks receiver membership through a per-snapshot weak set.
+Both JavaScript policy and native ownership output are rebuilt as `native-release-2vxGY8`.
+Its source-binding regression passes at 30,747,064 retained bytes,
+including forged receivers, cross-snapshot methods, substituted sources, and retired parents.
+Complete faithful and fragmented configured-host replays are running against that output.
+The isolated memory reduction does not establish complete-session repair.
 
 Next, measure shared methods within each governing snapshot,
 using a private `WeakSet` to authenticate the original frozen plain binding records.
