@@ -646,3 +646,21 @@ fn d106_focused_controls_keep_enter_and_space_and_the_other_buttons_keep_the_tra
     assert_action("header button: Ctrl+F still opens Search", ShortcutAction::Search, &in_zone(FocusZone::Button, ctrl("f")));
     assert_action("header button: Alt+Right still seeks", ShortcutAction::SeekForward, &in_zone(FocusZone::Button, alt("ArrowRight")));
 }
+
+// What:     `#[test] fn the_licenses_page_answers_escape_with_back_and_keeps_the_players_chords_inert()` checks the Licenses page.
+// Why:      Escape on the Licenses page returns to Settings whatever holds focus, and the chords of the player page (Search,
+//           Settings, play and pause) must not act on a page drawn over it.
+#[test]
+fn the_licenses_page_answers_escape_with_back_and_keeps_the_players_chords_inert() {
+    for zone in [FocusZone::Surface, FocusZone::Button, FocusZone::SettingsList] {
+        assert_action("licenses: Escape", ShortcutAction::Back, &on_route(KeyRoute::Licenses, zone, pressed("Escape")));
+    }
+    let settings_chord = ShortcutRequest { alt: true, ..ctrl("s") };
+    for (name, request) in [("Ctrl+F", ctrl("f")), ("Ctrl+Alt+S", settings_chord), ("Ctrl+M", ctrl("m"))] {
+        let action = shortcut_action(&on_route(KeyRoute::Licenses, FocusZone::Button, request));
+        assert!(
+            !matches!(action, ShortcutAction::Search | ShortcutAction::Settings | ShortcutAction::Mode),
+            "{name} acted on the Licenses page: {action:?}"
+        );
+    }
+}

@@ -406,6 +406,7 @@ fn run_settings_action(window: &AppWindow, action: ShortcutAction, context: &Key
         ShortcutAction::Back => match context.route {
             Route::Settings => crate::ui_settings::close_settings(window),
             Route::Search => crate::ui_search::close_search_route(window),
+            Route::Licenses => crate::ui_licenses::close_licenses(window),
             Route::Player | Route::TemplateEditor => {
                 tracing::warn!(route = ?context.route, "Back was classified on a page that has no Back target");
                 return false;

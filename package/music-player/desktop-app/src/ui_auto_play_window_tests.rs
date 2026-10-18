@@ -285,9 +285,14 @@ fn the_arrow_keys_reach_the_switch_row_and_space_and_enter_toggle_it() {
     assert_eq!(switch_touch(&app).accessible_checked(), Some(false), "Enter toggles");
     assert_eq!(saved_values(), [true, false]);
     assert_eq!(read_state(|state| return state.route), Route::Settings, "Enter on the switch opens no editor");
+    // Down moves on to the Licenses row, the last stop: Space there opens its page and toggles nothing.
     tap(&app, "Down");
     tap(&app, " ");
-    assert_eq!(saved_values(), [true, false, true], "Down stops on the last row");
+    assert_eq!(saved_values(), [true, false], "Space on the Licenses row toggles nothing");
+    assert_eq!(read_state(|state| return state.route), Route::Licenses, "Space on the Licenses row opens its page");
+    assert!(app.invoke_key_pressed("\u{1b}".into(), false, false, false, false, false, false), "Escape is used on the page");
+    settle();
+    assert_eq!(read_state(|state| return state.route), Route::Settings, "Escape returns to Settings");
     tap(&app, "Home");
     tap(&app, "Enter");
     assert_eq!(read_state(|state| return state.route), Route::TemplateEditor, "Home then Enter opens the first template");
@@ -299,7 +304,9 @@ fn space_on_the_switch_row_sends_no_engine_command() {
     open_settings(&app);
     settle();
     host.clear();
+    // End reaches the Licenses row, the last stop; Up moves to the switch row above it.
     tap(&app, "End");
+    tap(&app, "Up");
     tap(&app, " ");
     assert_eq!(switch_touch(&app).accessible_checked(), Some(true));
     assert!(host.sent_texts().is_empty(), "no engine command: {:?}", host.sent_texts());

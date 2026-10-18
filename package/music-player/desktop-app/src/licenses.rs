@@ -27,18 +27,20 @@
 use std::io::{ErrorKind, Write};
 
 /// What:
-///      `pub const NOTICES: &str = include_str!(...)`.
+///      `pub static NOTICES: &str = include_str!(...)`.
 ///  The whole notice text,
 ///  compiled into the binary from the file `build.rs` wrote into `OUT_DIR`.
 /// Why:
 ///       The Windows release is a single executable with nothing beside it,
 ///  so the notices must travel inside the program.
+///  It is a `static`, not a `const`: a `const` is copied into every crate that uses it,
+///  and the Licenses page of the window (the binary crate) and `--licenses` (this crate) would each carry the 2 MB text.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// export const NOTICES: string = embedFile(`${OUT_DIR}/third_party_licenses.txt`);
 /// ```
-pub const NOTICES: &str = include_str!(concat!(env!("OUT_DIR"), "/third_party_licenses.txt"));
+pub static NOTICES: &str = include_str!(concat!(env!("OUT_DIR"), "/third_party_licenses.txt"));
 
 /// What:
 ///      `pub fn write_notices(sink: &mut impl Write) -> std::io::Result<()>`.

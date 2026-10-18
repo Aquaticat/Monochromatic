@@ -76,6 +76,9 @@ pub enum Scope {
     SettingsField,
     /// The full-width template editor page.
     EditorPage,
+    /// The Licenses page,
+    ///  whatever holds focus.
+    LicensesPage,
     /// The Settings page and the template editor page.
     EditorOrSettings,
 }
@@ -266,12 +269,13 @@ pub static BINDINGS: &[Binding] = &[
     row(ShortcutAction::MenuUp, NONE, &["ArrowUp"], Scope::Popup).repeating().in_menu(),
     row(ShortcutAction::MenuDown, NONE, &["ArrowDown"], Scope::Popup).repeating().in_menu(),
     row(ShortcutAction::MenuChoose, NONE, &["Enter"], Scope::Popup).in_menu(),
-    // Escape, from the innermost thing outward: the picker overlay, the editor line, the Settings list, Search.
+    // Escape, from the innermost thing outward: the picker overlay, the editor line, the Settings list, Search, Licenses.
     row(ShortcutAction::ClosePicker, NONE, &["Escape"], Scope::PickerOverlay),
     row(ShortcutAction::SettingsFocusList, NONE, &["Escape"], Scope::SettingsField),
     row(ShortcutAction::Back, NONE, &["Escape"], Scope::SettingsIdle),
     row(ShortcutAction::EditorLeave, NONE, &["Escape"], Scope::EditorPage),
     row(ShortcutAction::Back, NONE, &["Escape"], Scope::SearchPage),
+    row(ShortcutAction::Back, NONE, &["Escape"], Scope::LicensesPage),
     // Editor pages: Control+Enter applies and leaves, Control+Shift+Backspace resets the template.
     row(ShortcutAction::EditorApply, P, &["Enter"], Scope::EditorOrSettings),
     row(ShortcutAction::EditorReset, PS, &["Backspace"], Scope::EditorOrSettings),
