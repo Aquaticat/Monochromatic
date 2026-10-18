@@ -95,14 +95,12 @@ fn matching(query: ElementQuery, role: AccessibleRole, label: &str) -> ElementHa
     // ```ts
     // const found = query.filter(e => e.accessibleRole === role && e.accessibleLabel === wanted);
     // ```
-    let found = query
-        .match_accessible_role(role)
-        .match_predicate(move |candidate| {
-            return candidate
-                .accessible_label()
-                .is_some_and(|text| return text == wanted.as_str());
-        })
-        .find_all();
+    let mut found = Vec::new();
+    for candidate in query.match_accessible_role(role).find_all() {
+        if has_label(&candidate, &wanted) {
+            found.push(candidate);
+        }
+    }
     assert_eq!(
         found.len(),
         1,
@@ -117,6 +115,14 @@ fn matching(query: ElementQuery, role: AccessibleRole, label: &str) -> ElementHa
     // return found[0];
     // ```
     return found[0].clone();
+}
+
+/// Whether an element reads out exactly `wanted` as its accessible label.
+fn has_label(candidate: &ElementHandle, wanted: &str) -> bool {
+    return match candidate.accessible_label() {
+        Some(text) => text == wanted,
+        None => false,
+    };
 }
 
 /// What:
@@ -160,15 +166,12 @@ fn assert_row(list: &ElementHandle, label: &str, selected: bool, index: usize) {
     // const named = descendants(list).filter(e => e.accessibleLabel === label).length;
     // ```
     let wanted = label.to_string();
-    let named = list
-        .query_descendants()
-        .match_predicate(move |candidate| {
-            return candidate
-                .accessible_label()
-                .is_some_and(|text| return text == wanted.as_str());
-        })
-        .find_all()
-        .len();
+    let mut named = 0;
+    for candidate in list.query_descendants().find_all() {
+        if has_label(&candidate, &wanted) {
+            named += 1;
+        }
+    }
     assert_eq!(
         named, 1,
         "row {label:?} is named by {named} elements in its list, so its name would be read more than once"

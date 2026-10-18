@@ -113,27 +113,35 @@ fn mark(index: usize) -> [usize; 4] {
 ///  a directory pair,
 ///  and a badge pair.
 fn rows(window: &AppWindow) {
-    let row = |label: &str, ignored: bool, selected: bool, directory: bool, recency: &str| {
-        return TreeEntry {
-            label: label.into(),
-            ignored,
-            selected,
-            directory,
-            recency: recency.into(),
-            ..TreeEntry::default()
-        };
-    };
     let model = vec![
-        row("same.ts", false, false, false, ""),
-        row("same.ts", true, false, false, ""),
-        row("sel.ts", false, true, false, "1"),
-        row("sel.ts", true, true, false, "1"),
-        row("dir", false, false, true, ""),
-        row("dir", true, false, true, ""),
-        row("same.ts", false, false, false, "2"),
-        row("same.ts", true, false, false, "2"),
+        tree_entry("same.ts", false, false, false, ""),
+        tree_entry("same.ts", true, false, false, ""),
+        tree_entry("sel.ts", false, true, false, "1"),
+        tree_entry("sel.ts", true, true, false, "1"),
+        tree_entry("dir", false, false, true, ""),
+        tree_entry("dir", true, false, true, ""),
+        tree_entry("same.ts", false, false, false, "2"),
+        tree_entry("same.ts", true, false, false, "2"),
     ];
     window.set_tree_entries(ModelRc::from(Rc::new(VecModel::from(model))));
+}
+
+/// One tree entry with only the fields these tests vary.
+fn tree_entry(
+    label: &str,
+    ignored: bool,
+    selected: bool,
+    directory: bool,
+    recency: &str,
+) -> TreeEntry {
+    return TreeEntry {
+        label: label.into(),
+        ignored,
+        selected,
+        directory,
+        recency: recency.into(),
+        ..TreeEntry::default()
+    };
 }
 
 /// Largest per-channel difference between two colors.
@@ -322,24 +330,29 @@ fn project(root: &Path) {
 /// Whether the model row with this label is marked ignored.
 fn flagged(window: &AppWindow, label: &str) -> Option<bool> {
     let index = row(window, label)?;
-    return window
-        .get_tree_entries()
-        .row_data(index as usize)
-        .map(|entry| return entry.ignored);
+    return match window.get_tree_entries().row_data(index as usize) {
+        Some(entry) => Some(entry.ignored),
+        None => None,
+    };
 }
 
 /// How many accessible list items carry exactly this label.
 fn labelled(window: &AppWindow, label: &str) -> usize {
     let wanted = label.to_string();
-    return ElementQuery::from_root(window)
+    let mut count = 0;
+    for candidate in ElementQuery::from_root(window)
         .match_accessible_role(AccessibleRole::ListItem)
-        .match_predicate(move |candidate| {
-            return candidate
-                .accessible_label()
-                .is_some_and(|text| return text == wanted.as_str());
-        })
         .find_all()
-        .len();
+    {
+        let named = match candidate.accessible_label() {
+            Some(text) => text == wanted.as_str(),
+            None => false,
+        };
+        if named {
+            count += 1;
+        }
+    }
+    return count;
 }
 
 /// The real reader marks rows from the project's rule files:

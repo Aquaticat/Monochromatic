@@ -120,16 +120,25 @@ fn source_pixels(window: &AppWindow) -> SharedPixelBuffer<Rgba8Pixel> {
 /// Whether any fully covered source pixel has exactly this ink;
 ///  covered pixels carry the ink unblended.
 fn has_ink(pixels: &SharedPixelBuffer<Rgba8Pixel>, ink: [u8; 4]) -> bool {
-    // What: `|pixel| ...` is an arrow function; `.any` stops at the first pixel it accepts.
+    // What: A `for` loop that stops at the first pixel with the ink.
     // Why: One fully covered pixel of a role proves that role was painted with this ink.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // return pixels.some(pixel => [pixel.r, pixel.g, pixel.b, pixel.a].join() === ink.join());
     // ```
-    return pixels.as_slice().iter().any(|pixel| {
-        return [pixel.r, pixel.g, pixel.b, pixel.a] == ink;
-    });
+    for pixel in pixels.as_slice() {
+        if [pixel.r, pixel.g, pixel.b, pixel.a] == ink {
+            return true;
+        }
+    }
+    return false;
+}
+
+/// The lightness of the frame's pixel at column `x` and row `y`,
+///  for a frame `width` pixels wide.
+fn lightness_at(frame: &SharedPixelBuffer<Rgba8Pixel>, width: usize, x: usize, y: usize) -> f32 {
+    return lightness(frame.as_slice()[y * width + x]);
 }
 
 /// Fully covered source pixels inside the active match's selection,
@@ -272,27 +281,21 @@ fn assert_scheme(reader: &Reader, dark: bool) -> Vec<u8> {
             );
         }
     }
-    // What: `|x: usize, y: usize| ...` is an arrow function with typed parameters, reading one pixel.
-    // Why: The divider line, the match border, and their backgrounds are each a single sampled pixel.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const at = (x: number, y: number) => lightness(frame.pixels[y * width + x]);
-    // ```
-    let at = |x: usize, y: usize| return lightness(frame.as_slice()[y * width + x]);
     // The idle divider line is the column right after the sidebar; four columns further is gutter background.
-    let line = at(sidebar, height / 2);
-    let cell = at(sidebar + 4, height / 2);
+    let line = lightness_at(&frame, width, sidebar, height / 2);
+    let cell = lightness_at(&frame, width, sidebar + 4, height / 2);
     // The non-active match's left border is one pixel left of its first character, here at mid-row.
     let found = window
         .get_source_matches()
         .row_data(0)
         .expect("visible match");
-    let border = at(
+    let border = lightness_at(
+        &frame,
+        width,
         source + GUTTER + found.x as usize - 1,
         HEADER + found.y as usize + 12,
     );
-    let page = at(source + 4, HEADER + 12);
+    let page = lightness_at(&frame, width, source + 4, HEADER + 12);
     for (part, mark, behind) in [("divider line", line, cell), ("match border", border, page)] {
         if dark {
             assert!(

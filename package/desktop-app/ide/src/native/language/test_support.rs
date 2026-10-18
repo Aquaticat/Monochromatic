@@ -178,10 +178,14 @@ pub(super) fn definitions(variables: &[(&str, &str)], command: Option<&str>) -> 
     // const entries: string[] = variables.some(([name]) => name === 'PUSH') ? [] : ["IDE_SCRIPTED_PUSH = '0'"];
     // ```
     let mut entries: Vec<String> = Vec::new();
-    if !variables
-        .iter()
-        .any(|(name, _value)| return *name == "PUSH")
-    {
+    let mut names_push = false;
+    for (name, _value) in variables {
+        if *name == "PUSH" {
+            names_push = true;
+            break;
+        }
+    }
+    if !names_push {
         entries.push(String::from("IDE_SCRIPTED_PUSH = '0'"));
     }
     for (name, value) in variables {
@@ -422,12 +426,11 @@ pub(super) fn above(reader: &LanguageReader, line: usize, x: f32, rise: f32) -> 
 /// ```
 pub(super) fn rows(reader: &LanguageReader) -> (usize, usize) {
     let source = reader.source.borrow();
-    // `and_then` reads the frame's annotations when a frame exists; `let ... else` answers zeros otherwise.
-    let Some(frame) = source
-        .shaped
-        .as_ref()
-        .and_then(|view| return view.annotations.as_ref())
-    else {
+    // `let ... else` answers zeros when no frame or no annotations of it exist.
+    let Some(view) = source.shaped.as_ref() else {
+        return (0, 0);
+    };
+    let Some(frame) = view.annotations.as_ref() else {
         return (0, 0);
     };
     let mut hints = 0;

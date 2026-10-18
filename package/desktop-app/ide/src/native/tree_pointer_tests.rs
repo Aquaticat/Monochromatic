@@ -10,20 +10,25 @@ use slint::{
 /// A shared scalar records which model row was activated without mutating real files.
 use std::{cell::Cell, rc::Rc};
 
+/// Sixty tree entries labeled `<prefix>-0.txt` to `<prefix>-59.txt`.
+pub(super) fn sixty_entries(prefix: &str) -> Vec<TreeEntry> {
+    let mut entries: Vec<TreeEntry> = Vec::new();
+    for index in 0..60 {
+        entries.push(TreeEntry {
+            label: SharedString::from(format!("{prefix}-{index}.txt")),
+            ..TreeEntry::default()
+        });
+    }
+    return entries;
+}
+
 /// A scroll during a held click cannot turn the release into activation of a newly rebound row.
 #[test]
 fn windowed_row_rebinding_cancels_an_in_progress_click() {
     let window = AppWindow::new().expect("native tree window");
     window.set_project_visible(true);
     window.set_source_available(false);
-    let entries: Vec<_> = (0..60)
-        .map(|index| {
-            return TreeEntry {
-                label: SharedString::from(format!("source-{index}.txt")),
-                ..TreeEntry::default()
-            };
-        })
-        .collect();
+    let entries = sixty_entries("source");
     window.set_tree_entries(ModelRc::from(Rc::new(VecModel::from(entries))));
     let activated = Rc::new(Cell::new(-1));
     let callback_state = Rc::clone(&activated);
@@ -78,14 +83,7 @@ fn windowed_row_rebinding_cancels_an_in_progress_click() {
         position: point,
         button: PointerEventButton::Left,
     });
-    let replacement: Vec<_> = (0..60)
-        .map(|index| {
-            return TreeEntry {
-                label: SharedString::from(format!("replacement-{index}.txt")),
-                ..TreeEntry::default()
-            };
-        })
-        .collect();
+    let replacement = sixty_entries("replacement");
     window.set_tree_entries(ModelRc::from(Rc::new(VecModel::from(replacement))));
     window
         .window()

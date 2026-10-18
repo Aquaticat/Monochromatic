@@ -157,9 +157,14 @@ fn native_search_orders_results_filters_contents_and_reveals_source_lines() {
     query(&reader.window, "%needle");
     let model = reader.window.get_search_entries();
     assert_eq!(model.row_count(), 2);
-    let target = (0..model.row_count())
-        .find(|index| return model.row_data(*index).expect("content row").path == "needle-file.txt")
-        .expect("current file content hit");
+    let mut found_target = None;
+    for index in 0..model.row_count() {
+        if model.row_data(index).expect("content row").path == "needle-file.txt" {
+            found_target = Some(index);
+            break;
+        }
+    }
+    let target = found_target.expect("current file content hit");
     reader.window.invoke_search_choose(target as i32);
     assert_eq!(
         reader.source.borrow().file_generation,

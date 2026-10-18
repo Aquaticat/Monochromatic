@@ -73,14 +73,40 @@ pub(super) fn pixel(frame: &SharedPixelBuffer<Rgba8Pixel>, x: f32, y: f32) -> Rg
 
 /// WCAG 2 relative luminance of an opaque pixel.
 fn luminance(pixel: Rgba8Pixel) -> f32 {
-    let linear = |channel: u8| {
-        let value = f32::from(channel) / 255.0;
-        if value <= 0.04045 {
-            return value / 12.92;
-        }
-        return ((value + 0.055) / 1.055).powf(2.4);
-    };
     return 0.2126 * linear(pixel.r) + 0.7152 * linear(pixel.g) + 0.0722 * linear(pixel.b);
+}
+
+/// One color channel as linear light,
+///  from the sRGB encoding.
+fn linear(channel: u8) -> f32 {
+    let value = f32::from(channel) / 255.0;
+    if value <= 0.04045 {
+        return value / 12.92;
+    }
+    return ((value + 0.055) / 1.055).powf(2.4);
+}
+
+/// The address of the shaped rows the reader last painted;
+///  a repaint replaces the rows and so changes the address.
+fn painted(reader: &Reader) -> *const ide_app::shaped_text::ShapedRow {
+    return reader
+        .source
+        .borrow()
+        .shaped
+        .as_ref()
+        .expect("shaped")
+        .rows
+        .as_ptr();
+}
+
+/// The logical height of every block of virtual rows the reader holds.
+fn heights(reader: &Reader) -> Vec<f32> {
+    let source = reader.source.borrow();
+    let mut found: Vec<f32> = Vec::new();
+    for block in source.blocks.iter() {
+        found.push(block.height());
+    }
+    return found;
 }
 
 /// WCAG 2 contrast ratio of two opaque pixels.
@@ -214,24 +240,13 @@ fn only_visible_annotation_changes_repaint() {
     }
     let (_directory, reader) = fixture_reader(&text);
     let window = &reader.window;
-    let painted = || {
-        return reader
-            .source
-            .borrow()
-            .shaped
-            .as_ref()
-            .expect("shaped")
-            .rows
-            .as_ptr();
-    };
-    let original = painted();
+    let original = painted(&reader);
     let stamp = displayed(&reader.source.borrow());
     // Character offset of line 150, far below the materialized rows.
-    let far = text
-        .lines()
-        .take(150)
-        .map(|line| return line.chars().count() + 1)
-        .sum::<usize>();
+    let mut far = 0;
+    for line in text.lines().take(150) {
+        far += line.chars().count() + 1;
+    }
     let outside = Some(Arc::new(DiagnosticsSnapshot {
         stamp,
         groups: vec![SourceGroup {
@@ -241,7 +256,7 @@ fn only_visible_annotation_changes_repaint() {
     }));
     set_annotations(window, &reader.source, None, outside.clone());
     assert_eq!(
-        painted(),
+        painted(&reader),
         original,
         "a change outside the materialized rows repainted the source"
     );
@@ -262,11 +277,11 @@ fn only_visible_annotation_changes_repaint() {
         }],
     }));
     set_annotations(window, &reader.source, None, inside.clone());
-    let repainted = painted();
+    let repainted = painted(&reader);
     assert_ne!(repainted, original, "a visible change did not repaint");
     assert_eq!(shown(&reader), (0, 1, 1));
     set_annotations(window, &reader.source, None, inside);
-    assert_eq!(painted(), repainted, "the same snapshots repainted");
+    assert_eq!(painted(&reader), repainted, "the same snapshots repainted");
 }
 
 /// At twice the display scale every virtual row keeps its logical place:
@@ -280,15 +295,7 @@ fn display_scale_keeps_virtual_rows_in_place() {
     let window = &reader.window;
     annotate(&reader);
     update_timers_and_animations();
-    let heights = || -> Vec<f32> {
-        let source = reader.source.borrow();
-        return source
-            .blocks
-            .iter()
-            .map(|block| return block.height())
-            .collect();
-    };
-    let before = heights();
+    let before = heights(&reader);
     let image = window.get_source_image().size();
     let scale = window.window().scale_factor();
     window
@@ -297,7 +304,11 @@ fn display_scale_keeps_virtual_rows_in_place() {
             scale_factor: scale * 2.0,
         });
     update_timers_and_animations();
-    assert_eq!(heights(), before, "blocks changed their logical height");
+    assert_eq!(
+        heights(&reader),
+        before,
+        "blocks changed their logical height"
+    );
     let doubled = window.get_source_image().size();
     assert_eq!(doubled.height, image.height * 2);
     assert_eq!(doubled.width, image.width * 2);

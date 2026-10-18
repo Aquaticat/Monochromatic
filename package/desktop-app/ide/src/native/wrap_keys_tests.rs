@@ -71,12 +71,12 @@ fn arrange(reader: &Reader, factor: f32, width: f32) {
 fn rows_of(reader: &Reader, line: usize) -> Vec<Range<usize>> {
     let current = reader.source.borrow();
     let view = current.shaped.as_ref().expect("shaped view");
-    let row = view
-        .rows
-        .iter()
-        .find(|row| return row.row == line)
-        .expect("the line is materialized");
-    return row.source_rows();
+    for row in view.rows.iter() {
+        if row.row == line {
+            return row.source_rows();
+        }
+    }
+    panic!("the line is materialized");
 }
 
 /// The side of the wrap offset the caret stands on.
@@ -442,9 +442,10 @@ fn the_view_follows_the_caret_through_every_visual_row() {
         let (_project, reader) = open(&long_text(30));
         arrange(&reader, 1.0, width);
         let window = &reader.window;
-        let rows: usize = (0..30)
-            .map(|line| return reader.source.borrow().row_map.rows_of(line))
-            .sum();
+        let mut rows: usize = 0;
+        for line in 0..30 {
+            rows += reader.source.borrow().row_map.rows_of(line);
+        }
         for step in 0..rows - 1 {
             key(window, Key::DownArrow);
             assert!(

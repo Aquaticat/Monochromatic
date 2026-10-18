@@ -410,9 +410,13 @@ fn find_box_selection_uses_the_ink_chosen_from_the_fill() {
         // ```ts
         // const filled = pixels(shown, glyphs).some(found => [found.r, found.g, found.b, found.a] === fill);
         // ```
-        let filled = pixels(&shown, glyphs)
-            .iter()
-            .any(|found| return [found.r, found.g, found.b, found.a] == fill);
+        let mut filled = false;
+        for found in pixels(&shown, glyphs).iter() {
+            if [found.r, found.g, found.b, found.a] == fill {
+                filled = true;
+                break;
+            }
+        }
         assert!(
             filled,
             "{label}: selected find text has no selection fill behind it"

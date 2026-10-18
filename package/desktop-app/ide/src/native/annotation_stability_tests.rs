@@ -16,6 +16,8 @@
 //!  and scrolling across an annotated line is rigid,
 //!  pixel by pixel.
 
+/// The window whose scroll the tests drive.
+use super::AppWindow;
 /// The production setter and the stamp of the displayed text.
 use super::annotate::{displayed, set_annotations};
 /// The frame reader.
@@ -466,6 +468,16 @@ fn rows_arriving_above_the_view_move_no_visible_pixel() {
     assert_eq!(top_reader.window.get_caret_y(), row + 2.0);
 }
 
+/// Scroll one pixel away from `offset` and back,
+///  as the reader's wheel would;
+///  the scroll the rows must wait for has to be the latest thing that happened when they arrive.
+fn scroll(window: &AppWindow, offset: f32) {
+    window.set_scroll_y(-(offset + 1.0));
+    update_timers_and_animations();
+    window.set_scroll_y(-offset);
+    update_timers_and_animations();
+}
+
 /// While the reader is scrolling,
 ///  rows arriving above the view wait:
 ///  assigning the scroll offset would cut the
@@ -497,22 +509,8 @@ fn rows_above_the_view_wait_until_scrolling_has_stopped() {
     // ```
     let mut now = std::time::Instant::now();
     hold_clock(Some(now));
-    // What: A closure that scrolls one pixel away and back, as the reader's wheel would.
-    // Why: Taking a frame takes time; the scroll the rows must wait for has to be the latest thing that
-    //      happened when they arrive.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const scroll = () => { window.scrollY = -(offset + 1); tick(); window.scrollY = -offset; tick(); };
-    // ```
-    let scroll = || {
-        window.set_scroll_y(-(offset + 1.0));
-        update_timers_and_animations();
-        window.set_scroll_y(-offset);
-        update_timers_and_animations();
-    };
     // The reader scrolls, and a hint for line 10 arrives at once.
-    scroll();
+    scroll(window, offset);
     inject(&reader, vec![hint(at(10, 4), "a:")], Vec::new());
     assert_eq!(
         -window.get_scroll_y(),
@@ -522,7 +520,7 @@ fn rows_above_the_view_wait_until_scrolling_has_stopped() {
     assert_eq!(reader.source.borrow().row_map.block_height(10), 0.0);
     assert_eq!(difference(&before, &frame(window)), None);
     // A hint for a visible line arrives together with the one above the view while the reader still scrolls.
-    scroll();
+    scroll(window, offset);
     inject(
         &reader,
         vec![hint(at(10, 4), "a:"), hint(at(104, 4), "b:")],

@@ -150,10 +150,13 @@ fn a_block_stands_above_the_first_row_and_wraps_to_the_text_area() {
         );
     }
     let current = opened.source.borrow();
-    let frame = current
+    let painted_view = current
         .shaped
         .as_ref()
-        .and_then(|view| return view.annotations.as_ref())
+        .expect("the frame paints the annotations");
+    let frame = painted_view
+        .annotations
+        .as_ref()
         .expect("the frame paints the annotations");
     assert!(!frame.texts.is_empty());
     for text in &frame.texts {
@@ -173,6 +176,27 @@ fn a_block_stands_above_the_first_row_and_wraps_to_the_text_area() {
 /// a press on a continuation row of the same
 ///  line lands in that row;
 /// hover treats the block as over no character,
+/// The shaped row of source line `line` among the materialized rows;
+///  `what` names it in the failure.
+fn row_of_line<'a>(
+    view: &'a ide_app::shaped_text::ShapedView,
+    line: usize,
+    what: &str,
+) -> &'a ide_app::shaped_text::ShapedRow {
+    for candidate in view.rows.iter() {
+        if candidate.row == line {
+            return candidate;
+        }
+    }
+    panic!("{what}");
+}
+
+/// How many message rows, hint rows, and what height the block of `LINE` has.
+fn rows_at(reader: &Reader) -> (usize, usize, f32) {
+    let found = block(reader, LINE).expect("block");
+    return (found.messages.len(), found.hint_rows, found.height());
+}
+
 /// and the line below keeps its rows.
 #[test]
 fn presses_on_a_wrapped_block_and_its_rows_resolve_the_right_line_and_row() {
@@ -184,16 +208,8 @@ fn presses_on_a_wrapped_block_and_its_rows_resolve_the_right_line_and_row() {
     let (first_row, third_row, below_second) = {
         let current = opened.source.borrow();
         let view = current.shaped.as_ref().expect("shaped view");
-        let shaped = view
-            .rows
-            .iter()
-            .find(|candidate| return candidate.row == LINE)
-            .expect("line");
-        let below = view
-            .rows
-            .iter()
-            .find(|candidate| return candidate.row == LINE + 1)
-            .expect("next");
+        let shaped = row_of_line(view, LINE, "line");
+        let below = row_of_line(view, LINE + 1, "next");
         let map = &current.row_map;
         let y = map.code_top(LINE) - ROW_HEIGHT;
         assert_eq!(
@@ -251,10 +267,6 @@ fn a_new_window_width_breaks_the_block_again() {
     settled(&opened);
     let window = &opened.window;
     let wide = opened.source.borrow().width;
-    let rows_at = |reader: &Reader| {
-        let found = block(reader, LINE).expect("block");
-        return (found.messages.len(), found.hint_rows, found.height());
-    };
     let before = rows_at(&opened);
     reset(&opened.source);
     let packed = opened.source.borrow().annotations.work().packed;

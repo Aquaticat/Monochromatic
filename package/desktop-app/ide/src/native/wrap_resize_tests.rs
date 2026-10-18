@@ -211,18 +211,20 @@ fn fresh_view(reader: &Reader) -> ShapedView {
 
 /// The rectangles of a window model as plain numbers.
 fn numbers(model: &slint::ModelRc<super::ui::SourceSelection>) -> Vec<[f32; 4]> {
-    return model
-        .iter()
-        .map(|rect| return [rect.x, rect.y, rect.width, rect.height])
-        .collect();
+    let mut found: Vec<[f32; 4]> = Vec::new();
+    for rect in model.iter() {
+        found.push([rect.x, rect.y, rect.width, rect.height]);
+    }
+    return found;
 }
 
 /// The rectangles of a frame as plain numbers.
 fn rects(list: &[ide_app::shaped_text::ReadingRect]) -> Vec<[f32; 4]> {
-    return list
-        .iter()
-        .map(|rect| return [rect.x, rect.y, rect.width, rect.height])
-        .collect();
+    let mut found: Vec<[f32; 4]> = Vec::new();
+    for rect in list.iter() {
+        found.push([rect.x, rect.y, rect.width, rect.height]);
+    }
+    return found;
 }
 
 /// Whether any pixel of the shown image has ink to the right of `limit` logical pixels.
@@ -902,16 +904,18 @@ fn a_view_with_more_lines_than_the_allowance_is_left_to_the_worker() {
     window.hide().expect("close wrap window");
 }
 
+/// The bytes of a raster of three views of 1124 columns at display scale `scale`.
+fn common_raster_bytes(scale: f32) -> u64 {
+    return (1124.0 * scale).ceil() as u64 * (1980.0 * scale).ceil() as u64 * 4;
+}
+
 /// A tile whose raster passes the bound is left to the worker although its lines are few and cheap,
 /// and the bound
 ///  admits the tile of a common window.
 #[test]
 fn a_tile_with_a_huge_raster_is_left_to_the_worker() {
     // 1100 x 660 at scale 1: three views of 1124 columns.
-    let common = |scale: f32| {
-        return (1124.0 * scale).ceil() as u64 * (1980.0 * scale).ceil() as u64 * 4;
-    };
-    assert!(common(1.0) <= REWRAP_RASTER_BYTES);
+    assert!(common_raster_bytes(1.0) <= REWRAP_RASTER_BYTES);
     const { assert!(REWRAP_RASTER_BYTES < ide_app::text_raster::MAX_RASTER_BYTES) };
     let (_project, opened) = open(&"a short line\n".repeat(6000));
     settled(&opened);
@@ -1042,12 +1046,10 @@ fn a_measurement_applied_before_the_tile_of_a_new_width_leaves_no_stale_heights(
     // Nothing advances timers here, so the window takes neither the tile nor the measurement until both wait.
     let start = std::time::Instant::now();
     loop {
-        let waiting = opened
-            .source
-            .borrow()
-            .tile_worker
-            .as_ref()
-            .map_or(0, |worker| return worker.pending_pass_lines());
+        let waiting = match opened.source.borrow().tile_worker.as_ref() {
+            Some(worker) => worker.pending_pass_lines(),
+            None => 0,
+        };
         if waiting >= lines {
             break;
         }
@@ -1139,15 +1141,20 @@ fn a_frame_drawn_right_after_a_resize_event_is_wrapped_to_the_new_width() {
             .entry(pixels[row * drawn + edge - 1])
             .or_insert(0_usize) += 1;
     }
-    let background = common
-        .into_iter()
-        .max_by_key(|(_, count)| return *count)
-        .map(|(pixel, _)| return pixel)
-        .expect("a code area background");
+    let mut most_common = None;
+    let mut most_rows = 0;
+    for (pixel, count) in common {
+        if most_common.is_none() || count > most_rows {
+            most_common = Some(pixel);
+            most_rows = count;
+        }
+    }
+    let background = most_common.expect("a code area background");
     let mut at_edge = 0;
     for row in 40..frame.height() as usize {
-        let ink = |column: usize| return pixels[row * drawn + column] != background;
-        if ink(edge - 1) || ink(edge - 2) {
+        let last_column = pixels[row * drawn + edge - 1] != background;
+        let before_last = pixels[row * drawn + edge - 2] != background;
+        if last_column || before_last {
             at_edge += 1;
         }
     }

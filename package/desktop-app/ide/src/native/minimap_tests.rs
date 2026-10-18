@@ -23,6 +23,7 @@ use super::wrap_tests::{long_text, open, settled};
 /// its reply type,
 /// and the accept rule.
 use super::{
+    AppWindow,
     minimap::{DEBOUNCE, Plan, THROTTLE, apply, plan},
     minimap_build::{Key as PictureKey, MINIMAP_GATE, OFF_WORKER_BUILDS, Reply},
     overscan_tile_tests::{scroll_to, settle_tile},
@@ -368,11 +369,7 @@ fn the_box_changes_fill_and_border_under_the_pointer() {
     let window = &opened.window;
     let top = window.get_minimap_box_top();
     let height = window.get_minimap_box_height();
-    let at = |frame: &SharedPixelBuffer<slint::Rgba8Pixel>, x: f32, y: f32| {
-        let index = (HEADER + y) as usize * frame.width() as usize
-            + (TEXT_LEFT + window.get_viewport_width() + x) as usize;
-        return frame.as_slice()[index];
-    };
+
     // The box stands at the top of the track at the first offset, so its border rows are exact.
     assert_eq!(top, 0.0);
     let text_area = LogicalPosition::new(TEXT_LEFT + 100.0, HEADER + 100.0);
@@ -384,20 +381,20 @@ fn the_box_changes_fill_and_border_under_the_pointer() {
         "the pointer is not over the minimap"
     );
     let rest = window.window().take_snapshot().expect("a frame");
-    let plain = at(&rest, 40.0, below);
-    let fill_rest = at(&rest, 40.0, height / 2.0);
+    let plain = pixel_at(window, &rest, 40.0, below);
+    let fill_rest = pixel_at(window, &rest, 40.0, height / 2.0);
     assert_ne!(
         fill_rest, plain,
         "the box has a fill beside the plain minimap"
     );
     assert_ne!(
-        at(&rest, 40.0, 0.0),
-        at(&rest, 40.0, 1.0),
+        pixel_at(window, &rest, 40.0, 0.0),
+        pixel_at(window, &rest, 40.0, 1.0),
         "the box has a border besides its fill"
     );
     assert_eq!(
-        at(&rest, 40.0, 1.0),
-        at(&rest, 40.0, 4.0),
+        pixel_at(window, &rest, 40.0, 1.0),
+        pixel_at(window, &rest, 40.0, 4.0),
         "the border at rest is one pixel wide"
     );
     // A pointer over the minimap but outside the box leaves the box as it is at rest: CodeGlance Pro marks the box only
@@ -410,35 +407,44 @@ fn the_box_changes_fill_and_border_under_the_pointer() {
     );
     assert!(!window.get_minimap_over_box(), "but not over the box");
     let beside = window.window().take_snapshot().expect("a frame");
-    assert_eq!(at(&beside, 40.0, below), plain);
+    assert_eq!(pixel_at(window, &beside, 40.0, below), plain);
     assert_eq!(
-        at(&beside, 40.0, height / 2.0),
+        pixel_at(window, &beside, 40.0, height / 2.0),
         fill_rest,
         "the fill does not change while the pointer is beside the box"
     );
-    assert_eq!(at(&beside, 40.0, 0.0), at(&rest, 40.0, 0.0));
-    assert_eq!(at(&beside, 40.0, 1.0), at(&rest, 40.0, 1.0));
+    assert_eq!(
+        pixel_at(window, &beside, 40.0, 0.0),
+        pixel_at(window, &rest, 40.0, 0.0)
+    );
+    assert_eq!(
+        pixel_at(window, &beside, 40.0, 1.0),
+        pixel_at(window, &rest, 40.0, 1.0)
+    );
     // On the box, the fill changes and the border widens.
     travel(&opened, over(window, 40.0, height / 2.0));
     update_timers_and_animations();
     assert!(window.get_minimap_over_box(), "the pointer is over the box");
     let hovered = window.window().take_snapshot().expect("a frame");
     assert_eq!(
-        at(&hovered, 40.0, below),
+        pixel_at(window, &hovered, 40.0, below),
         plain,
         "the plain minimap does not change under the pointer"
     );
     assert_ne!(
-        at(&hovered, 40.0, height / 2.0),
+        pixel_at(window, &hovered, 40.0, height / 2.0),
         fill_rest,
         "hover changes the fill"
     );
     assert_eq!(
-        at(&hovered, 40.0, 0.0),
-        at(&hovered, 40.0, 1.0),
+        pixel_at(window, &hovered, 40.0, 0.0),
+        pixel_at(window, &hovered, 40.0, 1.0),
         "hover makes the border two pixels wide"
     );
-    assert_ne!(at(&hovered, 40.0, 1.0), at(&hovered, 40.0, 4.0));
+    assert_ne!(
+        pixel_at(window, &hovered, 40.0, 1.0),
+        pixel_at(window, &hovered, 40.0, 4.0)
+    );
     drop(release);
     window.hide().expect("close minimap window");
 }
@@ -449,34 +455,15 @@ fn the_wheel_over_the_minimap_scrolls_like_the_wheel_over_the_text() {
     let (_project, opened) = open(&long_text(400));
     settled(&opened);
     let window = &opened.window;
-    let finish = |reader: &Reader| {
-        let mut previous = f32::MAX;
-        for _ in 0..200 {
-            update_timers_and_animations();
-            std::thread::sleep(Duration::from_millis(10));
-            let at = offset(reader);
-            if at > 0.0 && at == previous {
-                break;
-            }
-            previous = at;
-        }
-        return offset(reader);
-    };
-    let wheel = |at: LogicalPosition| {
-        window
-            .window()
-            .dispatch_event(WindowEvent::PointerScrolled {
-                position: at,
-                delta_x: 0.0,
-                delta_y: -360.0,
-            });
-    };
-    wheel(LogicalPosition::new(TEXT_LEFT + 100.0, HEADER + 100.0));
+    wheel(
+        window,
+        LogicalPosition::new(TEXT_LEFT + 100.0, HEADER + 100.0),
+    );
     let over_text = finish(&opened);
     assert!(over_text > 0.0, "the wheel scrolled the text");
     scroll_to(window, 0.0);
     calm(&opened);
-    wheel(over(window, 30.0, 100.0));
+    wheel(window, over(window, 30.0, 100.0));
     let over_minimap = finish(&opened);
     assert_eq!(
         over_minimap, over_text,
@@ -651,6 +638,108 @@ fn a_new_wrap_width_rebuilds_the_picture() {
     window.hide().expect("close minimap window");
 }
 
+/// The pixel of a frame at the minimap's column `x` and row `y` below the header.
+fn pixel_at(
+    window: &AppWindow,
+    frame: &SharedPixelBuffer<slint::Rgba8Pixel>,
+    x: f32,
+    y: f32,
+) -> slint::Rgba8Pixel {
+    let index = (HEADER + y) as usize * frame.width() as usize
+        + (TEXT_LEFT + window.get_viewport_width() + x) as usize;
+    return frame.as_slice()[index];
+}
+
+/// Turn the wheel over the window at `at` by one notch of 360 logical pixels.
+fn wheel(window: &AppWindow, at: LogicalPosition) {
+    window
+        .window()
+        .dispatch_event(WindowEvent::PointerScrolled {
+            position: at,
+            delta_x: 0.0,
+            delta_y: -360.0,
+        });
+}
+
+/// Let the scroll animation run out and return the offset it stopped at.
+fn finish(reader: &Reader) -> f32 {
+    let mut previous = f32::MAX;
+    for _ in 0..200 {
+        update_timers_and_animations();
+        std::thread::sleep(Duration::from_millis(10));
+        let at = offset(reader);
+        if at > 0.0 && at == previous {
+            break;
+        }
+        previous = at;
+    }
+    return offset(reader);
+}
+
+/// A final reply for request `number`,
+///  valid for `picture` with its text revision moved by `stamp_shift`.
+fn reply(
+    picture: PictureKey,
+    stats: ide_app::minimap::Stats,
+    number: u64,
+    stamp_shift: u64,
+) -> Reply {
+    let mut moved = picture;
+    moved.stamp.revision += stamp_shift;
+    return Reply {
+        id: number,
+        key: moved,
+        last: true,
+        pixels: SharedPixelBuffer::new(4, 4),
+        stats,
+        elapsed: Duration::ZERO,
+    };
+}
+
+/// Whether the picture on screen is drawn from the current highlighting and no newer request is posted.
+fn styled(reader: &Reader) -> bool {
+    let current = reader.source.borrow();
+    let styles = std::sync::Arc::as_ptr(&current.styles).cast::<()>() as usize;
+    let drawn = match current.minimap.shown {
+        Some(shown) => shown.styles == styles,
+        None => false,
+    };
+    return drawn && current.minimap.posted == current.minimap.shown;
+}
+
+/// The mean brightness of the inked pixels of the picture on screen.
+fn brightness(reader: &Reader) -> f32 {
+    let image = reader
+        .window
+        .get_minimap_image()
+        .to_rgba8()
+        .expect("picture pixels");
+    let mut total = 0.0_f32;
+    let mut count = 0.0_f32;
+    for pixel in image.as_slice() {
+        if pixel.a > 0 {
+            let alpha = f32::from(pixel.a);
+            total += (0.299 * f32::from(pixel.r)
+                + 0.587 * f32::from(pixel.g)
+                + 0.114 * f32::from(pixel.b))
+                / alpha;
+            count += 1.0;
+        }
+    }
+    assert!(count > 100.0, "the picture holds ink");
+    return total / count;
+}
+
+/// `key` for a text with one more row in its last part of the row measure.
+fn another_row(key: PictureKey) -> PictureKey {
+    let mut moved = key;
+    if let Some(mut rows) = moved.rows {
+        rows.3 += 1;
+        moved.rows = Some(rows);
+    }
+    return moved;
+}
+
 /// A picture of an older text,
 /// of an older request,
 /// or of another file is dropped,
@@ -669,21 +758,13 @@ fn a_stale_picture_is_dropped_and_a_current_one_is_shown() {
             current.minimap.last_stats.expect("statistics"),
         )
     };
-    let reply = |number: u64, stamp_shift: u64| {
-        let mut moved = picture;
-        moved.stamp.revision += stamp_shift;
-        return Reply {
-            id: number,
-            key: moved,
-            last: true,
-            pixels: SharedPixelBuffer::new(4, 4),
-            stats,
-            elapsed: Duration::ZERO,
-        };
-    };
     let shown_before = opened.source.borrow().minimap.images_set;
-    apply(window, &opened.source, reply(id + 5, 1));
-    apply(window, &opened.source, reply(id.saturating_sub(1), 0));
+    apply(window, &opened.source, reply(picture, stats, id + 5, 1));
+    apply(
+        window,
+        &opened.source,
+        reply(picture, stats, id.saturating_sub(1), 0),
+    );
     {
         let current = opened.source.borrow();
         assert_eq!(
@@ -692,7 +773,7 @@ fn a_stale_picture_is_dropped_and_a_current_one_is_shown() {
         );
         assert_eq!(current.minimap.dropped, 2);
     }
-    apply(window, &opened.source, reply(id + 6, 0));
+    apply(window, &opened.source, reply(picture, stats, id + 6, 0));
     let current = opened.source.borrow();
     assert_eq!(current.minimap.images_set, shown_before + 1);
     assert_eq!(current.minimap.shown_id, id + 6);
@@ -722,42 +803,12 @@ fn highlights_and_the_scheme_rebuild_the_picture_in_the_palette_inks() {
         }
     }
     switch(&opened.window, ColorScheme::Dark);
-    let styled = |reader: &Reader| {
-        let current = reader.source.borrow();
-        let styles = std::sync::Arc::as_ptr(&current.styles).cast::<()>() as usize;
-        return current
-            .minimap
-            .shown
-            .is_some_and(|shown| return shown.styles == styles)
-            && current.minimap.posted == current.minimap.shown;
-    };
     {
         let mut waiting = Waiting::slow();
         while !(styled(&opened)) {
             waiting.step("the picture did not follow the highlights");
         }
     }
-    let brightness = |reader: &Reader| {
-        let image = reader
-            .window
-            .get_minimap_image()
-            .to_rgba8()
-            .expect("picture pixels");
-        let mut total = 0.0_f32;
-        let mut count = 0.0_f32;
-        for pixel in image.as_slice() {
-            if pixel.a > 0 {
-                let alpha = f32::from(pixel.a);
-                total += (0.299 * f32::from(pixel.r)
-                    + 0.587 * f32::from(pixel.g)
-                    + 0.114 * f32::from(pixel.b))
-                    / alpha;
-                count += 1.0;
-            }
-        }
-        assert!(count > 100.0, "the picture holds ink");
-        return total / count;
-    };
     let dark_key = opened.source.borrow().minimap.shown.expect("a picture key");
     let dark = brightness(&opened);
     switch(&opened.window, ColorScheme::Light);
@@ -843,14 +894,6 @@ fn each_kind_of_change_has_its_own_pace() {
     let base = opened.source.borrow().minimap.shown.expect("a picture key");
     let long_ago = Some(Duration::from_secs(5));
     let just_now = Some(Duration::from_millis(40));
-    let another_row = |key: PictureKey| {
-        let mut moved = key;
-        moved.rows = moved.rows.map(|mut rows| {
-            rows.3 += 1;
-            return rows;
-        });
-        return moved;
-    };
     assert_eq!(
         plan(None, None, base, None, false),
         Plan::Post,

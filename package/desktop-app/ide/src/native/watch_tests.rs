@@ -36,6 +36,14 @@ use std::{
     time::{Duration, Instant},
 };
 
+/// Atomically replace the displayed file with `text`,
+///  staging the new content in `folder` first.
+fn replace(folder: &Path, displayed: &Path, text: &str) {
+    let staged = folder.join(".view.txt.tmp");
+    fs::write(&staged, text).expect("staged replacement");
+    fs::rename(&staged, displayed).expect("atomic replace");
+}
+
 /// A shipped window over `root`,
 ///  displaying `file`,
 ///  with refresh and navigation timers kept alive.
@@ -164,11 +172,7 @@ fn native_source_follows_atomic_replace_and_delete_then_recreate() {
         update_timers_and_animations();
         std::thread::sleep(Duration::from_millis(2));
     }
-    let replace = |text: &str| {
-        let staged = folder.join(".view.txt.tmp");
-        fs::write(&staged, text).expect("staged replacement");
-        fs::rename(&staged, &displayed).expect("atomic replace");
-    };
+
     // Caret example: `I am a bi|g cat.` becomes `I was a bi|g cat.`.
     state.borrow_mut().document.select(ReadingPosition {
         anchor: 9,
@@ -176,7 +180,7 @@ fn native_source_follows_atomic_replace_and_delete_then_recreate() {
         viewport: 0,
         affinity: ide_app::document::ReadingAffinity::Downstream,
     });
-    replace("I was a big cat.\n");
+    replace(&folder, &displayed, "I was a big cat.\n");
     {
         let mut waiting = Waiting::prompt();
         while !(window.get_source_text() == "I was a big cat.\n") {
@@ -203,7 +207,11 @@ fn native_source_follows_atomic_replace_and_delete_then_recreate() {
         affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     render(&window, &state);
-    replace("I was a big cat, but now I am a human!\n");
+    replace(
+        &folder,
+        &displayed,
+        "I was a big cat, but now I am a human!\n",
+    );
     {
         let mut waiting = Waiting::prompt();
         while !(window.get_source_text() == "I was a big cat, but now I am a human!\n") {

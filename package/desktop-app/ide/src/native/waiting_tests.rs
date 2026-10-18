@@ -46,7 +46,9 @@ const FINE_PAUSE: Duration = Duration::from_millis(1);
 ///  and how long to pause between checks.
 /// Why:
 ///  The check stays in the test as a plain condition,
-///  and the clock, the pause, and the failure live here.
+///  and the clock,
+///  the pause,
+///  and the failure live here.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

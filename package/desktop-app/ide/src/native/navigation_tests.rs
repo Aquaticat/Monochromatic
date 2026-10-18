@@ -22,9 +22,8 @@ use std::{cell::RefCell, fs, rc::Rc};
 pub(super) fn row(window: &AppWindow, label: &str) -> Option<i32> {
     let model = window.get_tree_entries();
     for index in 0..model.row_count() {
-        if model
-            .row_data(index)
-            .is_some_and(|entry| return entry.label == label)
+        if let Some(entry) = model.row_data(index)
+            && entry.label == label
         {
             return Some(index as i32);
         }

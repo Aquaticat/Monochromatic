@@ -34,7 +34,11 @@ const PATIENCE: Duration = Duration::from_secs(10);
 /// Five thousand numbered lines,
 /// each ending with a line feed.
 fn document() -> String {
-    return (0..LINES).map(|line| format!("line {line}\n")).collect();
+    let mut text = String::new();
+    for line in 0..LINES {
+        text.push_str(&format!("line {line}\n"));
+    }
+    return text;
 }
 
 /// Open a shown window on `text`,
@@ -59,12 +63,11 @@ fn await_worker_ready(state: &Rc<RefCell<State>>) {
     let start = Instant::now();
     loop {
         update_timers_and_animations();
-        if state
-            .borrow()
-            .tile_worker
-            .as_ref()
-            .is_some_and(|worker| return worker.is_ready())
-        {
+        let ready = match state.borrow().tile_worker.as_ref() {
+            Some(worker) => worker.is_ready(),
+            None => false,
+        };
+        if ready {
             return;
         }
         assert!(

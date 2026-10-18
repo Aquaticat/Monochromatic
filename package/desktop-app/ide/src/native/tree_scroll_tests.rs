@@ -1,11 +1,9 @@
 //! A far reveal must place the whole target row inside the real native tree viewport.
 
 /// Exercise the shipped project component rather than a separate scrolling fixture.
-use super::{AppWindow, ui::TreeEntry};
+use super::{AppWindow, tree_pointer_tests::sixty_entries};
 /// Native model and snapshot APIs force the toolkit to materialize its displayed row window.
-use slint::{
-    ComponentHandle, ModelRc, SharedString, VecModel, platform::update_timers_and_animations,
-};
+use slint::{ComponentHandle, ModelRc, VecModel, platform::update_timers_and_animations};
 /// Owned model rows stay alive across programmatic viewport movement.
 use std::rc::Rc;
 
@@ -15,14 +13,7 @@ fn far_tree_reveal_keeps_the_entire_target_row_visible() {
     let window = AppWindow::new().expect("native tree window");
     window.set_project_visible(true);
     window.set_source_available(false);
-    let entries: Vec<_> = (0..60)
-        .map(|index| {
-            return TreeEntry {
-                label: SharedString::from(format!("source-{index}.txt")),
-                ..TreeEntry::default()
-            };
-        })
-        .collect();
+    let entries = sixty_entries("source");
     window.set_tree_entries(ModelRc::from(Rc::new(VecModel::from(entries))));
     window.show().expect("show native tree");
     window

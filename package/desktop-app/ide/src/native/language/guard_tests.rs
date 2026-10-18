@@ -127,6 +127,24 @@ fn reply_about_text_no_longer_displayed_is_not_applied() {
     );
 }
 
+/// An empty hints snapshot for `stamp`.
+fn hints_for(stamp: DocumentStamp) -> Arc<HintsSnapshot> {
+    return Arc::new(HintsSnapshot {
+        stamp,
+        first_line: 0,
+        last_line: 1,
+        hints: Vec::new(),
+    });
+}
+
+/// An empty diagnostics snapshot for `stamp`.
+fn diagnostics_for(stamp: DocumentStamp) -> Arc<DiagnosticsSnapshot> {
+    return Arc::new(DiagnosticsSnapshot {
+        stamp,
+        groups: Vec::new(),
+    });
+}
+
 /// Snapshots are stored only for the displayed text and handed out only for the stamp asked with.
 #[test]
 fn snapshots_for_other_text_are_not_stored_or_handed_out() {
@@ -138,33 +156,19 @@ fn snapshots_for_other_text_are_not_stored_or_handed_out() {
         file: 3,
         revision: 1,
     };
-    let hints = |stamp| {
-        return Arc::new(HintsSnapshot {
-            stamp,
-            first_line: 0,
-            last_line: 1,
-            hints: Vec::new(),
-        });
-    };
-    let diagnostics = |stamp| {
-        return Arc::new(DiagnosticsSnapshot {
-            stamp,
-            groups: Vec::new(),
-        });
-    };
     let mut store = Annotations::default();
     // `Rope::from` copies the literal into a text buffer; `&text` lends it to the store.
     let text = Rope::from("one line");
     assert!(
-        !store.accept_hints(displayed, &text, hints(older)),
+        !store.accept_hints(displayed, &text, hints_for(older)),
         "hints for an earlier revision were stored"
     );
     assert!(
-        !store.accept_diagnostics(displayed, &text, diagnostics(older)),
+        !store.accept_diagnostics(displayed, &text, diagnostics_for(older)),
         "diagnostics for an earlier revision were stored"
     );
-    assert!(store.accept_hints(older, &text, hints(older)));
-    assert!(store.accept_diagnostics(older, &text, diagnostics(older)));
+    assert!(store.accept_hints(older, &text, hints_for(older)));
+    assert!(store.accept_diagnostics(older, &text, diagnostics_for(older)));
     assert!(
         store.hints(displayed).is_none(),
         "hints for an earlier revision were handed out"

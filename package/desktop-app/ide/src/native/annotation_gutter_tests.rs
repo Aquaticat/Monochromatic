@@ -210,9 +210,13 @@ fn ink_runs(
     let mut runs: Vec<(usize, usize)> = Vec::new();
     for x in (TEXT_LEFT - GUTTER) as usize..(TEXT_LEFT - NUMBER_GAP) as usize {
         // `any` asks whether some pixel of the column differs visibly from the background.
-        let inked = (2..22).any(|dy| {
-            return contrast(pixel(shown, x as f32, top + dy as f32), background) > 1.05;
-        });
+        let mut inked = false;
+        for dy in 2..22 {
+            if contrast(pixel(shown, x as f32, top + dy as f32), background) > 1.05 {
+                inked = true;
+                break;
+            }
+        }
         if !inked {
             continue;
         }
@@ -319,9 +323,10 @@ fn gutter_letters_show_the_worst_severity_in_front_of_the_line_number() {
             GUTTER,
             "{scheme:?}: the gutter's width, measured from the 15 px JetBrains Mono letter and digits"
         );
-        let tops: Vec<f32> = (0..4)
-            .map(|line| return reader.source.borrow().row_map.code_top(line))
-            .collect();
+        let mut tops: Vec<f32> = Vec::new();
+        for line in 0..4 {
+            tops.push(reader.source.borrow().row_map.code_top(line));
+        }
         let inks = [
             window.get_error_ink(),
             window.get_warning_ink(),
@@ -432,10 +437,10 @@ fn the_letter_stands_the_same_gap_before_one_two_and_three_digit_numbers() {
     assert!(matching > 5, "line 99 shows no letter in the error ink");
     runs.push(ink_runs(&scrolled, row_y, background));
     // The letter is the first run and the number's first digit the second; `10` has its digits in two runs.
-    let gaps: Vec<usize> = runs
-        .iter()
-        .map(|found| return found[1].0 - found[0].1 - 1)
-        .collect();
+    let mut gaps: Vec<usize> = Vec::new();
+    for found in &runs {
+        gaps.push(found[1].0 - found[0].1 - 1);
+    }
     assert_eq!(
         runs[1].len(),
         3,

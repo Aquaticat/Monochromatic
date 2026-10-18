@@ -65,8 +65,15 @@ fn settled_tile(opened: &super::find_tests::Reader) {
 /// Whether any pixel of the visible band of the image has ink;
 /// a window with no image yet has none.
 fn has_ink(window: &super::AppWindow) -> bool {
-    return window.get_source_image().to_rgba8().is_some()
-        && shown(window).iter().any(|pixel| return pixel[3] > 0);
+    if window.get_source_image().to_rgba8().is_none() {
+        return false;
+    }
+    for pixel in shown(window) {
+        if pixel[3] > 0 {
+            return true;
+        }
+    }
+    return false;
 }
 
 /// Wait until the first tile is painted or the window names a failure,
@@ -187,9 +194,9 @@ fn a_clip_stays_within_the_raster_limit_for_every_window_size() {
         let cap = tile_cap(width, scale);
         for view in [0.0_f32, 12_345.0, 400_000.0] {
             let band = ((view - height).max(0.0), view + 2.0 * height);
-            let clip = band_clip(0.0, 1_000_000.0, band, cap).unwrap_or_else(|| {
-                panic!("a million pixels of lines fit one raster at {width}x{height}")
-            });
+            let Some(clip) = band_clip(0.0, 1_000_000.0, band, cap) else {
+                panic!("a million pixels of lines fit one raster at {width}x{height}");
+            };
             let columns = ((width + 24.0).ceil() * scale).ceil() as u64;
             let rows = ((clip.bottom - clip.top) * scale).ceil() as u64;
             assert!(

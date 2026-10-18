@@ -78,17 +78,50 @@ pub(super) fn tabbed_text(count: usize) -> String {
     return text;
 }
 
+/// The window y of the code row of `top_line`.
+fn screen(state: &Rc<RefCell<State>>, top_line: usize, window: &AppWindow) -> f32 {
+    return state.borrow().row_map.code_top(top_line) + window.get_scroll_y();
+}
+
+/// Whether the worker holds more measured lines than one poll takes.
+fn worker_measured_ahead(state: &Rc<RefCell<State>>) -> bool {
+    return match state.borrow().tile_worker.as_ref() {
+        Some(worker) => worker.pending_pass_lines() > TAKE_LIMIT + TAKE_LIMIT / 2,
+        None => false,
+    };
+}
+
+/// A press and release at `position` after the double-click interval has passed.
+fn click(window: &AppWindow, position: LogicalPosition) {
+    std::thread::sleep(Duration::from_millis(520));
+    window.window().dispatch_event(WindowEvent::PointerPressed {
+        position,
+        button: PointerEventButton::Left,
+    });
+    window
+        .window()
+        .dispatch_event(WindowEvent::PointerReleased {
+            position,
+            button: PointerEventButton::Left,
+        });
+    update_timers_and_animations();
+}
+
 /// Whether the worker has measured the whole text at the current wrap width and nothing is queued.
 fn measured(state: &Rc<RefCell<State>>, scale: f32) -> bool {
     let current = state.borrow();
-    let posted = current.pass_posted.map(|(key, _)| return key);
+    let mut posted = None;
+    if let Some((key, _)) = current.pass_posted {
+        posted = Some(key);
+    }
+    let idle = match current.tile_worker.as_ref() {
+        Some(worker) => !worker.is_busy(),
+        None => false,
+    };
     return posted == Some(current_key(&current, scale))
         && current.tile_job.is_none()
         && current.scroll_wanted.is_none()
-        && current
-            .tile_worker
-            .as_ref()
-            .is_some_and(|worker| return !worker.is_busy());
+        && idle;
 }
 
 /// Wait until the pass has finished and the last output is applied.
@@ -285,16 +318,13 @@ fn rows_above_the_view_changing_height_move_no_visible_pixel() {
         .borrow()
         .row_map
         .line_at(-window.get_scroll_y());
-    let screen = |state: &Rc<RefCell<State>>| {
-        return state.borrow().row_map.code_top(top_line) + window.get_scroll_y();
-    };
-    let before_screen = screen(&opened.source);
+    let before_screen = screen(&opened.source, top_line, window);
     let before_pixels = shown(window);
     let before_extent = opened.source.borrow().row_map.height();
     // Release the pass: lines above the view get their heights, and the offset follows them.
     drop(release);
     settled(&opened);
-    let after_screen = screen(&opened.source);
+    let after_screen = screen(&opened.source, top_line, window);
     let after_extent = opened.source.borrow().row_map.height();
     assert!(after_extent > before_extent, "the pass changed the extent");
     assert_eq!(
@@ -392,13 +422,7 @@ fn opening_fifty_thousand_lines_never_blocks_the_window_thread() {
     }
     // No timer runs while waiting, so the window takes nothing and the worker's output piles up.
     let waiting = Instant::now();
-    while !opened
-        .source
-        .borrow()
-        .tile_worker
-        .as_ref()
-        .is_some_and(|worker| return worker.pending_pass_lines() > TAKE_LIMIT + TAKE_LIMIT / 2)
-    {
+    while !worker_measured_ahead(&opened.source) {
         assert!(
             waiting.elapsed() < PATIENCE,
             "the worker did not measure ahead of the window"
@@ -648,39 +672,31 @@ fn a_click_at_a_wrap_offset_keeps_the_side_that_was_clicked() {
     let (_project, opened) = open(&format!("{}\n", "m".repeat(400)));
     settled(&opened);
     let window = &opened.window;
-    let click = |position: LogicalPosition| {
-        std::thread::sleep(Duration::from_millis(520));
-        window.window().dispatch_event(WindowEvent::PointerPressed {
-            position,
-            button: PointerEventButton::Left,
-        });
-        window
-            .window()
-            .dispatch_event(WindowEvent::PointerReleased {
-                position,
-                button: PointerEventButton::Left,
-            });
-        update_timers_and_animations();
-    };
     let wrap_offset = {
         let current = opened.source.borrow();
         let row = &current.shaped.as_ref().expect("view").rows[0];
         row.source_start + row.visual_row_sources(1).expect("second row").start
     };
-    click(LogicalPosition::new(
-        TEXT_LEFT + 1.0,
-        HEADER + 24.0 + 12.0 + window.get_scroll_y(),
-    ));
+    click(
+        window,
+        LogicalPosition::new(
+            TEXT_LEFT + 1.0,
+            HEADER + 24.0 + 12.0 + window.get_scroll_y(),
+        ),
+    );
     assert_eq!(opened.source.borrow().document.position().head, wrap_offset);
     assert_eq!(
         window.get_caret_y(),
         26.0,
         "left of the lower row's first glyph the caret is on the lower row"
     );
-    click(LogicalPosition::new(
-        TEXT_LEFT + window.get_viewport_width() - 1.0,
-        HEADER + 12.0 + window.get_scroll_y(),
-    ));
+    click(
+        window,
+        LogicalPosition::new(
+            TEXT_LEFT + window.get_viewport_width() - 1.0,
+            HEADER + 12.0 + window.get_scroll_y(),
+        ),
+    );
     assert_eq!(
         opened.source.borrow().document.position().head,
         wrap_offset,

@@ -59,10 +59,11 @@ fn kernel_watches() -> usize {
         }
         let info = format!("/proc/self/fdinfo/{}", entry.file_name().to_string_lossy());
         let text = fs::read_to_string(info).unwrap_or_default();
-        total += text
-            .lines()
-            .filter(|line| return line.starts_with("inotify wd:"))
-            .count();
+        for line in text.lines() {
+            if line.starts_with("inotify wd:") {
+                total += 1;
+            }
+        }
     }
     return total;
 }

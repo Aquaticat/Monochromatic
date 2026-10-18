@@ -265,6 +265,11 @@ fn vertical_keys_keep_a_preferred_column_and_extend_with_shift() {
     window.hide().expect("close caret window");
 }
 
+/// Line `n` from three onwards starts at 15 + (n - 3) * 11.
+fn start_of_line(line: usize) -> usize {
+    return 15 + (line - 3) * 11;
+}
+
 /// PageDown and PageUp move caret and view by the whole lines in view;
 ///  Shift extends.
 #[test]
@@ -280,13 +285,11 @@ fn page_keys_move_by_the_visible_height_and_keep_the_caret_in_view() {
         page >= 4,
         "the fixture window must show several lines, found {page}"
     );
-    // Line `n` from three onwards starts at 15 + (n - 3) * 11.
-    let start_of = |line: usize| return 15 + (line - 3) * 11;
     repeat(window, Key::DownArrow, 3);
     repeat(window, Key::RightArrow, 4);
     assert_eq!(position(&reader), (19, 19));
     key(window, Key::PageDown);
-    let landed = start_of(3 + page) + 4;
+    let landed = start_of_line(3 + page) + 4;
     assert_eq!(
         position(&reader),
         (landed, landed),
@@ -298,7 +301,7 @@ fn page_keys_move_by_the_visible_height_and_keep_the_caret_in_view() {
         "PageDown must move the view by the same whole lines"
     );
     key(window, Key::PageDown);
-    assert_eq!(position(&reader).1, start_of(3 + page * 2) + 4);
+    assert_eq!(position(&reader).1, start_of_line(3 + page * 2) + 4);
     assert_eq!(-window.get_scroll_y(), page as f32 * 48.0);
     key(window, Key::PageUp);
     key(window, Key::PageUp);
