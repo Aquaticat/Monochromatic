@@ -511,15 +511,6 @@ function apartStartsOf(
     definitions,
   },);
   /**
-   The links of the English whose label shows nothing, closing marks or marks, at the offsets of the fold, none where no closing
-   square bracket stands in the fold.
-   */
-  const links = foldedLinksOf({
-    english: haystack,
-    folded,
-    definitions,
-  },);
-  /**
    Where a stand may end inside a word made with an apostrophe after closing marks, read once for the whole English.
    */
   const joints = closingJointsOf({
