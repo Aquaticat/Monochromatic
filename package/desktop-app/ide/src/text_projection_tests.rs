@@ -9,7 +9,7 @@
 /// The walk under test,
 /// the rope view the lookups run on,
 /// and the flat walk that serves as the reference.
-use super::{FLAT_LINE_BYTES, caret_stops, caret_stops_visiting, project_line};
+use super::{FLAT_LINE_BYTES, StopVisitor, caret_stops, caret_stops_visiting, project_line};
 /// Helix's grapheme walk and rope view,
 /// used by the reference walk.
 use helix_core::{RopeSlice, graphemes::next_grapheme_boundary};
@@ -92,11 +92,21 @@ fn stops_equal_the_flat_walk_on_either_side_of_the_chunking_limit() {
 /// summed over the walk.
 fn scanned(source: &str) -> (u64, usize) {
     let visible = source.chars().count();
-    let mut total: u64 = 0;
-    let stops = caret_stops_visiting(source, visible, |slice, position| {
-        total += slice.chunk_at_char(position).0.len() as u64;
-    });
-    return (total, stops.len());
+    let mut counter = ScanBytes { total: 0 };
+    let stops = caret_stops_visiting(source, visible, &mut counter);
+    return (counter.total, stops.len());
+}
+
+/// Adds up the bytes of the chunk each lookup starts in.
+struct ScanBytes {
+    /// The bytes scanned so far.
+    total: u64,
+}
+
+impl StopVisitor for &mut ScanBytes {
+    fn visit(&mut self, slice: RopeSlice<'_>, position: usize) {
+        self.total += slice.chunk_at_char(position).0.len() as u64;
+    }
 }
 
 /// A lookup scans the chunk it lands in;

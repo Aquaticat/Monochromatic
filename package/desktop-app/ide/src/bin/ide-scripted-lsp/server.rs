@@ -146,10 +146,10 @@ impl Session {
     ///  push diagnostics that quote it.
     fn publish(&self, uri: &str, version: &Value) {
         // `get` returns `Option<&String>`; `map_or` substitutes empty text for an unknown document.
-        let text = self
-            .documents
-            .get(uri)
-            .map_or("", |found| return found.as_str());
+        let text = match self.documents.get(uri) {
+            Some(found) => found.as_str(),
+            None => "",
+        };
         self.wire
             .record(json_value!({ "text": { "uri": uri, "version": version, "text": text } }));
         if !self.script.push_diagnostics {
@@ -199,10 +199,10 @@ impl Session {
             return;
         }
         let uri = params["textDocument"]["uri"].as_str().unwrap_or("");
-        let text = self
-            .documents
-            .get(uri)
-            .map_or("", |found| return found.as_str());
+        let text = match self.documents.get(uri) {
+            Some(found) => found.as_str(),
+            None => "",
+        };
         let position = &params["position"];
         let offset = offset_at(
             text,
@@ -218,10 +218,10 @@ impl Session {
             json_value!({ "id": id, "result": null })
         } else {
             // `chars().next()` reads the character at the offset, if any; `map_or` renders it as text.
-            let character = text[offset..]
-                .chars()
-                .next()
-                .map_or(String::new(), |found| return found.to_string());
+            let character = match text[offset..].chars().next() {
+                Some(found) => found.to_string(),
+                None => String::new(),
+            };
             json_value!({ "id": id, "result": {
                 "contents": { "kind": "markdown", "value": format!("line={line} char={character}") },
                 "range": { "start": position, "end": position },
@@ -323,10 +323,10 @@ impl Session {
             if step_for(&self.script.pull_steps, self.pulls) == Step::Silent {
                 return;
             }
-            let text = self
-                .documents
-                .get(uri)
-                .map_or("", |found| return found.as_str());
+            let text = match self.documents.get(uri) {
+                Some(found) => found.as_str(),
+                None => "",
+            };
             self.send(json_value!({ "id": id, "result": { "kind": "full", "items": [{
                 "range": { "start": { "line": 0, "character": 0 }, "end": { "line": 0, "character": 1 } },
                 "severity": 1,

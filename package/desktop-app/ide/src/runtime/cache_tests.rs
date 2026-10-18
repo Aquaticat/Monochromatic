@@ -18,24 +18,27 @@ use std::{
 /// Bytes standing in for a parser library;
 ///  large enough that a torn write would be visible.
 fn library() -> Vec<u8> {
-    return (0..1_048_576u32)
-        .map(|index| return (index % 251) as u8)
-        .collect();
+    let mut bytes: Vec<u8> = Vec::with_capacity(1_048_576);
+    for index in 0..1_048_576u32 {
+        bytes.push((index % 251) as u8);
+    }
+    return bytes;
 }
 
 /// Names in `directory` other than the final library files.
 fn leftovers(directory: &Path) -> Vec<String> {
-    return fs::read_dir(directory)
-        .expect("cache directory")
-        .map(|entry| {
-            return entry
-                .expect("entry")
-                .file_name()
-                .to_string_lossy()
-                .into_owned();
-        })
-        .filter(|name| return !name.ends_with(".so"))
-        .collect();
+    let mut found: Vec<String> = Vec::new();
+    for entry in fs::read_dir(directory).expect("cache directory") {
+        let name = entry
+            .expect("entry")
+            .file_name()
+            .to_string_lossy()
+            .into_owned();
+        if !name.ends_with(".so") {
+            found.push(name);
+        }
+    }
+    return found;
 }
 
 #[test]

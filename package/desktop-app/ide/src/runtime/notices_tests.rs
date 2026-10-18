@@ -106,11 +106,12 @@ static WITHOUT_CRATES_RUNTIME: EmbeddedRuntime = EmbeddedRuntime {
 
 #[test]
 fn license_folders_and_license_named_files_are_notices_and_nothing_else_is() {
-    let selected: Vec<&str> = FILES
-        .iter()
-        .map(|file| return file.path)
-        .filter(|path| return is_notice(path))
-        .collect();
+    let mut selected: Vec<&str> = Vec::new();
+    for file in FILES.iter() {
+        if is_notice(file.path) {
+            selected.push(file.path);
+        }
+    }
     assert_eq!(
         selected,
         vec![

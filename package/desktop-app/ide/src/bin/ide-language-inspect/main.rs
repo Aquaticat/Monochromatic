@@ -209,13 +209,21 @@ fn main() -> Result<()> {
     // `PathBuf::from` wraps the raw argument as a path without converting its bytes.
     let plan_path = PathBuf::from(argument);
     // The trailing `?` returns the error to the caller when reading or decoding fails.
-    let encoded = std::fs::read_to_string(&plan_path)
-        .with_context(|| return format!("Cannot read plan {}", plan_path.display()))?;
+    let encoded = match std::fs::read_to_string(&plan_path) {
+        Ok(text) => text,
+        Err(error) => {
+            return Err(anyhow::Error::new(error)
+                .context(format!("Cannot read plan {}", plan_path.display())));
+        }
+    };
     let plan: Plan = serde_json::from_str(&encoded).context("Cannot decode the plan")?;
-    let project = plan
-        .project
-        .canonicalize()
-        .with_context(|| return format!("Cannot resolve project {}", plan.project.display()))?;
+    let project = match plan.project.canonicalize() {
+        Ok(found) => found,
+        Err(error) => {
+            return Err(anyhow::Error::new(error)
+                .context(format!("Cannot resolve project {}", plan.project.display())));
+        }
+    };
     ide_app::language::enter_project_directory(&project)?;
     // Log to standard error so standard output carries only observations. The worker's debug records
     // are what the inspection reads, so they are on unless `RUST_LOG` says otherwise; helix-lsp's

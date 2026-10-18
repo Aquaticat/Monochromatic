@@ -123,10 +123,10 @@ fn prepare(source: &Path, operation: &str) -> Result<()> {
     // ```ts
     // const config = { 'use-grammars': { only: [...grammars] } };
     // ```
-    let only = GRAMMARS
-        .iter()
-        .map(|name| return (*name).to_string())
-        .collect();
+    let mut only: Vec<String> = Vec::new();
+    for name in GRAMMARS.iter() {
+        only.push((*name).to_string());
+    }
     let configuration = Configuration {
         selection: Selection { only },
     };
@@ -154,10 +154,11 @@ fn prepare(source: &Path, operation: &str) -> Result<()> {
 ///  help never touches runtime state.
 fn main() -> Result<()> {
     let arguments: Vec<String> = std::env::args().skip(1).collect();
-    if arguments
-        .first()
-        .is_some_and(|value| return value == "--help")
-    {
+    let wants_help = match arguments.first() {
+        Some(value) => value == "--help",
+        None => false,
+    };
+    if wants_help {
         println!(
             "Usage: ide-runtime <fetch|build> <PINNED_HELIX_RUNTIME>\nBuild-only helper. Use mise run //package/desktop-app/ide:runtime."
         );

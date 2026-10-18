@@ -159,9 +159,12 @@ fn attempt_order(desired: &BTreeSet<PathBuf>, file: Option<&Path>) -> Vec<PathBu
     // ```ts
     // const parent = file === undefined ? undefined : dirname(file); if (parent && desired.has(parent)) order.push(parent);
     // ```
-    let parent = file
-        .and_then(Path::parent)
-        .filter(|directory| return desired.contains(*directory));
+    let mut parent = None;
+    if let Some(directory) = file.and_then(Path::parent)
+        && desired.contains(directory)
+    {
+        parent = Some(directory);
+    }
     if let Some(directory) = parent {
         order.push(directory.to_path_buf());
     }
@@ -305,7 +308,7 @@ pub fn reconcile(
         kernel.remove(path);
         tracing::debug!(path = %path.display(), "stopped watching a directory that is no longer shown");
     }
-    // What: `retain` keeps only the entries for which the closure returns true.
+    // What: the entries are taken out and only the desired ones are put back, in their order.
     // Why: A directory that is no longer shown must not be retried later, and its failure is forgotten.
     //
     // In TS you'd write (pseudocode):
@@ -313,21 +316,30 @@ pub fn reconcile(
     // for (const path of failed.keys()) if (!desired.has(path)) failed.delete(path);
     // ```
     let desired = &watches.desired;
-    watches
-        .failed
-        .retain(|path, _message| return desired.contains(path));
-    watches.limited.retain(|path| return desired.contains(path));
-    // What: `is_some_and` asks the optional backoff whether a sweep may retry now.
+    let failed = std::mem::take(&mut watches.failed);
+    for (path, message) in failed {
+        if desired.contains(&path) {
+            watches.failed.insert(path, message);
+        }
+    }
+    let limited = std::mem::take(&mut watches.limited);
+    for path in limited {
+        if desired.contains(&path) {
+            watches.limited.insert(path);
+        }
+    }
+    // What: `match` asks the optional backoff whether a sweep may retry now.
     // Why: Under the limit a sweep retries only when the backoff allows; what is shown changing retries at once.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // const sweepRetry = retry && limit !== undefined && limit.mayRetry(now);
     // ```
-    let sweep_retry = request.retry
-        && watches
-            .limit
-            .is_some_and(|backoff| return backoff.may_retry(now));
+    let backoff_allows = match watches.limit {
+        Some(backoff) => backoff.may_retry(now),
+        None => false,
+    };
+    let sweep_retry = request.retry && backoff_allows;
     let allowed = Allowed {
         failed: request.retry,
         limited: shown_changed || sweep_retry || request.user_retry,

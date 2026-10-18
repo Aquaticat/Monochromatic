@@ -30,7 +30,7 @@ use crate::workspace::Workspace;
 /// ```ts
 /// import { INotifyWatcher, Config } from 'notify';
 /// ```
-use notify::{Config, INotifyWatcher, Watcher};
+use notify::{Config, Event, EventHandler, INotifyWatcher, Watcher};
 /// What:
 ///  `Arc` shares the state across threads;
 ///  `Receiver`/`SyncSender` are the bounded wake channel's ends;
@@ -58,6 +58,33 @@ use std::{
 /// Shortest sleep while waiting for the servers' backoff,
 ///  so a wait that just ended does not spin.
 const SHORTEST_BACKOFF_SLEEP: Duration = Duration::from_millis(50);
+
+/// What:
+///  The handler notify calls for every event:
+///  it owns the shared state and the wake sender,
+///  and records the event.
+/// Why:
+///  notify calls it on its own thread,
+///  so it must own what it uses.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const handler = (event) => record(shared, waker, event);
+/// ```
+struct EventRecorder {
+    /// The state the UI thread reads.
+    shared: Arc<Mutex<Shared>>,
+    /// Wakes the watch thread after an event was recorded.
+    waker: SyncSender<()>,
+}
+
+/// Each event is recorded as a change or an invalidation.
+impl EventHandler for EventRecorder {
+    /// Record one event or error from notify.
+    fn handle_event(&mut self, event: notify::Result<Event>) {
+        record(&self.shared, &self.waker, event);
+    }
+}
 
 /// The real kernel calls:
 ///  one borrowed watcher and the project boundary its watches must stay inside.
@@ -170,10 +197,11 @@ fn apply(
     // The same holds for a newly displayed file in a directory that was already watched.
     // No write was seen, so a write event recorded in the meantime keeps its own classification.
     let parent = watches.file.as_deref().and_then(Path::parent);
-    if (outcome.switched
-        || parent.is_some_and(|directory| return outcome.established.contains(directory)))
-        && published.pending.source.is_none()
-    {
+    let reached = match parent {
+        Some(directory) => outcome.established.contains(directory),
+        None => false,
+    };
+    if (outcome.switched || reached) && published.pending.source.is_none() {
         published.pending.source = Some(SourceChange::Reread);
     }
     published.pending.directories.extend(outcome.established);
@@ -191,7 +219,7 @@ pub(super) fn run(
 ) {
     let handler_shared = Arc::clone(&shared);
     let handler_waker = waker.clone();
-    // What: `move |event| ...` is a closure that takes ownership of `handler_shared` and `handler_waker`.
+    // What: `EventRecorder` is a struct that takes ownership of `handler_shared` and `handler_waker`.
     // Why: notify calls it on its own thread for every event, so it must own what it uses.
     //
     // In TS you'd write (pseudocode):
@@ -199,8 +227,9 @@ pub(super) fn run(
     // const handler = (event) => record(handlerShared, handlerWaker, event);
     // ```
     let created = INotifyWatcher::new(
-        move |event| {
-            record(&handler_shared, &handler_waker, event);
+        EventRecorder {
+            shared: handler_shared,
+            waker: handler_waker,
         },
         Config::default().with_follow_symlinks(false),
     );
@@ -217,11 +246,14 @@ pub(super) fn run(
     let mut servers = Servers::default();
     loop {
         // While the servers wait on the limit, the thread also wakes when their backoff ends.
-        let backoff = servers.watches.limit.map(|limit| {
-            return limit
-                .until_retry(Instant::now())
-                .max(SHORTEST_BACKOFF_SLEEP);
-        });
+        let mut backoff = None;
+        if let Some(limit) = servers.watches.limit {
+            backoff = Some(
+                limit
+                    .until_retry(Instant::now())
+                    .max(SHORTEST_BACKOFF_SLEEP),
+            );
+        }
         // What: `recv_timeout` waits for a wake or the end of the backoff; `Timeout` is the latter.
         // Why: The servers' retries need no UI tick, so they also work in the headless inspection tool.
         //
@@ -234,7 +266,10 @@ pub(super) fn run(
                 Ok(()) | Err(RecvTimeoutError::Timeout) => Ok(()),
                 Err(error) => Err(error.to_string()),
             },
-            None => wakes.recv().map_err(|error| return error.to_string()),
+            None => match wakes.recv() {
+                Ok(()) => Ok(()),
+                Err(error) => Err(error.to_string()),
+            },
         };
         if let Err(error) = received {
             tracing::debug!(%error, "change-watch wake channel closed");

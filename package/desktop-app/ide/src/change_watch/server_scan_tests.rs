@@ -71,10 +71,10 @@ fn project() -> (tempfile::TempDir, PathBuf) {
 fn source_folders_follow_the_search_ignore_rules() {
     let (_directory, root) = project();
     let found = scan(&root, &root, true);
-    let expected: BTreeSet<PathBuf> = ["", "src", "src/deep"]
-        .iter()
-        .map(|relative| return root.join(relative))
-        .collect();
+    let mut expected: BTreeSet<PathBuf> = BTreeSet::new();
+    for relative in ["", "src", "src/deep"] {
+        expected.insert(root.join(relative));
+    }
     // `root.join("")` is the root itself.
     assert_eq!(found.directories, expected);
     assert_eq!(

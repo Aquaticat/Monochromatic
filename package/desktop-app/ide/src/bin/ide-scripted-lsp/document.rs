@@ -149,11 +149,13 @@ pub fn line_at(text: &str, offset: usize) -> &str {
     // ```ts
     // const start = text.lastIndexOf('\n', offset - 1) + 1;
     // ```
-    let start = text[..offset]
-        .rfind('\n')
-        .map_or(0, |found| return found + 1);
-    let end = text[offset..]
-        .find('\n')
-        .map_or(text.len(), |found| return offset + found);
+    let start = match text[..offset].rfind('\n') {
+        Some(found) => found + 1,
+        None => 0,
+    };
+    let end = match text[offset..].find('\n') {
+        Some(found) => offset + found,
+        None => text.len(),
+    };
     return &text[start..end];
 }

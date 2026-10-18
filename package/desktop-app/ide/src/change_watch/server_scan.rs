@@ -82,6 +82,15 @@ pub(super) struct Scan {
     pub(super) generation: u64,
 }
 
+/// True when the directory entry is a folder itself;
+///  the file type does not follow symbolic links.
+fn is_directory_entry(entry: &fs::DirEntry) -> bool {
+    return match entry.file_type() {
+        Ok(kind) => kind.is_dir(),
+        Err(_) => false,
+    };
+}
+
 /// True for a name the search skips (hidden) or that is never watched.
 fn skipped_name(name: &OsStr) -> bool {
     // What: `as_bytes` views the native name as raw bytes; `first` is its first byte, if any.
@@ -92,7 +101,13 @@ fn skipped_name(name: &OsStr) -> bool {
     // return name.startsWith('.') || PRUNED.includes(name);
     // ```
     let hidden = name.as_bytes().first() == Some(&b'.');
-    let pruned = PRUNED.iter().any(|pruned| return name == *pruned);
+    let mut pruned = false;
+    for candidate in PRUNED.iter() {
+        if name == *candidate {
+            pruned = true;
+            break;
+        }
+    }
     return hidden || pruned;
 }
 
@@ -113,11 +128,14 @@ fn under_pruned(base: &Path, file: &Path) -> bool {
     let Some(parent) = relative.parent() else {
         return false;
     };
-    return parent.components().any(|component| {
-        return PRUNED
-            .iter()
-            .any(|pruned| return component.as_os_str() == *pruned);
-    });
+    for component in parent.components() {
+        for pruned in PRUNED.iter() {
+            if component.as_os_str() == *pruned {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 /// What:
@@ -168,12 +186,21 @@ fn list_files(root: &Path, base: &Path) -> Option<Vec<PathBuf>> {
     // ```ts
     // return output.stdout.split('\0').filter(Boolean);
     // ```
-    let files = output
-        .stdout
-        .split(|byte| return *byte == 0)
-        .filter(|piece| return !piece.is_empty())
-        .map(|piece| return PathBuf::from(OsStr::from_bytes(piece)))
-        .collect();
+    let mut files: Vec<PathBuf> = Vec::new();
+    let mut start = 0;
+    for (index, byte) in output.stdout.iter().enumerate() {
+        if *byte == 0 {
+            if index > start {
+                files.push(PathBuf::from(OsStr::from_bytes(
+                    &output.stdout[start..index],
+                )));
+            }
+            start = index + 1;
+        }
+    }
+    if start < output.stdout.len() {
+        files.push(PathBuf::from(OsStr::from_bytes(&output.stdout[start..])));
+    }
     return Some(files);
 }
 
@@ -201,7 +228,7 @@ fn walk_all(base: &Path) -> BTreeSet<PathBuf> {
         // `flatten` skips entries that could not be read.
         for entry in entries.flatten() {
             // `file_type` does not follow symbolic links, so a link to a folder is not entered.
-            let is_directory = entry.file_type().is_ok_and(|kind| return kind.is_dir());
+            let is_directory = is_directory_entry(&entry);
             if is_directory && !skipped_name(&entry.file_name()) {
                 pending.push(entry.path());
             }
@@ -219,7 +246,10 @@ fn is_empty_directory(directory: &Path) -> bool {
     // ```ts
     // return readdirSync(directory).length === 0;
     // ```
-    return fs::read_dir(directory).is_ok_and(|mut entries| return entries.next().is_none());
+    return match fs::read_dir(directory) {
+        Ok(mut entries) => entries.next().is_none(),
+        Err(_) => false,
+    };
 }
 
 /// Empty folders directly inside the source folders:
@@ -234,7 +264,7 @@ fn empty_children(directories: &BTreeSet<PathBuf>) -> BTreeSet<PathBuf> {
         };
         for entry in entries.flatten() {
             let path = entry.path();
-            let is_directory = entry.file_type().is_ok_and(|kind| return kind.is_dir());
+            let is_directory = is_directory_entry(&entry);
             if !is_directory || skipped_name(&entry.file_name()) || directories.contains(&path) {
                 continue;
             }
@@ -328,11 +358,14 @@ pub(super) fn bases(
     let mut wanted = BTreeSet::new();
     for candidate in candidates {
         // `symlink_metadata` describes the link itself, so a link to a folder is not followed.
-        let is_directory =
-            fs::symlink_metadata(candidate).is_ok_and(|metadata| return metadata.is_dir());
-        let named = candidate
-            .file_name()
-            .is_some_and(|name| return !skipped_name(name));
+        let is_directory = match fs::symlink_metadata(candidate) {
+            Ok(metadata) => metadata.is_dir(),
+            Err(_) => false,
+        };
+        let named = match candidate.file_name() {
+            Some(name) => !skipped_name(name),
+            None => false,
+        };
         if is_directory
             && named
             && let Some(parent) = candidate.parent()
@@ -349,7 +382,14 @@ pub(super) fn bases(
     // Sorted order puts a folder before everything inside it, so one pass drops the covered ones.
     let mut kept: Vec<PathBuf> = Vec::new();
     for base in wanted {
-        if kept.iter().any(|outer| return base.starts_with(outer)) {
+        let mut covered = false;
+        for outer in kept.iter() {
+            if base.starts_with(outer) {
+                covered = true;
+                break;
+            }
+        }
+        if covered {
             continue;
         }
         kept.push(base);

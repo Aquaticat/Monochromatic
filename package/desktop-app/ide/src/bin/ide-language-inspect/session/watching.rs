@@ -6,8 +6,10 @@
 
 /// The session these steps belong to.
 use super::Session;
+/// The condition this step waits for.
+use super::condition::FoldersWatched;
 /// Failures name the operation that failed.
-use anyhow::{Context, Result};
+use anyhow::Result;
 /// `json_value!` is `json!` with the one lint allowance the repository's `unwrap` ban needs.
 use ide_app::json_value;
 /// JSON values.
@@ -43,10 +45,10 @@ impl Session {
         let Some(watcher) = self.watcher.as_mut() else {
             return;
         };
-        let feed = self
-            .worker
-            .wants_file_changes()
-            .then(|| return self.worker.file_change_sender());
+        let mut feed = None;
+        if self.worker.wants_file_changes() {
+            feed = Some(self.worker.file_change_sender());
+        }
         watcher.feed_servers(feed);
         // The tree's invalidations have no reader here.
         let _tree = watcher.take();
@@ -56,32 +58,30 @@ impl Session {
     ///  the displayed document is not touched.
     pub(super) fn write(&mut self, file: &Path, text: &str) -> Result<Value> {
         let path = self.project.join(file);
-        std::fs::write(&path, text)
-            .with_context(|| return format!("Cannot write {}", path.display()))?;
+        if let Err(error) = std::fs::write(&path, text) {
+            return Err(
+                anyhow::Error::new(error).context(format!("Cannot write {}", path.display()))
+            );
+        }
         return Ok(json_value!({ "written": path.display().to_string() }));
     }
 
     /// Wait until at least `minimum` folders are watched for the servers;
     ///  report whether that happened.
     pub(super) fn folders(&mut self, minimum: usize, seconds: u64) -> Result<Value> {
-        // What: a closure that reads the watcher's folder count, or false without a watcher.
+        // What: a condition that reads the watcher's folder count, or is false without a watcher.
         // Why: `until` polls with any such test.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // const watched = (session) => (session.watcher?.serverFolders() ?? 0) >= minimum;
         // ```
-        let watched = move |session: &Session| {
-            return session
-                .watcher
-                .as_ref()
-                .is_some_and(|watcher| return watcher.server_folders() >= minimum);
-        };
+        let watched = FoldersWatched { minimum };
         let within = self.until(Duration::from_secs(seconds), &watched)?;
-        let folders = self
-            .watcher
-            .as_ref()
-            .map_or(0, |watcher| return watcher.server_folders());
+        let mut folders = 0;
+        if let Some(watcher) = self.watcher.as_ref() {
+            folders = watcher.server_folders();
+        }
         return Ok(json_value!({ "within": within, "folders": folders }));
     }
 }

@@ -206,9 +206,10 @@ impl Wire {
             return json_value!({ "sendFailed": error.to_string() });
         }
         // `recv_timeout` returns `Err` when nothing arrived in time; `unwrap_or_else` substitutes a marker.
-        return receiver
-            .recv_timeout(Duration::from_secs(10))
-            .unwrap_or_else(|_| return json!({ "unanswered": true }));
+        return match receiver.recv_timeout(Duration::from_secs(10)) {
+            Ok(answer) => answer,
+            Err(_) => json!({ "unanswered": true }),
+        };
     }
 
     /// Hand a client reply to the thread that asked.

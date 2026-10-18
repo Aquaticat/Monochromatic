@@ -173,13 +173,13 @@ impl ChangeWatcher {
             }
         }
         let owned_file = file.map(Path::to_path_buf);
-        if self
-            .sent
-            .as_ref()
-            .is_some_and(|(directories_sent, file_sent)| {
-                return directories_sent == &wanted && file_sent == &owned_file;
-            })
-        {
+        let unchanged = match self.sent.as_ref() {
+            Some((directories_sent, file_sent)) => {
+                directories_sent == &wanted && file_sent == &owned_file
+            }
+            None => false,
+        };
+        if unchanged {
             return;
         }
         let mut guard = lock(&self.shared);
@@ -256,10 +256,10 @@ impl ChangeWatcher {
             changes.watched = Some(guard.watched.clone());
         }
         drop(guard);
-        let finished = self
-            .thread
-            .as_ref()
-            .is_some_and(|thread| return thread.is_finished());
+        let finished = match self.thread.as_ref() {
+            Some(thread) => thread.is_finished(),
+            None => false,
+        };
         if finished && !self.stopped {
             self.stopped = true;
             tracing::warn!(

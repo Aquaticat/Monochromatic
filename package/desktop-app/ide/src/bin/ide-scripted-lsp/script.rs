@@ -177,10 +177,10 @@ pub fn step_for(steps: &[Step], seen: u64) -> Step {
     // ```ts
     // return steps[seen - 1] ?? 'answer';
     // ```
-    let Some(index) = seen
-        .checked_sub(1)
-        .and_then(|before| return usize::try_from(before).ok())
-    else {
+    let Some(before) = seen.checked_sub(1) else {
+        return Step::Answer;
+    };
+    let Ok(index) = usize::try_from(before) else {
         return Step::Answer;
     };
     return steps.get(index).copied().unwrap_or(Step::Answer);
@@ -332,8 +332,10 @@ fn read(name: &str, fallback: &str) -> String {
     // ```ts
     // return env[`IDE_SCRIPTED_${name}`] ?? fallback;
     // ```
-    return env::var(format!("IDE_SCRIPTED_{name}"))
-        .unwrap_or_else(|_| return fallback.to_string());
+    return match env::var(format!("IDE_SCRIPTED_{name}")) {
+        Ok(value) => value,
+        Err(_) => fallback.to_string(),
+    };
 }
 
 /// Settings construction.

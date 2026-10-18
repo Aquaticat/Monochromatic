@@ -136,13 +136,14 @@ fn a_blocked_output_never_delays_the_logging_thread() {
     let total = 5000;
     let started = Instant::now();
     let mut slowest = Duration::ZERO;
-    tracing::subscriber::with_default(subscriber, || {
-        for number in 0..total {
-            let before = Instant::now();
-            tracing::info!(number, "a record logged while the output is stalled");
-            slowest = slowest.max(before.elapsed());
-        }
-    });
+    // The guard keeps the subscriber as this thread's default until it is dropped.
+    let default_guard = tracing::subscriber::set_default(subscriber);
+    for number in 0..total {
+        let before = Instant::now();
+        tracing::info!(number, "a record logged while the output is stalled");
+        slowest = slowest.max(before.elapsed());
+    }
+    drop(default_guard);
     let elapsed = started.elapsed();
     assert!(
         slowest < Duration::from_secs(1) && elapsed < Duration::from_secs(3),
@@ -155,7 +156,10 @@ fn a_blocked_output_never_delays_the_logging_thread() {
         .matches("a record logged while the output is stalled")
         .count();
     let losses = reported(&text);
-    let lost: u64 = losses.iter().map(|loss| return loss.records).sum();
+    let mut lost: u64 = 0;
+    for loss in losses.iter() {
+        lost += loss.records;
+    }
     assert!(
         lost > 0,
         "the stalled output was expected to overflow the queue"

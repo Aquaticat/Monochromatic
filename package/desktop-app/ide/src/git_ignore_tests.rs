@@ -47,11 +47,11 @@ fn listing(workspace: &Workspace, folder: &str) -> (std::path::PathBuf, Vec<Dire
 fn ignored(matcher: &mut IgnoreMatcher, workspace: &Workspace, folder: &str) -> Vec<String> {
     let (path, entries) = listing(workspace, folder);
     let answer = matcher.evaluate(&path, &entries);
-    return answer
-        .names
-        .iter()
-        .map(|name| return name.to_string_lossy().into_owned())
-        .collect();
+    let mut texts: Vec<String> = Vec::new();
+    for name in answer.names.iter() {
+        texts.push(name.to_string_lossy().into_owned());
+    }
+    return texts;
 }
 
 /// A matcher with no global excludes file.

@@ -83,14 +83,19 @@ pub struct ServerRequest {
 
 /// Forget everything below `base` (the base included) in a set of folders.
 pub(super) fn forget_below(set: &mut BTreeSet<PathBuf>, base: &Path) {
-    // What: `retain` keeps the entries for which the closure is true; `starts_with` compares whole components.
+    // What: only the entries outside `base` are put back; `starts_with` compares whole components.
     // Why: A removed or rescanned folder takes its subfolders with it.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // for (const path of set) if (isInside(path, base)) set.delete(path);
     // ```
-    set.retain(|path| return !path.starts_with(base));
+    let held = std::mem::take(set);
+    for path in held {
+        if !path.starts_with(base) {
+            set.insert(path);
+        }
+    }
 }
 
 /// Remove the watches the servers no longer want,
@@ -118,18 +123,29 @@ pub fn reconcile_servers(
         }
     }
     let desired = &servers.desired;
-    servers.limited.retain(|path| return desired.contains(path));
-    servers.failed.retain(|path| return desired.contains(path));
-    // What: `is_some_and` asks the optional backoff whether its wait is over.
+    let limited = std::mem::take(&mut servers.limited);
+    for path in limited {
+        if desired.contains(&path) {
+            servers.limited.insert(path);
+        }
+    }
+    let failed = std::mem::take(&mut servers.failed);
+    for path in failed {
+        if desired.contains(&path) {
+            servers.failed.insert(path);
+        }
+    }
+    // What: `match` asks the optional backoff whether its wait is over.
     // Why: A folder waiting on the limit is retried after the backoff, or at once after a new scan.
     //
     // In TS you'd write (pseudocode):
     // ```ts
     // const retryLimited = desiredChanged || (limit !== undefined && limit.mayRetry(now));
     // ```
-    let backoff_retry = servers
-        .limit
-        .is_some_and(|backoff| return backoff.may_retry(now));
+    let backoff_retry = match servers.limit {
+        Some(backoff) => backoff.may_retry(now),
+        None => false,
+    };
     let retry_limited = request.desired_changed || backoff_retry;
     let mut established = BTreeSet::new();
     let mut limit_hit = false;
@@ -283,12 +299,13 @@ impl Kernel for TreeFirst<'_> {
             // ```ts
             // const victim = [...servers.active].find(path => !treeHeld.has(path));
             // ```
-            let candidate = self
-                .servers
-                .active
-                .iter()
-                .find(|held| return !self.tree_held.contains(*held))
-                .cloned();
+            let mut candidate = None;
+            for held in self.servers.active.iter() {
+                if !self.tree_held.contains(held) {
+                    candidate = Some(held.clone());
+                    break;
+                }
+            }
             let Some(victim) = candidate else {
                 return Err(WatchFailure::Limit);
             };

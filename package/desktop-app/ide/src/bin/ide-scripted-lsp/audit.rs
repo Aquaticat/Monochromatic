@@ -26,6 +26,16 @@ use serde_json::{Value, json};
 /// ```
 use std::{fs::OpenOptions, io::Write};
 
+/// True when the comma-separated mount `options` list `wanted`.
+fn lists_option(options: &str, wanted: &str) -> bool {
+    for option in options.split(',') {
+        if option == wanted {
+            return true;
+        }
+    }
+    return false;
+}
+
 /// What:
 ///  Mount points mounted read-write,
 ///  from `/proc/self/mountinfo`.
@@ -45,7 +55,7 @@ fn writable_mounts() -> Vec<String> {
     for line in table.lines() {
         // Fields: id, parent, device, root, mount point, mount options, ...
         let fields: Vec<&str> = line.split(' ').collect();
-        if fields.len() > 5 && fields[5].split(',').any(|option| return option == "rw") {
+        if fields.len() > 5 && lists_option(fields[5], "rw") {
             found.push(fields[4].to_string());
         }
     }
@@ -54,11 +64,11 @@ fn writable_mounts() -> Vec<String> {
 
 /// Try to append to `path` and report the result with the raw error number.
 fn attempt_write(path: &str) -> Value {
-    let outcome = OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(path)
-        .and_then(|mut file| return file.write_all(b"x"));
+    let opened = OpenOptions::new().create(true).append(true).open(path);
+    let outcome = match opened {
+        Ok(mut file) => file.write_all(b"x"),
+        Err(error) => Err(error),
+    };
     return match outcome {
         Ok(()) => json_value!({ "path": path, "ok": true }),
         Err(error) => json_value!({ "path": path, "ok": false, "errno": error.raw_os_error() }),
@@ -84,8 +94,10 @@ pub fn audit(writes: &str) -> Value {
     names.sort();
     let mut namespaces = json!({});
     for kind in ["user", "pid", "net", "mnt"] {
-        let link = std::fs::read_link(format!("/proc/self/ns/{kind}"))
-            .map_or(String::new(), |target| return target.display().to_string());
+        let link = match std::fs::read_link(format!("/proc/self/ns/{kind}")) {
+            Ok(target) => target.display().to_string(),
+            Err(_) => String::new(),
+        };
         namespaces[kind] = json_value!(link);
     }
     let mut results = Vec::new();
@@ -95,9 +107,10 @@ pub fn audit(writes: &str) -> Value {
         }
     }
     // The working directory shows which spelling of the project root exists inside the sandbox.
-    let cwd = std::env::current_dir().map_or(String::new(), |found| {
-        return found.display().to_string();
-    });
+    let cwd = match std::env::current_dir() {
+        Ok(found) => found.display().to_string(),
+        Err(_) => String::new(),
+    };
     return json_value!({
         "pid": std::process::id(),
         "cwd": cwd,

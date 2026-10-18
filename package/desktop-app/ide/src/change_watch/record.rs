@@ -168,8 +168,10 @@ fn record_for_servers(guard: &mut Shared, kind: &EventKind, path: &Path) -> bool
     };
     let parent = path.parent();
     let watched = &guard.server.watched;
-    let inside =
-        watched.contains(path) || parent.is_some_and(|folder| return watched.contains(folder));
+    let mut inside = watched.contains(path);
+    if !inside && let Some(folder) = parent {
+        inside = watched.contains(folder);
+    }
     if !inside {
         return false;
     }
@@ -212,6 +214,14 @@ fn record_for_servers(guard: &mut Shared, kind: &EventKind, path: &Path) -> bool
     return structure;
 }
 
+/// True when the optional path ends in the file name `name`.
+fn named(candidate: Option<&Path>, name: &str) -> bool {
+    if let Some(found) = candidate.and_then(Path::file_name) {
+        return found == name;
+    }
+    return false;
+}
+
 /// What:
 ///  True for the files whose content decides which entries git ignores:
 ///  a `.gitignore`,
@@ -225,11 +235,6 @@ fn record_for_servers(guard: &mut Shared, kind: &EventKind, path: &Path) -> bool
 /// function isIgnoreRuleFile(path: string): boolean;
 /// ```
 fn is_ignore_rule_file(path: &Path) -> bool {
-    let named = |candidate: Option<&Path>, name: &str| -> bool {
-        return candidate
-            .and_then(Path::file_name)
-            .is_some_and(|found| return found == name);
-    };
     if named(Some(path), ".gitignore") {
         return true;
     }

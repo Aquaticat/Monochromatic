@@ -9,7 +9,9 @@ use crate::Step;
 /// Rendering of observations.
 use crate::render;
 /// Failures name the operation that failed.
-use anyhow::{Context, Result, bail};
+use anyhow::{Result, bail};
+/// The conditions steps wait for.
+use condition::{Answered, Condition, DiagnosticsWithin, HintsEnough, Never, ServerReady};
 /// `json_value!` is `json!` with the one lint allowance the repository's `unwrap` ban needs.
 use ide_app::json_value;
 /// The handle and the types it exchanges.
@@ -20,7 +22,7 @@ use ide_app::language::{
     hints::{HintWindow, HintsSnapshot},
     identity::DocumentStamp,
     reply::{LanguageReply, PositionRequest, RequestKind, RequestOutcome},
-    status::{LanguageStatus, ServerState},
+    status::LanguageStatus,
     sync::{DocumentOpen, DocumentReload},
 };
 /// The application's own document and reload path,
@@ -47,6 +49,8 @@ use std::{
     time::{Duration, Instant},
 };
 
+/// The conditions a step waits for.
+mod condition;
 /// The steps about folders watched for the servers,
 ///  and the relay the application's tick performs.
 mod watching;
@@ -191,7 +195,7 @@ impl Session {
     /// What:
     ///  Poll until `done` accepts the session or the time is up;
     ///  returns whether it did.
-    ///       `&dyn Fn(&Session) -> bool` borrows any function or closure with that signature.
+    ///       `&dyn Condition` borrows any value that implements the `Condition` trait.
     /// Why:
     ///  Real servers answer after an unknown warm-up;
     ///  every step states its own limit.
@@ -200,11 +204,11 @@ impl Session {
     /// ```ts
     /// until(seconds: number, done: (session: Session) => boolean): boolean
     /// ```
-    fn until(&mut self, limit: Duration, done: &dyn Fn(&Session) -> bool) -> Result<bool> {
+    fn until(&mut self, limit: Duration, done: &dyn Condition) -> Result<bool> {
         let start = Instant::now();
         loop {
             self.poll()?;
-            if done(self) {
+            if done.holds(self) {
                 return Ok(true);
             }
             if start.elapsed() >= limit {
@@ -227,8 +231,11 @@ impl Session {
 
     /// Write new content to the displayed file and apply the reload as the application does.
     fn reload(&mut self, text: &str) -> Result<()> {
-        std::fs::write(&self.path, text)
-            .with_context(|| return format!("Cannot write {}", self.path.display()))?;
+        if let Err(error) = std::fs::write(&self.path, text) {
+            return Err(
+                anyhow::Error::new(error).context(format!("Cannot write {}", self.path.display()))
+            );
+        }
         let reload = self.document.prepare_reload(text);
         let command = DocumentReload::from_reload(self.file, &reload);
         if !self.document.apply_reload(reload) {
@@ -267,30 +274,29 @@ impl Session {
             let Some(number) = self.ask(wanted, at)? else {
                 bail!("the command queue was full");
             };
-            // What: A closure capturing `number` by copy; `move` gives it its own copy.
+            // What: `Answered` holds the request number by copy.
             // Why: The wait ends when the last server answered this request.
             //
             // In TS you'd write (pseudocode):
             // ```ts
             // const answered = (session: Session) => session.replies.some(r => r.request === number && r.remaining === 0);
             // ```
-            let answered = move |session: &Session| {
-                return session
-                    .replies
-                    .iter()
-                    .any(|reply| return reply.request == number && reply.remaining == 0);
-            };
+            let answered = Answered { request: number };
             let complete = self.until(limit.saturating_sub(start.elapsed()), &answered)?;
-            let matched = self.replies.iter().any(|reply| {
+            let mut matched = false;
+            for reply in self.replies.iter() {
                 // `matches!` is true when the pair fits one of the listed patterns.
-                return matches!(
+                if matches!(
                     (&reply.outcome, until),
                     (RequestOutcome::Hover(_), "hover")
                         | (RequestOutcome::Locations(_), "locations")
                         | (RequestOutcome::Empty, "empty")
                         | (_, "")
-                );
-            });
+                ) {
+                    matched = true;
+                    break;
+                }
+            }
             if matched || start.elapsed() >= limit {
                 return Ok(
                     json_value!({ "attempts": attempts, "complete": complete, "matched": matched }),
@@ -314,8 +320,13 @@ impl Session {
         let result = match step {
             Step::Open { file } => {
                 let path = self.project.join(file);
-                let text = std::fs::read_to_string(&path)
-                    .with_context(|| return format!("Cannot read {}", path.display()))?;
+                let text = match std::fs::read_to_string(&path) {
+                    Ok(found) => found,
+                    Err(error) => {
+                        return Err(anyhow::Error::new(error)
+                            .context(format!("Cannot read {}", path.display())));
+                    }
+                };
                 self.file += 1;
                 self.document = Document::new(&text);
                 self.path = path.clone();
@@ -331,14 +342,7 @@ impl Session {
                 json_value!({ "sent": sent })
             }
             Step::Ready { seconds } => {
-                let ready = |session: &Session| {
-                    return session
-                        .status
-                        .servers
-                        .iter()
-                        .any(|row| return row.state == ServerState::Ready);
-                };
-                json_value!({ "ready": self.until(Duration::from_secs(*seconds), &ready)? })
+                json_value!({ "ready": self.until(Duration::from_secs(*seconds), &ServerReady)? })
             }
             Step::Request {
                 kind,
@@ -357,14 +361,11 @@ impl Session {
                     visible_lines: *visible,
                 };
                 let sent = self.worker.request_hints(self.stamp(), window)?;
-                let least = *minimum;
-                let stamp = self.stamp();
                 // Hints are latest-value state: an unchanged snapshot is not published again, so the
                 // one already held counts when it describes the displayed revision.
-                let enough = move |session: &Session| {
-                    return session.hints.as_ref().is_some_and(|hints| {
-                        return hints.stamp == stamp && hints.hints.len() >= least;
-                    });
+                let enough = HintsEnough {
+                    stamp: self.stamp(),
+                    least: *minimum,
                 };
                 json_value!({ "sent": sent, "enough": self.until(Duration::from_secs(*seconds), &enough)? })
             }
@@ -373,17 +374,10 @@ impl Session {
                 maximum,
                 seconds,
             } => {
-                let (least, most) = (*minimum, *maximum);
-                let stamp = self.stamp();
-                let within = move |session: &Session| {
-                    return session.diagnostics.as_ref().is_some_and(|found| {
-                        let count: usize = found
-                            .groups
-                            .iter()
-                            .map(|group| return group.items.len())
-                            .sum();
-                        return found.stamp == stamp && count >= least && count <= most;
-                    });
+                let within = DiagnosticsWithin {
+                    stamp: self.stamp(),
+                    least: *minimum,
+                    most: *maximum,
                 };
                 json_value!({ "within": self.until(Duration::from_secs(*seconds), &within)? })
             }
@@ -396,13 +390,15 @@ impl Session {
                 self.replies.clear();
                 let overtaken = self.ask(RequestKind::Hover, *at)?;
                 self.reload(text)?;
-                let never = |_: &Session| return false;
-                self.until(Duration::from_millis(*settle), &never)?;
+                self.until(Duration::from_millis(*settle), &Never)?;
                 let after = self.worker.fence_counts();
-                let delivered = self
-                    .replies
-                    .iter()
-                    .any(|reply| return Some(reply.request) == overtaken);
+                let mut delivered = false;
+                for reply in self.replies.iter() {
+                    if Some(reply.request) == overtaken {
+                        delivered = true;
+                        break;
+                    }
+                }
                 json_value!({
                     "request": overtaken,
                     "delivered": delivered,
@@ -412,8 +408,7 @@ impl Session {
             Step::Write { file, text } => self.write(file, text)?,
             Step::Folders { minimum, seconds } => self.folders(*minimum, *seconds)?,
             Step::Sleep { milliseconds } => {
-                let never = |_: &Session| return false;
-                self.until(Duration::from_millis(*milliseconds), &never)?;
+                self.until(Duration::from_millis(*milliseconds), &Never)?;
                 json!({})
             }
             Step::Close => json_value!({ "sent": self.worker.close()? }),

@@ -141,12 +141,12 @@ fn apply_scan(
     // ```ts
     // const before = new Set([...desired].filter(path => isInside(path, base)));
     // ```
-    let before: BTreeSet<PathBuf> = servers
-        .desired
-        .iter()
-        .filter(|path| return path.starts_with(&base) && !servers.provisional.contains(*path))
-        .cloned()
-        .collect();
+    let mut before: BTreeSet<PathBuf> = BTreeSet::new();
+    for path in servers.desired.iter() {
+        if path.starts_with(&base) && !servers.provisional.contains(path) {
+            before.insert(path.clone());
+        }
+    }
     forget_below(&mut servers.desired, &base);
     forget_below(&mut servers.provisional, &base);
     servers.desired.extend(found.directories);
@@ -159,9 +159,10 @@ fn apply_scan(
         return;
     };
     for file in found.files {
-        let known = file
-            .parent()
-            .is_some_and(|folder| return before.contains(folder));
+        let known = match file.parent() {
+            Some(folder) => before.contains(folder),
+            None => false,
+        };
         if known {
             continue;
         }
@@ -245,10 +246,10 @@ pub(super) fn start_scan(
     shared: &Arc<Mutex<Shared>>,
     waker: &SyncSender<()>,
 ) {
-    let finished = servers
-        .scanning
-        .as_ref()
-        .is_none_or(|handle| return handle.is_finished());
+    let finished = match servers.scanning.as_ref() {
+        Some(handle) => handle.is_finished(),
+        None => true,
+    };
     let requested = !servers.candidates.is_empty() || !servers.rescans.is_empty();
     if !servers.active || !finished || !requested {
         return;
