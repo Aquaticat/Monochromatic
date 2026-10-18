@@ -53,6 +53,28 @@ const LINKED_IMPORTER_SOURCE = "import type { LinkedConfig, } from 'linked-works
 /** Source of the workspace package, whose real path carries no `node_modules` segment. */
 const LINKED_PACKAGE_SOURCE = 'export type LinkedConfig = { value: string; };\n';
 
+/** Disposable directory removed after the test scope. */
+type DisposableLinkedRoot = {
+  readonly path: string;
+  readonly [Symbol.dispose]: () => void;
+};
+
+/**
+ Creates the disposable directory holding the importer and the linked package.
+ 
+ @returns directory removed after the test scope.
+ */
+function disposableLinkedRoot(): DisposableLinkedRoot {
+  /** Directory created for one case. */
+  const path = mkdtempSync(join(tmpdir(), 'readonly-owner-link-',),);
+  return {
+    path,
+    [Symbol.dispose](): void {
+      rmSync(path, { recursive: true, force: true, },);
+    },
+  };
+}
+
 /**
  Writes a project importing a workspace package through a `node_modules` symbolic link.
  
@@ -206,42 +228,36 @@ await describe({
     it({
       name: 'classifies a workspace package reached through a node_modules symbolic link as workspace',
       fn: async () => {
-        /** Disposable directory holding the importer and the linked package. */
-        const root = mkdtempSync(join(tmpdir(), 'readonly-owner-link-',),);
-        try {
-          /** Importer whose parameter type is declared in the linked package. */
-          const inputPath = writeLinkedWorkspaceFixture(root,);
-          const session = openSemanticFile({
-            fileName: inputPath,
-            sourceText: LINKED_IMPORTER_SOURCE,
-            hasBOM: false,
-          },);
-          const parameterNode = session.nodeAtOffset(LINKED_IMPORTER_SOURCE.indexOf('config:',),);
-          const type = session.checker.getTypeAtLocation(parameterNode,);
-          if (type === undefined)
-            throw new Error('Expected the linked package type.',);
-          /** Source file of the type, which the program holds under the real workspace path. */
-          const declarationFile = session.project.program
-            .getSourceFile(join(realpathSync(root,), 'workspace-package', 'index.ts',),);
-          if (declarationFile === undefined)
-            throw new Error('Expected the linked package source in the program.',);
-          /* The premise of the case: the program flags a workspace file reached through the link as external. */
-          expect(session.project.program.isSourceFileFromExternalLibrary(declarationFile,),).toBe(true,);
-          const classification = classifyReadonlyType({
-            checker: session.checker,
-            project: session.project,
-            type,
-          },);
-          closeSemanticBridge();
-          if (classification.kind !== 'mutable')
-            throw new Error('Expected the linked package type to be mutable.',);
-          expect(classification.writablePaths.map(function owners(path,): readonly string[] {
-            return path.declarationOwners;
-          },),).toEqual([['workspace',],],);
-        }
-        finally {
-          rmSync(root, { recursive: true, force: true, },);
-        }
+        using root = disposableLinkedRoot();
+        /** Importer whose parameter type is declared in the linked package. */
+        const inputPath = writeLinkedWorkspaceFixture(root.path,);
+        const session = openSemanticFile({
+          fileName: inputPath,
+          sourceText: LINKED_IMPORTER_SOURCE,
+          hasBOM: false,
+        },);
+        const parameterNode = session.nodeAtOffset(LINKED_IMPORTER_SOURCE.indexOf('config:',),);
+        const type = session.checker.getTypeAtLocation(parameterNode,);
+        if (type === undefined)
+          throw new Error('Expected the linked package type.',);
+        /** Source file of the type, which the program holds under the real workspace path. */
+        const declarationFile = session.project.program
+          .getSourceFile(join(realpathSync(root.path,), 'workspace-package', 'index.ts',),);
+        if (declarationFile === undefined)
+          throw new Error('Expected the linked package source in the program.',);
+        /* The premise of the case: the program flags a workspace file reached through the link as external. */
+        expect(session.project.program.isSourceFileFromExternalLibrary(declarationFile,),).toBe(true,);
+        const classification = classifyReadonlyType({
+          checker: session.checker,
+          project: session.project,
+          type,
+        },);
+        closeSemanticBridge();
+        if (classification.kind !== 'mutable')
+          throw new Error('Expected the linked package type to be mutable.',);
+        expect(classification.writablePaths.map(function owners(path,): readonly string[] {
+          return path.declarationOwners;
+        },),).toEqual([['workspace',],],);
       },
     },),
     it({

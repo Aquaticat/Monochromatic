@@ -146,6 +146,16 @@ function disposableFixtureRoot(): DisposableFixtureRoot {
   };
 }
 
+/** What one side of a shared-hit comparison knows about a source. */
+type AnalysisSnapshot = Parameters<typeof verifySharedHit>[0]['cached'];
+
+/** One shared-hit comparison, whose cached side defaults to the agreeing snapshot. */
+type VerificationCase = {
+  readonly fileName: string;
+  readonly cached?: AnalysisSnapshot;
+  readonly fresh: AnalysisSnapshot;
+};
+
 /** One project directory next to the shared directory. */
 type ProjectFixture = {
   readonly name: string;
@@ -293,7 +303,7 @@ function buildBothProjects({
  @returns absolute paths of every shared entry.
  */
 function sharedEntryPaths(cacheRoot: string,): readonly string[] {
-  return readdirSync(cacheRoot, { recursive: true, },)
+  return readdirSync(cacheRoot, { recursive: true, encoding: 'utf8', },)
     .filter(function isSharedEntry(name,): boolean {
       return name.startsWith('shared',) && name.endsWith('.json',);
     },)
@@ -302,25 +312,43 @@ function sharedEntryPaths(cacheRoot: string,): readonly string[] {
     },);
 }
 
+/** Environment values set for one scope. */
+type EnvironmentOverride = {
+  readonly [Symbol.dispose]: () => void;
+};
+
 /**
- Puts an environment variable back the way it was before a case changed it.
+ Sets environment variables for the scope that holds the result.
  
- @param name - Variable name.
+ @param values - Variable names and the values they hold in the scope.
  
- @param value - Value before the case,
- absent when the variable was unset.
+ @returns override that puts every variable back the way it was,
+ removing the ones that were unset.
  */
-function restoreEnvironment({
-  name,
-  value,
-}: {
-  readonly name: string;
-  readonly value: string | undefined;
-},): void {
-  if (value === undefined)
-    delete process.env[name];
-  else
-    process.env[name] = value;
+function overrideEnvironment(values: Readonly<Record<string, string>>,): EnvironmentOverride {
+  /** Values the variables held before, for those that were set. */
+  const previous = new Map<string, string>();
+  /** Names of the variables that were unset. */
+  const unset: string[] = [];
+  Object.entries(values,)
+    .forEach(function setVariable([name, value,],): void {
+      const before = process.env[name];
+      if (before === undefined)
+        unset.push(name,);
+      else
+        previous.set(name, before,);
+      process.env[name] = value;
+    },);
+  return {
+    [Symbol.dispose](): void {
+      previous.forEach(function restoreVariable(value, name,): void {
+        process.env[name] = value;
+      },);
+      unset.forEach(function removeVariable(name,): void {
+        Reflect.deleteProperty(process.env, name,);
+      },);
+    },
+  };
 }
 
 /**
@@ -1150,91 +1178,74 @@ await describe({
         using root = disposableFixtureRoot();
         /** Directory receiving this process's verification counter file. */
         const directory = join(root.path, 'verification',);
-        /** Environment values in place before the case, restored afterwards. */
-        const previous = {
-          verify: process.env[VERIFY_SHARED_ENVIRONMENT_VARIABLE],
-          directory: process.env[VERIFY_SHARED_DIRECTORY_ENVIRONMENT_VARIABLE],
+        using environment = overrideEnvironment({
+          [VERIFY_SHARED_ENVIRONMENT_VARIABLE]: '1',
+          [VERIFY_SHARED_DIRECTORY_ENVIRONMENT_VARIABLE]: directory,
+        },);
+        /** Snapshot both sides share, with no omissions. */
+        const agreeing: AnalysisSnapshot = {
+          summaries: new Map(),
+          omittedCallableKeys: [],
+          omissionReasons: [],
         };
-        process.env[VERIFY_SHARED_ENVIRONMENT_VARIABLE] = '1';
-        process.env[VERIFY_SHARED_DIRECTORY_ENVIRONMENT_VARIABLE] = directory;
-        try {
-          /** Snapshot both sides share, with no omissions. */
-          const agreeing = {
-            summaries: new Map(),
-            omittedCallableKeys: [] as readonly string[],
-            omissionReasons: [] as readonly (typeof OMISSION_REASON_A | typeof OMISSION_REASON_B)[],
-          };
-          [
-            {
-              fileName: 'agreeing.ts',
-              fresh: agreeing,
+        /** Comparisons run, the first of which must not be reported. */
+        const cases: readonly VerificationCase[] = [
+          {
+            fileName: 'agreeing.ts',
+            fresh: agreeing,
+          },
+          {
+            fileName: 'omitted-keys.ts',
+            fresh: {
+              ...agreeing,
+              omittedCallableKeys: ['omitted-keys.ts:inspect',],
             },
-            {
-              fileName: 'omitted-keys.ts',
-              fresh: {
-                ...agreeing,
-                omittedCallableKeys: ['omitted-keys.ts:inspect',],
-              },
+          },
+          {
+            fileName: 'omission-reasons.ts',
+            fresh: {
+              ...agreeing,
+              omissionReasons: [OMISSION_REASON_A,],
             },
-            {
-              fileName: 'omission-reasons.ts',
-              fresh: {
-                ...agreeing,
-                omissionReasons: [OMISSION_REASON_A,],
-              },
+          },
+          {
+            fileName: 'omission-reason-values.ts',
+            cached: {
+              ...agreeing,
+              omissionReasons: [OMISSION_REASON_B,],
             },
-            {
-              fileName: 'omission-reason-values.ts',
-              cached: {
-                ...agreeing,
-                omissionReasons: [OMISSION_REASON_B,],
-              },
-              fresh: {
-                ...agreeing,
-                omissionReasons: [OMISSION_REASON_A,],
-              },
+            fresh: {
+              ...agreeing,
+              omissionReasons: [OMISSION_REASON_A,],
             },
-          ].forEach(function verifyCase({ fileName, cached, fresh, }: {
-            readonly fileName: string;
-            readonly cached?: typeof agreeing;
-            readonly fresh: typeof agreeing;
-          },): void {
-            verifySharedHit({
-              fileName,
-              project: 'reading-project',
-              writerProject: 'writing-project',
-              cached: cached ?? agreeing,
-              fresh,
-            },);
+          },
+        ];
+        cases.forEach(function verifyCase({ fileName, cached, fresh, },): void {
+          verifySharedHit({
+            fileName,
+            project: 'reading-project',
+            writerProject: 'writing-project',
+            cached: cached ?? agreeing,
+            fresh,
           },);
-          /** Counter files this process wrote. */
-          const counterFiles = readdirSync(directory,)
-            .filter(function isCounterFile(name,): boolean {
-              return name.endsWith('.json',);
-            },);
-          expect(counterFiles.length,).toBe(1,);
-          /** Mismatch records of this process, one per differing case. */
-          const { mismatchRecords, } = JSON.parse(
-            readFileSync(join(directory, counterFiles[0] ?? '',), 'utf8',),
-          ) as { readonly mismatchRecords: readonly { readonly fileName: string; readonly parts: readonly string[]; }[]; };
-          expect(mismatchRecords.map(function describeRecord({ fileName, parts, },): string {
-            return `${fileName}: ${parts.join('; ',)}`;
-          },),).toEqual([
-            'omitted-keys.ts: omittedCallableKeys differ',
-            'omission-reasons.ts: omissionReasons differ',
-            'omission-reason-values.ts: omissionReasons differ',
-          ],);
-        }
-        finally {
-          restoreEnvironment({
-            name: VERIFY_SHARED_ENVIRONMENT_VARIABLE,
-            value: previous.verify,
+        },);
+        /** Counter files this process wrote. */
+        const counterFiles = readdirSync(directory,)
+          .filter(function isCounterFile(name,): boolean {
+            return name.endsWith('.json',);
           },);
-          restoreEnvironment({
-            name: VERIFY_SHARED_DIRECTORY_ENVIRONMENT_VARIABLE,
-            value: previous.directory,
-          },);
-        }
+        expect(counterFiles.length,).toBe(1,);
+        /** Mismatch records of this process, one per differing case. */
+        const { mismatchRecords, } = JSON.parse(
+          readFileSync(join(directory, counterFiles[0] ?? '',), 'utf8',),
+        ) as { readonly mismatchRecords: readonly { readonly fileName: string; readonly parts: readonly string[]; }[]; };
+        expect(mismatchRecords.map(function describeRecord({ fileName, parts, },): string {
+          return `${fileName}: ${parts.join('; ',)}`;
+        },),).toEqual([
+          'omitted-keys.ts: omittedCallableKeys differ',
+          'omission-reasons.ts: omissionReasons differ',
+          'omission-reason-values.ts: omissionReasons differ',
+        ],);
       },
     },),
   ],
