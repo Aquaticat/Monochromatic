@@ -1,0 +1,412 @@
+{
+  "schemaVersion": 1,
+  "collectedAt": "2026-10-18T07:47:35.301Z",
+  "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+  "status": "Research checkpoint; remaining advanced exporters and repository cache mounts unresolved",
+  "sourceArchive": {
+    "path": "doc/audit/depot-buildkit-platform-campaign-2026-10-18.sources.json.gz",
+    "bytes": 679922,
+    "sha256": "b66f1e5dc0dc8bbc7e3769bf170180d105661ddea6250b4dc2cc181627897aeb"
+  },
+  "service": {
+    "source": "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
+    "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+    "projectId": "27m5m3vjlv",
+    "buildId": "fxzj58r8m2",
+    "tag": "monochromatic-platform-buildkit-20261018-v1-service",
+    "taggedImageReference": "registry.depot.dev/27m5m3vjlv:monochromatic-platform-buildkit-20261018-v1-service",
+    "imageReference": "registry.depot.dev/27m5m3vjlv@sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+    "digest": "sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+    "username": "x-token",
+    "pullTokenValuePublished": false,
+    "pullTokenRequestedForBuildId": "fxzj58r8m2",
+    "documentedPullTokenLifetimeSeconds": 3600,
+    "pullTokenClaims": {
+      "jwtDecoded": false
+    },
+    "nonceEnvironment": "MONO_RESEARCH_NONCE",
+    "healthPath": "/health",
+    "noncePath": "/nonce",
+    "port": 8080,
+    "holdSharedImageAndProjectUntilParentConsumersFinish": true,
+    "registryInspectionComplete": true,
+    "runtime": [
+      {
+        "architecture": "amd64",
+        "manifestDigest": "sha256:6132df16f6e66c0d2a08179fd7c9fefb377d2fc72e90fef79d6b83d2b88f9ff7",
+        "configDigest": "sha256:aedf411bcd17538e70d87272ba16677ed7ec62f2211cf4f30a3f38ec8ce6b55a",
+        "cmdProgramSha256": "7ce0999f42f0f692c62e1f9d1e5113a83804d1fc297284116ac80724f7ba2adc",
+        "healthcheck": {
+          "Test": [
+            "CMD",
+            "node",
+            "--input-type=module-typescript",
+            "-e",
+            "const response=await fetch('http://127.0.0.1:8080/health',{signal:AbortSignal.timeout(1000)}); const body=await response.json(); if(!response.ok||body.status!=='ok') throw new Error('Fixture health response failed');"
+          ],
+          "Interval": 1000000000,
+          "Timeout": 2000000000,
+          "StartPeriod": 1000000000,
+          "Retries": 3
+        },
+        "layerMediaTypes": [
+          "application/vnd.oci.image.layer.v1.tar+gzip"
+        ],
+        "layerBytes": 81007838
+      },
+      {
+        "architecture": "arm64",
+        "manifestDigest": "sha256:25187dc7165a7775344baa96241a7b86f40af77bad0ca6ea4ae6b9df2c634f9b",
+        "configDigest": "sha256:2c23ac87b73f3de90bbfbf4e71b052919759111932d92f0ffba288861b3f94f6",
+        "cmdProgramSha256": "7ce0999f42f0f692c62e1f9d1e5113a83804d1fc297284116ac80724f7ba2adc",
+        "healthcheck": {
+          "Test": [
+            "CMD",
+            "node",
+            "--input-type=module-typescript",
+            "-e",
+            "const response=await fetch('http://127.0.0.1:8080/health',{signal:AbortSignal.timeout(1000)}); const body=await response.json(); if(!response.ok||body.status!=='ok') throw new Error('Fixture health response failed');"
+          ],
+          "Interval": 1000000000,
+          "Timeout": 2000000000,
+          "StartPeriod": 1000000000,
+          "Retries": 3
+        },
+        "layerMediaTypes": [
+          "application/vnd.oci.image.layer.v1.tar+gzip"
+        ],
+        "layerBytes": 80876101
+      }
+    ],
+    "attestations": [
+      {
+        "manifestDigest": "sha256:65efde5ef9f94f651035ebc31eff58721eb0552ef368e5e15ebf727a1d708bd3",
+        "annotatedRuntimeSubject": "sha256:6132df16f6e66c0d2a08179fd7c9fefb377d2fc72e90fef79d6b83d2b88f9ff7",
+        "layerDigest": "sha256:c61883fd65656c7d8c206496129975aad03ba702e79d03d3005b2fad6a39a23c",
+        "mediaType": "application/vnd.in-toto+json",
+        "predicateType": "https://spdx.dev/Document",
+        "subjects": [
+          {
+            "name": "pkg:docker/registry.depot.dev/27m5m3vjlv@latest?platform=linux%2Famd64",
+            "digest": {
+              "sha256": "6132df16f6e66c0d2a08179fd7c9fefb377d2fc72e90fef79d6b83d2b88f9ff7"
+            }
+          }
+        ]
+      },
+      {
+        "manifestDigest": "sha256:65efde5ef9f94f651035ebc31eff58721eb0552ef368e5e15ebf727a1d708bd3",
+        "annotatedRuntimeSubject": "sha256:6132df16f6e66c0d2a08179fd7c9fefb377d2fc72e90fef79d6b83d2b88f9ff7",
+        "layerDigest": "sha256:1fa0c322c504ff68efae3d9bc404a852cc7dc6522321d2635593721c1f1b54b5",
+        "mediaType": "application/vnd.in-toto+json",
+        "predicateType": "https://slsa.dev/provenance/v0.2",
+        "subjects": [
+          {
+            "name": "pkg:docker/registry.depot.dev/27m5m3vjlv@latest?platform=linux%2Famd64",
+            "digest": {
+              "sha256": "6132df16f6e66c0d2a08179fd7c9fefb377d2fc72e90fef79d6b83d2b88f9ff7"
+            }
+          }
+        ]
+      },
+      {
+        "manifestDigest": "sha256:466ce9b519d46d0c199b658f9c522260265e632d67502596e0fbc5aed8f2d6d1",
+        "annotatedRuntimeSubject": "sha256:25187dc7165a7775344baa96241a7b86f40af77bad0ca6ea4ae6b9df2c634f9b",
+        "layerDigest": "sha256:e10b693cd6cdbc5ddcc63b0e2035faecf32610c21b15b1ed944b064043974447",
+        "mediaType": "application/vnd.in-toto+json",
+        "predicateType": "https://spdx.dev/Document",
+        "subjects": [
+          {
+            "name": "pkg:docker/registry.depot.dev/27m5m3vjlv@latest?platform=linux%2Farm64",
+            "digest": {
+              "sha256": "25187dc7165a7775344baa96241a7b86f40af77bad0ca6ea4ae6b9df2c634f9b"
+            }
+          }
+        ]
+      },
+      {
+        "manifestDigest": "sha256:466ce9b519d46d0c199b658f9c522260265e632d67502596e0fbc5aed8f2d6d1",
+        "annotatedRuntimeSubject": "sha256:25187dc7165a7775344baa96241a7b86f40af77bad0ca6ea4ae6b9df2c634f9b",
+        "layerDigest": "sha256:6af5991ee540b16c0d84bcfb691b635547ed07f1ceb8e2a19d4a0bc268278d5f",
+        "mediaType": "application/vnd.in-toto+json",
+        "predicateType": "https://slsa.dev/provenance/v0.2",
+        "subjects": [
+          {
+            "name": "pkg:docker/registry.depot.dev/27m5m3vjlv@latest?platform=linux%2Farm64",
+            "digest": {
+              "sha256": "25187dc7165a7775344baa96241a7b86f40af77bad0ca6ea4ae6b9df2c634f9b"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "immutableFixtureSources": [
+    "d9cf7458443c5c4b7d169ba18cdb80a7fcf34cbf",
+    "b00f8c834b51bed8ba619dddb15b24274f4350ad",
+    "898e2fdd6aac05471cf340231a50042ba6e43bc7",
+    "5cfc1d90f92154cf62fa95789fad9bd7deeda208"
+  ],
+  "attempts": [
+    {
+      "receipt": "service-build.json",
+      "buildId": "7wjrw9szj0",
+      "source": "d9cf7458443c5c4b7d169ba18cdb80a7fcf34cbf",
+      "exitCode": 1,
+      "signal": null,
+      "startedAt": "2026-10-18T07:08:39.522Z",
+      "finishedAt": "2026-10-18T07:08:50.509Z",
+      "elapsedMilliseconds": 10986,
+      "guardFired": false
+    },
+    {
+      "receipt": "service-build-v2.json",
+      "buildId": "xj1l6kmvbg",
+      "source": "b00f8c834b51bed8ba619dddb15b24274f4350ad",
+      "exitCode": 1,
+      "signal": null,
+      "startedAt": "2026-10-18T07:13:35.925Z",
+      "finishedAt": "2026-10-18T07:13:48.649Z",
+      "elapsedMilliseconds": 12724,
+      "guardFired": false
+    },
+    {
+      "receipt": "service-build-v3.json",
+      "buildId": "xm26rbm5kt",
+      "source": "898e2fdd6aac05471cf340231a50042ba6e43bc7",
+      "exitCode": 1,
+      "signal": null,
+      "startedAt": "2026-10-18T07:18:30.779Z",
+      "finishedAt": "2026-10-18T07:18:46.657Z",
+      "elapsedMilliseconds": 15878,
+      "guardFired": false
+    },
+    {
+      "receipt": "service-build-v4.json",
+      "buildId": "fxzj58r8m2",
+      "source": "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-10-18T07:25:44.512Z",
+      "finishedAt": "2026-10-18T07:26:12.515Z",
+      "elapsedMilliseconds": 28003,
+      "guardFired": false
+    }
+  ],
+  "registry": {
+    "complete": true,
+    "anonymousStatus": 401,
+    "runtime": [
+      {
+        "architecture": "amd64",
+        "manifestDigest": "sha256:6132df16f6e66c0d2a08179fd7c9fefb377d2fc72e90fef79d6b83d2b88f9ff7",
+        "configDigest": "sha256:aedf411bcd17538e70d87272ba16677ed7ec62f2211cf4f30a3f38ec8ce6b55a",
+        "cmdProgramSha256": "7ce0999f42f0f692c62e1f9d1e5113a83804d1fc297284116ac80724f7ba2adc",
+        "healthcheck": {
+          "Test": [
+            "CMD",
+            "node",
+            "--input-type=module-typescript",
+            "-e",
+            "const response=await fetch('http://127.0.0.1:8080/health',{signal:AbortSignal.timeout(1000)}); const body=await response.json(); if(!response.ok||body.status!=='ok') throw new Error('Fixture health response failed');"
+          ],
+          "Interval": 1000000000,
+          "Timeout": 2000000000,
+          "StartPeriod": 1000000000,
+          "Retries": 3
+        },
+        "layerMediaTypes": [
+          "application/vnd.oci.image.layer.v1.tar+gzip"
+        ],
+        "layerBytes": 81007838
+      },
+      {
+        "architecture": "arm64",
+        "manifestDigest": "sha256:25187dc7165a7775344baa96241a7b86f40af77bad0ca6ea4ae6b9df2c634f9b",
+        "configDigest": "sha256:2c23ac87b73f3de90bbfbf4e71b052919759111932d92f0ffba288861b3f94f6",
+        "cmdProgramSha256": "7ce0999f42f0f692c62e1f9d1e5113a83804d1fc297284116ac80724f7ba2adc",
+        "healthcheck": {
+          "Test": [
+            "CMD",
+            "node",
+            "--input-type=module-typescript",
+            "-e",
+            "const response=await fetch('http://127.0.0.1:8080/health',{signal:AbortSignal.timeout(1000)}); const body=await response.json(); if(!response.ok||body.status!=='ok') throw new Error('Fixture health response failed');"
+          ],
+          "Interval": 1000000000,
+          "Timeout": 2000000000,
+          "StartPeriod": 1000000000,
+          "Retries": 3
+        },
+        "layerMediaTypes": [
+          "application/vnd.oci.image.layer.v1.tar+gzip"
+        ],
+        "layerBytes": 80876101
+      }
+    ],
+    "attestations": [
+      {
+        "manifestDigest": "sha256:65efde5ef9f94f651035ebc31eff58721eb0552ef368e5e15ebf727a1d708bd3",
+        "annotatedRuntimeSubject": "sha256:6132df16f6e66c0d2a08179fd7c9fefb377d2fc72e90fef79d6b83d2b88f9ff7",
+        "layerDigest": "sha256:c61883fd65656c7d8c206496129975aad03ba702e79d03d3005b2fad6a39a23c",
+        "mediaType": "application/vnd.in-toto+json",
+        "predicateType": "https://spdx.dev/Document",
+        "subjects": [
+          {
+            "name": "pkg:docker/registry.depot.dev/27m5m3vjlv@latest?platform=linux%2Famd64",
+            "digest": {
+              "sha256": "6132df16f6e66c0d2a08179fd7c9fefb377d2fc72e90fef79d6b83d2b88f9ff7"
+            }
+          }
+        ]
+      },
+      {
+        "manifestDigest": "sha256:65efde5ef9f94f651035ebc31eff58721eb0552ef368e5e15ebf727a1d708bd3",
+        "annotatedRuntimeSubject": "sha256:6132df16f6e66c0d2a08179fd7c9fefb377d2fc72e90fef79d6b83d2b88f9ff7",
+        "layerDigest": "sha256:1fa0c322c504ff68efae3d9bc404a852cc7dc6522321d2635593721c1f1b54b5",
+        "mediaType": "application/vnd.in-toto+json",
+        "predicateType": "https://slsa.dev/provenance/v0.2",
+        "subjects": [
+          {
+            "name": "pkg:docker/registry.depot.dev/27m5m3vjlv@latest?platform=linux%2Famd64",
+            "digest": {
+              "sha256": "6132df16f6e66c0d2a08179fd7c9fefb377d2fc72e90fef79d6b83d2b88f9ff7"
+            }
+          }
+        ]
+      },
+      {
+        "manifestDigest": "sha256:466ce9b519d46d0c199b658f9c522260265e632d67502596e0fbc5aed8f2d6d1",
+        "annotatedRuntimeSubject": "sha256:25187dc7165a7775344baa96241a7b86f40af77bad0ca6ea4ae6b9df2c634f9b",
+        "layerDigest": "sha256:e10b693cd6cdbc5ddcc63b0e2035faecf32610c21b15b1ed944b064043974447",
+        "mediaType": "application/vnd.in-toto+json",
+        "predicateType": "https://spdx.dev/Document",
+        "subjects": [
+          {
+            "name": "pkg:docker/registry.depot.dev/27m5m3vjlv@latest?platform=linux%2Farm64",
+            "digest": {
+              "sha256": "25187dc7165a7775344baa96241a7b86f40af77bad0ca6ea4ae6b9df2c634f9b"
+            }
+          }
+        ]
+      },
+      {
+        "manifestDigest": "sha256:466ce9b519d46d0c199b658f9c522260265e632d67502596e0fbc5aed8f2d6d1",
+        "annotatedRuntimeSubject": "sha256:25187dc7165a7775344baa96241a7b86f40af77bad0ca6ea4ae6b9df2c634f9b",
+        "layerDigest": "sha256:6af5991ee540b16c0d84bcfb691b635547ed07f1ceb8e2a19d4a0bc268278d5f",
+        "mediaType": "application/vnd.in-toto+json",
+        "predicateType": "https://slsa.dev/provenance/v0.2",
+        "subjects": [
+          {
+            "name": "pkg:docker/registry.depot.dev/27m5m3vjlv@latest?platform=linux%2Farm64",
+            "digest": {
+              "sha256": "25187dc7165a7775344baa96241a7b86f40af77bad0ca6ea4ae6b9df2c634f9b"
+            }
+          }
+        ]
+      }
+    ],
+    "intermediateDescriptor": {
+      "descriptor": {
+        "mediaType": "application/vnd.oci.image.index.v1+json",
+        "digest": "sha256:ec6b6f12a0165c3c6c8d0b39ad01fb910bf6325bbd488a47411da32b2b435966",
+        "size": 856
+      },
+      "finalDigest": "sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7"
+    }
+  },
+  "remoteConsumer": {
+    "overallPass": false,
+    "failedDiagnostic": "Error: container 0bae3d193ca8f2b2eff4571b923e5a1f600cb34ff3eacc6458c098a94f41cdb4 has no defined healthcheck\n\n\n125 !== 0\n",
+    "http": {
+      "results": [
+        {
+          "path": "/health",
+          "status": 200,
+          "body": {
+            "status": "ok",
+            "nonce": "a3bec9fb-6761-4fc3-8b08-ef0345223ee1",
+            "cohort": "monochromatic-platform-buildkit-20261018-v1",
+            "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+            "harnessCommit": "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
+            "architecture": "x64",
+            "nodeVersion": "v24.22.0",
+            "path": "/health"
+          }
+        },
+        {
+          "path": "/nonce",
+          "status": 200,
+          "body": {
+            "status": "ok",
+            "nonce": "a3bec9fb-6761-4fc3-8b08-ef0345223ee1",
+            "cohort": "monochromatic-platform-buildkit-20261018-v1",
+            "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+            "harnessCommit": "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
+            "architecture": "x64",
+            "nodeVersion": "v24.22.0",
+            "path": "/nonce"
+          }
+        },
+        {
+          "path": "/missing-positive-negative-control",
+          "status": 404,
+          "body": {
+            "status": "not-found",
+            "nonce": "a3bec9fb-6761-4fc3-8b08-ef0345223ee1",
+            "cohort": "monochromatic-platform-buildkit-20261018-v1",
+            "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+            "harnessCommit": "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
+            "architecture": "x64",
+            "nodeVersion": "v24.22.0",
+            "path": "/missing-positive-negative-control"
+          }
+        }
+      ],
+      "nodeVersion": "v24.22.0"
+    },
+    "nativeHealthcheck": {
+      "exitCode": 125,
+      "stdout": "",
+      "stderr": "Error: container 0bae3d193ca8f2b2eff4571b923e5a1f600cb34ff3eacc6458c098a94f41cdb4 has no defined healthcheck\n"
+    },
+    "stop": {
+      "exitCode": 0,
+      "stdout": "depot-remote-service-a3bec9fb\n",
+      "stderr": ""
+    },
+    "cleanup": {
+      "exitCode": 0,
+      "stdout": "depot-remote-service-a3bec9fb\n",
+      "stderr": ""
+    },
+    "containerExitCode": 0,
+    "hostBindMounts": 0
+  },
+  "timestampComputeModel": {
+    "observedNativeRequestMilliseconds": 67591,
+    "maximumArchitectureBuilders": 2,
+    "cpusPerBuilder": 16,
+    "memoryGiBPerBuilder": 32,
+    "publicRateUsdPerBuilderMinute": 0.04,
+    "nominalWindowEstimateUsd": 0.09012133333333333,
+    "ceilingUsd": 1,
+    "invoiceOrAccountCapProven": false,
+    "initialExpiredWallClockRetained": true
+  },
+  "heldResources": {
+    "projectId": "27m5m3vjlv",
+    "imageDigest": "sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+    "deletionDeferredUntilSharedConsumersFinish": true
+  },
+  "unresolved": [
+    "OCI archive/local exports",
+    "Synthetic secret and keyless SSH forwarding consumers",
+    "Remote Git immutable context and local overlay control",
+    "Real firstparty BuildKit cache-mount consumer",
+    "OCI health metadata runtime controls",
+    "Build-specific versus project-path pull-token scope",
+    "Independent parent nativeCI and GitHub consumers",
+    "Image/project deletion after shared consumers"
+  ]
+}

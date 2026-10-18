@@ -14382,5 +14382,14 @@
       "url": "https://depot.dev/docs/api/ci/reference",
       "finding": "Original HTML and https://depot.dev/openapi/depot-ci/v1.json are valid; .md path redirects to overview and cannot stand in for the API reference"
     }
-  ]
+  ],
+  "runtimeCampaigns": {
+    "advancedBuildkit": {
+      "receipt": "doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json",
+      "source": "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
+      "projectId": "27m5m3vjlv",
+      "buildId": "fxzj58r8m2",
+      "status": "Save, registry and HTTP consumers exercised; embedded Podman healthcheck failed; other cases active"
+    }
+  }
 }
