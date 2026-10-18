@@ -366,3 +366,55 @@ The retained verification control joins `711` selected scalar values,
 and all five private-original hashes.
 Its unauthenticated public run request also matches the actor and triggering-actor identities.
 The current archive includes that compact control as its `35th` source record.
+# Terminal managed Mac and Windows allocation follow-on
+
+The owner seal `depot-current-host-owner-complete-2026-10-18.evidence.json.gz`
+has compressed SHA-256 `d29c7887cf4df674346d850db3f2186345a55cbc53bbacd98ef33c7977221a35`.
+Its selected allocation rows match a fresh scoped jobs response for run `39148580870`:
+
+- Mac job `117737397487` ran from `17:13:37Z` to `17:19:36Z`,
+  measuring `359` seconds at the documented `USD 0.08/minute` list rate.
+- Windows job `117737397295` ran from `17:19:37Z` to `17:30:51Z`,
+  measuring `674` seconds at the documented `USD 0.016/minute` list rate.
+
+Both intervals are on `2026-10-18`.
+Both jobs concluded with failure.
+This allocation join grants no additional application test credit.
+The primary runner-types body retained in the follow-on source archive gives these rates at lines `114` and `84`.
+Requested memory and disk use the documented `GB` units;
+the API assignment is not a hardware measurement.
+The owning process cap is `17` minutes inside the `20` minute job timeout.
+The released full-timeout reservation was `USD 1.92` under the separate `USD 2` guard.
+Skipped scheduler job `117737398481` has no assigned runner or started step and receives no allocation row.
+
+The current follow-on has `37` unique allocations and `41` retained source bodies:
+`17` standard public GitHub jobs,
+`9` Depot-managed GitHub jobs,
+`8` native CI jobs,
+and `3` BuildKit requests.
+The managed host addition is exactly `USD 0.6584` in elapsed-job list-compute proxies.
+The current total is `USD 1.2625`,
+comprising `USD 0.8381` for Depot-managed GitHub jobs and `USD 0.4244` for native CI.
+Standard public GitHub compute remains `USD 0`.
+The root graph subtotal remains `USD 0.487`.
+The separate BuildKit request-window proxy remains `USD 0.015897333333`;
+it is not an observed builder billing interval and is not added to that total.
+No invoice,
+included-minute debit,
+VM billing lifetime,
+or artifact/storage charge was observed.
+
+The existing `depot-owned-allocation-follow-on-verification-2026-10-18.evidence.json`
+remains the immutable `35` row snapshot verification.
+The host successor receives a separate verification receipt.
+Only a selected provider jobs projection is published;
+the full original remains private with its byte count and hash.
+The five public recovery rows in the new owner seal match existing rows and are not added again.
+The frozen `223` row baseline is unchanged.
+
+The GNU-only public Windows run `39152147229` is pending its owner's terminal receipt.
+The parent admission `c297a446bc` covers seven material-owner primary jobs and at most two named corrections
+under a separate `USD 5` guard,
+but supplies no completed allocation identity here.
+The platform SSH probe is being resealed without a supplied allocation identity.
+None of those pending items contributes a cost row at this snapshot.
