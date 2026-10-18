@@ -17,7 +17,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type Candidate, } from '@monochromatic-dev/translation-repair-house-rule';
+import type { Candidate, } from '@monochromatic-dev/translation-repair-house-rule';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
 import {
   describeSlate,

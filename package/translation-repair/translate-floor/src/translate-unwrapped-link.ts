@@ -4,10 +4,10 @@ import {
 } from '@monochromatic-dev/translation-repair-rendering-audit/ts';
 import {
   parseMarkdownBody,
+  type ProtectedAtom,
   requireMarkdownRefusal,
   withMarkdownExhaustionRefused,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import type { ProtectedAtom, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
   readSliceSkeleton,

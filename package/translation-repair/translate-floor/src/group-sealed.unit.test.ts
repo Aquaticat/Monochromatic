@@ -15,7 +15,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { parseDocument, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type DocumentNode, } from '@monochromatic-dev/translation-repair-document-structure';
+import type { DocumentNode, } from '@monochromatic-dev/translation-repair-document-structure';
 import { blockPairingToSteps, } from '@monochromatic-dev/translation-repair-stage';
 import {
   type AlignedRun,

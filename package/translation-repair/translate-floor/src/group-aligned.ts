@@ -1,9 +1,9 @@
 import {
   alignBlocks,
   type AlignmentStep,
+  type DocumentNode,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { declinedTargetIds, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import type { DocumentNode, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import {
   mergeOneSidedRuns,
   NOT_AN_INSERTION,

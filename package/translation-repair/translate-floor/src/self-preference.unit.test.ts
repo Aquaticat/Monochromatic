@@ -17,10 +17,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import {
-  type CandidateProducer,
-  type SelectionBallot,
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type {
+  CandidateProducer,
+  SelectionBallot,
 } from '@monochromatic-dev/translation-repair-house-rule';
 import {
   type SelectionRound,

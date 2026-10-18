@@ -12,7 +12,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { makeInsertionChunk, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
 import {
   buildSliceDelivery,
   type LaneSliceText,

@@ -1,14 +1,17 @@
 import type { SliceSyntax, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import { contributorAuthorityFindings, } from '@monochromatic-dev/translation-repair-house-rule/ts';
+import {
+  contributorAuthorityFindings,
+  type DeclaredNamePair,
+} from '@monochromatic-dev/translation-repair-house-rule/ts';
 import {
   type DisputedWording,
   disputedWordingFindings,
 } from './disputed-wording.ts';
 import { validateFrontMatterTranslation, } from './front-matter-translation.ts';
 import { compareLineCounts, } from './line-structure-guard.ts';
-import type { DeclaredNamePair, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import {
   compareBlocks,
+  type PageGrammar,
   quotedPassageFloorFindings,
   readSliceSkeleton,
   type SliceSkeleton,
@@ -24,7 +27,6 @@ import { sourceCarryFindings, } from './translate-source-carry.ts';
 import { sheetLeakFindings, } from './translate-sheet-leak.ts';
 import { untranslatedOrResidueFindings, } from './translate-han-residue.ts';
 import { signerHandleFindings, } from './translate-signer-handle.ts';
-import type { PageGrammar, } from '@monochromatic-dev/translation-repair-glossary/ts';
 
 //region Translate validation
 // Compares a candidate translation against its ORIGINAL on everything that

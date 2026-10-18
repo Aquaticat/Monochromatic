@@ -18,7 +18,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type ProtectedAtom, } from '@monochromatic-dev/translation-repair-document-structure';
+import type { ProtectedAtom, } from '@monochromatic-dev/translation-repair-document-structure';
 import {
   atomFindings,
   renderingPoolsOf,

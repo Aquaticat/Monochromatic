@@ -8,20 +8,22 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import { allInInputOrder, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { SliceSyntax, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import type { DeclaredNamePair, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import {
   type DisputedWording,
   disputedWordingFindings,
 } from './disputed-wording.ts';
-import { CONTRIBUTOR_AUTHORITY_FINDING, } from '@monochromatic-dev/translation-repair-house-rule/ts';
+import {
+  CONTRIBUTOR_AUTHORITY_FINDING,
+  type DeclaredNamePair,
+} from '@monochromatic-dev/translation-repair-house-rule/ts';
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import {
   attemptStageCall,
+  type HeardVoice,
   markFailureWritten,
   type StageVoice,
 } from '@monochromatic-dev/translation-repair-stage/ts';
 import { producedVolumeBound, } from './produced-volume-bound.ts';
-import type { HeardVoice, } from '@monochromatic-dev/translation-repair-stage/ts';
 import {
   buildTranslateRepairMessages,
   isTranslateRepairWire,

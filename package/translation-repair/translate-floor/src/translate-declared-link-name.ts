@@ -5,10 +5,10 @@ import {
 } from '@monochromatic-dev/translation-repair-glossary/ts';
 import {
   carriesName,
+  type DeclaredNamePair,
   nameProjection,
   projectName,
 } from '@monochromatic-dev/translation-repair-house-rule/ts';
-import type { DeclaredNamePair, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import {
   type Link,
   linksOf,

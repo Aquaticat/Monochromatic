@@ -31,8 +31,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type HeardVoice, } from '@monochromatic-dev/translation-repair-stage';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { HeardVoice, } from '@monochromatic-dev/translation-repair-stage';
 import {
   buildTranslateCandidates,
   foldTranslatorVoices,

@@ -9,9 +9,9 @@
  @module
  */
 
-import {
-  type AlignmentStep,
-  type DocumentNode,
+import type {
+  AlignmentStep,
+  DocumentNode,
 } from '@monochromatic-dev/translation-repair-document-structure';
 import {
   type AlignedRun,

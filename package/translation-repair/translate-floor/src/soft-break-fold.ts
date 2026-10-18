@@ -1,8 +1,10 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
-import type { DocumentNode, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { parseDocument, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import { requireMarkdownRefusal, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import {
+  type DocumentNode,
+  requireMarkdownRefusal,
+} from '@monochromatic-dev/translation-repair-document-structure/ts';
 
 //region Soft break fold
 // SHOWS A PROSE PARAGRAPH THE WAY IT RENDERS, for a judge whose decision must

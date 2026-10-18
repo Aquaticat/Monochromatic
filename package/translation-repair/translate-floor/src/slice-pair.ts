@@ -1,15 +1,17 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
-import type { ContentChunk, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import {
+  type ContentChunk,
   isInsertionChunk,
   makeInsertionChunk,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { DocumentNode, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { groupNodesSealed, } from './group-aligned.ts';
-import { blockPairingToSteps, } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { BlockPair, } from '@monochromatic-dev/translation-repair-stage/ts';
+import {
+  type BlockPair,
+  blockPairingToSteps,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 import { groupNodes, } from './group-nodes.ts';
 
 //region Paragraph slicing

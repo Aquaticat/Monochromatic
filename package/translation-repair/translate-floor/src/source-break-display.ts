@@ -6,11 +6,11 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/ts';
 import type { SliceSyntax, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import {
+  type DeepReadonlyData,
   MdxParseError,
   parseSliceBody,
   requireMdxRefusal,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import type { DeepReadonlyData, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import type { IncumbentKind, } from './translate-absence.ts';
 
 /**
