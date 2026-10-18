@@ -1,230 +1,240 @@
-name: Research complete Linux coverage
-
+name: Research complete Linux module coverage
 on:
-  workflow_dispatch:
-
+  workflow_dispatch: null
 permissions:
   contents: read
-
 concurrency:
   group: research-complete-linux-${{ github.ref }}
   cancel-in-progress: false
-
 jobs:
   libraries:
-    name: Frozen libraries ${{ matrix.shard }}
+    name: Frozen module graph ${{ matrix.shard }}
     runs-on: depot-ubuntu-24.04-8
     timeout-minutes: 15
     strategy:
       fail-fast: false
       max-parallel: 2
       matrix:
-        shard: [a, b]
+        shard:
+          - a
+          - b
     env:
       COVERAGE_SOURCE: e02be6c8b8fe9efb41a7f8f1a0b311c17796588a
       COVERAGE_SHARD: ${{ matrix.shard }}
-      MISE_AUTO_INSTALL: 'false'
-      MISE_JOBS: '2'
+      MISE_AUTO_INSTALL: "false"
+      MISE_JOBS: "2"
       NODE_OPTIONS: --max-old-space-size=2048
-      OXLINT_THREADS: '2'
-      CI: 'true'
+      OXLINT_THREADS: "2"
+      CI: "true"
+      COVERAGE_TASK_NAMES_SHA256: 149afd917a4fa10f4b5846fc2c02a4ed69f89401ab9230c4869ff34c3cd76e7c
     steps:
-    - name: Checkout immutable application source
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      with:
-        ref: e02be6c8b8fe9efb41a7f8f1a0b311c17796588a
-        persist-credentials: false
+      - name: Checkout immutable application source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: e02be6c8b8fe9efb41a7f8f1a0b311c17796588a
+          persist-credentials: false
+      - name: Initialize source-bound receipt before setup
+        shell: node {0}
+        run: >
+          const { mkdirSync, writeFileSync, readFileSync } = require('node:fs');
 
-    - name: Initialize source-bound receipt before setup
-      shell: node {0}
-      run: |
-        const { mkdirSync, writeFileSync, readFileSync } = require('node:fs');
-        const { execFileSync } = require('node:child_process');
-        const { cpus, totalmem, arch, platform } = require('node:os');
-        const path = process.env.RUNNER_TEMP + '/coverage-' + process.env.COVERAGE_SHARD;
-        mkdirSync(path, { recursive: true });
-        const source = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
-        if (source !== process.env.COVERAGE_SOURCE) throw new Error('Application checkout differs from frozen source');
-        const metadata = {
-          source, workflowCommit: process.env.GITHUB_SHA, run: process.env.GITHUB_RUN_ID,
-          attempt: process.env.GITHUB_RUN_ATTEMPT, shard: process.env.COVERAGE_SHARD,
-          runner: process.env.RUNNER_NAME, platform: platform(), arch: arch(),
-          cpuCount: cpus().length, memoryBytes: totalmem(),
-          osRelease: readFileSync('/etc/os-release', 'utf8'),
-          startedAt: new Date().toISOString(), state: 'setup_pending',
-          limits: { taskMilliseconds: 90000, campaignMilliseconds: 540000, jobMinutes: 15 },
-        };
-        writeFileSync(path + '/source.json', JSON.stringify(metadata, null, 2));
+          const { execFileSync } = require('node:child_process');
 
-    - name: Set up frozen Mise parser without global tool installation
-      uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
-      with:
-        # Match the parser used to capture the frozen task inventory.
-        version: 2026.10.0
-        install: false
+          const { cpus, totalmem, arch, platform } = require('node:os');
 
-    - name: Install only Node and pnpm
-      timeout-minutes: 3
-      run: mise install --locked node pnpm
+          const path = process.env.RUNNER_TEMP + '/coverage-' + process.env.COVERAGE_SHARD;
 
-    - name: Install immutable dependencies without the prepare umbrella
-      timeout-minutes: 4
-      run: mise exec node pnpm -- pnpm install --frozen-lockfile
+          mkdirSync(path, { recursive: true });
 
-    - name: Write disposable owning research tasks
-      shell: node {0}
-      run: |
-        const { mkdirSync, writeFileSync } = require('node:fs');
-        async function consumeArtifact() {
-          const { cp, mkdtemp, readFile, readdir, writeFile } = await import('node:fs/promises');
-          const { join } = await import('node:path');
-          const { pathToFileURL } = await import('node:url');
-          const { strict: assert } = await import('node:assert');
-          const root = process.env.MISE_MONOREPO_ROOT;
-          const packagePath = process.env.COVERAGE_PACKAGE;
-          if (!root || !/^package\/module\/[a-z-]+$/.test(packagePath ?? '')) throw new Error('Invalid artifact consumer package');
-          const pkg = JSON.parse(await readFile(join(root, packagePath, 'package.json'), 'utf8'));
-          const fixture = await mkdtemp(join(process.env.RUNNER_TEMP, 'artifact-consumer-'));
-          await cp(join(root, packagePath, 'dist'), join(fixture, 'dist'), { recursive: true });
-          await writeFile(join(fixture, 'package.json'), JSON.stringify(pkg));
-          const mainExport = pkg.exports?.['.'];
-          const entry = typeof mainExport === 'string' ? mainExport : mainExport?.default ?? pkg.module ?? pkg.main;
-          if (!entry) throw new Error('No default artifact export for ' + packagePath);
-          process.chdir(fixture);
-          const mod = await import(pathToFileURL(join(fixture, entry)).href);
-          assert.ok(Object.keys(mod).length > 0, 'Built module must expose runtime exports');
-          const assertions = ['isolated_dist_import', 'nonempty_runtime_exports'];
-          if (packagePath.endsWith('/array-at')) {
-            assert.equal(mod.arrayAt({ array: [10, 20], index: -1 }), 20);
-            assert.throws(() => mod.arrayAt({ array: [], index: 0 }), mod.ArrayAtError);
-            assertions.push('negative_index', 'empty_array_rejection');
-          }
-          if (packagePath.endsWith('/function-arity')) {
-            assert.deepEqual(['10', '10'].map(mod.unary(Number.parseInt)), [10, 10]);
-            assertions.push('callback_arity');
-          }
-          if (packagePath.endsWith('/caught-value')) {
-            assert.equal(mod.caughtValueText(new Error('offline')), 'offline');
-            assert.equal(mod.caughtValueText(404), '404');
-            assertions.push('error_message', 'primitive_conversion');
-          }
-          console.log(JSON.stringify({ packagePath, entry, assertions, fixtureOutsideWorkspace: !fixture.startsWith(root + '/') }));
-        }
-        async function campaign() {
-          const { spawn, execFileSync } = await import('node:child_process');
-          const { once } = await import('node:events');
-          const { openSync, closeSync, readFileSync, writeFileSync, existsSync, cpSync, readdirSync, mkdirSync } = await import('node:fs');
-          const { join } = await import('node:path');
-          const { createHash } = await import('node:crypto');
-          const root = process.env.MISE_MONOREPO_ROOT;
-          const shard = process.env.COVERAGE_SHARD;
-          const receipt = join(process.env.RUNNER_TEMP, 'coverage-' + shard);
-          const groups = {
-            a: ['array-at', 'async-time', 'const', 'pipe', 'or-throw', 'pnpm-workspace-catalog'],
-            b: ['fs-id', 'fs-path', 'zip-writer', 'numeric-format', 'function-arity', 'caught-value'],
+          const source = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+
+          if (source !== process.env.COVERAGE_SOURCE) throw new Error('Application checkout differs
+          from frozen source');
+
+          const metadata = {
+            source, workflowCommit: process.env.GITHUB_SHA, run: process.env.GITHUB_RUN_ID,
+            attempt: process.env.GITHUB_RUN_ATTEMPT, shard: process.env.COVERAGE_SHARD,
+            runner: process.env.RUNNER_NAME, platform: platform(), arch: arch(),
+            cpuCount: cpus().length, memoryBytes: totalmem(),
+            osRelease: readFileSync('/etc/os-release', 'utf8'),
+            startedAt: new Date().toISOString(), state: 'setup_pending',
+            limits: { taskMilliseconds: 90000, campaignMilliseconds: 540000, jobMinutes: 15 },
           };
-          const packages = groups[shard];
-          if (!packages) throw new Error('Unknown fixed coverage shard');
-          const commands = [{ task: '//package/config/oxlint:build:js:node', packagePath: 'package/config/oxlint', kind: 'shared_static_prerequisite' }];
-          for (const name of packages) {
-            const packagePath = 'package/module/' + name;
-            for (const kind of ['build', 'lint:types', 'lint:oxlint', 'test:unit']) {
-              commands.push({ task: '//' + packagePath + ':' + kind, packagePath, kind });
+
+          writeFileSync(path + '/source.json', JSON.stringify(metadata, null, 2));
+      - name: Set up frozen Mise parser without global tool installation
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+        with:
+          version: 2026.10.0
+          install: false
+      - name: Install only Node and pnpm
+        timeout-minutes: 3
+        run: mise install --locked node pnpm
+      - name: Install immutable dependencies without the prepare umbrella
+        timeout-minutes: 4
+        run: mise exec node pnpm -- pnpm install --frozen-lockfile
+      - name: Verify source-filtered cloud task inventory
+        shell: node {0}
+        run: >-
+          (async function captureTaskInventory() {
+           const { execFileSync } = await import('node:child_process')
+           const { writeFileSync } = await import('node:fs')
+           const { relative, join } = await import('node:path')
+           const { createHash } = await import('node:crypto')
+           const root = process.cwd()
+           const tasks = JSON.parse(execFileSync('mise', ['tasks','ls','--all','--hidden','--json'], { encoding:'utf8', maxBuffer: 64*1024*1024 }))
+           const repositoryTasks = tasks.filter(task => task.source.startsWith(root + '/')).map(task => ({ name:task.name, source:relative(root,task.source), configSources:task.config_sources.map(source => relative(root,source)), directory:relative(root,task.dir), runTemplate:task.run, tools:task.tools, environmentKeys:Object.keys(task.env ?? {}) }))
+           const namesHash = createHash('sha256').update(repositoryTasks.map(task => task.name).sort().join('\n')).digest('hex')
+           const evidence = { source: process.env.COVERAGE_SOURCE, repositoryTaskCount: repositoryTasks.length, repositoryTaskNamesSha256: namesHash, outsideRepositoryTaskCount: tasks.length - repositoryTasks.length, tasks: repositoryTasks }
+           writeFileSync(join(process.env.RUNNER_TEMP,'coverage-' + process.env.COVERAGE_SHARD,'task-inventory.json'), JSON.stringify(evidence,null,2))
+           if (namesHash !== process.env.COVERAGE_TASK_NAMES_SHA256) throw new Error('Cloud task inventory differs from source-filtered frozen local inventory')
+           console.log('Matched ' + repositoryTasks.length + ' frozen repository task names')
+          })()
+      - name: Write disposable owning research tasks
+        shell: node {0}
+        run: |
+          const { mkdirSync, writeFileSync } = require('node:fs');
+          async function consumeArtifact() {
+            const { cp, mkdtemp, readFile, readdir, writeFile } = await import('node:fs/promises');
+            const { join } = await import('node:path');
+            const { pathToFileURL } = await import('node:url');
+            const { strict: assert } = await import('node:assert');
+            const root = process.env.MISE_MONOREPO_ROOT;
+            const packagePath = process.env.COVERAGE_PACKAGE;
+            if (!root || !/^package\/module\/[a-z-]+$/.test(packagePath ?? '')) throw new Error('Invalid artifact consumer package');
+            const pkg = JSON.parse(await readFile(join(root, packagePath, 'package.json'), 'utf8'));
+            const fixture = await mkdtemp(join(process.env.RUNNER_TEMP, 'artifact-consumer-'));
+            await cp(join(root, packagePath, 'dist'), join(fixture, 'dist'), { recursive: true });
+            await writeFile(join(fixture, 'package.json'), JSON.stringify(pkg));
+            const mainExport = pkg.exports?.['.'];
+            const entry = typeof mainExport === 'string' ? mainExport : mainExport?.default ?? pkg.module ?? pkg.main;
+            if (!entry) throw new Error('No default artifact export for ' + packagePath);
+            process.chdir(fixture);
+            const mod = await import(pathToFileURL(join(fixture, entry)).href);
+            assert.ok(Object.keys(mod).length > 0, 'Built module must expose runtime exports');
+            const assertions = ['isolated_dist_import', 'nonempty_runtime_exports'];
+            if (packagePath.endsWith('/array-at')) {
+              assert.equal(mod.arrayAt({ array: [10, 20], index: -1 }), 20);
+              assert.throws(() => mod.arrayAt({ array: [], index: 0 }), mod.ArrayAtError);
+              assertions.push('negative_index', 'empty_array_rejection');
             }
-            commands.push({ task: '//package/dev-script/coverage-research:test:artifact-consumer', packagePath, kind: 'artifact_consumer' });
+            if (packagePath.endsWith('/function-arity')) {
+              assert.deepEqual(['10', '10'].map(mod.unary(Number.parseInt)), [10, 10]);
+              assertions.push('callback_arity');
+            }
+            if (packagePath.endsWith('/caught-value')) {
+              assert.equal(mod.caughtValueText(new Error('offline')), 'offline');
+              assert.equal(mod.caughtValueText(404), '404');
+              assertions.push('error_message', 'primitive_conversion');
+            }
+            console.log(JSON.stringify({ packagePath, entry, assertions, fixtureOutsideWorkspace: !fixture.startsWith(root + '/') }));
           }
-          const sourceReceipt = JSON.parse(readFileSync(join(receipt, 'source.json'), 'utf8'));
-          const deadline = Math.min(Date.now() + 540000, Date.parse(sourceReceipt.startedAt) + 780000);
-          const manifest = { source: process.env.COVERAGE_SOURCE, workflowCommit: process.env.GITHUB_SHA, shard, profile: 'linux-libraries-pilot', commands, outcomes: [] };
-          const save = () => writeFileSync(join(receipt, 'campaign.json'), JSON.stringify(manifest, null, 2));
-          manifest.toolVersions = Object.fromEntries([['mise', ['--version']], ['node', ['--version']], ['pnpm', ['--version']]].map(([tool, args]) => [tool, execFileSync(tool, args, { cwd: root, encoding: 'utf8' }).trim()]));
-          save();
-          for (const [index, command] of commands.entries()) {
-            const remaining = deadline - Date.now();
-            if (remaining < 20000) {
-              manifest.outcomes.push({ ...command, state: 'not_started_campaign_budget' });
+          async function campaign() {
+            const { spawn, execFileSync } = await import('node:child_process');
+            const { once } = await import('node:events');
+            const { openSync, closeSync, readFileSync, writeFileSync, existsSync, cpSync, readdirSync, mkdirSync } = await import('node:fs');
+            const { join } = await import('node:path');
+            const { createHash } = await import('node:crypto');
+            const root = process.env.MISE_MONOREPO_ROOT;
+            const shard = process.env.COVERAGE_SHARD;
+            const receipt = join(process.env.RUNNER_TEMP, 'coverage-' + shard);
+            const plans = JSON.parse(readFileSync(join(root, 'package/dev-script/coverage-research/plan.json'), 'utf8'));
+            const plan = plans[shard];
+            if (!plan || plan.source !== process.env.COVERAGE_SOURCE) throw new Error('Source or shard plan mismatch');
+            const packages = plan.packages;
+            const commands = plan.commands;
+            const sourceReceipt = JSON.parse(readFileSync(join(receipt, 'source.json'), 'utf8'));
+            const deadline = Math.min(Date.now() + 540000, Date.parse(sourceReceipt.startedAt) + 780000);
+            const manifest = { source: process.env.COVERAGE_SOURCE, workflowCommit: process.env.GITHUB_SHA, shard, profile: plan.profile, commands, outcomes: [] };
+            const save = () => writeFileSync(join(receipt, 'campaign.json'), JSON.stringify(manifest, null, 2));
+            manifest.toolVersions = Object.fromEntries([['mise', ['--version']], ['node', ['--version']], ['pnpm', ['--version']]].map(([tool, args]) => [tool, execFileSync(tool, args, { cwd: root, encoding: 'utf8' }).trim()]));
+            save();
+            for (const [index, command] of commands.entries()) {
+              const remaining = deadline - Date.now();
+              if (remaining < 20000) {
+                manifest.outcomes.push({ ...command, state: 'not_started_campaign_budget' });
+                save();
+                continue;
+              }
+              const logName = String(index).padStart(3, '0') + '.log';
+              const logPath = join(receipt, logName);
+              const fd = openSync(logPath, 'w');
+              const started = Date.now();
+              const outcome = { ...command, log: logName, startedAt: new Date(started).toISOString(), state: 'running' };
+              manifest.outcomes.push(outcome);
               save();
-              continue;
+              const proc = spawn('mise', ['run', command.task, ...(command.args ?? [])], { cwd: root, env: { ...process.env, COVERAGE_PACKAGE: command.packagePath }, detached: true, stdio: ['ignore', fd, fd] });
+              let timedOut = false;
+              let killTimer;
+              const stopGroup = signal => {
+                try { process.kill(-proc.pid, signal); }
+                catch (error) { if (error.code !== 'ESRCH') throw error; }
+              };
+              const timer = setTimeout(() => {
+                timedOut = true;
+                stopGroup('SIGTERM');
+                killTimer = setTimeout(() => stopGroup('SIGKILL'), 3000);
+              }, Math.min(90000, remaining - 10000));
+              try {
+                const [code, signal] = await once(proc, 'close');
+                outcome.exitCode = code;
+                outcome.signal = signal;
+                outcome.state = timedOut ? 'task_budget_exhausted' : code === 0 ? 'command_succeeded' : 'command_failed_requires_classification';
+              } catch (error) {
+                outcome.state = 'harness_spawn_failed';
+                outcome.error = String(error);
+              } finally {
+                clearTimeout(timer);
+                clearTimeout(killTimer);
+                closeSync(fd);
+              }
+              outcome.durationMilliseconds = Date.now() - started;
+              const log = readFileSync(logPath);
+              outcome.logSha256 = createHash('sha256').update(log).digest('hex');
+              outcome.logBytes = log.length;
+              outcome.discovery = { basis: 'tracked_test_file_candidates_not_runtime_case_counts', files: execFileSync('git', ['ls-files', '--', command.packagePath], { cwd: root, encoding: 'utf8' }).trim().split('\n').filter(path => path.endsWith('.unit.test.ts') && !path.includes('.expensive.')) };
+              save();
+              console.log(command.task + ' ' + outcome.state + ' ' + outcome.durationMilliseconds + 'ms');
             }
-            const logName = String(index).padStart(3, '0') + '.log';
-            const logPath = join(receipt, logName);
-            const fd = openSync(logPath, 'w');
-            const started = Date.now();
-            const outcome = { ...command, log: logName, startedAt: new Date(started).toISOString(), state: 'running' };
-            manifest.outcomes.push(outcome);
-            save();
-            const proc = spawn('mise', ['run', command.task], { cwd: root, env: { ...process.env, COVERAGE_PACKAGE: command.packagePath }, detached: true, stdio: ['ignore', fd, fd] });
-            let timedOut = false;
-            let killTimer;
-            const stopGroup = signal => {
-              try { process.kill(-proc.pid, signal); }
-              catch (error) { if (error.code !== 'ESRCH') throw error; }
-            };
-            const timer = setTimeout(() => {
-              timedOut = true;
-              stopGroup('SIGTERM');
-              killTimer = setTimeout(() => stopGroup('SIGKILL'), 3000);
-            }, Math.min(90000, remaining - 10000));
-            try {
-              const [code, signal] = await once(proc, 'close');
-              outcome.exitCode = code;
-              outcome.signal = signal;
-              outcome.state = timedOut ? 'task_budget_exhausted' : code === 0 ? 'command_succeeded' : 'command_failed_requires_classification';
-            } catch (error) {
-              outcome.state = 'harness_spawn_failed';
-              outcome.error = String(error);
-            } finally {
-              clearTimeout(timer);
-              clearTimeout(killTimer);
-              closeSync(fd);
-            }
-            outcome.durationMilliseconds = Date.now() - started;
-            const log = readFileSync(logPath);
-            outcome.logSha256 = createHash('sha256').update(log).digest('hex');
-            outcome.logBytes = log.length;
-            outcome.discovery = { basis: 'tracked_test_file_candidates_not_runtime_case_counts', files: execFileSync('git', ['ls-files', '--', command.packagePath], { cwd: root, encoding: 'utf8' }).trim().split('\n').filter(path => path.endsWith('.unit.test.ts') && !path.includes('.expensive.')) };
-            save();
-            console.log(command.task + ' ' + outcome.state + ' ' + outcome.durationMilliseconds + 'ms');
-          }
-          manifest.completedAt = new Date().toISOString();
-          manifest.artifactFiles = [];
-          for (const name of packages) {
-            const dist = join(root, 'package/module', name, 'dist');
-            if (!existsSync(dist)) continue;
-            const destination = join(receipt, 'artifacts', name, 'dist');
-            mkdirSync(join(receipt, 'artifacts', name), { recursive: true });
-            cpSync(dist, destination, { recursive: true });
-            cpSync(join(root, 'package/module', name, 'package.json'), join(receipt, 'artifacts', name, 'package.json'));
-            const pending = [destination];
-            while (pending.length) {
-              const dir = pending.pop();
-              for (const entry of readdirSync(dir, { withFileTypes: true })) {
-                const path = join(dir, entry.name);
-                if (entry.isDirectory()) pending.push(path);
-                else if (entry.isFile()) {
-                  const bytes = readFileSync(path);
-                  manifest.artifactFiles.push({ path: path.slice(receipt.length + 1), bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') });
+            manifest.completedAt = new Date().toISOString();
+            manifest.artifactFiles = [];
+            for (const name of packages) {
+              const dist = join(root, 'package/module', name, 'dist');
+              if (!existsSync(dist)) continue;
+              const destination = join(receipt, 'artifacts', name, 'dist');
+              mkdirSync(join(receipt, 'artifacts', name), { recursive: true });
+              cpSync(dist, destination, { recursive: true });
+              cpSync(join(root, 'package/module', name, 'package.json'), join(receipt, 'artifacts', name, 'package.json'));
+              const pending = [destination];
+              while (pending.length) {
+                const dir = pending.pop();
+                for (const entry of readdirSync(dir, { withFileTypes: true })) {
+                  const path = join(dir, entry.name);
+                  if (entry.isDirectory()) pending.push(path);
+                  else if (entry.isFile()) {
+                    const bytes = readFileSync(path);
+                    manifest.artifactFiles.push({ path: path.slice(receipt.length + 1), bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') });
+                  }
                 }
               }
             }
+            manifest.changedTrackedFiles = execFileSync('git', ['diff', '--name-only'], { cwd: root, encoding: 'utf8' }).trim().split('\n').filter(Boolean);
+            save();
+            if (manifest.outcomes.some(outcome => outcome.state !== 'command_succeeded')) throw new Error('Frozen coverage commands did not all succeed; inspect source-bound receipts');
           }
-          manifest.changedTrackedFiles = execFileSync('git', ['diff', '--name-only'], { cwd: root, encoding: 'utf8' }).trim().split('\n').filter(Boolean);
-          save();
-          if (manifest.outcomes.some(outcome => outcome.state !== 'command_succeeded')) throw new Error('Frozen coverage commands did not all succeed; inspect source-bound receipts');
-        }
-        const dir = 'package/dev-script/coverage-research';
-        mkdirSync(dir, { recursive: true });
-        const task = (name, fn) => '[tasks.' + JSON.stringify(name) + ']\nshell = "node --input-type=module-typescript -e"\nrun = ' + JSON.stringify('await (' + fn.toString() + ')()') + '\n';
-        writeFileSync(dir + '/mise.toml', task('campaign', campaign) + '\n' + task('test:artifact-consumer', consumeArtifact));
+          const dir = 'package/dev-script/coverage-research';
+          mkdirSync(dir, { recursive: true });
+          const task = (name, fn) => '[tasks.' + JSON.stringify(name) + ']\nshell = "node --input-type=module-typescript -e"\nrun = ' + JSON.stringify('await (' + fn.toString() + ')()') + '\n';
+          writeFileSync(dir + '/mise.toml', task('campaign', campaign) + '\n' + task('test:artifact-consumer', consumeArtifact));
 
-    - name: Execute owning frozen tasks with bounded command budgets
-      run: mise run //package/dev-script/coverage-research:campaign
-
-    - name: Preserve source-bound receipts and task logs
-      if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-      with:
-        name: frozen-linux-coverage-${{ matrix.shard }}-${{ github.run_id }}
-        path: ${{ runner.temp }}/coverage-${{ matrix.shard }}
-        if-no-files-found: error
-        retention-days: 14
+          writeFileSync(dir + "/plan.json", "{\"a\":{\"source\":\"e02be6c8b8fe9efb41a7f8f1a0b311c17796588a\",\"profile\":\"all_active_modules_default\",\"packages\":[\"array-at\",\"async-time\",\"conf-fork\",\"const\",\"css-edit.bench\",\"css-edit.fuzz\",\"dom\",\"fs-path\",\"hyperscript\",\"image-diff\",\"jsonc-edit.bench\",\"jsonc-edit.fuzz\",\"llm-type\",\"logger.fuzz\",\"make-asynchronous-fork.fuzz\",\"matcher-fork.fuzz\",\"memoize\",\"observable\",\"p-limit-fork\",\"p-map-fork\",\"p-memoize-fork\",\"pify-fork\",\"pipe\",\"quick-lru-fork\",\"test\",\"test-expect\",\"throws\",\"toml-edit\",\"wg-allowedips\"],\"commands\":[{\"task\":\"//package/module/test:build\",\"packagePath\":\"package/module/test\",\"kind\":\"shared_harness_build\"},{\"task\":\"//package/module/logger:build\",\"packagePath\":\"package/module/logger\",\"kind\":\"shared_logger_build\"},{\"task\":\"//package/config/oxlint:build:js:node\",\"packagePath\":\"package/config/oxlint\",\"kind\":\"shared_static_prerequisite\"},{\"task\":\"//package/module/array-at:build\",\"packagePath\":\"package/module/array-at\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/async-iter:build\",\"packagePath\":\"package/module/async-iter\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/async-time:build\",\"packagePath\":\"package/module/async-time\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/caught-value:build\",\"packagePath\":\"package/module/caught-value\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/conf-fork:build\",\"packagePath\":\"package/module/conf-fork\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/const:build\",\"packagePath\":\"package/module/const\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/css-edit:build\",\"packagePath\":\"package/module/css-edit\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/dom:build\",\"packagePath\":\"package/module/dom\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/fs-id:build\",\"packagePath\":\"package/module/fs-id\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/fs-path:build\",\"packagePath\":\"package/module/fs-path\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/function-arity:build\",\"packagePath\":\"package/module/function-arity\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/hyperscript:build\",\"packagePath\":\"package/module/hyperscript\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/i18n-compose:build\",\"packagePath\":\"package/module/i18n-compose\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/image-diff:build\",\"packagePath\":\"package/module/image-diff\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/jsonc-edit:build\",\"packagePath\":\"package/module/jsonc-edit\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/kv-store:build\",\"packagePath\":\"package/module/kv-store\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/llm-type:build\",\"packagePath\":\"package/module/llm-type\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/make-asynchronous-fork:build\",\"packagePath\":\"package/module/make-asynchronous-fork\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/matcher-fork:build\",\"packagePath\":\"package/module/matcher-fork\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/matrix:build\",\"packagePath\":\"package/module/matrix\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/memoize:build\",\"packagePath\":\"package/module/memoize\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/numeric-format:build\",\"packagePath\":\"package/module/numeric-format\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/observable:build\",\"packagePath\":\"package/module/observable\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/or-throw:build\",\"packagePath\":\"package/module/or-throw\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/p-limit-fork:build\",\"packagePath\":\"package/module/p-limit-fork\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/p-map-fork:build\",\"packagePath\":\"package/module/p-map-fork\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/p-memoize-fork:build\",\"packagePath\":\"package/module/p-memoize-fork\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/pify-fork:build\",\"packagePath\":\"package/module/pify-fork\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/pipe:build\",\"packagePath\":\"package/module/pipe\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/pnpm-workspace-catalog:build\",\"packagePath\":\"package/module/pnpm-workspace-catalog\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/quick-lru-fork:build\",\"packagePath\":\"package/module/quick-lru-fork\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/test-diagnostic:build\",\"packagePath\":\"package/module/test-diagnostic\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/test-expect:build\",\"packagePath\":\"package/module/test-expect\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/test-sandbox:build\",\"packagePath\":\"package/module/test-sandbox\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/throws:build\",\"packagePath\":\"package/module/throws\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/token-count:build\",\"packagePath\":\"package/module/token-count\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/toml-edit:build\",\"packagePath\":\"package/module/toml-edit\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/wg-allowedips:build\",\"packagePath\":\"package/module/wg-allowedips\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/zip-writer:build\",\"packagePath\":\"package/module/zip-writer\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/array-at:lint:types\",\"packagePath\":\"package/module/array-at\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/array-at:lint:oxlint\",\"packagePath\":\"package/module/array-at\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/array-at:test:unit\",\"packagePath\":\"package/module/array-at\",\"kind\":\"default_test\"},{\"task\":\"//package/module/async-time:lint:types\",\"packagePath\":\"package/module/async-time\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/async-time:lint:oxlint\",\"packagePath\":\"package/module/async-time\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/async-time:test:unit\",\"packagePath\":\"package/module/async-time\",\"kind\":\"default_test\"},{\"task\":\"//package/module/conf-fork:lint:types\",\"packagePath\":\"package/module/conf-fork\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/conf-fork:lint:oxlint\",\"packagePath\":\"package/module/conf-fork\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/conf-fork:test:unit\",\"packagePath\":\"package/module/conf-fork\",\"kind\":\"default_test\"},{\"task\":\"//package/module/const:lint:types\",\"packagePath\":\"package/module/const\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/const:lint:oxlint\",\"packagePath\":\"package/module/const\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/const:test\",\"packagePath\":\"package/module/const\",\"kind\":\"default_test\"},{\"task\":\"//package/module/css-edit.bench:lint:types\",\"packagePath\":\"package/module/css-edit.bench\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/css-edit.bench:lint:oxlint\",\"packagePath\":\"package/module/css-edit.bench\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/css-edit.fuzz:lint:types\",\"packagePath\":\"package/module/css-edit.fuzz\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/css-edit.fuzz:lint:oxlint\",\"packagePath\":\"package/module/css-edit.fuzz\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/css-edit.fuzz:test:unit\",\"packagePath\":\"package/module/css-edit.fuzz\",\"kind\":\"default_test\"},{\"task\":\"//package/module/dom:lint:types\",\"packagePath\":\"package/module/dom\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/dom:lint:oxlint\",\"packagePath\":\"package/module/dom\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/fs-path:lint:types\",\"packagePath\":\"package/module/fs-path\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/fs-path:lint:oxlint\",\"packagePath\":\"package/module/fs-path\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/fs-path:test:unit\",\"packagePath\":\"package/module/fs-path\",\"kind\":\"default_test\"},{\"task\":\"//package/module/hyperscript:lint:types\",\"packagePath\":\"package/module/hyperscript\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/hyperscript:lint:oxlint\",\"packagePath\":\"package/module/hyperscript\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/image-diff:lint:types\",\"packagePath\":\"package/module/image-diff\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/image-diff:lint:oxlint\",\"packagePath\":\"package/module/image-diff\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/image-diff:test:unit\",\"packagePath\":\"package/module/image-diff\",\"kind\":\"default_test\"},{\"task\":\"//package/module/jsonc-edit.bench:lint:types\",\"packagePath\":\"package/module/jsonc-edit.bench\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/jsonc-edit.bench:lint:oxlint\",\"packagePath\":\"package/module/jsonc-edit.bench\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/jsonc-edit.fuzz:lint:types\",\"packagePath\":\"package/module/jsonc-edit.fuzz\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/jsonc-edit.fuzz:lint:oxlint\",\"packagePath\":\"package/module/jsonc-edit.fuzz\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/jsonc-edit.fuzz:test:unit\",\"packagePath\":\"package/module/jsonc-edit.fuzz\",\"kind\":\"default_test\"},{\"task\":\"//package/module/llm-type:lint:types\",\"packagePath\":\"package/module/llm-type\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/llm-type:lint:oxlint\",\"packagePath\":\"package/module/llm-type\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/llm-type:test\",\"packagePath\":\"package/module/llm-type\",\"kind\":\"default_test\"},{\"task\":\"//package/module/logger.fuzz:lint:types\",\"packagePath\":\"package/module/logger.fuzz\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/logger.fuzz:lint:oxlint\",\"packagePath\":\"package/module/logger.fuzz\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/logger.fuzz:test:unit\",\"packagePath\":\"package/module/logger.fuzz\",\"kind\":\"default_test\"},{\"task\":\"//package/module/make-asynchronous-fork.fuzz:lint:types\",\"packagePath\":\"package/module/make-asynchronous-fork.fuzz\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/make-asynchronous-fork.fuzz:lint:oxlint\",\"packagePath\":\"package/module/make-asynchronous-fork.fuzz\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/make-asynchronous-fork.fuzz:test:unit\",\"packagePath\":\"package/module/make-asynchronous-fork.fuzz\",\"kind\":\"default_test\"},{\"task\":\"//package/module/matcher-fork.fuzz:lint:types\",\"packagePath\":\"package/module/matcher-fork.fuzz\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/matcher-fork.fuzz:lint:oxlint\",\"packagePath\":\"package/module/matcher-fork.fuzz\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/matcher-fork.fuzz:test:unit\",\"packagePath\":\"package/module/matcher-fork.fuzz\",\"kind\":\"default_test\"},{\"task\":\"//package/module/memoize:lint:types\",\"packagePath\":\"package/module/memoize\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/memoize:lint:oxlint\",\"packagePath\":\"package/module/memoize\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/memoize:test:unit\",\"packagePath\":\"package/module/memoize\",\"kind\":\"default_test\"},{\"task\":\"//package/module/observable:lint:types\",\"packagePath\":\"package/module/observable\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/observable:lint:oxlint\",\"packagePath\":\"package/module/observable\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/observable:test:unit\",\"packagePath\":\"package/module/observable\",\"kind\":\"default_test\"},{\"task\":\"//package/module/p-limit-fork:lint:types\",\"packagePath\":\"package/module/p-limit-fork\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/p-limit-fork:lint:oxlint\",\"packagePath\":\"package/module/p-limit-fork\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/p-limit-fork:test:unit\",\"packagePath\":\"package/module/p-limit-fork\",\"kind\":\"default_test\"},{\"task\":\"//package/module/p-map-fork:lint:types\",\"packagePath\":\"package/module/p-map-fork\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/p-map-fork:lint:oxlint\",\"packagePath\":\"package/module/p-map-fork\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/p-map-fork:test:unit\",\"packagePath\":\"package/module/p-map-fork\",\"kind\":\"default_test\"},{\"task\":\"//package/module/p-memoize-fork:lint:types\",\"packagePath\":\"package/module/p-memoize-fork\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/p-memoize-fork:lint:oxlint\",\"packagePath\":\"package/module/p-memoize-fork\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/p-memoize-fork:test:unit\",\"packagePath\":\"package/module/p-memoize-fork\",\"kind\":\"default_test\"},{\"task\":\"//package/module/pify-fork:lint:types\",\"packagePath\":\"package/module/pify-fork\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/pify-fork:lint:oxlint\",\"packagePath\":\"package/module/pify-fork\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/pify-fork:test:unit\",\"packagePath\":\"package/module/pify-fork\",\"kind\":\"default_test\"},{\"task\":\"//package/module/pipe:lint:types\",\"packagePath\":\"package/module/pipe\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/pipe:lint:oxlint\",\"packagePath\":\"package/module/pipe\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/pipe:test:unit\",\"packagePath\":\"package/module/pipe\",\"kind\":\"default_test\"},{\"task\":\"//package/module/quick-lru-fork:lint:types\",\"packagePath\":\"package/module/quick-lru-fork\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/quick-lru-fork:lint:oxlint\",\"packagePath\":\"package/module/quick-lru-fork\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/quick-lru-fork:test:unit\",\"packagePath\":\"package/module/quick-lru-fork\",\"kind\":\"default_test\"},{\"task\":\"//package/module/test:lint:types\",\"packagePath\":\"package/module/test\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/test:lint:oxlint\",\"packagePath\":\"package/module/test\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/test:test:unit\",\"packagePath\":\"package/module/test\",\"kind\":\"default_test\"},{\"task\":\"//package/module/test-expect:lint:types\",\"packagePath\":\"package/module/test-expect\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/test-expect:lint:oxlint\",\"packagePath\":\"package/module/test-expect\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/test-expect:test:unit\",\"packagePath\":\"package/module/test-expect\",\"kind\":\"default_test\"},{\"task\":\"//package/module/throws:lint:types\",\"packagePath\":\"package/module/throws\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/throws:lint:oxlint\",\"packagePath\":\"package/module/throws\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/throws:test:unit\",\"packagePath\":\"package/module/throws\",\"kind\":\"default_test\"},{\"task\":\"//package/module/toml-edit:lint:types\",\"packagePath\":\"package/module/toml-edit\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/toml-edit:lint:oxlint\",\"packagePath\":\"package/module/toml-edit\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/toml-edit:test:unit\",\"packagePath\":\"package/module/toml-edit\",\"kind\":\"default_test\"},{\"task\":\"//package/module/wg-allowedips:lint:types\",\"packagePath\":\"package/module/wg-allowedips\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/wg-allowedips:lint:oxlint\",\"packagePath\":\"package/module/wg-allowedips\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/wg-allowedips:test:unit\",\"packagePath\":\"package/module/wg-allowedips\",\"kind\":\"default_test\"}]},\"b\":{\"source\":\"e02be6c8b8fe9efb41a7f8f1a0b311c17796588a\",\"profile\":\"all_active_modules_default\",\"packages\":[\"async-iter\",\"caught-value\",\"conf-fork.fuzz\",\"css-edit\",\"css-edit.conformance\",\"deepmerge-ts.fuzz\",\"fs-id\",\"function-arity\",\"i18n-compose\",\"jsonc-edit\",\"jsonc-edit.conformance\",\"kv-store\",\"logger\",\"make-asynchronous-fork\",\"matcher-fork\",\"matrix\",\"numeric-format\",\"or-throw\",\"p-limit-fork.fuzz\",\"p-map-fork.fuzz\",\"p-memoize-fork.fuzz\",\"pify-fork.fuzz\",\"pnpm-workspace-catalog\",\"quick-lru-fork.fuzz\",\"test-diagnostic\",\"test-sandbox\",\"token-count\",\"toml-edit.fuzz\",\"zip-writer\"],\"commands\":[{\"task\":\"//package/module/test:build\",\"packagePath\":\"package/module/test\",\"kind\":\"shared_harness_build\"},{\"task\":\"//package/module/logger:build\",\"packagePath\":\"package/module/logger\",\"kind\":\"shared_logger_build\"},{\"task\":\"//package/config/oxlint:build:js:node\",\"packagePath\":\"package/config/oxlint\",\"kind\":\"shared_static_prerequisite\"},{\"task\":\"//package/module/array-at:build\",\"packagePath\":\"package/module/array-at\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/async-iter:build\",\"packagePath\":\"package/module/async-iter\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/async-time:build\",\"packagePath\":\"package/module/async-time\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/caught-value:build\",\"packagePath\":\"package/module/caught-value\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/conf-fork:build\",\"packagePath\":\"package/module/conf-fork\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/const:build\",\"packagePath\":\"package/module/const\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/css-edit:build\",\"packagePath\":\"package/module/css-edit\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/dom:build\",\"packagePath\":\"package/module/dom\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/fs-id:build\",\"packagePath\":\"package/module/fs-id\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/fs-path:build\",\"packagePath\":\"package/module/fs-path\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/function-arity:build\",\"packagePath\":\"package/module/function-arity\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/hyperscript:build\",\"packagePath\":\"package/module/hyperscript\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/i18n-compose:build\",\"packagePath\":\"package/module/i18n-compose\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/image-diff:build\",\"packagePath\":\"package/module/image-diff\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/jsonc-edit:build\",\"packagePath\":\"package/module/jsonc-edit\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/kv-store:build\",\"packagePath\":\"package/module/kv-store\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/llm-type:build\",\"packagePath\":\"package/module/llm-type\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/make-asynchronous-fork:build\",\"packagePath\":\"package/module/make-asynchronous-fork\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/matcher-fork:build\",\"packagePath\":\"package/module/matcher-fork\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/matrix:build\",\"packagePath\":\"package/module/matrix\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/memoize:build\",\"packagePath\":\"package/module/memoize\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/numeric-format:build\",\"packagePath\":\"package/module/numeric-format\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/observable:build\",\"packagePath\":\"package/module/observable\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/or-throw:build\",\"packagePath\":\"package/module/or-throw\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/p-limit-fork:build\",\"packagePath\":\"package/module/p-limit-fork\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/p-map-fork:build\",\"packagePath\":\"package/module/p-map-fork\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/p-memoize-fork:build\",\"packagePath\":\"package/module/p-memoize-fork\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/pify-fork:build\",\"packagePath\":\"package/module/pify-fork\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/pipe:build\",\"packagePath\":\"package/module/pipe\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/pnpm-workspace-catalog:build\",\"packagePath\":\"package/module/pnpm-workspace-catalog\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/quick-lru-fork:build\",\"packagePath\":\"package/module/quick-lru-fork\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/test-diagnostic:build\",\"packagePath\":\"package/module/test-diagnostic\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/test-expect:build\",\"packagePath\":\"package/module/test-expect\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/test-sandbox:build\",\"packagePath\":\"package/module/test-sandbox\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/throws:build\",\"packagePath\":\"package/module/throws\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/token-count:build\",\"packagePath\":\"package/module/token-count\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/toml-edit:build\",\"packagePath\":\"package/module/toml-edit\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/wg-allowedips:build\",\"packagePath\":\"package/module/wg-allowedips\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/zip-writer:build\",\"packagePath\":\"package/module/zip-writer\",\"kind\":\"shared_module_build\"},{\"task\":\"//package/module/async-iter:lint:types\",\"packagePath\":\"package/module/async-iter\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/async-iter:lint:oxlint\",\"packagePath\":\"package/module/async-iter\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/async-iter:test:unit\",\"packagePath\":\"package/module/async-iter\",\"kind\":\"default_test\"},{\"task\":\"//package/module/caught-value:lint:types\",\"packagePath\":\"package/module/caught-value\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/caught-value:lint:oxlint\",\"packagePath\":\"package/module/caught-value\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/caught-value:test:unit\",\"packagePath\":\"package/module/caught-value\",\"kind\":\"default_test\"},{\"task\":\"//package/module/conf-fork.fuzz:lint:types\",\"packagePath\":\"package/module/conf-fork.fuzz\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/conf-fork.fuzz:lint:oxlint\",\"packagePath\":\"package/module/conf-fork.fuzz\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/conf-fork.fuzz:test:unit\",\"packagePath\":\"package/module/conf-fork.fuzz\",\"kind\":\"default_test\"},{\"task\":\"//package/module/css-edit:lint:types\",\"packagePath\":\"package/module/css-edit\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/css-edit:lint:oxlint\",\"packagePath\":\"package/module/css-edit\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/css-edit:test:unit\",\"packagePath\":\"package/module/css-edit\",\"kind\":\"default_test\"},{\"task\":\"//package/module/css-edit.conformance:lint:types\",\"packagePath\":\"package/module/css-edit.conformance\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/css-edit.conformance:lint:oxlint\",\"packagePath\":\"package/module/css-edit.conformance\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/css-edit.conformance:test:unit\",\"packagePath\":\"package/module/css-edit.conformance\",\"kind\":\"default_test\"},{\"task\":\"//package/module/deepmerge-ts.fuzz:lint:types\",\"packagePath\":\"package/module/deepmerge-ts.fuzz\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/deepmerge-ts.fuzz:lint:oxlint\",\"packagePath\":\"package/module/deepmerge-ts.fuzz\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/deepmerge-ts.fuzz:test:unit\",\"packagePath\":\"package/module/deepmerge-ts.fuzz\",\"kind\":\"default_test\"},{\"task\":\"//package/module/fs-id:lint:types\",\"packagePath\":\"package/module/fs-id\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/fs-id:lint:oxlint\",\"packagePath\":\"package/module/fs-id\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/fs-id:test:unit\",\"packagePath\":\"package/module/fs-id\",\"kind\":\"default_test\"},{\"task\":\"//package/module/function-arity:lint:types\",\"packagePath\":\"package/module/function-arity\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/function-arity:lint:oxlint\",\"packagePath\":\"package/module/function-arity\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/function-arity:test:unit\",\"packagePath\":\"package/module/function-arity\",\"kind\":\"default_test\"},{\"task\":\"//package/module/i18n-compose:lint:types\",\"packagePath\":\"package/module/i18n-compose\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/i18n-compose:lint:oxlint\",\"packagePath\":\"package/module/i18n-compose\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/i18n-compose:test:unit\",\"packagePath\":\"package/module/i18n-compose\",\"kind\":\"default_test\"},{\"task\":\"//package/module/jsonc-edit:lint:types\",\"packagePath\":\"package/module/jsonc-edit\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/jsonc-edit:lint:oxlint\",\"packagePath\":\"package/module/jsonc-edit\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/jsonc-edit:test:unit\",\"packagePath\":\"package/module/jsonc-edit\",\"kind\":\"default_test\"},{\"task\":\"//package/module/jsonc-edit.conformance:lint:types\",\"packagePath\":\"package/module/jsonc-edit.conformance\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/jsonc-edit.conformance:lint:oxlint\",\"packagePath\":\"package/module/jsonc-edit.conformance\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/jsonc-edit.conformance:test:unit\",\"packagePath\":\"package/module/jsonc-edit.conformance\",\"kind\":\"default_test\"},{\"task\":\"//package/module/kv-store:lint:types\",\"packagePath\":\"package/module/kv-store\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/kv-store:lint:oxlint\",\"packagePath\":\"package/module/kv-store\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/kv-store:test:unit\",\"packagePath\":\"package/module/kv-store\",\"kind\":\"default_test\"},{\"task\":\"//package/module/logger:lint:types\",\"packagePath\":\"package/module/logger\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/logger:lint:oxlint\",\"packagePath\":\"package/module/logger\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/logger:test:unit\",\"packagePath\":\"package/module/logger\",\"kind\":\"default_test\"},{\"task\":\"//package/module/make-asynchronous-fork:lint:types\",\"packagePath\":\"package/module/make-asynchronous-fork\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/make-asynchronous-fork:lint:oxlint\",\"packagePath\":\"package/module/make-asynchronous-fork\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/make-asynchronous-fork:test:unit\",\"packagePath\":\"package/module/make-asynchronous-fork\",\"kind\":\"default_test\"},{\"task\":\"//package/module/matcher-fork:lint:types\",\"packagePath\":\"package/module/matcher-fork\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/matcher-fork:lint:oxlint\",\"packagePath\":\"package/module/matcher-fork\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/matcher-fork:test:unit\",\"packagePath\":\"package/module/matcher-fork\",\"kind\":\"default_test\"},{\"task\":\"//package/module/matrix:lint:types\",\"packagePath\":\"package/module/matrix\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/matrix:lint:oxlint\",\"packagePath\":\"package/module/matrix\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/matrix:test\",\"packagePath\":\"package/module/matrix\",\"kind\":\"default_test\"},{\"task\":\"//package/module/numeric-format:lint:types\",\"packagePath\":\"package/module/numeric-format\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/numeric-format:lint:oxlint\",\"packagePath\":\"package/module/numeric-format\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/numeric-format:test\",\"packagePath\":\"package/module/numeric-format\",\"kind\":\"default_test\"},{\"task\":\"//package/module/or-throw:lint:types\",\"packagePath\":\"package/module/or-throw\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/or-throw:lint:oxlint\",\"packagePath\":\"package/module/or-throw\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/or-throw:test:unit\",\"packagePath\":\"package/module/or-throw\",\"kind\":\"default_test\"},{\"task\":\"//package/module/p-limit-fork.fuzz:lint:types\",\"packagePath\":\"package/module/p-limit-fork.fuzz\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/p-limit-fork.fuzz:lint:oxlint\",\"packagePath\":\"package/module/p-limit-fork.fuzz\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/p-limit-fork.fuzz:test:unit\",\"packagePath\":\"package/module/p-limit-fork.fuzz\",\"kind\":\"default_test\"},{\"task\":\"//package/module/p-map-fork.fuzz:lint:types\",\"packagePath\":\"package/module/p-map-fork.fuzz\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/p-map-fork.fuzz:lint:oxlint\",\"packagePath\":\"package/module/p-map-fork.fuzz\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/p-map-fork.fuzz:test:unit\",\"packagePath\":\"package/module/p-map-fork.fuzz\",\"kind\":\"default_test\"},{\"task\":\"//package/module/p-memoize-fork.fuzz:lint:types\",\"packagePath\":\"package/module/p-memoize-fork.fuzz\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/p-memoize-fork.fuzz:lint:oxlint\",\"packagePath\":\"package/module/p-memoize-fork.fuzz\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/p-memoize-fork.fuzz:test:unit\",\"packagePath\":\"package/module/p-memoize-fork.fuzz\",\"kind\":\"default_test\"},{\"task\":\"//package/module/pify-fork.fuzz:lint:types\",\"packagePath\":\"package/module/pify-fork.fuzz\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/pify-fork.fuzz:lint:oxlint\",\"packagePath\":\"package/module/pify-fork.fuzz\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/pify-fork.fuzz:test:unit\",\"packagePath\":\"package/module/pify-fork.fuzz\",\"kind\":\"default_test\"},{\"task\":\"//package/module/pnpm-workspace-catalog:lint:types\",\"packagePath\":\"package/module/pnpm-workspace-catalog\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/pnpm-workspace-catalog:lint:oxlint\",\"packagePath\":\"package/module/pnpm-workspace-catalog\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/pnpm-workspace-catalog:test:unit\",\"packagePath\":\"package/module/pnpm-workspace-catalog\",\"kind\":\"default_test\"},{\"task\":\"//package/module/quick-lru-fork.fuzz:lint:types\",\"packagePath\":\"package/module/quick-lru-fork.fuzz\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/quick-lru-fork.fuzz:lint:oxlint\",\"packagePath\":\"package/module/quick-lru-fork.fuzz\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/quick-lru-fork.fuzz:test:unit\",\"packagePath\":\"package/module/quick-lru-fork.fuzz\",\"kind\":\"default_test\"},{\"task\":\"//package/module/test-diagnostic:lint:types\",\"packagePath\":\"package/module/test-diagnostic\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/test-diagnostic:lint:oxlint\",\"packagePath\":\"package/module/test-diagnostic\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/test-diagnostic:test:unit\",\"packagePath\":\"package/module/test-diagnostic\",\"kind\":\"default_test\"},{\"task\":\"//package/module/test-sandbox:lint:types\",\"packagePath\":\"package/module/test-sandbox\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/test-sandbox:lint:oxlint\",\"packagePath\":\"package/module/test-sandbox\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/test-sandbox:test:unit\",\"packagePath\":\"package/module/test-sandbox\",\"kind\":\"default_test\"},{\"task\":\"//package/module/token-count:lint:types\",\"packagePath\":\"package/module/token-count\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/token-count:lint:oxlint\",\"packagePath\":\"package/module/token-count\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/token-count:test:unit\",\"packagePath\":\"package/module/token-count\",\"kind\":\"default_test\"},{\"task\":\"//package/module/toml-edit.fuzz:lint:types\",\"packagePath\":\"package/module/toml-edit.fuzz\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/toml-edit.fuzz:lint:oxlint\",\"packagePath\":\"package/module/toml-edit.fuzz\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/toml-edit.fuzz:test:unit\",\"packagePath\":\"package/module/toml-edit.fuzz\",\"kind\":\"default_test\"},{\"task\":\"//package/module/zip-writer:lint:types\",\"packagePath\":\"package/module/zip-writer\",\"kind\":\"lint:types\"},{\"task\":\"//package/module/zip-writer:lint:oxlint\",\"packagePath\":\"package/module/zip-writer\",\"kind\":\"lint:oxlint\"},{\"task\":\"//package/module/zip-writer:test:unit\",\"packagePath\":\"package/module/zip-writer\",\"kind\":\"default_test\"}]}}");
+      - name: Execute owning frozen tasks with bounded command budgets
+        run: mise run //package/dev-script/coverage-research:campaign
+      - name: Preserve source-bound receipts and task logs
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: frozen-linux-coverage-${{ matrix.shard }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/coverage-${{ matrix.shard }}
+          if-no-files-found: error
+          retention-days: 14
