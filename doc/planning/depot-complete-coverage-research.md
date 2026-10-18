@@ -274,7 +274,8 @@ they do not establish provider causation or a stable source defect without contr
 ## Durable source and execution evidence
 
 The [coverage manifest](depot-complete-coverage-manifest.json)
-indexes all 227 canonical active and inactive roots,
+indexes 223 canonical active and inactive package-directory roots
+and separately retains four documentation blobs previously counted as package candidates,
 their declared APIs,
 task families,
 Node/Cargo manifests,
@@ -1627,7 +1628,7 @@ Its controlled static map retains 20,692 assertion candidates,
 32,931 branch candidates,
 1,045 generator sites and 106 authored desktop recorder declarations.
 These are source identities, not runtime cases or measured branch coverage.
-The per-package join covers all 227 package roots and is being enriched with the sealed Rust projection
+The per-package join covers all 223 directory roots and is enriched with the sealed Rust projection
 and the actual failure-log boundaries before the semantic seal.
 
 The first public handoff used a misleading `documentedMemoryGiB` field for catalog GB values.
@@ -1680,3 +1681,23 @@ The proposed concrete edit tightens `QIV` in `AGENTS.md` to:
 
 This is a planning proposal, not an applied instruction-file edit.
 The completed local logger and deployed-uploader controls implement that boundary for this profile.
+
+## Corrected package-directory count and semantic join
+
+The original 227 candidate records included four documentation blobs.
+The frozen Git tree proves 223 package-directory roots:
+208 active, 13 paused and two archived.
+The former 211 active and 14 paused counts are retracted as directory counts.
+The [source-directory receipt](../audit/depot-complete-coverage-source-directory-scope.json)
+retains the four exact blob paths and Git identities.
+The canonical manifest keeps their original records separately.
+Source-script, byte, import, assertion and actual execution counts are unaffected.
+
+The semantic workset separately joins 11,052 static specification declarations,
+root-script scope, the exact ARM describe-group receipt,
+23 Rust crate roots and 61 qualified Rust contexts,
+25 proper packed namespace consumers and the actual Linux GUI and current Mac owner boundaries.
+All 121 failed command logs were rehashed successfully before diagnostic classification.
+No runtime branch coverage, assertion instrumentation, complete package test success,
+or execution of every declared owner is claimed.
+Current host controls remain a separate finite queue item.
