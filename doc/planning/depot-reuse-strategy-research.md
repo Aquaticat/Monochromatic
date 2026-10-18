@@ -21,6 +21,46 @@ no broad credential is created or copied into a new secret.
 
 ## Repository inventory
 
+### Current execution checkpoint
+
+Harness `363bd501a0366dc4f74e35ad1b77f1a8ffad95b4` adds repeated cache-off Gradle consumers,
+isolated response-fault/input controls and the existing real Detekt host owner.
+Cache-off allocations `d3ks91rnnb` and `pq5pzj9mcg` are active.
+Both use the same frozen application,
+prepared image,
+pnpm content-store preparation and timed `test --rerun jar` command as the warm pair.
+The controlled difference disables both remote and local task-output caching.
+The research harness changed;
+the application did not.
+
+Updated-image Rust allocation `w16c45njf5` ran every selected Nextest case without fail-fast:
+1,951 executed,
+1,934 passed,
+17 failed and five skipped.
+Frozen `package/git-policy/cli/src/native/test_support.rs:19` hardcodes `/usr/bin/git`.
+The verified Git 2.56 executable on `PATH` therefore did not satisfy that fixture's absolute-path contract.
+Several failed cases explicitly observed provider Git 2.55 bytes.
+Two real-linter cases require `GIT_POLICY_NATIVE_TEST_LINTER`;
+one lock-identity case also failed.
+Those failures remain separate evidence boundaries;
+the application source is not repaired for this experiment.
+The next Rust harness must provision the disposable sandbox's exact Git fixture path,
+preserve all test statuses and publish research cache receipts before propagating a failed suite status.
+
+The Detekt host is the existing `//package/linter/kotlin:lint:detekt` owner,
+which invokes Gradle `detektCheck` with the produced plugin JAR and `detekt-cli:2.0.0-alpha.6`.
+The pending controls job runs the owner and separate documented/undocumented Kotlin fixtures,
+retaining native CLI help/version and exact JAR hashes.
+This does not substitute for the root `lint:detekt` task's repository-wide fanout.
+
+Nine completed allocations account for 1,260 request-to-terminal seconds,
+or USD 0.504 at the declared eight-vCPU timestamp-price proxy.
+Seven remaining 15-minute slots add at most USD 2.52 to that arithmetic,
+giving USD 3.024 including the two active cache-off allocations' full reserved ceilings.
+This excludes storage,
+network,
+other agents and any account bill.
+
 A tracked-file inventory at the frozen source contains 13,860 files.
 Active `package/` files include 1,894 Rust sources,
 294 Kotlin sources,
