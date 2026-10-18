@@ -11,7 +11,7 @@ assert(root);
 export const frozen = 'e02be6c8b8fe9efb41a7f8f1a0b311c17796588a';
 export const prefix = '/opt/depot-reuse-20261018-r1';
 export const profile = process.env.RESEARCH_RUST_PROFILE;
-assert(['fuzz-small', 'fuzz-git', 'fuzz-linter', 'codex-host', 'planted-git', 'planted-linter', 'truepeak-all'].includes(profile));
+assert(['fuzz-small', 'fuzz-git', 'fuzz-linter', 'codex-host', 'planted-git', 'planted-linter', 'truepeak-all', 'wg-privileged', 'benchmarks'].includes(profile));
 export const owned = join(root, '.research-rust-' + profile);
 export const evidence = join(owned, 'receipts');
 mkdirSync(evidence, { recursive: true, mode: 0o700 });
