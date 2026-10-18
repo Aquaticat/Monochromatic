@@ -34,7 +34,10 @@
           }
         },
         {
-          "run": "mise install node"
+          "run": "mise install node pnpm"
+        },
+        {
+          "run": "mise run prepare:pnpm:install -- --frozen-lockfile"
         },
         {
           "name": "Isolate descriptor-close permission behavior",
