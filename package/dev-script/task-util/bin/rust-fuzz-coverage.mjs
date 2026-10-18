@@ -42,7 +42,7 @@ try {
     try {
       rust(key + '-locked-dependency-preparation', ['cargo', 'fetch', '--locked'], { cwd: project });
       environment.CARGO_NET_OFFLINE = 'true';
-      const list = rust(key + '-actual-target-list', ['cargo', 'fuzz', 'list', '--fuzz-dir', '.'], { cwd: project }).output.trim().split('\n');
+      const list = rust(key + '-actual-target-list', ['cargo', 'fuzz', 'list', '--fuzz-dir', '.'], { cwd: project }).stdout.trim().split('\n');
       const targetFiles = tracked.filter(file => file.startsWith(path + '/fuzz_targets/') && file.endsWith('.rs'));
       const declared = targetFiles.map(file => file.split('/').at(-1).slice(0, -3)).sort();
       assert.deepEqual([...list].sort(), declared);

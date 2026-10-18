@@ -25,21 +25,25 @@ export function save(extra = {}) {
 export function run(name, command, args, options = {}) {
   const { cwd = root, allowFailure = false, env = environment } = options;
   const path = join(evidence, name + '.log');
-  const fd = openSync(path, 'w', 0o600);
+  const stdoutFd = openSync(path + '.stdout', 'w', 0o600);
+  const stderrFd = openSync(path + '.stderr', 'w', 0o600);
   const record = { name, command: [command, ...args], cwd, startedAt: new Date().toISOString() };
   records.push(record);
   save();
   const start = performance.now();
   let result;
-  try { result = spawnSync(command, args, { cwd, env, stdio: ['ignore', fd, fd] }); }
-  finally { closeSync(fd); }
-  const output = readFileSync(path, 'utf8');
+  try { result = spawnSync(command, args, { cwd, env, stdio: ['ignore', stdoutFd, stderrFd] }); }
+  finally { closeSync(stdoutFd); closeSync(stderrFd); }
+  const stdout = readFileSync(path + '.stdout', 'utf8');
+  const stderr = readFileSync(path + '.stderr', 'utf8');
+  const output = stdout + stderr;
+  writeFileSync(path, output, { mode: 0o600 });
   Object.assign(record, { finishedAt: new Date().toISOString(), elapsedSeconds: (performance.now() - start) / 1000, status: result.status, signal: result.signal, error: result.error?.message, logSha256: hash(output) });
   save();
   console.log(JSON.stringify(record));
   if (result.error) throw result.error;
   if (!allowFailure) assert.equal(result.status, 0, name + ': ' + output.slice(-4000));
-  return { status: result.status, output };
+  return { status: result.status, output, stdout, stderr };
 }
 export function rust(name, args, options = {}) { return run(name, 'mise', ['exec', 'rust', 'cargo:cargo-nextest', 'cargo:cargo-fuzz', '--', ...args], options); }
 export function sourceAdmission(paths) {
