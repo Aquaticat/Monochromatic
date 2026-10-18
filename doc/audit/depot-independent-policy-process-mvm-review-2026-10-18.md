@@ -464,3 +464,24 @@ Their original compressed bundles remain unchanged.
 The independent private proof catalog,
 fresh GET bodies and recomputation results are retained under
 `temp/agent/depot-independent-review-20261018/additional` in the executing user's home.
+
+### Additional review publication checks
+
+The changed review section and complete prerequisite troubleshooting note pass a rendered CommonMark check.
+Targeted `lint:monochromatic-lint` passes for both Markdown files.
+The documented workflow patch also passes `git apply --check` and actual application in a disposable local fixture;
+its resulting workflow bytes exactly equal the target immutable revision.
+Patch SHA-256 is `ee242687e4ba3c5d96edb63f69960570be6da47c498b4f8d549d85e5e6580fff`.
+The source workflow SHA-256 is `374acbf649e114477522738da6bbf9c2335841458d2838ff7333ba7cf5b9015f`;
+the applied result is `4183e80c7f9bdbfd6bfd7dc8e0b7df068bf4fca5ad48a184843a5112ad60eb6a`.
+Only the disposable fixture was patched.
+
+The separate three-ZIP guest-transformation review remains queued after publication.
+The coordinator reports GitHub run `39132577785`
+at harness `3829831039cc43aa717c6c927f835b867e9313b6`.
+These new consumers have not been credited by this review.
+The original eight-ZIP qualification and unchanged bytes remain authoritative for their original boundary.
+The coordinator also received the exact frozen-source scanner/Truepeak profile handoff,
+recorded in `doc/planning/depot-rust-coverage-research.md`,
+for its independently owned repeated Linux DAG.
+No cloud run or settings mutation was performed by this reviewer.

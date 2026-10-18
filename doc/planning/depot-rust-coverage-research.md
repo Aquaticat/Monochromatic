@@ -883,3 +883,110 @@ CRC/hash/outcome joins,
 credential inspection,
 current allowance sources and one committed review note.
 No new cloud allocation is admitted for that review.
+
+## Reusable immutable Rust profile handoff
+
+The coordinator requested these exact existing profiles for a repeated Linux DAG.
+This is a source handoff,
+not another execution or allocation.
+Both retain ordinary Cargo build and Nextest test concurrency:
+the adapters explicitly delete `CARGO_BUILD_JOBS` and set no test-thread override.
+
+### Scanner producer and admitted consumer
+
+Producer `v7njncr47d` used harness `360abf1382631750c3f26928c2342d0acd13eb6b`
+and `.depot/workflows/reuse-scanner-seed.yml`.
+Reader `zq7cc1nd4b` used `670d84778d24567e36b01a22c33833310d44d659`
+and `.depot/workflows/reuse-scanner-target.yml`.
+Both invoke `//package/dev-script/task-util:research:reuse:scanner` through Mise.
+The implementation is `package/dev-script/task-util/bin/reuse-scanner-consumer.mjs`,
+importing `reuse-context.mjs`.
+The real owner is `//package/cli/forbidden-strings:test`,
+whose frozen task runs `cargo nextest run --release`.
+The adapter forwards `--locked --offline --no-fail-fast`.
+The admitted baseline passes 237 cases without skips;
+its additional dependency-feature control is separately labeled.
+
+Both workflows use `tools-r2-git256`,
+image digest `sha256:fb197837831d438592d9455b3a31d808a20ad8bdc2ae76b05d8b36f6656419cd`.
+They first invoke the registry and tool-admission tasks in the same task-util package.
+The prepared image manifest is `/opt/depot-reuse-20261018-r1/image-manifest.json`.
+The real Archil mount is `/mnt/aquaticats-monochromatic-reuse-20261018-scanner-target-trusted-r1`.
+Its producer publishes `scanner-target.json` and `scanner-target.tar.zst` only after real tests and controls pass.
+The manifest is also retained as
+`.research-reuse/receipts/scanner-success-only-target-manifest.json`.
+Reader admission independently pins manifest SHA-256
+`e8f233474e03ca54e18f59fe02dc2020a3fd942623b228e643ae046ee953569c`
+and archive SHA-256
+`c0ebdf4d623deaad706d1aee02e57245bfc29994d935ad1a3780f67df08513f5`.
+The archive contains 128391415 compressed bytes.
+
+The manifest binds absolute workspace and target paths,
+image digest,
+compiler and sccache binary hashes,
+`mise.lock`,
+release/incremental/compiler-flag profile and all tracked scanner/regex source bytes plus original mtimes.
+The reader verifies the real `fuse.archil` mount,
+rejects partial archive bytes,
+actual changed source and absent-manifest fixtures,
+restores source mtimes and then executes the complete owner again.
+Its target must initially be absent.
+The seed requires unpublished archive/manifest paths and cannot overwrite this existing namespace.
+The reader uses read-only remote compiler-cache mode with the workflow-provided cache token.
+
+A new image or workspace path therefore requires its own newly admitted producer and namespace.
+The existing r2 archive does not qualify under the r3 digest merely because Rust versions agree.
+A repeated DAG must retain each repetition's original command receipts before another invocation overwrites them,
+and must label fresh versus same-workspace target state explicitly.
+The scanner's source admission covers its subject and regex path dependency;
+a new driver should independently keep root tool/config inputs frozen as well.
+No target-reader repetition spread was measured in the original campaign.
+
+### Truepeak all-features consumer
+
+Run `221vdm1f21` used harness `a85e204f078db540c2a292342000ce5423bb8338`
+and `.depot/workflows/rust-truepeak-all.yml`.
+Its exact task is `//package/dev-script/task-util:research:rust:truepeak`,
+implemented in `package/dev-script/task-util/bin/rust-truepeak-all.mjs`
+with `rust-bounded-profile.mjs`.
+The adapter executes the release/all-features boundary of `//package/music-player/truepeak-core:test`:
+locked fetch followed by locked/offline release/all-features Nextest with complete failure reporting.
+Its dedicated JUnit configuration records every skip and output,
+with a 90-second per-test bound and ten-second grace.
+
+This workflow uses `tools-r3-fuzz-codex`,
+image digest `sha256:1c2b469a9d7fae8bc364e6392f771c28565647a04c40847f345bc140dfce4e88`.
+The prepared prefix supplies `mise-data`,
+`mise-cache`,
+`rustup` and `cargo`.
+The adapter admits the frozen Truepeak crate and root `mise.toml`,
+`mise.lock` and `.cargo/config.toml` before/after execution.
+It uses private `HOME` and `TMPDIR` under `.research-rust-truepeak-all`,
+a dedicated target directory,
+existing fake samples and disposable Turso databases.
+It needs no C/Chromaprint setup and calls no real paid provider.
+
+The actual result is 89 passed and two intentional skips out of 91 enumerated.
+Locked fetch took 31.017 seconds;
+compile plus Nextest took 75.075 seconds in the single admitted AMD64 sample.
+The provider interval was 170 seconds on the 8-CPU/32-GB profile,
+with a 15-minute job bound and twelve-minute execution step.
+No standalone Truepeak target producer/archive was admitted.
+Same-workspace repeated invocations retain the target and overwrite fixed receipt/JUnit paths,
+so a new repeated driver must preserve each original result and declare that cache boundary.
+
+The raw AMD64 XML is retained in `depot-rust-coverage-2026-10-18.receipts.json.gz`.
+Walk its nested `previous` objects to the extension whose `run.run_id` equals `221vdm1f21`.
+In that extension,
+`selected[".research-rust-truepeak-all/receipts/nextest/default/truepeak-all.xml"]`
+is the original XML string.
+The current bundle has eight `previous` levels before that extension.
+The ARM64 workload owner received this selector to compare all actual case identities,
+not only aggregate counts.
+
+The independent evidence review is published in
+[`depot-independent-policy-process-mvm-review-2026-10-18.md`](../audit/depot-independent-policy-process-mvm-review-2026-10-18.md).
+The separately requested three-ZIP guest-transformation review remains queued after publication:
+GitHub run `39132577785`,
+harness `3829831039cc43aa717c6c927f835b867e9313b6`.
+This queue item admits no allocation by the reviewer.
