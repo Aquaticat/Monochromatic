@@ -107,7 +107,9 @@ The groups that follow name the main ones.
   culled seats and decisions:
   refuse a run whose required providers are not ready,
   refuse culled seats,
-  and call the decisions router.
+  build the client of OpenRouter's decisions router,
+  read the corpus pin from the environment,
+  and run one constructed comparison past the production judges.
   Names:
   `assertRequiredProvidersReady`,
   `readRequiredProviders`,
@@ -133,7 +135,7 @@ that command,
 and each task sets it to its own name.
 
 - `budget-sample`:
-  takes one reading of both providers' meters and leaves it in the log,
+  takes one reading of every provider's meter and leaves it in the log,
   so an outage's end is observed while no pass is running.
   Capture both streams with `> log 2>&1`.
   Spends no generation.

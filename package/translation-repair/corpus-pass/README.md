@@ -84,10 +84,11 @@ The groups that follow name the main ones.
   `corpus-run/pass-consistency-carry.ts`,
   and `corpus-run/pass-consistency-cache.ts`.
 - Page assembly:
-  assemble the settled page,
-  guard it,
-  and settle page titles,
-  archive text and references.
+  compose the settled artifact with the page guard's outcome,
+  ask the page-level guards of the would-ship page,
+  settle or resume the lexicon of repeated page titles,
+  normalize the archive text every stage reads,
+  and have the roster attest the archive details a reference states.
   Names:
   `settledPageArtifact`,
   `assertPageGuards`,

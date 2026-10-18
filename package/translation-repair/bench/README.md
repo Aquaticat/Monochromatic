@@ -9,7 +9,7 @@ the roster card printer,
 and the sentinel,
 displacement and translate probes.
 It is its own package because these runners calibrate the roster and the lanes from outside the pipeline,
-and no other family package depends on it.
+and `coverage-census` is the only family package that lists it in `dependencies`.
 
 ## What it provides
 
@@ -149,7 +149,8 @@ and each task sets it to its own name.
   asks a translator ensemble to render the corpus section with the worst coverage gap,
   which the repair loop cannot express.
 - `roster-card`:
-  prints the `model-cards.ts` fragment for one model off a provider's live listing,
+  prints the fragment for `package/translation-repair/shared-contract/src/model-cards.ts` for one model off a
+  provider's live listing,
   so seating a model is one card and one list entry.
   Usage after `--`:
   `<synthetic|hyper|openrouter|bedrock> <served id>`.
@@ -239,7 +240,9 @@ used by tests):
 
 ### Used by
 
-No family package lists it in `dependencies`.
+Packages that list it in `dependencies`:
+
+- `coverage-census`
 
 ## Tests
 

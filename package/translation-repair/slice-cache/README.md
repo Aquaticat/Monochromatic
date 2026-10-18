@@ -182,6 +182,7 @@ Packages that list it in `dependencies`:
 
 - `bench`
 - `corpus-pass`
+- `coverage-census`
 
 ## Tests
 

@@ -1,9 +1,9 @@
 # @monochromatic-dev/translation-repair-coverage-census
 
 The coverage census and its control and probe:
-it finds the package code no unit test ran,
-by running the suite under V8 coverage against an unminified build with source maps and mapping the cold code
-back to source lines.
+it finds the family code no unit test ran,
+by running every package's unit suite under one V8 coverage directory against unminified builds with source maps
+and mapping the cold code back to source lines named `<package>/src/<file>`.
 The census is its own package because it builds coverage bundles and reads sources across the family,
 and no production package depends on it.
 
@@ -29,6 +29,20 @@ The groups that follow name the main ones.
   `corpus-run/coverage-census-input.ts`,
   `corpus-run/coverage-census-build.ts`,
   and `corpus-run/coverage-census-report.ts`.
+- Family scope and commit:
+  find what the census measures from the directory it runs in,
+  the family of packages or the package alone,
+  group named test files by the member whose suite runs them,
+  refuse a member's coverage build the census cannot read,
+  and name the files edited since the commit a saved census records.
+  Names:
+  `censusScopeOf`,
+  `familySuiteRunsOf`,
+  `requireFamilyCoverageBuild`,
+  `isFamilyBundleName`,
+  `packageCommit`,
+  `sourcesEditedSince`.
+  Declared in `corpus-run/coverage-census-family.ts` and `corpus-run/coverage-census-commit.ts`.
 - Mapping coverage to source:
   read the coverage files and source maps of the bundles and place each cold stretch on source lines.
   Names:
@@ -45,7 +59,7 @@ The groups that follow name the main ones.
   `corpus-run/coverage-census-place.ts`,
   and `corpus-run/coverage-tally.ts`.
 - Baselines and invariant throws:
-  read an earlier census as a baseline,
+  read a saved census as a baseline,
   and count the stretches that are nothing but invariant throws apart from the cold code.
   Names:
   `readBaselineCensus`,
@@ -71,11 +85,17 @@ The groups that follow name the main ones.
   `corpus-run/coverage-probe-run.ts`,
   and `corpus-run/coverage-probe-args.ts`.
 - Runner entries:
-  the build entries of this package's runners and the sources the census treats as runner entries.
+  the build entry lists of every package that owns runners,
+  merged into one so that the census tells a runner's command-line main from library source,
+  and the sources it treats as runner entries.
   Names:
+  `FAMILY_ENTRY_LISTS`,
+  `familyEntriesOf`,
+  `FamilyEntryConflictError`,
   `nodeEntries`,
   `runnerEntrySources`.
-  Declared in `build-entries.ts`.
+  Declared in `family-build-entries.ts`;
+  this package's own list is in `build-entries.ts`.
 
 ## Runners
 
@@ -104,30 +124,34 @@ and each task sets it to its own name.
   Pass `--only ids` after `--`.
   Spends quota.
 - `coverage-census`:
-  builds unminified with source maps,
-  runs the unit suite (or the unit test files named after `--`) under V8 coverage,
-  and prints the package code no test ran,
-  mapped to source lines,
+  builds every family package unminified with source maps,
+  runs each package's unit suite under one V8 coverage directory,
+  and prints the code no test ran,
+  mapped to source lines named `<package>/src/<file>`,
   with each stretch that is nothing but invariant throws counted and listed apart.
-  Add `--baseline <census.json>` and `--source <src/file.ts>` after `--` to read an earlier census against this run.
-  It runs `coverage-census:build` first and rebuilds the normal build afterwards.
-  The whole suite writes about 8 GB of coverage under the user cache directory,
+  Name unit test files from the family directory (`<package>/src/<file>.unit.test.ts`) after `--`
+  to run only the packages they stand in.
+  Add `--baseline <census.json>` and `--source <package/src/file.ts>` after `--` to read a saved census against
+  this run.
+  It runs `coverage-census:build` first and rebuilds every normal build afterwards.
+  The whole suite writes about 8 GB of coverage under `~/.cache/translation-repair/coverage`,
   deleted once read.
   Spends no quota.
 
 The task `coverage-census:build` is not a runner:
-it builds this package's entries with a source map beside every chunk,
-unminified,
-through `rolldown.coverage.config.ts`,
+it runs after the `build:js:node` of every family package,
+then rebuilds the build directory of each package that has a `rolldown.coverage.config.ts`,
+with a source map beside every chunk and unminified,
 because compression folds guards into expressions that V8 gives no range for.
 It is never a child of `build`,
-whose fan-out would run it beside the normal build into the same directory.
+whose fan-out would run it beside the normal build into the same directories.
 
-`src/build-entries.ts` lists only this package's three runners,
-so `runnerEntrySources` names those three as the census's runner entries.
-The plan (the coverage census item under its rules for runners) has the census read every runner package's list;
-until it does,
-the census sees a subset.
+`src/build-entries.ts` lists only this package's three runners.
+The census reads the union of every runner package's list through `src/family-build-entries.ts`,
+so the runners of `bench`,
+`corpus-pass`,
+`probe`,
+`run` and `slice-cache` count as runner entries too.
 
 ## Family dependencies
 
@@ -139,6 +163,7 @@ a package is named `@monochromatic-dev/translation-repair-<short name>`.
 Production dependencies (`dependencies` in `package.json`):
 
 - `archive`
+- `bench`
 - `corpus-source`
 - `document-structure`
 - `glossary`
@@ -150,6 +175,7 @@ Production dependencies (`dependencies` in `package.json`):
 - `reference`
 - `run`
 - `shared-contract`
+- `slice-cache`
 - `slice-reading`
 - `stage`
 - `typography`
