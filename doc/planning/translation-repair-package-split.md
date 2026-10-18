@@ -100,6 +100,22 @@ the outputs are under `/var/home/user/temp/agent/tr-fan/s245/split/lint/`.
   `corpus-pass` ran 4.24 s before the other two and 4.12 s after,
   so three packages do not evict each other;
   the eviction in the paired rounds needs more of the family than that.
+- The bound is the cause of the warm cost (`cost-probe4b.txt`):
+  with the bounds raised to 4096 MiB and 65,536 entries in `w165`
+  (uncommitted, in the plugin source
+  and in the rebuilt `@monochromatic-dev/config-oxlint` bundle the root config loads),
+  the cache emptied,
+  and every package linted once and then again,
+  the first round took 311.07 s and the second 70.93 s,
+  with `corpus-pass` 4.87 s,
+  `probe` 3.33 s and `bench` 3.13 s.
+  The family's warm cache is 8269 entries and 508,090,059 bytes,
+  about twice both current bounds.
+  A first attempt (`cost-probe4.txt`, second round 312.84 s) edited only the plugin source,
+  which the bundle the root config loads does not read,
+  so it measured the old bounds.
+- The cold round's cost is the analysis run once per project that reaches a module,
+  which a larger bound does not change.
 
 ### A finding on the way
 
