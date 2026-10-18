@@ -39,7 +39,8 @@ The selected JWT audience matches that exact registry host.
 Its only repository authorization names `research-reuse-20261018` with action `pull`.
 No offline or refresh token was requested.
 No persistent credential was created,
-and no token value was stored or published.
+and token values remained only in process memory.
+No token value was persisted or published.
 
 With that bearer,
 the three owned tags and their exact immutable digests each returned HTTP `404`,

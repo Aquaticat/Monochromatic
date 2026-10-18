@@ -256,6 +256,9 @@ Its unassigned skipped scheduler row `117725490037` is excluded.
 Separate Depot OS run `39148580870` is terminal under its own USD 2 guard.
 Its exact Mac/Windows rows await the owner's retained artifact/API seal before final normalization.
 Its USD 1.92 admission reservation is not a measured allocation cost.
+Root also reported prospective coverage GNU recovery and platform SSH-debug follow-ons.
+Their owners must supply exact admitted identities and retained terminal receipts before an allocation append.
+No allocation row is inferred from those prospective profiles.
 The documented host memory unit is GB,
 with actual CPU and RAM measurements missing from that handoff.
 
@@ -302,7 +305,7 @@ All six valid scoped reads returned `MANIFEST_UNKNOWN` with HTTP `404`.
 The identical path returned HTTP `401` with a deliberately invalid noncredential bearer.
 Selected JWT audience and repository/pull authorization match exactly.
 No deletion request,
-new credential,
+persistent credential,
 or cloud job ran.
 Expiry cause and storage reclamation remain unmeasured.
 The [authentication troubleshooting note](../troubleshooting/depot-native-snapshot-registry-authentication.md)
