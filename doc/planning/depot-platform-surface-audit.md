@@ -395,8 +395,9 @@ Anonymous manifest access returned 401.
 The temporary pull token used the observed Basic authentication challenge and successfully read the image.
 Cross-origin signed blob redirects were followed without forwarding the Authorization header.
 The token value is excluded from committed evidence.
-The CLI reference describes a build-ID form while the registry overview describes project-path read access;
-the narrowness of that build-ID form still needs a distinct-artifact control.
+The CLI reference describes a build-ID form while the registry overview describes project-path read access.
+The token's successful read of the subsequently created CI image establishes cross-build project access.
+Cross-project isolation remains unexercised.
 
 Podman 5.8.7 pulled the immutable remote image and ran its unmodified entrypoint and command.
 The health,
@@ -406,7 +407,10 @@ and controlled stop exited zero.
 However,
 `podman healthcheck run` returned 125 with `has no defined healthcheck`,
 even though the raw OCI configuration contains the Docker `Healthcheck` extension.
-The aggregate consumer therefore remains failed pending format and runtime controls.
+The aggregate consumer remains failed.
+The [pinned Podman source diagnosis](../troubleshooting/podman-oci-healthchecks.md)
+now explains the omitted metadata;
+the parent-run Docker consumer honored the same original image's check.
 
 The expired initial eight-minute wall-clock window is retained.
 The authorized recovery used a fresh five-minute request guard,
@@ -499,13 +503,11 @@ This is a request-window estimate,
 not billed usage or an aggregate invoice guarantee.
 No account-wide billing or usage query is authorized or required by this campaign.
 
-## Unreleased CLI changes expose additional research cases
-
 ## Repository Node26 image prerequisite correction in progress
 
 The subsequent cloud job-image consumers reached checkout,
 then the frozen Node `26.12.0` loader failed with a missing `libatomic.so.1`.
-The earlier base Node `24.22.0` check did not exercise the repository's different runtime.
+The base Node `24.22.0` check did not exercise the repository's different runtime.
 The failed CI image remains retained.
 A further owned derivative adds Debian `libatomic1`
 and executes both exact architecture archives from the frozen root `mise.lock` during its build.
@@ -540,6 +542,8 @@ and the immutable remote-Git controls.
 The owned project remains `HARDWARE_16X32`,
 with at most two architecture builders and a five-minute server build timeout.
 This model does not inspect or constrain unseen account charges.
+
+## Unreleased CLI changes expose additional research cases
 
 The open [CLI upgrade pull request][cli-upgrade] documents differences from the installed release:
 remote Bake handling,
