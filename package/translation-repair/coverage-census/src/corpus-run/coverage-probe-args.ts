@@ -1,8 +1,8 @@
 import {
+  type CommandLineOf,
   idListFlag,
   wholeNumberFlag,
 } from '@monochromatic-dev/translation-repair-run/ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 
 //region Coverage probe arguments
 // What the coverage probe is asked on its command line, kept apart from the

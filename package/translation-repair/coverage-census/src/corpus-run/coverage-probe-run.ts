@@ -6,13 +6,19 @@ import {
   listCorpusPeople,
 } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
-import { listCoverageCandidates, } from '@monochromatic-dev/translation-repair-archive/ts';
-import type { runCoverageStage, } from '@monochromatic-dev/translation-repair-archive/ts';
+import {
+  listCoverageCandidates,
+  type runCoverageStage,
+} from '@monochromatic-dev/translation-repair-archive/ts';
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
-import { parseDocument, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import { askedAmong, } from '@monochromatic-dev/translation-repair-run/ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
+import {
+  parseDocument,
+  type RosterModelId,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
+  askedAmong,
+  type CommandLineOf,
+} from '@monochromatic-dev/translation-repair-run/ts';
 import { readCoverageProbeArguments, } from './coverage-probe-args.ts';
 import { readPair, } from './coverage-probe-pair.ts';
 import {

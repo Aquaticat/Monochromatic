@@ -14,7 +14,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
+import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
 import {
   type CoverageControlResult,
   runCoverageControl,

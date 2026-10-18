@@ -4,8 +4,10 @@ import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-pro
 import type { CorpusPin, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
-import { idListFlag, } from '@monochromatic-dev/translation-repair-run/ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
+import {
+  type CommandLineOf,
+  idListFlag,
+} from '@monochromatic-dev/translation-repair-run/ts';
 import { gatherCases, } from './coverage-control-probe-cases.ts';
 import {
   controlLines,

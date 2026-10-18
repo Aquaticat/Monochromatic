@@ -6,12 +6,14 @@ import {
   rendersAsNothing,
   wordForCount,
 } from '@monochromatic-dev/translation-repair-typography/ts';
-import { runCoverageStage, } from '@monochromatic-dev/translation-repair-archive/ts';
-import type { CoverageVerdict, } from '@monochromatic-dev/translation-repair-archive/ts';
-import { parseDocument, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type {
-  AnchorTarget,
-  RosterModelId,
+import {
+  type CoverageVerdict,
+  runCoverageStage,
+} from '@monochromatic-dev/translation-repair-archive/ts';
+import {
+  type AnchorTarget,
+  parseDocument,
+  type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { decoyCut, } from './coverage-control-decoy.ts';
 import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';

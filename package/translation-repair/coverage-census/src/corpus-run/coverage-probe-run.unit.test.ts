@@ -17,11 +17,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
+import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
 import { readTextOrEmptyIfMissing, } from '@monochromatic-dev/translation-repair-typography';
-import {
-  type CoverageAnswer,
-  type runCoverageStage,
+import type {
+  CoverageAnswer,
+  runCoverageStage,
 } from '@monochromatic-dev/translation-repair-archive';
 import { runCoverageProbe, } from '../../dist/final/node/index.mjs';
 import { levelCapturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';

@@ -14,9 +14,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary';
-import {
-  type CoverageAnswer,
-  type CoverageCandidate,
+import type {
+  CoverageAnswer,
+  CoverageCandidate,
 } from '@monochromatic-dev/translation-repair-archive';
 import {
   answeredRow,

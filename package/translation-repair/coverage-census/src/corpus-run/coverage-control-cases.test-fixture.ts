@@ -1,10 +1,10 @@
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type SyntheticClient,
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { parseDocument, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type CoverageControlCase, } from '../../dist/final/node/index.mjs';
+import type { CoverageControlCase, } from '../../dist/final/node/index.mjs';
 
 //region Coverage control cases and client
 // ONE DAMAGEABLE CASE AT A NAMED LOCATION, and a client answering every
