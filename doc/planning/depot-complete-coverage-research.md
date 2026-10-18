@@ -1019,7 +1019,7 @@ arbitrary filesystem relocation and another platform are unmeasured.
 ## Matching-image browser and E2E campaign
 
 Run `39126466632`,
-immutable harness `552831830e18bb55c17bc5af4ed22db233790e89`,
+immutable harness `552831830ef2f059b7efa5149fe20f053428c220`,
 is the sole active coverage job.
 Its finite plan has 50 owning invocations:
 42 shared builds,
