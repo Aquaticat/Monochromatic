@@ -21,5 +21,15 @@
   "fullWindowTimestampComputeReservationUsd": 0.23,
   "nominalCampaignGuardUsd": 1,
   "maximumBuildCreates": 1,
-  "alternativeCredentialPermitted": false
+  "alternativeCredentialPermitted": false,
+  "recovery": {
+    "attempt": 2,
+    "previousRun": "dzsf27t0xx",
+    "previousBuild": "j9r23brwtx",
+    "singleExporter": "local",
+    "additionalFullWindowReservationUsd": 0.23,
+    "cumulativeFullWindowReservationUsd": 0.46,
+    "parentAuthorization": "2026-10-18 after coverage terminal release",
+    "productionRoutingChanged": false
+  }
 }
