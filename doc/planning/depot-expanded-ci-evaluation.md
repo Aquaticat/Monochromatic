@@ -180,6 +180,35 @@ with cleanup verifying no app/compositor processes,
 units or container and restored audio state
 ([desktop sessions and original artifacts](depot-complete-coverage-research.md)).
 
+The current-source native-host recovery executes 1495 Rust cases on the selected Mac contexts,
+with 1468 passes and 27 failures,
+and 1494 on the selected Windows contexts,
+with 1493 passes and one failure.
+The recorded binary/case identities and statuses match exactly for public Mac 15 versus Depot Mac,
+and public Windows x64 versus Depot Windows x64.
+The same comparator detects changed identities,
+missing cases and changed statuses;
+authored skips remain separate from this executed-case comparison
+([host comparison and controls](../audit/depot-current-host-case-comparator-controls-2026-10-18.evidence.json)).
+These standalone-workspace owners do not exercise IDE,
+terminal or file-manager tests through their Truepeak dependency.
+The shared builds,
+actual Mach-O/PE version consumers,
+filesystem identity and semantic-plugin host/external consumers pass;
+logger failures retain their child-versus-aggregate boundaries
+([current owner execution](depot-complete-coverage-research.md)).
+
+The requested/catalog Depot Mac profile is eight CPUs and 24 GB,
+but its actual Node probe reports seven available CPUs and 18253611008 memory bytes (17 GiB).
+Public Mac reports three available CPUs and 7516192768 bytes (seven GiB).
+Both Windows probes report four available CPUs:
+17174360064 memory bytes on public GitHub and 16827592704 on Depot.
+Depot's actual OS build and CPU model were not captured;
+the catalog's Apple M2 is not an observed chip identity.
+These measurements do not establish why the requested and observed Mac resources differ,
+or a fair native-platform performance ratio
+([original environment observations](../audit/depot-current-host-case-comparator-controls-2026-10-18.evidence.json)).
+
 ### Execution infrastructure
 
 Native orchestration needs explicit event and check ownership,
@@ -459,6 +488,20 @@ Later OS,
 owner and debug controls are excluded from this frozen snapshot until separately normalized
 ([follow-on ledger](depot-owned-allocation-follow-on.md),
 [independent frozen source and arithmetic](../audit/depot-owned-allocation-follow-on-independent-2026-10-18.evidence.json)).
+
+The separately verified successor has 37 allocation rows and 41 retained source bodies,
+including the public recovery and managed-host windows.
+Its nominal known-provider proxy is USD 1.2625:
+Depot GitHub USD 0.8381 and native CI USD 0.4244.
+The managed Mac's 359 seconds and Windows' 674 seconds add USD 0.6584.
+Public compute remains zero,
+the Root graph subtotal remains USD 0.487,
+and the separate BuildKit request-window proxy remains USD 0.015897333333.
+These are interval-derived proxies before allowances,
+with invoice and allocated-builder compute unmeasured.
+Later GNU,
+material-owner and debug attempts need their own terminal joins
+([37-row successor verification](../audit/depot-owned-allocation-follow-on-hosts-verification-2026-10-18.evidence.json)).
 
 The current-source four-CPU Linux comparison has two completed repetitions on each GitHub runner pool.
 All 42 shared Node build commands pass in every sample.
@@ -795,11 +838,11 @@ as do absent-owner cache/language recipes and external observability sinks
 
 Remaining factual work is explicitly owned in the
 [execution handover](../handover/depot-trial-grilling.md):
-current-source macOS and Windows owner controls,
+the terminal GNU correction's actual outcomes,
 semantic feature/assertion reconciliation,
 existing-evidence joins and admitted execution of remaining IDE/file-manager/terminal/design owners,
 the finite native debug consumer,
-prepared-image absence controls and final combined allocation/cost normalization.
+and final combined allocation/cost normalization.
 The capability-allocation source review and concrete rollout profiles are written;
 the newly admitted material-owner execution and final source-failure dispositions remain open.
 All 120 captured documentation pages now have substantive applicability findings in the source ledger.

@@ -211,11 +211,14 @@ The combined nominal job-window proxy is USD 0.6584,
 separate from its USD 1.92 reservation and invoice cost.
 Its observed case counts match the public count boundaries;
 Coverage seals exact original artifact/case/host evidence and actual OS/machine differences before final integration.
-GNU-only correction `39152147229` is now the sole coverage allocation,
+GNU-only correction `39152147229` is terminal failed,
 on harness `b76aab1964bfe9ac21aec3e9c5d24de443ec4992`
 and dedicated branch `research/depot-gnu-owner-correction-20261018`.
 Its single standard public Windows job has a 30-minute cap and 27-minute inner bound,
 with zero nominal public compute and finite watcher `11329` owning its 40-minute campaign guard.
+Job `117747819418` ran from 18:00:26 to 18:10:52 UTC (626 seconds).
+Coverage is collecting the actual bodies before assigning execution credit.
+No coverage cloud job remains active.
 The decoded bootstrap and duplicate-versus-single-argument controls pass before dispatch.
 Coverage sequences the material campaign after this GNU attempt is terminal.
 Platform's pending SSH source includes a third native CLI PTY-RPC consumer,
@@ -258,8 +261,24 @@ Rust sealed current absence in `49e5c84d1b`:
 SHA-256 `967abe64d26450f9754b00c387c742b1ea744f6ac8e58d7be605b240c1499956`.
 The same-host/path invalid-Bearer control returns 401 while the valid selected pull token returns 404.
 Its 20-body source archive retains exact creator/host/repository/tag/digest joins.
-The follow-on now has 35 rows and 39 retained bodies after the public recovery's five zero-compute rows;
-USD 0.6041 and the parent USD 0.487 subtotal remain unchanged.
+The follow-on now has 37 rows and 41 retained bodies after the public recovery and managed-host joins.
+Its known nominal provider-window proxy is USD 1.2625,
+with Depot GitHub USD 0.8381 and native CI USD 0.4244;
+the parent graph subtotal remains USD 0.487.
+Rust's successor verification is sealed at `92839f0386`:
+`doc/audit/depot-owned-allocation-follow-on-hosts-verification-2026-10-18.evidence.json`.
+The ledger SHA-256 is `9b536e96fabfe522fa0921dddfa7b7da3c14730c5c9625c99b7286850425cb17`;
+the 41-body archive SHA-256 is `872651779e81a7ae6627c10c7392151fbe435cb97be456a8e409428ee6ca1b6d`.
+Host comparison controls at `21f3133491` establish equality for 1495 Mac and 1494 Windows recorded cases,
+with changed identity,
+missing identity and changed status detected by the same comparator.
+The original host seal remains at its `d29c7887...` identity;
+the derived-view comparison successor is
+`doc/audit/depot-current-host-owner-comparison-2026-10-18.evidence.json.gz`,
+SHA-256 `c11ce61387c8675f99c303cad6093d444a13bc7c42adf24eb77f2bdd1f1677b7`.
+Depot Mac requested/catalog eight CPUs and 24 GB differs from observed available CPUs seven and 17 GiB.
+Its actual OS build and CPU model remain unmeasured;
+do not substitute a fresh VM or catalog M2 as the missing original observation.
 The independent frozen 30-row review remains a distinct immutable snapshot;
 the final larger ledger still needs the parent's new independent review.
 The refreshed Cargo bootstrap troubleshooting section renders and passes its targeted check.
@@ -269,6 +288,17 @@ The first stdout-only collector missed stderr diagnostics and is rejected,
 as is the nonmoving heading control.
 No broader token or account enumeration is authorized.
 Coordinate at most two active cloud jobs across owners.
+Root removed its completed graph and MVM worktrees after clean tracked/untracked status,
+ignored-output dry runs,
+root Git-name/ignore checks and confirmation that neither active owner needs their paths.
+The three ignored-output directories were moved into the private Root controller's
+`retained-completed-worktree-outputs` directory before ordinary non-forced removal.
+No retained evidence or shared Git/LFS objects were deleted.
+The physical roots resolve through `/var/mnt/encrypted/temp/agent`;
+the first literal-path assertion was rejected and the corrected realpath comparison passes.
+The rejected parent invocation `mise run --file ...` emitted `no task //:--file found`.
+Running the existing task from its owning controller directory passes five receipt hashes,
+44 source-body joins and targeted Markdown lint.
 
 ## Recorded setup and recovery history on 2026-10-18 at 16:33 UTC
 
