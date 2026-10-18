@@ -113,6 +113,15 @@ const OMISSION_REASON_B = 'typescript-tuple-serialization-failed';
 /** Include list reaching the project directory, the shared directory and its JSX-capable files. */
 const JSX_INCLUDE = '"include":["*.ts","../shared/*.ts","../shared/*.tsx"]';
 
+/** Project whose helper reaches a JSX-capable file. */
+const JSX_PROJECT: ProjectFixture = {
+  name: 'first',
+  compilerOptions: `${STRICT_COMPILER_OPTIONS},"jsx":"preserve"`,
+  inputSource: INPUT_SOURCE,
+  files: {},
+  include: JSX_INCLUDE,
+};
+
 /** Include list reaching the project directory and the shared directory. */
 const INCLUDE = '"include":["*.ts","../shared/*.ts"]';
 
@@ -587,6 +596,9 @@ await describe({
             compilerOptions: STRICT_COMPILER_OPTIONS,
             inputSource: INPUT_SOURCE,
             files: {},
+            /* The second program holds every file the first held, so the whole-scope snapshot an
+             * unresolved closure takes cannot be what keeps the entry from being read back. */
+            include: '"include":["*.ts","../shared/*.ts","../first/*.ts"]',
           },
         },);
         expect(stats.sharedSourceCacheHitCount,).toBe(0,);
@@ -896,6 +908,27 @@ await describe({
       },
     },),
     it({
+      name: 'names the fallback reason of a file that reaches a JSX-capable file',
+      fn: async () => {
+        using root = disposableFixtureRoot();
+        writeSharedDirectory({
+          root: root.path,
+          files: {
+            'helper.ts': IMPLICIT_IMPORT_HELPER_SOURCE,
+            'view.tsx': VIEW_SOURCE,
+          },
+        },);
+        /** Key of the helper, which reaches a file whose implicit import no closure lists. */
+        const key = sharedKeyOf({
+          root: root.path,
+          sharedName: 'helper.ts',
+          project: JSX_PROJECT,
+        },);
+        expect(key.eligible,).toBe(false,);
+        expect(key.eligible ? undefined : key.reason,).toBe('implicit-import-file',);
+      },
+    },),
+    it({
       name: 'does not share a file that reaches a JSX-capable file the parser lists no runtime import for',
       fn: async () => {
         using root = disposableFixtureRoot();
@@ -907,21 +940,7 @@ await describe({
           },
         },);
         /** Project fixture identical in both builds. */
-        const project: ProjectFixture = {
-          name: 'first',
-          compilerOptions: `${STRICT_COMPILER_OPTIONS},"jsx":"preserve"`,
-          inputSource: `import { inspect, } from '../shared/helper.js';\nexport function caller(value: { text: string; },): string { return inspect(value); }\n`,
-          files: {},
-          include: JSX_INCLUDE,
-        };
-        /** Key of the helper, which reaches a file whose implicit import no closure lists. */
-        const key = sharedKeyOf({
-          root: root.path,
-          sharedName: 'helper.ts',
-          project,
-        },);
-        expect(key.eligible,).toBe(false,);
-        expect(key.eligible ? undefined : key.reason,).toBe('implicit-import-file',);
+        const project = JSX_PROJECT;
         /** Counters of the second project, which agrees with the first on every input. */
         const stats = buildBothProjects({
           root: root.path,
