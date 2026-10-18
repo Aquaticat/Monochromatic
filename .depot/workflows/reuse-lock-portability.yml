@@ -1,0 +1,41 @@
+name: Native archived lock and clock controls
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  locks:
+    runs-on:
+      size: 4x16
+      image: l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r2-git256
+    timeout-minutes: 10
+    env:
+      CI: 'true'
+      MISE_AUTO_INSTALL: 'false'
+      MISE_LOCKED: '1'
+      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+      MISE_DATA_DIR: /opt/depot-reuse-20261018-r1/mise-data
+      MISE_CACHE_DIR: /opt/depot-reuse-20261018-r1/mise-cache
+      REUSE_LOCK_PROVIDER: native-depot
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        fetch-depth: 1
+        clean: false
+    - name: Admit the exact diagnostic input and bundled prerequisites
+      env:
+        REUSE_LOCK_STAGE: prepare
+        MONO_RESEARCH_LOCK_ARCHIVE_URL_20261018: ${{ secrets.MONO_RESEARCH_LOCK_ARCHIVE_URL_20261018 }}
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:reuse:lock-prepare
+    - name: Run actual archived lock and metadata tests with ordinary and tmpfs fixtures
+      env:
+        REUSE_LOCK_STAGE: consume
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:reuse:lock-portability
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      if: always()
+      with:
+        name: native-archived-lock-controls
+        path: .research-lock/receipts
+        retention-days: 7
+        if-no-files-found: warn

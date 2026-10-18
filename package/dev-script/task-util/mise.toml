@@ -175,3 +175,11 @@ run = "node bin/reuse-registry-probe.mjs"
 description = "Prepare the existing native Git verification prerequisite and the audited compiler-cache tool"
 run = "node bin/reuse-tool-update.mjs"
 
+[tasks."research:reuse:lock-prepare"]
+description = "Admit one exact-source diagnostic archive using only an expiring object-read URL or workflow mirror"
+run = "node bin/reuse-lock-prepare.mjs"
+
+[tasks."research:reuse:lock-portability"]
+description = "Run the exact archived34-case lock cohort repeatedly across owned ordinary/tmpfs fixtures"
+run = "node bin/reuse-lock-portability.mjs"
+
