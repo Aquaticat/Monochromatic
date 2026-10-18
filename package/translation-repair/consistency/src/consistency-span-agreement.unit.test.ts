@@ -413,6 +413,32 @@ await describe({
       },
     },),
     it({
+      name: 'READS A JOINT OF A LONGER WORD AS PART OF IT, as the locator does: a quote "cat" is no word of "cat\'s bowl", "cat-nap" '
+        + 'or "0.5" written with a joint beside it, so it is contained only in itself and is no candidate, and "cat" beside a space '
+        + 'is one',
+      fn: async () => {
+        /**
+         The candidates two ballots leave when one quotes the short words and the other quotes the longer text.
+         */
+        function candidatesOf({ short, long, }: { readonly short: string; readonly long: string; },): unknown {
+          return containedQuoteWordsOf({
+            voices: [
+              ballotOf({ seat: 'a', quotes: { 'OCCURRENCE 1': short, }, choice: 'OCCURRENCE 1', },),
+              ballotOf({ seat: 'b', quotes: { 'OCCURRENCE 1': long, }, choice: 'OCCURRENCE 1', },),
+            ],
+            label: 'OCCURRENCE 1',
+          },);
+        }
+        expect([
+          candidatesOf({ short: 'cat', long: 'cat\'s bowl', },),
+          candidatesOf({ short: 'cat', long: 'cat-nap', },),
+          candidatesOf({ short: '5', long: '0.5', },),
+          candidatesOf({ short: 'bowl', long: 'cat\'s bowl', },),
+          candidatesOf({ short: 'cat', long: 'cat naps', },),
+        ],).toEqual([[], [], [], ['bowl',], ['cat',],],);
+      },
+    },),
+    it({
       name: 'ENDS ON A BLANK QUOTE, which is contained only in another blank quote: a blank quote beside two that end in a '
         + 'letter is no candidate, and two blank quotes beside one of words are the one candidate',
       fn: async () => {
