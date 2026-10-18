@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-18T13:54:54.839Z",
+  "updatedAt": "2026-10-18T14:00:39.674Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research reopened; no readiness claim",
   "sourceArchive": {
@@ -48,8 +48,19 @@
       "family": "platform",
       "applicability": "Account, security, observability, support or adjacent integration policy",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed document read; claim-level applicability and source limitations recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:00:39.674Z",
+        "sourceSha256": "ee88788a95f390e56333754981951f693979dbfaf6b3d90f8b11617e26907f7a",
+        "findings": [
+          "Landing page cards enumerate CI, BuildKit, GHA, registry, agents and API; Managed has a separate CTA",
+          "Landing cards omit Cache and Code, so that page alone is not a complete product inventory",
+          "Advertises no-card trial without specifying trial credit/transition entitlement"
+        ],
+        "use": "Product discovery cross-checked against complete LLM index, sitemap and current pricing, not landing cards only",
+        "limits": "No trial/account/subscription state queried"
+      }
     },
     {
       "title": "Manage your Depot account and organizations",
@@ -77,8 +88,20 @@
       "family": "platform",
       "applicability": "Account, security, observability, support or adjacent integration policy",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed document read; claim-level applicability and source limitations recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:00:39.674Z",
+        "sourceSha256": "433d8cbefba6c29685fb22aff3b44db0c3b8d30d29874adaf946d62b3a6fe5cd",
+        "findings": [
+          "Organization consolidates all product usage in one invoice; named allowances do not become transferable",
+          "Developer does not document member invitation; invitation is Startup/Business",
+          "Account and organization deletion require support request; organization removal described as manual",
+          "Member permissions described more broadly than older security page User role wording"
+        ],
+        "use": "Operating roles, plan eligibility and export/deletion boundaries for complementary CI pools",
+        "limits": "No account settings, memberships, billing or invoices inspected; no support contact"
+      }
     },
     {
       "title": "Quickstart for remote Claude Code agents on Depot",
@@ -192,8 +215,20 @@
       "family": "platform",
       "applicability": "Account, security, observability, support or adjacent integration policy",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed document read; claim-level applicability and source limitations recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:00:39.674Z",
+        "sourceSha256": "3308edf7845a1a59e2aa4d9a62606cc72eb29cf8be552b9499cf761e2b12c89f",
+        "findings": [
+          "Native failed job attempts automatically receive AI summaries from masked failed-attempt log tails/annotations",
+          "No training on usage/logs is stated; this is not no-processing or no-third-party-transfer",
+          "Authenticated Sherlock may read organization settings/usage and open support after confirmation",
+          "CLI/API deterministic paths and machine-readable Markdown/LLM indexes are separately documented"
+        ],
+        "use": "Diagnostic provenance, data-processing and agent-loop prerequisites; use raw logs for causal evidence",
+        "limits": "No Sherlock session, broad diagnostic bridge or model credential created; stopping diagnose does not disable automatic summaries"
+      }
     },
     {
       "title": "Container builds API tutorial",
@@ -3239,8 +3274,20 @@
       "family": "platform",
       "applicability": "Account, security, observability, support or adjacent integration policy",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed document read; claim-level applicability and source limitations recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:00:39.674Z",
+        "sourceSha256": "0d306cd3daf223ea1cdca28560ee78ad7cccc82b9a208f8a2191c09ed5cbc128",
+        "findings": [
+          "Explicit flag then DEPOT_TOKEN then stored login; DEPOT_CACHE_TOKEN may be fallback auth, not universal endpoint permission",
+          "Native/GHA inject short-lived job/cache context; SCCACHE/NX/TURBO variables have product-specific meanings",
+          "Native environment-file interfaces and matrix indices/totals are documented; reusable workflows resolve own strategy",
+          "OTEL/error telemetry and update notices have separate controls; OIDC debug prints lookup details"
+        ],
+        "use": "Hermetic tool bootstrap/auth scope and matrix/report provenance; existing cache and orchestration receipts qualify selected variables",
+        "limits": "No broad environment dump or OIDC-debug invocation; variable presence does not prove permission or secret absence"
+      }
     },
     {
       "title": "Access private resources from Depot runners",
@@ -3605,8 +3652,20 @@
       "family": "platform",
       "applicability": "Account, security, observability, support or adjacent integration policy",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed document read; claim-level applicability and source limitations recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:00:39.674Z",
+        "sourceSha256": "42870517420641566389df1485af787cba5d10eb335e7e1def16475481da8ce0",
+        "findings": [
+          "Org OAuth config joins Linux builders, GHA and nativeCI as ephemeral tailnet nodes",
+          "Depot Windows integration explicitly unsupported; no conclusion about manual Windows VPN installation",
+          "Requires auth-key write scope and tailnet ACL/tag configuration",
+          "Disconnect prevents new joins but in-flight nodes remain until completion unless removed in Tailscale"
+        ],
+        "use": "Optional private dependency/service access when needed; current local/disposable consumers need no new tailnet access",
+        "limits": "No org/tailnet settings or OAuth credentials changed; custom SDK probes explicitly disabled tailnet joining"
+      }
     },
     {
       "title": "Depot Managed on AWS",
@@ -3736,8 +3795,20 @@
       "family": "platform",
       "applicability": "Account, security, observability, support or adjacent integration policy",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed document read; claim-level applicability and source limitations recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:00:39.674Z",
+        "sourceSha256": "fd124c7f9e00f4b23f10dc272d1b77d4010398f74742a3fd42d294b7e65a90e1",
+        "findings": [
+          "Organization usage charts include billable time/storage/tests, distinct from job timestamps and reserved arithmetic",
+          "Test analytics combines nativeCI/GHA with ref/suite/file/class filters,90day context and same-SHA pass/fail heuristic",
+          "P95 slow-test and failure-signature views are documented, not statistically qualified by a selected passing cohort",
+          "Storage display separates layer/Actions/registry/remote caches but pricing combines its named allowance"
+        ],
+        "use": "Potential expanded CI observability and export needs; exact owned-run raw logs/artifacts remain admissible without org-wide usage",
+        "limits": "No org dashboards/usage queried; no uptime denominator, global cap guarantee or analytics qualification inferred"
+      }
     },
     {
       "title": "PostHog for Startups credits",
@@ -3759,8 +3830,18 @@
       "family": "platform",
       "applicability": "Account, security, observability, support or adjacent integration policy",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed document read; claim-level applicability and source limitations recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:00:39.674Z",
+        "sourceSha256": "f3e572b4b8ff45963ba5c7b57f2d702ed5edb50f688ef2665ce6d93f2bfaac5b",
+        "findings": [
+          "Conditional new-customer offer USD5000credit for approved startups; covers plan and named products for one year",
+          "No monthly limit on offer credit; exhausted credit resumes normal plan/overage charges"
+        ],
+        "use": "Optional external credit eligibility only; cannot be assumed in the settled USD200 operating ceiling",
+        "limits": "No eligibility, code, checkout, balance or subscription inspected; current trial eligibility unresolved"
+      }
     },
     {
       "title": "Depot Registry",
@@ -3897,8 +3978,22 @@
       "family": "platform",
       "applicability": "Account, security, observability, support or adjacent integration policy",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed document read; claim-level applicability and source limitations recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:00:39.674Z",
+        "sourceSha256": "171598966d02be106e9832d9c59c0a47f562bd0a34d26a6e2f3116475b825820",
+        "findings": [
+          "Build authorization implies mutable project cache/VM access; project separation is a trust boundary, not secret-mount assurance",
+          "User role and hardware wording differ from account docs and later Metal rollout material",
+          "CI secrets use org KMS envelope encryption, owners-only writes and org/repository scoping; values are write-only",
+          "Secret migration runs a one-shot GH workflow to transfer available secrets; not a passive metadata migration",
+          "Actions cache repository isolation claim is product-specific, not a cache-disk ACL or generic organization-cache guarantee",
+          "New EC2-per-job/hardware isolation prose is not sufficient evidence of current all-label Metal placement"
+        ],
+        "use": "Threat model for shared mutable caches, untrusted PRs, secrets, artifact admission and infrastructure chronology",
+        "limits": "No direct physical/isolation audit or global data-erasure proof; synthetic exclusions and owned404 controls remain narrowly scoped"
+      }
     },
     {
       "title": "Troubleshooting",
@@ -3923,8 +4018,19 @@
       "family": "platform",
       "applicability": "Account, security, observability, support or adjacent integration policy",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed document read; claim-level applicability and source limitations recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:00:39.674Z",
+        "sourceSha256": "0de846b930e03c7bea25726b339d955ec09a555342290ce0d4d1bba2f89a9dc3",
+        "findings": [
+          "Links product-specific troubleshooting and support",
+          "Payment failure retries span14days; exhausted retries cancel subscription",
+          "This payment-failure behavior is not a documented active-trial transition or deliberate plan downgrade contract"
+        ],
+        "use": "Operational recovery and support discovery only; do not use unpaid invoices as budget enforcement",
+        "limits": "No billing/invoice/support/account action performed"
+      }
     }
   ],
   "cli": [
