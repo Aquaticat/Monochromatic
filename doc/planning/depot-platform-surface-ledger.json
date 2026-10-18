@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-18T15:46:07.928Z",
+  "updatedAt": "2026-10-18T15:50:52.251Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research reopened; no readiness claim",
   "sourceArchive": {
@@ -2629,11 +2629,25 @@
       "family": "container-builds",
       "applicability": "Build shared multi-target research/CI images and architecture outputs without conflating targets with VMs",
       "retrievalValidated": true,
-      "reviewState": "Dedicated architecture builders, shared same-architecture cache and Bake graph source-reviewed; actual graph and overlapping isolated network consumers passed; billing interval apportionment remains source-limited",
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
       "runtimeEvidence": [
         "doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json"
       ],
-      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md",
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "cb8bdda52a5967927d9f1659c0a1641c0aaffb0a8e728a4550d9cd2f015293e1",
+        "sourceBytes": 11694,
+        "findings": [
+          "Independent stages and bake targets may execute concurrently; same-architecture requests normally share one project builder and contend for its fixed resources.",
+          "Content-identical work can deduplicate across concurrent requests on the same builder; waiting for shared work is not necessarily a cache miss or admission queue.",
+          "Multiarch launches a native builder per architecture; per-project target separation changes resource/cache isolation rather than giving free parallel resources.",
+          "Autoscaled clones do not write new layers back to the primary; the per-instance scale threshold is not a total-builder ceiling. Our bounded project kept scaling off.",
+          "The overview example uses project-id while the deciding bake guide/current target syntax uses project_id; actual exercised HCL and CLI source decide the admitted graph."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Docker Arm images",
@@ -2656,12 +2670,25 @@
       "family": "container-builds",
       "applicability": "Produce architecture-specific reusable service/job images; distinguish that from repository ARM CI",
       "retrievalValidated": true,
-      "reviewState": "Actual Node/ELF and consumer-bound AMD64/ARM64 image outputs exercised; no Rust/TypeScript ARM repository workload credit until the queued real profile",
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
       "runtimeEvidence": [
         "doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json",
         "doc/audit/depot-service-containers-2026-10-18.evidence.json"
       ],
-      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md",
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "7f4669b635ef1440c605f9a2bd82ca8c385cf4bfaa6bde1fc16c53b14ea52717",
+        "sourceBytes": 3768,
+        "findings": [
+          "Native AMD64/ARM64 builders avoid ordinary cross-architecture QEMU builds; actual two-architecture Node/service/derived images and ELF/runtime consumers qualify only those architectures.",
+          "Host-architecture detection can choose ARM automatically; explicit platform lists retain intent and are needed when the requesting runner differs.",
+          "Multiarch --load differs from ordinary Docker exporter manifest-list limitations and still requires a real compatible local daemon.",
+          "Documented physical/default cache sizes do not measure current storage consumption; Startup/Business larger builders remain a distinct tier gate."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Build autoscaling",
@@ -2693,9 +2720,24 @@
       "family": "container-builds",
       "applicability": "Potential later BuildKit throughput; keep this research within an enforceable maximum builder count",
       "retrievalValidated": true,
-      "reviewState": "Deciding Project.max_concurrent_builds is a per-instance scale-out threshold, not total instance cap; schemas reviewed; autoscaling kept off; no executed scale-out claim",
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
       "runtimeEvidence": [],
-      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md",
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "b17837db672431c8fe15c3d02bfaf79aa47faac87ba187a17b1d3c84da147076",
+        "sourceBytes": 11200,
+        "findings": [
+          "Autoscaling is available on all plans, disabled by default, and compares concurrent requests with builds-per-instance before adding builders.",
+          "The documented prefilling16 and Project.max_concurrent_builds are per-instance thresholds; no source-reviewed total-builder cap was established, so no bounded scale-out was activated.",
+          "Each clone starts from the main cache and discards its newly generated cache writes; isolation can trade cross-build deduplication/cache efficiency for throughput.",
+          "Bake counts as one request per project independent of target count; multiple project IDs create separate requests/builders.",
+          "The feature has no extra activation fee, but scaled builders cost ordinary compute; temporary clones are documented not to consume cache-storage quota.",
+          "Smaller builders plus autoscaling does not give an individual build more CPU/RAM and is not a guaranteed latency improvement."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Continuous Integration",
@@ -2716,8 +2758,20 @@
       "family": "container-builds",
       "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "c22ae3c3261f0d97c2ae6cccb7d81be5453b0bb9ddb99039da401cb11dfe9226",
+        "sourceBytes": 2114,
+        "findings": [
+          "Remote container builds are usable inside an incumbent CI provider; integration does not require replacing the workflow scheduler.",
+          "The up-to40x marketing statement is not this repository measurement or a whole-CI forecast.",
+          "Default16CPU/32GB and larger Startup/Business shapes are independent of native CI runner sizes and included-minute pools."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Dev Containers",
@@ -2741,8 +2795,20 @@
       "family": "container-builds",
       "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "a01075f56a03df888431ca47f4f51f9159bf9c7b49bd7a08cf215cce59fa1308",
+        "sourceBytes": 5045,
+        "findings": [
+          "Dev Containers uses Docker Buildx and can route image construction through Depot; the developer workspace still requires a local/runtime consumer.",
+          "configure-docker installs a plugin and changes global defaults; no such mutation was performed in this audit.",
+          "The custom desktop/IDE/container incumbents do not automatically establish a VSCode Dev Containers adoption or compatibility receipt."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Docker Bake",
@@ -2783,11 +2849,26 @@
       "family": "container-builds",
       "applicability": "Review and execute a pinned shared-base image graph with named contexts",
       "retrievalValidated": true,
-      "reviewState": "Actual reviewed graph executed; local print and rejected-target controls do not substitute for the retained native build consumers",
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
       "runtimeEvidence": [
         "doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json"
       ],
-      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md",
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "fbb2322953102e12fa6f07b0e807faffe13c4c67d2ea95718aad9b0b35583a0c",
+        "sourceBytes": 11652,
+        "findings": [
+          "HCL/JSON/Compose, groups, target contexts/inherits, variables and matrix names describe a multi-image graph rather than a test scheduler.",
+          "The deciding HCL key is project_id; Compose build.x-depot.project-id and per-target values take precedence over the action project input.",
+          "Compose lacks some HCL inheritance/variable features; bake build/load does not itself start compose services or publish an application.",
+          "Save tags add target suffixes and --save does not automatically push every bake-file tag; --push plus destination authentication is a separate operation.",
+          "Actual reviewed bake execution, local exports, secret/SSH controls and first-party Cargo cache mounts are retained in the BuildKit campaign, not inferred from --print.",
+          "The guide example uses action input file, while captured official action.yml/src/context.ts declare/read files. Do not copy that unqualified snippet; current action schema/source is deciding."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Docker",
@@ -2811,8 +2892,19 @@
       "family": "container-builds",
       "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "7998170a697e2891f2e9a1bd70946c0d4d3766f38c6265e0a5e7142e77970bc9",
+        "sourceBytes": 2455,
+        "findings": [
+          "The Docker plugin/driver route changes default docker build and buildx behavior and still requires a selected Depot project.",
+          "Direct depot CLI invocation qualifies the audited path without proving every third-party tool that invokes Docker/Buildx is compatible."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Docker Compose",
@@ -2839,8 +2931,21 @@
       "family": "container-builds",
       "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "1ffa65c4191a9152823db1046073845aaa5d90ab101d7a07e6b8d593367e56f2",
+        "sourceBytes": 6963,
+        "findings": [
+          "Preferred bake --load can build service images together and pull missing layers, whereas configured compose build downloads exported tar and creates individual requests per service.",
+          "Compose build cannot select separate Depot projects per service on the described driver route; bake supports x-depot project overrides.",
+          "Building/loading image graphs is separate from compose up networking, volumes, secret injection and actual service health; parent native/GHA service consumers provide distinct runtime evidence.",
+          "The illustrative final push references steps.build in a different test job and is not an adopted working publication recipe; no production Compose deployment or real publishing credential was used."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Local Development",
@@ -2863,8 +2968,20 @@
       "family": "container-builds",
       "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "5b2f391039fd815a1701dfe4aac7d3d6c2f20a03d558f30e5d5afcbff14e1b21",
+        "sourceBytes": 2963,
+        "findings": [
+          "Local users and CI share a project cache namespace; successful teammate access is not an independent security boundary.",
+          "Default build is cache-only unless a load/export/push operation is requested; source inspection or completed build status alone does not prove a runnable local consumer.",
+          "Explicit --project avoids introducing depot.json or mutating default Docker configuration during research."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Access private registries",
@@ -2884,8 +3001,19 @@
       "family": "container-builds",
       "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "d0a45c90438e990704219c8d7f747a6f5b826ee885d58002083c2395dce8793d",
+        "sourceBytes": 934,
+        "findings": [
+          "Private FROM and push authentication uses the invoking client local Docker credential provider; it is not established by Depot account login alone.",
+          "The automatic native job-token project-registry exchange is separately exercised; no arbitrary external private-registry credential or production push was added."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "AWS CodeBuild",
@@ -3407,8 +3535,20 @@
       "family": "container-builds",
       "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "a79d98c54b79b716fa70e83a9f85a26c98ab94ec3aa6499567c15fce435c4907",
+        "sourceBytes": 3016,
+        "findings": [
+          "Dashboard separates executed, cached and deduplicated stages/platforms, with step dependency graphs and50-build step histories.",
+          "Source/context/log visibility can include uploaded inputs; the actual research fixture restricts context and never supplies real secret markers as ordinary build arguments.",
+          "Share build creates an unauthenticated public URL; no share link was created and source availability is not publication authorization."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Container build metrics",
@@ -3437,8 +3577,21 @@
       "family": "container-builds",
       "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "8600bb8e194a1640dd7b8f2949beedb5b8917057005788af92ed3e07e9853d51",
+        "sourceBytes": 6247,
+        "findings": [
+          "Build/project UI offers CPU/memory graphs, cache/step histories and OOM or90percent utilization notices.",
+          "Dashboard time-saved/cache figures are not an unchanged-input causal provider comparison or an invoice.",
+          "Monthly/project/org usage pages are distinct from exact owned request/job metadata; no forbidden account usage/settings inspection was performed.",
+          "Context tab is documented when files are sent to builders; full-repository incumbent contexts require owner-specific ignore/secret review before adoption."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Optimal Dockerfiles for .NET",
@@ -4155,8 +4308,27 @@
       "family": "container-builds",
       "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "a8d5633a44a09c298077c6f7213adf17dc10d2dd66dfa30c7045f9ded87ecb31",
+        "sourceBytes": 23617,
+        "findings": [
+          "Developer includes default16CPU/32GB builders and native multiarch;32CPU/64GB and64CPU/128GB require Startup/Business with2x/4x allowance multipliers and corresponding rates.",
+          "Container compute is tracked by the second with no per-build minute minimum; public included build minutes are not a hard cap and are separately named from CI/GHA pools.",
+          "Default same-architecture project requests share one machine/cache; unlimited request concurrency is not unlimited independent CPU.",
+          "Fork pull-request isolation is documented to deny project-cache reads/writes; it is not established for every trigger/token route by the owned trusted-job probes.",
+          "Cache GC retains parent layers referenced by recently used descendants and explicitly can exceed the configured storage policy. keepGb is not a hard shared-storage budget cap.",
+          "The summary says500GB expansion while the detailed cache policy says1000GB; retention examples7/14/30 differ from actually accepted API1day. Preserve source disagreements rather than replacing measured configuration.",
+          "Platform list includes ARMv6/v7 and386, but native64-bit consumer receipts do not qualify those ABIs or imply a macOS/Windows container kernel.",
+          "Default provenance appears as unknown/unknown index entries; disabling it is a choice, while actual graph/subject verification is distinct from signature trust.",
+          "Lazy estargz/nydus and zstd exporter options are documented capabilities; no lazy-pull runtime, production Kubernetes/Fargate rollout or broad all-format claim was executed.",
+          "Architecture description names EC2/cloud-agent/machine-agent; current Metal/KVM observations on GHA/native CI are different products and cannot silently rewrite BuildKit hosting claims."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Quickstart for faster Docker image builds",
@@ -4180,8 +4352,20 @@
       "family": "container-builds",
       "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "55eab55f9780197e99d61c49ee21cdd1f0d728f419d93efd016f01e53a400ac7",
+        "sourceBytes": 3013,
+        "findings": [
+          "First-run login/project onboarding may prompt; installed helper failure paths can attempt listing even in nonTTY mode. The native auth relay blocks account listing before upstream.",
+          "Usage cap configuration is explicitly Container Build Minutes; it is not a documented native CI/GHA/Sandbox/storage/model aggregate USD cap.",
+          "No organization usage cap or subscription setting was changed; admission/timeout arithmetic remains a scoped research guard."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Troubleshooting container builds",
@@ -4230,8 +4414,25 @@
       "family": "container-builds",
       "applicability": "Remote builds, reusable environments, native architecture and artifact preparation",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed container-build contract, repository ownership, plan/auth/cache/resource boundaries and exercised consumer limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:50:52.251Z",
+        "sourceSha256": "fa9395ef707f3a796176a728a2551a666f43fa20372c1d02a9903fc960404142",
+        "sourceBytes": 17862,
+        "findings": [
+          "Keepalive/resource starvation, TLS transport, cache metadata, upstream Docker Hub, local certificate permissions and registry auth have separate documented diagnostics and must not be merged into one provider incident.",
+          "Client must remain connected during BuildKit work; network/VPN/firewall failures can cancel the build and do not prove an infrastructure allocation failure.",
+          "Docker29 API minimum1.44 versus old client1.43 affects --load; env-version, engine-config or registry alternatives are separate mechanisms, not all exercised workarounds here.",
+          "The provider recommends removing redundant gha cache exporters; cache persistence and actual cache-mount/target correctness remain distinct measured controls.",
+          "KEEP_GIT_DIR affects remote Git context metadata; source-bound Git contexts and local context excludes must be reviewed before adopting Git-dependent tasks.",
+          "DEPOT_DISABLE_OTEL disables embedded CLI tracing for conflicting OTEL schema environments; it is not an organization-wide telemetry or automatic AI-summary optout.",
+          "Resetting cache purges the project volume and starts clean infrastructure; no shared/production cache was reset or size setting changed in response to unrelated incidents.",
+          "Unknown/unknown provenance descriptors are expected metadata and are not additional runnable architectures or a failed ARM workload."
+        ],
+        "use": "Remote container construction and immutable CI/service/prepared-image or narrow first-party producer candidates; use actual context/consumer evidence before production routing.",
+        "limits": "Read/source applicability does not qualify every example/format/runtime, scale-out or external credential; exact build and OCI consumer receipts retain the executed boundary."
+      }
     },
     {
       "title": "Environment variables",
@@ -17643,5 +17844,11 @@
       "sha256": "f92c3eb1f7e87bd59c393faa0df7a1f9e42f762bb287cbdb8697154b0c690f6d"
     },
     "scope": "Full deployed source bodies reviewed; absent owner manifests do not establish absence of downloaded/configured third-party tool dependencies; runtime claims remain exact source-bound consumers"
+  },
+  "containerBuildCompleteSourceReview": {
+    "pages": 15,
+    "claims": 66,
+    "sourceBytes": 112543,
+    "sourceArchive": "doc/audit/depot-platform-surface-sources-2026-10-18.evidence.json.gz"
   }
 }
