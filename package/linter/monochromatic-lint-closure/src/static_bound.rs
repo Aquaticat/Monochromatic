@@ -14,9 +14,6 @@
 use rustc_hir::def_id::DefId;
 /// Import the lint context that gives access to compiler queries.
 use rustc_lint::LateContext;
-/// Import the supertrait elaborator:
-/// it expands `F: Task` into `F: Task` plus everything `trait Task: ..` implies.
-use rustc_middle::ty::elaborate::elaborate;
 /// Import clause kinds (the compiler's name for where-clauses and bounds) and type kinds.
 use rustc_middle::ty::{ClauseKind, Ty, TyKind};
 
@@ -83,15 +80,16 @@ fn type_requires_static<'tcx>(cx: &LateContext<'tcx>, callee: DefId, parameter: 
 }
 
 /// What:
-///  Scan the elaborated where-clauses of `callee` for `parameter: 'static`.
+///  Scan the where-clauses of `callee` for `parameter: 'static`.
 /// Why:
-///  `param_env` already merges the impl and trait parents' clauses;
-///  elaboration adds the clauses that a supertrait such as `trait Task: 'static` implies for `F: Task`.
+///  `param_env` already merges the impl and trait parents' clauses and elaborates supertraits,
+///  so `F: Task` with `trait Task: 'static` yields `F: 'static` without a separate elaboration step
+///  (measured: removing an explicit elaboration pass changed no fixture result).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function environmentRequiresStatic(callee: DefId, parameter: Type): boolean {
-///   for (const clause of elaborate(environmentOf(callee))) {
+///   for (const clause of environmentOf(callee)) {
 ///     if (clause.kind === 'outlives' && clause.type === parameter && clause.region === 'static') return true;
 ///   }
 ///   return false;
@@ -103,7 +101,7 @@ fn environment_requires_static<'tcx>(
     parameter: Ty<'tcx>,
 ) -> bool {
     let environment = cx.tcx.param_env(callee);
-    for clause in elaborate(cx.tcx, environment.caller_bounds()) {
+    for clause in environment.caller_bounds() {
         let ClauseKind::TypeOutlives(outlives) = clause.kind().skip_binder() else {
             continue;
         };
