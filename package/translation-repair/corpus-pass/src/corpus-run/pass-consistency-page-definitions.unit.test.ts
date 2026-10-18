@@ -27,6 +27,7 @@ import {
   type ConsistencySliceFacts,
   editsChangingLocatedWords,
   settledIndexOf,
+  workedPageOf,
   writtenParagraphsOf,
 } from '../../dist/final/node/index.mjs';
 import { levelCapturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
@@ -164,6 +165,137 @@ await describe({
             },);
           },
         },),
+        it({
+          name: 'READS THE PAGE\'S DEFINITIONS IN THE ENGLISH: words joined across a reference the page defines are no stand there '
+            + 'either, so a replacement that leaves the located words out of a slice whose English held them only so changes nothing '
+            + 'on that page, and does on a page that defines nothing of the kind (n173)',
+          fn: async () => {
+            /**
+             The English of a slice in which `tens` stands once for a reader of the slice alone and not at all where the page defines
+             the reference between it and `kit`.
+             */
+            const english = 'kit[][r]tens';
+            const mine = groupIn({
+              places: [
+                { slice: 0, english: 'The cat naps. It is warm.', quote: 'The cat naps.', },
+                { slice: 1, english, quote: 'kit', },
+              ],
+            },);
+            const other = groupIn({
+              places: [
+                { slice: 1, english, quote: 'tens', },
+                { slice: 3, english: 'Dusk: the tens purr in the sun.', quote: 'tens', },
+              ],
+            },);
+            /**
+             A block replacement of the whole slice by words that hold no `tens`.
+             */
+            const edit = {
+              kind: 'block' as const,
+              placePositions: [1,],
+              sliceIndex: 1,
+              start: 0,
+              end: english.length,
+              text: 'kit',
+            };
+            /**
+             What the replacement leaves out, on a page or on none.
+             */
+            function leftOutOn({ page, }: { readonly page?: PageEnglish; },): unknown {
+              return editsChangingLocatedWords({
+                index: settledIndexOf({ settled: [withEdit({ group: mine, edit, },), other,], },),
+                sliceIndex: 1,
+                english,
+                ...((page === undefined) ? {} : { page, }),
+              },);
+            }
+            /**
+             The page that holds the slice and a definition line after it.
+             */
+            function pageDefining({ definition, }: { readonly definition: string; },): PageEnglish {
+              return { text: `${english}\n\n${definition}`, offset: 0, };
+            }
+            /**
+             What it leaves out where the page does not define the reference.
+             */
+            const leftOut = [{ group: 0, edit, other: { group: 1, label: 'OCCURRENCE 1', start: 8, }, },];
+            expect({
+              defined: leftOutOn({ page: pageDefining({ definition: '[r]: u', }), },),
+              otherLabel: leftOutOn({ page: pageDefining({ definition: '[x]: u', }), },),
+              alone: leftOutOn({},),
+            },).toEqual({
+              defined: [],
+              otherLabel: leftOut,
+              alone: leftOut,
+            },);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: workedPageOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'HANDS THE PAGE OF THE FACTS ON when it looks for the replacements that change the words another group located, so '
+            + 'a slice that carries its page leaves out the replacement the page\'s definitions make a change, and one that carries '
+            + 'none does not (n173)',
+          fn: async () => {
+            const mine = groupIn({
+              places: [
+                { slice: 0, english: 'The cat naps. It is warm.', quote: 'The cat naps.', },
+                { slice: 1, english: SLICE, quote: 'and tail', },
+              ],
+            },);
+            const other = groupIn({
+              places: [
+                { slice: 1, english: SLICE, quote: 'kit', },
+                { slice: 3, english: 'Dusk: the kit purrs in the sun.', quote: 'kit', },
+              ],
+            },);
+            /**
+             A block replacement of the whole slice by some text that joins `kit` to a word across a reference.
+             */
+            const edit = {
+              kind: 'block' as const,
+              placePositions: [1,],
+              sliceIndex: 1,
+              start: 0,
+              end: SLICE.length,
+              text: 'kit[][r]\'kit tail',
+            };
+            /**
+             The facts of the slice, with the page they belong to or none.
+             */
+            function factsOnPage({ page, }: { readonly page?: PageEnglish; },): ConsistencySliceFacts {
+              return {
+                ...FACTS_ALONE,
+                sliceIndex: 1,
+                current: { kind: 'present', text: SLICE, },
+                ...((page === undefined) ? {} : { page, }),
+              };
+            }
+            /**
+             How many replacements the slice leaves out, on a page or on none.
+             */
+            function leftOutCount({ page, }: { readonly page?: PageEnglish; },): number | undefined {
+              const { slices, } = workedPageOf({
+                settled: [withEdit({ group: mine, edit, },), other,],
+                slices: [factsOnPage({ page, },),],
+              },);
+              return slices[0]?.leftOut.length;
+            }
+            expect({
+              defined: leftOutCount({ page: pageWith({ definition: '[r]: u', },), },),
+              otherLabel: leftOutCount({ page: pageWith({ definition: '[x]: u', },), },),
+              alone: leftOutCount({},),
+            },).toEqual({
+              defined: 1,
+              otherLabel: 0,
+              alone: 0,
+            },);
+          },
+        },),
       ],
     },),
     describe({
@@ -237,6 +369,63 @@ await describe({
                 written: [{ seat: 'hyper-cat', text: 'The sunny window put the kitten[][r]\'kitten to sleep.', },],
                 findings: [],
               },
+            },);
+          },
+        },),
+        it({
+          name: 'READS THE PAGE\'S DEFINITIONS IN THE BLOCK: words joined across a reference the page defines are no stand in the '
+            + 'block either, so a paragraph that holds the words to keep once is kept where the page defines the reference, and withheld '
+            + 'where the block held them twice (n173)',
+          fn: async () => {
+            /**
+             The English of the slice, whose block holds `kitten` on both sides of a reference.
+             */
+            const english = '## One\n\nThe sunny window put the kitten[][r]kitten to sleep.';
+            /**
+             The block of that English.
+             */
+            const block: CarryBlock = {
+              start: english.indexOf('The sunny',),
+              end: english.length,
+              text: 'The sunny window put the kitten[][r]kitten to sleep.',
+            };
+            /**
+             What the writers' paragraphs come to on a page or on none.
+             */
+            function writtenOn({ page, }: { readonly page?: PageEnglish; },): unknown {
+              return writtenParagraphsOf({
+                voices: [{ seat: 'hyper-cat', translation: 'The sunny window put the kitten to sleep.', },],
+                english,
+                block,
+                keeping: ['kitten',],
+                crossing: [],
+                facts: {
+                  ...FACTS_ALONE,
+                  current: { kind: 'present', text: english, },
+                  ...((page === undefined) ? {} : { page, }),
+                },
+                declared: [],
+                declaredNames: [],
+                l: levelCapturingLogger({ lines: [], },),
+              },);
+            }
+            /**
+             What it comes to where the block holds the words twice and the paragraph once.
+             */
+            const withheld = {
+              written: [],
+              findings: [
+                'consistency-candidate-refused (hyper-cat): the paragraph no longer holds the words of another place that must stay as they are',
+              ],
+            };
+            expect({
+              defined: writtenOn({ page: { text: `${english}\n\n[r]: u`, offset: 0, }, },),
+              otherLabel: writtenOn({ page: { text: `${english}\n\n[x]: u`, offset: 0, }, },),
+              alone: writtenOn({},),
+            },).toEqual({
+              defined: { written: [{ seat: 'hyper-cat', text: 'The sunny window put the kitten to sleep.', },], findings: [], },
+              otherLabel: withheld,
+              alone: withheld,
             },);
           },
         },),
