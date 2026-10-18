@@ -763,3 +763,43 @@ not a complete normalized Android rebuild or proof of whole-APK byte reproducibi
 - [Gradle 9.8.1 cache model](https://docs.gradle.org/9.8.1/userguide/build_cache.html)
 - [Gradle task-specific reruns](https://docs.gradle.org/9.8.1/userguide/command_line_interface.html#sec:rerun_tasks)
 - [Nextest 0.9.148 release](https://github.com/nextest-rs/nextest/releases/tag/cargo-nextest-0.9.148)
+## Frozen Kotlin authored-test identity join
+
+The [Kotlin owner projection](../audit/depot-kotlin-gradle-owner-join-2026-10-18.evidence.json)
+joins the unchanged warm/off cache samples to the six authored JVM unit methods.
+The entire `package/linter/kotlin` Git tree is `fa0167ad3af17896374a22b40ede76e9e9f51250`
+in frozen `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`
+and both executed harness revisions.
+The source file is `src/test/kotlin/dev/monochromatic/detekt/RequireKDocTest.kt` within that package.
+Its SHA-256 is `85aabcd1a45a34c82ed6725b3a6eb72d4e60c0c3f383998056246191f3d6806a`.
+
+The authoritative JUnit classname is `dev.monochromatic.detekt.RequireKDocTest`.
+Each repetition passed these authored methods with no failures or skips:
+
+- `reportsUndocumentedTopLevelDeclarations()`
+- `reportsMembersLocalsAndNested()`
+- `reportsSecondaryConstructorAndEnumEntries()`
+- `acceptsFullyDocumentedCode()`
+- `skipsExcludedKinds()`
+- `allowOverrideExemptsOverridingMembers()`
+
+Warm runs `s9w4jkv0hc` and `rrlzfmp2qv` use harness `9f5923543640df2ee41a00ef7d098e1262a470e7`.
+Off runs `d3ks91rnnb` and `pq5pzj9mcg` use harness `363bd501a0366dc4f74e35ad1b77f1a8ffad95b4`.
+The projection retains exact workflow/job/attempt identities,
+original XML hashes,
+original ZIP hashes,
+and source pointers into `gradleReuse.repeatedOffVersusWarm.summaries` in the canonical reuse receipt.
+The independent join verified four original ZIP CRCs and `102` original member hashes.
+
+The frozen owner `//package/linter/kotlin:test` executes `./gradlew test --no-daemon --console=plain`.
+The cache experiment executes that same authored Gradle `test` task through `mise exec java`,
+adding forced `--rerun`,
+`jar`,
+and the recorded cache/diagnostic/resource arguments.
+It does not literally invoke the Mise owner wrapper.
+The actual timings `17.550128155` and `15.83624124` seconds warm,
+versus `21.43464331` and `20.26238305` seconds off,
+include the recorded JVM/Gradle command boundary and fresh six-case JUnit execution.
+They are not whole-job or general provider speed claims.
+Modified controls in `r328mp420m` and the emitted-JAR Detekt host integration remain separate evidence.
+Repetitions do not multiply the distinct authored-case count.

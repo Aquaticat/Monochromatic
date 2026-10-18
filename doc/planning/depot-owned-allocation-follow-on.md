@@ -251,10 +251,12 @@ and independently read all exact tags and immutable digests before drawing an ab
 Root requested the exact Kotlin authored-test join before admitting a duplicate JVM run.
 The repeated cache receipt retains the six `RequireKDocTest` methods in all four unchanged samples.
 Their Kotlin package Git trees match frozen `e02` exactly.
-The queue is to seal original XML,
+The [sealed projection](../audit/depot-kotlin-gradle-owner-join-2026-10-18.evidence.json)
+retains original XML,
 immutable source,
 owning task,
-and run/attempt identities as a compact projection.
+and run/attempt identities.
+It verifies four original ZIP CRCs and `102` member hashes.
 The Detekt plugin host consumer and modified negative controls stay separate.
 
 Coverage also requested a source-qualified search of retained Rust and legacy receipts
