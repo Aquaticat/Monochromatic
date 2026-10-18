@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "collectedAt": "2026-10-18T08:57:10.415Z",
+  "collectedAt": "2026-10-18T08:59:19.507Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research ongoing: native exports, registry bridge and Node26-qualified OCI derivative exercised; forwarding, immutable Git and remaining Cargo mount cases active",
   "sourceArchive": {
     "path": "doc/audit/depot-buildkit-platform-campaign-2026-10-18.sources.json.gz",
-    "bytes": 2967655,
-    "sha256": "7ced24886c6297fa891062d3629ff59ad6d83f32eb5dc78293f5eb323e4e5304"
+    "bytes": 2970776,
+    "sha256": "66a00df642a2987fbfe246aa07d304b47885e4aee98fdd8ccdb5d047c73b3bfc"
   },
   "service": {
     "source": "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
@@ -250,6 +250,19 @@
       "elapsedMilliseconds": 31529,
       "guardFired": false,
       "phase": "ci-node26",
+      "projectId": "27m5m3vjlv"
+    },
+    {
+      "receipt": "cargo-cache-empty-offline.json",
+      "buildId": "lskskmk4hn",
+      "source": "7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-10-18T08:57:32.811Z",
+      "finishedAt": "2026-10-18T08:57:52.482Z",
+      "elapsedMilliseconds": 19670,
+      "guardFired": false,
+      "phase": "cargo-empty-offline",
       "projectId": "27m5m3vjlv"
     }
   ],
@@ -1763,7 +1776,63 @@
       }
     }
   },
-  "cargoCacheMountCases": [],
+  "cargoCacheMountCases": [
+    {
+      "receipt": "cargo-cache-empty-offline.json",
+      "source": "7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f",
+      "exitCode": 0,
+      "consumerVerified": true,
+      "elapsedMilliseconds": 19670,
+      "consumer": {
+        "phase": "empty-offline",
+        "nonce": "empty-offline-7232a145-e373-4c2b-9be0-6d5e09c3c1c9",
+        "harnessCommit": "7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f",
+        "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+        "architecture": "x64",
+        "nodeVersion": "v24.22.0",
+        "cpuCount": 16,
+        "memoryBytes": 32997212160,
+        "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)\nbinary: rustc\ncommit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452\ncommit-date: 2026-07-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.97.1\nLLVM version: 22.1.6\n",
+        "cargo": "cargo 1.97.1 (c980f4866 2026-06-30)\n",
+        "registryCacheId": "monochromatic-platform-buildkit-20261018-v1-cargo-r1-registry-amd64",
+        "targetCacheId": "monochromatic-platform-buildkit-20261018-v1-cargo-r1-target-amd64",
+        "markerBefore": {
+          "registry": null,
+          "target": null
+        },
+        "markerAfter": "empty-offline-7232a145-e373-4c2b-9be0-6d5e09c3c1c9",
+        "registryTopLevel": [
+          ".mono-cache-probe-marker",
+          "CACHEDIR.TAG"
+        ],
+        "startedAt": "2026-10-18T08:57:51.228Z",
+        "finishedAt": "2026-10-18T08:57:51.255Z",
+        "cargoElapsedMilliseconds": 27,
+        "args": [
+          "build",
+          "--manifest-path",
+          "/src/crate/Cargo.toml",
+          "--release",
+          "--no-default-features",
+          "--locked",
+          "--jobs",
+          "2",
+          "--message-format=json",
+          "--offline"
+        ],
+        "rustflags": "--cfg=depot_buildkit_flags_base",
+        "exitCode": 101,
+        "signal": null,
+        "expectedFailure": true,
+        "compilerArtifacts": [],
+        "artifactFiles": [],
+        "lockBefore": "9bf611d703ba946c5d359753d93d827d5b0992c07e23d5504f9c328f0d01db3e",
+        "lockAfter": "9bf611d703ba946c5d359753d93d827d5b0992c07e23d5504f9c328f0d01db3e",
+        "unitTestsExecuted": false
+      },
+      "rawCompilerOutputPreservedInCompressedArchive": true
+    }
+  ],
   "registry": {
     "complete": true,
     "anonymousStatus": 401,
@@ -1955,12 +2024,12 @@
     "hostBindMounts": 0
   },
   "timestampComputeModel": {
-    "observedNativeRequestMilliseconds": 170632,
+    "observedNativeRequestMilliseconds": 190302,
     "maximumArchitectureBuilders": 2,
     "cpusPerBuilder": 16,
     "memoryGiBPerBuilder": 32,
     "publicRateUsdPerBuilderMinute": 0.04,
-    "nominalWindowEstimateUsd": 0.22750933333333334,
+    "nominalWindowEstimateUsd": 0.253736,
     "ceilingUsd": 2,
     "invoiceOrAccountCapProven": false,
     "initialExpiredWallClockRetained": true
