@@ -109,6 +109,18 @@ The installed Pi `AgentSession.navigateTree` emits that top-level control field 
 The probe changes only the error message and can complete some action modes despite retained capture-error diagnostics,
 so action success alone is not a sufficient regression assertion.
 Keep ordinary message/tool copying strict while repairing the constructor-owned native event boundary.
+The committed RED regression is `43accdb953` and task `test:native:event-controls`.
+`native-event-controls-red.log` shows the original callbacks succeed,
+then the retained-source read throws `SessionInputCaptureError` with the unsupported-prototype cause.
+
+Live MiMo diagnosis later reaches selector `c0b612fd-08a5-415c-ae5a-97ead39b4ddd` after 36 tool results.
+The diagnostic is `Original policy review and evidence closure failed`;
+stderr identifies `Native run prompt was replaced after this source snapshot`.
+A queued RPC steering message was sent during the live turn.
+Keep this freshness incident separate from the `AbortSignal` event issue;
+verify its deciding source and subsequent-turn refresh before calling it a product defect or an expected transient.
+The controller authorizes only the displayed two scoped source-search commands through RPC Allow.
+Evidence is `mimo-live-closure-failure.json` and the raw live host stderr.
 
 Reviewed cleanup removes eight inactive releases after an empty, freshly measured native consumer audit.
 The active `mmaT8k` and verified rollback `mHAoem` remain.
