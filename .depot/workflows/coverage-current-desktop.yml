@@ -1,0 +1,225 @@
+name: Research current frozen desktop producers and consumers
+on:
+  workflow_dispatch: null
+permissions:
+  contents: read
+jobs:
+  desktop:
+    runs-on:
+      size: 8x32
+      image: monochromatic-trial-desktop-ready:20261016-v1
+    timeout-minutes: 30
+    env:
+      MISE_AUTO_INSTALL: "false"
+      MISE_LOCKED: "1"
+      CARGO_BUILD_JOBS: "4"
+      LIBGL_ALWAYS_SOFTWARE: "1"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: e02be6c8b8fe9efb41a7f8f1a0b311c17796588a
+          persist-credentials: false
+          clean: false
+          fetch-depth: 1
+      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+        with:
+          version: 2026.10.9
+          install: false
+          cache: false
+      - name: Write disposable bounded research tasks
+        shell: node {0}
+        run: "const {mkdirSync,writeFileSync}=require(\"node:fs\");const {join}=require(\"node:path\");const
+          dir=join(process.env.GITHUB_WORKSPACE,\"package/dev-script/coverage-research\");mkdirSync(dir,{recu\
+          rsive:true});writeFileSync(join(dir,\"mise.toml\"),\"[tasks.\\\"desktop:campaign\\\"]\\nquiet =
+          true\\nshell = \\\"node --input-type=module-typescript -e\\\"\\nrun = \\\"await (async function
+          campaign(){\\\\n const
+          {readFileSync,writeFileSync,mkdirSync,existsSync,statSync,copyFileSync,chmodSync,globSync}=await
+          import('node:fs'),{spawnSync,execFileSync}=await
+          import('node:child_process'),{join,dirname,resolve}=await
+          import('node:path'),{homedir,userInfo,availableParallelism}=await
+          import('node:os'),{createHash}=await import('node:crypto'),{strict:assert}=await
+          import('node:assert');const
+          root=process.env.GITHUB_WORKSPACE??process.cwd(),evidence=join(root,'.research-desktop/receipts'),b\
+          ase=join(homedir(),'temp/agent/depot-package-snapshot'),started=Date.now(),source='e02be6c8b8fe9efb\
+          41a7f8f1a0b311c17796588a';mkdirSync(evidence,{recursive:true});const
+          sha=bytes=>createHash('sha256').update(bytes).digest('hex'),receipt={source,startedAt:new
+          Date().toISOString(),resource:{vcpu:8,memoryGiB:32,jobMinutes:30,campaignMinutes:27,buildJobs:4},ca\
+          lls:[],failures:[],artifacts:[]};const
+          save=()=>writeFileSync(join(evidence,'desktop-campaign.json'),JSON.stringify(receipt,null,2)+'\\\\\\\
+          \\n');function run(name,program,args,{cwd=root,budgetMs=60000,env={},required=true}={}){const
+          remaining=27*60000-(Date.now()-started);assert(remaining>2000,'Finite campaign budget
+          exhausted');const before=new
+          Date().toISOString(),result=spawnSync(program,args,{cwd,encoding:'utf8',env:{...process.env,...env}\
+          ,timeout:Math.min(remaining,budgetMs),maxBuffer:64*1024*1024});const
+          text=(result.stdout??'')+(result.stderr??''),log=name+'.log';writeFileSync(join(evidence,log),text)\
+          ;receipt.calls.push({name,program,args,cwd,startedAt:before,finishedAt:new
+          Date().toISOString(),exitCode:result.status,signal:result.signal,error:result.error?.message??null,\
+          log,bytes:Buffer.byteLength(text),sha256:sha(Buffer.from(text))});save();console.log(JSON.stringify\
+          ({name,exitCode:result.status,signal:result.signal,log}));if(required&&result.status!==0)throw new
+          Error(name+' failed with '+result.status+': '+text.slice(-3000));return result}\\\\n
+          assert.equal(execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),source);ass\
+          ert.equal(execFileSync('git',['diff','--name-only'],{cwd:root,encoding:'utf8'}).trim(),'');receipt.\
+          sourceInputs={};for(const path of
+          ['mise.toml','mise.lock','pnpm-lock.yaml','package/cli/nested-wayland-session/Cargo.toml','package/\
+          cli/nested-wayland-session/Cargo.lock','package/cli/nested-wayland-session/mise.toml','package/musi\
+          c-player/desktop-app/Cargo.toml','package/music-player/desktop-app/Cargo.lock','package/music-playe\
+          r/desktop-app/mise.toml','package/music-player/desktop-e2e/mise.toml'])receipt.sourceInputs[path]=s\
+          ha(readFileSync(join(root,path)));save();\\\\n const
+          packages=JSON.parse(readFileSync(join(base,'manifest.json'),'utf8'));receipt.toolSnapshot={manifest\
+          FileSha256:sha(readFileSync(join(base,'manifest.json'))),packages:packages.packages,expectedPackage\
+          Manifest:packages.manifest,expectedMagickVersion:packages.magickVersion,oldPreparedBinariesCredited\
+          :false};assert.equal(execFileSync('dpkg-query',['--show',`--showformat=${packages.format}`,...packa\
+          ges.packages],{encoding:'utf8'}),packages.manifest);assert.equal(execFileSync(join(base,'bin/magick\
+          '),['--version'],{encoding:'utf8'}),packages.magickVersion);receipt.toolSnapshot.magickSha256=sha(r\
+          eadFileSync(join(base,'bin/magick')));save();\\\\n const
+          extraPath=join(base,'bin')+':'+process.env.PATH;process.env.PATH=extraPath;const
+          prep=run('install-exact-node-pnpm-rust','mise',['install','--locked','node','pnpm','rust'],{budgetM\
+          s:240000});run('install-frozen-workspace-dependencies','mise',['exec','pnpm','--','pnpm','install',\
+          '--frozen-lockfile','--ignore-scripts'],{budgetMs:180000});const
+          plan=JSON.parse(readFileSync(join(root,'package/dev-script/coverage-research/desktop-plan.json'),'u\
+          tf8'));for(const [index,row]of
+          plan.common.entries())run('shared-'+String(index).padStart(2,'0'),'mise',['run',row.task],{budgetMs\
+          :120000});\\\\n const
+          compositor=join(root,'package/cli/nested-wayland-session/target/release/monochromatic-nested-waylan\
+          d-session'),desktop=join(root,'package/music-player/desktop-app/target/release/music-player');recei\
+          pt.preexistingOutputs=[compositor,desktop].map(path=>({path,exists:existsSync(path),sha256:existsSy\
+          nc(path)?sha(readFileSync(path)):null}));save();run('actual-compositor-release-owner','mise',['run'\
+          ,'//package/cli/nested-wayland-session:build'],{budgetMs:600000,env:{CARGO_BUILD_JOBS:'4'}});\\\\n
+          const
+          install=join(homedir(),'temp/agent/current-e02-compositor-install');mkdirSync(join(install,'bin'),{\
+          recursive:true,mode:448});copyFileSync(compositor,join(install,'bin/monochromatic-nested-wayland-se\
+          ssion'));chmodSync(join(install,'bin/monochromatic-nested-wayland-session'),493);run('link-actual-v\
+          ersioned-producer','mise',['link','--force','cargo:monochromatic-nested-wayland-session@0.6.0',inst\
+          all]);run('actual-mise-compositor-lookup','mise',['where','cargo:monochromatic-nested-wayland-sessi\
+          on']);run('actual-compositor-version',compositor,['--version']);run('actual-desktop-e2e-unit-owner'\
+          ,'mise',['run','//package/music-player/desktop-e2e:test:unit'],{budgetMs:120000});\\\\n const
+          native=run('actual-desktop-release-owner','mise',['run','//package/music-player/desktop-app:build']\
+          ,{budgetMs:720000,env:{CARGO_BUILD_JOBS:'4'},required:false});if(native.status!==0){const
+          stderr=(native.stdout??'')+(native.stderr??'');if(!stderr.includes('libclang'))throw new
+          Error('Desktop source build failure was not the qualified libclang configuration boundary');const
+          library=globSync('/usr/lib/llvm-*/lib/libclang.so*')[0];assert(library);receipt.libclangBridge={dia\
+          gnosticPreserved:true,realLibrary:library,hardcodedSourcePath:'/usr/lib64',sourceEdited:false};run(\
+          'supply-real-library-at-frozen-configured-path','sudo',['--non-interactive','ln','--symbolic','--fo\
+          rce',library,'/usr/lib64/libclang.so']);run('actual-desktop-release-owner-with-installed-library','\
+          mise',['run','//package/music-player/desktop-app:build'],{budgetMs:720000,env:{CARGO_BUILD_JOBS:'4'\
+          }})}\\\\n for(const [name,path]of [['compositor',compositor],['desktop',desktop]]){const
+          bytes=readFileSync(path);receipt.artifacts.push({name,path,bytes:bytes.length,sha256:sha(bytes),sou\
+          rce});copyFileSync(path,join(evidence,name));run(name+'-dynamic-library-requirements','ldd',[path])\
+          }save();\\\\n const
+          name='coverage-desktop-'+process.env.GITHUB_RUN_ID+'-'+process.pid,podman=['--non-interactive','pod\
+          man','--cgroup-manager=cgroupfs'],p=(suffix,args,opts={})=>run('runtime-'+suffix,'sudo',[...podman,\
+          ...args],opts);const
+          marker=join(base,'current-e02-overlay-marker');assert(!existsSync(marker));try{p('start',['run','--\
+          detach','--name',name,'--label','research-coverage=current-e02-desktop','--systemd=always','--cgrou\
+          pns=private','--network=none','--memory=2g','--cpus=2','--pids-limit=512','--timeout=600','--rootfs\
+          ','/:O','/usr/lib/systemd/systemd','--unit=basic.target','--log-target=console']);let
+          ready=false;for(let attempt=0;attempt<30;attempt++){const
+          state=p('ready-'+attempt,['exec',name,'systemctl','show','--property=Version','--value'],{required:\
+          false});if(state.status===0&&state.stdout.trim()){ready=true;break}await (await
+          import('node:timers/promises')).setTimeout(500)}assert(ready);p('user-services',['exec',name,'syste\
+          mctl','start',`user@${process.getuid()}.service`]);const
+          user=['exec','--workdir',join(root,'package/music-player/desktop-e2e'),name,'runuser','--user',user\
+          Info().username,'--','env',`XDG_RUNTIME_DIR=/run/user/${process.getuid()}`,`DBUS_SESSION_BUS_ADDRES\
+          S=unix:path=/run/user/${process.getuid()}/bus`,`PATH=${process.env.PATH}`,'MISE_AUTO_INSTALL=false'\
+          ,'LIBGL_ALWAYS_SOFTWARE=1'];p('marker',[...user,'touch',marker]);p('user-unit-control',[...user,'sy\
+          stemd-run','--user','--wait','--pipe','--unit=coverage-positive-control','--property=MemoryMax=256M\
+          ','/bin/cat','/proc/self/cgroup']);p('pipewire',[...user,'systemctl','--user','start','pipewire.soc\
+          ket','pipewire-pulse.socket','wireplumber.service']);const
+          before=p('sinks-before',[...user,'pactl','list','short','sinks']);const
+          suite=p('actual-frozen-desktop-suite',[...user,'mise','run','//package/music-player/desktop-e2e:run\
+          '],{budgetMs:480000,required:false});const
+          after=p('sinks-after',[...user,'pactl','list','short','sinks']);const
+          names=text=>text.trim().split('\\\\\\\\n').filter(Boolean).map(row=>row.split('\\\\\\\\t')[1]).sort\
+          ();assert.deepEqual(names(after.stdout),names(before.stdout));const
+          units=p('units-after',[...user,'systemctl','--user','list-units','--state=active','--no-legend','mu\
+          sic-player-e2e*']);assert.equal(units.stdout.trim(),'');const
+          processes=p('processes-after',['exec',name,'pgrep','--exact','music-player'],{required:false});asse\
+          rt.equal(processes.status,1);receipt.consumer={suiteExitCode:suite.status,sinkNamesRestored:true,ac\
+          tiveTestUnits:0,applicationProcesses:0,source};assert.equal(suite.status,0)}finally{p('logs',['logs\
+          ',name],{required:false});p('stop',['stop','--time=10',name],{required:false});p('remove',['rm',nam\
+          e],{required:false});const
+          exists=p('exists-after',['container','exists',name],{required:false});receipt.cleanup={containerAbs\
+          ent:exists.status===1,overlayWritesDiscarded:!existsSync(marker)};save();assert.equal(exists.status\
+          ,1);assert(!existsSync(marker))}\\\\n
+          receipt.changedTrackedFiles=execFileSync('git',['diff','--name-only'],{cwd:root,encoding:'utf8'}).t\
+          rim().split('\\\\\\\\n').filter(Boolean);assert.equal(receipt.changedTrackedFiles.length,0);for(con\
+          st[path,hash]of
+          Object.entries(receipt.sourceInputs))assert.equal(sha(readFileSync(join(root,path))),hash);receipt.\
+          finishedAt=new
+          Date().toISOString();save();console.log(JSON.stringify({phase:'current-source-desktop-finished',con\
+          sumer:receipt.consumer,cleanup:receipt.cleanup}))\\\\n})()\\\"\\n\");writeFileSync(join(dir,\"deskt\
+          op-plan.json\"),\"{\\\"common\\\":[{\\\"task\\\":\\\"//package/module/test:build\\\",\\\"packagePath\
+          \\\":\\\"package/module/test\\\",\\\"kind\\\":\\\"shared_harness_build\\\"},{\\\"task\\\":\\\"//pac\
+          kage/module/logger:build\\\",\\\"packagePath\\\":\\\"package/module/logger\\\",\\\"kind\\\":\\\"sha\
+          red_logger_build\\\"},{\\\"task\\\":\\\"//package/config/oxlint:build:js:node\\\",\\\"packagePath\\\
+          \":\\\"package/config/oxlint\\\",\\\"kind\\\":\\\"shared_static_prerequisite\\\"},{\\\"task\\\":\\\
+          \"//package/module/array-at:build\\\",\\\"packagePath\\\":\\\"package/module/array-at\\\",\\\"kind\\\
+          \":\\\"shared_module_build\\\"},{\\\"task\\\":\\\"//package/module/async-iter:build\\\",\\\"package\
+          Path\\\":\\\"package/module/async-iter\\\",\\\"kind\\\":\\\"shared_module_build\\\"},{\\\"task\\\":\
+          \\\"//package/module/async-time:build\\\",\\\"packagePath\\\":\\\"package/module/async-time\\\",\\\
+          \"kind\\\":\\\"shared_module_build\\\"},{\\\"task\\\":\\\"//package/module/caught-value:build\\\",\\\
+          \"packagePath\\\":\\\"package/module/caught-value\\\",\\\"kind\\\":\\\"shared_module_build\\\"},{\\\
+          \"task\\\":\\\"//package/module/conf-fork:build\\\",\\\"packagePath\\\":\\\"package/module/conf-fork\
+          \\\",\\\"kind\\\":\\\"shared_module_build\\\"},{\\\"task\\\":\\\"//package/module/const:build\\\",\\\
+          \"packagePath\\\":\\\"package/module/const\\\",\\\"kind\\\":\\\"shared_module_build\\\"},{\\\"task\\\
+          \":\\\"//package/module/css-edit:build\\\",\\\"packagePath\\\":\\\"package/module/css-edit\\\",\\\"\
+          kind\\\":\\\"shared_module_build\\\"},{\\\"task\\\":\\\"//package/module/dom:build\\\",\\\"packageP\
+          ath\\\":\\\"package/module/dom\\\",\\\"kind\\\":\\\"shared_module_build\\\"},{\\\"task\\\":\\\"//pa\
+          ckage/module/fs-id:build\\\",\\\"packagePath\\\":\\\"package/module/fs-id\\\",\\\"kind\\\":\\\"shar\
+          ed_module_build\\\"},{\\\"task\\\":\\\"//package/module/fs-path:build\\\",\\\"packagePath\\\":\\\"p\
+          ackage/module/fs-path\\\",\\\"kind\\\":\\\"shared_module_build\\\"},{\\\"task\\\":\\\"//package/mod\
+          ule/function-arity:build\\\",\\\"packagePath\\\":\\\"package/module/function-arity\\\",\\\"kind\\\":\
+          \\\"shared_module_build\\\"},{\\\"task\\\":\\\"//package/module/hyperscript:build\\\",\\\"packagePa\
+          th\\\":\\\"package/module/hyperscript\\\",\\\"kind\\\":\\\"shared_module_build\\\"},{\\\"task\\\":\\\
+          \"//package/module/i18n-compose:build\\\",\\\"packagePath\\\":\\\"package/module/i18n-compose\\\",\\\
+          \"kind\\\":\\\"shared_module_build\\\"},{\\\"task\\\":\\\"//package/module/image-diff:build\\\",\\\
+          \"packagePath\\\":\\\"package/module/image-diff\\\",\\\"kind\\\":\\\"shared_module_build\\\"},{\\\"\
+          task\\\":\\\"//package/module/jsonc-edit:build\\\",\\\"packagePath\\\":\\\"package/module/jsonc-edit\
+          \\\",\\\"kind\\\":\\\"shared_module_build\\\"},{\\\"task\\\":\\\"//package/module/kv-store:build\\\
+          \",\\\"packagePath\\\":\\\"package/module/kv-store\\\",\\\"kind\\\":\\\"shared_module_build\\\"},{\\\
+          \"task\\\":\\\"//package/module/llm-type:build\\\",\\\"packagePath\\\":\\\"package/module/llm-type\\\
+          \",\\\"kind\\\":\\\"shared_module_build\\\"},{\\\"task\\\":\\\"//package/module/make-asynchronous-f\
+          ork:build\\\",\\\"packagePath\\\":\\\"package/module/make-asynchronous-fork\\\",\\\"kind\\\":\\\"sh\
+          ared_module_build\\\"},{\\\"task\\\":\\\"//package/module/matcher-fork:build\\\",\\\"packagePath\\\
+          \":\\\"package/module/matcher-fork\\\",\\\"kind\\\":\\\"shared_module_build\\\"},{\\\"task\\\":\\\"\
+          //package/module/matrix:build\\\",\\\"packagePath\\\":\\\"package/module/matrix\\\",\\\"kind\\\":\\\
+          \"shared_module_build\\\"},{\\\"task\\\":\\\"//package/module/memoize:build\\\",\\\"packagePath\\\":\
+          \\\"package/module/memoize\\\",\\\"kind\\\":\\\"shared_module_build\\\"},{\\\"task\\\":\\\"//packag\
+          e/module/numeric-format:build\\\",\\\"packagePath\\\":\\\"package/module/numeric-format\\\",\\\"kind\
+          \\\":\\\"shared_module_build\\\"},{\\\"task\\\":\\\"//package/module/observable:build\\\",\\\"packa\
+          gePath\\\":\\\"package/module/observable\\\",\\\"kind\\\":\\\"shared_module_build\\\"},{\\\"task\\\
+          \":\\\"//package/module/or-throw:build\\\",\\\"packagePath\\\":\\\"package/module/or-throw\\\",\\\"\
+          kind\\\":\\\"shared_module_build\\\"},{\\\"task\\\":\\\"//package/module/p-limit-fork:build\\\",\\\
+          \"packagePath\\\":\\\"package/module/p-limit-fork\\\",\\\"kind\\\":\\\"shared_module_build\\\"},{\\\
+          \"task\\\":\\\"//package/module/p-map-fork:build\\\",\\\"packagePath\\\":\\\"package/module/p-map-f\
+          ork\\\",\\\"kind\\\":\\\"shared_module_build\\\"},{\\\"task\\\":\\\"//package/module/p-memoize-fork\
+          :build\\\",\\\"packagePath\\\":\\\"package/module/p-memoize-fork\\\",\\\"kind\\\":\\\"shared_module\
+          _build\\\"},{\\\"task\\\":\\\"//package/module/pify-fork:build\\\",\\\"packagePath\\\":\\\"package/\
+          module/pify-fork\\\",\\\"kind\\\":\\\"shared_module_build\\\"},{\\\"task\\\":\\\"//package/module/p\
+          ipe:build\\\",\\\"packagePath\\\":\\\"package/module/pipe\\\",\\\"kind\\\":\\\"shared_module_build\\\
+          \"},{\\\"task\\\":\\\"//package/module/pnpm-workspace-catalog:build\\\",\\\"packagePath\\\":\\\"pac\
+          kage/module/pnpm-workspace-catalog\\\",\\\"kind\\\":\\\"shared_module_build\\\"},{\\\"task\\\":\\\"\
+          //package/module/quick-lru-fork:build\\\",\\\"packagePath\\\":\\\"package/module/quick-lru-fork\\\",\
+          \\\"kind\\\":\\\"shared_module_build\\\"},{\\\"task\\\":\\\"//package/module/test-diagnostic:build\\\
+          \",\\\"packagePath\\\":\\\"package/module/test-diagnostic\\\",\\\"kind\\\":\\\"shared_module_build\\\
+          \"},{\\\"task\\\":\\\"//package/module/test-expect:build\\\",\\\"packagePath\\\":\\\"package/module\
+          /test-expect\\\",\\\"kind\\\":\\\"shared_module_build\\\"},{\\\"task\\\":\\\"//package/module/test-\
+          sandbox:build\\\",\\\"packagePath\\\":\\\"package/module/test-sandbox\\\",\\\"kind\\\":\\\"shared_m\
+          odule_build\\\"},{\\\"task\\\":\\\"//package/module/throws:build\\\",\\\"packagePath\\\":\\\"packag\
+          e/module/throws\\\",\\\"kind\\\":\\\"shared_module_build\\\"},{\\\"task\\\":\\\"//package/module/to\
+          ken-count:build\\\",\\\"packagePath\\\":\\\"package/module/token-count\\\",\\\"kind\\\":\\\"shared_\
+          module_build\\\"},{\\\"task\\\":\\\"//package/module/toml-edit:build\\\",\\\"packagePath\\\":\\\"pa\
+          ckage/module/toml-edit\\\",\\\"kind\\\":\\\"shared_module_build\\\"},{\\\"task\\\":\\\"//package/mo\
+          dule/wg-allowedips:build\\\",\\\"packagePath\\\":\\\"package/module/wg-allowedips\\\",\\\"kind\\\":\
+          \\\"shared_module_build\\\"},{\\\"task\\\":\\\"//package/module/zip-writer:build\\\",\\\"packagePath\
+          \\\":\\\"package/module/zip-writer\\\",\\\"kind\\\":\\\"shared_module_build\\\"}]}\");"
+      - name: Build frozen producers and execute real unit and graphical consumers
+        run: mise run //package/dev-script/coverage-research:desktop:campaign
+      - name: Retain source and runtime receipts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: current-e02-desktop-producers-consumers
+          path: .research-desktop/receipts
+          retention-days: 14
+          if-no-files-found: error
