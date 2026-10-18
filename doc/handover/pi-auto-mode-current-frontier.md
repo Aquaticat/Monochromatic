@@ -123,6 +123,19 @@ other retained context versions,
 and pending diagnostic writes;
 the source counters can falsify the first hypothesis before another storage change.
 
+Private pool profiling reaches 103,200 retained occurrences,
+including 102,228 tool-loadout query observations,
+while unique content totals 61,899,464 characters and the sampled heap reaches 1,396,560,032 bytes.
+The source is `pool-profile-summary.json` in the incident scratch;
+the profiled fixture is `pi-mimo-failure-rpc-uaHgtz` and still exits 134.
+This distinguishes source text volume from the overhead of retained publications and other owners.
+A private module-loader probe now measures whether input-only publication views unnecessarily retain
+the complete message-projection owner.
+Input-only views cannot match provider payloads;
+the probe shares their false matcher without changing distinct occurrences or native aliases.
+A separate faithful replay removes only private diagnostic module rewrites,
+to check whether the recorder's stack tracing contributes to the heap failure.
+
 Next actions:
 
 - Rebuild the event snapshot change and run event sharing plus the complete native event receipt catalog.
