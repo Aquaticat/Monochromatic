@@ -103,3 +103,31 @@ That search is not evidence that every comparable report is absent.
 The `.out-of-scope/` filing check is unnecessary because no filing or draft is being created.
 The durable artifact is this diagnosis and the working lookup,
 with nothing to send upstream.
+
+## Run creation has a different output contract
+
+On 2026-10-18,
+the same CLI rejected `depot ci run --workflow ... --output json` with
+`unknown flag: --output`.
+The retained negative control exited 1 with no stdout.
+`depot ci run --help` lists no `--output` option.
+The command's supported text output is explicit in `pkg/cmd/ci/run.go:241`:
+
+```go
+// pkg/cmd/ci/run.go:241
+fmt.Printf("Org: %s\n", resp.OrgId)
+fmt.Printf("Run: %s\n", resp.RunId)
+```
+
+Removing the unsupported flag created run `rvvg2kv0jk` at harness
+`9779cb896b92969b84f45e2737117231638aa700`.
+The collector extracts the anchored `Run: <id>` line,
+then uses `ci status <id> --output json` for structured state.
+This adds text parsing at creation;
+it does not imply that every CI subcommand supports the same output flags.
+The original creation error was a harness invocation error,
+separate from any subsequent container result.
+
+The upstream filing decision remains unchanged:
+the advertised command interface matches the observed behavior,
+and no upstream patch or report is proposed.
