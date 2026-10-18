@@ -826,7 +826,7 @@ the items after it are the record of 2026-10-05 and older.
     `test:wrap` 62 and 15, all passed. Also issue #1756: the container lint now applies the root `clippy.toml`, and
     `Result::unwrap` sites use `json_value!` (one scoped allowance) or `Value::from`.
   - Dylint gate over the IDE (stage 2b of `doc/decision/rust-closure-lint-dylint.md`; branch `feat/ide-closure-lint`,
-    worktree `.claude/worktrees/ide-dylint`, an agent, 2026-10-18; not merged, not pushed). The lint
+    worktree `.claude/worktrees/ide-dylint`, an agent, 2026-10-18; landed after the coordinator's gates below). The lint
     `avoidable_closure` now reports nothing on the IDE: `mise run //package/desktop-app/ide:lint:closures` exits 0.
     The 83 distinct reports (84 in the stage logs, because `src/syntax_loader.rs:188` is reported in both the library
     and the binary) became: 78 conversions (5 in `src/bin`, 27 in 16 `*_tests.rs` files, 46 in 19
@@ -860,8 +860,16 @@ the items after it are the record of 2026-10-05 and older.
     `test:reader-lifecycle` 316, and `inspect:language` against disposable projects, all passed. All 411 anchors of the
     `bin/inspect-*-guards.mjs` scripts still match their files (none moved); the 21 guard cases whose test functions
     or anchored files this branch touched were run again and failed on their guard as designed (source 12, annotation
-    2, find 1, language 2, search 1, watch 3). Not rerun: the other guard cases, `bundle` and `inspect:bundle`. The
-    README of the lint package still calls itself a stage-1 package.
+    2, find 1, language 2, search 1, watch 3). The coordinating session then merged `main` (only this file
+    conflicted) and reran on the merged tree, all status 0: `lint:rustfmt`, container clippy, `lint:slint`,
+    `lint:release`, `lint:closures`, `test` 783, `test:cli` 13, `test:language` 379, `test:minimap` 19, `test:wrap` 15
+    and 62, `test:annotations` 54, `test:annotations-native` 25, `test:syntax` 64, `test:native` 197, `bundle`,
+    `inspect:bundle` (10 of 10), `inspect:bundle-guards` (8 of 8), all eleven guard scripts (source 108, annotation 65,
+    sidebar 18, theme 7, find 39, ignored 28, search 17, watch 76, language 31, language lifecycle 28 runs, language
+    navigation 16), and `inspect:language`, `inspect:language-mise` and `inspect:language-confinement`. A positive
+    control (the expectation of `minimap_build.rs` renamed to `dead_code`) made `lint:closures` exit 1 with the closure
+    reported and `this lint expectation is unfulfilled`; the file was restored. The README of the lint package still
+    calls itself a stage-1 package.
     Still open: the fate of the syntax-only rule once the gate is accepted (proposal in the agent's report: switch it
     off for `package/desktop-app/ide/**` by a configuration override, since the new lint covers the same closures with
     type information and sees macro arguments, and keep it elsewhere until each other Rust package has its own
