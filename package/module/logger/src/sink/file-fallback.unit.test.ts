@@ -120,5 +120,26 @@ await describe({ name: 'file sink default fallback', children: [
     assert.ok(stderr.includes('file sink verification failed'), stderr);
     assert.equal(stderr.includes('using fallback'), false);
   } }),
+  it({ name: 'neutralizes terminal control characters in a project failure notice', fn: async function fallbackControls() {
+    await using fixture = await workspace();
+    const cwd = join(fixture.path, 'project-\u001B]0;injected\u0007-\u009B31m');
+    await mkdir(join(cwd, 'node_modules'), { recursive: true });
+    await writeFile(join(cwd, 'node_modules', '.monochromatic'), 'occupied');
+    const stderr = await consume({ cwd, home: fixture.path, state: join(fixture.path, 'state') });
+    assert.equal(stderr.includes('\u001B'), false);
+    assert.equal(stderr.includes('\u0007'), false);
+    assert.equal(stderr.includes('\u009B'), false);
+    await checkRecords(join(fixture.path, 'state', 'monochromatic', 'log'));
+  } }),
+  it({ name: 'neutralizes terminal control characters in strict file failure diagnostics', fn: async function explicitControls() {
+    await using fixture = await workspace();
+    const directory = join(fixture.path, 'explicit-\u001B]0;injected\u0007-\u009B31m');
+    await writeFile(directory, 'occupied');
+    const stderr = await consume({ cwd: fixture.path, home: fixture.path,
+      state: join(fixture.path, 'state'), directory, available: false });
+    assert.equal(stderr.includes('\u001B'), false);
+    assert.equal(stderr.includes('\u0007'), false);
+    assert.equal(stderr.includes('\u009B'), false);
+  } }),
 ] });
 //endregion
