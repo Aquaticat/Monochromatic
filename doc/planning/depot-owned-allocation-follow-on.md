@@ -201,8 +201,11 @@ and skipped totals remain part of that comparison.
 
 Coverage's first public host handoff `39141147245` is terminal with five allocated jobs.
 Its skipped unassigned scheduler row `117715669048` must not become a compute allocation.
-Recovery `39144499822` remains owner-watched;
-the separate Depot OS admission remains unallocated.
+Recovery `39144499822` is terminal with five allocated public GitHub jobs.
+The follow-on queue is to append its exact owned rows after selected provider-metadata verification.
+Its unassigned skipped scheduler row `117725490037` is excluded.
+Separate Depot OS run `39148580870` is owner-watched under its own USD 2 guard;
+its USD 1.92 admission reservation is not a measured allocation cost.
 The documented host memory unit is GB,
 with actual CPU and RAM measurements missing from that handoff.
 
@@ -234,7 +237,32 @@ with the existing login.
 This is an authentication prerequisite failure,
 not evidence of image absence or a completed deletion.
 No deletion or new credential ran.
-The documented OCI bridge remains queued for source inspection and an exact owned-image read.
+The documented OCI challenge exchange returned HTTP `200` with the existing login,
+an exact repository pull scope,
+and no refresh-token request or persistent credential creation.
+The first exact `tools-r1` tag read then returned HTTP `404`,
+code `MANIFEST_UNKNOWN`.
+No deletion ran.
+The queue is to verify the exchanged token's selected repository authorization
+and independently read all exact tags and immutable digests before drawing an absence conclusion.
+
+## Kotlin and legacy owner joins
+
+Root requested the exact Kotlin authored-test join before admitting a duplicate JVM run.
+The repeated cache receipt retains the six `RequireKDocTest` methods in all four unchanged samples.
+Their Kotlin package Git trees match frozen `e02` exactly.
+The queue is to seal original XML,
+immutable source,
+owning task,
+and run/attempt identities as a compact projection.
+The Detekt plugin host consumer and modified negative controls stay separate.
+
+Coverage also requested a source-qualified search of retained Rust and legacy receipts
+for actual IDE,
+file-manager,
+and terminal package/binary/case identities before any new owner allocation.
+This read-only evidence join is queued after the compact Kotlin seal.
+An empty entry in the current Rust projection is not proof that historical cohorts never executed that owner.
 
 ## Provider metadata publication correction
 
