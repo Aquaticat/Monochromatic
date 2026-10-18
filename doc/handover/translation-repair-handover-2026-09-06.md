@@ -298,7 +298,12 @@ before the other queued work.
     `artifact`,
     `page-check` among them);
     read those against the code.
-    Then the docs move per the plan's "Docs" section.
+    The docs move per the plan's "Docs" section is delegated to a Sonnet agent in `w171`
+    (at `cc2facd4d2`):
+    the 133 docs to `package/translation-repair/` or the one package each is about,
+    living references rewritten,
+    historical ones annotated with the new path and the move date,
+    the docs scans' readers moved with a before-and-after file-set control.
 3.  The controls in a fresh keyless worktree
     (suite names and counts against g100,
     scans,
