@@ -658,8 +658,8 @@ Re-run on 2026-10-18 at the branch head after merging `main` (each number from a
 The human decided through the question tool on 2026-10-18:
 add a Licenses row to Settings in both apps,
 "doesn't need mockups, just do it, this one is pretty simple and low-impact in terms of design".
-No design record (`package/music-player/design/decisions.md`) was written for it,
-and no mockup was made; this section is the record.
+No mockup was made, by that decision; the design record is D132 in `package/music-player/design/decisions.md`
+(written 2026-10-18, after the rows were built), and this section holds the build facts.
 
 The Android app (branch `feat/music-player-android-licenses-row`) does this:
 
