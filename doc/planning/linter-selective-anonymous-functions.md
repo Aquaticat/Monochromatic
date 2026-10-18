@@ -2,7 +2,10 @@
 
 Status: proposal of 2026-10-18; on the same day the owner chose a Dylint lint plus comment directives, recorded in
 `doc/decision/rust-closure-lint-dylint.md`.
-The sections below are the evidence behind that choice.
+Later that day the owner removed the rule `rust/no-anonymous-functions` altogether instead of making it selective
+(section "Removal of `rust/no-anonymous-functions`" of the decision record), so Change 1 and Change 2 below
+were never built for `monochromatic-lint`.
+The sections below are the evidence behind the Dylint choice and describe the rule as it was before its removal.
 
 ## Problem
 

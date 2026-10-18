@@ -876,10 +876,12 @@ the items after it are the record of 2026-10-05 and older.
     `main` stays behind `origin/main` until that change is committed or dropped by its owner. Branch and worktree
     removed. The IDE is reinstalled (`~/.local/bin/monochromatic-ide`, sha256 `f068d238b760`, equal to
     `dist/monochromatic-ide`; `monochromatic-ide.previous` is the build `2172fa208b55`); `--help` runs.
-    Still open: the fate of the syntax-only rule once the gate is accepted (proposal in the agent's report: switch it
-    off for `package/desktop-app/ide/**` by a configuration override, since the new lint covers the same closures with
-    type information and sees macro arguments, and keep it elsewhere until each other Rust package has its own
-    `lint:closures`).
+    Decided on 2026-10-18 (the owner, through the question tool): the syntax-only rule `rust/no-anonymous-functions`
+    is removed altogether, repo-wide, instead of being switched off for the IDE only (branch
+    `refactor/remove-no-anonymous-functions`, worktree `.claude/worktrees/remove-closure-rule`; landing: pending).
+    The Dylint lint `avoidable_closure` is the only closure check from then on. Rust packages other than the IDE have
+    no closure check until each gets its own `lint:closures` gate. The record is the section "Removal of
+    `rust/no-anonymous-functions`" of `doc/decision/rust-closure-lint-dylint.md`.
   - Ignored entries dimmed in the tree (branch `feat/ide-ignored-dim`, request of 2026-10-14: "Apply 0.8 opacity to text
     for gitignored files/dirs"; the user chose the `ignore` crate 0.4.33, the only new package). Before, the tree
     listed ignored entries at full ink (`Workspace::list` is a plain `read_dir`). The reader thread now decides the
