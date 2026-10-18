@@ -76,7 +76,7 @@ const path = 'evidence/timeout-renew.json';
 const attempts = fs.existsSync(path) ? JSON.parse(fs.readFileSync(path, 'utf8')) : [];
 const attempt = attempts.length + 1;
 if (attempt > 2) throw new Error('Unexpected timeout-renew execution count');
-const observation = { attempt, startedAt: new Date().toISOString(), intendedHoldMilliseconds: attempt === 1 ? 70000 : 50000 };
+const observation = { attempt, pid: process.pid, parentPid: process.ppid, startedAt: new Date().toISOString(), intendedHoldMilliseconds: attempt === 1 ? 70000 : 50000 };
 attempts.push(observation);
 fs.writeFileSync(path, JSON.stringify(attempts, null, 2) + '\n');
 console.log(JSON.stringify({ probe: 'timeout-renew', ...observation }));
@@ -99,6 +99,25 @@ attempts.push(value);
 fs.writeFileSync(path, JSON.stringify(attempts, null, 2) + '\n');
 console.log(JSON.stringify(value));
 throw new IntentionalExhaustionFailure('Intentional exhausted retry control: ' + key);
+'''
+
+[tasks.observe-process-timeout]
+shell = "node --input-type=module-typescript -e"
+run = '''
+const fs = await import('node:fs');
+const { setTimeout } = await import('node:timers/promises');
+const { execFileSync } = await import('node:child_process');
+if (!fs.existsSync('evidence/sibling-finished')) throw new Error('Completed-writer positive control is absent');
+const attempts = JSON.parse(fs.readFileSync('evidence/timeout-renew.json', 'utf8'));
+if (attempts.length !== 1) throw new Error('Process-timeout control requires exactly one task execution');
+await setTimeout(12000);
+const path = 'evidence/timeout-renew-completed-1.json';
+const lateCompletion = fs.existsSync(path) ? JSON.parse(fs.readFileSync(path, 'utf8')) : null;
+const elapsedMilliseconds = Date.now() - Date.parse(attempts[0].startedAt);
+if (elapsedMilliseconds < 71000) throw new Error('Process observation preceded the declared writer completion horizon');
+const result = { schemaVersion: 1, applicationBase: 'e02be6c8b8fe9efb41a7f8f1a0b311c17796588a', harness: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), provider: process.env.PROBE_PLATFORM_PROVIDER, control: { completedWriterPresent: true, intendedHoldMilliseconds: 70000, stepTimeoutMilliseconds: 60000, elapsedMilliseconds }, attempts, lateCompletion, step: { outcome: process.env.PROBE_TIMEOUT_OUTCOME, conclusion: process.env.PROBE_TIMEOUT_CONCLUSION }, observedAt: new Date().toISOString() };
+fs.writeFileSync('evidence/timeout-observation.json', JSON.stringify(result, null, 2) + '\n');
+console.log(JSON.stringify(result));
 '''
 
 [tasks.finish-state]

@@ -1,4 +1,4 @@
-name: research runtime prerequisites
+name: research process timeout controls
 on:
   workflow_dispatch:
 permissions:
@@ -6,8 +6,11 @@ permissions:
 env:
   MISE_AUTO_INSTALL: 'false'
   MISE_LOCKED: '1'
+defaults:
+  run:
+    working-directory: .depot/research/native-semantics
 jobs:
-  platform:
+  process:
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 5
     strategy:
@@ -16,7 +19,7 @@ jobs:
       matrix:
         runner: [ubuntu-24.04, depot-ubuntu-24.04]
     env:
-      PROBE_PLATFORM_PROVIDER: gha-${{ matrix.runner }}
+      PROBE_PLATFORM_PROVIDER: github-${{ matrix.runner }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -28,12 +31,20 @@ jobs:
           install: false
           cache: false
       - run: mise install node
-      - run: mise run //.depot/research/runtime:platform
-        working-directory: .depot/research/runtime
+      - run: mise run //.depot/research/native-semantics:parallel-sibling
+      - id: timed
+        run: mise run //.depot/research/native-semantics:timeout-renew
+        timeout-minutes: 1
+        continue-on-error: true
+      - run: mise run //.depot/research/native-semantics:observe-process-timeout
+        if: always()
+        env:
+          PROBE_TIMEOUT_OUTCOME: ${{ steps.timed.outcome }}
+          PROBE_TIMEOUT_CONCLUSION: ${{ steps.timed.conclusion }}
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
-          name: runtime-prerequisites-${{ matrix.runner }}
-          path: .depot/research/runtime/evidence/
+          name: research-process-timeout-${{ matrix.runner }}
+          path: .depot/research/native-semantics/evidence/
           if-no-files-found: error
           retention-days: 7
