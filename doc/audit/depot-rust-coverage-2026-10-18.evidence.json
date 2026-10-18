@@ -201586,6 +201586,1381 @@
           "passed": 1
         }
       ]
+    },
+    {
+      "phase": "corpus-audit",
+      "runId": "8ksdxnqq25",
+      "harnessSha": "7861d87ac6a93d33b0636b4aeea34e5b2929cad6",
+      "status": "finished",
+      "requestedAt": "2026-10-18T12:26:48.456Z",
+      "finishedAt": "2026-10-18T12:30:40Z",
+      "cpus": 4,
+      "memoryGb": 16,
+      "jobMaximumMinutes": 10,
+      "requestedToFinishSecondsUpperBound": 232,
+      "conservativeTimestampComputeProxyUsd": 0.0928,
+      "artifacts": [
+        {
+          "artifact_id": "01a14efe-1f10-728f-95bd-22d877c3d242",
+          "run_id": "8ksdxnqq25",
+          "workflow_id": "3pd1xddwv4",
+          "workflow_path": "",
+          "job_id": "n6mj6pg7fv",
+          "job_key": "_inline_0.yaml:consumer",
+          "attempt_id": "hbgz7nhv5h",
+          "attempt": 1,
+          "name": "rust-coverage-corpus-audit",
+          "size_bytes": 2114747,
+          "created_at": "2026-10-18T12:30:39Z"
+        }
+      ],
+      "artifactIntegrity": [
+        {
+          "zipPath": "corpus-audit-receipts.zip",
+          "bytes": 2114747,
+          "sha256": "83d38e57c7a764bc976ee2cf79b6f1d761dc0c8558d9295c349d291f5ce7030d",
+          "providerDigestVerified": true,
+          "zipCrcVerified": true,
+          "members": [
+            {
+              "name": ".research-rust-corpus-audit/receipts/actual-archive-git-version.log",
+              "bytes": 19,
+              "sha256": "e928567de6f903039a669b7647bf037309d50e4f7916bb5c06f7b05d3bf966fe"
+            },
+            {
+              "name": ".research-rust-corpus-audit/receipts/actual-archive-git-version.log.stdout",
+              "bytes": 19,
+              "sha256": "e928567de6f903039a669b7647bf037309d50e4f7916bb5c06f7b05d3bf966fe"
+            },
+            {
+              "name": ".research-rust-corpus-audit/receipts/actual-archive-git-version.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-corpus-audit/receipts/actual-archive-lfs-version.log",
+              "bytes": 47,
+              "sha256": "38ddab9757e195a59195a4b0acf6143e889bd832476d2965e1882ce811d36ddd"
+            },
+            {
+              "name": ".research-rust-corpus-audit/receipts/actual-archive-lfs-version.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-corpus-audit/receipts/actual-archive-lfs-version.log.stdout",
+              "bytes": 47,
+              "sha256": "38ddab9757e195a59195a4b0acf6143e889bd832476d2965e1882ce811d36ddd"
+            },
+            {
+              "name": ".research-rust-corpus-audit/receipts/archive-identical-frozen-source.log",
+              "bytes": 153743,
+              "sha256": "27c9f01c94dde5563c459e7f92e85342b6037e99229bfb562b27f265cb5de932"
+            },
+            {
+              "name": ".research-rust-corpus-audit/receipts/archive-identical-frozen-source.log.stderr",
+              "bytes": 153743,
+              "sha256": "27c9f01c94dde5563c459e7f92e85342b6037e99229bfb562b27f265cb5de932"
+            },
+            {
+              "name": ".research-rust-corpus-audit/receipts/archive-identical-frozen-source.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-corpus-audit/receipts/archive-identity.json",
+              "bytes": 278,
+              "sha256": "cad8be37402921d09b344e66d40328d63c2666ad7f5531462245716b9e704248"
+            },
+            {
+              "name": ".research-rust-corpus-audit/receipts/archive-members.json",
+              "bytes": 6222221,
+              "sha256": "e65319256aa3ce424e926a75a5cd4448fdfedd154de69c1439ccad5ea50aed3a"
+            },
+            {
+              "name": ".research-rust-corpus-audit/receipts/profile-receipt.json",
+              "bytes": 5684,
+              "sha256": "983fbf9774d1d689b780b59e57ee181aa4f0ab65999ad4962dc749a5dcf95ebf"
+            },
+            {
+              "name": ".research-rust-corpus-audit/receipts/raw-tree-inventory.log",
+              "bytes": 1762646,
+              "sha256": "feed0bf8cc55cd2d715dca7d3c6a7671db8e65f7a44a973970184e969609a9b1"
+            },
+            {
+              "name": ".research-rust-corpus-audit/receipts/raw-tree-inventory.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-corpus-audit/receipts/raw-tree-inventory.log.stdout",
+              "bytes": 1762646,
+              "sha256": "feed0bf8cc55cd2d715dca7d3c6a7671db8e65f7a44a973970184e969609a9b1"
+            },
+            {
+              "name": ".research-rust-corpus-audit/receipts/verify-all-archive-members.log",
+              "bytes": 150,
+              "sha256": "c55c78a17f8137fe18b554596080d263349d467dc4b8ff924efb091f6b0111e8"
+            },
+            {
+              "name": ".research-rust-corpus-audit/receipts/verify-all-archive-members.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-corpus-audit/receipts/verify-all-archive-members.log.stdout",
+              "bytes": 150,
+              "sha256": "c55c78a17f8137fe18b554596080d263349d467dc4b8ff924efb091f6b0111e8"
+            },
+            {
+              "name": ".research-reuse/receipts/reuse-registry-probe-session.json",
+              "bytes": 148,
+              "sha256": "acabdca6910f80e86c0f815fe52ce775e0cb9f13a9b0871eb418777a00ff6b39"
+            },
+            {
+              "name": ".research-reuse/receipts/snapshot-registry-manifest.json",
+              "bytes": 3792,
+              "sha256": "fd344b71328a749b670385ac0e291bfa0629c80c3c2cdb90d4d8457be02f12c3"
+            },
+            {
+              "name": ".research-reuse/receipts/snapshot-registry-manifest.jsonl",
+              "bytes": 3087,
+              "sha256": "5be06606f1ce675fafe999ad876aff73528b9c3f29271ece8ce8608c83c2791a"
+            }
+          ]
+        }
+      ],
+      "junit": [],
+      "resourceAttributionCorrection": {
+        "originalAdapterCpus": 8,
+        "originalAdapterMemoryGb": 32,
+        "configuredCpus": 4,
+        "configuredMemoryGb": 16,
+        "workflow": ".depot/workflows/rust-corpus-audit.yml",
+        "harnessSha": "7861d87ac6a93d33b0636b4aeea34e5b2929cad6",
+        "reason": "Duplicated scratch dispatcher resource mapping was corrected to derive resources from immutable workflow YAML. Original eight-CPU conservative cost is retained without lowering the cumulative proxy."
+      },
+      "computeProxyCpuEnvelope": 8
+    },
+    {
+      "phase": "wg-privileged-r5",
+      "runId": "4hddgrkrk2",
+      "harnessSha": "e93bd31aac690b919a85fd7c2b76c8812094c14d",
+      "status": "failed",
+      "requestedAt": "2026-10-18T12:28:39.079Z",
+      "finishedAt": "2026-10-18T12:30:16Z",
+      "cpus": 8,
+      "memoryGb": 32,
+      "jobMaximumMinutes": 10,
+      "requestedToFinishSecondsUpperBound": 97,
+      "conservativeTimestampComputeProxyUsd": 0.0388,
+      "artifacts": [
+        {
+          "artifact_id": "01a14efd-bfe1-751e-935d-fcbfab35353a",
+          "run_id": "4hddgrkrk2",
+          "workflow_id": "blrmcnrzft",
+          "workflow_path": "",
+          "job_id": "7vd2wh0bjp",
+          "job_key": "_inline_0.yaml:consumer",
+          "attempt_id": "dz7qvdbcn0",
+          "attempt": 1,
+          "name": "rust-coverage-wg-privileged",
+          "size_bytes": 31004,
+          "created_at": "2026-10-18T12:30:15Z"
+        }
+      ],
+      "artifactIntegrity": [
+        {
+          "zipPath": "wg-privileged-r5-receipts.zip",
+          "bytes": 31004,
+          "sha256": "3ff6bb9af639eed83ef5a9eb749050d035e06bca5e11a3a14d0c9ffccf034abf",
+          "providerDigestVerified": true,
+          "zipCrcVerified": true,
+          "members": [
+            {
+              "name": ".research-rust-wg-privileged/receipts/final-source-admission.log",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/initial-source-admission.log",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/final-source-admission.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/final-source-admission.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/initial-source-admission.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/initial-source-admission.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/installed-cargo-path.log",
+              "bytes": 45,
+              "sha256": "722043661d695c05e18d4f6d1d3ae0822bb0519211023bec796b686561e46256"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/installed-cargo-path.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/installed-cargo-path.log.stdout",
+              "bytes": 45,
+              "sha256": "722043661d695c05e18d4f6d1d3ae0822bb0519211023bec796b686561e46256"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/installed-nextest-path.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/installed-nextest-path.log",
+              "bytes": 94,
+              "sha256": "ac456f8c460b7b73c43780608776849469c58f0e97ba311c8bb34f54ce1ea18d"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/installed-nextest-path.log.stdout",
+              "bytes": 94,
+              "sha256": "ac456f8c460b7b73c43780608776849469c58f0e97ba311c8bb34f54ce1ea18d"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/installed-node-path.log",
+              "bytes": 70,
+              "sha256": "0134d935094fad66183bb971c63c663f80d46dad2d83aa0d4aeab9a1842ca95c"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/installed-node-path.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/installed-node-path.log.stdout",
+              "bytes": 70,
+              "sha256": "0134d935094fad66183bb971c63c663f80d46dad2d83aa0d4aeab9a1842ca95c"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/kernel.log",
+              "bytes": 133,
+              "sha256": "59146af91331bab4d2a2dc7239c56b3a170502cdec6329bf63f3b3fb96afe5e4"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/kernel.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/kernel.log.stdout",
+              "bytes": 133,
+              "sha256": "59146af91331bab4d2a2dc7239c56b3a170502cdec6329bf63f3b3fb96afe5e4"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/locked-dependency-preparation.log",
+              "bytes": 608,
+              "sha256": "cbd086834baf65b65c3f14f37d178f368ad3999a884ba65b6978a8ddbf1cd84c"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/locked-dependency-preparation.log.stderr",
+              "bytes": 608,
+              "sha256": "cbd086834baf65b65c3f14f37d178f368ad3999a884ba65b6978a8ddbf1cd84c"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/locked-dependency-preparation.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/mount-help.log",
+              "bytes": 3133,
+              "sha256": "c59657d17b51795bc072a14544673ce37168fc9d6a474f38b2e6790fa516810e"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/mount-help.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/mount-help.log.stdout",
+              "bytes": 3133,
+              "sha256": "c59657d17b51795bc072a14544673ce37168fc9d6a474f38b2e6790fa516810e"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/namespace-help.log",
+              "bytes": 2237,
+              "sha256": "901a061fdbbc40224bad1680a13a25ac4e7cdf9ced9135b0e3711a8bed20fe50"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/namespace-help.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/namespace-help.log.stdout",
+              "bytes": 2237,
+              "sha256": "901a061fdbbc40224bad1680a13a25ac4e7cdf9ced9135b0e3711a8bed20fe50"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/network-help.log",
+              "bytes": 972,
+              "sha256": "64b0ef78e85e76b08df652e011cd09cfdd0e21451739081bd80b5650e2f1b79e"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/network-help.log.stderr",
+              "bytes": 972,
+              "sha256": "64b0ef78e85e76b08df652e011cd09cfdd0e21451739081bd80b5650e2f1b79e"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/network-help.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/network-version.log",
+              "bytes": 41,
+              "sha256": "f3ea07dd87b9b2d624cf1d546eb377e322cfe987dea878bc9d541b679e7fac4b"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/network-version.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/network-version.log.stdout",
+              "bytes": 41,
+              "sha256": "f3ea07dd87b9b2d624cf1d546eb377e322cfe987dea878bc9d541b679e7fac4b"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-help.log",
+              "bytes": 889,
+              "sha256": "6d96913d60922f0cfde4f20cd6faa5ea25831390541b0cd1b0cb77467a63b7dc"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-help.log.stderr",
+              "bytes": 889,
+              "sha256": "6d96913d60922f0cfde4f20cd6faa5ea25831390541b0cd1b0cb77467a63b7dc"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-help.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-package-verify.log",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-package-verify.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-package-verify.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-package-version.log",
+              "bytes": 14,
+              "sha256": "c386e55053d67b92c05cb94aba1aeb7f8214da73f56414f5c8849b382143cf82"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-package-version.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-package-version.log.stdout",
+              "bytes": 14,
+              "sha256": "c386e55053d67b92c05cb94aba1aeb7f8214da73f56414f5c8849b382143cf82"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-reaper-install.log",
+              "bytes": 746,
+              "sha256": "f6aa24942118c7a6435381c4166bf8c161d8a9b08b36a5a45079f93fc93ff86b"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-reaper-install.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-reaper-install.log.stdout",
+              "bytes": 746,
+              "sha256": "f6aa24942118c7a6435381c4166bf8c161d8a9b08b36a5a45079f93fc93ff86b"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-version.log",
+              "bytes": 20,
+              "sha256": "2689f5c25f0a7b83f59d7b0f39add6318c16d4799e7d6325580902c70a874685"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-version.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-version.log.stdout",
+              "bytes": 20,
+              "sha256": "2689f5c25f0a7b83f59d7b0f39add6318c16d4799e7d6325580902c70a874685"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-package-index-refresh.log",
+              "bytes": 1051,
+              "sha256": "cfdee43619a2514d99c204acc3b6536d3a9393a1d2debb9b13ac48b177ab897b"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-package-index-refresh.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-package-index-refresh.log.stdout",
+              "bytes": 1051,
+              "sha256": "cfdee43619a2514d99c204acc3b6536d3a9393a1d2debb9b13ac48b177ab897b"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-package-manager-help.log",
+              "bytes": 1619,
+              "sha256": "977fb78b8099025f84360c930e374ad17bca5f7c2e1395ccb777301bf12d8acf"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-package-manager-help.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owning-debug-cli-build.log",
+              "bytes": 761,
+              "sha256": "b586a6584fe439690cf2f74c6b579d3ddcdf1fdf2be0b87f77693bc961a27513"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-package-manager-help.log.stdout",
+              "bytes": 1619,
+              "sha256": "977fb78b8099025f84360c930e374ad17bca5f7c2e1395ccb777301bf12d8acf"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owning-debug-cli-build.log.stderr",
+              "bytes": 761,
+              "sha256": "b586a6584fe439690cf2f74c6b579d3ddcdf1fdf2be0b87f77693bc961a27513"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owning-debug-cli-build.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/privileged-nextest-build-only.log",
+              "bytes": 734,
+              "sha256": "779f1f3d4fbccc76e41d6ed5d30c476e99b410c8f2a5c06bf84d3915336456fb"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/privileged-nextest-build-only.log.stderr",
+              "bytes": 734,
+              "sha256": "779f1f3d4fbccc76e41d6ed5d30c476e99b410c8f2a5c06bf84d3915336456fb"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/privileged-nextest-build-only.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/profile-receipt.json",
+              "bytes": 10670,
+              "sha256": "ad1627efd407200f98117d0c33b79b036663d4b1b8fca650d8dbe9d9a396f96b"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/source-admission.json",
+              "bytes": 3879,
+              "sha256": "724d9da54f2fbc6c664f5e0dc09700596feb1dd2fbd2b3aec7b8c3403d498b97"
+            },
+            {
+              "name": ".research-reuse/receipts/reuse-registry-probe-session.json",
+              "bytes": 139,
+              "sha256": "d716e08077385737fc0e7591eeed687fe8faf8def864a12e8558268b6e559b57"
+            },
+            {
+              "name": ".research-reuse/receipts/snapshot-registry-manifest.json",
+              "bytes": 3792,
+              "sha256": "db659dfc6984e0b28397782b1b469a74bb4ef4a0d6d1654df294f6f74683de3f"
+            },
+            {
+              "name": ".research-reuse/receipts/snapshot-registry-manifest.jsonl",
+              "bytes": 3087,
+              "sha256": "e50ec67060dd5e6ba7d5be6e3d55f028c0dc99f5f901b03bb648302868a9b7a3"
+            }
+          ]
+        }
+      ],
+      "junit": []
+    },
+    {
+      "phase": "wg-privileged-r6",
+      "runId": "506m7r84kk",
+      "harnessSha": "d569ca3b16f3e7ef66519fd86939728df7cebcfc",
+      "status": "finished",
+      "requestedAt": "2026-10-18T12:33:35.120Z",
+      "finishedAt": "2026-10-18T12:35:07Z",
+      "cpus": 8,
+      "memoryGb": 32,
+      "jobMaximumMinutes": 10,
+      "requestedToFinishSecondsUpperBound": 92,
+      "conservativeTimestampComputeProxyUsd": 0.0368,
+      "artifacts": [
+        {
+          "artifact_id": "01a14f02-3480-751f-a17d-e9e22ae85e05",
+          "run_id": "506m7r84kk",
+          "workflow_id": "gmt7f1p7sw",
+          "workflow_path": "",
+          "job_id": "rnr4bnpbcs",
+          "job_key": "_inline_0.yaml:consumer",
+          "attempt_id": "zbnbqldg3j",
+          "attempt": 1,
+          "name": "rust-coverage-wg-privileged",
+          "size_bytes": 45484,
+          "created_at": "2026-10-18T12:35:07Z"
+        }
+      ],
+      "artifactIntegrity": [
+        {
+          "zipPath": "wg-privileged-r6-receipts.zip",
+          "bytes": 45484,
+          "sha256": "c2d15bcc69ae09d7968bce477f9e47a3a02fe165afb3fb51f1a3c91ebf969f27",
+          "providerDigestVerified": true,
+          "zipCrcVerified": true,
+          "members": [
+            {
+              "name": ".research-rust-wg-privileged/receipts/actual-privileged-nextest.log",
+              "bytes": 8609,
+              "sha256": "b73dbc0932c6c3f5ca8d3304ecea6fa720666f65231bfb92372b9f45ef4826d5"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/cgroups-after-cleanup.json",
+              "bytes": 3,
+              "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/cgroups-after-tests.json",
+              "bytes": 34,
+              "sha256": "670e218b665f8ae43b08ea35562106c74afce6875f8d2a9a65491ea8c9f00eb5"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/cgroups-before.json",
+              "bytes": 3,
+              "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/final-source-admission.log",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/final-source-admission.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/final-source-admission.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/initial-source-admission.log",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/initial-source-admission.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/installed-cargo-path.log",
+              "bytes": 45,
+              "sha256": "722043661d695c05e18d4f6d1d3ae0822bb0519211023bec796b686561e46256"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/initial-source-admission.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/installed-cargo-path.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/installed-cargo-path.log.stdout",
+              "bytes": 45,
+              "sha256": "722043661d695c05e18d4f6d1d3ae0822bb0519211023bec796b686561e46256"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/installed-nextest-path.log",
+              "bytes": 94,
+              "sha256": "ac456f8c460b7b73c43780608776849469c58f0e97ba311c8bb34f54ce1ea18d"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/installed-nextest-path.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/installed-nextest-path.log.stdout",
+              "bytes": 94,
+              "sha256": "ac456f8c460b7b73c43780608776849469c58f0e97ba311c8bb34f54ce1ea18d"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/installed-node-path.log",
+              "bytes": 70,
+              "sha256": "0134d935094fad66183bb971c63c663f80d46dad2d83aa0d4aeab9a1842ca95c"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/installed-node-path.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/kernel.log",
+              "bytes": 133,
+              "sha256": "5d243dec9f830855fb63a61427e2a221857352e0edbbd3250206598b59d01363"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/installed-node-path.log.stdout",
+              "bytes": 70,
+              "sha256": "0134d935094fad66183bb971c63c663f80d46dad2d83aa0d4aeab9a1842ca95c"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/kernel.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/kernel.log.stdout",
+              "bytes": 133,
+              "sha256": "5d243dec9f830855fb63a61427e2a221857352e0edbbd3250206598b59d01363"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/locked-dependency-preparation.log",
+              "bytes": 608,
+              "sha256": "cbd086834baf65b65c3f14f37d178f368ad3999a884ba65b6978a8ddbf1cd84c"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/locked-dependency-preparation.log.stderr",
+              "bytes": 608,
+              "sha256": "cbd086834baf65b65c3f14f37d178f368ad3999a884ba65b6978a8ddbf1cd84c"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/locked-dependency-preparation.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/mount-help.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/mount-help.log",
+              "bytes": 3133,
+              "sha256": "c59657d17b51795bc072a14544673ce37168fc9d6a474f38b2e6790fa516810e"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/mount-help.log.stdout",
+              "bytes": 3133,
+              "sha256": "c59657d17b51795bc072a14544673ce37168fc9d6a474f38b2e6790fa516810e"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/namespace-commands.json",
+              "bytes": 1677,
+              "sha256": "b7705a6c8cca846a3ce66f0f3e9f833fe2747f49720c29799c7c32aa616582b2"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/namespace-help.log",
+              "bytes": 2237,
+              "sha256": "901a061fdbbc40224bad1680a13a25ac4e7cdf9ced9135b0e3711a8bed20fe50"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/namespace-help.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/namespace-help.log.stdout",
+              "bytes": 2237,
+              "sha256": "901a061fdbbc40224bad1680a13a25ac4e7cdf9ced9135b0e3711a8bed20fe50"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/namespace-initial-cgroup.txt",
+              "bytes": 5,
+              "sha256": "e57fd7b21104f091de366ace1464596378a498b0a5e63f1b21147a8998c20107"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/namespace-initial-mountinfo.txt",
+              "bytes": 1527,
+              "sha256": "75e04d29d22298206646d004b26cb582009aaf3a6297b5de01a526d7b1ce21e0"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/namespace-mountinfo.txt",
+              "bytes": 1690,
+              "sha256": "74cb919fa886995a01fc6bee2c97f83d26192cbab49521fd1a8544adf7d05eff"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/namespace-status.txt",
+              "bytes": 1396,
+              "sha256": "c28064b9f3700a106eb9a472c596f4e824490bcb13e0a41fa71b07e2afa61611"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/network-help.log",
+              "bytes": 972,
+              "sha256": "64b0ef78e85e76b08df652e011cd09cfdd0e21451739081bd80b5650e2f1b79e"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/network-help.log.stderr",
+              "bytes": 972,
+              "sha256": "64b0ef78e85e76b08df652e011cd09cfdd0e21451739081bd80b5650e2f1b79e"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/network-help.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/network-version.log",
+              "bytes": 41,
+              "sha256": "f3ea07dd87b9b2d624cf1d546eb377e322cfe987dea878bc9d541b679e7fac4b"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/network-version.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/network-version.log.stdout",
+              "bytes": 41,
+              "sha256": "f3ea07dd87b9b2d624cf1d546eb377e322cfe987dea878bc9d541b679e7fac4b"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/new-unrelated-cgroups-not-touched.json",
+              "bytes": 3,
+              "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/nextest/default/wg-privileged.xml",
+              "bytes": 12186,
+              "sha256": "5e64c457caa243f462112185a6aa7838db0337da23a35d808bd264e914f04cef"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/node-init-orphan-positive-control.log",
+              "bytes": 105,
+              "sha256": "5da0745fbb4fe39831e1e6cdaa1db113b0c31fa027233aa19e292eda412209d3"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/node-init-orphan-positive-control.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/node-init-orphan-positive-control.log.stdout",
+              "bytes": 105,
+              "sha256": "5da0745fbb4fe39831e1e6cdaa1db113b0c31fa027233aa19e292eda412209d3"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/node-init-orphan.json",
+              "bytes": 126,
+              "sha256": "7cac10c3c797c840a58c3303c623ca3559fb2293ab04124f1acb497676ebaa99"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-help.log",
+              "bytes": 852,
+              "sha256": "4ff1707a1c802ce10a55abba191a95fb2a9e1b4dda81202908dc3a2e46b4f8ae"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-help.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-help.log.stdout",
+              "bytes": 852,
+              "sha256": "4ff1707a1c802ce10a55abba191a95fb2a9e1b4dda81202908dc3a2e46b4f8ae"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-package-verify.log",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-package-verify.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-package-verify.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-package-version.log",
+              "bytes": 14,
+              "sha256": "c386e55053d67b92c05cb94aba1aeb7f8214da73f56414f5c8849b382143cf82"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-package-version.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-package-version.log.stdout",
+              "bytes": 14,
+              "sha256": "c386e55053d67b92c05cb94aba1aeb7f8214da73f56414f5c8849b382143cf82"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-reaper-install.log",
+              "bytes": 746,
+              "sha256": "cf136357970d897beeb928170a6391c54813bea3727083fb5fd1b794ef9efcdf"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-reaper-install.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-reaper-install.log.stdout",
+              "bytes": 746,
+              "sha256": "cf136357970d897beeb928170a6391c54813bea3727083fb5fd1b794ef9efcdf"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-version.log",
+              "bytes": 20,
+              "sha256": "2689f5c25f0a7b83f59d7b0f39add6318c16d4799e7d6325580902c70a874685"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-version.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-init-version.log.stdout",
+              "bytes": 20,
+              "sha256": "2689f5c25f0a7b83f59d7b0f39add6318c16d4799e7d6325580902c70a874685"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-package-index-refresh.log",
+              "bytes": 1051,
+              "sha256": "bb239c53c5de3570f74249c1d9aa9ae4072778a53531e6de871a12eb0ae83952"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-package-index-refresh.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-package-index-refresh.log.stdout",
+              "bytes": 1051,
+              "sha256": "bb239c53c5de3570f74249c1d9aa9ae4072778a53531e6de871a12eb0ae83952"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-package-manager-help.log",
+              "bytes": 1619,
+              "sha256": "977fb78b8099025f84360c930e374ad17bca5f7c2e1395ccb777301bf12d8acf"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-package-manager-help.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-package-manager-help.log.stdout",
+              "bytes": 1619,
+              "sha256": "977fb78b8099025f84360c930e374ad17bca5f7c2e1395ccb777301bf12d8acf"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-root-network-mount-cgroup-pid-namespaces.log",
+              "bytes": 1258,
+              "sha256": "228c194d9ce6be43b92b5a7c15c0552d434fe3c81dca230bd4003799575ff25c"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-root-network-mount-cgroup-pid-namespaces.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owned-root-network-mount-cgroup-pid-namespaces.log.stdout",
+              "bytes": 1258,
+              "sha256": "228c194d9ce6be43b92b5a7c15c0552d434fe3c81dca230bd4003799575ff25c"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owning-debug-cli-build.log",
+              "bytes": 761,
+              "sha256": "c2a6c08822760e440a76fbd70bdb65013e8a40395fbf8fe7d2fadcd7a48808f6"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owning-debug-cli-build.log.stderr",
+              "bytes": 761,
+              "sha256": "c2a6c08822760e440a76fbd70bdb65013e8a40395fbf8fe7d2fadcd7a48808f6"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/owning-debug-cli-build.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/private-bpffs-mount.log",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/private-cgroup2-bind-write.log",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/private-cgroup2-bind.log",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/private-loopback-addresses.log",
+              "bytes": 309,
+              "sha256": "6f336ad33b2531b4328bacec76018107ede69d9adb994119020b230c860a9ac6"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/private-loopback-up.log",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/privileged-boundary.json",
+              "bytes": 325,
+              "sha256": "5155b6ee8e9f5a3f1193fefd7b3bd05d3b770107298f014597cd69feb0848683"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/privileged-nextest-build-only.log",
+              "bytes": 734,
+              "sha256": "6a64402a3778c749b9c09be9159a6528113ec4f56c8f1aad007342d261091613"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/privileged-nextest-build-only.log.stderr",
+              "bytes": 734,
+              "sha256": "6a64402a3778c749b9c09be9159a6528113ec4f56c8f1aad007342d261091613"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/privileged-nextest-build-only.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/profile-receipt.json",
+              "bytes": 19613,
+              "sha256": "94f3551b8cb44745a488480f881c7e171cba95ddfd6a0b4a3837e7d493aee5ab"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/proper-init-orphan-reaping-control.log",
+              "bytes": 100,
+              "sha256": "0ae6f2157f2e3338ea3e27ef9f2789e5ca265c599087cbd4f45c390148d37835"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/proper-init-orphan-reaping-control.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/proper-init-orphan-reaping-control.log.stdout",
+              "bytes": 100,
+              "sha256": "0ae6f2157f2e3338ea3e27ef9f2789e5ca265c599087cbd4f45c390148d37835"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/source-admission.json",
+              "bytes": 3879,
+              "sha256": "724d9da54f2fbc6c664f5e0dc09700596feb1dd2fbd2b3aec7b8c3403d498b97"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/tini-init-orphan.json",
+              "bytes": 121,
+              "sha256": "4fad08fddcf672f8bb851a1c5068e2cdede574aea2315c6889b77f0ebf8d9d03"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/unmount-owned-bpffs.log",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/unmount-owned-cgroup2-binding.log",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-wg-privileged/receipts/writable-cgroup-admission.json",
+              "bytes": 202,
+              "sha256": "384e006e43fb614923822f9dff34eef78375727319c9df56568c4b4c1af9a64c"
+            },
+            {
+              "name": ".research-reuse/receipts/reuse-registry-probe-session.json",
+              "bytes": 139,
+              "sha256": "e71863b735ff98e9c75af177e1ff38c072c5c0bd345b9794287b17e1732c346e"
+            },
+            {
+              "name": ".research-reuse/receipts/snapshot-registry-manifest.json",
+              "bytes": 3792,
+              "sha256": "bd4fa0b62b5389141d9aef47ea5df09f8b29a52a99d19b3218253f12011c2cc8"
+            },
+            {
+              "name": ".research-reuse/receipts/snapshot-registry-manifest.jsonl",
+              "bytes": 3087,
+              "sha256": "b66c0eb513383707ec11814b8e97b1df6cbdd12391a65d657bbdc3bf22915596"
+            }
+          ]
+        }
+      ],
+      "junit": [
+        {
+          "path": ".research-rust-wg-privileged/receipts/nextest/default/wg-privileged.xml",
+          "enumeratedTotal": 26,
+          "skipped": 15,
+          "failed": 0,
+          "errors": 0,
+          "testsRun": 11,
+          "passed": 11
+        }
+      ]
+    },
+    {
+      "phase": "truepeak-bench-positive",
+      "runId": "1k8ph1wk9h",
+      "harnessSha": "29c841d899d475e55f959b10cecad0d925e4f2d0",
+      "status": "finished",
+      "requestedAt": "2026-10-18T12:38:14.095Z",
+      "finishedAt": "2026-10-18T12:39:57Z",
+      "cpus": 4,
+      "memoryGb": 16,
+      "jobMaximumMinutes": 10,
+      "requestedToFinishSecondsUpperBound": 103,
+      "conservativeTimestampComputeProxyUsd": 0.0206,
+      "artifacts": [
+        {
+          "artifact_id": "01a14f06-9eb1-76c7-b07c-713e7b388681",
+          "run_id": "1k8ph1wk9h",
+          "workflow_id": "12gzpdfmg3",
+          "workflow_path": "",
+          "job_id": "76q96mj7dg",
+          "job_key": "_inline_0.yaml:consumer",
+          "attempt_id": "nl3m76wvm5",
+          "attempt": 1,
+          "name": "rust-coverage-truepeak-bench-positive",
+          "size_bytes": 32675,
+          "created_at": "2026-10-18T12:39:56Z"
+        }
+      ],
+      "artifactIntegrity": [
+        {
+          "zipPath": "truepeak-bench-positive-receipts.zip",
+          "bytes": 32675,
+          "sha256": "0788c1774971c400e04bf5a32082077ce6c038999a42f604968cd07248d57330",
+          "providerDigestVerified": true,
+          "zipCrcVerified": true,
+          "members": [
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/final-source-admission.log",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/final-source-admission.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/final-source-admission.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/initial-source-admission.log",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/initial-source-admission.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/initial-source-admission.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/locked-dependency-preparation.log",
+              "bytes": 778,
+              "sha256": "09e6d1d4e0514943aa9a98f9bc85794f4e308d94ffd360fa285e60d9a0a56be7"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/locked-dependency-preparation.log.stderr",
+              "bytes": 778,
+              "sha256": "09e6d1d4e0514943aa9a98f9bc85794f4e308d94ffd360fa285e60d9a0a56be7"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/locked-dependency-preparation.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/owning-release-build.log",
+              "bytes": 1782,
+              "sha256": "02617dd6998356072fcf8c9cf77fcdea6bca57fcb7c160a563bd69ee1a80711a"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/owning-release-build.log.stderr",
+              "bytes": 1782,
+              "sha256": "02617dd6998356072fcf8c9cf77fcdea6bca57fcb7c160a563bd69ee1a80711a"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/owning-release-build.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-1-create.log",
+              "bytes": 65,
+              "sha256": "df089ae2333e3994a812688d4485c9d7617963358b47c85020d658817509f648"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-1-create.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-1-create.log.stdout",
+              "bytes": 65,
+              "sha256": "df089ae2333e3994a812688d4485c9d7617963358b47c85020d658817509f648"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-1-remove-owned-container.log",
+              "bytes": 65,
+              "sha256": "df089ae2333e3994a812688d4485c9d7617963358b47c85020d658817509f648"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-1-remove-owned-container.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-1-remove-owned-container.log.stdout",
+              "bytes": 65,
+              "sha256": "df089ae2333e3994a812688d4485c9d7617963358b47c85020d658817509f648"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-1-retain-owned-corpus.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-1-retain-owned-corpus.log",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-1-retain-owned-corpus.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-1-run.log",
+              "bytes": 5154,
+              "sha256": "deb025d29857e85e4b225bde04a2e128f3b435efea3c5d4dff788b4e35c0ed6c"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-1-run.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-1-run.log.stdout",
+              "bytes": 5154,
+              "sha256": "deb025d29857e85e4b225bde04a2e128f3b435efea3c5d4dff788b4e35c0ed6c"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-1-state.log",
+              "bytes": 321,
+              "sha256": "ca9d7730e3225f27b3e0a1f2f07830a9e73d89f26e4e624c07357f1c66ca174c"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-1-state.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-1-state.log.stdout",
+              "bytes": 321,
+              "sha256": "ca9d7730e3225f27b3e0a1f2f07830a9e73d89f26e4e624c07357f1c66ca174c"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-2-create.log",
+              "bytes": 65,
+              "sha256": "840485816156fd7ee8b5baeabbe2bc4caa95df32d4d91b3a27cc18359790c3b3"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-2-create.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-2-create.log.stdout",
+              "bytes": 65,
+              "sha256": "840485816156fd7ee8b5baeabbe2bc4caa95df32d4d91b3a27cc18359790c3b3"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-2-remove-owned-container.log",
+              "bytes": 65,
+              "sha256": "840485816156fd7ee8b5baeabbe2bc4caa95df32d4d91b3a27cc18359790c3b3"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-2-remove-owned-container.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-2-remove-owned-container.log.stdout",
+              "bytes": 65,
+              "sha256": "840485816156fd7ee8b5baeabbe2bc4caa95df32d4d91b3a27cc18359790c3b3"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-2-retain-owned-corpus.log",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-2-retain-owned-corpus.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-2-retain-owned-corpus.log.stdout",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-2-run.log",
+              "bytes": 5154,
+              "sha256": "deb025d29857e85e4b225bde04a2e128f3b435efea3c5d4dff788b4e35c0ed6c"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-2-run.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-2-run.log.stdout",
+              "bytes": 5154,
+              "sha256": "deb025d29857e85e4b225bde04a2e128f3b435efea3c5d4dff788b4e35c0ed6c"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-2-state.log",
+              "bytes": 322,
+              "sha256": "5234861c5a681fcbaa85f87da3ed4c4013e832d86322a6f3cd0c68758ed9f08f"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-2-state.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-repetition-2-state.log.stdout",
+              "bytes": 322,
+              "sha256": "5234861c5a681fcbaa85f87da3ed4c4013e832d86322a6f3cd0c68758ed9f08f"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/positive-results.json",
+              "bytes": 2977,
+              "sha256": "58347923b7fa76d28b90c3e1a32989c486cc14265b47e9cbffcec778d2446935"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/profile-receipt.json",
+              "bytes": 11381,
+              "sha256": "84faa2f4b32eba9481e860ea91cc82e9f1199058b5b8857af4ee5dff4811fe39"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/runtime/positive-repetition-1/out/long_features.jsonl",
+              "bytes": 8704,
+              "sha256": "6b353d33aa7b2acda2090abfa6f4d69b71fb15a9ea5096d80bc6d144c7723cbd"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/runtime/positive-repetition-2/out/long_features.jsonl",
+              "bytes": 8704,
+              "sha256": "6b353d33aa7b2acda2090abfa6f4d69b71fb15a9ea5096d80bc6d144c7723cbd"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/runtime-image-build.log",
+              "bytes": 358,
+              "sha256": "5d11c74951e40b0c55dc283eb6180339e50f08aba3ae6456b0cf720d3d9d8592"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/runtime-image-build.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/runtime-image-build.log.stdout",
+              "bytes": 358,
+              "sha256": "5d11c74951e40b0c55dc283eb6180339e50f08aba3ae6456b0cf720d3d9d8592"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/runtime-libraries-truepeak-core-bench.log",
+              "bytes": 297,
+              "sha256": "ce7be4ef59d09d570ba2518ec86fb3c2b5a8fd846f28f6202aa9c4bdf8b58b61"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/runtime-libraries-truepeak-core-bench.log.stderr",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/runtime-libraries-truepeak-core-bench.log.stdout",
+              "bytes": 297,
+              "sha256": "ce7be4ef59d09d570ba2518ec86fb3c2b5a8fd846f28f6202aa9c4bdf8b58b61"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/source-admission.json",
+              "bytes": 12368,
+              "sha256": "3015dc298ab33be32c7f260a16014d8c8691f9650e9d0fa0d37c02150cd659b0"
+            },
+            {
+              "name": ".research-rust-truepeak-bench-positive/receipts/synthetic-positive-tracks.jsonl",
+              "bytes": 121660,
+              "sha256": "951817e9db64369e21e87e46f3f937041f2f1647d3a8416a43b7b7df0eb2c109"
+            },
+            {
+              "name": ".research-reuse/receipts/reuse-registry-probe-session.json",
+              "bytes": 147,
+              "sha256": "0516c0be403da3e83a75fb4beb49cac67b87e4e1d72bbe396d51ea21aeffaab5"
+            },
+            {
+              "name": ".research-reuse/receipts/snapshot-registry-manifest.json",
+              "bytes": 3792,
+              "sha256": "3ba0c1c34b853bbc2f2c4d76990303539d35a1db8f5780cdaff8f6fb775b4eae"
+            },
+            {
+              "name": ".research-reuse/receipts/snapshot-registry-manifest.jsonl",
+              "bytes": 3087,
+              "sha256": "3963b70cb8ef54f818a18c020ac2e55987448eaf7d1745b689701f903872a788"
+            }
+          ]
+        }
+      ],
+      "junit": []
     }
   ],
   "receipts": {
@@ -201597,18 +202972,18 @@
   },
   "rawReceipts": {
     "path": "doc/audit/depot-rust-coverage-2026-10-18.receipts.json.gz",
-    "bytes": 9367768,
-    "sha256": "b742a9c4eb5268f2e32477a42ecc90ab39495ec14786f0c1adadeab17d34fd24",
-    "uncompressedBytes": 52967521,
-    "uncompressedSha256": "be43b9012434aa113526c630193fb5fd4d4d9b9ff58153b0c00de223d1d3b812"
+    "bytes": 11483893,
+    "sha256": "a6ef79bb57f66ffb891ff54dba0aa2744eb435bb6735a323cd2ccecfe51f650f",
+    "uncompressedBytes": 62124078,
+    "uncompressedSha256": "acb1337c95fb91a34b194ec962545aaa0ba9a0301fe2872ad7aa01acbe36b70c"
   },
   "accounting": {
-    "cumulativeConservativeTimestampComputeProxyUsd": 4.024,
-    "remainingUsd": 0.976,
+    "cumulativeConservativeTimestampComputeProxyUsd": 4.213,
+    "remainingUsd": 0.787,
     "ceilingUsd": 5,
     "invoiceAccessed": false
   },
-  "updatedAt": "2026-10-18T12:22:44.019Z",
+  "updatedAt": "2026-10-18T12:43:32.819Z",
   "consumerSummaries": {
     "installedCodex": {
       "runId": "1h6qf8j86f",
@@ -201668,7 +203043,62 @@
       },
       "independentMembershipAssertion": "Passed by unchanged installed_host_rewrites_commands test",
       "realPaidProviderCalls": 0,
-      "sourceAndSeedBytesChanged": false
+      "sourceAndSeedBytesChanged": false,
+      "stderrRetainingRepeat": {
+        "runId": "m138glct7m",
+        "nextestPassed": 1,
+        "providerRequests": 41,
+        "functionCallOutputs": 40,
+        "successfulPayloadOutputs": 40,
+        "completedHookEvents": 40,
+        "sortedHookMilliseconds": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "stderrBytes": 0,
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bareShutdownErrors": false,
+        "stderrCapture": "Byte-preserving tee retained complete host stderr; no filtering",
+        "realPaidProviderCalls": 0
+      }
     },
     "gitPolicyPlanted": {
       "runId": "gm2drnx19m",
@@ -202922,6 +204352,357 @@
       "allFeatures": true,
       "buildAndTestConcurrency": "Nextest defaults",
       "realPaidProviders": false
+    },
+    "wgPrivileged": {
+      "runId": "506m7r84kk",
+      "harnessSha": "d569ca3b16f3e7ef66519fd86939728df7cebcfc",
+      "frozenSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "passed": 11,
+      "failed": 0,
+      "filteredOrdinarySkips": 15,
+      "enumerated": 26,
+      "passedCaseNames": [
+        "pin_tests::partial_link_attach_rolls_back",
+        "pin_tests::all_protocol_hooks_mark_and_drop_cleanly",
+        "pin_tests::pretransition_parent_death_rolls_back_candidate",
+        "pin_tests::application_watcher_service_starts_and_stops",
+        "pin_tests::failed_attach_preserves_prior_attachment",
+        "pin_tests::recovery_adopts_committed_candidate",
+        "pin_tests::removed_cgroup_detaches_by_lexical_identity",
+        "pin_tests::wrong_owner_state_fails_closed",
+        "pin_tests::persisted_protocol_lifecycle",
+        "pin_tests::recovery_rejects_uncommitted_candidate",
+        "pin_tests::application_watcher_covers_named_targets_and_future_ghostty"
+      ],
+      "nodeInitControl": {
+        "expected": "zombie",
+        "observedState": "Z",
+        "pid": 9,
+        "parentHarnessPid": 1,
+        "namespaceInit": "node-MainThread"
+      },
+      "tiniInitControl": {
+        "expected": "reaped",
+        "observedState": "absent",
+        "pid": 10,
+        "parentHarnessPid": 2,
+        "namespaceInit": "tini"
+      },
+      "ownedCgroupsAfterCleanup": [],
+      "unmounts": [
+        {
+          "name": "unmount-owned-bpffs",
+          "command": [
+            "umount",
+            "/sys/fs/bpf"
+          ],
+          "status": 0,
+          "signal": null
+        },
+        {
+          "name": "unmount-owned-cgroup2-binding",
+          "command": [
+            "umount",
+            "/sys/fs/cgroup"
+          ],
+          "status": 0,
+          "signal": null
+        }
+      ],
+      "nextestConcurrency": "Default build and test concurrency; no CARGO_BUILD_JOBS override",
+      "earlierSixFailures": {
+        "runId": "p81kntfxgs",
+        "causeBoundary": "Node was PID 1 in a private PID namespace, with no init reaper. Controlled Node/Tini orphan probes and unchanged-source successful repeat established harness lifecycle correction.",
+        "originalReportsRetained": true
+      },
+      "productSourceChanged": false
+    },
+    "benchmarkCorpus": {
+      "runId": "8ksdxnqq25",
+      "benchmarkRunId": "hzfbgz4xq7",
+      "frozenSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "archiveBytes": 602992640,
+      "archiveSha256": "47698c6be07012ab111e7586c1fd23d8b1f610ca5d3f570e53147da9a30ad368",
+      "members": 13860,
+      "rawTreeEntries": 13860,
+      "materializedLfsMembers": 1464,
+      "allNonmatchingMembersVerifiedLfs": true,
+      "missing": [],
+      "correctedAttribution": "Frozen Git export with content-addressed LFS materializations, not raw Git object bytes or pointer-only media",
+      "allMemberHashesRetainedInRawReceipts": true
+    },
+    "benchmarks": {
+      "runId": "hzfbgz4xq7",
+      "frozenSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "repetitionsPerExecutable": 2,
+      "nativeOutcomes": [
+        {
+          "path": "package/music-player/truepeak-core.bench",
+          "boundary": "owning-debug-nextest",
+          "status": 0
+        },
+        {
+          "executable": "truepeak-core-bench",
+          "repetition": 1,
+          "input": "Deterministic synthetic tracks JSONL; no real audio-performance claim",
+          "id": "8a6dd09ed3d17067ddac1ff29bdb1a1e3d92dccfe4b55898be77f3a960065b81",
+          "image": "localhost/rust-research-benchmarks:bounded",
+          "args": [
+            "/input/tracks.jsonl"
+          ],
+          "status": 0,
+          "state": {
+            "OciVersion": "1.2.1",
+            "Status": "exited",
+            "Running": false,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 0,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2026-10-18T11:58:46.834553652Z",
+            "FinishedAt": "2026-10-18T11:58:47.004146228Z",
+            "CheckpointedAt": "0001-01-01T00:00:00Z",
+            "RestoredAt": "0001-01-01T00:00:00Z"
+          },
+          "files": [],
+          "corpusCopiedTo": "/home/runner/work/Monochromatic/Monochromatic/.research-rust-benchmarks/receipts/runtime/truepeak-core-bench-repetition-1",
+          "noHostMounts": true,
+          "network": "none",
+          "cpus": 2,
+          "memoryBytes": 2147483648,
+          "pidsLimit": 128,
+          "workingDirectory": "/work",
+          "maximumSeconds": 600,
+          "executedUnits": 0,
+          "finished": false
+        },
+        {
+          "executable": "truepeak-core-bench",
+          "repetition": 2,
+          "input": "Deterministic synthetic tracks JSONL; no real audio-performance claim",
+          "id": "8ed48b619012381223e0aea8e7ff8f4756b65a20a76a087991f88d330eae491c",
+          "image": "localhost/rust-research-benchmarks:bounded",
+          "args": [
+            "/input/tracks.jsonl"
+          ],
+          "status": 0,
+          "state": {
+            "OciVersion": "1.2.1",
+            "Status": "exited",
+            "Running": false,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 0,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2026-10-18T11:58:47.143264739Z",
+            "FinishedAt": "2026-10-18T11:58:47.312146228Z",
+            "CheckpointedAt": "0001-01-01T00:00:00Z",
+            "RestoredAt": "0001-01-01T00:00:00Z"
+          },
+          "files": [],
+          "corpusCopiedTo": "/home/runner/work/Monochromatic/Monochromatic/.research-rust-benchmarks/receipts/runtime/truepeak-core-bench-repetition-2",
+          "noHostMounts": true,
+          "network": "none",
+          "cpus": 2,
+          "memoryBytes": 2147483648,
+          "pidsLimit": 128,
+          "workingDirectory": "/work",
+          "maximumSeconds": 600,
+          "executedUnits": 0,
+          "finished": false
+        },
+        {
+          "executable": "forbidden-regex-bench",
+          "repetition": 1,
+          "input": "Complete frozen repository source and owning ignore policy",
+          "id": "7941f76c136c607b1e25461787a2c87eabccba22287d3e69e5c6d6a14e63627f",
+          "image": "localhost/rust-research-benchmarks:bounded",
+          "args": [],
+          "status": 0,
+          "state": {
+            "OciVersion": "1.2.1",
+            "Status": "exited",
+            "Running": false,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 0,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2026-10-18T11:58:47.447432573Z",
+            "FinishedAt": "2026-10-18T12:04:46.660146228Z",
+            "CheckpointedAt": "0001-01-01T00:00:00Z",
+            "RestoredAt": "0001-01-01T00:00:00Z"
+          },
+          "files": [],
+          "corpusCopiedTo": "/home/runner/work/Monochromatic/Monochromatic/.research-rust-benchmarks/receipts/runtime/forbidden-regex-bench-repetition-1",
+          "noHostMounts": true,
+          "network": "none",
+          "cpus": 2,
+          "memoryBytes": 2147483648,
+          "pidsLimit": 128,
+          "workingDirectory": "/input/repository",
+          "maximumSeconds": 600,
+          "executedUnits": 0,
+          "finished": false
+        },
+        {
+          "executable": "forbidden-regex-bench",
+          "repetition": 2,
+          "input": "Complete frozen repository source and owning ignore policy",
+          "id": "0fd2957fa005dad4773669d1d9c7b63f3755abe0ea7423d9e6ce70479e4d95fc",
+          "image": "localhost/rust-research-benchmarks:bounded",
+          "args": [],
+          "status": 0,
+          "state": {
+            "OciVersion": "1.2.1",
+            "Status": "exited",
+            "Running": false,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 0,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2026-10-18T12:04:46.79559913Z",
+            "FinishedAt": "2026-10-18T12:10:51.596146228Z",
+            "CheckpointedAt": "0001-01-01T00:00:00Z",
+            "RestoredAt": "0001-01-01T00:00:00Z"
+          },
+          "files": [],
+          "corpusCopiedTo": "/home/runner/work/Monochromatic/Monochromatic/.research-rust-benchmarks/receipts/runtime/forbidden-regex-bench-repetition-2",
+          "noHostMounts": true,
+          "network": "none",
+          "cpus": 2,
+          "memoryBytes": 2147483648,
+          "pidsLimit": 128,
+          "workingDirectory": "/input/repository",
+          "maximumSeconds": 600,
+          "executedUnits": 0,
+          "finished": false
+        }
+      ],
+      "truepeakBenchNextestPassed": 3,
+      "sourceLoopsChanged": false,
+      "scope": "Regex: complete verified frozen exported corpus. Truepeak: deterministic synthetic negative fixture, no feasible candidate. No real audio-decoding or vendor-performance comparison.",
+      "owningBareCargoRunStatus": 101,
+      "owningBareCargoRunBlocker": "Two declared binaries and no default-run; explicit produced truepeak-core-bench was executed.",
+      "runtimeLibFuzzerHeuristics": "executedUnits/finished fields are inapplicable to benchmark output; actual exit status, container state and complete stage output establish completion.",
+      "positiveFixtureRepeat": {
+        "runId": "1k8ph1wk9h",
+        "harnessSha": "29c841d899d475e55f959b10cecad0d925e4f2d0",
+        "results": {
+          "fixtureSha256": "951817e9db64369e21e87e46f3f937041f2f1647d3a8416a43b7b7df0eb2c109",
+          "tracks": 24,
+          "executableSha256": "673eab428e009586e8b8b3b528d5baf8b5ceb6d7a6fae09a237157efd3485623",
+          "outcomes": [
+            {
+              "repetition": 1,
+              "id": "cafcb2a96298fdb9739cffdae0258a4b1708b57410f9243e4bad695e1b0e838f",
+              "image": "localhost/rust-research-truepeak-positive:bounded",
+              "executable": "truepeak-core-bench",
+              "args": [
+                "/input/tracks.jsonl"
+              ],
+              "status": 0,
+              "state": {
+                "OciVersion": "1.2.1",
+                "Status": "exited",
+                "Running": false,
+                "Paused": false,
+                "Restarting": false,
+                "OOMKilled": false,
+                "Dead": false,
+                "Pid": 0,
+                "ExitCode": 0,
+                "Error": "",
+                "StartedAt": "2026-10-18T12:39:54.580832733Z",
+                "FinishedAt": "2026-10-18T12:39:54.775051396Z",
+                "CheckpointedAt": "0001-01-01T00:00:00Z",
+                "RestoredAt": "0001-01-01T00:00:00Z"
+              },
+              "files": [
+                {
+                  "path": "out/long_features.jsonl",
+                  "bytes": 8704,
+                  "sha256": "6b353d33aa7b2acda2090abfa6f4d69b71fb15a9ea5096d80bc6d144c7723cbd"
+                }
+              ],
+              "corpusCopiedTo": "/home/runner/work/Monochromatic/Monochromatic/.research-rust-truepeak-bench-positive/receipts/runtime/positive-repetition-1",
+              "noHostMounts": true,
+              "network": "none",
+              "cpus": 2,
+              "memoryBytes": 2147483648,
+              "pidsLimit": 128,
+              "workingDirectory": "/work",
+              "maximumSeconds": 120,
+              "executedUnits": 0,
+              "finished": false
+            },
+            {
+              "repetition": 2,
+              "id": "591ddc2f7ac48a9dee7509bdf6899b5d5a8e66c8cfef2fcf2d0dc87f60ee0afd",
+              "image": "localhost/rust-research-truepeak-positive:bounded",
+              "executable": "truepeak-core-bench",
+              "args": [
+                "/input/tracks.jsonl"
+              ],
+              "status": 0,
+              "state": {
+                "OciVersion": "1.2.1",
+                "Status": "stopped",
+                "Running": false,
+                "Paused": false,
+                "Restarting": false,
+                "OOMKilled": false,
+                "Dead": false,
+                "Pid": 0,
+                "ExitCode": 0,
+                "Error": "",
+                "StartedAt": "2026-10-18T12:39:54.903313743Z",
+                "FinishedAt": "2026-10-18T12:39:55.099051396Z",
+                "CheckpointedAt": "0001-01-01T00:00:00Z",
+                "RestoredAt": "0001-01-01T00:00:00Z"
+              },
+              "files": [
+                {
+                  "path": "out/long_features.jsonl",
+                  "bytes": 8704,
+                  "sha256": "6b353d33aa7b2acda2090abfa6f4d69b71fb15a9ea5096d80bc6d144c7723cbd"
+                }
+              ],
+              "corpusCopiedTo": "/home/runner/work/Monochromatic/Monochromatic/.research-rust-truepeak-bench-positive/receipts/runtime/positive-repetition-2",
+              "noHostMounts": true,
+              "network": "none",
+              "cpus": 2,
+              "memoryBytes": 2147483648,
+              "pidsLimit": 128,
+              "workingDirectory": "/work",
+              "maximumSeconds": 120,
+              "executedUnits": 0,
+              "finished": false
+            }
+          ]
+        },
+        "bestWindowCount": 14,
+        "thresholdSeconds": 60,
+        "marginDb": 0.3,
+        "decodedSeconds": 1440,
+        "correctedTargetSeconds": 4359,
+        "featureRowsPerRepetition": 24,
+        "featureBytesPerRepetition": 8704,
+        "featureSha256": "6b353d33aa7b2acda2090abfa6f4d69b71fb15a9ea5096d80bc6d144c7723cbd",
+        "noClassifierFeasibleBranchExecuted": true,
+        "scope": "Full unchanged search on flat synthetic peak bins, no real audio decoding; negative fixture remains separately retained."
+      }
     }
   },
   "snapshotMetadata": {
@@ -202938,5 +204719,19 @@
       "consumerSummaries"
     ],
     "historicalReceiptHashes": "Initial receipt descriptor is historical; current receipt hash is rawReceipts. Prior raw data remains nested without deletion."
+  },
+  "executionClosure": {
+    "ownedActiveJobs": [],
+    "sourceChanged": false,
+    "seedBytesChanged": false,
+    "paidProviderCalls": 0,
+    "remainingSourceBoundaries": [
+      "Intentional ignored regex pathological regression was not separately selected; bounded fuzz targets were executed.",
+      "Linter panic_hook_child and Truepeak crash_writer_child are helper subprocesses exercised by their parent tests, not separately added to counts.",
+      "Truepeak bench_cold_write requires its bench:cache owner and an admitted real-disk path; sidecar benchmarks do not prove storage durability.",
+      "Truepeak collector real-audio input capture was not executed by synthetic-bin search fixtures.",
+      "Current full Git policy suite retains two known failures in independent reuse campaign.",
+      "Desktop/native lanes remain separately owned and are not credited by Cargo source inventory."
+    ]
   }
 }
