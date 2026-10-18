@@ -95,6 +95,18 @@ It now uses the recorded
 [GitHub-expression delimiter workaround](../troubleshooting/mise-task-github-expression-templating.md).
 Neither the local relay controls nor the local Node consumer establish native job-token authorization.
 
+The narrowly scoped project creation returned `200` at `2026-10-18T14:47:45.122Z`:
+owned project `ng17dl3xrn`,
+`HARDWARE_16X32`,
+five-minute build timeout,
+`keepBytes: 26843545600`,
+`keepGb: 25`,
+and `keepDays: 1`.
+No autoscaling threshold was set.
+Creation allocated no builder.
+Harness `21494877fd` binds this project identifier into the fixture;
+native dispatch remains a separate operation.
+
 ### Native consumer
 
 The producer will copy the exact frozen first-party
