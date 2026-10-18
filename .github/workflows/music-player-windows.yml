@@ -706,6 +706,7 @@ jobs:
         WAIT_TIMEOUT = 0x102
         ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x4
         WM_GETTEXT, WM_GETTEXTLENGTH, WM_COMMAND, IDOK = 0x000D, 0x000E, 0x0111, 1
+        WM_CLOSE, BM_CLICK = 0x0010, 0x00F5
         FORCE = "MUSIC_PLAYER_FORCE_STARTUP_FAILURE"
 
 
@@ -902,6 +903,37 @@ jobs:
             return "\n".join(text for text in texts if text)
 
 
+        def child_of_class(hwnd, wanted):
+            """The first child window of the given class, or None."""
+            found = []
+
+            def visit(child, _):
+                if class_name(child) == wanted:
+                    found.append(child)
+                return True
+
+            user32.EnumChildWindows(hwnd, EnumWindowsProc(visit), 0)
+            return found[0] if found else None
+
+
+        def dismiss(dialog, process):
+            """Presses OK the way a person would, and falls back to other ways the box accepts.
+
+            Each way gets 5 seconds to end the process; the name of the way that did is returned, or None when none did.
+            """
+            button = child_of_class(dialog, "Button")
+            ways = [("BM_CLICK on the OK button", button, BM_CLICK, 0), ("WM_CLOSE", dialog, WM_CLOSE, 0), ("WM_COMMAND IDOK", dialog, WM_COMMAND, IDOK)]
+            for name, target, message, parameter in ways:
+                if target is None:
+                    print(f"    no window for {name}", flush=True)
+                    continue
+                user32.PostMessageW(target, message, parameter, 0)
+                if kernel32.WaitForSingleObject(process, 5000) != WAIT_TIMEOUT:
+                    return name
+                print(f"    {name} did not end the process within 5 seconds", flush=True)
+            return None
+
+
         # What decides how the console treats escape sequences on this runner, printed for the record.
         kernel32.FreeConsole()
         kernel32.AllocConsole()
@@ -975,11 +1007,13 @@ jobs:
             process, pid = launch("", False, False)
             dialog = find_dialog(pid, 20)
             title = message = ""
+            way = None
             if dialog is not None:
                 title = window_text(dialog)
                 message = dialog_message(dialog)
-                user32.PostMessageW(dialog, WM_COMMAND, IDOK, 0)
+                way = dismiss(dialog, process)
             code = finish(process, 20000)
+            print(f"    {step}: the box was closed by {way}", flush=True)
             for line in message.splitlines():
                 print(f"    {step} message: {line}".encode("ascii", "backslashreplace").decode(), flush=True)
             good = dialog is not None and title.startswith("Music Player") and phrase in message and FORCE in message and code == wanted_code
