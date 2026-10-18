@@ -64,13 +64,47 @@ Controls allocation `r328mp420m` runs the owner and separate documented/undocume
 retaining native CLI help/version and exact JAR hashes.
 This does not substitute for the root `lint:detekt` task's repository-wide fanout.
 
-Nine completed allocations account for 1,260 request-to-terminal seconds,
-or USD 0.504 at the declared eight-vCPU timestamp-price proxy.
-Seven remaining 15-minute slots add at most USD 2.52 to that arithmetic,
-giving USD 3.024 including the two active cache-off allocations' full reserved ceilings.
+Thirteen completed allocations account for 2,027 request-to-terminal seconds,
+or USD 0.8108 at the declared eight-vCPU timestamp-price proxy.
+The approved job ceiling is now 18,
+with the same two-simultaneous,
+eight-vCPU,
+32-GB,
+15-minute and USD 5 limits.
+Five remaining slots,
+including the active native warm pair `tpqlt2h227` and `kfmq92jdm1`,
+reserve USD 1.80 at their full ceilings,
+giving a USD 2.6108 forecast.
 This excludes storage,
 network,
 other agents and any account bill.
+
+The native warm pair uses pushed harness `ce27ef7d9d76615243e969e987ba2efd76195f49`.
+Both run the actual full native CLI/test cohort with failures propagated,
+then independently run the corrected Detekt host fixtures.
+The initial documented constant-returning fixture was rejected by Detekt's existing
+`FunctionOnlyReturningConstant` rule;
+the corrected fixtures depend on their argument.
+The real package Detekt owner and CLI help/version had already passed in `r328mp420m`.
+
+Corrected-prerequisite seed `n2zlbh5gpb` executed 1,951 cases:
+1,949 passed and two failed,
+with five additional skipped cases and 1,956 enumerated in total.
+The exact remaining cases are
+`real_index_lock::tests::releasing_after_a_landing_leaves_a_replaced_lock`
+and `real_index_lock::tests::an_install_through_a_replaced_lock_is_refused`.
+The first observed the replacement file disappear;
+the second observed installation succeed instead of refusing a replacement.
+An earlier allocation failed a different replacement-identity case.
+No matched filesystem/provider control has established the cause.
+These are observed failures at a filesystem boundary,
+not established source defects or cache-caused regressions.
+
+Remaining allocation work is separately admitted:
+an existing forbidden-strings CLI producer and fresh target reader,
+with the CLI's own complete Nextest suite required to pass before its target archive is published.
+A distinct exact-source Nextest/Git diagnostic archive may retain failing native tests for matched provider controls.
+That diagnostic artifact is not a success-only target-cache publication or a passing gate.
 
 ### Repeated Gradle task-output comparison
 
