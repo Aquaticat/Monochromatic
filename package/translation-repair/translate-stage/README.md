@@ -33,7 +33,7 @@ The groups that follow name the main ones.
   and `translate-stage-result.ts`.
 - Run-offs and retries:
   run off tied finalists,
-  retry a slate that drew too few ballots,
+  ask a panel that declined a slate once more over the same slate,
   and settle a slice no voice cleared the floor for.
   Names:
   `runoffFinalists`,
@@ -45,7 +45,9 @@ The groups that follow name the main ones.
   `translate-retry.ts`,
   and `translate-unfloored.ts`.
 - Candidate selection:
-  decide the best candidate and set the fan-out and minimum ballots for it.
+  run one selection round that names a winner or declines,
+  record the contest that decided it,
+  and size the judges asked and the minimum weight to the seats that could answer.
   Names:
   `decideBestCandidate`,
   `selectBestCandidate`,
@@ -73,7 +75,7 @@ The groups that follow name the main ones.
   and `present-tense-text.ts`.
 - Evidence and criteria:
   the evidence and criteria a judge sees,
-  and the error raised when a repair is interrupted.
+  and the operational stop raised when an absent passage cannot form another unique repair task.
   Names:
   `translateSlateEvidence`,
   `translatedSlateCriteria`,

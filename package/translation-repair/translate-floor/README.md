@@ -18,9 +18,12 @@ provider and `stage` packages.
 The groups that follow name the main ones.
 
 - Floors and validation:
-  findings raised for a translated slice that leaves Han text,
-  adds a formula,
-  leaks a sheet or leaves a link unwrapped.
+  findings raised for a translated slice that does not carry the references and code atoms it owes,
+  repeats a Han-carrying original untranslated,
+  leaves Han text in its English prose,
+  forms more formulas than the original,
+  carries a label of the sheet's evidence,
+  or unwraps a worded link and keeps its destination.
   Names:
   `validateTranslatedSlice`,
   `atomFindings`,

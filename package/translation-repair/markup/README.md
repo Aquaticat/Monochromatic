@@ -7,7 +7,8 @@ code-point helpers,
 MDX tag and markup-atom scanners and the nesting bounds that keep the parsers from exhausting the stack.
 It imports no other family package,
 so it comes first in the build order,
-and every other package with production code lists it.
+and every other package with production code lists it,
+`consolidate` in `devDependencies` only because its tests are the only files that import it.
 
 ## What it provides
 
@@ -41,7 +42,10 @@ The groups that follow name the main ones.
 - MDX tags and markup atoms:
   recognize where an MDX tag opens,
   read tag names,
-  and count the markup atoms a translation must carry across.
+  find the openers and closers of named inline container tags,
+  scan the markup atoms an edit must carry through,
+  measure what an edit lost,
+  and refuse the edits of a patch that lose markup the patch writes nowhere else.
   Names:
   `opensMdxTag`,
   `readTagName`,

@@ -30,9 +30,11 @@ The groups that follow name the main ones.
   `renderingSpans`.
   Declared in `community-glossary.ts` and `glossary-match.ts`.
 - Address and skeleton floors:
-  read the block skeleton of a slice and report translations that drop an address,
-  a Latin title or a block,
-  or leave a stray closing quote.
+  read the block skeleton of a slice or a page,
+  and report candidates that do not carry their floor's blocks or quoted passages,
+  that render a second-person address of the original in the third person,
+  that set a Latin-letter title in the Chinese title marks,
+  or that carry a closing quotation mark with no opening one.
   Names:
   `readSliceSkeleton`,
   `readPageSkeleton`,

@@ -37,14 +37,16 @@ The groups that follow name the main ones.
   `sse-frame.test-fixture.ts`,
   `anthropic-frames.test-fixture.ts` and `piece-response.test-fixture.ts` build streamed replies.
   `body-cut-response.test-fixture.ts` builds a response that fails after its status line.
-  `quoting-failure.test-fixture.ts`,
-  `stack-edge.test-fixture.ts`,
-  `parse-exhaustion.test-fixture.ts` and `refusal-order.test-fixture.ts` build failures.
+  `quoting-failure.test-fixture.ts` builds a failure whose own message quotes a credential.
+  `stack-edge.test-fixture.ts` runs a function with its caller almost out of stack,
+  and `parse-exhaustion.test-fixture.ts` makes a parse raise the engine's stack exhaustion.
+  `refusal-order.test-fixture.ts` makes two concurrent members refuse in an order the case chooses.
   `child-sight.test-fixture.ts` reads what a child process can see of its parent's environment.
 - Texts and generated data:
-  `seeded-draws.test-fixture.ts`,
-  `runs-of-pieces.test-fixture.ts`,
-  `sorted-number-sets.test-fixture.ts` and `element-reads.test-fixture.ts` support property-style cases.
+  `seeded-draws.test-fixture.ts` draws repeatable pseudo-random values,
+  `runs-of-pieces.test-fixture.ts` lists every short run of pieces,
+  `sorted-number-sets.test-fixture.ts` renders index sets as sorted arrays,
+  and `element-reads.test-fixture.ts` counts how often a list's elements are read.
   `han-findings.test-fixture.ts`,
   `destination-address-texts.test-fixture.ts` and `consistency-marks-reading.test-fixture.ts` hold texts and
   readings.

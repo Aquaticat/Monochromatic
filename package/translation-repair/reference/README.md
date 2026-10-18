@@ -31,7 +31,8 @@ The groups that follow name the main ones.
 - Attestation:
   ask the bench which details a cited reference states,
   check each quote word for word,
-  and keep the confirmed ones.
+  keep the confirmed ones,
+  and reject an addition claim whose archive-side quote overlaps an attested archive quote before the panel hears it.
   Names:
   `attestCitedReferences`,
   `buildReferenceAttestMessages`,

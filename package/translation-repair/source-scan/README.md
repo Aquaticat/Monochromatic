@@ -23,17 +23,22 @@ so a function one package exports and another uses still counts as reached.
   `message-names-only.unit.test.ts`,
   `position-references.unit.test.ts`,
   `living-doc-links.unit.test.ts` and `own-unit-tests.unit.test.ts`.
-  The plan (section "Readers that find a file by path") has every scan read the `src` of every family package.
-  At this commit the helpers `readPackageSource` and `readPackageTexts` still resolve `src` and the package root
-  from `import.meta.dirname`,
-  so they read this package's own `src`,
-  `doc`,
-  README and task file.
+  Every scan reads the family as one program:
+  `readPackageSource` reads the TypeScript under the `src` of every family package,
+  and `readPackageTexts` adds each family package's README,
+  docs and task file,
+  plus the family docs and README.
+  Files are keyed by package directory and path under that package's `src`,
+  such as `run/corpus-run/cli-refusal.ts`.
   `readRepositoryTexts` reads the living repository docs from the repository root,
   four levels above `src`.
 - Scan fixtures:
-  files named `*.test-fixture.ts` that only scans import,
-  because they import no production code.
+  files named `*.test-fixture.ts` that only scans import.
+  `family-source.test-fixture.ts` reads the family's source and task files and resolves imports between packages:
+  `familyPackages`,
+  `readPackageSource`,
+  `readTaskFiles`,
+  `runnerEntriesOf` and `declaringModule`.
   `source-scan.test-fixture.ts` parses TypeScript with the parser rolldown exposes and walks the syntax tree.
   `source-text-scan.test-fixture.ts` holds the text helpers `matchingClose`,
   `topLevelPieces` and `withoutBlockAndLineComments`.
@@ -65,8 +70,7 @@ a package is named `@monochromatic-dev/translation-repair-<short name>`.
 No family package is a production dependency,
 because there is no production code.
 
-Development dependencies other than `test-fixture` (`devDependencies`,
-the siblings whose built entries the scans import):
+Development dependencies other than `test-fixture` (`devDependencies`):
 
 - `coverage-census`
 - `document-structure`
@@ -83,11 +87,16 @@ No family package lists it in `dependencies` or `devDependencies`.
 This package has no build and no `dist`:
 its tests are the scans,
 and `test:unit` runs them.
-The scans import the built entries of the siblings named in Family dependencies,
-through their package names,
+The scans import the built entries of `document-structure`,
+`markup`,
+`run` and `typography` through their package names,
 which resolve to each sibling's `dist/final/node/index.mjs`.
-Its `mise.toml` declares no `depends` for them,
-so build the siblings first with `mise run //package/translation-repair/<sibling>:build`.
+`coverage-census` is listed in `package.json` but no scan imports it;
+the scans read its source as text,
+like every other family package's.
+The `test:unit` task declares no `depends`,
+so build those four first with `mise run //package/translation-repair/<sibling>:build`.
+The `source-scans` task builds them first.
 
 Run the scans with `mise run //package/translation-repair/source-scan:test:unit`,
 or run the listed set with `mise run //package/translation-repair/source-scan:source-scans`.

@@ -54,7 +54,9 @@ The groups that follow name the main ones.
   and `stage-fanout-window.ts`.
 - Seat tally and roster checks:
   count what each seat did across a run,
-  and refuse a roster that is blocklisted or misconfigured.
+  give the owner's verdict on a blocklisted model spelling,
+  refuse a lane whose required role has nobody in it,
+  and size an exact-half quorum.
   Names:
   `createSeatTally`,
   `seatTallyClient`,
@@ -81,7 +83,7 @@ The groups that follow name the main ones.
 - Prompt payloads and uniqueness:
   store each model prompt durably,
   pick a fence longer than any fence in the text,
-  and digest prompts so a repeated question can be told.
+  and digest a model with its prompt so that one model is never sampled twice on one completed prompt.
   Names:
   `promptPayloadStore`,
   `PromptPayloadStoreError`,

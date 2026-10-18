@@ -35,16 +35,17 @@ The groups that follow name the main ones.
   `rendering-audit-corroborate.ts`,
   and `rendering-audit-anchor.ts`.
 - Rendering glossary:
-  the glossary of ordinary renderings the audit judges against,
-  and the lines that show it to a model.
+  the glossary of ordinary Chinese words whose word-for-word rendering reads badly in English,
+  and the identity-context lines that show it to a model.
   Names:
   `RENDERING_GLOSSARY`,
   `renderingTermLines`.
   Declared in `rendering-glossary.ts`.
 - Page names and headings:
-  the names of linked pages,
-  their rendered links,
-  repeated title spans and the identity lines of a page.
+  the names of linked pages and how the archive renders their links,
+  repeated title spans the archive leaves unpaired,
+  the footnote and comment notes of an entry,
+  and the identity lines of a page.
   Names:
   `pageNameLines`,
   `pairedPageNames`,
@@ -59,7 +60,9 @@ The groups that follow name the main ones.
   `page-identity-lines.ts`,
   and `entry-notes.ts`.
 - Attribution signatures:
-  read who a log line attributes a claim to.
+  read the signer's name off a signature line,
+  which opens with one or more dashes and carries the name and then a comma and the date,
+  and list the signatures of a text.
   Names:
   `readSignature`,
   `signaturesOf`.

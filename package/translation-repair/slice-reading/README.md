@@ -64,7 +64,9 @@ The groups that follow name the main ones.
   `container-integrity.ts`,
   and `container-half-pairs.ts`.
 - Slice pictures:
-  attach the pictures of a page to the slices that show them.
+  render what is known of the pictures a slice shows and of its neighbours' pictures,
+  name what is not known,
+  and give a pairing sheet the transcripts of an aligned section's pictures.
   Names:
   `slicePictures`,
   `slicePictureContexts`,

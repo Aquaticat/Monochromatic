@@ -4,7 +4,7 @@ The wire-level half of the model clients:
 masking credentials out of text,
 scanning streamed deltas,
 watching a stream for stalls and degeneration,
-and the synthetic transport that tests drive.
+and the transport seam that tests fill with recorded replies and that drivers fill with `fetch`.
 It is its own package so `provider` and the stream consumers share one copy of the failure classes,
 which production code tests with `instanceof`.
 
@@ -59,7 +59,7 @@ The groups that follow name the main ones.
   `stream-overrun.ts`,
   and `stream-cut.ts`.
 - Transport:
-  the fetch-based transport,
+  the transport seam with its fetch-based default,
   its reply shape and the errors a failed exchange raises.
   Names:
   `fetchTransport`,
@@ -85,7 +85,7 @@ The groups that follow name the main ones.
   `json-false-start.ts`,
   and `masked-json-body.ts`.
 - Quote preservation and quota:
-  count the quoted passages a rewrite must keep,
+  count the quoted passages on both sides of a replacement and say whether it leaves fewer than the archive has,
   and read the Synthetic quota snapshot.
   Names:
   `countQuotedPassages`,

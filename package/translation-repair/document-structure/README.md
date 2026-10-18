@@ -29,9 +29,10 @@ The groups that follow name the main ones.
   `front-matter.ts`,
   and `parse-slice-body.ts`.
 - Document nodes and masks:
-  number the top-level nodes of a page,
-  and mask comments,
-  lone container tags and invisible lines before alignment.
+  build anchor-ready nodes from the top-level blocks of a page,
+  mask comments,
+  lone container tags and invisible lines to same-length whitespace before the parser reads them,
+  and promote the children of containers to top-level blocks or widen block extents to hold container tags.
   Names:
   `buildDocumentNodes`,
   `maskHtmlComments`,
@@ -48,7 +49,7 @@ The groups that follow name the main ones.
 - Footnote graph:
   find footnote references and definitions,
   normalize their identifiers,
-  and report rewrites that break the graph.
+  and refuse a rename that cannot be proven syntax-preserving and injective.
   Names:
   `buildFootnoteGraph`,
   `footnoteMentions`,

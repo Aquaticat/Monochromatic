@@ -2,14 +2,16 @@
 
 Everything that talks to a model provider:
 routing a call to the provider that serves its model and still has budget,
-the OpenRouter,
-Bedrock,
-Anthropic,
-Hyper and Synthetic clients and catalogues,
+the Synthetic,
+Hyper,
+OpenRouter and Bedrock clients,
+the Synthetic,
+OpenRouter and Bedrock catalogues,
+the Anthropic Messages wire format that Hyper speaks,
 retries,
 deadlines and spend reporting.
-It is its own package so the stage and lane layers that build on it call one routing client and the clients load from one
-built file.
+It is its own package so the stage and lane layers that build on it call one routing client
+and the clients load from one built file.
 
 ## What it provides
 
@@ -48,8 +50,10 @@ The groups that follow name the main ones.
   `openrouter-client.ts`,
   and `bedrock-client.ts`.
 - Catalogues and reach:
-  the models each provider serves,
-  and which models reach which provider with images.
+  the models Synthetic,
+  OpenRouter and Bedrock serve for the pipeline,
+  and which providers can take a call for a roster model,
+  with or without a picture.
   Names:
   `SYNTHETIC_MODELS`,
   `OPENROUTER_MODELS`,
