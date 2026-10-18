@@ -65,4 +65,39 @@ class QueuedLoadLedgerTest {
         ledger.queued("u2")
         assertEquals("u2", ledger.failureToReport(2L))
     }
+
+    /**
+     * Load 1 was queued and failed, the user then asked for load 2, and load 2 never reached the native engine (its
+     * descriptor could not be opened). The next poll still reads failure number 1, which equals the queued count, but
+     * the user has moved on to a request that was reported on its own, so load 1 is not reported again.
+     */
+    @Test
+    fun theFailureOfAQueuedLoadIsDroppedWhenANewerRequestNeverReachedTheEngine() {
+        /** Ledger with one queued load. */
+        val ledger = QueuedLoadLedger().also { it.queued("u1") }
+        ledger.requested()
+        assertNull(ledger.failureToReport(1L))
+        assertNull("a dropped failure is not reported later either", ledger.failureToReport(1L))
+    }
+
+    /** A request that does reach the native engine is queued, so its own failure is reported. */
+    @Test
+    fun aRequestThatReachesTheEngineIsReportedWhenItFails() {
+        /** Ledger with one queued load and a second request that then reached the engine. */
+        val ledger = QueuedLoadLedger().also { it.queued("u1") }
+        ledger.requested()
+        ledger.queued("u2")
+        assertEquals("u2", ledger.failureToReport(2L))
+    }
+
+    /** After a request that never reached the engine, the next request that does is reported when it fails. */
+    @Test
+    fun aLaterQueuedLoadIsReportedAfterARequestThatNeverReachedTheEngine() {
+        /** Ledger with a queued load, a request that stayed out and a third load that was queued. */
+        val ledger = QueuedLoadLedger().also { it.queued("u1") }
+        ledger.requested()
+        ledger.requested()
+        ledger.queued("u3")
+        assertEquals("u3", ledger.failureToReport(2L))
+    }
 }

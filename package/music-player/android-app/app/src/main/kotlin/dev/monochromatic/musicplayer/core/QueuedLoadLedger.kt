@@ -72,6 +72,18 @@ class QueuedLoadLedger {
         latestUri = uri
     }
 
+    // What:     `fun requested()` records that a newer load was asked for and has not reached the native engine yet.
+    // Why:      A load request can end before the native call (the descriptor cannot be opened, the native load
+    //           refuses it), and then it is never queued, yet it has replaced the load that failed before it.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // requested(): void { }
+    // ```
+    /** Records that a load was requested; the next [queued] call says it reached the native engine. */
+    fun requested() {
+    }
+
     // What:     `fun failureToReport(failedLoad: Long): String?` returns the URI to report, or null.
     // Why:      A failure number of zero means none failed, a number already seen was handled, and a number below
     //           the count of queued loads names a load that a newer request has replaced.
