@@ -4,15 +4,16 @@
 /// The registry under test and its unconfined setup.
 use super::super::{LanguageSetup, Languages};
 /// What:
-///  `json!` builds a JSON value from literal syntax.
+///  `json_value!` builds a JSON value from literal syntax.
 /// Why:
 ///  The expected settings are written as JSON.
+///  The macro is `json!` with the one lint allowance the repository's `unwrap` ban needs.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// const expected = { watcher: 'client' };
 /// ```
-use serde_json::json;
+use crate::json_value;
 
 /// The settings Helix will send rust-analyzer for a registry built with `setup`.
 fn settings(setup: LanguageSetup) -> serde_json::Value {
@@ -32,7 +33,7 @@ fn settings(setup: LanguageSetup) -> serde_json::Value {
 #[test]
 fn rust_analyzer_watches_through_the_client() {
     let found = settings(LanguageSetup::unconfined());
-    assert_eq!(found["files"]["watcher"], json!("client"));
+    assert_eq!(found["files"]["watcher"], json_value!("client"));
 }
 
 /// A merged definition replaces the whole `files` table;
@@ -50,6 +51,6 @@ fn merged_file_settings_keep_their_other_keys() {
     let found = settings(setup);
     assert_eq!(
         found["files"],
-        json!({ "excludeDirs": ["vendor"], "watcher": "client" })
+        json_value!({ "excludeDirs": ["vendor"], "watcher": "client" })
     );
 }

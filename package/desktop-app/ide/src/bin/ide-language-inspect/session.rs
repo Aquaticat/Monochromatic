@@ -10,6 +10,8 @@ use crate::Step;
 use crate::render;
 /// Failures name the operation that failed.
 use anyhow::{Context, Result, bail};
+/// `json_value!` is `json!` with the one lint allowance the repository's `unwrap` ban needs.
+use ide_app::json_value;
 /// The handle and the types it exchanges.
 use ide_app::language::{
     LanguageWorker,
@@ -96,7 +98,7 @@ pub struct Session {
 
 /// Print one observation line with the milliseconds since the session started.
 fn emit(started: Instant, mut record: Value) {
-    record["ms"] = json!(started.elapsed().as_millis());
+    record["ms"] = json_value!(started.elapsed().as_millis());
     println!("{record}");
 }
 
@@ -154,18 +156,24 @@ impl Session {
         self.relay_file_changes();
         // `if let Some(x) = ...?` runs the block only when something new was published.
         if let Some(status) = self.worker.try_take_status()? {
-            emit(self.started, json!({ "status": render::status(&status) }));
+            emit(
+                self.started,
+                json_value!({ "status": render::status(&status) }),
+            );
             self.status = status;
         }
         // `while let Some(x) = ...?` repeats until the reply queue is empty.
         while let Some(reply) = self.worker.try_take_reply()? {
-            emit(self.started, json!({ "reply": render::reply(&reply) }));
+            emit(
+                self.started,
+                json_value!({ "reply": render::reply(&reply) }),
+            );
             self.replies.push(reply);
         }
         if let Some(diagnostics) = self.worker.try_take_diagnostics()? {
             emit(
                 self.started,
-                json!({ "diagnostics": render::diagnostics(&diagnostics, self.document.text()) }),
+                json_value!({ "diagnostics": render::diagnostics(&diagnostics, self.document.text()) }),
             );
             // `Some(...)` is the "value present" variant of `Option`.
             self.diagnostics = Some(diagnostics);
@@ -173,7 +181,7 @@ impl Session {
         if let Some(hints) = self.worker.try_take_hints()? {
             emit(
                 self.started,
-                json!({ "hints": render::hints(&hints, self.document.text()) }),
+                json_value!({ "hints": render::hints(&hints, self.document.text()) }),
             );
             self.hints = Some(hints);
         }
@@ -285,7 +293,7 @@ impl Session {
             });
             if matched || start.elapsed() >= limit {
                 return Ok(
-                    json!({ "attempts": attempts, "complete": complete, "matched": matched }),
+                    json_value!({ "attempts": attempts, "complete": complete, "matched": matched }),
                 );
             }
             std::thread::sleep(REPEAT);
@@ -320,7 +328,7 @@ impl Session {
                     text: self.document.text().clone(),
                     stamp: self.stamp(),
                 })?;
-                json!({ "sent": sent })
+                json_value!({ "sent": sent })
             }
             Step::Ready { seconds } => {
                 let ready = |session: &Session| {
@@ -330,7 +338,7 @@ impl Session {
                         .iter()
                         .any(|row| return row.state == ServerState::Ready);
                 };
-                json!({ "ready": self.until(Duration::from_secs(*seconds), &ready)? })
+                json_value!({ "ready": self.until(Duration::from_secs(*seconds), &ready)? })
             }
             Step::Request {
                 kind,
@@ -358,7 +366,7 @@ impl Session {
                         return hints.stamp == stamp && hints.hints.len() >= least;
                     });
                 };
-                json!({ "sent": sent, "enough": self.until(Duration::from_secs(*seconds), &enough)? })
+                json_value!({ "sent": sent, "enough": self.until(Duration::from_secs(*seconds), &enough)? })
             }
             Step::Diagnostics {
                 minimum,
@@ -377,11 +385,11 @@ impl Session {
                         return found.stamp == stamp && count >= least && count <= most;
                     });
                 };
-                json!({ "within": self.until(Duration::from_secs(*seconds), &within)? })
+                json_value!({ "within": self.until(Duration::from_secs(*seconds), &within)? })
             }
             Step::Reload { text } => {
                 self.reload(text)?;
-                json!({ "revision": self.document.revision() })
+                json_value!({ "revision": self.document.revision() })
             }
             Step::Stale { at, text, settle } => {
                 let before = self.worker.fence_counts();
@@ -395,7 +403,7 @@ impl Session {
                     .replies
                     .iter()
                     .any(|reply| return Some(reply.request) == overtaken);
-                json!({
+                json_value!({
                     "request": overtaken,
                     "delivered": delivered,
                     "droppedStaleRevision": after.stale_revision - before.stale_revision,
@@ -408,11 +416,11 @@ impl Session {
                 self.until(Duration::from_millis(*milliseconds), &never)?;
                 json!({})
             }
-            Step::Close => json!({ "sent": self.worker.close()? }),
+            Step::Close => json_value!({ "sent": self.worker.close()? }),
         };
         emit(
             self.started,
-            json!({ "step": number, "do": format!("{step:?}").split_whitespace().next(), "result": result }),
+            json_value!({ "step": number, "do": format!("{step:?}").split_whitespace().next(), "result": result }),
         );
         return Ok(());
     }
@@ -423,7 +431,7 @@ impl Session {
         let counts = self.worker.fence_counts();
         emit(
             self.started,
-            json!({ "done": true, "fence": format!("{counts:?}") }),
+            json_value!({ "done": true, "fence": format!("{counts:?}") }),
         );
     }
 }

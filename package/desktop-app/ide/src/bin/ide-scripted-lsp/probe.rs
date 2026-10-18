@@ -5,6 +5,8 @@
 ///  report file,
 ///  and reply table.
 use crate::framing::Wire;
+/// `json_value!` is `json!` with the one lint allowance the repository's `unwrap` ban needs.
+use ide_app::json_value;
 /// JSON values and the literal-building macro.
 use serde_json::{Value, json};
 
@@ -28,7 +30,7 @@ use serde_json::{Value, json};
 /// ```
 fn probe_one(wire: &Wire, method: &str, params: Value) {
     let response = wire.ask(method, params);
-    wire.record(json!({ "probe": { "method": method, "response": response } }));
+    wire.record(json_value!({ "probe": { "method": method, "response": response } }));
 }
 
 /// What:
@@ -43,7 +45,7 @@ fn probe_one(wire: &Wire, method: &str, params: Value) {
 /// function notify(wire: Wire, method: string, params: unknown) { wire.send({ method, params }); }
 /// ```
 fn notify(wire: &Wire, method: &str, params: Value) {
-    if let Err(error) = wire.send(json!({ "method": method, "params": params })) {
+    if let Err(error) = wire.send(json_value!({ "method": method, "params": params })) {
         eprintln!("scripted language server cannot notify the client: {error}");
     }
 }
@@ -66,27 +68,27 @@ pub fn run(wire: &Wire, uri: &str) {
     probe_one(
         wire,
         "window/workDoneProgress/create",
-        json!({ "token": "scripted-progress" }),
+        json_value!({ "token": "scripted-progress" }),
     );
     notify(
         wire,
         "$/progress",
-        json!({ "token": "scripted-progress", "value": { "kind": "begin", "title": "Scripted indexing" } }),
+        json_value!({ "token": "scripted-progress", "value": { "kind": "begin", "title": "Scripted indexing" } }),
     );
     notify(
         wire,
         "$/progress",
-        json!({ "token": "scripted-progress", "value": { "kind": "end" } }),
+        json_value!({ "token": "scripted-progress", "value": { "kind": "end" } }),
     );
     probe_one(
         wire,
         "workspace/configuration",
-        json!({ "items": [{ "section": "scripted" }, { "section": "scripted.nested.value" }, { "section": "missing" }] }),
+        json_value!({ "items": [{ "section": "scripted" }, { "section": "scripted.nested.value" }, { "section": "missing" }] }),
     );
     probe_one(
         wire,
         "client/registerCapability",
-        json!({ "registrations": [
+        json_value!({ "registrations": [
             { "id": "watch-1", "method": "workspace/didChangeWatchedFiles", "registerOptions": { "watchers": [{ "globPattern": "**/*.scripted" }] } },
             { "id": "save-1", "method": "textDocument/didSave", "registerOptions": {} }
         ] }),
@@ -95,34 +97,38 @@ pub fn run(wire: &Wire, uri: &str) {
     probe_one(
         wire,
         "window/showMessageRequest",
-        json!({ "type": 3, "message": "Pick one", "actions": [{ "title": "Yes" }, { "title": "No" }] }),
+        json_value!({ "type": 3, "message": "Pick one", "actions": [{ "title": "Yes" }, { "title": "No" }] }),
     );
     probe_one(
         wire,
         "window/showDocument",
-        json!({ "uri": "https://example.invalid/", "external": true }),
+        json_value!({ "uri": "https://example.invalid/", "external": true }),
     );
     // The one request that would change a project file if the client applied it.
     probe_one(
         wire,
         "workspace/applyEdit",
-        json!({ "label": "scripted edit", "edit": { "changes": { uri: [
+        json_value!({ "label": "scripted edit", "edit": { "changes": { uri: [
             { "range": { "start": { "line": 0, "character": 0 }, "end": { "line": 0, "character": 0 } }, "newText": "INJECTED " }
         ] } } }),
     );
-    probe_one(wire, "workspace/applyEdit", json!({ "edit": 5 }));
+    probe_one(wire, "workspace/applyEdit", json_value!({ "edit": 5 }));
     probe_one(wire, "workspace/diagnostic/refresh", Value::Null);
-    probe_one(wire, "scripted/unknownMethod", json!({ "any": 1 }));
-    notify(wire, "scripted/unknownNotification", json!({ "any": 1 }));
+    probe_one(wire, "scripted/unknownMethod", json_value!({ "any": 1 }));
+    notify(
+        wire,
+        "scripted/unknownNotification",
+        json_value!({ "any": 1 }),
+    );
     notify(
         wire,
         "window/showMessage",
-        json!({ "type": 3, "message": "scripted message" }),
+        json_value!({ "type": 3, "message": "scripted message" }),
     );
     notify(
         wire,
         "window/logMessage",
-        json!({ "type": 4, "message": "scripted log line" }),
+        json_value!({ "type": 4, "message": "scripted log line" }),
     );
     wire.record(json!({ "probe-done": true }));
 }

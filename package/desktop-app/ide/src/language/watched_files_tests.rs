@@ -9,11 +9,13 @@
 use super::{FORWARD_LIMIT, FORWARD_QUIET, WatchedFiles, merge};
 /// The changes the change watcher forwards.
 use crate::change_watch::{ServerChange, ServerChangeKind};
+/// Registrations are written as JSON;
+///  the macro is `json!` with the one lint allowance the repository's `unwrap` ban needs.
+use crate::json_value;
 /// The protocol's data types.
 use helix_lsp::lsp;
 /// What:
-///  `json!` builds a JSON value from literal syntax;
-///  `from_value` decodes it into a typed record.
+///  `from_value` decodes a JSON value into a typed record.
 /// Why:
 ///  Registrations are written exactly as a server sends them.
 ///
@@ -21,7 +23,7 @@ use helix_lsp::lsp;
 /// ```ts
 /// const options = JSON.parse(text) as RegistrationOptions;
 /// ```
-use serde_json::{from_value, json};
+use serde_json::from_value;
 /// Paths and the chosen times of each step.
 use std::{
     path::{Path, PathBuf},
@@ -30,7 +32,7 @@ use std::{
 
 /// Decode registration options written as JSON.
 fn options(watchers: serde_json::Value) -> lsp::DidChangeWatchedFilesRegistrationOptions {
-    return from_value(json!({ "watchers": watchers })).expect("registration options");
+    return from_value(json_value!({ "watchers": watchers })).expect("registration options");
 }
 
 /// One change at `path`.
@@ -97,7 +99,7 @@ fn glob_patterns_follow_the_protocol() {
     watched.register(
         1,
         "relative".to_string(),
-        options(json!([
+        options(json_value!([
             { "globPattern": { "baseUri": "file:///p/src", "pattern": "**/*.{ts,tsx}" } },
             { "globPattern": { "baseUri": { "uri": "file:///p", "name": "p" }, "pattern": "*.json" } },
         ])),
@@ -105,7 +107,7 @@ fn glob_patterns_follow_the_protocol() {
     watched.register(
         2,
         "string".to_string(),
-        options(json!([{ "globPattern": "**/*.rs" }])),
+        options(json_value!([{ "globPattern": "**/*.rs" }])),
     );
     let now = Instant::now();
     for path in [
@@ -148,7 +150,7 @@ fn kinds_limit_what_a_watcher_hears() {
     watched.register(
         1,
         "creations".to_string(),
-        options(json!([{ "globPattern": "**/*.txt", "kind": 1 }])),
+        options(json_value!([{ "globPattern": "**/*.txt", "kind": 1 }])),
     );
     let now = Instant::now();
     watched.record(change("/p/new.txt", ServerChangeKind::Created), now);
@@ -171,7 +173,7 @@ fn a_burst_is_sent_once_with_each_path_once() {
     watched.register(
         1,
         "all".to_string(),
-        options(json!([{ "globPattern": "**/*" }])),
+        options(json_value!([{ "globPattern": "**/*" }])),
     );
     let start = Instant::now();
     assert!(watched.record(change("/p/a", ServerChangeKind::Created), start));
@@ -220,12 +222,12 @@ fn only_running_servers_with_watchers_hear_anything() {
     watched.register(
         1,
         "rust".to_string(),
-        options(json!([{ "globPattern": "**/*.rs" }])),
+        options(json_value!([{ "globPattern": "**/*.rs" }])),
     );
     watched.register(
         2,
         "rust".to_string(),
-        options(json!([{ "globPattern": "**/*.rs" }])),
+        options(json_value!([{ "globPattern": "**/*.rs" }])),
     );
     assert!(watched.wanted());
     watched.record(change("/p/a.rs", ServerChangeKind::Changed), now);

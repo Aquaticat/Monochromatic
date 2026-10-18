@@ -2,6 +2,7 @@
 //!  without a server.
 
 use super::{ClientView, Decision, EDIT_REFUSAL, Effect, configuration_section, decide};
+use crate::json_value;
 use helix_lsp::{jsonrpc, lsp};
 use serde_json::{Value, json};
 
@@ -14,7 +15,7 @@ fn params(value: Value) -> jsonrpc::Params {
 }
 
 fn settings() -> Value {
-    return json!({ "scripted": { "flag": true, "nested": { "value": 42 } } });
+    return json_value!({ "scripted": { "flag": true, "nested": { "value": 42 } } });
 }
 
 fn decided(method: &str, value: Value) -> Decision {
@@ -34,8 +35,8 @@ fn decided(method: &str, value: Value) -> Decision {
 ///  without the envelope helix-lsp adds.
 fn wire(decision: &Decision) -> Value {
     return match &decision.reply {
-        Ok(result) => json!({ "result": result }),
-        Err(error) => json!({ "error": error }),
+        Ok(result) => json_value!({ "result": result }),
+        Err(error) => json_value!({ "error": error }),
     };
 }
 
@@ -43,13 +44,13 @@ fn wire(decision: &Decision) -> Value {
 fn workspace_edit_is_refused_with_a_normal_result() {
     let decision = decided(
         "workspace/applyEdit",
-        json!({ "label": "scripted edit", "edit": { "changes": { "file:///project/a.rs": [
+        json_value!({ "label": "scripted edit", "edit": { "changes": { "file:///project/a.rs": [
             { "range": { "start": { "line": 0, "character": 0 }, "end": { "line": 0, "character": 0 } }, "newText": "INJECTED " }
         ] } } }),
     );
     assert_eq!(
         wire(&decision),
-        json!({ "result": { "applied": false, "failureReason": "read-only client: workspace edits are not applied" } }),
+        json_value!({ "result": { "applied": false, "failureReason": "read-only client: workspace edits are not applied" } }),
         "a server-initiated workspace edit was not refused"
     );
     assert_eq!(
@@ -64,11 +65,11 @@ fn workspace_edit_is_refused_with_a_normal_result() {
 fn configuration_returns_one_entry_per_item() {
     let decision = decided(
         "workspace/configuration",
-        json!({ "items": [{ "section": "scripted" }, { "section": "scripted.nested.value" }, { "section": "missing" }, {}] }),
+        json_value!({ "items": [{ "section": "scripted" }, { "section": "scripted.nested.value" }, { "section": "missing" }, {}] }),
     );
     assert_eq!(
         wire(&decision),
-        json!({ "result": [{ "flag": true, "nested": { "value": 42 } }, 42, null, settings()] })
+        json_value!({ "result": [{ "flag": true, "nested": { "value": 42 } }, 42, null, settings()] })
     );
     assert_eq!(decision.policy, "answered");
 }
@@ -88,7 +89,7 @@ fn configuration_section_without_settings_is_null() {
 fn capability_registration_is_acknowledged_and_only_watchers_are_kept() {
     let decision = decided(
         "client/registerCapability",
-        json!({ "registrations": [
+        json_value!({ "registrations": [
             { "id": "watch-1", "method": "workspace/didChangeWatchedFiles", "registerOptions": { "watchers": [{ "globPattern": "**/*.scripted" }] } },
             { "id": "save-1", "method": "textDocument/didSave", "registerOptions": {} },
             { "id": "watch-2", "method": "workspace/didChangeWatchedFiles", "registerOptions": { "watchers": 5 } }
@@ -107,7 +108,7 @@ fn capability_registration_is_acknowledged_and_only_watchers_are_kept() {
 fn capability_unregistration_is_acknowledged() {
     let decision = decided(
         "client/unregisterCapability",
-        json!({ "unregisterations": [
+        json_value!({ "unregisterations": [
             { "id": "watch-1", "method": "workspace/didChangeWatchedFiles" },
             { "id": "save-1", "method": "textDocument/didSave" }
         ] }),
@@ -123,13 +124,13 @@ fn capability_unregistration_is_acknowledged() {
 fn progress_creation_and_message_requests_get_null() {
     let progress = decided(
         "window/workDoneProgress/create",
-        json!({ "token": "scripted-progress" }),
+        json_value!({ "token": "scripted-progress" }),
     );
     assert_eq!(wire(&progress), json!({ "result": null }));
     assert_eq!(progress.policy, "acknowledged");
     let message = decided(
         "window/showMessageRequest",
-        json!({ "type": 3, "message": "Pick one", "actions": [{ "title": "Yes" }, { "title": "No" }] }),
+        json_value!({ "type": 3, "message": "Pick one", "actions": [{ "title": "Yes" }, { "title": "No" }] }),
     );
     assert_eq!(wire(&message), json!({ "result": null }));
     assert_eq!(message.effect, Effect::None);
@@ -140,7 +141,7 @@ fn workspace_folders_are_the_clients_own() {
     let decision = decided("workspace/workspaceFolders", Value::Null);
     assert_eq!(
         wire(&decision),
-        json!({ "result": [{ "uri": "file:///project", "name": "project" }] })
+        json_value!({ "result": [{ "uri": "file:///project", "name": "project" }] })
     );
 }
 
@@ -148,7 +149,7 @@ fn workspace_folders_are_the_clients_own() {
 fn show_document_is_refused() {
     let decision = decided(
         "window/showDocument",
-        json!({ "uri": "https://example.invalid/", "external": true }),
+        json_value!({ "uri": "https://example.invalid/", "external": true }),
     );
     assert_eq!(wire(&decision), json!({ "result": { "success": false } }));
     assert_eq!(decision.policy, "refused");
@@ -163,19 +164,19 @@ fn diagnostic_refresh_is_acknowledged_and_triggers_a_pull() {
 
 #[test]
 fn unknown_method_gets_method_not_found() {
-    let decision = decided("scripted/unknownMethod", json!({ "any": 1 }));
+    let decision = decided("scripted/unknownMethod", json_value!({ "any": 1 }));
     assert_eq!(
         wire(&decision),
-        json!({ "error": { "code": -32601, "message": "Method not found: scripted/unknownMethod" } })
+        json_value!({ "error": { "code": -32601, "message": "Method not found: scripted/unknownMethod" } })
     );
     assert_eq!(decision.policy, "method-not-found");
 }
 
 #[test]
 fn malformed_parameters_get_invalid_params() {
-    let decision = decided("workspace/applyEdit", json!({ "edit": 5 }));
+    let decision = decided("workspace/applyEdit", json_value!({ "edit": 5 }));
     let reply = wire(&decision);
-    assert_eq!(reply["error"]["code"], json!(-32602));
+    assert_eq!(reply["error"]["code"], json_value!(-32602));
     let message = reply["error"]["message"].as_str().expect("error message");
     assert!(
         message.starts_with("Malformed workspace/applyEdit: "),

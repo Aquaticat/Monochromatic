@@ -12,6 +12,9 @@
 /// ```
 pub mod document;
 
+/// The one JSON-building macro whose expansion may call `Result::unwrap`.
+mod json_value;
+
 /// Semantic source classifications do not depend on terminal-cell geometry.
 pub mod source_style;
 

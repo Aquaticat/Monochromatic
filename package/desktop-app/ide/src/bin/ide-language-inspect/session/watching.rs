@@ -8,8 +8,10 @@
 use super::Session;
 /// Failures name the operation that failed.
 use anyhow::{Context, Result};
-/// JSON values and the literal-building macro.
-use serde_json::{Value, json};
+/// `json_value!` is `json!` with the one lint allowance the repository's `unwrap` ban needs.
+use ide_app::json_value;
+/// JSON values.
+use serde_json::Value;
 /// What:
 ///  `Path` is a borrowed path;
 ///  `Duration` a time span.
@@ -56,7 +58,7 @@ impl Session {
         let path = self.project.join(file);
         std::fs::write(&path, text)
             .with_context(|| return format!("Cannot write {}", path.display()))?;
-        return Ok(json!({ "written": path.display().to_string() }));
+        return Ok(json_value!({ "written": path.display().to_string() }));
     }
 
     /// Wait until at least `minimum` folders are watched for the servers;
@@ -80,6 +82,6 @@ impl Session {
             .watcher
             .as_ref()
             .map_or(0, |watcher| return watcher.server_folders());
-        return Ok(json!({ "within": within, "folders": folders }));
+        return Ok(json_value!({ "within": within, "folders": folders }));
     }
 }

@@ -1,6 +1,8 @@
 //! What the server can see and change from inside its sandbox,
 //!  recorded once at start.
 
+/// `json_value!` is `json!` with the one lint allowance the repository's `unwrap` ban needs.
+use ide_app::json_value;
 /// What:
 ///  `Value` is any JSON value;
 ///  `json!` builds one from literal syntax.
@@ -58,8 +60,8 @@ fn attempt_write(path: &str) -> Value {
         .open(path)
         .and_then(|mut file| return file.write_all(b"x"));
     return match outcome {
-        Ok(()) => json!({ "path": path, "ok": true }),
-        Err(error) => json!({ "path": path, "ok": false, "errno": error.raw_os_error() }),
+        Ok(()) => json_value!({ "path": path, "ok": true }),
+        Err(error) => json_value!({ "path": path, "ok": false, "errno": error.raw_os_error() }),
     };
 }
 
@@ -84,7 +86,7 @@ pub fn audit(writes: &str) -> Value {
     for kind in ["user", "pid", "net", "mnt"] {
         let link = std::fs::read_link(format!("/proc/self/ns/{kind}"))
             .map_or(String::new(), |target| return target.display().to_string());
-        namespaces[kind] = json!(link);
+        namespaces[kind] = json_value!(link);
     }
     let mut results = Vec::new();
     for path in writes.split(':') {
@@ -96,7 +98,7 @@ pub fn audit(writes: &str) -> Value {
     let cwd = std::env::current_dir().map_or(String::new(), |found| {
         return found.display().to_string();
     });
-    return json!({
+    return json_value!({
         "pid": std::process::id(),
         "cwd": cwd,
         "environment": names,

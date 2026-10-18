@@ -3,6 +3,8 @@
 //!  and every edit is refused.
 
 use crate::support::{self, PRODUCT_TIMEOUT, Probe};
+/// `json_value!` is `json!` with the one lint allowance the repository's `unwrap` ban needs.
+use ide_app::json_value;
 use ide_app::language::reply::{RequestKind, RequestOutcome};
 use serde_json::{Value, json};
 
@@ -44,7 +46,7 @@ fn server_requests_get_policy_replies_and_edits_change_nothing() {
     assert_eq!(edits.len(), 2);
     assert_eq!(
         edits[0],
-        json!({ "result": { "applied": false, "failureReason": "read-only client: workspace edits are not applied" } }),
+        json_value!({ "result": { "applied": false, "failureReason": "read-only client: workspace edits are not applied" } }),
         "a server-initiated workspace edit was not refused"
     );
     assert_eq!(edits[1]["error"]["code"], -32602, "{}", edits[1]);
@@ -59,7 +61,7 @@ fn server_requests_get_policy_replies_and_edits_change_nothing() {
     );
     assert_eq!(
         replies(&lines, "workspace/configuration"),
-        [json!({ "result": [{ "flag": true, "nested": { "value": 42 } }, 42, null] })]
+        [json_value!({ "result": [{ "flag": true, "nested": { "value": 42 } }, 42, null] })]
     );
     assert_eq!(
         replies(&lines, "client/registerCapability"),
@@ -67,7 +69,9 @@ fn server_requests_get_policy_replies_and_edits_change_nothing() {
     );
     assert_eq!(
         replies(&lines, "workspace/workspaceFolders"),
-        [json!({ "result": [{ "uri": format!("file://{}", root.display()), "name": "project" }] })]
+        [
+            json_value!({ "result": [{ "uri": format!("file://{}", root.display()), "name": "project" }] })
+        ]
     );
     assert_eq!(
         replies(&lines, "window/showMessageRequest"),
@@ -84,7 +88,7 @@ fn server_requests_get_policy_replies_and_edits_change_nothing() {
     assert_eq!(
         replies(&lines, "scripted/unknownMethod"),
         [
-            json!({ "error": { "code": -32601, "message": "Method not found: scripted/unknownMethod" } })
+            json_value!({ "error": { "code": -32601, "message": "Method not found: scripted/unknownMethod" } })
         ]
     );
     let unanswered: Vec<&Value> = lines

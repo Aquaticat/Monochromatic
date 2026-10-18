@@ -8,9 +8,10 @@
 use crate::framing::Wire;
 /// What a test scripted for this request.
 use crate::script::Step;
+/// `json_value!` is `json!` with the one lint allowance the repository's `unwrap` ban needs.
+use ide_app::json_value;
 /// What:
-///  `Value` is any JSON value;
-///  `json!` builds one from literal syntax.
+///  `Value` is any JSON value.
 /// Why:
 ///  The answer is one JSON object.
 ///
@@ -18,7 +19,7 @@ use crate::script::Step;
 /// ```ts
 /// type Value = unknown;
 /// ```
-use serde_json::{Value, json};
+use serde_json::Value;
 
 /// What:
 ///  The fixed answer to one `textDocument/inlayHint` request with request number `id`.
@@ -39,7 +40,7 @@ use serde_json::{Value, json};
 /// function answer(id: unknown): object { return { id, result: [/* two hints */] }; }
 /// ```
 fn answer(id: &Value) -> Value {
-    return json!({ "id": id, "result": [
+    return json_value!({ "id": id, "result": [
         {
             "position": { "line": 0, "character": 5 },
             "label": [{ "value": "part-a" }, { "value": "-part-b", "command": { "title": "x", "command": "scripted.command" } }],
@@ -96,17 +97,17 @@ pub fn respond(wire: &Wire, id: &Value, step: Step, held: &mut Option<Value>) {
         Step::Answer => send(wire, answer(id)),
         Step::Failed => send(
             wire,
-            json!({ "id": id, "error": { "code": -32603, "message": "scripted internal error" } }),
+            json_value!({ "id": id, "error": { "code": -32603, "message": "scripted internal error" } }),
         ),
         Step::Modified | Step::ModifiedThenNotify => {
             send(
                 wire,
-                json!({ "id": id, "error": { "code": -32801, "message": "content modified" } }),
+                json_value!({ "id": id, "error": { "code": -32801, "message": "content modified" } }),
             );
             if step == Step::ModifiedThenNotify {
                 send(
                     wire,
-                    json!({ "method": "window/logMessage", "params": { "type": 4, "message": "scripted notification after a superseded hint answer" } }),
+                    json_value!({ "method": "window/logMessage", "params": { "type": 4, "message": "scripted notification after a superseded hint answer" } }),
                 );
             }
         }

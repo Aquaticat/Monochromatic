@@ -160,7 +160,7 @@ fn plain_matcher_differs_from_browser_reference_only_in_pinned_cases() {
         // Exact machine-readable terminal output is an inspection artifact, not application logging.
         println!(
             "{}",
-            serde_json::json!({ "case": case.name, "agrees": agrees, "browserFound": case.found, "matcherFound": first.is_some(), "matcherSelected": selected, "matcherStartUtf16": start, "matcherEndUtf16": end })
+            ide_app::json_value!({ "case": case.name, "agrees": agrees, "browserFound": case.found, "matcherFound": first.is_some(), "matcherSelected": selected, "matcherStartUtf16": start, "matcherEndUtf16": end })
         );
     }
     assert!(
@@ -169,7 +169,7 @@ fn plain_matcher_differs_from_browser_reference_only_in_pinned_cases() {
     );
     println!(
         "{}",
-        serde_json::json!({ "browserVersion": corpus.browser_version, "differentCases": differences })
+        ide_app::json_value!({ "browserVersion": corpus.browser_version, "differentCases": differences })
     );
     assert_eq!(total, 29, "the captured corpus changed size");
     assert_eq!(

@@ -2,6 +2,8 @@
 //!  the report file,
 //!  and pending client replies.
 
+/// `json_value!` is `json!` with the one lint allowance the repository's `unwrap` ban needs.
+use ide_app::json_value;
 /// What:
 ///  `Value` is any JSON value;
 ///  `json!` builds one from literal syntax.
@@ -118,7 +120,7 @@ impl Wire {
     /// }
     /// ```
     pub fn send(&self, mut message: Value) -> io::Result<()> {
-        message["jsonrpc"] = json!("2.0");
+        message["jsonrpc"] = json_value!("2.0");
         let body = message.to_string();
         // What: `lock()` waits for exclusive access and returns a guard; `expect` stops the
         //       program with this message if another thread panicked while holding the lock.
@@ -133,7 +135,7 @@ impl Wire {
         output.flush()?;
         // `drop` releases the output lock before the report lock is taken.
         drop(output);
-        self.record(json!({ "sent": { "id": message["id"], "method": message["method"] } }));
+        self.record(json_value!({ "sent": { "id": message["id"], "method": message["method"] } }));
         return Ok(());
     }
 
@@ -160,7 +162,7 @@ impl Wire {
         // ```ts
         // entry.at = Date.now();
         // ```
-        entry["at"] = json!(
+        entry["at"] = json_value!(
             SystemTime::now()
                 .duration_since(UNIX_EPOCH)
                 .map_or(0.0, |since| return since.as_secs_f64() * 1000.0)
@@ -199,8 +201,9 @@ impl Wire {
             .lock()
             .expect("waiting lock is not poisoned")
             .insert(id, sender);
-        if let Err(error) = self.send(json!({ "id": id, "method": method, "params": params })) {
-            return json!({ "sendFailed": error.to_string() });
+        if let Err(error) = self.send(json_value!({ "id": id, "method": method, "params": params }))
+        {
+            return json_value!({ "sendFailed": error.to_string() });
         }
         // `recv_timeout` returns `Err` when nothing arrived in time; `unwrap_or_else` substitutes a marker.
         return receiver

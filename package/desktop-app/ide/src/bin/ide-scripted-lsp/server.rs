@@ -9,6 +9,8 @@ use crate::document::{apply_change, line_at, offset_at};
 use crate::framing::{Wire, read_message};
 /// Settings of this run.
 use crate::script::{Hover, Init, Script, Step, step_for};
+/// `json_value!` is `json!` with the one lint allowance the repository's `unwrap` ban needs.
+use ide_app::json_value;
 /// JSON values and the literal-building macro.
 use serde_json::{Value, json};
 /// What:
@@ -97,14 +99,14 @@ fn capabilities(script: &Script) -> Value {
     // `mut` allows adding optional members below.
     let mut result = json!({ "hoverProvider": true });
     if let Some(encoding) = script.encoding {
-        result["positionEncoding"] = json!(match encoding {
+        result["positionEncoding"] = json_value!(match encoding {
             crate::script::Unit::Utf8 => "utf-8",
             crate::script::Unit::Utf16 => "utf-16",
             crate::script::Unit::Utf32 => "utf-32",
         });
     }
     if let Some(change) = script.sync {
-        result["textDocumentSync"] = json!({ "openClose": true, "change": change });
+        result["textDocumentSync"] = json_value!({ "openClose": true, "change": change });
         if script.save {
             result["textDocumentSync"]["save"] = json!(true);
         }
@@ -115,7 +117,7 @@ fn capabilities(script: &Script) -> Value {
         result["inlayHintProvider"] = json!({ "resolveProvider": true });
     }
     if script.pull_diagnostics {
-        result["diagnosticProvider"] = json!({ "identifier": "scripted", "interFileDependencies": false, "workspaceDiagnostics": false });
+        result["diagnosticProvider"] = json_value!({ "identifier": "scripted", "interFileDependencies": false, "workspaceDiagnostics": false });
     }
     return result;
 }
@@ -149,11 +151,11 @@ impl Session {
             .get(uri)
             .map_or("", |found| return found.as_str());
         self.wire
-            .record(json!({ "text": { "uri": uri, "version": version, "text": text } }));
+            .record(json_value!({ "text": { "uri": uri, "version": version, "text": text } }));
         if !self.script.push_diagnostics {
             return;
         }
-        let mut params = json!({
+        let mut params = json_value!({
             "uri": uri,
             "diagnostics": [{
                 "range": { "start": { "line": 0, "character": 0 }, "end": { "line": 0, "character": 1 } },
@@ -166,7 +168,7 @@ impl Session {
             // `clone` copies the JSON number so the notification owns its own value.
             params["version"] = version.clone();
         }
-        self.send(json!({ "method": "textDocument/publishDiagnostics", "params": params }));
+        self.send(json_value!({ "method": "textDocument/publishDiagnostics", "params": params }));
     }
 
     /// What:
@@ -211,16 +213,16 @@ impl Session {
         let line = line_at(text, offset);
         let answer = if modified {
             // The answer a server gives when its own state moved under the request.
-            json!({ "id": id, "error": { "code": -32801, "message": "content modified" } })
+            json_value!({ "id": id, "error": { "code": -32801, "message": "content modified" } })
         } else if line.trim().is_empty() {
-            json!({ "id": id, "result": null })
+            json_value!({ "id": id, "result": null })
         } else {
             // `chars().next()` reads the character at the offset, if any; `map_or` renders it as text.
             let character = text[offset..]
                 .chars()
                 .next()
                 .map_or(String::new(), |found| return found.to_string());
-            json!({ "id": id, "result": {
+            json_value!({ "id": id, "result": {
                 "contents": { "kind": "markdown", "value": format!("line={line} char={character}") },
                 "range": { "start": position, "end": position },
             } })
@@ -260,7 +262,7 @@ impl Session {
                 Init::Hang => {}
                 Init::Exit => std::process::exit(3),
                 Init::Error => self.send(
-                    json!({ "id": id, "error": { "code": -32603, "message": "scripted initialize failure" } }),
+                    json_value!({ "id": id, "error": { "code": -32603, "message": "scripted initialize failure" } }),
                 ),
                 Init::Ok => {
                     // A gated start waits for the test's file, for at most one minute.
@@ -269,7 +271,7 @@ impl Session {
                     }
                     // A slow start: the client must not send anything else in the meantime.
                     thread::sleep(Duration::from_millis(self.script.init_delay));
-                    self.send(json!({ "id": id, "result": {
+                    self.send(json_value!({ "id": id, "result": {
                         "capabilities": capabilities(&self.script),
                         "serverInfo": { "name": "ide-scripted-lsp" },
                     } }));
@@ -280,35 +282,35 @@ impl Session {
             if let Some(line) = &self.script.stderr_at_shutdown {
                 eprintln!("{line}");
             }
-            self.send(json!({ "id": id, "result": null }));
+            self.send(json_value!({ "id": id, "result": null }));
         } else if method == "textDocument/hover" {
             self.hover(id, params);
         } else if method == "textDocument/definition"
             && let Some(result) = &self.script.definition
         {
             // A scripted result is sent exactly as the test wrote it.
-            self.send(json!({ "id": id, "result": result }));
+            self.send(json_value!({ "id": id, "result": result }));
         } else if method == "textDocument/references"
             && let Some(result) = &self.script.references
         {
-            self.send(json!({ "id": id, "result": result }));
+            self.send(json_value!({ "id": id, "result": result }));
         } else if method == "textDocument/definition" {
-            let range = json!({ "start": { "line": 2, "character": 0 }, "end": { "line": 2, "character": 6 } });
+            let range = json_value!({ "start": { "line": 2, "character": 0 }, "end": { "line": 2, "character": 6 } });
             let mut targets = vec![
-                json!({ "uri": uri, "range": range }),
-                json!({ "uri": "untitled:Untitled-1", "range": range }),
-                json!({ "uri": "jdt://contents/java.base/java/lang/String.class", "range": range }),
-                json!({ "uri": "file:///definitely/missing/file.rs", "range": range }),
+                json_value!({ "uri": uri, "range": range }),
+                json_value!({ "uri": "untitled:Untitled-1", "range": range }),
+                json_value!({ "uri": "jdt://contents/java.base/java/lang/String.class", "range": range }),
+                json_value!({ "uri": "file:///definitely/missing/file.rs", "range": range }),
             ];
             if let Some(outside) = &self.script.outside {
-                targets.push(json!({
+                targets.push(json_value!({
                     "uri": format!("file://{}", outside.display()),
                     "range": { "start": { "line": 0, "character": 0 }, "end": { "line": 0, "character": 1 } },
                 }));
             }
-            self.send(json!({ "id": id, "result": targets }));
+            self.send(json_value!({ "id": id, "result": targets }));
         } else if method == "textDocument/references" {
-            self.send(json!({ "id": id, "error": { "code": -32603, "message": "scripted internal failure" } }));
+            self.send(json_value!({ "id": id, "error": { "code": -32603, "message": "scripted internal failure" } }));
         } else if method == "textDocument/inlayHint" {
             self.inlay_hints += 1;
             // `&self.script.hint_steps` lends the scripted list; the count picks this request's step.
@@ -325,14 +327,14 @@ impl Session {
                 .documents
                 .get(uri)
                 .map_or("", |found| return found.as_str());
-            self.send(json!({ "id": id, "result": { "kind": "full", "items": [{
+            self.send(json_value!({ "id": id, "result": { "kind": "full", "items": [{
                 "range": { "start": { "line": 0, "character": 0 }, "end": { "line": 0, "character": 1 } },
                 "severity": 1,
                 "source": "scripted-pull",
                 "message": format!("PULLED:{text}"),
             }] } }));
         } else {
-            self.send(json!({ "id": id, "error": { "code": -32601, "message": format!("scripted server has no {method}") } }));
+            self.send(json_value!({ "id": id, "error": { "code": -32601, "message": format!("scripted server has no {method}") } }));
         }
     }
 
@@ -375,9 +377,9 @@ impl Session {
             thread::spawn(move || {
                 let reply = wire.ask(
                     "client/registerCapability",
-                    json!({ "registrations": [{ "id": "scripted-watchers", "method": "workspace/didChangeWatchedFiles", "registerOptions": { "watchers": watchers } }] }),
+                    json_value!({ "registrations": [{ "id": "scripted-watchers", "method": "workspace/didChangeWatchedFiles", "registerOptions": { "watchers": watchers } }] }),
                 );
-                wire.record(json!({ "registered-watchers": reply }));
+                wire.record(json_value!({ "registered-watchers": reply }));
             });
         }
     }
@@ -401,9 +403,9 @@ pub fn run(script: Script) -> io::Result<()> {
     let wire = Arc::new(Wire::new(script.report.as_deref())?);
     if let Ok(writes) = std::env::var("IDE_SCRIPTED_AUDIT") {
         // Recorded before anything else, so a sandbox audit exists even if the session fails.
-        wire.record(json!({ "audit": crate::audit::audit(&writes) }));
+        wire.record(json_value!({ "audit": crate::audit::audit(&writes) }));
     }
-    wire.record(json!({ "started": { "cwd": std::env::current_dir()?.display().to_string(), "pid": std::process::id() } }));
+    wire.record(json_value!({ "started": { "cwd": std::env::current_dir()?.display().to_string(), "pid": std::process::id() } }));
     let mut session = Session {
         script,
         wire: Arc::clone(&wire),
@@ -422,9 +424,9 @@ pub fn run(script: Script) -> io::Result<()> {
         let id = &message["id"];
         match method {
             Some(name) => {
-                session
-                    .wire
-                    .record(json!({ "received": name, "id": id, "params": message["params"] }));
+                session.wire.record(
+                    json_value!({ "received": name, "id": id, "params": message["params"] }),
+                );
                 if id.is_null() {
                     session.notification(name, &message["params"]);
                 } else {
@@ -433,9 +435,9 @@ pub fn run(script: Script) -> io::Result<()> {
             }
             None => {
                 let reply = if message["error"].is_null() {
-                    json!({ "result": message["result"] })
+                    json_value!({ "result": message["result"] })
                 } else {
-                    json!({ "error": message["error"] })
+                    json_value!({ "error": message["error"] })
                 };
                 session.wire.resolve(id.as_u64().unwrap_or(0), reply);
             }

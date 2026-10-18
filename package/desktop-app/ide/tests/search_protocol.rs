@@ -4,7 +4,10 @@
 ///  assertions compare the original bytes.
 use base64::{Engine, engine::general_purpose::STANDARD};
 /// Production result types and decoders are exercised without a native window.
+/// `json_value!` builds the wire fixtures like `json!`,
+///  with the one lint allowance the `unwrap` ban needs.
 use ide_app::{
+    json_value,
     search::{MAX_PREVIEW_GRAPHEMES, SearchKind},
     search_protocol::{content, filename},
     search_query::PathQuery,
@@ -18,7 +21,7 @@ use std::{os::unix::ffi::OsStrExt, path::Path};
 
 /// Serialize a real match envelope rather than concatenating unescaped JSON strings.
 fn record(path: Value, lines: Value, line: usize) -> Vec<u8> {
-    return serde_json::to_vec(&json!({"type":"match", "data":{"path":path,"lines":lines,"line_number":line,"submatches":[]}}))
+    return serde_json::to_vec(&json_value!({"type":"match", "data":{"path":path,"lines":lines,"line_number":line,"submatches":[]}}))
         .expect("serialize match fixture");
 }
 
@@ -28,8 +31,8 @@ fn text_records_keep_native_identity_and_source_line() {
     let root = Path::new("/project");
     let name = "/project/猫 '\";\\\n$.ts";
     let wire = record(
-        json!({"text":name}),
-        json!({"text":"  const 猫 = 1;  \r\n"}),
+        json_value!({"text":name}),
+        json_value!({"text":"  const 猫 = 1;  \r\n"}),
         7,
     );
     let hit = content(root, &wire)
@@ -52,8 +55,8 @@ fn byte_records_do_not_round_trip_paths_through_utf8() {
     let root = Path::new("/project");
     let path = b"/project/native-\xff.rs";
     let wire = record(
-        json!({"bytes":STANDARD.encode(path)}),
-        json!({"bytes":STANDARD.encode(b"a\xffb\n")}),
+        json_value!({"bytes":STANDARD.encode(path)}),
+        json_value!({"bytes":STANDARD.encode(b"a\xffb\n")}),
         1,
     );
     let hit = content(root, &wire)
@@ -87,8 +90,8 @@ fn preview_limit_preserves_combining_and_joined_graphemes() {
     for grapheme in ["e\u{301}", "👨‍👩‍👧‍👦"] {
         let text = grapheme.repeat(MAX_PREVIEW_GRAPHEMES + 1);
         let wire = record(
-            json!({"text":"/project/source.txt"}),
-            json!({"text":text}),
+            json_value!({"text":"/project/source.txt"}),
+            json_value!({"text":text}),
             2,
         );
         let hit = content(Path::new("/project"), &wire)
@@ -105,8 +108,8 @@ fn preview_limit_preserves_combining_and_joined_graphemes() {
     }
     let exact = "x".repeat(MAX_PREVIEW_GRAPHEMES);
     let wire = record(
-        json!({"text":"/project/source.txt"}),
-        json!({"text":exact}),
+        json_value!({"text":"/project/source.txt"}),
+        json_value!({"text":exact}),
         1,
     );
     let hit = content(Path::new("/project"), &wire)
@@ -127,7 +130,7 @@ fn preview_limit_preserves_combining_and_joined_graphemes() {
 #[test]
 fn metadata_and_unknown_event_types_remain_distinct() {
     for kind in ["begin", "end", "context", "summary"] {
-        let wire = serde_json::to_vec(&json!({"type":kind,"data":{"unused":[1,2,3]}}))
+        let wire = serde_json::to_vec(&json_value!({"type":kind,"data":{"unused":[1,2,3]}}))
             .expect("metadata fixture");
         assert!(
             content(Path::new("/project"), &wire)
@@ -153,18 +156,18 @@ fn metadata_and_unknown_event_types_remain_distinct() {
 fn malformed_matches_are_errors_not_empty_results() {
     let root = Path::new("/project");
     for path in [
-        json!({}),
-        json!({"text":"/project/source","bytes":"AA=="}),
-        json!({"bytes":"***"}),
+        json_value!({}),
+        json_value!({"text":"/project/source","bytes":"AA=="}),
+        json_value!({"bytes":"***"}),
     ] {
-        assert!(content(root, &record(path, json!({"text":"source"}), 1)).is_err());
+        assert!(content(root, &record(path, json_value!({"text":"source"}), 1)).is_err());
     }
     assert!(
         content(
             root,
             &record(
-                json!({"text":"/project/source"}),
-                json!({"text":"source"}),
+                json_value!({"text":"/project/source"}),
+                json_value!({"text":"source"}),
                 0
             )
         )
@@ -173,7 +176,7 @@ fn malformed_matches_are_errors_not_empty_results() {
     assert!(
         content(
             root,
-            &record(json!({"text":"/project/source"}), json!({}), 1)
+            &record(json_value!({"text":"/project/source"}), json!({}), 1)
         )
         .is_err()
     );
@@ -209,7 +212,11 @@ fn decoded_paths_must_be_project_children() {
         assert!(
             content(
                 root,
-                &record(json!({"text":path}), json!({"text":"source"}), 1)
+                &record(
+                    json_value!({"text":path}),
+                    json_value!({"text":"source"}),
+                    1
+                )
             )
             .is_err()
         );

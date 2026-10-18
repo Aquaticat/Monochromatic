@@ -1,6 +1,8 @@
 //! JSON rendering of what the Language module publishes,
 //!  for the inspection record.
 
+/// `json_value!` is `json!` with the one lint allowance the repository's `unwrap` ban needs.
+use ide_app::json_value;
 /// The published types being rendered.
 use ide_app::language::{
     diagnostics::DiagnosticsSnapshot,
@@ -9,8 +11,7 @@ use ide_app::language::{
     status::LanguageStatus,
 };
 /// What:
-///  `Value` is any JSON value;
-///  `json!` builds one from literal syntax.
+///  `Value` is any JSON value.
 /// Why:
 ///  Observations are printed as one JSON object per line.
 ///
@@ -18,7 +19,7 @@ use ide_app::language::{
 /// ```ts
 /// type Value = unknown;
 /// ```
-use serde_json::{Value, json};
+use serde_json::Value;
 
 /// Longest text copied into the record,
 ///  in characters.
@@ -45,43 +46,43 @@ fn outcome(found: &RequestOutcome) -> Value {
             let mut rendered = Vec::new();
             for target in targets {
                 rendered.push(match target {
-                    Target::Open(open) => json!({
+                    Target::Open(open) => json_value!({
                         "path": open.path,
                         "outsideProject": open.outside_project,
                         "sameDocument": open.same_document,
                         "line": open.line,
                         "range": open.range,
                     }),
-                    Target::Unavailable { uri, refusal } => json!({
+                    Target::Unavailable { uri, refusal } => json_value!({
                         "unavailable": uri,
                         "reason": refusal.to_string(),
                     }),
                 });
             }
-            json!({ "state": "locations", "targets": rendered })
+            json_value!({ "state": "locations", "targets": rendered })
         }
-        RequestOutcome::Hover(hover) => json!({
+        RequestOutcome::Hover(hover) => json_value!({
             "state": "hover",
             "markdown": hover.markdown,
             "range": hover.range,
             "text": shown(&hover.text),
         }),
-        RequestOutcome::Empty => json!({ "state": "empty" }),
-        RequestOutcome::Unsupported => json!({ "state": "unsupported" }),
-        RequestOutcome::Starting => json!({ "state": "starting" }),
-        RequestOutcome::Unsynchronized => json!({ "state": "unsynchronized" }),
-        RequestOutcome::NoServer => json!({ "state": "no-server" }),
-        RequestOutcome::Superseded => json!({ "state": "superseded" }),
+        RequestOutcome::Empty => json_value!({ "state": "empty" }),
+        RequestOutcome::Unsupported => json_value!({ "state": "unsupported" }),
+        RequestOutcome::Starting => json_value!({ "state": "starting" }),
+        RequestOutcome::Unsynchronized => json_value!({ "state": "unsynchronized" }),
+        RequestOutcome::NoServer => json_value!({ "state": "no-server" }),
+        RequestOutcome::Superseded => json_value!({ "state": "superseded" }),
         // `{failure:?}` writes the failure with its debug formatting.
         RequestOutcome::Failed(failure) => {
-            json!({ "state": "failed", "failure": format!("{failure:?}") })
+            json_value!({ "state": "failed", "failure": format!("{failure:?}") })
         }
     };
 }
 
 /// Render one reply with the identities it carries.
 pub fn reply(found: &LanguageReply) -> Value {
-    return json!({
+    return json_value!({
         "request": found.request,
         "file": found.stamp.file,
         "revision": found.stamp.revision,
@@ -96,14 +97,14 @@ pub fn reply(found: &LanguageReply) -> Value {
 pub fn status(found: &LanguageStatus) -> Value {
     let mut servers = Vec::new();
     for row in &found.servers {
-        servers.push(json!({
+        servers.push(json_value!({
             "server": format!("{}#{}", row.server.name, row.server.instance),
             "state": format!("{:?}", row.state),
             "features": row.features.map(|features| return format!("{features:?}")),
             "progress": row.progress,
         }));
     }
-    return json!({
+    return json_value!({
         "language": found.language,
         "document": format!("{:?}", found.document),
         "servers": servers,
@@ -118,7 +119,7 @@ pub fn diagnostics(found: &DiagnosticsSnapshot, text: &helix_core::Rope) -> Valu
             // `min` keeps the quoted range inside the text even if the record is read late.
             let end = item.end.min(text.len_chars());
             let start = item.start.min(end);
-            items.push(json!({
+            items.push(json_value!({
                 "source": group.source,
                 "severity": item.severity.map(|severity| return format!("{severity:?}")),
                 "code": item.code,
@@ -130,7 +131,7 @@ pub fn diagnostics(found: &DiagnosticsSnapshot, text: &helix_core::Rope) -> Valu
             }));
         }
     }
-    return json!({ "revision": found.stamp.revision, "items": items });
+    return json_value!({ "revision": found.stamp.revision, "items": items });
 }
 
 /// Render hints with the character each one precedes.
@@ -139,7 +140,7 @@ pub fn hints(found: &HintsSnapshot, text: &helix_core::Rope) -> Value {
     for hint in &found.hints {
         let position = hint.position.min(text.len_chars());
         let line = text.char_to_line(position);
-        items.push(json!({
+        items.push(json_value!({
             "position": hint.position,
             "line": line,
             "label": hint.label,
@@ -150,7 +151,7 @@ pub fn hints(found: &HintsSnapshot, text: &helix_core::Rope) -> Value {
             "before": shown(&text.slice(text.line_to_char(line)..position).to_string()),
         }));
     }
-    return json!({
+    return json_value!({
         "revision": found.stamp.revision,
         "lines": [found.first_line, found.last_line],
         "items": items,
