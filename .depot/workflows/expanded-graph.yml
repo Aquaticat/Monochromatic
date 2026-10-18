@@ -48,6 +48,11 @@
           }
         },
         {
+          "name": "Record source and actual resources before setup",
+          "shell": "node {0}",
+          "run": "const fs = require('node:fs');\nconst os = require('node:os');\nconst cp = require('node:child_process');\nconst dir = process.env.RUNNER_TEMP + '/expanded-graph';\nfs.mkdirSync(dir, { recursive: true });\nconst value = { startedMilliseconds: Date.now(), source: cp.execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), cpuCount: os.cpus().length, memoryBytes: os.totalmem(), arch: os.arch(), platform: os.platform(), provider: process.env.GRAPH_PROVIDER, repetition: process.env.GRAPH_REPETITION, operatingSystem: fs.readFileSync('/etc/os-release','utf8'), initialPathNode: process.version };\nfs.writeFileSync(dir + '/job-start.json', JSON.stringify(value, null, 2));\nif (value.cpuCount !== 4 || value.arch !== 'x64') throw new Error('Matched four-CPU AMD64 graph admission differs');\n"
+        },
+        {
           "uses": "jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c",
           "with": {
             "version": "2026.10.9",
