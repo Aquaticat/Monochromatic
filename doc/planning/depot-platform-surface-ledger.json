@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-18T15:50:52.251Z",
+  "updatedAt": "2026-10-18T15:55:44.925Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research reopened; no readiness claim",
   "sourceArchive": {
@@ -4497,8 +4497,20 @@
       "family": "github-runners",
       "applicability": "GitHub complementary orchestration and native runner capabilities",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed GHA runner contract, repository/plan/cache/network/auth boundaries, source contradictions and exercised limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:55:44.925Z",
+        "sourceSha256": "a092eb4eefeae9c44282e3b6a9b115a7eae521822185ba2f778e1cf5fafa33b2",
+        "sourceBytes": 5451,
+        "findings": [
+          "Default documented dynamic public IPs do not provide an allowlistable fixed address; do not infer precise current egress topology from historical EC2 architecture prose.",
+          "Tailscale/Cloudflare identity approaches require their own organization credentials/policy and are not adopted by discovering the option.",
+          "AWS VPC peering, dedicated NAT/static IP deployment and Managed require Business and customer-owned infrastructure; no AWS/network/account setting is changed."
+        ],
+        "use": "Additional GitHub-orchestrated Linux/ARM/Windows capacity and Startup Mac discovery, with exact source-bound owners and independent cache/test evidence.",
+        "limits": "No settings, production routing, Business infrastructure, Dagger/Dependabot token, external network credential or account-wide usage/analytics inspection; documented features are not universal executed acceptance."
+      }
     },
     {
       "title": "Use egress filters for GitHub Actions runners",
@@ -4521,8 +4533,21 @@
       "family": "github-runners",
       "applicability": "GitHub complementary orchestration and native runner capabilities",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed GHA runner contract, repository/plan/cache/network/auth boundaries, source contradictions and exercised limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:55:44.925Z",
+        "sourceSha256": "65ca352998a9da9711351a199b018ca2337d92891816f2ec74b91426ca4df8df",
+        "sourceBytes": 2870,
+        "findings": [
+          "Default outbound allow can be replaced by organization IP/CIDR/hostname policies; loopback is always allowed, deny precedes allow, and hostname resolution is pinned in hosts.",
+          "Depot/GitHub/AWS allow entries are preconfigured and BuildKit machine IPs added dynamically; this is not a minimal destination allowlist derived from repository dependencies.",
+          "Linux-only filters are root-modifiable and incompatible with Tailscale; they do not establish an immutable hostile-root exfiltration boundary.",
+          "No account-wide policy is read/changed or denied-network workload executed; future dependency mirrors/CDN endpoints need an explicit source-bound policy design."
+        ],
+        "use": "Additional GitHub-orchestrated Linux/ARM/Windows capacity and Startup Mac discovery, with exact source-bound owners and independent cache/test evidence.",
+        "limits": "No settings, production routing, Business infrastructure, Dagger/Dependabot token, external network credential or account-wide usage/analytics inspection; documented features are not universal executed acceptance."
+      }
     },
     {
       "title": "Dagger",
@@ -4548,8 +4573,21 @@
       "family": "github-runners",
       "applicability": "GitHub complementary orchestration and native runner capabilities",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed GHA runner contract, repository/plan/cache/network/auth boundaries, source contradictions and exercised limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:55:44.925Z",
+        "sourceSha256": "1738d5907f878c7a55fffd305d1297d8f38404eae8a2a3b111741eebe9091036",
+        "sourceBytes": 5221,
+        "findings": [
+          "Dagger Engine support is explicitly deprecated and slated for removal; it is not an adoption candidate merely because its guide remains indexed.",
+          "The integration requires a Dagger Cloud token and adds engine .04/min on top of the GitHub runner; no undocumented allowance apportionment is inferred.",
+          "A separate engine VM/cache sends telemetry to Dagger Cloud and shuts down after the job; this is not ordinary remote BuildKit or native CI orchestration.",
+          "No incumbent Dagger owner is introduced, no Cloud account/token connected and no extra engine allocated."
+        ],
+        "use": "Additional GitHub-orchestrated Linux/ARM/Windows capacity and Startup Mac discovery, with exact source-bound owners and independent cache/test evidence.",
+        "limits": "No settings, production routing, Business infrastructure, Dagger/Dependabot token, external network credential or account-wide usage/analytics inspection; documented features are not universal executed acceptance."
+      }
     },
     {
       "title": "Dependabot",
@@ -4574,8 +4612,20 @@
       "family": "github-runners",
       "applicability": "GitHub complementary orchestration and native runner capabilities",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed GHA runner contract, repository/plan/cache/network/auth boundaries, source contradictions and exercised limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:55:44.925Z",
+        "sourceSha256": "3b2e6610718fa849ca2e60a32dc9dbb65c165a2280b890de5a7767f5c5456e58",
+        "sourceBytes": 3348,
+        "findings": [
+          "Dependency-update execution on self-hosted runners requires a GitHub repository/org setting, then automatically routes to depot-ubuntu-latest.",
+          "The documented Dependabot workflows lack GitHub OIDC; Depot CLI/actions require an explicit Dependabot secret rather than reusing native automatic injection assumptions.",
+          "Private registry/network access is a separate capability requiring its own supplied credentials/network policy. No Dependabot setting or persistent token is created."
+        ],
+        "use": "Additional GitHub-orchestrated Linux/ARM/Windows capacity and Startup Mac discovery, with exact source-bound owners and independent cache/test evidence.",
+        "limits": "No settings, production routing, Business infrastructure, Dagger/Dependabot token, external network credential or account-wide usage/analytics inspection; documented features are not universal executed acceptance."
+      }
     },
     {
       "title": "GitHub Actions logs",
@@ -4599,8 +4649,20 @@
       "family": "github-runners",
       "applicability": "GitHub complementary orchestration and native runner capabilities",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed GHA runner contract, repository/plan/cache/network/auth boundaries, source contradictions and exercised limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:55:44.925Z",
+        "sourceSha256": "601347c1b9a6bd5531c5a669ad9f2e883f130d852cc4cf59f8b48bdea0efc850",
+        "sourceBytes": 2592,
+        "findings": [
+          "Dashboard logs default to one hour across repositories with scroll pagination; empty/count results are not meaningful without explicit time/repository scope and complete pagination.",
+          "Filters depend on activity in the selected scope and context lines can be expanded; organization-shared search URLs are not necessarily public build-share links.",
+          "Raw exact-owned GitHub job logs and retained artifacts support our claims; broad dashboard search/index retention was not exercised."
+        ],
+        "use": "Additional GitHub-orchestrated Linux/ARM/Windows capacity and Startup Mac discovery, with exact source-bound owners and independent cache/test evidence.",
+        "limits": "No settings, production routing, Business infrastructure, Dagger/Dependabot token, external network credential or account-wide usage/analytics inspection; documented features are not universal executed acceptance."
+      }
     },
     {
       "title": "GitHub Actions metrics and analytics",
@@ -4625,8 +4687,21 @@
       "family": "github-runners",
       "applicability": "GitHub complementary orchestration and native runner capabilities",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed GHA runner contract, repository/plan/cache/network/auth boundaries, source contradictions and exercised limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:55:44.925Z",
+        "sourceSha256": "9d8c145e3540e72f4807969cf081f82fd4a61fb5ac59373417df7d25ff52640d",
+        "sourceBytes": 7599,
+        "findings": [
+          "Job/step duration and CPU/memory trends plus recommendations are distinct from monthly billable usage; forbidden account usage views are not opened.",
+          "Source-reviewed recommendation thresholds, telemetry lag and UTC aggregation matter; auto recommendations are not a measured no-performance-loss promise or a production change.",
+          "CSV/JSON exports produce a ZIP with table-specific files and reporting/filter details; per-day successful/failed minute breakdowns are explicitly estimates.",
+          "No account-wide analytics export or dashboard UI interaction is claimed; exact-owned timestamps/original receipts remain the runtime evidence."
+        ],
+        "use": "Additional GitHub-orchestrated Linux/ARM/Windows capacity and Startup Mac discovery, with exact source-bound owners and independent cache/test evidence.",
+        "limits": "No settings, production routing, Business infrastructure, Dagger/Dependabot token, external network credential or account-wide usage/analytics inspection; documented features are not universal executed acceptance."
+      }
     },
     {
       "title": "GitHub Actions test results",
@@ -4656,8 +4731,23 @@
       "family": "github-runners",
       "applicability": "GitHub complementary orchestration and native runner capabilities",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed GHA runner contract, repository/plan/cache/network/auth boundaries, source contradictions and exercised limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:55:44.925Z",
+        "sourceSha256": "54e9291c0a7ace88b0dc05607ee012ca294ae875ecf58a2b3d4550c64b24c34f",
+        "sourceBytes": 8952,
+        "findings": [
+          "test-report-action runs only on Depot-managed GHA jobs, requires id-token write, and warns/skips unsupported runner environments; standard-GHA generic upload is not established.",
+          "JUnit producers include Node/Vitest/Jest/Playwright/Python/Ruby/Go examples, but actual owning reporters and physical runnable identities require source-bound adapters.",
+          "Unique upload key is for invocation deduplication, not the logical timing split identity; the physical Nextest classname adapter retains raw versus derived XML.",
+          "The dashboard offers recurring/latest/passed-on-rerun history; possibly-flaky analytics is specifically richer/native-attempt based and is not symmetric full GHA history coverage.",
+          "One million passing events is shared plan entitlement wording; passing uploads beyond it cost .000001 each, while failed/error/skip are free. Do not relabel repeated uploads as unique tests.",
+          "No whole-suite reporter coverage, foreign test-framework adoption or account analytics history is claimed from these documented UI features."
+        ],
+        "use": "Additional GitHub-orchestrated Linux/ARM/Windows capacity and Startup Mac discovery, with exact source-bound owners and independent cache/test evidence.",
+        "limits": "No settings, production routing, Business infrastructure, Dagger/Dependabot token, external network credential or account-wide usage/analytics inspection; documented features are not universal executed acceptance."
+      }
     },
     {
       "title": "Depot GitHub Actions runners",
@@ -4686,11 +4776,26 @@
       "family": "github-runners",
       "applicability": "Retain GitHub workflow orchestration with additional Depot Linux/Windows compute and separate platform gates",
       "retrievalValidated": true,
-      "reviewState": "Current tier and allowance wording source-reviewed; trial availability does not establish Developer Mac eligibility; no shared native/GHA credit or Mac exclusion invented",
+      "reviewState": "Complete deployed GHA runner contract, repository/plan/cache/network/auth boundaries, source contradictions and exercised limits reviewed",
       "runtimeEvidence": [
         "doc/audit/depot-included-allowance-2026-10-18.evidence.json"
       ],
-      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md",
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:55:44.925Z",
+        "sourceSha256": "73438923d82ec96ff6c9954baffb80b3386f21f8b321d84521a6d1c63f3cdd71",
+        "sourceBytes": 15288,
+        "findings": [
+          "Managed GHA supports organization-owned GitHub repositories; native CI also supports personal repositories. Existing Aquaticats organization controls satisfy only the owned repo path.",
+          "Unlimited concurrency and cache size/network marketing do not imply unlimited free compute/storage, guaranteed queue latency or a global monetary cap.",
+          "Current docs describe EC2/AMD/Graviton and ephemeral fresh instances; current Metal/KVM chronology and observed devices are retained without identifying every deployed host implementation.",
+          "Actions cache namespace is repository-scoped but cross-branch, unlike standard GitHub branch restrictions; actual immutable trusted-source admission is required for mutable restored artifacts.",
+          "Developer permits Linux/Windows, Startup adds macOS; custom GHA AMIs/GPU/dedicated enterprise infrastructure are distinct Business capabilities, not Developer native snapshots or ordinary job-container images.",
+          "Per-second usage with month-end whole minutes and independently named GHA allowances does not settle mixed-OS cash-credit apportionment or Mac multiplier."
+        ],
+        "use": "Additional GitHub-orchestrated Linux/ARM/Windows capacity and Startup Mac discovery, with exact source-bound owners and independent cache/test evidence.",
+        "limits": "No settings, production routing, Business infrastructure, Dagger/Dependabot token, external network credential or account-wide usage/analytics inspection; documented features are not universal executed acceptance."
+      }
     },
     {
       "title": "Quickstart for GitHub Actions runners",
@@ -4716,8 +4821,20 @@
       "family": "github-runners",
       "applicability": "GitHub complementary orchestration and native runner capabilities",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed GHA runner contract, repository/plan/cache/network/auth boundaries, source contradictions and exercised limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:55:44.925Z",
+        "sourceSha256": "0a157bba6fd580909dd0f5cb13c41501b05a68961b2725d57443dc82dcb92d7f",
+        "sourceBytes": 2959,
+        "findings": [
+          "Initial app connection requires Depot org owner and GitHub app/repository runner-group access, plus public-repo allow permission where applicable.",
+          "Changing a supported label chooses compute under GitHub orchestration, not native CI scheduler semantics. Existing research routes do not authorize production routing changes.",
+          "No app reinstall, runner-group/access setting or usage page inspection was required/performed for these current source-bound owned jobs."
+        ],
+        "use": "Additional GitHub-orchestrated Linux/ARM/Windows capacity and Startup Mac discovery, with exact source-bound owners and independent cache/test evidence.",
+        "limits": "No settings, production routing, Business infrastructure, Dagger/Dependabot token, external network credential or account-wide usage/analytics inspection; documented features are not universal executed acceptance."
+      }
     },
     {
       "title": "Depot GitHub Actions runner types",
@@ -4746,12 +4863,27 @@
       "family": "github-runners",
       "applicability": "Select Linux/Windows/macOS runner classes for expanded host and device gates",
       "retrievalValidated": true,
-      "reviewState": "Current per-class cash rates and multipliers source-reviewed; Linux/Windows normalized rates differ; Mac Startup/Business eligibility established but Mac credit and normalized debit unresolved",
+      "reviewState": "Complete deployed GHA runner contract, repository/plan/cache/network/auth boundaries, source contradictions and exercised limits reviewed",
       "runtimeEvidence": [
         "doc/audit/depot-included-allowance-2026-10-18.evidence.json",
         "doc/audit/depot-github-kvm-documentation-contradiction-2026-10-18.evidence.json"
       ],
-      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md",
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:55:44.925Z",
+        "sourceSha256": "db1cbad74236617620aaaa77dc395b86fd94e836b87e9d75ee874ff80fd98705",
+        "sourceBytes": 11087,
+        "findings": [
+          "Exact labels/sizes/rates and elapsed-to-billed multipliers are the deciding catalog, not stale overview FAQ hardware or assumed Linux cash rates.",
+          "Linux/ARM2CPU .006 and4CPU .012 normalize1x/2x; Windows2CPU .008 with2x and4CPU .016 with4x show normalized units do not have one universal cash value.",
+          "Mac8CPU24GB .08/min has no multiplier column; Developer tier exclusion is distinct from unresolved Startup Mac debit/credit mechanics. The prior categorical Mac allowance exclusion stays retracted.",
+          "Linux/Mac RAM disk acceleration reserves memory; advertised total disk is not free workspace. Runner software READMEs can lead deployed images, so actual tools must be measured.",
+          "Windows docs report no Hyper-V and warn Docker compatibility; source does not prove every Windows process-isolation/container/VM mode impossible.",
+          "Mac capacity is not fully elastic and can queue; custom runner AMIs require Business. Actual Linux ARM functional source tests and parent Windows/Mac owners remain separate evidence."
+        ],
+        "use": "Additional GitHub-orchestrated Linux/ARM/Windows capacity and Startup Mac discovery, with exact source-bound owners and independent cache/test evidence.",
+        "limits": "No settings, production routing, Business infrastructure, Dagger/Dependabot token, external network credential or account-wide usage/analytics inspection; documented features are not universal executed acceptance."
+      }
     },
     {
       "title": "Troubleshooting GitHub Actions runners",
@@ -4810,8 +4942,26 @@
       "family": "github-runners",
       "applicability": "GitHub complementary orchestration and native runner capabilities",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed GHA runner contract, repository/plan/cache/network/auth boundaries, source contradictions and exercised limits reviewed",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:55:44.925Z",
+        "sourceSha256": "f41fd5a82ee977f2bcc8ba9184d6734ffbd52b18f65c7a441b9c8802749d7f61",
+        "sourceBytes": 19760,
+        "findings": [
+          "Documented typical provisioning/registration10to45seconds is not this repository spread; billing starts after job execution, not provision time. Stale dashboard rows need exact GitHub/runtime confirmation.",
+          "Use a single Depot label and check default runner-group/repository/app access; multiple label arrays can be unstable, and selected-workflow patterns can prevent allocation.",
+          "The current guide explicitly says no/dev/kvm on GHA, contradicted by independently retained AMD64 device/initialization/guest receipts; the source contradiction is not a blanket ARM/SDK/Windows guarantee.",
+          "Current usage-cap section explicitly names GitHub Actions minutes limit, separately from container-build quickstart. Earlier categorical container-only wording is retracted; no aggregate native/storage/test/model USD cap is established.",
+          "No-space and lost-communication/cancellation diagnoses have multiple independent causes; do not merge source/tool failures, GitHub cancellation, memory pressure or vendor outages without matching user-visible boundaries.",
+          "GitHub cancel and force-cancel differ; force cancellation may bypass cleanup. Terminating a runner via Depot API does not itself cancel the GitHub workflow.",
+          "tmate is an external action integration, not Depot-maintained SSH; maintenance disclaimer does not prohibit requested work. No long-lived debug session or new dependency is activated.",
+          "Mac fixed capacity/FIFO and annual dedicated capacity explain a documented queue risk, not measured current demand; no annual commitment or plan change was made.",
+          "Fresh runners do not retain pulled Docker images across jobs; registry CDN/pull-through and whole-image tar archives are different reuse mechanisms with distinct mutable tag/invalidation risks."
+        ],
+        "use": "Additional GitHub-orchestrated Linux/ARM/Windows capacity and Startup Mac discovery, with exact source-bound owners and independent cache/test evidence.",
+        "limits": "No settings, production routing, Business infrastructure, Dagger/Dependabot token, external network credential or account-wide usage/analytics inspection; documented features are not universal executed acceptance."
+      }
     },
     {
       "title": "Tailscale",
@@ -17850,5 +18000,21 @@
     "claims": 66,
     "sourceBytes": 112543,
     "sourceArchive": "doc/audit/depot-platform-surface-sources-2026-10-18.evidence.json.gz"
+  },
+  "githubRunnerCompleteSourceReview": {
+    "pages": 11,
+    "claims": 51,
+    "sourceBytes": 85127,
+    "sourceArchive": "doc/audit/depot-platform-surface-sources-2026-10-18.evidence.json.gz"
+  },
+  "capControlCorrection": {
+    "at": "2026-10-18T15:55:44.925Z",
+    "retractedClaim": "Only container builds have a documented minute usage cap",
+    "currentDecidingSources": [
+      "https://depot.dev/docs/container-builds/quickstart.md",
+      "https://depot.dev/docs/github-actions/troubleshooting.md"
+    ],
+    "qualifiedConclusion": "Separate documented Container Build Minutes and GitHub Actions minute controls; no current setting inspection, configured values, runtime cap test or aggregate all-product USD enforcement",
+    "noAccountUsageOrSettingsInspected": true
   }
 }
