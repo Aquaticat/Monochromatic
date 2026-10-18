@@ -165,8 +165,12 @@ The first green attempt passes actual SDK capture after reopen,
 then exposes an incorrect test call to the internal input-origin reader.
 The test now uses the SDK's returned message content for persistence fidelity
 and the original pool publications for the live/load source comparison.
-Its rerun is pending;
-the source repair is not yet declared verified.
+The corrected maintained regression passes on `hGuAfo`:
+actual SDK persistence,
+seven supported live/load content cases and four rejected content cases,
+with opaque signatures preserved locally.
+Evidence is `loaded-message-content-green2.log`.
+The guard mutation and actual resumed-session compaction/next-review checks remain pending.
 
 The worker is restarted fresh as `pi-mimo-rpc-session-JTeYFr`,
 session `44944`,
@@ -175,6 +179,15 @@ Its current editing checkpoint is only the CLI network guard and process consume
 The supervisor owns the other original checkpoint files during the history/compaction investigation;
 their lint work stays queued.
 This keeps lint implementation independent of the failing resumed-session consumer.
+The worker's relative-path lint probes report `No files found to lint`;
+do not count those as clean results.
+An explicit package cwd plus absolute source paths checks both actual files:
+initially 72 warnings and six errors,
+then 31 warnings and six errors after scoped formatting.
+The worker has modified only its assigned CLI pair so far.
+Its intentional supervisor-steering pause withholds two old inspection calls;
+the resumed implementation prompt keeps the human's original task active.
+The exact failed and successful command cwd/path combinations are still being compared.
 At this checkpoint,
 Git shows no MiMo source edits yet;
 its first lint slice is still analysis.
