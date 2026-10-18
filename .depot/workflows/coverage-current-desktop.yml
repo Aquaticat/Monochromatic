@@ -89,14 +89,19 @@ jobs:
           oding:'utf8'}),packages.manifest);assert.equal(execFileSync(join(base\
           ,'bin/magick'),['--version'],{encoding:'utf8'}),packages.magickVersio\
           n);receipt.toolSnapshot.magickSha256=sha(readFileSync(join(base,'bin/\
-          magick')));save();\\\\n\\\\n const
+          magick')));save();\\\\n await (async function
+          fetchArchive({root,receipt,save,run,sha}){const{mkdirSync,writeFileSy\
+          nc}=await import('node:fs'),{join}=await
+          import('node:path'),{spawnSync}=await
+          import('node:child_process'),{strict:assert}=await
+          import('node:assert');const
           input=join(root,'.research-desktop/restoration-input');mkdirSync(inpu\
           t,{recursive:true,mode:448});assert(process.env.COVERAGE_DESKTOP_PROD\
-          UCER_URL,'Scoped artifact URL is absent');const download=await
+          UCER_URL,'Scoped artifact URL is absent');const response=await
           fetch(process.env.COVERAGE_DESKTOP_PRODUCER_URL,{redirect:'error',sig\
-          nal:AbortSignal.timeout(90000)});assert.equal(download.status,200);co\
+          nal:AbortSignal.timeout(90000)});assert.equal(response.status,200);co\
           nst archive=Buffer.from(await
-          download.arrayBuffer());assert.equal(archive.length,26510839);assert.\
+          response.arrayBuffer());assert.equal(archive.length,26510839);assert.\
           equal(sha(archive),'bebf05ba6a63d4fb5770e9fb642dcbc8a071572ab437c2d9e\
           47b52ec91b739a3');const
           zip=join(input,'producer.zip');writeFileSync(zip,archive);if(spawnSyn\
@@ -106,12 +111,12 @@ jobs:
           ']);const
           members=run('archive-members','unzip',['-Z1',zip]).stdout.trim().spli\
           t('\\\\\\\\n');assert.equal(members.length,75);assert(members.every(n\
-          ame=>!name.startsWith('/')&&!name.includes('..')&&!name.includes('\\\\\
-          \\\\\\\\\\\\')));run('restore-immutable-producer-archive','unzip',['-\
-          q',zip,'-d',join(input,'unpacked')]);receipt.archiveRestoration={arti\
-          factId:'01a14f10-67de-7d0c-ab62-46516f374ebb',bytes:archive.length,sh\
-          a256:sha(archive),members:members.length,signedUrlOrCredentialRecorde\
-          d:false};save();\\\\n const
+          ame=>!name.startsWith('/')&&!name.includes('..')&&!name.includes(Stri\
+          ng.fromCharCode(92))));run('restore-immutable-producer-archive','unzi\
+          p',['-q',zip,'-d',join(input,'unpacked')]);receipt.archiveRestoration\
+          ={artifactId:'01a14f10-67de-7d0c-ab62-46516f374ebb',bytes:archive.len\
+          gth,sha256:sha(archive),members:members.length,signedUrlOrCredentialR\
+          ecorded:false};save()})({root,receipt,save,run,sha});\\\\n const
           extraPath=join(base,'bin')+':'+process.env.PATH;process.env.PATH=extr\
           aPath;const
           prep=run('install-exact-node-pnpm','mise',['install','--locked','node\
@@ -121,26 +126,31 @@ jobs:
           plan=JSON.parse(readFileSync(join(root,'package/dev-script/coverage-r\
           esearch/desktop-plan.json'),'utf8'));for(const [index,row]of
           plan.common.entries())run('shared-'+String(index).padStart(2,'0'),'mi\
-          se',['run',row.task],{budgetMs:120000});\\\\n\\\\n const
+          se',['run',row.task],{budgetMs:120000});\\\\n const
+          {compositor,desktop,forwarder,forwardedLog}=await (async function
+          restoreProducer({root,evidence,receipt,save,run,sha}){const{readFileS\
+          ync,writeFileSync,mkdirSync,copyFileSync,chmodSync}=await
+          import('node:fs'),{join,dirname}=await
+          import('node:path'),{homedir}=await
+          import('node:os'),{strict:assert}=await import('node:assert');const
           compositor=join(root,'package/cli/nested-wayland-session/target/relea\
           se/monochromatic-nested-wayland-session'),desktop=join(root,'package/\
-          music-player/desktop-app/target/release/music-player');const
-          restored=join(root,'.research-desktop/restoration-input/unpacked'),pr\
-          oducer=JSON.parse(readFileSync(join(restored,'desktop-campaign.json')\
-          ,'utf8'));assert.equal(producer.source,source);for(const[path,value]of
+          music-player/desktop-app/target/release/music-player'),restored=join(\
+          root,'.research-desktop/restoration-input/unpacked'),producer=JSON.pa\
+          rse(readFileSync(join(restored,'desktop-campaign.json'),'utf8'));asse\
+          rt.equal(producer.source,receipt.source);for(const[path,value]of
           Object.entries(producer.sourceInputs))assert.equal(sha(readFileSync(j\
           oin(root,path))),value);receipt.producerRestoration={run:'9zvpr3t592'\
-          ,artifactId:'01a14f10-67de-7d0c-ab62-46516f374ebb',archiveSha256:'beb\
-          f05ba6a63d4fb5770e9fb642dcbc8a071572ab437c2d9e47b52ec91b739a3',produc\
-          erSourceMetadataMatches:true,producerAssetBytesUnobserved:true,rebuil\
-          t:false};for(const[name,path,expectedBytes,expectedHash]of[['composit\
-          or',compositor,9220128,'1508c92cb46135fcbd420aad50e046169d77f5aa89f07\
-          faf67925a14eb99b955'],['desktop',desktop,53526792,'aa3bf32840df2d7485\
-          6e4f519272580fb79a488caf99c0824065cbda2d696274']]){const
-          bytes=readFileSync(join(restored,name));assert.equal(bytes.length,exp\
-          ectedBytes);assert.equal(sha(bytes),expectedHash);mkdirSync(dirname(p\
-          ath),{recursive:true});copyFileSync(join(restored,name),path);chmodSy\
-          nc(path,493)}const
+          ,artifactId:'01a14f10-67de-7d0c-ab62-46516f374ebb',producerSourceMeta\
+          dataMatches:true,producerAssetBytesUnobserved:true,rebuilt:false};for\
+          (const[name,path,size,digest]of[['compositor',compositor,9220128,'150\
+          8c92cb46135fcbd420aad50e046169d77f5aa89f07faf67925a14eb99b955'],['des\
+          ktop',desktop,53526792,'aa3bf32840df2d74856e4f519272580fb79a488caf99c\
+          0824065cbda2d696274']]){const
+          bytes=readFileSync(join(restored,name));assert.equal(bytes.length,siz\
+          e);assert.equal(sha(bytes),digest);mkdirSync(dirname(path),{recursive\
+          :true});copyFileSync(join(restored,name),path);chmodSync(path,493)}co\
+          nst
           install=join(homedir(),'temp/agent/current-e02-compositor-install');m\
           kdirSync(join(install,'bin'),{recursive:true,mode:448});copyFileSync(\
           compositor,join(install,'bin/monochromatic-nested-wayland-session'));\
@@ -149,53 +159,57 @@ jobs:
           argo:monochromatic-nested-wayland-session@0.6.0',install]);run('actua\
           l-mise-compositor-lookup','mise',['where','cargo:monochromatic-nested\
           -wayland-session']);run('actual-compositor-version',compositor,['--ve\
-          rsion']);const
+          rsion']);\\\\nfunction
+          forwarderMain({compositor,log}){const{spawnSync}=require('node:child_\
+          process'),{appendFileSync}=require('node:fs'),args=process.argv.slice\
+          (2),information=args.some(arg=>['--version','-V','--help','-h'].inclu\
+          des(arg)),actual=information?args:['--headless',...args];appendFileSy\
+          nc(log,JSON.stringify({args,actual,informationForwardedWithoutChange:\
+          information})+String.fromCharCode(10));const
+          result=spawnSync(compositor,actual,{stdio:'inherit'});if(result.error\
+          )throw result.error;process.exitCode=result.status??1}\\\\nconst
           forwarder=join(root,'.research-desktop/compositor-headless'),forwarde\
           dLog=join(root,'.research-desktop/compositor-forwarded-argv.jsonl'),f\
-          orwarderSource='#!/usr/bin/env node\\\\\\\\nconst
-          {spawnSync}=require(\\\\\\\"node:child_process\\\\\\\"),{appendFileSy\
-          nc}=require(\\\\\\\"node:fs\\\\\\\"),args=process.argv.slice(2),isInf\
-          ormation=args.some(arg=>[\\\\\\\"--version\\\\\\\",\\\\\\\"-V\\\\\\\",\
-          \\\\\\\"--help\\\\\\\",\\\\\\\"-h\\\\\\\"].includes(arg)),actual=isIn\
-          formation?args:[\\\\\\\"--headless\\\\\\\",...args];appendFileSync('+\
-          JSON.stringify(forwardedLog)+',JSON.stringify({args,actual,informatio\
-          nForwardedWithoutChange:isInformation})+\\\\\\\"\\\\\\\\\\\\\\\\n\\\\\
-          \\\");const
-          result=spawnSync('+JSON.stringify(compositor)+',actual,{stdio:\\\\\\\
-          \"inherit\\\\\\\"});if(result.error)throw
-          result.error;process.exitCode=result.status??1;\\\\\\\\n';writeFileSy\
-          nc(forwarder,forwarderSource.replaceAll('\\\\\\\\\\\\\\\\n','\\\\\\\\\
-          n'));chmodSync(forwarder,493);receipt.headlessBoundary={supportedExec\
-          utableOverride:'E2E_COMPOSITOR',forwarderSha256:sha(readFileSync(forw\
-          arder)),onlyAddedCompositorArgument:'--headless',versionForwardedToAc\
-          tualProducer:true,sourceAssertionsEdited:false};run('forwarder-versio\
-          n-positive-control',forwarder,['--version']);save();\\\\n for(const
-          [name,path]of [['compositor',compositor],['desktop',desktop]]){const
+          orwarderSource=['#!/usr/bin/env
+          node','('+forwarderMain.toString()+')('+JSON.stringify({compositor,lo\
+          g:forwardedLog})+');',''].join(String.fromCharCode(10));writeFileSync\
+          (forwarder,forwarderSource);chmodSync(forwarder,493);receipt.headless\
+          Boundary={supportedExecutableOverride:'E2E_COMPOSITOR',forwarderSha25\
+          6:sha(readFileSync(forwarder)),onlyAddedCompositorArgument:'--headles\
+          s',versionForwardedToActualProducer:true,sourceAssertionsEdited:false\
+          };run('forwarder-version-positive-control',forwarder,['--version']);s\
+          ave();return{compositor,desktop,forwarder,forwardedLog}})({root,evide\
+          nce,receipt,save,run,sha});\\\\n for(const [name,path]of
+          [['compositor',compositor],['desktop',desktop]]){const
           bytes=readFileSync(path);receipt.artifacts.push({name,path,bytes:byte\
           s.length,sha256:sha(bytes),source});run(name+'-dynamic-library-requir\
-          ements','ldd',[path])}save();\\\\n\\\\n const
+          ements','ldd',[path])}save();\\\\n await (async function
+          captureWorkingInputs({root,evidence,receipt,save,sha}){const{readFile\
+          Sync,writeFileSync}=await import('node:fs'),{join}=await
+          import('node:path'),{execFileSync}=await
+          import('node:child_process'),{strict:assert}=await
+          import('node:assert');const
           tracked=execFileSync('git',['ls-files','--stage','-z','--','package/c\
           li/nested-wayland-session','package/music-player/desktop-app','packag\
           e/music-player/desktop-e2e','package/music-player/truepeak-core'],{cw\
-          d:root,encoding:'utf8',maxBuffer:8*1024*1024}).split('\\\\\\\\0').fil\
-          ter(Boolean);assert(tracked.length<=4000);const workingFiles=[];let
-          workingBytes=0;for(const entry of tracked){const match=/^(\\\\\\\\d+)
-          ([a-f0-9]+)
-          (\\\\\\\\d)\\\\\\\\t([\\\\\\\\s\\\\\\\\S]+)$/.exec(entry);assert(matc\
-          h);const[,mode,gitBlobId,stage,path]=match;assert.equal(stage,'0');co\
-          nst
+          d:root,encoding:'utf8',maxBuffer:8*1024*1024}).split(String.fromCharC\
+          ode(0)).filter(Boolean);assert(tracked.length<=4000);const
+          files=[];let workingBytes=0;for(const entry of tracked){const
+          tab=entry.indexOf(String.fromCharCode(9));assert(tab>0);const[mode,gi\
+          tBlobId,stage]=entry.slice(0,tab).split('
+          '),path=entry.slice(tab+1);assert.equal(stage,'0');const
           bytes=readFileSync(join(root,path));workingBytes+=bytes.length;assert\
-          (workingBytes<=512*1024*1024);workingFiles.push({path,gitBlobId,mode,\
-          actualWorkingBytes:bytes.length,actualWorkingSha256:sha(bytes),isLfsP\
-          ointer:bytes.subarray(0,128).toString().startsWith('version
-          https://git-lfs.github.com/spec/v1\\\\\\\\n')})}writeFileSync(join(ev\
-          idence,'consumer-materialized-working-inputs.json'),JSON.stringify({s\
-          ource,measuredAt:'before
+          (workingBytes<=512*1024*1024);files.push({path,gitBlobId,mode,actualW\
+          orkingBytes:bytes.length,actualWorkingSha256:sha(bytes),isLfsPointer:\
+          bytes.subarray(0,128).toString().startsWith('version
+          https://git-lfs.github.com/spec/v1'+String.fromCharCode(10))})}writeF\
+          ileSync(join(evidence,'consumer-materialized-working-inputs.json'),JS\
+          ON.stringify({source:receipt.source,measuredAt:'before
           consumer',producerAssetBytesUnobserved:true,gitBlobIdsAreNotWorkingBy\
-          teHashes:true,files:workingFiles,actualWorkingBytes:workingBytes},nul\
-          l,2)+'\\\\\\\\n');receipt.materializedConsumerInputs={files:workingFi\
-          les.length,actualWorkingBytes:workingBytes,producerByteEquivalenceCla\
-          imed:false};save();\\\\n const
+          teHashes:true,files,actualWorkingBytes:workingBytes},null,2));receipt\
+          .materializedConsumerInputs={files:files.length,actualWorkingBytes:wo\
+          rkingBytes,producerByteEquivalenceClaimed:false};save()})({root,evide\
+          nce,receipt,save,sha});\\\\n const
           name='coverage-desktop-'+process.env.GITHUB_RUN_ID+'-'+process.pid,po\
           dman=['--non-interactive','podman','--cgroup-manager=cgroupfs'],p=(su\
           ffix,args,opts={})=>run('runtime-'+suffix,'sudo',[...podman,...args],\
