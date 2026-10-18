@@ -1205,6 +1205,66 @@ All three source-bound native runs and build requests are terminal,
 all three original ZIPs are retained,
 and the solely owned image/project deletion has fresh absence controls.
 
+## Working-report allocation completeness
+
+The narrow completeness review compares the working report captured at
+SHA-256 `ae19f1ece34860bf483bf54b2a713ee314a1cf340ccbdab1c97d9018e9a08970`
+with all 120 substantively reviewed deployed documentation pages and the linked actual consumers.
+It is not a whole-report sufficiency sign-off.
+The [ledger](depot-platform-surface-ledger.json) records the evidence-linked gaps and paste-ready paragraphs
+under `reportAllocationReview`,
+mapped to the existing six report sections.
+No report edits,
+cloud operations,
+service activation or settings changes are part of this review.
+
+The material omissions are allocation and operating dispositions:
+
+- Native event/check ownership,
+  protected-environment and reusable-workflow compatibility,
+  retry persistence and parallel shared state.
+- Tests report producers and identity lineage,
+  exact attempts,
+  source-only analytics,
+  temporary SSH,
+  logs and resource metrics.
+- Native thin snapshots,
+  ordinary OCI job images,
+  immutable dependency/target archives,
+  organization-global Disk and custom SDK runtimes as distinct formats and trust boundaries.
+- Actual BuildKit contexts and immutable source selection,
+  attestations versus signature trust,
+  bounded autoscaling,
+  registry promotion,
+  pull-through,
+  CDN transfer and retention/deletion.
+- Trusted versus untrusted cache access,
+  the measured lack of pnpm-store benefit,
+  Linux-only root-modifiable egress and the separate Dependabot credential route.
+- Controlled workload admission under the USD 200 ceiling and the account-access restriction,
+  with retention/export and unknown external charges kept explicit.
+- Source-only Managed/customer AWS,
+  GPU/custom GHA images,
+  Code/mirrors,
+  Agents/model credentials,
+  deprecated Dagger and absent-owner integrations.
+
+The priority is trust,
+budget and lifecycle conditions,
+then concrete product-to-owner allocation,
+then explicit optional-product dispositions.
+The first group prevents unreviewed authority or spend;
+the second turns measured consumers into a usable proposal;
+the third prevents research coverage from being mistaken for product activation.
+The repository's Codex fixture does not qualify Depot Agents,
+and successful custom SDK thin-image execution does not qualify every OCI or named runtime.
+
+Generic ledger tasks that still described all-page and CLI reconciliation as unfinished
+are preserved under `supersededOpenGaps` and replaced with the current factual limits.
+This does not mark every marketing/context page,
+private backend method or optional integration as exercised.
+Independent whole-report review remains queued for the separately owned operating-system and semantic results.
+
 ## Follow-up qualification and upstream diagnostic work
 
 - Preserve the source/deployment distinction for the mapped schemas,
@@ -1269,7 +1329,7 @@ and the solely owned image/project deletion has fresh absence controls.
   It qualifies selected functional owners,
   with one 8-CPU job and no performance ratio.
 
-The source/evidence ledger will distinguish discovered,
+The source/evidence ledger distinguishes discovered,
 retrieved,
 source-audited,
 exercised,
