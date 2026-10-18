@@ -951,8 +951,12 @@ a 15-second test limit,
 and a 90-second suite limit.
 The original image declares Playwright 1.63.0 while the source lock declares 1.64.0;
 the run preserves that baseline instead of changing the recipe.
-No browser runtime result is claimed until its receipt is collected.
-Other browser and E2E specifications remain separate tracked profiles.
+The terminal receipt verifies all 45 owning invocations:
+42 shared builds passed and the three engine owners failed before their test bodies.
+Each engine enumerated two cases,
+but Playwright 1.64.0 could not find its required executables in the original 1.63.0 image.
+These six enumerated cases receive no executed-body credit.
+The original container recipe and failure are retained.
 
 ## Fresh compiled-host artifact consumer dispatched
 
@@ -971,11 +975,68 @@ It admits one exact source-bound artifact,
 checks its digest and declared output hashes,
 restores only compiled output,
 and executes the actual native domain owner without rebuilding application source.
-The known `none` frontier assertion remains an expected preserved source failure,
-while permission and prohibition remain actual positive controls.
+The producer passed all 44 owning invocations.
+The fresh consumer verified all 1,036 declared compiled file hashes,
+including the formerly omitted 3,762-byte `.manifest.json`,
+and restored 33,802 ZIP members against the matching installed SDK snapshot.
+Its first actual domain import failed because `runner.js` did not expose `nativeAssertActive`.
+No domain scenario ran in that first fresh consumer.
 The consumer verifies the installed SDK snapshot against the producer before host execution.
 Only the artifact download step receives its read-only workflow token;
 no new repository secret was created.
 
 The source diagnosis and outstanding membership/runtime boundaries are recorded in
 [`github-artifact-hidden-sdk-resources.md`](../troubleshooting/github-artifact-hidden-sdk-resources.md).
+
+## Restored activation and dependency topology controls
+
+Run `39126088565`,
+immutable harness `0d8123ea327f5beddedcf3ba99d698288ea6d979`,
+retains the flattened artifact failure and calls the frozen source's activation owner.
+Activation alone advances the failure from the missing export to missing dependency `which`.
+Its namespace probes used an incorrect `.mjs` suffix for `paths.ts`;
+those probe failures are harness errors and provide no namespace evidence.
+
+Corrected run `39126304854`,
+immutable harness `bb659f0f7fea71de9a2ba850bd04c5d0919fcb8e`,
+restores the same exact producer artifact without building application source or running the unit suite.
+It preserves the materialized directories,
+calls `activateNativeBuild`,
+and reconstructs the three emitted dependency symlinks with the exact frozen producer formula.
+The loader's expected runner URL changes from unequal to equal to the generated absolute import.
+The same 52,321-byte `runner.js`,
+SHA-256 `ad8895d110bc4b0eb26415589b2e8b2e7516bf8f91c28504a8214f2e7572fe47`,
+then exposes `nativeAssertActive` through the registered maintained loader.
+The earlier 79-command producer and fresh 44-command producer have identical runner bytes.
+
+The actual restored domain owner passes permission and prohibition with zero HTTP/provider requests,
+then reaches the preserved `none` assertion:
+actual `unresolved` versus expected `unspecified`.
+This qualifies the measured same-layout restored consumer through those scenario boundaries.
+Generated absolute imports and dependency symlinks remain packaging requirements;
+arbitrary filesystem relocation and another platform are unmeasured.
+
+## Matching-image browser and E2E campaign
+
+Run `39126466632`,
+immutable harness `552831830e18bb55c17bc5af4ed22db233790e89`,
+is the sole active coverage job.
+Its finite plan has 50 owning invocations:
+42 shared builds,
+the authored browser-property bundle and product page build,
+one copied-recipe matching-image control,
+the root browser owner for all three configured engines,
+and the root E2E owner for both configured engines.
+The frozen inventory contains eight browser specifications and four E2E specifications.
+All application source,
+test assertions,
+and Playwright configurations remain unchanged.
+Only the copied Docker recipe's base-image token changes to the digest-qualified 1.64.0 image.
+A consumer-boundary Podman wrapper adds 2 GiB memory and 2 CPU limits to each actual container.
+The job remains bounded to 8 CPUs,
+32 GiB,
+15 minutes,
+one worker,
+zero retries,
+and finite per-task and suite limits.
+No terminal result is credited before collection.
