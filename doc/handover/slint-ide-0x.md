@@ -771,9 +771,18 @@ the items after it are the record of 2026-10-05 and older.
     tests are exempted from the TypeScript arrow ban by an override in `package/config/oxlint/src/overrides.ts`
     (line 201). A Rust equivalent of that test override would clear the 11 test closures without any new rule
     machinery.
-    Until then the 67 stay reported as warnings, listed in `~/temp/agent/ide-closures/final-unconverted.txt`. Landing of this branch: the agent's gates ran on the tree
-    before `main` was merged in; the coordinating session reran them on the merged tree (lint, tests, bundle and
-    guards) before the fast-forward.
+    Until then the 67 stay reported as warnings, listed in `~/temp/agent/ide-closures/final-unconverted.txt`.
+    Landed on 2026-10-18 as `d0283728f4` (fast-forward, pushed; branch and worktree removed, the auto-pushed remote
+    branch deleted). The agent's gates ran before `main` was merged in; the coordinating session reran them on the
+    merged tree, whose IDE tree `218fe10ff4` was identical to the gated one: lint, `test` (783), `test:cli`,
+    `test:language` (379), `test:minimap`, `test:wrap`, `test:annotations`, `test:annotations-native`,
+    `test:syntax` (64), `test:native` (197), `lint:release`, bundle, `inspect:bundle`, `inspect:bundle-guards`,
+    eleven guard scripts (source 108, annotation 65, sidebar 18, theme 7, ignored 28, watch 76, language 31, and the
+    find, search, language lifecycle and language navigation ones), and `inspect:language`, `inspect:language-mise`
+    and `inspect:language-confinement`, all status 0. Issue 1756 got a progress comment. The IDE is reinstalled
+    (`~/.local/bin/monochromatic-ide`, sha256 `2172fa208b55`, equal to `dist/monochromatic-ide`; the previous binary
+    is `monochromatic-ide.previous`, sha256 `9c4d6047`); `--help` runs. The installed build includes the minimap
+    and the closures work.
     Files added: `src/json_value.rs`, `src/language/diagnostics/store/pulled.rs`,
     `src/language/request/answer/trouble.rs`, `src/minimap/paint.rs`, `src/native/waiting_tests.rs` and
     `src/bin/ide-language-inspect/session/condition.rs`. Guard anchors moved in six `bin/inspect-*-guards.mjs` scripts;
