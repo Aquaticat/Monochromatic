@@ -37,8 +37,9 @@ Use an intentional GitHub/Depot hybrid with Developer as the planning baseline,
 plus selective overage for paid checks whose coverage or waiting-time benefit justifies the cost.
 Keep routine standard GitHub-hosted work where its free public-repository compute is sufficient.
 Depot can supply Windows and Apple Silicon macOS compute through GitHub Actions.
-The recommendation to retain GitHub-hosted native jobs on Developer follows the plan's economics and Mac eligibility,
-rather than an OS limitation across Depot's products
+Developer includes Depot Windows runners;
+Depot Mac runners require Startup.
+Routine native work can remain on free GitHub-hosted runners within the chosen budget
 ([pricing][pricing],
 [runner eligibility][runner-overview],
 [public GitHub compute][github-billing],
