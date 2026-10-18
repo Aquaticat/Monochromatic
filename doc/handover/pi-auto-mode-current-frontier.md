@@ -116,6 +116,14 @@ whose harness otherwise runs children concurrently.
 The candidate source restores on failure;
 its built artifact still contains the last mutation and is not qualified.
 A new committed-test candidate must rerun every mutation and the restored build/consumer.
+That follow-up is complete in `policy-input-factory-fixed-built-mutants.json`:
+frozen `89d6bb1d30` candidate `pPbr3A` passes fresh JS/native builds,
+package types,
+the test's zero-warning/zero-error lint and the genuine consumer.
+Every thirteen rebuilt mutation fails its intended named case,
+including borrowed `assertCurrent` with a genuine binding.
+Restored source rebuilds and the maintained consumer passes again.
+The earlier failed mutation candidate remains separate and unqualified.
 The parent collector reads only exact named logs below a four-MiB bound.
 The native worker is read-only on
 `native-investigate-unused-system-profile-20261018-architecture-07`.
