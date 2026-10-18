@@ -1,3 +1,122 @@
+[tasks.capability-diagnostic]
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const fs = await import('node:fs');
+const os = await import('node:os');
+const { join } = await import('node:path');
+const { execFileSync, spawnSync } = await import('node:child_process');
+const { setTimeout } = await import('node:timers/promises');
+class CapabilityDiagnosticFailure extends Error {}
+if (process.env.GITHUB_ACTIONS !== 'true' || process.env.RUNNER_OS !== 'Linux' || process.env.PROBE_PLATFORM_PROVIDER !== 'github-hosted-ubuntu-24.04') throw new CapabilityDiagnosticFailure('Diagnostic is restricted to the owned ephemeral GitHub Linux control');
+const source = process.cwd();
+const evidence = join(source, '.depot/research/mvm/evidence');
+fs.mkdirSync(evidence, { recursive: true, mode: 0o700 });
+const scratch = join(os.homedir(), 'temp/agent');
+fs.mkdirSync(scratch, { recursive: true, mode: 0o700 });
+fs.chmodSync(scratch, 0o700);
+const privateHome = fs.mkdtempSync(join(scratch, 'depot-kvm-capability-'));
+const runtimeRoot = '/run/user/' + process.getuid();
+const commands = [];
+const deadline = Date.now() + 8 * 60 * 1000;
+let environment = { ...process.env };
+const run = (id, command, args, options = {}) => {
+  const remaining = deadline - Date.now();
+  if (!options.cleanup && remaining < 30000) throw new CapabilityDiagnosticFailure('Capability diagnostic deadline reached with cleanup reserved');
+  const startedAt = new Date().toISOString();
+  const value = spawnSync(command, args, { env: options.environment ?? environment, cwd: source, detached: true, encoding: 'utf8', input: options.input, timeout: options.cleanup ? 15000 : Math.min(options.limit ?? 30000, remaining), maxBuffer: 16777216 });
+  if (value.error?.code === 'ETIMEDOUT' && value.pid) {
+    try { process.kill(-value.pid, 'SIGKILL'); } catch (error) { if (error.code !== 'ESRCH') throw error; }
+  }
+  fs.writeFileSync(join(evidence, id + '.stdout.log'), value.stdout ?? '');
+  fs.writeFileSync(join(evidence, id + '.stderr.log'), value.stderr ?? '');
+  commands.push({ id, command: [command, ...args], startedAt, finishedAt: new Date().toISOString(), status: value.status, signal: value.signal, error: value.error?.message ?? null });
+  fs.writeFileSync(join(evidence, 'capability-commands.json'), JSON.stringify(commands, null, 2) + '\n');
+  console.log(JSON.stringify(commands.at(-1)));
+  return value;
+};
+const requireSuccess = value => { if (value.status !== 0) throw new CapabilityDiagnosticFailure('Capability prerequisite failed; retained command output identifies its boundary'); return value; };
+const access = path => { try { fs.accessSync(path, fs.constants.R_OK | fs.constants.W_OK); return { available: true }; } catch (error) { return { available: false, diagnostic: String(error) }; } };
+const identity = { uid: process.getuid(), gid: process.getgid(), groups: process.getgroups(), passwd: execFileSync('getent', ['passwd', String(process.getuid())], { encoding: 'utf8' }).trim(), architecture: process.arch, cpus: os.cpus().length, memoryBytes: os.totalmem(), kernel: os.release() };
+const before = access('/dev/kvm');
+requireSuccess(run('capability-apt-update', 'sudo', ['--non-interactive', 'apt-get', 'update'], { limit: 180000 }));
+const packages = ['acl', 'libvirt-daemon', 'libvirt-daemon-driver-qemu', 'libvirt-clients', 'qemu-system-x86', 'qemu-utils', 'virtiofsd', 'ovmf'];
+requireSuccess(run('capability-apt-install', 'sudo', ['--non-interactive', 'apt-get', 'install', '--yes', '--no-install-recommends', ...packages], { limit: 180000, environment: { ...environment, DEBIAN_FRONTEND: 'noninteractive' } }));
+requireSuccess(run('capability-package-versions', 'dpkg-query', ['--show', '--showformat=${Package}=${Version}\n', ...packages]));
+if (fs.existsSync('/dev/kvm') && !before.available) requireSuccess(run('capability-owned-kvm-acl', 'sudo', ['--non-interactive', 'setfacl', '--modify', 'u:' + process.getuid() + ':rw', '/dev/kvm']));
+const after = access('/dev/kvm');
+requireSuccess(run('capability-qemu-help', '/usr/bin/qemu-system-x86_64', ['--help']));
+requireSuccess(run('capability-qemu-accelerators', '/usr/bin/qemu-system-x86_64', ['-accel', 'help']));
+const qmpInput = ['qmp_capabilities', 'query-kvm', 'query-status', 'quit'].map((execute, index) => JSON.stringify({ execute, id: ['caps', 'kvm', 'status', 'quit'][index] })).join('\n') + '\n';
+const raw = [];
+for (const machine of ['q35', 'none']) {
+  for (const accelerator of ['tcg', 'kvm']) {
+    for (const privilege of accelerator === 'kvm' ? ['user', 'root'] : ['user']) {
+      const args = ['-machine', machine + ',accel=' + accelerator, '-m', '128', '-smp', '1', '-nodefaults', '-display', 'none', '-S', '-qmp', 'stdio'];
+      const id = 'capability-raw-' + machine + '-' + accelerator + '-' + privilege;
+      const value = privilege === 'root' ? run(id, 'sudo', ['--non-interactive', '/usr/bin/qemu-system-x86_64', ...args], { input: qmpInput, limit: 20000 }) : run(id, '/usr/bin/qemu-system-x86_64', args, { input: qmpInput, limit: 20000 });
+      const messages = (value.stdout ?? '').trim().split('\n').filter(Boolean).map(line => JSON.parse(line));
+      raw.push({ id, machine, accelerator, privilege, status: value.status, qmpKvm: messages.find(item => item.id === 'kvm'), qmpStatus: messages.find(item => item.id === 'status'), qmpMessages: messages });
+    }
+  }
+}
+if (!fs.existsSync(runtimeRoot)) requireSuccess(run('capability-runtime-root', 'sudo', ['--non-interactive', 'install', '--directory', '--mode=700', '--owner=' + process.getuid(), '--group=' + process.getgid(), runtimeRoot]));
+const runtime = fs.mkdtempSync(join(runtimeRoot, 'd-'));
+fs.chmodSync(runtime, 0o700);
+const config = join(runtime, 'c');
+environment = { ...process.env, HOME: privateHome, XDG_CONFIG_HOME: config, XDG_CACHE_HOME: join(privateHome, '.cache'), XDG_DATA_HOME: join(privateHome, '.local/share'), XDG_RUNTIME_DIR: runtime };
+const daemons = ['virtlogd', 'libvirtd'];
+const cleanupErrors = [];
+const daemonExits = [];
+let failure;
+let capabilities;
+let kvmDomainCapabilities;
+let tcgDomainCapabilities;
+try {
+  for (const name of daemons) requireSuccess(run('capability-' + name + '-start', '/usr/sbin/' + name, ['--daemon', '--pid-file', join(runtime, name + '.pid')]));
+  const virsh = (id, args) => run(id, 'virsh', ['--connect', 'qemu:///session', ...args]);
+  requireSuccess(virsh('capability-virsh-help', ['help', 'domcapabilities']));
+  capabilities = virsh('capability-libvirt-capabilities', ['capabilities']);
+  tcgDomainCapabilities = virsh('capability-libvirt-tcg-domain', ['domcapabilities', '--emulatorbin', '/usr/bin/qemu-system-x86_64', '--arch', 'x86_64', '--machine', 'q35', '--virttype', 'qemu']);
+  kvmDomainCapabilities = virsh('capability-libvirt-kvm-domain', ['domcapabilities', '--emulatorbin', '/usr/bin/qemu-system-x86_64', '--arch', 'x86_64', '--machine', 'q35', '--virttype', 'kvm']);
+  requireSuccess(virsh('capability-domains', ['list', '--all', '--name']));
+} catch (error) { failure = { message: String(error), stack: error.stack }; }
+finally {
+  try {
+    for (const [index, root] of [join(privateHome, '.cache/libvirt'), join(config, 'libvirt'), join(runtime, 'libvirt')].entries()) {
+      if (!fs.existsSync(root)) continue;
+      let retained = 0;
+      for (const name of fs.globSync('**/*.log', { cwd: root })) {
+        const path = join(root, name);
+        const stat = fs.lstatSync(path);
+        if (stat.isFile() && stat.size <= 8388608 && retained < 32) { fs.copyFileSync(path, join(evidence, 'capability-daemon-' + index + '-' + name.replaceAll('/', '-'))); retained++; }
+      }
+    }
+  } catch (error) { cleanupErrors.push({ stage: 'daemon-log-retention', diagnostic: String(error) }); }
+  for (const name of [...daemons].reverse()) {
+    try {
+      const pidPath = join(runtime, name + '.pid');
+      if (!fs.existsSync(pidPath)) { daemonExits.push({ name, started: false }); continue; }
+      const pid = Number(fs.readFileSync(pidPath, 'utf8').trim());
+      if (!Number.isSafeInteger(pid) || pid < 2) throw new CapabilityDiagnosticFailure('Private daemon PID is invalid');
+      process.kill(pid, 'SIGTERM');
+      let gone = false;
+      for (let attempt = 0; attempt < 30; attempt++) {
+        try { process.kill(pid, 0); } catch (error) { if (error.code !== 'ESRCH') throw error; gone = true; break; }
+        await setTimeout(100);
+      }
+      daemonExits.push({ name, pid, gone });
+      if (!gone) throw new CapabilityDiagnosticFailure('Private diagnostic daemon did not stop');
+    } catch (error) { cleanupErrors.push({ stage: name + '-stop', diagnostic: String(error) }); }
+  }
+}
+const positiveControl = raw.some(value => value.accelerator === 'tcg' && value.status === 0 && value.qmpKvm?.return?.enabled === false);
+const result = { schemaVersion: 1, purpose: 'Raw QEMU and libvirt KVM boundary diagnostic; no application guest or Android emulator', applicationBase: 'e02be6c8b8fe9efb41a7f8f1a0b311c17796588a', harness: process.env.GITHUB_SHA, identity, before, after, raw, libvirt: { capabilitiesStatus: capabilities?.status, kvmDomainCapabilitiesStatus: kvmDomainCapabilities?.status, tcgDomainCapabilitiesStatus: tcgDomainCapabilities?.status }, positiveControl, failure, cleanup: { daemonExits, cleanupErrors, complete: cleanupErrors.length === 0 && daemonExits.every(value => value.gone || value.started === false) }, observedAt: new Date().toISOString() };
+fs.writeFileSync(join(evidence, 'capability-diagnostic.json'), JSON.stringify(result, null, 2) + '\n');
+console.log(JSON.stringify(result));
+if (!positiveControl || failure || !result.cleanup.complete || capabilities?.status !== 0) throw new CapabilityDiagnosticFailure('Diagnostic did not complete its positive control, capture, or cleanup boundary');
+'''
+
 [tasks.lifecycle]
 dir = "{{config_root}}/../../.."
 shell = "node --input-type=module-typescript -e"
