@@ -1,10 +1,12 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
-import type { DocumentNode, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import {
   activeFootnoteMarkers,
   parseDocument,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import { normalizeFootnoteIdentifier, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import {
+  type DocumentNode,
+  normalizeFootnoteIdentifier,
+} from '@monochromatic-dev/translation-repair-document-structure/ts';
 import {
   type FootnoteProtectedRange,
   overlapsFootnoteProtection,

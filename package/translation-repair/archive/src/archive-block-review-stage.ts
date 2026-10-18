@@ -37,9 +37,9 @@ import {
   gatherStageVoices,
   type HeardVoice,
   reachableQuorum,
+  type StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Archive block review stage
 

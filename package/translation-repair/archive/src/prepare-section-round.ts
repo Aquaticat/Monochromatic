@@ -4,7 +4,11 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import { alignHeadingsForced, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
-import { type ContentChunk, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import type {
+  ContentChunk,
+  RepairDocument,
+  RosterModelId,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   chunkByHeadings,
   chunkLabel,
@@ -18,13 +22,9 @@ import {
   requireSectionPairingRefusal,
   type SectionPair,
   type SectionPairingError,
+  type StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
-import type {
-  RepairDocument,
-  RosterModelId,
-} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Section pairing round
 // BUYS A SECTION PAIRING, BUT ONLY WHERE THE DETERMINISTIC ALIGNER REFUSED.

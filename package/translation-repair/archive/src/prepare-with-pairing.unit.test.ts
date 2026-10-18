@@ -24,11 +24,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type PairedSectionRecord, } from '@monochromatic-dev/translation-repair-slice-reading';
-import {
-  type BenchSeating,
-  type SliceCache,
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { PairedSectionRecord, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type {
+  BenchSeating,
+  SliceCache,
 } from '@monochromatic-dev/translation-repair-translate-floor';
 import {
   type ChatJsonOutcome,

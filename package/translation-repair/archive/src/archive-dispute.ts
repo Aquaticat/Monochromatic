@@ -1,10 +1,10 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
-import type { AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { DisputedWording, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 // Claim category that disputes the archive rendering at any severity.
 import {
   ADDITION_CATEGORY,
+  type AdjudicatedIssue,
   APPARATUS_KINDS,
   type IssueSeverity,
   NARRATIVE_DETAIL_IS_NOT_APPARATUS,

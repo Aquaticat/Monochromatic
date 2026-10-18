@@ -3,8 +3,8 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import type { BlockPair, } from '@monochromatic-dev/translation-repair-stage/ts';
 import {
+  type BlockPair,
   crossingFinding,
   splitDefinitionPairs,
 } from '@monochromatic-dev/translation-repair-stage/ts';

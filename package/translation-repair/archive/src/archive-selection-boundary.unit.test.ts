@@ -5,9 +5,9 @@
  */
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
 } from '@monochromatic-dev/translation-repair-provider';
 import { runArchiveBlockReviewStage, } from '../dist/final/node/index.mjs';
 import {

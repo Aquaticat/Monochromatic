@@ -23,10 +23,10 @@ import {
   type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract';
 import { firstRoundWindow, } from '@monochromatic-dev/translation-repair-stage';
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type SyntheticClient,
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { runCoverageStage, } from '../dist/final/node/index.mjs';
 import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixture/ts/hang-stop.test-fixture.ts';

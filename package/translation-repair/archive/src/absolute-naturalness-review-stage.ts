@@ -19,11 +19,11 @@ import {
   NaturalnessQuorumError,
   validNaturalnessQuorum,
 } from '@monochromatic-dev/translation-repair-adjudication/ts';
-import type {
-  FanOutMode,
-  StageSettings,
+import {
+  type FanOutMode,
+  runWindowedRounds,
+  type StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
-import { runWindowedRounds, } from '@monochromatic-dev/translation-repair-stage/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Absolute naturalness review stage

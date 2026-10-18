@@ -2,13 +2,15 @@ import {
   alignBlocks,
   alignHeadingsForced,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import { type ContentChunk, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import type {
+  ContentChunk,
+  RepairDocument,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   alignDocumentSections,
   chunkByHeadings,
   chunkLabel,
 } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import type { RepairDocument, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Coverage candidates
 // Every passage an aligner reports as unpaired, which is every passage anything

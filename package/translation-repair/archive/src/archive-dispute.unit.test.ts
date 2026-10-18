@@ -17,9 +17,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  type AdjudicatedIssue,
-  type IssueClaim,
+import type {
+  AdjudicatedIssue,
+  IssueClaim,
 } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   archiveDisputeNote,

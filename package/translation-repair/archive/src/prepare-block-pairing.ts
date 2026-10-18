@@ -5,14 +5,12 @@ import {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import {
   blockPairingQuestion,
+  type ChunkPair,
   pairBlocksWithRoster,
+  type PairedReading,
   type PairedSectionRecord,
   pairingPictureContext,
   queriedBlockPairingDetails,
-} from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import type {
-  ChunkPair,
-  PairedReading,
 } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
@@ -22,13 +20,13 @@ import {
   type FreeOrderBlocks,
   readBlockPairing,
   requireBlockPairingRefusal,
+  type StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
 import { finishPreparedBlockPairing, } from './prepare-block-pairing-finish.ts';
 import type { PreparedBlockPairing, } from './prepare-block-pairing-model.ts';
 import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { ContainerSpan, } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region One indexed parent through existing block preparation
 // One aligned section's pairing: settled by structure, resumed from the cache, or asked of the roster.

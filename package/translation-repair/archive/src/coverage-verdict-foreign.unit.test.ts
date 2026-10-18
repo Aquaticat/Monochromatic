@@ -19,7 +19,7 @@ import {
   parseDocument,
   type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type HeardVoice, } from '@monochromatic-dev/translation-repair-stage';
+import type { HeardVoice, } from '@monochromatic-dev/translation-repair-stage';
 import {
   type CoverageReportWire,
   judgeCoverage,

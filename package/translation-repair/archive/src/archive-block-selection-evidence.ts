@@ -1,8 +1,10 @@
 import type { ArchiveBlockReviewWire, } from './archive-block-review-wire.ts';
 import type { Candidate, } from '@monochromatic-dev/translation-repair-house-rule/ts';
-import type { SelectEvidence, } from '@monochromatic-dev/translation-repair-adjudication/ts';
 import { citedReferenceEvidence, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import { declaredNamesEvidence, } from '@monochromatic-dev/translation-repair-adjudication/ts';
+import {
+  declaredNamesEvidence,
+  type SelectEvidence,
+} from '@monochromatic-dev/translation-repair-adjudication/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 /**

@@ -18,10 +18,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  type AdjudicatedIssue,
-  type IssueClaim,
-  type IssueSeverity,
+import type {
+  AdjudicatedIssue,
+  IssueClaim,
+  IssueSeverity,
 } from '@monochromatic-dev/translation-repair-shared-contract';
 import { archiveDisputesOf, } from '../dist/final/node/index.mjs';
 

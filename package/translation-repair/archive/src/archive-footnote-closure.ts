@@ -1,11 +1,9 @@
 import type { FootnoteRelabel, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import {
+  type FootnoteLabelRewrite,
   readFootnoteClosureInput,
+  type RelabelClosure,
   retainedFootnoteLabels,
-} from '@monochromatic-dev/translation-repair-page-pass/ts';
-import type {
-  FootnoteLabelRewrite,
-  RelabelClosure,
 } from '@monochromatic-dev/translation-repair-page-pass/ts';
 import {
   activeFootnoteMarkers,

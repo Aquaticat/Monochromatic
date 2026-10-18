@@ -1,4 +1,7 @@
-import type { FrontMatterAuthority, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
+import type {
+  FrontMatterAuthority,
+  PreparedDocumentPair,
+} from '@monochromatic-dev/translation-repair-corpus-source/ts';
 
 import {
   type Logger,
@@ -7,20 +10,22 @@ import {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
-import { alignDocumentSections, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import { type PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
-import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication/ts';
-import type {
-  PairedReading,
-  PairedSectionRecord,
+import {
+  alignDocumentSections,
+  type PairedReading,
+  type PairedSectionRecord,
 } from '@monochromatic-dev/translation-repair-slice-reading/ts';
+import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication/ts';
 import type {
   BlockPair,
   DefinitionLabelPair,
   PairedDocumentRecord,
   StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
-import { parseDocument, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
+  parseDocument,
+  type RosterModelId,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { prepareBlockPairing, } from './prepare-block-pairing.ts';
 import { buySectionPairing, } from './prepare-section-round.ts';
 import type { AttestedDetail, } from '@monochromatic-dev/translation-repair-reference/ts';
@@ -28,7 +33,6 @@ import type {
   BenchSeating,
   SliceCache,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Preparation with roster pairing
 // THE ONE PLACE A MODEL TOUCHES PREPARATION, and it is deliberately outside it.

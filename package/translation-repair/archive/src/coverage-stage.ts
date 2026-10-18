@@ -14,11 +14,11 @@ import {
   type CoverageReportWire,
   isCoverageReportWire,
 } from './coverage-wire.ts';
-import type {
-  FanOutMode,
-  StageSettings,
+import {
+  type FanOutMode,
+  gatherStageVoices,
+  type StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
-import { gatherStageVoices, } from '@monochromatic-dev/translation-repair-stage/ts';
 import type {
   AnchorTarget,
   RosterModelId,

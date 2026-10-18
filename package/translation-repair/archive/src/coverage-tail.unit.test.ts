@@ -19,7 +19,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { CORPUS_EXPANSION, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
 import {
   interiorShortfall,
   readUntranslatedTail,
