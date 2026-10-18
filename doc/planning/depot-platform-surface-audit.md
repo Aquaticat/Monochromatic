@@ -554,7 +554,28 @@ Remote build `lskskmk4hn` exercised the empty-cache offline negative control.
 Cargo returned its expected exit 101 in 27 milliseconds,
 with no compiler artifacts and absent registry and target markers.
 The outer guarded build passed in 19,670 milliseconds.
-The online seed and offline reuse/invalidation cases remain pending.
+The coherent continuation used the same harness and frozen crate for every case:
+
+- Seed `12139n3wbg`: 12 Cargo compiler-artifact records,
+  none fresh;
+  Cargo 3,120 milliseconds and outer build 17,147 milliseconds.
+- Offline warm `x33zr9szff`: all 12 records fresh;
+  Cargo 376 milliseconds and outer build 13,781 milliseconds.
+- Offline target reset `x98z3btb21`: all 12 records recompiled using the retained registry cache;
+  Cargo 3,005 milliseconds and outer build 16,755 milliseconds.
+- Offline changed flags `71x7kn2wqr`: all 12 records recompiled using the original target mount;
+  Cargo 3,096 milliseconds and outer build 18,193 milliseconds.
+
+Each case consumed a new run nonce,
+so the warm result executed Cargo rather than returning a cached Docker layer.
+The mount markers prove the registry/target reuse and the separate empty target.
+The lock hash stayed unchanged.
+These are Cargo artifact records,
+not the prior sccache request counter.
+This cohort proves the narrow firstparty compilation/cache mechanism;
+it does not run nextest or the optional service/fingerprint graph.
+There is only one sample per case,
+so the recorded durations do not establish a speedup ratio or run-to-run spread.
 The actual local prerequisite control started pinned Node `24.22.0`,
 Rust `1.97.1`,
 and Cargo `1.97.1`
@@ -570,6 +591,29 @@ and the immutable remote-Git controls.
 The owned project remains `HARDWARE_16X32`,
 with at most two architecture builders and a five-minute server build timeout.
 This model does not inspect or constrain unseen account charges.
+
+## Current Cargo wrapper and historical feature chronology
+
+The installed root CLI exposes `depot cargo`.
+Its help invocation entered the command and failed because sccache was absent;
+the command-tree inventory retains that failure.
+The [current-source diagnosis](../troubleshooting/depot-cargo-cache-wrapper.md)
+and real isolated CLI controls establish a local Cargo/sccache wrapper,
+including its automatic job-token fallback,
+credential precedence,
+argument forwarding,
+and removal of inherited `SCCACHE_*` tuning.
+It is not a separate remote Rust execution pool.
+
+The full captured changelog also exposes Cache Explorer downloads,
+Dockerfile Hadolint/Semgrep integration,
+builder CNI isolation,
+separate historical build-minute and GitHub-minute caps,
+and Datadog's transition to general availability.
+Their applicability and deciding-current-source reconciliation are active work.
+Secret/SSH forwarding,
+the reviewed multi-target Bake graph,
+and immutable remote Git contexts remain pending runtime probes.
 
 ## Unreleased CLI changes expose additional research cases
 
