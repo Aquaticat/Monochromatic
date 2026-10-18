@@ -86,12 +86,21 @@ class LicenseNoticeBlocksTest {
         )
     }
 
-    /** Short lines, such as a centered title, keep their line breaks. */
+    /** Short lines, such as a centered title, keep their line breaks and their indentation relative to each other. */
     @Test
     fun shortLinesKeepTheirBreaks() {
         assertEquals(
-            listOf(LicenseBlock(LicenseBlockKind.LINES, "      Apache License\n Version 2.0, January 2004")),
+            listOf(LicenseBlock(LicenseBlockKind.LINES, "     Apache License\nVersion 2.0, January 2004")),
             splitLicenseNotices("      Apache License\n Version 2.0, January 2004"),
+        )
+    }
+
+    /** The indentation that all lines share is dropped, so a centered title starts at the left edge. */
+    @Test
+    fun theSharedIndentationIsDropped() {
+        assertEquals(
+            listOf(LicenseBlock(LicenseBlockKind.LINES, "TITLE\n  Sub title")),
+            splitLicenseNotices("                   TITLE\n                     Sub title"),
         )
     }
 

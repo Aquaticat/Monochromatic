@@ -104,7 +104,10 @@ private fun isRule(line: String, mark: Char): Boolean = line.length == RULE_LENG
 //   return wrapped ? { kind: "prose", text: lines.map((l) => l.trim()).join(" ") } : { kind: "lines", text: lines.join("\n") };
 // }
 // ```
-/** Joins the lines of one paragraph into prose when all but its last line are long, else keeps them as lines. */
+/**
+ * Joins the lines of one paragraph into prose when all but its last line are long, else keeps them as lines with the
+ * indentation they all share removed.
+ */
 private fun blockOf(lines: List<String>): LicenseBlock {
     /** Whether the paragraph has two or more lines and each line before the last was cut to fit a column. */
     val wrapped: Boolean = lines.size >= 2 &&
@@ -112,7 +115,13 @@ private fun blockOf(lines: List<String>): LicenseBlock {
     if (wrapped) {
         return LicenseBlock(kind = LicenseBlockKind.PROSE, text = lines.joinToString(separator = " ") { it.trim() })
     }
-    return LicenseBlock(kind = LicenseBlockKind.LINES, text = lines.joinToString(separator = "\n") { it.trimEnd() })
+    /** Spaces that every non-blank line starts with, which a centered title carries and a narrow screen cannot use. */
+    val commonIndent: Int = lines.filter { line -> line.isNotBlank() }
+        .minOfOrNull { line -> line.length - line.trimStart().length } ?: 0
+    return LicenseBlock(
+        kind = LicenseBlockKind.LINES,
+        text = lines.joinToString(separator = "\n") { line -> line.drop(commonIndent).trimEnd() },
+    )
 }
 
 // What:     `fun splitLicenseNotices(notices: String): List<LicenseBlock>` cuts the whole notice text into blocks.
