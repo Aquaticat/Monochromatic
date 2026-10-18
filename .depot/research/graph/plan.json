@@ -1670,5 +1670,224 @@
         "--no-fail-fast"
       ]
     }
-  ]
+  ],
+  "topLevelSourceEntries": [
+    {
+      "path": ".agents",
+      "gitObject": "0003544b8e1073c9d8e16c2a10479f1c621334cc"
+    },
+    {
+      "path": ".browserslistrc",
+      "gitObject": "9bae6bbc49ca9167f6ff15220be28419fb3995b5"
+    },
+    {
+      "path": ".cargo",
+      "gitObject": "47743075cb578cf30823ece19daf0f88be3c49cf"
+    },
+    {
+      "path": ".changeset",
+      "gitObject": "bde3af4768f9a7a64436301ab278bb35f098364d"
+    },
+    {
+      "path": ".claude-plugin",
+      "gitObject": "75d441419fc4543c16ababf82c17105db7ff5740"
+    },
+    {
+      "path": ".dockerignore",
+      "gitObject": "709f543f2f8b4f462707282741de0751a5e70424"
+    },
+    {
+      "path": ".editorconfig",
+      "gitObject": "3f5ad16784a3bffd7267e38162262e80bf27bfe1"
+    },
+    {
+      "path": ".gitattributes",
+      "gitObject": "4735b092a8548df9adf7eb4a9c2e164deabddfb1"
+    },
+    {
+      "path": ".gitignore",
+      "gitObject": "98efcf7c1f0c3cfd4cc5401b686eb312424d5694"
+    },
+    {
+      "path": ".idea",
+      "gitObject": "1c668d609b4fbc2951a6d5c0e1d8af4c1c880e82"
+    },
+    {
+      "path": ".lfsconfig",
+      "gitObject": "622ccd346c0e7b3e65a2f67459cb4145fe939988"
+    },
+    {
+      "path": ".opencodereview",
+      "gitObject": "7ea8962b0728e64a7d6c0813abbb534e99e3c110"
+    },
+    {
+      "path": ".out-of-scope",
+      "gitObject": "342022c77570a6288e3ca37c79f1147204eef006"
+    },
+    {
+      "path": ".pi",
+      "gitObject": "89dbc638b4008a10cf77a021c05caf1f59d39327"
+    },
+    {
+      "path": ".pnpmfile.mjs",
+      "gitObject": "d79f0e5d960a0ab04b56c1a14650d705a510b05b"
+    },
+    {
+      "path": ".pnpmfile.policies.json",
+      "gitObject": "36f495cf425f446149a3c12da948c230f3cd137a"
+    },
+    {
+      "path": ".serena",
+      "gitObject": "0ce18ebd3b5b798c740ebde01b34eee3549bd672"
+    },
+    {
+      "path": "AGENTS.md",
+      "gitObject": "b3ec75fb84ff57d28b10e269f87f02da1fb9ae1e"
+    },
+    {
+      "path": "CLAUDE.md",
+      "gitObject": "5ff092f55a50a953182acc46fb84829098f92735"
+    },
+    {
+      "path": "Caddyfile",
+      "gitObject": "50297f4f9ebdde76028abc21515099f6eb410756"
+    },
+    {
+      "path": "Dockerfile",
+      "gitObject": "d0d535b29e5f241e85a8204b6b78e6c252d74d88"
+    },
+    {
+      "path": "LICENSE",
+      "gitObject": "0a041280bd00a9d068f503b8ee7ce35214bd24a1"
+    },
+    {
+      "path": "LICENSES",
+      "gitObject": "7caf23b2f50dfea907715852494053505ef53f69"
+    },
+    {
+      "path": "README.md",
+      "gitObject": "06de2c97465f1cb2e2d546f4e2804fb14d44a50b"
+    },
+    {
+      "path": "SECURITY.md",
+      "gitObject": "d5713536ec643060bdf0e905283e493c7c86b846"
+    },
+    {
+      "path": "bunfig.toml",
+      "gitObject": "6d4a7790561ad7e10238d2b583175dc13ccd28c3"
+    },
+    {
+      "path": "cli-git.config.jsonc",
+      "gitObject": "696470e069e76a6770fcf10495446f7ae5cc5917"
+    },
+    {
+      "path": "clippy.toml",
+      "gitObject": "1af0c5c1751f65eb3907492349711a286ffa4e02"
+    },
+    {
+      "path": "doc",
+      "gitObject": "6e7c2f1191b02d5b6e62788e170bf830b4c9edd9"
+    },
+    {
+      "path": "docker-compose.yml",
+      "gitObject": "7e1cf50a8b0c521256e1d6cca7dc3a41555cf868"
+    },
+    {
+      "path": "dprint.json",
+      "gitObject": "679feb79bb286daa8b2d700d2934c4c99e5921c9"
+    },
+    {
+      "path": "file-enforcer.config.ts",
+      "gitObject": "3017b6bcbaa3cddb3691d66772ab5690cb6127d2"
+    },
+    {
+      "path": "forbidden-strings.append.txt",
+      "gitObject": "8ff2dacc1ead11efdceeb59eb5f43412c472fc56"
+    },
+    {
+      "path": "mise.lock",
+      "gitObject": "5c5b4bea0a5162b5c4ce0bf35c297254813c7635"
+    },
+    {
+      "path": "mise.no-env.toml",
+      "gitObject": "aa4698f8d537c2a0a26ea71ac0a6ca995dfd5aba"
+    },
+    {
+      "path": "mise.toml",
+      "gitObject": "999f2f5588b33f637c584536b5cbd094e0a5d66a"
+    },
+    {
+      "path": "monochromatic-lint.config.jsonc",
+      "gitObject": "5e8ce1bfd5354483c0cf1fb7ea810ace4f218b2f"
+    },
+    {
+      "path": "monochromatic.code-workspace",
+      "gitObject": "e6122e9a9f8c7b520e8112fec7698dab865324dc"
+    },
+    {
+      "path": "node.config.json",
+      "gitObject": "b1d93558f11070f9be3356d9201b2f28ea0c8731"
+    },
+    {
+      "path": "oxlint.config.ts",
+      "gitObject": "217a434d2339390a8830fe6b84cbaece4aa6674f"
+    },
+    {
+      "path": "package-deprecated",
+      "gitObject": "7339c8f11b26d48ca3347c2e531a054f6e5754a6"
+    },
+    {
+      "path": "package-paused",
+      "gitObject": "b3ee71bbaf4cb65fa349dad499fa3808108916f5"
+    },
+    {
+      "path": "package.json",
+      "gitObject": "33a45a76c5d0dd32061842a1e82eeba8ab6930d6"
+    },
+    {
+      "path": "package",
+      "gitObject": "c7d6a23c628b25ad3995fe59aaf8db3836a58425"
+    },
+    {
+      "path": "playwright.Dockerfile",
+      "gitObject": "ee6c6b2fbd46ebb2eab096a4164693d7c18e4e77"
+    },
+    {
+      "path": "playwright.browser.config.ts",
+      "gitObject": "db2c66b999b9ff436643e6784f5122908b290fcb"
+    },
+    {
+      "path": "playwright.e2e.config.ts",
+      "gitObject": "e63894c57af4caa06ca2f6d44ab490768324dd83"
+    },
+    {
+      "path": "playwright",
+      "gitObject": "7c52469b66bf896b74320ebfd8fa18dae5986edb"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "gitObject": "51c4e1b1c70ecc8e47fe2e4c08c6c895b27301bc"
+    },
+    {
+      "path": "pnpm-workspace.yaml",
+      "gitObject": "b2f55c8c29336cf4f95825228a9a89e21e1c3946"
+    },
+    {
+      "path": "slopo.conf.yaml",
+      "gitObject": "4f7968598ddb84907ee68fd4e24ca12f93b56d26"
+    },
+    {
+      "path": "slopo.ignore.txt",
+      "gitObject": "2352173cf7538667375850df6d87cdcaa3ab027e"
+    },
+    {
+      "path": "socket.json",
+      "gitObject": "bed6e322680c3511cc6ea49435e47d9b67304bb3"
+    },
+    {
+      "path": "tsconfig.json",
+      "gitObject": "ddddec9427d5b910ff32280e10d3c3ece63ff1cf"
+    }
+  ],
+  "sourceGuardBoundary": "All frozen top-level Git entries except declared .github/.depot research configuration, plus tracked working-tree diff; generated research helper and build outputs are identified separately"
 }
