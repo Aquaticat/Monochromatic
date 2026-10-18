@@ -525,6 +525,13 @@ so the order adds sibling builds to a dependency that exists.
 - Each runner entry stays in the package that owns its entry file,
   with its `mise` task and its built path moved with it.
   Docs and runbooks that start runners name the new task.
+- A runner's pipeline digest (`corpus-run/pipeline-digest.ts`) hashes the runner's own `dist/final/node` directory,
+  and artifacts and slice caches key their generation on it.
+  A runner that imported sibling builds at run time would leave sibling code out of its digest,
+  so a sibling change could resume foreign slices silently.
+  Runner bundles therefore keep inlining every family package,
+  in a build of their own;
+  only the library index build keeps family siblings external.
 - The coverage census builds coverage bundles of the whole family,
   so it reads every package's sources,
   not only its own.
