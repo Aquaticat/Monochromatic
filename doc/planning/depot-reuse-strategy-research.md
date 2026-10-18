@@ -122,13 +122,43 @@ Stop on the declared resource ceiling,
 unexpected credential use or an uninspected execution path.
 Preserve failed outcomes and include their compute exposure.
 
-## Campaign work queue
+## Captured preparation and active consumers
 
 The first preparation run is `xkmm08vpjs`,
 dispatched from pushed harness `e65f3ccf26781999717cfd9c17e1bd361f42183a`.
 It requests one `depot-ubuntu-24.04-8` sandbox and a 15-minute timeout.
-Its proposed image destination is `l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r1`.
-That reference is not a verified reusable image until capture and fresh-consumer checks finish.
+The preparation finished at `2026-10-18T06:32:24Z`.
+Its image destination is `l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r1`,
+with pushed manifest digest `sha256:9fb974fd32185c8afd5711370869d03e0f28e5b560c928eae324c20151ddeee8`.
+Fresh consumption is still unverified.
+The [preparation evidence](../audit/depot-reuse-strategy-2026-10-18.evidence.json)
+binds the frozen source inputs,
+tool hashes and all 11 retained artifact members to the provider's uploaded ZIP digest.
+
+Measured command durations are 15.137 seconds for the locked core tools,
+1.575 seconds for Nextest,
+2.361 seconds for pnpm's 582 downloaded packages,
+1.238 seconds to create the installed-dependency archive,
+16.880 seconds for Gradle dependency-graph resolution and 0.725 seconds for Cargo fetch.
+Gradle's dependency report does not prove all later compile/test JARs were downloaded.
+The snapshot helper measured 19.104 seconds for capture plus upload,
+with 5,703,139,328 uploaded block bytes.
+These boundaries exclude fresh-image startup,
+checkout and action startup;
+uploaded bytes are not a verified storage charge.
+The pnpm store contains 908,109,264 bytes and the installed archive contains 296,779,994 bytes.
+
+The helper selected by release version `1.2.30` reports `snapshot 0.1.0 (119be55)` at runtime.
+Both identities are retained rather than silently treating them as matching versions.
+The `max-age: 6h` input is not evidence of automatic registry deletion.
+
+Consumer run `6wt5gm6t75`,
+from harness `168107a38eadffe157c74be4267c10341c675550`,
+failed before sandbox startup when `runs-on.image` used the full registry `@sha256:` reference.
+The provider's diagnosis states `Dispatch failed: [not_found] image "9fb974fd32185c8afd5711370869d03e0f28e5b560c928eae324c20151ddeee8" not found`.
+The documented unique tag form is the next probe.
+This dispatch failure does not measure Gradle,
+tool installation or cache restoration.
 The helper's official release resolver supplies a pinned Depot S3 archive;
 authenticated lookup of public `depot/snapshot` source returned HTTP `404`.
 The helper's internal source/build provenance is therefore unverified,
@@ -138,6 +168,8 @@ Parent work separately owns Android APK/instrumented builds,
 headful device consumption,
 default-image graphics/KVM and prepared-image portability to GitHub Actions.
 This campaign does not launch or delegate emulator work.
+
+## Campaign work queue
 
 - Verify snapshot capture/upload and fresh installed-tool reuse,
   including source/secret marker controls and missing-tool behavior.
