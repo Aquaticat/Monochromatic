@@ -274,7 +274,7 @@ before saying it matches, QAB):
   runner printed literal ESC characters), proven on the Windows runners with a positive control.
 - Standing rule from the human (2026-10-17): "You should never use Opus subagents!" Subagents use `model: sonnet`
   (or haiku for trivial reads). The four agents below were first started on Opus and all died on 2026-10-17 on the
-  account's weekly limit (resets 2026-10-19 08:00 America/New_York); their partial work stayed in their worktrees
+  account's weekly limit; their partial work stayed in their worktrees
   (now under `/var/mnt/encrypted/temp/agent/`) and fresh Sonnet agents continue it:
   (c) `aa99a806ba461a022` (licenses), (d) `a507287f6e2fa8092` (winerr), (e) `ae0eaae6e38ca6ea1` (cachebatch),
   (f) `a24e53faf2449563e` (andlarge, plus issues 1438, 1439, 1440), (g) `a4826ac87de5272d2`, branch
