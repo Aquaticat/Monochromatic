@@ -1,5 +1,76 @@
 # Depot trial interview
 
+## Execution checkpoint on 2026-10-18 at 08:45 UTC
+
+Research remains open;
+do not resume the interview or declare readiness from the completed module sample.
+The frozen application source is `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+Later main changes do not silently enlarge a frozen cohort.
+
+The exact cloud APK pair now has a completed local headful consumer in
+[`depot-android-consumer-2026-10-18.evidence.json`](../audit/depot-android-consumer-2026-10-18.evidence.json).
+All 16 source-derived cases were reported:
+14 passed,
+two retained the known `SessionStoreTest` context-fixture failure,
+and none skipped.
+Private emulator/ADB cleanup completed.
+The successful producer and its matching certificates remain distinct from the first APK-only launch.
+
+Both native Depot and Depot's GitHub runner completed the frozen `mvm` Linux lifecycle.
+GitHub-hosted Ubuntu failed libvirt's KVM capability boundary after a successful device-access adjustment.
+The parent owns a further bounded raw QEMU/libvirt diagnostic,
+the public VM/process receipts,
+PR cleanup receipt completion,
+and the associated source-backed troubleshooting notes.
+
+Derived container runs `rvvg2kv0jk` and `39112162357` completed:
+host HTTP controls passed and all job containers completed checkout,
+then their locked Node 26.12.0 installation failed because `libatomic.so.1` was absent.
+The capability researcher is preparing a separately identified image with that prerequisite
+and actual AMD64/Arm64 Node 26 execution.
+The parent must consume that image,
+retain failed fixtures,
+remove only its exact owned GitHub/native pull-secret variants,
+and release the owned builder resources afterward.
+
+The cache researcher now owns the queued matched lock/evidence replays on native Depot,
+GitHub-hosted Ubuntu,
+and Depot GitHub runners.
+Its admission extends from 18 to at most 21 cloud requests,
+with the same USD 5 timestamp-compute model ceiling and two active jobs at most.
+Each new four-CPU/sixteen-GB job has a ten-minute limit.
+The forecast is USD 1.7312 from the measured USD 1.3712 plus USD 0.36 reserved.
+It must use the exact diagnostic binaries/source,
+repeat unchanged controls,
+compare owned ordinary directories with bounded tmpfs where supported,
+preserve red results,
+and delete its exact temporary signed-URL secrets.
+
+The parent still owns physical Depot Tests shards/report consumers,
+native retry/rerun and corrected state-artifact consumption,
+broader Rust/current-source linter coverage,
+the cost/critical-path model,
+and the approved final report.
+The frozen inventory contains five Rust fuzz sidecars,
+not only the two `rust-module` sidecars:
+`cli/forbidden-strings.fuzz`,
+`git-policy/cli.fuzz`,
+`linter/monochromatic-lint.fuzz`,
+`rust-module/forbidden-regex.fuzz`,
+and `rust-module/jsonc-edit.fuzz` under `package/`.
+Inspect each owning task before running;
+some already implement container bounds and planted controls,
+and some dual-corpus commands can mutate committed seed inputs.
+Keep source preservation and explicit ASan/GNU target evidence.
+
+The capability researcher's additional admission is USD 2 cumulative timestamp compute,
+with its existing two-builder/sixteen-CPU/thirty-two-GB bounds unchanged.
+Actual Bake,
+secret/SSH forwarding,
+real Cargo cache mounts,
+and remote-source controls remain its owned work.
+Captured docs/repository enumeration is not complete substantive feature review.
+
 ## Research reopened and interview withdrawn on 2026-10-18
 
 The user rejected the readiness claim:
