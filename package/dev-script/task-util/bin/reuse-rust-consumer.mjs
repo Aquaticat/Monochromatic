@@ -40,12 +40,23 @@ assert.equal(sha(readFileSync(binary)), '973cb15f6a986d84ca334bbed3bbe2eb8f1ee8f
 writeFileSync(join(evidence, 'sccache-installation.json'), JSON.stringify({ startedAt, elapsedSeconds: (performance.now() - start) / 1000, downloadedBytes: archive?.length ?? 0, archiveSha256: archive ? sha(archive) : null, binarySha256: sha(readFileSync(binary)), version: '0.18.0', sourceCommit: '01c35e69b97f516c2ebfbdb418b5cd6277bde280', installedInPreparedImage }, null, 2) + '\n');
 const selectedGit = join(prefix, 'git-2.56.0/bin/git');
 assert.equal(sha(readFileSync(selectedGit)), 'd42496dde88b0e5bfbdeb8a32f339601635d7007915ce9a9925ba7f7423bc99e');
+// The frozen authoritative fixtures deliberately call this absolute path and compare /proc executable identities.
+run({ name: 'disposable-sandbox-required-git-install', command: 'sudo', args: ['install', '--mode=0755', '--', selectedGit, '/usr/bin/git'] });
+assert.equal(sha(readFileSync('/usr/bin/git')), sha(readFileSync(selectedGit)));
+const linterInstallEnv = { ...env, MISE_CARGO_BINSTALL_ONLY: 'true', MISE_CARGO_BINSTALL_QUICKINSTALL: 'false' };
+run({ name: 'lock-bound-published-linter-install', command: 'mise', args: ['install', 'cargo:monochromatic-lint'], childEnv: linterInstallEnv, limit: 180_000 });
+const linterPath = run({ name: 'lock-bound-published-linter-path', command: 'mise', args: ['which', 'monochromatic-lint'], childEnv: linterInstallEnv }).log.trim();
+assert.equal(sha(readFileSync(linterPath)), '6f82c73dadadd11506624a085d38e7e5ab98a26014416bfedd03c1928a85cc69');
+const linterHelp = run({ name: 'lock-bound-published-linter-help', command: linterPath, args: ['--help'] });
+assert(linterHelp.log.includes('--version'));
+run({ name: 'lock-bound-published-linter-version', command: linterPath, args: ['--version'] });
+writeFileSync(join(evidence, 'published-linter-prerequisite.json'), JSON.stringify({ kind: 'locked-published-tool-not-current-source-workload', version: '0.1.3', releaseTag: 'monochromatic-lint-v0.1.3', releaseSource: 'c954f74798ee47c027ee3d9a31811de6345ca328', archiveSha256: '9d9021526d5377d268d4c75ed9d42d9df53d9ed76969031edb6a7809863ec665', binarySha256: sha(readFileSync(linterPath)), bytes: statSync(linterPath).size, path: linterPath }, null, 2) + '\n');
 const wrapper = join(dirname(fileURLToPath(import.meta.url)), 'reuse-rustc-wrapper.mjs');
 chmodSync(wrapper, 0o755);
 const journal = join(evidence, 'rustc-requests.jsonl');
 writeFileSync(journal, '');
 const target = join(privateRoot, 'cargo-target');
-const buildEnv = { ...env, PATH: dirname(selectedGit) + ':' + env.PATH, CARGO_TARGET_DIR: target, CARGO_INCREMENTAL: '0', CARGO_PROFILE_DEV_DEBUG: '0', RUSTC_WRAPPER: wrapper, REUSE_SCCACHE_BINARY: binary, REUSE_RUSTC_JOURNAL: journal, SCCACHE_WEBDAV_ENDPOINT: 'https://cache.depot.dev', SCCACHE_WEBDAV_KEY_PREFIX: 'aquaticats-monochromatic-reuse-20261018-native-r2-git256/', SCCACHE_WEBDAV_TOKEN: process.env.DEPOT_CACHE_TOKEN, SCCACHE_WEBDAV_RW_MODE: phase === 'seed' ? 'READ_WRITE' : 'READ_ONLY', SCCACHE_DIR: join(privateRoot, 'sccache-local'), SCCACHE_CACHE_SIZE: '0', SCCACHE_IDLE_TIMEOUT: '300', SCCACHE_SERVER_PORT: '42262', CLI_GIT_LOCK_WAIT_SECONDS: '20', CLI_GIT_PUSH_LOCK_WAIT_SECONDS: '20' };
+const buildEnv = { ...env, PATH: dirname(selectedGit) + ':' + env.PATH, CARGO_TARGET_DIR: target, CARGO_INCREMENTAL: '0', CARGO_PROFILE_DEV_DEBUG: '0', RUSTC_WRAPPER: wrapper, REUSE_SCCACHE_BINARY: binary, REUSE_RUSTC_JOURNAL: journal, SCCACHE_WEBDAV_ENDPOINT: 'https://cache.depot.dev', SCCACHE_WEBDAV_KEY_PREFIX: 'aquaticats-monochromatic-reuse-20261018-native-r3-absolute-git/', SCCACHE_WEBDAV_TOKEN: process.env.DEPOT_CACHE_TOKEN, SCCACHE_WEBDAV_RW_MODE: phase === 'seed' ? 'READ_WRITE' : 'READ_ONLY', SCCACHE_DIR: join(privateRoot, 'sccache-local'), SCCACHE_CACHE_SIZE: '0', SCCACHE_IDLE_TIMEOUT: '300', SCCACHE_SERVER_PORT: '42262', CLI_GIT_LOCK_WAIT_SECONDS: '20', CLI_GIT_PUSH_LOCK_WAIT_SECONDS: '20', GIT_POLICY_NATIVE_TEST_LINTER: linterPath };
 delete buildEnv.CARGO_BUILD_JOBS;
 run({ name: 'sccache-help', command: binary, args: ['--help'], childEnv: buildEnv });
 run({ name: 'sccache-version', command: binary, args: ['--version'], childEnv: buildEnv });
