@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-18T15:10:27.821Z",
+  "updatedAt": "2026-10-18T15:15:20.914Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research reopened; no readiness claim",
   "sourceArchive": {
@@ -249,8 +249,21 @@
       "family": "api",
       "applicability": "Programmatic cloud requests and observations; restricted methods remain source-only",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed API page read; operation scope, auth, lifecycle, repository applicability and exact runtime boundaries reconciled",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:15:20.913Z",
+        "sourceSha256": "1b39bf45aea14198a168a342c177d8c0cd884926a3a7922a82de9491abb00bcb",
+        "findings": [
+          "Node SDK registers a build then attaches normal CLI using DEPOT_BUILD_ID and derived build token; Go helper directly acquires/releases BuildKit with mTLS",
+          "Project per customer/trust entity recommended for cache isolation; a project is not universally one image",
+          "Machine release retains warm capacity for two minutes; actual billable builder intervals remain unqualified",
+          "External registries need separate Docker/programmatic auth; save/load/push and file exporters are distinct consumers",
+          "Go tutorial defers Finish(buildErr) with an initially nil variable; argument-capture behavior and a closure remedy are not exercised by this page review"
+        ],
+        "use": "Programmatic creation/cleanup and ordinary CLI are actual incumbent research controllers; direct Go BuildKit client is an optional separate adapter",
+        "limits": "No organization-token creation, broad project/organization list, external registry credentials or direct Go builder session executed; Go snippet behavior requires its own control before adoption"
+      }
     },
     {
       "title": "Authentication",
@@ -271,8 +284,19 @@
       "family": "api",
       "applicability": "Programmatic cloud requests and observations; restricted methods remain source-only",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed API page read; operation scope, auth, lifecycle, repository applicability and exact runtime boundaries reconciled",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:15:20.914Z",
+        "sourceSha256": "20d1747cfdc0b629b92001384950651476099f82d85f7d1ab298236970afff7e",
+        "findings": [
+          "Organization API token grants project creation/update/deletion/builds and full push/pull for any project registry in that organization",
+          "Bearer Authorization is the API contract; organization-wide token is broader than a per-project build token or native short-lived job credential",
+          "Published listProjects demonstration is not an instruction to access unrelated account state"
+        ],
+        "use": "Existing user CLI login stays in process for solely-owned resource management; native injected credential is separately qualified",
+        "limits": "No organization token was minted, copied into a workflow, or inspected"
+      }
     },
     {
       "title": "Depot Code API Reference",
@@ -296,8 +320,20 @@
       "family": "api",
       "applicability": "Programmatic cloud requests and observations; restricted methods remain source-only",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed API page read; operation scope, auth, lifecycle, repository applicability and exact runtime boundaries reconciled",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:15:20.914Z",
+        "sourceSha256": "29c5889ea5e35208899a6b9cb1ac30b80cbe946e6f2c02e21c6c912f791e3428",
+        "findings": [
+          "CodeService public beta supports CreateRepository with exactly standalone or github, and DeleteRepository by stable repositoryId",
+          "GitHub mirror requires active Code Access connection; GitHub remains source of truth",
+          "Delete makes refs unreachable and is irreversible; no physical-object erasure guarantee",
+          "sdk-node does not currently export CodeService; Connect JSON or Buf-generated client is required"
+        ],
+        "use": "Optional future Git transport/origin capability, distinct from CI execution pools",
+        "limits": "No mirror/repository/token created; no code transfer, speed or retention proof"
+      }
     },
     {
       "title": "GitHub Actions API",
@@ -325,8 +361,23 @@
       "family": "api",
       "applicability": "Programmatic cloud requests and observations; restricted methods remain source-only",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed API page read; operation scope, auth, lifecycle, repository applicability and exact runtime boundaries reconciled",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:15:20.914Z",
+        "sourceSha256": "176cc9926e0dc6d1edc30a0ff032d6754a7a9bc9938a51680e7239b0b72f42ee",
+        "findings": [
+          "Organization-token scoped job/log/analytics/runner recommendation/App connection/test-summary/usage-projection API; organization derives from credential",
+          "Job/analytics queries default30days and allow90days; logs default1hour and allow30days",
+          "CPU/memory recommendations aggregate complete UTC days even for a subday request; exact job durations/failure counts use requested time range",
+          "Rounded thresholds: sizeup at90percent averageCPU ormemory; sizedown averages<=30percent andpeaks<=70percent; no minimum jobcount; preserve OS/architecture/storage family",
+          "Workflow-path telemetry may lack utilization attribution; pagination reflects ingestion and dataThrough freshness",
+          "TerminateGithubActionsJob requests compute termination and does not cancel GitHub workflow run",
+          "Connections install URL expires10minutes; usage projection is list-rate estimate excluding credits/discounts/custom pricing"
+        ],
+        "use": "Potential exact-job observability and future size recommendations; current source-bound allocation ledger is separate from inferred utilization",
+        "limits": "No organization analytics/usage/projection/connection listing or settings change; published filters do not override the account-wide access constraint"
+      }
     },
     {
       "title": "Depot API Overview",
@@ -352,8 +403,20 @@
       "family": "api",
       "applicability": "Programmatic cloud requests and observations; restricted methods remain source-only",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed API page read; operation scope, auth, lifecycle, repository applicability and exact runtime boundaries reconciled",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:15:20.914Z",
+        "sourceSha256": "0c1a3ace3b6ee74930a31e05123de26bf56d2f38650a921d0333d4302e3d97d7",
+        "findings": [
+          "Connect supports JSON/gRPC; native CI, managed GHA, Container Builds, Sandbox and Code expose distinct interfaces",
+          "Core getProject/updateProject/listProjects require organization token; user login does not work; createProject/deleteProject also accept authorized user tokens",
+          "Sandbox public beta charges requested vCPUs times lifetime at CI compute rate with no one-minute minimum; included-plan credit is not established",
+          "One project per untrusted customer entity is the documented cache trust boundary"
+        ],
+        "use": "Explains earlier user-token GetProject rejection while actual create/delete/build capability remains available",
+        "limits": "No account or invoice access; service documentation is not universal cross-product credential authorization"
+      }
     },
     {
       "title": "Depot Sandbox SDK reference",
@@ -402,11 +465,27 @@
       "family": "api",
       "applicability": "Programmatic owned test/tool sandboxes with finite lifecycle and filesystem consumers",
       "retrievalValidated": true,
-      "reviewState": "Installed SDK/schema and deployed reference reviewed; default lifecycle and one AMD64 block-image absolute-Git/small-files consumer passed; arbitrary OCI/named runtimes, snapshot persistence, secrets and detached-log completeness remain unqualified",
+      "reviewState": "Complete deployed API page read; operation scope, auth, lifecycle, repository applicability and exact runtime boundaries reconciled",
       "runtimeEvidence": [
         "doc/audit/depot-sdk-custom-runtime-2026-10-18.evidence.json"
       ],
-      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md",
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:15:20.914Z",
+        "sourceSha256": "c1575be4a00673692c0b6a59f72d841a5cff96c148d249f09669175dc62df083",
+        "findings": [
+          "Separate ESM @depot/sandbox client requires Node20+, explicit orgID for ambiguous user or app/service credentials",
+          "Create runtime.imageRef is documented, while Coming soon contradicts it by calling custom runtimes not delivered; actual custom Depot r2 image success is the deciding narrow evidence",
+          "Defaults2CPU4096MB100GBdisk and120minute expiry includingprovisioning; CPU2to64, maximumlifetime24hours; explicit2minute profiles used here",
+          "stop is graceful finished, blocking waits cleanup; kill is cancelled and signal option currently ignored; methods reject already stopped instances",
+          "runCommand direct argv, optional sudo/detached; no implicit shell; output collection capped16MiB and independent slow consumers fail explicitly",
+          "Filesystem API preserves syscall/path/error identity; beta filesystem operations lack root; full-binary transfer failure differs from successful absolute Git and small-file consumers",
+          "Detached logs/output/wait are documented unavailable; setTimeout resets expiry from request subject to absolute maximum; no lifetime extension called here",
+          "Secrets and SDK-created snapshots remain planned; native snapshot Action and SDK use of an existing image are different capabilities"
+        ],
+        "use": "Actual owned default and custom-image SDK lifecycle, direct command and small-filesystem controls retained separately from native CI",
+        "limits": "Seven historical owned SDK sandboxes terminal; no arbitrary ordinary OCI runtime, named runtime, SDK snapshot/secret injection, full executable-transfer or retained detached replay qualification"
+      }
     },
     {
       "title": "Depot SDK Reference",
@@ -471,8 +550,24 @@
       "family": "api",
       "applicability": "Programmatic cloud requests and observations; restricted methods remain source-only",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed API page read; operation scope, auth, lifecycle, repository applicability and exact runtime boundaries reconciled",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:15:20.914Z",
+        "sourceSha256": "12b14401e1e20fa465bcf59c15f6e08b57be1849b9f3470f3ea915ece35d2fe2",
+        "findings": [
+          "Project/build execution/build records/registry/BuildKit/usage/organization services enumerated; generated Node/Go and CLI-private service namespaces must not be conflated",
+          "ResetProject terminates project machines and deletes cache while retaining configuration; DeleteProject also destroys associated volumes by documented contract",
+          "Build record ShareBuild exposes public URL and StopSharingBuild removes it; no sharing enabled",
+          "sdk-node2.0.0 lacks GitLab trust provider, while current Connect JSON and generated Go schema expose GitLab; old client surface is not provider absence",
+          "DEPOT_BUILD_ID attaches a precreated build; ordinary CLI handles FinishBuild, direct SDK sessions must finish and release themselves",
+          "BuildKit API requires health reporting or resources removed after five minutes inactivity; release schedules removal rather than proving physical deletion",
+          "Registry ListImages/DeleteImage are project-scoped; usage methods include invoice-equivalent organization CSV and remain excluded",
+          "Project configuration cache keepGb is per-architecture ceiling; current public25GB plan storage pool and actual used bytes remain separate"
+        ],
+        "use": "Current owned create/delete/ListBuilds and BuildKit/registry consumers use explicit scope; API offers future typed control instead of dashboard automation",
+        "limits": "No project reset, public sharing, broad token/trust mutation, organization enumeration, usage method or direct Go BuildKit session; configured ceilings are not actual storage consumption"
+      }
     },
     {
       "title": "Authentication",
