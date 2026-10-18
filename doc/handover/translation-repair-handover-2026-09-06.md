@@ -450,7 +450,10 @@ before the other queued work.
     gate g102 runs on `1939670f87` in `w179`, unit `gate-g102`, output `s245/split/gate-g102/`):
     n171 and n173 left no hand-back to source their breaches,
     and Z4 has no recorded fix;
-    a `pi` sol review;
+    a `pi` sol review of the five rounds' landed production diff
+    (`s245/sol-review/question.md` and `production.diff`;
+    blocked: `pi` reports `No API key found for openai-codex`, so the owner must log in;
+    an independent Sonnet review of the same diff runs meanwhile, report `s245/sol-review/sonnet/review.md`);
     the cache-account audit;
     the relaunch of TianqiChen666 through the runbook's keyed task.
 6.  Done 2026-10-18:
