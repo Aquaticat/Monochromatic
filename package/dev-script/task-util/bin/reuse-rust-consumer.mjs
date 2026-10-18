@@ -53,7 +53,7 @@ run({ name: 'nextest-owned-version', command: 'mise', args: ['exec', 'rust', 'ca
 const nextestHelp = run({ name: 'nextest-command-help', command: 'mise', args: ['exec', 'rust', 'cargo:cargo-nextest', '--', 'cargo', 'nextest', 'run', '--help'], childEnv: buildEnv });
 assert(nextestHelp.log.includes('--no-fail-fast'));
 run({ name: 'host-git-version', command: '/usr/bin/git', args: ['--version'], childEnv: buildEnv });
-assert.equal(run({ name: 'required-git-version', command: 'git', args: ['--version'], childEnv: buildEnv }).log.trim(), 'git version 2.56.0');
+assert.equal(run({ name: 'required-git-version', command: 'mise', args: ['exec', 'rust', 'cargo:cargo-nextest', '--', 'git', '--version'], childEnv: buildEnv }).log.trim(), 'git version 2.56.0');
 run({ name: 'locked-rust-toolchain', command: 'mise', args: ['exec', 'rust', '--', 'rustc', '--version', '--verbose'], childEnv: buildEnv });
 run({ name: 'sccache-start', command: binary, args: ['--start-server'], childEnv: buildEnv });
 
