@@ -568,8 +568,13 @@ Part of [the family README](../README.md).
   the definitions inside containers (B620).
   The rows of B619 are fixed by n166,
   n168 and n169,
-  which are green and not landed,
-  with the rows left to them taken by n173.
+  landed with n171 in the tests `555bb74aa0` and the code `29d6064708`,
+  with the rows left to them taken by n173 (`ff6be38eef`, `43428948cb`).
+  Landed with them:
+  a carry choice with no strict majority is run off among its tied leaders,
+  with the quorum, window and label rules of the bench's run-off,
+  and a second split keeps the page as it stands (B641;
+  the lead's adoption of the owner's run-off rule of 2026-10-11, open to the owner's veto).
   The words rule:
   the span the pass replaces is the words alone.
   The single marks that touch each edge of the span are read at the chosen place and at the receiving place.
