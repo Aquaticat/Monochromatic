@@ -102,10 +102,14 @@ The BuildKit request-window proxy remains separate and unmeasured builder billin
 
 The root graph subtotal independently recomputes to `USD 0.487`:
 
-- Setup failure Depot jobs: `71` seconds and `USD 0.0142`.
-- Corrected Depot GitHub jobs: `815` seconds and `USD 0.163`.
-- Original native attempts: `771` seconds and `USD 0.1542`.
-- Corrected native attempts: `778` seconds and `USD 0.1556`.
+- Setup failure Depot jobs:
+  `71` seconds and `USD 0.0142`.
+- Corrected Depot GitHub jobs:
+  `815` seconds and `USD 0.163`.
+- Original native attempts:
+  `771` seconds and `USD 0.1542`.
+- Corrected native attempts:
+  `778` seconds and `USD 0.1556`.
 
 These are exact assigned-job or native-attempt intervals priced at `USD 0.012/minute`,
 with standard public GitHub compute zero.
@@ -212,3 +216,11 @@ read the current scoped deletion contract,
 and retain timestamp and exact absence receipts.
 No account-wide listing is authorized.
 Local worktrees and source archives remain retained.
+
+Coverage confirmed on 2026-10-18 that its pending host controls and local semantic audit need none of these snapshots.
+The exact second tag is `tools-r2-git256`.
+The registry schema inspection and exact owned-image admission precede deletion.
+The independent follow-on recheck passed `33` source-body joins,
+`30` interval and identity joins,
+and all retained setup ZIP CRC checks after desktop hydration.
+The frozen baseline is unchanged.
