@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-18T14:56:51.182Z",
+  "updatedAt": "2026-10-18T15:06:43.934Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research reopened; no readiness claim",
   "sourceArchive": {
@@ -994,8 +994,26 @@
       "family": "ci",
       "applicability": "Expanded workflow execution, orchestration, current-source checks, tests and debugging",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed page, claims, repository applicability and actual receipt boundaries reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:04:06.165Z",
+        "reviewer": "/root",
+        "sourceSha256": "ff617914eb76d5110e89edcc9795c035cd97d16c2a446fd9a1e2ca0fd0de974c",
+        "sourceBytes": 23665,
+        "findings": [
+          "The compatibility table marks workflow DAGs, matrices, reusable workflows, concurrency, outputs, services, containers, expressions and continuation supported; exercised continuation/timeout/rerun semantics retain their actual mismatches rather than inheriting the table's checkmarks.",
+          "Deployment environments are marked unsupported in the compatibility table; the separate secrets guide still supports environment-name metadata for variant matching. Metadata selection must not be confused with protected approval gates. Non-Depot runs-on labels become Linux depot-ubuntu-latest, so copied Windows/Mac labels cannot qualify operating-system execution.",
+          "Fork pull_request and pull_request_target support is documented as planned. Defensive fork behavior in individual Actions is a distinct layer, not proof of native fork workflow support.",
+          "Native scheduled workflows activate only on the default branch, use UTC, ignore per-entry timezone and have no start-time SLA. Repository dispatch also uses the default branch; workflow_run exposes distinct YAML name, path and Depot basepath fields.",
+          "Cross-repository reusable workflows require full commit SHAs or version-looking tags, not branches/abbreviated SHAs; authored .github/workflows paths resolve to .depot/workflows in the source repository. Private callers/source repositories have same-organization/App-access restrictions.",
+          "Unsupported permission keys are silently ignored. code-quality must be explicit and is excluded from read-all/write-all; issues permissions also depend on the Code Access App installation grant.",
+          "JavaScript Action Node12/16/20 declarations now run on Node24 by default, separately from the PATH node used by run steps; the temporary insecure-version opt-out is not a Node26 job-runtime fix.",
+          "GitHub Packages authentication with native GitHub App GITHUB_TOKEN is documented unsupported across package registries. Depot Registry save avoids introducing a broad long-lived package PAT; no PAT is provisioned in this research."
+        ],
+        "use": "Keep GitHub orchestration for platform/environment/trust boundaries it supplies; design native owner jobs with explicit supported labels, permissions, immutable reusable references and separately qualified status/process/artifact behavior.",
+        "limits": "Documentation is not actual exercise of every trigger, expression, reusable-workflow mode, fork trust boundary or permission. No recurring schedule, deployment environment, App installation or token is changed. Existing execution receipts qualify only their exact exercised boundaries."
+      }
     },
     {
       "title": "Mount a durable cache disk",
@@ -1021,8 +1039,23 @@
       "family": "ci",
       "applicability": "Expanded workflow execution, orchestration, current-source checks, tests and debugging",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed page, claims, repository applicability and actual receipt boundaries reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:04:06.165Z",
+        "reviewer": "/root",
+        "sourceSha256": "b49984ad8ab00614161df4bff1924aaf665cb16459f2eabebb30b8bb47593055",
+        "sourceBytes": 6222,
+        "findings": [
+          "Cache-disk names are organization-global across repositories/workflows; knowing a name can grant any organization build access to its contents. Use repository/purpose namespaces and exclude secrets/untrusted outputs.",
+          "depot/cache-mount creates and reuses a durable named filesystem, supports simultaneous mounts and conditional writes, but supplies no atomicity for overlapping application writes. Single writers, partitioned directories or immutable content-addressed entries remain application responsibilities.",
+          "Public-fork Action behavior skips mounting and creates only the target directory; this is not proof that native fork workflow scheduling is supported.",
+          "The guide calls Disk beta free during beta, without an end date. It documents organization cache retention with a fourteen-day default and owner deletion in workflow settings. This is separate from the priced combined Build Cache/Depot Cache/Registry pool.",
+          "The repository's existing Disk producer/reader hashes, FUSE/unmount and token-delete receipts are applicable; its single 30.261-to-0.139-second observation has no unchanged-repeat causal qualification."
+        ],
+        "use": "A namespaced, source/ABI/flags-admitted filesystem can hold compiler inputs, reference fixtures and partitioned producer outputs without Actions tarball restore steps; preserve actual byte consumers and single-writer ownership.",
+        "limits": "No organization retention/settings/listing is accessed. The existing single-pair timing does not establish a cache or whole-job speed multiplier, simultaneous-writer safety, or future beta pricing."
+      }
     },
     {
       "title": "Use Depot CI in coding agent loops",
@@ -1062,8 +1095,23 @@
       "family": "ci",
       "applicability": "Expanded workflow execution, orchestration, current-source checks, tests and debugging",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed page, claims, repository applicability and actual receipt boundaries reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:04:06.165Z",
+        "reviewer": "/root",
+        "sourceSha256": "1448431042e8d299fa3513354dfc1c8ebb603bd235b23a9bb0709ae08827a57b",
+        "sourceBytes": 9057,
+        "findings": [
+          "The advertised agent loop dispatches local tracked-file patches, automatically resolves --job dependencies, uses status --wait and drills into bounded diagnosis/log/attempt evidence. New untracked files are not patched until staged.",
+          "AI-generated diagnose suggestions require verification against actual logs. A stored diagnosis and an explicit new model call are distinct, and the platform's automatic failure-summary processing is not ruled out by avoiding application model calls.",
+          "The guide's blanket agent permission examples and fix-until-green prompt are examples, not authorization to change this evaluation's frozen source, account settings, deployments or production routes.",
+          "The existing bounded Mise controller and source-bound dispatch/status/log/ZIP consumer receipts exercise the noninteractive shell loop. Its immutable pushed revisions are a stronger reviewable source boundary than an unidentified dirty patch.",
+          "The guide recommends attempt bounds and offers direct SSH/tmate; actual run completion, job exit, process absence and billing release remain separate observations."
+        ],
+        "use": "Continue source-bound local agent dispatch and targeted evidence collection under per-campaign reservations, explicit ownership and finite attempts; preserve application baseline failures rather than editing assertions to force research green.",
+        "limits": "No global blanket command permission, custom agent command, recurring fix loop, secret/variable change or provider-model call is introduced. CLI local-patch support does not qualify ignored/untracked material or a full filesystem upload."
+      }
     },
     {
       "title": "Build and use custom images",
@@ -1088,8 +1136,24 @@
       "family": "ci",
       "applicability": "Expanded workflow execution, orchestration, current-source checks, tests and debugging",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed page, claims, repository applicability and actual receipt boundaries reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:04:06.165Z",
+        "reviewer": "/root",
+        "sourceSha256": "76e66d2b933807ba162b9b702655d419bfb04af5a22b8ac231358c4b10e11e8e",
+        "sourceBytes": 7461,
+        "findings": [
+          "depot/snapshot-action is native-CI-only, captures sandbox filesystem state into an organization Depot Registry image, and is not a GitHub Actions snapshot mechanism.",
+          "Custom images use runs-on {size,image} with both required, Depot Registry images only, and documented 2x8 through64x256 geometries. The compatibility page's jobs.snapshot row should not be treated as proof that arbitrary OCI images or syntax variants work.",
+          "Process environment changes such as PATH do not persist. Tool-setup actions or explicit paths/environment must be replayed even if downloaded files are present; this matches the research's separate absolute-executable consumers and prepared-image tool activation checks.",
+          "The guide proposes preinstalling toolchains/system dependencies and prepulling service images, but containers still need startup/health consumers. Those proposed savings need actual complete-job measurements.",
+          "Precloned repositories require checkout clean:false to preserve untracked dependencies/artifacts. That optimization also requires current source/output admission; retained bytes or stale subsecond builds are not correctness or performance evidence.",
+          "The research's r1/r2/r3 prepared-image and fresh compiled/runtime consumers retain image/source/absolute-CWD/toolchain relations; default-toolchain coherent graph samples intentionally exclude those prepared snapshots."
+        ],
+        "use": "Use separately versioned prepared images for measured expensive setup only after admitting source, architecture, toolchains, environment activation and actual downstream consumers; rebuild the image when admitted dependencies change.",
+        "limits": "No production image tag or recurring image workflow is changed. Filesystem snapshotting is not process/env continuation, arbitrary external-registry support, measured pre-pull benefit or byte-equivalent application output without a consumer."
+      }
     },
     {
       "title": "Debug a failing job with SSH",
@@ -1119,8 +1183,23 @@
       "family": "ci",
       "applicability": "Expanded workflow execution, orchestration, current-source checks, tests and debugging",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed page, claims, repository applicability and actual receipt boundaries reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:04:06.165Z",
+        "reviewer": "/root",
+        "sourceSha256": "c0842723d35287d036523e9a16ed47c1b1b1c0d88a80492358debec2dd3c38e1",
+        "sourceBytes": 6942,
+        "findings": [
+          "Direct SSH attaches through exec.depot.dev with Depot API authentication to the raw running sandbox; it is not a paused workflow step and does not guarantee the workflow's CWD or environment.",
+          "--ssh-after-step injects mxschmitt/action-tmate@v3, uses one-based step counting, requires exactly one --job, excludes --ssh, and sets limit-access-to-actor:false. Anyone seeing a live connection string in logs can attach.",
+          "Ending the tmate session completes the injected pause and resumes remaining steps. The page retains a TODO for session duration/timeout, so no finite session lifetime is inferred from it.",
+          "ci ssh can select run/job IDs, waits up to five minutes for a sandbox, and --info --output json prints details instead of establishing a real interactive consumer.",
+          "A live debug session has runner-user/root privileges and can change measured state. Keep such debugging separate from unchanged benchmark samples and prevent connection strings from entering public evidence."
+        ],
+        "use": "A source-supported direct-sandbox bridge is available for exact owned failed/running jobs when existing diagnostics are insufficient; prefer explicit finite commands and isolated debug profiles over contaminating timing samples.",
+        "limits": "This page review is not a successful SSH/tmate execution receipt. No tmate pause or public bearer-like connection URL is created. The documentation leaves session timeout unresolved and raw-sandbox SSH does not recreate a step's environment."
+      }
     },
     {
       "title": "Manage secrets and variables",
@@ -1152,8 +1231,24 @@
       "family": "ci",
       "applicability": "Expanded workflow execution, orchestration, current-source checks, tests and debugging",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed page, claims, repository applicability and actual receipt boundaries reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:04:06.165Z",
+        "reviewer": "/root",
+        "sourceSha256": "5243f44e058bbf82f02311b513e284dbce3218f9f34a88e79be7c587a2ef16b8",
+        "sourceBytes": 12970,
+        "findings": [
+          "Organization owners manage encrypted secret variants and plaintext variable variants. Secret values are write-only after creation, are decrypted on demand and hydrated per step; declared log masking is not a substitute for inspecting published original evidence.",
+          "Availability uses OR among alternatives of one attribute kind and AND across repository/branch/workflow/environment kinds. Branch and workflow attributes allow globs; repository variants bind stable repository identity through rename/transfer.",
+          "Variant priority is environment, repository, branch, workflow, fallback; adding an attribute increases specificity within the hierarchy, and environment-only can beat repository-only. It is not a simple highest-attribute-count rule.",
+          "Environment-name matching accepts string/object job.environment metadata; jobs without the field cannot match. This does not prove protected GitHub environment approval/deployment integration, which the compatibility page marks unsupported.",
+          "Bulk migration creates a temporary one-shot GitHub workflow branch and requires a push within five minutes, then imports values/deletes the remote branch. Reserved GITHUB_TOKEN/DEPOT_TOKEN names are skipped, so a migration is a real secret-copy operation rather than harmless discovery.",
+          "Existing exact-name, repository/branch/workflow-scoped research transport secrets have positive-presence and negative-deletion receipts. They do not qualify all variant-conflict or glob precedence combinations."
+        ],
+        "use": "Use short-lived automatic native build authentication where proven and narrowly scoped ephemeral transport bindings only when necessary; preserve exact selector/identity and cleanup receipts.",
+        "limits": "No bulk secret migration, new broad token, organization secret/variable listing, global account setting or real deployment is authorized by reading the guide. Variables are not private, and environment matching alone is not an approval gate."
+      }
     },
     {
       "title": "Manage workflow runs",
@@ -1189,8 +1284,24 @@
       "family": "ci",
       "applicability": "Expanded workflow execution, orchestration, current-source checks, tests and debugging",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed page, claims, repository applicability and actual receipt boundaries reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:04:06.165Z",
+        "reviewer": "/root",
+        "sourceSha256": "6038056a96ba77d826a6b82457fce2325c4459e64506afd3d9a4dbe69e8f0b6d",
+        "sourceBytes": 11727,
+        "findings": [
+          "Local ci run patches are injected after checkout; remote branches use unpushed changes and local-only branches use the default branch base. Reusable-workflow call jobs cannot receive a patch step and instead run merge-base code with a warning, so clean pushed immutable source avoids that local-patch coverage gap.",
+          "ci dispatch accepts a workflow basename and validates declared inputs; it differs from local ci run's workflow path/patch semantics. Depot actor identity derives from the actual dispatch credential and triggering_actor changes on retries while original actor remains fixed.",
+          "The built-in DEPOT_TOKEN is limited to the current job attempt and cannot dispatch another workflow; native job OIDC cannot directly authorize ci dispatch either. The guide's cross-workflow example requires a separately stored organization/user token, which is not introduced here.",
+          "Workflow --failed retry creates attempts for failed/cancelled jobs and also reruns downstream succeeded/skipped jobs. Single-job retry, in-step retry, full workflow rerun and a fresh dispatch have distinct replay scopes and costs.",
+          "Rerun requires a terminal workflow. Cancel can target run/workflow/job, but observed terminal state does not prove descendant absence or VM billing release; existing timeout and stale-artifact controls remain authoritative for those narrower boundaries.",
+          "Run/job/workflow show APIs expose exact hierarchy and attempts. Existing exact-owned status/watch/API/ZIP receipts avoid reading an organization-wide run list and join current immutable content rather than trusting numeric artifact ID order."
+        ],
+        "use": "Prefer event-driven native workflows or explicit bounded local dispatch without adding a broad cross-workflow token; use exact source/run/workflow/job/attempt identities and account separately for downstream replay.",
+        "limits": "No broad dispatch token, organization listing, production trigger or recurring workflow is configured. Actor environment values can include personal names/email and must not be dumped into public artifacts. The original same-name artifact rerun remains a measured failed consumer."
+      }
     },
     {
       "title": "Run steps in parallel",
@@ -1215,8 +1326,23 @@
       "family": "ci",
       "applicability": "Expanded workflow execution, orchestration, current-source checks, tests and debugging",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed page, claims, repository applicability and actual receipt boundaries reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:04:06.165Z",
+        "reviewer": "/root",
+        "sourceSha256": "3dfaff17c54e4c65722ff1b05358db769ffaf4aeb4ae53565b3ba2c86de41b45",
+        "sourceBytes": 4556,
+        "findings": [
+          "Native parallel blocks fork step-state snapshots of outputs/environment/GITHUB_PATH, then merge state before the next step, while workspace, HOME and tool caches remain shared.",
+          "Secret masking takes effect globally and immediately across sibling branches; state isolation does not imply filesystem isolation.",
+          "A parallel block can contain ordered sequential arrays. Nested parallel blocks are unsupported, and step IDs must be unique across the entire job.",
+          "Default fail-fast cancels siblings; fail-fast:false lets failures complete without converting the group to success. Individual step continue-on-error absorbs its failure into group eligibility, distinct from documented job-level continuation and the measured native aggregate mismatch.",
+          "Shared Node builds must finish before module/browser fanout, and Cargo/other writers need distinct output ownership. The current coherent graph implements its own bounded process DAG inside a shell, so that new timing alone is not evidence for every native parallel-step state rule."
+        ],
+        "use": "Use native parallel/sequential only for disjoint filesystem writers after prerequisites, with explicit failure collection and unique IDs; retain the prior source-bound orchestration receipts for the actual semantics exercised.",
+        "limits": "The guide gives no conflict-precedence guarantee for sibling writes to the same state key or filesystem path. No new claim about signal propagation, billing release or nested parallel support follows."
+      }
     },
     {
       "title": "Retry failed steps",
@@ -1240,8 +1366,23 @@
       "family": "ci",
       "applicability": "Expanded workflow execution, orchestration, current-source checks, tests and debugging",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed page, claims, repository applicability and actual receipt boundaries reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:04:06.165Z",
+        "reviewer": "/root",
+        "sourceSha256": "eb8fb6ecd29534534963950aa5b5f2e55330de0897c59559b124c2b67fdca830",
+        "sourceBytes": 6068,
+        "findings": [
+          "Native retry is supported only on run steps; retry on uses Actions is rejected because action post/state machinery is not safely replayable. A countN means N additional attempts, with1to10 retries and configurable constant/exponential capped delays.",
+          "Any nonzero failure triggers retry, without exit/output filters. continue-on-error applies only after all retries are exhausted; timeout-minutes is per attempt, while the job's cancellation/timeout stops further retries according to the guide.",
+          "Retries reuse the same sandbox. Filesystem mutations and GITHUB_OUTPUT/GITHUB_ENV/GITHUB_PATH/GITHUB_STATE contents accumulate; the files are read once after the loop and the last value wins.",
+          "All step-attempt groups share the same step logs rather than separate job-attempt logs, so attempt costs and failure evidence must distinguish step repeats from ci rerun jobs/workflows.",
+          "Repeated frozen-source assertions should remain evidence, not be hidden by unconditional retries. Current coherent graph samples intentionally use no retry; the measured finite-writer timeout gap also prevents inferring descendant process cleanup from retry/cancellation documentation."
+        ],
+        "use": "Consider finite retries only for specifically identified transient, replay-safe commands, with admitted output identities and a job-level cost/time bound; preserve every failure and distinguish same-sandbox state from fresh reruns.",
+        "limits": "No general retry policy is enabled. The guide's cancellation claim is not observed process absence, deallocation or billing release; native timeout controls retain their measured mismatch."
+      }
     },
     {
       "title": "Split tests by timing",
@@ -1316,8 +1457,23 @@
       "family": "ci",
       "applicability": "Expanded workflow execution, orchestration, current-source checks, tests and debugging",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed page, claims, repository applicability and actual receipt boundaries reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:04:06.165Z",
+        "reviewer": "/root",
+        "sourceSha256": "a3deb5497cef65853486bc6939c0a044463e75fa046bd6d9cca1317eafb1de8e",
+        "sourceBytes": 16356,
+        "findings": [
+          "Origin-hosted repositories receive direct Origin events/checks, while GitHub mirrors retain GitHub as source of truth and event/check destination. The same-looking workflow syntax does not make the forge integrations identical.",
+          "The integration is early beta and requires Cursor Origin access plus Depot organization ownership/connection. This repository currently stays on GitHub; adding a mirror/forge is not part of using an additional execution pool.",
+          "Migration --forge=origin versus default github selects remote/access checks and mode-specific compatibility analysis. Migration findings are advisory and do not prevent writing a workflow; unsupported conversions can be disabled jobs requiring review.",
+          "Origin mode lacks GitHub release/assets, SARIF/code-scanning and dependency-snapshot APIs in documented examples. Failures, silent degradation and conditional unsupported modes must not be generalized to the GitHub-backed Depot product.",
+          "Secret import still uses a temporary five-minute push window and repository/App/forge alignment. A successful migration command is not proof that publication, security scanning or required-check consumers completed."
+        ],
+        "use": "Record non-applicability to the current GitHub-authoritative repository and retain forge-specific caveats so an all-capabilities inventory does not silently introduce code mirroring or another subscription.",
+        "limits": "No Origin account, Cursor plan, repository mirror/detachment, organization integration, secret import or external publication is configured; no Origin execution or branch-protection proof is claimed."
+      }
     },
     {
       "title": "Datadog CI Visibility",
@@ -1339,8 +1495,23 @@
       "family": "ci",
       "applicability": "Expanded workflow execution, orchestration, current-source checks, tests and debugging",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed page, claims, repository applicability and actual receipt boundaries reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:04:06.165Z",
+        "reviewer": "/root",
+        "sourceSha256": "99e0af4607cb1944cccf44658a39bc9dbf71002c764654defc23c20ad6b7c56c",
+        "sourceBytes": 2154,
+        "findings": [
+          "Native CI is not a GitHub Actions run, so Datadog's GitHub webhook ingest does not automatically see it; Depot uses Datadog's custom pipeline API.",
+          "Emission requires both an organization toggle and DD_API_KEY secret. Repository-scoped key overrides organization-scoped key; DD_SITE selects a nondefault region.",
+          "Workflow/job/step map to pipeline/job/step; retries are distinct runs and partial retries are marked partial. Cancelled steps become errors, while skipped/never-run steps are omitted.",
+          "Emission is best-effort and does not stop CI if Datadog is unavailable, so a missing dashboard row would not prove no native execution.",
+          "The repository has no authorized Datadog setup in this evaluation; first-party original logs/JUnit/job/attempt evidence already supplies its required audit path."
+        ],
+        "use": "Document as an optional external observability integration if a future independently authorized Datadog requirement exists; keep native-vs-GHA ingest and cancellation/skip semantics explicit.",
+        "limits": "No Datadog API key, account, organization toggle or external telemetry sink is created or enabled; no Datadog consumer or best-effort delivery guarantee is claimed."
+      }
     },
     {
       "title": "Depot CI logs",
@@ -1362,8 +1533,22 @@
       "family": "ci",
       "applicability": "Expanded workflow execution, orchestration, current-source checks, tests and debugging",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed page, claims, repository applicability and actual receipt boundaries reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:04:06.165Z",
+        "reviewer": "/root",
+        "sourceSha256": "fc1b29670b9114db955f01181b749aef986e6342ab57780bc1f297beca29f67a",
+        "sourceBytes": 2844,
+        "findings": [
+          "The dashboard log viewer groups full output by step and offers search/filter/export; CLI logs can select and follow an exact job attempt and CI API supports programmatic retrieval.",
+          "DEPOT_JOB_URL identifies a particular attempt's dashboard page. That URL is useful correlation metadata, while publishing raw logs still requires credential/signed-URL/privacy inspection.",
+          "The repository already retains exact original evidence ZIPs, per-member/log hashes and selected safe API metadata. Raw Actions logs and signed artifact transport URLs remain private.",
+          "The page advertises run/repository/trigger/SHA/PR/workflow filters, but the research uses exact owned IDs and does not inspect other organization repositories or send example Slack/webhook notifications."
+        ],
+        "use": "Keep attempt-scoped logs, source correlation, actual selected diagnostics and immutable archive/member hashes as the audit path; use bounded terminal watchers rather than routine progress queries.",
+        "limits": "No provider log retention/completeness guarantee is stated here, so silence is not proof of no execution. No external message, account-wide workflow listing or raw signed transport URL is published."
+      }
     },
     {
       "title": "Depot CI metrics",
@@ -1386,8 +1571,22 @@
       "family": "ci",
       "applicability": "Expanded workflow execution, orchestration, current-source checks, tests and debugging",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed page, claims, repository applicability and actual receipt boundaries reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:04:06.165Z",
+        "reviewer": "/root",
+        "sourceSha256": "39a0d254a17061f98e00c537c8a651cf7396c3f27ae0bb12d0f62b5d1aca6d0f",
+        "sourceBytes": 2443,
+        "findings": [
+          "Per-job sandbox CPU/memory graphs have step annotations, and step durations expose setup versus execution bottlenecks; the guide also points to exact-job metrics APIs.",
+          "Failure diagnosis is AI-generated from job logs when available and can be retrieved through ci diagnose. Avoiding an explicit application model call does not establish that provider-side failure analysis is absent.",
+          "Resource graphs can inform sizing, but nominal CPU/RAM labels and maximum reservations are not observed utilization, actual billable VM intervals or invoices.",
+          "The repeated graph must keep actual resource identity and overlapping intervals rather than summing isolated job durations; no measured whole-CI speedup follows from the UI's example graphs."
+        ],
+        "use": "Join exact owned attempts' resource and step evidence to observed complete-sample critical paths and allocation arithmetic; retain setup, execution, intentional serialization and provider processing separately.",
+        "limits": "No account-wide usage/billing/settings query or AI setting change is made. Provider-generated suggestions remain unverified until source/log/consumer checks support them."
+      }
     },
     {
       "title": "Depot CI test results",
@@ -1420,8 +1619,24 @@
       "family": "ci",
       "applicability": "Expanded workflow execution, orchestration, current-source checks, tests and debugging",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed page, claims, repository applicability and actual receipt boundaries reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:04:06.165Z",
+        "reviewer": "/root",
+        "sourceSha256": "b8c4e3b1ada0c2f4715a2561cfe63db1e3ab9837d017baec3cc0b4fa12c1798b",
+        "sourceBytes": 9302,
+        "findings": [
+          "Native test-report Action authentication is automatic through native sandbox OIDC without DEPOT_TOKEN secret or id-token:write. This specialized native service contract is separate from external cloud OIDC's explicit permission requirement.",
+          "The Action accepts files/directories/recursive XML/globs and newline-separated paths. Unique key inputs distinguish multiple upload invocations in one job; default key fallback uses GITHUB_ACTION then default.",
+          "The page advertises failure/error/skip details, captured stdout/stderr, grouped shard results and same-SHA passed-on-rerun/flaky context. Existing exact-source stored-results, failure/retry/skip and identity-adapter controls qualify their actual exercised surfaces, not every advertised analytics view.",
+          "depot tests resolves job IDs to latest attempts, exact attempt IDs directly, and multi-job run IDs only with job/workflow disambiguation; --ci prevents cross-product ID lookup ambiguity.",
+          "Developer and Startup each include one million passing result events monthly, then USD0.000001 per passing result; failures/errors/skips are free. Repeated uploads/executions must not be confused with unique test bodies.",
+          "The protocol's duplicate_invocation-always-false limitation and existing issue remain distinct from the page's key/dedup guidance; the adapted 34-case timed disjoint union and136stored events retain exact invocation identities."
+        ],
+        "use": "Emit real source-owned JUnit where supported, preserve original XML and validated identity adapters, upload after test failures without treating uploads as execution, and use exact attempts for evidence and usage modeling.",
+        "limits": "No account-wide analytics/usage page is read. Claimed history/flakiness/dedup behavior is limited to retained controls; passing-result events are not unique cases or an assertion-coverage denominator."
+      }
     },
     {
       "title": "GitHub checks",
@@ -1442,8 +1657,22 @@
       "family": "ci",
       "applicability": "Expanded workflow execution, orchestration, current-source checks, tests and debugging",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed page, claims, repository applicability and actual receipt boundaries reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:04:06.165Z",
+        "reviewer": "/root",
+        "sourceSha256": "47fee52425151dfa3009a48bba59ed4790a408e95f0bb560121c52c6241edf1c",
+        "sourceBytes": 1248,
+        "findings": [
+          "Depot CI publishes job checks on corresponding commits, with GitHub-style reusable/matrix naming; retry/rerun reuses the check name for a new attempt.",
+          "The actual disposable PR controls already prove required-check selection for GitHub App15368 versus Depot App219785, failed-merge rejection and a final non-admin passing merge; the temporary base was deleted and main protection remained equal to baseline.",
+          "Measured native job-level continue-on-error leaves native aggregate/App-suite failure despite successful downstream eligibility, while the one-step continuation control completes its job/workflow. A checkmark in compatibility docs does not erase that result.",
+          "Check name alone is not a provider/attempt identity; protected requirements need the intended App and actual current commit/merge checkout relation."
+        ],
+        "use": "Keep exact current-commit provider App/check identity and aggregate semantics explicit before proposing required/advisory native gates.",
+        "limits": "The documentation page is not a new branch-protection or fork/check-security experiment. No main protection or deployment setting is changed."
+      }
     },
     {
       "title": "OIDC with Depot CI",
@@ -1473,8 +1702,23 @@
       "family": "ci",
       "applicability": "Expanded workflow execution, orchestration, current-source checks, tests and debugging",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed page, claims, repository applicability and actual receipt boundaries reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:04:06.165Z",
+        "reviewer": "/root",
+        "sourceSha256": "ea8a1e044b70fabf0313456a68e12c9eba2ae85803d173055c6f1bce047e0b5f",
+        "sourceBytes": 13916,
+        "findings": [
+          "External cloud OIDC uses issuer https://identity.depot.dev and JWKS /keys, not GitHub's token.actions.githubusercontent.com issuer/subject. The guide requires id-token:write for external tokens and describes five-minute expiry with requested audience.",
+          "Subject encodes Depot org, GitHub owner/repository, full ref and per-job sandbox. Match stable org/repo/ref and wildcard the final sandbox rather than pinning a changing sandbox ID; organization IDs must not receive an invented org_ prefix.",
+          "The guide directs AWS to standard aud/sub IAM conditions rather than arbitrary flat Depot/GitHub claim keys; it distinguishes cloud providers that can map custom claims. These are documentation-level provider instructions, not an exercised AWS role.",
+          "During a hybrid transition, the guide recommends a separate Depot trust policy so the existing GitHub issuer/subject remains usable. Creating or broadening cloud trust is not required for the current source-bound research.",
+          "Automatic native Tests/build-service authentication, external cloud federation, GitHub Actions project OIDC and cross-workflow dispatch are separate contracts; success of one does not qualify the others."
+        ],
+        "use": "If a future separately authorized external cloud consumer needs federation, design aud/issuer/stable-source identity matching without long-lived secrets and verify the actual provider's deciding trust semantics first.",
+        "limits": "No AWS/GCP/Azure role, account, trust relationship, broad token or production deployment is created. The captured example JWT is documentation, not a live token or proof of a successful provider exchange."
+      }
     },
     {
       "title": "Depot CI",
@@ -1503,12 +1747,28 @@
       "family": "ci",
       "applicability": "Native Linux workflow execution, sizing, architecture labels and separate included CI allowance",
       "retrievalValidated": true,
-      "reviewState": "Current deployed source establishes2CPU/8GB included-minute baseline and CPU multipliers; actual orchestration receipts separate; ARM functional owners completed in p4xj5dsh3s; complete page reserved for parent source pass",
+      "reviewState": "Complete deployed page, claims, repository applicability and actual receipt boundaries reviewed by parent",
       "runtimeEvidence": [
         "doc/audit/depot-native-orchestration-2026-10-18.evidence.json",
         "doc/audit/depot-included-allowance-2026-10-18.evidence.json"
       ],
-      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md"
+      "reconciliationSource": "doc/planning/depot-platform-surface-audit.md",
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:04:06.165Z",
+        "reviewer": "/root",
+        "sourceSha256": "662dbbdddb0fe4b47d12360fc4f70de5ce07bb92d9ec6306fa09ac8d500131b9",
+        "sourceBytes": 14011,
+        "findings": [
+          "Native CI is Depot's Switchyard orchestration plus Depot Metal sandboxes, not a GitHub-hosted run. Automatic event registration follows merging .depot/workflows to the default branch; original .github workflows continue independently.",
+          "The page's2to3second startup and no-YAML-rewrite claims are marketing/documented behavior, not measured repository guarantees. Compatibility limitations, actual timeout/continued-failure semantics and duplicated side-effect risk remain binding qualifiers.",
+          "Native sandboxes are Ubuntu24.04 Linux AMD64/ARM64,2CPU8GB through64CPU256GB. Native offers no Mac/Windows sandbox; those are a distinct Depot GHA product. Default PATH Node22 is separate from JavaScript Action runtime and required locked Node26.",
+          "Compute is documented per second without one-minute minimum, with included minutes normalized to2CPU8GB. Four CPUs consume2base minutes per wall minute and the size ladder doubles through32x multiplier; included amounts are not hard caps.",
+          "Developer USD20 includes2000native base minutes and Startup USD200 includes20000; product build/GHA allowances remain separate, with storage scope reconciled against live combined-product pricing rather than treating every pool as shared.",
+          "Actual repository ARM run p4xj5dsh3s already passed the all-feature Truepeak and built-module functional controls. It replaces any stale queued-ARM wording but does not establish whole-repository ARM coverage or repeated speed."
+        ],
+        "use": "Treat native Linux execution, Depot GHA operating-system runners and BuildKit as separate allocation products with actual source-bound workloads and measured complete-sample evidence.",
+        "limits": "No default-branch workflow activation, paid plan change or deployment duplication occurs in the research. The page is not an invoice, resource-utilization measurement, startup SLA or universal compatibility guarantee."
+      }
     },
     {
       "title": "Quickstart for Depot CI",
@@ -1537,8 +1797,23 @@
       "family": "ci",
       "applicability": "Expanded workflow execution, orchestration, current-source checks, tests and debugging",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Complete deployed page, claims, repository applicability and actual receipt boundaries reviewed by parent",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T15:04:06.165Z",
+        "reviewer": "/root",
+        "sourceSha256": "d289ac96a90fd971a22e22a701e51ed2ea141c3d1e518f0df26ab4f5cf21a37e",
+        "sourceBytes": 5827,
+        "findings": [
+          "Native automatic triggers require the Depot Code Access App and default-branch .depot workflows; research currently uses existing authorized access and exact bounded dispatches rather than changing App installation or production triggers.",
+          "The migration command copies selected workflows plus other non-symlink files under .github/workflows, preserves relative paths/permissions and copies local Actions to .depot/actions. A migrated file is not proof that its intended source, platform or side effects are correct.",
+          "Standard Ubuntu labels map to native sandbox labels; nonstandard labels default to Depot Linux while expressions remain unresolved. Source-bound rendered destination checks are required, as proven by the retained corrupt-expression queued attempt.",
+          "Secret migration is separate from workflow copying and reserved token names are skipped; merging event workflows can run side effects twice because GitHub originals remain active.",
+          "Specific --job local runs are available for bounded investigation, with dependency/source/patch limits detailed in the run-management guide. The user's goal is additional capabilities and expanded CI, not replacing GitHub wholesale."
+        ],
+        "use": "Prepare and evaluate new owner-specific CI configurations in isolated branches with actual destination/source/consumer checks; defer production triggers and required-check decisions to the post-research interview.",
+        "limits": "No global migration, App permission change, bulk secret import, subscription change or production merge is performed from this guide. Installation examples are not executed as unaudited curl-to-shell commands."
+      }
     },
     {
       "title": "Authentication",
@@ -16692,5 +16967,18 @@
       "nativeDepot": []
     },
     "scope": "Complete immutable tracked filename inventory; absence is not a ban or absence of configured/downloaded third-party tools"
+  },
+  "nativeCiCompleteSourceReview": {
+    "reviewer": "/root",
+    "reviewedPages": 18,
+    "splitTestsReviewedSeparately": true,
+    "claimFindings": 95,
+    "sourceBytes": 156769,
+    "archive": {
+      "path": "doc/audit/depot-native-ci-document-source-review-2026-10-18.evidence.json.gz",
+      "bytes": 13893,
+      "sha256": "672193a5ca02e030240664f0812f7b612e7d02b263158b36728346a8c7a29f7e"
+    },
+    "scope": "Full source bodies and applicability reviewed, not runtime qualification of all syntax/integrations"
   }
 }
