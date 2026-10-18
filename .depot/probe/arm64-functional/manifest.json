@@ -1,0 +1,23 @@
+{
+  "frozenSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+  "maximumConcurrentJobs": 1,
+  "runner": "depot-ubuntu-24.04-arm-8",
+  "maximumCpus": 8,
+  "documentedMemoryGB": 32,
+  "serverJobTimeoutMinutes": 15,
+  "profileDeadlineMinutes": 10,
+  "commandMaximumMilliseconds": 240000,
+  "fullWindowComputeReservationUsd": 0.36,
+  "nominalCampaignCeilingUsd": 1,
+  "invoiceOrAccountCapProven": false,
+  "passingResultAndStorageMetersSeparate": true,
+  "matchedAmd64": {
+    "rustRun": "221vdm1f21",
+    "rustHarness": "a85e204f078db540c2a292342000ce5423bb8338",
+    "tsRun": "39105587003",
+    "tsHarness": "b9c84e42b72f7e0abfa942a98a61029e4f3f252c"
+  },
+  "productionRoutingChanged": false,
+  "accountSettingsAccessed": false,
+  "customSnapshotReused": false
+}
