@@ -61,9 +61,42 @@ the native cache namespace and the added hardware probe differ.
 
 All six initial jobs are in progress.
 All five Depot-labelled jobs have actual `depot-*` runner names.
-The private `wait-native-followup-terminals` task waits for all routes in command session `75523`,
-writing terminal receipts under `depot-native-followup-dispatches/`.
-It emits only terminal results.
+
+The first desktop Mac route is terminal:
+`1433` nextest cases run,
+`1406` passed,
+`27` failed and one summary skip,
+plus the two existing Clippy `missing return` diagnostics.
+Do not claim identity parity until the individual test names are compared.
+Its hardware probe reports seven CPUs and `18253611008` memory bytes,
+which differs from the published eight-CPU,
+24-GB runner specification.
+Record measured hardware separately from the priced label.
+
+The first desktop Windows Depot rows stopped at harness checkout with `Filename too long`.
+They receive no desktop consumer credit.
+The original GitHub ARM row reached the existing PowerShell failure.
+All logs and the ARM provenance archive are retained under
+private `depot-native-followup-artifacts/` with provider digests checked.
+The [long-path recovery](../troubleshooting/depot-windows-long-path-checkout.md)
+uses new Windows harness `20b7e331ad5a4e29bd493aba1829fff5f07d27a8`.
+Recovery cohort `native-recovery-20261018T035939491Z`
+retains the original native harness for unchanged repetitions and all historical case digests.
+The recovery [bound manifest](../audit/depot-complete-cohort-native-recovery-20261018T035939491Z.json)
+is committed as `738e501267` and its published bytes are independently verified.
+All recovery routes are dispatched:
+native hosts run `39095637308`,
+desktop Mac run `39095642563` and desktop Windows run `39095647113`.
+The native harness remains `3e51a06848ba363a90d4ce30816760042153f349`.
+The private `depot-native-long-path-publication.json`
+and `depot-native-long-path-dispatches/` retain the authoritative clock and receipts.
+Inspect those receipts before any repeated dispatch.
+
+The first wave is fully terminal and command session `75523` has completed.
+Its terminal receipts are under `depot-native-followup-dispatches/`.
+The recovery `wait-native-long-path-terminals` task is active;
+it writes terminal receipts under `depot-native-long-path-dispatches/`
+and emits only terminal results.
 Continue independent source-issue reconciliation while those inputs remain unchanged.
 Then collect actual logs and archives,
 validate hardware,
