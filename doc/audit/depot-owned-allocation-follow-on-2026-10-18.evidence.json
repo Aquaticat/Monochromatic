@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "all_current_terminal_root_and_first_host_handoff_rows_normalized_recovery_pending",
-  "recordedAt": "2026-10-18T16:42:45.662Z",
+  "recordedAt": "2026-10-18T16:44:43.410Z",
   "baseline": {
     "path": "doc/audit/depot-owned-allocation-ledger-2026-10-18.evidence.json",
     "record": "inputs/doc/audit/depot-owned-allocation-ledger-2026-10-18.evidence.json@d265c963dbb0c95c",
@@ -1330,7 +1330,7 @@
         "seconds": "423",
         "source": {
           "record": "terminal/depot-current-host-first-handoff-2026-10-18.evidence.json@a0f76b373a8c1193",
-          "pointer": "/firstHandoff/jobs/jobs/0"
+          "pointer": "/firstHandoff/jobs/0"
         },
         "scope": "assigned standard public GitHub job interval; nominal public compute0, storage unmeasured",
         "nominalListCompute": {
@@ -1404,7 +1404,7 @@
         "seconds": "144",
         "source": {
           "record": "terminal/depot-current-host-first-handoff-2026-10-18.evidence.json@a0f76b373a8c1193",
-          "pointer": "/firstHandoff/jobs/jobs/1"
+          "pointer": "/firstHandoff/jobs/1"
         },
         "scope": "assigned standard public GitHub job interval; nominal public compute0, storage unmeasured",
         "nominalListCompute": {
@@ -1478,7 +1478,7 @@
         "seconds": "65",
         "source": {
           "record": "terminal/depot-current-host-first-handoff-2026-10-18.evidence.json@a0f76b373a8c1193",
-          "pointer": "/firstHandoff/jobs/jobs/2"
+          "pointer": "/firstHandoff/jobs/2"
         },
         "scope": "assigned standard public GitHub job interval; nominal public compute0, storage unmeasured",
         "nominalListCompute": {
@@ -1552,7 +1552,7 @@
         "seconds": "695",
         "source": {
           "record": "terminal/depot-current-host-first-handoff-2026-10-18.evidence.json@a0f76b373a8c1193",
-          "pointer": "/firstHandoff/jobs/jobs/3"
+          "pointer": "/firstHandoff/jobs/3"
         },
         "scope": "assigned standard public GitHub job interval; nominal public compute0, storage unmeasured",
         "nominalListCompute": {
@@ -1626,7 +1626,7 @@
         "seconds": "543",
         "source": {
           "record": "terminal/depot-current-host-first-handoff-2026-10-18.evidence.json@a0f76b373a8c1193",
-          "pointer": "/firstHandoff/jobs/jobs/4"
+          "pointer": "/firstHandoff/jobs/4"
         },
         "scope": "assigned standard public GitHub job interval; nominal public compute0, storage unmeasured",
         "nominalListCompute": {
@@ -2337,10 +2337,10 @@
   "actualVmBillingIntervalsObserved": false,
   "sourceArchive": {
     "path": "doc/audit/depot-owned-allocation-follow-on-2026-10-18.sources.json.gz",
-    "bytes": 329609,
-    "sha256": "f7e384b8c5ff87da4b916a1d5aa33ad25f7455ad43f5520ae285247da7438b3f",
-    "uncompressedBytes": 2907303,
-    "records": 30
+    "bytes": 346791,
+    "sha256": "d80f6d303b7efe08534a0adf566133c179752bdd7d127cb1b0d6dff5c7c9ef80",
+    "uncompressedBytes": 2975086,
+    "records": 31
   },
   "nominalKnownProviderWindowListProxyTotal": {
     "usd": "0.6105",
