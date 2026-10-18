@@ -463,7 +463,14 @@ before the other queued work.
     and Z4 has no recorded fix;
     a `pi` sol review of the five rounds' landed production diff
     (`s245/sol-review/question.md` and `production.diff`;
-    blocked: `pi` reports `No API key found for openai-codex`, so the owner must log in;
+    blocked at first: `pi` reported `No API key found for openai-codex`;
+    the owner moved the review model to `openai/gpt-6.1-sol` (`CLAUDE.md`, `923e70ccf2`, 2026-10-18),
+    and that run answered with eight findings (`s245/sol-review/answer-gpt61.md`):
+    span agreement across an apostrophe joint, mixed-pair quotation masking, a link labelled with a mark,
+    a label ending in a space before an apostrophe, inline code padded with line endings,
+    the identity-keyed label cache, a run-off on an unasked carry, and span-agreement TSDoc;
+    each is reproduced red first and fixed in `w187` (on `bc9b2db70d`), ledger text to `s245/w187-notes.md`,
+    then gated, landed and filed with the docs batch;
     an independent Sonnet review of the same diff found R1 to R7, report `s245/sol-review/sonnet/review.md`;
     R1 is confirmed in the code: the carry run-off sheet is byte-identical to the first sheet when every candidate
     is a finalist (`runOff` only renames the stage, `pass-consistency-carry-ask.ts:328`),
