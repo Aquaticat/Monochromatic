@@ -44,7 +44,7 @@ fn the_nearest_configuration_governs_alone() {
     write(
         root,
         &format!("nested/{CONFIG}"),
-        r#"[{ "files": ["src/*.rs"], "rules": { "rust/no-anonymous-functions": { "severity": "warn" } } }]"#,
+        r#"[{ "files": ["src/*.rs"], "rules": { "rust/tests-in-sidecars": { "severity": "warn" } } }]"#,
     );
     let mut store: ConfigStore = ConfigStore::new(root, None).expect("store");
     let outer: FilePlan = lint(&mut store, "top/src/a.rs");
@@ -61,7 +61,7 @@ fn the_nearest_configuration_governs_alone() {
     };
     assert_eq!(outer_rules.rustdoc, Some(Severity::Error));
     assert_eq!(outer_rules.max_lines.expect("budget").max, 7);
-    assert_eq!(outer_rules.no_anonymous_functions, None);
+    assert_eq!(outer_rules.tests_in_sidecars, None);
     // The nested configuration replaces the outer one for its subtree; nothing is merged across files.
     let inner: FilePlan = lint(&mut store, "nested/src/a.rs");
     assert_eq!(inner.display, "nested/src/a.rs");
@@ -73,7 +73,7 @@ fn the_nearest_configuration_governs_alone() {
     else {
         panic!("Rust rules expected");
     };
-    assert_eq!(inner_rules.no_anonymous_functions, Some(Severity::Warn));
+    assert_eq!(inner_rules.tests_in_sidecars, Some(Severity::Warn));
     assert_eq!(inner_rules.rustdoc, None);
     assert_eq!(inner_rules.max_lines, None);
     // A nested file its own configuration does not match is unconfigured, not handed to the outer one.

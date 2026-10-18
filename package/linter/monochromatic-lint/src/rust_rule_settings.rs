@@ -6,7 +6,7 @@
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
-//! type RustRuleSettings = { maxLines?: { severity: Severity; max: number }; rustdoc?: Severity; anonymous?: Severity; explicit?: Severity };
+//! type RustRuleSettings = { maxLines?: { severity: Severity; max: number }; rustdoc?: Severity; explicit?: Severity; sidecars?: Severity };
 //! ```
 
 /// Import existing schema readers and validation instead of adding another configuration grammar.
@@ -39,8 +39,6 @@ pub struct RustRuleSettings {
     /// Documentation requirement,
     ///  including private declarations.
     pub rustdoc: Option<Severity>,
-    /// Ban parsed anonymous functions.
-    pub no_anonymous_functions: Option<Severity>,
     /// Full semantic annotation policy,
     ///  which requires a workspace context.
     pub explicit_types: Option<Severity>,
@@ -102,7 +100,6 @@ pub fn rust_rule_settings(rules: &JsoncValue) -> Result<RustRuleSettings, Config
                 }
             }
             "rust/require-rustdoc" => result.rustdoc = severity,
-            "rust/no-anonymous-functions" => result.no_anonymous_functions = severity,
             "rust/require-explicit-types" => result.explicit_types = severity,
             "rust/tests-in-sidecars" => result.tests_in_sidecars = severity,
             _ => {

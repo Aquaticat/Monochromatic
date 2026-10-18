@@ -16,7 +16,7 @@ use crate::diagnostic::{Diagnostic, Severity, Span};
 /// Construct one real finding with a known source position.
 fn finding(severity: Severity) -> Diagnostic {
     return Diagnostic::new(
-        "rust/no-anonymous-functions",
+        "rust/max-lines",
         severity,
         String::from("message"),
         String::from("input.rs"),

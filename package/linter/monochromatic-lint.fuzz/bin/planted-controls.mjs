@@ -52,9 +52,9 @@ const plants = [
     edits: [{ from: 'merged.extend_from_slice(elements);', to: 'merged = elements.to_vec();' }],
   },
   {
-    name: 'rust_style: only the first closure of a file is reported',
-    file: 'package/linter/monochromatic-lint/src/rust_no_anonymous_functions.rs',
-    edits: [{ from: 'findings.push(finding);', to: 'findings.push(finding);\n        break;' }],
+    name: 'rust_style: a file named like a sidecar is still reported',
+    file: 'package/linter/monochromatic-lint/src/rust_tests_in_sidecars.rs',
+    edits: [{ from: 'stem == "tests" || stem.ends_with("_tests")', to: 'stem == "tests"' }],
   },
   {
     name: 'rust_explicit_types: an initialized binding needs no annotation',

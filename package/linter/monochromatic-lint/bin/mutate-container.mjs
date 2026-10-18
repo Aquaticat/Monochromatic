@@ -19,7 +19,7 @@ const testImage = `localhost/monochromatic-lint-test:${imageTag}`;
 const mutationImage = `localhost/monochromatic-lint-mutation:${imageTag}`;
 
 /**
- * Full names of the four tests that load a real Cargo workspace through the semantic engine.
+ * Full names of the five tests that load a real Cargo workspace through the semantic engine.
  * Alone in the bounded container they took 43 to 139 seconds each, and the rest of the library suite 14 seconds
  * (workspace-tests-cost-1.log), so the fast scopes skip exactly these. Each name is a whole test path that no other
  * test contains, so the quick tests of the same modules still run. Record: doc/handover/unified-linter-mutation-close.md.
@@ -29,6 +29,7 @@ const workspaceTests = [
   'rust_file_engine::tests::selected_semantics_reuses_the_manifest_session',
   'rust_inferred_constants::tests::holes_resolve_against_the_parameter_in_their_own_slot',
   'rust_workspace_tests::generated_definitions_and_build_failures_are_distinct',
+  'run_directive_tests::semantic_findings_follow_the_same_directive_rules',
 ];
 
 /**
@@ -68,9 +69,9 @@ function fileArguments(glob) {
  */
 const scopes = new Map([
   ['--rust-style', {
-    description: 'the anonymous-function and sidecar test rules against their own tests',
-    select: ['src/rust_no_anonymous_functions.rs', 'src/rust_tests_in_sidecars.rs'].flatMap(fileArguments),
-    run: ['--', 'rust_no_anonymous_functions', 'rust_tests_in_sidecars'],
+    description: 'the sidecar test rule against its own tests',
+    select: fileArguments('src/rust_tests_in_sidecars.rs'),
+    run: ['--', 'rust_tests_in_sidecars'],
   }],
   // This is scoped evidence, not a replacement for full-rule mutation. The baseline still runs.
   // Every test the `markdown` filter selects is a library test: the baseline at c184147f ran 136 library tests
@@ -105,23 +106,24 @@ const scopes = new Map([
   // The executable's own modules: orchestration, the binary entry point, Rust rule selection, and the input
   // expansion and fix loop it drives. Its Markdown modules (`markdown_lfs_*`, dispatch and rule settings) are under
   // the Markdown scope's glob. `main.rs` and the real streams are reached only by the `binary` test target, whose
-  // test names share no substring, so this scope runs every test except the four that load Cargo workspaces;
+  // test names share no substring, so this scope runs every test except the five that load Cargo workspaces;
   // those take most of the whole suite's time, which exceeded the 180 second limit (183.94 s) at 04c663cb0.
   ['--executable', {
-    description: 'orchestration, the entry point, Rust rule selection, input expansion and the fix loop against every test except the four Cargo-workspace tests',
+    description: 'orchestration, the entry point, the command grammar, Rust rule selection, input expansion and the fix loop against every test except the five Cargo-workspace tests',
     select: [
-      'src/run_*.rs', 'src/main.rs', 'src/rust_dispatch.rs', 'src/rust_rule_settings.rs',
+      'src/run_*.rs', 'src/main.rs', 'src/cli_options.rs', 'src/rust_dispatch.rs', 'src/rust_rule_settings.rs',
       'src/file_discovery.rs', 'src/path_inputs.rs', 'src/fix_loop.rs',
     ].flatMap(fileArguments),
     run: ['--', '--', ...workspaceTests.flatMap(skipArguments)],
   }],
   // Shared layers below every rule: configuration parsing, lookup, matching and merging, rule-option validation,
-  // findings, grouped edits, and the syntax-only Rust rules with their shared parse. None loads a Cargo workspace.
+  // findings, the inline-directive filter, grouped edits, and the syntax-only Rust rules with their shared parse.
+  // None loads a Cargo workspace.
   ['--core', {
-    description: 'configuration, findings, grouped edits and the syntax-only Rust rules against every test except the four Cargo-workspace tests',
+    description: 'configuration, findings, inline directives, grouped edits and the syntax-only Rust rules against every test except the five Cargo-workspace tests',
     select: [
-      'src/config_*.rs', 'src/configuration*.rs', 'src/diagnostic.rs', 'src/edits.rs', 'src/resolved_rules.rs',
-      'src/rust_rules.rs', 'src/rust_source.rs',
+      'src/config_*.rs', 'src/configuration*.rs', 'src/diagnostic.rs', 'src/directive_*.rs', 'src/edits.rs',
+      'src/resolved_rules.rs', 'src/rust_rules.rs', 'src/rust_source.rs',
     ].flatMap(fileArguments),
     run: ['--', '--', ...workspaceTests.flatMap(skipArguments)],
   }],

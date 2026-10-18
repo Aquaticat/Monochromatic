@@ -14,7 +14,7 @@ use super::{Edit, Fix, ProcessorLanguage, finding, fixed, inputs};
 /// Preserve the existing diagnostic severity model.
 use crate::diagnostic::{Diagnostic, Severity};
 /// Exercise the empty-snippet documentation policy through typed real rule selection.
-use crate::rust_rule_settings::RustRuleSettings;
+use crate::rust_rule_settings::{LineBudget, RustRuleSettings};
 
 /// First,
 ///  middle and last full-line deletion preserve surviving prefixes and bytes.
@@ -269,24 +269,29 @@ fn processors_extract_and_project_indented_block_and_line_doc_fences() {
     assert!(ordinary_stars[0].source().contains("* list"));
 }
 
-/// Both prepared closure checks and real documentable items report authored positions.
+/// Both the authored line budget and real documentable items report authored positions.
 #[test]
-fn processors_check_prepared_closures_and_documentable_items() {
-    let source: &str = "```rust\n//! Example.\nlet callback = || 1;\nfn helper() {}\n```\n";
+fn processors_check_the_authored_line_budget_and_documentable_items() {
+    let source: &str = "```rust\n//! Example.\nlet callback = 1;\nfn helper() {}\n```\n";
     let virtuals = inputs(source, ProcessorLanguage::Markdown);
     let findings = virtuals[0]
         .check_rust(RustRuleSettings {
             rustdoc: Some(Severity::Warn),
-            no_anonymous_functions: Some(Severity::Error),
+            max_lines: Some(LineBudget {
+                severity: Severity::Error,
+                max: 0,
+            }),
             ..RustRuleSettings::default()
         })
         .expect("prepared checks");
     assert_eq!(findings.len(), 2);
-    assert!(
-        findings
-            .iter()
-            .any(|item| return item.code == "rust/no-anonymous-functions")
-    );
+    // The budget counts the authored lines only and anchors on the first one beyond it, `let callback`.
+    let budget = findings
+        .iter()
+        .find(|item| return item.code == "rust/max-lines")
+        .expect("authored line budget finding");
+    assert_eq!(budget.severity, Severity::Error);
+    assert_eq!(budget.labels[0].span.line, 3);
     assert!(
         findings
             .iter()

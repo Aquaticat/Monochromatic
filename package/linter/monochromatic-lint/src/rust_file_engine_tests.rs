@@ -11,7 +11,7 @@
 /// Import the actual engine and its selected-rule inputs.
 use super::RustFileEngine;
 use crate::diagnostic::{Diagnostic, Severity};
-use crate::rust_rule_settings::RustRuleSettings;
+use crate::rust_rule_settings::{LineBudget, RustRuleSettings};
 use crate::rust_semantic_test_support::{prepare_lockfile, progress};
 use crate::rust_workspace::WorkspacePreparation;
 /// Import native paths and owned fixtures for real workspace verification.
@@ -25,18 +25,22 @@ fn no_semantic_selection_avoids_workspace_initialization() {
     let mut engine: RustFileEngine =
         RustFileEngine::new(WorkspacePreparation::SourceOnly, progress);
     let selected: RustRuleSettings = RustRuleSettings {
-        no_anonymous_functions: Some(Severity::Error),
+        max_lines: Some(LineBudget {
+            severity: Severity::Error,
+            max: 0,
+        }),
         ..RustRuleSettings::default()
     };
     let findings: Vec<Diagnostic> = engine
         .check(
             Path::new("/intentionally-unavailable/input.rs"),
-            String::from("fn main() { call(|| {}); }"),
+            String::from("fn main() {}"),
             String::from("host.md/fence.rs"),
             selected,
         )
         .expect("syntax checks do not read the path");
     assert_eq!(findings.len(), 1);
+    assert_eq!(findings[0].code, "rust/max-lines");
     assert_eq!(findings[0].filename, "host.md/fence.rs");
     assert_eq!(engine.workspace_count(), 0);
     assert!(
