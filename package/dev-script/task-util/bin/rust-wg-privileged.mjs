@@ -14,7 +14,9 @@ try {
   run('kernel', 'uname', ['--all']);
   run('namespace-help', 'unshare', ['--help']);
   run('mount-help', 'mount', ['--help']);
-  run('network-help', 'ip', ['--help']);
+  const networkHelp = run('network-help', 'ip', ['--help'], { allowFailure: true });
+  assert([0, 255].includes(networkHelp.status));
+  assert(networkHelp.output.includes('Usage: ip [ OPTIONS ] OBJECT'));
   const project = join(root, 'package/cli/wg-quicker-exempt');
   rust('locked-dependency-preparation', ['cargo', 'fetch', '--locked'], { cwd: project });
   rust('owning-debug-cli-build', ['cargo', 'build', '--offline', '--locked'], { cwd: project });
