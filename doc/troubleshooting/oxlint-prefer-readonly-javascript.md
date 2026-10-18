@@ -80,12 +80,40 @@ The new filename-specific regression cases are committed locally as `ccec2d9`.
 They use the upstream `tsconfig.checkJs.json`,
 which explicitly enables JavaScript input checking.
 The complete existing `prefer_readonly` rule catalog remains enabled.
-The prototype verification is running with a private Go toolchain mount,
+The prototype verification uses a private Go toolchain mount,
 disposable module cache and home,
 2 GiB memory and two CPUs.
 Neither the workspace nor the real home or credentials is mounted.
-The remedy and final result are pending;
-this record does not claim a verified upstream fix.
+The new cases fail for each JavaScript filename before the remedy.
+The local remedy returns no listeners from `Run` when `ast.IsSourceFileJS(ctx.SourceFile)` is true.
+The complete `prefer_readonly` package catalog then passes,
+including its existing TypeScript findings and fixes.
+The retained logs are `tsgolint-readonly-prototype-red.log`
+and `tsgolint-readonly-prototype-green.log` in the reproduction directory.
+
+The standalone helper builds successfully with Go `1.27.2`.
+An actual maintained `format:oxlint` invocation uses that private binary through `OXLINT_TSGOLINT_PATH`
+against a fresh copy of the original `system-slot.mjs`.
+It preserves `#state;`,
+produces no `readonly #state`,
+and reports 60 warnings and zero errors.
+Its exit status is still 1 because warnings remain;
+this is not a zero-lint claim.
+Node `26.12.0` subsequently accepts the resulting JavaScript with `--check`.
+The retained logs are `readonly-formatter-integration.log`
+and `readonly-formatter-javascript-syntax.log`.
+
+The [local patch](./oxlint-prefer-readonly-javascript.patch) applies cleanly to the qualified upstream commit.
+Local prototype commits are `ccec2d9`,
+`0b64a8e` and `f615072`.
+Go's generated `go.work.sum` changes remain outside that patch.
+No installed helper,
+workspace dependency or lint configuration is replaced.
+
+The fetched upstream `main` rule is byte-identical to the qualified tag's rule:
+SHA-256 `89790716cd54cd4e1b063db9e166ca594f5af398fbf234437465f878492fc2b8`.
+This comparison checks that rule file,
+not every upstream dependency or build input.
 
 ## Current workaround and limits
 
@@ -112,11 +140,69 @@ No rule is disabled or weakened.
   Tracker searches for `readonly JavaScript` return no issue or pull request.
   Broader `prefer-readonly` searches find implementation and maintenance work,
   including merged pull request 1149.
-- Prototype: regression cases and bounded verification are in progress.
-  No upstream fix is claimed or filed yet.
+- Prototype: all added JavaScript cases fail before the guard and pass after it.
+  The complete rule catalog passes and the standalone helper builds.
+  The real formatter preserves JavaScript grammar with the private helper,
+  and Node accepts the resulting file.
 
 The `.out-of-scope` inventory is checked.
 Its `low-impact-typescript-formatting.md` exclusion concerns token polish,
 not insertion of syntax that breaks a JavaScript consumer.
 No matching exemption is found.
-Nothing is filed or drafted for publication until the prototype and applicability checks finish.
+The contribution guide's `CODE_OF_CONDUCT.md` link returns 404 when checked on 2026-10-18.
+Its current location is `oxc-project/oxc/.github/CODE_OF_CONDUCT.md`,
+which is read in full.
+The searched contribution and conduct policies contain no AI-filing prohibition.
+This records the checked policies,
+not a claim about every possible policy source.
+
+All filing checks have supporting evidence.
+The following draft stays local because the current authorization covers this repository,
+not publishing to the upstream repository.
+No issue or pull request is filed upstream.
+
+## Local upstream issue draft
+
+Proposed title:
+`prefer-readonly inserts a TypeScript modifier into JavaScript private fields`.
+
+````markdown
+<!-- Proposed oxc-project/tsgolint issue body, not published. -->
+## Reproduction
+
+With oxlint 1.88.0 and oxlint-tsgolint 7.0.2004,
+enable type-aware `typescript/prefer-readonly` on this `.mjs` file:
+
+```javascript
+// readonly-example.mjs
+class Example {
+  #value = 1;
+  get value() {
+    return this.#value;
+  }
+}
+```
+
+The rule reports that `#value` is never reassigned and inserts `readonly `.
+The resulting `readonly #value = 1;` is invalid JavaScript.
+The next lint pass reports TS8009:
+`The 'readonly' modifier can only be used in TypeScript files.`
+
+JavaScript input should not receive a TypeScript-only modifier.
+The local regression catalog covers `.js`,
+`.cjs`,
+`.mjs` and `.jsx` filenames with the upstream checkJs configuration.
+
+## Source and verified remedy
+
+At tag v7.0.2004,
+`PreferReadonlyRule.Run` has no JavaScript exclusion,
+and its fix builder unconditionally inserts `readonly `.
+The fetched main rule file is unchanged.
+
+Returning no listeners when `ast.IsSourceFileJS(ctx.SourceFile)` is true fixes these cases.
+The complete existing prefer_readonly rule catalog still passes,
+including TypeScript cases.
+A helper built from that patch also preserves valid JavaScript through the actual oxlint formatter.
+No existing rule or test catalog is disabled.
+````

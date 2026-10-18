@@ -94,6 +94,12 @@ Inventories and receipts remain private under
 
 ## Checkpoint maintenance lessons
 
+Correct use by reasonable consumers is the UX requirement.
+A behavior being documented does not excuse a surprising result.
+The RPC launcher must qualify its actual Git executable before allowing repository writes;
+a successful generic `git --version` does not establish active policy protection.
+See the [launcher PATH incident](../../../../doc/troubleshooting/git-policy-wrapper-launcher-path.md).
+
 Capture a nonempty list of explicit file paths before staging,
 including new files.
 Use that same list for staging and committing,

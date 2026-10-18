@@ -1,5 +1,54 @@
 # Auto-mode current frontier
 
+## Latest verified boundary and user steering
+
+The user keeps root `CPN` unchanged and places the checkpoint lesson in package docs.
+The user also states the UX requirement:
+reasonable consumers must use the tool correctly without unexpected behavior;
+documentation alone does not excuse surprises.
+The user authorizes filing a GitHub issue for an owned Git-wrapper defect or UX issue.
+
+Frozen source `8b34f75c03` builds private JavaScript and native release `FGiMf5` successfully.
+Full unit tests,
+the session-input aggregate,
+the process-network receipt consumer and fresh-cache types all pass.
+The actual streaming runner retains 10,565,216 bytes for 1,600 progress events,
+inside the previously measured repaired spread.
+These checks do not complete all affected standalone consumer catalogs or the package lint backlog.
+
+The supervisor found a separate launcher defect:
+the RPC fixture's replacement PATH omitted `.cache/cli-git-bin`.
+Ordinary `git` therefore invoked system Git,
+so the wrapper never saw the empty commit path list.
+Disposable probes prove the wrapper rejects that list,
+preserves an explicit commit scope,
+and system Git commits both owned and concurrently staged files with an empty list.
+The live fixture now resolves `git` to a verified wrapper link in `/fixture-bin`.
+Future launches mount that wrapper explicitly and qualify its policy namespace.
+Root commits must now invoke `.cache/cli-git-bin/git` explicitly.
+[Issue 1768](https://github.com/Aquaticats/Monochromatic/issues/1768) records the UX gap;
+issue 575 is related but targets explicit absolute-path bypasses.
+See `doc/troubleshooting/git-policy-wrapper-launcher-path.md` for exact diagnostics and receipts.
+
+The upstream prefer-readonly prototype is now verified:
+all added JavaScript filename cases fail before the guard,
+the complete rule catalog passes after it,
+the standalone helper builds,
+and the actual formatter with the private helper preserves JavaScript grammar.
+Node accepts the result.
+The formatter still reports 60 warnings and zero errors on the scoped file;
+its exit 1 is not a completed lint check.
+The local patch and unpublished issue draft are in
+`doc/troubleshooting/oxlint-prefer-readonly-javascript.md` and its sibling patch artifact.
+Nothing is published upstream or installed into the workspace.
+
+Next actions remain affected standalone consumer coverage,
+MiMo's source lint work,
+typed native clusters,
+final configured replay and provider-payload checks,
+runtime dependency census and final artifact cleanup.
+Do not end on a readiness handoff or treat these checkpoints as completion.
+
 ## Purpose and live status
 
 Continue the authorized auto-mode repair,
