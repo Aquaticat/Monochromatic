@@ -4,7 +4,9 @@ Paths in this record are the layout after 2026-10-18,
 under `package/translation-repair`.
 
 Four items were left after the page-definitions work of B665 to B667,
-and the lead had them closed on 2026-10-18 on top of `7c21a56fc2`:
+and the lead had them closed on 2026-10-18 on top of `7c21a56fc2`
+(a clock-zone slip in the account of the third, B672,
+and a request to read the words of a place with recorded definitions that was not built, B673, followed):
 the emphasis readers that still parsed without the page's definitions (B668),
 the contradictions in the TSDoc of the consistency cache version (B669),
 the pairing cache version, which no account had read between `d614a0c1d` and `29d606470` (B670),
@@ -278,3 +280,92 @@ it passes any time followed by `UTC`.
 No guard can catch it,
 since the text does not say which tool printed the digits;
 the prevention doc says so and names the check on the source.
+
+## B673: reading the words of a place with recorded definitions was not built, because it reads the page the other way
+
+Raised on 2026-10-18 by the lead as generation 19 of the artifact:
+the pass records the smallest set of the page's definitions that change how the words of a place read,
+the planner, the apply stage and the reader of a record read the words with them,
+and the proof of an apostrophe takes them too.
+
+Outcome written on 2026-10-18.
+Red tests for the words were committed and withdrawn (`920ab9bf80`, `6a7daffc75`).
+What was built is the proof of the apostrophe taking the definitions a caller gives
+(red `262b62fae2`, fixed in `aababac6fe`),
+which the lead named and which stands on its own.
+No generation was added,
+and `ARTIFACT_SCHEMA_VERSION_V18` is still what the pass writes.
+
+What was tried,
+and what it showed:
+
+- The mechanism was built in `consistency` and not committed:
+  a counter that records, for any located place,
+  the cut of the page's definitions that gives the span its slot and its word reading;
+  the same cut joined for the two places of a splice
+  and handed to `looseMarksOf`, `withLooseMarksOf`, `inReceivingForm`, `bringsAtEdge` and `gainsBesideKeptMark`;
+  and a `definitions` carried on the plan so the check of the gains reads the replaced words with them.
+- The mark at the end of words reads as an apostrophe of its word after closing markup
+  only when the parse of the words closes something,
+  and the parse of a fragment cannot see a delimiter outside it.
+  In `Take *[*]a*’ now.` with `[*]` defined in another slice,
+  the page reads the mark as `trailing` (an apostrophe),
+  the counter locates `[*]a*’` at offset 6 and records `definitions: '[*]: u'`,
+  the span read alone holds an edge apostrophe (as the page reads it),
+  and the span read with that definition holds none and one loose mark.
+  The planner then said `replace` for the words read alone
+  and `unavailable` for the words read with the recorded definition,
+  and a reader that took the record's words with that definition
+  would find the edge mark of the span to be no apostrophe.
+  So recording the definitions turns a place the pass carries correctly into one it leaves,
+  and a record that reads back into one that does not.
+- The other direction does not occur in a located place.
+  Of the 205,740 strings of three to seven characters over `* _ ~ [ ] ( ) a b ’` and a space
+  that start or end in `’` and hold a bracket with a label,
+  84 pass `carriesOrCutsMarkup` and read another way with the definitions of their brackets,
+  and all 84 are attached alone and loose with the definition.
+  A span that reads attached only with the definition (`*a [b*] c*’`) is refused as cutting markup,
+  because `carriesOrCutsMarkup` counts delimiters by parity and reads the span alone,
+  and the counter leaves such a place unlocated with the reason `markup`.
+
+What the search did not show:
+a random search of 1,799,159 pages and quotes found no located place that records definitions,
+and the hand-built page above found one at the first try.
+The null was a sample that rarely held an opener, a reference and a closer in that order,
+and it is not evidence that the case cannot occur
+(mistake-prevention, searches and censuses that miss).
+
+No difference between the pass and the reader exists today for the words:
+both read them alone,
+so a place whose words read differently with the page's definitions is not planned one way and read back another.
+The limit is the one that the head of `consistency-loose-marks.ts` names,
+and its reason there now includes the case above.
+
+Options for the lead,
+none taken:
+
+- Leave the words read alone.
+  Pros: the reachable case is read as the page reads it,
+  nothing changes in a record,
+  no generation moves,
+  and a running pass is not cut off from the run directories of generation 18
+  (`assertResumableSchemaGeneration` refuses another generation).
+  Cons: a span that only a definition balances stays unlocated.
+- Record the page's reading of the edge marks of a located span
+  (which edge holds an apostrophe of its word) in place of definitions.
+  Pros: the reader takes the page's reading as the counter had it, in every case, with no parse of a fragment.
+  Cons: a new key and so a generation,
+  and the pass-schema guard cuts a build off from older run directories.
+- Make the markup test read the span with the definitions and by pairing, then record the definitions.
+  Pros: `*a [b*] c*’` is located and read as the page reads it.
+  Cons: the largest change,
+  it unlocates places that are carried today (the span `[*]a*’` above cuts the page's emphasis),
+  and it needs a generation.
+
+Ranking: leaving the words read alone,
+then recording the edge readings,
+then the definitions with the markup test,
+because the first changes nothing the reachable case needs changed,
+the second is faithful in every case at the price of a generation,
+and the third carries the second's price and unlocates places the pass carries correctly today.
+The attempt is kept outside the repository by the agent that ran it.

@@ -378,7 +378,9 @@ named for that subject and listed here.
   The emphasis readers that parsed without the page's definitions (B668),
   the contradictions in the TSDoc of the consistency cache version (B669),
   the account of the pairing cache version from `d614a0c1d` to `29d606470` (B670),
-  and the Synthetic quota body the meter reader refused on 2026-10-18 (B671).
+  the Synthetic quota body the meter reader refused on 2026-10-18 (B671),
+  a clock-zone slip in that account (B672),
+  and the request to read the words of a place with recorded definitions, which reads the page the other way and was not built (B673).
 - [Audit ledger: the package split, configs, scans and messages](audit-ledger-package-split-configs-scans-and-messages.md):
   What the split of the package into 36 found in the moved code and its tooling:
   a build config that lacked a plugin,

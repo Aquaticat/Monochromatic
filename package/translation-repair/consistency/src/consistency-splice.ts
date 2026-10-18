@@ -531,7 +531,7 @@ function keepsMarksAttached(
  undefined reference change how the emphasis around it pairs and how the marks outside the span read (n173). Absent for a slice
  read alone and for a caller that holds no English. The words of the places are read without them: the reader of a record plans the
  same splice from the recorded words alone and holds no page, so a definition handed to the reading of the words would let the
- pass plan what the reader refuses (`consistency-loose-marks.ts`)
+ pass plan what the reader refuses, and the definitions would not make the words read as the page does (`consistency-loose-marks.ts`, ledger B673)
 
  @returns That the receiving place already agrees, that the words cannot be
  moved by code (no slot to move a frame's words by, a mark beside the words

@@ -84,7 +84,15 @@ import { continuesLatinWordOrCompatibilityForm, } from '@monochromatic-dev/trans
 // reading run where the page defines `[b*]` and does not where it does not. Every function of this file that reads the words
 // takes the definitions for that reason, and the planner, the apply stage and the reader of a record pass none, since the three
 // share these functions, the reader of a record holds no page to read them from, and a definition handed to two of them and not
-// the third would let the pass plan a splice that the reader of the record refuses.
+// the third would let the pass plan a splice that the reader of the record refuses. RECORDING THE DEFINITIONS WOULD NOT MAKE THE WORDS
+// READ AS THE PAGE DOES, and that is the reason that holds when the first one does not (ledger B673): a definition cannot supply a
+// delimiter that stands outside the span. In `Take *[*]a*’ now.` with `[*]` defined, the page reads the mark after `a*` as an apostrophe
+// of its word, because the `*` after `a` closes the emphasis the `*` before `[*]` opened; the span `[*]a*’` read alone agrees, and read
+// with the definition it makes the `*` inside `[*]` plain text and the `*` after `a` a closer of nothing, so the mark reads loose. Of
+// the 84 spans that `carriesOrCutsMarkup` passes and that read another way with the definitions of their brackets, among the
+// strings of three to seven characters over `* _ ~ [ ] ( ) a b ’` and a space that start or end in `’` and hold a bracket with a
+// label, all 84 are of that kind (attached alone, loose with the definition). A span that only a definition balances
+// (`*a [b*] c*’`) is refused as cutting markup, since `carriesOrCutsMarkup` counts delimiters and reads the span alone.
 //
 // A CORNER BRACKET BESIDE A SPAN IS NOT RECORDED. A single mark directly beside
 // a located span that is no proven apostrophe is kept in the rendering

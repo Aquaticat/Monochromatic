@@ -381,6 +381,15 @@ and eight small pages the seventh review built lost a quotation mark (ledger M18
 The scope of a rule is decided from what the language allows,
 and each shape a count shows as zero gets a hand-built input before the rule leans on its absence.
 
+A random search of 1,799,159 pages and quotes found no place whose words read another way with a page's definition, and a hand-built
+page found one at the first try (ledger B673).
+The sample rarely held an opener, a reference and a closer in the order the case needs,
+so the null said nothing about reach.
+A fixture is also read as the span the counter locates and not as the text it was written as:
+`*a [b*] c*’` differs with a definition, and the counter locates `a [b*] c*’` after the opener, which does not.
+The search reports its own positive control, a case known to be found, before a null is written down,
+and a fixture is run through the counter before a test leans on it.
+
 A link checker parses Markdown and not text:
 one reported an escaped bracket in quoted output as a dead link,
 and the line held no link (ledger M255).
