@@ -115,7 +115,7 @@ function assertCandidatesFit(
 }
 
 /**
- Checks a carry against its own ballots: no ballots where the bench was not
+ Checks a carry against its own ballots: no ballots and no run-off where the bench was not
  asked, and where it was asked the usable count and the decision recounted.
 
  @param carry - the carry
@@ -165,6 +165,12 @@ function assertCarryRecounts(
       throw new ArtifactParseError({
         path,
         reason: 'no ballots, no usable count and no quorum, since the bench was not asked among the candidates',
+      },);
+    }
+    if (carry.runOff !== undefined) {
+      throw new ArtifactParseError({
+        path: `${path}.runOff`,
+        reason: 'no run-off, since the bench was not asked among the candidates',
       },);
     }
     if ((carry.decision
