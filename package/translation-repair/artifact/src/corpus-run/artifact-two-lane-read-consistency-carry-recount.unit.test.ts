@@ -24,6 +24,7 @@ import {
   type ArtifactConsistencyCarry,
   assertCarriesRecount,
   outcomesAfter,
+  type TwoLaneArtifactGeneration,
 } from '../../dist/final/node/index.mjs';
 import {
   recountRefusalOf,
@@ -95,16 +96,11 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'ACCEPTS A CARRY WHOSE COUNT AND DECISION ARE WHAT ITS BALLOTS GIVE: a choice, no majority, no quorum, no '
+          name: 'ACCEPTS A CARRY WHOSE COUNT AND DECISION ARE WHAT ITS BALLOTS GIVE: a choice, no quorum, no '
             + 'alternative, a failure, and a splice absent',
           fn: async () => {
             const carries: readonly ArtifactConsistencyCarry[] = [
               CARRY,
-              {
-                ...CARRY,
-                ballots: [FIRST_BALLOT, { ...SECOND_BALLOT, choice: 'CANDIDATE 1', },],
-                decision: { kind: 'none', reason: 'no-majority', },
-              },
               {
                 ...CARRY,
                 ballots: [FIRST_BALLOT,],
@@ -131,6 +127,7 @@ await describe({
               return assertCarriesRecount({
                 carries: [carry,],
                 path: 'cat.carries',
+                generation: Number('18',) as TwoLaneArtifactGeneration,
               },);
             },),).toEqual(carries.map(function accepted(): unknown {
               return undefined;
@@ -242,6 +239,7 @@ await describe({
                 return assertCarriesRecount({
                   carries: [CARRY, { ...CARRY, usable: 3, },],
                   path: 'cat.groups[0].carries',
+                  generation: Number('18',) as TwoLaneArtifactGeneration,
                 },);
               },
             },);

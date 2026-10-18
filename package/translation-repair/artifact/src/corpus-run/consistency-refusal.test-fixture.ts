@@ -13,6 +13,7 @@ import { ArtifactParseError, } from '@monochromatic-dev/translation-repair-artif
 import {
   type ArtifactConsistencyCarry,
   assertCarriesRecount,
+  type TwoLaneArtifactGeneration,
 } from '../../dist/final/node/index.mjs';
 
 //region Consistency refusal text
@@ -51,6 +52,8 @@ export function refusalTextOf({ read, }: { readonly read: () => unknown; },): st
 
  @param carry - carry as recorded
 
+ @param generation - generation the section was written under, the one the pass writes by default
+
  @returns The refusal as text, class name first
 
  @throws {@link Error} when the recount threw something other than an artifact parse refusal, or nothing
@@ -60,12 +63,21 @@ export function refusalTextOf({ read, }: { readonly read: () => unknown; },): st
  const text = recountRefusalOf({ carry, },);
  ```
  */
-export function recountRefusalOf({ carry, }: { readonly carry: ArtifactConsistencyCarry; },): string {
+export function recountRefusalOf(
+  {
+    carry,
+    generation = Number('18',) as TwoLaneArtifactGeneration,
+  }: {
+    readonly carry: ArtifactConsistencyCarry;
+    readonly generation?: TwoLaneArtifactGeneration;
+  },
+): string {
   return refusalTextOf({
     read: function recounts(): void {
       assertCarriesRecount({
         carries: [carry,],
         path: 'cat.carries',
+        generation,
       },);
     },
   },);

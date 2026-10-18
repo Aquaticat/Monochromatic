@@ -2,7 +2,8 @@
  Tests for reading back a carry whose choice was run off (the lead's adoption of 2026-10-15 of the owner's rule of 2026-10-11
  for this ask): the artifact keeps the run-off beside the first count, and the reader recounts both, so a run-off that does
  not follow from the first count, or a decision that does not follow from the run-off, is refused. A carry recorded
- without a run-off, as the earlier runs recorded a split, is still read as it was.
+ without a run-off, as the runs of generation 17 and earlier recorded a split, is still read as it was there, and from
+ generation 18 the run-off is required where the finalists rule calls for one.
 
  Fixtures are cat-themed invention; no corpus content appears here.
 
@@ -20,6 +21,7 @@ import {
   type ArtifactConsistencyCarry,
   assertCarriesRecount,
   parseConsistencyCarry,
+  type TwoLaneArtifactGeneration,
 } from '../../dist/final/node/index.mjs';
 import { recountRefusalOf, } from './consistency-refusal.test-fixture.ts';
 
@@ -76,6 +78,11 @@ const RUN_OFF_CARRY: ArtifactConsistencyCarry = {
 };
 
 /**
+ The generation the pass writes, and the last generation that recorded a split with no run-off.
+ */
+const GENERATION_EIGHTEEN = Number('18',) as TwoLaneArtifactGeneration;
+
+/**
  A value as the artifact stores it and a resumed run reads it back: through JSON, whose semantics are the point.
 
  @param value - value as built
@@ -123,10 +130,8 @@ await describe({
       children: [
         it({
           name: 'ACCEPTS A CARRY WHOSE RUN-OFF FOLLOWS FROM THE TIE OF ITS FIRST COUNT AND WHOSE DECISION FOLLOWS FROM THE RUN-OFF: '
-            + 'a choice, a second split, a run-off that missed its quorum, a tie of two leaders, and an earlier run\'s split '
-            + 'recorded with no run-off',
+            + 'a choice, a second split, a run-off that missed its quorum, and a tie of two leaders',
           fn: async () => {
-            const { runOff: _runOff, ...earlier } = RUN_OFF_CARRY;
             const carries: readonly ArtifactConsistencyCarry[] = [
               RUN_OFF_CARRY,
               {
@@ -168,12 +173,72 @@ await describe({
                 },
                 decision: { kind: 'chosen', label: 'CANDIDATE 1', },
               },
-              { ...earlier, decision: { kind: 'none', reason: 'no-majority', }, },
             ];
             // Each carry is read without a refusal: the recount returns for every one.
             for (const carry of carries) {
-              expect(assertCarriesRecount({ carries: [carry,], path: 'cat.carries', },),).toBeUndefined();
+              expect(assertCarriesRecount({ carries: [carry,], path: 'cat.carries', generation: GENERATION_EIGHTEEN, },),)
+                .toBeUndefined();
             }
+          },
+        },),
+        it({
+          name: 'REQUIRES THE RUN-OFF FROM GENERATION EIGHTEEN WHERE THE FINALISTS RULE CALLS FOR ONE, and reads a split recorded '
+            + 'with no run-off as written in generation seventeen: a three-way split and a lone leader without a majority are '
+            + 'refused at eighteen and accepted at seventeen, and a first count that missed its quorum needs none at either',
+          fn: async () => {
+            const { runOff: _runOff, ...without } = RUN_OFF_CARRY;
+            /**
+             The three-way split of the run-off carry, recorded with no run-off.
+             */
+            const threeWay: ArtifactConsistencyCarry = { ...without, decision: { kind: 'none', reason: 'no-majority', }, };
+            /**
+             Four choices that give one candidate two and each of the others one, recorded with no run-off.
+             */
+            const loneLeader: ArtifactConsistencyCarry = {
+              ...threeWay,
+              ballots: [
+                ballotOf({ seat: 'hyper-cat', choice: 'CANDIDATE 1', },),
+                ballotOf({ seat: 'bedrock-cat', choice: 'CANDIDATE 1', },),
+                ballotOf({ seat: 'vision-cat', choice: 'CANDIDATE 2', },),
+                ballotOf({ seat: 'synthetic-cat', choice: 'CANDIDATE 3', },),
+              ],
+              usable: 4,
+            };
+            /**
+             A first count that missed its quorum, so there is no split to run off.
+             */
+            const noQuorum: ArtifactConsistencyCarry = {
+              ...threeWay,
+              ballots: [ballotOf({ seat: 'hyper-cat', choice: 'CANDIDATE 1', },),],
+              usable: 1,
+              decision: { kind: 'none', reason: 'no-quorum', },
+            };
+            /**
+             The refusal of a missing run-off.
+             */
+            const missing = 'ArtifactParseError: artifact parse failed at cat.carries[0].runOff: expected a run-off among the finalists of '
+              + 'the first ballots, since they reached their quorum and gave no candidate a strict majority.';
+            expect({
+              seventeen: [threeWay, loneLeader, noQuorum,].map(function readAtSeventeen(carry,): unknown {
+                return assertCarriesRecount({
+                  carries: [carry,],
+                  path: 'cat.carries',
+                  generation: Number('17',) as TwoLaneArtifactGeneration,
+                },);
+              },),
+              eighteen: [threeWay, loneLeader,].map(function refusedAtEighteen(carry,): string {
+                return recountRefusalOf({ carry, generation: GENERATION_EIGHTEEN, },);
+              },),
+              eighteenNoQuorum: assertCarriesRecount({
+                carries: [noQuorum,],
+                path: 'cat.carries',
+                generation: GENERATION_EIGHTEEN,
+              },),
+            },).toEqual({
+              seventeen: [undefined, undefined, undefined,],
+              eighteen: [missing, missing,],
+              eighteenNoQuorum: undefined,
+            },);
           },
         },),
         it({

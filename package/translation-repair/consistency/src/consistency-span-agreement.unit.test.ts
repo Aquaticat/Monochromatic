@@ -200,6 +200,8 @@ const GROUP_TWO_BALLOTS: readonly ConsistencyVoice[] = [
  @param quorum - quorum the gather closed on
  @param framed - whether the group is a frame with a slot, a plain group by default
 
+ @param pageText - the text of the page the first place belongs to, none by default, in which the first place starts at 0
+
  @returns What the ballots come to
 
  @example
@@ -213,11 +215,13 @@ function countAgainst(
     english,
     quorum,
     framed = false,
+    pageText,
   }: {
     readonly voices: readonly ConsistencyVoice[];
     readonly english: readonly string[];
     readonly quorum: number;
     readonly framed?: boolean;
+    readonly pageText?: string;
   },
 ): ReturnType<typeof countConsistency> {
   return countConsistency({
@@ -226,6 +230,7 @@ function countAgainst(
       return {
         label: `OCCURRENCE ${String(position + 1,)}`,
         english: { kind: 'present' as const, text, },
+        ...(((position > 0) || (pageText === undefined)) ? {} : { page: { text: pageText, offset: 0, }, }),
       };
     },),
     framed,
@@ -482,6 +487,42 @@ await describe({
           core: 'cat naps in the sun',
           start: 14,
         },);
+      },
+    },),
+    it({
+      name: 'RECORDS THE DEFINITIONS OF THE PAGE ON A LOCATED RENDERING ONLY WHERE THEY MOVE ITS SLOT, and only the ones that do: '
+        + 'with the definition of `[b]` on the page `a[b]c` is one word and has no slot, a definition of another reference moves '
+        + 'nothing, and a page that holds both records the first alone',
+      fn: async () => {
+        /**
+         The ballots of a frame that all gave the slot `b` beside the span `a[b]c`.
+         */
+        const voices = ['a', 'b', 'c',].map(function ballotFor(seat,): ConsistencyVoice {
+          return framedBallotOf({ seat, quote: 'a[b]c', slot: 'b', },);
+        },);
+        /**
+         The first place's rendering for a page, none for the span read alone.
+         */
+        function renderingFor(pageText: string | undefined,): unknown {
+          return countAgainst({
+            voices,
+            english: ['a[b]c', 'The kitten naps.',],
+            quorum: 3,
+            framed: true,
+            ...((pageText === undefined) ? {} : { pageText, }),
+          },).renderings[0];
+        }
+        expect([
+          renderingFor(undefined,),
+          renderingFor('a[b]c\n\n[b]: https://x.example/b',),
+          renderingFor('a[b]c\n\n[z]: https://x.example/z',),
+          renderingFor('a[b]c\n\n[b]: https://x.example/b\n\n[z]: https://x.example/z',),
+        ],).toEqual([
+          { kind: 'located', quote: 'a[b]c', core: 'a[b]c', start: 0, slot: 'b', slotStart: 2, },
+          { kind: 'located', quote: 'a[b]c', core: 'a[b]c', start: 0, definitions: '[b]: https://x.example/b', },
+          { kind: 'located', quote: 'a[b]c', core: 'a[b]c', start: 0, slot: 'b', slotStart: 2, },
+          { kind: 'located', quote: 'a[b]c', core: 'a[b]c', start: 0, definitions: '[b]: https://x.example/b', },
+        ],);
       },
     },),
   ],

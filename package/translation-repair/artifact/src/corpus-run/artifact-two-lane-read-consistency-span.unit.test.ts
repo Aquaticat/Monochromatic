@@ -486,6 +486,50 @@ const SLOT_REFUSAL = `ArtifactParseError: artifact parse failed at ${GROUP}.occu
   + 'expected the slot a strict majority of the usable ballots gave inside those words, and none where they gave none.';
 
 /**
+ The refusal of definitions a generation eighteen group records that move no slot.
+ */
+const DEFINITIONS_REFUSAL = `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[0].rendering.definitions: `
+  + 'expected the definitions that change the slot the usable ballots give inside those words, and none where they change none.';
+
+/**
+ The definition of the reference in the span `a[b]c`, as a page holds it in another slice.
+ */
+const DEFINITION_OF_B = '[b]: https://x.example/b';
+
+/**
+ A frame group whose four ballots all quoted the span `a[b]c` with the slot `b`, and whose first place records the given rendering.
+
+ @param recorded - the rendering the first place records
+
+ @param runOff - the run-off the generation requires for the split, none by default
+
+ @returns The group
+
+ @example
+ ```ts
+ const group = referenceGroupOf({ recorded: { kind: 'located', quote: 'a[b]c', start: 0, }, },);
+ ```
+ */
+function referenceGroupOf(
+  {
+    recorded,
+    runOff,
+  }: {
+    readonly recorded: ArtifactConsistencyOccurrence['rendering'];
+    readonly runOff?: ArtifactConsistencyRunOff;
+  },
+): AskedGroup {
+  return splitGroupOf({
+    first: [1, 2, 3, 4,].map(function givenSlot(): { readonly quote: string; readonly slot: string; } {
+      return { quote: 'a[b]c', slot: 'b', };
+    },),
+    repeat: FRAME,
+    recorded,
+    ...((runOff === undefined) ? {} : { runOff, }),
+  },);
+}
+
+/**
  A frame whose ballots quoted nested spans of the first place: three of four quoted `cat naps in the sun` or a longer span that
  contains it, each with the slot `naps`, and the fourth quoted `cat naps` with the slot `cat`.
  */
@@ -587,22 +631,75 @@ await describe({
           },
         },),
         it({
-          name: 'PINS THE LIMIT OF THE SLOT RECOUNT: a span that holds a shortcut reference (`a[b]c`) is read without the '
-            + 'definitions of the page, which the file does not hold, so a pass that recorded no slot there (with the definition '
-            + 'in another slice `b` is no stand) is refused, and the limit is the reader\'s to document, not to hide',
+          name: 'PINS THE LIMIT OF THE GENERATION SEVENTEEN SLOT RECOUNT: a span that holds a shortcut reference (`a[b]c`) is read '
+            + 'without the definitions of the page, which a generation seventeen file does not record, so a pass that recorded no '
+            + 'slot there (with the definition in another slice `b` is no stand) is refused, and the limit is documented, not hidden',
           fn: async () => {
             /**
-             The group whose ballots gave the slot `b` beside the span `a[b]c` and whose first place records no slot.
+             The group whose ballots gave the slot `b` beside the span `a[b]c` and whose first place records no slot, as a
+             generation seventeen pass wrote a split: with no run-off.
              */
-            const group = splitGroupOf({
-              first: [1, 2, 3, 4,].map(function givenSlot(): { readonly quote: string; readonly slot: string; } {
-                return { quote: 'a[b]c', slot: 'b', };
+            const group = referenceGroupOf({ recorded: { kind: 'located', quote: 'a[b]c', start: 0, }, },);
+            expect(coherenceRefusal({ group, generation: 17, },),).toBe(SLOT_REFUSAL,);
+          },
+        },),
+        it({
+          name: 'READS BACK A GENERATION EIGHTEEN GROUP WHOSE SPAN HOLDS A REFERENCE DEFINED IN ANOTHER SLICE, through the '
+            + 'definitions the place records, and refuses the same record without them or with the slot the span alone gives',
+          fn: async () => {
+            /**
+             The place as the pass records it: no slot, and the definition that makes `a[b]c` one word.
+             */
+            const withDefinitions: ArtifactConsistencyOccurrence['rendering'] = {
+              kind: 'located',
+              quote: 'a[b]c',
+              start: 0,
+              definitions: DEFINITION_OF_B,
+            };
+            expect([
+              assertSpanGroupCoherent({
+                group: referenceGroupOf({ recorded: withDefinitions, runOff: THREE_WAY_RUN_OFF, },),
+                path: GROUP,
+                generation: GENERATION_EIGHTEEN,
               },),
-              repeat: FRAME,
-              recorded: { kind: 'located', quote: 'a[b]c', start: 0, },
-              runOff: THREE_WAY_RUN_OFF,
-            },);
-            expect(coherenceRefusal({ group, generation: GENERATION_EIGHTEEN, },),).toBe(SLOT_REFUSAL,);
+              coherenceRefusal({
+                group: referenceGroupOf({ recorded: { kind: 'located', quote: 'a[b]c', start: 0, }, runOff: THREE_WAY_RUN_OFF, },),
+                generation: GENERATION_EIGHTEEN,
+              },),
+              coherenceRefusal({
+                group: referenceGroupOf({ recorded: { ...withDefinitions, slot: 'b', }, runOff: THREE_WAY_RUN_OFF, },),
+                generation: GENERATION_EIGHTEEN,
+              },),
+            ],).toEqual([undefined, SLOT_REFUSAL, SLOT_REFUSAL,],);
+          },
+        },),
+        it({
+          name: 'REFUSES DEFINITIONS A GENERATION EIGHTEEN GROUP RECORDS THAT MOVE NO SLOT: the definition of another reference, '
+            + 'and definitions beside a place of a group that is no frame',
+          fn: async () => {
+            expect([
+              coherenceRefusal({
+                group: referenceGroupOf({
+                  recorded: { kind: 'located', quote: 'a[b]c', start: 0, slot: 'b', definitions: '[z]: https://x.example/z', },
+                  runOff: THREE_WAY_RUN_OFF,
+                },),
+                generation: GENERATION_EIGHTEEN,
+              },),
+              coherenceRefusal({
+                group: groupOf({
+                  over: {
+                    occurrences: [
+                      placeOf({
+                        position: 0,
+                        over: { rendering: { kind: 'located', quote: 'The cat naps', start: 0, definitions: DEFINITION_OF_B, }, },
+                      },),
+                      placeOf({ position: 1, },),
+                    ],
+                  },
+                }),
+                generation: GENERATION_EIGHTEEN,
+              },),
+            ],).toEqual([DEFINITIONS_REFUSAL, DEFINITIONS_REFUSAL,],);
           },
         },),
         it({
@@ -789,7 +886,7 @@ await describe({
               return coherenceRefusal({ group, },);
             },),).toEqual([
               `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[1].rendering: `
-              + 'expected words that a strict majority of the quotes naming the place contain, as the place\'s English holds them.',
+              + 'expected words that the quotes of more than half of all the usable ballots contain, as the place\'s English holds them.',
               `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[1].rendering.reason: `
               + 'expected a reason the usable ballots do not contradict.',
             ],);
@@ -846,7 +943,7 @@ await describe({
             },),).toEqual([
               outcomeRefusal({ place: 0, expected: 'chosen, as the ballots and the renderings give for this place', }),
               `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[1].rendering: `
-              + 'expected words that a strict majority of the quotes naming the place contain, as the place\'s English holds them.',
+              + 'expected words that the quotes of more than half of all the usable ballots contain, as the place\'s English holds them.',
               outcomeRefusal({ place: 1, expected: 'kept-context, as the ballots and the renderings give for this place', }),
             ],);
           },

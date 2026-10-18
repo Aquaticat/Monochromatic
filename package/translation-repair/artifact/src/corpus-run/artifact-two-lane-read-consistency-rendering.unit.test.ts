@@ -48,7 +48,7 @@ function renderingRead(
     generation,
   }: {
     readonly value: unknown;
-    readonly generation: 15 | 16 | 17;
+    readonly generation: 15 | 16 | 17 | 18;
   },
 ): unknown {
   return parseConsistencyRendering({
@@ -78,7 +78,7 @@ function renderingRefusal(
     generation,
   }: {
     readonly value: unknown;
-    readonly generation: 15 | 16 | 17;
+    readonly generation: 15 | 16 | 17 | 18;
   },
 ): string {
   return refusalTextOf({
@@ -116,6 +116,48 @@ await describe({
               sixteen,
               seventeen,
               { kind: 'located', quote: 'The cat naps', start: 4, },
+            ],);
+          },
+        },),
+        it({
+          name: 'READS THE DEFINITIONS OF THE PAGE A GENERATION EIGHTEEN LOCATED RENDERING RECORDS, and refuses the key before '
+            + 'eighteen, naming the keys that generation allows',
+          fn: async () => {
+            /**
+             A rendering that records the definitions that move its slot.
+             */
+            const recorded = { kind: 'located', quote: 'a[b]c', start: 0, definitions: '[b]: https://x.example/b', };
+            expect([
+              renderingRead({ value: recorded, generation: 18, },),
+              renderingRead({ value: { kind: 'located', quote: 'a[b]c', start: 0, markBefore: '\'', slot: 'b', }, generation: 18, },),
+              renderingRefusal({ value: recorded, generation: 17, },),
+            ],).toEqual([
+              recorded,
+              { kind: 'located', quote: 'a[b]c', start: 0, markBefore: '\'', slot: 'b', },
+              'ArtifactParseError: artifact parse failed at cat.rendering.definitions: '
+              + 'expected no key here beyond kind, quote, start, markBefore, markAfter, slot.',
+            ],);
+          },
+        },),
+        it({
+          name: 'REFUSES DEFINITIONS THAT ARE NOT TEXT, ARE EMPTY, OR ARE NOT IN THE FORM A PAGE\'S DEFINITIONS ARE READ IN: a number, '
+            + 'an empty string, a sentence, and definitions with other text among them',
+          fn: async () => {
+            const reason = 'ArtifactParseError: artifact parse failed at cat.rendering.definitions: expected link and footnote '
+              + 'definitions in the form a page\'s definitions are read in, and at least one.';
+            expect([
+              renderingRefusal({ value: { kind: 'located', quote: 'a[b]c', start: 0, definitions: 7, }, generation: 18, },),
+              renderingRefusal({ value: { kind: 'located', quote: 'a[b]c', start: 0, definitions: '', }, generation: 18, },),
+              renderingRefusal({ value: { kind: 'located', quote: 'a[b]c', start: 0, definitions: 'not a definition', }, generation: 18, },),
+              renderingRefusal({
+                value: { kind: 'located', quote: 'a[b]c', start: 0, definitions: '[b]: https://x.example/b\nstray text', },
+                generation: 18,
+              },),
+            ],).toEqual([
+              'ArtifactParseError: artifact parse failed at cat.rendering.definitions: expected a string.',
+              reason,
+              reason,
+              reason,
             ],);
           },
         },),

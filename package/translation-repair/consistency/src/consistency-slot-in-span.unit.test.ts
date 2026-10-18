@@ -163,6 +163,39 @@ await describe({
       },
     },),
     it({
+      name: 'READS THE SLOT WITH THE DEFINITIONS IT IS GIVEN, as it reads them from a page: a shortcut reference in the span whose '
+        + 'definition stands elsewhere makes `a[b]c` one word, so the slot `b` is no stand, where the span read alone has one',
+      fn: async () => {
+        /**
+         The span, with a reference in it.
+         */
+        const span = 'a[b]c';
+        /**
+         The definition of the reference, as the page holds it in another slice.
+         */
+        const definitions = '[b]: https://x.example/b';
+        /**
+         Three ballots that gave the slot.
+         */
+        const voices = ballotsGiving({ span, slots: [['b',], ['b',], ['b',],], },);
+        /**
+         The arguments every reading shares.
+         */
+        const shared = { voices, label: 'OCCURRENCE 1', words: foldedWordsOf({ text: span, },), span, };
+        expect({
+          alone: slotInSpan(shared,),
+          given: slotInSpan({ ...shared, definitions, },),
+          pageRead: slotInSpan({ ...shared, page: { text: `${span}\n\n${definitions}`, offset: 0, }, },),
+          unrelated: slotInSpan({ ...shared, definitions: '[z]: https://x.example/z', },),
+        },).toEqual({
+          alone: [{ slot: 'b', slotStart: 2, },],
+          given: [],
+          pageRead: [],
+          unrelated: [{ slot: 'b', slotStart: 2, },],
+        },);
+      },
+    },),
+    it({
       name: 'GIVES NO SLOT THAT CUTS MARKUP, beside a slot of the same span that cuts none',
       fn: async () => {
         expect({

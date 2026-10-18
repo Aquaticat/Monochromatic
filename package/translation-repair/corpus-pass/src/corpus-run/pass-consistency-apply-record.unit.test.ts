@@ -175,6 +175,29 @@ await describe({
             ],);
           },
         },),
+        it({
+          name: 'RECORDS THE DEFINITIONS OF THE PAGE A LOCATED RENDERING WAS READ WITH, only when it has them, beside its words '
+            + 'and no slot',
+          fn: async () => {
+            expect([
+              recordedRendering({
+                rendering: {
+                  kind: 'located',
+                  quote: 'a[b]c',
+                  core: 'a[b]c',
+                  start: 0,
+                  definitions: '[b]: https://x.example/b',
+                },
+              },),
+              recordedRendering({
+                rendering: { kind: 'located', quote: 'a[b]c', core: 'a[b]c', start: 0, slot: 'b', slotStart: 2, },
+              },),
+            ],).toEqual([
+              { kind: 'located', quote: 'a[b]c', start: 0, definitions: '[b]: https://x.example/b', },
+              { kind: 'located', quote: 'a[b]c', start: 0, slot: 'b', },
+            ],);
+          },
+        },),
       ],
     },),
     describe({
