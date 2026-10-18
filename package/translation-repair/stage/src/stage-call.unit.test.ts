@@ -278,6 +278,39 @@ await describe({
     },),
 
     it({
+      name: 'BOUNDS THE OPENING OF THE RE-ASK\'S REPLY AS IT BOUNDS THE FIRST\'S, so a re-ask reply of three hundred characters '
+        + 'shows its first hundred and twenty and a line break in it shows as a space',
+      fn: async () => {
+        const warnings: string[] = [];
+        const logger = warningRecordingLogger({ base: l, warnings, },);
+        await callWith({
+          client: scriptedClient({
+            outcome: {
+              kind: 'schema-mismatch',
+              rawText: '{"purr":"Occurrence 3"}',
+              detail: 'content parsed as JSON but failed the caller schema guard',
+              reaskFailure: {
+                servedBy: 'hyper',
+                kind: 'schema-mismatch',
+                rawText: `a\nb${'q'.repeat(300,)}`,
+                cause: 'content is not valid JSON: Unexpected token',
+              },
+            },
+          },),
+          signal: new AbortController().signal,
+          logger,
+        },);
+
+        /**
+         Warning the lost voice recorded.
+         */
+        const warning = warnings[0] ?? '';
+        expect(warning,).toContain(`raw="a b${'q'.repeat(117,)}"`,);
+        expect(warning.includes('\n',),).toBe(false,);
+      },
+    },),
+
+    it({
       name: 'TRUNCATES a long reply and flattens its line breaks, so one lost '
         + 'voice cannot bury the rest of a run log',
       fn: async () => {
