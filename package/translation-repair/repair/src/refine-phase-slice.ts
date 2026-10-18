@@ -24,10 +24,10 @@ import type { SliceCache, } from '@monochromatic-dev/translation-repair-translat
 import {
   everyStageHeard,
   silentStagesOf,
+  type StageSettings,
   UnpreparedSliceError,
 } from '@monochromatic-dev/translation-repair-stage/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Refine phase slice
 // Resume or buy one naturalness settlement. The document driver owns overlap

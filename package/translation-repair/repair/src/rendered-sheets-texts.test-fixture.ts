@@ -9,10 +9,10 @@
  */
 
 import { messageText, } from '@monochromatic-dev/translation-repair-provider';
-import { type RepairRegion, } from '@monochromatic-dev/translation-repair-adjudication';
+import type { RepairRegion, } from '@monochromatic-dev/translation-repair-adjudication';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
-import { type AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type JudgeReference, } from '../dist/final/node/index.mjs';
+import type { AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { JudgeReference, } from '../dist/final/node/index.mjs';
 
 
 //region Rendered sheet texts

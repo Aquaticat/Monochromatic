@@ -18,9 +18,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { stageQuorumUnmetFinding, } from '@monochromatic-dev/translation-repair-stage';
-import {
-  type IntroducedDefectReport,
-  type RegionDefectTally,
+import type {
+  IntroducedDefectReport,
+  RegionDefectTally,
 } from '@monochromatic-dev/translation-repair-adjudication';
 import { refineProbeVerdict, } from '../dist/final/node/index.mjs';
 

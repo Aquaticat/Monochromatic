@@ -13,7 +13,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
-import { type AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   type EditorStageResult,
   NOBODY_WROTE_IT,

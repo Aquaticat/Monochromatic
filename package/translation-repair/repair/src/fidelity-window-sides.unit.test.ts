@@ -31,7 +31,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { parseDocument, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
 import { sliceNeighbourContexts, } from '../dist/final/node/index.mjs';
 
 //region Fixtures

@@ -18,18 +18,18 @@ import type {
 import { notApplicableRepair, } from './repair-not-applicable.ts';
 import { buyRepairSlice, } from './repair-slice-buy.ts';
 import { repairSliceKey, } from './repair-slice-key.ts';
-import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import {
   armSliceCost,
   resumedSliceDiscardFinding,
+  type SliceCache,
   sliceRecordAgrees,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import {
   reuseTwinOrBuy,
+  type StageSettings,
   type TwinMemo,
   type TwinStored,
 } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Repair slice settle
 // One prepared repair slice from neighbour windows to a resumed, twin-reused or

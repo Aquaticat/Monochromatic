@@ -18,15 +18,13 @@ import {
 import {
   computeIssueClaimId,
   type IssueClaim,
+  type RepairDocument,
+  type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   nonTranslationVotesStand,
   screenNonTranslationVotes,
 } from '@monochromatic-dev/translation-repair-archive/ts';
-import type {
-  RepairDocument,
-  RosterModelId,
-} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { runCriticStage, } from './repair-stages.ts';
 
 //region Chunk critic phase

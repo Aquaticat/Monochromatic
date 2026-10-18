@@ -6,10 +6,6 @@ import type {
   AdjudicatedIssue,
   RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type {
-  IssueCheckerBallot,
-  IssueCheckerReading,
-} from '@monochromatic-dev/translation-repair-adjudication/ts';
 import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   type IssueAuthorship,
@@ -17,6 +13,8 @@ import {
 } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import {
   buildResolutionMessages,
+  type IssueCheckerBallot,
+  type IssueCheckerReading,
   type IssueResolutionTally,
   logBallotIrregularities,
   RESOLUTION_RESPONSE_FORMAT,
@@ -26,8 +24,10 @@ import {
   usableResolutionReportFor,
 } from '@monochromatic-dev/translation-repair-adjudication/ts';
 import { inRosterOrder, } from './refine-stage-replies.ts';
-import { gatherStageVoices, } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
+import {
+  gatherStageVoices,
+  type StageSettings,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Checker stage
 // The proving stage of one chunk's repair: checker models judge whether each

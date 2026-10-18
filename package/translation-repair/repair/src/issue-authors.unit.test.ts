@@ -12,12 +12,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import {
-  type RepairJudgedRound,
-  type RepairSlateEntry,
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type {
+  RepairJudgedRound,
+  RepairSlateEntry,
 } from '@monochromatic-dev/translation-repair-assembly';
-import { type PatchOperation, } from '@monochromatic-dev/translation-repair-page-pass';
+import type { PatchOperation, } from '@monochromatic-dev/translation-repair-page-pass';
 import {
   appliedIssuesByEnvelope,
   collectIssueAuthors,

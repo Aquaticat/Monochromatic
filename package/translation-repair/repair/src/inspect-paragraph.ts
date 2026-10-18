@@ -4,9 +4,9 @@ import type {
   RootContent,
 } from 'mdast';
 
-import type { DeepReadonlyData, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 
 import {
+  type DeepReadonlyData,
   parseMdxBody,
   type ProtectedAtom,
   requireMdxRefusal,

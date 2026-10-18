@@ -23,10 +23,10 @@ import {
 import { UNATTRIBUTED_TEXT, } from '@monochromatic-dev/translation-repair-house-rule';
 import { runPanelStage, } from '@monochromatic-dev/translation-repair-adjudication';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type SyntheticClient,
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { aggregateClaims, } from '@monochromatic-dev/translation-repair-shared-contract';
 import { runCheckerStage, } from '../dist/final/node/index.mjs';

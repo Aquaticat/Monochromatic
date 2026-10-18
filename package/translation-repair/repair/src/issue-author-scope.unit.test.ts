@@ -11,10 +11,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type RepairJudgedRound, } from '@monochromatic-dev/translation-repair-assembly';
-import { type PatchOperation, } from '@monochromatic-dev/translation-repair-page-pass';
-import { type CandidateProducer, } from '@monochromatic-dev/translation-repair-house-rule';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { RepairJudgedRound, } from '@monochromatic-dev/translation-repair-assembly';
+import type { PatchOperation, } from '@monochromatic-dev/translation-repair-page-pass';
+import type { CandidateProducer, } from '@monochromatic-dev/translation-repair-house-rule';
 import {
   collectIssueAuthors,
   type EditorStageResult,

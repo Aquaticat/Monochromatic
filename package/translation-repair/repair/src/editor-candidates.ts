@@ -14,11 +14,11 @@ import {
   resolveEditorEdits,
 } from './edit-wire.ts';
 import type { EditorCandidate, } from './editor-selection-result.ts';
-import type {
-  EditableEnvelope,
-  RosterModelId,
+import {
+  type EditableEnvelope,
+  isUnreadableReason,
+  type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import { isUnreadableReason, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { HeardVoice, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Editor candidate assembly

@@ -34,7 +34,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   refineRunShape,
   refineSliceKey,

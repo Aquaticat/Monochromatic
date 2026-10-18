@@ -1,10 +1,10 @@
-import {
-  type EditableEnvelope,
-  type RosterModelId,
+import type {
+  EditableEnvelope,
+  RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
 import { applyPatchOperations, } from '@monochromatic-dev/translation-repair-page-pass';
-import { type EditorCandidate, } from '../dist/final/node/index.mjs';
+import type { EditorCandidate, } from '../dist/final/node/index.mjs';
 
 //region Editor candidate envelope
 // ONE FIXTURE ENVELOPE AND THE CANDIDATE A MODEL PROPOSES AGAINST IT, for

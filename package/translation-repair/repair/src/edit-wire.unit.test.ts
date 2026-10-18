@@ -13,9 +13,9 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { messageText, } from '@monochromatic-dev/translation-repair-provider';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
-import {
-  type AdjudicatedIssue,
-  type EditableEnvelope,
+import type {
+  AdjudicatedIssue,
+  EditableEnvelope,
 } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   buildEditorMessages,

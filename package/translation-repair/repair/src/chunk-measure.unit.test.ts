@@ -13,7 +13,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type PatchOperation, } from '@monochromatic-dev/translation-repair-page-pass';
+import type { PatchOperation, } from '@monochromatic-dev/translation-repair-page-pass';
 import {
   type IssueResolutionTally,
   UNCHANGED_MEASUREMENTS,

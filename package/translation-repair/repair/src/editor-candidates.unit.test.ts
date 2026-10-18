@@ -25,7 +25,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type EditableEnvelope, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { EditableEnvelope, } from '@monochromatic-dev/translation-repair-shared-contract';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
 import { buildEditorCandidates, } from '../dist/final/node/index.mjs';
 import {

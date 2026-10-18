@@ -17,10 +17,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type ClaimAttribution, } from '@monochromatic-dev/translation-repair-adjudication';
-import {
-  type AdjudicatedIssue,
-  type IssueClaim,
+import type { ClaimAttribution, } from '@monochromatic-dev/translation-repair-adjudication';
+import type {
+  AdjudicatedIssue,
+  IssueClaim,
 } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   attachClaimFilers,

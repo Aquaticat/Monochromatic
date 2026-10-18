@@ -27,18 +27,18 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  type IssueCheckerReading,
-  type ResolutionVerdict,
+import type {
+  IssueCheckerReading,
+  ResolutionVerdict,
 } from '@monochromatic-dev/translation-repair-adjudication';
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type SyntheticClient,
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
-import {
-  type AdjudicatedIssue,
-  type RosterModelId,
+import type {
+  AdjudicatedIssue,
+  RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
 import { retainsResolvedIssues, } from '../dist/final/node/index.mjs';

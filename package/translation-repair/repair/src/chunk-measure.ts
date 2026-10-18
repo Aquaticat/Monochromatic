@@ -1,8 +1,3 @@
-import type {
-  AdjudicatedIssue,
-  EditableEnvelope,
-  RepairDocument,
-} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { PatchOperation, } from '@monochromatic-dev/translation-repair-page-pass/ts';
 import {
   appliedIssuesByEnvelope,
@@ -11,7 +6,12 @@ import {
 import type { EditorStageResult, } from './repair-editor-stage.ts';
 import type { IssueAuthorship, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import { downgradeCount, } from '@monochromatic-dev/translation-repair-stage/ts';
-import { footnoteBreakCount, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
+  type AdjudicatedIssue,
+  type EditableEnvelope,
+  footnoteBreakCount,
+  type RepairDocument,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type {
   CandidateMeasurements,
   IssueResolutionTally,

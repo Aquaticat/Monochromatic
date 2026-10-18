@@ -12,8 +12,10 @@ import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/
 import { collectRefinedAuthors, } from './issue-authors.ts';
 import type { ChunkRepairOutcome, } from '@monochromatic-dev/translation-repair-assembly/ts';
 import { runCheckerStage, } from './repair-edit-stages.ts';
-import { silentStagesOf, } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
+import {
+  silentStagesOf,
+  type StageSettings,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Refine recheck
 // The checker round a refined slice passes before its rewrite may ship: the

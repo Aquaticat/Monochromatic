@@ -1,6 +1,8 @@
-import type { SelectEvidence, } from '@monochromatic-dev/translation-repair-adjudication/ts';
 import { citedReferenceEvidence, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import { declaredNamesEvidence, } from '@monochromatic-dev/translation-repair-adjudication/ts';
+import {
+  declaredNamesEvidence,
+  type SelectEvidence,
+} from '@monochromatic-dev/translation-repair-adjudication/ts';
 import { HOUSE_FORM_CORRECTION_KEEPS_MEANING, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 
 //region Refinement selection context

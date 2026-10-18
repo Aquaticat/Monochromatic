@@ -14,19 +14,17 @@ import {
   resolveCriticIssue,
 } from '@monochromatic-dev/translation-repair-adjudication/ts';
 import {
+  type AnchorTarget,
   computeIssueClaimId,
   type DocumentSide,
   type IssueClaim,
+  type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type {
-  FanOutMode,
-  StageSettings,
+import {
+  type FanOutMode,
+  gatherStageVoices,
+  type StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
-import { gatherStageVoices, } from '@monochromatic-dev/translation-repair-stage/ts';
-import type {
-  AnchorTarget,
-  RosterModelId,
-} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Critic and panel stages
 // The two claim-producing stages of one chunk's repair: critics fan out and

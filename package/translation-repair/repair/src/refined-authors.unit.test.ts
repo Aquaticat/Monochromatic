@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 import { collectRefinedAuthors, } from '../dist/final/node/index.mjs';
 import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,

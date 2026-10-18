@@ -11,9 +11,11 @@ import {
   resolveRestorationJudgment,
   type RestorationVerdict,
 } from './restoration-judge-wire.ts';
-import { gatherStageVoices, } from '@monochromatic-dev/translation-repair-stage/ts';
+import {
+  gatherStageVoices,
+  type StageSettings,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Restoration judge stage
 // Ensemble bilingual grading of one entry's restored seeds. No single judge

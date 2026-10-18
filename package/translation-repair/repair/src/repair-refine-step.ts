@@ -3,13 +3,16 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
-import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import {
   failureWritten,
+  type StageSettings,
   UnpreparedSliceError,
 } from '@monochromatic-dev/translation-repair-stage/ts';
-import { assertSettledRecordAgrees, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
+import {
+  assertSettledRecordAgrees,
+  type SliceCache,
+} from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import {
   type RefinePhaseResult,
   runRefinePhase,
@@ -20,7 +23,6 @@ import type {
   RepairModels,
   RepairSliceSeating,
 } from '@monochromatic-dev/translation-repair-assembly/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Repair refine step
 // The naturalness lane as the DRIVER sees it: one call, plus the two abort

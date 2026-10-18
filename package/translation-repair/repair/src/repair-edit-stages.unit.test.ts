@@ -28,14 +28,14 @@ import {
   type IssueAuthorship,
   UNATTRIBUTED_TEXT,
 } from '@monochromatic-dev/translation-repair-house-rule';
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type SyntheticClient,
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
-import {
-  type AdjudicatedIssue,
-  type RosterModelId,
+import type {
+  AdjudicatedIssue,
+  RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
 import { runCheckerStage, } from '../dist/final/node/index.mjs';

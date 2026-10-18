@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
-import { type RepairModels, } from '@monochromatic-dev/translation-repair-assembly';
+import type { RepairModels, } from '@monochromatic-dev/translation-repair-assembly';
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
 import {

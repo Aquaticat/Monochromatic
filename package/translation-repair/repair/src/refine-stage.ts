@@ -38,10 +38,13 @@ import {
   assertJudgeableProducerRoster,
   CHUNK_SCOPE_ENVELOPE,
   describeJudgedRound,
+  type ProducerRosterError,
   type RepairJudgedRound,
 } from '@monochromatic-dev/translation-repair-assembly/ts';
-import { gatherStageVoices, } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
+import {
+  gatherStageVoices,
+  type StageSettings,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Refinement stage
 // One slice's naturalness pass over already-repaired text.
@@ -150,7 +153,7 @@ export type RefineStageResult = {
 
  @returns Shipped text plus what decided it
 
- @throws {@link import('@monochromatic-dev/translation-repair-assembly/ts').ProducerRosterError} when the
+ @throws {@link ProducerRosterError} when the
  roster could not select anything: repeats on either side, no refiner, or
  judges too few to reach the minimum weight
 

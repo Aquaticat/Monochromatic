@@ -6,7 +6,10 @@ import { frontMatterRepairOutcome, } from './front-matter-repair.ts';
 import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
-import { failureWritten, } from '@monochromatic-dev/translation-repair-stage/ts';
+import {
+  failureWritten,
+  type StageSettings,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 import { cacheRefusalsOf, } from './repair-cache-gate.ts';
 import { repairChunk, } from './repair-chunk.ts';
 import type {
@@ -14,9 +17,10 @@ import type {
   RepairModels,
   RepairSliceSeating,
 } from '@monochromatic-dev/translation-repair-assembly/ts';
-import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import { assertSettledRecordAgrees, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
+import {
+  assertSettledRecordAgrees,
+  type SliceCache,
+} from '@monochromatic-dev/translation-repair-translate-floor/ts';
 
 //region Repair slice buy
 // What one repair-lane slice costs when neither disk nor a twin can answer:

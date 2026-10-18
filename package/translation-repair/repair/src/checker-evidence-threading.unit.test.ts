@@ -30,11 +30,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { UNATTRIBUTED_TEXT, } from '@monochromatic-dev/translation-repair-house-rule';
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication';
-import {
-  type ChunkRepairOutcome,
-  type RepairModels,
+import type {
+  ChunkRepairOutcome,
+  RepairModels,
 } from '@monochromatic-dev/translation-repair-assembly';
-import { type ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
 import {
   type ChatJsonOutcome,
   type ChatJsonRequest,

@@ -13,9 +13,11 @@ import {
   isRestorationJudgeWire,
   type JudgeReference,
 } from './restoration-judge-wire.ts';
-import { gatherStageVoices, } from '@monochromatic-dev/translation-repair-stage/ts';
+import {
+  gatherStageVoices,
+  type StageSettings,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Derivability probe stage
 // Ensemble audit of whether deleted sentences are fully derivable from the

@@ -23,14 +23,14 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  type EditableEnvelope,
-  type RosterModelId,
+import type {
+  EditableEnvelope,
+  RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract';
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type SyntheticClient,
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
 import {

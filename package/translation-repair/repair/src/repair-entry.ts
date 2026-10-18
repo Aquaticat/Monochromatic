@@ -8,8 +8,10 @@ import type {
   RepairTranslationResult,
 } from '@monochromatic-dev/translation-repair-assembly/ts';
 import { repairPreparedDocument, } from './repair-translation.ts';
-import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import { SLICE_CHAR_BUDGET, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
+import {
+  SLICE_CHAR_BUDGET,
+  type SliceCache,
+} from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Repair entry

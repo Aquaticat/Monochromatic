@@ -10,6 +10,7 @@ import {
 import {
   assertOverlap,
   mapOverlapped,
+  type StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
 import {
   assertCheckerIndependence,
@@ -25,7 +26,6 @@ import { refineRunShape, } from './refine-slice-key.ts';
 import type { RefinedSliceSettlement, } from './refine-slice-settle.ts';
 import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import { spliceSlices, } from '@monochromatic-dev/translation-repair-page-pass/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Refinement phase
 // Naturalness is a second per-slice phase after every accuracy outcome settles.

@@ -9,11 +9,11 @@ import {
 } from '@monochromatic-dev/translation-repair-page-pass/ts';
 import type { Candidate, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import { gateParagraphRewrite, } from './inspect-paragraph.ts';
-import type {
-  EditableEnvelope,
-  RosterModelId,
+import {
+  type EditableEnvelope,
+  isUnreadableReason,
+  type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import { isUnreadableReason, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   type RefineReportWire,
   type RefineResolution,

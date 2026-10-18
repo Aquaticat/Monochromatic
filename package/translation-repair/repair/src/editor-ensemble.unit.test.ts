@@ -13,9 +13,9 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import {
-  type EditableEnvelope,
-  type RosterModelId,
+import type {
+  EditableEnvelope,
+  RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   type ChatJsonOutcome,

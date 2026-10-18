@@ -30,15 +30,15 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type PatchOutcome, } from '@monochromatic-dev/translation-repair-page-pass';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { PatchOutcome, } from '@monochromatic-dev/translation-repair-page-pass';
 import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
   messageText,
   type SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
-import { type Candidate, } from '@monochromatic-dev/translation-repair-house-rule';
+import type { Candidate, } from '@monochromatic-dev/translation-repair-house-rule';
 import { selectChunkPatch, } from '../dist/final/node/index.mjs';
 import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,

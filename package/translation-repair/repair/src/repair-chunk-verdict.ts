@@ -1,18 +1,16 @@
-import type {
-  AdjudicatedIssue,
-  EditableEnvelope,
-} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { PatchOperation, } from '@monochromatic-dev/translation-repair-page-pass/ts';
 import { measurePatchedCandidate, } from './chunk-measure.ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import { findDroppedDeclaredNames, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import {
+  type AdjudicatedIssue,
+  type EditableEnvelope,
   parseDocument,
   type RepairDocument,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { IssueResolutionTally, } from '@monochromatic-dev/translation-repair-adjudication/ts';
 import {
   type CandidateMeasurements,
+  type IssueResolutionTally,
   type RepairCandidate,
   selectRepairCandidate,
   UNCHANGED_CANDIDATE_ID,

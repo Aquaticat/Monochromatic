@@ -28,7 +28,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
+import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
 import { NON_TRANSLATION_BLOCK_VOTES, } from '@monochromatic-dev/translation-repair-archive';
 import {
   computeIssueClaimId,

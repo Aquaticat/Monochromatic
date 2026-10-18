@@ -38,7 +38,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { type RepairModels, } from '@monochromatic-dev/translation-repair-assembly';
+import type { RepairModels, } from '@monochromatic-dev/translation-repair-assembly';
 import {
   type ChatJsonOutcome,
   type ChatJsonRequest,

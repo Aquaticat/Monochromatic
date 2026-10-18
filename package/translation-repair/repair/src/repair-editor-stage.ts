@@ -37,10 +37,15 @@ import {
   selectChunkPatch,
   selectPerEnvelope,
 } from './editor-ensemble.ts';
-import { assertJudgeableEditorRoster, } from '@monochromatic-dev/translation-repair-assembly/ts';
-import type { RepairJudgedRound, } from '@monochromatic-dev/translation-repair-assembly/ts';
-import { gatherStageVoices, } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
+import {
+  assertJudgeableEditorRoster,
+  type ProducerRosterError,
+  type RepairJudgedRound,
+} from '@monochromatic-dev/translation-repair-assembly/ts';
+import {
+  gatherStageVoices,
+  type StageSettings,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Editor stage
 // Several editors rewrite one chunk's envelopes independently, every proposal
@@ -147,7 +152,7 @@ export type EditorStageResult = {
 
  @returns Winning patch plus findings
 
- @throws {@link import('@monochromatic-dev/translation-repair-assembly/ts').ProducerRosterError} when either
+ @throws {@link ProducerRosterError} when either
  roster repeats a model, no editor is seated, or too few judges are seated to
  reach the minimum vote weight
 

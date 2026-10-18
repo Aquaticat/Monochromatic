@@ -20,23 +20,21 @@ import {
 import {
   assertRostersConfigured,
   mapOverlapped,
+  type StageSettings,
+  type TwinMemo,
 } from '@monochromatic-dev/translation-repair-stage/ts';
-import { assembleRepair, } from '@monochromatic-dev/translation-repair-assembly/ts';
-import type {
-  ChunkRepairOutcome,
-  RepairModels,
-  RepairSliceSeating,
-  RepairTranslationResult,
+import {
+  assembleRepair,
+  type ChunkRepairOutcome,
+  type RepairModels,
+  type RepairSliceSeating,
+  type RepairTranslationResult,
 } from '@monochromatic-dev/translation-repair-assembly/ts';
 import { refineSettledSlices, } from './repair-refine-step.ts';
 import { repairRunShape, } from './repair-slice-key.ts';
 import { settleRepairSlice, } from './repair-slice-settle.ts';
 import type { RefinedSliceSettlement, } from './refine-slice-settle.ts';
 import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import type {
-  StageSettings,
-  TwinMemo,
-} from '@monochromatic-dev/translation-repair-stage/ts';
 
 
 //region Repair translation

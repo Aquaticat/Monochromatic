@@ -24,14 +24,14 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type SyntheticClient,
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
-import {
-  type AggregatedClaim,
-  type ClaimCluster,
+import type {
+  AggregatedClaim,
+  ClaimCluster,
 } from '@monochromatic-dev/translation-repair-shared-contract';
 import { runPanelStage, } from '@monochromatic-dev/translation-repair-adjudication';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';

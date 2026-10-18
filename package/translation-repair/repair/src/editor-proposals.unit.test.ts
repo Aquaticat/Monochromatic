@@ -15,11 +15,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  type EditableEnvelope,
-  type RosterModelId,
+import type {
+  EditableEnvelope,
+  RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type CandidateProducer, } from '@monochromatic-dev/translation-repair-house-rule';
+import type { CandidateProducer, } from '@monochromatic-dev/translation-repair-house-rule';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
 import {
   collectEnvelopeProposals,

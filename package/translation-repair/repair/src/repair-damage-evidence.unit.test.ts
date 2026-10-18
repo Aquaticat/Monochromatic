@@ -21,9 +21,9 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  type RegionDefectTally,
-  type ScreenedDefectClaim,
+import type {
+  RegionDefectTally,
+  ScreenedDefectClaim,
 } from '@monochromatic-dev/translation-repair-adjudication';
 import { damageClaimLinesBySlice, } from '../dist/final/node/index.mjs';
 import { SEAT_SYNTHETIC_VISION_WITHHELD, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';

@@ -38,16 +38,16 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type ResolutionVerdict, } from '@monochromatic-dev/translation-repair-adjudication';
-import {
-  type ChunkRepairOutcome,
-  type RepairModels,
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { ResolutionVerdict, } from '@monochromatic-dev/translation-repair-adjudication';
+import type {
+  ChunkRepairOutcome,
+  RepairModels,
 } from '@monochromatic-dev/translation-repair-assembly';
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type SyntheticClient,
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { settleRefinedSlice, } from '../dist/final/node/index.mjs';
 import {

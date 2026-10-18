@@ -34,16 +34,16 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { type SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor';
-import {
-  type ChunkRepairOutcome,
-  type RepairModels,
+import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor';
+import type {
+  ChunkRepairOutcome,
+  RepairModels,
 } from '@monochromatic-dev/translation-repair-assembly';
-import { type ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type SyntheticClient,
+import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   type RefinedSliceSettlement,
