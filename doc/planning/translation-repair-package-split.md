@@ -1,0 +1,596 @@
+# Translation-repair package split
+
+## Purpose
+
+The owner asked on 2026-10-18 why the package's lint takes so long,
+and to split `package/module/translation-repair` into packages under `package/translation-repair/<name>`,
+each of a manageable size,
+before the other queued work.
+This document records the measurements behind the answer,
+the module map the split follows,
+the rules the move keeps,
+and the controls that prove the move changed no behaviour.
+It is written before any file moves,
+so the map and the rules can be read and vetoed as they stand.
+
+## Lint cost, measured
+
+All runs below are oxlint 1.87.0 on the package as it stood at `94ebefa1e3`,
+in the keyless worktree `w165` after a fresh build,
+timed with `/usr/bin/time`.
+
+- The whole package (3004 files,
+  378k production lines,
+  1552 test files):
+  24.6 s,
+  23.9 s and 24.1 s wall over three warm runs,
+  33 s user each time;
+  0 warnings and 0 errors.
+- The 92.1 s in gate `g99b` was a cold run on a loaded host:
+  the first run in the branch worktree took 76 s wall and the second 25 s.
+- 31 files at the bottom of the import graph (the modules every runner reaches):
+  3.7 s and 3.6 s wall.
+- 40 `corpus-run/pass-*` files at the top of the graph:
+  3.1 s and 3.0 s wall.
+- All 120 `consistency-*` files,
+  sources and tests together:
+  3.5 s and 3.6 s wall.
+- The type check (`lint:types`) took 2.1 s in `g99b`,
+  so oxlint is almost all of the lint time.
+
+Most of a small run is fixed start-up,
+and a run near the top of the graph costs what a run near the bottom does.
+A package of 5k to 25k lines should lint in about 3 to 5 s against the 24 s the whole package takes now.
+A gate that lints every package of the family pays the start-up once per package,
+so it will take longer in total than one lint of the whole package does today.
+That cost is measured after the move,
+not estimated here.
+
+### A finding on the way
+
+Lint of the branch worktree reported 331 warnings and 96 errors
+(`TS2353`,
+`TS2339`,
+`TS2305`,
+`TS2724` and the `no-unsafe-*` family),
+all in test files.
+Its `dist` was built on 2026-10-15 and the tests take their types from `dist/final/node/index.d.mts`,
+so lint of tests reads the last build,
+not the source.
+The gate builds first,
+which is why gates stay clean.
+The rule for the split keeps this in mind:
+a package's lint runs after its build.
+
+## How the map was made
+
+The map was computed from the import graph,
+not from file names alone,
+because names proved a poor guide to layering.
+
+- **Graph.**
+  Every tracked `.ts` under `src` was parsed with the oxc parser rolldown exposes.
+  Each named import was resolved through re-export chains to the module that declares the name,
+  so barrels (66 modules that declare nothing) drop out and their consumers point at the real owners.
+  1384 production modules remain,
+  with no name left unresolved.
+- **Components.**
+  The graph has 1345 strongly connected components;
+  the largest holds 6 files.
+  Each component stays whole in one package.
+- **Topics.**
+  Every module got a topic from its name family
+  (text,
+  provider,
+  panel,
+  translate,
+  repair,
+  consolidate,
+  consistency,
+  artifact,
+  corpus-run,
+  corpus-pass,
+  corpus-probe,
+  coverage-census,
+  and a few more),
+  with exact overrides for orchestration files whose names put them in the wrong layer
+  (`document-lanes.ts`,
+  `document-preparation.ts`,
+  the `*-driver` files,
+  the `corpus-pass*` runner files).
+- **No total order on topics exists.**
+  A layered assignment by topic order displaced 145k to 193k lines from their topic for the orders tried by hand,
+  and 96k for the best order a search found,
+  which it reached only by pulling most of `panel` into lower packages,
+  because the panel,
+  translate and repair families import each other's rule files in both directions.
+- **Clustering.**
+  Components were merged greedily by import affinity,
+  first only within a topic,
+  then across topics only into the cluster that imports the smaller side most and only while one topic keeps 80% of the lines,
+  then clusters under 4000 lines joined a neighbour.
+  No merge may close a cycle between clusters,
+  so the result is acyclic by construction,
+  and no cluster may pass 25k lines.
+
+The result is 34 packages of 4,055 to 23,968 lines.
+The module-to-package list is `doc/audit/translation-repair-package-split-map-2026-10-18.json`.
+
+## The packages
+
+Listed from the bottom of the dependency order up.
+Each line gives production lines,
+production files,
+how many other packages of the family it imports,
+and what it holds.
+
+- `markup`:
+  7,981 lines,
+  34 files,
+  imports none.
+  Markup atoms,
+  MDX tags,
+  nesting bounds,
+  letter and code-point classes.
+- `document-structure`:
+  9,909 lines,
+  35 files,
+  imports 1.
+  The MDX parse,
+  footnote graph,
+  container masks,
+  heading and block alignment.
+- `shared-contract`:
+  8,021 lines,
+  35 files,
+  imports 2.
+  Small shared shapes many layers read:
+  model cards,
+  aggregate claims,
+  patch and issue models,
+  roster ids.
+  It mixes families on purpose:
+  each module is imported from several layers.
+- `typography`:
+  5,093 lines,
+  24 files,
+  imports 3.
+  Quote normalization,
+  semantic wrapping,
+  prose typography,
+  log context.
+- `glossary`:
+  8,222 lines,
+  36 files,
+  imports 4.
+  The community glossary and its matching,
+  address and skeleton rules,
+  sheet paths,
+  directory ids.
+- `house-rule`:
+  5,727 lines,
+  23 files,
+  imports 5.
+  House policy,
+  identity context,
+  declared names,
+  grading and resolution sheets.
+- `provider-stream`:
+  8,434 lines,
+  30 files,
+  imports 5.
+  Credential masking,
+  stream deltas and their failure detectors,
+  synthetic transport.
+- `provider`:
+  16,317 lines,
+  52 files,
+  imports 7.
+  Provider routing,
+  budgets,
+  and the OpenRouter,
+  Bedrock,
+  Anthropic,
+  Hyper and synthetic clients.
+- `stage`:
+  10,034 lines,
+  39 files,
+  imports 8.
+  Panel stage rounds,
+  quorum,
+  seat tally,
+  prompt payloads,
+  and the block and section pairing stages.
+- `slice-reading`:
+  10,016 lines,
+  43 files,
+  imports 9.
+  Image reading and OCR,
+  chunked documents,
+  slice coverage and pictures.
+- `rendering-audit`:
+  5,360 lines,
+  20 files,
+  imports 9.
+  The rendering audit library,
+  rendering glossary,
+  page names and headings.
+- `reference`:
+  4,651 lines,
+  15 files,
+  imports 10.
+  Cited references,
+  attestation,
+  work titles,
+  lookup caches.
+- `corpus-source`:
+  8,204 lines,
+  26 files,
+  imports 10.
+  The corpus reader and its git access,
+  repeat groups,
+  preparation identity.
+- `page-pass`:
+  9,530 lines,
+  32 files,
+  imports 10.
+  Page passes that restore or splice text:
+  title references,
+  contributor names,
+  ordinals,
+  typography restore.
+- `translate-floor`:
+  16,212 lines,
+  56 files,
+  imports 13.
+  The translate lane's floors and validation,
+  slice delivery and cost.
+- `adjudication`:
+  9,876 lines,
+  40 files,
+  imports 14.
+  Critics,
+  adjudication,
+  tallying,
+  candidate selection,
+  introduced-defect screening.
+- `assembly`:
+  7,957 lines,
+  23 files,
+  imports 9.
+  Assembly integrity and repetition checks,
+  and the repair records assembly reads.
+- `artifact-pool`:
+  4,602 lines,
+  15 files,
+  imports 8.
+  Artifact pool,
+  eligibility,
+  generations,
+  provenance and placement.
+- `translate-stage`:
+  6,281 lines,
+  23 files,
+  imports 12.
+  The translate stage,
+  run-offs,
+  retries,
+  and tense candidates.
+- `lane-contest`:
+  7,066 lines,
+  21 files,
+  imports 16.
+  Lane comparison and contests,
+  seeded errors,
+  delivery coherence.
+- `archive`:
+  7,580 lines,
+  28 files,
+  imports 17.
+  Archive blocks,
+  disputes,
+  revisions,
+  coverage verdicts,
+  section and block preparation.
+- `consistency`:
+  19,546 lines,
+  55 files,
+  imports 13.
+  The page-level consistency pass.
+- `repair`:
+  16,684 lines,
+  60 files,
+  imports 19.
+  The repair and refine lanes and the editor ensemble.
+- `consolidate`:
+  7,148 lines,
+  26 files,
+  imports 16.
+  Consolidation:
+  settle,
+  gate,
+  polish,
+  standing.
+- `insertion`:
+  4,055 lines,
+  16 files,
+  imports 12.
+  Insertion checks on carried and contained text,
+  runner closure,
+  band order.
+- `translate-lane`:
+  5,524 lines,
+  19 files,
+  imports 20.
+  The translate lane over a document:
+  slices,
+  alignment,
+  archive splicing.
+- `artifact`:
+  23,759 lines,
+  74 files,
+  imports 23.
+  The two-lane artifact:
+  building,
+  reading,
+  rebuilding,
+  row equality.
+- `page-check`:
+  17,936 lines,
+  60 files,
+  imports 21.
+  Published-page checks:
+  Canadian spelling and dates,
+  would-ship,
+  page assembly,
+  destinations,
+  archive casing.
+- `run`:
+  19,610 lines,
+  75 files,
+  imports 21.
+  Run configuration,
+  seats,
+  the runs lock,
+  the command line,
+  meters,
+  spend and the ledger.
+  Runners:
+  `budget-sample`,
+  `meter-report`,
+  `cap-census`,
+  `ledger-report`,
+  `repeat-census`,
+  `run-timing-report`,
+  `spend-report`,
+  `verify-published`.
+- `slice-cache`:
+  10,342 lines,
+  50 files,
+  imports 23.
+  Slice and consolidation caches,
+  the cache-account audit,
+  slice census,
+  pass schema and eligibility.
+  Runners:
+  `cache-account-audit`,
+  `slice-census`,
+  `slice-cost-report`.
+- `corpus-pass`:
+  23,968 lines,
+  84 files,
+  imports 29.
+  The corpus pass and its per-entry steps.
+  Runner:
+  `corpus-pass`.
+- `probe`:
+  21,325 lines,
+  105 files,
+  imports 24.
+  Probes and their reports:
+  rendering audit,
+  relabel,
+  sensitivity,
+  recall,
+  damage,
+  attribution,
+  scores.
+  Runners:
+  `damage-sample`,
+  `draw-sample`,
+  `audit-sensitivity`,
+  `rendering-audit-settled`,
+  `rendering-audit-settled-report`,
+  `probe-relabel`,
+  `probe-sensitivity`,
+  `probe-verify`,
+  `recall-benchmark`,
+  `score-agreement`,
+  `score-attribution`,
+  `score-crosscheck`,
+  `score-probe`,
+  `score-verify`,
+  `judge-fidelity-probe`.
+- `bench`:
+  15,867 lines,
+  78 files,
+  imports 23.
+  Benches and calibration:
+  window trial,
+  editor width and calibration,
+  rosters,
+  model health,
+  sentinel.
+  Runners:
+  `checker-sensitivity`,
+  `model-catalog`,
+  `model-health`,
+  `roster-card`,
+  `producer-calibrate`,
+  `roster-bench`,
+  `sentinel-probe`,
+  `displacement-probe`,
+  `editor-calibrate`,
+  `editor-standing-read`,
+  `editor-width-probe`,
+  `translate-probe`,
+  `window-trial-probe`.
+- `coverage-census`:
+  9,375 lines,
+  32 files,
+  imports 15.
+  The coverage census and its control and probe.
+  Runners:
+  `coverage-census`,
+  `coverage-control-probe`,
+  `coverage-probe`.
+
+Every package name is `@monochromatic-dev/translation-repair-<name>`,
+after the `package/figma/kiwi` precedent for a category directory,
+and every directory segment is singular.
+
+## Rules the move keeps
+
+### No behaviour change
+
+The move changes paths,
+import specifiers,
+package manifests and build configuration only.
+No function body changes in the move commits.
+Barrels are dissolved:
+every import names the package that declares the name.
+Each package gets its own `src/index.ts` exporting what its siblings and its tests use.
+
+### One copy of every module in a process
+
+Production code checks identity on family classes:
+46 `instanceof` sites,
+9 of them on `SyntheticHttpError` and others on the stream errors,
+`StatedRefusalError`,
+`ArtifactParseError` and their kin.
+63 test fixtures that use production code are imported by tests in more than one package
+(`stage-settings.test-fixture.ts` alone by tests in 24).
+If a package's build inlined its siblings,
+as `doc/decision/workspace-ts-source-imports.md` makes the default (`deps.alwaysBundle`),
+a test would load its own build's inlined copy of a sibling next to the copy a shared fixture loads,
+and an error thrown by one copy would fail `instanceof` against the other.
+
+So inside the family,
+library builds keep family siblings external:
+a package's `dist` imports `@monochromatic-dev/translation-repair-<sibling>`,
+which resolves through the sibling's `"."` export to the sibling's own `dist`.
+Every test and fixture then reaches each module through exactly one file.
+Runner bundles still inline everything,
+so the shipped commands stay self-contained.
+This is a family-scoped exception to the decision document's inlining default,
+taken because nothing outside the family imports these packages and the package was never published
+(npm answers 404 for `@monochromatic-dev/module-translation-repair`).
+The cost is a build order:
+a package's build and tests depend on its siblings' builds,
+declared through `depends` in each `mise.toml`.
+Lint of a package's tests already depends on its own build (see "A finding on the way"),
+so the order adds sibling builds to a dependency that exists.
+
+### Tests
+
+- A test keeps importing built output,
+  which the `test-import` rule requires
+  (`package/oxlint-plugin/test-import/README.md`).
+- A test lives in the package of the module it tests,
+  found by its base name (`foo.unit.test.ts` tests `foo.ts`).
+- 209 tests also need a name from a package that imports their subject's package.
+  Each lives instead in the lowest package that reaches every name it needs,
+  measured per test against the map.
+- One test,
+  `corpus-run/cli-refusal.unit.test.ts`,
+  needs names from `bench`,
+  `coverage-census` and `artifact` at once,
+  and no package reaches all three.
+  It splits into one file per runner,
+  each beside the runner it checks.
+- 111 test files have no subject module:
+  the source scans,
+  fixtures that import no production code (`scratch-dir`,
+  `capturing-logger` and their kin),
+  and runner tests that start built commands.
+  The source scans move to a package of their own (`package/translation-repair/source-scan`)
+  that reads every family package's `src`.
+  Fixtures with no production imports move to `package/translation-repair/test-fixture`,
+  exported through its `/ts` subpath.
+  Runner tests go beside their runner.
+- The suite after the move must hold the same 2482 passing cases under the same names.
+
+### Runners, the coverage census and the scans
+
+- Each runner entry stays in the package that owns its entry file,
+  with its `mise` task and its built path moved with it.
+  Docs and runbooks that start runners name the new task.
+- The coverage census builds coverage bundles of the whole family,
+  so it reads every package's sources,
+  not only its own.
+- Production-reach guards (dead code,
+  unused values) and the other whole-package source scans
+  measure the family as one program,
+  so a function one package exports and another uses still counts as reached.
+
+### Docs
+
+- Docs about the family as a whole
+  (the ledger,
+   the prevention doc,
+   the writer brief and the rest of the 133 package-local `.md` files)
+  move to `package/translation-repair/`,
+  beside the packages,
+  after the `package/music-player/README.md` precedent for a category-level doc.
+- A doc about one package moves into that package.
+- Living docs that cite a moved path are rewritten to the new path.
+  Historical records keep the path as written,
+  with an in-place note naming the new path and the move date.
+
+## Controls
+
+The pre-split state is recorded at `94ebefa1e3`:
+
+- suite 2482 passing cases and the blankness scan green;
+- oxlint 0 warnings and 0 errors;
+- the TianqiChen66625 decisions replay byte-identical to the n171 build's output except for its label;
+- the corpus measure over the 92 pinned pages.
+
+After the move,
+in a fresh keyless worktree:
+
+- every package builds,
+  lints clean and type-checks;
+- the suite holds the same case names and counts;
+- every source scan passes;
+- the replay and the corpus measure,
+  run against the new `corpus-pass` runner bundle and the new library builds,
+  match the pre-split outputs byte for byte except for labels;
+- full-family lint time and single-package lint time are measured and recorded here.
+
+## Order of work
+
+1.  Commit this document and the map.
+2.  One commit moves every file with `git mv` and rewrites every import,
+    by a scratch script that reads the map;
+    the tree may not build at that commit,
+    and its message says so.
+3.  Package scaffolding:
+    `package.json`,
+    `mise.toml`,
+    `tsconfig.json`,
+    rolldown configs and `README.md` for each package.
+4.  Tests re-homed per the test rules,
+    the scan and fixture packages,
+    the coverage census reading the family.
+5.  Docs moved and path references rewritten.
+6.  The controls,
+    then this document updated with the measured lint times.
+
+## Open questions
+
+None block the move.
+The externals exception is open to veto;
+the alternative is tests importing family source through `/ts`,
+which removes the build order but stops testing built output,
+which the `test-import` rule exists to prevent.
