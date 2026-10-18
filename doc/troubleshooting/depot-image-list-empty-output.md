@@ -56,17 +56,42 @@ The public-project API returned the expected missing-project result after deleti
 plain-text empty output from a different image-list state must not be interpreted as an exhaustive listing.
 
 A disposable upstream clone has push URL `DISABLED` and the exact source identity named in `Root cause`.
-A bounded local before/after prototype is being prepared with synthetic registry responses,
+A bounded local before/after prototype passed with synthetic registry responses,
 no Depot credentials,
 at most 2 CPU and 2 GiB,
 and no cloud allocation.
-Its controls must exercise the actual Cobra command,
-pagination,
-nonempty JSON and CSV,
-empty JSON and CSV,
-invalid formats,
-and an API error.
-This paragraph is a pending verification record, not a claim that the patch has passed.
+Its actual Cobra command controls passed in both original and patched versions:
+
+- Two-page populated JSON retains both images in timestamp order.
+- Two-page populated CSV retains its header and quotes a tag containing a comma.
+- Empty JSON changes from invalid plain text to valid JSON `null`.
+- Empty CSV changes from plain text to an empty stream.
+- An invalid format with empty input changes from success to the existing format error.
+- An invalid format with populated input remains an error.
+- A synthetic API permission denial remains an error.
+
+The paired controls total 14 executions.
+They use HTTP/2 Connect and the upstream generated protobuf request/response types,
+with a synthetic marker instead of any Depot credential.
+The first fixture incorrectly assumed JSON request bodies;
+that fixture failure is preserved separately from the production serialization behavior.
+Node `24.22.0` and Go `1.25.14` ran inside the mount-free container.
+Its observed CPU quota was `200000/100000`,
+memory limit `2147483648` bytes,
+and PID limit `256`.
+The container exited successfully and its absence was checked after removal.
+
+The [public evidence](../audit/depot-image-list-empty-output-2026-10-18.evidence.json)
+retains every result and a local issue draft.
+Its linked source archive retains the runnable command driver,
+generated-message adapter,
+consumer runner,
+container recipe,
+original source,
+and exact patch.
+The source clone and runtime prototype were disposable;
+the normal installed CLI and repository implementation were not modified.
+The full CLI root bootstrap and interactive table were not exercised by this minimal command driver.
 
 ## Verified workarounds
 
@@ -90,7 +115,7 @@ No account-wide inventory or broader credential is needed to diagnose this seria
     The empty-result return precedes the selected serializer and format validation.
 2.  Fixable upstream: yes.
     Removing that return lets the existing writers and error branch execute.
-    The local prototype must still establish the resulting behavior.
+    The actual command prototype established the resulting behavior with the existing writers.
 3.  Supported use case: yes.
     The command exposes `--output` and implements JSON and CSV writers.
 4.  Contribution welcome: provisionally yes.
@@ -104,8 +129,11 @@ No account-wide inventory or broader credential is needed to diagnose this seria
     The inspected path history ends with the Bubble Tea dependency upgrade on `2026-08-17`,
     following the image command's `2025-09-12` introduction.
     Absence of a matching issue or refusal is not a prediction of maintainer acceptance.
-6.  Prototype: pending local controlled execution.
-    The smallest candidate removes only the early empty-result return.
+6.  Prototype: yes.
+    Removing only the early empty-result return passed the 14 paired controls.
+    The exact patch is retained with the public evidence.
 
 No upstream issue or PR has been sent.
-A local draft will retain the actual prototype evidence before any filing decision.
+A local draft retains the actual prototype evidence and discloses AI assistance.
+All diagnostic gates passed for that draft;
+this does not authorize sending an external issue or PR.
