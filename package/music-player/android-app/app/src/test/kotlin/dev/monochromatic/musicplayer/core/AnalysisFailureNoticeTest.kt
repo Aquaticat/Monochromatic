@@ -214,4 +214,74 @@ class AnalysisFailureNoticeTest {
         }
         assertEquals(1, notifications)
     }
+
+    /** D122 and D123: one file passed by the player is named in the title, with the tap-time reason as the text. */
+    @Test
+    fun anUnplayableFileIsNamedWithTheWordsOfTheTapMessage() {
+        val notice = unplayableFilesNotice(listOf("broken.mp3"), timedOut = false)
+        assertEquals("Could not play broken.mp3.", notice.title)
+        assertEquals("Its file could not be opened.", notice.text)
+    }
+
+    /** Several files passed in one walk make one notice that counts them and names the first. */
+    @Test
+    fun severalUnplayableFilesCollapseToACountWithTheFirstNamed() {
+        val notice = unplayableFilesNotice(listOf("a.mp3", "b.mp3", "c.mp3"), timedOut = false)
+        assertEquals("Could not play 3 files, including a.mp3.", notice.title)
+        assertEquals("They could not be opened.", notice.text)
+    }
+
+    /** A walk that ended on a timeout says the music library was slow, for one file and for several. */
+    @Test
+    fun aTimeoutSaysTheLibraryDidNotAnswer() {
+        val slow = "The music library did not answer in time. Try again in a moment."
+        assertEquals(slow, unplayableFilesNotice(listOf("a.mp3"), timedOut = true).text)
+        assertEquals(slow, unplayableFilesNotice(listOf("a.mp3", "b.mp3"), timedOut = true).text)
+    }
+
+    /** A long file name is shortened as in the tap-time message. */
+    @Test
+    fun aLongUnplayableFileNameIsShortened() {
+        val name = "x".repeat(60) + ".mp3"
+        assertEquals(
+            "Could not play " + "x".repeat(47) + "….",
+            unplayableFilesNotice(listOf(name), timedOut = false).title,
+        )
+    }
+
+    /** A report with no file is a caller error. */
+    @Test
+    fun noUnplayableFileIsRefused() {
+        val refused = runCatching { unplayableFilesNotice(emptyList(), timedOut = false) }.exceptionOrNull()
+        assertTrue(refused is IllegalArgumentException)
+    }
+
+    /** The delivery posts the notice it is given and names its own subject in the warning, with no file name. */
+    @Test
+    fun aDeliveryPostsTheGivenNoticeAndWarnsInItsOwnWords() {
+        /** Notices handed to the poster. */
+        val posted = ArrayList<AnalysisFailureNotice>()
+        /** Warning lines. */
+        val warnings = ArrayList<String>()
+        val ok = deliverAnalysisFailureNotice(
+            fileNames = listOf("a.mp3"),
+            verdict = { NotificationPostVerdict.POST },
+            post = { notice -> posted.add(notice) },
+            warn = { message, _ -> warnings.add(message) },
+            noticeFor = { names -> unplayableFilesNotice(names, timedOut = false) },
+            subject = "unplayable files",
+        )
+        assertTrue(ok)
+        assertEquals("Could not play a.mp3.", posted.single().title)
+        deliverAnalysisFailureNotice(
+            fileNames = listOf("secret-name.mp3"),
+            verdict = { NotificationPostVerdict.CHANNEL_DISABLED },
+            post = { notice -> posted.add(notice) },
+            warn = { message, _ -> warnings.add(message) },
+            noticeFor = { names -> unplayableFilesNotice(names, timedOut = false) },
+            subject = "unplayable files",
+        )
+        assertEquals(1, posted.size)
+        assertEquals("unplayable files notification not posted for 1 files: CHANNEL_DISABLED", warnings.single())
+    }
 }

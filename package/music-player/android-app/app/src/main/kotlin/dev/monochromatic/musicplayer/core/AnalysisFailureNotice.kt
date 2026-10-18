@@ -115,6 +115,27 @@ fun notificationPostVerdict(
     else -> NotificationPostVerdict.POST
 }
 
+// What:     `fun unplayableFilesNotice(fileNames, timedOut)` words the report of files the player passed (D122, D123).
+// Why:      A track the player moved to by itself and could not open is reported as a system notification, never as
+//           the in-app message of a tap. The words are those of the tap-time message (`trackLoadFailureMessage`), split
+//           into a title and a text; several files collapse to a count that names the first, and a timeout says the
+//           music library was slow, because no file was shown to be broken.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function unplayableFilesNotice(names: string[], timedOut: boolean): AnalysisFailureNotice { /* count or name */ }
+// ```
+/**
+ * Returns the notification texts for one or more files the player passed because it could not open them.
+ *
+ * @param fileNames bare file names in the order met, at least one
+ * @param timedOut whether the music library did not answer in time, which replaces the reason in the text
+ * @return the title and the text of the notification
+ */
+fun unplayableFilesNotice(fileNames: List<String>, timedOut: Boolean): AnalysisFailureNotice {
+    return AnalysisFailureNotice(title = "", text = "")
+}
+
 // What:     `fun deliverAnalysisFailureNotice(...)` posts the notice when it can be posted and otherwise only logs.
 // Why:      D123: the notification is the only place the failure is shown. When it cannot be posted, the sweep gets
 //           one warning in the log and nothing in the app; a failure while deciding or posting is a refused post too,
@@ -145,6 +166,8 @@ fun deliverAnalysisFailureNotice(
     verdict: () -> NotificationPostVerdict,
     post: (AnalysisFailureNotice) -> Unit,
     warn: (message: String, cause: Throwable?) -> Unit,
+    noticeFor: (List<String>) -> AnalysisFailureNotice = ::analysisFailureNotice,
+    subject: String = "analysis failure",
 ): Boolean {
     if (fileNames.isEmpty()) {
         return false

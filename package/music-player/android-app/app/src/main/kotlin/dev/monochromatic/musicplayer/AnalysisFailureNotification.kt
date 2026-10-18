@@ -23,6 +23,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import dev.monochromatic.musicplayer.core.AnalysisFailureNotice
 import dev.monochromatic.musicplayer.core.NotificationPostVerdict
+import dev.monochromatic.musicplayer.core.UnplayableReport
 import dev.monochromatic.musicplayer.core.deliverAnalysisFailureNotice
 import dev.monochromatic.musicplayer.core.notificationPostVerdict
 
@@ -34,6 +35,9 @@ private const val ANALYSIS_FAILURE_CHANNEL_NAME: String = "Analysis problems"
 
 /** Fixed id of the analysis-failure notification, different from the progress notification's id. */
 internal const val ANALYSIS_FAILURE_NOTIFICATION_ID: Int = 4202
+
+/** Fixed id of the notification that reports files the player passed, different from the analysis one. */
+internal const val UNPLAYABLE_FILES_NOTIFICATION_ID: Int = 4203
 
 /** Logcat tag of the failure notification, shared with the sweep code that reports to it. */
 private const val FAILURE_NOTIFICATION_TAG: String = "PeakSweep"
@@ -147,4 +151,13 @@ internal fun postAnalysisFailureNotification(context: Context, fileNames: List<S
         warn = { message, cause -> Log.w(FAILURE_NOTIFICATION_TAG, message, cause) },
     )
     Log.i(FAILURE_NOTIFICATION_TAG, "analysis failure notification files=${fileNames.size} posted=$posted")
+}
+
+/**
+ * Posts the report of files the player passed.
+ *
+ * @param context any context of this app
+ * @param report the files passed so far in the walk, and whether it ended on a timeout
+ */
+internal fun postUnplayableFilesNotification(context: Context, report: UnplayableReport) {
 }
