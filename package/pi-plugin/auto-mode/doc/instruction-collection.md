@@ -37,12 +37,15 @@ with a 32-MiB retained-storage ceiling.
 JSON boundaries,
 the surrogate digest control and rejection of borrowed or foreign accessors.
 Source commit `0666bd3dcb` builds as `native-release-EWv4wy` and passes the package type check.
-The strengthened streaming consumer retains 10,508,712 heap bytes,
-against 328,037,592 bytes on the prior artifact,
+The escaped-text streaming consumer reproduces the SDK's shallow message clone
+while retaining its shared content array and original partial-message identity.
+It retains 10,544,896 heap bytes,
+against 342,565,888 bytes on the prior artifact,
 while preserving the checked original snapshots and identities.
 The exact-content and accessor-rejection consumer passes.
 Rebuilt removal tests fail for JSON string-token alignment,
 exact source/accessor recognition and UTF-16 code-unit preservation.
+These removal tests also pass detection with the escaped-text consumer.
 The private variant omitting explicit chunk copies passes this capacity case on the measured Node runtime;
 that case does not prove copying is necessary for its corpus.
 Complete configured-host verification remains a separate completion check.

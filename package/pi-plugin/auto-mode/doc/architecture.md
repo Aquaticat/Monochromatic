@@ -106,6 +106,11 @@ and executable verification.
 An existing implementation is evidence of a responsibility,
 not sufficient justification for its current decomposition.
 
+The [dependency footprint](dependency-footprint.md) follows shared installed packages beyond package symlinks,
+separates optional peers and platform variants,
+and identifies retained parser and host responsibilities.
+Its installed-directory counts are distinct from a deployment or executed-import size.
+
 ## Historical extension consolidation measurements
 
 The [retired extension pipeline](retired-extension.md) no longer supplies another execution-permission path.
@@ -155,7 +160,8 @@ Declared compaction file-operation Sets retain complete ordinary path snapshots.
 The regression also reads the manager's retained original event source;
 successful native navigation alone does not establish that evidence.
 Growing serialized streaming prefixes share immutable storage without merging original publications.
-The current maintained stress case retains 10,508,712 heap bytes against its 328,037,592-byte prior result.
+The current escaped-text,
+SDK-message-clone stress case retains 10,544,896 heap bytes against its 342,565,888-byte prior result.
 Actual configured compaction and subsequent reviewed tools pass on `q83LlN`;
 their complete captured provider requests pass required and excluded data checks.
 The subsequent `EWv4wy` worker still needs its completed actual editing and final configured replay evidence.

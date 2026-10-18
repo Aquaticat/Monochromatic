@@ -9276,7 +9276,7 @@ which are rejected without invocation.
 ### Verified consumer repair and limits
 
 `input-content.ts:77` interns exact chunk-identity sequences;
-`input-content-chunks.ts:18` resets bounded chunk alignment at generated JSON string tokens.
+`input-content-chunks.ts:21` resets bounded chunk alignment at generated JSON string tokens.
 The package-local [storage explanation](../../package/pi-plugin/auto-mode/doc/instruction-collection.md#retained-native-input-storage)
 records the component,
 tradeoffs and maintained tests.

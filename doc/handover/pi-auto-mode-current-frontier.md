@@ -65,11 +65,12 @@ the retired extension pipeline and whole-call adapters remain removed.
 
 ## Active MiMo checkpoint
 
-The most recent controller uses `llmgateway-devpass/mimo-v2.6-pro` and pins `native-release-q83LlN`.
-Its preserved fixture is `${HOME}/temp/agent/pi-mimo-rpc-session-eZNsLl`,
-controller command session `74937`.
-Actual resume and RPC compaction pass;
-subsequent real tool groups execute with captured Luna requests.
+The active controller uses `llmgateway-devpass/mimo-v2.6-pro` and pins `native-release-EWv4wy`.
+Its fixture is `${HOME}/temp/agent/pi-mimo-rpc-session-7O5MPn`,
+controller command session `91455`.
+It resumes the closed `eZNsLl` session and receives `mimo-focused-editing.json`.
+Actual resume and RPC compaction pass on that preceding `q83LlN` controller;
+its subsequent real tool groups execute with captured Luna requests.
 The current assignment is the CLI guard,
 its process consumer and `src/native-process-network.unit.test.ts`.
 No completed semantic repair commit exists yet.
@@ -83,10 +84,9 @@ and preserve missing/empty receipt-path validation.
 The worker's fresh private home does not copy old session scratch files.
 Missing initial scratch in a resumed session is not evidence that every tool call gets a new home.
 The original cancellation/compaction projection files and their tests remain supervisor-owned.
-This controller closes with exit zero before its measured RSS reaches the configured limit again.
-The current restarted fixture is `${HOME}/temp/agent/pi-mimo-rpc-session-7O5MPn`,
-pins `native-release-EWv4wy` and runs under controller command session `91455`.
-It resumes the closed `eZNsLl` session and receives `mimo-focused-editing.json`.
+The preceding `eZNsLl` controller closes with exit zero before its measured RSS reaches the configured limit again.
+Its command session is `74937`.
+Do not attribute that closed-controller result to the still-running `7O5MPn` worker.
 
 ### Original worker and completed progress repair
 
@@ -504,10 +504,9 @@ Do not equate any error-word hit with a bare shutdown error or filter the noise 
   compaction,
   exact-content and streaming-capacity regressions in the maintained session-input task catalog;
   add an aggregate task after the worker's current config-dependent checks settle.
-- First reproduce and repair the parallel progress freshness failure,
-  with automatic and exact-group Allow controls,
-  genuine source-change rejection and rebuilt guard mutations.
-  Coordinate source ownership with the live worker and restart its pinned host after the repair.
+- Preserve the repaired parallel-progress consumer and counterfactual evidence.
+  Add the remaining configured-host complete parallel-group Allow/progress positive control,
+  with genuine source-change and cancellation rejection.
 - Obtain a fresh complete lint result with zero warnings and errors,
   passing appropriate tests,
   and comparison of exported/implementation branches against exercised consumers.
@@ -523,6 +522,10 @@ Do not equate any error-word hit with a bare shutdown error or filter the noise 
 - Finish the native-control component rationale and refresh architecture/handoff docs against the final evidence.
   Every major responsibility keeps its package-local justification.
 - Measure final source/runtime/verification/build inventories and footprint.
+  The package-local dependency-footprint document now records installed-directory scopes,
+  optional TypeScript peers,
+  platform variants and explicit provider removals;
+  those scopes are not deployment closure measurements.
   Re-audit native process consumers with a positive control,
   run cleanup dry runs and root stray-git checks,
   then remove only reviewed inactive artifacts after consumers retire.
