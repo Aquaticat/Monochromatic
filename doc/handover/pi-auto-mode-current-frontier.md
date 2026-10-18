@@ -170,7 +170,12 @@ actual SDK persistence,
 seven supported live/load content cases and four rejected content cases,
 with opaque signatures preserved locally.
 Evidence is `loaded-message-content-green2.log`.
-The guard mutation and actual resumed-session compaction/next-review checks remain pending.
+The rebuilt guard mutant restores only the text-only loaded validator;
+the maintained SDK persistence regression fails with the original message.
+`loaded-message-mutant-receipt.json` confirms unchanged production hashes and active publication.
+The qualified `pi` subtrees in `rKKphY` and `hGuAfo` have 513 byte-identical regular files;
+`qualified-sdk-differences.json` records the comparison.
+Actual resumed-session compaction/next-review verification remains pending.
 
 The worker is restarted fresh as `pi-mimo-rpc-session-JTeYFr`,
 session `44944`,
@@ -187,7 +192,30 @@ then 31 warnings and six errors after scoped formatting.
 The worker has modified only its assigned CLI pair so far.
 Its intentional supervisor-steering pause withholds two old inspection calls;
 the resumed implementation prompt keeps the human's original task active.
-The exact failed and successful command cwd/path combinations are still being compared.
+The exact failed commands quote both filenames as one shell argument.
+A private task using the actual repository `parse_usage_args` source proves
+one quoted argument stays one path,
+while separate arguments stay separate paths.
+This is a worker invocation error,
+not evidence of a Mise or Oxlint defect.
+
+### Reopened actual compaction file-collection capture failure
+
+Captured RPC fixture `pi-mimo-rpc-session-RnT4E0`,
+controller `11197`,
+opens the original real worker history on `hGuAfo` without the prior text-only load failure.
+Actual RPC compaction reaches `session_before_compact`
+and retains a new `Run message data has an unsupported prototype` error
+from `loaded-event-inputs.mjs` through the strict ordinary copier.
+The SDK's compaction preparation contains `fileOps` with native `Set<string>` fields
+`read`,
+`written` and `edited`.
+The new maintained `test:native:compaction-inputs` regression uses the installed SDK's `createFileOps`,
+an actual original event runner,
+an ordinary-data positive control,
+callback mutation snapshots and strict wrong-role/output controls.
+Its first run is pending.
+Do not broaden arbitrary message/tool metadata to accept platform containers.
 At this checkpoint,
 Git shows no MiMo source edits yet;
 its first lint slice is still analysis.

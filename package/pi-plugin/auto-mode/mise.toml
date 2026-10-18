@@ -961,6 +961,10 @@ run = 'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/nativ
 description = "Verify persisted and live native message blocks retain the same content and validation"
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-loaded-message-content.test.mjs"
 
+[tasks."test:native:compaction-inputs"]
+description = "Verify native SDK compaction file sets cross only their declared input boundary"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-compaction-inputs.test.mjs"
+
 [tasks."test:native:retained-context-capacity"]
 description = "Retain separate authenticated inputs whose aggregate exceeds the engine string limit"
 # The regression reaches the engine string limit before the disposable container's 2 GiB memory limit.
