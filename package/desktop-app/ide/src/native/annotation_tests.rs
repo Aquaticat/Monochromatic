@@ -13,11 +13,13 @@ use super::annotate::{displayed, set_annotations};
 /// Anchor and head of the reading selection.
 use super::caret_tests::position;
 /// The complete reader fixture and its key helpers.
-use super::find_tests::{Reader, chord, eventually, key, reader, status_for, type_text};
+use super::find_tests::{Reader, chord, key, reader, status_for, type_text};
 /// Bounded waits and tree-row lookup shared with the navigation tests.
-use super::navigation_tests::{row, wait_until};
+use super::navigation_tests::row;
 /// The production window.
 use super::{AppWindow, render};
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::{NAVIGATION_UNREACHED, Waiting};
 /// Snapshot records exactly as the Language module builds them.
 use ide_app::language::{
     diagnostics::{Diagnostic, DiagnosticsSnapshot, Freshness, Severity, SourceGroup},
@@ -524,9 +526,12 @@ fn virtual_rows_are_not_source_text() {
     // Find matches source text only: words that only hints and messages contain are not found.
     chord(window, Key::Control, "f");
     type_text(window, "mismatched");
-    eventually("text of a message row was matched", || {
-        return window.get_find_status() == "No matches";
-    });
+    {
+        let mut waiting = Waiting::eventually();
+        while !(window.get_find_status() == "No matches") {
+            waiting.step("text of a message row was matched");
+        }
+    }
     assert_eq!(window.get_source_matches().row_count(), 0);
     key(window, Key::Escape);
 }
@@ -621,7 +626,12 @@ fn stale_snapshots_disappear_after_reload_and_file_switch() {
     let reader = reader(fixture.path(), "main.rs");
     let window = &reader.window;
     // The external changes below reach the reader through its live watch, not the sweep.
-    super::navigation_tests::wait_until(|| return reader.source.borrow().refresh.is_watched());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(reader.source.borrow().refresh.is_watched()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     annotate(&reader);
     for _ in 0..12 {
         key(window, Key::RightArrow);
@@ -635,9 +645,12 @@ fn stale_snapshots_disappear_after_reload_and_file_switch() {
     let revision = reader.source.borrow().document.revision();
     // The change appends a line, so every annotated line keeps its number.
     super::find_tests::replace_file(&path, &format!("{FIXTURE}// changed\n"));
-    eventually("the external change was not reloaded", || {
-        return reader.source.borrow().document.revision() > revision;
-    });
+    {
+        let mut waiting = Waiting::eventually();
+        while !(reader.source.borrow().document.revision() > revision) {
+            waiting.step("the external change was not reloaded");
+        }
+    }
     let (hints, messages, underlines) = painted(&reader);
     assert_eq!(underlines, 0, "stale markers were painted after reload");
     assert_eq!(messages, 0, "stale messages were painted after reload");
@@ -662,24 +675,40 @@ fn stale_snapshots_disappear_after_reload_and_file_switch() {
     // A second change with no annotations for its text: the space is held, then given up.
     let second = reader.source.borrow().document.revision();
     super::find_tests::replace_file(&path, &format!("{FIXTURE}// changed again\n"));
-    eventually("the second external change was not reloaded", || {
-        return reader.source.borrow().document.revision() > second;
-    });
+    {
+        let mut waiting = Waiting::eventually();
+        while !(reader.source.borrow().document.revision() > second) {
+            waiting.step("the second external change was not reloaded");
+        }
+    }
     assert_eq!(reader.source.borrow().row_map.code_top(2), tops[2]);
     let since = std::time::Instant::now();
-    eventually("held space was never given up", || {
-        return reader.source.borrow().row_map.code_top(2) == 48.0;
-    });
+    {
+        let mut waiting = Waiting::eventually();
+        while !(reader.source.borrow().row_map.code_top(2) == 48.0) {
+            waiting.step("held space was never given up");
+        }
+    }
     let waited = since.elapsed();
     assert!(
         waited >= Duration::from_millis(700) && waited <= Duration::from_millis(2000),
         "held space was given up after {waited:?}, not after about one second"
     );
     annotate(&reader);
-    wait_until(|| return row(window, "other.rs").is_some());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(row(window, "other.rs").is_some()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     let generation = reader.source.borrow().file_generation;
     window.invoke_tree_activate(row(window, "other.rs").expect("second file row"));
-    wait_until(|| return reader.source.borrow().file_generation > generation);
+    {
+        let mut waiting = Waiting::eventually();
+        while !(reader.source.borrow().file_generation > generation) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     assert_eq!(
         painted(&reader),
         (0, 0, 0),

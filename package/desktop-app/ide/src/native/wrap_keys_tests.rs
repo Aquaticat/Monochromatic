@@ -15,7 +15,9 @@ use super::find_tests::{Reader, chord, key};
 /// Window sizes and the text origin of the pointer tests.
 use super::sidebar_tests::{HEADER, TEXT_LEFT, resize};
 /// Fixture builders and the waits that let the worker measure.
-use super::wrap_tests::{long_line, long_text, open, settled, until};
+use super::wrap_tests::{long_line, long_text, open, settled};
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::Waiting;
 /// Geometry-free word motion,
 /// the expected value of Ctrl+Left and Ctrl+Right.
 use ide_app::caret_motion::{Motion, moved};
@@ -55,9 +57,12 @@ fn arrange(reader: &Reader, factor: f32, width: f32) {
             scale_factor: factor,
         });
     resize(window, width, 660.0 / factor);
-    until("the wrap width did not follow the arrangement", || {
-        return reader.source.borrow().width > 0.0;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        while !(reader.source.borrow().width > 0.0) {
+            waiting.step("the wrap width did not follow the arrangement");
+        }
+    }
     settled(reader);
 }
 

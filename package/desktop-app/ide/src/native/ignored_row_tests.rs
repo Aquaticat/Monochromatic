@@ -7,7 +7,7 @@
 /// A window with every production binding over a disposable project.
 use super::find_tests::reader;
 /// Polling for the tree the reader fills in the background.
-use super::navigation_tests::{row, wait_until};
+use super::navigation_tests::row;
 /// Rendered frames and single pixels,
 ///  shared with the sidebar paint tests.
 use super::sidebar_paint_tests::{frame, pixel};
@@ -19,6 +19,8 @@ use super::sidebar_tests::{fixture, motion, settle};
 use super::theme_tests::{rgba, switch};
 /// Generated window and row types from the shipped markup.
 use super::{AppWindow, ui::TreeEntry};
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::{NAVIGATION_UNREACHED, Waiting};
 /// The row elements an assistive tool is given.
 use i_slint_backend_testing::{AccessibleRole, ElementQuery};
 /// The WCAG 2 arithmetic of the selected-ink rule,
@@ -349,11 +351,17 @@ fn ignored_rows_are_flagged_in_the_model_and_named_in_the_accessibility_tree() {
     project(fixture.path());
     let shown = reader(fixture.path(), "plain.txt");
     let window = &shown.window;
-    wait_until(|| return row(window, "sub").is_some());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(row(window, "sub").is_some()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     for name in ["build", "sub"] {
         window.invoke_tree_activate(row(window, name).expect("directory row"));
-        wait_until(|| {
-            return row(
+        {
+            let mut waiting = Waiting::eventually();
+            while !(row(
                 window,
                 if name == "build" {
                     "inner.txt"
@@ -361,8 +369,11 @@ fn ignored_rows_are_flagged_in_the_model_and_named_in_the_accessibility_tree() {
                     "deep.txt"
                 },
             )
-            .is_some();
-        });
+            .is_some())
+            {
+                waiting.step(NAVIGATION_UNREACHED);
+            }
+        }
     }
     settle(window);
     // File pattern, negation, directory pattern, and a plain file.
@@ -409,10 +420,25 @@ fn a_changed_gitignore_dims_and_undims_rows_while_the_window_runs() {
     project(fixture.path());
     let shown = reader(fixture.path(), "plain.txt");
     let window = &shown.window;
-    wait_until(|| return row(window, "sub").is_some());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(row(window, "sub").is_some()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     window.invoke_tree_activate(row(window, "sub").expect("sub row"));
-    wait_until(|| return row(window, "deep.txt").is_some());
-    wait_until(|| return flagged(window, "deep.zz-ignored") == Some(true));
+    {
+        let mut waiting = Waiting::eventually();
+        while !(row(window, "deep.txt").is_some()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
+    {
+        let mut waiting = Waiting::eventually();
+        while !(flagged(window, "deep.zz-ignored") == Some(true)) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     assert_eq!(flagged(window, "plain.txt"), Some(false));
     assert_eq!(flagged(window, "deep.txt"), Some(false));
     // The test, never the IDE, rewrites the rule file: every .txt is now ignored, and the extension no longer is.
@@ -421,14 +447,44 @@ fn a_changed_gitignore_dims_and_undims_rows_while_the_window_runs() {
         "*.txt\n# rules changed while the window runs\n",
     )
     .expect("changed rule file");
-    wait_until(|| return flagged(window, "plain.txt") == Some(true));
-    wait_until(|| return flagged(window, "deep.txt") == Some(true));
-    wait_until(|| return flagged(window, "deep.zz-ignored") == Some(false));
-    wait_until(|| return flagged(window, "a.zz-ignored") == Some(false));
+    {
+        let mut waiting = Waiting::eventually();
+        while !(flagged(window, "plain.txt") == Some(true)) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
+    {
+        let mut waiting = Waiting::eventually();
+        while !(flagged(window, "deep.txt") == Some(true)) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
+    {
+        let mut waiting = Waiting::eventually();
+        while !(flagged(window, "deep.zz-ignored") == Some(false)) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
+    {
+        let mut waiting = Waiting::eventually();
+        while !(flagged(window, "a.zz-ignored") == Some(false)) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     // And back.
     fs::write(fixture.path().join(".gitignore"), "*.zz-ignored\n").expect("restored rule file");
-    wait_until(|| return flagged(window, "plain.txt") == Some(false));
-    wait_until(|| return flagged(window, "deep.zz-ignored") == Some(true));
+    {
+        let mut waiting = Waiting::eventually();
+        while !(flagged(window, "plain.txt") == Some(false)) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
+    {
+        let mut waiting = Waiting::eventually();
+        while !(flagged(window, "deep.zz-ignored") == Some(true)) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     window.hide().expect("close ignored-row window");
 }
 
@@ -441,7 +497,12 @@ fn outside_a_work_tree_no_row_is_flagged_or_named_ignored() {
     fs::remove_dir(fixture.path().join(".git")).expect("remove the git folder");
     let shown = reader(fixture.path(), "plain.txt");
     let window = &shown.window;
-    wait_until(|| return row(window, "a.zz-ignored").is_some());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(row(window, "a.zz-ignored").is_some()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     settle(window);
     for label in [
         "a.zz-ignored",

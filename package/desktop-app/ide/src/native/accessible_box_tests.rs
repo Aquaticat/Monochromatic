@@ -20,13 +20,15 @@ use super::find_clear_tests::opened;
 /// Typing into whatever has keyboard focus,
 ///  one key press,
 ///  and the bounded wait for a condition.
-use super::find_tests::{eventually, key, type_text};
+use super::find_tests::{key, type_text};
 /// The bounded wait for native navigation state and the tree-row lookup.
-use super::navigation_tests::{row, wait_until};
+use super::navigation_tests::row;
 /// The search reader and the double-Shift opening of the search overlay.
 use super::search_tests::{open, reader};
 /// An exact window size and settled layout.
 use super::sidebar_tests::{resize, settle};
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::{NAVIGATION_UNREACHED, Waiting};
 /// What:
 ///  `ElementHandle` is Slint's test-only handle on one element of a live window;
 ///  `AccessibleRole`
@@ -201,9 +203,12 @@ fn find_box_and_clear_control_expose_role_label_value_and_actions() {
     );
     // Setting the value is how an assistive tool types; it must run find like typing does.
     field.set_accessible_value("needle");
-    eventually("setting the find box's value did not run find", || {
-        return field.accessible_description().as_deref() == Some("Match 1 of 2");
-    });
+    {
+        let mut waiting = Waiting::eventually();
+        while !(field.accessible_description().as_deref() == Some("Match 1 of 2")) {
+            waiting.step("setting the find box's value did not run find");
+        }
+    }
     assert_eq!(
         window.get_find_query(),
         "needle",
@@ -223,9 +228,12 @@ fn find_box_and_clear_control_expose_role_label_value_and_actions() {
         Some(""),
         "the clear control's default action did not clear the find box"
     );
-    eventually("clearing did not remove the find count", || {
-        return field.accessible_description().as_deref() == Some("");
-    });
+    {
+        let mut waiting = Waiting::eventually();
+        while !(field.accessible_description().as_deref() == Some("")) {
+            waiting.step("clearing did not remove the find count");
+        }
+    }
     assert!(
         window.get_find_has_focus(),
         "the clear control's default action moved keyboard focus out of the find box"
@@ -272,7 +280,12 @@ fn search_box_and_clear_control_expose_role_label_value_and_actions() {
     // ```ts
     // waitUntil(() => row(window, 'needle-file.txt') !== undefined);
     // ```
-    wait_until(|| return row(window, "needle-file.txt").is_some());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(row(window, "needle-file.txt").is_some()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     open(window);
     let field = only(window, "Search query");
     assert_eq!(
@@ -296,9 +309,12 @@ fn search_box_and_clear_control_expose_role_label_value_and_actions() {
         "assistive tools are offered a clear control for an empty query"
     );
     field.set_accessible_value("needle");
-    wait_until(|| {
-        return !window.get_search_busy() && window.get_search_entries().row_count() > 0;
-    });
+    {
+        let mut waiting = Waiting::eventually();
+        while !(!window.get_search_busy() && window.get_search_entries().row_count() > 0) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     settle(window);
     assert_eq!(
         window.get_search_query(),
@@ -377,7 +393,12 @@ fn search_box_description_counts_the_results() {
     let reader = reader(fixture.path());
     let window = &reader.window;
     resize(window, 1100.0, 660.0);
-    wait_until(|| return row(window, "needle-two.txt").is_some());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(row(window, "needle-two.txt").is_some()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     open(window);
     let field = only(window, "Search query");
     described(&field, "", "opening the overlay");
@@ -387,7 +408,12 @@ fn search_box_description_counts_the_results() {
         "positive control: setting the query did not start a search"
     );
     described(&field, "Searching", "setting the query");
-    wait_until(|| return !window.get_search_busy());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(!window.get_search_busy()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     settle(window);
     let total = window.get_search_entries().row_count();
     assert_eq!(total, 2, "positive control: the fixture gives two results");
@@ -396,7 +422,12 @@ fn search_box_description_counts_the_results() {
     settle(window);
     described(&field, "Result 2 of 2", "Down");
     field.set_accessible_value("zzzz");
-    wait_until(|| return !window.get_search_busy());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(!window.get_search_busy()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     settle(window);
     described(&field, "No results", "a query that matches nothing");
     window.invoke_search_dismiss();

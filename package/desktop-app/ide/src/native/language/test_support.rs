@@ -66,7 +66,7 @@ use std::{
 
 /// Waiting for timers and for the scripted server,
 ///  in their own module.
-pub(super) use super::test_waits::{eventually, ready};
+pub(super) use super::test_waits::ready;
 
 /// Name of the scripted server definition.
 pub(super) const SERVER: &str = "scripted-ls";

@@ -14,6 +14,8 @@ use super::{
     AppWindow, State, bind_appearance, bind_keys, bind_pointer, bind_viewport, navigation, reload,
     render,
 };
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::Waiting;
 /// The canonical project boundary is created only over disposable fixtures.
 use ide_app::workspace::Workspace;
 /// Real headless timers drive the same refresh timers as the shipped event loop.
@@ -88,21 +90,24 @@ fn idle(span: Duration) {
     }
 }
 
-/// Return the time until `ready` holds,
+/// Return the time until the tree lists a row labeled `label`,
 ///  polling the model about once per millisecond.
-fn elapsed_until(mut ready: impl FnMut() -> bool) -> Duration {
-    let start = Instant::now();
-    loop {
-        update_timers_and_animations();
-        if ready() {
-            return start.elapsed();
-        }
-        assert!(
-            start.elapsed() < TRIAL_LIMIT,
-            "an external write did not reach the window"
-        );
-        std::thread::sleep(Duration::from_millis(1));
+fn elapsed_until_row(window: &AppWindow, label: &str) -> Duration {
+    let mut waiting = Waiting::closely(TRIAL_LIMIT);
+    while row(window, label).is_none() {
+        waiting.step("an external write did not reach the window");
     }
+    return waiting.elapsed();
+}
+
+/// Return the time until the window shows `content` as the source text,
+///  polling the model about once per millisecond.
+fn elapsed_until_source(window: &AppWindow, content: &str) -> Duration {
+    let mut waiting = Waiting::closely(TRIAL_LIMIT);
+    while window.get_source_text() != content {
+        waiting.step("an external write did not reach the window");
+    }
+    return waiting.elapsed();
 }
 
 /// Print one JSON line:
@@ -165,10 +170,10 @@ fn measure(folders: usize) {
     render(&window, &state);
     for index in 0..folders {
         let label = format!("folder-{index:02}");
-        elapsed_until(|| return row(&window, &label).is_some());
+        elapsed_until_row(&window, &label);
         window.invoke_tree_activate(row(&window, &label).expect("folder row"));
         let seed = format!("seed-{index:02}.txt");
-        elapsed_until(|| return row(&window, &seed).is_some());
+        elapsed_until_row(&window, &seed);
     }
     idle(Duration::from_millis(600));
     let mut random = Sequence(folders as u64);
@@ -181,7 +186,7 @@ fn measure(folders: usize) {
         let target = random.below(folders as u64);
         let folder = fixture.path().join(format!("folder-{target:02}"));
         fs::write(folder.join(&name), "").expect("external file creation");
-        tree.push(elapsed_until(|| return row(&window, &name).is_some()));
+        tree.push(elapsed_until_row(&window, &name));
     }
     let mut source = Vec::new();
     for trial in 0..TRIALS {
@@ -189,7 +194,7 @@ fn measure(folders: usize) {
         idle(Duration::from_millis(20 + random.below(500)));
         let content = format!("revision {trial}\n");
         fs::write(&displayed, &content).expect("external source rewrite");
-        source.push(elapsed_until(|| return window.get_source_text() == content));
+        source.push(elapsed_until_source(&window, &content));
     }
     report("tree-create", folders, &tree);
     report("source-rewrite", folders, &source);

@@ -19,7 +19,9 @@ use super::viewport::band_clip;
 /// The reader fixture,
 /// bounded waits,
 /// and the pixels of the shown image.
-use super::wrap_tests::{long_text, open, settled, shown, until};
+use super::wrap_tests::{long_text, open, settled, shown};
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::Waiting;
 /// Library types that give the expected values.
 use ide_app::{row_map::CODE_ROW, text_raster::MAX_RASTER_BYTES};
 /// Toolkit models and events.
@@ -46,10 +48,18 @@ fn tall_file() -> String {
 /// shown late,
 /// or on the worker.
 fn settled_tile(opened: &super::find_tests::Reader) {
-    until("the tile worker did not finish the re-center", || {
-        let current = opened.source.borrow();
-        return current.tile_job.is_none() && current.scroll_wanted.is_none();
-    });
+    {
+        let mut waiting = Waiting::slow();
+        loop {
+            {
+                let current = opened.source.borrow();
+                if current.tile_job.is_none() && current.scroll_wanted.is_none() {
+                    break;
+                }
+            }
+            waiting.step("the tile worker did not finish the re-center");
+        }
+    }
 }
 
 /// Whether any pixel of the visible band of the image has ink;
@@ -63,9 +73,12 @@ fn has_ink(window: &super::AppWindow) -> bool {
 /// then fail on the failure.
 fn painted_without_error(opened: &super::find_tests::Reader) {
     let window = &opened.window;
-    until("the window neither painted nor named a failure", || {
-        return has_ink(window) || !window.get_error_message().is_empty();
-    });
+    {
+        let mut waiting = Waiting::slow();
+        while !(has_ink(window) || !window.get_error_message().is_empty()) {
+            waiting.step("the window neither painted nor named a failure");
+        }
+    }
     assert_eq!(
         window.get_error_message().to_string(),
         "",

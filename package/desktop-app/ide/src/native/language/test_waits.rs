@@ -6,13 +6,12 @@
 /// The reader whose binding reports the server's state,
 ///  and the server's name.
 use super::test_support::{LanguageReader, SERVER};
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::Waiting;
 /// Server states as the binding reports them.
 use ide_app::language::status::ServerState;
-/// Deadlines for every wait.
-use std::time::{Duration, Instant};
-
-/// Longest wait for an expected state in these tests.
-const PATIENCE: Duration = Duration::from_secs(10);
+/// Deadline for the server's start.
+use std::time::Duration;
 
 /// What:
 ///  Longest wait for the scripted server to become ready or to fail its start.
@@ -33,26 +32,6 @@ const PATIENCE: Duration = Duration::from_secs(10);
 /// ```
 const READY_PATIENCE: Duration = Duration::from_secs(17);
 
-/// Advance timers until `ready` holds,
-///  failing with `message` after `patience`.
-fn eventually_within(message: &str, patience: Duration, mut ready: impl FnMut() -> bool) {
-    let start = Instant::now();
-    loop {
-        slint::platform::update_timers_and_animations();
-        if ready() {
-            return;
-        }
-        assert!(start.elapsed() < patience, "{message}");
-        std::thread::sleep(Duration::from_millis(2));
-    }
-}
-
-/// Advance timers until `ready` holds,
-///  failing with `message` after ten seconds.
-pub(super) fn eventually(message: &str, ready: impl FnMut() -> bool) {
-    eventually_within(message, PATIENCE, ready);
-}
-
 /// What:
 ///  The scripted server's state as the binding last polled it,
 ///  if it is listed.
@@ -70,13 +49,13 @@ fn server_state(reader: &LanguageReader) -> Option<ServerState> {
     // The trailing `?` leaves with nothing after the binding was closed.
     let binding = reader.binding.as_ref()?;
     let language = binding.language.borrow();
-    // `find` returns the first row for the server; `map` copies its state out of the borrow.
-    return language
-        .status
-        .servers
-        .iter()
-        .find(|row| return row.server.name == SERVER)
-        .map(|row| return row.state.clone());
+    // The first row for the server decides; its state is copied out of the borrow.
+    for row in &language.status.servers {
+        if row.server.name == SERVER {
+            return Some(row.state.clone());
+        }
+    }
+    return None;
 }
 
 /// Wait until the scripted server is ready for the displayed file,
@@ -84,16 +63,14 @@ fn server_state(reader: &LanguageReader) -> Option<ServerState> {
 /// A failed start ends the wait at once,
 ///  and the message names the state last seen.
 pub(super) fn ready(reader: &LanguageReader) {
-    eventually_within(
-        "the scripted server neither became ready nor failed within its start deadline",
-        READY_PATIENCE,
-        || {
-            return matches!(
-                server_state(reader),
-                Some(ServerState::Ready | ServerState::FailedToStart { .. })
-            );
-        },
-    );
+    let mut waiting = Waiting::within(READY_PATIENCE);
+    while !matches!(
+        server_state(reader),
+        Some(ServerState::Ready | ServerState::FailedToStart { .. })
+    ) {
+        waiting
+            .step("the scripted server neither became ready nor failed within its start deadline");
+    }
     assert_eq!(
         server_state(reader),
         Some(ServerState::Ready),

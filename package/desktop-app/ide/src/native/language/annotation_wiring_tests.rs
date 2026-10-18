@@ -9,9 +9,11 @@
 ///  the scripted server,
 ///  and real key and pointer events.
 use super::test_support::{
-    TEXT_TOP, above, address, caret, caret_x, control_click, definitions, eventually, hover, idle,
-    location, move_to, point, popup, project, reader, ready, rows,
+    TEXT_TOP, above, address, caret, caret_x, control_click, definitions, hover, idle, location,
+    move_to, point, popup, project, reader, ready, rows,
 };
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::Waiting;
 /// The stamp of the displayed text and the production repaint.
 use crate::native::{annotate::displayed, render};
 /// One hint record and its snapshot,
@@ -80,10 +82,18 @@ fn server_hints_and_diagnostics_are_painted_by_the_poll_that_stored_them() {
     // ```ts
     // await eventually(() => source.current.syntaxRevision === source.current.document.revision());
     // ```
-    eventually("the first highlighting answer was not applied", || {
-        let current = reader.source.borrow();
-        return current.syntax_revision == Some(current.document.revision());
-    });
+    {
+        let mut waiting = Waiting::language();
+        loop {
+            {
+                let current = reader.source.borrow();
+                if current.syntax_revision == Some(current.document.revision()) {
+                    break;
+                }
+            }
+            waiting.step("the first highlighting answer was not applied");
+        }
+    }
     // The order this test depends on: nothing from the delayed server was painted by that repaint.
     assert!(
         rows(&reader) == (0, 0),
@@ -104,13 +114,18 @@ fn server_hints_and_diagnostics_are_painted_by_the_poll_that_stored_them() {
     // ```
     reader.source.borrow_mut().scrolled_at = Some(Instant::now() + Duration::from_secs(60));
     ready(&reader);
-    eventually(
-        "accepted hints and diagnostics were stored but never painted",
-        || {
-            let (hints, messages) = rows(&reader);
-            return hints > 0 && messages > 0;
-        },
-    );
+    {
+        let mut waiting = Waiting::language();
+        loop {
+            {
+                let (hints, messages) = rows(&reader);
+                if hints > 0 && messages > 0 {
+                    break;
+                }
+            }
+            waiting.step("accepted hints and diagnostics were stored but never painted");
+        }
+    }
     // Both stand above the first line, which therefore starts lower than a line without rows would.
     assert!(reader.source.borrow().row_map.code_top(0) > 0.0);
 }
@@ -123,9 +138,12 @@ fn hover_popup_above_a_line_does_not_cover_its_virtual_rows() {
     let fixture = project(&[("main.scripted", &tall())]);
     let reader = reader(&fixture, "main.scripted", definitions(&[], None));
     ready(&reader);
-    eventually("the server's hint was not painted", || {
-        return rows(&reader).0 > 0;
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(rows(&reader).0 > 0) {
+            waiting.step("the server's hint was not painted");
+        }
+    }
     // A hint for line 22, near the bottom of the view, through the poll's own entry point.
     let line = 22;
     let position = line * 13 + 7;
@@ -167,9 +185,12 @@ fn hover_popup_above_a_line_does_not_cover_its_virtual_rows() {
     );
     caret(&reader, position);
     hover(&reader);
-    eventually("the hover did not appear", || {
-        return !popup(&reader).is_empty();
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(!popup(&reader).is_empty()) {
+            waiting.step("the hover did not appear");
+        }
+    }
     assert!(
         !reader.window.get_language_popup_below(),
         "the popup fits below line {line}; the test needs a line near the bottom of the view"
@@ -202,9 +223,12 @@ fn resting_and_control_click_on_virtual_rows_ask_nothing() {
         definitions(&[("DEFINITION", &answer)], None),
     );
     ready(&reader);
-    eventually("the server's hint was not painted", || {
-        return rows(&reader).0 > 0;
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(rows(&reader).0 > 0) {
+            waiting.step("the server's hint was not painted");
+        }
+    }
     // Eight pixels above the first code row is inside the hint row; x is over `b` of `beta`.
     let x = caret_x(&reader, 6) + 2.0;
     move_to(&reader.window, above(&reader, 0, x, 8.0));
@@ -220,14 +244,17 @@ fn resting_and_control_click_on_virtual_rows_ask_nothing() {
     assert_eq!(popup(&reader), "");
     // Positive controls on the code row beneath: the same x answers both.
     move_to(&reader.window, point(&reader, 0, x));
-    eventually("the pointer hover on the code row did not appear", || {
-        return !popup(&reader).is_empty();
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(!popup(&reader).is_empty()) {
+            waiting.step("the pointer hover on the code row did not appear");
+        }
+    }
     control_click(&reader.window, point(&reader, 0, x));
-    eventually(
-        "Ctrl+click on the code row did not open the definition",
-        || {
-            return reader.window.get_source_text() == other_text;
-        },
-    );
+    {
+        let mut waiting = Waiting::language();
+        while !(reader.window.get_source_text() == other_text) {
+            waiting.step("Ctrl+click on the code row did not open the definition");
+        }
+    }
 }

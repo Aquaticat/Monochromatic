@@ -2,11 +2,11 @@
 //!  through real window key events.
 
 /// The complete reader fixture and key helpers of the find tests.
-use super::find_tests::{
-    chord, eventually, key, reader, selection, settle, status, status_for, type_text,
-};
+use super::find_tests::{chord, key, reader, selection, settle, status, status_for, type_text};
 /// Bounded waits and tree-row lookup shared with the navigation tests.
-use super::navigation_tests::{row, wait_until};
+use super::navigation_tests::row;
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::{NAVIGATION_UNREACHED, Waiting};
 /// Real toolkit key events reach the same capture scopes as seat input.
 use slint::{ComponentHandle, Model, platform::Key};
 /// What:
@@ -37,16 +37,29 @@ fn native_find_recomputes_for_a_switched_file_and_keeps_input_focus() {
     .expect("second fixture");
     let reader = reader(fixture.path(), "alpha.txt");
     let window = &reader.window;
-    wait_until(|| return row(window, "beta.txt").is_some());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(row(window, "beta.txt").is_some()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     chord(window, Key::Control, "f");
     type_text(window, "needle");
     status_for(window, "needle", "1/2");
     let generation = reader.source.borrow().file_generation;
     window.invoke_tree_activate(row(window, "beta.txt").expect("second file row"));
-    wait_until(|| return reader.source.borrow().file_generation > generation);
-    eventually("matches were not recomputed for the new file", || {
-        return window.get_find_status() == "0/3";
-    });
+    {
+        let mut waiting = Waiting::eventually();
+        while !(reader.source.borrow().file_generation > generation) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
+    {
+        let mut waiting = Waiting::eventually();
+        while !(window.get_find_status() == "0/3") {
+            waiting.step("matches were not recomputed for the new file");
+        }
+    }
     assert!(
         window.get_find_open(),
         "switching files closed the find bar"
@@ -71,7 +84,12 @@ fn native_find_recomputes_for_a_switched_file_and_keeps_input_focus() {
     let switched = reader.source.borrow().file_generation;
     // The recent-file shortcut is pressed while the find input has focus.
     chord(window, Key::Control, "1");
-    wait_until(|| return reader.source.borrow().file_generation > switched);
+    {
+        let mut waiting = Waiting::eventually();
+        while !(reader.source.borrow().file_generation > switched) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     status(window, "0/2");
     assert_eq!(window.get_find_query(), "needle");
     assert_eq!(
@@ -204,7 +222,12 @@ fn native_find_reports_refused_text_and_clears_for_empty_text() {
     type_text(window, "needle");
     status_for(window, "needle", "1/1");
     window.invoke_find_edited("n".repeat(1001).into());
-    wait_until(|| return window.get_find_error() != "");
+    {
+        let mut waiting = Waiting::eventually();
+        while !(window.get_find_error() != "") {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     assert!(window.get_find_error().contains("at most 1000 characters"));
     assert_eq!(
         window.get_source_matches().row_count(),

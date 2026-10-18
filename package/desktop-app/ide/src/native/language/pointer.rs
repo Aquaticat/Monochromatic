@@ -52,7 +52,11 @@ impl Rest {
     ///  a different character restarts the rest.
     pub(super) fn moved(&mut self, character: Option<usize>) {
         // `map` reads the character of the present rest, if any.
-        if self.at.map(|(current, _)| return current) == Some(character) {
+        let mut present = None;
+        if let Some((current, _)) = self.at {
+            present = Some(current);
+        }
+        if present == Some(character) {
             return;
         }
         // `Some((character, Instant::now()))` starts a new rest at this moment.
@@ -135,10 +139,14 @@ pub(super) fn character_at(state: &State, y: f32, x: f32) -> Option<usize> {
     let view = state.shaped.as_ref()?;
     let scale = view.viewport.scale;
     // `find` returns the first shaped row of that line, or nothing when it is not materialized.
-    let row = view
-        .rows
-        .iter()
-        .find(|candidate| return candidate.row == line)?;
+    let mut found_row = None;
+    for candidate in view.rows.iter() {
+        if candidate.row == line {
+            found_row = Some(candidate);
+            break;
+        }
+    }
+    let row = found_row?;
     let length = row.source_len();
     let end = row.source_start + length;
     // The pointer is on one visual row of a wrapped line; the end of that row, not of the line, is where text stops.

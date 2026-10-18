@@ -23,6 +23,8 @@ use super::{
     tile_pass::TAKE_LIMIT,
     viewport::{CARET_ROOM, place, wrap_width},
 };
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::Waiting;
 /// Library types that give the expected values.
 use ide_app::{row_map::RowMap, shaped_text::TextShaper};
 /// Toolkit events and models.
@@ -76,20 +78,6 @@ pub(super) fn tabbed_text(count: usize) -> String {
     return text;
 }
 
-/// Advance timers until `ready` holds,
-/// failing with `message` after `PATIENCE`.
-pub(super) fn until(message: &str, mut ready: impl FnMut() -> bool) {
-    let start = Instant::now();
-    loop {
-        update_timers_and_animations();
-        if ready() {
-            return;
-        }
-        assert!(start.elapsed() < PATIENCE, "{message}");
-        std::thread::sleep(Duration::from_millis(2));
-    }
-}
-
 /// Whether the worker has measured the whole text at the current wrap width and nothing is queued.
 fn measured(state: &Rc<RefCell<State>>, scale: f32) -> bool {
     let current = state.borrow();
@@ -106,9 +94,12 @@ fn measured(state: &Rc<RefCell<State>>, scale: f32) -> bool {
 /// Wait until the pass has finished and the last output is applied.
 pub(super) fn settled(reader: &Reader) {
     let scale = reader.window.window().scale_factor();
-    until("the measurement pass did not finish", || {
-        return measured(&reader.source, scale);
-    });
+    {
+        let mut waiting = Waiting::slow();
+        while !(measured(&reader.source, scale)) {
+            waiting.step("the measurement pass did not finish");
+        }
+    }
     // The render an applied output asks for has run when no timer is left pending.
     update_timers_and_animations();
 }
@@ -118,9 +109,12 @@ pub(super) fn open(text: &str) -> (tempfile::TempDir, Reader) {
     let project = memory_project("wrap-view-");
     fs::write(project.path().join("a.txt"), text).expect("fixture file");
     let opened = reader(project.path(), "a.txt");
-    until("the view did not report a width", || {
-        return opened.source.borrow().width > 0.0;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        while !(opened.source.borrow().width > 0.0) {
+            waiting.step("the view did not report a width");
+        }
+    }
     return (project, opened);
 }
 
@@ -268,14 +262,23 @@ fn rows_above_the_view_changing_height_move_no_visible_pixel() {
     let scale = window.window().scale_factor();
     let start = 320.0 * 24.0;
     window.set_scroll_y(-start);
-    until("the tile for the new view did not arrive", || {
-        update_timers_and_animations();
-        let current = opened.source.borrow();
-        return current.tile_job.is_none()
-            && current.scroll_wanted.is_none()
-            && current.shown.first + current.shown.count > 320
-            && current.shown.first <= 320;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        loop {
+            {
+                update_timers_and_animations();
+                let current = opened.source.borrow();
+                if current.tile_job.is_none()
+                    && current.scroll_wanted.is_none()
+                    && current.shown.first + current.shown.count > 320
+                    && current.shown.first <= 320
+                {
+                    break;
+                }
+            }
+            waiting.step("the tile for the new view did not arrive");
+        }
+    }
     // The tile holds exact heights; the line number at the view's top stays under the pointer.
     let top_line = opened
         .source
@@ -320,10 +323,14 @@ fn the_extent_settles_as_chunks_arrive() {
         if release.send(()).is_err() {
             break;
         }
-        until("a released chunk was not applied", || {
-            return opened.source.borrow().pass_applied > applied
-                || measured(&opened.source, scale);
-        });
+        {
+            let mut waiting = Waiting::slow();
+            while !(opened.source.borrow().pass_applied > applied
+                || measured(&opened.source, scale))
+            {
+                waiting.step("a released chunk was not applied");
+            }
+        }
         applied = opened.source.borrow().pass_applied;
         extents.push(opened.source.borrow().row_map.height());
     }
@@ -445,9 +452,12 @@ fn a_resize_breaks_kept_rows_again_without_shaping() {
     reset(&opened.source);
     opened.source.borrow_mut().rows_rebroken = 0;
     resize(window, 900.0, 660.0);
-    until("the new width did not reach the state", || {
-        return opened.source.borrow().width != width;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        while !(opened.source.borrow().width != width) {
+            waiting.step("the new width did not reach the state");
+        }
+    }
     settled(&opened);
     let current = opened.source.borrow();
     assert_eq!(current.pass_shaped, shaped, "the resize shaped lines again");
@@ -482,10 +492,18 @@ fn a_recenter_while_the_pass_runs_is_built_on_the_worker() {
     *PASS_GATE.lock().expect("pass gate") = Some(gate);
     let (_project, opened) = open(&long_text(3000));
     let window = &opened.window;
-    until("the first tile did not settle", || {
-        let current = opened.source.borrow();
-        return current.tile_job.is_none() && current.scroll_wanted.is_none();
-    });
+    {
+        let mut waiting = Waiting::slow();
+        loop {
+            {
+                let current = opened.source.borrow();
+                if current.tile_job.is_none() && current.scroll_wanted.is_none() {
+                    break;
+                }
+            }
+            waiting.step("the first tile did not settle");
+        }
+    }
     {
         let mut current = opened.source.borrow_mut();
         current.renders = 0;
@@ -508,10 +526,14 @@ fn a_recenter_while_the_pass_runs_is_built_on_the_worker() {
         );
         assert_eq!(current.images_set, 0, "the window thread set an image");
     }
-    until("the worker's tile was not swapped in", || {
-        return opened.source.borrow().tiles_applied == 1
-            || opened.source.borrow().tiles_discarded > 0;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        while !(opened.source.borrow().tiles_applied == 1
+            || opened.source.borrow().tiles_discarded > 0)
+        {
+            waiting.step("the worker's tile was not swapped in");
+        }
+    }
     let current = opened.source.borrow();
     assert_eq!(
         current.tiles_discarded, 0,
@@ -540,9 +562,12 @@ fn the_caret_after_a_full_row_stays_inside_the_view() {
     // A text area of 9 * 70 + 1 = 631 px: without caret room a row would hold the glyphs up to 630 px.
     // The window is 110 px wider than the 946 px that gave it before the minimap, which takes its widest 110 px.
     resize(window, 946.0 + 110.0, 660.0);
-    until("the wrap width did not follow the resize", || {
-        return opened.source.borrow().width == 631.0 - CARET_ROOM;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        while !(opened.source.borrow().width == 631.0 - CARET_ROOM) {
+            waiting.step("the wrap width did not follow the resize");
+        }
+    }
     settled(&opened);
     assert_eq!(window.get_viewport_width(), 631.0);
     let scale = window.window().scale_factor();
@@ -703,9 +728,12 @@ fn shift_wheel_does_not_scroll_and_there_is_no_horizontal_motion() {
             delta_x: 0.0,
             delta_y: -300.0,
         });
-    until("a plain wheel turn did not scroll the view", || {
-        return window.get_scroll_y() < 0.0;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        while !(window.get_scroll_y() < 0.0) {
+            waiting.step("a plain wheel turn did not scroll the view");
+        }
+    }
     window.hide().expect("close wrap window");
 }
 
@@ -733,9 +761,12 @@ fn a_drag_resize_leaves_no_stale_heights() {
     for _ in 0..80 {
         let _ = release.send(());
     }
-    until("the final width did not reach the state", || {
-        return opened.source.borrow().width == window.get_viewport_width() - CARET_ROOM;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        while !(opened.source.borrow().width == window.get_viewport_width() - CARET_ROOM) {
+            waiting.step("the final width did not reach the state");
+        }
+    }
     settled(&opened);
     let current = opened.source.borrow();
     let lines = current.document.text().len_lines();

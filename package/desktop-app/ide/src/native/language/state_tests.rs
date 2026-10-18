@@ -5,11 +5,13 @@
 
 /// Fixtures and real key events.
 use super::test_support::{
-    address, caret, definition, definitions, eventually, hover, idle, location, popup, project,
-    reader, reader_launching, reader_with, ready,
+    address, caret, definition, definitions, hover, idle, location, popup, project, reader,
+    reader_launching, reader_with, ready,
 };
 /// A tree-row lookup shared with the navigation tests.
 use crate::native::navigation_tests::row;
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::Waiting;
 /// What:
 ///  `anyhow!` builds an error from a message,
 ///  like `new Error(...)`.
@@ -45,14 +47,21 @@ fn starting_server_is_explained_and_answers_once_ready() {
     );
     caret(&reader, 6);
     hover(&reader);
-    eventually("starting was not explained", || {
-        return popup(&reader) == "scripted-ls is still starting. Press Ctrl+Q again in a moment.";
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(popup(&reader) == "scripted-ls is still starting. Press Ctrl+Q again in a moment.")
+        {
+            waiting.step("starting was not explained");
+        }
+    }
     ready(&reader);
     hover(&reader);
-    eventually("the ready server's hover did not appear", || {
-        return popup(&reader) == "line=alpha beta char=b";
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(popup(&reader) == "line=alpha beta char=b") {
+            waiting.step("the ready server's hover did not appear");
+        }
+    }
 }
 
 /// A server program that does not exist is named with its remedy.
@@ -62,12 +71,21 @@ fn missing_server_program_is_named_with_its_remedy() {
     let languages = definitions(&[], Some("/definitely/missing/ide-scripted-lsp"));
     let reader = reader(&fixture, "main.scripted", languages);
     definition(&reader);
-    eventually("the missing program was not explained", || {
-        let text = popup(&reader);
-        return text.starts_with("Go to definition needs scripted-ls, which is not available:")
-            && text.contains("/definitely/missing/ide-scripted-lsp")
-            && text.ends_with("After installing it, press Ctrl+B again.");
-    });
+    {
+        let mut waiting = Waiting::language();
+        loop {
+            {
+                let text = popup(&reader);
+                if text.starts_with("Go to definition needs scripted-ls, which is not available:")
+                    && text.contains("/definitely/missing/ide-scripted-lsp")
+                    && text.ends_with("After installing it, press Ctrl+B again.")
+                {
+                    break;
+                }
+            }
+            waiting.step("the missing program was not explained");
+        }
+    }
     assert!(reader.window.get_language_popup_note());
 }
 
@@ -99,11 +117,20 @@ fn refused_launch_is_explained_with_its_reason() {
     let fixture = project(&[("main.scripted", TEXT)]);
     let reader = reader_launching(&fixture, "main.scripted", definitions(&[], None), refuse);
     definition(&reader);
-    eventually("the refused launch was not explained", || {
-        let text = popup(&reader);
-        return text
-            == "scripted-ls was not started, so go to definition is not available for this file: simulated refusal.";
-    });
+    {
+        let mut waiting = Waiting::language();
+        loop {
+            {
+                let text = popup(&reader);
+                if text
+                    == "scripted-ls was not started, so go to definition is not available for this file: simulated refusal."
+                {
+                    break;
+                }
+            }
+            waiting.step("the refused launch was not explained");
+        }
+    }
     assert!(reader.window.get_language_popup_note());
     assert!(reader.window.get_source_has_focus());
 }
@@ -119,9 +146,12 @@ fn unsupported_feature_is_named() {
     );
     ready(&reader);
     definition(&reader);
-    eventually("the unsupported feature was not named", || {
-        return popup(&reader) == "scripted-ls does not offer go to definition.";
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(popup(&reader) == "scripted-ls does not offer go to definition.") {
+            waiting.step("the unsupported feature was not named");
+        }
+    }
 }
 
 /// A failed request,
@@ -139,11 +169,14 @@ fn failed_request_is_explained_with_the_server_error() {
     );
     ready(&reader);
     definition(&reader);
-    eventually("the failure was not explained", || {
-        return popup(&reader).starts_with(
+    {
+        let mut waiting = Waiting::language();
+        while !(popup(&reader).starts_with(
             "Find references failed: scripted-ls answered with error -32603: scripted internal failure. Press Ctrl+B",
-        );
-    });
+        )) {
+waiting.step("the failure was not explained");
+}
+    }
 }
 
 /// An empty answer and a file without a language each get their sentence.
@@ -160,23 +193,36 @@ fn empty_answer_and_unknown_language_are_explained() {
     );
     ready(&reader);
     definition(&reader);
-    eventually("the empty answer was not explained", || {
-        return popup(&reader) == "No definition found.";
-    });
-    eventually("the tree did not show the files", || {
-        return row(&reader.window, "notes.unknownext").is_some();
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(popup(&reader) == "No definition found.") {
+            waiting.step("the empty answer was not explained");
+        }
+    }
+    {
+        let mut waiting = Waiting::language();
+        while !(row(&reader.window, "notes.unknownext").is_some()) {
+            waiting.step("the tree did not show the files");
+        }
+    }
     reader
         .window
         .invoke_tree_activate(row(&reader.window, "notes.unknownext").expect("notes row"));
-    eventually("the notes did not open", || {
-        return reader.window.get_source_text() == "plain notes\n";
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(reader.window.get_source_text() == "plain notes\n") {
+            waiting.step("the notes did not open");
+        }
+    }
     definition(&reader);
-    eventually("the unknown language was not explained", || {
-        return popup(&reader)
-            == "No language is recognized for this file, so go to definition is not available here.";
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(popup(&reader)
+            == "No language is recognized for this file, so go to definition is not available here.")
+        {
+            waiting.step("the unknown language was not explained");
+        }
+    }
 }
 
 /// A hover answer for text a reload replaced is never shown;
@@ -196,9 +242,12 @@ fn hover_answer_overtaken_by_a_reload_is_not_shown() {
     let revision = reader.source.borrow().document.revision();
     fs::write(fixture.root.join("main.scripted"), format!("{TEXT}zeta\n"))
         .expect("external change");
-    eventually("the reload did not arrive", || {
-        return reader.source.borrow().document.revision() != revision;
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(reader.source.borrow().document.revision() != revision) {
+            waiting.step("the reload did not arrive");
+        }
+    }
     let start = Instant::now();
     while start.elapsed().as_millis() < 1500 {
         idle(10);
@@ -222,9 +271,12 @@ fn hover_answer_overtaken_by_a_file_switch_is_not_shown() {
         "main.scripted",
         definitions(&[("HOVER_DELAY_MS", "800")], None),
     );
-    eventually("the tree did not show the files", || {
-        return row(&reader.window, "other.scripted").is_some();
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(row(&reader.window, "other.scripted").is_some()) {
+            waiting.step("the tree did not show the files");
+        }
+    }
     ready(&reader);
     caret(&reader, 6);
     hover(&reader);
@@ -232,9 +284,12 @@ fn hover_answer_overtaken_by_a_file_switch_is_not_shown() {
     reader
         .window
         .invoke_tree_activate(row(&reader.window, "other.scripted").expect("other row"));
-    eventually("the file did not switch", || {
-        return reader.window.get_source_text() == "other words\n";
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(reader.window.get_source_text() == "other words\n") {
+            waiting.step("the file did not switch");
+        }
+    }
     idle(1500);
     assert_eq!(
         popup(&reader),
@@ -253,9 +308,12 @@ fn unavailable_language_support_is_explained_on_request() {
         Err(anyhow!("simulated start failure")),
     );
     definition(&reader);
-    eventually("the failure was not explained", || {
-        return popup(&reader) == "simulated start failure.";
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(popup(&reader) == "simulated start failure.") {
+            waiting.step("the failure was not explained");
+        }
+    }
     assert!(reader.window.get_source_has_focus());
 }
 
@@ -292,9 +350,12 @@ fn closing_while_a_request_is_pending_is_orderly() {
     ready(&reader);
     caret(&reader, 6);
     hover(&reader);
-    eventually("the server did not start", || {
-        return !scripted_children().is_empty();
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(!scripted_children().is_empty()) {
+            waiting.step("the server did not start");
+        }
+    }
     idle(300);
     let binding = reader.binding.take().expect("binding");
     let started = Instant::now();

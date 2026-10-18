@@ -41,7 +41,7 @@
 ///  and the production repaint.
 use super::{AppWindow, State, annotate, render};
 /// A malformed inspection file stops startup with a message naming it.
-use anyhow::{Context, Result, bail};
+use anyhow::{Result, bail};
 /// The snapshot records a language server would produce.
 use ide_app::language::{
     diagnostics::{Diagnostic, DiagnosticsSnapshot, Freshness, Severity, SourceGroup},
@@ -206,6 +206,11 @@ struct Records {
     groups: Vec<SourceGroup>,
 }
 
+/// Orders hints by the character offset they are drawn before.
+fn by_position(left: &InlayHint, right: &InlayHint) -> std::cmp::Ordering {
+    return left.position.cmp(&right.position);
+}
+
 /// Convert the parsed file into the Language module's records.
 fn records(file: InspectionFile) -> Result<Records> {
     let server = ServerIdentity {
@@ -223,7 +228,7 @@ fn records(file: InspectionFile) -> Result<Records> {
             server: server.clone(),
         });
     }
-    hints.sort_by_key(|hint| return hint.position);
+    hints.sort_by(by_position);
     let mut groups: Vec<SourceGroup> = Vec::new();
     for problem in file.diagnostics {
         let item = Diagnostic {
@@ -242,11 +247,15 @@ fn records(file: InspectionFile) -> Result<Records> {
         // ```ts
         // const group = groups.find(known => known.source === problem.source);
         // ```
-        if let Some(group) = groups
-            .iter_mut()
-            .find(|known| return known.source == problem.source)
-        {
-            group.items.push(item);
+        let mut found_group = None;
+        for (index, known) in groups.iter().enumerate() {
+            if known.source == problem.source {
+                found_group = Some(index);
+                break;
+            }
+        }
+        if let Some(index) = found_group {
+            groups[index].items.push(item);
         } else {
             groups.push(SourceGroup {
                 source: problem.source,
@@ -344,13 +353,21 @@ fn tick(
         ..
     } = current;
     let mut accepted = false;
-    // `is_some_and` answers false once the hints arrived and otherwise asks whether their moment has come.
-    if schedule.hints.is_some_and(|due| return now >= due) {
+    // False once the hints arrived; otherwise whether their moment has come.
+    let hints_due = match schedule.hints {
+        Some(due) => now >= due,
+        None => false,
+    };
+    if hints_due {
         schedule.hints = None;
         let snapshot = hint_snapshot(records, stamp, lines);
         accepted = annotations.accept_hints(stamp, document.text(), snapshot) || accepted;
     }
-    if schedule.diagnostics.is_some_and(|due| return now >= due) {
+    let diagnostics_due = match schedule.diagnostics {
+        Some(due) => now >= due,
+        None => false,
+    };
+    if diagnostics_due {
         schedule.diagnostics = None;
         let snapshot = problem_snapshot(records, stamp);
         accepted = annotations.accept_diagnostics(stamp, document.text(), snapshot) || accepted;
@@ -387,18 +404,24 @@ pub(super) fn inject(window: &AppWindow, state: &Rc<RefCell<State>>) -> Result<O
     let Some(path) = std::env::var_os("IDE_INSPECT_ANNOTATIONS") else {
         return Ok(None);
     };
-    let text = std::fs::read_to_string(&path).with_context(|| {
-        return format!(
-            "Cannot read the inspection annotation file {}",
-            path.display()
-        );
-    })?;
-    let file: InspectionFile = serde_json::from_str(&text).with_context(|| {
-        return format!(
-            "Cannot parse the inspection annotation file {}",
-            path.display()
-        );
-    })?;
+    let text = match std::fs::read_to_string(&path) {
+        Ok(read) => read,
+        Err(error) => {
+            return Err(anyhow::Error::new(error).context(format!(
+                "Cannot read the inspection annotation file {}",
+                path.display()
+            )));
+        }
+    };
+    let file: InspectionFile = match serde_json::from_str(&text) {
+        Ok(parsed) => parsed,
+        Err(error) => {
+            return Err(anyhow::Error::new(error).context(format!(
+                "Cannot parse the inspection annotation file {}",
+                path.display()
+            )));
+        }
+    };
     let delays = file.delays;
     let reload = file.reload_delays;
     let records = records(file)?;

@@ -8,10 +8,12 @@
 /// Real key events,
 ///  the full production reader,
 ///  and bounded waits shared with the find tests.
-use super::find_tests::{Reader, chord, eventually, reader, status_for, type_text};
+use super::find_tests::{Reader, chord, reader, status_for, type_text};
 /// Shared rendering entry point,
 ///  used here only to draw a cold reference image.
 use super::{AppWindow, render};
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::Waiting;
 /// Selected-text ink is chosen from the drawn selection fill,
 ///  as production rendering does.
 use ide_app::selection_ink::legible_ink;
@@ -327,12 +329,18 @@ fn themed_reader() -> (tempfile::TempDir, Reader) {
     fs::write(fixture.path().join("notes.txt"), "notes").expect("second tree row");
     let reader = reader(fixture.path(), "theme.ts");
     let window = &reader.window;
-    eventually("TypeScript highlighting did not arrive", || {
-        return !reader.source.borrow().styles.is_empty();
-    });
-    eventually("the project tree did not list both files", || {
-        return window.get_tree_entries().row_count() == 2;
-    });
+    {
+        let mut waiting = Waiting::eventually();
+        while !(!reader.source.borrow().styles.is_empty()) {
+            waiting.step("TypeScript highlighting did not arrive");
+        }
+    }
+    {
+        let mut waiting = Waiting::eventually();
+        while !(window.get_tree_entries().row_count() == 2) {
+            waiting.step("the project tree did not list both files");
+        }
+    }
     chord(window, Key::Control, "f");
     type_text(window, "needle");
     status_for(window, "needle", "1/2");

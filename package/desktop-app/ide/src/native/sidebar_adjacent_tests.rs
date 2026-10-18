@@ -2,9 +2,6 @@
 //! sidebar width,
 //!  and the tree scrollbar works up to the zone.
 
-/// Bounded waiting while the toolkit eases a wheel scroll,
-///  shared with the find tests.
-use super::find_tests::eventually;
 /// Shared window fixture,
 ///  pointer helpers,
 ///  and the pinned layout measurements.
@@ -12,6 +9,8 @@ use super::sidebar_tests::{
     DIVIDER, HEADER, MINIMUM, REACH, SOURCE_MINIMUM, click, drag_to, fixture, motion, press,
     release, settle,
 };
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::Waiting;
 /// Window ownership for closing the fixture,
 ///  the left pointer button for a scrollbar drag,
 ///  and the
@@ -205,10 +204,12 @@ fn wheel_over_the_divider_zone_scrolls_what_lies_under_it() {
     // ```ts
     // eventually(message, () => window.treeScrollY < treeBefore);
     // ```
-    eventually(
-        "a wheel turn over the zone's tree columns did not scroll the tree",
-        || return window.get_tree_scroll_y() < tree_before,
-    );
+    {
+        let mut waiting = Waiting::eventually();
+        while !(window.get_tree_scroll_y() < tree_before) {
+            waiting.step("a wheel turn over the zone's tree columns did not scroll the tree");
+        }
+    }
     let source_before = window.get_scroll_y();
     // The zone's last column lies over the source column's first columns.
     window
@@ -218,10 +219,12 @@ fn wheel_over_the_divider_zone_scrolls_what_lies_under_it() {
             delta_x: 0.0,
             delta_y: -96.0,
         });
-    eventually(
-        "a wheel turn over the zone's source columns did not scroll the source",
-        || return window.get_scroll_y() < source_before,
-    );
+    {
+        let mut waiting = Waiting::eventually();
+        while !(window.get_scroll_y() < source_before) {
+            waiting.step("a wheel turn over the zone's source columns did not scroll the source");
+        }
+    }
     assert_eq!(
         window.get_sidebar_width(),
         256.0,

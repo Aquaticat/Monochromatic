@@ -12,6 +12,8 @@
 use super::watch_tests::open;
 /// The slow-writer helpers and texts of the write-wait tests.
 use super::write_wait_tests::{NEW, OLD, PAUSE, until_text, watch_texts};
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::{NAVIGATION_UNREACHED, Waiting};
 /// The kind of change the navigation records for a reread no write was seen behind.
 use ide_app::change_watch::SourceChange;
 /// The quiet period a save must stay under for the assertion to apply.
@@ -57,10 +59,18 @@ fn reads_no_notification_asked_for_do_not_show_a_save_in_progress() {
         let mut seen = Vec::new();
         // The reader thread starts by loading highlighting, which can outlast a save; once a highlighting
         // answer for the displayed text was applied, it is idle, and the rest lets the startup rereads finish.
-        super::navigation_tests::wait_until(|| {
-            let current = state.borrow();
-            return current.syntax_revision == Some(current.document.revision());
-        });
+        {
+            let mut waiting = Waiting::eventually();
+            loop {
+                {
+                    let current = state.borrow();
+                    if current.syntax_revision == Some(current.document.revision()) {
+                        break;
+                    }
+                }
+                waiting.step(NAVIGATION_UNREACHED);
+            }
+        }
         watch_texts(&window, Duration::from_millis(300), &mut seen);
         let truncated_at = Instant::now();
         let mut file = OpenOptions::new()

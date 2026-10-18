@@ -27,7 +27,9 @@ use super::tile_build::{BUILD_GATE, PASS_GATE};
 /// Wrapped fixtures,
 /// the open reader,
 /// and bounded waits.
-use super::wrap_tests::{long_text, open, settled, tabbed_text, until};
+use super::wrap_tests::{long_text, open, settled, tabbed_text};
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::Waiting;
 /// Snapshot records exactly as the Language module builds them.
 use ide_app::{
     document::{ReadingAffinity, ReadingPosition},
@@ -257,9 +259,12 @@ fn a_new_window_width_breaks_the_block_again() {
     reset(&opened.source);
     let packed = opened.source.borrow().annotations.work().packed;
     resize(window, TEXT_LEFT + 300.0 + minimap_beside(300.0), 660.0);
-    until("the narrow width did not reach the state", || {
-        return opened.source.borrow().width < wide;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        while !(opened.source.borrow().width < wide) {
+            waiting.step("the narrow width did not reach the state");
+        }
+    }
     settled(&opened);
     // The blocks follow the width at once, and so does the tile: the window thread paints it once, within its allowance.
     let [_, tiles, rows, images] = counts(&opened.source);
@@ -304,9 +309,12 @@ fn a_new_window_width_breaks_the_block_again() {
         TEXT_LEFT + wide + 2.0 + minimap_beside(wide + 2.0),
         660.0,
     );
-    until("the wide width did not return", || {
-        return opened.source.borrow().width > narrow_width;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        while !(opened.source.borrow().width > narrow_width) {
+            waiting.step("the wide width did not return");
+        }
+    }
     settled(&opened);
     assert_eq!(
         rows_at(&opened).0,
@@ -332,15 +340,27 @@ fn a_new_width_left_to_the_worker_keeps_the_displayed_tile_until_the_workers_til
     reset(&opened.source);
     opened.source.borrow_mut().rewrap_deferred = 0;
     resize(window, TEXT_LEFT + 300.0 + minimap_beside(300.0), 660.0);
-    until("the narrow width did not reach the state", || {
-        return opened.source.borrow().width < wide;
-    });
-    until("the worker's tile did not arrive", || {
-        let current = opened.source.borrow();
-        return current.tile_job.is_none()
-            && current.scroll_wanted.is_none()
-            && current.shown.width == current.width;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        while !(opened.source.borrow().width < wide) {
+            waiting.step("the narrow width did not reach the state");
+        }
+    }
+    {
+        let mut waiting = Waiting::slow();
+        loop {
+            {
+                let current = opened.source.borrow();
+                if current.tile_job.is_none()
+                    && current.scroll_wanted.is_none()
+                    && current.shown.width == current.width
+                {
+                    break;
+                }
+            }
+            waiting.step("the worker's tile did not arrive");
+        }
+    }
     settled(&opened);
     let [_, tiles, _, _] = counts(&opened.source);
     assert_eq!(tiles, 0, "the window thread painted a tile for the resize");
@@ -358,9 +378,12 @@ fn a_new_width_left_to_the_worker_keeps_the_displayed_tile_until_the_workers_til
 
 /// Wait until the worker has taken the held build from the gate slot.
 fn until_build_started(message: &str) {
-    until(message, || {
-        return BUILD_GATE.lock().expect("build gate").is_none();
-    });
+    {
+        let mut waiting = Waiting::slow();
+        while !(BUILD_GATE.lock().expect("build gate").is_none()) {
+            waiting.step(message);
+        }
+    }
 }
 
 /// Short lines with a tab,
@@ -420,9 +443,12 @@ fn a_tile_discarded_while_the_window_waits_for_one_is_asked_for_again() {
     release
         .send(())
         .expect("the build is waiting for its release");
-    until("the stale tile was not discarded", || {
-        return opened.source.borrow().tiles_discarded >= 1;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        while !(opened.source.borrow().tiles_discarded >= 1) {
+            waiting.step("the stale tile was not discarded");
+        }
+    }
     let start = std::time::Instant::now();
     loop {
         update_timers_and_animations();
@@ -487,9 +513,12 @@ fn hints_far_from_the_view_are_packed_again_when_the_view_comes_near() {
         TEXT_LEFT + 300.0 + minimap_beside(300.0),
         660.0,
     );
-    until("the narrow width did not reach the state", || {
-        return opened.source.borrow().width < wide;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        while !(opened.source.borrow().width < wide) {
+            waiting.step("the narrow width did not reach the state");
+        }
+    }
     settled(&opened);
     let narrow = opened.source.borrow().width;
     let repacked = opened.source.borrow().annotations.work().packed - packed;
@@ -510,14 +539,23 @@ fn hints_far_from_the_view_are_packed_again_when_the_view_comes_near() {
     // The view comes near the far line: its hints are packed for the width it has now.
     let top = opened.source.borrow().row_map.code_top(FAR);
     opened.window.set_scroll_y(-top);
-    until("the tile for the far line did not arrive", || {
-        update_timers_and_animations();
-        let current = opened.source.borrow();
-        return current.tile_job.is_none()
-            && current.scroll_wanted.is_none()
-            && current.shown.first <= FAR
-            && FAR < current.shown.first + current.shown.count;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        loop {
+            {
+                update_timers_and_animations();
+                let current = opened.source.borrow();
+                if current.tile_job.is_none()
+                    && current.scroll_wanted.is_none()
+                    && current.shown.first <= FAR
+                    && FAR < current.shown.first + current.shown.count
+                {
+                    break;
+                }
+            }
+            waiting.step("the tile for the far line did not arrive");
+        }
+    }
     let mut shaper = TextShaper::new();
     let expected = {
         let current = opened.source.borrow();
@@ -525,9 +563,19 @@ fn hints_far_from_the_view_are_packed_again_when_the_view_comes_near() {
             .wrapped_row(&current.document, FAR, 1.0, narrow)
             .caret_x(far, 1.0)
     };
-    until("the far line was not packed for the new width", || {
-        update_timers_and_animations();
-        return block(&opened, FAR).is_some_and(|found| return found.hints[0].x == expected);
-    });
+    {
+        let mut waiting = Waiting::slow();
+        loop {
+            update_timers_and_animations();
+            let far_packed = match block(&opened, FAR) {
+                Some(found) => found.hints[0].x == expected,
+                None => false,
+            };
+            if far_packed {
+                break;
+            }
+            waiting.step("the far line was not packed for the new width");
+        }
+    }
     opened.window.hide().expect("close wrap window");
 }

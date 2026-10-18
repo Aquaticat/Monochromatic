@@ -9,9 +9,11 @@ use super::AppWindow;
 /// Real key events,
 ///  the full production reader,
 ///  and bounded waits shared with the find tests.
-use super::find_tests::{chord, eventually, reader, status_for, type_text};
+use super::find_tests::{chord, reader, status_for, type_text};
 /// Pointer helpers that dispatch real window events and then lay the window out again.
 use super::sidebar_tests::{click, resize, settle};
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::Waiting;
 /// Toolkit key names,
 ///  window ownership,
 ///  and the model interface that counts match rectangles.
@@ -169,9 +171,13 @@ fn find_clear_cell_is_48px_and_every_part_of_it_clears() {
         // ```ts
         // eventually(message, () => window.findStatus === '' && window.sourceMatches.length === 0);
         // ```
-        eventually("clearing did not update the find results", || {
-            return window.get_find_status() == "" && window.get_source_matches().row_count() == 0;
-        });
+        {
+            let mut waiting = Waiting::eventually();
+            while !(window.get_find_status() == "" && window.get_source_matches().row_count() == 0)
+            {
+                waiting.step("clearing did not update the find results");
+            }
+        }
         // Typing again without a click proves that the keyboard still reaches the box.
         found(window);
     }

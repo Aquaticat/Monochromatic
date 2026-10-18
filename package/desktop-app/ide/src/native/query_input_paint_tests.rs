@@ -15,7 +15,7 @@
 ///  shared with the find tests.
 use super::find_tests::{chord, key, type_text};
 /// Bounded waits and tree-row lookup shared with the navigation tests.
-use super::navigation_tests::{row, wait_until};
+use super::navigation_tests::row;
 /// The source-empty reader and the double-Shift opener of the search tests.
 use super::search_tests::{Reader, open, reader};
 /// Rendered frames and single pixels,
@@ -26,6 +26,8 @@ use super::sidebar_tests::{motion, press, release, resize, settle};
 /// The scheme switch the desktop-settings watcher makes,
 ///  and color bytes.
 use super::theme_tests::{rgba, switch};
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::{NAVIGATION_UNREACHED, Waiting};
 /// What:
 ///  `ColorScheme` is the toolkit's scheme enum (`Unknown`,
 ///  `Dark`,
@@ -115,7 +117,12 @@ fn searching() -> (tempfile::TempDir, Reader) {
     // ```ts
     // waitUntil(() => row(window, 'only.txt') !== undefined);
     // ```
-    wait_until(|| return row(&opened.window, "only.txt").is_some());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(row(&opened.window, "only.txt").is_some()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     open(&opened.window);
     // Park the pointer in the panel's title row, away from the box and the result rows.
     motion(&opened.window, 500.0, 70.0);

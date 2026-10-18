@@ -7,8 +7,6 @@
 //!  reload,
 //!  and close.
 
-/// Bounded waits and tree-row lookup shared with the navigation tests.
-use super::navigation_tests::wait_until;
 /// The production window,
 ///  source state,
 ///  and every binding the shipped application installs.
@@ -16,6 +14,8 @@ use super::{
     AppWindow, State, bind_appearance, bind_keys, bind_pointer, bind_viewport, find, navigation,
     reload, render,
 };
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::{NAVIGATION_UNREACHED, Waiting};
 /// The canonical project boundary is created only over disposable fixtures.
 use ide_app::workspace::Workspace;
 /// Real toolkit key events reach the same capture scopes as seat input.
@@ -191,20 +191,11 @@ pub(super) fn type_text(window: &AppWindow, text: &str) {
 
 /// Wait until the bar shows exactly this count text.
 pub(super) fn status(window: &AppWindow, expected: &str) {
-    wait_until(|| return window.get_find_status() == expected);
-}
-
-/// Advance native timers until `ready` holds,
-///  failing with a message naming the missing behavior.
-pub(super) fn eventually(message: &str, mut ready: impl FnMut() -> bool) {
-    let start = Instant::now();
-    loop {
-        slint::platform::update_timers_and_animations();
-        if ready() {
-            return;
+    {
+        let mut waiting = Waiting::eventually();
+        while !(window.get_find_status() == expected) {
+            waiting.step(NAVIGATION_UNREACHED);
         }
-        assert!(start.elapsed() < Duration::from_secs(5), "{message}");
-        std::thread::sleep(Duration::from_millis(2));
     }
 }
 
@@ -256,10 +247,14 @@ pub(super) fn status_for(window: &AppWindow, query: &str, expected: &str) {
     // eventually(message, () => window.findStatus === expected
     //   && window.selectedText.toLowerCase() === query.toLowerCase());
     // ```
-    eventually(&message, || {
-        return window.get_find_status() == expected
-            && window.get_selected_text().to_lowercase() == query.to_lowercase();
-    });
+    {
+        let mut waiting = Waiting::eventually();
+        while !(window.get_find_status() == expected
+            && window.get_selected_text().to_lowercase() == query.to_lowercase())
+        {
+            waiting.step(&message);
+        }
+    }
 }
 
 /// Let several polling ticks and any worker reply pass before asserting that nothing changed.
@@ -422,20 +417,30 @@ fn native_find_recomputes_after_external_reload_and_follows_selection_correspond
     let reader = reader(fixture.path(), "cat.txt");
     let window = &reader.window;
     // The external changes below reach the reader through its live watch, not the sweep.
-    wait_until(|| return reader.source.borrow().refresh.is_watched());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(reader.source.borrow().refresh.is_watched()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     chord(window, Key::Control, "f");
     type_text(window, "am a");
     status_for(window, "am a", "1/1");
     assert_eq!(selection(&reader), (2, 6));
     let revision = reader.source.borrow().document.revision();
     replace_file(&path, "A new first line\nI am a big cat\n");
-    wait_until(|| return reader.source.borrow().document.revision() > revision);
-    eventually(
-        "matches were not recomputed for the reloaded revision",
-        || {
-            return window.get_selection_is_match() && window.get_find_status() == "1/1";
-        },
-    );
+    {
+        let mut waiting = Waiting::eventually();
+        while !(reader.source.borrow().document.revision() > revision) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
+    {
+        let mut waiting = Waiting::eventually();
+        while !(window.get_selection_is_match() && window.get_find_status() == "1/1") {
+            waiting.step("matches were not recomputed for the reloaded revision");
+        }
+    }
     assert_eq!(
         selection(&reader),
         (19, 23),
@@ -447,11 +452,19 @@ fn native_find_recomputes_after_external_reload_and_follows_selection_correspond
         &path,
         "A new first line\nI was a big cat, but now I am a human!\n",
     );
-    wait_until(|| return reader.source.borrow().document.revision() > moved);
-    eventually(
-        "the selection must follow the replaced region, not jump to a later match",
-        || return window.get_find_status() == "0/1",
-    );
+    {
+        let mut waiting = Waiting::eventually();
+        while !(reader.source.borrow().document.revision() > moved) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
+    {
+        let mut waiting = Waiting::eventually();
+        while !(window.get_find_status() == "0/1") {
+            waiting
+                .step("the selection must follow the replaced region, not jump to a later match");
+        }
+    }
     assert_eq!(window.get_selected_text(), "was a");
     assert!(!window.get_selection_is_match());
     assert_eq!(

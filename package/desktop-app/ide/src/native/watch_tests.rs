@@ -11,6 +11,8 @@ use super::{
     AppWindow, State, bind_appearance, bind_keys, bind_pointer, bind_viewport, navigation, reload,
     render,
 };
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::{NAVIGATION_UNREACHED, Waiting};
 /// Reading positions and the canonical project boundary.
 use ide_app::{document::ReadingPosition, workspace::Workspace};
 /// Real headless timers drive the same refresh timers as the shipped event loop.
@@ -33,31 +35,6 @@ use std::{
     rc::Rc,
     time::{Duration, Instant},
 };
-
-/// Every observed change must arrive within this bound.
-///  Each change is made right after a reread of the
-/// same item was observed,
-///  so without a notification its next reread is the following 1 s safety sweep,
-/// about 800 ms later for five shown directories;
-///  only the first change of a test can meet a sweep by chance.
-const PROMPT: Duration = Duration::from_millis(400);
-
-/// Run native timers until `ready` holds;
-///  fail when it takes longer than `PROMPT`.
-pub(super) fn promptly(what: &str, mut ready: impl FnMut() -> bool) {
-    let start = Instant::now();
-    loop {
-        update_timers_and_animations();
-        if ready() {
-            return;
-        }
-        assert!(
-            start.elapsed() < PROMPT,
-            "{what} did not appear within {PROMPT:?}"
-        );
-        std::thread::sleep(Duration::from_millis(2));
-    }
-}
 
 /// A shipped window over `root`,
 ///  displaying `file`,
@@ -106,34 +83,59 @@ fn native_tree_follows_changes_in_one_of_several_expanded_folders() {
     let (window, _state, _timers) = open(fixture.path(), &displayed);
     for index in 0..4 {
         let label = format!("folder-{index:02}");
-        super::navigation_tests::wait_until(|| return row(&window, &label).is_some());
+        {
+            let mut waiting = Waiting::eventually();
+            while !(row(&window, &label).is_some()) {
+                waiting.step(NAVIGATION_UNREACHED);
+            }
+        }
         window.invoke_tree_activate(row(&window, &label).expect("folder row"));
         let seed = format!("seed-{index:02}.txt");
-        super::navigation_tests::wait_until(|| return row(&window, &seed).is_some());
+        {
+            let mut waiting = Waiting::eventually();
+            while !(row(&window, &seed).is_some()) {
+                waiting.step(NAVIGATION_UNREACHED);
+            }
+        }
     }
     let last = fixture.path().join("folder-03");
     fs::write(last.join("created.txt"), "").expect("external create");
-    promptly("a created file", || {
-        return row(&window, "created.txt").is_some();
-    });
+    {
+        let mut waiting = Waiting::prompt();
+        while !(row(&window, "created.txt").is_some()) {
+            waiting.step_missing("a created file");
+        }
+    }
     fs::rename(last.join("created.txt"), last.join("renamed.txt")).expect("external rename");
-    promptly("a renamed file", || {
-        return row(&window, "renamed.txt").is_some() && row(&window, "created.txt").is_none();
-    });
+    {
+        let mut waiting = Waiting::prompt();
+        while !(row(&window, "renamed.txt").is_some() && row(&window, "created.txt").is_none()) {
+            waiting.step_missing("a renamed file");
+        }
+    }
     fs::rename(fixture.path().join("outer.txt"), last.join("outer.txt"))
         .expect("move into the folder");
-    promptly("a file moved into the folder", || {
-        return depth(&window, "outer.txt") == Some(1);
-    });
+    {
+        let mut waiting = Waiting::prompt();
+        while !(depth(&window, "outer.txt") == Some(1)) {
+            waiting.step_missing("a file moved into the folder");
+        }
+    }
     fs::rename(last.join("outer.txt"), fixture.path().join("outer.txt"))
         .expect("move out of the folder");
-    promptly("a file moved out of the folder", || {
-        return depth(&window, "outer.txt") == Some(0);
-    });
+    {
+        let mut waiting = Waiting::prompt();
+        while !(depth(&window, "outer.txt") == Some(0)) {
+            waiting.step_missing("a file moved out of the folder");
+        }
+    }
     fs::remove_file(last.join("renamed.txt")).expect("external delete");
-    promptly("a deleted file's removal", || {
-        return row(&window, "renamed.txt").is_none();
-    });
+    {
+        let mut waiting = Waiting::prompt();
+        while !(row(&window, "renamed.txt").is_none()) {
+            waiting.step_missing("a deleted file's removal");
+        }
+    }
     window.hide().expect("close watch window");
 }
 
@@ -149,7 +151,12 @@ fn native_source_follows_atomic_replace_and_delete_then_recreate() {
     let displayed = folder.join("view.txt");
     fs::write(&displayed, "I am a big cat.\n").expect("displayed source");
     let (window, state, _timers) = open(fixture.path(), &displayed);
-    super::navigation_tests::wait_until(|| return state.borrow().refresh.is_watched());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(state.borrow().refresh.is_watched()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     // Let the startup reads (first read, highlighting, the new watch's extra read) finish,
     // so only a change notification can explain the next read.
     let settled = Instant::now();
@@ -170,18 +177,24 @@ fn native_source_follows_atomic_replace_and_delete_then_recreate() {
         affinity: ide_app::document::ReadingAffinity::Downstream,
     });
     replace("I was a big cat.\n");
-    promptly("the caret replacement", || {
-        return window.get_source_text() == "I was a big cat.\n";
-    });
+    {
+        let mut waiting = Waiting::prompt();
+        while !(window.get_source_text() == "I was a big cat.\n") {
+            waiting.step_missing("the caret replacement");
+        }
+    }
     assert_eq!(
         state.borrow().document.position().head,
         10,
         "the caret left the g"
     );
     fs::write(&displayed, "I am a big cat\n").expect("reset text");
-    promptly("the reset text", || {
-        return window.get_source_text() == "I am a big cat\n";
-    });
+    {
+        let mut waiting = Waiting::prompt();
+        while !(window.get_source_text() == "I am a big cat\n") {
+            waiting.step_missing("the reset text");
+        }
+    }
     // Selection example: `I [am a] big cat` follows the replaced region, not the later literal.
     state.borrow_mut().document.select(ReadingPosition {
         anchor: 2,
@@ -191,26 +204,35 @@ fn native_source_follows_atomic_replace_and_delete_then_recreate() {
     });
     render(&window, &state);
     replace("I was a big cat, but now I am a human!\n");
-    promptly("the selection replacement", || {
-        return window.get_source_text() == "I was a big cat, but now I am a human!\n";
-    });
+    {
+        let mut waiting = Waiting::prompt();
+        while !(window.get_source_text() == "I was a big cat, but now I am a human!\n") {
+            waiting.step_missing("the selection replacement");
+        }
+    }
     assert_eq!(
         window.get_selected_text(),
         "was a",
         "selection followed the later literal"
     );
     fs::remove_file(&displayed).expect("delete displayed file");
-    promptly("the missing-file diagnostic", || {
-        return state.borrow().file_error.is_some();
-    });
+    {
+        let mut waiting = Waiting::prompt();
+        while !(state.borrow().file_error.is_some()) {
+            waiting.step_missing("the missing-file diagnostic");
+        }
+    }
     assert_eq!(
         window.get_source_text(),
         "I was a big cat, but now I am a human!\n"
     );
     fs::write(&displayed, "recreated\n").expect("recreate displayed file");
-    promptly("the recreated file", || {
-        return window.get_source_text() == "recreated\n" && state.borrow().file_error.is_none();
-    });
+    {
+        let mut waiting = Waiting::prompt();
+        while !(window.get_source_text() == "recreated\n" && state.borrow().file_error.is_none()) {
+            waiting.step_missing("the recreated file");
+        }
+    }
     assert!(
         state.borrow().refresh.is_watched(),
         "the source fell back to polling"

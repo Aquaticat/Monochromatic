@@ -55,10 +55,11 @@ fn heading(kind: RequestKind) -> &'static str {
 /// const name = (server?: ServerIdentity) => server?.name ?? 'The language server';
 /// ```
 fn name(server: Option<&ServerIdentity>) -> String {
-    // `map_or` returns the fallback for nothing, otherwise the closure's result.
-    return server.map_or("The language server".to_string(), |found| {
-        return found.name.clone();
-    });
+    // The fallback stands for nothing; otherwise the server's own name.
+    return match server {
+        Some(found) => found.name.clone(),
+        None => "The language server".to_string(),
+    };
 }
 
 /// The work a server reports,
@@ -66,10 +67,12 @@ fn name(server: Option<&ServerIdentity>) -> String {
 ///  or nothing.
 fn progress(status: &LanguageStatus, server: Option<&ServerIdentity>) -> String {
     for row in &status.servers {
-        // `is_some_and` tests the borrowed identity only when one is present.
-        if server.is_some_and(|found| return found.name == row.server.name)
-            && let Some(title) = &row.progress
-        {
+        // The borrowed identity is tested only when one is present.
+        let same_server = match server {
+            Some(found) => found.name == row.server.name,
+            None => false,
+        };
+        if same_server && let Some(title) = &row.progress {
             return format!(" ({title})");
         }
     }
@@ -195,6 +198,24 @@ fn failed(action: Action, server: Option<&ServerIdentity>, failure: &RequestFail
     };
 }
 
+/// The answer with the lowest rank,
+///  or nothing without answers.
+fn most_telling(
+    outcomes: &[(Option<ServerIdentity>, RequestOutcome)],
+) -> Option<&(Option<ServerIdentity>, RequestOutcome)> {
+    let mut best: Option<&(Option<ServerIdentity>, RequestOutcome)> = None;
+    for candidate in outcomes {
+        let better = match best {
+            Some(held) => rank(&candidate.1) < rank(&held.1),
+            None => true,
+        };
+        if better {
+            best = Some(candidate);
+        }
+    }
+    return best;
+}
+
 /// What:
 ///  Rank outcomes by how much they tell the user;
 ///  lower is more telling.
@@ -247,7 +268,7 @@ pub(super) fn states_support_problem(
         return false;
     }
     // The most telling answer decides, as it does for the explanation itself.
-    let Some((_, outcome)) = outcomes.iter().min_by_key(|(_, found)| return rank(found)) else {
+    let Some((_, outcome)) = most_telling(outcomes) else {
         return true;
     };
     return matches!(
@@ -275,9 +296,8 @@ pub(super) fn explain(
     outcomes: &[(Option<ServerIdentity>, RequestOutcome)],
     status: &LanguageStatus,
 ) -> String {
-    // `min_by_key` picks the answer with the lowest rank; `None` means there was no answer.
-    let Some((server, outcome)) = outcomes.iter().min_by_key(|(_, found)| return rank(found))
-    else {
+    // The answer with the lowest rank decides; `None` means there was no answer.
+    let Some((server, outcome)) = most_telling(outcomes) else {
         return no_server(action, status);
     };
     let who = name(server.as_ref());

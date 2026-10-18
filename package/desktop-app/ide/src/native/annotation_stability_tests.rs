@@ -25,10 +25,12 @@ use super::annotation_tests::{TEXT_LEFT, TEXT_TOP, hint, problem};
 /// The complete reader fixture,
 ///  its opener,
 ///  and its bounded wait.
-use super::find_tests::{Reader, eventually, reader};
+use super::find_tests::{Reader, reader};
 /// The clock the scrolling rule reads,
 /// which a test holds and moves.
 use super::rows::hold_clock;
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::Waiting;
 /// Snapshot records exactly as the Language module builds them.
 use ide_app::language::{
     diagnostics::{Diagnostic, DiagnosticsSnapshot, Severity, SourceGroup},
@@ -534,9 +536,12 @@ fn rows_above_the_view_wait_until_scrolling_has_stopped() {
     // Scrolling has stopped: the rows are shown and nothing above line 104's block moves.
     now += QUIET_PASSED;
     hold_clock(Some(now));
-    eventually("rows that waited for scrolling were never shown", || {
-        return reader.source.borrow().row_map.block_height(10) == row;
-    });
+    {
+        let mut waiting = Waiting::eventually();
+        while !(reader.source.borrow().row_map.block_height(10) == row) {
+            waiting.step("rows that waited for scrolling were never shown");
+        }
+    }
     update_timers_and_animations();
     assert_eq!(-window.get_scroll_y(), offset + row);
     let after = frame(window);
@@ -573,12 +578,12 @@ fn rows_above_the_view_wait_until_scrolling_has_stopped() {
     );
     now += QUIET_PASSED;
     hold_clock(Some(now));
-    eventually(
-        "rows that waited for a scroll step were never shown",
-        || {
-            return reader.source.borrow().row_map.block_height(20) == row;
-        },
-    );
+    {
+        let mut waiting = Waiting::eventually();
+        while !(reader.source.borrow().row_map.block_height(20) == row) {
+            waiting.step("rows that waited for a scroll step were never shown");
+        }
+    }
 }
 
 /// After an external change the old rows are not painted,
@@ -605,9 +610,12 @@ fn a_reload_holds_row_space_until_annotations_return() {
     // Line 12 changes without changing its length, so every annotated position stays valid.
     let changed = numbered(14).replace("line 012: value", "line 012: other");
     fs::write(directory.path().join("notes.txt"), &changed).expect("external change");
-    eventually("the external change was not reloaded", || {
-        return reader.source.borrow().document.revision() > revision;
-    });
+    {
+        let mut waiting = Waiting::eventually();
+        while !(reader.source.borrow().document.revision() > revision) {
+            waiting.step("the external change was not reloaded");
+        }
+    }
     update_timers_and_animations();
     let held = (frame(window), map(&reader));
     assert_eq!(held.1, annotated.1, "the reload changed where lines are");

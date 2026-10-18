@@ -7,11 +7,13 @@
 ///  shared with the find tests.
 use super::find_tests::type_text;
 /// Bounded waits and tree-row lookup shared with the navigation tests.
-use super::navigation_tests::{row, wait_until};
+use super::navigation_tests::row;
 /// The source-empty reader and the double-Shift opener of the search tests.
 use super::search_tests::{open, reader};
 /// Pointer helpers that dispatch real window events and then lay the window out again.
 use super::sidebar_tests::{click, resize, settle};
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::{NAVIGATION_UNREACHED, Waiting};
 /// Window ownership and the model interface that counts result rows.
 use slint::{ComponentHandle, Model};
 /// Fixture files are written into a disposable project directory.
@@ -52,7 +54,12 @@ fn search_clear_cell_is_48px_clears_the_query_and_results_and_keeps_focus() {
     // ```ts
     // waitUntil(() => row(window, 'needle-file.txt') !== undefined);
     // ```
-    wait_until(|| return row(window, "needle-file.txt").is_some());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(row(window, "needle-file.txt").is_some()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     open(window);
     assert!(
         !window.get_search_clear_shown(),
@@ -64,7 +71,12 @@ fn search_clear_cell_is_48px_clears_the_query_and_results_and_keeps_focus() {
         "needle",
         "typing did not reach the search box"
     );
-    wait_until(|| return !window.get_search_busy() && window.get_search_entries().row_count() > 0);
+    {
+        let mut waiting = Waiting::eventually();
+        while !(!window.get_search_busy() && window.get_search_entries().row_count() > 0) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     settle(window);
     assert!(
         window.get_search_clear_shown(),

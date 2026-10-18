@@ -3,13 +3,15 @@
 //! unfinished,
 //!  because the sweep read is not asked for by the save's notification.
 
+/// The bounded wait for startup state,
+///  and the renderer that shows a new selection.
+use super::render;
 /// Shipped window setup shared with the watch tests.
 use super::watch_tests::open;
 /// The slow-writer helpers and texts of the asserting write-wait tests.
 use super::write_wait_tests::{NEW, OLD, PAUSE, baseline, until_text, watch_texts};
-/// The bounded wait for startup state,
-///  and the renderer that shows a new selection.
-use super::{navigation_tests::wait_until, render};
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::{NAVIGATION_UNREACHED, Waiting};
 /// Reading positions,
 ///  and the shipped intervals named in the measurement output.
 use ide_app::{
@@ -61,7 +63,12 @@ fn write_wait_timer_coincidence() {
     let displayed = folder.join("view.txt");
     fs::write(&displayed, OLD).expect("displayed source");
     let (window, state, _timers) = open(fixture.path(), &displayed);
-    wait_until(|| return state.borrow().refresh.is_watched());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(state.borrow().refresh.is_watched()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     let trials = 120;
     let span_ms = 400_u32;
     let mut truncated_shown = 0;

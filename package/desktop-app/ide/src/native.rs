@@ -276,6 +276,9 @@ mod tree_pointer_tests;
 mod tree_scroll_tests;
 /// Fractional viewport movement and bounded tile materialization.
 mod viewport;
+/// Bounded waiting that advances native timers until a state the test checks holds.
+#[cfg(test)]
+mod waiting_tests;
 /// An ignored measurement of watch counts and staleness when a changed folder is scrolled into view.
 #[cfg(test)]
 mod watch_scope_tests;

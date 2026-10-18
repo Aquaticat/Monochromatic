@@ -16,9 +16,9 @@
 use super::accessible_box_tests::{count, only};
 /// One key press and release through the window,
 ///  and a bounded wait that names what did not happen.
-use super::find_tests::{eventually, key};
+use super::find_tests::key;
 /// The bounded wait for native navigation state and the tree-row lookup.
-use super::navigation_tests::{row, wait_until};
+use super::navigation_tests::row;
 /// The search overlay's double-Shift opening.
 use super::search_tests::open;
 /// The 1100 by 660 sidebar fixture,
@@ -27,6 +27,8 @@ use super::search_tests::open;
 use super::sidebar_tests::{fixture, resize, settle};
 /// The window type and the location row type generated from the shipped markup.
 use super::{AppWindow, find_tests, search_tests, ui::ReferenceEntry};
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::{NAVIGATION_UNREACHED, Waiting};
 /// What:
 ///  `AccessibleRole` is the toolkit's enum of accessible roles;
 ///  `ElementHandle` is Slint's test-only
@@ -272,7 +274,12 @@ fn tree_rows_report_role_name_position_and_the_open_file_as_selected() {
     // ```ts
     // waitUntil(() => row(window, 'beta.txt') !== undefined);
     // ```
-    wait_until(|| return row(window, "beta.txt").is_some());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(row(window, "beta.txt").is_some()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     settle(window);
     let rows = window.get_tree_entries().row_count();
     let tree = container(
@@ -302,12 +309,12 @@ fn tree_rows_report_role_name_position_and_the_open_file_as_selected() {
     );
     // Opening another file through the row's default action moves the selected state to its row.
     item(&tree, "beta.txt").invoke_accessible_default_action();
-    eventually(
-        "opening beta.txt through its row did not select its row",
-        || {
-            return item(&tree, "beta.txt").accessible_item_selected() == Some(true);
-        },
-    );
+    {
+        let mut waiting = Waiting::eventually();
+        while !(item(&tree, "beta.txt").accessible_item_selected() == Some(true)) {
+            waiting.step("opening beta.txt through its row did not select its row");
+        }
+    }
     assert_row(&tree, "alpha.txt", false, 0);
     assert_row(&tree, "beta.txt", true, 1);
     // The opened file has a slot badge; its row's description names the shortcut the badge shows.
@@ -330,12 +337,12 @@ fn tree_rows_report_role_name_position_and_the_open_file_as_selected() {
     );
     // A handle does not keep its element alive, so the row is looked up again after the file switch.
     item(&tree, "nested").invoke_accessible_expand_action();
-    eventually(
-        "the expand action did not list the directory's file",
-        || {
-            return row(window, "inner.txt").is_some();
-        },
-    );
+    {
+        let mut waiting = Waiting::eventually();
+        while !(row(window, "inner.txt").is_some()) {
+            waiting.step("the expand action did not list the directory's file");
+        }
+    }
     settle(window);
     assert_eq!(
         item(&tree, "nested").accessible_expanded(),
@@ -358,12 +365,20 @@ fn search_results_report_role_name_position_and_the_selected_result() {
     let reader = search_tests::reader(fixture.path());
     let window = &reader.window;
     resize(window, 1100.0, 660.0);
-    wait_until(|| return row(window, "needle-two.txt").is_some());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(row(window, "needle-two.txt").is_some()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     open(window);
     only(window, "Search query").set_accessible_value("needle");
-    wait_until(|| {
-        return !window.get_search_busy() && window.get_search_entries().row_count() == 2;
-    });
+    {
+        let mut waiting = Waiting::eventually();
+        while !(!window.get_search_busy() && window.get_search_entries().row_count() == 2) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     settle(window);
     let results = container(window, AccessibleRole::List, "Search results", 2);
     // What: `row_data(0)` returns an `Option` holding a copy of the first result; `.path` is its path.

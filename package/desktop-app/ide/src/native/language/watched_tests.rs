@@ -6,7 +6,9 @@
 ///  the scripted server's definitions,
 ///  bounded waiting,
 ///  and the readiness wait.
-use super::test_support::{address, definitions, eventually, project, reader, ready};
+use super::test_support::{address, definitions, project, reader, ready};
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::Waiting;
 /// External writes and the server's report.
 use std::fs;
 
@@ -36,7 +38,8 @@ fn an_external_change_reaches_the_server_through_the_application() {
     // The server registers after `initialized` and the folders are then scanned, so the write is
     // repeated every 100 ms until one lands in a watched folder.
     let mut ticks = 0;
-    eventually("the external change did not reach the server", || {
+    let mut waiting = Waiting::language();
+    loop {
         if ticks % 50 == 0 {
             fs::write(&changed, format!("after {ticks}\n")).expect("external change");
         }
@@ -49,8 +52,16 @@ fn an_external_change_reaches_the_server_through_the_application() {
         // const text = existsSync(report) ? readFileSync(report, 'utf8') : '';
         // ```
         let text = fs::read_to_string(&report).unwrap_or_default();
-        return text.lines().any(|line| {
-            return line.contains("workspace/didChangeWatchedFiles") && line.contains(&expected);
-        });
-    });
+        let mut reached = false;
+        for line in text.lines() {
+            if line.contains("workspace/didChangeWatchedFiles") && line.contains(&expected) {
+                reached = true;
+                break;
+            }
+        }
+        if reached {
+            break;
+        }
+        waiting.step("the external change did not reach the server");
+    }
 }

@@ -249,10 +249,10 @@ pub(super) fn choose(
         return;
     };
     // `usize::try_from` refuses a negative index instead of wrapping it.
-    let Some(target) = usize::try_from(index)
-        .ok()
-        .and_then(|row| return listed.get(row).cloned())
-    else {
+    let Ok(row) = usize::try_from(index) else {
+        return;
+    };
+    let Some(target) = listed.get(row).cloned() else {
         return;
     };
     let position = origin.caret;

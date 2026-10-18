@@ -125,8 +125,14 @@ pub(super) fn set_annotations(
     // ```ts
     // logger.debug('annotation snapshots installed', { hints: hints?.stamp, diagnostics: diagnostics?.stamp });
     // ```
-    let hint_stamp = hints.as_ref().map(|snapshot| return snapshot.stamp);
-    let diagnostic_stamp = diagnostics.as_ref().map(|snapshot| return snapshot.stamp);
+    let mut hint_stamp = None;
+    if let Some(snapshot) = hints.as_ref() {
+        hint_stamp = Some(snapshot.stamp);
+    }
+    let mut diagnostic_stamp = None;
+    if let Some(snapshot) = diagnostics.as_ref() {
+        diagnostic_stamp = Some(snapshot.stamp);
+    }
     let shown = displayed(&current);
     tracing::debug!(
         hints = ?hint_stamp,
@@ -177,6 +183,22 @@ pub(super) fn colors(window: &AppWindow) -> AnnotationColors {
     };
 }
 
+/// The index of the first block that stands at or below line `first`,
+///  found by binary search over blocks sorted by line.
+fn first_block_from(blocks: &[Arc<ide_app::virtual_row::Block>], first: usize) -> usize {
+    let mut low = 0;
+    let mut high = blocks.len();
+    while low < high {
+        let middle = low + (high - low) / 2;
+        if blocks[middle].line < first {
+            low = middle + 1;
+        } else {
+            high = middle;
+        }
+    }
+    return low;
+}
+
 /// What:
 ///  The annotations of the materialized rows:
 ///  their blocks of virtual rows and the diagnostics touching
@@ -195,10 +217,8 @@ pub(super) fn colors(window: &AppWindow) -> AnnotationColors {
 /// ```
 pub(super) fn visible(current: &State, bounds: super::tile::TileBounds) -> Arc<Visible> {
     let last = bounds.first.saturating_add(bounds.count);
-    // `partition_point` is a binary search for the first block at or below the first materialized line.
-    let from = current
-        .blocks
-        .partition_point(|block| return block.line < bounds.first);
+    // A binary search finds the first block at or below the first materialized line.
+    let from = first_block_from(&current.blocks, bounds.first);
     let mut blocks = Vec::new();
     for block in &current.blocks[from..] {
         if block.line >= last {

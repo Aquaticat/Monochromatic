@@ -5,9 +5,11 @@
 //! An ignored measurement reports which pause lengths let a truncated file through.
 
 /// Shipped window setup and the bounded wait shared with the watch tests.
-use super::watch_tests::{open, promptly};
+use super::watch_tests::open;
 /// The production window and the bounded wait for startup state.
-use super::{AppWindow, navigation_tests::wait_until, render};
+use super::{AppWindow, render};
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::{NAVIGATION_UNREACHED, Waiting};
 /// Reading positions,
 ///  and the shipped write-wait intervals named in the measurement output.
 use ide_app::{
@@ -143,7 +145,12 @@ fn native_source_does_not_show_an_in_place_save_before_it_finishes() {
     let displayed = folder.join("view.txt");
     fs::write(&displayed, OLD).expect("displayed source");
     let (window, state, _timers) = open(fixture.path(), &displayed);
-    wait_until(|| return state.borrow().refresh.is_watched());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(state.borrow().refresh.is_watched()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     baseline(&window, &displayed);
     state.borrow_mut().document.select(ReadingPosition {
         anchor: 2,
@@ -187,7 +194,12 @@ fn native_source_does_not_show_a_deleted_file_before_its_rewrite_finishes() {
     let displayed = folder.join("view.txt");
     fs::write(&displayed, OLD).expect("displayed source");
     let (window, state, _timers) = open(fixture.path(), &displayed);
-    wait_until(|| return state.borrow().refresh.is_watched());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(state.borrow().refresh.is_watched()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     baseline(&window, &displayed);
     state.borrow_mut().document.select(ReadingPosition {
         anchor: 2,
@@ -210,9 +222,12 @@ fn native_source_does_not_show_a_deleted_file_before_its_rewrite_finishes() {
         "was a",
         "the selection did not follow the rewritten file"
     );
-    promptly("the cleared missing-file diagnostic", || {
-        return state.borrow().file_error.is_none();
-    });
+    {
+        let mut waiting = Waiting::prompt();
+        while !(state.borrow().file_error.is_none()) {
+            waiting.step_missing("the cleared missing-file diagnostic");
+        }
+    }
     window.hide().expect("close rewrite window");
 }
 
@@ -229,7 +244,12 @@ fn write_wait_pause_sweep() {
     let displayed = folder.join("view.txt");
     fs::write(&displayed, OLD).expect("displayed source");
     let (window, state, _timers) = open(fixture.path(), &displayed);
-    wait_until(|| return state.borrow().refresh.is_watched());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(state.borrow().refresh.is_watched()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     let trials = 8;
     for pause_ms in [10_u64, 20, 30, 40, 50, 60, 70, 80, 100, 150, 200] {
         let mut truncated_shown = 0;

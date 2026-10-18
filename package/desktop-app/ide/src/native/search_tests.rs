@@ -4,10 +4,12 @@
 //!  and source-open boundaries.
 
 /// Existing timer waits enforce a finite deadline for observable native state.
-use super::navigation_tests::{row, wait_until};
+use super::navigation_tests::row;
 /// Reuse the production window and source bindings,
 ///  not a parallel test-only overlay.
 use super::{AppWindow, State, bind_appearance, bind_keys, bind_viewport, navigation};
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::{NAVIGATION_UNREACHED, Waiting};
 /// Project boundary creation reads only disposable fixtures.
 use ide_app::workspace::Workspace;
 /// Real toolkit key events drive capture before focused input handling.
@@ -101,7 +103,12 @@ fn query(window: &AppWindow, raw: &str) {
         0,
         "old rows survived a new query"
     );
-    wait_until(|| return !window.get_search_busy());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(!window.get_search_busy()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
 }
 
 /// Filename results precede contents;
@@ -115,7 +122,12 @@ fn native_search_orders_results_filters_contents_and_reveals_source_lines() {
         .expect("content-only match");
     fs::write(fixture.path().join("[.txt"), "plain text").expect("literal invalid-regex path");
     let reader = reader(fixture.path());
-    wait_until(|| return row(&reader.window, "needle-file.txt").is_some());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(row(&reader.window, "needle-file.txt").is_some()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     open(&reader.window);
     query(&reader.window, "needle");
     assert_eq!(reader.window.get_search_entries().row_count(), 3);
@@ -133,7 +145,12 @@ fn native_search_orders_results_filters_contents_and_reveals_source_lines() {
     key(&reader.window, Key::DownArrow);
     assert_eq!(reader.window.get_search_selected(), 0);
     key(&reader.window, Key::Return);
-    wait_until(|| return reader.window.get_source_text() == text.as_str());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(reader.window.get_source_text() == text.as_str()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     assert!(!reader.window.get_search_open());
     let generation = reader.source.borrow().file_generation;
     open(&reader.window);
@@ -173,7 +190,12 @@ fn pending_file_open_does_not_steal_search_input_focus() {
     let fixture = tempfile::tempdir().expect("disposable pending-open project");
     fs::write(fixture.path().join("pending.txt"), "pending source").expect("source fixture");
     let reader = reader(fixture.path());
-    wait_until(|| return row(&reader.window, "pending.txt").is_some());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(row(&reader.window, "pending.txt").is_some()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     let target = row(&reader.window, "pending.txt").expect("pending source row");
     reader.window.invoke_tree_activate(target);
     open(&reader.window);
@@ -181,7 +203,12 @@ fn pending_file_open_does_not_steal_search_input_focus() {
         !reader.window.get_source_available(),
         "control requires the source reply to remain pending until after overlay activation"
     );
-    wait_until(|| return reader.window.get_source_text() == "pending source");
+    {
+        let mut waiting = Waiting::eventually();
+        while !(reader.window.get_source_text() == "pending source") {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     reader
         .window
         .window()
@@ -229,7 +256,12 @@ fn native_search_scopes_to_tree_directory_and_close_clears_pending_results() {
     )
     .expect("child hit");
     let reader = reader(fixture.path());
-    wait_until(|| return row(&reader.window, "nested").is_some());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(row(&reader.window, "nested").is_some()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     reader
         .window
         .invoke_tree_user_focus(row(&reader.window, "nested").expect("directory row"));
@@ -243,7 +275,12 @@ fn native_search_scopes_to_tree_directory_and_close_clears_pending_results() {
     assert!(!reader.window.get_search_open());
     assert!(!reader.window.get_search_busy());
     let closed = Instant::now();
-    wait_until(|| return closed.elapsed() >= Duration::from_millis(250));
+    {
+        let mut waiting = Waiting::eventually();
+        while !(closed.elapsed() >= Duration::from_millis(250)) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     assert_eq!(
         reader.window.get_search_entries().row_count(),
         0,

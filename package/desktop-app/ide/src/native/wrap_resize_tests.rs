@@ -32,7 +32,9 @@ use super::viewport::wrap_width;
 /// Wrapped fixtures,
 /// the open reader,
 /// and bounded waits.
-use super::wrap_tests::{long_text, open, settled, tabbed_text, until};
+use super::wrap_tests::{long_text, open, settled, tabbed_text};
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::Waiting;
 /// Library types that give the expected values.
 use ide_app::{
     document::ReadingPosition,
@@ -634,12 +636,21 @@ fn lines_over_the_work_allowance_are_left_to_the_worker() {
             "the old tile stays until the worker's arrives"
         );
     }
-    until("the worker's tile did not arrive", || {
-        let current = opened.source.borrow();
-        return current.tile_job.is_none()
-            && current.scroll_wanted.is_none()
-            && current.shown.width == current.width;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        loop {
+            {
+                let current = opened.source.borrow();
+                if current.tile_job.is_none()
+                    && current.scroll_wanted.is_none()
+                    && current.shown.width == current.width
+                {
+                    break;
+                }
+            }
+            waiting.step("the worker's tile did not arrive");
+        }
+    }
     settled(&opened);
     let after = spent(&opened);
     assert_eq!(after.applied, 1, "{after:?}");
@@ -697,12 +708,21 @@ fn tabbed_lines_are_charged_for_their_corrective_passes_and_left_to_the_worker()
         step.shaped + step.rebroken <= 9,
         "the window thread brought in more lines than the allowance pays for: {step:?}"
     );
-    until("the worker's tile did not arrive", || {
-        let current = opened.source.borrow();
-        return current.tile_job.is_none()
-            && current.scroll_wanted.is_none()
-            && current.shown.width == current.width;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        loop {
+            {
+                let current = opened.source.borrow();
+                if current.tile_job.is_none()
+                    && current.scroll_wanted.is_none()
+                    && current.shown.width == current.width
+                {
+                    break;
+                }
+            }
+            waiting.step("the worker's tile did not arrive");
+        }
+    }
     settled(&opened);
     let current = opened.source.borrow();
     let lines = current.document.text().len_lines();
@@ -759,12 +779,21 @@ fn a_line_of_two_hundred_thousand_characters_is_left_to_the_worker() {
         "the window thread broke a line again: {step:?}"
     );
     assert_eq!(step.images, 0, "{step:?}");
-    until("the worker's tile did not arrive", || {
-        let current = opened.source.borrow();
-        return current.tile_job.is_none()
-            && current.scroll_wanted.is_none()
-            && current.shown.width == current.width;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        loop {
+            {
+                let current = opened.source.borrow();
+                if current.tile_job.is_none()
+                    && current.scroll_wanted.is_none()
+                    && current.shown.width == current.width
+                {
+                    break;
+                }
+            }
+            waiting.step("the worker's tile did not arrive");
+        }
+    }
     let after = spent(&opened);
     assert_eq!(after.applied, 1, "{after:?}");
     assert_eq!(after.painted, 0, "{after:?}");
@@ -799,21 +828,39 @@ fn a_view_with_more_lines_than_the_allowance_is_left_to_the_worker() {
     // A window 3,300 pixels tall shows about 137 rows, so its tile holds about 412 lines. The headless renderer
     // cannot draw a window that large, so the size is reported without a frame.
     change_width(&opened, 700.0, 3300.0);
-    until("the tall window's tile did not arrive", || {
-        let current = opened.source.borrow();
-        return current.tile_job.is_none()
-            && current.scroll_wanted.is_none()
-            && current.shown.width == current.width;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        loop {
+            {
+                let current = opened.source.borrow();
+                if current.tile_job.is_none()
+                    && current.scroll_wanted.is_none()
+                    && current.shown.width == current.width
+                {
+                    break;
+                }
+            }
+            waiting.step("the tall window's tile did not arrive");
+        }
+    }
     // Away from the top of the text the tile has a view of overscan on both sides.
     window.set_scroll_y(-24_000.0);
     update_timers_and_animations();
-    until("the tile for the scrolled view did not arrive", || {
-        let current = opened.source.borrow();
-        return current.tile_job.is_none()
-            && current.scroll_wanted.is_none()
-            && current.shown.first > 500;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        loop {
+            {
+                let current = opened.source.borrow();
+                if current.tile_job.is_none()
+                    && current.scroll_wanted.is_none()
+                    && current.shown.first > 500
+                {
+                    break;
+                }
+            }
+            waiting.step("the tile for the scrolled view did not arrive");
+        }
+    }
     settled(&opened);
     start_counting(&opened);
     change_width(&opened, 500.0, 3300.0);
@@ -837,12 +884,21 @@ fn a_view_with_more_lines_than_the_allowance_is_left_to_the_worker() {
         0,
         "the window thread brought in lines for a view over the allowance: {step:?}"
     );
-    until("the worker's tile did not arrive", || {
-        let current = opened.source.borrow();
-        return current.tile_job.is_none()
-            && current.scroll_wanted.is_none()
-            && current.shown.width == current.width;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        loop {
+            {
+                let current = opened.source.borrow();
+                if current.tile_job.is_none()
+                    && current.scroll_wanted.is_none()
+                    && current.shown.width == current.width
+                {
+                    break;
+                }
+            }
+            waiting.step("the worker's tile did not arrive");
+        }
+    }
     window.hide().expect("close wrap window");
 }
 
@@ -868,10 +924,18 @@ fn a_tile_with_a_huge_raster_is_left_to_the_worker() {
             scale_factor: original * 3.0,
         });
     update_timers_and_animations();
-    until("the tile for the new scale did not arrive", || {
-        let current = opened.source.borrow();
-        return current.tile_job.is_none() && current.scroll_wanted.is_none();
-    });
+    {
+        let mut waiting = Waiting::slow();
+        loop {
+            {
+                let current = opened.source.borrow();
+                if current.tile_job.is_none() && current.scroll_wanted.is_none() {
+                    break;
+                }
+            }
+            waiting.step("the tile for the new scale did not arrive");
+        }
+    }
     settled(&opened);
     start_counting(&opened);
     change_width(&opened, 700.0, 660.0);
@@ -885,12 +949,21 @@ fn a_tile_with_a_huge_raster_is_left_to_the_worker() {
         step.painted, 0,
         "the window thread painted a tile whose raster passes the bound: {step:?}"
     );
-    until("the worker's tile did not arrive", || {
-        let current = opened.source.borrow();
-        return current.tile_job.is_none()
-            && current.scroll_wanted.is_none()
-            && current.shown.width == current.width;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        loop {
+            {
+                let current = opened.source.borrow();
+                if current.tile_job.is_none()
+                    && current.scroll_wanted.is_none()
+                    && current.shown.width == current.width
+                {
+                    break;
+                }
+            }
+            waiting.step("the worker's tile did not arrive");
+        }
+    }
     window.hide().expect("close wrap window");
 }
 
@@ -949,9 +1022,12 @@ fn a_measurement_applied_before_the_tile_of_a_new_width_leaves_no_stale_heights(
     *BUILD_GATE.lock().expect("build gate") = Some(build_gate);
     window.set_scroll_y(-(40.0 * height));
     update_timers_and_animations();
-    until("the worker did not start the held build", || {
-        return BUILD_GATE.lock().expect("build gate").is_none();
-    });
+    {
+        let mut waiting = Waiting::slow();
+        while !(BUILD_GATE.lock().expect("build gate").is_none()) {
+            waiting.step("the worker did not start the held build");
+        }
+    }
     start_counting(&opened);
     change_width(&opened, 500.0, 660.0);
     assert_eq!(
@@ -981,12 +1057,21 @@ fn a_measurement_applied_before_the_tile_of_a_new_width_leaves_no_stale_heights(
         );
         std::thread::sleep(std::time::Duration::from_millis(2));
     }
-    until("the tile for the new width did not arrive", || {
-        let current = opened.source.borrow();
-        return current.tile_job.is_none()
-            && current.scroll_wanted.is_none()
-            && current.shown.width == current.width;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        loop {
+            {
+                let current = opened.source.borrow();
+                if current.tile_job.is_none()
+                    && current.scroll_wanted.is_none()
+                    && current.shown.width == current.width
+                {
+                    break;
+                }
+            }
+            waiting.step("the tile for the new width did not arrive");
+        }
+    }
     settled(&opened);
     // What: The map follows the table of heights only once the reader has stopped scrolling for the quiet time, and
     //       the final tile and measurement of this test come within it of the scroll that started it, so the clock
@@ -996,9 +1081,12 @@ fn a_measurement_applied_before_the_tile_of_a_new_width_leaves_no_stale_heights(
     hold_clock(Some(
         std::time::Instant::now() + std::time::Duration::from_secs(10),
     ));
-    until("the map did not follow the table of heights", || {
-        return !due(&mut opened.source.borrow_mut(), scale);
-    });
+    {
+        let mut waiting = Waiting::slow();
+        while !(!due(&mut opened.source.borrow_mut(), scale)) {
+            waiting.step("the map did not follow the table of heights");
+        }
+    }
     hold_clock(None);
     let current = opened.source.borrow();
     let mut shaper = TextShaper::new();

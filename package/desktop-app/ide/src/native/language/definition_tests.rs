@@ -3,8 +3,10 @@
 /// Fixtures and real key and pointer events.
 use super::test_support::{
     LanguageReader, address, caret, caret_x, click, control_click, definition, definitions, escape,
-    eventually, head, location, point, project, reader, ready,
+    head, location, point, project, reader, ready,
 };
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::Waiting;
 /// Key events for the list and a tree-row lookup shared with the navigation tests.
 use crate::native::{find_tests::key, navigation_tests::row};
 /// Toolkit models,
@@ -57,9 +59,12 @@ fn definition_in_the_same_file_moves_the_caret_and_reveals_it() {
     );
     ready(&reader);
     definition(&reader);
-    eventually("the caret did not reach the definition", || {
-        return head(&reader) == at(100, 5);
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(head(&reader) == at(100, 5)) {
+            waiting.step("the caret did not reach the definition");
+        }
+    }
     let top = -reader.window.get_scroll_y();
     let bottom = top + reader.window.get_viewport_height();
     // The vertical mapping places line 100: the scripted server's hint takes a row above the first line.
@@ -97,13 +102,19 @@ fn definition_at_the_caret_lists_references_and_enter_opens_the_chosen_one() {
     );
     let reader = reader(&fixture, "main.scripted", languages);
     ready(&reader);
-    eventually("the tree did not show the file", || {
-        return row(&reader.window, "main.scripted").is_some();
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(row(&reader.window, "main.scripted").is_some()) {
+            waiting.step("the tree did not show the file");
+        }
+    }
     definition(&reader);
-    eventually("the references list did not open", || {
-        return reader.window.get_references_open();
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(reader.window.get_references_open()) {
+            waiting.step("the references list did not open");
+        }
+    }
     assert_eq!(reader.window.get_references_title(), "3 references");
     assert_eq!(label(&reader, 0), "main.scripted:1");
     assert_eq!(label(&reader, 1), "nested/other.scripted:2");
@@ -120,17 +131,27 @@ fn definition_at_the_caret_lists_references_and_enter_opens_the_chosen_one() {
     key(&reader.window, Key::DownArrow);
     assert_eq!(reader.window.get_references_selected(), 1);
     key(&reader.window, Key::Return);
-    eventually("the chosen reference's file did not open", || {
-        return reader.source.borrow().file_path.as_deref()
-            == Some(&fixture.root.join("nested/other.scripted"));
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(reader.source.borrow().file_path.as_deref()
+            == Some(&fixture.root.join("nested/other.scripted")))
+        {
+            waiting.step("the chosen reference's file did not open");
+        }
+    }
     assert!(!reader.window.get_references_open());
-    eventually("the caret did not reach the reference", || {
-        return head(&reader) == 8;
-    });
-    eventually("the tree did not reveal the reference's file", || {
-        return row(&reader.window, "other.scripted").is_some();
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(head(&reader) == 8) {
+            waiting.step("the caret did not reach the reference");
+        }
+    }
+    {
+        let mut waiting = Waiting::language();
+        while !(row(&reader.window, "other.scripted").is_some()) {
+            waiting.step("the tree did not reveal the reference's file");
+        }
+    }
     assert_eq!(badge(&reader, "other.scripted"), "0");
     assert_eq!(badge(&reader, "main.scripted"), "1");
     assert!(!reader.window.get_file_outside_project());
@@ -152,20 +173,32 @@ fn control_click_opens_a_definition_in_another_project_file() {
         definitions(&[("DEFINITION", &answer)], None),
     );
     ready(&reader);
-    eventually("the tree did not show the file", || {
-        return row(&reader.window, "main.scripted").is_some();
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(row(&reader.window, "main.scripted").is_some()) {
+            waiting.step("the tree did not show the file");
+        }
+    }
     let x = caret_x(&reader, at(3, 6)) + 2.0;
     control_click(&reader.window, point(&reader, 3, x));
-    eventually("Ctrl+click did not open the definition's file", || {
-        return reader.window.get_source_text() == "first\n  second line\n";
-    });
-    eventually("the caret did not reach the definition", || {
-        return head(&reader) == 8;
-    });
-    eventually("the tree did not reveal the file", || {
-        return row(&reader.window, "other.scripted").is_some();
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(reader.window.get_source_text() == "first\n  second line\n") {
+            waiting.step("Ctrl+click did not open the definition's file");
+        }
+    }
+    {
+        let mut waiting = Waiting::language();
+        while !(head(&reader) == 8) {
+            waiting.step("the caret did not reach the definition");
+        }
+    }
+    {
+        let mut waiting = Waiting::language();
+        while !(row(&reader.window, "other.scripted").is_some()) {
+            waiting.step("the tree did not reveal the file");
+        }
+    }
     assert_eq!(badge(&reader, "other.scripted"), "0");
 }
 
@@ -183,21 +216,30 @@ fn outside_project_definition_opens_marked_without_tree_reveal_or_history() {
         definitions(&[("DEFINITION", &answer)], None),
     );
     ready(&reader);
-    eventually("the tree did not show the file", || {
-        return row(&reader.window, "main.scripted").is_some();
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(row(&reader.window, "main.scripted").is_some()) {
+            waiting.step("the tree did not show the file");
+        }
+    }
     definition(&reader);
-    eventually("the outside file did not open", || {
-        return reader.window.get_source_text() == "pub library\n";
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(reader.window.get_source_text() == "pub library\n") {
+            waiting.step("the outside file did not open");
+        }
+    }
     assert!(reader.window.get_file_outside_project());
     assert_eq!(
         reader.window.get_file_label(),
         SharedString::from(library.display().to_string())
     );
-    eventually("the caret did not reach the outside target", || {
-        return head(&reader) == 4;
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(head(&reader) == 4) {
+            waiting.step("the caret did not reach the outside target");
+        }
+    }
     assert_eq!(
         badge(&reader, "main.scripted"),
         "0",
@@ -213,9 +255,12 @@ fn outside_project_definition_opens_marked_without_tree_reveal_or_history() {
     reader
         .window
         .invoke_tree_shortcut(SharedString::from("0"), true, false, false);
-    eventually("Ctrl+0 did not return to the project file", || {
-        return !reader.window.get_file_outside_project();
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(!reader.window.get_file_outside_project()) {
+            waiting.step("Ctrl+0 did not return to the project file");
+        }
+    }
     assert!(reader.window.get_source_text().starts_with("line 000"));
 }
 
@@ -240,9 +285,12 @@ fn several_definitions_are_listed_and_closing_returns_focus_to_the_source() {
     ready(&reader);
     caret(&reader, at(10, 2));
     definition(&reader);
-    eventually("the definitions list did not open", || {
-        return reader.window.get_references_open();
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(reader.window.get_references_open()) {
+            waiting.step("the definitions list did not open");
+        }
+    }
     assert_eq!(reader.window.get_references_title(), "2 definitions");
     assert_eq!(label(&reader, 0), "main.scripted:3");
     let rows = reader.window.get_references_entries();
@@ -255,9 +303,12 @@ fn several_definitions_are_listed_and_closing_returns_focus_to_the_source() {
     assert!(reader.window.get_source_has_focus());
     assert_eq!(head(&reader), at(10, 2));
     definition(&reader);
-    eventually("the definitions list did not open again", || {
-        return reader.window.get_references_open();
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(reader.window.get_references_open()) {
+            waiting.step("the definitions list did not open again");
+        }
+    }
     click(&reader.window, LogicalPosition::new(100.0, 400.0));
     assert!(!reader.window.get_references_open());
     assert!(reader.window.get_source_has_focus());
@@ -278,9 +329,12 @@ fn unavailable_targets_explain_why_they_cannot_be_opened() {
     );
     ready(&reader);
     definition(&reader);
-    eventually("the definitions list did not open", || {
-        return reader.window.get_references_open();
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(reader.window.get_references_open()) {
+            waiting.step("the definitions list did not open");
+        }
+    }
     assert_eq!(
         reader
             .window
@@ -310,9 +364,12 @@ fn a_later_open_drops_a_waiting_definition_target() {
         ("c.scripted", "c0 c1\n"),
     ]);
     let reader = reader(&fixture, "main.scripted", definitions(&[], None));
-    eventually("the tree did not show the files", || {
-        return row(&reader.window, "c.scripted").is_some();
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(row(&reader.window, "c.scripted").is_some()) {
+            waiting.step("the tree did not show the files");
+        }
+    }
     // The state a definition answer leaves while its file `b` is still being read.
     reader.source.borrow_mut().pending_jump = Some(super::Jump {
         path: fixture.root.join("b.scripted"),
@@ -323,9 +380,12 @@ fn a_later_open_drops_a_waiting_definition_target() {
     reader
         .window
         .invoke_tree_activate(row(&reader.window, "c.scripted").expect("c row"));
-    eventually("the chosen file did not open", || {
-        return reader.window.get_source_text() == "c0 c1\n";
-    });
+    {
+        let mut waiting = Waiting::language();
+        while !(reader.window.get_source_text() == "c0 c1\n") {
+            waiting.step("the chosen file did not open");
+        }
+    }
     assert_eq!(
         head(&reader),
         0,

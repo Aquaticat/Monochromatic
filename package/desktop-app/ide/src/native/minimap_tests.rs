@@ -11,13 +11,13 @@
 /// The source reader fixture,
 /// its disposable project,
 /// and the bounded waits.
-use super::find_tests::{Reader, eventually, key, memory_project, reader};
+use super::find_tests::{Reader, key, memory_project, reader};
 /// Window metrics shared with the layout tests.
 use super::sidebar_tests::{HEADER, TEXT_LEFT};
 /// The long wrapped text,
 /// the waits,
 /// and the window's measured state.
-use super::wrap_tests::{long_text, open, settled, until};
+use super::wrap_tests::{long_text, open, settled};
 /// The worker's counters,
 /// its gate,
 /// its reply type,
@@ -28,6 +28,8 @@ use super::{
     overscan_tile_tests::{scroll_to, settle_tile},
     theme_tests::switch,
 };
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::Waiting;
 /// Library types that give the expected values.
 use ide_app::minimap::{FULL_WORK, Geometry};
 /// Toolkit events,
@@ -125,12 +127,21 @@ fn calm(reader: &Reader) {
 
 /// Wait until a picture for the displayed text is on screen and no request is awaited.
 fn picture_shown(reader: &Reader) {
-    until("the minimap picture did not arrive", || {
-        let current = reader.source.borrow();
-        return current.minimap.shown.is_some()
-            && current.minimap.posted == current.minimap.shown
-            && current.minimap.images_set > 0;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        loop {
+            {
+                let current = reader.source.borrow();
+                if current.minimap.shown.is_some()
+                    && current.minimap.posted == current.minimap.shown
+                    && current.minimap.images_set > 0
+                {
+                    break;
+                }
+            }
+            waiting.step("the minimap picture did not arrive");
+        }
+    }
 }
 
 /// The box matches `ide_app::minimap::Geometry` at every scroll offset,
@@ -563,9 +574,12 @@ fn a_held_worker_never_blocks_the_view() {
     let (_project, opened) = open(&long_text(600));
     settled(&opened);
     let window = &opened.window;
-    until("the held worker was not asked for a picture", || {
-        return opened.source.borrow().minimap.posts > 0;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        while !(opened.source.borrow().minimap.posts > 0) {
+            waiting.step("the held worker was not asked for a picture");
+        }
+    }
     let shape = geometry(&opened);
     scroll_to(window, shape.max_offset() / 2.0);
     calm(&opened);
@@ -601,14 +615,22 @@ fn a_new_wrap_width_rebuilds_the_picture() {
     let height = window.get_minimap_track();
     super::sidebar_tests::resize(window, 760.0, 660.0);
     settled(&opened);
-    until("the picture did not follow the new width", || {
-        let current = opened.source.borrow();
-        return current
-            .minimap
-            .shown
-            .is_some_and(|shown| return shown.rows != before.rows)
-            && current.minimap.shown == current.minimap.posted;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        loop {
+            {
+                let current = opened.source.borrow();
+                let followed = match current.minimap.shown {
+                    Some(shown) => shown.rows != before.rows,
+                    None => false,
+                };
+                if followed && current.minimap.shown == current.minimap.posted {
+                    break;
+                }
+            }
+            waiting.step("the picture did not follow the new width");
+        }
+    }
     let after = opened.source.borrow().minimap.shown.expect("a picture key");
     assert_ne!(
         after.wrap, before.wrap,
@@ -693,9 +715,12 @@ fn highlights_and_the_scheme_rebuild_the_picture_in_the_palette_inks() {
     }
     fs::write(project.path().join("a.ts"), &text).expect("theme fixture");
     let opened = reader(project.path(), "a.ts");
-    eventually("TypeScript highlighting did not arrive", || {
-        return !opened.source.borrow().styles.is_empty();
-    });
+    {
+        let mut waiting = Waiting::eventually();
+        while !(!opened.source.borrow().styles.is_empty()) {
+            waiting.step("TypeScript highlighting did not arrive");
+        }
+    }
     switch(&opened.window, ColorScheme::Dark);
     let styled = |reader: &Reader| {
         let current = reader.source.borrow();
@@ -706,9 +731,12 @@ fn highlights_and_the_scheme_rebuild_the_picture_in_the_palette_inks() {
             .is_some_and(|shown| return shown.styles == styles)
             && current.minimap.posted == current.minimap.shown;
     };
-    until("the picture did not follow the highlights", || {
-        return styled(&opened);
-    });
+    {
+        let mut waiting = Waiting::slow();
+        while !(styled(&opened)) {
+            waiting.step("the picture did not follow the highlights");
+        }
+    }
     let brightness = |reader: &Reader| {
         let image = reader
             .window
@@ -733,14 +761,22 @@ fn highlights_and_the_scheme_rebuild_the_picture_in_the_palette_inks() {
     let dark_key = opened.source.borrow().minimap.shown.expect("a picture key");
     let dark = brightness(&opened);
     switch(&opened.window, ColorScheme::Light);
-    until("the picture did not follow the scheme", || {
-        let current = opened.source.borrow();
-        return current
-            .minimap
-            .shown
-            .is_some_and(|shown| return shown.colors != dark_key.colors)
-            && current.minimap.shown == current.minimap.posted;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        loop {
+            {
+                let current = opened.source.borrow();
+                let followed = match current.minimap.shown {
+                    Some(shown) => shown.colors != dark_key.colors,
+                    None => false,
+                };
+                if followed && current.minimap.shown == current.minimap.posted {
+                    break;
+                }
+            }
+            waiting.step("the picture did not follow the scheme");
+        }
+    }
     let light = brightness(&opened);
     assert!(
         light < dark - 0.15,
@@ -765,13 +801,21 @@ fn fifty_thousand_lines_give_a_bounded_picture_without_blocking_the_window() {
     let (_project, opened) = open(&text);
     let window = &opened.window;
     let mut slowest = Duration::ZERO;
-    until("the picture of fifty thousand lines did not arrive", || {
-        let tick = Instant::now();
-        update_timers_and_animations();
-        slowest = slowest.max(tick.elapsed());
-        let current = opened.source.borrow();
-        return current.minimap.images_set > 0;
-    });
+    {
+        let mut waiting = Waiting::slow();
+        loop {
+            {
+                let tick = Instant::now();
+                update_timers_and_animations();
+                slowest = slowest.max(tick.elapsed());
+                let current = opened.source.borrow();
+                if current.minimap.images_set > 0 {
+                    break;
+                }
+            }
+            waiting.step("the picture of fifty thousand lines did not arrive");
+        }
+    }
     let first = started.elapsed();
     assert!(
         slowest < Duration::from_millis(1500),

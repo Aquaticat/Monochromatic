@@ -3,10 +3,10 @@
 
 /// Share production bindings and native polling helpers without adding test interfaces to the shipped binary.
 use super::{
-    AppWindow, State, bind_appearance, bind_viewport, navigation,
-    navigation_tests::{row, wait_until},
-    render,
+    AppWindow, State, bind_appearance, bind_viewport, navigation, navigation_tests::row, render,
 };
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::{NAVIGATION_UNREACHED, Waiting};
 /// Canonical project identity and source positions are the same types used in navigation.
 use ide_app::{document::ReadingPosition, workspace::Workspace};
 /// ModelRc equality compares underlying model identity,
@@ -35,25 +35,50 @@ fn missing_reveal_keeps_the_existing_model_until_tree_changes() {
     let _navigation = navigation::bind(&window, &source, workspace).expect("navigation");
     window.show().expect("show window");
     render(&window, &source);
-    wait_until(|| return row(&window, "source.txt").is_some());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(row(&window, "source.txt").is_some()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     let original = window.get_tree_entries();
     fs::write(fixture.path().join("control.txt"), "positive control").expect("additional source");
-    wait_until(|| return row(&window, "control.txt").is_some());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(row(&window, "control.txt").is_some()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     // Positive control: the identity assertion must detect an actual published-model replacement.
     assert_ne!(original, window.get_tree_entries());
     fs::remove_file(&path).expect("external removal");
-    wait_until(|| return row(&window, "source.txt").is_none());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(row(&window, "source.txt").is_none()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     window.invoke_tree_shortcut(SharedString::from("0"), true, false, false);
     let retained = window.get_tree_entries();
     let start = Instant::now();
-    wait_until(|| return start.elapsed() >= Duration::from_millis(120));
+    {
+        let mut waiting = Waiting::eventually();
+        while !(start.elapsed() >= Duration::from_millis(120)) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     assert_eq!(
         retained,
         window.get_tree_entries(),
         "unresolved reveal replaced an unchanged tree model"
     );
     fs::write(&path, "source").expect("restore source");
-    wait_until(|| return row(&window, "source.txt").is_some());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(row(&window, "source.txt").is_some()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     assert_ne!(retained, window.get_tree_entries());
     assert_eq!(
         window.get_tree_focused_row(),
@@ -77,7 +102,12 @@ fn initial_directory_failure_reports_absent_snapshot_and_recovers() {
     bind_appearance(&window, &source);
     let _navigation = navigation::bind(&window, &source, workspace).expect("navigation");
     window.show().expect("show window");
-    wait_until(|| return !window.get_tree_error().is_empty());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(!window.get_tree_error().is_empty()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     assert!(
         window
             .get_tree_error()
@@ -90,7 +120,12 @@ fn initial_directory_failure_reports_absent_snapshot_and_recovers() {
     );
     fs::create_dir(&root).expect("restore project directory");
     fs::write(root.join("new.txt"), "new source").expect("restored directory entry");
-    wait_until(|| return row(&window, "new.txt").is_some() && window.get_tree_error().is_empty());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(row(&window, "new.txt").is_some() && window.get_tree_error().is_empty()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     window.hide().expect("close window");
 }
 
@@ -109,7 +144,12 @@ fn contained_alias_open_preserves_current_selection_and_stops_reveal_updates() {
     let _navigation = navigation::bind(&window, &source, workspace).expect("navigation");
     window.show().expect("show window");
     render(&window, &source);
-    wait_until(|| return row(&window, "alias.txt").is_some());
+    {
+        let mut waiting = Waiting::eventually();
+        while !(row(&window, "alias.txt").is_some()) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     source.borrow_mut().document.select(ReadingPosition {
         anchor: 1,
         head: 4,
@@ -121,7 +161,12 @@ fn contained_alias_open_preserves_current_selection_and_stops_reveal_updates() {
     let before = window.get_tree_entries();
     window.invoke_tree_activate(row(&window, "alias.txt").expect("alias row"));
     // A completed alias open republishes recency; unchanged periodic reads do not replace the model.
-    wait_until(|| return window.get_tree_entries() != before);
+    {
+        let mut waiting = Waiting::eventually();
+        while !(window.get_tree_entries() != before) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     assert_eq!(source.borrow().file_path.as_ref(), Some(&path));
     assert_eq!(source.borrow().file_generation, generation);
     assert_eq!(window.get_selected_text(), "our");
@@ -141,7 +186,12 @@ fn contained_alias_open_preserves_current_selection_and_stops_reveal_updates() {
         "0"
     );
     let start = Instant::now();
-    wait_until(|| return start.elapsed() >= Duration::from_millis(120));
+    {
+        let mut waiting = Waiting::eventually();
+        while !(start.elapsed() >= Duration::from_millis(120)) {
+            waiting.step(NAVIGATION_UNREACHED);
+        }
+    }
     assert_eq!(model, window.get_tree_entries());
     window.hide().expect("close window");
 }

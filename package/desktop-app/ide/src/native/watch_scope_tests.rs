@@ -6,9 +6,11 @@
 //! disposable copy that watches only the folders in the tree's viewport.
 
 /// Tree-row lookup by label and the bounded wait for startup state.
-use super::navigation_tests::{row, wait_until};
+use super::navigation_tests::row;
 /// Shipped window setup shared with the watch tests.
 use super::watch_tests::open;
+/// Bounded waiting that advances native timers until a state the test checks holds.
+use crate::native::waiting_tests::{NAVIGATION_UNREACHED, Waiting};
 /// Real headless timers drive the same refresh timers as the shipped event loop;
 /// `ComponentHandle` provides `hide` on the generated window and `Model` the tree's row count.
 use slint::{ComponentHandle, Model, platform::update_timers_and_animations};
@@ -97,10 +99,20 @@ fn watch_scope_reveal_staleness() {
     let (window, _state, _timers) = open(fixture.path(), &displayed);
     for index in 0..FOLDERS {
         let label = format!("folder-{index:02}");
-        wait_until(|| return row(&window, &label).is_some());
+        {
+            let mut waiting = Waiting::eventually();
+            while !(row(&window, &label).is_some()) {
+                waiting.step(NAVIGATION_UNREACHED);
+            }
+        }
         window.invoke_tree_activate(row(&window, &label).expect("folder row"));
         let child = format!("file-{index:02}-0.txt");
-        wait_until(|| return row(&window, &child).is_some());
+        {
+            let mut waiting = Waiting::eventually();
+            while !(row(&window, &child).is_some()) {
+                waiting.step(NAVIGATION_UNREACHED);
+            }
+        }
     }
     run_for(Duration::from_millis(1500));
     let watches = kernel_watches();
