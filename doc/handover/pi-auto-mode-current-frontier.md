@@ -75,7 +75,13 @@ but its pack step fails because `npm:module:pack` no longer exists in the genera
 `file-enforcer.config.ts` owns `mise.toml` from `mise.no-env.toml`.
 Restore the established pack/publish tasks in that source, regenerate only the managed root config,
 then repeat the targeted logger workflow and verify a registry consumer.
-Do not claim `0.4.2` is published yet.
+The source tasks are restored and the original generator regenerates the root output without running concurrent owners.
+Generated-output commit `d6d1d67b06` reaches `origin/main`.
+Targeted run `39106517976` succeeds at that revision.
+The fresh, disposable registry consumer installs logger `0.4.2`, verifies its public exports and repository,
+and persists five ordinary, tagged, large, reentrant and independently owned-file records as valid JSONL.
+Evidence is `logger042-registry-consumer.log` and `logger042-registry-receipt.json` in the current scratch.
+The automatic workflow's HTTP 404 remains a separate path; the targeted trusted-publisher recovery completes publication.
 
 The stderr inventory is retained as `final-stderr-receipt.json` with the original raw files.
 It includes deliberate private `nativeRunReserve` stack probes, a Synthetic catalog route rejected by the offline hook,
@@ -87,6 +93,29 @@ The prepared direct MiMo controller now shadows the project `.pi` directory with
 preserving the original files and allowing the actual settings reader to lock them.
 The persistent controller and atomic command sender are `mimo-rpc-session` and `mimo-rpc-command`
 in the current scratch; they are prepared but have not started lint editing.
+The direct diagnosis session is now live as `pi-mimo-rpc-session-jMWeUL`,
+with controller tool session `18970` and log `mimo-rpc-session-diagnosis.log`.
+It is performing read-only analysis of the signal boundary, not lint editing.
+Its first reads expose missing `rg` on the container's initial PATH.
+The controller stops a broad filesystem-discovery group,
+supplies the measured executable path,
+then sends a new prompt because Stop settles the whole Pi turn and a steering message alone does not resume it.
+The next controller generation mounts `rg` in `/fixture-bin`.
+Stop this diagnosis host before retiring its pinned `mmaT8k` release;
+the eventual lint worker must start against the repaired native artifact.
+
+The private signal probe identifies `field=signal`, `[object AbortSignal]`, constructor `AbortSignal`.
+The installed Pi `AgentSession.navigateTree` emits that top-level control field in `session_before_tree`.
+The probe changes only the error message and can complete some action modes despite retained capture-error diagnostics,
+so action success alone is not a sufficient regression assertion.
+Keep ordinary message/tool copying strict while repairing the constructor-owned native event boundary.
+
+Reviewed cleanup removes eight inactive releases after an empty, freshly measured native consumer audit.
+The active `mmaT8k` and verified rollback `mHAoem` remain.
+The post-cleanup package measures 22,933,936 regular-file bytes and 20,180,992 unique allocated inode bytes,
+across 2,912 regular files; shared dependency symlink targets are excluded.
+The cleanup receipt is `reviewed-native-cleanup-receipt.json` in current scratch;
+the footprint JSON remains in the older lint-approval scratch.
 The corrected process-consumer audit detects both live `/fixture-node` hosts by Pi title and fixture inode.
 Cleanup must wait for every consumer to terminate.
 

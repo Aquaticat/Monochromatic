@@ -320,6 +320,17 @@ broader local and cloud environment equivalence is not assumed.
 
 The active queue remains independently verifiable:
 
+- Review and execute the frozen Android product's SDK/NDK setup,
+  debug APK build,
+  AndroidTest APK build,
+  and applicable host JVM unit tests.
+  Use a single 8 CPU/32 GB cloud job capped at 30 minutes.
+  Preserve actual tool,
+  ABI,
+  layout,
+  source,
+  and APK hashes for the parent's local headful device consumer.
+  No emulator runs in this lane.
 - Finish the immutable package/feature/command manifest,
   including active and inactive roots,
   actual imported/generated influences,
