@@ -9,6 +9,14 @@ run = "node bin/rust-coverage.mjs"
 description = "Parse the new owned research harness without compiling application code"
 run = "node --check bin/rust-coverage.mjs"
 
+[tasks."research:rust:core"]
+description = "Run frozen standalone Rust owners and produce the exact native wg routing prerequisite"
+run = "node bin/rust-core-coverage.mjs"
+
+[tasks."research:rust:core-check"]
+description = "Parse the standalone research harness without compiling application code"
+run = "node --check bin/rust-core-coverage.mjs"
+
 [tasks.'build:js']
 extends = "build:js"
 
