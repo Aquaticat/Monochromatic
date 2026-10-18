@@ -2,6 +2,7 @@
 // The names `@monochromatic-dev/translation-repair-corpus-pass` gives its siblings and its own tests, each from the module that declares it.
 // Production siblings import it through `/ts`; tests and fixtures through the built entry, so a process loads one copy.
 
+export { nodeEntries, } from './build-entries.ts';
 export { consolidateDocument, } from './consolidate-driver.ts';
 export { assertPassResumable, } from './corpus-run/corpus-pass-guards.ts';
 export { type CorpusPassInput, } from './corpus-run/corpus-pass-input.ts';
