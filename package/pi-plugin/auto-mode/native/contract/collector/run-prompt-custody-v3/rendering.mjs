@@ -6,7 +6,13 @@ import {createGuidelineInputs} from './guideline-inputs.mjs';
 
 //region Retain the original render lifetime and system-section publication.
 /** Retain the original render lifetime and system-section publication. */
-export function createRunRendering({state,check,issuedErrors,record,guard}){
+export function createRunRendering({
+  state,
+  check,
+  issuedErrors,
+  record,
+  guard
+}){
 /** The fixed native preparation path renders synchronously within this original run. */
   function render({
     options,
@@ -155,6 +161,9 @@ export function createRunRendering({state,check,issuedErrors,record,guard}){
       }
     };
   }
-return {render,captureSystemMessage};
+return {
+  render,
+  captureSystemMessage
+};
 }
 //endregion

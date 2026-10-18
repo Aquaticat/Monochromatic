@@ -1,6 +1,28 @@
-import {RootLeaseError,RootLeaseOwnershipError,RootLeaseSuspendedError,RootLeaseRetiredError,RootTransitionError} from './lifecycle-errors.mjs';
+import {
+  RootLeaseError,
+  RootLeaseOwnershipError,
+  RootLeaseSuspendedError,
+  RootLeaseRetiredError,
+  RootTransitionError
+} from './lifecycle-errors.mjs';
 //region Prepared transitions publish or retire their original canonical root.
-export function createRootTransitions({emit,rootFor,active,transitions,observeNative,retired,retireRecord,unchangedEpoch,pending,ownedPair,exhausted,nativeOccurrence,leases,createRoot,issue}) {
+export function createRootTransitions({
+  emit,
+  rootFor,
+  active,
+  transitions,
+  observeNative,
+  retired,
+  retireRecord,
+  unchangedEpoch,
+  pending,
+  ownedPair,
+  exhausted,
+  nativeOccurrence,
+  leases,
+  createRoot,
+  issue
+}) {
   function begin(lease) {
     emit('lifecycle.begin.entry');const root=rootFor(lease);active(root);
     if(root.canonical
@@ -185,6 +207,15 @@ export function createRootTransitions({emit,rootFor,active,transitions,observeNa
     }); const lease=issue(next);active(next);return lease;
   }
 
- return {begin,beginRetirement,markMutation,cancelUnchanged,commit,completeRetirement,retireFailed,reopen};
+ return {
+   begin,
+   beginRetirement,
+   markMutation,
+   cancelUnchanged,
+   commit,
+   completeRetirement,
+   retireFailed,
+   reopen
+ };
 }
 //endregion

@@ -1,4 +1,16 @@
-import { mode, freshSessionApproval, uncertainContext, headless, useNativeContext, reloadContext, policyText, programProfile, code, fixtureState, outsideProfile } from './approval-fixture-options.mjs';
+import {
+  mode,
+  freshSessionApproval,
+  uncertainContext,
+  headless,
+  useNativeContext,
+  reloadContext,
+  policyText,
+  programProfile,
+  code,
+  fixtureState,
+  outsideProfile
+} from './approval-fixture-options.mjs';
 //region Original session, runtime and authored approval responses.
 import assert from 'node:assert/strict';
 import {createEnvironment} from './environment.mjs';
@@ -24,7 +36,8 @@ export const env=await createEnvironment({
   hostPrompt:'Fixture background.',
   extensionFactories:[function captureNativePiApi(pi) {
     fixtureState.nativePi=pi;
-    if(process.argv.includes('--bypass-fixture'))registerNativeBypass(pi);
+    if(process.argv
+      .includes('--bypass-fixture'))registerNativeBypass(pi);
   }]
 });
 // This direct-SDK fixture registers the original policy reload boundary used by native host services.
@@ -76,7 +89,8 @@ export const {
 session.agent
   .getApiKey=function readFixtureApiKey() { return (process.env
     .FIXTURE_API_KEY); };
-assert.ok(fixtureState.nativePi&&((typeof fixtureState.nativePi.appendEntry)==='function'));
+assert.ok(fixtureState.nativePi&&((typeof fixtureState.nativePi
+  .appendEntry)==='function'));
 function policy(definitionId) { return {
   model:ruleAssessmentModel,
   definitionId,
@@ -105,7 +119,7 @@ function createFixtureSelector() {
   fixtureState.abortTask=session.abort();
   return undefined;
  }
- if(outsideProfile&&mode==='prohibited')return 'Stop';
+ if(outsideProfile&&(mode==='prohibited'))return 'Stop';
  return mode==='deny'?'Deny':mode==='stop'?'Stop':'Allow';
   };
 }
@@ -122,7 +136,9 @@ if(useNativeContext&&(!headless))await session.bindExtensions({uiContext:{
   select
 }});
 export const runtime=bindNativePolicyRuntime({
-  ...(process.argv.includes('--bypass-fixture')?{readBypass(){return readNativeBypassEnabled(session.extensionRunner.createContext());}}:{}),
+  ...(process.argv
+    .includes('--bypass-fixture')?{readBypass(){return readNativeBypassEnabled(session.extensionRunner
+      .createContext());}}:{}),
   root,
   lifecycle,
   policyInput:env.policyInput,
@@ -201,10 +217,26 @@ export const runtime=bindNativePolicyRuntime({
   };},
   async sendWire({body}){
   fixtureState.assessments++;const wire=JSON.parse(body);
-  fixtureState.wires.push(wire);
-  assert.equal(Object.hasOwn(wire.state,'originalRequestBody'),false);
-  assert.equal(Object.hasOwn(wire.state,'fullPolicy'),false);
-  assert.ok(wire.state.selectedPolicyMaterial[0].fragments.every(function originalExcerpt(span){return policyText.includes(span.text);}));
+  fixtureState.wires
+    .push(wire);
+  assert.equal(
+    Object.hasOwn(
+      wire.state,
+      'originalRequestBody'
+    ),
+    false
+  );
+  assert.equal(
+    Object.hasOwn(
+      wire.state,
+      'fullPolicy'
+    ),
+    false
+  );
+  assert.ok(wire.state
+    .selectedPolicyMaterial[0]
+    .fragments
+    .every(function originalExcerpt(span){return policyText.includes(span.text);}));
   const answers=Object.fromEntries(Object.entries(wire.questions)
     .map(function answerAuthoredApprovalQuestion([slot,question]) {
    const id=question.instructions
@@ -215,7 +247,10 @@ export const runtime=bindNativePolicyRuntime({
        .selectedMaterial,
      'originalRequestBody'
    );
-   const choice=Object.hasOwn(question.criteria,'approve')?(mode==='prohibited'?'deny':'unknown'):id==='UNK'?'unknown':id==='CNF'?(freshSessionApproval?'fresh-session-approval':'prerequisite'):id==='RUL'?(mode==='bare'?'none':mode==='prohibited'?'prohibition':'permission'):'none';
+   const choice=Object.hasOwn(
+     question.criteria,
+     'approve'
+   )?(mode==='prohibited'?'deny':'unknown'):id==='UNK'?'unknown':id==='CNF'?(freshSessionApproval?'fresh-session-approval':'prerequisite'):id==='RUL'?(mode==='bare'?'none':mode==='prohibited'?'prohibition':'permission'):'none';
    assert.ok(Object.hasOwn(
      question.criteria,
      choice

@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 
 //region Exercise original SDK serialization and field-specific copied-receipt controls.
-export function createDomainFixtureStream({session,providerMetadata,receiptControl}){
+export function createDomainFixtureStream({
+  session,
+  providerMetadata,
+  receiptControl
+}){
 const originalSdkStream=session.agent
   .streamFunction;
 function controlledSdkStream({

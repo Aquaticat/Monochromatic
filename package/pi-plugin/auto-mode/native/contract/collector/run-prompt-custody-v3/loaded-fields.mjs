@@ -1,6 +1,9 @@
 import {types} from "node:util";
 import {SourceCollectionError} from "../collector.mjs";
-import {copyMessageData,assertTextMessageContent} from "../run-prompt-custody/messages.mjs";
+import {
+  copyMessageData,
+  assertTextMessageContent
+} from "../run-prompt-custody/messages.mjs";
 //region Selected native fields avoid accessors and opaque companion data.
 /** Observe native data fields without adding reads of accessors or proxy traps. */
 export function dataField({

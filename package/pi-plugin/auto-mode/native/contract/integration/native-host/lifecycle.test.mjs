@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { readHostResource } from './resource-reload.ts';
-import { env, source, fixtureState, createRuntime, nativeHost } from './lifecycle-fixture.mjs';
+import {
+  env,
+  source,
+  fixtureState,
+  createRuntime,
+  nativeHost
+} from './lifecycle-fixture.mjs';
 
 //region Original host lifecycle assertions retain the actual runtime.
 const { createSessionManager } = await import(source('main.js'));
@@ -206,7 +212,9 @@ const runtime = await createAgentSessionRuntime(
       await nativeHost.disposeSession(unexpected.session);
     },
       function matchesIncompleteCleanup(error) {
-        return Error.isError(error) && error.message.includes('cleanup is incomplete');
+        return Error.isError(error)
+          && error.message
+          .includes('cleanup is incomplete');
       }
     );
   }

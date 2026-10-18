@@ -28,7 +28,9 @@ await assert.rejects(
     manager:foreignManager
   })); },
   function matchesForeignManager(error) {
-    return Error.isError(error) && error.message.includes('not returned by this declared constructor owner');
+    return Error.isError(error)
+      && error.message
+      .includes('not returned by this declared constructor owner');
   }
 );
 assert.equal(
@@ -117,7 +119,9 @@ assert.throws(
     }
   )); },
   function matchesRetainedOwner(error) {
-    return Error.isError(error) && error.message.includes('already has a context-copy owner');
+    return Error.isError(error)
+      && error.message
+      .includes('already has a context-copy owner');
   }
 );
 second.session
@@ -152,7 +156,9 @@ assert.throws(
     }
   )); },
   function matchesCurrentOwner(error) {
-    return Error.isError(error) && error.message.includes('already has a context-copy owner');
+    return Error.isError(error)
+      && error.message
+      .includes('already has a context-copy owner');
   }
 );
 factory.lifecycle

@@ -13,15 +13,24 @@ export function createReachedRunnerClass({
   return class ReachedProgramNestedRunner extends NestedToolCallRunner{
     createDeclaredProgram(input){
       const runner=this;
-      return createDeclaredProgramFacade({...input,
+      return createDeclaredProgramFacade({
+        ...input,
         bindGroup(binding){return runner.#bindGroup(binding);},
         executeGroup(execution){return runner.#executeGroup(execution);},
         createReachedProgramRun,
         NativeExecutionGuardError
       });
     }
-    #bindGroup(input){return bindReachedProgramGroup({...input,runner:this,NestedCallRecorder});}
-    async #executeGroup(input){await executeReachedProgramGroup({...input,runner:this,dispatchPreparedBatch});}
+    #bindGroup(input){return bindReachedProgramGroup({
+      ...input,
+      runner:this,
+      NestedCallRecorder
+    });}
+    async #executeGroup(input){await executeReachedProgramGroup({
+      ...input,
+      runner:this,
+      dispatchPreparedBatch
+    });}
     takeRecord(toolCallId){const scope=this.scopes
       .get(toolCallId); const result=super.takeRecord(toolCallId);if(scope?.owner)this.scopes
         .delete(scope.owner);return result;}

@@ -1,7 +1,20 @@
-import {RuleAssessmentWireError,sha} from './wire-source.mjs';
+import {
+  RuleAssessmentWireError,
+  sha
+} from './wire-source.mjs';
 
 //region Validate the original binding before publishing its correlated wire question.
-export function appendAdoptionQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs}){
+export function appendAdoptionQuestion({
+  sources,
+  head,
+  binding,
+  definition,
+  index,
+  seen,
+  membership,
+  questions,
+  pairs
+}){
    if((!binding)||(Object.keys(binding)
      .toSorted()
      .join(',')

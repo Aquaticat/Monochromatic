@@ -94,13 +94,17 @@ export async function verifyEventPhases(){
  );
 
  // Pi's original await captures the result before a later queued mutation.
- const delayedState={result:undefined,mutated:false};
+ const delayedState={
+   result:undefined,
+   mutated:false
+ };
  const delayed=fixture({
    kind:'turn_start',
    handlers:[function delayedResult(){
   delayedState.result={unused:'original result'};
   const deferred=Promise.withResolvers();
-  queueMicrotask(function settle(){deferred.resolve(delayedState.result);queueMicrotask(function later(){delayedState.result.unused='later result';delayedState.mutated=true;});});
+  queueMicrotask(function settle(){deferred.resolve(delayedState.result);queueMicrotask(function later(){delayedState.result
+    .unused='later result';delayedState.mutated=true;});});
   return deferred.promise;
  }]
  });

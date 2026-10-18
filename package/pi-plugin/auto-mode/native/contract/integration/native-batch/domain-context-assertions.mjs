@@ -2,7 +2,12 @@ import assert from 'node:assert/strict';
 import {inspectNativeSourceDomain} from '../policy-source/source-domain.mjs';
 
 //region Context callbacks retain original inputs, results, failures, and completion identity.
-export function assertObservedDomainContext({review,contextCalls,throwingContext,lateContextMutations}){
+export function assertObservedDomainContext({
+  review,
+  contextCalls,
+  throwingContext,
+  lateContextMutations
+}){
    assert.ok(
      contextCalls>=3,
      'Original native context and context_with_system callbacks must run'

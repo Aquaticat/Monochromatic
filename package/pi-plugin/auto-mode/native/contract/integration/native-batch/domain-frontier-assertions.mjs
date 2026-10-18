@@ -84,7 +84,11 @@ export function assertDomainReview({
    {depth:4}
  )
  );
- const clauseAbstention=assertDomainTransport({review,settings,originalBody});
+ const clauseAbstention=assertDomainTransport({
+   review,
+   settings,
+   originalBody
+ });
  const issues=review.premiseIssues
    .map(function describeUnresolvedIssue(issue) { return (({
      premise:issue.premise,
@@ -144,7 +148,12 @@ export function assertDomainReview({
     `Original native event accounting is incomplete: ${JSON.stringify(domainIssue?.sourceDomain
       ?.gaps)}`
   );
-  if(observedContext)assertObservedDomainContext({review,contextCalls,throwingContext,lateContextMutations});
+  if(observedContext)assertObservedDomainContext({
+    review,
+    contextCalls,
+    throwingContext,
+    lateContextMutations
+  });
   if(receiptControl){
    assert.equal(
      review.outcome

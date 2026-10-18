@@ -4,10 +4,16 @@ export function object(value){return (value!==null)&&(((typeof value)==='object'
 
 export function parseObservationEndpoint(endpoint){
   try{return new URL(endpoint);}
-  catch(error){throw new RequestObservationProfileError('Declared endpoint is not a URL',{cause:error});}
+  catch(error){throw new RequestObservationProfileError(
+    'Declared endpoint is not a URL',
+    {cause:error}
+  );}
 }
 export function parseRequestBody(body){
   try{return JSON.parse(body);}
-  catch(error){throw new RequestObservationProfileError('Serialized request is not valid JSON',{cause:error});}
+  catch(error){throw new RequestObservationProfileError(
+    'Serialized request is not valid JSON',
+    {cause:error}
+  );}
 }
 //endregion

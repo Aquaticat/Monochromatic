@@ -1,21 +1,37 @@
 import {SourceCollectionError} from '../../collector.mjs';
-import {ResourceInputCustodyError,RecordedInputFailure,failed,publicFailure} from './resource-failures.mjs';
+import {
+  ResourceInputCustodyError,
+  RecordedInputFailure,
+  failed,
+  publicFailure
+} from './resource-failures.mjs';
 import {snapshotInput} from '../../resource-input-custody/values.ts';
 import {phases} from './resource-methods.mjs';
 /** Publish and retire original native resource reload occurrences. */
-export function createResourceReload({readers,discoveries,nativeReload}){
-  function finishReload({record,scope}){
+export function createResourceReload({
+  readers,
+  discoveries,
+  nativeReload
+}){
+  function finishReload({
+    record,
+    scope
+  }){
     record.active=undefined;
-    if(scope.pending.length>0){
+    if(scope.pending
+      .length
+      >0){
       record.cleanup=scope;
       async function finishUnbound(){
         scope.unbound=Object.freeze((await Promise.all(scope.pending)).flat()
           .map(function freezeUnboundResult(value){return Object.freeze(value);}));
         record.cleanup=undefined;
-        scope.completion.resolve();
+        scope.completion
+          .resolve();
       }
       void finishUnbound();
-    }else scope.completion.resolve();
+    }else scope.completion
+      .resolve();
   }
 function readOutputs(record){
     const {loader} = record;
@@ -87,8 +103,10 @@ function compareOutputs({
       scope.returns[2]
     ];
     if(outputs.raw
-      .some(function isChangedReference(value,
-        index) { return (value!==references[index]); })
+      .some(function isChangedReference(
+        value,
+        index
+      ) { return (value!==references[index]); })
       ||(JSON.stringify(outputs.copies)!==JSON.stringify(scope.phases
         .map(function readCapturedOutput(value) { return (value.after); }))))throw new SourceCollectionError('Native resource output differs from its captured transformation result');
   }
@@ -138,13 +156,26 @@ async function reload({
     };
     record.current=undefined;record.active=scope;record.history
       .push(scope);
-    using reloadActivity={ [Symbol.dispose](){finishReload({record,scope});} };
+    using reloadActivity={ [Symbol.dispose](){finishReload({
+      record,
+      scope
+    });} };
     const nativeReturn={value:undefined};
     try{
-      try{nativeReturn.value=await Reflect.apply(nativeReload,record.loader,args);}
+      try{nativeReturn.value=await Reflect.apply(
+        nativeReload,
+        record.loader,
+        args
+      );}
       catch(error){
-        if(!((error instanceof RecordedInputFailure)&&(error.scope===scope)
-          &&scope.failures.includes(error.occurrence)))failed({scope,error,at:'native-reload'});
+        if(!((error instanceof RecordedInputFailure)
+          &&(error.scope===scope)
+          &&scope.failures
+          .includes(error.occurrence)))failed({
+            scope,
+            error,
+            at:'native-reload'
+          });
       }
       if(scope.failures
         .length
@@ -186,5 +217,8 @@ async function reload({
       scope.status='failed';throw publicFailure(scope);
     }
   }
-return {current,reload};
+return {
+  current,
+  reload
+};
 }

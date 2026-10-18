@@ -2,11 +2,29 @@ import assert from 'node:assert/strict';
 import {createAssessmentSender} from '../maintained-policy.mjs';
 
 //region Authored relation answers retain original request bytes and supplied HTTP protocol controls.
-export function createDomainFixtureAssessment({settings,observations}){
- const {nextDecision,nextInput,nextResult,unresolvedClause,relation,operatingPolicy,lowConfidenceClause,httpTransport}=settings;
+export function createDomainFixtureAssessment({
+  settings,
+  observations
+}){
+ const {
+   nextDecision,
+   nextInput,
+   nextResult,
+   unresolvedClause,
+   relation,
+   operatingPolicy,
+   lowConfidenceClause,
+   httpTransport
+ }=settings;
 function authoredWireAnswer({body}){
   observations.assessments++;const wire=JSON.parse(body);
-  assert.equal(Object.hasOwn(wire.state,'originalRequestBody'),false);
+  assert.equal(
+    Object.hasOwn(
+      wire.state,
+      'originalRequestBody'
+    ),
+    false
+  );
   const answers=Object.fromEntries(Object.entries(wire.questions)
     .map(function answerAuthoredDomainQuestion([slot,question]) {
    assert.notEqual(
@@ -31,7 +49,10 @@ function authoredWireAnswer({body}){
      2,
      'Later receipts must not revise the first assessment'
    );observations.nextInputQuestions++;}
-   const operationDecision=Object.hasOwn(question.criteria,'approve');
+   const operationDecision=Object.hasOwn(
+     question.criteria,
+     'approve'
+   );
    const choice=operationDecision?(settings.operationDecision??((unresolvedClause??relation)==='prohibition'?'deny':'unknown')):laterInstruction?'prohibition':selectedClause?(unresolvedClause??relation):'none';
    const score=operatingPolicy?(selectedClause&&lowConfidenceClause?0.599999:(choice==='unknown')||(choice==='unsupported')?1:0.6):1;
    assert.ok(Object.hasOwn(
@@ -91,7 +112,7 @@ const sendAssessment=httpTransport?createAssessmentSender({
     false
   );
   const decisionRequest=JSON.parse(options.body);
-  if(settings.transientHttpFailure && observations.httpCalls===2)
+  if(settings.transientHttpFailure && (observations.httpCalls===2))
     throw new TypeError('Fixture connection reset with private request data');
   const nativeRequest={
     model:decisionRequest.model,

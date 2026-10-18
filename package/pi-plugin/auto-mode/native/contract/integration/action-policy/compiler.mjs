@@ -1,4 +1,7 @@
-import {compilation,resolveCompilationIssues} from './compilation-result.mjs';
+import {
+  compilation,
+  resolveCompilationIssues
+} from './compilation-result.mjs';
 import {MISSING_AUTHORIZATION_EVIDENCE} from './authorization-inputs.mjs';
 import {lowerEstablishedClause} from './clause-lowering.mjs';
 import {inspectPolicyPremises} from './premises.mjs';
@@ -30,7 +33,10 @@ export function compileBoundClauseProgram({
 }){
  authorizationInputs?.assertCurrent();
  const base=inspectPolicyPremises(inputs);
-   const sourceUses=consumeSourceAssociations({...inputs,instructionSources:inputs.provenanceSources??inputs.instructionSources});
+   const sourceUses=consumeSourceAssociations({
+     ...inputs,
+     instructionSources:inputs.provenanceSources??inputs.instructionSources
+   });
    const rules=[];
    const authorizationRequirements=[];
    const clauses=[];
@@ -63,7 +69,11 @@ export function compileBoundClauseProgram({
    0,
    clauseCount
  );
- const operation=inspectOperationCoverage({inputs,clauseEnabled,policy});
+ const operation=inspectOperationCoverage({
+   inputs,
+   clauseEnabled,
+   policy
+ });
  const issues=clauseEnabled?base.issues
    .filter(function retainIndependentPremise(issue) { return ((issue.premise!=='qualified-rule-interpretation')&&(!(operation&&(issue.premise==='complete-operation-coverage')))); }):[...base.issues];
  function unresolvedOperationUse({
@@ -135,7 +145,19 @@ export function compileBoundClauseProgram({
     .value
     .choice
     !=='none');
-  recordDecision({judgment,event:'clause-admission',details:{id,binding:projection,model:record.model,matchingModel,answer:record.answer,admitted,priority}});
+  recordDecision({
+    judgment,
+    event:'clause-admission',
+    details:{
+      id,
+      binding:projection,
+      model:record.model,
+      matchingModel,
+      answer:record.answer,
+      admitted,
+      priority
+    }
+  });
   sourceNeedsAuthority.set(
     projection.sourceOccurrence,
     (sourceNeedsAuthority.get(projection.sourceOccurrence)??false)||needsAuthority

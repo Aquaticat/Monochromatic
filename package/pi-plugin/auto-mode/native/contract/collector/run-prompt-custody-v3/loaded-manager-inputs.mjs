@@ -1,11 +1,25 @@
 import {types} from "node:util";
 import {SourceCollectionError} from "../collector.mjs";
 import {copyMessageData} from "../run-prompt-custody/messages.mjs";
-import {assertManagerMessageContent,assertManagerSystemTools} from "./manager-message-content.mjs";
-import {dataField,agentMessageFields,systemInputFields,assertSystemInput,bashInput} from './loaded-fields.mjs';
+import {
+  assertManagerMessageContent,
+  assertManagerSystemTools
+} from "./manager-message-content.mjs";
+import {
+  dataField,
+  agentMessageFields,
+  systemInputFields,
+  assertSystemInput,
+  bashInput
+} from './loaded-fields.mjs';
 //region Observe manager frames without replacing their native return or failure.
 /** Observe manager frames without replacing their native return or failure. */
-export function createLoadedManagerInputs({poolState,InputCaptureError,reserve,retainConstructedInput}){
+export function createLoadedManagerInputs({
+  poolState,
+  InputCaptureError,
+  reserve,
+  retainConstructedInput
+}){
 /** Share frame capture and budgets without accepting an origin declaration from the native input. */
  function captureManagerFrame({
    frame,

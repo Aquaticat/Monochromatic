@@ -1,7 +1,26 @@
-import {RuleAssessmentWireError,sha,isRuleCode} from './wire-source.mjs';
+import {
+  RuleAssessmentWireError,
+  sha,
+  isRuleCode
+} from './wire-source.mjs';
 
 //region Preserve source-specific candidate identity and complete source-span checks.
-export function appendClauseQuestion({sources,head,binding,definition,index,seen,membership,questions,pairs,operation,categorical,clauseRelations,question,proposedOperation}){
+export function appendClauseQuestion({
+  sources,
+  head,
+  binding,
+  definition,
+  index,
+  seen,
+  membership,
+  questions,
+  pairs,
+  operation,
+  categorical,
+  clauseRelations,
+  question,
+  proposedOperation
+}){
   if((!binding)||(Object.keys(binding)
     .toSorted()
     .join(',')

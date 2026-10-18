@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import {fixture} from './event-receipt-fixture.mjs';
-import {assertNativeSessionInputCapture,readNativeSessionInputUsage} from './generated/session-manager.mjs';
+import {
+  assertNativeSessionInputCapture,
+  readNativeSessionInputUsage
+} from './generated/session-manager.mjs';
 
 //region Preserve the original native event assertions and their fixture-owned observations.
 export async function verifyEventBounds(){
@@ -18,7 +21,10 @@ export async function verifyEventBounds(){
      text:'x'.repeat(8_192)
    });
  const chunks=chunked.records();
- assert.equal(chunks.length,1);
+ assert.equal(
+   chunks.length,
+   1
+ );
  assert.equal(
    chunks.flat()
      .length,
@@ -42,7 +48,13 @@ export async function verifyEventBounds(){
      text:'x'.repeat(65_536)
    });
  assertNativeSessionInputCapture(oversized.manager);
- assert.equal(oversized.records()[0][0].value.value.text,'x'.repeat(65_536));
+ assert.equal(
+   oversized.records()[0][0]
+     .value
+     .value
+     .text,
+   'x'.repeat(65_536)
+ );
  const exhausted=fixture({
    kind:'turn_start',
    handlers:[function observe(){return undefined;}]
@@ -64,8 +76,16 @@ export async function verifyEventBounds(){
      ordinal:128
    });
  assertNativeSessionInputCapture(exhausted.manager);
- assert.equal(readNativeSessionInputUsage(exhausted.manager).count,129);
- assert.equal(exhausted.records().length,129);
+ assert.equal(
+   readNativeSessionInputUsage(exhausted.manager)
+     .count,
+   129
+ );
+ assert.equal(
+   exhausted.records()
+     .length,
+   129
+ );
 
  // Capture never invokes a result accessor to discover its apparent data.
  const accessorState={calls:0};

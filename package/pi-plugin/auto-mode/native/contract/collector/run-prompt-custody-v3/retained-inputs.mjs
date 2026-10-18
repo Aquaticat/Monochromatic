@@ -3,7 +3,14 @@ import {readOriginalMessagePublication} from './handler-publication.mjs';
 
 //region Resolve original input identities and retain selected native path membership.
 /** Resolve original input identities and retain selected native path membership. */
-export function createRunRetainedInputs({state,scopes,history,assertLive,readRoot,readSessionInput}){
+export function createRunRetainedInputs({
+  state,
+  scopes,
+  history,
+  assertLive,
+  readRoot,
+  readSessionInput
+}){
 /** Read original handler input references from this owner's existing history, scoped to the current native root. */
   function readHandlerOptionOrigins(){
     assertLive();
@@ -20,7 +27,9 @@ export function createRunRetainedInputs({state,scopes,history,assertLive,readRoo
       }
     }
     if(readRoot()!==root)throw new SourceCollectionError('Native root changed while reading original callback input history');
-    if((origins.length!==state.handlerInputView.length)||origins.some(function differsFromRetainedHandlerInput(
+    if((origins.length
+      !==state.handlerInputView
+      .length)||origins.some(function differsFromRetainedHandlerInput(
       origin,
       index
     ) { return (origin!==state.handlerInputView[index]); }))state.handlerInputView=Object.freeze(origins);
@@ -30,7 +39,12 @@ export function createRunRetainedInputs({state,scopes,history,assertLive,readRoo
   function readInputOrigins(managerInputs){
     const handlerInputs=readHandlerOptionOrigins();
     if(handlerInputs.length===0)return managerInputs;
-    if((state.combinedInputView?.managerInputs===managerInputs)&&(state.combinedInputView.handlerInputs===handlerInputs))return state.combinedInputView.value;
+    if((state.combinedInputView
+      ?.managerInputs
+      ===managerInputs)&&(state.combinedInputView
+        .handlerInputs
+        ===handlerInputs))return state.combinedInputView
+          .value;
     const value=Object.freeze([
       ...handlerInputs,
       ...managerInputs
@@ -118,7 +132,9 @@ export function createRunRetainedInputs({state,scopes,history,assertLive,readRoo
     entry
   }){
     if((!readRoot)||(rootOccurrence!==readRoot()))return;
-    const previous=state.selectedPathInputs?.rootOccurrence===rootOccurrence?state.selectedPathInputs:undefined;
+    const previous=state.selectedPathInputs
+      ?.rootOccurrence
+      ===rootOccurrence?state.selectedPathInputs:undefined;
     if(previous?.failure)return;
     const publication=readOriginalMessagePublication(entry)??readOriginalMessagePublication(entry.type==='message'?entry.message:entry);
     const origin=originalMessageInput(publication);
@@ -142,7 +158,11 @@ export function createRunRetainedInputs({state,scopes,history,assertLive,readRoo
     entries
   }){
     if((!readRoot)||(rootOccurrence!==readRoot()))return;
-    if((state.selectedPathInputs?.rootOccurrence===rootOccurrence)&&state.selectedPathInputs.failure)return;
+    if((state.selectedPathInputs
+      ?.rootOccurrence
+      ===rootOccurrence)
+      &&state.selectedPathInputs
+      .failure)return;
     const seen=new Set();
     const origins=[];
     for(const entry of entries){
@@ -169,6 +189,14 @@ export function createRunRetainedInputs({state,scopes,history,assertLive,readRoo
       origins:Object.freeze(origins)
     });
   }
-return {readHandlerOptionOrigins,readInputOrigins,readInputUsage,originalMessageInput,assertRetainedInput,retainAppendedInput,retainSelectedPath};
+return {
+  readHandlerOptionOrigins,
+  readInputOrigins,
+  readInputUsage,
+  originalMessageInput,
+  assertRetainedInput,
+  retainAppendedInput,
+  retainSelectedPath
+};
 }
 //endregion

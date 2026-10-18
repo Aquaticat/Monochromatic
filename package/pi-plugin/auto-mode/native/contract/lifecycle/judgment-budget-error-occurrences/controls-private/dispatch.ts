@@ -62,8 +62,15 @@ export function createJudgmentDispatcher({
   readonly targetAt: number;
   readonly signal: AbortSignal;
 }): JudgmentBudget['dispatch'] {
-  /** Original judgment counters are shared by every active dispatch capability. */
-  const runBundle=createBundleDispatcher({accounting,checkpoint,signal,targetAt});
+  /**
+   Original judgment counters are shared by every active dispatch capability.
+   */
+  const runBundle=createBundleDispatcher({
+    accounting,
+    checkpoint,
+    signal,
+    targetAt
+  });
   /**
    Check lifetime after a failed attempt without replacing its original error.
    
@@ -189,9 +196,13 @@ export function createJudgmentDispatcher({
          Only the successful transport path publishes a response field.
          */
         const response: { value?: Result }={};
-        /** Saved capabilities cannot enter a subsequent assessment dispatch. */
+        /**
+         Saved capabilities cannot enter a subsequent assessment dispatch.
+         */
         const admission={active:true};
-        /** Every success, failure, retry, and early return retires this capability. */
+        /**
+         Every success, failure, retry, and early return retires this capability.
+         */
         using bundleScope={ [Symbol.dispose](): void {admission.active=false;} };
         /**
          Admit calls only during their originating assessment invocation.

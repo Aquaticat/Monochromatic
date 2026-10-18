@@ -29,6 +29,9 @@ export function createPassiveEventObserver(owner){
   });
  }
  function read(kinds){capture.assertCaptured();return owner.read(kinds);}
- return Object.freeze({begin,read});
+ return Object.freeze({
+   begin,
+   read
+ });
 }
 //endregion

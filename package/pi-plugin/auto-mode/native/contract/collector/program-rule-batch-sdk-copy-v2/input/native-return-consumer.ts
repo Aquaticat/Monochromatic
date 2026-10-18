@@ -249,22 +249,46 @@ export function createNativeReturnConsumer(owner: NativeReturnOwner): NativeRetu
     return invocation;
   }
 
-  /** Reserve the actual call before preparation while permitting terminal capture after parent return. */
+  /**
+   Reserve the actual call before preparation while permitting terminal capture after parent return.
+   */
   function open(input: NativeReturnInput): NativeReturnEntry {
-    const ol = tagged({ tag: open.name, l: rl });
+    const ol = tagged({
+      tag: open.name,
+      l: rl
+    });
     ol.debug('reserving original call for native preparation');
     const invocation = reserve(input);
     function complete(outcome: unknown): NativeReturnOutcome {
-      tagged({ tag: complete.name, l: ol }).debug('retaining original native phase completion');
+      tagged({
+        tag: complete.name,
+        l: ol
+      })
+        .debug('retaining original native phase completion');
       if (invocation.state !== 'running') throw new NativeReturnContractError('Native call already has a terminal outcome');
-      return retainNativeReturn({ invocation, outcome });
+      return retainNativeReturn({
+        invocation,
+        outcome
+      });
     }
     function fail(error: unknown): void {
-      tagged({ tag: fail.name, l: ol }).debug('retaining native phase failure');
-      tagged({ tag: fail.name, l: ol }).debug(caughtValueText(error));
-      if (invocation.state === 'running') { invocation.state = 'threw'; invocation.failure = error; }
+      tagged({
+        tag: fail.name,
+        l: ol
+      })
+        .debug('retaining native phase failure');
+      tagged({
+        tag: fail.name,
+        l: ol
+      })
+        .debug(caughtValueText(error));
+      if (invocation.state === 'running') { invocation.state = 'threw';
+      invocation.failure = error; }
     }
-    return Object.freeze({ complete, fail });
+    return Object.freeze({
+      complete,
+      fail
+    });
   }
 
   /**

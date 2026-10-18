@@ -195,8 +195,14 @@ export async function emitPackage({
             target: 'ES2024',
             module: 'NodeNext',
             moduleResolution: 'NodeNext',
-            rootDir: join(upstream, 'src'),
-            outDir: join(target, 'dist'),
+            rootDir: join(
+              upstream,
+              'src'
+            ),
+            outDir: join(
+              target,
+              'dist'
+            ),
             noCheck: true,
             noResolve: true,
             declaration: false,
@@ -207,8 +213,14 @@ export async function emitPackage({
             skipLibCheck: true,
             types: [],
           },
-          include: [join(upstream, 'src/**/*.ts')],
-          exclude: [join(upstream, 'src/experimental')],
+          include: [join(
+            upstream,
+            'src/**/*.ts'
+          )],
+          exclude: [join(
+            upstream,
+            'src/experimental'
+          )],
         },
         null,
         2,

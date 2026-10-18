@@ -106,11 +106,18 @@ export function resolveManualReviewOutcome(program: CompiledProgram): GuardOutco
 
  @throws InstructionResolutionInputError for malformed internal policy facts
  */
-export function resolveConfirmedOutcome({ program, reconsideredOutcome }: {
+export function resolveConfirmedOutcome({
+  program,
+  reconsideredOutcome
+}: {
   readonly program: CompiledProgram;
   readonly reconsideredOutcome?: GuardOutcome;
 }): GuardOutcome {
-  tagged({ tag: resolveConfirmedOutcome.name, l }).debug('resolving original policy after scoped confirmation');
+  tagged({
+    tag: resolveConfirmedOutcome.name,
+    l
+  })
+    .debug('resolving original policy after scoped confirmation');
   /**
    A terminal complete-operation denial remains binding; unresolved review leaves clause estimates diagnostic.
    */
