@@ -661,7 +661,7 @@ giving a gross timestamp-based compute estimate of USD $0.008157 at the publishe
 The request-to-terminal interval was 72.764 seconds.
 There is only one allocation per condition,
 so these elapsed intervals do not establish unchanged-input spread or a speed multiplier.
-The demonstrated benefit is reuse of all 11 cacheable Rust compilation requests in a fresh allocation.
+The demonstrated benefit is 11 Rust compiler-cache hits in a fresh allocation with no Rust cache misses.
 No target directory,
 package archive,
 or broad new credential supplied that reuse.
