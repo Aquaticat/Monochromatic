@@ -26,7 +26,7 @@ fn the_decode_variant_reports_the_wrapped_symphonia_error_as_its_source() {
 /// A wrapped opus error is the source of the `Opus` variant. The error comes from a decoder the library rejects.
 #[test]
 fn the_opus_variant_reports_the_wrapped_opus_error_as_its_source() {
-    let opus_error = opus::Decoder::new(12345, opus::Channels::Mono).err().expect("12345 Hz is not an Opus rate");
+    let opus_error = opus::Decoder::new(12345, opus::Channels::Mono).expect_err("12345 Hz is not an Opus rate");
     let message = opus_error.to_string();
     let error = PlayerError::from(opus_error);
     let source = error.source().expect("the Opus variant has a source");
