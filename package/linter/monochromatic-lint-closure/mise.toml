@@ -28,3 +28,26 @@ run = "cargo fmt"
 [tasks.lint]
 description = "Run every static check of the library"
 run = ["cargo check --all-targets", "cargo clippy --all-targets -- --deny warnings", "cargo fmt --check"]
+
+[tasks.bless]
+description = "Rewrite tests/ui/*.stderr from the lint's current output; review the diff against the verdict markers before committing"
+shell = "node --input-type=module-typescript -e"
+run = '''
+import { spawnSync } from 'node:child_process';
+import { copyFileSync, mkdtempSync, readdirSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+// compiletest writes each differing actual output next to its scratch files in TMPDIR, so a fresh TMPDIR collects exactly them.
+const scratch = mkdtempSync(join(tmpdir(), 'bless-'));
+const run = spawnSync('cargo', ['nextest', 'run', 'ui_tests::ui', '--no-fail-fast'], {
+  env: { ...process.env, TMPDIR: scratch },
+  stdio: 'inherit',
+});
+if (run.error) throw run.error;
+for (const name of readdirSync(scratch)) {
+  if (name.endsWith('.stage-id.stderr')) {
+    copyFileSync(join(scratch, name), join('tests/ui', name.replace('.stage-id.stderr', '.stderr')));
+    console.log('blessed ' + name);
+  }
+}
+'''
