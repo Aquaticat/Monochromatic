@@ -29,13 +29,13 @@ export function run({ name, command, args, cwd = root, env = childEnv, observe =
   const startedAt = new Date().toISOString();
   const start = performance.now();
   const result = spawnSync(command, args, { cwd, env, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
-  const log = (result.stdout ?? '') + (result.stderr ?? '');
+  const log = (result.stdout ?? '') + (result.stderr ?? '') + (result.error?.message ?? '');
   writeFileSync(join(evidence, name + '.log'), log);
   const record = { name, command: [command, ...args], cwd, startedAt, elapsedSeconds: (performance.now() - start) / 1000, status: result.status, signal: result.signal, logSha256: hash(log) };
   records.push(record);
   save('lock-commands-' + process.env.REUSE_LOCK_STAGE + '.json', { provider, node: process.version, hostname: hostname(), kernel: release(), cpus: cpus(), memoryBytes: totalmem(), bootId: readFileSync('/proc/sys/kernel/random/boot_id', 'utf8').trim(), records });
   console.log(JSON.stringify(record));
-  if (result.error) throw result.error;
+  if (result.error && !observe) throw result.error;
   if (!observe) assert.equal(result.status, 0, name + ' failed; see retained command output');
   return { record, log, stdout: result.stdout };
 }

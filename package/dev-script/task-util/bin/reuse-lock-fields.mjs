@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { chmodSync, lstatSync, mkdirSync, readFileSync, readdirSync, statfsSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { strict as assert } from 'node:assert';
 
 export function fields(path) {
   const stat = lstatSync(path, { bigint: true });
@@ -14,6 +15,12 @@ export function filesystem(path) {
 
 export function replacementAndClockProbe(directory) {
   mkdirSync(directory, { recursive: true });
+  const heldPath = join(directory, 'same-inode-positive-control.lock');
+  writeFileSync(heldPath, '', { flag: 'wx', mode: 0o600 });
+  const heldBefore = fields(heldPath);
+  writeFileSync(heldPath, 'same file, changed bytes');
+  const heldAfter = fields(heldPath);
+  assert(heldBefore.device === heldAfter.device && heldBefore.inode === heldAfter.inode);
   const replacements = [];
   for (let attempt = 0; attempt < 64; attempt += 1) {
     const path = join(directory, 'replacement-' + attempt + '.lock');
@@ -31,7 +38,7 @@ export function replacementAndClockProbe(directory) {
     chmodSync(path, attempt % 2 === 0 ? 0o600 : 0o640);
     clock.push(fields(path));
   }
-  return { filesystem: filesystem(directory), replacements, reusedDeviceInodeCount: replacements.filter(item => item.sameDeviceAndInode).length, clock, observedNonzeroMillisecondFraction: clock.some(item => BigInt(item.ctimeSubsecondNanoseconds) / 1000000n !== 0n), interpretation: 'Source-derived filesystem observations only. The native lock identity compares file/device/inode; metadata evidence separately rounds ctime. These probes do not establish a provider defect or a source remedy.' };
+  return { filesystem: filesystem(directory), sameInodePositiveControl: { before: heldBefore, after: heldAfter }, replacements, reusedDeviceInodeCount: replacements.filter(item => item.sameDeviceAndInode).length, clock, observedNonzeroMillisecondFraction: clock.some(item => BigInt(item.ctimeSubsecondNanoseconds) / 1000000n !== 0n), interpretation: 'Source-derived filesystem observations only. The native lock identity compares file/device/inode; metadata evidence separately rounds ctime. These probes do not establish a provider defect or a source remedy.' };
 }
 
 export function residualFixtureFields(directory) {
