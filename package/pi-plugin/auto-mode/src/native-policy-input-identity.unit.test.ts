@@ -100,6 +100,22 @@ await describe({
   name: 'built policy-input identity',
   children: [
     it({
+      name: 'keeps capability operations out of implicit property enumeration',
+      fn: async function opaqueEnumeration() {
+        assert.deepEqual(Object.keys(input), []);
+      },
+    }),
+    it({
+      name: 'serializes as an opaque capability without reading its loader state',
+      fn: async function opaqueSerialization() {
+        /** Complete serialization remains local; failure output reports only its length. */
+        const serialized = JSON.stringify(input);
+        assert.ok(serialized !== undefined);
+        assert.equal(serialized.length, 2);
+        assert.equal(serialized, '{}');
+      },
+    }),
+    it({
       name: 'reads and revalidates the original native capability without replacing its binding',
       fn: async function originalCapability() {
         /** The native loader has already published its real current binding. */

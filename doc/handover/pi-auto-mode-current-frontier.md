@@ -57,6 +57,23 @@ The factory's fake borrowed receivers intentionally now report `PolicySlotBindin
 instead of V8's class-private-field `TypeError`.
 Public reader errors retain their original text;
 the changed internal diagnostic and object layout must be reported explicitly.
+Factory checkpoint `61a7599831` is committed with clean three-file lint and pending rebuilt consumers.
+Independent review identifies an unnecessary difference within that intentional layout change:
+object-literal getters are enumerable,
+so ordinary enumeration and JSON serialization can expose the loader state that the original class leaves opaque.
+Maintained enumeration and serialization cases are added before changing the factory.
+Next verify those cases against the original class,
+rebuild the committed factory and retain its failing cases,
+then preserve nonenumerability before capability publication and rerun the rebuilt consumer.
+Source review also distinguishes a callable-export check from proof of its nested return shape.
+The phase worker must correct that proof claim or separately substantiate a source-audited ABI;
+it must not add eager whole-object validation.
+The accepted fallback harness uses the same callable-export pattern and needs the same ABI clarification.
+Its completed behavioral matrices and data-fragment narrowing remain valid evidence.
+The private inspector smoke captures a 5,378,583-byte retained heap,
+finds the planted 2,097,168-byte array backing store through actual heap edges,
+and closes normally with complete stderr retained.
+No live worker has been signaled or snapshotted.
 The user keeps root `TCV`,
 `CPN` and `RXI` unchanged and puts the lessons in package documentation.
 The selected logger policy is project-first defaults with user-state fallback and strict explicit destinations.
