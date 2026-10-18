@@ -231,6 +231,17 @@ Release builds of `monochromatic-lint` in run 38672750851:
 
 ### pnpm store (not cached)
 
+The measured workflow is `readonly-semantic-bridge.yml`,
+displayed as `readonly semantic bridge host evidence`.
+Its jobs are `semantic bridge (ubuntu-latest)`,
+`semantic bridge (windows-latest)` and `semantic bridge (macos-15)`.
+The tested cache system is GitHub Actions `actions/cache` archiving the pnpm store,
+not Depot Cache or Cargo artifact caching.
+The comparison covers cache restoration plus workspace dependency installation,
+excluding cache-save time unless explicitly stated.
+The policy applies this result to other pnpm-installing workflows;
+they are not separately measured regressions in this record.
+
 Entry size 298 MB (Linux), 377 MB (Windows), 580 MB (macOS). Run 38672732092 and its re-run:
 
 - Linux: install 8 to 9 s without a cache; restore 7 s plus install 8 s with one.

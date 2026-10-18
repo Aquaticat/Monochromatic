@@ -27,6 +27,13 @@ routing and cache notes.
 Do not begin the interview while factual prerequisites remain investigable.
 Do not change production routing or the subscription before shared understanding is reached.
 Prior account-wide-access exclusions remain in force.
+The user also requires performance claims to name the exact jobs and cache system.
+The measured pnpm-store regression is GitHub `actions/cache`
+in `readonly-semantic-bridge.yml`'s semantic-bridge jobs,
+not Depot Cache and not separately measured logger/TOML regressions.
+The cache decision now names that boundary.
+The research plan retains a concrete proposed `QNB` tightening for the later interview;
+`AGENTS.md` is unchanged.
 
 ## Cache benefit clarification on 2026-10-18
 

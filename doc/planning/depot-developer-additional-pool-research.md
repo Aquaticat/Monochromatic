@@ -95,6 +95,10 @@ All findings distinguish current official documentation,
 source inspection,
 real invocation,
 observed output and unresolved evidence.
+Performance and cache claims name the workflow and job,
+cache implementation,
+input state and timed boundary.
+Policy extrapolation to a similar job stays distinct from a measurement of that job.
 
 The existing cache evidence demonstrates reuse but does not establish a fresh-job warm comparison between providers.
 The native follow-up demonstrated execution,
@@ -122,3 +126,28 @@ The user correction broadens every area's applicability to a substantially expan
 today's workflows are a measured incumbent,
 not the limit of the design.
 No interview question is pending.
+
+## Reporting-rule clarification
+
+The user corrected the vague statement that caching slowed unspecified jobs.
+The exact measured regression is GitHub Actions `actions/cache` for the pnpm store
+in `readonly-semantic-bridge.yml`'s cross-platform semantic-bridge jobs.
+It does not establish a Depot Cache regression or independent measurements of other pnpm workflows.
+The [existing cache decision](../decision/ci-caching.md#pnpm-store-not-cached)
+now records the workload,
+backend and measurement boundary explicitly.
+
+A concrete proposed tightening of `AGENTS.md`'s existing `QNB` rule is:
+
+```text
+# Proposed AGENTS.md replacement; not applied.
+QNB:
+Comparing noisy results:
+name workloads, cache systems and timed boundaries;
+measure unchanged-input spread first.
+Differences within that spread are noise.
+```
+
+The proposal remains unapplied.
+Present it with the interview's independent decisions after factual research,
+respecting the user's instruction not to start grilling yet.
