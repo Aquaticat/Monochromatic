@@ -1,10 +1,10 @@
 import type { Nodes, } from 'mdast';
 
 import {
+  type DeepReadonlyData,
   parseSliceBody,
   requireMdxRefusal,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import type { DeepReadonlyData, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 
 //region Link text
 // WHICH LINK TEXT IS PROSE. The text of a link written between brackets is the label a reader reads, so the prose mask of the
