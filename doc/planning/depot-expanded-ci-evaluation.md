@@ -33,6 +33,17 @@ before unspecified services or charges
 ([executed combined model](../audit/depot-combined-product-pricing-2026-10-18.evidence.json)).
 The USD 200 ceiling therefore requires an explicit workload allocation.
 
+GitHub remains the forge and check consumer.
+Native Depot is the proposed Linux orchestration pool;
+Depot-managed GitHub runners retain GitHub scheduling for eligible Linux AMD64/ARM64 and Windows jobs.
+GitHub scheduling also retains release permissions,
+protected-environment approvals and reusable-workflow references that native compatibility does not cover.
+Mac work stays on public GitHub under Developer.
+The exercised ARM owners establish selected portability,
+not every ARM workload
+([native contracts](depot-native-ci-capability-review.md),
+[actual ARM consumers](depot-arm64-workload-research.md)).
+
 ## Immutable workloads and scope
 
 The expanded repository source is `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
@@ -43,6 +54,16 @@ generated producers and consumer receipts retain separate identities in the
 [Rust record](depot-rust-coverage-research.md)
 and [runtime record](depot-runtime-orchestration-research.md).
 Later main changes do not silently enter that cohort.
+
+Documentation,
+inspected source and runtime-qualified consumers are separate evidence levels.
+Native filesystem snapshots,
+ordinary OCI job/service images,
+compiled target archives and SDK custom runtimes retain different formats and identities.
+The SDK custom thin-image success does not qualify ordinary OCI or named runtimes;
+planned SDK snapshot and secret APIs are not delivered-feature evidence
+([platform ledger](depot-platform-surface-ledger.json),
+[prepared filesystem and archive controls](depot-reuse-strategy-research.md)).
 
 The original trial's four historical source cases and native follow-up cohorts retain their own manifests.
 Their 770 primary gates are a historical inventory,
@@ -160,6 +181,20 @@ units or container and restored audio state
 ([desktop sessions and original artifacts](depot-complete-coverage-research.md)).
 
 ### Execution infrastructure
+
+Native orchestration needs explicit event and check ownership,
+with content-bound artifact names and supported reusable-workflow references.
+Native retries reuse filesystem/environment state,
+and native parallel branches share mutable directories;
+they do not create isolated repetitions.
+The measured single-job graph does not qualify every native parallel-step merge rule.
+Tests reporting should retain original JUnit and validated identity transformations,
+use attempt-specific report keys and split only admitted runnable identities.
+The 34-case Nextest adapter qualifies its demonstrated single-binary shape.
+Full-framework reporting,
+dashboard flakiness and GitHub/native analytics parity retain narrower evidence limits
+([orchestration contracts](depot-native-ci-capability-review.md),
+[physical report adapter](depot-tests-identity-adapter-research.md)).
 
 Native Depot,
 Depot-managed GitHub Actions and standard GitHub now each have a passing actual frozen `mvm` guest lifecycle.
@@ -354,6 +389,15 @@ Not issuing an explicit paid model request does not mean the vendor performs no 
 These documented behaviors remain separate from executed repository consumers
 ([substantive native capability review](depot-native-ci-capability-review.md)).
 
+Native live/paused-step SSH,
+per-job logs and resource metrics are separately documented debugging capabilities.
+Their operational admission must retain exact attempt identity and private connection details.
+Developer community support,
+beta terms and the incomplete incident-history denominator provide no repository availability guarantee.
+The proposal retains exact-attempt diagnostics and GitHub execution as a fallback;
+both products still depend on their configured forge and identity paths
+([operating terms and status boundaries](depot-platform-surface-audit.md)).
+
 ## Provider allocation, cost, and critical paths
 
 Developer includes 500 build minutes,
@@ -517,6 +561,96 @@ not every access-mode or fork/PR write scenario
 ([cache applicability and trust review](depot-cache-capability-review.md)).
 
 ## Adoption conditions and unresolved evidence
+
+### Proposed workflow allocation
+
+Use the native Linux pool for admitted Node static/unit/process owners,
+Rust Nextest owners,
+bounded property/conformance/mutation profiles and compatible browser/container consumers.
+Build shared producers once and validate their real consumers.
+Keep GitHub permission and approval boundaries on GitHub scheduling,
+with Depot runners available where their tested OS,
+resource shape and plan eligibility fit.
+The final required/advisory split and event cadence remain interview decisions;
+the retained source failures prevent treating every researched owner as a passing required gate
+([owner results](depot-complete-coverage-research.md),
+[Rust execution contexts](depot-rust-coverage-research.md)).
+
+Allocate reuse by measured owner:
+Gradle remote task outputs for the demonstrated Kotlin linter,
+direct sccache for qualified Rust compiler consumers,
+and source/tool/ABI-bound dependency or target archives with passing readers.
+The measured pnpm content-store profiles do not justify universal store caching.
+Native tool snapshots require current checkout and executable/PATH admission.
+Organization-global Disk mounts need a single writer,
+partitioning or immutable content;
+concurrent mounts do not provide atomic mutation.
+An expected digest supplied by the same mutable untrusted cache does not independently authenticate its contents
+([reuse controls](depot-reuse-strategy-research.md),
+[cache capabilities and trust](depot-cache-capability-review.md)).
+
+Use BuildKit/Bake for admitted container contexts and immutable multiarchitecture CI/service producers,
+preserving the exercised SBOM/provenance-to-runtime-digest checks.
+A matching attestation subject does not establish signing trust.
+Autoscaling has no demonstrated total-builder bound in this evaluation;
+keep it outside automatic paid admission until that bound is supplied.
+Registry pull-through,
+Fast CDN and server-side promotion are reviewed options with no measured speedup here.
+Tagged retention is opt-in,
+saved project images default to unlimited retention,
+and logical deletion can precede blob reclamation.
+Standard transfer is documented free;
+Fast transfer costs USD 0.10/GB
+([executed BuildKit graph](../audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json),
+[registry lifecycle sources](depot-platform-surface-audit.md)).
+Credentialed Containerfiles also need their own context and cleanup controls:
+the synthetic Git rewrite probe retained its invented-token key,
+without supplying a real credential or proving exported-layer retention
+([source-owned cleanup boundary](../troubleshooting/git-url-rewrite-cleanup-key.md)).
+
+### Trust, budget and optional products
+
+Trusted branches and untrusted PRs need explicit cache-write and secret authority.
+Depot Actions cache,
+project BuildKit cache and organization-global Disk have different scopes.
+Linux egress filtering is root-modifiable and incompatible with Tailscale;
+it is not a hostile-root exfiltration boundary or a Windows/Mac policy.
+Private connectivity needs its documented credentials and eligibility.
+Dependabot has a separate runner setting and lacks ordinary GitHub OIDC,
+so its authentication cannot inherit the regular-job assumption.
+No network policy,
+tailnet credential or Dependabot secret was activated
+([cache trust](depot-cache-capability-review.md),
+[network and bot source review](depot-platform-surface-ledger.json)).
+
+Paid scheduling needs finite workload reservations and separately priced storage,
+Tests,
+SDK and optional-product quantities.
+The research excludes account-wide usage and invoice inspection,
+so it cannot verify an aggregate USD 200 invoice guarantee.
+Production admission needs current authorized headroom and expiry,
+with public GitHub compute available when paid headroom is unknown.
+Retention and deletion must name exported artifacts,
+registry manifests/blobs,
+snapshots,
+Disk and logs separately
+([allowances and limits](depot-included-allowance-reconciliation.md),
+[actual logical registry cleanup](depot-native-buildkit-auth-research.md)).
+
+Managed/customer-AWS,
+GPU and custom GitHub runner images need their separate eligibility and administrative delegation.
+Code is a public-beta Git transport/mirror with push-only native events;
+it has no demonstrated independent GitHub recovery path here.
+Depot Agents describes Claude Code,
+Anthropic authentication and separately billed agent minutes without included usage.
+The repository's Codex fixture does not qualify that product.
+The Dagger engine integration is deprecated and adds a distinct engine charge.
+These reviewed adjacent products remain unactivated,
+as do absent-owner cache/language recipes and external observability sinks
+([optional-product boundaries](depot-platform-surface-audit.md),
+[current Dagger guide](https://depot.dev/docs/github-actions/integrations/dagger)).
+
+### Remaining research and interview boundary
 
 Remaining factual work is explicitly owned in the
 [execution handover](../handover/depot-trial-grilling.md):
