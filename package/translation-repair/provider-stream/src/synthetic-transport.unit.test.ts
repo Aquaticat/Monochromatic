@@ -341,6 +341,44 @@ await describe({
       },
     },),
     it({
+      name: 'KEEPS THE CHARACTERS OF THE ANSWER AND OF THE REASONING A CUT STREAM COUNTED on the error it masks, so the abandonment '
+        + 'line of a synthetic call reports them in place of the wire length',
+      fn: async ctx => {
+        ctx.sinon
+          .stub(
+            globalThis,
+            'fetch',
+          )
+          .callsFake(async function cutBody() {
+            return pieceResponse({
+              pieces: [
+                frameOf({ channel: 'reasoning', text: 'Pondering the cat.', },) + frameOf({ channel: 'content', text: 'It is a cat.', },),
+              ],
+              ending: new Error('connection reset',),
+              status: 200,
+            },);
+          },);
+        /** Value caught from the exchange whose stream was cut. */
+        let caught: unknown;
+        try {
+          await fetchTransport({
+            url: 'https://example.org/cat-chat',
+            label: 'hf:whiskers',
+            method: 'POST',
+            headers: { Authorization: `Bearer ${WHISKER_KEY}`, },
+            bodyJson: '{}',
+            signal: new AbortController().signal,
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        if (!(caught instanceof StreamCutShortError))
+          throw new Error('a cut-short error by construction',);
+        expect(caught.generatedChars,).toEqual({ content: 'It is a cat.'.length, reasoning: 'Pondering the cat.'.length, },);
+      },
+    },),
+    it({
       name: 'NAMES A REQUEST THE RUNTIME REFUSED TO SEND by an authored account, the runtime\'s own words kept as the cause',
       fn: async ctx => {
         /**

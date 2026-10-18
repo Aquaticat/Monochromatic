@@ -852,6 +852,72 @@ await describe({
     },),
 
     it({
+      name: 'HANDS THE CHARACTERS OF THE ANSWER AND OF THE REASONING THE WATCH COUNTED to the cut it throws, so the abandonment line '
+        + 'can report them in place of the wire length',
+      fn: async () => {
+        /**
+         What the model reasons and what it answers before the plug is pulled.
+         */
+        const reasoned = 'Pondering the cat.';
+        const answered = 'It is a cat.';
+
+        /**
+         That much, framed as the wire carries it.
+         */
+        const delivered = frameOf({ channel: 'reasoning', text: reasoned, },) + frameOf({ channel: 'content', text: answered, },);
+
+        /**
+         Caller's own steering.
+         */
+        const steering = new AbortController();
+
+        /**
+         How many pieces have gone out.
+         */
+        const sent = { count: 0, };
+
+        /**
+         Encoder, since a body carries bytes.
+         */
+        const encoder = new TextEncoder();
+
+        /**
+         A body that delivers once and is then torn down.
+         */
+        const body = new ReadableStream<Uint8Array>({
+          pull(controller,): void {
+            if (sent.count === 0) {
+              sent.count += 1;
+              controller.enqueue(encoder.encode(delivered,),);
+              return;
+            }
+            steering.abort();
+            controller.error(new Error('exchange torn down by abort',),);
+          },
+        },);
+
+        using guard = armIdleGuard({
+          label: 'hf:whiskers',
+          firstByteMs: HANG_STOP_MS,
+          idleMs: HANG_STOP_MS,
+        },);
+
+        /**
+         What the drain did.
+         */
+        const outcome = await drainOutcome({
+          response: new Response(body,),
+          guard,
+          callerSignal: steering.signal,
+        },);
+
+        if ((outcome.kind !== 'raised') || (!(outcome.error instanceof StreamCutShortError)))
+          throw new Error('a cut by construction',);
+        expect(outcome.error.generatedChars,).toEqual({ content: answered.length, reasoning: reasoned.length, },);
+      },
+    },),
+
+    it({
       name: 'STATES A CUT STREAM\'S CAUSE BY CLASS in its message, which the error declares safe to repeat, '
         + 'repeats the sentence of a cause that declares the same, and names the HTTP status of a cause that is '
         + 'a provider\'s status failure without its body',
