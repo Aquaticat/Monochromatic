@@ -563,6 +563,15 @@ A word such as "most" is a count,
 and it is counted (ledger M226).
 A listing is given a cause only after the type of each entry in it is read:
 unreadable entries called mode-locked test files were dangling symbolic links (ledger M224).
+A round said every caller of the text fold receives the page's definitions,
+and three readers of emphasis still parsed without them,
+two of them one step behind the caller the brief named (ledger B668).
+A claim that every caller of a function hands it a value is made after the call sites are listed with `rg` and read,
+and a parameter that defaults to empty is where a caller leaves it out unseen.
+A cache version's account said no record had been written since it was set,
+and a pass wrote three under it three weeks later (ledger B670).
+An account of a cache version names the date and the search that backs "no record since",
+and says what retires a stored record besides the number.
 
 What enforces it:
 habit;

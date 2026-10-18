@@ -374,6 +374,11 @@ named for that subject and listed here.
   which artifact generation 18 records,
   the carry run-off that generation 18 requires,
   and a refusal text that named the wrong quotes.
+- [Audit ledger: follow-ups on emphasis definitions, cache accounts and the Synthetic quota shape](audit-ledger-follow-ups-emphasis-definitions-cache-accounts-and-synthetic-quota.md):
+  The emphasis readers that parsed without the page's definitions (B668),
+  the contradictions in the TSDoc of the consistency cache version (B669),
+  the account of the pairing cache version from `d614a0c1d` to `29d606470` (B670),
+  and the Synthetic quota body the meter reader refused on 2026-10-18 (B671).
 - [Audit ledger: the package split, configs, scans and messages](audit-ledger-package-split-configs-scans-and-messages.md):
   What the split of the package into 36 found in the moved code and its tooling:
   a build config that lacked a plugin,
@@ -760,6 +765,7 @@ Filed in:
 - [Audit ledger: the consistency pass, definitions inside containers, fragment landings and the mask memory](audit-ledger-consistency-pass-definitions-landings-and-the-mask-memory.md)
 - [Audit ledger: the consistency pass, voices lost and places left unlocated](audit-ledger-consistency-pass-voices-lost-and-places-left-unlocated.md)
 - [Audit ledger: the consistency pass, page definitions recorded and carries gated by generation](audit-ledger-consistency-pass-page-definitions-recorded-and-carries-gated.md)
+- [Audit ledger: follow-ups on emphasis definitions, cache accounts and the Synthetic quota shape](audit-ledger-follow-ups-emphasis-definitions-cache-accounts-and-synthetic-quota.md)
 - [Audit ledger: the package split, configs, scans and messages](audit-ledger-package-split-configs-scans-and-messages.md)
 
 ## Process mistakes in this audit
