@@ -495,13 +495,26 @@ with zero skipped cases,
 failures,
 or errors.
 The case-identity multiset matches the first run.
+The [task-level execution proof][android-jvm-execution]
+retains both complete Gradle logs,
+every task outcome,
+and each XML report's timestamp and hash.
+Both invocations show `:app:testDebugUnitTest` executing without `FROM-CACHE` or `UP-TO-DATE`.
+Every report timestamp falls inside its actual test command's recorded interval.
+Each invocation separately restores `:app:javaPreCompileDebugUnitTest` from cache;
+that compilation-cache result is distinct from test execution.
 Tracked source remained unchanged.
 The byte comparison is narrower:
 the 4 AndroidX payloads match between builds,
 while the 6 engine/Turso payloads differ.
-The retained evidence records both hashes;
-the cause is not established,
-and source identity is not being promoted into a bit-reproducibility claim.
+The [section-level comparison and original-source controls][android-reproducibility]
+show matching `.text` bytes for all 8 inspected 64-bit libraries.
+Each differing engine/Turso library contains the corresponding build's clock timestamp in `.rodata`;
+the isolated unchanged `turso_core` build script reproduces deterministic output with `SOURCE_DATE_EPOCH`.
+Symbol-table and string-table differences are retained separately.
+The [timestamp diagnosis][android-timestamp-diagnosis] describes the verified seed control
+and the absence of a complete normalized native or APK rebuild comparison.
+Source identity is not being promoted into a whole-artifact bit-reproducibility claim.
 
 The parent consumed the exact second-run pair on a private headful API 37,
 `x86_64` device using emulator `37.2.12` and host GPU rendering.
@@ -527,6 +540,9 @@ The newer main checkout's 3 additional instrumentation classes are outside the f
 
 [android-page-sizes]: https://developer.android.com/guide/practices/page-sizes
 [android-receipts]: depot-complete-coverage-android-receipts.json.gz
+[android-jvm-execution]: depot-complete-coverage-android-junit-execution.json.gz
+[android-reproducibility]: depot-complete-coverage-android-reproducibility.json.gz
+[android-timestamp-diagnosis]: ../troubleshooting/turso-android-native-build-timestamps.md
 [android-device-consumer]: ../audit/depot-android-consumer-2026-10-18.evidence.json
 
 ## Remaining Node static and build campaign
