@@ -647,8 +647,13 @@ with a 15-minute job cap,
 3-minute command cap,
 and 9-minute campaign cap.
 Both shards build the reviewed cross-package prerequisites before their assigned default tasks.
-The CPU-cap and desktop-E2E owning configurations declare no build task;
-their selected tests use source scripts or pure and stand-in-socket helpers.
+The CPU-cap and desktop-E2E owning configurations declare no build task.
+The initial characterization of desktop-E2E as only pure and stand-in-socket helpers was incomplete:
+`compositor-path.unit.test.ts` actually queries the installed Mise compositor,
+and `image.unit.test.ts` invokes ImageMagick for PNG decoding.
+Neither check starts a GUI,
+but both require separately qualified installed tools.
+The WireGuard companion lookup also requires the real `wg-quicker-exempt` release artifact.
 The profile uses injected provider transports,
 temporary Git repositories,
 temporary file-enforcer configurations,
@@ -658,6 +663,19 @@ and an invalid VM backend sentinel.
 Actual paid provisioning,
 physical compositor control,
 and host hardware writes are outside these fixture tests.
+The completed run invoked all 131 commands:
+128 passed,
+and the WireGuard,
+CPU-cap,
+and desktop-E2E default tasks failed.
+Both workers used UID `1001`,
+so the WireGuard fixture did enter its intended nonroot privilege path.
+Both source receipts retain unchanged tracked files.
+The missing native companion,
+compositor lookup,
+decoder prerequisite,
+and CPU-cap assertion remain distinct diagnoses;
+they are not assigned collectively to a provider.
 
 Auto Mode's `build:native` and `test:native:*` names describe a maintained Pi host built from JavaScript/TypeScript.
 They are not covered by the Cargo campaign.
