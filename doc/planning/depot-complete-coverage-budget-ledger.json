@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "measuredAt": "2026-10-18T16:17:43.196Z",
+  "measuredAt": "2026-10-18T17:10:20.677Z",
   "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "guardUsd": 5,
   "pricingSource": {
@@ -1505,61 +1505,174 @@
       "publicComputeOnly": true,
       "artifactStorageCostUnmeasured": true,
       "invoice": false
+    },
+    {
+      "dedupeKey": "github:Aquaticats/Monochromatic:run:39144499822:attempt:1:job:117725488825",
+      "provider": "github-public-standard",
+      "run": 39144499822,
+      "attempt": 1,
+      "id": 117725488825,
+      "name": "Current e02 host (windows2025-gnu-ucrt64-current)",
+      "status": "completed",
+      "conclusion": "failure",
+      "workflowSha": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "resourceShape": {
+        "requestedLabels": [
+          "windows-2025"
+        ],
+        "documentedVcpu": 4,
+        "documentedMemoryGB": 16,
+        "actualCpuAndMemoryInQualifiedOwnerReceipts": true,
+        "jobMinutes": 30,
+        "maxParallel": 1
+      },
+      "runner": "GitHub Actions 1000002892",
+      "startedAt": "2026-10-18T16:59:02Z",
+      "completedAt": "2026-10-18T17:01:23Z",
+      "seconds": 141,
+      "rateUsdPerMinute": 0,
+      "nominalElapsedUsd": 0,
+      "conservativeRoundedMinuteUsd": 0,
+      "reservationUsd": 0,
+      "publicComputeOnly": true,
+      "artifactStorageCostUnmeasured": true,
+      "invoice": false
+    },
+    {
+      "dedupeKey": "github:Aquaticats/Monochromatic:run:39144499822:attempt:1:job:117725488995",
+      "provider": "github-public-standard",
+      "run": 39144499822,
+      "attempt": 1,
+      "id": 117725488995,
+      "name": "Current e02 host (windows11-msvc-arm64-current)",
+      "status": "completed",
+      "conclusion": "failure",
+      "workflowSha": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "resourceShape": {
+        "requestedLabels": [
+          "windows-11-arm"
+        ],
+        "documentedVcpu": 4,
+        "documentedMemoryGB": 16,
+        "actualCpuAndMemoryInQualifiedOwnerReceipts": true,
+        "jobMinutes": 30,
+        "maxParallel": 1
+      },
+      "runner": "GitHub Actions 1000002875",
+      "startedAt": "2026-10-18T16:49:59Z",
+      "completedAt": "2026-10-18T16:59:01Z",
+      "seconds": 542,
+      "rateUsdPerMinute": 0,
+      "nominalElapsedUsd": 0,
+      "conservativeRoundedMinuteUsd": 0,
+      "reservationUsd": 0,
+      "publicComputeOnly": true,
+      "artifactStorageCostUnmeasured": true,
+      "invoice": false
+    },
+    {
+      "dedupeKey": "github:Aquaticats/Monochromatic:run:39144499822:attempt:1:job:117725489035",
+      "provider": "github-public-standard",
+      "run": 39144499822,
+      "attempt": 1,
+      "id": 117725489035,
+      "name": "Current e02 host (macos15-arm-current)",
+      "status": "completed",
+      "conclusion": "failure",
+      "workflowSha": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "resourceShape": {
+        "requestedLabels": [
+          "macos-15"
+        ],
+        "documentedVcpu": 3,
+        "documentedMemoryGB": 7,
+        "actualCpuAndMemoryInQualifiedOwnerReceipts": true,
+        "jobMinutes": 30,
+        "maxParallel": 1
+      },
+      "runner": "GitHub Actions 1000002823",
+      "startedAt": "2026-10-18T16:20:02Z",
+      "completedAt": "2026-10-18T16:29:26Z",
+      "seconds": 564,
+      "rateUsdPerMinute": 0,
+      "nominalElapsedUsd": 0,
+      "conservativeRoundedMinuteUsd": 0,
+      "reservationUsd": 0,
+      "publicComputeOnly": true,
+      "artifactStorageCostUnmeasured": true,
+      "invoice": false
+    },
+    {
+      "dedupeKey": "github:Aquaticats/Monochromatic:run:39144499822:attempt:1:job:117725489078",
+      "provider": "github-public-standard",
+      "run": 39144499822,
+      "attempt": 1,
+      "id": 117725489078,
+      "name": "Current e02 host (macos-latest-authored-fsid)",
+      "status": "completed",
+      "conclusion": "success",
+      "workflowSha": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "resourceShape": {
+        "requestedLabels": [
+          "macos-latest"
+        ],
+        "documentedVcpu": 3,
+        "documentedMemoryGB": 7,
+        "actualCpuAndMemoryInQualifiedOwnerReceipts": true,
+        "jobMinutes": 30,
+        "maxParallel": 1
+      },
+      "runner": "GitHub Actions 1000002872",
+      "startedAt": "2026-10-18T16:48:48Z",
+      "completedAt": "2026-10-18T16:49:57Z",
+      "seconds": 69,
+      "rateUsdPerMinute": 0,
+      "nominalElapsedUsd": 0,
+      "conservativeRoundedMinuteUsd": 0,
+      "reservationUsd": 0,
+      "publicComputeOnly": true,
+      "artifactStorageCostUnmeasured": true,
+      "invoice": false
+    },
+    {
+      "dedupeKey": "github:Aquaticats/Monochromatic:run:39144499822:attempt:1:job:117725489146",
+      "provider": "github-public-standard",
+      "run": 39144499822,
+      "attempt": 1,
+      "id": 117725489146,
+      "name": "Current e02 host (windows2025-msvc-x64-current)",
+      "status": "completed",
+      "conclusion": "failure",
+      "workflowSha": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "resourceShape": {
+        "requestedLabels": [
+          "windows-2025"
+        ],
+        "documentedVcpu": 4,
+        "documentedMemoryGB": 16,
+        "actualCpuAndMemoryInQualifiedOwnerReceipts": true,
+        "jobMinutes": 30,
+        "maxParallel": 1
+      },
+      "runner": "GitHub Actions 1000002844",
+      "startedAt": "2026-10-18T16:29:27Z",
+      "completedAt": "2026-10-18T16:48:42Z",
+      "seconds": 1155,
+      "rateUsdPerMinute": 0,
+      "nominalElapsedUsd": 0,
+      "conservativeRoundedMinuteUsd": 0,
+      "reservationUsd": 0,
+      "publicComputeOnly": true,
+      "artifactStorageCostUnmeasured": true,
+      "invoice": false
     }
   ],
-  "activeReservation": {
-    "profile": "public-host-controls-recovery",
-    "provider": "github-public-standard",
-    "workflowSha": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19",
-    "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
-    "resourceShape": {
-      "maximumParallelJobs": 1,
-      "jobMinutes": 30,
-      "cases": [
-        {
-          "id": "macos15-arm-current",
-          "label": "macos-15",
-          "kind": "all",
-          "flavor": "native",
-          "target": "aarch64-apple-darwin",
-          "tools": "node pnpm"
-        },
-        {
-          "id": "windows2025-msvc-x64-current",
-          "label": "windows-2025",
-          "kind": "all",
-          "flavor": "msvc",
-          "target": "x86_64-pc-windows-msvc",
-          "tools": "node pnpm"
-        },
-        {
-          "id": "macos-latest-authored-fsid",
-          "label": "macos-latest",
-          "kind": "fsid",
-          "flavor": "none",
-          "target": "none",
-          "tools": "node"
-        },
-        {
-          "id": "windows11-msvc-arm64-current",
-          "label": "windows-11-arm",
-          "kind": "rust",
-          "flavor": "msvc",
-          "target": "aarch64-pc-windows-msvc",
-          "tools": "node"
-        },
-        {
-          "id": "windows2025-gnu-ucrt64-current",
-          "label": "windows-2025",
-          "kind": "rust",
-          "flavor": "gnu",
-          "target": "x86_64-pc-windows-gnu",
-          "tools": "node"
-        }
-      ]
-    },
-    "reservationUsd": 0
-  },
+  "activeReservation": null,
   "nominalMeasuredGithubElapsedUsd": 1.1898000000000002,
   "conservativeCompletedGithubRoundedMinuteUsd": 1.4880000000000009,
   "conservativeCompletedNativeReservedUpperBoundUsd": 3.2399999999999998,

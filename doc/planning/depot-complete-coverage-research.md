@@ -1727,3 +1727,25 @@ This is a request to prepare concrete admission profiles, not an admitted alloca
 No emulator, compositor-launch or desktop application relaunch is included.
 The current public and matched Depot host controls keep their existing guards and allocation boundary.
 Raw Git pointer bytes, materialized LFS payloads, source test markers and runtime cases remain distinct.
+
+## Terminal public recovery and matched Depot admission
+
+Public run `39144499822` is terminal with five allocated standard GitHub contexts.
+The unselected scheduler placeholder has no runner and is excluded from allocated rows.
+The actual typed command logs restore source-failure and owner-body evidence;
+the public compute model remains USD0 and storage remains unmeasured.
+The original campaign now has 53 completed rows,
+no active reservation and USD4.7280 under its USD5 guard.
+The USD6 fallback is unused.
+
+The separately admitted matched Depot profile uses harness `aa501f4a5c0e74a0a993b668c98b00fe3be2da19`,
+frozen application `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`, one parallel job,
+and two 20-minute caps with 17-minute inner campaigns.
+Mac uses `depot-macos-15`, eight CPU and 24 GB, at USD0.08/minute;
+Windows uses `depot-windows-2025-4`, four CPU and 16 GB, at USD0.016/minute.
+The conservative compute reservation is USD1.92 under the separate USD2 guard.
+Mac availability is the existing Startup trial, not Developer entitlement;
+Windows is Developer-supported.
+No subscription, deployment, provider/model call or source assertion changes are included.
+The [concrete immutable admission](../audit/depot-current-host-matched-admission-2026-10-18.evidence.json)
+retains all finite commands, corrected hashes, actual bootstrap and source/ledger boundaries.
