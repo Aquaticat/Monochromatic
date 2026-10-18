@@ -29,7 +29,7 @@ try {
   const config = nextestConfig('wg-privileged');
   const variables = Object.entries(environment).filter(([key]) => ['PATH', 'HOME', 'TMPDIR', 'CARGO_HOME', 'CARGO_TARGET_DIR', 'CARGO_BUILD_JOBS', 'CARGO_INCREMENTAL', 'CARGO_PROFILE_DEV_DEBUG', 'RUSTUP_HOME'].includes(key)).map(([key, value]) => key + '=' + value);
   const result = run('owned-root-network-mount-cgroup-pid-namespaces', 'sudo', ['--non-interactive', 'unshare', '--mount', '--net', '--cgroup', '--pid', '--fork', '--kill-child', '--mount-proc', '--propagation', 'private', '--', '/usr/bin/env', ...variables, node, join(root, 'package/dev-script/task-util/bin/rust-wg-namespace.mjs'), project, evidence, cargo, config], { allowFailure: true });
-  writeFileSync(join(evidence, 'privileged-boundary.json'), JSON.stringify({ owningTask: '//package/cli/wg-quicker-exempt:test:functional', adapter: 'Nextest selects the same ignored tests with default concurrency', admission: 'Private mount, network, cgroup and PID namespaces; new bpffs and cgroup2 mounts; loopback only; no user namespace', status: result.status }, null, 2) + '\n');
+  writeFileSync(join(evidence, 'privileged-boundary.json'), JSON.stringify({ owningTask: '//package/cli/wg-quicker-exempt:test:functional', adapter: 'Nextest selects the same ignored tests with default concurrency', admission: 'Private mount, network, cgroup and PID namespaces; new bpffs and private writable bind of inherited cgroup2; loopback only; no user namespace', status: result.status }, null, 2) + '\n');
   assert.equal(result.status, 0, result.output.slice(-6000));
 } finally { finish(); }
 //endregion
