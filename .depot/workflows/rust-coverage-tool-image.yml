@@ -1,0 +1,79 @@
+name: Verified extra Rust tools and full metadata consumer recovery
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  tools:
+    runs-on:
+      size: 8x32
+      image: l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r2-git256
+    timeout-minutes: 15
+    env:
+      CI: 'true'
+      MISE_AUTO_INSTALL: 'false'
+      MISE_LOCKED: '1'
+      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+      RESEARCH_RUST_PROFILE: linter
+      RESEARCH_RUST_IMAGE: l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r2-git256
+      RESEARCH_RUST_IMAGE_DIGEST: sha256:fb197837831d438592d9455b3a31d808a20ad8bdc2ae76b05d8b36f6656419cd
+      RESEARCH_REUSE_ROLE: consume
+      REUSE_IMAGE_TAG: tools-r2-git256
+      REUSE_IMAGE_DIGEST: sha256:fb197837831d438592d9455b3a31d808a20ad8bdc2ae76b05d8b36f6656419cd
+      RESEARCH_SECRET_CONTROL: synthetic-public-control-only-20261018-r3
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        fetch-depth: 64
+        clean: false
+    - name: Bind base image to the admitted manifest digest
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:reuse:registry
+    - name: Prepare exact public tool binaries and bounded container runtime
+      id: additional-tools
+      timeout-minutes: 4
+      env:
+        RESEARCH_RUST_TOOL_PHASE: prepare
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:rust:tools
+    - name: Repeat all current-source Nextest and direct full-metadata consumer cases
+      timeout-minutes: 8
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:rust:coverage
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      if: always()
+      with:
+        name: rust-coverage-current-linter-recovery
+        path: .research-rust/receipts
+        include-hidden-files: true
+        retention-days: 7
+        if-no-files-found: warn
+    - name: Seal the source checkout and synthetic secret file
+      if: ${{ always() && steps.additional-tools.outcome == 'success' }}
+      env:
+        RESEARCH_RUST_TOOL_PHASE: seal
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:rust:tools
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      if: always()
+      with:
+        name: rust-coverage-additional-tool-preparation
+        path: /opt/depot-reuse-20261018-r1/receipts-r3
+        include-hidden-files: true
+        retention-days: 7
+        if-no-files-found: error
+    - name: Capture the additional tools independently of application test status
+      if: ${{ always() && steps.additional-tools.outcome == 'success' }}
+      uses: depot/snapshot-action@a082cbabd407afdf324a7b4f41889795636f4b24
+      with:
+        image: l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r3-fuzz-codex
+        # Freeze the already source-audited official snapshot resolver result.
+        version: 1.2.30
+        max-age: 6h
+        env-mask: |
+          RESEARCH_SECRET_CONTROL
+          DEPOT_CACHE_TOKEN
+          DEPOT_JIT_TOKEN
+          DEPOT_SNAPSHOT_TOKEN
+          DEPOT_TOKEN
+          SCCACHE_WEBDAV_TOKEN
+          ACTIONS_RUNTIME_TOKEN
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN
+          GITHUB_TOKEN

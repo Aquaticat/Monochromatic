@@ -17,6 +17,14 @@ run = "node bin/rust-core-coverage.mjs"
 description = "Parse the standalone research harness without compiling application code"
 run = "node --check bin/rust-core-coverage.mjs"
 
+[tasks."research:rust:tools"]
+description = "Prepare verified fuzz and deterministic host tools, or seal only this owned cloud checkout"
+run = "node bin/rust-research-tools.mjs"
+
+[tasks."research:rust:tools-check"]
+description = "Parse the additional tool snapshot harness without installing or compiling application code"
+run = "node --check bin/rust-research-tools.mjs"
+
 [tasks.'build:js']
 extends = "build:js"
 
