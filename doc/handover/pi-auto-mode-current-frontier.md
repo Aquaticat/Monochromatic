@@ -201,6 +201,22 @@ including forged receivers, cross-snapshot methods, substituted sources, and ret
 Complete faithful and fragmented configured-host replays are running against that output.
 The isolated memory reduction does not establish complete-session repair.
 
+Both `native-release-2vxGY8` replays subsequently exit 134:
+fragmented fixture `pi-mimo-failure-rpc-XYDlO0` reaches 34 live assessments;
+faithful fixture `pi-mimo-failure-rpc-7osKnn` reaches 42.
+The original target corpus contains 31 assistant proposal groups and 52 tool calls.
+The complete native lifecycle/fallback/freshness/execution catalogs, units, and type check pass.
+Final formatted source-binding and event-sharing regressions pass;
+both receiver and native-root private mutations fail their intended assertions without changing production hashes.
+
+Immediate investigation now follows completed group ownership:
+`native-batch/prepared-group.mjs` closes by setting only `state.closed`.
+Its retained context callbacks still reference the full review and its request-bound input views.
+A private retirement counterfactual will replace only closed-group review references with the terminal outcome,
+while the runtime still retains the actual latest full review for diagnostics.
+This is not applied to production and needs live consumer proof plus lifecycle/freshness regression coverage.
+The user was told that the fragmented replay still fails; readiness remains withdrawn.
+
 Next, measure shared methods within each governing snapshot,
 using a private `WeakSet` to authenticate the original frozen plain binding records.
 Preserve every source occurrence, request identity, original ordering, and parent freshness check.
