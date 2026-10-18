@@ -4678,7 +4678,7 @@
     "logger": "Actual disposable file-batch Promise identity and JSONL parsing failures; no cause or provider-wide data-loss conclusion",
     "watch": "The25000ms watch-change condition fails in3of8samples, specifically original repetition2 on each of3profiles; both corrected-native samples pass, with no causal fix established",
     "webkit": "Four GHA and two corrected-native profiles reach26expected1skipped1unexpected; OPFS verify false versus expected true, not successful all-browser acceptance",
-    "rootE2e": "Four GHA profiles per browser produce zero test cases and a paused-owner missing module import during discovery; original native profiles fail earlier at namespace setup",
+    "rootE2e": "Four GHA and two corrected-native profiles per browser produce zero test cases and a paused-owner missing module import during discovery; original native profiles fail earlier at namespace setup",
     "nativeCorrected": "Both222log samples verify corrected container setup, with5succeeded3failed browser commands; same OPFS and paused-owner limits now actually reached",
     "nativeOriginal": "newuidmap blocks preparation and all browser/E2E commands; those commands are attempted but tests are not exercised",
     "githubBudgets": "Each standard GitHub profile has6started command budgets and28unstarted; no identical full graph completion or global speed ratio",
@@ -4698,5 +4698,25 @@
     "unchangedSuffixCharacters": 8986,
     "removed": "result=spawnSync('+JSON.stringify(realPodman)+',a",
     "added": "native=process.env.GRAPH_PROVIDER===\\\"native-depot\\\";const command=native?\\\"sudo\\\":'+JSON.stringify(realPodman)+';const actualArgs=native?[\\\"--non-interactive\\\",'+JSON.stringify(realPodman)+',...args]:args;const result=spawnSync(command,actualA"
+  },
+  "verificationExecution": {
+    "originalZipCount": 8,
+    "originalZipByteChecks": "passed",
+    "originalZipSha256Checks": "passed",
+    "originalZipCrcTool": "unzip -t",
+    "originalZipCrcChecks": "passed",
+    "originalMemberReader": "unzip -p",
+    "verifiedOriginalCommandLogs": 1720,
+    "commandMemberHashAlgorithm": "sha256",
+    "applicationIdentityChecks": "passed",
+    "harnessIdentityChecks": "passed",
+    "changedTrackedApplicationFiles": "empty in each original graph",
+    "remainingOwnedDriverGroups": "zero in each original graph",
+    "rawProviderActionsJobLogs": "kept private; public projection contains selected command diagnostics and reporter cases only"
+  },
+  "runIds": {
+    "githubActions": "39140975786",
+    "nativeOriginal": "gb01kjx2qk",
+    "nativeCorrected": "fnvwqfg0bb"
   }
 }
