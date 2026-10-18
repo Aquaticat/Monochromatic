@@ -1,0 +1,50 @@
+name: Exact-source native failure diagnostic archive
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diagnostic:
+    runs-on:
+      size: 8x32
+      image: l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r2-git256
+    timeout-minutes: 15
+    env:
+      CI: 'true'
+      MISE_AUTO_INSTALL: 'false'
+      MISE_LOCKED: '1'
+      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+      RESEARCH_REUSE_ROLE: consume
+      REUSE_KIND: rust
+      REUSE_PHASE: diagnostic
+      REUSE_DEPENDENCIES: installed
+      REUSE_IMAGE_TAG: tools-r2-git256
+      REUSE_IMAGE_DIGEST: sha256:fb197837831d438592d9455b3a31d808a20ad8bdc2ae76b05d8b36f6656419cd
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        fetch-depth: 64
+        clean: false
+    - name: Bind snapshot identity
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:reuse:registry
+    - name: Verify prepared tools and dependency archive
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:reuse:tools
+    - name: Mount the existing research namespace without publishing native targets
+      uses: depot/cache-mount@38d61fd25163e9ef3a3eff8a61676994d306e549
+      with:
+        name: aquaticats-monochromatic-reuse-20261018-native-target-trusted-r1
+        path: /mnt/aquaticats-monochromatic-reuse-20261018-native-target-trusted-r1
+        debug: 'true'
+    - name: Compile exact-source diagnostic transport and replay only filesystem cases
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:reuse:rust
+    - name: Recheck image identity
+      if: always()
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:reuse:registry
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      if: always()
+      with:
+        name: native-exact-source-diagnostic
+        path: .research-reuse/receipts
+        retention-days: 7
+        if-no-files-found: warn
