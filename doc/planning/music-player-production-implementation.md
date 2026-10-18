@@ -544,6 +544,15 @@ Queued, not started (an agent slot frees when one of the above reports; the cap 
   to save only on main and dispatch, under 650 MB per entry, and to delete feature-branch entries after merge.
 - Gallery retake owed from task 93 (the four Settings images, in progress inside that branch); task 94's retakes are done.
 - Forward the Alpine and Windows artifact specifications to task 92 when those agents report.
+- 2026-10-18 MERGED (agent `a24e53faf2449563e`, head `303ef695f0`, 1,302 Android unit tests, detekt, lintDebug and
+  clippy clean): the `last_modified` fix (root cause: the document column asked of the media store, 27,137 exceptions
+  in a cold 10,000-track run before, 0 after; fingerprints identical on device for 25 of 25 media store tracks) and
+  issues 1438, 1439, 1440. Jank at 10,000 tracks is not caused by the exceptions and not changed by the fix (4 of 20
+  windows slow against 2 of 40 at 1,000 tracks, p = 0.089); a quiet-host perfetto trace is owed and not started.
+  Follow-up agent `af5649edcdf4f7d71` (branch `fix/music-player-android-load-failure-routing`): the ledger stale
+  second message edge and non-tap load failures (auto-advance, restore) following D122 and D123 with a system
+  notification instead of an in-app message. Agent (g)'s scratch of 94 GB was cut to 11 GB (emulator copies and
+  invented libraries removed; `emu-90` belongs to someone else and stays).
 - 2026-10-18 done from that triage and merged to main: 1612 and 1610 (workflow fixes, release and cache-prune dry
   runs green), 1639 (the four design runtime JS files tracked, negations recorded in
   `doc/decision/gitignore-negations.md`; closed by the commit), the music player share of 1758 (fedora:41 index digest
