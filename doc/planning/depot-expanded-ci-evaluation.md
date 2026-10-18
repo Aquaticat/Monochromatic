@@ -1006,8 +1006,7 @@ The user accepted Depot runners under GitHub orchestration first,
 followed by qualification and promotion of selected Linux workflows to native CI.
 This rollout stays within a permanent hybrid with heavy GitHub-hosted runner use.
 Promotion does not mean progressively draining eligible workloads from GitHub's own compute.
-The remaining interview settles the dependent adoption conditions;
-production routing still follows confirmation of shared understanding.
+Production routing follows confirmation of shared understanding of the concrete rollout plan.
 The user also accepted standing bounded authority for recurring overage within the existing planning ceiling
 and one reserved automatic recovery attempt for classified infrastructure failures.
 The original failure remains visible;
