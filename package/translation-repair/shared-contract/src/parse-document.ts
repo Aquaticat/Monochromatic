@@ -17,8 +17,10 @@ import {
   widenNodesToContainers,
   withMarkdownExhaustionRefused,
   withMdxExhaustionRefused,
+  type FootnoteGraph,
+  type MarkdownParseError,
+  type FrontMatterParseError,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import type { FootnoteGraph, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 
 //region Document parsing
 // Composition of the deterministic core: front matter split, tolerant parse
@@ -165,7 +167,7 @@ export type RepairDocument = {
 
  @returns mdast root plus downgrade findings when the strict grammar failed
 
- @throws {@link import('@monochromatic-dev/translation-repair-document-structure/ts').MarkdownParseError} when plain markdown refuses the body too,
+ @throws {@link MarkdownParseError} when plain markdown refuses the body too,
  its nesting being past the parse bound or having exhausted the parser's stack
  (`parse-mdx.ts` `requireMarkdownRefusal`)
 
@@ -230,9 +232,9 @@ export function parseBodyTolerant(
 
  @returns Parsed document with nodes, hashes, footnote graph, and findings
 
- @throws {@link import('@monochromatic-dev/translation-repair-document-structure/ts').FrontMatterParseError} when fenced YAML refuses to parse
+ @throws {@link FrontMatterParseError} when fenced YAML refuses to parse
 
- @throws {@link import('@monochromatic-dev/translation-repair-document-structure/ts').MarkdownParseError} when plain markdown refuses the body too,
+ @throws {@link MarkdownParseError} when plain markdown refuses the body too,
  its nesting being past the parse bound or having exhausted the parser's stack
 
  @example

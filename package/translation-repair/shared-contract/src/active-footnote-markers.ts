@@ -1,6 +1,7 @@
 import type { RootContent, } from 'mdast';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
+  type DeepReadonlyData,
   FootnoteRewriteError,
   gfmMarkerAt,
   type GfmMarkerSpan,
@@ -18,7 +19,6 @@ import {
   unpositionedRuns,
   withMdxExhaustionRefused,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import type { DeepReadonlyData, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 
 //region Syntax-authorized footnote markers
 // AST nodes supply context; masked raw text supplies unresolved references and exact encoded spans.

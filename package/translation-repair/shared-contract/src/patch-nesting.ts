@@ -1,12 +1,10 @@
 import {
   firstNestingExcess,
   nestingAccount,
+  type NestingExcess,
+  type NestingReading,
   spliceDisjointEdits,
   type SpliceEdit,
-} from '@monochromatic-dev/translation-repair-markup/ts';
-import type {
-  NestingExcess,
-  NestingReading,
 } from '@monochromatic-dev/translation-repair-markup/ts';
 
 //region Patch nesting
