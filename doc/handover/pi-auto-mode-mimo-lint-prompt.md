@@ -5,15 +5,20 @@
 MiMo's task is to clear the complete maintained lint scope for `package/pi-plugin/auto-mode`
 while preserving the verified native execution and review behavior.
 MiMo runs through a supervised Pi RPC host rather than requiring a manual handoff.
-Read-only diagnosis is active; lint editing is not assigned until the native-control regression is fixed.
+The live worker has actual lint-editing scope.
+Its first coherent checkpoint is the CLI network guard,
+the CLI process consumer and `src/native-process-network.unit.test.ts`.
+The supervising agent owns native cancellation,
+compaction,
+history and content-storage sources until their current verification finishes.
 The complete replay corpus passes behavioral verification on `native-release-mmaT8k`;
-the additional native session-action catalog exposes a separate cancellation-signal capture defect.
+later native input repairs are built as `native-release-EWv4wy`.
 See the [current frontier](pi-auto-mode-current-frontier.md) for the active incident and evidence location.
 
 The 2026-10-18 full Oxlint run reports **83 errors and 13,834 warnings**
 across **818 files and 486 rules**, using one thread.
 This is the measured pre-control-regression snapshot,
-so run full lint again after the native repair before selecting edits.
+so run full lint again after the assigned checkpoint before selecting remaining clusters.
 The previous intermediate snapshot reported 30 errors and 13,163 warnings.
 Phase extraction and its genuine host fixtures add findings while removing retired protocols;
 this is an explicit increase in diagnostic debt, not a clean-lint claim.
@@ -62,17 +67,23 @@ Rule severity and coverage remain unchanged.
 ## Verified behavior to preserve
 
 The verified complete replay build is `native-release-mmaT8k`.
-The eventual lint host must start against the repaired native-control build,
-not reuse a diagnosis host pinned to the earlier release.
+The current lint host pins `native-release-EWv4wy`.
+The canonical frontier records its live fixture and controller;
+do not reuse a closed diagnosis host pinned to an earlier release.
 Both direct and child groups use Pi's actual preparation, execution, and finalization bodies.
 The same prepared group owns automatic review, manual confirmation, membership, and execution maps.
 Native slots expose phase retention; the retired `invokeProgramNative` API and whole-call adapters are absent.
 Restoring them to satisfy fixture typing would restore removed architecture.
 
-The full units and type check pass.
-The native lifecycle catalog passes all 22 modes,
+The complete `mmaT8k` baseline has passing full units and type checking.
+Its native lifecycle catalog passes all 22 modes,
 including actual child preparation, hidden-property rejection, hook blocking, and cancellation.
-The 24 fallback cases and native execution catalogs pass.
+The newer progress/fallback catalog also passes on `EWv4wy`,
+including exact-group Allow after native progress and source/cancellation rejection controls.
+The current full-unit run fails on the known stale network fixture's missing private receipt path;
+that is part of the worker's first editing checkpoint.
+The exact committed-source type check and new storage,
+compaction and persisted-content consumers pass.
 Logger destination tests and the full logger unit suite also pass.
 
 The faithful configured replay `pi-mimo-failure-rpc-7vxnGu` completes all 52 original calls,
@@ -143,3 +154,18 @@ The [current frontier](pi-auto-mode-current-frontier.md) retains incident eviden
 commits, failed experiments, and historical measurements.
 The original second group's discarded transport cause remains unknown.
 Desktop `notify-send` termination is a separate incident.
+
+## Supervisor completion boundary
+
+The worker reports a coherent scoped commit and fresh zero-finding lint result.
+The supervisor reviews the actual patch,
+rebuilds its native artifact,
+runs the actual CLI process and network unit,
+then continues the full-package queue without a manual handoff.
+Lint success alone does not establish native behavior.
+Final completion still requires full lint,
+appropriate complete tests,
+both configured replays,
+required/excluded request audits,
+reviewed artifact cleanup,
+dependency-aware measurement and rendered package documentation.

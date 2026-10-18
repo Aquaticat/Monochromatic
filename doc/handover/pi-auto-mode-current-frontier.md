@@ -73,7 +73,9 @@ subsequent real tool groups execute with captured Luna requests.
 The current assignment is the CLI guard,
 its process consumer and `src/native-process-network.unit.test.ts`.
 No completed semantic repair commit exists yet.
-The two changed CLI files contain the earlier formatter's edits.
+The saved CLI files start with the earlier formatter's edits;
+the current worker has now applied the first actual guard rewrite.
+The JSONL consumer and disposable unit environment remain in progress.
 The original cancellation/compaction projection files and their tests remain supervisor-owned.
 This controller closes with exit zero before its measured RSS reaches the configured limit again.
 The current restarted fixture is `${HOME}/temp/agent/pi-mimo-rpc-session-7O5MPn`,
@@ -484,6 +486,10 @@ Do not equate any error-word hit with a bare shutdown error or filter the noise 
   rebuild affected consumers,
   run types and meaningful native controls,
   then continue through the remaining full-package lint clusters.
+- Keep new loaded-content,
+  compaction,
+  exact-content and streaming-capacity regressions in the maintained session-input task catalog;
+  add an aggregate task after the worker's current config-dependent checks settle.
 - First reproduce and repair the parallel progress freshness failure,
   with automatic and exact-group Allow controls,
   genuine source-change rejection and rebuilt guard mutations.

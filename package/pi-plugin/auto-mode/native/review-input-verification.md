@@ -62,8 +62,32 @@ including both originally failing call identifiers,
 with no selectors and host exit status `0`.
 Its 62 actual Luna requests pass the required and excluded structured-payload audit.
 The character-fragmented thinking variant is a separate streaming stress case;
-it does not include the saved assistant text and still exhausts the heap at this checkpoint.
+it does not include the saved assistant text.
+An earlier version exhausts the heap;
+the complete `mmaT8k` baseline after logger `0.4.2` completes all 52 calls and 62 actual Luna requests.
 Persisted final messages do not establish the original network chunk boundaries.
+
+A later actual MiMo worker exits after V8 heap exhaustion.
+Its cause is not established by the earlier replay result.
+The native streaming capacity regression independently reproduces full-prefix storage growth,
+then verifies shared storage with unchanged original callback,
+snapshot and publication identities.
+The [instruction collector](../doc/instruction-collection.md#retained-native-input-storage)
+documents that component and its separate configured-host completion checks.
+
+The complete closed `eZNsLl` configured-session capture after real RPC compaction passes an additional audit:
+35 requests,
+33 operation reviews and 660 questions.
+Positive controls detect missing prepared members,
+substituted proposal IDs,
+thinking,
+signatures and raw command fields.
+Actual requests preserve parsed Bash input,
+original proposal IDs,
+current task text and each clause's complete proposed operation.
+Shared material can contain policy excerpts or complete visible-conversation content;
+the audit checks the selected clause against the corresponding representation.
+It does not recursively interpret arbitrary literal tool-output text as encoded transport metadata.
 
 The recorder excludes transient `message_update` output from its own retained JSON stream
 after an earlier private output limit prevented completion.
