@@ -453,7 +453,8 @@ before the other queued work.
     run in `w181` (notes `w181-notes/report.md`);
     the docs batch's leftovers (the batch itself landed in `065353a34f` to `8194356f4d`;
     `1939670f87` brought `design-commitments.md` up to the B619 landing and the B641 carry run-off;
-    gate g102 runs on `1939670f87` in `w179`, unit `gate-g102`, output `s245/split/gate-g102/`):
+    gate g102 on `1939670f87` is green, output `s245/split/gate-g102/`:
+    145 steps exit 0, suite 2506 pass and 0 fail, the same as g101):
     n171 and n173 left no hand-back to source their breaches,
     and Z4 has no recorded fix;
     a `pi` sol review of the five rounds' landed production diff
