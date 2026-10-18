@@ -4,11 +4,13 @@ import { describe, it } from '@monochromatic-dev/module-test/ts';
 
 //region Original built modules create the capability before counterfeit consumers exercise its interface.
 /** The namespace is loaded from the same stable facade used by native callers. */
-const policy: unknown = await import(new URL(
+const loadedPolicy: unknown = await import(new URL(
   '../dist/native/contract/integration/policy-source/system-slot.mjs',
   import.meta.url,
 ).href);
-assert.ok((policy !== null) && ((typeof policy) === 'object'));
+assert.ok((loadedPolicy !== null) && ((typeof loadedPolicy) === 'object'));
+/** Explicit namespace ownership remains available inside the independent test callbacks. */
+const policy: object = loadedPolicy;
 /** The real disposable native environment supplies an issued and loaded capability. */
 const environmentModule: unknown = await import(new URL(
   '../dist/native/contract/integration/native-batch/environment.mjs',
@@ -37,8 +39,10 @@ await using lifetime = {
   },
 };
 /** The genuine capability is never replaced with a caller-authored state object. */
-const input: unknown = Reflect.get(environment, 'policyInput');
-assert.ok((input !== null) && ((typeof input) === 'object'));
+const loadedInput: unknown = Reflect.get(environment, 'policyInput');
+assert.ok((loadedInput !== null) && ((typeof loadedInput) === 'object'));
+/** Explicit issued-object identity remains available inside the independent test callbacks. */
+const input: object = loadedInput;
 /** Public operations accept either the capability or their original aggregate argument. */
 const readers = [
   { name: 'readPolicyInput', field: undefined },
@@ -150,19 +154,15 @@ await describe({
           /** Descriptor values remain untrusted until their callable kind is checked. */
           const operation: unknown = descriptor.get ?? descriptor.value;
           assert.ok((typeof operation) === 'function');
-          for (const receiver of [{}, { ...input }, Object.create(input), new Proxy(input, {})]) {
-            /** Both synchronous access and asynchronous reload must withhold the borrowed state. */
-            const outcome: { failure: unknown } = { failure: undefined };
-            try {
+          await Array.fromAsync([{}, { ...input }, Object.create(input), new Proxy(input, {})], async function rejectReceiver(receiver) {
+            await assert.rejects(async function invokeBorrowedMember() {
               /** A copied operation receives only the counterfeit receiver and an invalid binding. */
               const result: unknown = Reflect.apply(operation, receiver, [{}]);
               if (result instanceof Promise) await result;
-            }
-            catch (error) {
-              outcome.failure = error;
-            }
-            assert.ok(Error.isError(outcome.failure));
-          }
+            }, function originalFailure(error: unknown): boolean {
+              return Error.isError(error);
+            });
+          });
         },
       });
     }),
