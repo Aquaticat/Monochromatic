@@ -18,6 +18,7 @@ import {
   cacheAccountCommitsOf,
   cacheAccountGitOutput,
 } from './cache-account-git.ts';
+import { preSplitSourcesOf, } from './cache-account-sources.ts';
 
 //region Cache account setting
 // WHICH COMMIT SET A CACHE VERSION'S CURRENT VALUE (ledger M28): the newest
@@ -35,7 +36,8 @@ const auditLog = contextRoot({ tag: 'cache-account-audit', },);
 
  @param root - repository's top directory
 
- @param sources - pathspec of the package's source
+ @param sources - pathspec of the package's source; where it is the family's, the pre-split source directory is
+ read beside it, so a version set before the split is found at its old commit and not at the move
 
  @param version - constant as the source declares it
 
@@ -75,6 +77,7 @@ export async function cacheVersionSetting(
         version.declaration,
         '--',
         sources,
+        ...preSplitSourcesOf({ sources, },),
       ],
     },),
   },);
@@ -96,6 +99,7 @@ export async function cacheVersionSetting(
           commit.hash,
           '--',
           sources,
+          ...preSplitSourcesOf({ sources, },),
         ],
       },);
       return {

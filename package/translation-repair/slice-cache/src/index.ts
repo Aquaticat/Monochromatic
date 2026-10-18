@@ -33,6 +33,8 @@ export { cacheVersionSetting, } from './corpus-run/cache-account-setting.ts';
 export {
   type AuditedSources,
   auditedSourcesOf,
+  preSplitSourcesOf,
+  preSplitWithoutTestsOf,
   repositoryTopOf,
   sourcesOfPrefix,
   sourcesPathspecOf,

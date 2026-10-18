@@ -23,6 +23,8 @@ import {
 import { cacheVersionSetting, } from './cache-account-setting.ts';
 import {
   auditedSourcesOf,
+  preSplitSourcesOf,
+  preSplitWithoutTestsOf,
   repositoryTopOf,
   sourcesPathspecOf,
   withoutTestsPathspecOf,
@@ -267,7 +269,9 @@ export async function auditCacheAccounts(
         `${earliestCommit.hash}..HEAD`,
         '--',
         sourcesPathspec,
+        ...preSplitSourcesOf({ sources, },),
         withoutTests,
+        ...preSplitWithoutTestsOf({ sources, },),
       ],
     },),
   },);

@@ -22,6 +22,8 @@ import {
   auditCacheAccounts,
   auditedSourcesOf,
   citedHash,
+  preSplitSourcesOf,
+  preSplitWithoutTestsOf,
 } from '../../dist/final/node/index.mjs';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import {
@@ -121,6 +123,51 @@ await describe({
           sources: 'package/stray/src',
           files: ['package/stray/src/stray-cache-version.ts',],
         },);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: preSplitSourcesOf.name,
+  children: [
+    it({
+      name: 'NAMES THE PRE-SPLIT SOURCE DIRECTORY where the sources are the family\'s, in either form the audit '
+        + 'writes them',
+      fn: async () => {
+        expect([
+          `${FAMILY}/*/src`,
+          `:(glob)${FAMILY}/*/src/**`,
+        ].map((sources,) => preSplitSourcesOf({ sources, },)),).toEqual([
+          ['package/module/translation-repair/src',],
+          ['package/module/translation-repair/src',],
+        ],);
+      },
+    },),
+    it({
+      name: 'NAMES NONE where the sources are one package\'s own, whose sources never stood there',
+      fn: async () => {
+        expect(preSplitSourcesOf({ sources: 'package/stray/src', },),).toEqual([],);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: preSplitWithoutTestsOf.name,
+  children: [
+    it({
+      name: 'LEAVES THE TESTS OF THE PRE-SPLIT SOURCE DIRECTORY OUT where the sources are the family\'s',
+      fn: async () => {
+        expect(preSplitWithoutTestsOf({ sources: `${FAMILY}/*/src`, },),).toEqual([
+          ':(exclude,glob)package/module/translation-repair/src/**/*.test.ts',
+        ],);
+      },
+    },),
+    it({
+      name: 'LEAVES NOTHING OUT where the sources are one package\'s own',
+      fn: async () => {
+        expect(preSplitWithoutTestsOf({ sources: 'package/stray/src', },),).toEqual([],);
       },
     },),
   ],
