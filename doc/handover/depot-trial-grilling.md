@@ -42,6 +42,11 @@ and both successful domain cases made zero HTTP/provider requests.
 The remaining `none` case reached its preserved `unresolved` versus `unspecified` source assertion.
 The coverage researcher owns complete matching-image browser/E2E receipts,
 finite mutation and conformance completion and their canonical coverage note.
+Separate remaining coverage items are actual desktop compositor/ImageMagick/PNG prerequisites and consumers,
+proper packed-install consumers,
+and semantic feature/assertion-manifest completion.
+No other lane owns these items;
+the coverage researcher must reconcile measured/reserved campaign cost before each additional bounded profile.
 
 The broader Rust ledger records all 35 bounded ASan fuzz targets completed,
 Truepeak's actual all-features Nextest result of 89 passing cases and two expected skips,
