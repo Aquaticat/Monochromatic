@@ -222,7 +222,8 @@ retention,
 token,
 upstream,
 and manifest-detail operations.
-Their authorization and cleanup behavior still need an isolated artifact proof before a new retained resource is created.
+Their authorization and cleanup behavior still need an isolated artifact proof
+before relying on those operations for resource reclamation.
 No broad registry token,
 mirror,
 or policy change follows from source discovery.
