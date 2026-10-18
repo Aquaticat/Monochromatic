@@ -23,7 +23,7 @@ pub mod explicit_types;
 /// Fixed in-memory workspace initialization for semantic properties.
 mod semantic_fixture;
 
-/// Structured and raw-source invariants for the anonymous-function ban.
+/// Structured and raw-source invariants for the sidecar test rule.
 pub mod rust_style;
 
 /// Import owned JSONC values and the production operations under test.

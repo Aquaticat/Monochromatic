@@ -50,7 +50,7 @@ fn is_unnameable_leaf(database: &dyn HirDatabase, ty: &Type<'_>) -> bool {
             }
         }
     }
-    // Closures have unnameable types; the independent anonymous-function rule can still reject their expressions.
+    // Closures have unnameable types; a separate closure check, not this rule, decides whether their expressions are acceptable.
     if ty.as_closure().is_some() {
         return true;
     }

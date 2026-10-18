@@ -97,7 +97,7 @@ fn inconsistent_modes_and_invalid_values_are_rejected() {
         vec!["--concurrency", "many"],
         vec!["--max-warnings=-1"],
         vec!["--config"],
-        vec!["--rule", "rust/no-anonymous-functions"],
+        vec!["--rule", "rust/max-lines"],
         vec!["--unknown"],
     ] {
         assert!(parse(arguments.as_slice()).is_err(), "{arguments:?}");

@@ -1,5 +1,5 @@
 //! What:
-//!  Coverage-guided entry for the Rust anonymous-function rule.
+//!  Coverage-guided entry for the Rust sidecar test rule.
 //! Why:
 //!  libFuzzer mutates arbitrary source and a bounded structured grammar together.
 //!
