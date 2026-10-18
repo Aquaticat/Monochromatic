@@ -485,3 +485,10 @@ The coordinator also received the exact frozen-source scanner/Truepeak profile h
 recorded in `doc/planning/depot-rust-coverage-research.md`,
 for its independently owned repeated Linux DAG.
 No cloud run or settings mutation was performed by this reviewer.
+
+The Rust handoff also passes its rendered check and the same targeted lint invocation.
+Read-only publication verification found remote `main` at
+`48d85b438492c186baf81a4c2171d583f61f0b82`,
+containing the completed review and handoff;
+the owned paths were clean.
+The two additional archive bundles and prerequisite source bundle still reproduce their reviewed SHA-256 values.
