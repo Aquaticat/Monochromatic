@@ -363,13 +363,30 @@ before the other queued work.
     (`w171-notes/lintlist-out.txt`);
     it amended one of its own unpushed commits,
     against the no-amend rule (a slip for the ledger).
-3.  The controls in a fresh keyless worktree
+3.  Integration in `w172` (detached, not yet on the branch):
+    on the branch head `b030c7ca71` (the 23-package lint fixes landed and pushed),
+    the base oxlint ignore narrowed to `**/package/test-fixture/**`
+    (root lint still skips the fixture packages, the translation-repair `test-fixture` lints 46 files),
+    `w173`'s nine commits (`w168` merged onto `w169` with a required `packageEntry`,
+    refusals naming `taskPathOf` over `COMMAND_OWNERS`,
+    the audit's pre-split history, tests first;
+    three conflicts with the docs move kept the derived task paths),
+    and `w174`'s four README corrections.
+    A Sonnet agent continues there:
+    the six `source-scans` findings in `w169`'s coverage-census code,
+    the test-only workspace cycles removed by moving each runner test to the runner's owner,
+    oxlint to zero in the remaining eight packages,
+    the `./ts` exports of `source-scan` and `test-fixture`,
+    `source-scan`'s unused `coverage-census` development dependency,
+    and `run`'s `budget-sample` description.
+    Then gate `w172`'s head and fast-forward the branch to it.
+4.  The controls in a fresh keyless worktree
     (suite names and counts against g100,
     scans,
     the decisions replay,
     census and audit source sets),
     then the measured lint times into the plan.
-4.  The queue the split went ahead of,
+5.  The queue the split went ahead of,
     oldest first:
     the delegated items (finalist extension,
     guard demos);
@@ -377,7 +394,7 @@ before the other queued work.
     a `pi` sol review;
     the cache-account audit;
     the relaunch of TianqiChen666 through the runbook's keyed task.
-5.  Tell the owner that the classifier refused the issue comments on 527 and 541,
+6.  Tell the owner that the classifier refused the issue comments on 527 and 541,
     that 527 and 541 no longer hold on the branch (`cbedea3574` removed the code),
     and that 542 is fixed by ledger X15.
 
