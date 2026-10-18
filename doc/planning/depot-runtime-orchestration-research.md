@@ -1,6 +1,6 @@
 # Depot runtime and orchestration research
 
-## Current execution boundary on 2026-10-18 at 10:58 UTC
+## Current execution boundary on 2026-10-18 at 11:21 UTC
 
 Native single-job retry now has actual transport evidence:
 attempt two of `xgq2429hqv` downloaded the producer archives,
@@ -16,13 +16,23 @@ The deciding SDK sorts same-name artifacts by descending numeric ID.
 The older observed artifact has the larger ID;
 both IDs are safe integers.
 The [source trace and controls](../troubleshooting/depot-rerun-artifact-id-order.md)
-explain the selector result without establishing the backend ID-construction mechanism.
+establish the selector vulnerability without establishing the backend ID-construction mechanism.
+The failing Action's raw pre-filter response was not captured;
+a visibility race is not excluded as the specific incident mechanism.
 Content-bound names at `46fab80ef500e7d857cdb822085c03f899e266ff`
 passed the first fresh consumer in `w9jdpj5f1l`.
-Its real complete workflow rerun is admitted with cumulative conservative reservations of USD 0.822
-under the unchanged USD 1 guard.
+Its real complete workflow rerun passed all current-output and rejection controls,
+with ten distinct API sandbox IDs across the five jobs and two attempts.
+The [public orchestration receipt](../audit/depot-native-orchestration-2026-10-18.evidence.json)
+retains fifteen original evidence ZIPs.
 The raw aggregate status also includes intentionally failed parallel jobs and a cancelled timeout job.
-An isolated ordinary continued-failure comparison remains required before diagnosing job-level continuation.
+The isolated ordinary comparison now has a [public receipt](../audit/depot-job-policy-history-2026-10-18.evidence.json).
+Native `kjf78stmkb` and GitHub `39122132487` both normalize the allowed failure's dependency result to success.
+Native's aggregate and GitHub App suite still conclude failure,
+while the GitHub workflow concludes success.
+No cancelled timeout job explains that isolated difference.
+The default downstream and step-level controls are separately admitted as `pfzfjrqdpq` and `lrhfzwrwl2`.
+Cumulative conservative semantics reservations are USD 0.960 under the USD 1 guard.
 
 The [earlier Tests trial](../audit/depot-test-feature-2026-10-16.md)
 already proves actual physical binary-level splitting and report/history controls.
@@ -39,8 +49,17 @@ Three 34-case seed runs and two 17-case physical shards passed,
 and the downstream consumer verified the exact disjoint 34-case union.
 Attempt-scoped APIs independently returned 136 passing case events,
 with four distinct provider sandbox IDs joined to the source-bound receipts.
-Both physical commands still reported zero timed candidates;
-history-balancing benefit is not qualified.
+Both physical commands reported zero timed candidates.
+The later read-only controls established that the harness supplied full test-name values as class-name candidates,
+while every actual JUnit classname is `monochromatic-git-policy-cli`.
+That real class has historical timing data under both timing granularities;
+the full test-name controls and absent-class negative do not.
+The [current documentation](https://depot.dev/docs/ci/how-to-guides/split-tests.md)
+requires candidate values to match JUnit file/class fields;
+`testname` timing granularity does not introduce a test-name candidate identity.
+This corrects the earlier unresolved-availability interpretation.
+The per-test physical partition remains an untimed execution/ingestion result,
+not a timing-balanced per-test result.
 The [public receipt](../audit/depot-physical-test-shards-2026-10-18.evidence.json)
 retains stored rows and five original evidence ZIPs,
 excluding the binary input wrapper and signed transport URL.

@@ -1,6 +1,6 @@
 # Depot trial interview
 
-## Execution checkpoint on 2026-10-18 at 10:58 UTC
+## Execution checkpoint on 2026-10-18 at 11:21 UTC
 
 The actual single-job retry of native run `xgq2429hqv` completed artifact download on attempt two.
 Its consumer then correctly rejected the old fixture's failed assertion.
@@ -11,21 +11,32 @@ The subsequent full workflow rerun regenerated passing producer receipts,
 but its downloader selected the first attempt's `allrun` archive alongside current state/default archives.
 The consumer rejected the current-output hash mismatch.
 All seven producer/consumer archives across both attempts are retained privately with CRC and SHA checks.
-The deciding published SDK selector sorts same-name artifacts by numeric ID,
+The published SDK selector sorts same-name artifacts by numeric ID,
 and the actual older `allrun` ID is larger than the rerun's ID.
 Both IDs are safe integers;
 precision loss does not explain this pair.
 The backend's ID-construction mechanism remains unknown.
+The Action's raw pre-filter response was not captured;
+the selector vulnerability is proven but a visibility race is not excluded as the incident mechanism.
 The source trace and controls are in
 [`depot-rerun-artifact-id-order.md`](../troubleshooting/depot-rerun-artifact-id-order.md).
 Content-bound names at `46fab80ef500e7d857cdb822085c03f899e266ff`
 passed their first fresh consumer in `w9jdpj5f1l`,
 with all current producer hashes and six source/hash rejection controls.
-Its full workflow rerun is admitted under the unchanged USD 1 semantics guard,
-with USD 0.822 cumulative conservative full-window reservations.
+Its full workflow rerun passed the same current-output and rejection controls.
+Both attempts join their current producer archives and ten distinct provider sandbox identities.
+The [public receipt](../audit/depot-native-orchestration-2026-10-18.evidence.json)
+retains fifteen original ZIPs.
 Do not infer passing aggregate workflow status from that consumer:
 the same diagnostic workflow contains intentionally failed parallel jobs and a cancelled timeout job.
-An isolated ordinary job-level continuation comparison remains queued to separate these effects.
+The isolated ordinary job-level comparison completed as native `kjf78stmkb` and GitHub `39122132487`:
+both expose `needs.allowed_failure.result` as `success`,
+while native aggregate and GitHub App suite report failure and the GitHub workflow reports success.
+There is no cancelled timeout in that isolated workflow.
+Default downstream eligibility and an isolated step-level workaround are separate admitted controls.
+Their runs are `pfzfjrqdpq` and `lrhfzwrwl2`,
+at `714a3cad36c20da75969454fe33f28dab7770e9b`.
+The semantics campaign's cumulative full-window reservations are USD 0.960 under the USD 1 guard.
 
 The earlier [Depot Tests trial](../audit/depot-test-feature-2026-10-16.md)
 already qualifies physical binary-level sharding,
@@ -44,8 +55,18 @@ their downstream consumer verified the exact disjoint 34-case union.
 Attempt-scoped result APIs independently returned all 136 passing events,
 with 34 unique case names and four distinct provider sandbox identities.
 Both shard commands found timings for zero candidates.
-Physical execution and ingestion passed;
-per-test historical lookup and any history-balancing benefit remain unqualified.
+Physical execution and ingestion passed.
+The later read-only control established a harness identity error:
+the full test-name candidates do not match their JUnit classname,
+`monochromatic-git-policy-cli`.
+Depot found timings for that actual classname under both test-name and class-name timing granularity;
+all full test-name candidate controls and the absent-class negative found zero.
+Changing report-key variants did not change that observed identity distinction.
+The current [splitting documentation](https://depot.dev/docs/ci/how-to-guides/split-tests.md)
+requires file/class candidates even when timing granularity is `testname`.
+The original zero result does not establish unavailable historical data or a vendor history defect.
+The [paired policy/history receipt](../audit/depot-job-policy-history-2026-10-18.evidence.json)
+retains all eight read-only requests and their actual outputs.
 The two full profile reservations total USD 0.348 under the USD 1 campaign guard.
 Original evidence ZIPs,
 stored result rows and positive/negative transport-secret cleanup are public in
@@ -80,9 +101,8 @@ The parent owns its public receipt and deciding-source note.
 The installed Libvirt source launches its KVM capability probe with machine `none`;
 the changing ordinary-user access still needs per-probe state evidence before assigning a cause.
 
-The remaining parent queue includes the current artifact rerun,
-per-test history identity diagnosis,
-ordinary continuation isolation,
+The remaining parent queue includes final default/step continuation receipt collection,
+the timing-identity troubleshooting note and final canonical interpretation correction,
 VM/process public receipts,
 container Git/libatomic prerequisite notes,
 job-environment recurrence documentation,

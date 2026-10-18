@@ -57,6 +57,11 @@ The consumer's download log records its original ZIP digest,
 rather than the new ZIP digest,
 `4027aee6a01033fcca9578f8545764a75974ddef9c9afe41cb411f060ca501b0`.
 These observations match the deciding SDK selector.
+The Action's raw pre-filter list response was not captured.
+The new upload's earlier finalization and later API visibility do not prove that both same-name rows
+were visible to the failing consumer's list request.
+The exact selector controls establish the numeric-ordering vulnerability;
+they do not isolate it from a visibility race in that specific cloud incident.
 
 Both observed IDs are safe JavaScript integers.
 Numeric precision loss is not the explanation for this pair.
@@ -81,7 +86,7 @@ ZIP lengths,
 local SHA256 values and CRC checks passed.
 No native server-provided ZIP hash is claimed.
 
-## Verified protection and pending workaround
+## Verified protection and workaround
 
 The producer writes its raw receipt SHA256 to its job output.
 The consumer compares the downloaded receipt's bytes with that current output.
@@ -91,9 +96,17 @@ it prevents false acceptance rather than completing the rerun.
 
 Research commit `46fab80ef5` adds the producer receipt hash to each artifact name
 and downloads the exact names supplied by current dependency outputs.
-That cloud workaround and its full rerun remain under qualification.
+Actual run `w9jdpj5f1l` passed the downstream consumer on both its first attempt and full workflow rerun.
+Each consumer checked the exact current producer bytes and passed six source/hash rejection controls.
+The second attempt's artifacts join their current API attempt IDs;
+the five jobs across both attempts have ten distinct provider sandbox IDs.
 It avoids asking a same-name selector to infer chronology from IDs.
 It retains separate immutable names instead of replacing old artifacts.
+The [public receipt](../audit/depot-native-orchestration-2026-10-18.evidence.json)
+retains fifteen original ZIPs across the failing fixed-name and passing content-bound campaigns.
+Raw Action logs remain private because they contain signed download URLs.
+The workaround trades unchanged names for content-addressed names;
+a content-identical receipt legitimately retains its name.
 
 ## What does not work
 
@@ -118,7 +131,7 @@ This remains an integration finding for the current repository.
   the observed Depot IDs do not preserve the chronology assumed by the SDK selector.
   The backend mechanism is unknown.
 - Fixability:
-  content-bound naming is an owned consumer remedy under cloud qualification.
+  content-bound naming is an owned consumer remedy verified on fresh and full-rerun consumers.
   No public backend patch is available to evaluate.
 - Supported use:
   native workflows execute the pinned upload/download Actions in this trial.
@@ -128,7 +141,7 @@ This remains an integration finding for the current repository.
 - Maintainer intent:
   no evidence establishes intended Depot ID-ordering semantics.
 - Minimal patch:
-  the consumer change is committed;
+  the consumer change is committed and cloud-verified;
   no backend prototype is possible from the inspected public source.
 
 The `.out-of-scope/` inventory has no matching Depot exemption.
