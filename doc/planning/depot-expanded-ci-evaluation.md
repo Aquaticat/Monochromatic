@@ -656,6 +656,7 @@ Remaining factual work is explicitly owned in the
 [execution handover](../handover/depot-trial-grilling.md):
 current-source macOS and Windows owner controls,
 semantic feature/assertion reconciliation,
+execution of newly identified IDE/file-manager/terminal/Kotlin/design owners,
 capability allocation completeness and final combined allocation/cost normalization.
 All 120 captured documentation pages now have substantive applicability findings in the source ledger.
 The repeated GitHub and corrected native graph phases,

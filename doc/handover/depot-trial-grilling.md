@@ -73,6 +73,54 @@ Platform owns the separate source-backed troubleshooting note;
 this is an invocation error,
 not an upstream defect or a Depot result.
 
+The independent package census now passes at `16:59:07 UTC`:
+`doc/audit/depot-package-directory-census-independent-2026-10-18.evidence.json`
+joins all third-level package trees and the four excluded blob identities.
+Prepared commit `ed8cf6e5b4` records that independent evidence.
+The report's capability allocation now explicitly covers native/GHA scheduling,
+Tests/report identities,
+snapshots/OCI/Disk/SDK format separation,
+BuildKit/registry lifecycle,
+cache/PR/network/Dependabot trust and optional-product dispositions.
+Its scoped commit publisher is session `65826`;
+reap it and verify its actual landed identity before final ancestry checks.
+
+Coverage's semantic join identifies material authored owners with no retained execution:
+IDE,
+file-manager variants,
+terminal,
+Kotlin and design.
+Static test attributes are not executed-case counts.
+Coverage is preparing exact finite profiles for actual owner tests and real prerequisites,
+including the IDE's pinned grammar producer and terminal font/Zig dependencies.
+No allocation is authorized until that concrete proposal is reviewed.
+The parent can admit a separate maximum USD 5 campaign,
+at most two concurrent cloud jobs,
+with default Cargo/Nextest concurrency and existing no emulator/desktop relaunch boundary.
+The raw-Git graph does not prove materialized font/media payload equivalence.
+Coverage must name materialized LFS source hashes wherever those consumers need them.
+This research is not deferred to production acceptance.
+
+Platform additionally source-checks a finite native debug-access consumer,
+before any allocation,
+with a proposed two-CPU three-minute job and USD 0.036 maximum including correction.
+The installed `depot ci ssh` uses a PTY RPC;
+its `--info --output json` alone is not remote-command execution.
+The documented direct OpenSSH bridge and paused-step tmate injection are distinct transports.
+The parent must review exact noninteractive identity and cleanup controls before dispatch.
+Rust replaced desktop's 279-second envelope with exact workflow attempt evidence:
+263 seconds,
+status failed,
+USD 0.1052 nominal,
+giving a 30-row follow-on subtotal USD 0.6041.
+The archive had retained full workflow responses;
+Rust is inspecting all actual fields and replacing unnecessary public metadata with explicit selected projections,
+while retaining private originals/hashes and correcting source pointers.
+Current archive replacement does not erase Git history.
+The parent independently reconciles the sanitized final ledger,
+including subsequent OS/owner/debug attempts,
+before publishing a final combined subtotal.
+
 ## Recorded setup and recovery history on 2026-10-18 at 16:33 UTC
 
 Research remains active;
