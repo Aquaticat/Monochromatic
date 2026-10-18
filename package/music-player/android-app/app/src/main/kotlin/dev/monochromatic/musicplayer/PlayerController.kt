@@ -1690,7 +1690,11 @@ class PlayerController(private val engine: AudioEngine) {
     // private stopAtScopeEnd(): void {
     //   this.engine.pause();
     //   const first = this.queue.rewindScope();
-    //   if (first !== null) { this.loadedUri = this.uris[first]; this.engine.load(this.uris[first], false); }
+    //   if (first !== null) {
+    //     this.loadedUri = this.uris[first];
+    //     this.engine.load(this.uris[first], false);
+    //     this.onTrackLoaded?.(this.uris[first]);
+    //   }
     //   this.refresh(true);
     // }
     // ```
@@ -1705,6 +1709,8 @@ class PlayerController(private val engine: AudioEngine) {
         }
         loadedUri = uris[first]
         engine.load(uris[first], play = false)
+        // The readied first track is the loaded track, so its artist tag is read like that of any other load.
+        onTrackLoaded?.invoke(uris[first])
         refresh(followCurrent = true)
     }
 
