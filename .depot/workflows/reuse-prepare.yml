@@ -1,0 +1,58 @@
+name: Isolated installed tools and dependencies research
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  prepare:
+    runs-on:
+      size: 8x32
+    timeout-minutes: 15
+    env:
+      CI: 'true'
+      MISE_AUTO_INSTALL: 'false'
+      MISE_LOCKED: '1'
+      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+      RESEARCH_REUSE_ROLE: prepare
+      RESEARCH_PERSIST_CONTROL: synthetic-public-environment-20261018-r1
+      RESEARCH_SECRET_CONTROL: synthetic-masked-environment-20261018-r1
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        fetch-depth: 1
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Freeze the installer while measuring the lock-bound tool subset.
+        version: 2026.10.9
+        install: false
+        cache: false
+    - name: Install locked tools and prepare separate dependency stores
+      run: mise run //package/dev-script/task-util:research:reuse:prepare
+    - name: Exclude the source checkout and synthetic secret file
+      run: mise run //package/dev-script/task-util:research:reuse:seal
+    - name: Preserve preparation and source exclusion evidence
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      with:
+        name: reuse-preparation-receipts
+        path: /opt/depot-reuse-20261018-r1/receipts
+        retention-days: 7
+        if-no-files-found: warn
+    - name: Capture the isolated installed filesystem
+      uses: depot/snapshot-action@a082cbabd407afdf324a7b4f41889795636f4b24
+      with:
+        image: l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r1
+        # Pin the official resolver result so future dispatches cannot select another helper.
+        version: 1.2.30
+        max-age: 6h
+        env-mask: |
+          RESEARCH_SECRET_CONTROL
+          DEPOT_CACHE_TOKEN
+          DEPOT_JIT_TOKEN
+          DEPOT_SNAPSHOT_TOKEN
+          DEPOT_TOKEN
+          SCCACHE_WEBDAV_TOKEN
+          ACTIONS_RUNTIME_TOKEN
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN
+          GITHUB_TOKEN

@@ -52,3 +52,97 @@ run = "node src/tsc-failure.unit.test.ts"
 [tasks.buildAndTest]
 description = "Build the seven node entries, then run unit tests against the built testing seam"
 run = ["mise run build", "mise run test:unit"]
+[tasks."research:reuse:prepare"]
+description = "Prepare isolated lock-bound tools and dependency stores for the Depot reuse experiment"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { spawnSync, execFileSync } = await import('node:child_process');
+const { mkdirSync, readFileSync, writeFileSync, readdirSync, statSync, openSync, closeSync, realpathSync } = await import('node:fs');
+const { join } = await import('node:path');
+const { homedir, userInfo, cpus, totalmem } = await import('node:os');
+const { createHash } = await import('node:crypto');
+const { strict: assert } = await import('node:assert');
+const root = process.env.GITHUB_WORKSPACE;
+const prefix = '/opt/depot-reuse-20261018-r1';
+assert(root && process.env.RESEARCH_REUSE_ROLE === 'prepare');
+assert(process.env.DEPOT_SNAPSHOT_TOKEN, 'Automatic snapshot token is required; do not introduce another credential');
+execFileSync('sudo', ['install', '--directory', '--owner', userInfo().username, '--group', String(userInfo().gid), prefix]);
+const evidence = join(prefix, 'receipts');
+mkdirSync(evidence, { recursive: true });
+const env = { ...process.env, MISE_DATA_DIR: join(prefix, 'mise-data'), MISE_CACHE_DIR: join(prefix, 'mise-cache'), RUSTUP_HOME: join(prefix, 'rustup'), CARGO_HOME: join(prefix, 'cargo'), GRADLE_USER_HOME: join(prefix, 'gradle'), MISE_AUTO_INSTALL: 'false', MISE_LOCKED: '1', CARGO_BUILD_JOBS: '8' };
+const records = [];
+function run({ name, command, args, cwd = root, limit = 600_000 }) {
+  const logPath = join(evidence, name + '.log');
+  const fd = openSync(logPath, 'w', 0o600);
+  const startedAt = new Date().toISOString();
+  const start = performance.now();
+  let result;
+  try { result = spawnSync(command, args, { cwd, env, stdio: ['ignore', fd, fd], timeout: limit }); }
+  finally { closeSync(fd); }
+  const record = { name, command: [command, ...args], startedAt, finishedAt: new Date().toISOString(), elapsedSeconds: (performance.now() - start) / 1000, exitStatus: result.status, signal: result.signal, error: result.error?.message };
+  records.push(record);
+  writeFileSync(join(evidence, 'preparation.json'), JSON.stringify({ sourceSha: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(), baseSourceSha: 'e02be6c8b8fe9efb41a7f8f1a0b311c17796588a', prefix, records, allocation: { name: process.env.RUNNER_NAME, cpus: cpus().length, memoryBytes: totalmem() }, credentialPresence: { cache: Boolean(process.env.DEPOT_CACHE_TOKEN), snapshot: Boolean(process.env.DEPOT_SNAPSHOT_TOKEN) } }, null, 2) + '\n');
+  console.log(JSON.stringify(record));
+  if (result.error) throw result.error;
+  assert.equal(result.status, 0, name + ' failed; inspect its retained log without repairing frozen application source');
+  return readFileSync(logPath, 'utf8');
+}
+const sha = value => createHash('sha256').update(value).digest('hex');
+const identities = {};
+for (const path of ['mise.lock', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', '.pnpmfile.mjs', '.pnpmfile.policies.json', 'package/git-policy/cli/Cargo.lock', 'package/linter/kotlin/build.gradle.kts']) identities[path] = sha(readFileSync(join(root, path)));
+assert.equal(sha(readFileSync(join(root, 'package/linter/kotlin/gradle/wrapper/gradle-wrapper.jar'))), '3b8a25775a69158b5ad2b1d17a80a88dc7b40a352a73eb27d06c612a7ce68e98');
+run({ name: 'install-locked-core-tools', command: 'mise', args: ['install', 'node', 'pnpm', 'java', 'rust', 'cargo-binstall'] });
+run({ name: 'install-locked-nextest', command: 'mise', args: ['install', 'cargo:cargo-nextest'] });
+run({ name: 'installed-tool-versions', command: 'mise', args: ['exec', 'node', 'pnpm', 'java', 'rust', 'cargo:cargo-nextest', '--', 'node', '--input-type=module-typescript', '-e', 'const {execFileSync}=await import("node:child_process");for(const [command,args] of [["node",["--version"]],["pnpm",["--version"]],["java",["--version"]],["rustc",["--version","--verbose"]],["cargo",["nextest","--version"]]])console.log(execFileSync(command,args,{encoding:"utf8"}));'] });
+run({ name: 'pnpm-cold-install', command: 'mise', args: ['exec', 'node', 'pnpm', '--', 'pnpm', 'install', '--frozen-lockfile', '--store-dir', join(prefix, 'pnpm-store')] });
+const dependencyDirectories = ['node_modules'];
+for (const category of readdirSync(join(root, 'package'), { withFileTypes: true })) if (category.isDirectory()) for (const pkg of readdirSync(join(root, 'package', category.name), { withFileTypes: true })) if (pkg.isDirectory()) {
+  const relative = join('package', category.name, pkg.name, 'node_modules');
+  try { if (statSync(join(root, relative)).isDirectory()) dependencyDirectories.push(relative); } catch (error) { if (error.code !== 'ENOENT') throw error; }
+}
+writeFileSync(join(prefix, 'dependency-directories.nul'), dependencyDirectories.join('\0') + '\0');
+run({ name: 'archive-installed-dependencies', command: 'tar', args: ['--create', '--zstd', '--file', join(prefix, 'installed-dependencies.tar.zst'), '--directory', root, '--null', '--files-from', join(prefix, 'dependency-directories.nul')] });
+const wrapperProperties = join(root, 'package/linter/kotlin/gradle/wrapper/gradle-wrapper.properties');
+const originalProperties = readFileSync(wrapperProperties);
+writeFileSync(wrapperProperties, originalProperties.toString() + '\ndistributionSha256Sum=dce76f55f8e251a3a1f130eb120f30b3d271de2b76c9b0729d316b5a1b6dc01f\n');
+try { run({ name: 'gradle-cold-dependency-resolution', command: 'mise', args: ['exec', 'java', '--', './gradlew', 'dependencies', '--no-daemon', '--console=plain', '--no-build-cache', '--max-workers=8'], cwd: join(root, 'package/linter/kotlin'), limit: 300_000 }); }
+finally { writeFileSync(wrapperProperties, originalProperties); }
+run({ name: 'cargo-cold-fetch', command: 'mise', args: ['exec', 'rust', '--', 'cargo', 'fetch', '--locked', '--manifest-path', join(root, 'package/git-policy/cli/Cargo.toml')], limit: 180_000 });
+const tools = {};
+for (const binary of ['node', 'pnpm', 'java', 'rustc', 'cargo', 'cargo-nextest']) {
+  const path = execFileSync('mise', ['which', binary], { cwd: root, env, encoding: 'utf8' }).trim();
+  tools[binary] = { path, realpath: realpathSync(path), sha256: sha(readFileSync(path)), bytes: statSync(path).size };
+}
+const syntheticPath = join(root, '.reuse-synthetic-source-marker');
+writeFileSync(syntheticPath, 'synthetic-source-marker-20261018-r1\n');
+const sensitiveFixture = join(homedir(), '.config/depot/reuse-synthetic-secret');
+mkdirSync(join(homedir(), '.config/depot'), { recursive: true });
+writeFileSync(sensitiveFixture, 'synthetic-secret-file-20261018-r1\n', { mode: 0o600 });
+run({ name: 'prepared-store-bytes', command: 'du', args: ['--summarize', '--bytes', join(prefix, 'mise-data'), join(prefix, 'mise-cache'), join(prefix, 'rustup'), join(prefix, 'cargo'), join(prefix, 'gradle'), join(prefix, 'pnpm-store'), join(prefix, 'installed-dependencies.tar.zst')] });
+writeFileSync(join(prefix, 'image-manifest.json'), JSON.stringify({ recordedAt: new Date().toISOString(), baseSourceSha: 'e02be6c8b8fe9efb41a7f8f1a0b311c17796588a', sourceSha: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(), identities, tools, dependencyDirectories, dependencyArchive: { bytes: statSync(join(prefix, 'installed-dependencies.tar.zst')).size, sha256: sha(readFileSync(join(prefix, 'installed-dependencies.tar.zst'))) }, syntheticFixtures: { sourcePath: syntheticPath, secretPath: sensitiveFixture }, preparationRecords: records }, null, 2) + '\n');
+'''
+
+[tasks."research:reuse:seal"]
+description = "Remove the disposable source checkout and synthetic secret file before snapshot capture"
+shell = "node --input-type=module-typescript -e"
+run = '''
+const { execFileSync } = await import('node:child_process');
+const { readFileSync, writeFileSync, rmSync, mkdirSync, existsSync } = await import('node:fs');
+const { join } = await import('node:path');
+const { strict: assert } = await import('node:assert');
+const root = process.env.GITHUB_WORKSPACE;
+const prefix = '/opt/depot-reuse-20261018-r1';
+assert(root && process.env.RESEARCH_REUSE_ROLE === 'prepare' && process.env.DEPOT_SNAPSHOT_TOKEN);
+const manifest = JSON.parse(readFileSync(join(prefix, 'image-manifest.json'), 'utf8'));
+const ignored = execFileSync('git', ['clean', '--dry-run', '-d', '-X'], { cwd: root, encoding: 'utf8', maxBuffer:8*1024*1024 });
+const strayGitEntries = ['HEAD', 'config', 'hooks', 'objects', 'refs'].filter(name => existsSync(join(root, name)));
+assert.equal(strayGitEntries.length, 0);
+rmSync(manifest.syntheticFixtures.secretPath);
+rmSync(root, { recursive: true, force: true });
+mkdirSync(root, { recursive: true });
+const record = { recordedAt: new Date().toISOString(), sourceDirectoryCleared: true, sourceMarkerAbsent: !existsSync(manifest.syntheticFixtures.sourcePath), syntheticSecretFileAbsent: !existsSync(manifest.syntheticFixtures.secretPath), ignoredBeforeCleanup: ignored, strayGitEntries };
+assert(record.sourceMarkerAbsent && record.syntheticSecretFileAbsent);
+writeFileSync(join(prefix, 'receipts/seal.json'), JSON.stringify(record, null, 2) + '\n');
+console.log(JSON.stringify(record));
+'''
+
