@@ -11,10 +11,15 @@ const imageCheck = (await import('node:child_process')).spawnSync('podman', ['im
 if (imageCheck.status !== 0) {
   execFileSync('podman', ['build', '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000', '--tag', image, '--file', 'Containerfile', '.'], { stdio: 'inherit' })
 }
+// The repository-root clippy.toml holds the fleet-wide disallowed-methods ban that [lints.clippy] only activates.
+// It is mounted read-only outside /work and named by CLIPPY_CONF_DIR: a mount over /work/clippy.toml would leave an
+// empty clippy.toml in the package directory on the host. Host clippy finds the file in an ancestor directory.
+const rootClippyConfig = (await import('node:path')).resolve(process.cwd(), '../../../clippy.toml')
 const runBounded = (args, { network = false, ...options } = {}) => execFileSync('podman', [
   'run', '--rm', ...(network ? [] : ['--network=none']), '--memory=2g', '--cpus=2', '--pids-limit=512',
   '--ulimit', 'nofile=4096:4096', '--security-opt', 'label=disable',
   '--volume', process.cwd() + ':/work', '--volume', 'ide-cargo:/cargo',
+  '--volume', rootClippyConfig + ':/clippy-conf/clippy.toml:ro', '--env', 'CLIPPY_CONF_DIR=/clippy-conf',
   '--workdir', '/work', '--env', 'CARGO_BUILD_JOBS=2',
   '--env', 'SLINT_EMIT_DEBUG_INFO=1',
   '--env', 'HELIX_RUNTIME=/work/target/debug/runtime',
