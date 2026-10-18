@@ -13,7 +13,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type IssueResolutionTally, } from '@monochromatic-dev/translation-repair-adjudication';
+import type { IssueResolutionTally, } from '@monochromatic-dev/translation-repair-adjudication';
 import {
   CHECKER_NOTE,
   sheetCheckLine,

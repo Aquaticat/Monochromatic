@@ -14,8 +14,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
-import { type RepairModels, } from '@monochromatic-dev/translation-repair-assembly';
+import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
+import type { RepairModels, } from '@monochromatic-dev/translation-repair-assembly';
 import {
   probeCorpusEntries,
   type ProbedResult,

@@ -31,7 +31,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { type PatchOutcome, } from '@monochromatic-dev/translation-repair-page-pass';
+import type { PatchOutcome, } from '@monochromatic-dev/translation-repair-page-pass';
 import {
   type ChatJsonOutcome,
   type ChatJsonRequest,

@@ -23,8 +23,8 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { RUN_ROSTER, } from '@monochromatic-dev/translation-repair-run';
-import { type SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
-import { type CorpusPin, } from '@monochromatic-dev/translation-repair-corpus-source';
+import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
+import type { CorpusPin, } from '@monochromatic-dev/translation-repair-corpus-source';
 import {
   type CalibrationGrace,
   StatedRefusalError,

@@ -21,14 +21,14 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
+import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary';
 import {
   RUN_MODELS,
   RUN_ROSTER,
   RunConfigError,
 } from '@monochromatic-dev/translation-repair-run';
-import { type CorpusPin, } from '@monochromatic-dev/translation-repair-corpus-source';
+import type { CorpusPin, } from '@monochromatic-dev/translation-repair-corpus-source';
 import {
   type BenchSlice,
   runEditorWidthProbe,

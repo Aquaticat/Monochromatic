@@ -21,7 +21,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { type DocumentDisplacement, } from '@monochromatic-dev/translation-repair-artifact';
+import type { DocumentDisplacement, } from '@monochromatic-dev/translation-repair-artifact';
 import {
   CONTROL_CLASS,
   controlSlices,

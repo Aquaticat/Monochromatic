@@ -14,7 +14,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type SettledCarve, } from '@monochromatic-dev/translation-repair-slice-cache';
+import type { SettledCarve, } from '@monochromatic-dev/translation-repair-slice-cache';
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication';
 import { probeDisplacement, } from '../../dist/final/node/index.mjs';
 import { levelCapturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
