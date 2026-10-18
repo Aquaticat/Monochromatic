@@ -49,9 +49,20 @@ The receipt is `logger-guard-mutations-receipt.json` in the current scratch.
 Root `TCV` stays unchanged; missed-boundary guidance belongs in package-local docs.
 There is no adopted 13k line target.
 
-The active output is `native-release-XGbh0H`, verified through `dist/native` on 2026-10-18.
-Its affected verification matrix passes.
-The faithful configured-host replay completes all 52 original calls,
+The active output is `native-release-mmaT8k`, rebuilt through `dist/native` on 2026-10-18
+after a fresh JavaScript build against logger `0.4.2`.
+The emitted policy bundle is `native-policy-api-CtuEfa81.mjs`.
+The logger publishing commit `3befa69c14` is on `origin/main`;
+automatic npm release run `39104844467` has started.
+The new complete configured-host replays are running with explicit artifact receipts:
+faithful fixture `pi-mimo-failure-rpc-7vxnGu` and fragmented fixture `pi-mimo-failure-rpc-LD83ST`.
+Their logs are `faithful-logger042-mmaT8k.log` and `fragmented-logger042-mmaT8k.log` in the current scratch.
+The final native verification matrix is also running as `native-logger042-matrix.log`.
+The corrected process-consumer audit detects both live `/fixture-node` hosts by Pi title and fixture inode.
+Cleanup must wait for every consumer to terminate.
+
+The preceding `native-release-XGbh0H` affected verification matrix passes.
+Its faithful configured-host replay completes all 52 original calls,
 including both reported failures,
 with no selectors and host exit 0.
 All 62 actual Luna requests pass the structured-payload audit.
