@@ -156,6 +156,21 @@ which the ownership fix no longer masks;
 75 packages resolve none of their own imports in the scratch worktree (TS2307),
 so their programs were exercised only weakly;
 and `dev-script/watch-restart` logs an omission warning cold that its warm run drops.
+All three are closed (`83e43a4604` to `f931308964`):
+`workspaceOrigin` decides by path alone;
+building the 72 packages the 75 import cleared every TS2307,
+and those 75 lint identically under both bundles;
+a consumer's entry now persists the omissions of the installed implementations it was built from
+(cache schema 10),
+so a warm run reports them as a cold one does.
+Under that bundle all 199 packages again gave identical exit codes, summary lines and diagnostic headers,
+cold and warm,
+and every differing body line is a paired "omitted" and "restored" report of the same file,
+count and reasons,
+or a Go panic address (`w177-notes/fullrepo/compare-base199-vs-h2*.txt`).
+The 22 commits landed on 2026-10-18 as `1008a5999f` to `62ba3e10a6`,
+with the plugin tree identical to the verified one.
+Profiling the remaining cold time runs in `w177-notes/profile/`.
 The owner also chose to profile the remaining cold time
 (about 131 s against 11.5 s without the plugin)
 after landing, not before.
