@@ -31,6 +31,7 @@ then the bundled helper,
 then records `Unavailable`:
 
 ```rust
+//! Quoted upstream launcher excerpt.
 // openai/codex: codex-rs/linux-sandbox/src/launcher.rs:140
 if let Some(path) = find_system_bwrap_in_path(file_system_policy, sandbox_policy_cwd)
     && let Some(launcher) = system_bwrap_launcher_for_path(&path)
@@ -46,6 +47,7 @@ match bundled_bwrap::launcher() {
 `codex-rs/linux-sandbox/src/launcher.rs:60` panics on that unavailable state before the requested shell executes:
 
 ```rust
+//! Quoted upstream launcher excerpt.
 // openai/codex: codex-rs/linux-sandbox/src/launcher.rs:59
 BubblewrapLauncher::Unavailable => {
     panic!(
@@ -60,6 +62,7 @@ The transparent localhost capture in `mwwmknc37b` retains actual `function_call_
 Its local server still accepted the next request because the unchanged fixture checks the entire conversation body:
 
 ```rust
+//! Quoted repository fixture excerpt.
 // package/codex-plugin/bash-limit/tests/host_support/server.rs:67
 if index > 0 {
     let request = String::from_utf8(body).map_err(io::Error::other)?;
@@ -106,8 +109,12 @@ the official prepared Codex binary and the unchanged native-host test.
 The admitted correction installs distribution `bubblewrap` in the disposable CI sandbox,
 records its package version and executable hash,
 and probes real namespace creation before invoking the existing fixture.
-The rerun is pending;
-installation alone is not yet credited as a verified consumer workaround.
+Run `1h6qf8j86f` at immutable harness `28465cf9ba7f6c9df8329f6b254e7b36c2c815d6` passed
+the unchanged installed-host Nextest case and its independent membership assertion.
+The retained final provider request contains 40 successful `function_call_output` items,
+each with code `0` and `host-payload-executed` output.
+There are 41 local provider requests in total.
+This verifies the installed host and command rewrite against the deterministic fixture.
 No sandbox bypass or account setting change is part of this correction.
 
 ## What does not work
@@ -126,15 +133,26 @@ and explicitly permits authorized investigation.
 It does not exempt this task from ordinary verification.
 External messages are outside this campaign's authorization.
 
-1.  Upstream fault: not established.
+1.  Upstream fault:
+    not established.
     The observed environment omits a documented prerequisite.
-2.  Upstream fixability: no upstream implementation fix is needed to test the admitted distribution package.
-3.  Supported use case: the current Linux sandbox documentation supports this setup with Bubblewrap installed.
-4.  Contribution policy: upstream `docs/contributing.md` welcomes issue reports and rejects external code PRs.
-5.  Fix intent: no contrary maintainer position is needed to resolve this environment failure.
-6.  Prototype: the correction is a consumer environment setup change,
+2.  Upstream fixability:
+    no upstream implementation fix is needed to test the admitted distribution package.
+3.  Supported use case:
+    the current Linux sandbox documentation supports this setup with Bubblewrap installed.
+4.  Contribution policy:
+    upstream `docs/contributing.md` welcomes issue reports and rejects external code PRs.
+5.  Fix intent:
+    no contrary maintainer position is needed to resolve this environment failure.
+6.  Prototype:
+    the correction is a consumer environment setup change,
     with an actual sandbox probe and unchanged native-host rerun required before acceptance.
 
+A duplicate search for the exact panic found [openai/codex#50347](https://github.com/openai/codex/issues/50347).
+The complete issue and comments describe the same missing Bubblewrap prerequisite in a WSL/Desktop setup,
+alongside a separate missing-launcher incident.
+The distribution-package workaround is already reported there.
+This Linux CI fixture adds no required upstream fix or novel recovery mechanism.
 Nothing is ready to file as an upstream defect.
 The campaign retains its local reproduction and prerequisite correction instead.
 
