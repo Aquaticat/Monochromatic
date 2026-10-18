@@ -182,16 +182,16 @@ function recountOf(
 }
 
 /**
- The group in which two judges quoted "cat's bowl" and one quoted "cat", and the first place is recorded as located by "cat".
+ The group in which two judges quoted "cat's bowl" and one quoted "cat" for both places, and both are recorded as located by "cat".
  */
 const JOINT_GROUP = groupOf({
   quotes: [
-    { first: 'cat\'s bowl', second: 'the kitten naps', },
-    { first: 'cat\'s bowl', second: 'the kitten naps', },
-    { first: 'cat', second: 'the kitten naps', },
+    { first: 'cat\'s bowl', second: 'cat\'s bowl', },
+    { first: 'cat\'s bowl', second: 'cat\'s bowl', },
+    { first: 'cat', second: 'cat', },
   ],
   first: { kind: 'located', quote: 'cat', start: 0, },
-  second: { kind: 'located', quote: 'the kitten naps', start: 6, },
+  second: { kind: 'located', quote: 'cat', start: 0, },
   repeat: { kind: 'maximal', wording: '窗台上的阳光让小猫睡着了', },
 });
 
@@ -243,10 +243,10 @@ await describe({
             function groupQuoting({ first, quoted, }: { readonly first: string; readonly quoted: readonly string[]; },): AskedGroup {
               return groupOf({
                 quotes: quoted.map(function quoteFor(text,): { readonly first: string; readonly second: string; } {
-                  return { first: text, second: 'the kitten naps', };
+                  return { first: text, second: text, };
                 },),
                 first: { kind: 'located', quote: first, start: 0, },
-                second: { kind: 'located', quote: 'the kitten naps', start: 6, },
+                second: { kind: 'located', quote: first, start: 0, },
                 repeat: { kind: 'maximal', wording: '窗台上的阳光让小猫睡着了', },
               },);
             }
