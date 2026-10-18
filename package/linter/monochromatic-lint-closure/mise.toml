@@ -5,7 +5,10 @@ RUSTUP_TOOLCHAIN = "nightly-2026-10-17"
 # Bound compiler fan-out during local iteration, matching the sibling Rust packages.
 CARGO_BUILD_JOBS = "2"
 
-[tasks.build]
+# The root `build` and `lint` tasks fan out to every package task with exactly those names, in every session. This
+# package needs `rustc-dev`, `cargo-dylint` and `dylint-link`, which the shared toolchain does not have, so its
+# aggregate tasks carry other names and the root fanout does not reach them.
+[tasks."build:library"]
 description = "Build the Dylint library"
 run = "cargo build"
 
@@ -25,7 +28,7 @@ run = "cargo fmt --check"
 description = "Format the Rust sources"
 run = "cargo fmt"
 
-[tasks.lint]
+[tasks."lint:all"]
 description = "Run every static check of the library"
 run = ["cargo check --all-targets", "cargo clippy --all-targets -- --deny warnings", "cargo fmt --check"]
 
@@ -55,7 +58,7 @@ for (const name of readdirSync(scratch)) {
 
 [tasks.run]
 description = "Lint another package: mise run //package/linter/monochromatic-lint-closure:run <package directory>"
-depends = ["build"]
+depends = ["build:library"]
 # mise appends raw arguments to an inline script's text, so the directory is declared as a usage argument and read from the environment.
 usage = 'arg "<directory>" help="Directory of the package to lint; relative paths resolve against the directory the command was typed in"'
 

@@ -73,7 +73,9 @@ a procedural macro such as the one behind Slint's `slint!`) is skipped,
 because the author cannot rewrite it.
 A closure the author writes as an argument of an external macro is checked normally,
 and so is a closure written in the crate's own `macro_rules!` body.
-rustc already refuses to report this lint inside external macros,
+rustc already refuses to report a lint inside external macros unless the lint declares `report_in_external_macro` (`rustc_middle/src/lint.rs`,
+`lint_level`,
+line 473 in the pinned nightly),
 so the explicit span test in `src/lib.rs` is a second guard of the same policy;
 removing it changed no fixture result (see the guard controls below),
 while inverting it fails six fixtures.
@@ -164,13 +166,26 @@ so this package's `mise.toml` restates its own `RUSTUP_TOOLCHAIN`.
 
 ### Tasks
 
-- `mise run //package/linter/monochromatic-lint-closure:build` builds the library.
+- `mise run //package/linter/monochromatic-lint-closure:build:library` builds the library.
 - `mise run //package/linter/monochromatic-lint-closure:test` runs the unit tests and the UI fixtures through nextest.
-- `mise run //package/linter/monochromatic-lint-closure:lint` runs `cargo check`,
+- `mise run //package/linter/monochromatic-lint-closure:lint:all` runs `cargo check`,
   Clippy with `--deny warnings`,
-  and `cargo fmt --check`.
+  and `cargo fmt --check`;
+  `lint:clippy` and `lint:rustfmt` run the last two alone.
 - `mise run //package/linter/monochromatic-lint-closure:run <package directory>` lints another package with `cargo dylint --all-targets`.
 - `mise run //package/linter/monochromatic-lint-closure:bless` rewrites `tests/ui/*.stderr` from the lint's current output.
+
+The aggregate tasks are not named `build` and `lint`,
+as in the sibling packages.
+The root `build` and `lint` tasks fan out to every package task with exactly those names,
+in every session,
+and this package needs `rustc-dev`,
+`cargo-dylint` and `dylint-link`,
+which the shared toolchain does not have.
+Renaming keeps the root fan-out from reaching it;
+whether to restore the names once the toolchain is provisioned is the owner's decision.
+Entering the package also makes mise's Rust backend read `rust-toolchain.toml` and try to install that nightly with its components,
+and it records the install under `~/.local/share/mise/installs/rust`.
 
 ### Building the target with the library's toolchain
 
@@ -233,7 +248,9 @@ the `run` task therefore stages a copy under the name Dylint expects.
   and an unknown diagnostic.
 - `src/message_tests.rs` unit-tests the wording branches and that no message uses a judging word.
 - Fixtures:
-  `kept_by_callee.rs` (each allowed case with a twin that drops `'static` and must be reported),
+  `kept_by_callee.rs` (each allowed case with a twin that drops `'static` and must be reported;
+  the two std callees `thread::spawn` and `Builder::spawn` have no twin because their bound lives in std,
+  and `thread::scope` in `not_kept_by_callee.rs` is their unbounded counterpart),
   `not_kept_by_callee.rs`,
   `known_gaps.rs`,
   `adversarial.rs`,

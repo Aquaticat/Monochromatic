@@ -3,10 +3,12 @@
 // closure stays reported. Each case names its gap. A future fix that recognises the wrapper turns the marker into
 // `allowed` and the golden output shrinks. Cases D0 and D3c are controls without a wrapper effect.
 
+use std::rc::Rc;
 use std::sync::Arc;
 
 fn keep<F: FnOnce() + 'static>(f: F) { f() }
 fn keep_option<F: FnOnce() + 'static>(f: Option<F>) { if let Some(f) = f { f() } }
+fn keep_rc(f: Rc<dyn Fn() + 'static>) { f() }
 fn keep_arc(f: Arc<dyn Fn() + Send + Sync + 'static>) { f() }
 fn keep_optional_box(f: Option<Box<dyn FnOnce() + 'static>>) { if let Some(f) = f { f() } }
 fn keep_static_reference(f: &'static dyn Fn() -> usize) -> usize { f() }
@@ -44,6 +46,13 @@ fn gap_tuple_struct_constructor() {
     // verdict: reported
     let w = TupleWrapper(move || drop(s));
     (w.0)();
+}
+
+fn gap_rc_new() {
+    let s = String::new();
+    // GAP: Rc::new(closure) into Rc<dyn Fn() + 'static>; only Box::new is looked through.
+    // verdict: reported
+    keep_rc(Rc::new(move || { let _ = &s; }));
 }
 
 fn gap_some_wrapper() {
