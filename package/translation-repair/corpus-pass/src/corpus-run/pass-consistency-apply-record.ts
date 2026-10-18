@@ -113,6 +113,7 @@ export function recordedRendering(
     ...((rendering.markBefore === undefined) ? {} : { markBefore: rendering.markBefore, }),
     ...((rendering.markAfter === undefined) ? {} : { markAfter: rendering.markAfter, }),
     ...((rendering.slot === undefined) ? {} : { slot: rendering.slot, }),
+    ...((rendering.definitions === undefined) ? {} : { definitions: rendering.definitions, }),
   };
 }
 

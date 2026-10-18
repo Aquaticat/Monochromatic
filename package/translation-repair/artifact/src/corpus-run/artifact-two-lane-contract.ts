@@ -237,9 +237,21 @@ export const ARTIFACT_SCHEMA_VERSION_V17 = 17;
  the run-off its ballots call for and refuses a missing one, and a reader of seventeen refuses a run-off recorded for a lone
  leader, which no pass of that generation recorded.
 
- Everything else the generation seventeen record holds is this generation's too. The shape of the section is unchanged, so the
- key vocabulary is generation seventeen's. No cache key of the passes reads the generation: the consistency cache digests the sheet
- and its own version (`CONSISTENCY_CACHE_VERSION`), which did not move.
+ A CARRY'S RUN-OFF IS REQUIRED THE SAME WAY: a reader of this generation refuses a carry recorded with a first count that reached its
+ quorum and gave no candidate a strict majority, and no run-off, where the finalists rule calls for one. A reader of seventeen and
+ earlier reads such a carry as it was written, since the runs of those generations recorded a split and went no further.
+
+ A LOCATED PLACE OF A FRAME RECORDS `definitions` WHERE THE PAGE'S DEFINITIONS MOVE ITS SLOT: the link and footnote definitions the pass
+ read the slot with, the smallest set that gives the slot (`definitionsMovingSlotOf`), absent where the page's definitions change
+ nothing. The file holds no page to rebuild them from, so the recount of this generation reads the slot with the recorded definitions
+ and refuses definitions that are malformed or move no slot. A reader of seventeen and earlier refuses the key and recounts the slot over
+ the span alone, which is a limit it documents (ledger B661): a span that holds a reference defined in another slice is read as plain
+ text there.
+
+ Everything else the generation seventeen record holds is this generation's too. The shape of the section is that of seventeen
+ with the one key `definitions` added, so the key vocabulary is generation seventeen's and that key. No cache key of the passes
+ reads the generation or the field: the consistency cache digests the sheet and its own version
+ (`CONSISTENCY_CACHE_VERSION`), which did not move.
  */
 export const ARTIFACT_SCHEMA_VERSION_V18 = 18;
 
@@ -632,6 +644,44 @@ export function artifactGenerationRunsOffLoneLeader(
  ```
  */
 export function artifactGenerationReadsSlotsBesideContainingQuotes(
+  { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
+): boolean {
+  return generation >= ARTIFACT_SCHEMA_VERSION_V18;
+}
+
+/**
+ Reports whether generation requires a carry whose first count reached its quorum and gave no candidate a strict majority to record
+ the run-off the finalists rule asks for. An older section is read as it was written: such a carry ends at the split there.
+
+ @param generation - known two-lane artifact generation
+
+ @returns Whether a carry that names finalists and records no run-off is refused
+
+ @example
+ ```ts
+ artifactGenerationRequiresCarryRunOff({ generation: 18, });
+ ```
+ */
+export function artifactGenerationRequiresCarryRunOff(
+  { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
+): boolean {
+  return generation >= ARTIFACT_SCHEMA_VERSION_V18;
+}
+
+/**
+ Reports whether generation records, on a located place of a frame, the page definitions that move its slot, and reads the slot with
+ them. An older section records none and is recounted over the span alone, and its reader refuses the key.
+
+ @param generation - known two-lane artifact generation
+
+ @returns Whether a located rendering may carry `definitions`, and the slot is recounted with them
+
+ @example
+ ```ts
+ artifactGenerationRecordsDefinitions({ generation: 18, });
+ ```
+ */
+export function artifactGenerationRecordsDefinitions(
   { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
 ): boolean {
   return generation >= ARTIFACT_SCHEMA_VERSION_V18;

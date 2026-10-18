@@ -28,6 +28,7 @@ import type {
 import type { PageEnglish, } from './consistency-page-english.ts';
 import type { ConsistencyEnglish, } from './consistency-wire.ts';
 import { pageDefinitionsOf, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import { definitionsMovingSlotOf, } from './consistency-slot-definitions.ts';
 import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typography/ts';
 
 //region Consistency count
@@ -349,18 +350,23 @@ function locatedRendering(
     words,
     span,
     quotesByLabel,
-    ...((page === undefined)
-      ? {}
-      : {
-        page: {
-          ...page,
-          offset: page.offset + found.start,
-        },
-      }),
+    definitions,
+  },);
+  /**
+   The definitions of the page that move the slot, none when the page's definitions change nothing; the artifact stores them.
+   */
+  const moving = definitionsMovingSlotOf({
+    voices,
+    label,
+    words,
+    span,
+    quotesByLabel,
+    definitions,
   },);
   return {
     ...bare,
     ...inSpan,
+    ...((moving === '') ? {} : { definitions: moving, }),
   };
 }
 

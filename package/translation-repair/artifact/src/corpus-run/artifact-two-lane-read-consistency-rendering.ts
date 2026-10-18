@@ -13,8 +13,10 @@ import {
   isCountedSingleMark,
   type UnlocatedReason,
 } from '@monochromatic-dev/translation-repair-consistency/ts';
+import { pageDefinitionsOf, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   artifactGenerationCountsBySpan,
+  artifactGenerationRecordsDefinitions,
   artifactGenerationRecordsMarks,
   type TwoLaneArtifactGeneration,
 } from './artifact-two-lane-contract.ts';
@@ -23,8 +25,9 @@ import type { ArtifactConsistencyRendering, } from './artifact-two-lane-consiste
 //region Artifact consistency rendering reading
 // Reading the rendering of one place of a recorded group, key by key, under the
 // generation the section was written in: whether a located place carries the
-// offset of its span (sixteen) and the single marks its English holds beside
-// the span (seventeen), and which reasons for a place to stay unlocated exist.
+// offset of its span (sixteen), the single marks its English holds beside
+// the span (seventeen) and the page definitions that move its slot (eighteen),
+// and which reasons for a place to stay unlocated exist.
 
 /**
  Every reason a place's rendering can be unlocated, keyed by the union so the
@@ -91,6 +94,14 @@ const LOCATED_KEYS_OF_SEVENTEEN: readonly string[] = [
 ];
 
 /**
+ The keys a located rendering may hold in generation eighteen: the definitions of the page that move the slot join them.
+ */
+const LOCATED_KEYS_OF_EIGHTEEN: readonly string[] = [
+  ...LOCATED_KEYS_OF_SEVENTEEN,
+  'definitions',
+];
+
+/**
  The keys a located rendering may hold in a generation.
 
  @param generation - generation the section was written under
@@ -103,9 +114,53 @@ const LOCATED_KEYS_OF_SEVENTEEN: readonly string[] = [
  ```
  */
 function locatedKeysOf({ generation, }: { readonly generation: TwoLaneArtifactGeneration; },): readonly string[] {
+  if (artifactGenerationRecordsDefinitions({ generation, },))
+    return LOCATED_KEYS_OF_EIGHTEEN;
   if (artifactGenerationRecordsMarks({ generation, },))
     return LOCATED_KEYS_OF_SEVENTEEN;
   return artifactGenerationCountsBySpan({ generation, },) ? LOCATED_KEYS_OF_SIXTEEN : LOCATED_KEYS_OF_FIFTEEN;
+}
+
+/**
+ Reads the page definitions a located place records.
+
+ @param value - recorded definitions
+
+ @param path - where they sit, for the parse error
+
+ @returns The definitions, which are at least one and read back, as the page's definitions are read, to themselves
+
+ @throws {@link ArtifactParseError} when they are not text, are empty, or hold anything but definitions in the form a page's
+ definitions are read in
+
+ @example
+ ```ts
+ const definitions = requireDefinitions({ value: record.definitions, path: `${path}.definitions`, },);
+ ```
+ */
+function requireDefinitions(
+  {
+    value,
+    path,
+  }: {
+    readonly value: unknown;
+    readonly path: string;
+  },
+): string {
+  /**
+   The recorded text.
+   */
+  const definitions = requireString({
+    value,
+    path,
+  },);
+  if ((definitions === '') || (pageDefinitionsOf({ pageText: definitions, },) !== definitions)) {
+    throw new ArtifactParseError({
+      path,
+      reason: 'link and footnote definitions in the form a page\'s definitions are read in, and at least one',
+    },);
+  }
+  return definitions;
 }
 
 /**
@@ -273,6 +328,14 @@ export function parseConsistencyRendering(
         slot: requireString({
           value: record.slot,
           path: `${path}.slot`,
+        },),
+      }),
+    ...((record.definitions === undefined)
+      ? {}
+      : {
+        definitions: requireDefinitions({
+          value: record.definitions,
+          path: `${path}.definitions`,
         },),
       }),
   };

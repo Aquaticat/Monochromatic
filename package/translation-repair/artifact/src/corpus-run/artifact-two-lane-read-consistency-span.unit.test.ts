@@ -19,6 +19,7 @@ import {
 
 import type { ConsistencyWinner, } from '@monochromatic-dev/translation-repair-consistency';
 import {
+  ARTIFACT_SCHEMA_VERSION_V18,
   type ArtifactConsistencyBallot,
   type ArtifactConsistencyCarry,
   type ArtifactConsistencyChoiceBallot,
@@ -361,7 +362,7 @@ function outcomeRefusal({ place, expected, }: { readonly place: number; readonly
  The generation after seventeen, which reads a first round with a lone leader and no strict majority as one to run off and
  reads a slot beside any quote that contains the located words (the lead's decision of 2026-10-18).
  */
-const GENERATION_EIGHTEEN = Number('18',) as TwoLaneArtifactGeneration;
+const GENERATION_EIGHTEEN = ARTIFACT_SCHEMA_VERSION_V18;
 
 /**
  The labels of the split group's three places.

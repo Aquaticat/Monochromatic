@@ -7,13 +7,11 @@ import {
   foldedWordsOf,
   isKeptByMajority,
   planConsistencyEdit,
-  slotInSpan,
   usableVoicesOf,
 } from '@monochromatic-dev/translation-repair-consistency/ts';
 import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
   artifactGenerationCarriesPartialUnits,
-  artifactGenerationReadsSlotsBesideContainingQuotes,
   artifactGenerationRecordsMarks,
   type TwoLaneArtifactGeneration,
 } from './artifact-two-lane-contract.ts';
@@ -32,6 +30,7 @@ import {
   locatedContradictedBySpan,
   reasonContradictedBySpan,
 } from './artifact-two-lane-read-consistency-span-located.ts';
+import { expectedSlotOf, } from './artifact-two-lane-read-consistency-span-slot.ts';
 import {
   expectedWinnerOf,
   sameWinner,
@@ -56,17 +55,22 @@ import {
 // (`consistency-splice.ts`), and by the words alone before, as those sections
 // were written.
 //
-// THE RECOUNT HOLDS NO PAGE, SO IT HANDS THE SLOT READERS NO DEFINITIONS (ledger B661). The pass reads a slot with the link and
-// footnote definitions of the whole page (`pageDefinitionsOf` over the page text, `consistency-count.ts`), so a shortcut reference
+// THE RECOUNT HOLDS NO PAGE, SO THE PASS RECORDS THE DEFINITIONS THE SLOT NEEDS (ledger B661, B665). The pass reads a slot with the link
+// and footnote definitions of the whole page (`pageDefinitionsOf` over the page text, `consistency-count.ts`), so a shortcut reference
 // such as `[b]` inside a span is a link when its definition stands in another slice: `a[b]c` is then one word and `b` is no stand in
-// it, and the pass records no slot. The file cannot supply those definitions. `parseConsistency` is handed the section and the
-// indexes of the slices, the `slices` rows hold only the slices the pass changed (as they ended), the comparison rows hold each
+// it, and the pass records no slot. The file could not supply those definitions by itself. `parseConsistency` is handed the section and
+// the indexes of the slices, the `slices` rows hold only the slices the pass changed (as they ended), the comparison rows hold each
 // lane's text before the consolidation, and the consolidated English the pass read is recorded nowhere; rebuilding it takes the
-// corpus files at the artifact's commit (`artifact-two-lane-rebuild.ts`), which a reader of one file does not have. So the slot is
-// recounted over the span alone, where `b` stands once: a pass-written refrain whose span holds a reference defined in another slice,
-// with a slot at the joint of the reference, is refused here (the recount expects a slot the pass could not find), and the converse
-// direction is the same limit in `asLocatedBySpan` (`artifact-two-lane-read-consistency-span-located.ts`). The shape needs a
-// cross-slice definition and a slot at a word joint, and a case pins it.
+// corpus files at the artifact's commit (`artifact-two-lane-rebuild.ts`), which a reader of one file does not have. So, FROM GENERATION
+// EIGHTEEN, a located place of a frame records `definitions`, the smallest set of the page's definitions that gives its slot, wherever the
+// page's definitions move the slot at all (`definitionsMovingSlotOf`, `consistency-slot-definitions.ts`), and the recount reads the slot
+// with them: a place that records none is recounted over the span alone, so a pass-written place whose definitions were left out is
+// refused, as are definitions that are not in the form a page's definitions are read in or that move no slot. GENERATION SEVENTEEN AND
+// EARLIER KEEP THE LIMIT THEY WERE WRITTEN UNDER: they record no definitions, so the slot is recounted over the span alone, where `b`
+// stands once, and a pass-written refrain of those generations whose span holds a reference defined in another slice, with a slot at the
+// joint of the reference, is refused here (the recount expects a slot the pass could not find); the converse direction is the same limit
+// in `asLocatedBySpan` (`artifact-two-lane-read-consistency-span-located.ts`). The shape needs a cross-slice definition and a slot at
+// a word joint, and a case pins it for generation seventeen.
 //
 // A UNIT CARRIED IN PART IS READ FROM THE RECORD ALONE, from generation seventeen.
 // The places of one block share one bench record, so the carries recorded under
@@ -192,7 +196,7 @@ function assertSpanRenderingAgrees(
   if (!readable.includes(agreed,)) {
     throw new ArtifactParseError({
       path: `${path}.rendering`,
-      reason: 'words that a strict majority of the quotes naming the place contain, as the place\'s English holds them',
+      reason: 'words that the quotes of more than half of all the usable ballots contain, as the place\'s English holds them',
     },);
   }
   if (locatedContradictedBySpan({ rendering, },)) {
@@ -211,21 +215,18 @@ function assertSpanRenderingAgrees(
   /**
    The slot the ballots pin down inside the recorded words, none for a run or when they pin none.
    */
-  const [expected,] = (group.repeat
-    .kind
-    === 'refrain')
-    ? slotInSpan({
-      voices,
-      label: occurrence.label,
-      words: agreed,
-      span: rendering.quote,
-      // A slot is counted beside the quotes the generation counted it beside: any quote that contains the located words from
-      // generation eighteen, and a quote that is the located words before it. The page's link and footnote definitions are not
-      // handed over: the file holds no page, so a reference whose definition stands in another slice reads as plain text here
-      // (the limit is written at the head of this file).
-      slotAgreement: artifactGenerationReadsSlotsBesideContainingQuotes({ generation, },) ? 'containing-quote' : 'exact-quote',
-    },)
-    : [];
+  const [expected,] = expectedSlotOf({
+    voices,
+    label: occurrence.label,
+    agreed,
+    span: rendering.quote,
+    refrain: (group.repeat
+      .kind
+      === 'refrain'),
+    ...((rendering.definitions === undefined) ? {} : { definitions: rendering.definitions, }),
+    generation,
+    path: `${path}.rendering`,
+  },);
   if (rendering.slot !== expected?.slot) {
     throw new ArtifactParseError({
       path: `${path}.rendering`,
@@ -495,6 +496,7 @@ export function assertSpanGroupCoherent(
   assertCarriesRecount({
     carries: group.carries ?? [],
     path: `${path}.carries`,
+    generation,
   },);
   assertSpanOutcomesFollow({
     group,

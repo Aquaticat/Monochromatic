@@ -111,6 +111,15 @@ export type ConsistencyRendering =
      For a frame: offset in the core where the slot starts.
      */
     readonly slotStart?: number;
+
+    /**
+     For a frame: the link and footnote definitions of the page that the slot was read with, when reading the span without them
+     gives another slot or none (`a[b]c` is one word when `[b]` is defined in another slice, and the slot `b` is no stand). Only
+     the definitions that move the slot are kept (`consistency-slot-definitions.ts`); absent where the page's definitions move
+     nothing, and for a place that carries no page. A recorded artifact stores it (generation 18), so a reader that holds no page
+     reads the slot as the pass did.
+     */
+    readonly definitions?: string;
   }
   | {
     /**

@@ -185,6 +185,14 @@ export type ArtifactConsistencyRendering =
      where the ballots did not pin a slot down.
      */
     readonly slot?: string;
+
+    /**
+     Generation eighteen, for a frame: the link and footnote definitions of the page that the slot was read with, the smallest set
+     of them that gives the slot, present only where reading the span without them gives another slot or none (`a[b]c` is one
+     word when `[b]` is defined in another slice, so the slot `b` is no stand). In the form a page's definitions are read in
+     (`pageDefinitionsOf`). The file holds no page, so the recount reads the slot with these.
+     */
+    readonly definitions?: string;
   }
   | {
     /**

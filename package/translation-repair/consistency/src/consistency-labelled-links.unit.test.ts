@@ -269,6 +269,8 @@ await describe({
               start: 0,
               slot: 'kit',
               slotStart: 13,
+              // The definition makes the slot a stand, so the rendering carries it for a reader that holds no page.
+              definitions: '[r]: u',
             },);
             expect(renderingOnPage({ definition: '[x]: u', },),).toEqual({
               kind: 'located',

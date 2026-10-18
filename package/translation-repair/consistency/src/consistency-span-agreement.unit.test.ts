@@ -503,7 +503,7 @@ await describe({
         /**
          The first place's rendering for a page, none for the span read alone.
          */
-        function renderingFor(pageText: string | undefined,): unknown {
+        function renderingFor({ pageText, }: { readonly pageText?: string; },): unknown {
           return countAgainst({
             voices,
             english: ['a[b]c', 'The kitten naps.',],
@@ -513,10 +513,10 @@ await describe({
           },).renderings[0];
         }
         expect([
-          renderingFor(undefined,),
-          renderingFor('a[b]c\n\n[b]: https://x.example/b',),
-          renderingFor('a[b]c\n\n[z]: https://x.example/z',),
-          renderingFor('a[b]c\n\n[b]: https://x.example/b\n\n[z]: https://x.example/z',),
+          renderingFor({},),
+          renderingFor({ pageText: 'a[b]c\n\n[b]: https://x.example/b', },),
+          renderingFor({ pageText: 'a[b]c\n\n[z]: https://x.example/z', },),
+          renderingFor({ pageText: 'a[b]c\n\n[b]: https://x.example/b\n\n[z]: https://x.example/z', },),
         ],).toEqual([
           { kind: 'located', quote: 'a[b]c', core: 'a[b]c', start: 0, slot: 'b', slotStart: 2, },
           { kind: 'located', quote: 'a[b]c', core: 'a[b]c', start: 0, definitions: '[b]: https://x.example/b', },

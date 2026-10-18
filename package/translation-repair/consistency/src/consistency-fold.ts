@@ -592,6 +592,8 @@ as a reader sees it: below), so `so`
 
  @param page - the English of the whole page the haystack belongs to and where the haystack starts in it, which the proof of an apostrophe reads; the haystack alone is the page where absent
 
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`) in place of those read from `page`, for a caller that holds the definitions and not the page: a reader of a recorded artifact, which stores the definitions a slot was read with (generation 18); read from `page` where absent
+
  @returns That the words stand nowhere, the offsets of the one span they name
  in the English, or that they stand more than once and no mark evidence
  chooses one of the stands (a stand inside a longer word is no stand);
@@ -612,12 +614,14 @@ export function locateWords(
     marks,
     apostrophes = 'proven',
     page,
+    definitions: given,
   }: {
     readonly haystack: string;
     readonly words: string;
     readonly marks?: MarksBeside;
     readonly apostrophes?: 'proven' | 'outside';
     readonly page?: PageEnglish;
+    readonly definitions?: string;
   },
 ): SpanSearch {
   /**
@@ -646,9 +650,9 @@ export function locateWords(
   const folded = foldWithOffsets({ text: haystack, },);
   /**
    The link and footnote definitions of the page, which a reference in the English resolves against whichever slice holds the
-   definition; none for an English read alone.
+   definition: the ones the caller holds, else those of the page; none for an English read alone.
    */
-  const definitions = (page === undefined) ? '' : pageDefinitionsOf({ pageText: page.text, },);
+  const definitions = given ?? ((page === undefined) ? '' : pageDefinitionsOf({ pageText: page.text, },));
   /**
    Where the words stand in the folded English, at word boundaries and at no joint of a longer word, overlaps included.
    */

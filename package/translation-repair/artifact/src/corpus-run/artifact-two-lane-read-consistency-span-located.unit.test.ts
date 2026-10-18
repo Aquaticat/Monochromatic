@@ -101,6 +101,22 @@ await describe({
           },
         },),
         it({
+          name: 'READS THE DEFINITIONS A RENDERING RECORDS INTO THE COUNTER\'S FORM, and locates the slot of a rendering with the '
+            + 'definitions it was recorded with, where a recorded slot beside a reference is no stand without them',
+          fn: async () => {
+            expect(asLocatedBySpan({
+              rendering: { kind: 'located', quote: 'a[b]c', start: 0, definitions: '[b]: https://x.example/b', },
+              path: 'cat.rendering',
+            },),).toEqual({
+              kind: 'located',
+              quote: 'a[b]c',
+              core: 'a[b]c',
+              start: 0,
+              definitions: '[b]: https://x.example/b',
+            },);
+          },
+        },),
+        it({
           name: 'REFUSES A LOCATED RENDERING THAT RECORDS NO OFFSET as a broken invariant, not as an offset of zero, since the '
             + 'sixteenth shape records one for every located rendering',
           fn: async () => {

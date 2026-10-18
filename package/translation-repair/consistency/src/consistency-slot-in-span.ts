@@ -37,6 +37,9 @@ import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typogra
  @param page - the English of the whole page the span belongs to and where the span starts in it, whose link and footnote
  definitions a reference inside the span resolves against (n173); the span alone is the page where absent
 
+ @param definitions - the page's link and footnote definitions (`pageDefinitionsOf`) in place of those read from `page`, for a
+ reader of a recorded artifact, which stores the definitions a slot was read with; read from `page` where absent
+
  @param slotAgreement - which quotes a slot given beside counts for the words: any quote that contains them, or only a quote that
  is them, as a recount of an artifact written under the earlier rule reads it; containing quotes where absent
 
@@ -58,6 +61,7 @@ export function slotInSpan(
     span,
     quotesByLabel = quotesByLabelOf({ voices, },),
     page,
+    definitions,
     slotAgreement = 'containing-quote',
   }: {
     readonly voices: readonly ConsistencyVoice[];
@@ -66,6 +70,7 @@ export function slotInSpan(
     readonly span: string;
     readonly quotesByLabel?: QuotesByLabel;
     readonly page?: PageEnglish;
+    readonly definitions?: string;
     readonly slotAgreement?: SlotAgreement;
   },
 ): readonly {
@@ -92,6 +97,7 @@ export function slotInSpan(
     words: slotWords,
     apostrophes: 'outside',
     ...((page === undefined) ? {} : { page, }),
+    ...((definitions === undefined) ? {} : { definitions, }),
   },);
   if (inside.kind !== 'once')
     return [];

@@ -18,10 +18,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  ARTIFACT_SCHEMA_VERSION_V17,
+  ARTIFACT_SCHEMA_VERSION_V18,
   type ArtifactConsistencyCarry,
   assertCarriesRecount,
   parseConsistencyCarry,
-  type TwoLaneArtifactGeneration,
 } from '../../dist/final/node/index.mjs';
 import { recountRefusalOf, } from './consistency-refusal.test-fixture.ts';
 
@@ -80,7 +81,7 @@ const RUN_OFF_CARRY: ArtifactConsistencyCarry = {
 /**
  The generation the pass writes, and the last generation that recorded a split with no run-off.
  */
-const GENERATION_EIGHTEEN = Number('18',) as TwoLaneArtifactGeneration;
+const GENERATION_EIGHTEEN = ARTIFACT_SCHEMA_VERSION_V18;
 
 /**
  A value as the artifact stores it and a resumed run reads it back: through JSON, whose semantics are the point.
@@ -223,7 +224,7 @@ await describe({
                 return assertCarriesRecount({
                   carries: [carry,],
                   path: 'cat.carries',
-                  generation: Number('17',) as TwoLaneArtifactGeneration,
+                  generation: ARTIFACT_SCHEMA_VERSION_V17,
                 },);
               },),
               eighteen: [threeWay, loneLeader,].map(function refusedAtEighteen(carry,): string {

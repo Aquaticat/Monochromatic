@@ -21,10 +21,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  ARTIFACT_SCHEMA_VERSION_V18,
   type ArtifactConsistencyCarry,
   assertCarriesRecount,
   outcomesAfter,
-  type TwoLaneArtifactGeneration,
 } from '../../dist/final/node/index.mjs';
 import {
   recountRefusalOf,
@@ -127,7 +127,7 @@ await describe({
               return assertCarriesRecount({
                 carries: [carry,],
                 path: 'cat.carries',
-                generation: Number('18',) as TwoLaneArtifactGeneration,
+                generation: ARTIFACT_SCHEMA_VERSION_V18,
               },);
             },),).toEqual(carries.map(function accepted(): unknown {
               return undefined;
@@ -239,7 +239,7 @@ await describe({
                 return assertCarriesRecount({
                   carries: [CARRY, { ...CARRY, usable: 3, },],
                   path: 'cat.groups[0].carries',
-                  generation: Number('18',) as TwoLaneArtifactGeneration,
+                  generation: ARTIFACT_SCHEMA_VERSION_V18,
                 },);
               },
             },);

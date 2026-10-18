@@ -221,6 +221,7 @@ export {
   BOUNDARY_TAG_NAMES,
   unitKindsOf,
 } from './consistency-shown-kinds.ts';
+export { definitionsMovingSlotOf, } from './consistency-slot-definitions.ts';
 export { slotInSpan, } from './consistency-slot-in-span.ts';
 export { containedQuoteWordsOf, } from './consistency-span-agreement.ts';
 export {

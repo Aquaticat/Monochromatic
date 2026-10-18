@@ -184,6 +184,7 @@ export {
   carriesSplice,
   spliceBuiltForSomePlace,
 } from './corpus-run/artifact-two-lane-read-consistency-span-shared.ts';
+export { expectedSlotOf, } from './corpus-run/artifact-two-lane-read-consistency-span-slot.ts';
 export {
   expectedWinnerOf,
   sameWinner,

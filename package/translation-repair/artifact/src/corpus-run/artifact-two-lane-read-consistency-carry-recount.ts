@@ -7,6 +7,10 @@ import type {
   ArtifactConsistencyCarry,
   ConsistencyOccurrenceOutcome,
 } from './artifact-two-lane-consistency.ts';
+import {
+  artifactGenerationRequiresCarryRunOff,
+  type TwoLaneArtifactGeneration,
+} from './artifact-two-lane-contract.ts';
 import { sameWinner, } from './artifact-two-lane-read-consistency-span-winner.ts';
 import { assertSeatsHeardOnce, } from './artifact-two-lane-read-consistency-tally.ts';
 
@@ -17,6 +21,12 @@ import { assertSeatsHeardOnce, } from './artifact-two-lane-read-consistency-tall
 // of the usable ballots reaching the quorum give. What a carry says about the
 // group's places and outcomes is the coherence check's question
 // (`artifact-two-lane-read-consistency-span.ts`).
+//
+// A SPLIT WITH NO RUN-OFF IS READ AS WRITTEN ONLY BEFORE GENERATION EIGHTEEN. The runs of generation seventeen and earlier recorded
+// a carry whose first count had no strict majority and went no further, and their files are read as they were written. From
+// generation eighteen the pass asks the run-off wherever the finalists rule names finalists (`runOffChoiceFinalistsOf`), as it does
+// for a group's first round, so a carry that reached its quorum, gave no candidate a strict majority and names finalists must
+// record the run-off, and one that does not is refused (ledger B666).
 
 /**
  Checks the candidates of a carry: labelled in order, the current English once,
@@ -112,20 +122,24 @@ function assertCandidatesFit(
 
  @param path - where it sits, for the parse error
 
- @throws {@link ArtifactParseError} when a count or the decision is not what the ballots give
+ @param generation - generation the section was written under, which says whether a split with no run-off is read as written
+
+ @throws {@link ArtifactParseError} when a count or the decision is not what the ballots give, or a run-off the generation requires is missing
 
  @example
  ```ts
- assertCarryRecounts({ carry, path, },);
+ assertCarryRecounts({ carry, path, generation: 18, },);
  ```
  */
 function assertCarryRecounts(
   {
     carry,
     path,
+    generation,
   }: {
     readonly carry: ArtifactConsistencyCarry;
     readonly path: string;
+    readonly generation: TwoLaneArtifactGeneration;
   },
 ): void {
   assertCandidatesFit({
@@ -205,7 +219,6 @@ function assertCarryRecounts(
     },);
   }
   if (carry.runOff === undefined) {
-    // A split recorded with no run-off is read as it was written: the runs before the rule ended there.
     if (!sameWinner({
       left: choice,
       right: carry.decision,
@@ -213,6 +226,38 @@ function assertCarryRecounts(
       throw new ArtifactParseError({
         path: `${path}.decision`,
         reason: 'the decision a strict majority of the usable ballots, reaching the quorum, give',
+      },);
+    }
+    // A split recorded with no run-off is read as it was written before generation eighteen: the runs of those generations
+    // ended there. From eighteen the run-off is asked wherever the finalists rule names finalists, so its absence is refused.
+    /**
+     The finalists the first count names, which is when a run-off was asked.
+     */
+    const finalists = runOffChoiceFinalistsOf({
+      voices: carry.ballots,
+      labels,
+    },);
+    /**
+     Whether the first count reached its quorum and gave no candidate a strict majority.
+     */
+    const split = (choice.kind === 'none') && (choice.reason === 'no-majority');
+    /**
+     Whether the finalists rule named any finalists for it.
+     */
+    const named = (finalists
+      .length
+      > 0);
+    /**
+     Whether the generation requires the run-off the finalists rule asks for.
+     */
+    const required = artifactGenerationRequiresCarryRunOff({ generation, },);
+    if (required
+      && split
+      && named) {
+      throw new ArtifactParseError({
+        path: `${path}.runOff`,
+        reason: 'a run-off among the finalists of the first ballots, since they reached their quorum and gave no candidate '
+          + 'a strict majority',
       },);
     }
     return;
@@ -294,20 +339,24 @@ function assertCarryRecounts(
 
  @param path - where they sit, for the parse error
 
+ @param generation - generation the section was written under, which says whether a split with no run-off is read as written
+
  @throws {@link ArtifactParseError} when a carry is not what its ballots give
 
  @example
  ```ts
- assertCarriesRecount({ carries, path: `${path}.carries`, },);
+ assertCarriesRecount({ carries, path: `${path}.carries`, generation, },);
  ```
  */
 export function assertCarriesRecount(
   {
     carries,
     path,
+    generation,
   }: {
     readonly carries: readonly ArtifactConsistencyCarry[];
     readonly path: string;
+    readonly generation: TwoLaneArtifactGeneration;
   },
 ): void {
   carries.forEach(function recounts(
@@ -317,6 +366,7 @@ export function assertCarriesRecount(
     assertCarryRecounts({
       carry,
       path: `${path}[${String(at,)}]`,
+      generation,
     },);
   },);
 }

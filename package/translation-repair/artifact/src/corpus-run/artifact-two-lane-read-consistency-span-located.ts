@@ -25,11 +25,13 @@ import type { ArtifactConsistencyRendering, } from './artifact-two-lane-consiste
 // (`artifact-two-lane-read-consistency-occurrence.ts`) has already checked that
 // each is one single mark.
 //
-// THE SLOT IS FOUND IN THE WORDS ALONE, WITHOUT THE DEFINITIONS OF THE PAGE. The pass finds a slot inside its span with the link and
-// footnote definitions of the whole page, and the file holds no page to rebuild them from (the head of
-// `artifact-two-lane-read-consistency-span.ts` says why, ledger B661), so a slot is located here as the span's own text reads: a
-// shortcut reference in the span whose definition stands in another slice is plain text, and a recorded slot at its joint can be
-// refused here although the pass found it, as the recount can expect a slot the pass could not find.
+// THE SLOT IS FOUND WITH THE DEFINITIONS THE PLACE RECORDS, from generation eighteen. The pass finds a slot inside its span with the
+// link and footnote definitions of the whole page, and the file holds no page to rebuild them from (the head of
+// `artifact-two-lane-read-consistency-span.ts` says why, ledger B661), so the pass records the definitions that move the slot
+// (`definitions`, ledger B665) and the slot is located here with them. A rendering of generation seventeen or earlier records none, and
+// its slot is located as the span's own text reads: a shortcut reference in the span whose definition stands in another slice is
+// plain text there, and a recorded slot at its joint can be refused although the pass found it, as the recount can expect a slot the
+// pass could not find. That is the limit of those generations, which are not written any more.
 //
 // A GENERATION SEVENTEEN QUOTE MAY END OR BEGIN WITH ONE APOSTROPHE the ballots'
 // folded words lack: the span takes in the proven apostrophe beside the words
@@ -51,8 +53,8 @@ import type { ArtifactConsistencyRendering, } from './artifact-two-lane-consiste
  @param path - where the rendering sits, for the parse error
 
  @returns The counter's form, with the recorded offset and, for a frame that
- has one, the slot and its offset in the words; the slot is located in the words alone, with no definitions of the page (the head
- of this file says why)
+ has one, the slot and its offset in the words, and the definitions it was located with; the slot is located with the recorded
+ definitions, and with none of the page's where the rendering records none (the head of this file says why)
 
  @throws {@link ArtifactParseError} when a recorded slot does not stand exactly
  once in the words of its quote
@@ -88,6 +90,7 @@ export function asLocatedBySpan(
     start: rendering.start,
     ...((rendering.markBefore === undefined) ? {} : { markBefore: rendering.markBefore, }),
     ...((rendering.markAfter === undefined) ? {} : { markAfter: rendering.markAfter, }),
+    ...((rendering.definitions === undefined) ? {} : { definitions: rendering.definitions, }),
   };
   if (rendering.slot === undefined)
     return bare;
@@ -98,6 +101,7 @@ export function asLocatedBySpan(
     haystack: rendering.quote,
     words: rendering.slot,
     apostrophes: 'outside',
+    ...((rendering.definitions === undefined) ? {} : { definitions: rendering.definitions, }),
   },);
   if (inside.kind !== 'once') {
     throw new ArtifactParseError({

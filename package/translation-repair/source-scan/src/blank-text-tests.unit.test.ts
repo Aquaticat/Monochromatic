@@ -1185,6 +1185,10 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: RECORD,
   },
+  'artifact/corpus-run/artifact-two-lane-read-consistency-rendering.ts#requireDefinitions': {
+    tests: 1,
+    why: RECORD,
+  },
   'artifact-pool/corpus-run/artifact-two-lane-rebuild-rows.ts#carveDivergence': {
     tests: 1,
     why: SENTINEL,
@@ -1415,6 +1419,14 @@ const HELD_TESTS: Readonly<Record<string, {
   'consistency/consistency-fold.ts#locateWords': {
     tests: 1,
     why: EMPTY_NEEDLE,
+  },
+  'consistency/consistency-slot-definitions.ts#definitionsMovingSlotOf': {
+    tests: 1,
+    why: SENTINEL,
+  },
+  'consistency/consistency-count.ts#locatedRendering': {
+    tests: 1,
+    why: SENTINEL,
   },
   'consistency/consistency-contains-words.ts#containsWords': {
     tests: 2,
