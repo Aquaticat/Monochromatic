@@ -66,6 +66,10 @@ The coordinator will append its coherent graph `39135886118` after measurement.
 Later coverage/platform follow-ons require separate measured appends.
 The native BuildKit authentication plan retains its separate `USD 0.23` full-window admission and `USD 1` guard;
 its admission is not added as observed compute.
+Its later project `ng17dl3xrn` was created at `14:47:45.122 UTC`
+and native run `dzsf27t0xx` was reported dispatched at `14:54:05.816 UTC`,
+after the baseline inventory capture.
+Those exact identities remain explicit follow-ons until terminal measurement is appended.
 The coordinator's independent arithmetic review remains a separate completion gate for adopting these totals.
 
 The new guest cohort's

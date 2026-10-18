@@ -21065,5 +21065,37 @@
     "sourceArchiveSha256": "17ddab66fd96b7fc0b6267405b3cf13ffe669262a2909025265190263130b1fa",
     "method": "Original-byte SHA256/length checks, JSON pointer joins, exact Decimal/Fraction recomputation, immutable workflow resource/timeout joins and bounded credential-pattern classification",
     "coordinatorIndependentArithmeticReview": "Still separate; normalizer verification does not replace it"
-  }
+  },
+  "outOfSnapshotFollowOns": [
+    {
+      "owner": "coordinator",
+      "githubRunId": "39135886118",
+      "harnessSha": "815591bf307b1237d31b1c4e644463d7c13654fa",
+      "status": "Separately admitted coherent graph; measured rows will be appended by coordinator",
+      "addedToBaselineRowsOrTotals": false
+    },
+    {
+      "owner": "platform capability researcher",
+      "nativeRunId": "dzsf27t0xx",
+      "harnessSha": "e0bd5030fb0efde9b4b3982583229e10b74525fc",
+      "projectId": "ng17dl3xrn",
+      "projectCreatedAt": "2026-10-18T14:47:45.122Z",
+      "ownerReportedDispatchAt": "2026-10-18T14:54:05.816Z",
+      "status": "Dispatch identity supplied by owner after baseline inventory capture; terminal job/VM/build receipt not included in baseline",
+      "sourceAdmission": {
+        "path": "doc/audit/depot-native-buildkit-job-auth-2026-10-18.evidence.json",
+        "commit": "c1cef256ba",
+        "sha256": "ae3003c03e313f4c871fd093344b4944f941cc7dfb571d0ff1bfe1719ee33dfd",
+        "sourceArchive": {
+          "path": "doc/audit/depot-native-buildkit-job-auth-2026-10-18.sources.json.gz",
+          "bytes": 18768,
+          "sha256": "e5d29d600540f529c333ec3bb0bf259dde04d2b1fd76af16428d58c03142a2a2",
+          "uncompressedBytes": 83941,
+          "uncompressedSha256": "e11cd5460d277b1ec056d27673c6c0d0cbd60afc505153d6cf19629d12be9517"
+        }
+      },
+      "declaredAdmissionKey": "admission:native-buildkit-auth",
+      "addedToBaselineRowsOrTotals": false
+    }
+  ]
 }
