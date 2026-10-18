@@ -1,6 +1,12 @@
-import { nodeConfig, } from '@monochromatic-dev/config-rolldown/.node.ts';
+import { join, } from 'node:path';
+
+import {
+  copiedAssetsPlugin,
+  nodeConfig,
+} from '@monochromatic-dev/config-rolldown/.node.ts';
 
 import { nodeEntries, } from './src/build-entries.ts';
+import { CONFIG_FILE_NAME, } from './src/semantic-wrap-binary-constants.ts';
 
 // Ledger T8: the normal build's entries with a source map beside every chunk,
 // for the coverage census. V8 reports coverage by bundle offset, and the maps
@@ -32,6 +38,16 @@ import { nodeEntries, } from './src/build-entries.ts';
  */
 const config: ReturnType<typeof nodeConfig> = nodeConfig({
   input: Object.fromEntries(nodeEntries,),
+  extraPlugins: [copiedAssetsPlugin({
+    files: [{
+      source: join(
+        import.meta.dirname,
+        'src',
+        CONFIG_FILE_NAME,
+      ),
+      fileName: CONFIG_FILE_NAME,
+    },],
+  },),],
   outputOverrides: {
     sourcemap: true,
     minify: false,

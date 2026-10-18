@@ -1,12 +1,14 @@
 import {
   defineConfig,
   type OutputOptions,
+  type Plugin,
   type RolldownOptions,
 } from 'rolldown';
 import { dts, } from 'rolldown-plugin-dts';
 
 import { binShebangPlugin, } from './bin-shebang.ts';
 import { browserslistTargets, } from './browserslist-targets.ts';
+import { copiedAssetsPlugin, } from './copied-assets.ts';
 import {
   anchoredExternal,
   packageExternals,
@@ -16,6 +18,12 @@ import {
   familyEntrySpecifier,
 } from './package-family.ts';
 import { shebangExecutablePlugin, } from './shebang-executable.ts';
+
+export {
+  type CopiedAsset,
+  CopiedAssetReadError,
+  copiedAssetsPlugin,
+} from './copied-assets.ts';
 
 /**
  Resolved Browserslist targets shared by Node builds, via
@@ -155,6 +163,9 @@ function isInputList(
  @param external - Replacement external list from {@link nodeExternal} for
    consumers with custom bundle-inclusion patterns.
  
+ @param extraPlugins - Plugins appended after the shared ones, such as
+   {@link copiedAssetsPlugin} for data files the built output must carry.
+ 
  @returns Node flavor rolldown config for one self-contained build.
  
  @example
@@ -170,11 +181,13 @@ export function nodeConfig(
     outputDir = 'dist/final/node',
     outputOverrides = {},
     external,
+    extraPlugins = [],
   }: {
     readonly input?: readonly string[] | Readonly<Record<string, string>>;
     readonly outputDir?: string;
     readonly outputOverrides?: OutputOptions;
     readonly external?: readonly RegExp[];
+    readonly extraPlugins?: readonly Plugin[];
   } = {},
 ): RolldownOptions {
   return defineConfig({
@@ -184,6 +197,7 @@ export function nodeConfig(
     plugins: [
       ...basePlugins,
       binShebangPlugin({ outputDir, },),
+      ...extraPlugins,
     ],
     output: {
       ...baseOutput,

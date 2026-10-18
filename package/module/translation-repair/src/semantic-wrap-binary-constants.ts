@@ -28,12 +28,6 @@ export const CONFIG_FILE_NAME = 'semantic-wrap.config.jsonc';
 export const PASSAGE_FILE_NAME = 'passage.md';
 
 /**
- Name of the directory the package publishes its source in, which holds the
- configuration file.
- */
-export const SOURCE_DIRECTORY_NAME = 'src';
-
-/**
  Bytes granted to one reply, 64 mebibytes: a passage is kilobytes, so this
  bounds a runaway reply generously and still carries a passage a thousand
  times a page.

@@ -1,5 +1,4 @@
 import {
-  basename,
   dirname,
   join,
 } from 'node:path';
@@ -20,7 +19,6 @@ import {
   MOST_VERSION_CHARACTERS,
   PASSAGE_FILE_NAME,
   PINNED_LINT_BINARY_VERSION,
-  SOURCE_DIRECTORY_NAME,
 } from './semantic-wrap-binary-constants.ts';
 import {
   LintBinaryVersionError,
@@ -56,7 +54,8 @@ import {
 //
 // ITS CONFIGURATION IS A FILE THE PACKAGE SHIPS, `semantic-wrap.config.jsonc`,
 // because the program reads its configuration from a path. The file sits in
-// `src`, which the package publishes.
+// `src`, which the package publishes, and the build copies it beside the
+// built chunks in `dist/final/node`, where the bundle reads it.
 //
 // THE CHILD GETS NO KEY AND NO SETTING: its environment is built by
 // `childEnvironment` in `lint-program.ts`, as for every child of production
@@ -77,11 +76,16 @@ const confirmedPrograms = new Set<string>();
 /**
  Locates the configuration file the package ships.
 
- READ OFF THE NAME OF THE DIRECTORY THIS MODULE RUNS FROM rather than probed
- on disk: from source it is `src`, where the file stands beside the module,
- and from the build every chunk stands in `dist/final/node`, three levels
- below the package directory whose `src` the package publishes. A program
- that cannot read the path exits with a status, which the run error states.
+ READ BESIDE THIS MODULE, wherever it runs. From source the file stands in
+ `src` next to the module; from the build a copy stands in `dist/final/node`
+ next to every chunk, put there by the build configs. A copy beside the chunks
+ is what lets every bundle that inlines this module find the file wherever
+ that bundle is placed, where a path climbing out of the build directory to
+ `src` would point into whichever package holds the bundle. It also puts the
+ file's bytes in the directory the pipeline digest hashes, so changing the
+ configuration, which changes the line breaks the program produces, changes
+ the digest. A program that cannot read the path exits with a status, which
+ the run error states.
 
  @returns Path of the file
 
@@ -91,18 +95,8 @@ const confirmedPrograms = new Set<string>();
  ```
  */
 function semanticWrapConfigPath(): string {
-  if (basename(import.meta.dirname,) === SOURCE_DIRECTORY_NAME) {
-    return join(
-      import.meta.dirname,
-      CONFIG_FILE_NAME,
-    );
-  }
   return join(
     import.meta.dirname,
-    '..',
-    '..',
-    '..',
-    SOURCE_DIRECTORY_NAME,
     CONFIG_FILE_NAME,
   );
 }
