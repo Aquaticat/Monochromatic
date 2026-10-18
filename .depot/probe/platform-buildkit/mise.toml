@@ -43,7 +43,7 @@ try{
   const baseline=await run(['bake','--file','docker-bake.hcl','--print']);
   assert.equal(baseline.status,0,baseline.stderr);
   const parsed=JSON.parse(baseline.stdout);
-  assert.deepEqual(parsed.group.default.targets,['service','evidence']);
+  assert.deepEqual(parsed.group.default.targets.toSorted(),['evidence','service']);
   assert.deepEqual(parsed.target.service.platforms,['linux/amd64','linux/arm64']);
   assert.equal(parsed.target.service.project_id,'unallocated');
   assert.equal(parsed.target.service.args.BUILD_HARNESS_SHA,'print-control');
