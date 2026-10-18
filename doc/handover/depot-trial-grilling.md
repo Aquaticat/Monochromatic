@@ -2,17 +2,22 @@
 
 ## Local source-consumer checkpoint on 2026-10-18
 
-Cloud work remains terminal; no additional provider allocation is needed for this checkpoint.
+Cloud work remains terminal;
+no additional provider allocation is needed for this checkpoint.
 The frozen Figma parser and converter now pass all 24 authored leaf labels,
 including actual consumption of the three personal exports in a network-disabled container.
-Payloads, filenames and hashes remain private.
+Payloads,
+filenames and hashes remain private.
 The receipt is `doc/audit/depot-local-figma-authored-consumer-2026-10-18.evidence.json`.
 The remaining nine authored source-test files produced 151 passing leaf labels and four failures.
-Eight files pass; the import-attributes integration file fails during Rolldown entry resolution.
-It requests `src/fixtures`, while the frozen source contains `src/fixture`.
+Eight files pass;
+the import-attributes integration file fails during Rolldown entry resolution.
+It requests `src/fixtures`,
+while the frozen source contains `src/fixture`.
 The fresh owning Mise Node-harness build passes,
 and the existing built-export harness self-test passes its nine outer cases,
-including assertions about deliberate failures, timeouts and repeat termination.
+including assertions about deliberate failures,
+timeouts and repeat termination.
 Those controls are separate from product coverage.
 Exact source identities and 22 process-output bodies are sealed in
 `doc/audit/depot-remaining-local-unit-2026-10-18.evidence.json` and its source archive.
@@ -23,11 +28,13 @@ The committed three-leg local counterfactual admission is terminal:
 The writable logger directory removes its diagnostic but retains all four entry failures.
 Adding only `MONOCHROMATIC_VERBOSE=true` produces ten debug lifecycle lines in failed-child stderr.
 Adding only the throwaway `fixtures -> fixture` alias then makes all four authored cases pass.
-Each network-disabled container has two CPUs, 2 GiB RAM and a 150-second limit.
+Each network-disabled container has two CPUs,
+2 GiB RAM and a 150-second limit.
 Keep the entry-resolution and secondary logger diagnostics as separate incidents.
 The source-owned no-with case still does not assert absence of transformation on a plain import.
 Successful-child stderr was discarded by the local wrapper;
-its empty fields are placeholders, not observed empty streams.
+its empty fields are placeholders,
+not observed empty streams.
 The correction is explicit in `doc/audit/depot-local-node-counterfactual-2026-10-18.evidence.json`.
 All 223 semantic owner projections and 1818 original log-hash joins are now published in
 `doc/audit/depot-semantic-package-publication-2026-10-18.evidence.json`.

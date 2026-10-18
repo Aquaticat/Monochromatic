@@ -162,12 +162,16 @@ This incident is separate from the older external-text parsing issue in [rolldow
 
 Nothing to add upstream.
 
-1.  Upstream fault fails: the consumer requests a directory absent from the frozen tree.
-2.  An upstream change is not the remedy; the verified correction is at the first-party input boundary.
-3.  The controls exercise ordinary entry loading; they establish no unsupported-use-case claim.
+1.  Upstream fault fails:
+    the consumer requests a directory absent from the frozen tree.
+2.  An upstream change is not the remedy;
+    the verified correction is at the first-party input boundary.
+3.  The controls exercise ordinary entry loading;
+    they establish no unsupported-use-case claim.
 4.  Contribution policy is not assessed because no upstream defect or filing is proposed.
 5.  Maintainer willingness is not assessed because no upstream change is requested.
-6.  No upstream patch is appropriate; the unchanged consumer passes with the derived local alias.
+6.  No upstream patch is appropriate;
+    the unchanged consumer passes with the derived local alias.
 
 No upstream issue,
 comment or patch was sent or drafted.
