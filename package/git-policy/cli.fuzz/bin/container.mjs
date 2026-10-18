@@ -17,10 +17,7 @@ const targets = [
   { name: 'global_arguments', dictionary: 'arguments.dict' },
   { name: 'config_loading', dictionary: 'arguments.dict' },
   { name: 'config_schema', dictionary: 'config_schema.dict' },
-  // The frontier view forwards commits, and each one writes an event line on the process's standard error;
-  // closing that stream for the target (libFuzzer keeps its own copy for statistics) keeps a stalled pipe reader
-  // from stalling the target. A panic message is lost with it, so a crash is reproduced from its saved input.
-  { name: 'wrapper_controls', dictionary: 'controls.dict', extraOptions: ['-close_fd_mask=2'] },
+  { name: 'wrapper_controls', dictionary: 'controls.dict' },
   { name: 'batch_reply', dictionary: 'batch_reply.dict' },
   { name: 'stage_listing', dictionary: 'stage_listing.dict' },
   { name: 'rules_file', dictionary: 'rules_file.dict' },
@@ -207,7 +204,6 @@ async function main() {
         `/fuzz/bin/${target.name}`, `/fuzz/corpus/${target.name}`, `-max_total_time=${secondsPerTarget}`,
         `-max_len=${maxInputBytes}`, '-rss_limit_mb=1536', '-timeout=5', '-print_final_stats=1',
         `-artifact_prefix=/fuzz/artifacts/${target.name}/`, `-dict=/fuzz/dictionary/${target.dictionary}`,
-        ...(target.extraOptions ?? []),
       ], capture: true }).stdout.trim();
       containers.push(container);
       await mkdir(join(evidence, target.name), { recursive: true });
