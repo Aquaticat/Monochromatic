@@ -78,6 +78,41 @@ The revised full replay remains required before readiness is renewed.
 The native-root guard mutation is running in a private module loader;
 production source and output remain untouched.
 
+The native-root guard mutation is killed by the new regression;
+the production owner hash remains `71858a7f9c81f979050396fba9f629f437d5642a34b5446032511dc308e757a8`.
+The fragmented replay still exhausts the heap on `native-release-iQw5fd` after 26 live assessments.
+The faithful assistant-text replay instead hits the old private bridge's 30-request limit;
+that is a separate harness failure.
+The bridge now permits at most 128 requests for the complete original proposal corpus.
+Real configured-host prohibition control `pi-hyper-rpc-allow-SSsGVq` withholds both process and Bash members,
+with zero selectors and three live Luna responses.
+
+`test:native:event-sharing` reproduces callback-phase payload duplication through the actual native runner.
+The old build fails its storage assertion while retaining all phase values correctly.
+The new event snapshot stores distinct copied values once per emission,
+with ordered phase records referencing their original value ordinal.
+This changes storage only:
+no callback phase,
+mutation,
+output,
+or source occurrence is discarded.
+The existing native receipt fixture expands this lossless representation before checking all original assertions.
+The source is committed but still needs a native rebuild and verification.
+
+Next actions:
+
+- Rebuild the event snapshot change and run event sharing plus the complete native event receipt catalog.
+- Repeat full native units,
+  both configured-host replays,
+  outgoing-payload audits,
+  source-root mutation,
+  and the live prohibition control against the final output.
+- Resolve only new lint findings,
+  record the remaining full-package debt for MiMo,
+  update package/troubleshooting/handoff docs,
+  render Markdown,
+  and review inactive generated releases before final footprint measurement.
+
 ## Verified MiMo lint handoff on 2026-10-17
 
 The current handoff is [MiMo lint handoff](pi-auto-mode-mimo-lint-prompt.md).
