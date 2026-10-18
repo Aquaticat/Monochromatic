@@ -800,3 +800,17 @@ qualify the desktop lookup/decoder prerequisites,
 execute the isolated file-enforcer Git-config control,
 and prepare actual bounded fuzz/conformance/browser/product consumers.
 The immutable feature and consumer manifest remains under semantic review.
+
+## Generator Git credential cleanup control
+
+The frozen file-enforcer generator configures a credential-bearing Git URL subsection,
+then removes a different token-free subsection.
+The actual invented-token Git 2.56.0 control reproduced a live rewrite after the authored cleanup;
+its shell returned `0` while a direct wrong-key unset returned `5`.
+Matching-key and matching-section positive controls each removed the rewrite.
+[The source trace and retained receipt](../troubleshooting/git-url-rewrite-cleanup-key.md)
+cover only this live-configuration boundary.
+No real credential,
+complete generator image,
+or exported image layer was used.
+Expanded CI must preserve that limit when qualifying this existing image consumer.

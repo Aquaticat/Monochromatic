@@ -23,7 +23,20 @@
       "Computed imports, resource call candidates, README features, and missing assertion heuristics require semantic review.",
       "Static it/describe call sites are not runtime-discovered test-case counts.",
       "All dependency fields remain present, including development cycles."
-    ]
+    ],
+    "containerGitCredentialControl": {
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "sourcePath": "package/dev-script/file-enforcer/generator/Containerfile",
+      "sourceSha256": "16c174c71e32066baa7e8cd9de77c774fe89f32ec8b450533ad00ca94e43f7ef",
+      "evidence": "depot-complete-coverage-file-enforcer-git-config.json.gz",
+      "troubleshooting": "../troubleshooting/git-url-rewrite-cleanup-key.md",
+      "syntheticOnly": true,
+      "actualImageOrLayerConsumer": false,
+      "wrongKeyStatus": 5,
+      "authoredShellStatus": 0,
+      "liveRewriteSurvives": true,
+      "matchingKeyAndSectionPositiveControls": true
+    }
   },
   "coverageReviewComplete": false,
   "executionComplete": false,
@@ -288,6 +301,14 @@
       "sha256": "a31c47e47dcae8ea4619eb3c8b14e6eda24a67b4815b028b9976797a71344dae",
       "rawBytes": 1908799,
       "rawSha256": "cd4f8d02efd75167ea2a9898f32e99d95736602e4a236aff4e15741be2abf95a"
+    },
+    {
+      "path": "depot-complete-coverage-file-enforcer-git-config.json.gz",
+      "encoding": "gzip JSON",
+      "bytes": 70499,
+      "sha256": "559172ce0a2c8ebee3e4acb320eba40b259ca25d72440d15e9fa2a9e3834b251",
+      "rawBytes": 300983,
+      "rawSha256": "46dad14461c6d03f314d14497046abde5b1ec974573ef466e35cbb070ff5672d"
     }
   ],
   "execution": [
@@ -43109,5 +43130,5 @@
       "fullEvidence": "depot-complete-coverage-packages.json.gz"
     }
   ],
-  "latestEvidenceAt": "2026-10-18T10:27:12.592Z"
+  "latestEvidenceAt": "2026-10-18T10:42:22.544Z"
 }
