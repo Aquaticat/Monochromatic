@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "collectedAt": "2026-10-18T09:19:26.137Z",
+  "collectedAt": "2026-10-18T09:29:12.007Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
-  "status": "Research ongoing: native exports, registry bridge and Node26-qualified OCI derivative exercised; forwarding, immutable Git and remaining Cargo mount cases active",
+  "status": "Research ongoing: native exports, registry bridge, Node26-qualified OCI derivative, coherent firstparty Cargo mounts and actual forwarding/Bake/CNI controls exercised; immutable Git and lifecycle follow-through active",
   "sourceArchive": {
     "path": "doc/audit/depot-buildkit-platform-campaign-2026-10-18.sources.json.gz",
-    "bytes": 2978716,
-    "sha256": "b70943cce7b7ed81383ba1c7dee5bd90a77e2513e997c68b69fe2045ffbeb28f"
+    "bytes": 3121417,
+    "sha256": "43c5b8c3a348249827b52b68a13a5ace7a4d82b07cc5753fa1f3fe4be9744dfd"
   },
   "service": {
     "source": "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
@@ -149,6 +149,7 @@
     "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
     "aa89e372f09c82286695d80cddf7f86b602051c9",
     "0b471538cd549cb2181088803c1e0a6d542d791e",
+    "b0e3247a279507c759964162ec9eb816e3dcc402",
     "7f22f25adbb05e0c1add22211b12f1d275a29c17",
     "7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f"
   ],
@@ -237,6 +238,45 @@
       "elapsedMilliseconds": 35456,
       "guardFired": false,
       "phase": "ci-derived",
+      "projectId": "27m5m3vjlv"
+    },
+    {
+      "receipt": "forwarding-graph-positive.json",
+      "buildId": "tf3tp8b4tx",
+      "source": "b0e3247a279507c759964162ec9eb816e3dcc402",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-10-18T09:23:17.441Z",
+      "finishedAt": "2026-10-18T09:23:51.734Z",
+      "elapsedMilliseconds": 34293,
+      "guardFired": false,
+      "phase": "forwarding-positive",
+      "projectId": "27m5m3vjlv"
+    },
+    {
+      "receipt": "forwarding-graph-missing-secret.json",
+      "buildId": "c92mvpvs0t",
+      "source": "b0e3247a279507c759964162ec9eb816e3dcc402",
+      "exitCode": 1,
+      "signal": null,
+      "startedAt": "2026-10-18T09:24:55.636Z",
+      "finishedAt": "2026-10-18T09:25:02.115Z",
+      "elapsedMilliseconds": 6479,
+      "guardFired": false,
+      "phase": "forwarding-missing-secret",
+      "projectId": "27m5m3vjlv"
+    },
+    {
+      "receipt": "forwarding-graph-missing-ssh.json",
+      "buildId": "mqpxcrcbgn",
+      "source": "b0e3247a279507c759964162ec9eb816e3dcc402",
+      "exitCode": 1,
+      "signal": null,
+      "startedAt": "2026-10-18T09:25:46.015Z",
+      "finishedAt": "2026-10-18T09:25:52.581Z",
+      "elapsedMilliseconds": 6566,
+      "guardFired": false,
+      "phase": "forwarding-missing-ssh",
       "projectId": "27m5m3vjlv"
     },
     {
@@ -2854,6 +2894,728 @@
     ],
     "decidingSourceBodiesPreservedInCompressedArchive": true
   },
+  "forwardingBakeGraph": [
+    {
+      "receipt": "forwarding-graph-local-validation.json",
+      "observedAt": "2026-10-18T09:23:00.175Z",
+      "source": "b0e3247a279507c759964162ec9eb816e3dcc402",
+      "nodeVersion": "v26.12.0",
+      "syntaxPrograms": 7,
+      "typedStdin": {
+        "status": 1,
+        "stderr": "[stdin]:1\nconst text: string=\"fixture\"; if(text!==\"fixture\") throw new Error(\"fixture\");\n      ^^^^\n\nSyntaxError: Missing initializer in const declaration\n    at wrapSafe (node:internal/modules/cjs/loader:1900:18)\n    at checkSyntax (node:internal/main/check_syntax:88:3)\n    at node:internal/main/check_syntax:45:5\n    at Socket.<anonymous> (node:internal/process/execution:239:5)\n    at Socket.emit (node:events:526:24)\n    at endReadableNT (node:internal/streams/readable:2147:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)\n\nNode.js v26.12.0\n"
+      },
+      "strippedModuleStdin": {
+        "status": 0
+      },
+      "malformedPositiveControl": {
+        "status": 1,
+        "stderr": "[stdin]:1\nconst broken = ;\n               ^\n\nSyntaxError: Unexpected token ';'\n    at checkSyntax (node:internal/main/check_syntax:84:5)\n    at node:internal/main/check_syntax:45:5\n    at Socket.<anonymous> (node:internal/process/execution:239:5)\n    at Socket.emit (node:events:526:24)\n    at endReadableNT (node:internal/streams/readable:2147:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)\n\nNode.js v26.12.0\n"
+      },
+      "printed": {
+        "group": {
+          "default": {
+            "targets": [
+              "forwarding-graph"
+            ]
+          },
+          "forwarding-graph": {
+            "targets": [
+              "source",
+              "evidence",
+              "network-a",
+              "network-b"
+            ]
+          }
+        },
+        "target": {
+          "evidence": {
+            "context": "context",
+            "contexts": {
+              "fixtureinput": "fixture-input"
+            },
+            "dockerfile": "Dockerfile",
+            "args": {
+              "BUILD_HARNESS_SHA": "print-control",
+              "EXPECTED_AGENT_NONCE": "print-control",
+              "EXPECTED_SECRET_HASH": "print-control"
+            },
+            "target": "evidence",
+            "secret": [
+              {
+                "id": "fixture",
+                "src": "fixture-secret"
+              }
+            ],
+            "ssh": [
+              {
+                "id": "fixture",
+                "paths": [
+                  "fixture-agent.sock"
+                ]
+              }
+            ],
+            "platforms": [
+              "linux/amd64",
+              "linux/arm64"
+            ],
+            "output": [
+              {
+                "dest": "./proof",
+                "type": "local"
+              }
+            ],
+            "pull": false,
+            "no-cache": false,
+            "project_id": "unallocated"
+          },
+          "network-a": {
+            "context": "context",
+            "dockerfile": "Dockerfile",
+            "args": {
+              "BUILD_HARNESS_SHA": "print-control"
+            },
+            "target": "network-a",
+            "platforms": [
+              "linux/amd64"
+            ],
+            "output": [
+              {
+                "dest": "./network-a",
+                "type": "local"
+              }
+            ],
+            "pull": false,
+            "no-cache": false,
+            "project_id": "unallocated"
+          },
+          "network-b": {
+            "context": "context",
+            "dockerfile": "Dockerfile",
+            "args": {
+              "BUILD_HARNESS_SHA": "print-control"
+            },
+            "target": "network-b",
+            "platforms": [
+              "linux/amd64"
+            ],
+            "output": [
+              {
+                "dest": "./network-b",
+                "type": "local"
+              }
+            ],
+            "pull": false,
+            "no-cache": false,
+            "project_id": "unallocated"
+          },
+          "source": {
+            "context": "context",
+            "dockerfile": "Dockerfile",
+            "args": {
+              "BUILD_HARNESS_SHA": "print-control"
+            },
+            "target": "source-evidence",
+            "platforms": [
+              "linux/amd64",
+              "linux/arm64"
+            ],
+            "output": [
+              {
+                "dest": "./builder-proof",
+                "type": "local"
+              }
+            ],
+            "pull": false,
+            "no-cache": false,
+            "project_id": "unallocated"
+          }
+        }
+      },
+      "negativePrints": {
+        "secret": {
+          "group": {
+            "default": {
+              "targets": [
+                "missing-secret"
+              ]
+            }
+          },
+          "target": {
+            "missing-secret": {
+              "context": "context",
+              "contexts": {
+                "fixtureinput": "fixture-input"
+              },
+              "dockerfile": "Dockerfile",
+              "args": {
+                "BUILD_HARNESS_SHA": "print-control",
+                "EXPECTED_AGENT_NONCE": "print-control",
+                "EXPECTED_SECRET_HASH": "print-control"
+              },
+              "target": "evidence",
+              "ssh": [
+                {
+                  "id": "fixture",
+                  "paths": [
+                    "fixture-agent.sock"
+                  ]
+                }
+              ],
+              "platforms": [
+                "linux/amd64"
+              ],
+              "output": [
+                {
+                  "dest": "./missing-secret",
+                  "type": "local"
+                }
+              ],
+              "pull": false,
+              "no-cache": false,
+              "project_id": "unallocated"
+            }
+          }
+        },
+        "ssh": {
+          "group": {
+            "default": {
+              "targets": [
+                "missing-ssh"
+              ]
+            }
+          },
+          "target": {
+            "missing-ssh": {
+              "context": "context",
+              "contexts": {
+                "fixtureinput": "fixture-input"
+              },
+              "dockerfile": "Dockerfile",
+              "args": {
+                "BUILD_HARNESS_SHA": "print-control",
+                "EXPECTED_AGENT_NONCE": "print-control",
+                "EXPECTED_SECRET_HASH": "print-control"
+              },
+              "target": "evidence",
+              "secret": [
+                {
+                  "id": "fixture",
+                  "src": "fixture-secret"
+                }
+              ],
+              "platforms": [
+                "linux/amd64"
+              ],
+              "output": [
+                {
+                  "dest": "./missing-ssh",
+                  "type": "local"
+                }
+              ],
+              "pull": false,
+              "no-cache": false,
+              "project_id": "unallocated"
+            }
+          }
+        }
+      },
+      "cloudAllocated": false,
+      "rawMetadataPreservedInCompressedArchive": false
+    },
+    {
+      "receipt": "forwarding-graph-positive.json",
+      "kind": "native-build",
+      "phase": "forwarding-positive",
+      "source": "b0e3247a279507c759964162ec9eb816e3dcc402",
+      "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "projectId": "27m5m3vjlv",
+      "args": [
+        "bake",
+        "--file",
+        "docker-bake.hcl",
+        "--project",
+        "27m5m3vjlv",
+        "--metadata-file",
+        "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/forwarding-graph-positive/metadata.json",
+        "--progress",
+        "plain",
+        "forwarding-graph"
+      ],
+      "startedAt": "2026-10-18T09:23:17.441Z",
+      "maximumMilliseconds": 120000,
+      "maximumArchitectureBuilders": 2,
+      "cpuPerBuilder": 16,
+      "memoryGiBPerBuilder": 32,
+      "budget": {
+        "priorObservedMilliseconds": 256178,
+        "reservedUsd": 0.5015706666666666,
+        "ceilingUsd": 2,
+        "invoiceCapProven": false
+      },
+      "printed": {
+        "group": {
+          "default": {
+            "targets": [
+              "forwarding-graph"
+            ]
+          },
+          "forwarding-graph": {
+            "targets": [
+              "source",
+              "evidence",
+              "network-a",
+              "network-b"
+            ]
+          }
+        },
+        "target": {
+          "evidence": {
+            "context": "context",
+            "contexts": {
+              "fixtureinput": "fixture-input"
+            },
+            "dockerfile": "Dockerfile",
+            "args": {
+              "BUILD_HARNESS_SHA": "b0e3247a279507c759964162ec9eb816e3dcc402",
+              "EXPECTED_AGENT_NONCE": "keyless-cec92b63-30f9-4991-964f-81d407778905",
+              "EXPECTED_SECRET_HASH": "1e1ccb70815bc81a7b3ae13e407af01a778440959f19daf3c0335dea8ff17219"
+            },
+            "target": "evidence",
+            "secret": [
+              {
+                "id": "fixture",
+                "src": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/forwarding-graph-positive/synthetic-secret.private"
+              }
+            ],
+            "ssh": [
+              {
+                "id": "fixture",
+                "paths": [
+                  "[home]/temp/agent/fixture-agent-cec92b63.sock"
+                ]
+              }
+            ],
+            "platforms": [
+              "linux/amd64",
+              "linux/arm64"
+            ],
+            "output": [
+              {
+                "dest": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/forwarding-graph-positive/proof",
+                "type": "local"
+              }
+            ],
+            "pull": false,
+            "no-cache": false,
+            "project_id": "27m5m3vjlv"
+          },
+          "network-a": {
+            "context": "context",
+            "dockerfile": "Dockerfile",
+            "args": {
+              "BUILD_HARNESS_SHA": "b0e3247a279507c759964162ec9eb816e3dcc402"
+            },
+            "target": "network-a",
+            "platforms": [
+              "linux/amd64"
+            ],
+            "output": [
+              {
+                "dest": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/forwarding-graph-positive/network-a",
+                "type": "local"
+              }
+            ],
+            "pull": false,
+            "no-cache": false,
+            "project_id": "27m5m3vjlv"
+          },
+          "network-b": {
+            "context": "context",
+            "dockerfile": "Dockerfile",
+            "args": {
+              "BUILD_HARNESS_SHA": "b0e3247a279507c759964162ec9eb816e3dcc402"
+            },
+            "target": "network-b",
+            "platforms": [
+              "linux/amd64"
+            ],
+            "output": [
+              {
+                "dest": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/forwarding-graph-positive/network-b",
+                "type": "local"
+              }
+            ],
+            "pull": false,
+            "no-cache": false,
+            "project_id": "27m5m3vjlv"
+          },
+          "source": {
+            "context": "context",
+            "dockerfile": "Dockerfile",
+            "args": {
+              "BUILD_HARNESS_SHA": "b0e3247a279507c759964162ec9eb816e3dcc402"
+            },
+            "target": "source-evidence",
+            "platforms": [
+              "linux/amd64",
+              "linux/arm64"
+            ],
+            "output": [
+              {
+                "dest": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/forwarding-graph-positive/builder-proof",
+                "type": "local"
+              }
+            ],
+            "pull": false,
+            "no-cache": false,
+            "project_id": "27m5m3vjlv"
+          }
+        }
+      },
+      "syntheticSecretSha256": "1e1ccb70815bc81a7b3ae13e407af01a778440959f19daf3c0335dea8ff17219",
+      "agentNonce": "keyless-cec92b63-30f9-4991-964f-81d407778905",
+      "keylessAgent": true,
+      "localAgentList": {
+        "status": 0,
+        "publicIdentity": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA keyless-cec92b63-30f9-4991-964f-81d407778905"
+      },
+      "localCollisionControl": {
+        "code": "EADDRINUSE"
+      },
+      "finishedAt": "2026-10-18T09:23:51.734Z",
+      "elapsedMilliseconds": 34293,
+      "exitCode": 0,
+      "signal": null,
+      "guardFired": false,
+      "logPath": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/forwarding-graph-positive/build.log",
+      "consumer": {
+        "forwarding": [
+          {
+            "platform": "linux_amd64",
+            "proof": {
+              "secretSha256": "1e1ccb70815bc81a7b3ae13e407af01a778440959f19daf3c0335dea8ff17219",
+              "sshAgentComment": "keyless-cec92b63-30f9-4991-964f-81d407778905",
+              "privateKeyUsed": false
+            },
+            "lifetime": {
+              "secretAbsent": true,
+              "agentSocketAbsent": true,
+              "harnessCommit": "b0e3247a279507c759964162ec9eb816e3dcc402"
+            },
+            "builder": {
+              "architecture": "x64",
+              "targetArchitecture": "amd64",
+              "targetOs": "linux",
+              "cpuCount": 16,
+              "memoryBytes": 32997216256,
+              "cpuModels": [
+                "AMD EPYC 9R45"
+              ],
+              "nodeVersion": "v24.22.0",
+              "harnessCommit": "b0e3247a279507c759964162ec9eb816e3dcc402"
+            },
+            "context": {
+              "cohort": "monochromatic-platform-buildkit-20261018-v1",
+              "namedContextMarker": "independent-named-context",
+              "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a"
+            }
+          },
+          {
+            "platform": "linux_arm64",
+            "proof": {
+              "secretSha256": "1e1ccb70815bc81a7b3ae13e407af01a778440959f19daf3c0335dea8ff17219",
+              "sshAgentComment": "keyless-cec92b63-30f9-4991-964f-81d407778905",
+              "privateKeyUsed": false
+            },
+            "lifetime": {
+              "secretAbsent": true,
+              "agentSocketAbsent": true,
+              "harnessCommit": "b0e3247a279507c759964162ec9eb816e3dcc402"
+            },
+            "builder": {
+              "architecture": "arm64",
+              "targetArchitecture": "arm64",
+              "targetOs": "linux",
+              "cpuCount": 16,
+              "memoryBytes": 33020604416,
+              "cpuModels": [
+                "Neoverse-V2"
+              ],
+              "nodeVersion": "v24.22.0",
+              "harnessCommit": "b0e3247a279507c759964162ec9eb816e3dcc402"
+            },
+            "context": {
+              "cohort": "monochromatic-platform-buildkit-20261018-v1",
+              "namedContextMarker": "independent-named-context",
+              "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a"
+            }
+          }
+        ],
+        "network": [
+          {
+            "name": "a",
+            "port": 38429,
+            "startedAt": "2026-10-18T09:23:30.341Z",
+            "finishedAt": "2026-10-18T09:23:50.350Z",
+            "namespace": "net:[4026532787]",
+            "bootIdentitySha256": "94a7603ee49470aba21dab1cead63bade2c1287a1f19a5a04ecb69c4ec6477dd",
+            "harnessCommit": "b0e3247a279507c759964162ec9eb816e3dcc402",
+            "closed": true
+          },
+          {
+            "name": "b",
+            "port": 38429,
+            "startedAt": "2026-10-18T09:23:30.342Z",
+            "finishedAt": "2026-10-18T09:23:50.350Z",
+            "namespace": "net:[4026532715]",
+            "bootIdentitySha256": "94a7603ee49470aba21dab1cead63bade2c1287a1f19a5a04ecb69c4ec6477dd",
+            "harnessCommit": "b0e3247a279507c759964162ec9eb816e3dcc402",
+            "closed": true
+          }
+        ],
+        "overlapMilliseconds": 20008,
+        "sameBootIdentity": true,
+        "distinctNamespaces": true
+      },
+      "networkIsolationProven": true,
+      "consumerVerified": true,
+      "agent": {
+        "packets": [
+          {
+            "type": 11,
+            "at": "2026-10-18T09:23:17.408Z"
+          },
+          {
+            "type": 11,
+            "at": "2026-10-18T09:23:30.648Z"
+          },
+          {
+            "type": 11,
+            "at": "2026-10-18T09:23:30.786Z"
+          }
+        ],
+        "errors": [],
+        "closed": true,
+        "privateKeys": false
+      },
+      "buildId": "tf3tp8b4tx",
+      "rawMetadataPreservedInCompressedArchive": true
+    },
+    {
+      "receipt": "forwarding-graph-missing-secret.json",
+      "kind": "native-build",
+      "phase": "forwarding-missing-secret",
+      "source": "b0e3247a279507c759964162ec9eb816e3dcc402",
+      "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "projectId": "27m5m3vjlv",
+      "args": [
+        "bake",
+        "--file",
+        "docker-bake.hcl",
+        "--project",
+        "27m5m3vjlv",
+        "--metadata-file",
+        "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/forwarding-graph-missing-secret/metadata.json",
+        "--progress",
+        "plain",
+        "missing-secret"
+      ],
+      "startedAt": "2026-10-18T09:24:55.636Z",
+      "maximumMilliseconds": 120000,
+      "maximumArchitectureBuilders": 2,
+      "cpuPerBuilder": 16,
+      "memoryGiBPerBuilder": 32,
+      "budget": {
+        "priorObservedMilliseconds": 290471,
+        "reservedUsd": 0.5472946666666667,
+        "ceilingUsd": 2,
+        "invoiceCapProven": false
+      },
+      "printed": {
+        "group": {
+          "default": {
+            "targets": [
+              "missing-secret"
+            ]
+          }
+        },
+        "target": {
+          "missing-secret": {
+            "context": "context",
+            "contexts": {
+              "fixtureinput": "fixture-input"
+            },
+            "dockerfile": "Dockerfile",
+            "args": {
+              "BUILD_HARNESS_SHA": "b0e3247a279507c759964162ec9eb816e3dcc402",
+              "EXPECTED_AGENT_NONCE": "keyless-36a492c6-2037-4f8c-983b-986927745eb5",
+              "EXPECTED_SECRET_HASH": "0077a694add2b490a3e7f94b9d5d61d46845f4e45aa9f6aec91a2f42db28bbb1"
+            },
+            "target": "evidence",
+            "ssh": [
+              {
+                "id": "fixture",
+                "paths": [
+                  "[home]/temp/agent/fixture-agent-36a492c6.sock"
+                ]
+              }
+            ],
+            "platforms": [
+              "linux/amd64"
+            ],
+            "output": [
+              {
+                "dest": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/forwarding-graph-missing-secret/missing-secret",
+                "type": "local"
+              }
+            ],
+            "pull": false,
+            "no-cache": false,
+            "project_id": "27m5m3vjlv"
+          }
+        }
+      },
+      "syntheticSecretSha256": "0077a694add2b490a3e7f94b9d5d61d46845f4e45aa9f6aec91a2f42db28bbb1",
+      "agentNonce": "keyless-36a492c6-2037-4f8c-983b-986927745eb5",
+      "keylessAgent": true,
+      "localAgentList": {
+        "status": 0,
+        "publicIdentity": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA keyless-36a492c6-2037-4f8c-983b-986927745eb5"
+      },
+      "localCollisionControl": {
+        "code": "EADDRINUSE"
+      },
+      "finishedAt": "2026-10-18T09:25:02.115Z",
+      "elapsedMilliseconds": 6479,
+      "exitCode": 1,
+      "signal": null,
+      "guardFired": false,
+      "logPath": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/forwarding-graph-missing-secret/build.log",
+      "requiredMountRejected": true,
+      "consumerVerified": true,
+      "agent": {
+        "packets": [
+          {
+            "type": 11,
+            "at": "2026-10-18T09:24:55.615Z"
+          }
+        ],
+        "errors": [],
+        "closed": true,
+        "privateKeys": false
+      },
+      "buildId": "c92mvpvs0t",
+      "requiredMountDiagnostic": "secret fixture: not found",
+      "rawMetadataPreservedInCompressedArchive": false
+    },
+    {
+      "receipt": "forwarding-graph-missing-ssh.json",
+      "kind": "native-build",
+      "phase": "forwarding-missing-ssh",
+      "source": "b0e3247a279507c759964162ec9eb816e3dcc402",
+      "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "projectId": "27m5m3vjlv",
+      "args": [
+        "bake",
+        "--file",
+        "docker-bake.hcl",
+        "--project",
+        "27m5m3vjlv",
+        "--metadata-file",
+        "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/forwarding-graph-missing-ssh/metadata.json",
+        "--progress",
+        "plain",
+        "missing-ssh"
+      ],
+      "startedAt": "2026-10-18T09:25:46.015Z",
+      "maximumMilliseconds": 120000,
+      "maximumArchitectureBuilders": 2,
+      "cpuPerBuilder": 16,
+      "memoryGiBPerBuilder": 32,
+      "budget": {
+        "priorObservedMilliseconds": 296950,
+        "reservedUsd": 0.5559333333333334,
+        "ceilingUsd": 2,
+        "invoiceCapProven": false
+      },
+      "printed": {
+        "group": {
+          "default": {
+            "targets": [
+              "missing-ssh"
+            ]
+          }
+        },
+        "target": {
+          "missing-ssh": {
+            "context": "context",
+            "contexts": {
+              "fixtureinput": "fixture-input"
+            },
+            "dockerfile": "Dockerfile",
+            "args": {
+              "BUILD_HARNESS_SHA": "b0e3247a279507c759964162ec9eb816e3dcc402",
+              "EXPECTED_AGENT_NONCE": "keyless-8c33813d-82ee-4083-827a-eb7827fd51ee",
+              "EXPECTED_SECRET_HASH": "b56c9cb3e10e8890ae86633b9ad260e800d429350f5f8caa7621bf3da2cfe488"
+            },
+            "target": "evidence",
+            "secret": [
+              {
+                "id": "fixture",
+                "src": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/forwarding-graph-missing-ssh/synthetic-secret.private"
+              }
+            ],
+            "platforms": [
+              "linux/amd64"
+            ],
+            "output": [
+              {
+                "dest": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/forwarding-graph-missing-ssh/missing-ssh",
+                "type": "local"
+              }
+            ],
+            "pull": false,
+            "no-cache": false,
+            "project_id": "27m5m3vjlv"
+          }
+        }
+      },
+      "syntheticSecretSha256": "b56c9cb3e10e8890ae86633b9ad260e800d429350f5f8caa7621bf3da2cfe488",
+      "agentNonce": "keyless-8c33813d-82ee-4083-827a-eb7827fd51ee",
+      "keylessAgent": true,
+      "localAgentList": {
+        "status": 0,
+        "publicIdentity": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA keyless-8c33813d-82ee-4083-827a-eb7827fd51ee"
+      },
+      "localCollisionControl": {
+        "code": "EADDRINUSE"
+      },
+      "finishedAt": "2026-10-18T09:25:52.581Z",
+      "elapsedMilliseconds": 6566,
+      "exitCode": 1,
+      "signal": null,
+      "guardFired": false,
+      "logPath": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/forwarding-graph-missing-ssh/build.log",
+      "agent": {
+        "packets": [
+          {
+            "type": 11,
+            "at": "2026-10-18T09:25:45.938Z"
+          }
+        ],
+        "errors": [],
+        "closed": true,
+        "privateKeys": false
+      },
+      "buildId": "mqpxcrcbgn",
+      "requiredMountRejected": true,
+      "requiredMountDiagnostic": "unset ssh forward key fixture",
+      "consumerVerified": true,
+      "postRunHarnessCorrection": "Initial assertion expected a different diagnostic wording. Existing terminal log reconciled without allocating or rerunning.",
+      "rawMetadataPreservedInCompressedArchive": false
+    }
+  ],
   "registry": {
     "complete": true,
     "anonymousStatus": 401,
@@ -3045,12 +3807,12 @@
     "hostBindMounts": 0
   },
   "timestampComputeModel": {
-    "observedNativeRequestMilliseconds": 256178,
+    "observedNativeRequestMilliseconds": 303516,
     "maximumArchitectureBuilders": 2,
     "cpusPerBuilder": 16,
     "memoryGiBPerBuilder": 32,
     "publicRateUsdPerBuilderMinute": 0.04,
-    "nominalWindowEstimateUsd": 0.34157066666666663,
+    "nominalWindowEstimateUsd": 0.40468800000000005,
     "ceilingUsd": 2,
     "invoiceOrAccountCapProven": false,
     "initialExpiredWallClockRetained": true
@@ -3062,7 +3824,6 @@
   },
   "unresolved": [
     "Native OCI empty statement subjects versus registry subjects: deciding source and consumer consequences",
-    "Synthetic secret and keyless SSH forwarding consumers",
     "Remote Git immutable context and local overlay control",
     "Cross-project pull-token isolation",
     "Independent parent nativeCI and GitHub consumers",
