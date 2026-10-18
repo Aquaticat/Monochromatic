@@ -7,7 +7,7 @@ jobs:
   rust:
     runs-on:
       size: 8x32
-      image: l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r1
+      image: l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r2-git256
     timeout-minutes: 15
     env:
       CI: 'true'
@@ -18,24 +18,20 @@ jobs:
       REUSE_KIND: rust
       REUSE_PHASE: seed
       REUSE_DEPENDENCIES: installed
+      REUSE_IMAGE_TAG: tools-r2-git256
+      REUSE_IMAGE_DIGEST: sha256:fb197837831d438592d9455b3a31d808a20ad8bdc2ae76b05d8b36f6656419cd
     steps:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       with:
         persist-credentials: false
         # Retain the frozen application ancestor for dependency admission.
-        fetch-depth: 32
+        fetch-depth: 64
         # Preserve an unexpected old untracked source marker so the image control can detect it.
         clean: false
-    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
-      with:
-        # Avoid unrelated root-tool installation and freeze the task bootstrap.
-        version: 2026.10.9
-        install: false
-        cache: false
     - name: Bind the unique snapshot tag to its expected manifest digest
-      run: mise run //package/dev-script/task-util:research:reuse:registry
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:reuse:registry
     - name: Verify captured tools and installed dependency extraction
-      run: mise run //package/dev-script/task-util:research:reuse:tools
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:reuse:tools
     - name: Mount only this experiment's trusted immutable target archive
       uses: depot/cache-mount@38d61fd25163e9ef3a3eff8a61676994d306e549
       with:
@@ -43,10 +39,10 @@ jobs:
         path: /mnt/aquaticats-monochromatic-reuse-20261018-native-target-trusted-r1
         debug: 'true'
     - name: Build native CLI and execute existing Nextest consumers
-      run: mise run //package/dev-script/task-util:research:reuse:rust
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:reuse:rust
     - name: Recheck snapshot tag resolution after the consumer
       if: always()
-      run: mise run //package/dev-script/task-util:research:reuse:registry
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:reuse:registry
     - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       if: always()
       with:

@@ -7,8 +7,13 @@ import { evidence, sha } from './reuse-context.mjs';
 // Inspect only the experiment's manifest/config. Never retain credentials or arbitrary image environment values.
 const origin = 'https://l4zncjjbj5.registry.depot.dev';
 const repository = 'research-reuse-20261018';
+const tag = process.env.REUSE_IMAGE_TAG ?? 'tools-r1';
+assert(['tools-r1', 'tools-r2-git256'].includes(tag));
+const expectedDigest = process.env.REUSE_IMAGE_DIGEST ?? 'sha256:9fb974fd32185c8afd5711370869d03e0f28e5b560c928eae324c20151ddeee8';
+assert(/^sha256:[a-f0-9]{64}$/u.test(expectedDigest));
 const token = process.env.DEPOT_SNAPSHOT_TOKEN;
-const proof = { recordedAt: new Date().toISOString(), reference: origin.slice(8) + '/' + repository + ':tools-r1', automaticSnapshotCredentialPresent: Boolean(token), requests: [] };
+const proof = { recordedAt: new Date().toISOString(), reference: origin.slice(8) + '/' + repository + ':' + tag, expectedDigest, automaticSnapshotCredentialPresent: Boolean(token), requests: [] };
+let manifestVerified = false;
 
 /** Read one named artifact with bounded redirects and no credential forwarding to blob hosts. */
 async function get({ path, authorization }) {
@@ -28,7 +33,7 @@ try {
   if (token) {
     const basic = 'Basic ' + Buffer.from('x-token:' + token).toString('base64');
     let authorization = basic;
-    const path = '/v2/' + repository + '/manifests/tools-r1';
+    const path = '/v2/' + repository + '/manifests/' + tag;
     let response = await get({ path, authorization });
     if (response.status === 401) {
       const challenge = response.headers.get('www-authenticate') ?? '';
@@ -53,7 +58,8 @@ try {
     const bytes = Buffer.from(await response.arrayBuffer());
     assert(bytes.length <= 1024 * 1024);
     proof.digest = 'sha256:' + sha(bytes);
-    assert.equal(proof.digest, 'sha256:9fb974fd32185c8afd5711370869d03e0f28e5b560c928eae324c20151ddeee8');
+    assert.equal(proof.digest, expectedDigest);
+    manifestVerified = true;
     const manifest = JSON.parse(bytes.toString());
     proof.manifest = manifest;
     const configResponse = await get({ path: '/v2/' + repository + '/blobs/' + manifest.config.digest, authorization });
@@ -70,4 +76,5 @@ try {
   writeFileSync(join(evidence, 'snapshot-registry-manifest.json'), JSON.stringify(proof, null, 2) + '\n');
   appendFileSync(join(evidence, 'snapshot-registry-manifest.jsonl'), JSON.stringify(proof) + '\n');
   console.log(JSON.stringify({ automaticSnapshotCredentialPresent: proof.automaticSnapshotCredentialPresent, digest: proof.digest ?? null, failure: proof.failure ?? null }));
+  assert(manifestVerified, 'The snapshot manifest must match its independent harness-bound digest before consumption');
 }
