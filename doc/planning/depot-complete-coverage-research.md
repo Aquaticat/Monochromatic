@@ -36,14 +36,45 @@ no owning test execution is joined for them in that projection.
 The import-attributes packed namespace import remains qualified separately from its transformation assertions.
 This narrow missing-join finding is checked against retained execution evidence before any new allocation.
 
-The authored Figma converter tests also read three personal export fixtures through `homedir()`.
-Their exact local paths are present and privately byte/hash checked.
-The next verification is their actual local consumer in a disposable 2-CPU/2-GiB container,
-with network disabled during fixture consumption.
-Fixture payloads remain local.
-No assertion edits,
-host model calls,
-emulator or desktop relaunch are included.
+Those eleven source-owned files have now executed unchanged in isolated local containers.
+The Figma parser and converter pass 24 authored leaf labels,
+including actual consumption of the three private exports
+([Figma consumer](../audit/depot-local-figma-authored-consumer-2026-10-18.evidence.json)).
+The remaining nine files produce 151 passing leaf labels and four integration failures.
+The fresh owning Mise Node-harness build also succeeds,
+and its built-export self-test passes nine outer cases covering deliberate failure,
+timeout and repeat handling
+([remaining consumers](../audit/depot-remaining-local-unit-2026-10-18.evidence.json)).
+Those harness controls are separate from product-owner case counts.
+
+The four integration failures request plural `src/fixtures` while the frozen tree contains singular `src/fixture`.
+With logger write access held constant,
+adding only an untracked directory alias makes the same four authored cases pass.
+Making only the logger directory writable removes its diagnostic while retaining the entry failures.
+The no-with case still does not assert its named negative behavior:
+it uses the attributed fixture and only checks nonempty output
+([terminal controls](../audit/depot-local-node-counterfactual-2026-10-18.evidence.json),
+[source diagnosis](../troubleshooting/rolldown-import-attributes-test-fixture-path.md)).
+The original failing topology and derived passing topology remain separate qualifications.
+Personal export payloads,
+filenames and hashes remain local.
+No authored assertion changes,
+model calls or device launches occurred.
+
+The local wrapper retains successful-child stdout and failed-child stderr,
+but discards successful-child stderr.
+Its empty success-stderr fields are placeholders;
+the terminal control receipt explicitly retracts the original empty-stream claim.
+Passing source leaf labels remain backed by stdout.
+Source-import tests do not establish compiled product-artifact coverage.
+
+The detailed [semantic package publication](../audit/depot-semantic-package-publication-2026-10-18.evidence.json)
+now publishes all 223 directory-owner projections and 1818 exact command identities.
+All 1818 original log bodies were rehashed and joined to their artifact/outcome receipts;
+121 failed command receipts remain failures.
+Lexical exports,
+static specification declarations,
+imported-call candidates and generator inputs retain their static or observed-runtime limits.
 Per-product feature promises and every source branch remain unvalidated;
 the canonical manifest continues to report `coverageReviewComplete: false`.
 
