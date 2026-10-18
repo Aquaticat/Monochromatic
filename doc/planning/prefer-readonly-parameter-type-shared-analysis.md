@@ -145,7 +145,17 @@ the `export ... from`, `import =` and `/// <reference types>` fixtures do not sh
 the README documents the sharing.
 A cold family lint with verification on gave the prototype's exact totals:
 6856 hits verified, 0 mismatches, 110 unresolved-specifier fallbacks.
-The comparison over every repository package against the baseline bundle runs in `w177-notes/fullrepo/`.
+The comparison over every repository package against the baseline bundle (`w177-notes/fullrepo/`)
+gave identical exit codes, summary lines and sorted diagnostic headers in all 199 packages with a `lint:oxlint` task,
+cold and warm (41 skipped, reasons in `skipped.txt`);
+109 packages have diagnostics, 4 have this rule's (10 diagnostics).
+It left three items, closed before landing:
+`readonly-type-origin-location.ts` (`workspaceOrigin`) still reads the raw library flag,
+so a workspace declaration reached through a `node_modules` symlink gets the guidance of an external one,
+which the ownership fix no longer masks;
+75 packages resolve none of their own imports in the scratch worktree (TS2307),
+so their programs were exercised only weakly;
+and `dev-script/watch-restart` logs an omission warning cold that its warm run drops.
 The owner also chose to profile the remaining cold time
 (about 131 s against 11.5 s without the plugin)
 after landing, not before.
