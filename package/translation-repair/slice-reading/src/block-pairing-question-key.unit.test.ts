@@ -1,7 +1,7 @@
 import { createHash, } from 'node:crypto';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
-import { type DocumentNode, } from '@monochromatic-dev/translation-repair-document-structure';
-import { type ContentChunk, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { DocumentNode, } from '@monochromatic-dev/translation-repair-document-structure';
+import type { ContentChunk, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   blockPairingQuestion,
   blockPairingQuestionKey,

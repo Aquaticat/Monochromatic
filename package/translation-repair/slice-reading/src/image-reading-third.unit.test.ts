@@ -17,10 +17,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import {
-  type ChatTextRequest,
-  type SyntheticClient,
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type {
+  ChatTextRequest,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { readImagePair, } from '../dist/final/node/index.mjs';
 import {

@@ -1,9 +1,9 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
-import {
-  type BlockPair,
-  type BlockPairingWire,
-  type RoundOutcome,
+import type {
+  BlockPair,
+  BlockPairingWire,
+  RoundOutcome,
 } from '@monochromatic-dev/translation-repair-stage';
 import { readBlockPairingOutcomes, } from '../dist/final/node/index.mjs';
 import {

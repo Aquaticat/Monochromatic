@@ -25,9 +25,9 @@ import {
   makeInsertionChunk,
   parseDocument,
 } from '@monochromatic-dev/translation-repair-shared-contract';
-import {
-  type ContainerSpan,
-  type DocumentNode,
+import type {
+  ContainerSpan,
+  DocumentNode,
 } from '@monochromatic-dev/translation-repair-document-structure';
 import {
   assertContainerIntegrity,

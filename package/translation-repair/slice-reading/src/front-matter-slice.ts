@@ -1,9 +1,11 @@
-import type { ContentChunk, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type {
   ChunkPair,
   SliceSyntax,
 } from './chunk-document.ts';
-import { makeInsertionChunk, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
+  type ContentChunk,
+  makeInsertionChunk,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { FrontMatterBlock, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 
 //region Front matter slice

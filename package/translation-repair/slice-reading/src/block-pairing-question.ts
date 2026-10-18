@@ -1,10 +1,10 @@
 import { blockPairingQuestionKey, } from './block-pairing-question-key.ts';
 import type { ChunkPair, } from './chunk-document.ts';
-import type {
-  FreeOrderBlocks,
-  NumberedBlock,
+import {
+  definitionIndexes,
+  type FreeOrderBlocks,
+  type NumberedBlock,
 } from '@monochromatic-dev/translation-repair-stage/ts';
-import { definitionIndexes, } from '@monochromatic-dev/translation-repair-stage/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Current parent question identity

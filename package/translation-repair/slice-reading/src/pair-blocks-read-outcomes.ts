@@ -12,13 +12,11 @@ import {
   type FreeOrderBlocks,
   readBlockPairing,
   requireBlockPairingRefusal,
+  type RoundOutcome,
+  type StageVoice,
 } from '@monochromatic-dev/translation-repair-stage/ts';
 import { assertPairingSeats, } from './pair-blocks-evidence-identity.ts';
 import type { BlockPairingOutcome, } from './pair-blocks-stage.ts';
-import type {
-  RoundOutcome,
-  StageVoice,
-} from '@monochromatic-dev/translation-repair-stage/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Pairing outcomes read without transport

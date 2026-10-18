@@ -1,5 +1,5 @@
 import { makeInsertionChunk, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type ChunkPair, } from '../dist/final/node/index.mjs';
+import type { ChunkPair, } from '../dist/final/node/index.mjs';
 
 //region Insertion anchor pair
 // A PAIR WHOSE TARGET SIDE IS AN INSERTION ANCHOR AT AN OFFSET, the target

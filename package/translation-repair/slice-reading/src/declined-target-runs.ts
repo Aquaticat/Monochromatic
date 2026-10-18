@@ -4,8 +4,10 @@ import type {
   AlignmentStep,
   DocumentNode,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import { blockPairingToSteps, } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { BlockPair, } from '@monochromatic-dev/translation-repair-stage/ts';
+import {
+  type BlockPair,
+  blockPairingToSteps,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Declined target blocks
 // Translation blocks the roster's pairing accounted for NOWHERE, kept out of

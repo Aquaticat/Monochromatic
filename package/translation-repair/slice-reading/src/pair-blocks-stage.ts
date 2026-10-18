@@ -8,18 +8,16 @@ import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-pro
 import { blockPairingProtocol, } from './block-pairing-protocol.ts';
 import {
   type BlockPair,
+  type FanOutMode,
   type FreeOrderBlocks,
   isBlockPairingWire,
   type NumberedBlock,
   runWindowedRounds,
   shortBenchStageFinding,
+  type StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
 import { readBlockPairingOutcomes, } from './pair-blocks-read-outcomes.ts';
 import { assertPairingSeats, } from './pair-blocks-evidence-identity.ts';
-import type {
-  FanOutMode,
-  StageSettings,
-} from '@monochromatic-dev/translation-repair-stage/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Block pairing stage

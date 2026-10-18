@@ -1,7 +1,9 @@
 import type { ChunkPair, } from './chunk-document.ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
-import { UnhandledMemberInvariantError, } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import type { DocumentNode, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import {
+  type DocumentNode,
+  UnhandledMemberInvariantError,
+} from '@monochromatic-dev/translation-repair-document-structure/ts';
 
 //region Slice coverage
 // The one thing slicing cannot prove about itself: that carving a chunk pair

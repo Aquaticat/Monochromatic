@@ -2,11 +2,11 @@ import type { ChunkPair, } from './chunk-document.ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import { declinedTargetIdsOfPairing, } from './declined-target-runs.ts';
 import {
+  type BlockPair,
   claimMediaAdjacentTargets,
   countPairedBlocks,
 } from '@monochromatic-dev/translation-repair-stage/ts';
 import type { BlockPairingOutcome, } from './pair-blocks-stage.ts';
-import type { BlockPair, } from '@monochromatic-dev/translation-repair-stage/ts';
 import type { ContainerSpan, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 
 //region Queried preparation before persistence

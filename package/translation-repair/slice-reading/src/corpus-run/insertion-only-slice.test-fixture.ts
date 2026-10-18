@@ -1,5 +1,5 @@
 import { makeInsertionChunk, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type ChunkPair, } from '../../dist/final/node/index.mjs';
+import type { ChunkPair, } from '../../dist/final/node/index.mjs';
 
 //region Insertion-only slice
 // ONE SOURCE-ONLY SLICE, whose target is an insertion anchor rather than any

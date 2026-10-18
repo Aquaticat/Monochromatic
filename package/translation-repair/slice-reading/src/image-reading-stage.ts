@@ -3,7 +3,6 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 
-import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import { wholeOpening, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { encodeImageAsset, } from './image-asset.ts';
@@ -11,7 +10,11 @@ import {
   readingMakesSense,
   solidCharacters,
 } from './image-reading-sense.ts';
-import { readsImages, } from '@monochromatic-dev/translation-repair-provider/ts';
+import {
+  readsImages,
+  type SyntheticClient,
+} from '@monochromatic-dev/translation-repair-provider/ts';
+import type { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Image reading stage
@@ -243,7 +246,7 @@ export function isTransientReadingReason(
 
  @returns Reading that passed the screen, or why none is available
 
- @throws {@link import('@monochromatic-dev/translation-repair-provider/ts').SyntheticHttpError} on a
+ @throws {@link SyntheticHttpError} on a
  non-success status, which is a transport failure rather than an unreadable
  picture and is not this function's to interpret
 

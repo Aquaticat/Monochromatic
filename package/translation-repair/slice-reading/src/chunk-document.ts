@@ -1,6 +1,9 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
-import { alignHeadingsForced, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import {
+  alignHeadingsForced,
+  type DocumentNode,
+} from '@monochromatic-dev/translation-repair-document-structure/ts';
 import {
   type ContentChunk,
   describePlacement,
@@ -8,12 +11,13 @@ import {
   type InsertionPlacement,
   makeInsertionChunk,
   placeInsertions,
+  type RepairDocument,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
-import type { DocumentNode, } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import { sectionPairingToSteps, } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { SectionPair, } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { RepairDocument, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
+  type SectionPair,
+  sectionPairingToSteps,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Section chunking
 // Some documents send thinking models into token-ceiling spirals (run 4,
