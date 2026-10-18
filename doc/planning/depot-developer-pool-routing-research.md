@@ -87,6 +87,16 @@ Root task behavior matters when assigning these definitions:
 - Root `validate` includes mutating format work.
   Generated-file and format checks need disposable checkout state and a resulting-diff assertion.
 
+An explicit-path search covered all 197 unique Mise task source files and all 17 workflow files.
+It found the Mac `hdiutil` workaround,
+the root package-start-task TODO,
+and the root upstream-workaround section containing `fix:reinstall`.
+That repair task removes `node_modules` and reinstalls dependencies;
+it is not an immutable CI installation profile.
+The search included suppression markers and retained source hashes in the proof.
+Its scope is task and CI definitions,
+not a whole-codebase suppression or health verdict.
+
 Repository-only GitHub API reads on 2026-10-18 found an empty required-status-check list on `main`,
 an active Copilot review ruleset,
 SHA-pinned allowed actions,
@@ -547,6 +557,10 @@ Snapshots also need a synthetic-secret-marker test before claims that checkout c
 are excluded.
 Provider ephemeral-VM isolation and cache isolation are different claims;
 the current [Depot security reference][depot-security] distinguishes resource scopes.
+The existing [CI caching policy](../decision/ci-caching.md) also prohibits caching what a workflow ships
+and restricts cache saving by event.
+An accepted Depot cache design must explicitly reconcile that policy and its GitHub branch-isolation assumptions
+before changing a production publication path.
 
 ## Routing experiment results and limits
 
