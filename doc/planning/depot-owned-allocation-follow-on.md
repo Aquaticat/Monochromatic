@@ -80,6 +80,31 @@ The source archive retains original bodies and immutable workflow sources.
 Full-window maxima remain historical reservations,
 separate from observed provider interval proxies.
 
+## Completed root and first host follow-on
+
+The expanded terminal snapshot has `30` unique rows:
+`12` standard public GitHub jobs,
+`7` Depot GitHub jobs,
+`8` native CI jobs,
+and the same `3` BuildKit requests.
+The nominal known-provider-window list proxy is `USD 0.6105`,
+including the explicitly qualified `USD 0.1116` desktop run-envelope fallback.
+The BuildKit request-window proxy remains separate and unmeasured builder billing remains unknown.
+
+The root graph subtotal independently recomputes to `USD 0.487`:
+
+- Setup failure Depot jobs: `71` seconds and `USD 0.0142`.
+- Corrected Depot GitHub jobs: `815` seconds and `USD 0.163`.
+- Original native attempts: `771` seconds and `USD 0.1542`.
+- Corrected native attempts: `778` seconds and `USD 0.1556`.
+
+These are exact assigned-job or native-attempt intervals priced at `USD 0.012/minute`,
+with standard public GitHub compute zero.
+Graph phase durations and shared workflow/run envelopes do not replace those job boundaries.
+The ledger retains provider catalog GB separately from actual memory bytes,
+original owner unit spellings,
+and container binary memory limits.
+
 ## Independent Rust projection
 
 The coverage researcher requested a read-only package-result projection from the sealed Rust receipts.

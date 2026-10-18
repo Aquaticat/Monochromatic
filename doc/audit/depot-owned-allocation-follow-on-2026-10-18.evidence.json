@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "status": "terminal_rows_normalized_active_owner_follow_ons_pending",
-  "recordedAt": "2026-10-18T16:12:49.911Z",
+  "status": "all_current_terminal_root_and_first_host_handoff_rows_normalized_recovery_pending",
+  "recordedAt": "2026-10-18T16:42:45.662Z",
   "baseline": {
     "path": "doc/audit/depot-owned-allocation-ledger-2026-10-18.evidence.json",
     "record": "inputs/doc/audit/depot-owned-allocation-ledger-2026-10-18.evidence.json@d265c963dbb0c95c",
@@ -129,7 +129,7 @@
       "requestedResources": {
         "label": "depot-ubuntu-24.04-4",
         "vcpu": 4,
-        "memoryGiB": 16
+        "memoryGB": 16
       },
       "observedResources": {
         "vcpu": 4,
@@ -182,7 +182,13 @@
       ],
       "workloadExecutionCredit": false,
       "actualInvoiceObserved": false,
-      "billableVmLifetimeObserved": false
+      "billableVmLifetimeObserved": false,
+      "ownerReportedResourceShape": {
+        "label": "depot-ubuntu-24.04-4",
+        "vcpu": 4,
+        "memoryGiB": 16
+      },
+      "resourceUnitQualification": "Provider catalog labels memory in GB. Original owner schema field GiB is preserved separately; observed memory bytes are distinct."
     },
     {
       "key": "depot:github-actions-runners:run:39135886118:job:117700197734:attempt:1",
@@ -202,7 +208,7 @@
       "requestedResources": {
         "label": "depot-ubuntu-24.04-4",
         "vcpu": 4,
-        "memoryGiB": 16
+        "memoryGB": 16
       },
       "observedResources": {
         "vcpu": 4,
@@ -255,7 +261,13 @@
       ],
       "workloadExecutionCredit": false,
       "actualInvoiceObserved": false,
-      "billableVmLifetimeObserved": false
+      "billableVmLifetimeObserved": false,
+      "ownerReportedResourceShape": {
+        "label": "depot-ubuntu-24.04-4",
+        "vcpu": 4,
+        "memoryGiB": 16
+      },
+      "resourceUnitQualification": "Provider catalog labels memory in GB. Original owner schema field GiB is preserved separately; observed memory bytes are distinct."
     },
     {
       "key": "github:standard-public-github-actions:run:39135886118:job:117700197742:attempt:1",
@@ -566,7 +578,7 @@
       "requestedResources": {
         "label": "depot-ubuntu-24.04",
         "vcpu": 2,
-        "memoryGiB": 8
+        "memoryGB": 8
       },
       "observedResources": {
         "vcpu": 2,
@@ -616,7 +628,13 @@
       ],
       "workloadExecutionCredit": "benign-marker cache consumer only",
       "actualInvoiceObserved": false,
-      "billableVmLifetimeObserved": false
+      "billableVmLifetimeObserved": false,
+      "ownerReportedResourceShape": {
+        "label": "depot-ubuntu-24.04",
+        "vcpu": 2,
+        "memoryGiB": 8
+      },
+      "resourceUnitQualification": "Provider catalog labels memory in GB. Original owner schema field GiB is preserved separately; observed memory bytes are distinct."
     },
     {
       "key": "depot:github-actions-runners:run:39142023227:job:117718221436:attempt:1",
@@ -638,7 +656,7 @@
       "requestedResources": {
         "label": "depot-ubuntu-24.04",
         "vcpu": 2,
-        "memoryGiB": 8
+        "memoryGB": 8
       },
       "observedResources": {
         "vcpu": 2,
@@ -688,7 +706,13 @@
       ],
       "workloadExecutionCredit": "benign-marker cache consumer only",
       "actualInvoiceObserved": false,
-      "billableVmLifetimeObserved": false
+      "billableVmLifetimeObserved": false,
+      "ownerReportedResourceShape": {
+        "label": "depot-ubuntu-24.04",
+        "vcpu": 2,
+        "memoryGiB": 8
+      },
+      "resourceUnitQualification": "Provider catalog labels memory in GB. Original owner schema field GiB is preserved separately; observed memory bytes are distinct."
     },
     {
       "key": "depot:github-actions-runners:run:39142130086:job:117718537533:attempt:1",
@@ -710,7 +734,7 @@
       "requestedResources": {
         "label": "depot-ubuntu-24.04",
         "vcpu": 2,
-        "memoryGiB": 8
+        "memoryGB": 8
       },
       "observedResources": {
         "vcpu": 2,
@@ -760,7 +784,13 @@
       ],
       "workloadExecutionCredit": "benign-marker cache consumer only",
       "actualInvoiceObserved": false,
-      "billableVmLifetimeObserved": false
+      "billableVmLifetimeObserved": false,
+      "ownerReportedResourceShape": {
+        "label": "depot-ubuntu-24.04",
+        "vcpu": 2,
+        "memoryGiB": 8
+      },
+      "resourceUnitQualification": "Provider catalog labels memory in GB. Original owner schema field GiB is preserved separately; observed memory bytes are distinct."
     },
     {
       "key": "depot:native-ci:run:0jpk5bwpvs:job:scrrj4czcl:attempt:9tx3p5369r",
@@ -779,7 +809,6 @@
       "requestedResources": {
         "size": "8x32",
         "vcpu": 8,
-        "memoryGiB": 32,
         "jobMinutes": 15,
         "campaignMinutes": 12,
         "maximumParallelJobs": 1,
@@ -789,7 +818,8 @@
           "pids": 512,
           "timeoutSeconds": 600,
           "network": false
-        }
+        },
+        "memoryGB": 32
       },
       "configurationSource": {
         "record": "git/1aab4fb2eb81e8288cea56e800a0ae15fb179dfb/.depot/workflows/coverage-current-desktop.yml@a82ccaba4141a86f",
@@ -831,7 +861,23 @@
       ],
       "ownerReportedRunEnvelopeProxyUsd": "0.1116",
       "actualInvoiceObserved": false,
-      "billableVmLifetimeObserved": false
+      "billableVmLifetimeObserved": false,
+      "ownerReportedResourceShape": {
+        "size": "8x32",
+        "vcpu": 8,
+        "memoryGiB": 32,
+        "jobMinutes": 15,
+        "campaignMinutes": 12,
+        "maximumParallelJobs": 1,
+        "consumerContainer": {
+          "vcpu": 2,
+          "memoryGiB": 2,
+          "pids": 512,
+          "timeoutSeconds": 600,
+          "network": false
+        }
+      },
+      "resourceUnitQualification": "Provider catalog labels memory in GB. Original owner schema field GiB is preserved separately; observed memory bytes are distinct."
     },
     {
       "key": "depot:native-ci:run:dzsf27t0xx:job:l1qjrcg80f:attempt:2r16tj84qh",
@@ -851,8 +897,8 @@
       "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
       "requestedResources": {
         "cpu": 2,
-        "memoryGiB": 8,
-        "maximumMinutes": 5
+        "maximumMinutes": 5,
+        "memoryGB": 8
       },
       "configurationSource": {
         "record": "git/e0bd5030fb0efde9b4b3982583229e10b74525fc/.depot/workflows/native-buildkit-auth.yml@ea55ecd472d1b278",
@@ -896,7 +942,13 @@
         }
       ],
       "actualInvoiceObserved": false,
-      "billableVmLifetimeObserved": false
+      "billableVmLifetimeObserved": false,
+      "ownerReportedResourceShape": {
+        "cpu": 2,
+        "memoryGiB": 8,
+        "maximumMinutes": 5
+      },
+      "resourceUnitQualification": "Provider catalog labels memory in GB. Original owner schema field GiB is preserved separately; observed memory bytes are distinct."
     },
     {
       "key": "depot:native-ci:run:pxx75mxnw2:job:wzvqphjg1w:attempt:r0vm5jjk75",
@@ -916,8 +968,8 @@
       "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
       "requestedResources": {
         "cpu": 2,
-        "memoryGiB": 8,
-        "maximumMinutes": 5
+        "maximumMinutes": 5,
+        "memoryGB": 8
       },
       "configurationSource": {
         "record": "git/ddf656ea992952559a975e8693668b2005583499/.depot/workflows/native-buildkit-auth.yml@ea55ecd472d1b278",
@@ -961,7 +1013,13 @@
         }
       ],
       "actualInvoiceObserved": false,
-      "billableVmLifetimeObserved": false
+      "billableVmLifetimeObserved": false,
+      "ownerReportedResourceShape": {
+        "cpu": 2,
+        "memoryGiB": 8,
+        "maximumMinutes": 5
+      },
+      "resourceUnitQualification": "Provider catalog labels memory in GB. Original owner schema field GiB is preserved separately; observed memory bytes are distinct."
     },
     {
       "key": "depot:native-ci:run:38z4wlq9d3:job:833d5l1vdh:attempt:4fbdgxpspd",
@@ -981,8 +1039,8 @@
       "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
       "requestedResources": {
         "cpu": 2,
-        "memoryGiB": 8,
-        "maximumMinutes": 5
+        "maximumMinutes": 5,
+        "memoryGB": 8
       },
       "configurationSource": {
         "record": "git/f0865228da0123433face17054ca7f7f62538c9b/.depot/workflows/native-buildkit-auth.yml@ea55ecd472d1b278",
@@ -1026,7 +1084,13 @@
         }
       ],
       "actualInvoiceObserved": false,
-      "billableVmLifetimeObserved": false
+      "billableVmLifetimeObserved": false,
+      "ownerReportedResourceShape": {
+        "cpu": 2,
+        "memoryGiB": 8,
+        "maximumMinutes": 5
+      },
+      "resourceUnitQualification": "Provider catalog labels memory in GB. Original owner schema field GiB is preserved separately; observed memory bytes are distinct."
     },
     {
       "key": "depot:buildkit:project:ng17dl3xrn:build:j9r23brwtx",
@@ -1041,9 +1105,9 @@
       "executionSha": "e0bd5030fb0efde9b4b3982583229e10b74525fc",
       "requestedResources": {
         "cpu": 16,
-        "memoryGiB": 32,
         "architecture": "amd64",
-        "maximumMinutes": 5
+        "maximumMinutes": 5,
+        "memoryGB": 32
       },
       "observedBuilderResources": null,
       "interval": {
@@ -1081,7 +1145,14 @@
       "actualAllocatedBuilderIntervalsKnown": false,
       "coreMetadataBoundary": "Scoped core GetBuild returned401 requiring organization token; no broader token was created",
       "actualInvoiceObserved": false,
-      "billableVmLifetimeObserved": false
+      "billableVmLifetimeObserved": false,
+      "ownerReportedResourceShape": {
+        "cpu": 16,
+        "memoryGiB": 32,
+        "architecture": "amd64",
+        "maximumMinutes": 5
+      },
+      "resourceUnitQualification": "Provider catalog labels memory in GB. Original owner schema field GiB is preserved separately; observed memory bytes are distinct."
     },
     {
       "key": "depot:buildkit:project:ng17dl3xrn:build:xwq746tv4z",
@@ -1096,9 +1167,9 @@
       "executionSha": "ddf656ea992952559a975e8693668b2005583499",
       "requestedResources": {
         "cpu": 16,
-        "memoryGiB": 32,
         "architecture": "amd64",
-        "maximumMinutes": 5
+        "maximumMinutes": 5,
+        "memoryGB": 32
       },
       "observedBuilderResources": {
         "cpu": 16,
@@ -1139,7 +1210,14 @@
       "actualAllocatedBuilderIntervalsKnown": false,
       "coreMetadataBoundary": "Scoped core GetBuild returned401 requiring organization token; no broader token was created",
       "actualInvoiceObserved": false,
-      "billableVmLifetimeObserved": false
+      "billableVmLifetimeObserved": false,
+      "ownerReportedResourceShape": {
+        "cpu": 16,
+        "memoryGiB": 32,
+        "architecture": "amd64",
+        "maximumMinutes": 5
+      },
+      "resourceUnitQualification": "Provider catalog labels memory in GB. Original owner schema field GiB is preserved separately; observed memory bytes are distinct."
     },
     {
       "key": "depot:buildkit:project:ng17dl3xrn:build:20l2bllb5n",
@@ -1154,9 +1232,9 @@
       "executionSha": "f0865228da0123433face17054ca7f7f62538c9b",
       "requestedResources": {
         "cpu": 16,
-        "memoryGiB": 32,
         "architecture": "amd64",
-        "maximumMinutes": 5
+        "maximumMinutes": 5,
+        "memoryGB": 32
       },
       "observedBuilderResources": {
         "cpu": 16,
@@ -1197,13 +1275,927 @@
       "actualAllocatedBuilderIntervalsKnown": false,
       "coreMetadataBoundary": "Scoped core GetBuild returned401 requiring organization token; no broader token was created",
       "actualInvoiceObserved": false,
+      "billableVmLifetimeObserved": false,
+      "ownerReportedResourceShape": {
+        "cpu": 16,
+        "memoryGiB": 32,
+        "architecture": "amd64",
+        "maximumMinutes": 5
+      },
+      "resourceUnitQualification": "Provider catalog labels memory in GB. Original owner schema field GiB is preserved separately; observed memory bytes are distinct."
+    },
+    {
+      "key": "github:standard-public-github-actions:run:39141147245:job:117715668169:attempt:1",
+      "provider": "github",
+      "product": "standard-public-github-actions",
+      "kind": "job-attempt",
+      "identifiers": {
+        "runId": "39141147245",
+        "jobId": "117715668169",
+        "attemptNumber": 1
+      },
+      "status": "completed",
+      "conclusion": "failure",
+      "apiHeadSha": "c50ed764237d45d5fc7aa123e86b3dc43891e9da",
+      "executionSha": "c50ed764237d45d5fc7aa123e86b3dc43891e9da",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "requestedResources": {
+        "labels": [
+          "macos-15"
+        ],
+        "timeoutMinutes": 30,
+        "maximumParallelJobs": 1
+      },
+      "documentedHardware": {
+        "vcpu": 3,
+        "memoryGB": 7,
+        "measurementObserved": false,
+        "sourceUnitCorrection": "Owning researcher corrected its catalog field from GiB to GB; original owner body remains retained."
+      },
+      "configurationSource": {
+        "record": "git/c50ed764237d45d5fc7aa123e86b3dc43891e9da/.github/workflows/readonly-semantic-bridge.yml@ad58659406d0df8a",
+        "sha256": "ad58659406d0df8a25a7476f9b979ac2e9a004ee03be6a39c242176366d8933d",
+        "path": ".github/workflows/readonly-semantic-bridge.yml",
+        "commit": "c50ed764237d45d5fc7aa123e86b3dc43891e9da"
+      },
+      "runnerAssignment": {
+        "name": "GitHub Actions 1000002712",
+        "id": 1000002712,
+        "actualStepObserved": true
+      },
+      "interval": {
+        "startedAt": "2026-10-18T15:35:17Z",
+        "finishedAt": "2026-10-18T15:42:20Z",
+        "milliseconds": 423000,
+        "seconds": "423",
+        "source": {
+          "record": "terminal/depot-current-host-first-handoff-2026-10-18.evidence.json@a0f76b373a8c1193",
+          "pointer": "/firstHandoff/jobs/jobs/0"
+        },
+        "scope": "assigned standard public GitHub job interval; nominal public compute0, storage unmeasured",
+        "nominalListCompute": {
+          "usd": "0",
+          "numerator": "0",
+          "denominator": "60000000000",
+          "rateUsdPerMinute": "0",
+          "actualInvoiceObserved": false,
+          "billableVmLifetimeObserved": false
+        }
+      },
+      "maximumFullTimeoutReservation": {
+        "minutes": 30,
+        "usd": "0",
+        "active": false,
+        "scope": "standard public hosted compute only"
+      },
+      "sourceReferences": [
+        {
+          "record": "terminal/depot-current-host-first-handoff-2026-10-18.evidence.json@a0f76b373a8c1193",
+          "pointer": "/firstHandoff/allocatedRows/0"
+        }
+      ],
+      "actualCpuAndMemoryReceiptNotUploaded": true,
+      "actualInvoiceObserved": false,
+      "billableVmLifetimeObserved": false
+    },
+    {
+      "key": "github:standard-public-github-actions:run:39141147245:job:117715668344:attempt:1",
+      "provider": "github",
+      "product": "standard-public-github-actions",
+      "kind": "job-attempt",
+      "identifiers": {
+        "runId": "39141147245",
+        "jobId": "117715668344",
+        "attemptNumber": 1
+      },
+      "status": "completed",
+      "conclusion": "failure",
+      "apiHeadSha": "c50ed764237d45d5fc7aa123e86b3dc43891e9da",
+      "executionSha": "c50ed764237d45d5fc7aa123e86b3dc43891e9da",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "requestedResources": {
+        "labels": [
+          "windows-2025"
+        ],
+        "timeoutMinutes": 30,
+        "maximumParallelJobs": 1
+      },
+      "documentedHardware": {
+        "vcpu": 4,
+        "memoryGB": 16,
+        "measurementObserved": false,
+        "sourceUnitCorrection": "Owning researcher corrected its catalog field from GiB to GB; original owner body remains retained."
+      },
+      "configurationSource": {
+        "record": "git/c50ed764237d45d5fc7aa123e86b3dc43891e9da/.github/workflows/readonly-semantic-bridge.yml@ad58659406d0df8a",
+        "sha256": "ad58659406d0df8a25a7476f9b979ac2e9a004ee03be6a39c242176366d8933d",
+        "path": ".github/workflows/readonly-semantic-bridge.yml",
+        "commit": "c50ed764237d45d5fc7aa123e86b3dc43891e9da"
+      },
+      "runnerAssignment": {
+        "name": "GitHub Actions 1000002796",
+        "id": 1000002796,
+        "actualStepObserved": true
+      },
+      "interval": {
+        "startedAt": "2026-10-18T16:04:16Z",
+        "finishedAt": "2026-10-18T16:06:40Z",
+        "milliseconds": 144000,
+        "seconds": "144",
+        "source": {
+          "record": "terminal/depot-current-host-first-handoff-2026-10-18.evidence.json@a0f76b373a8c1193",
+          "pointer": "/firstHandoff/jobs/jobs/1"
+        },
+        "scope": "assigned standard public GitHub job interval; nominal public compute0, storage unmeasured",
+        "nominalListCompute": {
+          "usd": "0",
+          "numerator": "0",
+          "denominator": "60000000000",
+          "rateUsdPerMinute": "0",
+          "actualInvoiceObserved": false,
+          "billableVmLifetimeObserved": false
+        }
+      },
+      "maximumFullTimeoutReservation": {
+        "minutes": 30,
+        "usd": "0",
+        "active": false,
+        "scope": "standard public hosted compute only"
+      },
+      "sourceReferences": [
+        {
+          "record": "terminal/depot-current-host-first-handoff-2026-10-18.evidence.json@a0f76b373a8c1193",
+          "pointer": "/firstHandoff/allocatedRows/1"
+        }
+      ],
+      "actualCpuAndMemoryReceiptNotUploaded": true,
+      "actualInvoiceObserved": false,
+      "billableVmLifetimeObserved": false
+    },
+    {
+      "key": "github:standard-public-github-actions:run:39141147245:job:117715668360:attempt:1",
+      "provider": "github",
+      "product": "standard-public-github-actions",
+      "kind": "job-attempt",
+      "identifiers": {
+        "runId": "39141147245",
+        "jobId": "117715668360",
+        "attemptNumber": 1
+      },
+      "status": "completed",
+      "conclusion": "success",
+      "apiHeadSha": "c50ed764237d45d5fc7aa123e86b3dc43891e9da",
+      "executionSha": "c50ed764237d45d5fc7aa123e86b3dc43891e9da",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "requestedResources": {
+        "labels": [
+          "macos-latest"
+        ],
+        "timeoutMinutes": 30,
+        "maximumParallelJobs": 1
+      },
+      "documentedHardware": {
+        "vcpu": 3,
+        "memoryGB": 7,
+        "measurementObserved": false,
+        "sourceUnitCorrection": "Owning researcher corrected its catalog field from GiB to GB; original owner body remains retained."
+      },
+      "configurationSource": {
+        "record": "git/c50ed764237d45d5fc7aa123e86b3dc43891e9da/.github/workflows/readonly-semantic-bridge.yml@ad58659406d0df8a",
+        "sha256": "ad58659406d0df8a25a7476f9b979ac2e9a004ee03be6a39c242176366d8933d",
+        "path": ".github/workflows/readonly-semantic-bridge.yml",
+        "commit": "c50ed764237d45d5fc7aa123e86b3dc43891e9da"
+      },
+      "runnerAssignment": {
+        "name": "GitHub Actions 1000002767",
+        "id": 1000002767,
+        "actualStepObserved": true
+      },
+      "interval": {
+        "startedAt": "2026-10-18T15:54:05Z",
+        "finishedAt": "2026-10-18T15:55:10Z",
+        "milliseconds": 65000,
+        "seconds": "65",
+        "source": {
+          "record": "terminal/depot-current-host-first-handoff-2026-10-18.evidence.json@a0f76b373a8c1193",
+          "pointer": "/firstHandoff/jobs/jobs/2"
+        },
+        "scope": "assigned standard public GitHub job interval; nominal public compute0, storage unmeasured",
+        "nominalListCompute": {
+          "usd": "0",
+          "numerator": "0",
+          "denominator": "60000000000",
+          "rateUsdPerMinute": "0",
+          "actualInvoiceObserved": false,
+          "billableVmLifetimeObserved": false
+        }
+      },
+      "maximumFullTimeoutReservation": {
+        "minutes": 30,
+        "usd": "0",
+        "active": false,
+        "scope": "standard public hosted compute only"
+      },
+      "sourceReferences": [
+        {
+          "record": "terminal/depot-current-host-first-handoff-2026-10-18.evidence.json@a0f76b373a8c1193",
+          "pointer": "/firstHandoff/allocatedRows/2"
+        }
+      ],
+      "actualCpuAndMemoryReceiptNotUploaded": true,
+      "actualInvoiceObserved": false,
+      "billableVmLifetimeObserved": false
+    },
+    {
+      "key": "github:standard-public-github-actions:run:39141147245:job:117715668380:attempt:1",
+      "provider": "github",
+      "product": "standard-public-github-actions",
+      "kind": "job-attempt",
+      "identifiers": {
+        "runId": "39141147245",
+        "jobId": "117715668380",
+        "attemptNumber": 1
+      },
+      "status": "completed",
+      "conclusion": "failure",
+      "apiHeadSha": "c50ed764237d45d5fc7aa123e86b3dc43891e9da",
+      "executionSha": "c50ed764237d45d5fc7aa123e86b3dc43891e9da",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "requestedResources": {
+        "labels": [
+          "windows-2025"
+        ],
+        "timeoutMinutes": 30,
+        "maximumParallelJobs": 1
+      },
+      "documentedHardware": {
+        "vcpu": 4,
+        "memoryGB": 16,
+        "measurementObserved": false,
+        "sourceUnitCorrection": "Owning researcher corrected its catalog field from GiB to GB; original owner body remains retained."
+      },
+      "configurationSource": {
+        "record": "git/c50ed764237d45d5fc7aa123e86b3dc43891e9da/.github/workflows/readonly-semantic-bridge.yml@ad58659406d0df8a",
+        "sha256": "ad58659406d0df8a25a7476f9b979ac2e9a004ee03be6a39c242176366d8933d",
+        "path": ".github/workflows/readonly-semantic-bridge.yml",
+        "commit": "c50ed764237d45d5fc7aa123e86b3dc43891e9da"
+      },
+      "runnerAssignment": {
+        "name": "GitHub Actions 1000002725",
+        "id": 1000002725,
+        "actualStepObserved": true
+      },
+      "interval": {
+        "startedAt": "2026-10-18T15:42:23Z",
+        "finishedAt": "2026-10-18T15:53:58Z",
+        "milliseconds": 695000,
+        "seconds": "695",
+        "source": {
+          "record": "terminal/depot-current-host-first-handoff-2026-10-18.evidence.json@a0f76b373a8c1193",
+          "pointer": "/firstHandoff/jobs/jobs/3"
+        },
+        "scope": "assigned standard public GitHub job interval; nominal public compute0, storage unmeasured",
+        "nominalListCompute": {
+          "usd": "0",
+          "numerator": "0",
+          "denominator": "60000000000",
+          "rateUsdPerMinute": "0",
+          "actualInvoiceObserved": false,
+          "billableVmLifetimeObserved": false
+        }
+      },
+      "maximumFullTimeoutReservation": {
+        "minutes": 30,
+        "usd": "0",
+        "active": false,
+        "scope": "standard public hosted compute only"
+      },
+      "sourceReferences": [
+        {
+          "record": "terminal/depot-current-host-first-handoff-2026-10-18.evidence.json@a0f76b373a8c1193",
+          "pointer": "/firstHandoff/allocatedRows/3"
+        }
+      ],
+      "actualCpuAndMemoryReceiptNotUploaded": true,
+      "actualInvoiceObserved": false,
+      "billableVmLifetimeObserved": false
+    },
+    {
+      "key": "github:standard-public-github-actions:run:39141147245:job:117715668408:attempt:1",
+      "provider": "github",
+      "product": "standard-public-github-actions",
+      "kind": "job-attempt",
+      "identifiers": {
+        "runId": "39141147245",
+        "jobId": "117715668408",
+        "attemptNumber": 1
+      },
+      "status": "completed",
+      "conclusion": "failure",
+      "apiHeadSha": "c50ed764237d45d5fc7aa123e86b3dc43891e9da",
+      "executionSha": "c50ed764237d45d5fc7aa123e86b3dc43891e9da",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "requestedResources": {
+        "labels": [
+          "windows-11-arm"
+        ],
+        "timeoutMinutes": 30,
+        "maximumParallelJobs": 1
+      },
+      "documentedHardware": {
+        "vcpu": 4,
+        "memoryGB": 16,
+        "measurementObserved": false,
+        "sourceUnitCorrection": "Owning researcher corrected its catalog field from GiB to GB; original owner body remains retained."
+      },
+      "configurationSource": {
+        "record": "git/c50ed764237d45d5fc7aa123e86b3dc43891e9da/.github/workflows/readonly-semantic-bridge.yml@ad58659406d0df8a",
+        "sha256": "ad58659406d0df8a25a7476f9b979ac2e9a004ee03be6a39c242176366d8933d",
+        "path": ".github/workflows/readonly-semantic-bridge.yml",
+        "commit": "c50ed764237d45d5fc7aa123e86b3dc43891e9da"
+      },
+      "runnerAssignment": {
+        "name": "GitHub Actions 1000002772",
+        "id": 1000002772,
+        "actualStepObserved": true
+      },
+      "interval": {
+        "startedAt": "2026-10-18T15:55:12Z",
+        "finishedAt": "2026-10-18T16:04:15Z",
+        "milliseconds": 543000,
+        "seconds": "543",
+        "source": {
+          "record": "terminal/depot-current-host-first-handoff-2026-10-18.evidence.json@a0f76b373a8c1193",
+          "pointer": "/firstHandoff/jobs/jobs/4"
+        },
+        "scope": "assigned standard public GitHub job interval; nominal public compute0, storage unmeasured",
+        "nominalListCompute": {
+          "usd": "0",
+          "numerator": "0",
+          "denominator": "60000000000",
+          "rateUsdPerMinute": "0",
+          "actualInvoiceObserved": false,
+          "billableVmLifetimeObserved": false
+        }
+      },
+      "maximumFullTimeoutReservation": {
+        "minutes": 30,
+        "usd": "0",
+        "active": false,
+        "scope": "standard public hosted compute only"
+      },
+      "sourceReferences": [
+        {
+          "record": "terminal/depot-current-host-first-handoff-2026-10-18.evidence.json@a0f76b373a8c1193",
+          "pointer": "/firstHandoff/allocatedRows/4"
+        }
+      ],
+      "actualCpuAndMemoryReceiptNotUploaded": true,
+      "actualInvoiceObserved": false,
+      "billableVmLifetimeObserved": false
+    },
+    {
+      "key": "depot:github-actions-runners:run:39140975786:job:117715164010:attempt:1",
+      "provider": "depot",
+      "product": "github-actions-runners",
+      "kind": "job-attempt",
+      "identifiers": {
+        "runId": "39140975786",
+        "jobId": "117715164010",
+        "attemptNumber": 1
+      },
+      "status": "completed",
+      "conclusion": "failure",
+      "apiHeadSha": "234ccc92dabb81e998e0a0bb5e838713924dd83f",
+      "executionSha": "234ccc92dabb81e998e0a0bb5e838713924dd83f",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "requestedResources": {
+        "labels": [
+          "depot-ubuntu-24.04-4"
+        ],
+        "vcpu": 4,
+        "memoryGB": 16,
+        "timeoutMinutes": 30
+      },
+      "configurationSource": {
+        "record": "git/234ccc92dabb81e998e0a0bb5e838713924dd83f/.github/workflows/readonly-semantic-bridge.yml@1d621b7fb8ec67a9",
+        "sha256": "1d621b7fb8ec67a9dfee8fa07ba5604e3d35131df2cba7cd9fae98889335af85",
+        "path": ".github/workflows/readonly-semantic-bridge.yml",
+        "commit": "234ccc92dabb81e998e0a0bb5e838713924dd83f"
+      },
+      "runnerAssignment": {
+        "name": "depot-j7l8q936kg",
+        "id": 249,
+        "actualStepObserved": true
+      },
+      "interval": {
+        "startedAt": "2026-10-18T15:51:44Z",
+        "finishedAt": "2026-10-18T15:58:25Z",
+        "milliseconds": 401000,
+        "seconds": "401",
+        "source": {
+          "record": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json@4e4a03039a0bff79",
+          "pointer": "/jobs/jobs/0"
+        },
+        "scope": "assigned GitHub job interval, distinct from graph phases and VM billing lifetime",
+        "nominalListCompute": {
+          "usd": "0.0802",
+          "numerator": "4812000000",
+          "denominator": "60000000000",
+          "rateUsdPerMinute": "0.012",
+          "actualInvoiceObserved": false,
+          "billableVmLifetimeObserved": false
+        }
+      },
+      "maximumFullTimeoutReservation": {
+        "minutes": 30,
+        "usd": "0.36",
+        "active": false,
+        "scope": "historical full job timeout, not observed spend"
+      },
+      "sourceReferences": [
+        {
+          "record": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json@4e4a03039a0bff79",
+          "pointer": "/jobs/jobs/0"
+        }
+      ],
+      "actualInvoiceObserved": false,
+      "billableVmLifetimeObserved": false
+    },
+    {
+      "key": "depot:github-actions-runners:run:39140975786:job:117715164061:attempt:1",
+      "provider": "depot",
+      "product": "github-actions-runners",
+      "kind": "job-attempt",
+      "identifiers": {
+        "runId": "39140975786",
+        "jobId": "117715164061",
+        "attemptNumber": 1
+      },
+      "status": "completed",
+      "conclusion": "failure",
+      "apiHeadSha": "234ccc92dabb81e998e0a0bb5e838713924dd83f",
+      "executionSha": "234ccc92dabb81e998e0a0bb5e838713924dd83f",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "requestedResources": {
+        "labels": [
+          "depot-ubuntu-24.04-4"
+        ],
+        "vcpu": 4,
+        "memoryGB": 16,
+        "timeoutMinutes": 30
+      },
+      "configurationSource": {
+        "record": "git/234ccc92dabb81e998e0a0bb5e838713924dd83f/.github/workflows/readonly-semantic-bridge.yml@1d621b7fb8ec67a9",
+        "sha256": "1d621b7fb8ec67a9dfee8fa07ba5604e3d35131df2cba7cd9fae98889335af85",
+        "path": ".github/workflows/readonly-semantic-bridge.yml",
+        "commit": "234ccc92dabb81e998e0a0bb5e838713924dd83f"
+      },
+      "runnerAssignment": {
+        "name": "depot-g8f2h5jc3v",
+        "id": 236,
+        "actualStepObserved": true
+      },
+      "interval": {
+        "startedAt": "2026-10-18T15:58:26Z",
+        "finishedAt": "2026-10-18T16:05:20Z",
+        "milliseconds": 414000,
+        "seconds": "414",
+        "source": {
+          "record": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json@4e4a03039a0bff79",
+          "pointer": "/jobs/jobs/1"
+        },
+        "scope": "assigned GitHub job interval, distinct from graph phases and VM billing lifetime",
+        "nominalListCompute": {
+          "usd": "0.0828",
+          "numerator": "4968000000",
+          "denominator": "60000000000",
+          "rateUsdPerMinute": "0.012",
+          "actualInvoiceObserved": false,
+          "billableVmLifetimeObserved": false
+        }
+      },
+      "maximumFullTimeoutReservation": {
+        "minutes": 30,
+        "usd": "0.36",
+        "active": false,
+        "scope": "historical full job timeout, not observed spend"
+      },
+      "sourceReferences": [
+        {
+          "record": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json@4e4a03039a0bff79",
+          "pointer": "/jobs/jobs/1"
+        }
+      ],
+      "actualInvoiceObserved": false,
+      "billableVmLifetimeObserved": false
+    },
+    {
+      "key": "github:standard-public-github-actions:run:39140975786:job:117715164069:attempt:1",
+      "provider": "github",
+      "product": "standard-public-github-actions",
+      "kind": "job-attempt",
+      "identifiers": {
+        "runId": "39140975786",
+        "jobId": "117715164069",
+        "attemptNumber": 1
+      },
+      "status": "completed",
+      "conclusion": "failure",
+      "apiHeadSha": "234ccc92dabb81e998e0a0bb5e838713924dd83f",
+      "executionSha": "234ccc92dabb81e998e0a0bb5e838713924dd83f",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "requestedResources": {
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "vcpu": null,
+        "memoryGB": null,
+        "timeoutMinutes": 30
+      },
+      "configurationSource": {
+        "record": "git/234ccc92dabb81e998e0a0bb5e838713924dd83f/.github/workflows/readonly-semantic-bridge.yml@1d621b7fb8ec67a9",
+        "sha256": "1d621b7fb8ec67a9dfee8fa07ba5604e3d35131df2cba7cd9fae98889335af85",
+        "path": ".github/workflows/readonly-semantic-bridge.yml",
+        "commit": "234ccc92dabb81e998e0a0bb5e838713924dd83f"
+      },
+      "runnerAssignment": {
+        "name": "GitHub Actions 1000002802",
+        "id": 1000002802,
+        "actualStepObserved": true
+      },
+      "interval": {
+        "startedAt": "2026-10-18T16:05:22Z",
+        "finishedAt": "2026-10-18T16:24:13Z",
+        "milliseconds": 1131000,
+        "seconds": "1131",
+        "source": {
+          "record": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json@4e4a03039a0bff79",
+          "pointer": "/jobs/jobs/2"
+        },
+        "scope": "assigned GitHub job interval, distinct from graph phases and VM billing lifetime",
+        "nominalListCompute": {
+          "usd": "0",
+          "numerator": "0",
+          "denominator": "60000000000",
+          "rateUsdPerMinute": "0",
+          "actualInvoiceObserved": false,
+          "billableVmLifetimeObserved": false
+        }
+      },
+      "maximumFullTimeoutReservation": {
+        "minutes": 30,
+        "usd": "0",
+        "active": false,
+        "scope": "historical full job timeout, not observed spend"
+      },
+      "sourceReferences": [
+        {
+          "record": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json@4e4a03039a0bff79",
+          "pointer": "/jobs/jobs/2"
+        }
+      ],
+      "actualInvoiceObserved": false,
+      "billableVmLifetimeObserved": false
+    },
+    {
+      "key": "github:standard-public-github-actions:run:39140975786:job:117715164085:attempt:1",
+      "provider": "github",
+      "product": "standard-public-github-actions",
+      "kind": "job-attempt",
+      "identifiers": {
+        "runId": "39140975786",
+        "jobId": "117715164085",
+        "attemptNumber": 1
+      },
+      "status": "completed",
+      "conclusion": "failure",
+      "apiHeadSha": "234ccc92dabb81e998e0a0bb5e838713924dd83f",
+      "executionSha": "234ccc92dabb81e998e0a0bb5e838713924dd83f",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "requestedResources": {
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "vcpu": null,
+        "memoryGB": null,
+        "timeoutMinutes": 30
+      },
+      "configurationSource": {
+        "record": "git/234ccc92dabb81e998e0a0bb5e838713924dd83f/.github/workflows/readonly-semantic-bridge.yml@1d621b7fb8ec67a9",
+        "sha256": "1d621b7fb8ec67a9dfee8fa07ba5604e3d35131df2cba7cd9fae98889335af85",
+        "path": ".github/workflows/readonly-semantic-bridge.yml",
+        "commit": "234ccc92dabb81e998e0a0bb5e838713924dd83f"
+      },
+      "runnerAssignment": {
+        "name": "GitHub Actions 1000002708",
+        "id": 1000002708,
+        "actualStepObserved": true
+      },
+      "interval": {
+        "startedAt": "2026-10-18T15:32:57Z",
+        "finishedAt": "2026-10-18T15:51:44Z",
+        "milliseconds": 1127000,
+        "seconds": "1127",
+        "source": {
+          "record": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json@4e4a03039a0bff79",
+          "pointer": "/jobs/jobs/3"
+        },
+        "scope": "assigned GitHub job interval, distinct from graph phases and VM billing lifetime",
+        "nominalListCompute": {
+          "usd": "0",
+          "numerator": "0",
+          "denominator": "60000000000",
+          "rateUsdPerMinute": "0",
+          "actualInvoiceObserved": false,
+          "billableVmLifetimeObserved": false
+        }
+      },
+      "maximumFullTimeoutReservation": {
+        "minutes": 30,
+        "usd": "0",
+        "active": false,
+        "scope": "historical full job timeout, not observed spend"
+      },
+      "sourceReferences": [
+        {
+          "record": "terminal/expanded-graph-corrected-github-completed-samples.metadata.json@4e4a03039a0bff79",
+          "pointer": "/jobs/jobs/3"
+        }
+      ],
+      "actualInvoiceObserved": false,
+      "billableVmLifetimeObserved": false
+    },
+    {
+      "key": "depot:native-ci:run:gb01kjx2qk:job:hq5g8cjcnh:attempt:9xhp6c4zn3",
+      "provider": "depot",
+      "product": "native-ci",
+      "kind": "job-attempt",
+      "identifiers": {
+        "runId": "gb01kjx2qk",
+        "workflowId": "f1fqsq8q7c",
+        "jobId": "hq5g8cjcnh",
+        "attemptId": "9xhp6c4zn3",
+        "attemptNumber": 1,
+        "sandboxId": "4zfxm4gf19tjn4xkvtgl"
+      },
+      "status": "failed",
+      "executionSha": "234ccc92dabb81e998e0a0bb5e838713924dd83f",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "requestedResources": {
+        "size": "4x16",
+        "vcpu": 4,
+        "memoryGB": 16,
+        "timeoutMinutes": 30
+      },
+      "configurationSource": {
+        "record": "git/234ccc92dabb81e998e0a0bb5e838713924dd83f/.depot/workflows/expanded-graph.yml@81ccd0fa319edc28",
+        "sha256": "81ccd0fa319edc2844887581232fc3fb1f89744e11b4a6fcded59f26b8bc667f",
+        "path": ".depot/workflows/expanded-graph.yml",
+        "commit": "234ccc92dabb81e998e0a0bb5e838713924dd83f"
+      },
+      "interval": {
+        "startedAt": "2026-10-18T15:51:10Z",
+        "finishedAt": "2026-10-18T15:57:33Z",
+        "milliseconds": 383000,
+        "seconds": "383",
+        "source": {
+          "record": "terminal/expanded-graph-corrected-native-workflow.json@f9c28ba5d5f2c729",
+          "pointer": "/jobs/0/attempts/0"
+        },
+        "scope": "provider native job-attempt interval; not graph phase or measured VM billing",
+        "nominalListCompute": {
+          "usd": "0.0766",
+          "numerator": "4596000000",
+          "denominator": "60000000000",
+          "rateUsdPerMinute": "0.012",
+          "actualInvoiceObserved": false,
+          "billableVmLifetimeObserved": false
+        }
+      },
+      "providerRunEnvelope": {
+        "startedAt": "2026-10-18T15:50:58Z",
+        "finishedAt": "2026-10-18T16:04:04Z"
+      },
+      "maximumFullTimeoutReservation": {
+        "minutes": 30,
+        "usd": "0.36",
+        "active": false,
+        "scope": "historical full configured native job window"
+      },
+      "sourceReferences": [
+        {
+          "record": "terminal/expanded-graph-corrected-native-workflow.json@f9c28ba5d5f2c729",
+          "pointer": "/jobs/0/attempts/0"
+        }
+      ],
+      "actualInvoiceObserved": false,
+      "billableVmLifetimeObserved": false
+    },
+    {
+      "key": "depot:native-ci:run:gb01kjx2qk:job:prf7m37qfm:attempt:qn2bg45g19",
+      "provider": "depot",
+      "product": "native-ci",
+      "kind": "job-attempt",
+      "identifiers": {
+        "runId": "gb01kjx2qk",
+        "workflowId": "f1fqsq8q7c",
+        "jobId": "prf7m37qfm",
+        "attemptId": "qn2bg45g19",
+        "attemptNumber": 1,
+        "sandboxId": "p8hnm0g6cg97xmsb7dlb"
+      },
+      "status": "failed",
+      "executionSha": "234ccc92dabb81e998e0a0bb5e838713924dd83f",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "requestedResources": {
+        "size": "4x16",
+        "vcpu": 4,
+        "memoryGB": 16,
+        "timeoutMinutes": 30
+      },
+      "configurationSource": {
+        "record": "git/234ccc92dabb81e998e0a0bb5e838713924dd83f/.depot/workflows/expanded-graph.yml@81ccd0fa319edc28",
+        "sha256": "81ccd0fa319edc2844887581232fc3fb1f89744e11b4a6fcded59f26b8bc667f",
+        "path": ".depot/workflows/expanded-graph.yml",
+        "commit": "234ccc92dabb81e998e0a0bb5e838713924dd83f"
+      },
+      "interval": {
+        "startedAt": "2026-10-18T15:57:35Z",
+        "finishedAt": "2026-10-18T16:04:03Z",
+        "milliseconds": 388000,
+        "seconds": "388",
+        "source": {
+          "record": "terminal/expanded-graph-corrected-native-workflow.json@f9c28ba5d5f2c729",
+          "pointer": "/jobs/1/attempts/0"
+        },
+        "scope": "provider native job-attempt interval; not graph phase or measured VM billing",
+        "nominalListCompute": {
+          "usd": "0.0776",
+          "numerator": "4656000000",
+          "denominator": "60000000000",
+          "rateUsdPerMinute": "0.012",
+          "actualInvoiceObserved": false,
+          "billableVmLifetimeObserved": false
+        }
+      },
+      "providerRunEnvelope": {
+        "startedAt": "2026-10-18T15:50:58Z",
+        "finishedAt": "2026-10-18T16:04:04Z"
+      },
+      "maximumFullTimeoutReservation": {
+        "minutes": 30,
+        "usd": "0.36",
+        "active": false,
+        "scope": "historical full configured native job window"
+      },
+      "sourceReferences": [
+        {
+          "record": "terminal/expanded-graph-corrected-native-workflow.json@f9c28ba5d5f2c729",
+          "pointer": "/jobs/1/attempts/0"
+        }
+      ],
+      "actualInvoiceObserved": false,
+      "billableVmLifetimeObserved": false
+    },
+    {
+      "key": "depot:native-ci:run:fnvwqfg0bb:job:19j3026gt3:attempt:jjl310vs31",
+      "provider": "depot",
+      "product": "native-ci",
+      "kind": "job-attempt",
+      "identifiers": {
+        "runId": "fnvwqfg0bb",
+        "workflowId": "v3s4t0qdc4",
+        "jobId": "19j3026gt3",
+        "attemptId": "jjl310vs31",
+        "attemptNumber": 1,
+        "sandboxId": "660n904n49183gf6n8r3"
+      },
+      "status": "failed",
+      "executionSha": "72af18d5b130dabef7ff5b656ffdc1b58df4fcde",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "requestedResources": {
+        "size": "4x16",
+        "vcpu": 4,
+        "memoryGB": 16,
+        "timeoutMinutes": 30
+      },
+      "configurationSource": {
+        "record": "git/72af18d5b130dabef7ff5b656ffdc1b58df4fcde/.depot/workflows/expanded-graph.yml@81ccd0fa319edc28",
+        "sha256": "81ccd0fa319edc2844887581232fc3fb1f89744e11b4a6fcded59f26b8bc667f",
+        "path": ".depot/workflows/expanded-graph.yml",
+        "commit": "72af18d5b130dabef7ff5b656ffdc1b58df4fcde"
+      },
+      "interval": {
+        "startedAt": "2026-10-18T16:23:42Z",
+        "finishedAt": "2026-10-18T16:30:12Z",
+        "milliseconds": 390000,
+        "seconds": "390",
+        "source": {
+          "record": "terminal/expanded-graph-native-podman-workflow.json@a1de16e0c42806ad",
+          "pointer": "/jobs/0/attempts/0"
+        },
+        "scope": "provider native job-attempt interval; not graph phase or measured VM billing",
+        "nominalListCompute": {
+          "usd": "0.078",
+          "numerator": "4680000000",
+          "denominator": "60000000000",
+          "rateUsdPerMinute": "0.012",
+          "actualInvoiceObserved": false,
+          "billableVmLifetimeObserved": false
+        }
+      },
+      "providerRunEnvelope": {
+        "startedAt": "2026-10-18T16:23:29Z",
+        "finishedAt": "2026-10-18T16:36:43Z"
+      },
+      "maximumFullTimeoutReservation": {
+        "minutes": 30,
+        "usd": "0.36",
+        "active": false,
+        "scope": "historical full configured native job window"
+      },
+      "sourceReferences": [
+        {
+          "record": "terminal/expanded-graph-native-podman-workflow.json@a1de16e0c42806ad",
+          "pointer": "/jobs/0/attempts/0"
+        }
+      ],
+      "actualInvoiceObserved": false,
+      "billableVmLifetimeObserved": false
+    },
+    {
+      "key": "depot:native-ci:run:fnvwqfg0bb:job:wdftqf7lj0:attempt:hd8lkfppqb",
+      "provider": "depot",
+      "product": "native-ci",
+      "kind": "job-attempt",
+      "identifiers": {
+        "runId": "fnvwqfg0bb",
+        "workflowId": "v3s4t0qdc4",
+        "jobId": "wdftqf7lj0",
+        "attemptId": "hd8lkfppqb",
+        "attemptNumber": 1,
+        "sandboxId": "2pbf874sbwngf07kzp7c"
+      },
+      "status": "failed",
+      "executionSha": "72af18d5b130dabef7ff5b656ffdc1b58df4fcde",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "requestedResources": {
+        "size": "4x16",
+        "vcpu": 4,
+        "memoryGB": 16,
+        "timeoutMinutes": 30
+      },
+      "configurationSource": {
+        "record": "git/72af18d5b130dabef7ff5b656ffdc1b58df4fcde/.depot/workflows/expanded-graph.yml@81ccd0fa319edc28",
+        "sha256": "81ccd0fa319edc2844887581232fc3fb1f89744e11b4a6fcded59f26b8bc667f",
+        "path": ".depot/workflows/expanded-graph.yml",
+        "commit": "72af18d5b130dabef7ff5b656ffdc1b58df4fcde"
+      },
+      "interval": {
+        "startedAt": "2026-10-18T16:30:14Z",
+        "finishedAt": "2026-10-18T16:36:42Z",
+        "milliseconds": 388000,
+        "seconds": "388",
+        "source": {
+          "record": "terminal/expanded-graph-native-podman-workflow.json@a1de16e0c42806ad",
+          "pointer": "/jobs/1/attempts/0"
+        },
+        "scope": "provider native job-attempt interval; not graph phase or measured VM billing",
+        "nominalListCompute": {
+          "usd": "0.0776",
+          "numerator": "4656000000",
+          "denominator": "60000000000",
+          "rateUsdPerMinute": "0.012",
+          "actualInvoiceObserved": false,
+          "billableVmLifetimeObserved": false
+        }
+      },
+      "providerRunEnvelope": {
+        "startedAt": "2026-10-18T16:23:29Z",
+        "finishedAt": "2026-10-18T16:36:43Z"
+      },
+      "maximumFullTimeoutReservation": {
+        "minutes": 30,
+        "usd": "0.36",
+        "active": false,
+        "scope": "historical full configured native job window"
+      },
+      "sourceReferences": [
+        {
+          "record": "terminal/expanded-graph-native-podman-workflow.json@a1de16e0c42806ad",
+          "pointer": "/jobs/1/attempts/0"
+        }
+      ],
+      "actualInvoiceObserved": false,
       "billableVmLifetimeObserved": false
     }
   ],
   "totalsByProduct": {
     "standard-public-github-actions": {
-      "rows": 5,
-      "pricedProviderIntervals": 5,
+      "rows": 12,
+      "pricedProviderIntervals": 12,
+      "unpricedProviderIntervals": 0,
       "runOnlyFallbacks": 0,
       "nominalObservedProviderWindowListProxy": {
         "usd": "0",
@@ -1217,12 +2209,13 @@
       }
     },
     "github-actions-runners": {
-      "rows": 5,
-      "pricedProviderIntervals": 5,
+      "rows": 7,
+      "pricedProviderIntervals": 7,
+      "unpricedProviderIntervals": 0,
       "runOnlyFallbacks": 0,
       "nominalObservedProviderWindowListProxy": {
-        "usd": "0.0167",
-        "numerator": "1002000000",
+        "usd": "0.1797",
+        "numerator": "10782000000",
         "denominator": "60000000000"
       },
       "buildRequestWindowProxy": {
@@ -1232,12 +2225,13 @@
       }
     },
     "native-ci": {
-      "rows": 4,
-      "pricedProviderIntervals": 4,
+      "rows": 8,
+      "pricedProviderIntervals": 8,
+      "unpricedProviderIntervals": 0,
       "runOnlyFallbacks": 1,
       "nominalObservedProviderWindowListProxy": {
-        "usd": "0.121",
-        "numerator": "7260000000",
+        "usd": "0.4308",
+        "numerator": "25848000000",
         "denominator": "60000000000"
       },
       "buildRequestWindowProxy": {
@@ -1249,6 +2243,7 @@
     "buildkit": {
       "rows": 3,
       "pricedProviderIntervals": 0,
+      "unpricedProviderIntervals": 3,
       "runOnlyFallbacks": 0,
       "nominalObservedProviderWindowListProxy": {
         "usd": "0",
@@ -1312,27 +2307,15 @@
   "pendingOwnerReceipts": [
     {
       "provider": "github",
-      "runId": "39141147245",
+      "runId": "39144499822",
       "owner": "coverage",
-      "reason": "Owner terminal receipt not yet published at this snapshot"
-    },
-    {
-      "provider": "github",
-      "runId": "39140975786",
-      "owner": "root",
-      "reason": "Owner terminal receipt not yet published at this snapshot"
-    },
-    {
-      "provider": "depot",
-      "runId": "gb01kjx2qk",
-      "owner": "root",
-      "reason": "Owner terminal receipt not yet published at this snapshot"
+      "reason": "Owner-watched recovery not yet collected at this snapshot"
     },
     {
       "provider": "depot-github-actions",
       "runId": null,
       "owner": "coverage",
-      "reason": "Later Depot OS controls not yet allocated; admission is not an allocation"
+      "reason": "Separate Depot OS admission remains unallocated; no row invented"
     }
   ],
   "linkedOwnerReservations": [
@@ -1354,9 +2337,72 @@
   "actualVmBillingIntervalsObserved": false,
   "sourceArchive": {
     "path": "doc/audit/depot-owned-allocation-follow-on-2026-10-18.sources.json.gz",
-    "bytes": 176805,
-    "sha256": "c845faba0a513c10104f77806216291ba516da76c9505285e507dac234fca73e",
-    "uncompressedBytes": 1692629,
-    "records": 21
-  }
+    "bytes": 329609,
+    "sha256": "f7e384b8c5ff87da4b916a1d5aa33ad25f7455ad43f5520ae285247da7438b3f",
+    "uncompressedBytes": 2907303,
+    "records": 30
+  },
+  "nominalKnownProviderWindowListProxyTotal": {
+    "usd": "0.6105",
+    "numerator": "36630000000",
+    "denominator": "60000000000"
+  },
+  "rootGraphNominalKnownProviderWindowSubtotal": {
+    "usd": "0.487",
+    "numerator": "29220000000",
+    "denominator": "60000000000",
+    "runs": [
+      "39135886118",
+      "39140975786",
+      "gb01kjx2qk",
+      "fnvwqfg0bb"
+    ],
+    "actualInvoiceObserved": false
+  },
+  "resourceUnitPolicy": "Catalog memory GB is distinct from measured bytes and container --memory binary units. Original owner field spellings remain preserved in the source records.",
+  "excludedUnassignedSchedulerJobs": [
+    {
+      "id": 117715669048,
+      "run_id": 39141147245,
+      "workflow_name": "Frozen current-source public and Depot Mac Windows controls",
+      "head_branch": "research/depot-complete-coverage-20261018",
+      "run_url": "https://api.github.com/repos/Aquaticats/Monochromatic/actions/runs/39141147245",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOKlVnec8AAAAbaGaQOA",
+      "head_sha": "c50ed764237d45d5fc7aa123e86b3dc43891e9da",
+      "url": "https://api.github.com/repos/Aquaticats/Monochromatic/actions/jobs/117715669048",
+      "html_url": "https://github.com/Aquaticats/Monochromatic/actions/runs/39141147245/job/117715669048",
+      "status": "completed",
+      "conclusion": "skipped",
+      "created_at": "2026-10-18T15:35:11Z",
+      "started_at": "2026-10-18T15:35:11Z",
+      "completed_at": "2026-10-18T15:35:10Z",
+      "name": "Current e02 host (${{ matrix.id }})",
+      "steps": [],
+      "check_run_url": "https://api.github.com/repos/Aquaticats/Monochromatic/check-runs/117715669048",
+      "labels": [],
+      "runner_id": null,
+      "runner_name": null,
+      "runner_group_id": null,
+      "runner_group_name": null
+    }
+  ],
+  "appendedTerminalSources": [
+    {
+      "source": "doc/audit/depot-current-host-first-handoff-2026-10-18.evidence.json.gz",
+      "sha256": "c7d97ade72711bc3386591871419757f97f05afb5055f03b8e671dfeadd1cf85"
+    },
+    {
+      "source": "expanded-graph-corrected-github-completed-samples.metadata.json",
+      "sha256": "4e4a03039a0bff79ddd69d3f921d6ed4e6246afd52f1d0cea90bc939cc032280"
+    },
+    {
+      "source": "expanded-graph-corrected-native-workflow.json",
+      "sha256": "f9c28ba5d5f2c72970374fe47effee85f029f44b9e0d424f66bb477189548699"
+    },
+    {
+      "source": "expanded-graph-native-podman-workflow.json",
+      "sha256": "a1de16e0c42806ad07175e04d0e248aea82dea8fea2896441ade00f452f0f9dc"
+    }
+  ]
 }
