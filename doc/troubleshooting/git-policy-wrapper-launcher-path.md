@@ -51,6 +51,29 @@ both attempt logs are retained.
 
 ## Remedy and ownership
 
+### Separate missing-helper failure
+
+The source worker subsequently hit Git's diagnostic
+`git-lfs filter-process: line 1: git-lfs: command not found`.
+An unrelated tracked PNG required its clean filter while Git prepared a scoped commit.
+The replacement PATH omitted the helper as well as the original wrapper directory.
+
+A separate disposable fixture compares raw Git and the wrapper,
+each with and without the same qualified LFS helper.
+The fixture stages only `owned.txt` and changes an unrelated LFS-tracked PNG.
+Both executables exit 128 without the helper and leave `HEAD` unchanged.
+Both exit 0 with the helper and commit only `owned.txt`.
+This reproduces valid Git filter behavior exposing the launcher defect;
+it does not establish a wrapper-specific LFS bug.
+The receipt is
+`${HOME}/temp/agent/pi-mimo-preparation-failure-20261018/git-wrapper-lfs-environment-probe.json`.
+
+Future launcher construction preserves the complete resolved mise PATH,
+mounts qualified `git-lfs` explicitly and retains the policy wrapper first.
+Checking both tools inside the final child environment remains part of launch acceptance.
+
+### Qualified wrapper invocation
+
 The live disposable container now has `/fixture-bin/git` linked to the repository's actual wrapper.
 A subsequent `command -v git` returns `/fixture-bin/git`.
 Invoking `git cli-git --help` in that same container confirms the policy namespace is active.

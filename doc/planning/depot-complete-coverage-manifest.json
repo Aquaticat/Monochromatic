@@ -1405,6 +1405,63 @@
       "workflowCommit": "775d735adbc34c4caea7c626a43f27cd27d0d971",
       "evidence": "doc/planning/depot-complete-coverage-finite-owner-receipts.json.gz",
       "terminal": true
+    },
+    {
+      "profile": "packed-install",
+      "run": 39129851779,
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "workflowCommit": "0ef69d6b90dcf7ba948bdaa10aa26fbbf3c7f12f",
+      "conclusion": "failure",
+      "evidence": "doc/audit/depot-complete-coverage-packed-consumer-receipts.json.gz"
+    },
+    {
+      "profile": "packed-install-corrected",
+      "run": 39130630504,
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "workflowCommit": "d7447847d5d7c38e6d08164bba6f9fadd841564e",
+      "conclusion": "failure",
+      "evidence": "doc/audit/depot-complete-coverage-packed-consumer-receipts.json.gz"
+    },
+    {
+      "profile": "packed-install-restored",
+      "run": 39134064943,
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "workflowCommit": "c4c0d6fa8d3714849dc952f412102902eaf4d181",
+      "conclusion": "failure",
+      "evidence": "doc/audit/depot-complete-coverage-packed-consumer-receipts.json.gz"
+    },
+    {
+      "profile": "packed-cli-dry-run",
+      "run": 39135404757,
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "workflowCommit": "cf498cc94be2dbaaf4634ab862d76c46aea49520",
+      "conclusion": "failure",
+      "evidence": "doc/audit/depot-complete-coverage-packed-consumer-receipts.json.gz"
+    },
+    {
+      "profile": "packed-cli-verified-plan",
+      "run": 39136177894,
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "workflowCommit": "1aab4fb2eb81e8288cea56e800a0ae15fb179dfb",
+      "conclusion": "failure",
+      "evidence": "doc/audit/depot-complete-coverage-packed-consumer-receipts.json.gz"
+    },
+    {
+      "profile": "desktop-remaining-sessions",
+      "run": "0jpk5bwpvs",
+      "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "workflowCommit": "1aab4fb2eb81e8288cea56e800a0ae15fb179dfb",
+      "structuredPassed": 41,
+      "structuredFailed": 1,
+      "skipped": 0,
+      "pngFiles": 90,
+      "sourceAssertionsEdited": false,
+      "schedulerAdaptation": true,
+      "cleanup": {
+        "containerAbsent": true,
+        "overlayWritesDiscarded": true
+      },
+      "evidence": "doc/audit/depot-current-host-controls-admission-2026-10-18.evidence.json.gz"
     }
   ],
   "familySummary": {
@@ -43836,5 +43893,20 @@
       "fullEvidence": "depot-complete-coverage-packages.json.gz"
     }
   ],
-  "latestEvidenceAt": "2026-10-18T12:19:31.019Z"
+  "latestEvidenceAt": "2026-10-18T12:19:31.019Z",
+  "packedConsumerQualification": {
+    "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+    "producerRun": 39130630504,
+    "runtimeConsumerRun": 39136177894,
+    "runtimeImports": 25,
+    "functionalChecks": 5,
+    "typesOnlyPackedPackages": 1,
+    "typesConsumerProvider": "local bounded container",
+    "typePositivePassed": true,
+    "typeNegativeDiagnostic": "TS2322",
+    "runtimeNegativeDiagnostic": "ERR_PACKAGE_PATH_NOT_EXPORTED",
+    "evidence": "doc/audit/depot-complete-coverage-packed-consumer-receipts.json.gz",
+    "evidenceSha256": "3a050fdd4e1dc025c0cff57efd77f056504b7fada677e25158f6b50b233a467b",
+    "qualification": "25 runtime imports,5 functional controls,and1 separate types-only compiler positive/negative consumer; neither whole-package branch coverage nor mutation execution claimed"
+  }
 }

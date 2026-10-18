@@ -200,8 +200,11 @@ export function parseShellReviewStructure(command: string): Readonly<Record<stri
       effects: 'not-established',
     });
   } catch (error) {
+    if (error instanceof ShellReviewSyntaxError) {
+      l.debug(String(error));
+      throw error;
+    }
     l.error(String(error));
-    if (error instanceof ShellReviewSyntaxError) throw error;
     throw new ShellReviewSyntaxError(
       'Bash structure could not be parsed for automatic review',
       { cause: error, }

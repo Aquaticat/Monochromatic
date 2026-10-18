@@ -1345,12 +1345,187 @@ Remaining independently verifiable work is explicit:
   `quit`, `states`, and `visual` session bodies with an explicit research scheduler.
   Preserve the default owner invocation failure and identify the scheduler seam.
   Retain source-file hashes, actual outcomes, PNG receipts, and independent cleanup.
-- Packed installation: finish immutable archive restoration, supported pnpm workspace configuration,
-  a missing-dependency negative control, proper isolated install,
-  and actual installed library, CLI, and bundler consumers.
+- Packed installation: completed as a composite observation on 2026-10-18.
+  The qualified packed-consumer section records 25 runtime imports, five functional controls,
+  and a separate positive/negative compiler consumer of the types-only package.
 - Current cross-OS controls: run finite public GitHub macOS and Windows desktop and host owners
   after desktop and packed work, sequentially, without deployment or provider calls.
   Compare source, task, dependency, tool, and actual working-byte identities before historical carry-forward.
 - Semantic inventory: reconcile feature and assertion ownership, generator reach,
   actual versus compile-only consumers, and every material unexercised surface.
   Static declaration counts are not runtime coverage.
+
+## packed-cli-dry-run finite admission
+
+The immutable research harness is `cf498cc94be2dbaaf4634ab862d76c46aea49520`;
+the application remains `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+The retained finite plan is `packed-cli-dry-run-plan.json`.
+The deduplicated ledger contains 40 completed owned job rows,
+USD1.4520 completed GitHub rounded-minute compute,
+USD2.88 completed native conservative maxima,
+and USD0.12 reserved for this finite profile.
+The committed and reserved guard is USD4.4520 of USD5.
+These are list-rate planning proxies and conservative reservations,
+not invoices.
+Public GitHub standard compute is recorded separately from storage and artifact uncertainty.
+No account-wide usage or invoice endpoint is queried.
+
+## packed-cli-verified-plan finite admission
+
+The immutable research harness is `1aab4fb2eb81e8288cea56e800a0ae15fb179dfb`;
+the application remains `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+The retained finite plan is `packed-cli-verified-plan-plan.json`.
+The deduplicated ledger contains 41 completed owned job rows,
+USD1.4760 completed GitHub rounded-minute compute,
+USD2.88 completed native conservative maxima,
+and USD0.12 reserved for this finite profile.
+The committed and reserved guard is USD4.4760 of USD5.
+These are list-rate planning proxies and conservative reservations,
+not invoices.
+Public GitHub standard compute is recorded separately from storage and artifact uncertainty.
+No account-wide usage or invoice endpoint is queried.
+
+## Qualified packed consumers and current finite queue
+
+Run `39134064943` completed the proper isolated pnpm install and 25 runtime namespace imports,
+plus four functional library/bundler consumers.
+Its research harness separately requested unsupported CLI `--help` and incorrectly imported a types-only package.
+Neither finding is an application assertion failure.
+Run `39135404757` is a distinct harness activation failure:
+its bootstrap restored the older build/pack plan instead of the intended consumer-only plan.
+The decoded plan/task equality and actual bootstrap preflight corrected that activation boundary.
+
+Run `39136177894`, harness `1aab4fb2eb81e8288cea56e800a0ae15fb179dfb`,
+then completed the same 25 runtime imports and all five functional controls.
+The real installed mutation-test bin reported two mutants and selected `src/value.unit.test.ts`
+with `Ignored by suppression: 0`; dry-run executes neither mutants nor fixture tests.
+The other controls cover caught-value shapes, unary/binary behavior, asynchronous positive/negative paths,
+and a real static/dynamic text-import bundler consumer producing a 718-byte executed bundle.
+The job remains red because the harness also tried a runtime import of the types-only ownership marker.
+Its declared `types`-only export correctly rejects runtime loading with `ERR_PACKAGE_PATH_NOT_EXPORTED`.
+A separate proper install of that exact producer archive in local bounded containers
+qualifies both exported marker types with TypeScript `7.0.2` and Node `26.12.0`:
+the valid consumer compiles, the invalid field rejects with `TS2322`,
+and the runtime-negative control confirms the declared rejection.
+The negative compiler returns status 1; the initial local harness incorrectly expected status 2.
+These local controls use 2 CPU, 2 GiB, 256 PIDs, no network, and read-only input mounts;
+no owned container remains.
+They are local consumer evidence, not an additional Depot allocation.
+Raw packed logs also retain a logger file-sink verification diagnostic;
+the functional checks do not claim complete logger coverage.
+
+The [sealed packed receipts](../audit/depot-complete-coverage-packed-consumer-receipts.json.gz)
+retain the 26 exact producer archives, plans, run boundaries, and actual consumer results.
+Compressed evidence bytes: `1701669`; SHA-256:
+`3a050fdd4e1dc025c0cff57efd77f056504b7fada677e25158f6b50b233a467b`.
+Git identities, materialized source hashes, packed archive hashes, and installed resolution paths remain separate.
+
+The original campaign now has 42 completed owned job rows, USD1.488 GitHub rounded-minute proxies,
+and USD2.88 native conservative maxima, totaling USD4.368 against USD5.
+No coverage cloud job is live at this checkpoint.
+The remaining desktop maximum USD0.36 brings the planned bound to USD4.728.
+The parent-authorized USD6 fallback remains unused.
+These are source-bound list-rate planning models, not invoice amounts.
+
+The remaining independent queue is:
+
+- Desktop: execute the six prepared remaining authored session bodies,
+  preserve the default-wide failure, inspect actual PNG captures, and verify independent cleanup.
+- Public macOS/Windows: execute frozen current-source desktop and logger/semantic/filesystem owners,
+  with sequential jobs, at most 30 minutes per job, and nominal public standard compute USD0.
+  Retain artifact/storage uncertainty and Windows MSVC ARM64/GNU context boundaries explicitly.
+- Depot macOS/Windows: retained historical host controls used standard GitHub labels,
+  so they do not qualify actual Depot host execution.
+  Prepare equivalent current-source `depot-macos-15` and `depot-windows-2025-4` controls,
+  each at most 20 minutes, with a separate USD1.92 reservation under the parent-admitted USD2 guard.
+  Developer Windows eligibility is separate from macOS availability through the active Startup trial.
+  No subscription changes are authorized.
+- Semantic manifest: complete feature/assertion ownership, actual versus import-only/compile-only consumers,
+  generator reach, cross-OS source/task/dependency matching, and explicit material gaps.
+- Durable notes: finish source-backed corrections, Markdown rendering, link checks, and sealed desktop evidence.
+
+## desktop-remaining-sessions finite admission
+
+The immutable research harness is `1aab4fb2eb81e8288cea56e800a0ae15fb179dfb`;
+the application remains `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+The retained finite plan is `desktop-remaining-sessions-plan.json`.
+The deduplicated ledger contains 42 completed owned job rows,
+USD1.4880 completed GitHub rounded-minute compute,
+USD2.88 completed native conservative maxima,
+and USD0.36 reserved for this finite profile.
+The committed and reserved guard is USD4.7280 of USD5.
+These are list-rate planning proxies and conservative reservations,
+not invoices.
+Public GitHub standard compute is recorded separately from storage and artifact uncertainty.
+No account-wide usage or invoice endpoint is queried.
+
+## public-host-controls finite admission
+
+The immutable research harness is `334a5b75f376eb467e30b426a14369690bc2795f`;
+the application remains `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+The retained finite plan is `public-host-controls-plan.json`.
+The deduplicated ledger contains 43 completed owned job rows,
+USD1.4880 completed GitHub rounded-minute compute,
+USD3.24 completed native conservative maxima,
+and USD0.00 reserved for this finite profile.
+The committed and reserved guard is USD4.7280 of USD5.
+These are list-rate planning proxies and conservative reservations,
+not invoices.
+Public GitHub standard compute is recorded separately from storage and artifact uncertainty.
+No account-wide usage or invoice endpoint is queried.
+
+## Remaining desktop outcomes and current host admission
+
+Native run `0jpk5bwpvs`, job `scrrj4czcl`, attempt `9tx3p5369r`,
+executes all six prepared remaining authored session bodies without changing their assertions.
+The source-owned structured summaries record 41 passing outcomes and one failing outcome:
+`narrow` 10 passed; `dialog` one passed and one failed; `auto-play` four passed;
+`quit` one passed; `states` thirteen passed; `visual` twelve passed.
+Raw stdout prints outcomes live and again in its final summary,
+so 82 PASS lines and two FAIL lines are duplicate emissions, not case counts.
+The failed source assertion is `browse/ctrl-shift-o`: no folder-dialog window covers the player,
+with zero changed pixels. Its cause remains unproven.
+The independent focus-return check passes.
+The artifact retains 90 PNG files and their hashes.
+There are zero remaining app/compositor processes, active test units, or runtime containers;
+sinks are restored, overlay writes are discarded, and the temporary artifact URL credential is absent.
+A trailing research workflow step also names an undefined `desktop:cleanup` task;
+this is separate from the successful in-task cleanup and the source dialog assertion.
+The original default-wide invocation remains 69 live passing outcomes, one skip,
+and an uncaught folder-wait precondition; it did not write a final report.
+Neither observation is a passed complete desktop suite.
+
+Artifact `01a14f8b-0a70-75a3-afdc-3eb28dfa56d4` is 5550536 bytes,
+SHA-256 `c9257bd6fcaaefe3ec3d7b29ceac573acb4fdf70bce4bf9c4921dae8ac11d198`;
+182 members expand to 119656005 bytes with recorded call hashes verified.
+The provider run interval is 14:59:56 to 15:04:35 UTC, 279 seconds,
+with USD0.1116 list-rate interval proxy and USD0.36 conservative completed maximum.
+The original campaign now has 43 completed rows and a USD4.728 conservative guard sum;
+USD6 fallback remains unused.
+
+The next immutable host harness is `334a5b75f376eb467e30b426a14369690bc2795f`.
+Its actual Node bootstrap, generated task equality, actual Mise dry-run parsing,
+and module syntax preflight all pass locally.
+The public profile runs five sequential contexts, at most 30 minutes per job:
+macOS 15 native desktop plus logger/semantic/filesystem consumers;
+Windows 2025 MSVC x64 with the same owner set;
+the separately authored macOS-latest filesystem context;
+and native Windows 11 ARM64/MSVC and Windows 2025 x64/GNU desktop unit bodies.
+The latter Windows variants do not claim an ordinary release-binary smoke.
+Public standard compute is nominal USD0; artifact/storage cost remains unobserved.
+
+The equivalent Depot macOS 15 and Windows 2025 MSVC x64 controls use the same commands.
+Their labels are `depot-macos-15` and `depot-windows-2025-4`,
+with documented 8 CPU/24 GB and 4 CPU/16 GB capacities.
+At 20 minutes each, published list-rate maxima are USD1.60 and USD0.32,
+a separate USD1.92 reservation under USD2.
+Windows is a Developer capability; macOS requires the existing Startup trial availability.
+No subscription change is performed or implied.
+Source test assertions remain unchanged. The explicit nextest scheduler adapter adds only
+`--no-fail-fast`, preserving default build/test concurrency and retaining original/adapted hashes.
+Actual compiler host and emitted binary architecture are checked before native-consumer credit.
+
+The [sealed host admission evidence](../audit/depot-current-host-controls-admission-2026-10-18.evidence.json.gz)
+retains exact plans, workflow bytes, tool prerequisites, controls, and structured desktop results.
+Evidence bytes: `26778`; SHA-256:
+`f5755e11392506471c3461675c86b9bef97099f64eb841c0f296270beb8bebdd`.

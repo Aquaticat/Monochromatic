@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "measuredAt": "2026-10-18T13:59:28.997Z",
+  "measuredAt": "2026-10-18T15:24:04.492Z",
   "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "guardUsd": 5,
   "pricingSource": {
@@ -20,6 +20,99 @@
     "rateUsdPerMinute": 0
   },
   "rows": [
+    {
+      "id": 117701044029,
+      "name": "Restored frozen packed consumers (a)",
+      "status": "completed",
+      "conclusion": "failure",
+      "labels": [
+        "depot-ubuntu-24.04-4"
+      ],
+      "runner": "depot-m8494kgsc0",
+      "startedAt": "2026-10-18T14:28:59Z",
+      "completedAt": "2026-10-18T14:29:31Z",
+      "seconds": 32,
+      "rateUsdPerMinute": 0.012,
+      "nominalElapsedUsd": 0.0064,
+      "conservativeRoundedMinuteUsd": 0.012,
+      "dedupeKey": "github:Aquaticats/Monochromatic:run:39136177894:attempt:1:job:117701044029",
+      "provider": "depot-github-runner",
+      "run": 39136177894,
+      "attempt": 1,
+      "workflowSha": "1aab4fb2eb81e8288cea56e800a0ae15fb179dfb",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "resourceShape": {
+        "requestedLabel": [
+          "depot-ubuntu-24.04-4"
+        ],
+        "vcpu": 4,
+        "memoryGiB": 16
+      },
+      "reservationUsd": 0,
+      "invoice": false
+    },
+    {
+      "id": 117698793431,
+      "name": "Restored frozen packed consumers (a)",
+      "status": "completed",
+      "conclusion": "failure",
+      "labels": [
+        "depot-ubuntu-24.04-4"
+      ],
+      "runner": "depot-wbfcq01c6r",
+      "startedAt": "2026-10-18T14:18:35Z",
+      "completedAt": "2026-10-18T14:20:20Z",
+      "seconds": 105,
+      "rateUsdPerMinute": 0.012,
+      "nominalElapsedUsd": 0.021,
+      "conservativeRoundedMinuteUsd": 0.024,
+      "dedupeKey": "github:Aquaticats/Monochromatic:run:39135404757:attempt:1:job:117698793431",
+      "provider": "depot-github-runner",
+      "run": 39135404757,
+      "attempt": 1,
+      "workflowSha": "cf498cc94be2dbaaf4634ab862d76c46aea49520",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "resourceShape": {
+        "requestedLabel": [
+          "depot-ubuntu-24.04-4"
+        ],
+        "vcpu": 4,
+        "memoryGiB": 16
+      },
+      "reservationUsd": 0,
+      "invoice": false
+    },
+    {
+      "id": 117694897143,
+      "name": "Restored frozen packed consumers (a)",
+      "status": "completed",
+      "conclusion": "failure",
+      "labels": [
+        "depot-ubuntu-24.04-4"
+      ],
+      "runner": "depot-4z22l51qpn",
+      "startedAt": "2026-10-18T14:00:46Z",
+      "completedAt": "2026-10-18T14:01:20Z",
+      "seconds": 34,
+      "rateUsdPerMinute": 0.012,
+      "nominalElapsedUsd": 0.0068,
+      "conservativeRoundedMinuteUsd": 0.012,
+      "dedupeKey": "github:Aquaticats/Monochromatic:run:39134064943:attempt:1:job:117694897143",
+      "provider": "depot-github-runner",
+      "run": 39134064943,
+      "attempt": 1,
+      "workflowSha": "c4c0d6fa8d3714849dc952f412102902eaf4d181",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "resourceShape": {
+        "requestedLabel": [
+          "depot-ubuntu-24.04-4"
+        ],
+        "vcpu": 4,
+        "memoryGiB": 16
+      },
+      "reservationUsd": 0,
+      "invoice": false
+    },
     {
       "id": 117684884874,
       "name": "Actual frozen packing and consumers (a)",
@@ -1213,32 +1306,99 @@
       "invoice": false,
       "startedAt": "2026-10-18T13:42:35Z",
       "completedAt": "2026-10-18T13:46:07Z"
+    },
+    {
+      "dedupeKey": "depot-ci:l4zncjjbj5:run:0jpk5bwpvs:job:scrrj4czcl:attempt:9tx3p5369r",
+      "provider": "depot-ci",
+      "run": "0jpk5bwpvs",
+      "job": "scrrj4czcl",
+      "attempt": "9tx3p5369r",
+      "workflowSha": "1aab4fb2eb81e8288cea56e800a0ae15fb179dfb",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "resourceShape": {
+        "size": "8x32",
+        "vcpu": 8,
+        "memoryGiB": 32,
+        "jobMinutes": 15,
+        "campaignMinutes": 12,
+        "maximumParallelJobs": 1,
+        "consumerContainer": {
+          "vcpu": 2,
+          "memoryGiB": 2,
+          "pids": 512,
+          "timeoutSeconds": 600,
+          "network": false
+        }
+      },
+      "startedAt": "2026-10-18T14:59:56Z",
+      "completedAt": "2026-10-18T15:04:35Z",
+      "intervalScope": "provider run interval, not independently sampled worker interval",
+      "seconds": 279,
+      "listRateUsdPerMinute": 0.024,
+      "listRateBasis": "8 vCPU times published0.00005USD per vCPU-second times60; source-bound planning, not invoice",
+      "nominalRunIntervalProxyUsd": 0.1116,
+      "spentUpperBoundUsd": 0.36,
+      "reservationUsd": 0,
+      "invoice": false
     }
   ],
   "activeReservation": {
-    "profile": "packed-install-restored",
-    "provider": "depot-github-runner",
-    "workflowSha": "c4c0d6fa8d3714849dc952f412102902eaf4d181",
+    "profile": "public-host-controls",
+    "provider": "github-public-standard",
+    "workflowSha": "334a5b75f376eb467e30b426a14369690bc2795f",
     "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
     "resourceShape": {
-      "vcpu": 4,
-      "memoryGiB": 16,
-      "jobMinutes": 10,
       "maximumParallelJobs": 1,
-      "consumerContainer": {
-        "vcpu": 2,
-        "memoryGiB": 2,
-        "pids": 256,
-        "network": false,
-        "readOnly": true
-      }
+      "jobMinutes": 30,
+      "cases": [
+        {
+          "id": "macos15-arm-current",
+          "label": "macos-15",
+          "kind": "all",
+          "flavor": "native",
+          "target": "aarch64-apple-darwin",
+          "tools": "node pnpm"
+        },
+        {
+          "id": "windows2025-msvc-x64-current",
+          "label": "windows-2025",
+          "kind": "all",
+          "flavor": "msvc",
+          "target": "x86_64-pc-windows-msvc",
+          "tools": "node pnpm"
+        },
+        {
+          "id": "macos-latest-authored-fsid",
+          "label": "macos-latest",
+          "kind": "fsid",
+          "flavor": "none",
+          "target": "none",
+          "tools": "node"
+        },
+        {
+          "id": "windows11-msvc-arm64-current",
+          "label": "windows-11-arm",
+          "kind": "rust",
+          "flavor": "msvc",
+          "target": "aarch64-pc-windows-msvc",
+          "tools": "node"
+        },
+        {
+          "id": "windows2025-gnu-ucrt64-current",
+          "label": "windows-2025",
+          "kind": "rust",
+          "flavor": "gnu",
+          "target": "x86_64-pc-windows-gnu",
+          "tools": "node"
+        }
+      ]
     },
-    "reservationUsd": 0.12
+    "reservationUsd": 0
   },
-  "nominalMeasuredGithubElapsedUsd": 1.1556000000000002,
-  "conservativeCompletedGithubRoundedMinuteUsd": 1.4400000000000008,
-  "conservativeCompletedNativeReservedUpperBoundUsd": 2.88,
-  "guardCommittedAndReservedUsd": 4.44,
+  "nominalMeasuredGithubElapsedUsd": 1.1898000000000002,
+  "conservativeCompletedGithubRoundedMinuteUsd": 1.4880000000000009,
+  "conservativeCompletedNativeReservedUpperBoundUsd": 3.2399999999999998,
+  "guardCommittedAndReservedUsd": 4.728000000000001,
   "limits": [
     "Source-bound campaign compute only",
     "No account usage or invoice inspected",

@@ -96,6 +96,20 @@ The missing namespace init explains that fixture's six preceding process-identit
 without changing frozen product source
 ([Rust execution record](depot-rust-coverage-research.md)).
 
+The positive Truepeak search fixture completed the unchanged grid twice,
+selected a winning candidate and emitted matching 24-row feature files of 8704 bytes.
+That closes synthetic search and output emission;
+it does not measure real audio collection or decoding
+([benchmark boundary](depot-rust-coverage-research.md)).
+
+The native ARM64 repository profile passed the same Truepeak all-features owner:
+89 passes and two intentional skips,
+with all 91 JUnit identity/status tuples matching AMD64.
+The built `p-limit-fork` owner also passed the same eleven runtime describe groups.
+This is source-bound functional portability evidence,
+without repeated timings or a whole-repository ARM qualification
+([ARM64 workload and original receipt](depot-arm64-workload-research.md)).
+
 The exact cloud-produced Android APK pair has a headful local consumer:
 all sixteen source-derived instrumentation cases were reported,
 fourteen passed and two retained the known session-store context-fixture failure,
@@ -118,7 +132,15 @@ a 51-byte shared-directory CLI roundtrip and private-domain/daemon cleanup
 ([all eight original archives and outcomes](../audit/depot-mvm-kvm-2026-10-18.evidence.json)).
 That roundtrip did not separately assert guest payload visibility or a guest write.
 An independent source review identified this test gap;
-an explicit guest transformation consumer is now in the execution queue.
+the follow-up now proves that boundary on all three pools.
+Each guest verifies its own boot identity and exact 51-byte input,
+creates an initially absent distinct output,
+transforms it and returns the exact 57-byte result to the host.
+All three retain private-domain and daemon cleanup
+([new original archives and guest proofs](../audit/depot-mvm-guest-files-2026-10-18.evidence.json)).
+The first follow-up GitHub dispatch remained queued because of a corrupted generated runner expression;
+it is retained as a harness failure,
+separately from the three actual consumers.
 The earlier failed probes remain historical observations;
 the named-ACL mutation's writer is not identified.
 
@@ -151,7 +173,7 @@ but did not perform an SSH signature or prove project-level autoscaling
 Truepeak's image build and cache checks reported zero tests;
 the separately executed 89-case owner supplies its test evidence.
 
-The SDK campaign created and stopped three isolated VMs.
+The custom-runtime SDK campaign created and stopped three isolated VMs.
 Its final consumer used the absolute required Git executable,
 read a bounded manifest and completed a nonce write/read/delete cycle.
 The earlier Node-path failure and operation with an unresolved read timeout remain separate failed probes.
@@ -292,12 +314,13 @@ restored bytes or a shorter compile phase as a measured whole-CI speedup.
 
 Remaining factual work is explicitly owned in the
 [execution handover](../handover/depot-trial-grilling.md):
-desktop producer/runtime prerequisites,
+remaining authored desktop sessions after the real compositor/PNG consumer,
 proper packed-install consumers,
+current-source macOS and Windows owner controls,
 semantic feature/assertion reconciliation,
-actual repository ARM evidence,
-the final benchmark branch,
-source-ledger reconciliation and combined cost/critical-path normalization.
+automatic native-job BuildKit authentication,
+source-ledger reconciliation,
+repeated coherent Linux graph measurement and combined allocation/cost normalization.
 Independent sufficiency review follows those results.
 These are ongoing research tasks,
 not deferred production acceptance tests.

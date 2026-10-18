@@ -2,7 +2,7 @@
  Known process metadata shares the original shell review projection. @module
  */
 import {tagged} from '@monochromatic-dev/module-logger/ts';
-import {projectReviewInput} from './review-operation.ts';
+import {projectHistoricalReviewInput} from './review-operation.ts';
 
 //region Only installed process records identify command metadata as shell syntax.
 /**
@@ -31,7 +31,7 @@ function projectProcessRecord(value:unknown):unknown{
   const l=tagged({tag:projectProcessRecord.name});
   if((!isMetadataRecord(value))||((typeof value.command)!=='string'))return value;
   l.debug('projecting visible process command metadata');
-  return projectReviewInput({
+  return projectHistoricalReviewInput({
     name:'bash',
     input:value
   });
@@ -46,6 +46,9 @@ function projectProcessRecord(value:unknown):unknown{
  @param process - whether the original tool or custom-message type identifies process metadata
  
  @returns review metadata without raw command fields in known process records
+
+ @example
+ projectProcessResultDetails({details:{process:{id:'retained'}},process:true});
  */
 export function projectProcessResultDetails({
   details,
@@ -75,7 +78,7 @@ export function projectProcessResultDetails({
   /**
    Notifications carry command metadata directly rather than under a process field.
    */
-  const projected=(typeof details.command)==='string'?projectReviewInput({
+  const projected=(typeof details.command)==='string'?projectHistoricalReviewInput({
     name:'bash',
     input:details
   }):details;

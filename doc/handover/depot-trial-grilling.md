@@ -1,6 +1,184 @@
 # Depot trial interview
 
-## Execution checkpoint on 2026-10-18 at 12:20 UTC
+## Execution checkpoint on 2026-10-18 at 15:25 UTC
+
+Research remains active;
+do not start the interview.
+GitHub graph run `39135886118` is terminal failed:
+all four jobs passed checkout and resource recording,
+then failed selected-tool setup because the parent omitted configured `cargo-binstall`.
+The exact mise diagnostic is
+`requires configured install dependency 'cargo-binstall@latest', but its selected version is not installed`.
+No graph workload command ran;
+the planned 222 commands provide no execution or speed credit.
+The parent retained terminal job metadata,
+artifact identities and private failed logs,
+then followed the existing
+[Cargo installer troubleshooting entry](../troubleshooting/mise-cargo-backend-needs-rust-installed.md).
+Correction `fdca95cc72` installs locked Node,
+pnpm,
+Rust and `cargo-binstall` before locked Nextest.
+The Rust researcher independently preflights the actual final driver and setup locally before repeat dispatch.
+The exact staged tool install passed in fresh isolated tool state under two CPU and two GiB limits.
+Independent driver controls also found a staged-source detection gap and surviving detached commands after external
+`SIGTERM`.
+Correction `234ccc92dabb81e998e0a0bb5e838713924dd83f`
+compares tracked state to `HEAD` and adds signal-driven cancellation,
+bounded group termination and final cancellation receipts.
+Independent rechecks of that exact correction are pending;
+stub owner commands provide no application execution credit.
+The browser branch already contains `prepare:matched-image`;
+an incomplete-plan reading that alleged its omission was retracted.
+
+Native automatic BuildKit authentication run `dzsf27t0xx` is terminal failed.
+The CLI connected to the AMD64 builder with the injected native token,
+then the fixture combined incompatible local export and `--save`,
+emitting `multiple outputs currently unsupported`.
+This is a fixture error already covered by the exporter troubleshooting documentation,
+not a token rejection.
+Local-export-only correction `pxx75mxnw2` is terminal finished;
+the platform owner is validating its actual image consumer before assigning execution credit.
+The separate project-scoped registry auth control is now authorized before the parent graph,
+using the same owned project and cumulative USD 0.69 conservative reservation under the existing USD 1 guard.
+Desktop continuation `0jpk5bwpvs` executed all six remaining authored sessions.
+Its structured summaries contain 41 passing and one failing assertion,
+with no skips;
+duplicated raw output lines are not additional cases.
+The failing dialog assertion is `Ctrl+Shift+O opens the system folder dialog`.
+The owner verified zero retained app/compositor processes,
+units or container,
+restored sinks and absent credential.
+The coordinated native order is the platform owner's separate registry auth control,
+then the parent's corrected graph after independent preflight.
+No native graph has been dispatched.
+
+Packed consumers are sealed at `898fd6ab03`:
+25 actual runtime imports,
+one type-only package checked with positive and negative TypeScript consumers,
+and all five functional consumers including real mutation CLI dry-run discovery.
+Dry-run discovery is not executed mutation testing.
+The type-only package's runtime-import rejection is a harness expectation error,
+not a product failure.
+The separate current-source Depot Windows and Startup-trial Mac controls retain their USD 2 campaign guard.
+
+The parent finished substantive review of 18 deployed native-CI documentation pages,
+156,769 exact source bytes and 95 claim-level findings.
+The sealed private source/hash/review join is `native-ci-complete-source-review.json`
+under the parent's expansion controller.
+The platform owner is merging those findings into the public source ledger,
+preserving the separately reviewed split-tests page.
+The parent owns a concise canonical interpretation note and the final report integration.
+The parent also finished reading the eleven remaining Cache integration pages,
+69,290 verified source bytes,
+and owns their substantive finding/ledger join.
+The GitHub Cache integration guide explicitly documents no branch isolation on Depot;
+the parent owns a bounded cross-branch cache control before closing that trust-scope finding.
+No account setting or broad credential is needed.
+
+The original graph admission's USD 1.20 Depot nominal full-window reservation was incorrect.
+Current runner-types documentation gives four-CPU Linux USD 0.012 per minute,
+so two native and two Depot GitHub jobs at thirty minutes each reserve USD 1.44 before allowances.
+Public GitHub nominal compute remains zero.
+The six-sample uniform Depot-rate proxy is USD 2.16,
+not an observed all-provider invoice.
+The original four failed job intervals total 148 seconds,
+including 71 seconds on Depot runners:
+USD 0.0142 nominal Depot compute and USD 0.0296 uniform admission proxy.
+The corrected six-sample proxy plus USD 0.72 correction reserve and observed failed proxy is USD 2.9096,
+within the existing USD 3 campaign guard.
+The [failed setup receipt](../audit/depot-expanded-graph-setup-failure-2026-10-18.evidence.json)
+retains the original admission correction and exact four artifact digests.
+
+The combined allocation ledger at `acf8a8c195` freezes 223 records and known partial nominal compute
+USD 6.1999959,
+with BuildKit's USD 0.538584 request proxy kept separate from unmeasured actual BuildKit compute.
+The parent must independently verify its arithmetic and append measured post-baseline attempts,
+including the failed graph and automatic-auth cohorts.
+Admission maxima are not observed charges or invoices.
+After factual queues close,
+obtain an independent sufficiency review,
+finish the approved report sections and only then start the decision interview.
+
+## Historical execution checkpoint on 2026-10-18 at 14:26 UTC
+
+The factual research queue remains active;
+do not start the interview yet.
+The parent owns the final report and repeated coherent Linux graph campaign.
+The Rust researcher now owns the combined exact-allocation ledger and independent review of new parent evidence.
+The coverage researcher owns remaining desktop sessions,
+proper packed-install activation,
+current-source standard GitHub macOS/Windows controls and the semantic assertion manifest.
+The platform researcher owns substantive source-ledger completion and a new automatic native-job BuildKit auth probe.
+That probe uses only the injected short-lived job token,
+one owned temporary project and separate build/registry assertions under its USD 1 guard.
+The parent holds its native graph allocation until that probe is terminal.
+
+The stronger [guest-file receipt](../audit/depot-mvm-guest-files-2026-10-18.evidence.json)
+is committed at `c65e3b8eeb`.
+Native `25jpltfpkq` and both jobs in GitHub `39134227406` use harness
+`1373e624739fbc93502b0c8ca502820c6ff99b45`.
+Each actual guest has a distinct boot identity,
+reads the exact 51-byte input,
+creates an initially absent distinct output and returns the exact transformed 57 bytes.
+All three original ZIPs and 198 file identities are retained;
+the original host-shared-directory-only check remains separately qualified.
+The corrupt-expression dispatch `39132577785` is a retained queued harness failure,
+not a timed execution inferred from the API's populated `startedAt`.
+No invoice or VM billing-release claim follows from workflow completion.
+
+The repeated Linux graph uses clean pushed harness
+`815591bf307b1237d31b1c4e644463d7c13654fa`
+on `research/depot-expanded-graph-20261018`,
+with unchanged application cohort `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+GitHub dispatch is `39135886118`.
+It contains sequential GitHub and Depot-GitHub repetitions;
+the native workflow adds sequential native repetitions after its slot is released.
+The graph invokes 222 actual owning commands:
+a shared Node prerequisite phase,
+parallel module/browser branches and an independent Rust branch.
+This is one four-CPU Linux job per sample,
+not a distributed cross-job artifact DAG or complete repository CI.
+It preserves source failures and measures setup plus complete-report latency.
+It restores no explicit repository/package/compiler cache or prepared snapshot;
+provider image/tool/registry state is not assumed empty.
+The runtime source comparison uses 54 frozen top-level Git object identities,
+excluding declared research configuration directories,
+and tracked working-tree changes without requiring a shallow checkout to fetch the application parent commit.
+Local source controls observed unchanged success,
+changed-object rejection,
+a removed guard missing the difference and restored success.
+The six planned jobs each have four CPUs,
+16 GB and a thirty-minute limit,
+with at most two parent-owned concurrent jobs.
+The USD 3 gross proxy guard includes USD 2.16 full-window all-provider equivalents
+and USD 0.72 for two bounded corrections;
+the initial nominal Depot compute reservation is USD 1.20 before allowances.
+Public GitHub compute is modeled separately at zero nominal charge.
+The private controller retains the admission,
+source verification and dispatch response.
+
+Retain terminal graph job/attempt metadata and original evidence ZIPs,
+measure unchanged-input spread and actual overlapping critical paths,
+join them into the Rust researcher's allocation ledger,
+finish remaining owner-specific factual queues and obtain an independent sufficiency review.
+Then reconcile the approved six report sections and start the decision interview.
+
+The coordinated native order is automatic BuildKit auth,
+remaining desktop sessions,
+then the repeated native graph;
+the GitHub graph matrix proceeds independently.
+The retained historical Mac/Windows owner evidence uses standard GitHub runners,
+not Depot operating-system runners.
+Equivalent current-source Depot Windows and Startup-trial Mac controls are now coverage-owned
+under a separate USD 2 maximum reservation,
+with Developer Windows eligibility and Startup Mac eligibility kept distinct.
+The latest packed-install run `39136177894` reached all five functional consumers,
+including the real mutation-test CLI's dry-run discovery.
+Its remaining namespace-import failure concerns a type-only package;
+the coverage owner is replacing that invalid runtime expectation with an actual compiler consumer.
+No runtime import or executed mutation credit follows from the type-only package or CLI dry run.
+
+## Historical execution checkpoint on 2026-10-18 at 12:20 UTC
 
 The expanded evaluation remains research work;
 the interview has not started.

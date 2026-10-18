@@ -11,7 +11,7 @@ An owned Git-wrapper defect or UX issue should be filed in this repository's Git
 
 ### Active workers and ownership
 
-Both real Pi RPC workers use `llmgateway-devpass/mimo-v2.6-pro`,
+The real Pi RPC workers use `llmgateway-devpass/mimo-v2.6-pro`,
 thinking high,
 2 GiB memory,
 two CPUs,
@@ -22,18 +22,20 @@ The user explicitly authorizes invoking and monitoring MiMo.
 - Source worker: `pi-mimo-rpc-session-7O5MPn`,
   controller session `91455`,
   pinned native `EWv4wy`.
-  It exclusively owns `src/` and is checkpointing its native-return fixture changes.
-  Navigation assertion evidence is delivered,
-  but its correction is not yet independently verified.
+  It is closed with exit 0 after withholding a pathspec-less commit attempt.
+  Its native-return fixture change is preserved in scoped commit `75e519aca9`.
+  Supervisor ownership of `src/` resumes at this settled boundary.
+  Navigation assertion evidence was delivered but its correction is still pending.
 - Native worker: `pi-mimo-rpc-session-j2yRJI`,
   controller session `41734`,
   pinned native `LytMAt`.
-  It owns only `policy-source/system-slot*`,
+  It is now closed with exit 0 and no native edits after a separate context-projection failure.
+  Its reserved assignment covers only `policy-source/system-slot*`,
   `policy-loader*` and necessary sibling implementation/types for that boundary.
   It must preserve capability identity,
   source currentness,
   reload and collector linkage,
-  then settle after one coherent committed cluster.
+  then settle after one coherent committed cluster when resumed.
 - Supervisor: all other native code,
   private builds,
   consumer verification,
@@ -102,6 +104,109 @@ No loose positive-count assertion is authorized.
 
 ### Git wrapper and external formatter
 
+A later source-worker commit fails because the replacement PATH also omits `git-lfs`.
+The exact Git diagnostic is `git-lfs filter-process: line 1: git-lfs: command not found`,
+followed by a failed clean filter for an unrelated tracked PNG.
+This does not by itself establish a wrapper-specific defect.
+The live source fixture now has qualified Git LFS `3.8.0` in `/fixture-bin`.
+Future launches preserve the resolved mise PATH and mount the required LFS helper explicitly.
+A wrapper-only version or namespace check is insufficient environment verification.
+
+### Incomplete historical shell source
+
+The native worker's next model request fails source collection with
+`RequestObservationUnavailableError: Tool execution requires usable request evidence`.
+Its retained cause is `ShellReviewSyntaxError: Bash parser reported incomplete syntax`.
+This is separate from instruction-snapshot replacement.
+The actual closed session contains one aborted assistant call with an 80-code-unit incomplete Bash string.
+Its identifier never appears in a tool-execution-start event.
+The maintained built context projector reproduces the syntax error on that retained history;
+a clean-history control passes.
+The corrected-scope reproduction is `historical-shell-reproduction-corrected-sdk-scope.log`.
+The first probe used the wrong package-resolution scope and failed before exercising the projector.
+
+Private candidate `historical-shell-candidate-aWqmVs` starts from committed `6fac7c5648`.
+It separates strict current-operation projection from earlier activity data,
+keeps unavailable historical syntax explicit without transmitting raw Bash,
+preserves non-command options and unknown failures,
+and extracts per-role message projection from context windowing.
+New regression catalogs cover assistant,
+direct Bash and every known process metadata location,
+with strict current-proposal and unrelated-error controls.
+Scoped formatting reports zero warnings and errors;
+private JavaScript and native `I3dKHQ` builds,
+fresh-cache types and full units pass.
+The actual retained-history projector probe passes on the full saved session and an aborted-message prefix.
+The full context window can exclude the aborted call,
+but projection used to throw before window selection.
+The first green probe incorrectly required that marker in the final selected window;
+the corrected probe explicitly checks its actual prefix and retains the failed harness log.
+Source regression commit `a9b1766942` records both failing catalogs before implementation adoption.
+Guard removals for unrelated-error propagation,
+strict current proposals and raw historical-source exclusion each build,
+fail the maintained catalog and pass after restoration and rebuilding.
+Root source and publication hashes remain unchanged.
+The first raw-source mutation harness expected the shell catalog to run,
+but the process catalog correctly failed first;
+the corrected diagnostic check passes and the original private source is restored.
+Committed `e8b7a17e03` passes scoped lint on all six affected source/test files and fresh-cache types.
+Root published `dist` remains unchanged.
+The first configured replay fails before Pi startup because its capture preload cannot resolve the private
+candidate's canonical scratch path inside the container.
+The corrected launcher mounts that canonical path as well as both repository aliases.
+The read-only resumed controller is `pi-mimo-rpc-session-dwTJVg`,
+command session `97637`,
+on `I3dKHQ` with the original `j2yRJI` saved history.
+Its final-child Git-wrapper and LFS preflight passes.
+Finish this repair before resuming the native typing assignment.
+
+The corrected scoped read executes automatically on `dwTJVg`;
+the first authored probe accidentally includes a final dot operand and is withheld before correction.
+The initial payload audit fails because its capture hook records no requests.
+The dispatcher import used the candidate's physical scratch namespace,
+while the actual CLI imported its repository mount namespace.
+Node treats those module URLs as distinct instances;
+the second dispatcher instance replaces the fixture fetch hook.
+Control `ONKvxX` records `attached: false` at registration and session start.
+The corrected preloader resolves the actual CLI namespace in the child and checks its release name.
+Replay `NEymiB` records `attached: true` at registration,
+session start and agent start,
+executes one scoped Bash call with zero selectors/errors and closes with exit 0.
+Its actual four-request Luna audit covers 239 questions and two review requests,
+passes two required-data and four excluded-data positive controls,
+and finds no excluded structured fields.
+Receipt: `history-replay-payload-audit.log` in primary scratch.
+
+### Expected parser diagnostics
+
+The historical recovery exposed another user-visible issue:
+known syntax rejection still emitted low-level error logs on every context projection.
+Shared analyzer commit `8d0b81653b` keeps the same thrown value,
+logs expected syntax rejection at debug level and retains error logging for unexpected parser failures.
+Its version is bumped to `0.0.2` for publishing.
+Private build,
+fresh-cache types and all unit tests pass.
+A built consumer proves valid syntax and expected syntax rejection emit no error diagnostic,
+while injected unexpected JSON serialization failure retains its original cause and does emit an error diagnostic.
+The scoped lint invocation failed before Oxlint because the inherited task does not declare path arguments.
+This exact invocation limitation is recorded in `doc/troubleshooting/mise-usage-args-inline-node.md`.
+The corrected full-package lint is running;
+publication verification is pending.
+
+### Launcher acceptance checks
+
+The LFS comparison now proves raw Git and the wrapper both exit 128 without the helper,
+with unchanged `HEAD`,
+and both commit only the named file with the helper present.
+The issue comment is
+<https://github.com/Aquaticats/Monochromatic/issues/1768#issuecomment-6251202628>.
+The final-child preflight rejects raw Git and missing LFS in separate positive controls,
+then passes with both qualified tools.
+Luna capture is now an explicit import on the Pi Node invocation,
+so tool subprocesses do not inherit that capture preload through `NODE_OPTIONS`.
+The source native-return checkpoint `75e519aca9` independently passes scoped lint and fresh-cache types.
+Navigation assertion commit `b7f1ae1be2` passes the complete host-isolation catalog.
+
 [Issue 1768](https://github.com/Aquaticats/Monochromatic/issues/1768) is open with `needs-triage`.
 The supervisor's RPC launcher omitted the wrapper from its replacement PATH.
 System Git therefore accepted an empty commit scope and included concurrent staged documents.
@@ -132,6 +237,8 @@ installed helper or workspace dependency is changed.
 
 - Finish and verify the source lint clusters,
   including the precise navigation assertion correction.
+- Complete shared analyzer `0.0.2` lint and publication verification,
+  then build and consumer-verify the coherent default auto-mode artifact.
 - Verify the native policy-input cluster and continue typed native consolidation without rule weakening.
 - Finish affected consumer catalogs and repeat original configured interaction,
   compaction,
@@ -142,10 +249,19 @@ installed helper or workspace dependency is changed.
   final zero lint,
   complete branch coverage and rendered documentation.
 
-The latest renderer receipt before this refresh reports 30 files and no broken links.
+Full `src/` lint on frozen `e8b7a17e03` reports 1,037 warnings and 47 errors.
+The independently validated aggregate is `source-e8-lint-summary.json` in primary scratch.
+These are still open source findings;
+scoped clean checks are not package completeness.
+The latest renderer receipt before this refresh reports 32 files and no broken links.
 Render this updated checkpoint before final documentation completion.
 
-## Purpose and live status
+## Historical checkpoints retained for evidence
+
+The historical checkpoint sections preserve durable evidence and the state at each recorded step.
+Use `Current checkpoints and supervision` for current ownership and remaining work.
+
+## Historical purpose and status
 
 Continue the authorized auto-mode repair,
 architecture cleanup and complete lint queue without asking the human to request continuation.
@@ -158,7 +274,8 @@ It replaces a 14,000-line chronological checkpoint as the current resume surface
 
 The work is **not complete**.
 The native cancellation-control defect is repaired and consumer-verified.
-MiMo source and native policy-input workers are active through supervised Pi RPC.
+At this historical checkpoint,
+MiMo source and native policy-input workers were active through supervised Pi RPC.
 Full-package lint completion,
 final configured replays,
 final measurement and final documentation remain open.
@@ -208,7 +325,7 @@ unit and whole-operation fallbacks remain distinct.
 The canonical native interface supplies the generated bridges;
 the retired extension pipeline and whole-call adapters remain removed.
 
-## Active MiMo checkpoint
+## Historical MiMo checkpoint
 
 The active controller uses `llmgateway-devpass/mimo-v2.6-pro` and pins `native-release-EWv4wy`.
 Its fixture is `${HOME}/temp/agent/pi-mimo-rpc-session-7O5MPn`,

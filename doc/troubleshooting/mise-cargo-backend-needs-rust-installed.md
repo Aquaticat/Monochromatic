@@ -208,8 +208,64 @@ and its Windows Clippy step had a separate failure.
 Neither the setup repair nor the issue closure establishes complete native validation.
 Its tradeoff is an additional installer download,
 with all versions kept equal to the historical source lockfile.
-The failure does not establish any package build or test outcome.
-The upstream filing decision remains unchanged because the adapter omitted a configured prerequisite.
+
+## Expanded Linux graph repeats the configured installer omission
+
+GitHub Actions run [39135886118][expanded-prerequisite-failure] at harness
+`815591bf307b1237d31b1c4e644463d7c13654fa`
+used unchanged application cohort `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+Both standard GitHub jobs and both Depot GitHub runner jobs passed checkout,
+resource recording and mise installation,
+then failed this setup command:
+
+```bash
+# Disposable expanded-graph research workflow.
+mise install --locked node pnpm rust cargo:cargo-nextest
+```
+
+The exact emitting tool was mise `2026.10.9 linux-x64 (2026-10-13)`.
+All four failures named the same missing configured dependency:
+
+```text
+tool 'cargo:cargo-nextest@latest' requires configured install dependency 'cargo-binstall@latest', but its selected version is not installed
+```
+
+The log resolves Nextest to `0.9.148`.
+The omitted installer matches the optional-dependency source path and historical verified prerequisite
+documented in the native trial section.
+No application build,
+test,
+browser owner or graph campaign ran.
+These failures establish a bootstrap omission on both providers;
+they establish no workload timing comparison.
+
+Correction `fdca95cc72` stages the configured prerequisites without changing application source or owning tasks:
+
+```bash
+# Disposable expanded-graph research workflow, within the existing setup time limit.
+mise install --locked node pnpm rust cargo-binstall
+mise install --locked cargo:cargo-nextest
+```
+
+The additional installer download is part of measured setup.
+Independent local preflight used the exact frozen configuration,
+fresh tool/home/cache state and anonymous public downloads in a two-CPU,
+two-GiB container.
+The official mise executable's SHA-256 is
+`6ab6646b52b83f6bbd51c9d0d3ae54264ffa90efd1ac6d7c0ec5a86bbc6a0030`.
+The prerequisite command passed in 35,568 ms;
+the separate Nextest install passed in 6,487 ms.
+Actual binary probes reported Node `26.12.0`,
+pnpm `12.14.0` and Nextest `0.9.148`.
+These are single local setup observations,
+not a matched cloud speed comparison or application-test execution.
+A new immutable cloud attempt remains pending;
+the successful historical Mac/Windows setup is not substituted for this Linux cohort's result.
+The upstream filing decision remains unchanged:
+this fixture repeated an already documented repository prerequisite,
+so there is no new upstream defect or additive filing.
+
+[expanded-prerequisite-failure]: https://github.com/Aquaticats/Monochromatic/actions/runs/39135886118
 
 [native-prerequisite-failure]: https://github.com/Aquaticats/Monochromatic/actions/runs/38842242564
 [native-prerequisite-recovery]: https://github.com/Aquaticats/Monochromatic/actions/runs/38842787230

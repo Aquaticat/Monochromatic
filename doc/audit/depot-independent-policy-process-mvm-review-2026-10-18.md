@@ -283,11 +283,11 @@ No other material overstatement was established in this document-level review.
 This is not a second independent execution of every linked application suite.
 
 The MVM qualification finding was accepted and its current report wording rechecked.
-The coordinator is separately executing a finite three-pool consumer that reads pushed bytes in the guest,
+The coordinator subsequently executed a finite three-pool consumer that reads pushed bytes in the guest,
 creates a distinct initially absent output and pulls the guest-transformed result.
 Independent decoding,
-CRC/hash/outcome joins and credential inspection of those three new ZIPs are queued
-after publication.
+CRC/hash/outcome joins and credential inspection of those three new ZIPs were queued at this checkpoint
+and are now complete in the Actual guest-transformation review section.
 They must remain a separate cohort from the original eight MVM ZIPs.
 
 The original-cohort review checkpoint `7d743ae989` passed the targeted
@@ -315,7 +315,8 @@ The coordinator assigned and this reviewer completed checks of these additional 
 
 This work uses published/local evidence and read-only source inspection.
 It admits no cloud allocation or repository/billing settings change.
-The separate three-ZIP guest-transformation review remains queued after publication.
+The separate three-ZIP guest-transformation review was queued at this checkpoint
+and is now complete in the Actual guest-transformation review section.
 
 ### Original additional archives
 
@@ -476,10 +477,15 @@ The source workflow SHA-256 is `374acbf649e114477522738da6bbf9c2335841458d2838ff
 the applied result is `4183e80c7f9bdbfd6bfd7dc8e0b7df068bf4fca5ad48a184843a5112ad60eb6a`.
 Only the disposable fixture was patched.
 
-The separate three-ZIP guest-transformation review remains queued after publication.
-The coordinator reports GitHub run `39132577785`
+At this publication checkpoint,
+the separate three-ZIP guest-transformation review was queued.
+Its initial attribution named GitHub run `39132577785`
 at harness `3829831039cc43aa717c6c927f835b867e9313b6`.
-These new consumers have not been credited by this review.
+Attribution correction on 2026-10-18:
+those identify the cancelled generator control.
+The successful cohort is native `25jpltfpkq` and GitHub `39134227406`
+at harness `1373e624739fbc93502b0c8ca502820c6ff99b45`,
+qualified in the Actual guest-transformation review section.
 The original eight-ZIP qualification and unchanged bytes remain authoritative for their original boundary.
 The coordinator also received the exact frozen-source scanner/Truepeak profile handoff,
 recorded in `doc/planning/depot-rust-coverage-research.md`,
@@ -492,3 +498,88 @@ Read-only publication verification found remote `main` at
 containing the completed review and handoff;
 the owned paths were clean.
 The two additional archive bundles and prerequisite source bundle still reproduce their reviewed SHA-256 values.
+
+## Actual guest-transformation review
+
+The new three-ZIP cohort is published at `c65e3b8eeb0f1bc0e06bf555048b85635ec59202`
+in `depot-mvm-guest-files-2026-10-18.evidence.json` and its linked original bundle.
+The independent review passed for its original ZIP bytes,
+strict base64 decoding,
+CRC,
+member sizes and SHA256 hashes.
+The cohort contains 81,121 ZIP bytes,
+198 members and 216,993 uncompressed member bytes.
+Both GitHub API artifact digests match the original ZIP hashes;
+the native advertised size matches its original ZIP.
+The linked gzip SHA256 is `6f0bf7c1ea1891b24d8702b373fc9c30b8eb885a0827e6e056cb483cac0183d9`.
+
+Native run `25jpltfpkq` and both jobs in GitHub run `39134227406`
+join immutable harness `1373e624739fbc93502b0c8ca502820c6ff99b45`.
+The harness has no diff from frozen `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`
+in `package`,
+`mise.toml`,
+`mise.lock`,
+`pnpm-lock.yaml` or `pnpm-workspace.yaml`.
+Its owning lifecycle source was read independently,
+including the actual payload assertions and private daemon cleanup.
+
+All 85 command records match their embedded lifecycle records and retained stdout/stderr members.
+For each pool,
+the independently reconstructed nonce-bearing input is 51 bytes and its `guest:` transformation is 57 bytes.
+Both reconstructed hashes match the actual guest `sha256sum` output and retained consumer hashes.
+The recorded guest boot ID differs from the host boot ID.
+The actual `mvm exec` sequence checks the distinct output is absent,
+copies input to it,
+changes it with `sed`,
+then hashes it before `mvm pull`.
+The immutable harness compares pulled bytes directly with the expected transformed buffer before reporting success.
+This qualifies actual guest input visibility,
+output creation and transformation through `/mnt/shared` for this cohort.
+It does not upgrade the original eight-ZIP host shared-directory check.
+
+Each guest reports KVM enabled and running;
+QEMU command lines retain four vCPUs and `size=8388608k` memory.
+The deliberate missing-path command returns status 2,
+while every other recorded command succeeds.
+Each final private domain listing is empty,
+both owned daemon PIDs are observed exited and cleanup errors are empty.
+These are execution and cleanup observations,
+not VM billing-release measurements or application unit-test cases.
+
+The separate cancelled GitHub run `39132577785` has corrupt `$ + value +` runner labels,
+no assigned runner and no actual step execution.
+Its queued `started_at` timestamp does not establish allocated compute.
+The source records the failed generator separately from the successful guest consumers and retains guard removal/restoration.
+
+All decoded members were inspected as UTF8,
+including dense lifecycle/command records and daemon logs.
+Credential patterns found no token,
+authorization value or private-key material.
+Sensitive-word contexts contain passwd/GID diagnostics,
+public repository package names,
+QEMU references to private key files and libvirt help paths;
+they contain no key-file bytes.
+This closes the pending three-ZIP review without changing original archive bytes or allocating resources.
+
+The completed guest-review section and reconciled Rust handoff pass targeted `lint:monochromatic-lint`.
+Their rendered CommonMark output was inspected.
+The new original gzip retains SHA256
+`6f0bf7c1ea1891b24d8702b373fc9c30b8eb885a0827e6e056cb483cac0183d9`.
+
+## Expanded graph local preflight queue
+
+The coordinator requested independent review of frozen driver and plan
+at `815591bf307b1237d31b1c4e644463d7c13654fa`
+after all jobs of `39135886118` failed at the omitted configured `cargo-binstall` prerequisite.
+The local-only queue is source review,
+a fresh selected-tool installation probe if practical,
+and actual driver execution against explicitly fake owning commands in a disposable 2 CPU, 2 GiB container.
+No application test credit or new cloud allocation belongs to this preflight.
+The coordinator owns workflow corrections and dispatch; its graph worktree will not be edited.
+
+The expanded graph local queue is complete.
+The [source-guard/cancellation troubleshooting record](../troubleshooting/depot-expanded-graph-source-guard-cancellation.md)
+and [independent receipt](depot-expanded-graph-preflight-2026-10-18.evidence.json)
+retain original defects and corrected `234ccc92` controls.
+The browser-image omission claim was retracted after complete plan enumeration.
+Fresh anonymous selected-tool installation passed; fake graph execution earns no application test credit.

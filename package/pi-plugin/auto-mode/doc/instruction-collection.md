@@ -70,9 +70,26 @@ The collector publishes original readable-source occurrences and freshness check
 The original file observer detects changed readable files.
 The original source index supplies clause spans and headings.
 
-`src/visible-context.ts` selects visible session content.
-It excludes thinking and provider signatures.
-`src/review-operation.ts` supplies the same shell projection for historical and proposed calls.
+`src/visible-context.ts` owns conversation windows and verdict attachment.
+`src/visible-message.ts` projects each supported message role and excludes thinking and provider signatures.
+Keeping role projection separate makes its data boundary independent of context selection.
+`src/review-operation.ts` parses complete current proposals strictly.
+Earlier activity uses its historical projection:
+incomplete or unsupported Bash becomes explicit unavailable syntax,
+without raw command source or established effects.
+An aborted assistant fragment is historical data,
+not a new executable proposal.
+Non-command options and visible result metadata remain complete;
+unrelated failures still propagate.
+
+The built `test:visible-context` catalog covers incomplete assistant calls,
+direct Bash activity and process start,
+list,
+stop,
+write and notification metadata.
+Its strict-current-command and unexpected-error controls prevent historical recovery from granting permission
+or hiding unrelated failures.
+Both new regression catalogs fail on the previous built projector.
 Startup relevance retains rules scoring at least `0.60` for potential permission relevance.
 That selection is independent of the action-approval cutoff.
 Changed or missing rules are refreshed through the incumbent cache owner.
