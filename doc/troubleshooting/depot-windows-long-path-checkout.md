@@ -24,7 +24,15 @@ The prior run did not probe its effective configuration,
 so an unset or false setting on those particular runners is not yet a measured fact.
 Do not generalize this checkout failure to Windows build or test compatibility.
 
-## Recovery under execution
+The [measured checkout paths](../audit/depot-native-checkout-paths-2026-10-18.evidence.json)
+explain why the rows differed without assuming different Git configuration:
+the same fixture path occupies 260 characters under Depot's long harness directory,
+247 under the GitHub ARM workspace,
+and 243 under Depot's shorter native harness directory.
+The longer Depot checkout fails;
+the other original checkouts succeed.
+
+## Verified recovery
 
 The recovery harness starts with a Node command before either checkout.
 It queries the effective `core.longpaths` value and origin,
@@ -39,8 +47,22 @@ The recovery adds only the bootstrap and changes the workflow name.
 Its historical source-case manifest hashes are unchanged.
 The first failed allocations remain part of the evaluation cost.
 
-The real recovery checkout and its consumer outcomes are pending.
-The configuration readback alone will not establish that checkout or the desktop consumers pass.
+The real recovery is complete in
+[run `39095647113`](https://github.com/Aquaticats/Monochromatic/actions/runs/39095647113).
+All matrix rows record an unset effective `core.longpaths` value before the bootstrap
+and `true` afterward.
+Both Depot desktop checkouts then succeed at the same 260-character fixture path.
+Their original nextest consumers each pass 1432 executed cases,
+with one additional summary skip.
+The native binary,
+PE inspection,
+Bash runtime and launch checks succeed.
+The original PowerShell file assertion remains failed;
+the independent merged-stream and uncaptured-console probes verify the actual version.
+The [consumer evidence](../audit/depot-native-consumers-and-variation-2026-10-18.evidence.json)
+keeps those outcomes separate.
+
+The unchanged full checkout and original consumers establish recovery beyond configuration readback.
 The declared `depot-windows-2025-4` label is retained.
 The original full checkout is retained as the positive control for the reported path failure.
 
@@ -50,7 +72,8 @@ Git's documented opt-in is not evidence of an upstream Git defect.
 The documentation also limits its claim to supported Git operations;
 other tools still need their own real consumer verification.
 No Windows registry or account setting is changed.
-No upstream issue is filed while the supported configuration is being exercised.
+The supported configuration and real consumers pass the checkout recovery boundary.
+There is no upstream Git defect to file from this evidence.
 
 [long-paths]: https://gitforwindows.org/git-cannot-create-a-file-or-directory-with-a-long-path
 [git-config]: https://git-scm.com/docs/git-config
