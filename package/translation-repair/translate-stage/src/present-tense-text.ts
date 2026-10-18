@@ -293,7 +293,13 @@ function maskSingleCurlyQuotations({ text, }: { readonly text: string; },): stri
      The opening mark of the pair this closing mark ends, none where no paired mark waits.
      */
     const opening = waiting.pop();
-    if ((opening !== undefined) && (text.charAt(opening,) === '‘') && (text.charAt(index,) === '’')) {
+    if (opening === undefined)
+      continue;
+    /**
+     Whether the pair opens with the opening curly mark and closes with the closing curly mark, the only pairs that are speech here.
+     */
+    const isCurlyPair = (text.charAt(opening,) === '‘') && (text.charAt(index,) === '’');
+    if (isCurlyPair) {
       spans.push({
         start: opening,
         end: index + 1,
