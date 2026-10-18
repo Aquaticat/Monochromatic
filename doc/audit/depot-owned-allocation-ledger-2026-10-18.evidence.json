@@ -20248,7 +20248,7 @@
     "unmeasuredInvoicesOrVmBilling": true,
     "doNotAddReservationsOrPriorCampaignProxies": true
   },
-  "recordedAt": "2026-10-18T14:48:21.195529+00:00",
+  "recordedAt": "2026-10-18T14:52:00.277178+00:00",
   "snapshot": {
     "initialInputCaptureAt": "2026-10-18T13:59:27.911853+00:00",
     "lastInputRefreshAt": "2026-10-18T14:47:19.720513+00:00",
@@ -21003,11 +21003,11 @@
   ],
   "sourceArchive": {
     "path": "doc/audit/depot-owned-allocation-ledger-2026-10-18.sources.json.gz",
-    "bytes": 8005387,
-    "sha256": "d711cec9f3d93740a5af22f0cf454cfbb39ff0197380cd2da70195bd120ece16",
-    "uncompressedBytes": 53850357,
-    "uncompressedSha256": "9990a7d5f64127f35190459458623fc08f251c1098eb3cddf73382e1da03208c",
-    "records": 410
+    "bytes": 8006342,
+    "sha256": "17ddab66fd96b7fc0b6267405b3cf13ffe669262a2909025265190263130b1fa",
+    "uncompressedBytes": 53857223,
+    "uncompressedSha256": "cc53e01cd9599571654b2f3efb8370f17ce1f6c82712b048ffeec0dde0138ad8",
+    "records": 411
   },
   "independentGuestReview": {
     "status": "passed_original_bytes_crc_member_source_command_and_payload_hash_joins",
@@ -21022,8 +21022,12 @@
     }
   },
   "privacyReview": {
-    "credentialPatternCandidateCount": 4,
-    "classification": "Four references to the same public Rust --cfg identifier matched depot_ prefix; no credential material. Exact owned metadata and immutable source bodies checked before publication.",
+    "credentialPatternCandidateCount": 81,
+    "classifiedCandidates": {
+      "publicRustCfg": 4,
+      "publicWorkflowFilename": 77
+    },
+    "classification": "Public Rust cfg identifiers and normalized immutable workflow filenames; no credential material. Original bodies checked before publication.",
     "accountWideQueries": false
   },
   "pendingDeclaredAdmissions": [
@@ -21048,5 +21052,18 @@
       "addedToObservedCompute": false
     }
   ],
-  "sourceIdentityPolicy": "GitHub apiHeadSha is separate from actual executionSha. Retained PR consumer observations supply six actual merge checkouts and their immutable workflow lookups; other GitHub checkout SHA stays null rather than being inferred from Actions head_sha."
+  "sourceIdentityPolicy": "GitHub apiHeadSha is separate from actual executionSha. Retained PR consumer observations supply six actual merge checkouts and their immutable workflow lookups; other GitHub checkout SHA stays null rather than being inferred from Actions head_sha.",
+  "verification": {
+    "rows": 223,
+    "originalSourceRecords": 411,
+    "sourcePointerJoins": 1118,
+    "actualPrCheckoutJoins": 6,
+    "pricedObservedIntervals": 195,
+    "knownNominalUsd": "6.1999959",
+    "buildkitExactProxy": "67323/125000",
+    "allChecksPassed": true,
+    "sourceArchiveSha256": "17ddab66fd96b7fc0b6267405b3cf13ffe669262a2909025265190263130b1fa",
+    "method": "Original-byte SHA256/length checks, JSON pointer joins, exact Decimal/Fraction recomputation, immutable workflow resource/timeout joins and bounded credential-pattern classification",
+    "coordinatorIndependentArithmeticReview": "Still separate; normalizer verification does not replace it"
+  }
 }
