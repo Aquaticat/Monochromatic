@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-18T15:15:20.914Z",
+  "updatedAt": "2026-10-18T15:31:20.562Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research reopened; no readiness claim",
   "sourceArchive": {
@@ -16005,18 +16005,20 @@
     "nativeBuildkitJobAuthentication": {
       "note": "doc/planning/depot-native-buildkit-auth-research.md",
       "evidence": "doc/audit/depot-native-buildkit-job-auth-2026-10-18.evidence.json",
-      "status": "First native request failed on known exporter fixture defect after authorized builder connection; one single-export replacement admitted but not allocated",
-      "firstRun": "dzsf27t0xx",
-      "firstBuild": "j9r23brwtx",
-      "recoveryHarness": "ddf656ea992952559a975e8693668b2005583499",
-      "cumulativeFullWindowReservationUsd": 0.46,
+      "status": "Actual injected-token local build and frozen file consumer passed; separately bounded org-hosted project-registry consumer admitted but not allocated",
+      "failedRun": "dzsf27t0xx",
+      "failedBuild": "j9r23brwtx",
+      "passedLocalRun": "pxx75mxnw2",
+      "passedLocalBuild": "xwq746tv4z",
+      "registryHarness": "f0865228da0123433face17054ca7f7f62538c9b",
+      "cumulativeFullWindowReservationUsd": 0.69,
       "sourceArchive": {
         "path": "doc/audit/depot-native-buildkit-job-auth-2026-10-18.sources.json.gz",
-        "bytes": 46904,
-        "sha256": "47325a6b4413d482e1498f86cd374009bb617b9863cc058ad67dbdeca2ee75bb",
-        "uncompressedBytes": 247469,
-        "originalZips": 1,
-        "recoveryFixtureFiles": 10
+        "bytes": 83447,
+        "sha256": "23b34c6e85ff3262b12af64721ca383b9f19211dd5a7b1a23997f6248a7cc741",
+        "uncompressedBytes": 435556,
+        "originalZips": 2,
+        "registryFixtureFiles": 10
       }
     }
   },
