@@ -575,6 +575,25 @@ before saying it matches, QAB):
   repo cache was at 10.28 GB; a real `cache-prune` run (`39109951532`) deleted four superseded entries (2.33 GB), now
   7.95 GB.
 
+- 2026-10-18, license polish after 0.1.6, branch `fix/music-player-license-polish`, worktree `music-player-licpolish`; not
+  merged to `main`, no version bump. Three commits: the Slint attribution badge (`#MadeWithSlint`, the
+  `MadeWithSlint-logo-whitebg.png` file the license links, image URL pinned to Slint commit `7577a165d1`, linked to
+  slint.dev) is the first element of the release notes template in `music-player-release.yml`, so the release page
+  meets section 2(b) as well as the in-app widget (2(a)); the same notes no longer say Android has no screen for the
+  notices; the Android Licenses row draws Material Symbols `license` like the desktop row (was `description`); D132 in
+  `design/decisions.md` records the About group and Licenses row on both platforms (the human's no-mockup decision).
+  Badge facts, licence of the badge file (CC-BY-ND-4.0, linked and not copied) and the render checks are in
+  `doc/decision/music-player-third-party-licenses.md` section "The badge on the release page". Verified on the branch
+  after merging `main` (the merge changed nothing under `package` or `.github`): actionlint 1.7.12 clean, pandoc and
+  `gh api markdown` render the badge as an image link, release dry run `39110239882` green (all jobs; its log's
+  "Write the release notes" step prints the badge line), desktop `lint:slint`, nextest 1546 passed and 1 skipped,
+  clippy, Android detekt, 1361 unit tests with 0 failures in 132 result files, `lintDebug`. Not done: the new icon was
+  not seen in the app on the emulator (three launches of the owned AVD copy: gfxstream SIGSEGV, SIGABRT, then a boot
+  that never opened its console port; stopped at the two-relaunch limit); the committed path data was rendered
+  instead and equals the upstream `license_24px.svg` path. Open for the human (veto): whether the badge placement at
+  the top of the notes is wanted, and the Android icon change. The dry run's caches (gradle 654 MB, notices 128 MB)
+  were deleted.
+
 - 2026-10-17, review issues 1451 to 1458, 1460 and 1463 (assigned to (g) in the GitHub issues item), branch
   `fix/music-player-desktop-review-issues`, worktree `music-player-deskissues`; not merged to `main`, no version bump.
   All ten were real and are fixed, each commit closing its own issue: the session file is saved by temporary file,
