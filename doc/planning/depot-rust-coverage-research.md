@@ -63,7 +63,7 @@ the original adapter attribution is preserved with the correction.
 
 The executable research head is `ae56107178` on `research/depot-reuse-20261018`.
 Actual immutable execution SHAs are retained per run.
-The main checkout contains only this lane's documentation and evidence.
+This lane's main-checkout changes are documentation and evidence only.
 No prepared image tag,
 account setting or subscription was changed by the final consumers.
 
@@ -871,3 +871,15 @@ No owned job or reservation remains active.
 The final executable adapter syntax check passed all admitted Rust research bins.
 The YAML check rejected the committed malformed positive control
 and accepted every admitted Rust workflow.
+
+## Next delegated review
+
+The coordinator queued an independent read-only evidence review after this Rust publication.
+The review covers the job-policy/history,
+process-timeout and MVM/KVM audit bundles dated 2026-10-18,
+the combined-product pricing calculation and the root expanded-CI report outside this lane.
+It requires independent ZIP decoding,
+CRC/hash/outcome joins,
+credential inspection,
+current allowance sources and one committed review note.
+No new cloud allocation is admitted for that review.
