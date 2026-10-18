@@ -119,6 +119,49 @@ and cancellation cases.
 The full-session heap failure remains under investigation;
 these measurements establish callback sharing rather than complete-session capacity.
 
+## Native cancellation controls
+
+`native/contract/collector/run-prompt-custody-v3/event-controls.ts`
+owns the declared top-level `signal` field on input and after snapshots of
+`session_before_tree` and `session_before_compact`.
+The ordinary copier remains strict for messages,
+tool metadata,
+nested controls,
+extension outputs and every other event kind.
+
+A projection factory belongs to one original emission.
+Its weak map represents handle continuity as
+`{nativeControl: 'cancellation-signal', reference}`:
+the same handle reuses its reference after replacement and restoration.
+This marker records identity within the emission;
+it provides no instruction or permission authority.
+Original callbacks still receive the original event and live signal.
+
+The projection reads own descriptors,
+preserves all unrelated fields and never invokes a signal accessor.
+It does not read `aborted`,
+`reason`,
+listeners or internal symbols.
+Exact prototype compatibility limits this representation to the declared platform-control shape;
+it does not authenticate construction.
+Compatible lookalikes remain authority-free references.
+The Node v26.12.0 probe accepts a copied prototype and copied internal descriptors through its intrinsic getter,
+so that getter cannot supply the proposed authentication proof.
+The measured behavior and rejected design are retained in
+the repository's [Pi SDK troubleshooting record](../../../../doc/troubleshooting/pi-sdk-staging.md).
+
+`test:native:event-controls` exercises the original runner and retained manager receipt,
+including replacement,
+restoration,
+pre-aborted signals,
+accessors,
+proxies,
+ordinary signal values and the strict boundaries.
+Private source-copy rebuilds remove each scope,
+identity,
+field-preservation,
+proxy or opacity guard and make the maintained consumer fail.
+
 ## Source-binding ownership
 
 Every original message source has a distinct frozen plain view bound to its request and source occurrence.
