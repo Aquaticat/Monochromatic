@@ -23,10 +23,27 @@ Root `TCV` stays unchanged; missed-boundary guidance belongs in package-local do
 There is no adopted 13k line target.
 
 The active output is `native-release-XGbh0H`, verified through `dist/native` on 2026-10-18.
-Its complete configured-host replays and affected verification matrix are running.
+Its affected verification matrix passes.
+The faithful configured-host replay completes all 52 original calls,
+including both reported failures,
+with no selectors and host exit 0.
+All 62 actual Luna requests pass the structured-payload audit.
+The driver initially rejects successful inspection output containing the diagnostic phrase;
+the corrected saved-event audit detects both original real failures and excludes that successful read.
+Its evidence is `pi-mimo-failure-rpc-WHbepQ/terminal-audit.json` in private agent scratch.
+The fragmented-stream replay `pi-mimo-failure-rpc-2nQOZg` still exits 134 after 56 live assessments.
+Current full Oxlint inventory is 13,834 warnings and 83 errors across 818 files;
+the new retirement fixture's six errors are fixed.
+Independent current fragmented probes profile retained allocations and replace only private log append completion.
+Their fixtures are `pi-mimo-failure-rpc-3umw1N` and `pi-mimo-failure-rpc-ekAFp9` respectively.
+Both remain bounded to two CPUs and 2 GiB and preserve every original callback and log record.
 Earlier outputs still exit 134 from Node heap exhaustion;
 the private retirement-only replay instead reaches its 600-second driver limit after 58 live assessments.
-The immediate work is final consumer verification of the retained-input ownership repairs.
+The immediate work is diagnosing the remaining fragmented-stream retention,
+then complete consumer verification,
+artifact cleanup and measurement,
+durable package documentation,
+and the corrected MiMo handoff.
 Private experiments are not production repairs.
 
 ### Incident and completed repairs
