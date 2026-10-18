@@ -203,7 +203,24 @@ Running `cargo` from any toolchain path that has no rule yet (a fresh `rustup up
 shows a pop-up, and an unanswered one mints another permanent `reject` rule, so such first runs belong to a person
 at the screen.
 
-### Host change (user action, not applied here)
+### Host change (applied on 2026-10-18)
+
+The owner asked for it and the coordinating session applied it with `sudo`:
+
+- `/etc/opensnitchd/rules/000-allow-cargo.json` was added (mode 0600, owner root).
+  It is a `regexp` rule on `process.path` with `precedence` and action `allow`, matching
+  `^/var/(home/user/\.rustup|mnt/encrypted/temp/agent/.+)/toolchains/[^/]+/bin/cargo$`:
+  the `cargo` of any rustup toolchain in the home directory or in a scratch rustup home of an agent session.
+- Test with the old reject rule still in place: `cargo +nightly-2026-10-18 fetch` in a scratch crate with a fresh
+  scratch `CARGO_HOME` downloaded `itoa v1.0.11`, so `precedence` does win over a `reject-*` file.
+- The six `reject-always-simple-...-bin-cargo.json` rules for the toolchains `nightly-2026-09-16`, `-10-13`, `-10-15`,
+  `-10-17`, `-10-18` and `stable` were moved to `/etc/opensnitchd/rules.removed-2026-10-18/` (a backup, not a deletion).
+  The same fetch worked again afterwards and `opensnitch.service` stayed active.
+- Left alone: the `reject` rules for `rustup` (`/var/home/user/.cargo/bin/rustup`) and `cargo-semver-checks`.
+- Not changed: the pop-up preference below, so a program path outside every rule still gets a permanent reject
+  after 30 unanswered seconds.
+
+The original recommendation follows for the record.
 
 Delete or disable the three reject rules of installed toolchains in the OpenSnitch user interface (Rules tab), or remove
 the files as `root`:
@@ -222,8 +239,8 @@ daemon walks rules in name order and selects the first matching `reject` or `den
 so a `000-` rule with `precedence` is selected before the later `reject-*` files.
 
 Then add one rule so that future toolchains stop repeating this.
-A draft of `/etc/opensnitchd/rules/000-allow-rustup-toolchain-cargo.json` (rule syntax from the wiki's `Rules.md` and
-`Rules-examples.md`; untested here because adding it changes the host):
+The first draft of the rule, `000-allow-rustup-toolchain-cargo.json` (rule syntax from the wiki's `Rules.md` and
+`Rules-examples.md`); the rule that was installed is the one named above, with the wider path pattern:
 
 ```json
 {
