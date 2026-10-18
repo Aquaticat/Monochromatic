@@ -607,7 +607,14 @@ so `music-player.exe --version > file.txt` leaves an empty file there;
 use `music-player.exe --version | Out-File file.txt`, `| Out-String`,
 or `Start-Process -Wait -NoNewWindow -RedirectStandardOutput file.txt music-player.exe --version`.
 Started by a double-click, the program has no console,
-so its log lines and startup error messages are not shown anywhere.
+so its log lines are not shown anywhere.
+When such a start fails (the program cannot open its connection to the desktop,
+cannot create its window, its window stops working, or it hits an internal error),
+a Windows message box names the step that failed, what Windows reported, and what you can do.
+Started from a terminal, the program prints the same text there instead and shows no box
+(after an internal error it prints the standard panic message).
+Log lines are colored only on a console that shows the colors;
+redirected to a file or a pipe, they are plain text.
 The program takes one optional folder or file to open: `music-player.exe C:\Music`.
 
 ### macOS

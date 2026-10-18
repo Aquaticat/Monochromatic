@@ -950,6 +950,20 @@ run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs clause-deny-stop",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs clause-deny-headless",
 ]
+[tasks."test:native:decision-fallback:case"]
+description = "Exercise one actual native decision fallback mode"
+usage = 'arg "<mode>" help="Native decision fallback fixture mode"'
+run = 'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs "$usage_mode"'
+
+[tasks."test:native:retained-context-capacity"]
+description = "Retain separate authenticated inputs whose aggregate exceeds the engine string limit"
+# The regression reaches the engine string limit before the disposable container's 2 GiB memory limit.
+run = "node --max-old-space-size=1536 --expose-gc --import ./dist/native/loader.mjs src/native-retained-context-capacity.test.mjs"
+
+[tasks."test:native:event-sharing"]
+description = "Keep complete native callback receipts while sharing repeated event values"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-event-sharing.test.mjs"
+
 [tasks."test:native:phases"]
 description = "Verify real native phases and complete lifecycle stderr"
 run = "node --max-old-space-size=512 src/native-phase.unit.test.ts"

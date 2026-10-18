@@ -320,19 +320,53 @@ impl fmt::Display for PlayerError {
 }
 
 /// What:
-///      `impl std::error::Error for PlayerError {}` marks the type as a STANDARD
-///           error.
-///  The empty `{}` body accepts every default method (no custom
-///           `source()` / cause chain).
+///      `impl std::error::Error for PlayerError { fn source(..) }` marks the type as a STANDARD
+///           error and overrides `source()`, the cause-chain hook, to hand back the wrapped error of
+///           the `Io`, `Decode` and `Opus` variants. `Unsupported` and `Audio` hold only a message,
+///           so their `source()` is `None`.
 /// Why:
 ///       Lets `PlayerError` interoperate with `anyhow::Error` and `?` in callers
-///           that want a generic error.
+///           that want a generic error, and lets a chain walker (the `anyhow` startup report, a log
+///           of `Error::source` links) reach the wrapped `std::io::Error`, symphonia error or opus
+///           error instead of only the flattened `Display` line.
+/// Gotcha:
+///    `Display` for the three wrapper variants also prints the wrapped error, so a chain printed
+///           in full shows that text twice: once inside the `PlayerError` line, once as its cause.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// class PlayerError extends Error {}
+/// class PlayerError extends Error { cause?: Error }
 /// ```
-impl std::error::Error for PlayerError {}
+impl std::error::Error for PlayerError {
+    /// What:
+    ///      `fn source(&self) -> Option<&(dyn std::error::Error + 'static)>` borrows the wrapped
+    ///           error as a trait object; `'static` because the wrapped types own all their data.
+    /// Why:
+    ///       The default returns `None`, which cuts the chain at `PlayerError`.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// get cause(): Error | undefined { return this.kind === "io" ? this.inner : undefined; }
+    /// ```
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        // What:     `match self { ... }` over the five variants. The three wrapper variants bind the
+        //           inner error `e` and return `Some(e)`; the two message variants return `None`.
+        //           Every variant is listed, with no `_` arm, so a new variant fails to compile here
+        //           until its cause is decided.
+        // Why:      Forward exactly the causes the variants hold.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // switch (this.kind) { case "io": case "decode": case "opus": return this.cause; default: return undefined; }
+        // ```
+        return match self {
+            PlayerError::Io(e) => Some(e),
+            PlayerError::Decode(e) => Some(e),
+            PlayerError::Opus(e) => Some(e),
+            PlayerError::Unsupported(_) | PlayerError::Audio(_) => None,
+        };
+    }
+}
 
 /// What:
 ///      `impl From<std::io::Error> for PlayerError { ... }` defines how to CONVERT
@@ -441,3 +475,8 @@ impl From<opus::Error> for PlayerError {
         return PlayerError::Opus(e)
     }
 }
+
+/// Cause-chain tests for `PlayerError`.
+#[cfg(test)]
+#[path = "error_tests.rs"]
+mod tests;

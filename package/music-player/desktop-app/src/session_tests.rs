@@ -216,3 +216,119 @@ fn the_real_entry_points_read_and_write_the_session_file_of_the_config_home() {
     Session::save_auto_play_on_select(false).expect("turning the setting off saves");
     assert!(!Session::load_auto_play_on_select(), "and it loads back off");
 }
+
+/// What: `LogSink` is a writer that appends to a shared buffer, so a test can read what the log wrote.
+/// Why: the load failures are only reported through the log, so the test needs the log's own text.
+struct LogSink(std::sync::Arc<std::sync::Mutex<Vec<u8>>>);
+
+impl std::io::Write for LogSink {
+    fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+        self.0.lock().expect("the log buffer lock is not poisoned").extend_from_slice(bytes);
+        return Ok(bytes.len());
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        return Ok(());
+    }
+}
+
+/// What: `logged_by` runs `action` with a log subscriber that records every level, and returns the log text with
+/// `action`'s result.
+/// Why: the subscriber is installed for this thread only, and `load_at` runs on the calling thread.
+fn logged_by<T>(action: impl FnOnce() -> T) -> (T, String) {
+    let buffer = std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
+    let writer = std::sync::Arc::clone(&buffer);
+    let subscriber = tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::TRACE)
+        .with_ansi(false)
+        .with_writer(move || return LogSink(std::sync::Arc::clone(&writer)))
+        .finish();
+    let result = tracing::subscriber::with_default(subscriber, action);
+    let text = String::from_utf8(buffer.lock().expect("the log buffer lock is not poisoned").clone())
+        .expect("the log is UTF-8");
+    return (result, text);
+}
+
+/// A truncated file, the shape an interrupted in-place write leaves, loads as defaults and is reported with the parse
+/// error and the path.
+#[test]
+fn a_truncated_session_file_loads_as_defaults_and_is_logged_with_its_path() {
+    let path = scratch_file("truncated");
+    std::fs::write(&path, r#"{"source_root":"/music","volume":0."#).expect("the truncated file is written");
+    let (loaded, log) = logged_by(|| return Session::load_at(&path));
+    assert_eq!(loaded, Session::default());
+    assert!(log.contains("WARN"), "a warning is logged: {log}");
+    assert!(log.contains("EOF while parsing"), "the parse error is in the log: {log}");
+    assert!(log.contains("session.json"), "the path is in the log: {log}");
+}
+
+/// A session path that cannot be read as a file loads as defaults and is reported with the read error.
+#[test]
+fn an_unreadable_session_path_loads_as_defaults_and_is_logged_with_the_read_error() {
+    let path = scratch_file("unreadable");
+    std::fs::create_dir(&path).expect("a directory stands where the file would be");
+    let (loaded, log) = logged_by(|| return Session::load_at(&path));
+    assert_eq!(loaded, Session::default());
+    assert!(log.contains("WARN"), "a warning is logged: {log}");
+    assert!(log.contains("IsADirectory") || log.contains("directory"), "the read error is in the log: {log}");
+}
+
+/// A missing file is a first run, which is expected and stays quiet.
+#[test]
+fn a_missing_session_file_loads_as_defaults_without_a_warning() {
+    let path = scratch_file("missing");
+    let (loaded, log) = logged_by(|| return Session::load_at(&path));
+    assert_eq!(loaded, Session::default());
+    assert!(!log.contains("WARN"), "a first run logs no warning: {log}");
+}
+
+/// A save puts a complete new file in place of the old one, so an interrupted save leaves the old file whole. The
+/// inode changes because the new bytes arrive in a different file that is renamed over the old one; an in-place
+/// write keeps the inode.
+#[cfg(target_os = "linux")]
+#[test]
+fn a_save_replaces_the_session_file_by_rename_and_leaves_no_temporary_file() {
+    use std::os::unix::fs::MetadataExt;
+    let path = scratch_file("atomic");
+    Session::default().save_at(&path).expect("the first save writes the file");
+    let before = std::fs::metadata(&path).expect("the file exists").ino();
+    let second = Session { position_secs: 7.5, ..Session::default() };
+    second.save_at(&path).expect("the second save replaces the file");
+    let after = std::fs::metadata(&path).expect("the file exists").ino();
+    assert_ne!(before, after, "the second save wrote a new file and renamed it over the old one");
+    assert_eq!(Session::load_at(&path), second, "the replaced file is the complete second session");
+    let names: Vec<_> = std::fs::read_dir(path.parent().expect("the file has a directory"))
+        .expect("the directory lists")
+        .map(|entry| return entry.expect("an entry reads").file_name())
+        .collect();
+    assert_eq!(names, vec![std::ffi::OsString::from("session.json")], "no temporary file is left behind");
+}
+
+/// A temporary file left by an earlier interrupted save is replaced, not trusted, by the next save.
+#[test]
+fn a_stale_temporary_file_from_an_interrupted_save_does_not_block_the_next_save() {
+    let path = scratch_file("stale_temporary");
+    let directory = path.parent().expect("the file has a directory");
+    std::fs::write(directory.join("session.json.tmp"), "{\"half\":").expect("the stale temporary file is written");
+    let session = Session { volume: 0.25, ..Session::default() };
+    session.save_at(&path).expect("the save replaces the stale temporary file");
+    assert_eq!(Session::load_at(&path), session);
+    assert!(!directory.join("session.json.tmp").exists(), "the temporary file was renamed away");
+}
+
+/// A save that cannot finish leaves the previous complete file in place.
+#[cfg(target_os = "linux")]
+#[test]
+fn a_save_that_fails_leaves_the_previous_file_whole() {
+    let path = scratch_file("failed_save");
+    let first = Session { position_secs: 3.0, ..Session::default() };
+    first.save_at(&path).expect("the first save writes the file");
+    // A directory where the temporary file would go makes the write step fail before the rename.
+    let directory = path.parent().expect("the file has a directory");
+    std::fs::create_dir(directory.join("session.json.tmp")).expect("a directory blocks the temporary file");
+    let error = Session { position_secs: 9.0, ..Session::default() }
+        .save_at(&path)
+        .expect_err("the save cannot create its temporary file");
+    assert!(!error.to_string().is_empty());
+    assert_eq!(Session::load_at(&path), first, "the previous session is still the complete file");
+}

@@ -503,6 +503,28 @@ pub mod console_attach;
 pub mod console_attach_win32;
 
 /// What:
+///      `pub mod console_color;` whether the Windows build writes ANSI colors on stdout and stderr (`src/console_color.rs`).
+/// Why:
+///       A Windows console without VT processing shows escape sequences as text and a file keeps them, so the logger and
+///           clap write colors only to a console that interprets them; the decisions are pure and tested on every host.
+pub mod console_color;
+
+/// What:
+///      `pub mod startup_failure;` the text and the decisions of the startup failure report (`src/startup_failure.rs`).
+/// Why:
+///       A double-click start on Windows has no console, so a failed start shows its text in a message box; the text
+///           and the decisions are pure and tested on every host.
+pub mod startup_failure;
+
+/// What:
+///      `#[cfg(windows)] pub mod startup_failure_win32;` the message box and the panic hook of the startup failure report
+///           (`src/startup_failure_win32.rs`).
+/// Why:
+///       `MessageBoxW` exists on Windows only, so the module is gated out of the Linux and macOS builds.
+#[cfg(windows)]
+pub mod startup_failure_win32;
+
+/// What:
 ///      `pub mod template_model;` the supporting-text template vocabulary (`src/template_model.rs`):
 ///  fields,
 ///  the two templates and their defaults,

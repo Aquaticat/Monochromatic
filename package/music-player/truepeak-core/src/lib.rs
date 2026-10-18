@@ -28,10 +28,12 @@
 //! [`TruePeakSource`] and drive the policy;
 //!  the measurement and gain rules live here.
 //!
-//! The classifier,
-//!  the Turso cache I/O,
-//!  and the warming engine described in the plan
-//! land in later stages on top of this foundation.
+//! The probe resolver,
+//!  the track fingerprint (feature `fingerprint`),
+//!  and the Turso decision cache (feature `service`)
+//! sit on top of that foundation.
+//!  There is no classifier:
+//!  the shipped policy is classifier-free.
 
 /// The shared Catmull-Rom true-peak meter and its whole-buffer helper.
 mod meter;
@@ -135,7 +137,7 @@ pub use crate::fingerprint::{FINGERPRINT_DOMAIN_TAG, track_fingerprint};
 /// Re-exports the decision cache and its error,
 ///  behind the `service` feature.
 #[cfg(feature = "service")]
-pub use crate::cache::{CacheError, DecisionCache};
+pub use crate::cache::{CacheError, DecisionCache, WRITE_BATCH_LIMIT};
 
 /// Re-exports the cache-aware resolve,
 ///  behind the `service` feature.

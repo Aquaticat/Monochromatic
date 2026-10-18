@@ -320,3 +320,31 @@ fn the_scratch_guard_removes_the_probe_directory() {
     assert!(!scratch.exists());
     remove(&root);
 }
+
+/// A probe that fails before or after Git ran leaves no scratch directory: the captures name unpublished refs.
+#[test]
+fn a_failed_probe_removes_its_scratch_directory() {
+    let root = fixture("mp-scratch-failure");
+    let (repo, _origin, _base) = repository_with_origin("mp-scratch-failure-repo");
+    // Git cannot start.
+    let missing = PushGit {
+        real_git: PathBuf::from("/nonexistent/git"),
+        cwd: repo.clone(),
+        environment: fixture_environment(),
+    };
+    let not_started = root.join("not-started");
+    assert!(capture_probed_updates(&missing, &[], &[], &not_started).is_err());
+    assert!(!not_started.exists(), "the scratch directory of a probe that could not start remains");
+    // Git runs, and the hook captures nothing because the remote cannot be reached.
+    let nothing_captured = root.join("nothing-captured");
+    let unreachable = post(&["/nonexistent-remote-for-the-probe", "main"]);
+    assert!(capture_probed_updates(&git_for(&repo), &[], &unreachable, &nothing_captured).is_err());
+    assert!(!nothing_captured.exists(), "the scratch directory of a probe with no capture remains");
+    // A scratch path that exists already is not adopted and not removed.
+    let present = root.join("present");
+    std::fs::create_dir_all(&present).expect("present");
+    assert!(capture_probed_updates(&git_for(&repo), &[], &[], &present).is_err());
+    assert!(present.exists(), "a directory the probe did not create was removed");
+    remove(repo.parent().expect("root"));
+    remove(&root);
+}

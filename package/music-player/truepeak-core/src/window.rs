@@ -10,6 +10,10 @@
 //! window covers the ending:
 //!  a placement that misses the final start can under-read a
 //! track that peaks near its end.
+//!  A single window therefore sits at the final legal start,
+//!  not at frame 0:
+//!  with one window there is no spacing,
+//!  and the ending is the part the contract protects.
 //!  Each window is measured with its own meter so the
 //! discontinuity between two non-adjacent windows cannot fabricate an inter-sample
 //! spike at the seam.
@@ -71,7 +75,8 @@ pub fn window_frames(window_seconds: f64, rate: u32) -> u64 {
 ///      `pub fn window_frame_starts(total_frames: u64, window_count: usize,
 ///           window_frames: u64) -> Vec<u64>`.
 ///  The start frame of each probe window,
-///           evenly spaced from 0 to the final legal start.
+///           evenly spaced from 0 to the final legal start;
+///  a single window sits at the final legal start.
 ///  `Vec<u64>` (sibling
 ///           `[u64; N]` would need a const N;
 ///  `&[u64]` cannot own) returns one start
@@ -108,16 +113,18 @@ pub fn window_frame_starts(total_frames: u64, window_count: usize, window_frames
     // const lastStart = Math.max(0, totalFrames - windowFrames);
     // ```
     let last_start = total_frames.saturating_sub(window_frames);
-    // What:     `if window_count == 1 { return vec![0]; }`. `vec![0]` builds a
-    //           one-element owned vector holding frame 0.
-    // Why:      A single window has no spacing to compute; it starts at the beginning.
+    // What:     `if window_count == 1 { return vec![last_start]; }`. `vec![last_start]` builds a
+    //           one-element owned vector holding the final legal start.
+    // Why:      A single window has no spacing to compute, and the contract is that the last window
+    //           covers the ending: a window at frame 0 would under-read a track that peaks near its
+    //           end. For a track no longer than a window `last_start` is 0, so the start is unchanged.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // if (windowCount === 1) return [0];
+    // if (windowCount === 1) return [lastStart];
     // ```
     if window_count == 1 {
-        return vec![0];
+        return vec![last_start];
     }
     // What:     `let divisor = (window_count - 1) as f64;`. The number of gaps between
     //           windows, widened to `f64` for the fractional placement below.

@@ -72,6 +72,7 @@ fn search_row(row: &SearchRowView) -> SearchRow {
         has_parent: row.has_parent,
         current: row.current,
         playing: row.playing,
+        spoken: row.spoken.as_str().into(),
         index: row.index,
     };
 }

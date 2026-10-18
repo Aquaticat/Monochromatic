@@ -111,6 +111,20 @@ use tokio::sync::oneshot;
 use truepeak_core::{CacheIdentity, Decision, DecisionCache};
 
 /// What:
+///      `use truepeak_core::WRITE_BATCH_LIMIT;`.
+///  The largest number of queued writes the actor stores in one transaction,
+///  a `usize` constant from the shared crate.
+/// Why:
+///       Both platforms' actors drain their write queue up to the same bound,
+///  so a read waits behind at most one batch.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { WRITE_BATCH_LIMIT } from "truepeak-core";
+/// ```
+use truepeak_core::WRITE_BATCH_LIMIT;
+
+/// What:
 ///      `pub(super) enum Read { Get { .. }, Known { .. } }`.
 ///  The two read requests the
 ///           actor answers:
@@ -347,18 +361,26 @@ async fn run(
     // What:     The serve loop. `biased;` polls the read arm first every iteration; a
     //           refutable `Some(..)` pattern disables a closed channel's arm, and
     //           `else => break` fires once BOTH are closed (all senders dropped).
+    //           A received write also takes every write already queued behind it (up to
+    //           `WRITE_BATCH_LIMIT`, see `drain_writes`) and stores them in one transaction;
+    //           `&mut write_rx` lends the receiver so the drain can pull from it.
     // Why:      Reads win over a write backlog; the actor shuts down cleanly when the last
-    //           handle is gone.
+    //           handle is gone. One commit per batch instead of one per row is what keeps a
+    //           cold sweep from paying one disk flush per track (see
+    //           doc/decision/music-player-analysis-cache-commits.md). Every write the actor has
+    //           taken is committed before it serves the next read, as before.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // while (true) { select reads-first; on both-closed break; }
+    // while (true) { select reads-first; on a write: writeBatch(drainWrites(first, writeRx)); on both-closed break; }
     // ```
     loop {
         tokio::select! {
             biased;
             Some(request) = read_rx.recv() => serve_read(cache.as_ref(), identity, request).await,
-            Some(request) = write_rx.recv() => write(cache.as_ref(), identity, request).await,
+            Some(request) = write_rx.recv() => {
+                write_batch(cache.as_ref(), identity, drain_writes(request, &mut write_rx)).await;
+            }
             else => break,
         }
     }
@@ -554,29 +576,92 @@ async fn known(cache: Option<&DecisionCache>, identity: CacheIdentity) -> HashSe
 }
 
 /// What:
-///      `async fn put(cache: Option<&DecisionCache>, identity: CacheIdentity, request:
-///           Upsert)`.
-///  Store or upgrade one decision;
-///  no-op when degraded.
+///      `pub(super) fn drain_writes(first: Write, write_rx: &mut UnboundedReceiver<Write>) -> Vec<Upsert>`.
+///  Start a batch with the write just received,
+///  then take every write already waiting in the queue,
+///  up to `WRITE_BATCH_LIMIT` in total.
+///  `&mut` lends the receiver so this function can pull from it without owning it.
+///  `Vec<Upsert>` is an owned growable list (siblings:
+///  `&[Upsert]`,
+///  a borrowed view,
+///  and `[Upsert; N]`,
+///  a fixed-length array).
 /// Why:
-///       Serves `Upsert`;
-///  the shared cache's `WHERE` keeps an exact decision from being
-///           downgraded,
-///  and one bad write must not stall the sweep.
+///       The batch is whatever piled up while the previous commit ran:
+///  one row for a single refresh,
+///  hundreds during a cold sweep.
+///  Nothing waits for more writes to arrive,
+///  so a lone write is stored as soon as before.
+///  It returns an owned `Vec` (not a slice) because the batch outlives the queue items it was built from,
+///  and the count is not known in advance (not a fixed array).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// async function put(cache, identity, request) { ... }
+/// function drainWrites(first: Write, writeRx: Queue<Write>): Upsert[] { ... }
 /// ```
-async fn write(cache: Option<&DecisionCache>, identity: CacheIdentity, request: Write) {
-    match request {
-        Write::Put(upsert) => return put(cache, identity, upsert).await,
+pub(super) fn drain_writes(first: Write, write_rx: &mut UnboundedReceiver<Write>) -> Vec<Upsert> {
+    // What:     `let mut batch: Vec<Upsert> = Vec::new();`. An empty owned list that this function grows.
+    //           `mut` allows the pushes below.
+    // Why:      Collect the upserts in arrival order.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const batch: Upsert[] = [];
+    // ```
+    let mut batch: Vec<Upsert> = Vec::new();
+    // What:     `match first { Write::Put(upsert) => batch.push(upsert) }`. Unwrap the one kind of write and append it.
+    // Why:      The received write is the first row of the batch.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (first.kind === "put") batch.push(first.upsert);
+    // ```
+    match first {
+        Write::Put(upsert) => batch.push(upsert),
     }
+    // What:     Loop while the batch is under the limit; `write_rx.try_recv()` takes a queued write without
+    //           waiting, returning `Ok(write)` or `Err(..)` when the queue is empty or closed.
+    // Why:      Only writes that are already waiting join the batch; an empty queue ends it at once.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // while (batch.length < WRITE_BATCH_LIMIT) { const next = writeRx.tryShift(); if (next === undefined) break; batch.push(next.upsert); }
+    // ```
+    while batch.len() < WRITE_BATCH_LIMIT {
+        match write_rx.try_recv() {
+            Ok(Write::Put(upsert)) => batch.push(upsert),
+            Err(_) => break,
+        }
+    }
+    // A batch of more than one row means a backlog formed; record its size.
+    tracing::trace!(rows = batch.len(), "write batch drained");
+    // What:     `return batch`. Hand the owned list to the caller.
+    // Why:      The caller stores it in one transaction.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return batch;
+    // ```
+    return batch
 }
 
-async fn put(cache: Option<&DecisionCache>, identity: CacheIdentity, request: Upsert) {
+/// What:
+///      `async fn write_batch(cache: Option<&DecisionCache>, identity: CacheIdentity, batch: Vec<Upsert>)`.
+///  Store or upgrade every decision of the batch in one transaction;
+///  no-op when degraded.
+/// Why:
+///       Serves the write channel;
+///  the shared cache's `WHERE` keeps an exact decision from being downgraded,
+///  `put_batch` retries row by row when the transaction fails,
+///  and a failed row is logged and dropped so it never stalls the sweep.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// async function writeBatch(cache, identity, batch) { ... }
+/// ```
+async fn write_batch(cache: Option<&DecisionCache>, identity: CacheIdentity, batch: Vec<Upsert>) {
     // What:     `let Some(decision_cache) = cache else { return; };`. Degraded run drops the
-    //           write. The present reference gets its own name so it never shadows the
+    //           writes. The present reference gets its own name so it never shadows the
     //           `Option` parameter.
     // Why:      Nothing to persist to.
     //
@@ -585,17 +670,44 @@ async fn put(cache: Option<&DecisionCache>, identity: CacheIdentity, request: Up
     // if (!cache) return;
     // ```
     let Some(decision_cache) = cache else {
+        tracing::debug!(rows = batch.len(), "degraded cache; write batch dropped");
         return;
     };
-    // What:     `if let Err(error) = decision_cache.put(...).await { ... }`. Upsert the
-    //           decision; log and continue on error.
-    // Why:      One bad write must not stall the sweep; persistence is best-effort.
+    // What:     `batch.iter().map(|upsert| return (upsert.fingerprint, upsert.decision)).collect()`. Turn each
+    //           queued upsert into the `(fingerprint, decision)` pair the shared cache takes; `.iter()` walks the
+    //           list by reference, `|upsert| ...` is a closure (an arrow function), and `.collect()` gathers the
+    //           pairs into a new `Vec`.
+    // Why:      The shared crate does not know the desktop's `Upsert` type.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // try { await cache.put(request.fingerprint, identity, request.decision); } catch (e) { warn(e); }
+    // const entries = batch.map((upsert) => [upsert.fingerprint, upsert.decision]);
     // ```
-    if let Err(error) = decision_cache.put(request.fingerprint, identity, &request.decision).await {
-        tracing::warn!(error = %error, "cache put failed; write dropped");
+    let entries: Vec<(u64, Decision)> = batch.iter().map(|upsert| return (upsert.fingerprint, upsert.decision)).collect();
+    // What:     `if let Err(error) = decision_cache.put_batch(identity, &entries).await { ... }`. Store the batch;
+    //           `&entries` lends the list read-only; log on error.
+    // Why:      Persistence is best-effort; the error names how many rows were dropped.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // try { await cache.putBatch(identity, entries); } catch (e) { warn(e); }
+    // ```
+    if let Err(error) = decision_cache.put_batch(identity, &entries).await {
+        tracing::warn!(error = %error, "cache write batch failed; rows dropped");
     }
 }
+
+/// What:
+///      `#[cfg(test)] #[path = "peakcache_service_tests.rs"] mod tests;`.
+///  Test-only submodule in the sibling file.
+/// Why:
+///       Keep this file to production code;
+///  sibling `*_tests.rs` is max-lines exempt.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // peakcache_service.test.ts
+/// ```
+#[cfg(test)]
+#[path = "peakcache_service_tests.rs"]
+mod tests;
