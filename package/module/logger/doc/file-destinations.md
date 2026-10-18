@@ -51,9 +51,21 @@ no-project fallback and user-state failure diagnostics,
 while writable-project and strict explicit-destination controls pass.
 The log is `logger-default-fallback-red.log` in the session's private verification directory.
 Post-change build,
-types,
-lint,
-full tests and a real read-only mount consumer remain required before release.
+fresh-cache types and the complete unit suite pass.
+Full package lint reports zero warnings and errors on 69 files with 486 rules.
+The real read-only mounted consumer proves an independent write rejects with `EROFS`,
+then verifies default-logger persistence in private user state and strict explicit-destination failure.
+The recursive mkdir diagnostic is `ENOENT` on that fixture;
+the independent write establishes read-only state without relying on that diagnostic's spelling.
+
+Removing project priority and explicit-destination strictness independently makes the maintained tests fail
+after successful private builds.
+Restoring each private source and rebuilding passes the same catalog.
+Production source and output hashes remain unchanged during both mutations.
+The receipt is `logger-destination-mutants-receipt.json` in the private verification directory.
+Linux consumers exercise real filesystem behavior.
+The platform layout catalog also checks injected macOS and Windows paths;
+it does not claim execution on those operating systems.
 
 [XDG base directory specification]: https://specifications.freedesktop.org/basedir/latest/
 [env-paths implementation]: https://github.com/sindresorhus/env-paths/blob/main/index.js

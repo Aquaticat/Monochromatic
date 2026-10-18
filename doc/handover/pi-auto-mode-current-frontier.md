@@ -25,7 +25,7 @@ Default JavaScript and native `kFkBoY` now build from frozen `f56d63b688` inputs
 Full units, visible-context catalogs and fresh-cache types pass against this delivered artifact.
 The final original-interaction replay, module census and complete branch checks remain pending.
 The source lint checkpoint still has 1,037 warnings and 47 errors.
-All recorded RPC workers are closed; resume owned source and native repair assignments after delivery checks.
+Earlier RPC workers are closed; current replacements and their owned scopes are recorded in the worker records.
 Shared analyzer `0.0.2` publication is not verified:
 GitHub run `39139032024` failed with registry `E401` diagnostics, requiring source-backed investigation.
 
@@ -53,7 +53,9 @@ Its recursive mkdir failure is reported as `ENOENT`, despite the independent `ER
 do not substitute an assumed diagnostic.
 The first type check raced the build and also exposed real callback/optional-property errors;
 corrected checks run after the completed build.
-Guard mutation proof, version bump and release verification remain queued next.
+Both destination guard removals rebuild, fail the maintained regression, restore and rebuild to a passing control.
+Their receipt is `logger-destination-mutants-receipt.json`.
+Logger `0.4.3` is bumped for publishing; registry delivery verification remains queued next.
 The package-local logger contract is `package/module/logger/doc/file-destinations.md`.
 
 The current package-directory measurement is 23,899,438 bytes from

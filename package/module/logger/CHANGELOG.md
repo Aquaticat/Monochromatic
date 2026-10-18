@@ -1,5 +1,19 @@
 # @monochromatic-dev/module-logger
 
+## 0.4.3
+
+### Patch changes
+
+- Keep project-local default logs when writable,
+  falling back to persistent user state when project discovery or file verification is unavailable.
+  Announce the verified fallback directory and its reason once per sink.
+  Explicit argument and environment destinations remain strict.
+- Resolve XDG state paths only when absolute,
+  with conventional user log layouts on macOS and Windows.
+  Keep all filesystem probes lazy and preserve serialized append completions.
+- Create new JSONL files with mode `0600` where Unix modes apply.
+  The [file destination contract](doc/file-destinations.md) documents ownership and consumer verification.
+
 ## 0.4.2
 
 ### Patch changes
