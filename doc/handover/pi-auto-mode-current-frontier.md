@@ -2,6 +2,20 @@
 
 ## Latest verified boundary and user steering
 
+Correction to the attempted RPC guidance timing:
+an empty set of active tool events does not establish a settled agent boundary.
+The model request can still be in flight.
+After the navigation guidance was accepted,
+the next fixture edit reached selector `162f589d-f975-4889-9552-17ae43c18ca2`
+with `Observed request is no longer current`.
+The supervisor inspected the complete edit,
+confirmed that it only changes the owned fixture's internal wrapper parameter shape,
+and supplied explicit Allow through RPC under the existing source-fix authorization.
+This is fresh approval of that exact operation,
+not a fix for automatic currentness failure.
+Further guidance must wait for actual settlement,
+not merely a tool-completion event.
+
 Subsequent affected-catalog checks on private `FGiMf5` pass startup relevance
 and judgment preparation.
 The host-isolation catalog passes passive observer,

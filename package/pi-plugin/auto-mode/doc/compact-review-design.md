@@ -94,6 +94,12 @@ Inventories and receipts remain private under
 
 ## Checkpoint maintenance lessons
 
+An RPC tool-completion event does not establish an idle agent.
+The next model response can already depend on its original instruction snapshot.
+Send supervisory guidance at an actual settled boundary.
+If instructions change during a response,
+retain the stale-evidence rejection and obtain a fresh review or explicit approval for the complete operation.
+
 Correct use by reasonable consumers is the UX requirement.
 A behavior being documented does not excuse a surprising result.
 The RPC launcher must qualify its actual Git executable before allowing repository writes;
