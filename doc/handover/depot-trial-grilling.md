@@ -315,7 +315,7 @@ Cargo-selection,
 altered-PNG/LFS-pointer rejection and publication controls pass.
 Finite controller session `55444` has started.
 IDE full run `39156168838` uses `depot-ubuntu-24.04-4`,
-four requested CPUs/documented 16 GiB and a 30-minute/USD 0.36 maximum.
+four requested CPUs/documented 16 GB and a 30-minute/USD 0.36 maximum.
 GTK release run `39156185253` uses public `ubuntu-24.04`,
 30 minutes and nominal compute USD 0.
 Those jobs own both global slots.

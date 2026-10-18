@@ -445,7 +445,8 @@ Dependency installation is the last recorded phase before watchdog cancellation;
 the last APT line does not identify the blocking instruction or cause.
 Its exact source has a real completed/cancelled GitHub check,
 `native-ssh-acceptance / ssh-proof`,
-whose details identify the owned native job and attempt.
+whose details identify the owned native job.
+Fresh native job metadata joins that job to the run and attempt.
 The app is Depot Code Access (`219785`);
 that identity does not mean the optional Depot Code product was enabled.
 The known GitHub graph source provides nonempty check controls,
