@@ -1,0 +1,66 @@
+{
+  "name": "research advisory step failure with passing workflow",
+  "on": {
+    "workflow_dispatch": {}
+  },
+  "permissions": {
+    "contents": "read",
+    "id-token": "write"
+  },
+  "env": {
+    "MISE_AUTO_INSTALL": "false",
+    "MISE_LOCKED": "1"
+  },
+  "jobs": {
+    "advisory": {
+      "runs-on": "depot-ubuntu-24.04",
+      "timeout-minutes": 2,
+      "env": {
+        "PROBE_PLATFORM": "native-depot-step-control"
+      },
+      "steps": [
+        {
+          "uses": "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "uses": "jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c",
+          "with": {
+            "version": "2026.10.9",
+            "install": false,
+            "cache": false
+          }
+        },
+        {
+          "run": "mise install node"
+        },
+        {
+          "id": "advisory",
+          "continue-on-error": true,
+          "run": "mise run //.depot/research/native-semantics:policy-fail",
+          "working-directory": ".depot/research/native-semantics"
+        },
+        {
+          "run": "mise run //.depot/research/native-semantics:policy-step-consumer",
+          "working-directory": ".depot/research/native-semantics",
+          "env": {
+            "PROBE_STEP_OUTCOME": "${{ steps.advisory.outcome }}",
+            "PROBE_STEP_CONCLUSION": "${{ steps.advisory.conclusion }}"
+          }
+        },
+        {
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "if": "always()",
+          "with": {
+            "name": "research-step-policy-workaround",
+            "path": ".depot/research/native-semantics/policy-evidence/",
+            "if-no-files-found": "error",
+            "retention-days": 7
+          }
+        }
+      ]
+    }
+  }
+}

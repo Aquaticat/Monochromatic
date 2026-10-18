@@ -249,3 +249,15 @@ const record = { probe: 'ordinary-job-continue-on-error-consumer', passed: true,
 fs.writeFileSync('policy-evidence/consumer.json', JSON.stringify(record, null, 2) + '\n');
 console.log(JSON.stringify(record));
 '''
+
+[tasks.policy-step-consumer]
+shell = "node --input-type=module-typescript -e"
+run = '''
+const fs = await import('node:fs');
+const { execFileSync } = await import('node:child_process');
+if (process.env.PROBE_STEP_OUTCOME !== 'failure' || process.env.PROBE_STEP_CONCLUSION !== 'success') throw new Error('Advisory step outcome/conclusion did not retain failure and permit continuation');
+const record = { probe: 'step-policy-workaround', passed: true, source: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), outcome: process.env.PROBE_STEP_OUTCOME, conclusion: process.env.PROBE_STEP_CONCLUSION, platform: process.env.PROBE_PLATFORM, at: new Date().toISOString() };
+fs.mkdirSync('policy-evidence', { recursive: true });
+fs.writeFileSync('policy-evidence/step-consumer.json', JSON.stringify(record, null, 2) + '\n');
+console.log(JSON.stringify(record));
+'''
