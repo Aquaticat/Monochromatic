@@ -1,13 +1,17 @@
 //! The window thread's own step when the wrap width changes:
 //!  the lines near the view are broken again and the tile is painted for the new width before the next frame,
-//!  within a counted allowance, and a change that does not fit the allowance goes to the tile worker as a scroll
+//!  within a counted allowance,
+//! and a change that does not fit the allowance goes to the tile worker as a scroll
 //!  re-center does.
 
-/// The parent state, the tile bounds, and the tile's raster size.
+/// The parent state,
+/// the tile bounds,
+/// and the tile's raster size.
 use super::{State, render::viewport_of, tile};
 /// The height of one code row.
 use ide_app::row_map::CODE_ROW;
-/// The budget a measurement spends, and what it found.
+/// The budget a measurement spends,
+/// and what it found.
 use ide_app::shaped_text::{Budget, Measured};
 /// A wrap width must be a positive number of pixels.
 use ide_app::wrap::has_wrap_width;
@@ -18,7 +22,8 @@ use ide_app::wrap::has_wrap_width;
 ///  A tile of three view heights holds about a hundred lines at ordinary window sizes,
 ///  and one of an ultra-tall window a few hundred;
 ///  a view with more lines than this goes to the tile worker.
-///  The window thread's row cache keeps at least this many lines, so the lines of one step are not evicted by it.
+///  The window thread's row cache keeps at least this many lines,
+/// so the lines of one step are not evicted by it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -27,8 +32,11 @@ use ide_app::wrap::has_wrap_width;
 pub(super) const REWRAP_LINES: usize = 384;
 
 /// What:
-///  Most work, in the units of `ide_app::shaped_text::line_work` (characters shaped or broken, with a charge for
-///  each line and for each corrective pass of a tabbed line), the window thread spends on one change of width.
+///  Most work,
+/// in the units of `ide_app::shaped_text::line_work` (characters shaped or broken,
+/// with a charge for
+///  each line and for each corrective pass of a tabbed line),
+/// the window thread spends on one change of width.
 /// Why:
 ///  The release shaping rate measured on 2026-10-11 was 14 to 18 microseconds for a line of about 45 characters,
 ///  so this many units is a few milliseconds of shaping at most;
@@ -43,7 +51,8 @@ pub(super) const REWRAP_WORK: usize = 24_000;
 /// What:
 ///  The most bytes the raster of a tile built for a new width on the window thread may hold.
 /// Why:
-///  Painting a tile copies its pixels into an image and uploads them, so the step's cost grows with the raster;
+///  Painting a tile copies its pixels into an image and uploads them,
+/// so the step's cost grows with the raster;
 ///  the raster limit of 64 MiB for a tile built on the worker is too large to pay in one frame.
 ///  A window large enough that its tile passes this limit leaves the change to the worker.
 ///
@@ -56,8 +65,10 @@ pub(super) const REWRAP_RASTER_BYTES: u64 = 32 * 1024 * 1024;
 /// What:
 ///  What one change of width may still spend on the window thread.
 /// Why:
-///  Every line the step shapes or breaks again is charged before it runs, so the total is bounded by the
-///  allowance whatever the lines are; a line that does not fit leaves the whole change to the tile worker.
+///  Every line the step shapes or breaks again is charged before it runs,
+/// so the total is bounded by the
+///  allowance whatever the lines are;
+/// a line that does not fit leaves the whole change to the tile worker.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -125,9 +136,12 @@ impl Allowance {
 }
 
 /// What:
-///  Whether the raster of the tile at `bounds`, at display scale `scale`, is within [`REWRAP_RASTER_BYTES`].
+///  Whether the raster of the tile at `bounds`,
+/// at display scale `scale`,
+/// is within [`REWRAP_RASTER_BYTES`].
 /// Why:
-///  The raster is as wide as the text area and as tall as the lines of the tile, or the clip of them.
+///  The raster is as wide as the text area and as tall as the lines of the tile,
+/// or the clip of them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -148,11 +162,14 @@ pub(super) fn raster_fits(current: &State, bounds: tile::TileBounds, scale: f32)
 }
 
 /// What:
-///  Start the immediate step for a width change the viewport just reported, or hand the change to the worker.
-///  The answer is the allowance when the window thread takes the step, otherwise nothing.
+///  Start the immediate step for a width change the viewport just reported,
+/// or hand the change to the worker.
+///  The answer is the allowance when the window thread takes the step,
+/// otherwise nothing.
 /// Why:
 ///  A tile whose lines alone are more than the allowance covers is not tried at all;
-///  its change is queued for the worker like a scroll re-center, and the displayed tile stays on screen until it
+///  its change is queued for the worker like a scroll re-center,
+/// and the displayed tile stays on screen until it
 ///  arrives.
 ///  A flag left over from a report whose render never ran is dropped when the width no longer differs.
 ///
@@ -189,10 +206,12 @@ pub(super) fn begin(current: &mut State) -> Option<Allowance> {
 }
 
 /// What:
-///  Leave the change of width to the tile worker: the requested tile is queued as a scroll re-center is,
+///  Leave the change of width to the tile worker:
+/// the requested tile is queued as a scroll re-center is,
 ///  and the displayed tile stays on screen until the worker's tile arrives.
 /// Why:
-///  This is the path every change of width took before the window thread learned to take it, so a change that does
+///  This is the path every change of width took before the window thread learned to take it,
+/// so a change that does
 ///  not fit the allowance behaves as it did.
 ///
 /// In TS you'd write (pseudocode):

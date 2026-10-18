@@ -29,9 +29,12 @@ use slint::{ComponentHandle, Image, TimerMode};
 use std::{cell::RefCell, rc::Rc, sync::Arc, time::Instant};
 
 /// What:
-///  What a picture made now would be valid for, or nothing while the minimap has no size.
+///  What a picture made now would be valid for,
+/// or nothing while the minimap has no size.
 /// Why:
-///  A request is posted only when this differs from the last one; it holds no scroll offset, so a scroll step
+///  A request is posted only when this differs from the last one;
+/// it holds no scroll offset,
+/// so a scroll step
 ///  never changes it.
 ///
 /// In TS you'd write (pseudocode):
@@ -58,7 +61,8 @@ pub(super) fn key_of(window: &AppWindow, current: &State) -> Option<Key> {
     });
 }
 
-/// Post a request for the picture `key` describes, starting the worker on first use.
+/// Post a request for the picture `key` describes,
+/// starting the worker on first use.
 pub(super) fn post(window: &AppWindow, state: &Rc<RefCell<State>>, current: &mut State, key: Key) {
     if current.minimap.worker.is_none() {
         match MinimapWorker::new(current.shaper.fork()) {
@@ -108,7 +112,8 @@ pub(super) fn post(window: &AppWindow, state: &Rc<RefCell<State>>, current: &mut
     start_poll(window, state, current);
 }
 
-/// Post the request that is due now, if what the picture is valid for changed since the last one.
+/// Post the request that is due now,
+/// if what the picture is valid for changed since the last one.
 fn flush(window: &AppWindow, state: &Rc<RefCell<State>>) {
     let mut current = state.borrow_mut();
     let Some(key) = key_of(window, &current) else {
@@ -127,8 +132,13 @@ fn flush(window: &AppWindow, state: &Rc<RefCell<State>>) {
 ///  and after the quiet time for every other change.
 ///  A step that changes nothing the picture depends on costs a comparison of a few words.
 /// Why:
-///  The picture follows the text, the syntax classes, the wrap width, the vertical mapping, and the size;
-///  the scroll offset is none of them, because the viewport box moves in the markup.
+///  The picture follows the text,
+/// the syntax classes,
+/// the wrap width,
+/// the vertical mapping,
+/// and the size;
+///  the scroll offset is none of them,
+/// because the viewport box moves in the markup.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

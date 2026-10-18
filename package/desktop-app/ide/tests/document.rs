@@ -149,7 +149,8 @@ fn deletion_clamps_positions() {
     assert_eq!(doc.selected_text(), "");
 }
 
-/// The side of a wrap offset is part of the position: selecting keeps it,
+/// The side of a wrap offset is part of the position:
+/// selecting keeps it,
 ///  and a reload keeps it only for a head that did not move.
 #[test]
 fn the_side_of_a_wrap_offset_is_kept_by_selection_and_by_a_reload_that_leaves_the_head() {

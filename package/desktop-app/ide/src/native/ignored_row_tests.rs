@@ -293,7 +293,9 @@ fn ignored_names_are_drawn_at_eighty_percent_with_measured_contrast() {
 }
 
 /// A disposable work tree for the tests that run the real reader:
-///  the extension is chosen so a user's global excludes file, which the reader also reads, cannot match it.
+///  the extension is chosen so a user's global excludes file,
+/// which the reader also reads,
+/// cannot match it.
 fn project(root: &Path) {
     fs::create_dir(root.join(".git")).expect("git folder");
     fs::write(

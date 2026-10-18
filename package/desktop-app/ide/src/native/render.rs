@@ -41,7 +41,8 @@ fn rgba(color: slint::Color) -> [u8; 4] {
 ///  green,
 ///  blue,
 ///  alpha;
-///  `Color::from_argb_u8` builds a toolkit color from them, alpha first,
+///  `Color::from_argb_u8` builds a toolkit color from them,
+/// alpha first,
 /// and `Brush::from` wraps it as the fill type window properties hold.
 /// Why:
 ///  Inks chosen by native code are handed to the markup as window properties.
@@ -56,7 +57,8 @@ fn brush(color: [u8; 4]) -> slint::Brush {
     ));
 }
 
-/// The palette of the source glyphs and selection, from the window's current colors.
+/// The palette of the source glyphs and selection,
+/// from the window's current colors.
 pub(super) fn code_colors(window: &AppWindow) -> CodeColors {
     // The palette's selection ink follows the color scheme while its selection fill does not,
     // so the ink is chosen from the fill that is actually drawn behind the selected glyphs.
@@ -75,10 +77,14 @@ pub(super) fn code_colors(window: &AppWindow) -> CodeColors {
 ///
 /// A tile whose only change is the reader's scroll is built by the tile worker,
 ///  and the displayed tile stays on screen until its result is swapped in.
-/// A new wrap width is taken here, within an allowance (`rewrap`): the lines near the view are broken again,
-///  the tile is painted for the new width, and the frame that follows shows it;
+/// A new wrap width is taken here,
+/// within an allowance (`rewrap`):
+/// the lines near the view are broken again,
+///  the tile is painted for the new width,
+/// and the frame that follows shows it;
 ///  a width whose lines do not fit the allowance is built by the tile worker like a scroll re-center.
-/// Every other change builds the requested tile here, as before.
+/// Every other change builds the requested tile here,
+/// as before.
 pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     #[cfg(debug_assertions)]
     {

@@ -5,7 +5,9 @@
 //!  and the block sits above the first visual row of its line with underlines still on their own rows.
 //! No window is opened.
 
-/// The store under test, the marks that become underlines, and the records the store takes.
+/// The store under test,
+/// the marks that become underlines,
+/// and the records the store takes.
 use ide_app::{
     annotation::{Annotations, Mark, Visible},
     annotation_layout::{AnnotationColors, lay_out, pack},
@@ -20,10 +22,12 @@ use ide_app::{
     text_raster::{CodeColors, TextRaster},
     virtual_row::{BLOCK_GAP, Block, CONTINUATION_INDENT, MESSAGE_ROWS, ROW_HEIGHT},
 };
-/// The pointer snapshots travel in, and the range of lines near the view.
+/// The pointer snapshots travel in,
+/// and the range of lines near the view.
 use std::{ops::Range, sync::Arc};
 
-/// A line that wraps to several rows at the widths used here, with a clear place for hints on its later rows.
+/// A line that wraps to several rows at the widths used here,
+/// with a clear place for hints on its later rows.
 const CODE: &str = "let value = compute_total(first_item, second_item); // a long comment that keeps going and going";
 
 /// The stamp of the displayed text.
@@ -32,7 +36,8 @@ const SHOWN: DocumentStamp = DocumentStamp {
     revision: 1,
 };
 
-/// Palette of the painted checks; the hint ink is dark gray so it cannot be taken for the error ink.
+/// Palette of the painted checks;
+/// the hint ink is dark gray so it cannot be taken for the error ink.
 const COLORS: AnnotationColors = AnnotationColors {
     hint: [20, 20, 20, 255],
     error: [200, 0, 0, 255],
@@ -122,8 +127,10 @@ fn viewport(count: usize, wrap: f32) -> Viewport {
     };
 }
 
-/// A hint on the second visual row of a wrapped line is packed at the x that row draws it, not at the x of the
-///  unbroken line, and the frame paints it where the packing put it.
+/// A hint on the second visual row of a wrapped line is packed at the x that row draws it,
+/// not at the x of the
+///  unbroken line,
+/// and the frame paints it where the packing put it.
 #[test]
 fn hints_are_packed_against_the_line_as_it_is_broken() {
     let document = Document::new(CODE);
@@ -169,7 +176,8 @@ fn hints_are_packed_against_the_line_as_it_is_broken() {
     assert_eq!(frame.texts[0].x, block.hints[0].x);
 }
 
-/// A hint at the end of a long line would pass the right edge of the text area; it ends at the edge instead,
+/// A hint at the end of a long line would pass the right edge of the text area;
+/// it ends at the edge instead,
 ///  and a hint that fits stays exactly at its character.
 #[test]
 fn a_hint_that_would_pass_the_text_area_ends_at_its_edge() {
@@ -204,7 +212,8 @@ fn a_hint_that_would_pass_the_text_area_ends_at_its_edge() {
     assert!(places[1].x < row.caret_x(60, 1.0));
 }
 
-/// A label wider than the text area breaks into pieces on rows of their own, the later pieces at the left edge,
+/// A label wider than the text area breaks into pieces on rows of their own,
+/// the later pieces at the left edge,
 ///  and no piece is wider than the text area.
 #[test]
 fn a_label_wider_than_the_text_area_breaks_into_rows() {
@@ -248,8 +257,12 @@ fn a_label_wider_than_the_text_area_breaks_into_rows() {
     );
 }
 
-/// Message rows break to the text area: the same message takes more rows at a narrow width, the block is as tall as
-///  its rows, a wide text area changes nothing, and no row is wider than the area.
+/// Message rows break to the text area:
+/// the same message takes more rows at a narrow width,
+/// the block is as tall as
+///  its rows,
+/// a wide text area changes nothing,
+/// and no row is wider than the area.
 #[test]
 fn message_rows_break_to_the_text_area() {
     let message =
@@ -352,7 +365,8 @@ fn a_message_keeps_its_row_cap_at_a_narrow_width() {
     );
 }
 
-/// Message rows stand inside the text area in the frame: a diagnostic far to the right moves its whole message left.
+/// Message rows stand inside the text area in the frame:
+/// a diagnostic far to the right moves its whole message left.
 #[test]
 fn a_message_far_to_the_right_moves_left_to_stay_inside_the_text_area() {
     let text = format!("{}tail", "y".repeat(50));
@@ -403,9 +417,14 @@ fn a_message_far_to_the_right_moves_left_to_stay_inside_the_text_area() {
     assert_eq!(unwrapped.texts[0].x, own_x);
 }
 
-/// With a block above a wrapped line, the block ends where the line's first row begins, the line's rows follow it
-///  and fill the rows it was measured at, the next line starts under the last row, and an underline across the
-///  wrap break is painted on exactly the two visual rows it crosses, none of it in the block.
+/// With a block above a wrapped line,
+/// the block ends where the line's first row begins,
+/// the line's rows follow it
+///  and fill the rows it was measured at,
+/// the next line starts under the last row,
+/// and an underline across the
+///  wrap break is painted on exactly the two visual rows it crosses,
+/// none of it in the block.
 #[test]
 fn a_block_sits_above_the_first_row_and_underlines_stay_on_their_rows() {
     let text = format!("{CODE}\nnext line\n");
@@ -500,7 +519,8 @@ fn a_block_sits_above_the_first_row_and_underlines_stay_on_their_rows() {
 }
 
 /// A new width packs the lines that have hints again and measures no message row twice;
-///  the same width again does no shaping, and only rows wider than the new width are broken by shaping.
+///  the same width again does no shaping,
+/// and only rows wider than the new width are broken by shaping.
 #[test]
 fn a_new_width_does_only_the_work_it_needs() {
     let mut text = String::new();
@@ -581,7 +601,8 @@ fn a_new_width_does_only_the_work_it_needs() {
     assert_eq!(annotations.work().measured, before.measured);
 }
 
-/// The store packs a hint against the line as it is broken at the wrap width, and packs again for another width.
+/// The store packs a hint against the line as it is broken at the wrap width,
+/// and packs again for another width.
 #[test]
 fn assembled_hints_stand_where_the_broken_line_draws_them() {
     let document = Document::new(CODE);
@@ -615,8 +636,10 @@ fn assembled_hints_stand_where_the_broken_line_draws_them() {
     assert_ne!(narrow[0].hints[0].x, assembled[0].hints[0].x);
 }
 
-/// A new width packs and breaks only the lines near the view; the others keep what they had until the view comes
-///  near, and `stale_in` tells the window when that is.
+/// A new width packs and breaks only the lines near the view;
+/// the others keep what they had until the view comes
+///  near,
+/// and `stale_in` tells the window when that is.
 #[test]
 fn a_new_width_applies_to_the_lines_near_the_view_first() {
     let mut text = String::new();
@@ -709,7 +732,8 @@ fn a_new_width_applies_to_the_lines_near_the_view_first() {
     assert!(!annotations.stale_in(Some(500.0), &everywhere()));
 }
 
-/// A message line cut at 80 columns is joined and broken again as a whole, so no row but its last is a short tail,
+/// A message line cut at 80 columns is joined and broken again as a whole,
+/// so no row but its last is a short tail,
 ///  and a word that was cut is joined without a blank.
 #[test]
 fn a_message_line_is_broken_again_as_a_whole() {

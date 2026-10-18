@@ -205,7 +205,8 @@ pub struct Held {
 /// What:
 ///  The hint rows of one line packed at one wrap width.
 /// Why:
-///  A new width makes the packing of a line stale; the lines near the view are packed again at once,
+///  A new width makes the packing of a line stale;
+/// the lines near the view are packed again at once,
 ///  and the others keep this packing until the view comes near them.
 ///
 /// In TS you'd write (pseudocode):
@@ -214,7 +215,8 @@ pub struct Held {
 /// ```
 #[derive(Clone, Debug)]
 struct Placed {
-    /// The wrap width in logical pixels the line was packed at, or nothing while the view had none.
+    /// The wrap width in logical pixels the line was packed at,
+    /// or nothing while the view had none.
     wrap: Option<f32>,
     /// Number of hint rows.
     rows: usize,
@@ -250,7 +252,8 @@ pub struct AssemblyWork {
     pub packed: u64,
     /// Message rows shaped to learn their width.
     pub measured: u64,
-    /// Message rows wider than the text area, broken by shaping.
+    /// Message rows wider than the text area,
+    /// broken by shaping.
     pub broken: u64,
 }
 
@@ -293,7 +296,8 @@ pub struct Annotations {
     ///  from every hint snapshot of the `labelled` revision.
     labels: BTreeMap<usize, Vec<Label>>,
     /// Packed hint rows per line,
-    ///  computed on demand at `placed_scale`, each at the wrap width it records.
+    ///  computed on demand at `placed_scale`,
+    /// each at the wrap width it records.
     placed: BTreeMap<usize, Placed>,
     /// Physical pixels per logical pixel the entries of `placed` were packed at.
     placed_scale: f32,

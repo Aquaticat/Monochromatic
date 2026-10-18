@@ -106,7 +106,8 @@ impl ShapedRow {
     }
 
     /// Number of visual rows this source line occupies:
-    ///  one for an unwrapped line, more when the line was broken at a wrap width.
+    ///  one for an unwrapped line,
+    /// more when the line was broken at a wrap width.
     /// An empty line the engine leaves after the last row does not count (see [`Self::has_empty_tail`]).
     ///
     /// In TS you'd write (pseudocode):
@@ -120,10 +121,15 @@ impl ShapedRow {
     /// What:
     ///  Whether the engine left an empty line after the last row of the text.
     /// Why:
-    ///  When blanks end the text and the last of them overflows the width, the engine hangs the blanks on the last row
-    ///  and still emits one more line, with no characters.
-    ///  That line is no row of text: the caret at the end of the text stands at the end of the row before it,
-    ///  and the gutter, the vertical map, and the keys must not count it.
+    ///  When blanks end the text and the last of them overflows the width,
+    /// the engine hangs the blanks on the last row
+    ///  and still emits one more line,
+    /// with no characters.
+    ///  That line is no row of text:
+    /// the caret at the end of the text stands at the end of the row before it,
+    ///  and the gutter,
+    /// the vertical map,
+    /// and the keys must not count it.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -138,10 +144,13 @@ impl ShapedRow {
                 .is_some_and(|line| return line.text_range().is_empty());
     }
 
-    /// Logical y of visual row `index` from the top of the line's first row, at `scale`.
+    /// Logical y of visual row `index` from the top of the line's first row,
+    /// at `scale`.
     ///
-    /// The step is the first row's line height from the shaping engine's metrics, so row 0 is exactly zero.
-    /// An index past the last row still gives its offset; callers check `visual_rows` first.
+    /// The step is the first row's line height from the shaping engine's metrics,
+    /// so row 0 is exactly zero.
+    /// An index past the last row still gives its offset;
+    /// callers check `visual_rows` first.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -157,7 +166,8 @@ impl ShapedRow {
     /// What:
     ///  The visual row of this line whose extent holds the logical `top` of a rectangle,
     ///  or nothing when the rectangle is not on this line.
-    ///  A rectangle on a row starts at that row's top, so a small tolerance covers rounding after a rebase.
+    ///  A rectangle on a row starts at that row's top,
+    /// so a small tolerance covers rounding after a rebase.
     /// Why:
     ///  Selected ink and underlines are matched to the visual row they lie on,
     ///  never by comparing two floats for equality.
@@ -179,7 +189,8 @@ impl ShapedRow {
         return Some(index as usize);
     }
 
-    /// Display bytes of visual row `index`, or nothing when the row does not exist.
+    /// Display bytes of visual row `index`,
+    /// or nothing when the row does not exist.
     /// The rows' ranges tile the display text with no gap or overlap.
     ///
     /// In TS you'd write (pseudocode):
@@ -202,9 +213,11 @@ impl ShapedRow {
             .map(|line| line.text_range().start..line.text_range().end.min(length));
     }
 
-    /// Row-local source characters of visual row `index`, or nothing when the row does not exist.
+    /// Row-local source characters of visual row `index`,
+    /// or nothing when the row does not exist.
     ///
-    /// A tab counts as one source character, so the ranges of the rows tile `0..source_len()`.
+    /// A tab counts as one source character,
+    /// so the ranges of the rows tile `0..source_len()`.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -217,7 +230,8 @@ impl ShapedRow {
         );
     }
 
-    /// The source characters of every visual row, as global character ranges that tile the line's visible text.
+    /// The source characters of every visual row,
+    /// as global character ranges that tile the line's visible text.
     /// A line without text has one empty range at its start.
     ///
     /// In TS you'd write (pseudocode):
@@ -249,7 +263,8 @@ impl ShapedRow {
     }
 
     /// Visual row that holds display byte `byte` on the side `affinity` names.
-    /// A byte on a soft-wrap offset is on the lower row, unless `affinity` is `Upstream`.
+    /// A byte on a soft-wrap offset is on the lower row,
+    /// unless `affinity` is `Upstream`.
     fn visual_row_of(&self, byte: usize, affinity: Affinity) -> usize {
         let mut row = 0;
         for (index, line) in self.layout.lines().enumerate() {
@@ -274,8 +289,10 @@ impl ShapedRow {
         return row.min(self.visual_rows() - 1);
     }
 
-    /// Physical x of the caret before the row-local source character `local`, with the affinity of a plain row.
-    /// A position with no soft wrap has one row, so its caret is the same on either side.
+    /// Physical x of the caret before the row-local source character `local`,
+    /// with the affinity of a plain row.
+    /// A position with no soft wrap has one row,
+    /// so its caret is the same on either side.
     fn physical_x_on_row(&self, local: usize, row: usize) -> f32 {
         let byte = self.projection.source_to_byte[local.min(self.source_len())];
         for affinity in [Affinity::Downstream, Affinity::Upstream] {
@@ -286,7 +303,8 @@ impl ShapedRow {
         return self.cursor_x(byte, Affinity::Downstream);
     }
 
-    /// Visual row whose vertical extent contains physical `y`, or the last row when `y` is below all of them.
+    /// Visual row whose vertical extent contains physical `y`,
+    /// or the last row when `y` is below all of them.
     fn row_at_physical(&self, y: f32) -> usize {
         let mut row = 0;
         for (index, line) in self.layout.lines().enumerate().take(self.visual_rows()) {
@@ -305,7 +323,8 @@ impl ShapedRow {
     /// into equal parts and can propose a position between them.
     ///  A caret there would split one grapheme,
     /// so the proposal moves to whichever neighboring boundary is nearer to the pointer.
-    /// The distances are measured on visual row `row`, where the pointer is.
+    /// The distances are measured on visual row `row`,
+    /// where the pointer is.
     fn snapped(&self, local: usize, x: f32, row: usize) -> usize {
         let mut before = 0;
         let mut after = self.source_len();
@@ -330,7 +349,8 @@ impl ShapedRow {
         return after;
     }
 
-    /// Source character boundary nearest to physical `(x, y)`, with `y` measured from the top of this line's first row.
+    /// Source character boundary nearest to physical `(x, y)`,
+    /// with `y` measured from the top of this line's first row.
     fn hit_physical(&self, x: f32, y: f32) -> usize {
         // What: `Cursor::from_point` names the glyph under a physical point, in the engine's own units.
         // Why: The point is the pointer in physical pixels, and the row is the one whose extent holds `y`.
@@ -348,7 +368,8 @@ impl ShapedRow {
 
     /// Source character boundary nearest to logical `x` on this line's first visual row,
     ///  using the shaping engine's hit test.
-    /// An unwrapped line has one row, so this is its whole hit test.
+    /// An unwrapped line has one row,
+    /// so this is its whole hit test.
     /// A point inside a widened tab resolves to the nearer edge of that tab,
     /// and a point inside a multi-character grapheme to the nearer edge of the whole grapheme.
     ///
@@ -371,8 +392,10 @@ impl ShapedRow {
         return self.hit_physical(x * scale, y);
     }
 
-    /// Source character boundary nearest to logical `(x, y)`, where `y` is measured from the top of this line's first visual row.
-    /// Each visual row is one code row tall, so `y` between `visual_row_offset(n)` and the next offset is on row `n`.
+    /// Source character boundary nearest to logical `(x, y)`,
+    /// where `y` is measured from the top of this line's first visual row.
+    /// Each visual row is one code row tall,
+    /// so `y` between `visual_row_offset(n)` and the next offset is on row `n`.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -388,7 +411,8 @@ impl ShapedRow {
     ///  otherwise `Downstream`.
     /// Why:
     ///  A click right of the last character of a wrapped row puts the caret at the end of that row,
-    ///  not at the start of the next one, although both are the same offset (IntelliJ keeps the clicked side).
+    ///  not at the start of the next one,
+    /// although both are the same offset (IntelliJ keeps the clicked side).
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -412,7 +436,8 @@ impl ShapedRow {
         return ReadingAffinity::Downstream;
     }
 
-    /// Logical x of the caret before global source character `position`, standing on visual row `row`.
+    /// Logical x of the caret before global source character `position`,
+    /// standing on visual row `row`.
     /// A position that is not on that row gets the nearest side of it.
     ///
     /// In TS you'd write (pseudocode):
@@ -426,7 +451,8 @@ impl ShapedRow {
         return self.physical_x_on_row(local, row) / scale;
     }
 
-    /// Physical middle of the first visual row, the probe `hit` uses on a wrapped line.
+    /// Physical middle of the first visual row,
+    /// the probe `hit` uses on a wrapped line.
     fn first_row_middle(&self) -> f32 {
         return self.layout.lines().next().map_or(0.0, |line| {
             return line.metrics().block_min_coord + line.metrics().line_height / 2.0;
@@ -449,7 +475,8 @@ impl ShapedRow {
 
     /// Logical x and visual row of the caret before global source character `position`,
     ///  on the side of a soft-wrap offset that `affinity` names.
-    /// `Upstream` at a wrap offset draws at the end of the upper row, `Downstream` at the start of the lower one.
+    /// `Upstream` at a wrap offset draws at the end of the upper row,
+    /// `Downstream` at the start of the lower one.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -526,7 +553,8 @@ fn engine_affinity(affinity: ReadingAffinity) -> Affinity {
 /// What:
 ///  The caret's logical x and the visual row it is drawn on.
 /// Why:
-///  A soft-wrap offset is drawn on one row or the other, and the vertical position needs the row.
+///  A soft-wrap offset is drawn on one row or the other,
+/// and the vertical position needs the row.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -534,7 +562,8 @@ fn engine_affinity(affinity: ReadingAffinity) -> Affinity {
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct VisualCaret {
-    /// Logical x of the caret, measured from the line's start edge.
+    /// Logical x of the caret,
+    /// measured from the line's start edge.
     pub x: f32,
     /// Index of the visual row the caret is drawn on.
     pub row: usize,

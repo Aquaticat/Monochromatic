@@ -6,7 +6,8 @@
 use super::{AppWindow, State, render, viewport::follow};
 /// Geometry-free caret movement over source characters.
 use ide_app::caret_motion::{Motion, moved};
-/// Source offsets remain independent of rendered pixels, and the side of a soft-wrap offset is part of a click.
+/// Source offsets remain independent of rendered pixels,
+/// and the side of a soft-wrap offset is part of a click.
 use ide_app::document::{ReadingAffinity, ReadingPosition};
 /// Home and End follow the visual rows of the caret's line.
 use ide_app::line_boundary::{Edge, moved_to_edge};
@@ -61,7 +62,8 @@ struct Drag {
 ///  The answer is the character position under the pointer and the side of a soft-wrap offset it was clicked on.
 /// Why:
 ///  A drag can leave the materialized rows;
-///  such a line is shaped on demand, at the wrap width,
+///  such a line is shaped on demand,
+/// at the wrap width,
 /// so the pointer still resolves by glyph geometry instead of falling back to the line start.
 ///  `y` is the logical distance below the top of the line's first visual row,
 ///  so a click on a continuation row resolves in that row.
@@ -291,9 +293,11 @@ fn horizontal(key: &SharedString, control: bool) -> Option<Motion> {
 }
 
 /// What:
-///  `Option<Edge>` is Home or End without Control, or nothing.
+///  `Option<Edge>` is Home or End without Control,
+/// or nothing.
 /// Why:
-///  Plain Home and End follow the visual rows of a wrapped line, which only the shaped line knows;
+///  Plain Home and End follow the visual rows of a wrapped line,
+/// which only the shaped line knows;
 ///  with Control they go to the ends of the document instead.
 ///
 /// In TS you'd write (pseudocode):

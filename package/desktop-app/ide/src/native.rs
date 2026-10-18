@@ -25,7 +25,8 @@ use ide_app::find_navigation::FindResults;
 use ide_app::language::identity::DocumentStamp;
 /// The reload record the state keeps until the Language module is told.
 use ide_app::language::sync::DocumentReload;
-/// Visual rows of every line, as far as measured.
+/// Visual rows of every line,
+/// as far as measured.
 use ide_app::line_rows::LineRows;
 /// The displayed file is reread on change notifications,
 ///  or on the old timer while unwatched.
@@ -151,11 +152,15 @@ mod inspect;
 ///  references,
 ///  and hover through the Language module.
 mod language;
-/// The minimap beside the source text: the scroll control, and the picture of the whole text built off-thread.
+/// The minimap beside the source text:
+/// the scroll control,
+/// and the picture of the whole text built off-thread.
 mod minimap;
 /// The minimap's worker thread.
 mod minimap_build;
-/// The minimap's geometry, picture, and pointer paths.
+/// The minimap's geometry,
+/// picture,
+/// and pointer paths.
 #[cfg(test)]
 mod minimap_tests;
 /// Project tree and asynchronous successful-file navigation.
@@ -166,7 +171,8 @@ mod navigation_reveal_tests;
 /// Native project callbacks exercise actual reader/timer and source replacement boundaries.
 #[cfg(test)]
 mod navigation_tests;
-/// Scrolling inside the overscan tile does no source work, and leaving it re-centers the tile once.
+/// Scrolling inside the overscan tile does no source work,
+/// and leaving it re-centers the tile once.
 #[cfg(test)]
 mod overscan_tile_tests;
 /// Real pointer events select by character,
@@ -288,11 +294,21 @@ mod wrap_annotation_tests;
 ///  and scrolling inside a built tile of a wrapped file does no source work.
 #[cfg(test)]
 mod wrap_clip_tests;
-/// Home, End, Up, Down, paging, word motion, drags, and multi-clicks on wrapped lines.
+/// Home,
+/// End,
+/// Up,
+/// Down,
+/// paging,
+/// word motion,
+/// drags,
+/// and multi-clicks on wrapped lines.
 #[cfg(test)]
 mod wrap_keys_tests;
-/// A new window width: the window thread breaks the lines near the view again and paints the tile for it before the
-///  next frame, within a counted allowance, and what does not fit goes to the tile worker.
+/// A new window width:
+/// the window thread breaks the lines near the view again and paints the tile for it before the
+///  next frame,
+/// within a counted allowance,
+/// and what does not fit goes to the tile worker.
 #[cfg(test)]
 mod wrap_resize_tests;
 /// Always-on soft wrap in the window:
@@ -320,7 +336,8 @@ use render::{bind_appearance, render};
 pub use start::run;
 /// Tile bounds of the displayed and requested windows.
 use tile::TileBounds;
-/// The worker thread that builds scroll re-centers, held by the state.
+/// The worker thread that builds scroll re-centers,
+/// held by the state.
 use tile_build::TileWorker;
 /// What a background measurement is valid for.
 use tile_pass::PassKey;
@@ -354,30 +371,40 @@ struct State {
     first: usize,
     /// Bounded number of materialized source lines.
     count: usize,
-    /// The part of those lines the next tile holds, when they are too tall for one raster.
+    /// The part of those lines the next tile holds,
+    /// when they are too tall for one raster.
     clip: Option<Clip>,
-    /// Physical pixels per logical pixel as of the last render or viewport report, which the tile's size limit uses.
+    /// Physical pixels per logical pixel as of the last render or viewport report,
+    /// which the tile's size limit uses.
     scale: f32,
     /// What:
-    ///  The wrap width in logical pixels every line is broken at, or zero before the window reported one.
+    ///  The wrap width in logical pixels every line is broken at,
+    /// or zero before the window reported one.
     /// Why:
-    ///  The text area's width minus the caret room; a width of zero or less keeps the last width.
+    ///  The text area's width minus the caret room;
+    /// a width of zero or less keeps the last width.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
     /// width: number; // 0 until the view has a width
     /// ```
     width: f32,
-    /// How many visual rows every line takes, as far as it is known:
-    ///  exact for lines measured at `width`, the last known count for the rest, one for a line never measured.
+    /// How many visual rows every line takes,
+    /// as far as it is known:
+    ///  exact for lines measured at `width`,
+    /// the last known count for the rest,
+    /// one for a line never measured.
     wrap_rows: LineRows,
     /// The text `wrap_rows` describes.
     wrap_text: Option<DocumentStamp>,
-    /// Counter of changes to `wrap_rows`, part of the row key.
+    /// Counter of changes to `wrap_rows`,
+    /// part of the row key.
     wrap_version: u64,
-    /// What the pass last posted to the worker was for, and the syntax snapshot it used.
+    /// What the pass last posted to the worker was for,
+    /// and the syntax snapshot it used.
     pass_posted: Option<(PassKey, usize)>,
-    /// The symbol the gutter shows on a continuation row, chosen once from the fonts.
+    /// The symbol the gutter shows on a continuation row,
+    /// chosen once from the fonts.
     sign: Option<Sign>,
     /// The display scale the gutter's sign image was painted for.
     sign_scale: Option<u32>,
@@ -498,26 +525,40 @@ struct State {
     ///  on change notifications,
     ///  or on a timer while unwatched.
     refresh: SourceRefresh,
-    /// Bounds of the tile on screen: the frame, its gutter, and its line numbers.
-    /// It stays on screen while a scroll re-center is built, so it can differ from the requested window.
+    /// Bounds of the tile on screen:
+    /// the frame,
+    /// its gutter,
+    /// and its line numbers.
+    /// It stays on screen while a scroll re-center is built,
+    /// so it can differ from the requested window.
     shown: TileBounds,
-    /// Scroll re-center the reader's last viewport change asked for, until it is shown or superseded.
+    /// Scroll re-center the reader's last viewport change asked for,
+    /// until it is shown or superseded.
     scroll_wanted: Option<TileBounds>,
     /// A viewport report changed the wrap width and the next render is to take it on the window thread within an
-    /// allowance; the render clears it.
+    /// allowance;
+    /// the render clears it.
     rewrap: bool,
-    /// Bounds of the tile last queued for the worker and not cancelled; its result is accepted only while set.
+    /// Bounds of the tile last queued for the worker and not cancelled;
+    /// its result is accepted only while set.
     tile_job: Option<TileBounds>,
-    /// The tile worker thread, started on the first scroll re-center.
+    /// The tile worker thread,
+    /// started on the first scroll re-center.
     tile_worker: Option<TileWorker>,
     /// Polls the tile worker's replies on the window thread while a re-center is queued.
     tile_poll: Timer,
-    /// The minimap beside the source text: its size, worker, timers, and the drag in progress.
+    /// The minimap beside the source text:
+    /// its size,
+    /// worker,
+    /// timers,
+    /// and the drag in progress.
     minimap: minimap::MinimapState,
     /// What:
-    ///  Calls of `render`, counted in debug builds for the structural tests of the overscan tile.
+    ///  Calls of `render`,
+    /// counted in debug builds for the structural tests of the overscan tile.
     /// Why:
-    ///  A scroll inside the tile must not even enter `render`, which would still update models.
+    ///  A scroll inside the tile must not even enter `render`,
+    /// which would still update models.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -525,52 +566,70 @@ struct State {
     /// ```
     #[cfg(debug_assertions)]
     renders: u64,
-    /// Source tiles rasterized, counted in debug builds: one per re-center.
+    /// Source tiles rasterized,
+    /// counted in debug builds:
+    /// one per re-center.
     #[cfg(debug_assertions)]
     tiles_painted: u64,
-    /// Source rows shaped, counted in debug builds: a row taken from the cache is not counted.
+    /// Source rows shaped,
+    /// counted in debug builds:
+    /// a row taken from the cache is not counted.
     #[cfg(debug_assertions)]
     rows_shaped: u64,
-    /// Source images set on the window, counted in debug builds.
+    /// Source images set on the window,
+    /// counted in debug builds.
     #[cfg(debug_assertions)]
     images_set: u64,
-    /// Kept rows the window thread broke again at a new width, counted in debug builds.
+    /// Kept rows the window thread broke again at a new width,
+    /// counted in debug builds.
     #[cfg(debug_assertions)]
     rows_rebroken: u64,
-    /// Changes of width the window thread took at once, counted in debug builds.
+    /// Changes of width the window thread took at once,
+    /// counted in debug builds.
     #[cfg(debug_assertions)]
     rewrapped: u64,
-    /// Changes of width left to the tile worker because they did not fit the allowance, counted in debug builds.
+    /// Changes of width left to the tile worker because they did not fit the allowance,
+    /// counted in debug builds.
     #[cfg(debug_assertions)]
     rewrap_deferred: u64,
-    /// Lines and work the last immediate change of width was charged, counted in debug builds.
+    /// Lines and work the last immediate change of width was charged,
+    /// counted in debug builds.
     #[cfg(debug_assertions)]
     rewrap_spent: (usize, usize),
-    /// Scroll re-center tiles completed by the tile worker, counted in debug builds when their result arrives.
+    /// Scroll re-center tiles completed by the tile worker,
+    /// counted in debug builds when their result arrives.
     #[cfg(debug_assertions)]
     worker_tiles: u64,
-    /// Source rows shaped by the tile worker, counted in debug builds from its results.
+    /// Source rows shaped by the tile worker,
+    /// counted in debug builds from its results.
     #[cfg(debug_assertions)]
     worker_rows_shaped: u64,
-    /// Worker tiles swapped in, counted in debug builds.
+    /// Worker tiles swapped in,
+    /// counted in debug builds.
     #[cfg(debug_assertions)]
     tiles_applied: u64,
-    /// Worker tiles discarded as stale, counted in debug builds.
+    /// Worker tiles discarded as stale,
+    /// counted in debug builds.
     #[cfg(debug_assertions)]
     tiles_discarded: u64,
-    /// Outputs of the background pass applied on the window thread, counted in debug builds.
+    /// Outputs of the background pass applied on the window thread,
+    /// counted in debug builds.
     #[cfg(debug_assertions)]
     pass_applied: u64,
-    /// Most lines of the pass's output applied in one window-thread callback, counted in debug builds.
+    /// Most lines of the pass's output applied in one window-thread callback,
+    /// counted in debug builds.
     #[cfg(debug_assertions)]
     pass_most_lines: usize,
-    /// Lines of the pass's output applied on the window thread, counted in debug builds.
+    /// Lines of the pass's output applied on the window thread,
+    /// counted in debug builds.
     #[cfg(debug_assertions)]
     pass_lines: u64,
-    /// Lines the worker shaped for the pass, counted in debug builds from its outputs.
+    /// Lines the worker shaped for the pass,
+    /// counted in debug builds from its outputs.
     #[cfg(debug_assertions)]
     pass_shaped: u64,
-    /// Kept rows the worker broke again for the pass, counted in debug builds from its outputs.
+    /// Kept rows the worker broke again for the pass,
+    /// counted in debug builds from its outputs.
     #[cfg(debug_assertions)]
     pass_rebroken: u64,
 }

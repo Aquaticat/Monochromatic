@@ -11,7 +11,8 @@
 //!  with the whole file system and the project read-only,
 //!  and with a cleared environment.
 
-/// A bounded run, and what it gives back.
+/// A bounded run,
+/// and what it gives back.
 pub use super::run::{Completed, run_bounded};
 /// The same sandbox recipe,
 ///  probe,
@@ -47,7 +48,8 @@ use std::{
 ///  `lockfile`,
 ///  `offline`,
 ///  `yes`.
-///  A project's own `[settings]` cannot override them: an environment variable wins over a
+///  A project's own `[settings]` cannot override them:
+/// an environment variable wins over a
 ///  configuration file (measured with `mise settings get`).
 pub const SAFE_ENVIRONMENT: &[(&str, &str)] = &[
     ("MISE_AUTO_INSTALL", "false"),
@@ -147,7 +149,8 @@ pub fn find_mise() -> Option<PathBuf> {
 ///  `find_mise` with the application's `PATH` and home directory given.
 ///  `Option<&OsStr>` is a `PATH` value that may be unset.
 /// Why:
-///  A test passes its own, so the answer does not depend on the machine.
+///  A test passes its own,
+/// so the answer does not depend on the machine.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -15,8 +15,10 @@ use crate::shaped_row::{ReadingRect, ShapedRow};
 ///  The part of a tile's lines that its raster holds,
 ///  as two distances in logical pixels from the top of the first materialized line's block.
 /// Why:
-///  A tile holds whole lines, and one line wrapped to thousands of rows would pass the raster limit.
-///  The clip keeps the rows near the view; rows outside it are not painted,
+///  A tile holds whole lines,
+/// and one line wrapped to thousands of rows would pass the raster limit.
+///  The clip keeps the rows near the view;
+/// rows outside it are not painted,
 ///  and the gutter and the other row lists leave them out.
 ///
 /// In TS you'd write (pseudocode):
@@ -25,9 +27,11 @@ use crate::shaped_row::{ReadingRect, ShapedRow};
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Clip {
-    /// Where the raster starts, below the top of the first line's block.
+    /// Where the raster starts,
+    /// below the top of the first line's block.
     pub top: f32,
-    /// Where the raster ends, below the top of the first line's block.
+    /// Where the raster ends,
+    /// below the top of the first line's block.
     pub bottom: f32,
 }
 
@@ -63,7 +67,8 @@ pub struct ShapedView {
     pub height: u32,
     /// Top of the raster in logical pixels from the top of the text:
     ///  the top of the first materialized
-    /// line's block, or the clip's top below it.
+    /// line's block,
+    /// or the clip's top below it.
     pub origin: f32,
     /// The vertical mapping this frame was shaped against;
     ///  rows outside the frame are placed by it.

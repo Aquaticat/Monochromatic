@@ -396,7 +396,8 @@ fn view_follows_the_caret_with_the_smallest_scroll() {
     window.hide().expect("close caret window");
 }
 
-/// A caret on a continuation row of a long wrapped line scrolls its own visual row into view, not only the line.
+/// A caret on a continuation row of a long wrapped line scrolls its own visual row into view,
+/// not only the line.
 #[test]
 fn view_follows_the_caret_across_the_visual_rows_of_a_wrapped_line() {
     let fixture = tempfile::tempdir().expect("disposable caret project");

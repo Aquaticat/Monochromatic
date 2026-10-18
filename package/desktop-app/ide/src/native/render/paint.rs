@@ -26,7 +26,8 @@ use ide_app::source_frame::FrameStamp;
 use ide_app::text_raster::CodeColors;
 /// A wrap width must be a positive number of pixels.
 use ide_app::wrap::has_wrap_width;
-/// The most bytes a raster may hold, and the height of one code row.
+/// The most bytes a raster may hold,
+/// and the height of one code row.
 use ide_app::{row_map::CODE_ROW, text_raster::MAX_RASTER_BYTES};
 /// The window's display scale for the paint inputs.
 use slint::ComponentHandle;
@@ -36,7 +37,9 @@ use std::sync::Arc;
 /// What:
 ///  Logical pixels the raster extends past the wrap width.
 /// Why:
-///  The raster holds glyphs, the terminator mark, and underlines of the row ends;
+///  The raster holds glyphs,
+/// the terminator mark,
+/// and underlines of the row ends;
 ///  everything else the window draws over it is drawn by the markup.
 ///
 /// In TS you'd write (pseudocode):
@@ -45,11 +48,13 @@ use std::sync::Arc;
 /// ```
 const RASTER_MARGIN: f32 = 24.0;
 
-/// Raster width of a window that has not reported a width yet, in logical pixels.
+/// Raster width of a window that has not reported a width yet,
+/// in logical pixels.
 const UNWRAPPED_RASTER_WIDTH: f32 = 1300.0;
 
 /// What:
-///  Paint inputs that come from the window and the find state, read once per frame.
+///  Paint inputs that come from the window and the find state,
+/// read once per frame.
 /// Why:
 ///  A tile's paint identity and its job are both built from these values,
 ///  so the window and the worker see the same inputs.
@@ -73,7 +78,8 @@ pub(in crate::native) struct Paint {
 
 /// Read the paint inputs of the current frame.
 impl Paint {
-    /// Capture the window and find inputs; stale find results contribute no ranges.
+    /// Capture the window and find inputs;
+    /// stale find results contribute no ranges.
     pub(in crate::native) fn new(window: &AppWindow, current: &State) -> Self {
         return Self {
             scale: window.window().scale_factor(),
@@ -93,7 +99,8 @@ impl Paint {
 ///  The tallest tile in logical pixels whose raster stays within [`MAX_RASTER_BYTES`]
 ///  at wrap width `width` and display `scale`.
 /// Why:
-///  A tile is one image of the text area's width, so the limit on its bytes is a limit on its height;
+///  A tile is one image of the text area's width,
+/// so the limit on its bytes is a limit on its height;
 ///  a tile of lines taller than this is clipped to the rows near the view instead of being refused.
 ///  One code row is kept free for the rounding of the raster's size up to whole pixels.
 ///
@@ -112,7 +119,9 @@ pub(in crate::native) fn tile_cap(width: f32, scale: f32) -> f32 {
     return ((rows as f32 / scale).floor() - CODE_ROW).max(CODE_ROW);
 }
 
-/// The viewport of a tile at `bounds`: its lines broken at the wrap width, and a raster as wide as the text area.
+/// The viewport of a tile at `bounds`:
+/// its lines broken at the wrap width,
+/// and a raster as wide as the text area.
 pub(in crate::native) fn viewport_of(bounds: TileBounds, scale: f32) -> Viewport {
     let wrap = has_wrap_width(bounds.width).then_some(bounds.width);
     return Viewport {
@@ -127,7 +136,8 @@ pub(in crate::native) fn viewport_of(bounds: TileBounds, scale: f32) -> Viewport
     };
 }
 
-/// The paint identity of a tile at `bounds`, from the current document and the paint inputs.
+/// The paint identity of a tile at `bounds`,
+/// from the current document and the paint inputs.
 pub(in crate::native) fn stamp_for(
     current: &State,
     bounds: TileBounds,
@@ -143,7 +153,8 @@ pub(in crate::native) fn stamp_for(
     .with_annotations(annotate::visible(current, bounds), paint.inks);
 }
 
-/// Owned inputs of a tile at `bounds`, ready for the tile worker or for an immediate build.
+/// Owned inputs of a tile at `bounds`,
+/// ready for the tile worker or for an immediate build.
 pub(in crate::native) fn job(current: &State, bounds: TileBounds, paint: &Paint) -> TileJob {
     return TileJob {
         bounds,

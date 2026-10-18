@@ -82,7 +82,8 @@ pub enum Granularity {
 struct Press {
     /// When the button went down.
     at: Instant,
-    /// Visual row under the pointer, counted from the first row of the text.
+    /// Visual row under the pointer,
+    /// counted from the first row of the text.
     row: usize,
     /// Logical x inside the source text.
     x: f32,

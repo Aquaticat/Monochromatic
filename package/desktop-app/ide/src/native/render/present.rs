@@ -18,9 +18,11 @@ use slint::{Image, ModelRc, Rgba8Pixel, SharedPixelBuffer, SharedString, VecMode
 use std::{cell::RefCell, rc::Rc};
 
 /// What:
-///  Width of the cell the gutter's wrap indicator is painted in, in logical pixels.
+///  Width of the cell the gutter's wrap indicator is painted in,
+/// in logical pixels.
 /// Why:
-///  One space advance of the source font is 9 px; the cell leaves the mark some room at its right edge.
+///  One space advance of the source font is 9 px;
+/// the cell leaves the mark some room at its right edge.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -44,36 +46,46 @@ fn model_rows(rectangles: &[ReadingRect]) -> Vec<SourceSelection> {
 }
 
 /// What:
-///  What one presentation hands the window: new pixels, the offsets, and the frame's diagnostics.
+///  What one presentation hands the window:
+/// new pixels,
+/// the offsets,
+/// and the frame's diagnostics.
 /// Why:
-///  The tile swap and the synchronous path present through the same code, so they cannot disagree on order.
+///  The tile swap and the synchronous path present through the same code,
+/// so they cannot disagree on order.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type Frame = { pixels?: Pixels; matchesChanged: boolean; scale: number; scrolled?: number; sign?: Pixels };
 /// ```
 pub(in crate::native) struct Frame {
-    /// Pixels of a newly painted tile, when one was swapped in.
+    /// Pixels of a newly painted tile,
+    /// when one was swapped in.
     pub(in crate::native) pixels: Option<SharedPixelBuffer<Rgba8Pixel>>,
     /// Whether the match rectangles changed and must be handed over again.
     pub(in crate::native) matches_changed: bool,
-    /// Physical pixels per logical pixel, to size the image.
+    /// Physical pixels per logical pixel,
+    /// to size the image.
     pub(in crate::native) scale: f32,
     /// Scroll offset that settling the rows asked the window to take.
     pub(in crate::native) scrolled: Option<f32>,
     /// Line the language surface belongs to.
     pub(in crate::native) anchor_line: i32,
-    /// A failure to start or queue a tile, shown with the other diagnostics.
+    /// A failure to start or queue a tile,
+    /// shown with the other diagnostics.
     pub(in crate::native) notice: Option<String>,
-    /// The gutter's wrap indicator, painted again after a change of display scale.
+    /// The gutter's wrap indicator,
+    /// painted again after a change of display scale.
     pub(in crate::native) sign: Option<SharedPixelBuffer<Rgba8Pixel>>,
 }
 
 /// What:
 ///  Paint the gutter's wrap indicator for display scale `factor` when it has not been painted for it yet.
-///  The symbol is chosen once, from the fonts.
+///  The symbol is chosen once,
+/// from the fonts.
 /// Why:
-///  The image is set in the shaper and raster the source text uses, so the coverage check is about what is shown.
+///  The image is set in the shaper and raster the source text uses,
+/// so the coverage check is about what is shown.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -118,7 +130,12 @@ pub(super) fn ensure_sign(
     }
 }
 
-/// Present the displayed frame: its image and offsets, its gutter, rectangles, and caret, then the other readings.
+/// Present the displayed frame:
+/// its image and offsets,
+/// its gutter,
+/// rectangles,
+/// and caret,
+/// then the other readings.
 /// Each setter runs after the state borrow ends.
 pub(in crate::native) fn show(window: &AppWindow, state: &Rc<RefCell<State>>, frame: Frame) {
     let Frame {

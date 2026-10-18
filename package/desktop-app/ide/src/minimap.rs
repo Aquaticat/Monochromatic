@@ -1,14 +1,25 @@
-//! The minimap: the scroll control of the source view and the picture of the whole text it shows,
+//! The minimap:
+//! the scroll control of the source view and the picture of the whole text it shows,
 //!  with CodeGlance Pro's defaults.
 //!
-//! The geometry (`geometry`) is pure: the picture's scale and height, the viewport box, and the maps between a
-//!  position on the minimap, a scroll offset, and a visual row of the vertical mapping.
-//! The picture (`raster`) is built from that mapping on a worker thread, one pixel for each source column,
-//!  with a work budget, so its cost follows the height of the track and never the length of the text.
+//! The geometry (`geometry`) is pure:
+//! the picture's scale and height,
+//! the viewport box,
+//! and the maps between a
+//!  position on the minimap,
+//! a scroll offset,
+//! and a visual row of the vertical mapping.
+//! The picture (`raster`) is built from that mapping on a worker thread,
+//! one pixel for each source column,
+//!  with a work budget,
+//! so its cost follows the height of the track and never the length of the text.
 
-/// The minimap's sizes, the viewport box, and the maps between pixels and visual rows.
+/// The minimap's sizes,
+/// the viewport box,
+/// and the maps between pixels and visual rows.
 mod geometry;
-/// The picture of the whole text, built within a work budget.
+/// The picture of the whole text,
+/// built within a work budget.
 mod raster;
 
 /// The geometry's sizes,

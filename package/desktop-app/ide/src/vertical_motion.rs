@@ -3,14 +3,17 @@
 //!  PageUp,
 //!  and PageDown by visual row and shaped pixel position instead of character columns.
 //!
-//! A soft-wrapped line is several visual rows, and each step moves one of them.
+//! A soft-wrapped line is several visual rows,
+//! and each step moves one of them.
 //! The caret keeps aiming for the horizontal position where a run of vertical movements started
 //!  (IntelliJ's `CaretImpl.myDesiredX`),
 //! so passing through a short row or an empty line does not pull it to the left for the rows after it.
 //! Target lines are shaped on demand at the wrap width,
 //!  because a page movement usually leaves the materialized viewport.
 
-/// Canonical source, the current caret, and the side of a wrap offset it stands on.
+/// Canonical source,
+/// the current caret,
+/// and the side of a wrap offset it stands on.
 use crate::document::{Document, ReadingAffinity};
 /// A target row is hit in its middle.
 use crate::row_map::CODE_ROW;
@@ -50,7 +53,8 @@ pub struct PreferredColumn {
 ///
 /// `remembered` is used only when it belongs to the current caret position and side;
 ///  otherwise the caret's own x is taken.
-/// `width` is the wrap width in logical pixels, and a width that is not positive means no wrapping.
+/// `width` is the wrap width in logical pixels,
+/// and a width that is not positive means no wrapping.
 /// Moving up from the first row goes to the start of the text,
 ///  and down from the last row to its end,
 /// as an ordinary text view does.

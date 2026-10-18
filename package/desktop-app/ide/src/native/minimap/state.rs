@@ -12,7 +12,8 @@ use slint::Timer;
 use std::time::Instant;
 
 /// What:
-///  Where a drag of the viewport box started: the pointer's distance from the top of the minimap and the scroll
+///  Where a drag of the viewport box started:
+/// the pointer's distance from the top of the minimap and the scroll
 ///  offset at that moment.
 /// Why:
 ///  The box follows the pointer one to one from where it was grabbed.
@@ -25,23 +26,29 @@ use std::time::Instant;
 pub(super) struct Drag {
     /// Pointer distance from the top of the minimap at the press.
     pub(super) start_y: f32,
-    /// Scroll offset at the press, or after the jump the press made.
+    /// Scroll offset at the press,
+    /// or after the jump the press made.
     pub(super) start_offset: f32,
 }
 
 /// What:
-///  Everything the window keeps for the minimap besides the picture, which the toolkit holds.
+///  Everything the window keeps for the minimap besides the picture,
+/// which the toolkit holds.
 /// Why:
-///  One value in the state, so the minimap adds a single field there.
+///  One value in the state,
+/// so the minimap adds a single field there.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// type MinimapState = { size: [number, number]; worker?: Worker; posted?: Key; shown?: Key; drag?: Drag };
 /// ```
 pub(in crate::native) struct MinimapState {
-    /// Logical width and height of the minimap column, as the markup last reported them; zero before the layout.
+    /// Logical width and height of the minimap column,
+    /// as the markup last reported them;
+    /// zero before the layout.
     pub(in crate::native) size: (f32, f32),
-    /// The worker thread, started with the first request.
+    /// The worker thread,
+    /// started with the first request.
     pub(super) worker: Option<MinimapWorker>,
     /// Polls the worker's replies while one is awaited.
     pub(super) poll: Timer,
@@ -51,7 +58,9 @@ pub(in crate::native) struct MinimapState {
     pub(in crate::native) posted: Option<Key>,
     /// When the newest request was posted.
     pub(super) last_post: Option<Instant>,
-    /// What the previous look at the window, in `note`, was for.
+    /// What the previous look at the window,
+    /// in `note`,
+    /// was for.
     pub(super) noted: Option<Key>,
     /// What the picture on screen is valid for.
     pub(in crate::native) shown: Option<Key>,
@@ -59,20 +68,25 @@ pub(in crate::native) struct MinimapState {
     pub(super) next_id: u64,
     /// Number of the request whose picture is on screen.
     pub(in crate::native) shown_id: u64,
-    /// Number of the request whose final picture is awaited, or zero.
+    /// Number of the request whose final picture is awaited,
+    /// or zero.
     pub(super) awaited: u64,
     /// The drag in progress.
     pub(super) drag: Option<Drag>,
-    /// Requests posted, counted in debug builds for the structural tests.
+    /// Requests posted,
+    /// counted in debug builds for the structural tests.
     #[cfg(debug_assertions)]
     pub(in crate::native) posts: u64,
-    /// Pictures set on the window, counted in debug builds.
+    /// Pictures set on the window,
+    /// counted in debug builds.
     #[cfg(debug_assertions)]
     pub(in crate::native) images_set: u64,
-    /// Finished pictures dropped as stale, counted in debug builds.
+    /// Finished pictures dropped as stale,
+    /// counted in debug builds.
     #[cfg(debug_assertions)]
     pub(in crate::native) dropped: u64,
-    /// The cost of the picture on screen, kept in debug builds.
+    /// The cost of the picture on screen,
+    /// kept in debug builds.
     #[cfg(debug_assertions)]
     pub(in crate::native) last_stats: Option<ide_app::minimap::Stats>,
 }

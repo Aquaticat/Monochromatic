@@ -111,18 +111,27 @@ pub(crate) fn layout_with_tabs(
 /// What:
 ///  Most passes of the wrapped tab correction of one line.
 /// Why:
-///  A correction moves the breaks of the rows after it, and each pass fixes the corrections of the rows it measured
-///  correctly: row `n` is right after at most `n + 1` passes, because a row depends only on the rows before it.
-///  Measured on 2026-10-12, lines of 20,000 to 100,000 characters settled after 4 to 76 passes, never near their
-///  255 to 1,265 rows, but the count is not known beforehand and each pass costs one shaping of the whole line.
+///  A correction moves the breaks of the rows after it,
+/// and each pass fixes the corrections of the rows it measured
+///  correctly:
+/// row `n` is right after at most `n + 1` passes,
+/// because a row depends only on the rows before it.
+///  Measured on 2026-10-12,
+/// lines of 20,000 to 100,000 characters settled after 4 to 76 passes,
+/// never near their
+///  255 to 1,265 rows,
+/// but the count is not known beforehand and each pass costs one shaping of the whole line.
 pub const TAB_PASSES: usize = 40;
 
 /// What:
 ///  Most characters the corrective passes of one line may shape in all.
 /// Why:
-///  Every pass shapes the whole line, so a line of a hundred thousand characters would cost forty shapings:
-///  measured on 2026-10-12 in the release profile, 2.3 to 4.8 s for such a line on a loaded host.
-///  The passes allowed fall with the length of the line, so the work stays near this many characters,
+///  Every pass shapes the whole line,
+/// so a line of a hundred thousand characters would cost forty shapings:
+///  measured on 2026-10-12 in the release profile,
+/// 2.3 to 4.8 s for such a line on a loaded host.
+///  The passes allowed fall with the length of the line,
+/// so the work stays near this many characters,
 ///  and the tabs on the first rows of a very long line are exact while those far down may stand off their stops.
 ///
 /// In TS you'd write (pseudocode):
@@ -131,14 +140,18 @@ pub const TAB_PASSES: usize = 40;
 /// ```
 pub const TAB_BUDGET: usize = 1_000_000;
 
-/// Fewest corrective passes any line gets, however long it is.
+/// Fewest corrective passes any line gets,
+/// however long it is.
 pub const TAB_MIN_PASSES: usize = 4;
 
 /// What:
-///  How many corrective passes a line of `length` bytes gets: [`TAB_PASSES`] for a line short enough,
-///  otherwise the budget divided by its length, and never fewer than [`TAB_MIN_PASSES`].
+///  How many corrective passes a line of `length` bytes gets:
+/// [`TAB_PASSES`] for a line short enough,
+///  otherwise the budget divided by its length,
+/// and never fewer than [`TAB_MIN_PASSES`].
 /// Why:
-///  The bound on the work depends on the line, not only on a count of passes.
+///  The bound on the work depends on the line,
+/// not only on a count of passes.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -170,7 +183,8 @@ pub(crate) fn tabs_on_first_row(layout: &Layout<u32>, tabs: &[usize]) -> bool {
     return tabs.iter().all(|byte| return *byte < end);
 }
 
-/// Index of the visual row that holds display byte `byte`, a byte on a row boundary being on the lower row.
+/// Index of the visual row that holds display byte `byte`,
+/// a byte on a row boundary being on the lower row.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -199,11 +213,14 @@ fn row_of(layout: &Layout<u32>, byte: usize) -> usize {
     return low.saturating_sub(1);
 }
 
-/// Extra advance for each tab of a wrapped layout, in logical pixels, so every tab ends on a stop.
+/// Extra advance for each tab of a wrapped layout,
+/// in logical pixels,
+/// so every tab ends on a stop.
 ///
 /// Each tab's position is taken from `layout` with the corrections in `applied` removed from its row,
 ///  so the answer does not depend on which corrections were applied.
-/// Tab stops restart on every visual row, because a row starts at its own offset (the continuation indent).
+/// Tab stops restart on every visual row,
+/// because a row starts at its own offset (the continuation indent).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -248,7 +265,8 @@ fn wrapped_spacings(
     return spacings;
 }
 
-/// Whether two correction lists name the same tabs with the same extra advance, within `SPACING_TOLERANCE`.
+/// Whether two correction lists name the same tabs with the same extra advance,
+/// within `SPACING_TOLERANCE`.
 fn same_spacings(left: &[(usize, f32)], right: &[(usize, f32)]) -> bool {
     return left.len() == right.len()
         && left.iter().zip(right).all(|(first, second)| {
@@ -256,7 +274,8 @@ fn same_spacings(left: &[(usize, f32)], right: &[(usize, f32)]) -> bool {
         });
 }
 
-/// Total extra advance of a correction list, the measure by which the fitting of two lists is compared.
+/// Total extra advance of a correction list,
+/// the measure by which the fitting of two lists is compared.
 fn total_extra(spacings: &[(usize, f32)]) -> f32 {
     return spacings.iter().map(|(_, extra)| return *extra).sum();
 }
@@ -268,13 +287,20 @@ fn total_extra(spacings: &[(usize, f32)]) -> f32 {
 ///  recomputes the stops,
 ///  and stops when the corrections no longer change.
 /// Why:
-///  A correction can move a break, so the passes repeat until the rows agree.
-///  Row `n` depends only on rows before it, so the passes settle within the number of rows plus one.
-///  The one exception is a tab that ends its row: widened to its stop it no longer fits and moves to the next row,
-///  where the stop needs no widening, and unwidened it fits again.
-///  Such a pair of corrections repeats forever, so a correction equal to the one two passes back ends the loop
-///  with the layout that has the smaller corrections, the one in which the tab fits.
-///  At most `passes_for` passes run in any case, so the result is always deterministic and bounded.
+///  A correction can move a break,
+/// so the passes repeat until the rows agree.
+///  Row `n` depends only on rows before it,
+/// so the passes settle within the number of rows plus one.
+///  The one exception is a tab that ends its row:
+/// widened to its stop it no longer fits and moves to the next row,
+///  where the stop needs no widening,
+/// and unwidened it fits again.
+///  Such a pair of corrections repeats forever,
+/// so a correction equal to the one two passes back ends the loop
+///  with the layout that has the smaller corrections,
+/// the one in which the tab fits.
+///  At most `passes_for` passes run in any case,
+/// so the result is always deterministic and bounded.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

@@ -1,10 +1,19 @@
-//! Home, End, Up, Down, and paging on the visual rows of wrapped lines, without a window.
-//! Every test runs at several wrap widths and at scales 1 and 2, on lines the same shaper wraps as the source view.
-//! Rows that start or end with a tab, rows that fit exactly, and a wrapped line at the end of the file are covered.
+//! Home,
+//! End,
+//! Up,
+//! Down,
+//! and paging on the visual rows of wrapped lines,
+//! without a window.
+//! Every test runs at several wrap widths and at scales 1 and 2,
+//! on lines the same shaper wraps as the source view.
+//! Rows that start or end with a tab,
+//! rows that fit exactly,
+//! and a wrapped line at the end of the file are covered.
 
 /// Canonical source and the reading position with its side of a wrap offset.
 use ide_app::document::{Document, ReadingAffinity, ReadingPosition};
-/// The pure Home and End rules, and the shaped form the key handler calls.
+/// The pure Home and End rules,
+/// and the shaped form the key handler calls.
 use ide_app::line_boundary::{CaretPlace, Edge, end, home, moved_to_edge, row_containing};
 /// Shaper and the rows it produces.
 use ide_app::shaped_text::TextShaper;
@@ -13,12 +22,16 @@ use ide_app::vertical_motion::{PreferredColumn, vertical};
 /// Source character ranges of visual rows.
 use std::ops::Range;
 
-/// Wrap widths in logical pixels: a narrow pane, a middle one, a wide one.
+/// Wrap widths in logical pixels:
+/// a narrow pane,
+/// a middle one,
+/// a wide one.
 const WIDTHS: [f32; 3] = [240.0, 410.0, 700.0];
 /// Display scales the movements are checked at.
 const SCALES: [f32; 2] = [1.0, 2.0];
 
-/// A document whose caret is at `head` on `affinity`, with no selection.
+/// A document whose caret is at `head` on `affinity`,
+/// with no selection.
 fn at(text: &str, head: usize, affinity: ReadingAffinity) -> Document {
     let mut document = Document::new(text);
     document.select(ReadingPosition {
@@ -42,7 +55,8 @@ fn cells(width: f32, scale: f32) -> usize {
     return (width / advance(scale)).floor() as usize;
 }
 
-/// Visual rows of line `line` of `text` as global character ranges, shaped at `width` and `scale`.
+/// Visual rows of line `line` of `text` as global character ranges,
+/// shaped at `width` and `scale`.
 fn rows_of(text: &str, line: usize, width: f32, scale: f32) -> Vec<Range<usize>> {
     let document = Document::new(text);
     let mut shaper = TextShaper::new();
@@ -62,13 +76,18 @@ fn prose(width: f32, scale: f32) -> String {
     return text.trim_end().to_string();
 }
 
-/// A line whose second row starts with a tab: a first row filled by an unbreakable token, a blank that hangs on it
-///  (an overflowing blank stays on the upper row, so a tab right after it starts the next row), then the tab.
+/// A line whose second row starts with a tab:
+/// a first row filled by an unbreakable token,
+/// a blank that hangs on it
+///  (an overflowing blank stays on the upper row,
+/// so a tab right after it starts the next row),
+/// then the tab.
 fn tab_starts_a_row(width: f32, scale: f32) -> String {
     return format!("{} \ttail words", "m".repeat(cells(width, scale)));
 }
 
-/// A line whose first row ends with a tab that fills it exactly, then a token that fills the next row.
+/// A line whose first row ends with a tab that fills it exactly,
+/// then a token that fills the next row.
 fn tab_ends_a_row(width: f32, scale: f32) -> String {
     return format!(
         "{}\t{} more words",
@@ -77,13 +96,17 @@ fn tab_ends_a_row(width: f32, scale: f32) -> String {
     );
 }
 
-/// A line of an unbreakable token whose rows all fit the width exactly: the first row holds `cells` glyphs and each
-///  continuation row one less, because of the indent that stands for the wrap mark.
+/// A line of an unbreakable token whose rows all fit the width exactly:
+/// the first row holds `cells` glyphs and each
+///  continuation row one less,
+/// because of the indent that stands for the wrap mark.
 fn exact_fit(width: f32, scale: f32) -> String {
     return "m".repeat(cells(width, scale) * 3 - 2);
 }
 
-/// Every row range of a line tiles its text: each starts where the one before ended, the last ends at the line end.
+/// Every row range of a line tiles its text:
+/// each starts where the one before ended,
+/// the last ends at the line end.
 fn assert_tiles(rows: &[Range<usize>], line_end: usize, label: &str) {
     assert_eq!(rows[0].start, 0, "{label}: the first row starts the line");
     for pair in rows.windows(2) {
@@ -96,7 +119,8 @@ fn assert_tiles(rows: &[Range<usize>], line_end: usize, label: &str) {
     );
 }
 
-/// The fixtures wrap the way the tests below need, at every width and scale.
+/// The fixtures wrap the way the tests below need,
+/// at every width and scale.
 #[test]
 fn the_fixtures_wrap_as_described() {
     for width in WIDTHS {
@@ -151,7 +175,8 @@ fn the_fixtures_wrap_as_described() {
     }
 }
 
-/// The caret at the end of an upper row belongs to that row, and at the start of the lower row to the lower one.
+/// The caret at the end of an upper row belongs to that row,
+/// and at the start of the lower row to the lower one.
 #[test]
 fn a_wrap_offset_belongs_to_the_row_the_side_names() {
     let rows = vec![0..5, 5..9, 9..12];
@@ -171,7 +196,8 @@ fn a_wrap_offset_belongs_to_the_row_the_side_names() {
     assert_eq!(row_containing(&rows, 12, ReadingAffinity::Upstream), 2);
 }
 
-/// A line "  first row  second row  third" in three rows, to exercise the rules with exact characters.
+/// A line "  first row  second row  third" in three rows,
+/// to exercise the rules with exact characters.
 fn sample() -> (ide_app::document::Document, Vec<Range<usize>>) {
     // Characters: 2 blanks, "first" 2..7, blank 7, "row" 8..11, 2 blanks 11..13 | "second" 13..19, blank 19,
     // "row" 20..23, 2 blanks 23..25 | "third" 25..30.
@@ -191,7 +217,8 @@ fn place(head: usize, affinity: ReadingAffinity) -> CaretPlace {
     return CaretPlace { head, affinity };
 }
 
-/// Home on a row goes to its start, from the start of a continuation row to the first non-blank character,
+/// Home on a row goes to its start,
+/// from the start of a continuation row to the first non-blank character,
 ///  and on the first row it alternates between the line start and the first non-blank character.
 #[test]
 fn home_goes_to_the_row_start_then_the_first_non_blank() {
@@ -263,8 +290,10 @@ fn home_goes_to_the_row_start_then_the_first_non_blank() {
     );
 }
 
-/// End goes to the end of the row without its trailing blanks, then to the row end,
-///  then from the row end to the logical line end, which again leaves its trailing blanks out first.
+/// End goes to the end of the row without its trailing blanks,
+/// then to the row end,
+///  then from the row end to the logical line end,
+/// which again leaves its trailing blanks out first.
 #[test]
 fn end_goes_to_the_row_end_then_the_line_end() {
     let (document, rows) = sample();
@@ -341,7 +370,8 @@ fn end_goes_to_the_row_end_then_the_line_end() {
     );
 }
 
-/// Press Home or End from `head` until the place stops changing, collecting each place.
+/// Press Home or End from `head` until the place stops changing,
+/// collecting each place.
 fn press_until_still(
     shaper: &mut TextShaper,
     text: &str,
@@ -363,8 +393,11 @@ fn press_until_still(
     return places;
 }
 
-/// On shaped rows, Home from the middle of every continuation row goes to the row start, then to the line's first
-///  non-blank character, and the caret is drawn on the row it names.
+/// On shaped rows,
+/// Home from the middle of every continuation row goes to the row start,
+/// then to the line's first
+///  non-blank character,
+/// and the caret is drawn on the row it names.
 #[test]
 fn home_on_shaped_rows_at_every_width_and_scale() {
     for width in WIDTHS {
@@ -413,7 +446,8 @@ fn home_on_shaped_rows_at_every_width_and_scale() {
     }
 }
 
-/// On shaped rows, End walks from the first row's start to every row end and to the line end,
+/// On shaped rows,
+/// End walks from the first row's start to every row end and to the line end,
 ///  the end of an upper row being drawn on that row.
 #[test]
 fn end_on_shaped_rows_at_every_width_and_scale() {
@@ -488,7 +522,8 @@ fn end_on_shaped_rows_at_every_width_and_scale() {
     }
 }
 
-/// The caret at the end of an exact-fit row is drawn on that row; the same offset downstream is on the next.
+/// The caret at the end of an exact-fit row is drawn on that row;
+/// the same offset downstream is on the next.
 #[test]
 fn an_exact_fit_row_end_is_drawn_on_the_upper_row_only_when_the_side_says_so() {
     for width in WIDTHS {
@@ -511,7 +546,11 @@ fn an_exact_fit_row_end_is_drawn_on_the_upper_row_only_when_the_side_says_so() {
     }
 }
 
-/// Global visual rows of `text`: every line's rows in order, as (line, row, range).
+/// Global visual rows of `text`:
+/// every line's rows in order,
+/// as (line,
+/// row,
+/// range).
 fn all_rows(text: &str, width: f32, scale: f32) -> Vec<(usize, usize, Range<usize>)> {
     let document = Document::new(text);
     let mut shaper = TextShaper::new();
@@ -531,7 +570,10 @@ fn all_rows(text: &str, width: f32, scale: f32) -> Vec<(usize, usize, Range<usiz
     return result;
 }
 
-/// A document of wrapped lines, a short line, an empty line, and a wrapped line at the end of the file.
+/// A document of wrapped lines,
+/// a short line,
+/// an empty line,
+/// and a wrapped line at the end of the file.
 fn several_lines(width: f32, scale: f32) -> String {
     return format!(
         "{}\nshort\n\n{}\n{}",
@@ -559,7 +601,8 @@ fn caret_row(document: &Document, width: f32, scale: f32) -> usize {
     return in_line[row_containing(&ranges, position.head, position.affinity)];
 }
 
-/// Down and Up from the start of the text visit the start of every visual row in turn, whatever the line is.
+/// Down and Up from the start of the text visit the start of every visual row in turn,
+/// whatever the line is.
 #[test]
 fn down_and_up_visit_every_visual_row() {
     for width in WIDTHS {
@@ -620,7 +663,8 @@ fn down_and_up_visit_every_visual_row() {
     }
 }
 
-/// The remembered x survives rows that are shorter or have an indent, and the caret returns to its place.
+/// The remembered x survives rows that are shorter or have an indent,
+/// and the caret returns to its place.
 #[test]
 fn the_remembered_x_survives_short_rows_and_returns() {
     for width in WIDTHS {
@@ -674,7 +718,8 @@ fn the_remembered_x_survives_short_rows_and_returns() {
     }
 }
 
-/// A caret aiming past the end of a shorter upper row lands at that row's end, drawn on the upper row.
+/// A caret aiming past the end of a shorter upper row lands at that row's end,
+/// drawn on the upper row.
 #[test]
 fn a_target_row_shorter_than_the_aim_ends_on_that_row() {
     for width in WIDTHS {
@@ -737,7 +782,8 @@ fn a_target_row_shorter_than_the_aim_ends_on_that_row() {
     }
 }
 
-/// A step of many rows crosses lines of different heights and stops on the last row, and on the first.
+/// A step of many rows crosses lines of different heights and stops on the last row,
+/// and on the first.
 #[test]
 fn a_page_of_rows_crosses_wrapped_lines_and_clamps() {
     for width in WIDTHS {
@@ -775,8 +821,10 @@ fn a_page_of_rows_crosses_wrapped_lines_and_clamps() {
     }
 }
 
-/// A blank that overflows the last row hangs on it, and the empty line the engine adds after it is no row:
-///  the rows tile the text, the caret at the end of the text is on the last real row at its right edge.
+/// A blank that overflows the last row hangs on it,
+/// and the empty line the engine adds after it is no row:
+///  the rows tile the text,
+/// the caret at the end of the text is on the last real row at its right edge.
 #[test]
 fn a_hanging_blank_at_the_end_of_the_text_leaves_no_empty_row() {
     let mut tails = 0;
@@ -831,7 +879,8 @@ fn a_hanging_blank_at_the_end_of_the_text_leaves_no_empty_row() {
 }
 
 /// A remembered column belongs to one side of a wrap offset:
-///  the end of an upper row and the start of the next row are the same position, but not the same place.
+///  the end of an upper row and the start of the next row are the same position,
+/// but not the same place.
 #[test]
 fn a_remembered_column_belongs_to_one_side_of_a_wrap_offset() {
     for width in WIDTHS {

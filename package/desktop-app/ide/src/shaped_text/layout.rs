@@ -11,7 +11,8 @@ use crate::row_map::CODE_ROW;
 use crate::source_style::role_face;
 /// Height and text size of the virtual rows above annotated lines.
 use crate::virtual_row::{ROW_HEIGHT, ROW_TEXT};
-/// IntelliJ's break rules as a Parley override, and the continuation indent of a wrapped line.
+/// IntelliJ's break rules as a Parley override,
+/// and the continuation indent of a wrapped line.
 use crate::wrap::{INTELLIJ_LINE_BREAK, break_wrapped, has_wrap_width};
 /// Font and paragraph layout are supplied by the same Parley stack Slint uses.
 use parley::{
@@ -27,7 +28,11 @@ const ROW_FAMILY: &str = "Inter Variable";
 
 /// What:
 ///  The inputs that shape one source line:
-///  display text, scale, syntax roles, tab spacings, and an optional wrap width.
+///  display text,
+/// scale,
+/// syntax roles,
+/// tab spacings,
+/// and an optional wrap width.
 /// Why:
 ///  Plain and wrapped layouts share one builder,
 ///  and the wrap width is the only difference between them.
@@ -38,15 +43,19 @@ const ROW_FAMILY: &str = "Inter Variable";
 /// ```
 #[derive(Clone, Copy)]
 pub(crate) struct LineRequest<'a> {
-    /// Display text, with each tab stood in by one space.
+    /// Display text,
+    /// with each tab stood in by one space.
     pub(crate) text: &'a str,
     /// Physical pixels per logical pixel.
     pub(crate) scale: f32,
-    /// Syntax role runs as display byte start, end, and brush.
+    /// Syntax role runs as display byte start,
+    /// end,
+    /// and brush.
     pub(crate) roles: &'a [(usize, usize, u32)],
     /// Extra advance per display byte in logical pixels.
     pub(crate) spacings: &'a [(usize, f32)],
-    /// Wrap width in logical pixels, or nothing for an unbroken line.
+    /// Wrap width in logical pixels,
+    /// or nothing for an unbroken line.
     pub(crate) wrap: Option<f32>,
 }
 
@@ -200,7 +209,8 @@ impl TextShaper {
     ///  Break the text of one virtual row into pieces that each fit `width` logical pixels,
     ///  in the face and size [`Self::row_layout`] sets it;
     ///  a token wider than the width breaks inside it.
-    ///  The answer is the pieces in reading order, trailing blanks dropped;
+    ///  The answer is the pieces in reading order,
+    /// trailing blanks dropped;
     ///  an empty text has none.
     /// Why:
     ///  Hint labels and message rows wrap to the width of the code they stand over,
@@ -225,7 +235,8 @@ impl TextShaper {
         return pieces;
     }
 
-    /// Shape virtual-row text in the interface face, broken at `wrap` logical pixels or not at all.
+    /// Shape virtual-row text in the interface face,
+    /// broken at `wrap` logical pixels or not at all.
     fn build_row(&mut self, text: &str, scale: f32, wrap: Option<f32>) -> Layout<u32> {
         let mut builder = self
             .layouts

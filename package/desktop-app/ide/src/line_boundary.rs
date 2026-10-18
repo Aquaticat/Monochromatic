@@ -1,15 +1,20 @@
 //! Home and End on the visual rows of a soft-wrapped line.
 //!
 //! The rules are IntelliJ Community's `EditorActionUtil.moveCaretToLineStart` and `moveCaretToLineEnd`
-//!  with smart Home on (`platform/platform-impl`, commit `d0936c36705bdaf87deca0f157a40c651345600c`).
+//!  with smart Home on (`platform/platform-impl`,
+//! commit `d0936c36705bdaf87deca0f157a40c651345600c`).
 //! Home goes to the start of the visual row;
 //!  at the start of a continuation row it goes to the first non-blank character of the logical line's first row;
 //!  on the first row it alternates between the line start and the first non-blank character.
-//! End goes to the end of the visual row, leaving trailing blanks out;
+//! End goes to the end of the visual row,
+//! leaving trailing blanks out;
 //!  a caret already there goes to the end of the logical line.
-//! The rows are given as ranges of source characters, so the rules need no shaping and a test can feed them directly.
-//! Differences from IntelliJ: the caret cannot stand in the indent of a continuation row or beyond the end of a line
-//!  (there is no virtual space), so the step into the indent and the smart-indent column of a blank line are left out.
+//! The rows are given as ranges of source characters,
+//! so the rules need no shaping and a test can feed them directly.
+//! Differences from IntelliJ:
+//! the caret cannot stand in the indent of a continuation row or beyond the end of a line
+//!  (there is no virtual space),
+//! so the step into the indent and the smart-indent column of a blank line are left out.
 
 /// Canonical source and the caret whose row the keys read.
 use crate::document::{Document, ReadingAffinity};
@@ -21,8 +26,10 @@ use helix_core::RopeSlice;
 use std::ops::Range;
 
 /// What:
-///  A caret place: the character position and the side of a wrap offset it is drawn on;
-///  `usize` is the address-sized index ropes use (siblings `u32`, `u64`).
+///  A caret place:
+/// the character position and the side of a wrap offset it is drawn on;
+///  `usize` is the address-sized index ropes use (siblings `u32`,
+/// `u64`).
 /// Why:
 ///  A result at the end of an upper row and one at the start of the lower row are the same character position,
 ///  and only the side tells them apart.
@@ -48,9 +55,14 @@ fn downstream(head: usize) -> CaretPlace {
 }
 
 /// What:
-///  Space, tab, and the line terminators: the characters IntelliJ's `findFirstNonSpaceOffsetInRange` passes over.
+///  Space,
+/// tab,
+/// and the line terminators:
+/// the characters IntelliJ's `findFirstNonSpaceOffsetInRange` passes over.
 /// Why:
-///  Home looks for the first character that is none of them; a row never holds a terminator, so only blanks count.
+///  Home looks for the first character that is none of them;
+/// a row never holds a terminator,
+/// so only blanks count.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -62,9 +74,12 @@ fn is_blank(character: char) -> bool {
 
 /// What:
 ///  Index of the visual row that holds the caret at `head` on the side `affinity`.
-///  `rows` are the ranges of all visual rows of one logical line, in order, ending at the end of its visible text.
+///  `rows` are the ranges of all visual rows of one logical line,
+/// in order,
+/// ending at the end of its visible text.
 /// Why:
-///  A wrap offset ends the upper row and starts the lower one; `Upstream` picks the upper row.
+///  A wrap offset ends the upper row and starts the lower one;
+/// `Upstream` picks the upper row.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -83,7 +98,8 @@ pub fn row_containing(rows: &[Range<usize>], head: usize, affinity: ReadingAffin
     return found;
 }
 
-/// Position of the first character of `row` that is not a blank, or nothing when the row is all blanks.
+/// Position of the first character of `row` that is not a blank,
+/// or nothing when the row is all blanks.
 fn first_non_blank(text: RopeSlice, row: &Range<usize>) -> Option<usize> {
     return (row.start..row.end).find(|index| return !is_blank(text.char(*index)));
 }
@@ -93,9 +109,11 @@ fn first_non_blank(text: RopeSlice, row: &Range<usize>) -> Option<usize> {
 ///  `text` is the document's rope;
 ///  `rows` are the ranges of the visual rows of the caret's logical line.
 /// Why:
-///  Past the start of a visual row, Home goes to that start.
+///  Past the start of a visual row,
+/// Home goes to that start.
 ///  At the start of a continuation row it goes to the first non-blank character of the line's first row.
-///  On the first row, a caret at the line start goes to the first non-blank character,
+///  On the first row,
+/// a caret at the line start goes to the first non-blank character,
 ///  one after that character or inside the indent goes to the line start,
 ///  and one further right goes to the first non-blank character.
 ///
@@ -128,13 +146,16 @@ pub fn home(
 }
 
 /// What:
-///  Where End moves the caret at `head` on `affinity`, under the same arguments as [`home`].
+///  Where End moves the caret at `head` on `affinity`,
+/// under the same arguments as [`home`].
 /// Why:
-///  A caret that is not at the end of its visual row goes to that end, trailing blanks left out,
+///  A caret that is not at the end of its visual row goes to that end,
+/// trailing blanks left out,
 ///  and a caret at the blank-free end goes to the end including the blanks.
 ///  A caret at the end of a visual row that is not the last goes to the end of the logical line instead,
 ///  again left of its trailing blanks first.
-///  The end of an upper row is drawn on that row, so it is `Upstream`.
+///  The end of an upper row is drawn on that row,
+/// so it is `Upstream`.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -207,10 +228,12 @@ pub enum Edge {
 }
 
 /// What:
-///  Where `edge` moves the document's caret, with the line shaped at the wrap width `width`.
+///  Where `edge` moves the document's caret,
+/// with the line shaped at the wrap width `width`.
 ///  A width that is not positive means the line is not wrapped.
 /// Why:
-///  The visual rows of the caret's line are known only to the shaper, and the line may be outside the
+///  The visual rows of the caret's line are known only to the shaper,
+/// and the line may be outside the
 ///  materialized rows.
 ///
 /// In TS you'd write (pseudocode):

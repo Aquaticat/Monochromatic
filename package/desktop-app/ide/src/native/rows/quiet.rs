@@ -53,7 +53,8 @@ thread_local! {
     static HELD_CLOCK: Cell<Option<Instant>> = const { Cell::new(None) };
 }
 
-/// Hold the scrolling rule's clock at `at`, or let it run again with `None`.
+/// Hold the scrolling rule's clock at `at`,
+/// or let it run again with `None`.
 #[cfg(test)]
 pub(in crate::native) fn hold_clock(at: Option<Instant>) {
     HELD_CLOCK.with(|held| held.set(at));
