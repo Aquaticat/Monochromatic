@@ -937,45 +937,25 @@ for `gpt-6-luna`,
 and `gpt-6-astra` under `providers/openai`,
 with two further overrides under `providers/openai-fast`.
 
-Security finding,
-and it runs against the direction of this audit:
-`~/.pi/agent/models.json` stores the `llmgateway-devpass` API key in
-plaintext in the `apiKey` field.
-The file is mode `0644`,
-world-readable.
-DSH does not do this.
-Its providers use `apiKeyEnv` indirection
-(`QWEN_TOKEN_PLAN_INDIVIDUAL_API_KEY`,
-`OPENCODE_GO_API_KEY`),
-and its credential store `~/.dsh/.credentials.yaml` is mode `0600`.
-This is a Pi defect worth fixing,
-not a DSH gap.
+Credential handling on this machine was measured as part of the audit,
+and it produced findings on the Pi and Claude Code sides.
+Those concern local file permissions,
+key placement,
+and one key that reached a session transcript,
+so they are recorded in a companion file matching the `*.local.*` pattern at
+`.gitignore:11` rather than here.
+This repository is public and auto-pushes,
+and a tracked audit is not the place for them.
+The split is dated 2026-10-18;
+earlier revisions of this document carried the detail in the open.
 
-### Two more files in the same class, measured 2026-10-18
-
-One of them holds the secret in a logged position.
-`~/.claude.json` is mode `0644` and declares the `linkup` MCP server with its
-API key embedded in the server URL as an `apiKey=` query parameter,
-so the key is world-readable locally and also travels in the request target,
-which reaches Linkup's access logs on every call.
-`~/.pi/agent/mcp.json` is mode `0644`.
-By contrast `~/.dsh/.credentials.yaml` is `0600`,
-as is the `pi-search-fetch.json` written during the web search remediation,
-so DSH remains the only one of the three harnesses storing credentials
-correctly.
-The owner decision was to leave all three files untouched and record the
-finding here.
-
-Exposure incident,
-recorded because rotation is the only remedy and it is the owner's to perform.
-While inventorying MCP server targets for the priority list,
-the full Linkup API key was printed into the session transcript from
-`~/.claude.json`.
-A separate step in the same thread leaked the first four characters of the Exa
-key.
-Both keys should be treated as disclosed and rotated.
-The transcript is the exposure surface rather than the files,
-so tightening file permissions would not remediate it.
+The DSH side of the comparison belongs in this document,
+and it is a positive finding.
+Every provider in the profile patch declares `apiKeyEnv` indirection and no
+inline key,
+five of each measured,
+and the credential store `~/.dsh/.credentials.yaml` is mode `0600`.
+The two harnesses it was compared against do not match that.
 
 Two genuine DSH gaps in this area.
 The DSH patch declares no reasoning or thinking-level configuration for its
@@ -1230,20 +1210,7 @@ done or settled rather than open.
    It is the one hook with a direct,
    measurable context cost.
 
-7. Rotate the plaintext `llmgateway-devpass` API key in
-   `~/.pi/agent/models.json` and move it to an environment variable.
-   This is a Pi defect surfaced by the comparison,
-   and the file is mode `0644`.
-
-8. Fix the stale `enabledMcpjsonServers` entries in
-   `.claude/settings.local.json`,
-   which name two servers with no
-   `.mcp.json` behind them.
-   Re-confirmed 2026-10-18 at `.claude/settings.local.json:592-595`,
-   naming `slint-music-player` and `slint-terminal`,
-   with no `.mcp.json` in the repo root.
-
-9. Guard the `preset-cordis` override against upgrade drift.
+7. Guard the `preset-cordis` override against upgrade drift.
    Measured 2026-10-18:
    the override restates all 35 ids of the shipped preset in the same order,
    23 of them top-level plugin rows and the rest nested group children,
@@ -1260,6 +1227,11 @@ done or settled rather than open.
    that items 1 and 3 depend on.
    Proposed and not taken,
    so it stays open.
+
+Machine-local findings from this audit,
+covering credential handling and local harness configuration,
+are tracked in a companion file matching the `*.local.*` pattern at
+`.gitignore:11` and are deliberately not listed here.
 
 ## Surfaces this audit did not exercise
 
