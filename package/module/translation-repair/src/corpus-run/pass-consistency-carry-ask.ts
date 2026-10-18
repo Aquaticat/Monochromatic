@@ -10,7 +10,7 @@ import {
   type CarryWriterSubject,
 } from '../consistency-carry-writer-sheet.ts';
 import {
-  CONSISTENCY_CHOICE_RESPONSE_FORMAT,
+  consistencyChoiceResponseFormat,
   usableChoiceFor,
 } from '../consistency-choice.ts';
 import { codePointLength, } from '../code-points.ts';
@@ -266,6 +266,9 @@ export async function askCarryWriters(
 
  @param stageSettings - straggler windows the entry file read for this launch
 
+ @param runOff - whether this is the run-off among the candidates that tied for first, whose sheet shows those candidates only
+ and whose answer is kept under a key of its own; the first ask among all of them where absent
+
  @returns The choices heard, the quorum the gather closed on and its findings
 
  @throws {@link import('../stage-roster-repeat.ts').StageRosterRepeatError} when the bench seats one model twice
@@ -285,6 +288,7 @@ export async function askCarryChoice(
     exchangeTimeoutMs,
     l,
     stageSettings,
+    runOff = false,
   }: {
     readonly client: SyntheticClient;
     readonly modelIds: readonly RosterModelId[];
@@ -294,12 +298,20 @@ export async function askCarryChoice(
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
     readonly stageSettings: StageSettings;
+    readonly runOff?: boolean;
   },
 ): Promise<CarryChoiceAsked> {
   /**
    The sheet every judge reads.
    */
   const messages = buildCarryChoiceMessages({ subject, },);
+  /**
+   Labels the sheet shows, the only labels a reply may use.
+   */
+  const labels = subject.candidates
+    .map(function labelOf({ label, },): string {
+      return label;
+    },);
   /**
    The choices' record, and whether the cache supplied it.
    */
@@ -312,27 +324,27 @@ export async function askCarryChoice(
     messages,
     signal,
     exchangeTimeoutMs,
-    responseFormat: CONSISTENCY_CHOICE_RESPONSE_FORMAT,
-    validate: usableChoiceFor({
-      labels: subject.candidates
-        .map(function labelOf({ label, },): string {
-          return label;
-        },),
-    },),
-    stage: 'page-consistency-choice',
+    responseFormat: consistencyChoiceResponseFormat({ labels, },),
+    validate: usableChoiceFor({ labels, },),
+    stage: runOff ? 'page-consistency-choice-run-off' : 'page-consistency-choice',
     graceMs: stageSettings
       .grace
       .roundMs,
     cache,
     key: consistencyKey({
-      stage: 'choice',
+      stage: runOff ? 'choice-run-off' : 'choice',
       messages,
       modelIds,
       ...((subject.lifeEnded === undefined) ? {} : { lifeEnded: subject.lifeEnded, }),
       ...((subject.subjectNames === undefined) ? {} : { subjectNames: subject.subjectNames, }),
     },),
     readStored: storedChoices,
-    recordOf: choiceRecordOf,
+    recordOf: function recordFor(gathered,): ConsistencyChoiceRecord {
+      return choiceRecordOf({
+        ...gathered,
+        labels,
+      },);
+    },
     l,
   },);
   return {

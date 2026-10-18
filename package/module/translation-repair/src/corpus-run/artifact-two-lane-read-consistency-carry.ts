@@ -328,6 +328,7 @@ export function parseConsistencyCarry(
       'ballots',
       'usable',
       'quorum',
+      'runOff',
       'decision',
     ],
     path,
@@ -362,6 +363,14 @@ export function parseConsistencyCarry(
       value: record.quorum,
       path: `${path}.quorum`,
     },),
+    ...((record.runOff === undefined)
+      ? {}
+      : {
+        runOff: parseConsistencyRunOff({
+          value: record.runOff,
+          path: `${path}.runOff`,
+        },),
+      }),
     decision: parseDecision({
       value: record.decision,
       path: `${path}.decision`,

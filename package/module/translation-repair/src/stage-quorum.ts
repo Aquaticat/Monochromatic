@@ -234,6 +234,10 @@ type RoundsOutcome<ValueT,> = {
  @param fanOut - whether a round asks the window of quorum plus one, the
  production default, or the whole bench a fixture scripting every seat asks for
 
+ @param benchStart - seat the bench's rotation starts at in place of the
+ prompt's own, which a launch pins in its `StageSettings` so that the seats
+ asked move with no sheet text (`rotatedBench`); absent in production
+
  @returns Heard voices plus quorum verdict and degradation findings
 
  @throws {@link StageRosterRepeatError} when the roster seats one model more
@@ -259,6 +263,7 @@ export async function gatherStageVoices<ValueT,>(
     maxRetryRounds = STAGE_RETRY_ROUNDS,
     graceMs,
     fanOut = 'window',
+    benchStart,
     decision,
     seatTally = RUN_SEATS,
   }: ForeignBorrowed<{
@@ -275,6 +280,7 @@ export async function gatherStageVoices<ValueT,>(
     readonly maxRetryRounds?: number;
     readonly graceMs: number;
     readonly fanOut?: FanOutMode;
+    readonly benchStart?: number;
     readonly decision?: StageDecision;
     readonly seatTally?: SeatTally;
   }>,
@@ -414,6 +420,8 @@ export async function gatherStageVoices<ValueT,>(
     let pending: readonly RosterModelId[] = rotatedBench({
       modelIds: seated,
       messages,
+      // Conditional spread keeps the pinned seat absent instead of undefined.
+      ...((benchStart === undefined) ? {} : { start: benchStart, }),
     },);
 
     for (let round = 0; round <= maxRetryRounds; round += 1) {

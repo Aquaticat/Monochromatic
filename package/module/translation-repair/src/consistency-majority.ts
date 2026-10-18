@@ -5,6 +5,7 @@ import {
   type MarksBeside,
 } from './consistency-fold.ts';
 import {
+  canonicalBallotOf,
   type ConsistencyQuoteWire,
   isUsableConsistencyBallot,
 } from './consistency-wire.ts';
@@ -457,7 +458,7 @@ export function tiedForFirstOf(
     voices,
     labels,
   }: {
-    readonly voices: readonly ConsistencyVoice[];
+    readonly voices: readonly { readonly choice: string; }[];
     readonly labels: readonly string[];
   },
 ): readonly string[] {
@@ -492,7 +493,9 @@ export function tiedForFirstOf(
 }
 
 /**
- The ballots that can be counted against the places a sheet showed.
+ The ballots that can be counted against the places a sheet showed, each with the places it names written as the sheet showed
+ them (its choice, its kept places and the label of each quote), so a ballot stored in the form the judge wrote is counted as
+ one stored in the shown form, and the majorities of this module compare one label per place.
 
  @param voices - every heard ballot with its seat
 
@@ -514,11 +517,16 @@ export function usableVoicesOf(
     readonly labels: readonly string[];
   },
 ): readonly ConsistencyVoice[] {
-  return voices.filter(function counts(voice,): boolean {
+  return voices.flatMap(function counted(voice,): readonly ConsistencyVoice[] {
     return isUsableConsistencyBallot({
       ballot: voice,
       labels,
-    },);
+    },)
+      ? canonicalBallotOf({
+        ballot: voice,
+        labels,
+      },)
+      : [];
   },);
 }
 

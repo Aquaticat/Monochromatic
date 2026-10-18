@@ -1,4 +1,5 @@
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
+import { shownLabelOf, } from './consistency-label-form.ts';
 import {
   isJsonArray,
   isJsonRecord,
@@ -177,42 +178,118 @@ export function isConsistencyBallotWire(value: unknown,): value is ConsistencyBa
 }
 
 /**
- Whether a label list names only shown places, each once.
+ The shown labels a list of names stands for, in order, as a list of one list: none when a name stands for no shown label (or
+ for two), or when two names stand for one place.
 
- @param labels - labels a ballot gave
-
+ @param names - what a ballot gave as labels
  @param shown - labels the sheet showed
 
- @returns Whether every label is shown and none repeats
+ @returns The shown label of each name, as a list of zero or one
 
  @example
  ```ts
- namesShownOnce({ labels: ['OCCURRENCE 2',], shown: ['OCCURRENCE 1', 'OCCURRENCE 2',], },);
+ const [labels,] = shownOnceLabelsOf({ names: ['2',], shown: ['OCCURRENCE 1', 'OCCURRENCE 2',], },); // ['OCCURRENCE 2']
  ```
  */
-function namesShownOnce(
+function shownOnceLabelsOf(
   {
-    labels,
+    names,
     shown,
   }: {
-    readonly labels: readonly string[];
+    readonly names: readonly string[];
     readonly shown: readonly string[];
   },
-): boolean {
+): readonly (readonly string[])[] {
   /**
-   The labels the sheet showed, as a set, so each label a ballot gave is looked up in constant time and the work grows with the
-   number of labels, never with the number of pairs of labels.
+   The shown label each name stands for, none when it stands for none.
    */
-  const shownLabels = new Set(shown,);
-  return labels.every(function isShown(label,): boolean {
-    return shownLabels.has(label,);
-  },) && (new Set(labels,).size === labels.length);
+  const found = names.map(function labelOf(name,): readonly string[] {
+    return shownLabelOf({
+      name,
+      shown,
+    },);
+  },);
+  /**
+   The labels of the names that stood for one.
+   */
+  const labels = found.flat();
+  return ((labels.length === names.length) && (new Set(labels,).size === labels.length)) ? [labels,] : [];
+}
+
+/**
+ The ballot with the places it names written as the sheet showed them (its choice, its kept places and the label of each of its
+ quotes, whatever case or form the judge wrote them in), when it can name them: every one stands for exactly one shown place and
+ no place is kept twice or quoted twice. Every other field of the ballot is kept.
+
+ @param ballot - ballot of the right shape, with whatever else the reply carries
+ @param labels - labels the sheet showed
+
+ @returns The ballot with the shown labels, as a list of zero or one
+
+ @example
+ ```ts
+ const [canonical,] = canonicalBallotOf({ ballot, labels: consistencyLabels({ count: 2, },), },);
+ ```
+ */
+export function canonicalBallotOf<BallotT extends ConsistencyBallotWire,>(
+  {
+    ballot,
+    labels,
+  }: {
+    readonly ballot: BallotT;
+    readonly labels: readonly string[];
+  },
+): readonly BallotT[] {
+  /**
+   The shown place the choice stands for.
+   */
+  const [chosen,] = shownLabelOf({
+    name: ballot.choice,
+    shown: labels,
+  },);
+  /**
+   The shown places the kept places stand for.
+   */
+  const [kept,] = shownOnceLabelsOf({
+    names: ballot.keep,
+    shown: labels,
+  },);
+  /**
+   The shown places the quotes were taken from.
+   */
+  const [quoted,] = shownOnceLabelsOf({
+    names: ballot.quotes
+      .map(function labelOf(quote,): string {
+        return quote.label;
+      },),
+    shown: labels,
+  },);
+  if ((chosen === undefined) || (kept === undefined) || (quoted === undefined))
+    return [];
+  return [
+    {
+      ...ballot,
+      choice: chosen,
+      keep: kept,
+      quotes: ballot.quotes
+        .map(function quoteAt(
+          quote,
+          position,
+        ): ConsistencyQuoteWire {
+          return {
+            ...quote,
+            label: quoted[position] ?? quote.label,
+          };
+        },),
+    },
+  ];
 }
 
 /**
  Whether a ballot can be counted against the places a sheet showed: it gives
  a reason that shows a reader something, chooses a shown place, keeps only
- shown places, and quotes only shown places, each once.
+ shown places, and quotes only shown places, each once, every place written as the
+ sheet showed it or in another form of it.
 
  @param ballot - ballot of the right shape
 
@@ -236,18 +313,10 @@ export function isUsableConsistencyBallot(
 ): boolean {
   if (rendersAsNothing({ text: ballot.reason, },))
     return false;
-  if (!labels.includes(ballot.choice,))
-    return false;
-  return namesShownOnce({
-    labels: ballot.keep,
-    shown: labels,
-  },) && namesShownOnce({
-    labels: ballot.quotes
-      .map(function labelOf(quote,): string {
-        return quote.label;
-      },),
-    shown: labels,
-  },);
+  return canonicalBallotOf({
+    ballot,
+    labels,
+  },).length > 0;
 }
 
 /**
@@ -275,51 +344,65 @@ export function usableConsistencyBallotFor(
 }
 
 /**
- Structured-output constraint for consistency replies. `reason` is declared
- first, and `slot` is the one optional property.
+ Structured-output constraint for consistency replies, built for one ask. `reason` is declared first, `slot` is the one
+ optional property, and the three fields that name a place (`choice`, each kept place and the label of each quote) list the
+ labels the sheet showed as an `enum`, so a provider that enforces the schema can answer with no other.
+
+ @param labels - labels the sheet showed, the only labels a reply may use
+
+ @returns The constraint for this ask
+
+ @example
+ ```ts
+ const format = consistencyResponseFormat({ labels: consistencyLabels({ count: 2, },), },);
+ ```
  */
-export const CONSISTENCY_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
-  type: 'json_schema',
-  json_schema: {
-    name: 'page_consistency',
-    schema: {
-      type: 'object',
-      required: [
-        'reason',
-        'quotes',
-        'choice',
-        'keep',
-      ],
-      additionalProperties: false,
-      // REASON DECLARED BEFORE CHOICE, as the sheet's reply shape shows it
-      // (owner, 2026-10-11, "Reason before vote").
-      properties: {
-        reason: { type: 'string', },
-        quotes: {
-          type: 'array',
-          items: {
-            type: 'object',
-            required: [
-              'label',
-              'quote',
-            ],
-            additionalProperties: false,
-            properties: {
-              label: { type: 'string', },
-              quote: { type: 'string', },
-              slot: { type: 'string', },
+export function consistencyResponseFormat(
+  { labels, }: { readonly labels: readonly string[]; },
+): JsonSchemaResponseFormat {
+  return {
+    type: 'json_schema',
+    json_schema: {
+      name: 'page_consistency',
+      schema: {
+        type: 'object',
+        required: [
+          'reason',
+          'quotes',
+          'choice',
+          'keep',
+        ],
+        additionalProperties: false,
+        // REASON DECLARED BEFORE CHOICE, as the sheet's reply shape shows it
+        // (owner, 2026-10-11, "Reason before vote").
+        properties: {
+          reason: { type: 'string', },
+          quotes: {
+            type: 'array',
+            items: {
+              type: 'object',
+              required: [
+                'label',
+                'quote',
+              ],
+              additionalProperties: false,
+              properties: {
+                label: { type: 'string', enum: [...labels,], },
+                quote: { type: 'string', },
+                slot: { type: 'string', },
+              },
             },
           },
-        },
-        choice: { type: 'string', },
-        keep: {
-          type: 'array',
-          items: { type: 'string', },
+          choice: { type: 'string', enum: [...labels,], },
+          keep: {
+            type: 'array',
+            items: { type: 'string', enum: [...labels,], },
+          },
         },
       },
     },
-  },
-};
+  };
+}
 
 /**
  What a sheet shows of the English of one place.

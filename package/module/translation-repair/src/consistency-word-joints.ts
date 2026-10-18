@@ -3,12 +3,16 @@ import {
   codePointAt,
   codePointBefore,
 } from './code-points.ts';
-import {
-  APOSTROPHE_JOINERS,
-  CLOSING_BRACKETS,
-} from './consistency-closing-marks.ts';
+import { APOSTROPHE_JOINERS, } from './consistency-closing-marks.ts';
 import { isCornerBracket, } from './consistency-corner-brackets.ts';
-import { CLOSING_CURLY_DOUBLE, } from './consistency-markup-runs.ts';
+import {
+  type FoldedLinks,
+  NO_FOLDED_LINKS,
+} from './consistency-folded-links.ts';
+import {
+  CLOSING_BRACKETS,
+  CLOSING_CURLY_DOUBLE,
+} from './consistency-markup-runs.ts';
 import { continuesLatinWordOrCompatibilityForm, } from './latin-letters.ts';
 
 //region Consistency word joints
@@ -35,6 +39,9 @@ import { continuesLatinWordOrCompatibilityForm, } from './latin-letters.ts';
 // (`consistency-proven-apostrophes.ts`) and the form reader ask the same question of a
 // character beside a single mark, so a mark this file reads as joining is a mark they
 // read as attached, and the word the locator finds is the word the splice moves.
+// A LINK THAT SHOWS A READER NOTHING (`[](u)`, `![](u)`, a reference with an empty label) NEITHER ENDS A WORD NOR STARTS ONE (n169):
+// every reading beside a stand, forward and backward, steps over a run of such links as it steps over the delimiters of emphasis, in
+// any order with them, so `kit[](u)'kit` reads as `kit'kit` and `kit-[](u)kit` as `kit-kit` (`pastHiddenUnits`).
 // THE RULE, by mark:
 //
 // - A hyphen joins when each side is a letter or a digit: `so` is no stand
@@ -220,47 +227,122 @@ function joins(
 }
 
 /**
- The first offset, from one offset on in one direction, that holds no delimiter of emphasis.
+ No delimiter of emphasis: the reading that steps over links that show nothing alone passes this in place of the parse's delimiters.
+ */
+const NO_EMPHASIS: ReadonlySet<number> = new Set();
+
+/**
+ The first offset, from one offset on in one direction, that holds neither a delimiter of emphasis nor a unit of a link that shows
+ nothing. A link that shows nothing (`[](u)`, `![](u)`) is stepped over whole, from its first unit forward or from its last unit
+ backward, and may stand between delimiters of emphasis or between runs of them, so the reading takes them in any order and any
+ number (n169).
 
  @param text - folded English
 
  @param emphasis - the offsets in the fold of the delimiters of emphasis, strong emphasis and strikethrough by the parse; a
  lone asterisk or underscore is none
 
+ @param links - the links the parse holds, at the offsets of the fold
+
  @param from - offset the reading starts at
 
  @param step - `1` to read on, `-1` to read back
 
- @returns The offset, which may lie outside the text when delimiters run to its edge
+ @returns The offset, which may lie outside the text when delimiters and links run to its edge
 
  @example
  ```ts
- const at = pastEmphasis({ text: '**so**-called', emphasis: new Set([0, 1, 4, 5,],), from: 4, step: 1, },); // 6
+ const at = pastHiddenUnits({ text: '**so**-called', emphasis: new Set([0, 1, 4, 5,],), links: NO_FOLDED_LINKS, from: 4, step: 1, },); // 6
  ```
  */
-function pastEmphasis(
+function pastHiddenUnits(
   {
     text,
     emphasis,
+    links,
     from,
     step,
   }: {
     readonly text: string;
     readonly emphasis: ReadonlySet<number>;
+    readonly links: FoldedLinks;
     readonly from: number;
     readonly step: -1 | 1;
   },
 ): number {
   /**
+   The links that show nothing, by their last unit and by their first.
+   */
+  const {
+    emptyStarts,
+    emptyEnds,
+  } = links;
+  /**
    The offset reached, mutated only inside this function.
    */
   const reached = { at: from, };
   while ((reached.at >= 0) && (reached.at < text.length)) {
-    if (!emphasis.has(reached.at,))
+    if (emphasis.has(reached.at,)) {
+      reached.at += step;
+      continue;
+    }
+    /**
+     The first unit of the link that ends at the offset reached, absent where no link that shows nothing ends there.
+     */
+    const first = emptyStarts.get(reached.at,);
+    /**
+     The offset past the link that starts at the offset reached, reading on, or before the link that ends at it, reading back, absent
+     where no link shows nothing there.
+     */
+    const past = (step === 1)
+      ? emptyEnds.get(reached.at,)
+      : ((first === undefined) ? undefined : (first - 1));
+    if (past === undefined)
       break;
-    reached.at += step;
+    reached.at = past;
   }
   return reached.at;
+}
+
+/**
+ Where the run of empty links directly before a unit starts: the offset itself when no empty link ends directly before it.
+ Each step moves to the start of one link, so the reading is one pass over the run.
+
+ @param links - the links the parse holds, at the offsets of the fold
+
+ @param at - offset of the unit asked about
+
+ @returns The offset of the first unit of the run, `at` for no run
+
+ @example
+ ```ts
+ const start = startOfEmptyLinksBefore({ links: { ...NO_FOLDED_LINKS, emptyStarts: new Map([[6, 2,],],), }, at: 7, },); // 2
+ ```
+ */
+function startOfEmptyLinksBefore(
+  {
+    links,
+    at,
+  }: {
+    readonly links: FoldedLinks;
+    readonly at: number;
+  },
+): number {
+  /**
+   For the last unit of each empty link, the offset of its first unit.
+   */
+  const { emptyStarts, } = links;
+  /**
+   Where the run starts so far, moved back over one link at a time, mutated only inside this function.
+   */
+  const run = { start: at, };
+  for (
+    let first = emptyStarts.get(run.start - 1,);
+    first !== undefined;
+    first = emptyStarts.get(run.start - 1,)
+  )
+    run.start = first;
+  return run.start;
 }
 
 /**
@@ -276,7 +358,10 @@ function pastEmphasis(
  opening mark or the start of the text where the backward reading stops
  (`*'Tis the season*`, `('em)`), one after a straight double quotation mark
  (`"'Tis"`, and `s bowl` in `"cat"'s bowl`), which cannot say whether it closes or
- opens, and one that no letter follows. A stand that ends before the apostrophe is
+ opens, one after a link whose label shows marks or spaces and no letter or digit (`[-](u)'kit`), and one that no letter follows.
+ A link whose label shows nothing (`[](u)`, `[](u "t")`, `[]()`, a reference with an empty label, an image with no alt text) is no
+ neighbour of the apostrophe at all: the characters before the run of such links directly before the apostrophe are read as if the
+ links were not there, so `a [](u)'kit` is no joint and `kit[](u)'kit` is one. A stand that ends before the apostrophe is
  read forward instead, by {@link closingMarksThenApostrophe}.
 
  @param folded - the English in the fold
@@ -285,6 +370,8 @@ function pastEmphasis(
 
  @param emphasis - the offsets in the fold of the delimiters of emphasis by the parse, the only marks read past
 
+ @param links - the links the parse holds, at the offsets of the fold
+
  @param at - offset of the unit asked about, which may lie outside the text
 
  @returns Whether the unit is an apostrophe that is a joint
@@ -292,7 +379,7 @@ function pastEmphasis(
  @example
  ```ts
  const text = 'the **cat**\'s bowl';
- const joint = apostropheJoinsAt({ folded: text, originals: Array.from(text,), emphasis: new Set([4, 5, 9, 10,],), at: 11, },); // true
+ const joint = apostropheJoinsAt({ folded: text, originals: Array.from(text,), emphasis: new Set([4, 5, 9, 10,],), links: NO_FOLDED_LINKS, at: 11, },); // true
  ```
  */
 function apostropheJoinsAt(
@@ -300,11 +387,13 @@ function apostropheJoinsAt(
     folded,
     originals,
     emphasis,
+    links,
     at,
   }: {
     readonly folded: string;
     readonly originals: readonly string[];
     readonly emphasis: ReadonlySet<number>;
+    readonly links: FoldedLinks;
     readonly at: number;
   },
 ): boolean {
@@ -320,23 +409,44 @@ function apostropheJoinsAt(
     at: at + 1,
   },);
   /**
-   Offset of the last character before the apostrophe that is no emphasis mark, none when the marks run to the start.
+   Offset where the units a reader sees before the apostrophe end: the apostrophe's own, or the start of the run of empty links
+   directly before it.
    */
-  const beforeEmphasis = pastEmphasis({
+  const seen = startOfEmptyLinksBefore({
+    links,
+    at,
+  },);
+  /**
+   Offset of the last character before the apostrophe that is no emphasis mark and no unit of a link that shows nothing, none when
+   they run to the start.
+   */
+  const beforeHidden = pastHiddenUnits({
     text: folded,
     emphasis,
+    links,
     from: at - 1,
     step: -1,
   },);
   if (continuesLatinWordOrCompatibilityForm({
     character: codePointBefore({
       text: folded,
-      at: beforeEmphasis + 1,
+      at: beforeHidden + 1,
     },),
   },) && continuesLatinWordOrCompatibilityForm({ character: after, },))
     return true;
+  // A LINK THAT SHOWS NO WORD CONTINUES NO WORD RUN (n166 Z9, n168): the `)` of `[-](u)` is a closing bracket that nothing a reader
+  // sees as a word stands before, so the apostrophe after it is no joint (`consistency-link-label.ts`). A link that shows nothing is
+  // stepped over by `startOfEmptyLinksBefore`, so what is read here is what stands before it.
+  /**
+   The last unit of each link whose label shows marks and no letter or digit.
+   */
+  const { markOnlyEnds, } = links;
+  /**
+   Whether the apostrophe stands after a closing bracket that continues the word run: a bracket that closes no link of marks.
+   */
+  const afterBracket = CLOSING_BRACKETS.has(folded.charAt(seen - 1,),) && (!markOnlyEnds.has(seen - 1,));
   return continuesLatinWordOrCompatibilityForm({ character: after, },)
-    && (CLOSING_BRACKETS.has(folded.charAt(at - 1,),) || (originals[at - 1] === CLOSING_CURLY_DOUBLE));
+    && (afterBracket || (originals[seen - 1] === CLOSING_CURLY_DOUBLE));
 }
 
 /**
@@ -349,10 +459,13 @@ function apostropheJoinsAt(
  @param originals - the character the English held before the fold at each UTF-16 unit of it
 
  @param joints - the offsets of the English at which a stand ends inside a word made with an apostrophe after closing
- marks, read once for the whole English by `closingJointsOf` (`consistency-closing-marks.ts`)
+ marks, read once for the whole English by `closingJointsOf` (`consistency-closing-links.ts`)
 
  @param emphasis - the offsets in the fold of every delimiter of emphasis, strong emphasis and strikethrough by the parse
  (`consistency-prose-text.ts`), the only marks the reading steps over beside a joint
+
+ @param links - the links the parse holds, at the offsets of the fold (`foldedLinksOf`, `consistency-folded-links.ts`), none where
+ the caller read no link
 
  @param at - offset where the stand starts
 
@@ -373,6 +486,7 @@ export function cutsWord(
     originals,
     joints,
     emphasis,
+    links = NO_FOLDED_LINKS,
     at,
     end,
   }: {
@@ -380,6 +494,7 @@ export function cutsWord(
     readonly originals: readonly string[];
     readonly joints: ReadonlySet<number>;
     readonly emphasis: ReadonlySet<number>;
+    readonly links?: FoldedLinks;
     readonly at: number;
     readonly end: number;
   },
@@ -413,6 +528,7 @@ export function cutsWord(
       folded,
       originals,
       emphasis,
+      links,
       at: offset,
     },);
   }
@@ -439,17 +555,18 @@ export function cutsWord(
   // emphasis marks (which stands at every mark of a long run of them) never
   // walks the run: the reading stays linear in the English.
   /**
-   Whether a joint stands just after the stand, past any emphasis marks.
+   Whether a joint stands just after the stand, past any emphasis marks and any links that show nothing.
 
    @returns Whether the stand's last character is joined to what follows
    */
   function joinsOn(): boolean {
     /**
-     Offset of the first character after the stand that is no emphasis mark.
+     Offset of the first character after the stand that is no emphasis mark and no unit of a link that shows nothing.
      */
-    const after = pastEmphasis({
+    const after = pastHiddenUnits({
       text: folded,
       emphasis,
+      links,
       from: end,
       step: 1,
     },);
@@ -459,9 +576,10 @@ export function cutsWord(
       before: last,
       after: codePointAt({
         text: folded,
-        at: pastEmphasis({
+        at: pastHiddenUnits({
           text: folded,
           emphasis,
+          links,
           from: after + 1,
           step: 1,
         },),
@@ -469,17 +587,18 @@ export function cutsWord(
     },);
   }
   /**
-   Whether a joint stands just before the stand, past any emphasis marks.
+   Whether a joint stands just before the stand, past any emphasis marks and any links that show nothing.
 
    @returns Whether the stand's first character is joined to what precedes
    */
   function joinsBack(): boolean {
     /**
-     Offset of the last character before the stand that is no emphasis mark.
+     Offset of the last character before the stand that is no emphasis mark and no unit of a link that shows nothing.
      */
-    const before = pastEmphasis({
+    const before = pastHiddenUnits({
       text: folded,
       emphasis,
+      links,
       from: at - 1,
       step: -1,
     },);
@@ -488,9 +607,10 @@ export function cutsWord(
       original: originals[before] ?? '',
       before: codePointBefore({
         text: folded,
-        at: pastEmphasis({
+        at: pastHiddenUnits({
           text: folded,
           emphasis,
+          links,
           from: before - 1,
           step: -1,
         },) + 1,
@@ -498,20 +618,72 @@ export function cutsWord(
       after: first,
     },);
   }
+  /**
+   Whether a link that shows nothing stands just after the stand, with a letter or a digit directly beyond it, so that the text on
+   the two sides of the link is one word to a reader (`kit[](u)tens`).
+
+   @returns Whether the stand's last character runs on past a link that shows nothing
+   */
+  function runsOnPastLinks(): boolean {
+    /**
+     Offset of the first unit after the stand that is no unit of a link that shows nothing.
+     */
+    const after = pastHiddenUnits({
+      text: folded,
+      emphasis: NO_EMPHASIS,
+      links,
+      from: end,
+      step: 1,
+    },);
+    return (after > end) && continuesLatinWordOrCompatibilityForm({
+      character: codePointAt({
+        text: folded,
+        at: after,
+      },),
+    },);
+  }
+  /**
+   Whether a link that shows nothing stands just before the stand, with a letter or a digit directly beyond it, so that the text on
+   the two sides of the link is one word to a reader (`kit[](u)tens`).
+
+   @returns Whether the stand's first character runs back past a link that shows nothing
+   */
+  function runsBackPastLinks(): boolean {
+    /**
+     Offset of the last unit before the stand that is no unit of a link that shows nothing.
+     */
+    const before = pastHiddenUnits({
+      text: folded,
+      emphasis: NO_EMPHASIS,
+      links,
+      from: at - 1,
+      step: -1,
+    },);
+    return (before < (at - 1)) && continuesLatinWordOrCompatibilityForm({
+      character: codePointBefore({
+        text: folded,
+        at: before + 1,
+      },),
+    },);
+  }
   // AN APOSTROPHE AFTER THE STAND IS ASKED OF THE CLOSING JOINTS THE CALLER READ ONCE FOR
   // THE WHOLE TEXT, whatever the stand's last character is, since the stand may end in the
   // markup that stands between the word and its apostrophe (`the **cat**`, a link,
   // `"cat"`) or end before it (`cat` in `"cat"'s`). AN APOSTROPHE BEFORE THE STAND IS
-  // READ BACKWARD FROM ITS OWN POSITION over emphasis marks alone, which costs a
+  // READ BACKWARD FROM ITS OWN POSITION over emphasis marks and links that show nothing, which costs a
   // constant number of reads for a stand of closing marks beside no apostrophe.
-  return (continuesLatinWordOrCompatibilityForm({ character: last, },) && joinsOn())
-    || (continuesLatinWordOrCompatibilityForm({ character: first, },) && joinsBack())
+  return (continuesLatinWordOrCompatibilityForm({ character: last, },) && (joinsOn() || runsOnPastLinks()))
+    || (continuesLatinWordOrCompatibilityForm({ character: first, },) && (joinsBack() || runsBackPastLinks()))
     || joints.has(end,)
     || apostropheJoinsAt({
       folded,
       originals,
       emphasis,
-      at: at - 1,
+      links,
+      at: startOfEmptyLinksBefore({
+        links,
+        at,
+      },) - 1,
     },);
 }
 

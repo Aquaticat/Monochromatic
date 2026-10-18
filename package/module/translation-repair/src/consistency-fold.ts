@@ -2,11 +2,12 @@ import {
   addressRangesOf,
   standsOutsideAddresses,
 } from './consistency-addresses.ts';
-import { closingJointsOf, } from './consistency-closing-marks.ts';
+import { closingJointsOf, } from './consistency-closing-links.ts';
 import {
   edgeFreeRangeOf,
   edgeFreeWordsOf,
 } from './consistency-edge-marks.ts';
+import { foldedLinksOf, } from './consistency-folded-links.ts';
 import { ConsistencyInvariantError, } from './consistency-invariant-error.ts';
 import {
   isSingleMark,
@@ -459,12 +460,15 @@ function standsBesideMarks(
 
  @param needle - folded words looked for
 
+ @param definitions - the page's definitions (`pageDefinitionsOf`), none for an English read alone: a reference with an empty label is
+ read as a link where a definition of it stands in the English or here, as the page shows it
+
  @returns Start offsets in the folded English, in ascending order
 
  @example
  ```ts
  const text = 'the so-called cat';
- const starts = apartStartsOf({ haystack: text, folded: foldWithOffsets({ text, },), needle: 'so', },); // []
+ const starts = apartStartsOf({ haystack: text, folded: foldWithOffsets({ text, },), needle: 'so', definitions: '', },); // []
  ```
  */
 function apartStartsOf(
@@ -472,10 +476,12 @@ function apartStartsOf(
     haystack,
     folded,
     needle,
+    definitions,
   }: {
     readonly haystack: string;
     readonly folded: OffsetFoldedText;
     readonly needle: string;
+    readonly definitions: string;
   },
 ): readonly number[] {
   /**
@@ -493,6 +499,15 @@ function apartStartsOf(
    */
   const delimiters = emphasisDelimitersOf({ english: haystack, },);
   /**
+   The links of the English whose label shows nothing, closing marks or marks, at the offsets of the fold, none where no closing
+   square bracket stands in the fold.
+   */
+  const links = foldedLinksOf({
+    english: haystack,
+    folded,
+    definitions,
+  },);
+  /**
    Where a stand may end inside a word made with an apostrophe after closing marks, read once for the whole English.
    */
   const joints = closingJointsOf({
@@ -502,6 +517,7 @@ function apartStartsOf(
       offsets: delimiters.closing,
       folded,
     },),
+    links,
   },);
   /**
    Every delimiter of emphasis, at the offsets of the fold.
@@ -519,6 +535,7 @@ function apartStartsOf(
       originals: folded.originals,
       joints,
       emphasis,
+      links,
       at,
       end: at + needle.length,
     },);
@@ -625,12 +642,18 @@ export function locateWords(
    */
   const folded = foldWithOffsets({ text: haystack, },);
   /**
+   The link and footnote definitions of the page, which a reference in the English resolves against whichever slice holds the
+   definition; none for an English read alone.
+   */
+  const definitions = (page === undefined) ? '' : pageDefinitionsOf({ pageText: page.text, },);
+  /**
    Where the words stand in the folded English, at word boundaries and at no joint of a longer word, overlaps included.
    */
   const stands = apartStartsOf({
     haystack,
     folded,
     needle,
+    definitions,
   },);
   if (stands.length === 0)
     return { kind: 'none', };
@@ -667,7 +690,7 @@ export function locateWords(
     start: bare.start,
     end: bare.end,
     needle,
-    definitions: (page === undefined) ? '' : pageDefinitionsOf({ pageText: page.text, },),
+    definitions,
   },))
     return { kind: 'none', };
   return {
@@ -712,6 +735,7 @@ export function standsOf(
     haystack,
     folded: foldWithOffsets({ text: haystack, },),
     needle: foldedWordsOf({ text: words, },),
+    definitions: '',
   },)
     .length;
 }

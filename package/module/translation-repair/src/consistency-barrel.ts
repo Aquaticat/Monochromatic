@@ -56,13 +56,18 @@ export {
 } from './corpus-run/artifact-two-lane-read-consistency-carry-recount.ts';
 export { carriesOrCutsMarkup, } from './consistency-markup.ts';
 export { consistencyTenseLines, } from './consistency-tense.ts';
+export { shownLabelOf, } from './consistency-label-form.ts';
+export { labelsSentenceOf, } from './consistency-label-sentence.ts';
+export { containedQuoteWordsOf, } from './consistency-span-agreement.ts';
 export {
+  canonicalChoiceOf,
   choiceTallyOf,
-  CONSISTENCY_CHOICE_RESPONSE_FORMAT,
   type ConsistencyChoiceVoice,
+  consistencyChoiceResponseFormat,
   type ConsistencyChoiceWire,
   isConsistencyChoiceWire,
   isUsableChoice,
+  tiedChoicesOf,
   usableChoiceFor,
   usableChoicesOf,
 } from './consistency-choice.ts';
@@ -75,6 +80,7 @@ export {
   carryChoiceOf,
   type CarryOffer,
   carryOffersOf,
+  carryRunOffFinalistsOf,
 } from './consistency-carry.ts';
 export {
   type BlockStanding,
@@ -126,12 +132,13 @@ export {
   type ConsistencySubject,
 } from './consistency-sheet.ts';
 export {
-  CONSISTENCY_RESPONSE_FORMAT,
+  canonicalBallotOf,
   type ConsistencyBallotWire,
   type ConsistencyEnglish,
   consistencyLabel,
   consistencyLabels,
   type ConsistencyQuoteWire,
+  consistencyResponseFormat,
   isConsistencyBallotWire,
   isUsableConsistencyBallot,
   usableConsistencyBallotFor,
@@ -182,6 +189,7 @@ export {
   type ConsistencyRunOffAsked,
   storedChoices,
 } from './corpus-run/pass-consistency-run-off.ts';
+export { runOffResultLine, } from './corpus-run/pass-consistency-run-off-line.ts';
 export {
   askCarryChoice,
   askCarryWriters,

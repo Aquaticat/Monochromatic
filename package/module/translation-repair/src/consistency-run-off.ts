@@ -17,6 +17,7 @@ import {
   repeatedTextOf,
   selectMarks,
 } from './consistency-sheet.ts';
+import { labelsSentenceOf, } from './consistency-label-sentence.ts';
 import { consistencyTenseLines, } from './consistency-tense.ts';
 import {
   type ConsistencyEnglish,
@@ -279,7 +280,15 @@ export function buildConsistencyRunOffMessages(
           repeat: subject.repeat,
           fence,
         },)
-      }${placeBlocks.join('',)}${tenseBlock}${fence} END ${fence}\nReply with JSON only: {"reason":"...","choice":"<the label of the place you choose>"}`,
+      }${placeBlocks.join('',)}${tenseBlock}${fence} END ${fence}\n${
+        labelsSentenceOf({
+          labels: shown.map(function labelOf({ label, },): string {
+            return label;
+          },),
+          // NO QUOTED FIELD NAME HERE: the reply shape that follows is where `"reason"` is shown before `"choice"`.
+          fields: ['the choice',],
+        },)
+      }\nReply with JSON only: {"reason":"...","choice":"<the label of the place you choose>"}`,
     },
   ];
 }

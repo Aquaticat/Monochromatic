@@ -5,8 +5,8 @@
 // corner brackets the evidence fold writes as the single mark. Split from
 // `index.ts`, which sits at its line budget.
 
+export { closingJointsOf, } from './consistency-closing-links.ts';
 export {
-  closingJointsOf,
   joinedMarksOf,
   markPastRunOf,
 } from './consistency-closing-marks.ts';
@@ -17,6 +17,19 @@ export {
   type OffsetFoldedText,
   offsetsInFold,
 } from './consistency-fold-offsets.ts';
+export {
+  type FoldedLinks,
+  foldedLinksOf,
+  NO_FOLDED_LINKS,
+} from './consistency-folded-links.ts';
+export {
+  isLinkNode,
+  linkLabelKindOf,
+} from './consistency-link-label.ts';
+export {
+  linkTwinOf,
+  originalOffsetsOf,
+} from './consistency-link-twin.ts';
 export { cutsWord, } from './consistency-word-joints.ts';
 export {
   collapseLineBreaks,

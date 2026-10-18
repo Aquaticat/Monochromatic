@@ -1,3 +1,4 @@
+import { ConsistencyInvariantError, } from '../consistency-invariant-error.ts';
 import type {
   ArtifactConsistencyCarry,
   ArtifactConsistencyGroup,
@@ -23,10 +24,17 @@ import type {
 //   as it stood: `no-alternative` (no text but the current one to choose among), `no-quorum`, `no-majority` (the choice among the
 //   candidates reached no decision), `failed` (trouble stopped the carry), `chose-current` (the choice kept the English as it stands),
 //   `splice-cannot-reach-place` (the choice was the code splice, and this place has no words code can move the chosen words into, as
-//   a frame the splice cannot carry), `chose-writer-text` (a writer's text was chosen and no replacement of this place was made),
-//   `unrecorded` (the record holds no carry for the place).
-// - `kept:<reason>`: the pass left the place as it stood after the splice was chosen and the record's words let code move the chosen
-//   words in (`ConsistencyKeptReason`: the `gain-` and `edge-` reasons), which is named ahead of the carry's own decision.
+//   a frame the splice cannot carry), `unrecorded` (the record holds no carry for the place, whatever reason the pass recorded).
+// - `kept:<reason>`: the pass left the place as it stood, a splice was offered to the block of the place, and the record's words let
+//   code move the chosen words in only in part or not at all (`ConsistencyKeptReason`: the `gain-` and `edge-` reasons). It is named
+//   ahead of the carry's own decision for a place whose carry offered the splice. A place whose carry offered no splice (the writers
+//   and the current text alone, or no carry at all) never prints one, since the reason answers a splice that was never offered; the
+//   carry's own decision stands for it.
+//
+// A RECORD THE PASS CANNOT PRODUCE THROWS rather than printing a reason the record does not hold: a carry that chose a label no
+// candidate of the record holds, a writer's text chosen for a place that ended `kept-current` (a writer's text that is chosen replaces
+// every receiving place of its block), and a verdict that named no winner beside a replaced place each throw a
+// `ConsistencyInvariantError` naming the group and the place.
 
 /**
  The outcomes counted in the columns of the line, in the order they are printed: the six the line has always counted, then the three
@@ -79,14 +87,27 @@ function placesEndingIn(
 
  @param group - the group with its final outcomes
 
+ @param groupNumber - one-based number of the group, which names it in a thrown error
+
  @returns The reason as a list of zero or one
+
+ @throws {@link ConsistencyInvariantError} when the verdict named no winner and a place ended replaced, since a group whose bench
+ named no winner replaces no place
 
  @example
  ```ts
- const [reason,] = verdictReasonOf({ group, },); // 'no-winner:no-quorum'
+ const [reason,] = verdictReasonOf({ group, groupNumber: 1, },); // 'no-winner:no-quorum'
  ```
  */
-function verdictReasonOf({ group, }: { readonly group: ArtifactConsistencyGroup; },): readonly string[] {
+function verdictReasonOf(
+  {
+    group,
+    groupNumber,
+  }: {
+    readonly group: ArtifactConsistencyGroup;
+    readonly groupNumber: number;
+  },
+): readonly string[] {
   /**
    What was asked of the bench and what it answered.
    */
@@ -99,38 +120,58 @@ function verdictReasonOf({ group, }: { readonly group: ArtifactConsistencyGroup;
    The place every place followed, or why none.
    */
   const { winner, } = verdict;
-  return (winner.kind === 'none') ? [`no-winner:${winner.reason}`,] : [];
+  if (winner.kind !== 'none')
+    return [];
+  /**
+   The first place that ended replaced although no place won, none when every place stood.
+   */
+  const [replaced,] = group.occurrences
+    .filter(function ended(occurrence,): boolean {
+      return occurrence.outcome === 'replaced';
+    },);
+  if (replaced !== undefined) {
+    throw new ConsistencyInvariantError({
+      invariant: `group ${String(groupNumber,)} holds a verdict that named no winner (${winner.reason}) and ${replaced.label} ended `
+        + 'replaced, and a group whose bench named no winner replaces no place',
+    },);
+  }
+  return [`no-winner:${winner.reason}`,];
 }
 
 /**
  The reason the carry gives for a place whose English stood: what the carry to the place decided.
 
- @param carries - the carries of the group, one record for each receiving place
+ @param carries - the carries the record holds for the place: one, or none where the record holds none
+
+ @param groupNumber - one-based number of the group, which names it in a thrown error
 
  @param label - label of the place
 
  @returns The reason
 
+ @throws {@link ConsistencyInvariantError} when the carry chose a label none of its candidates holds, or chose a writer's text, which
+ replaces every receiving place of its block and so cannot leave this place as it stood
+
  @example
  ```ts
- const reason = carryReasonOf({ carries, label: 'OCCURRENCE 2', },); // 'carry:no-majority'
+ const reason = carryReasonOf({ carries: [carry,], groupNumber: 1, label: 'OCCURRENCE 2', },); // 'carry:no-majority'
  ```
  */
 function carryReasonOf(
   {
     carries,
+    groupNumber,
     label,
   }: {
     readonly carries: readonly ArtifactConsistencyCarry[];
+    readonly groupNumber: number;
     readonly label: string;
   },
 ): string {
   /**
    The carry to the place, none where the record holds none.
    */
-  const [carry,] = carries.filter(function isForPlace(candidate,): boolean {
-    return candidate.label === label;
-  },);
+  const [carry,] = carries;
   if (carry === undefined)
     return 'carry:unrecorded';
   /**
@@ -148,39 +189,81 @@ function carryReasonOf(
     .filter(function isChosen(candidate,): boolean {
       return candidate.label === decision.label;
     },);
-  if (chosen?.kind === 'current')
+  if (chosen === undefined) {
+    /**
+     The candidates the carry recorded.
+     */
+    const { candidates, } = carry;
+    /**
+     How many candidates the carry recorded.
+     */
+    const recorded = candidates.length;
+    throw new ConsistencyInvariantError({
+      invariant: `group ${String(groupNumber,)} ${label} ended kept-current and its carry chose ${decision.label}, which is not `
+        + `among the candidates the carry recorded (${String(recorded,)} recorded)`,
+    },);
+  }
+  if (chosen.kind === 'current')
     return 'carry:chose-current';
-  return (chosen?.kind === 'splice') ? 'carry:splice-cannot-reach-place' : 'carry:chose-writer-text';
+  if (chosen.kind === 'splice')
+    return 'carry:splice-cannot-reach-place';
+  throw new ConsistencyInvariantError({
+    invariant: `group ${String(groupNumber,)} ${label} ended kept-current and its carry chose ${decision.label}, a writer text, and `
+      + 'a writer text that is chosen replaces every receiving place of its block',
+  },);
 }
 
 /**
- The reason a place that ended `kept-current` was left as it stood: the reason the pass recorded for the place, else what the carry
- to it decided.
+ The reason a place that ended `kept-current` was left as it stood: the reason the pass recorded for the place where the carry to
+ it offered the splice, else what the carry to it decided. The pass records an edge reason for every receiving place whatever the
+ carry was offered, so a recorded reason answers a splice only where one was offered; where the carry offered the writers and the
+ current text alone, the carry's own decision is what ended the place.
 
  @param group - the group with its final outcomes
+
+ @param groupNumber - one-based number of the group, which names it in a thrown error
 
  @param occurrence - the place
 
  @returns The reason
 
+ @throws {@link ConsistencyInvariantError} when the carry to the place chose what the record cannot explain
+
  @example
  ```ts
- const reason = keptReasonOf({ group, occurrence, },); // 'kept:gain-pairs'
+ const reason = keptReasonOf({ group, groupNumber: 1, occurrence, },); // 'kept:gain-pairs'
  ```
  */
 function keptReasonOf(
   {
     group,
+    groupNumber,
     occurrence,
   }: {
     readonly group: ArtifactConsistencyGroup;
+    readonly groupNumber: number;
     readonly occurrence: ArtifactConsistencyOccurrence;
   },
 ): string {
-  if (occurrence.keptBecause !== undefined)
+  /**
+   The carry to the place: one, or none where the record holds none.
+   */
+  const carries = (group.carries ?? []).filter(function isForPlace(candidate,): boolean {
+    return candidate.label === occurrence.label;
+  },);
+  /**
+   Whether the carry offered the splice among its candidates.
+   */
+  const offeredSplice = carries.some(function offers({ candidates, },): boolean {
+    return candidates.some(function isSplice(candidate,): boolean {
+      return candidate.kind === 'splice';
+    },);
+  },);
+  if ((occurrence.keptBecause !== undefined) && offeredSplice)
     return `kept:${occurrence.keptBecause}`;
   return carryReasonOf({
-    carries: group.carries ?? [],
+    carries,
+    groupNumber,
     label: occurrence.label,
   },);
 }
@@ -190,17 +273,32 @@ function keptReasonOf(
 
  @param group - the group with its final outcomes
 
+ @param groupNumber - one-based number of the group, which names it in a thrown error
+
  @returns The reasons
+
+ @throws {@link ConsistencyInvariantError} when the record holds a verdict or a carry the pass cannot produce
 
  @example
  ```ts
- const reasons = reasonsOf({ group, },); // ['carry:no-majority']
+ const reasons = reasonsOf({ group, groupNumber: 1, },); // ['carry:no-majority']
  ```
  */
-function reasonsOf({ group, }: { readonly group: ArtifactConsistencyGroup; },): readonly string[] {
+function reasonsOf(
+  {
+    group,
+    groupNumber,
+  }: {
+    readonly group: ArtifactConsistencyGroup;
+    readonly groupNumber: number;
+  },
+): readonly string[] {
   return [
     ...new Set([
-      ...verdictReasonOf({ group, },),
+      ...verdictReasonOf({
+        group,
+        groupNumber,
+      },),
       ...group.occurrences
         .filter(function stood(occurrence,): boolean {
           return occurrence.outcome === 'kept-current';
@@ -208,6 +306,7 @@ function reasonsOf({ group, }: { readonly group: ArtifactConsistencyGroup; },): 
         .map(function reasonOf(occurrence,): string {
           return keptReasonOf({
             group,
+            groupNumber,
             occurrence,
           },);
         },),
@@ -221,14 +320,28 @@ function reasonsOf({ group, }: { readonly group: ArtifactConsistencyGroup; },): 
 
  @param group - the group with its final outcomes
 
+ @param groupNumber - one-based number of the group, as the pass numbers its groups in the log, which names the group in a thrown error
+
  @returns Log line text
+
+ @throws {@link ConsistencyInvariantError} naming the group and the place when the record holds what the pass cannot produce: a carry
+ that chose a label no candidate holds, a writer's text chosen for a place that ended `kept-current`, or a verdict that named no
+ winner beside a replaced place
 
  @example
  ```ts
- const line = groupLine({ group, },);
+ const line = groupLine({ group, groupNumber: 1, },);
  ```
  */
-export function groupLine({ group, }: { readonly group: ArtifactConsistencyGroup; },): string {
+export function groupLine(
+  {
+    group,
+    groupNumber,
+  }: {
+    readonly group: ArtifactConsistencyGroup;
+    readonly groupNumber: number;
+  },
+): string {
   /**
    The parts of the group the line names.
    */
@@ -241,7 +354,10 @@ export function groupLine({ group, }: { readonly group: ArtifactConsistencyGroup
   /**
    The reasons, none for a group whose places a column counts.
    */
-  const reasons = reasonsOf({ group, },);
+  const reasons = reasonsOf({
+    group,
+    groupNumber,
+  },);
   return [
     repeat.kind,
     `verdict=${verdict.kind}`,

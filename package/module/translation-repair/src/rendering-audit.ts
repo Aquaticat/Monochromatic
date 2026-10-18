@@ -112,7 +112,12 @@ export type RenderingAuditReport = {
 
   /**
    Every auditor's screened answer, kept for a later decision about how to
-   read a tally over a roster that disagrees with itself.
+   read a tally over a roster that disagrees with itself. The rows stand in
+   the order the roster is seated from the bench the audit's prompt rotates
+   (`rotatedBench`, `stage-fanout-window.ts`), so the order moves whenever the
+   sheet's wording does; a reader that names a voice by its position derives the
+   order from the prompt and the roster, as the print cases of the audit
+   sensitivity runner do.
    */
   readonly rows: readonly AuditVoiceRow[];
 

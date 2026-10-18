@@ -37,11 +37,19 @@
  slice-cache file written since the change, beside a control that finds files) was not made, since no runs directory is read in this
  round. The pairing sheets carry no house rule, so the pairing version does not move.
 
+ Version three (n166, 2026-10-15, Z11): the house rule's sentence that puts the narrative of a life in the past now holds the
+ quoted-words exception inside it, so a rendering stored under two was chosen under the earlier wording of the same rule. The key
+ hashes the titles, the identity and the roster and not the sheet, so such a record would be served under the new one. Whether one
+ exists is not measured here: the audit of n161 found 0 slice-cache records under the keyless worktree's runs directory
+ (`s228/cache-audit-n161.txt`, line 992), but the launch started since at `5f6c8593d7` runs at two and no runs directory is read in
+ this round, so the number moves, as the consolidate, lane-contest, repair slice, refine and translate versions move for the same
+ sheet. No record has been written at three, which this change sets first.
+
  @example
  ```ts
  const material = JSON.stringify({ version: PAGE_TITLE_CACHE_VERSION, source, titles, identity, roster, },);
  ```
  */
-export const PAGE_TITLE_CACHE_VERSION = 2;
+export const PAGE_TITLE_CACHE_VERSION = 3;
 
 //endregion Page title cache version

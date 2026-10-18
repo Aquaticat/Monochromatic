@@ -1,5 +1,9 @@
 import type { JsonSchemaResponseFormat, } from './chat-contract.ts';
-import { majorityChoiceOf, } from './consistency-majority.ts';
+import { shownLabelOf, } from './consistency-label-form.ts';
+import {
+  majorityChoiceOf,
+  tiedForFirstOf,
+} from './consistency-majority.ts';
 import { isJsonRecord, } from './json-guard.ts';
 import { rendersAsNothing, } from './renders-as-nothing.ts';
 
@@ -46,28 +50,41 @@ export type ConsistencyChoiceVoice = ConsistencyChoiceWire & {
 };
 
 /**
- Structured-output constraint for replies that only choose. `reason` is
- declared first.
+ Structured-output constraint for replies that only choose, built for one ask: `reason` is declared first, and `choice` lists
+ the labels the sheet showed as an `enum`, so a provider that enforces the schema can answer with no other.
+
+ @param labels - labels the sheet showed, the only labels a reply may use
+
+ @returns The constraint for this ask
+
+ @example
+ ```ts
+ const format = consistencyChoiceResponseFormat({ labels: ['CANDIDATE 1', 'CANDIDATE 2',], },);
+ ```
  */
-export const CONSISTENCY_CHOICE_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
-  type: 'json_schema',
-  json_schema: {
-    name: 'page_consistency_choice',
-    schema: {
-      type: 'object',
-      required: [
-        'reason',
-        'choice',
-      ],
-      additionalProperties: false,
-      // REASON DECLARED BEFORE CHOICE, as the sheets' reply shape shows it.
-      properties: {
-        reason: { type: 'string', },
-        choice: { type: 'string', },
+export function consistencyChoiceResponseFormat(
+  { labels, }: { readonly labels: readonly string[]; },
+): JsonSchemaResponseFormat {
+  return {
+    type: 'json_schema',
+    json_schema: {
+      name: 'page_consistency_choice',
+      schema: {
+        type: 'object',
+        required: [
+          'reason',
+          'choice',
+        ],
+        additionalProperties: false,
+        // REASON DECLARED BEFORE CHOICE, as the sheets' reply shape shows it.
+        properties: {
+          reason: { type: 'string', },
+          choice: { type: 'string', enum: [...labels,], },
+        },
       },
     },
-  },
-};
+  };
+}
 
 /**
  Whether a parsed reply has the shape of a choice, whatever it names.
@@ -87,8 +104,50 @@ export function isConsistencyChoiceWire(value: unknown,): value is ConsistencyCh
 }
 
 /**
+ The choice with its label as the sheet showed it, when it names exactly one shown label in any form (its case, white space
+ around it, a bare number, the word with the number); every other field of the reply is kept.
+
+ @param ballot - choice of the right shape, with whatever else the reply carries
+
+ @param labels - labels the sheet showed
+
+ @returns The choice with the shown label, as a list of zero or one; none when the choice names no shown label or more than one
+
+ @example
+ ```ts
+ const [canonical,] = canonicalChoiceOf({ ballot: { reason: 'r', choice: '3', }, labels: ['OCCURRENCE 3',], },);
+ ```
+ */
+export function canonicalChoiceOf<BallotT extends ConsistencyChoiceWire,>(
+  {
+    ballot,
+    labels,
+  }: {
+    readonly ballot: BallotT;
+    readonly labels: readonly string[];
+  },
+): readonly BallotT[] {
+  /**
+   The shown label the choice stands for.
+   */
+  const [label,] = shownLabelOf({
+    name: ballot.choice,
+    shown: labels,
+  },);
+  return (label === undefined)
+    ? []
+    : [
+      {
+        ...ballot,
+        choice: label,
+      },
+    ];
+}
+
+/**
  Whether a choice can be counted against the labels a sheet showed: it gives a
- reason that shows a reader something and chooses a shown label.
+ reason that shows a reader something and chooses a shown label, written as the
+ label or in another form of it.
 
  @param ballot - choice of the right shape
 
@@ -110,7 +169,10 @@ export function isUsableChoice(
     readonly labels: readonly string[];
   },
 ): boolean {
-  return (!rendersAsNothing({ text: ballot.reason, },)) && labels.includes(ballot.choice,);
+  return (!rendersAsNothing({ text: ballot.reason, },)) && (canonicalChoiceOf({
+    ballot,
+    labels,
+  },).length > 0);
 }
 
 /**
@@ -138,7 +200,8 @@ export function usableChoiceFor(
 }
 
 /**
- The choices that can be counted against the labels a sheet showed.
+ The choices that can be counted against the labels a sheet showed, each with the shown label it names in place of the form it
+ was written in, so a choice stored before the forms were read is counted as one stored since.
 
  @param voices - every heard choice with its seat
 
@@ -160,11 +223,48 @@ export function usableChoicesOf(
     readonly labels: readonly string[];
   },
 ): readonly ConsistencyChoiceVoice[] {
-  return voices.filter(function counts(voice,): boolean {
+  return voices.flatMap(function counted(voice,): readonly ConsistencyChoiceVoice[] {
     return isUsableChoice({
       ballot: voice,
       labels,
-    },);
+    },)
+      ? canonicalChoiceOf({
+        ballot: voice,
+        labels,
+      },)
+      : [];
+  },);
+}
+
+/**
+ The labels that tie for first among the choices that can be counted: two or more labels share the highest count and no label
+ has more than half of the usable choices. A single leader without a majority is no tie, and neither is a majority.
+
+ @param voices - every heard choice with its seat
+ @param labels - labels the sheet showed, in sheet order
+
+ @returns The tied labels in sheet order, none when no tie
+
+ @example
+ ```ts
+ const tied = tiedChoicesOf({ voices, labels: ['CANDIDATE 1', 'CANDIDATE 2', 'CANDIDATE 3',], },);
+ ```
+ */
+export function tiedChoicesOf(
+  {
+    voices,
+    labels,
+  }: {
+    readonly voices: readonly ConsistencyChoiceVoice[];
+    readonly labels: readonly string[];
+  },
+): readonly string[] {
+  return tiedForFirstOf({
+    voices: usableChoicesOf({
+      voices,
+      labels,
+    },),
+    labels,
   },);
 }
 

@@ -250,7 +250,7 @@ export async function openConsistencyCache(
 /**
  Which of the pass's questions a key names.
  */
-export type ConsistencyStage = 'ballots' | 'run-off' | 'writers' | 'choice';
+export type ConsistencyStage = 'ballots' | 'run-off' | 'writers' | 'choice' | 'choice-run-off';
 
 /**
  Names one question: the version, the stage, the whole sheet the bench or the

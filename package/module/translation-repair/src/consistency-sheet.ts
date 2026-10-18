@@ -1,6 +1,7 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import { longestRunOf, } from './character-run.ts';
+import { labelsSentenceOf, } from './consistency-label-sentence.ts';
 import { consistencyTenseLines, } from './consistency-tense.ts';
 import { citedReferenceBlockText, } from './cited-reference-rule.ts';
 import {
@@ -493,7 +494,19 @@ export function buildConsistencyMessages(
       role: 'user',
       // THE REPLY SHAPE NAMES NO REAL LABEL, since the rules forbid choosing by
       // position and a label in the example would be a first place offered.
-      content: `${identityBlock}${referenceBlock}${repeatBlock}${placeBlocks.join('',)}${tenseBlock}${fence} END ${fence}\nReply with JSON only: {"reason":"...","quotes":[{"label":"<the label of the OCCURRENCE>","quote":"..."${(subject.repeat
+      content: `${identityBlock}${referenceBlock}${repeatBlock}${placeBlocks.join('',)}${tenseBlock}${fence} END ${fence}\n${
+        labelsSentenceOf({
+          labels: subject.occurrences
+            .map(function labelAt(
+              _view,
+              position,
+            ): string {
+              return consistencyLabel({ position, },);
+            },),
+          // NO QUOTED FIELD NAME HERE: the reply shape that follows is where `"reason"` is shown before `"choice"`.
+          fields: ['the choice', 'the kept places', 'the label of each quote',],
+        },)
+      }\nReply with JSON only: {"reason":"...","quotes":[{"label":"<the label of the OCCURRENCE>","quote":"..."${(subject.repeat
         .kind
         === 'refrain') ? ',"slot":"..."' : ''}}],"choice":"<the label of the OCCURRENCE you choose>","keep":[]}`,
     },

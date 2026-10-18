@@ -4,7 +4,6 @@ import { singleMarkAt, } from './consistency-loose-marks.ts';
 import { carriesOrCutsMarkup, } from './consistency-markup.ts';
 import {
   agreedSlotWordsOf,
-  agreedWordsOf,
   isKeptByMajority,
   keepsByLabelOf,
   majorityChoiceOf,
@@ -14,6 +13,7 @@ import {
   tiedForFirstOf,
   usableVoicesOf,
 } from './consistency-majority.ts';
+import { containedQuoteWordsOf, } from './consistency-span-agreement.ts';
 import { unlessOverlapping, } from './consistency-count-overlap.ts';
 import { ConsistencyInvariantError, } from './consistency-invariant-error.ts';
 import type {
@@ -34,9 +34,12 @@ import { rendersAsNothing, } from './renders-as-nothing.ts';
 // BALLOTS AGREE ON A PLACE WHEN THEIR QUOTES LOCATE THE SAME SPAN OF THE PLACE'S
 // OWN ENGLISH (`consistency-fold.ts`): a line break written as a space, a curly
 // apostrophe written straight, the closing full stop kept or left off and a run
-// of spaces do not make two quotes two texts. A STRICT MAJORITY OF THE USABLE
-// BALLOTS must name one span, and that span must stand exactly once in the
-// English; the place then carries the words the English holds there, never a
+// of spaces do not make two quotes two texts. THE PLACE IS LOCATED BY THE LONGEST
+// OF ITS QUOTES THAT STANDS EXACTLY ONCE in its English and that a strict majority
+// of the quotes naming that place contain in the fold (`consistency-span-agreement.ts`,
+// the lead's ruling of 2026-10-15: quotes of one span of different lengths, the second
+// judge's a part of the first's, agree on the shorter, at the risk of leaving out words
+// a judge meant to carry); the place then carries the words the English holds there, never a
 // judge's string, and the span never begins or ends between the halves of a character reference the parser decodes or of a
 // backslash escape (`wholeSpanOf`, `consistency-whole-end.ts`: a quote that stops before the semicolon of `&amp;` or starts at
 // its `amp;` names the span with the whole reference, and one that stops before the full stop in `\.` names the span without
@@ -225,51 +228,76 @@ function locatedRendering(
    */
   const definitions = (page === undefined) ? '' : pageDefinitionsOf({ pageText: page.text, },);
   /**
-   The folded words a strict majority of the usable ballots quoted.
+   The spans a strict majority of the quotes naming this place contain, in the fold, longest first.
    */
-  const [words,] = agreedWordsOf({
+  const candidates = containedQuoteWordsOf({
     voices,
     label,
     quotesByLabel,
   },);
-  if (words === undefined) {
+  if (candidates.length === 0) {
     return {
       kind: 'unlocated',
       reason: 'no-agreement',
     };
   }
-  if (rendersAsNothing({ text: words, },)) {
+  /**
+   The candidates that show a reader something.
+   */
+  const readable = candidates.filter(function showsSomething(words,): boolean {
+    return !rendersAsNothing({ text: words, },);
+  },);
+  if (readable.length === 0) {
     return {
       kind: 'unlocated',
       reason: 'empty',
     };
   }
   /**
-   Where the words stand in the English, the single marks a strict majority of the usable ballots copied beside them choosing between stands.
+   Where each candidate stands in the English, the single marks a strict majority of the usable ballots copied beside it
+   choosing between stands, in the order of the candidates.
    */
-  const found = locateWords({
-    haystack: english.text,
-    words,
-    marks: markEvidenceOf({
-      voices,
-      label,
+  const searched = readable.map(function searchFor(words,) {
+    return {
       words,
-      quotesByLabel,
-    },),
-    ...((page === undefined) ? {} : { page, }),
+      found: locateWords({
+        haystack: english.text,
+        words,
+        marks: markEvidenceOf({
+          voices,
+          label,
+          words,
+          quotesByLabel,
+        },),
+        ...((page === undefined) ? {} : { page, }),
+      },),
+    };
   },);
-  if (found.kind === 'none') {
+  // THE LONGEST CANDIDATE THAT STANDS EXACTLY ONCE LOCATES THE PLACE; one that stands nowhere or more than once is passed over
+  // for the next longest, and when none stands once the place reports how the longest failed.
+  const [standing,] = searched.flatMap(function standsOnce({
+    words,
+    found,
+  },) {
+    return (found.kind === 'once') ? [{ words, start: found.start, end: found.end, },] : [];
+  },);
+  if (standing === undefined) {
     return {
       kind: 'unlocated',
-      reason: 'not-found',
+      reason: (searched[0]?.found.kind === 'many') ? 'ambiguous' : 'not-found',
     };
   }
-  if (found.kind === 'many') {
-    return {
-      kind: 'unlocated',
-      reason: 'ambiguous',
-    };
-  }
+  /**
+   The folded words that locate the place.
+   */
+  const { words, } = standing;
+  /**
+   Where they stand in the English.
+   */
+  const found = {
+    start: standing.start,
+    end: standing.end,
+  };
   /**
    Where the span ends, which the locator has taken whole where a judge's quote stopped inside a character reference or a
    backslash escape.

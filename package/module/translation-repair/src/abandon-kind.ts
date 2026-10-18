@@ -101,21 +101,41 @@ export function describeAbandon({ error, }: { readonly error: unknown; },): stri
     return 'no-first-byte, nothing was ever delivered';
 
   /**
-   How much the call had delivered before it was cut.
+   The stream as it arrived, framing included, which is not what the model wrote: the cuts of Qwen on the run of TianqiChen66625
+   delivered 1,308,758 characters on the wire for 49,293 of reasoning.
    */
-  const { partialText, } = error;
+  const wire = error.partialText.length;
 
   /**
-   How much of it there was.
+   The wire length, as a separate named field of the line.
    */
-  const delivered = partialText.length;
-  return `cut-mid-reply after ${String(delivered,)} delivered ${
+  const onTheWire = `${String(wire,)} ${
     wordForCount({
-      count: delivered,
+      count: wire,
       one: 'char',
       many: 'chars',
     },)
-  }, first byte at ${String(firstByteMs,)}ms`;
+  } on the wire`;
+
+  /**
+   The characters of the answer and of the reasoning the stream counted, as a list of zero or one.
+   */
+  const [generated,] = (error.generatedChars === undefined) ? [] : [error.generatedChars,];
+  if (generated === undefined)
+    return `cut-mid-reply after ${onTheWire}, first byte at ${String(firstByteMs,)}ms`;
+  return `cut-mid-reply after ${String(generated.content,)} answer ${
+    wordForCount({
+      count: generated.content,
+      one: 'char',
+      many: 'chars',
+    },)
+  } and ${String(generated.reasoning,)} reasoning ${
+    wordForCount({
+      count: generated.reasoning,
+      one: 'char',
+      many: 'chars',
+    },)
+  } (${onTheWire}), first byte at ${String(firstByteMs,)}ms`;
 }
 
 //endregion Abandon kind

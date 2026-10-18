@@ -1,4 +1,5 @@
 import { isAsciiAlphanumeric, } from './ascii-letters.ts';
+import type { MarkupRange, } from './consistency-markup-ranges.ts';
 import { rememberedViewOf, } from './consistency-prose-text.ts';
 import { transparentUnitsOf, } from './consistency-unread-units.ts';
 
@@ -10,13 +11,18 @@ import { transparentUnitsOf, } from './consistency-unread-units.ts';
 // an image, and the `<rt>` and `<rp>` of a ruby annotation each stand between two words a reader sees apart, so the words on either
 // side are not one word, and a place beside them is a whole word at that edge. Those units are told apart here as a boundary: the word
 // test reads each as a space. A tag that only wraps text (`b`, `i`, `em`, `strong`, `span`, `a`, `u`, `s`, `sub`, `sup` and the like)
-// stays hidden. A repeated phrase left uncarried beside a boundary was the harm, never a half word.
+// stays hidden. A repeated phrase left uncarried beside a boundary was the harm, never a half word. AN IMAGE WITH NO ALT TEXT IS THE
+// ONE IMAGE THAT SEPARATES NOTHING (n169): it shows a reader nothing at all, so it stays hidden like a link with an empty label and
+// the words on each side of it meet as in the text without it; an image with an alt of spaces or a word keeps its boundary. A line
+// break inside the resource of a link or an image (`[](u` + a line break + `)`) is part of the link and is hidden with it
+// (`transparentUnitsOf`, `consistency-unread-units.ts`); a line break between words is still a break.
 //
 // THE BLOCK TAG LIST IS THE PARSER'S OWN. The Markdown parser of the page (`remark-parse` over `micromark`) keeps the CommonMark
-// list of HTML block names, `htmlBlockNames` in `micromark-util-html-tag-name@2.0.1` (`index.js`, lines 16 to 79). That package is not
-// a dependency of this one and its list is not reachable from here, so the names are written out in `BOUNDARY_TAG_NAMES`, and
-// `consistency-shown-kinds.unit.test.ts` reads the parser's installed list and fails when a name it holds is missing here. `br`,
-// `hr`, `img`, `rt` and `rp` are the separating and annotating tags the list does not hold.
+// list of HTML block names, `htmlBlockNames` in `micromark-util-html-tag-name@2.0.1` (`index.js`, lines 16 to 79), and the list of
+// raw names, `htmlRawNames` in the same file (`pre`, `script`, `style`, `textarea`), whose elements the parser reads to their closing
+// tag. That package is not a dependency of this one and its lists are not reachable from here, so the names are written out in
+// `BOUNDARY_TAG_NAMES`, and `consistency-shown-kinds.unit.test.ts` reads both installed lists and fails when a name either holds is
+// missing here. `br`, `hr`, `img`, `rt` and `rp` are the separating and annotating tags the lists do not hold.
 
 /**
  What a unit of an English is to a reader at the edge of a span.
@@ -27,8 +33,9 @@ import { transparentUnitsOf, } from './consistency-unread-units.ts';
 export type UnitKind = 'boundary' | 'hidden' | 'shown';
 
 /**
- The tags that separate or annotate, lower case: the CommonMark HTML block names the parser keeps, and the line break, the rule, the
- image and the two ruby annotation tags.
+ The tags that separate or annotate, lower case: the CommonMark HTML block names the parser keeps, the four raw names it keeps beside
+ them (`pre`, `script`, `style` and `textarea`, whose elements it reads to their closing tag), and the line break, the rule, the image
+ and the two ruby annotation tags.
  */
 export const BOUNDARY_TAG_NAMES: ReadonlySet<string> = new Set([
   'address',
@@ -82,14 +89,18 @@ export const BOUNDARY_TAG_NAMES: ReadonlySet<string> = new Set([
   'option',
   'p',
   'param',
+  'pre',
   'rp',
   'rt',
+  'script',
   'search',
   'section',
+  'style',
   'summary',
   'table',
   'tbody',
   'td',
+  'textarea',
   'tfoot',
   'th',
   'thead',
@@ -347,6 +358,37 @@ function retype(
 }
 
 /**
+ Whether a stretch is one of some stretches, start and end alike.
+
+ @param range - the stretch asked about
+
+ @param stretches - the stretches it may be one of
+
+ @returns Whether a stretch of the list starts and ends where the stretch does
+
+ @example
+ ```ts
+ const same = isStretchOf({ range: { start: 1, end: 6, }, stretches: [{ start: 1, end: 6, },], },); // true
+ ```
+ */
+function isStretchOf(
+  {
+    range,
+    stretches,
+  }: {
+    readonly range: MarkupRange;
+    readonly stretches: readonly MarkupRange[];
+  },
+): boolean {
+  return stretches.some(function isSameStretch({
+    start,
+    end,
+  },): boolean {
+    return (start === range.start) && (end === range.end);
+  },);
+}
+
+/**
  The kind of every unit of an English at the edge of a span.
 
  @param english - the English of a slice
@@ -394,6 +436,13 @@ export function unitKindsOf(
   if (view.refused)
     return kinds;
   for (const range of view.images) {
+    // An image with no alt text shows a reader nothing (n169): it neither separates two words nor annotates one, so its units stay
+    // hidden and the text on either side of it meets as if it were not there. It is the same stretch as an empty link of the view.
+    if (isStretchOf({
+      range,
+      stretches: view.emptyLinks,
+    },))
+      continue;
     retype({
       kinds,
       from: range.start,

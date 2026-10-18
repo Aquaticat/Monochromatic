@@ -322,6 +322,38 @@ export type SchemaMismatchReason =
   | 'truncated-completion';
 
 /**
+ How the nudged re-ask on another provider failed too, kept beside the first answer's own failure (the lead's ruling of
+ 2026-10-15 on the run of TianqiChen66625, where the log of a lost voice named only the first answer's failure and a
+ reader could not tell a label written in a form no guard accepted from a second refusal).
+
+ @example
+ ```ts
+ const failure: ChatJsonReaskFailure = { servedBy: 'hyper', kind: 'schema-mismatch', rawText: '{}', cause: 'content is not valid JSON', };
+ ```
+ */
+export type ChatJsonReaskFailure = {
+  /**
+   Provider that served the re-ask, or the words `another provider` where it did not say.
+   */
+  readonly servedBy: string;
+
+  /**
+   Which kind of failure the re-ask's own reply was.
+   */
+  readonly kind: 'refusal-shaped' | 'schema-mismatch';
+
+  /**
+   Verbatim model text of the re-ask's reply.
+   */
+  readonly rawText: string;
+
+  /**
+   What failed in it: the refusal marker, or the mismatch's detail.
+   */
+  readonly cause: string;
+};
+
+/**
  Outcome of one schema-validated chat exchange.
  Refusals and mismatches are data (reroute and scorecard), never exceptions.
 
@@ -375,6 +407,11 @@ export type ChatJsonOutcome<ValueT,> =
      Token usage when reported; thinking tokens included.
      */
     readonly usage?: CompletionUsage;
+
+    /**
+     How the nudged re-ask on another provider failed too, when one was made and failed.
+     */
+    readonly reaskFailure?: ChatJsonReaskFailure;
   }
   | {
     /**
@@ -402,6 +439,11 @@ export type ChatJsonOutcome<ValueT,> =
      Token usage when reported; thinking tokens included.
      */
     readonly usage?: CompletionUsage;
+
+    /**
+     How the nudged re-ask on another provider failed too, when one was made and failed.
+     */
+    readonly reaskFailure?: ChatJsonReaskFailure;
   };
 
 /**

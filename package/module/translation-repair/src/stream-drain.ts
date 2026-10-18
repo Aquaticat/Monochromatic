@@ -456,6 +456,9 @@ export async function drainBody(
       label,
       partialText,
       progress: guard.progress(),
+      // The characters of the answer and of the reasoning the watch counted, which the abandonment line reports in place of
+      // the wire length (the lead's ruling of 2026-10-15).
+      generatedChars: watch.generatedChars(),
       cause: (guardSignal.aborted && (!callerSignal.aborted)) ? guardSignal.reason : error,
     },);
   }

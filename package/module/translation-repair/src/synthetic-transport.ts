@@ -244,6 +244,7 @@ async function drainWithMaskedCut(
         credentials,
       },),
       progress: error.progress,
+      ...((error.generatedChars === undefined) ? {} : { generatedChars: error.generatedChars, }),
       cause: error.cause,
     },);
   }

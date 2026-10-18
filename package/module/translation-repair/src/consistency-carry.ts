@@ -1,6 +1,7 @@
 import {
   choiceTallyOf,
   type ConsistencyChoiceVoice,
+  tiedChoicesOf,
 } from './consistency-choice.ts';
 import { compareCodePoints, } from './code-points.ts';
 import { hashContent, } from './document-node.ts';
@@ -283,6 +284,52 @@ export function carryChoiceOf(
         label,
       },
   };
+}
+
+/**
+ The candidates a carry choice runs off: when the choices reached the quorum and no candidate has a strict majority, the
+ candidates tied for first, as the first round runs off among the places that tied (the lead's adoption of 2026-10-15 of the
+ owner's rule of 2026-10-11 for this ask, open to the owner's veto). A single leader without a majority is no tie, and a choice
+ that missed its quorum or was won is not run off.
+
+ @param voices - every heard choice with its seat
+
+ @param labels - labels the sheet showed
+
+ @param quorum - voices the gather closed on, which the usable choices must reach
+
+ @returns The tied candidates in sheet order, none when the choice is not run off
+
+ @example
+ ```ts
+ const finalists = carryRunOffFinalistsOf({ voices, labels: ['CANDIDATE 1', 'CANDIDATE 2',], quorum: 2, },);
+ ```
+ */
+export function carryRunOffFinalistsOf(
+  {
+    voices,
+    labels,
+    quorum,
+  }: {
+    readonly voices: readonly ConsistencyChoiceVoice[];
+    readonly labels: readonly string[];
+    readonly quorum: number;
+  },
+): readonly string[] {
+  /**
+   What the choices decided on their own.
+   */
+  const { choice, } = carryChoiceOf({
+    voices,
+    labels,
+    quorum,
+  },);
+  return ((choice.kind === 'none') && (choice.reason === 'no-majority'))
+    ? tiedChoicesOf({
+      voices,
+      labels,
+    },)
+    : [];
 }
 
 //endregion Consistency carry

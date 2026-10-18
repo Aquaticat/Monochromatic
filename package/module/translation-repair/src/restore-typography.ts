@@ -271,8 +271,8 @@ type Landing = {
 
  @returns The reading of the replacement
 
- @throws {@link FragmentLandingError} when the landing lies outside its slice or ends before it starts, which is no refusal of the
- page grammar and is not logged as one
+ @throws {@link FragmentLandingError} when the landing is no whole numbers, lies outside its slice or ends before it starts, which is
+ no refusal of the page grammar and is not logged as one
 
  @example
  ```ts
@@ -372,6 +372,10 @@ function readingForRestoration(
  whichever slice holds the definition; none for a caller that holds no page
 
  @returns Replacement with the document's quote style restored
+
+ @throws {@link FragmentLandingError} when `landing` is given without `reading` and its offsets are not whole numbers, start before
+ the slice, end before they start or end past the slice, which is no refusal of the page grammar and is not logged as one; with
+ `reading` given the landing is never read and nothing is thrown
 
  @example
  ```ts

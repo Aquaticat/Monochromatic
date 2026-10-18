@@ -144,26 +144,33 @@ export function benchRotation(
 
  @param messages - prompt shared by every voice of the round
 
- @returns Same seats, started at the prompt's rotation
+ @param start - seat the rotation starts at in place of the prompt's own, a whole number below the size of the bench, which a launch
+ pins (`StageSettings.editorBenchStart`) so that the seats a fixture seats move with no sheet text; absent in production, where the
+ prompt decides
+
+ @returns Same seats, started at the pinned seat or at the prompt's rotation
 
  @example
  ```ts
  const order = rotatedBench({ modelIds, messages, },);
+ const pinned = rotatedBench({ modelIds, messages, start: 3, },);
  ```
  */
 export function rotatedBench(
   {
     modelIds,
     messages,
+    start: pinned,
   }: {
     readonly modelIds: readonly RosterModelId[];
     readonly messages: readonly ChatMessage[];
+    readonly start?: number;
   },
 ): readonly RosterModelId[] {
   /**
    Seat the rotation starts at.
    */
-  const start = benchRotation({
+  const start = pinned ?? benchRotation({
     messages,
     size: modelIds.length,
   },);

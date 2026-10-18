@@ -1,5 +1,6 @@
 import { ArtifactParseError, } from '../artifact-guard.ts';
 import { carryChoiceOf, } from '../consistency-carry.ts';
+import { tiedChoicesOf, } from '../consistency-choice.ts';
 import type {
   ArtifactConsistencyCarry,
   ConsistencyOccurrenceOutcome,
@@ -201,13 +202,81 @@ function assertCarryRecounts(
       reason: 'the number of ballots that can be counted against the candidates',
     },);
   }
+  if (carry.runOff === undefined) {
+    // A split recorded with no run-off is read as it was written: the runs before the rule ended there.
+    if (!sameWinner({
+      left: choice,
+      right: carry.decision,
+    },)) {
+      throw new ArtifactParseError({
+        path: `${path}.decision`,
+        reason: 'the decision a strict majority of the usable ballots, reaching the quorum, give',
+      },);
+    }
+    return;
+  }
+  /**
+   The bench asked once more among the candidates that tied for first.
+   */
+  const { runOff, } = carry;
+  if ((choice.kind !== 'none') || (choice.reason !== 'no-majority')) {
+    throw new ArtifactParseError({
+      path: `${path}.runOff`,
+      reason: 'a run-off only beside first ballots that reached their quorum and gave no candidate a strict majority',
+    },);
+  }
+  /**
+   The candidates the first ballots tied for first.
+   */
+  const tied = tiedChoicesOf({
+    voices: carry.ballots,
+    labels,
+  },);
+  if ((tied.length !== runOff.finalists.length) || tied.some(function differs(
+    label,
+    at,
+  ): boolean {
+    return label !== runOff.finalists[at];
+  },)) {
+    throw new ArtifactParseError({
+      path: `${path}.runOff.finalists`,
+      reason: 'the candidates tied for first among the first ballots, in sheet order, and at least two',
+    },);
+  }
+  if (runOff.quorum < 1) {
+    throw new ArtifactParseError({
+      path: `${path}.runOff.quorum`,
+      reason: 'a quorum of one at least, since the bench was asked among the finalists',
+    },);
+  }
+  assertSeatsHeardOnce({
+    seats: runOff.ballots
+      .map(function seatOf({ seat, },): string {
+        return seat;
+      },),
+    path: `${path}.runOff.ballots`,
+  },);
+  /**
+   What the run-off's ballots give, counted against the finalists only.
+   */
+  const counted = carryChoiceOf({
+    voices: runOff.ballots,
+    labels: runOff.finalists,
+    quorum: runOff.quorum,
+  },);
+  if (counted.usable !== runOff.usable) {
+    throw new ArtifactParseError({
+      path: `${path}.runOff.usable`,
+      reason: 'the number of run-off ballots that can be counted against the finalists',
+    },);
+  }
   if (!sameWinner({
-    left: choice,
+    left: counted.choice,
     right: carry.decision,
   },)) {
     throw new ArtifactParseError({
       path: `${path}.decision`,
-      reason: 'the decision a strict majority of the usable ballots, reaching the quorum, give',
+      reason: 'the decision a strict majority of the usable run-off ballots, reaching the run-off quorum, give',
     },);
   }
 }

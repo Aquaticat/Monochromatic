@@ -237,9 +237,19 @@ import type { RosterModelId, } from './synthetic-catalog.ts';
  Version 7 also covers the tense of quoted words (n161, TianqiChen666): the house rule and the selection criterion about tense now
  say that words quoted as someone wrote or said them keep the speaker's tense, so a rewrite or a selection stored under 6 may hold
  a quotation moved into the past. The key does not hash the sheet, so a record written under the old sheet would be served under
- the new one; no record has been written at 7, so this rides inside the number n159 set.
+ the new one; no record had been written at 7 when this was written: the numbers n159 set were first committed in `277145a862`
+ together with R1, and the audit of that commit found 0 slice-cache records under the keyless worktree's runs directory
+ (`s228/cache-audit-n161.txt`, line 992), so this rides inside the number n159 set.
+
+ Version 8 covers the tense sentences moving again (n166, Z11): the house rule's sentence that puts the narrative of a life in the
+ past and the judge tail's sentence that says no rule holds a life in the present now hold the quoted-words exception inside them,
+ so a rewrite or a selection stored under 7 was written under the earlier wording of the same rule. The key does not hash the sheet,
+ so such a record would be served under the new one. Whether one exists is not measured here: the audit of n161 found none, but the
+ launch started since at `5f6c8593d7` runs at 7 and no runs directory is read in this round, so the number moves, as the
+ consolidate, lane-contest, repair slice, translate and page title versions move for the same sheets. No record has been written at
+ 8, which this change sets first.
  */
-export const REFINE_CACHE_VERSION = 7;
+export const REFINE_CACHE_VERSION = 8;
 
 /**
  Everything about this run that changes what the voices are ASKED.

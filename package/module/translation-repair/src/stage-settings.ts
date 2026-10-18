@@ -43,6 +43,14 @@ export type StageSettings = {
    Where judged contests are kept.
    */
   readonly contestLedger: ContestLedger;
+
+  /**
+   The seat the editor bench's rotation starts at, in place of the prompt's own (`rotatedBench`, `stage-fanout-window.ts`): a whole
+   number below the size of the bench. A fixture or a calibration that names which editor seats ship pins it, since the seats asked
+   otherwise move whenever a sheet's wording does (n161: the house tense rule), and the cases that named them had to stop (n166,
+   Z3). Absent in every production launch, where the prompt decides.
+   */
+  readonly editorBenchStart?: number;
 };
 
 /**

@@ -4,6 +4,26 @@
  Generation of the page consistency pass's cached answers (the owner's ruling
  of 2026-10-11).
 
+ Version five (the lead's rulings of 2026-10-15 on the run of TianqiChen66625): what the
+ judges are asked and what a reply must contain to count changed, after two passes
+ (TianqiChen66624 and TianqiChen66625) wrote version four. Every sheet of the three judge asks (the first
+ round, the run-off among places and the choice among a place's candidates) ends in a
+ sentence that lists the exact labels the reply may use, and the response format of each
+ ask lists them as an `enum`, so no stored answer of version four replies to the question
+ asked now (the key digests the sheet, so the keys moved of themselves; the number moves
+ as well, since a change to a sheet's wording or to what a ballot must contain to be
+ usable moves it). A reply that names exactly one shown label in
+ another form (its case, white space, a bare number, the word with the number) now counts,
+ and is stored as the shown label: a record of version four holds only replies the
+ stricter guard counted, each already in the shown form, so none could hold a value
+ computed under the old rule that the new rule would count differently. A choice among
+ candidates that no candidate won by a strict majority is now run off among the candidates
+ tied for first, under a key of its own (`choice-run-off`); a version four record of the
+ choice stands for the first ask only, and the run-off it would now be followed by is
+ asked afresh. The counting of quotes, which locates a chosen place by the longest quote
+ that stands once and that a strict majority of the quotes naming the place contain, is
+ not stored and moves no key.
+
  Version four (the review of 2026-10-13): what the writers and the judges are
  shown changed again, before any pass wrote version three. The words of every
  place of every other group that stand in a block are listed to keep, not only
@@ -59,6 +79,6 @@
  const material = JSON.stringify({ version: CONSISTENCY_CACHE_VERSION, sheet, roster, },);
  ```
  */
-export const CONSISTENCY_CACHE_VERSION = 4;
+export const CONSISTENCY_CACHE_VERSION = 5;
 
 //endregion Consistency cache version

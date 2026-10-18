@@ -123,30 +123,18 @@ export type StageVoice<ValueT,> =
 const RAW_PREVIEW_CHARS = 120;
 
 /**
- Names WHY a voice was lost, not merely that one was.
+ Bounded opening of a reply's text, on one line, for a warning that names why a reply was lost.
 
- `schema-mismatch` covers three different faults needing three different
- fixes, truncated thinking, unparseable content and a rejected guard, and the
- client already distinguishes them in `detail`. That distinction was logged at
- DEBUG and discarded here, so a run recorded `schema-mismatch, voice lost`
- hundreds of times while saying nothing about which fault it was.
+ @param rawText - verbatim model text
 
- @param outcome - non-ok exchange outcome
-
- @returns Cause with its sub-kind, plus a bounded opening of the model text
+ @returns The first grapheme clusters of the text with its line breaks replaced by spaces
 
  @example
  ```ts
- lostVoiceCause({ outcome, },);
+ const opening = openingOf({ rawText: '{"purr":\n"loud"}', },);
  ```
  */
-function lostVoiceCause(
-  {
-    outcome,
-  }: {
-    readonly outcome: Exclude<ChatJsonOutcome<unknown>, { readonly kind: 'ok'; }>;
-  },
-): string {
+function openingOf({ rawText, }: { readonly rawText: string; },): string {
   /**
    Model text on one line.
 
@@ -154,8 +142,7 @@ function lostVoiceCause(
    carriage returns would otherwise break the one-line guarantee this exists
    to keep.
    */
-  const flattened = outcome
-    .rawText
+  const flattened = rawText
     .replaceAll(
       '\r\n',
       ' ',
@@ -202,9 +189,54 @@ function lostVoiceCause(
       return cluster.segment;
     },)
     .join('',);
-  if (outcome.kind === 'schema-mismatch')
-    return `schema-mismatch (${outcome.detail}) raw=${JSON.stringify(opening,)}`;
-  return `refusal-shaped (${outcome.marker}) raw=${JSON.stringify(opening,)}`;
+  return opening;
+}
+
+/**
+ Names WHY a voice was lost, not merely that one was.
+
+ `schema-mismatch` covers three different faults needing three different
+ fixes, truncated thinking, unparseable content and a rejected guard, and the
+ client already distinguishes them in `detail`. That distinction was logged at
+ DEBUG and discarded here, so a run recorded `schema-mismatch, voice lost`
+ hundreds of times while saying nothing about which fault it was.
+
+ WHEN THE RE-ASK ON ANOTHER PROVIDER FAILED TOO, its failure is named beside the
+ first answer's (the lead's ruling of 2026-10-15 on the run of TianqiChen66625,
+ where only the first was logged and a label written in a form no guard accepted
+ read as one failed reply).
+
+ @param outcome - non-ok exchange outcome
+
+ @returns Cause with its sub-kind, plus a bounded opening of the model text, and the re-ask's own when it failed too
+
+ @example
+ ```ts
+ lostVoiceCause({ outcome, },);
+ ```
+ */
+function lostVoiceCause(
+  {
+    outcome,
+  }: {
+    readonly outcome: Exclude<ChatJsonOutcome<unknown>, { readonly kind: 'ok'; }>;
+  },
+): string {
+  /**
+   The first answer's failure.
+   */
+  const first = (outcome.kind === 'schema-mismatch')
+    ? `schema-mismatch (${outcome.detail}) raw=${JSON.stringify(openingOf({ rawText: outcome.rawText, },),)}`
+    : `refusal-shaped (${outcome.marker}) raw=${JSON.stringify(openingOf({ rawText: outcome.rawText, },),)}`;
+  /**
+   How the re-ask failed too, as a list of zero or one.
+   */
+  const [reask,] = (outcome.reaskFailure === undefined) ? [] : [outcome.reaskFailure,];
+  return (reask === undefined)
+    ? first
+    : `${first}; the re-ask on ${reask.servedBy} failed too: ${reask.kind} (${reask.cause}) raw=${
+      JSON.stringify(openingOf({ rawText: reask.rawText, },),)
+    }`;
 }
 
 /**

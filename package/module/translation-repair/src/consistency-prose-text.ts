@@ -444,6 +444,30 @@ export type ProseView = {
    the code word.
    */
   readonly codeContents: readonly ProseRange[];
+
+  /**
+   The stretches of the links, references and images whose label shows nothing (`[](u)`, `[]()`, `![](u)`), none where the grammar
+   refuses the English. The text on each side of one meets as if it were not there.
+   */
+  readonly emptyLinks: readonly ProseRange[];
+
+  /**
+   The stretches of the links and images whose label shows marks and spaces and no letter or digit (`[-](u)`), none where the
+   grammar refuses the English.
+   */
+  readonly markOnlyLinks: readonly ProseRange[];
+
+  /**
+   The stretches of the links and images whose label shows closing round or square brackets and closing curly double quotation
+   marks and nothing else (`[\]](u)`), none where the grammar refuses the English.
+   */
+  readonly closingLinks: readonly ProseRange[];
+
+  /**
+   The stretches of the resources of the links, references and images: from the end of a label to the end of the link, and the whole
+   of an image, none where the grammar refuses the English. A line break inside one is part of the link.
+   */
+  readonly linkResources: readonly ProseRange[];
 };
 
 /**

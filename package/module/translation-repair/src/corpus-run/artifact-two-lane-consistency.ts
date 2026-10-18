@@ -585,7 +585,15 @@ export type ArtifactConsistencyCarry = {
   readonly quorum: number;
 
   /**
-   What the ballots decided.
+   The bench asked once more among the candidates that tied for first, present only when the first ballots reached their quorum
+   and no candidate had a strict majority (the lead's adoption of 2026-10-15 of the owner's rule of 2026-10-11 for this ask,
+   open to the owner's veto); its finalists are those candidates, its ballots are the second ask's, and `decision` is then
+   what the run-off decided. A carry recorded before the rule has none, and a split it recorded stays as recorded.
+   */
+  readonly runOff?: ArtifactConsistencyRunOff;
+
+  /**
+   What the ballots decided, or the run-off when there was one.
    */
   readonly decision: ArtifactConsistencyCarryDecision;
 };

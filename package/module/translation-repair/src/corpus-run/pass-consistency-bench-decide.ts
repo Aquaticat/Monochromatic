@@ -23,6 +23,7 @@ import {
   repeatOf,
 } from './pass-consistency-group.ts';
 import { askRunOff, } from './pass-consistency-run-off.ts';
+import { runOffResultLine, } from './pass-consistency-run-off-line.ts';
 import {
   countAsked,
   runOffReasonOf,
@@ -260,17 +261,30 @@ export async function decideAskedGroup(
         l: gl,
         stageSettings,
       },);
+    /**
+     The group, counted and settled.
+     */
+    const decided = settleAsked({
+      repeat,
+      places: prepared.places,
+      unplaced,
+      asked,
+      ...((runOff === undefined) ? {} : { runOff, }),
+    },);
+    // THE RUN-OFF'S FINAL COUNT IN ONE LINE: usable of heard, the quorum, and the winner or the reason for none.
+    if ((decided.verdict.kind === 'asked') && (decided.verdict.runOff !== undefined)) {
+      gl.info(runOffResultLine({
+        runOff: decided.verdict
+          .runOff,
+        winner: decided.verdict
+          .winner,
+      },),);
+    }
     return {
       kind: 'decided',
       repeat,
       unplaced,
-      decided: settleAsked({
-        repeat,
-        places: prepared.places,
-        unplaced,
-        asked,
-        ...((runOff === undefined) ? {} : { runOff, }),
-      },),
+      decided,
     };
   }
   catch (error) {

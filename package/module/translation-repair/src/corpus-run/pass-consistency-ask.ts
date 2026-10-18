@@ -10,9 +10,10 @@ import {
   type ConsistencySubject,
 } from '../consistency-sheet.ts';
 import {
+  canonicalBallotOf,
   type ConsistencyBallotWire,
-  CONSISTENCY_RESPONSE_FORMAT,
   consistencyLabels,
+  consistencyResponseFormat,
   usableConsistencyBallotFor,
 } from '../consistency-wire.ts';
 import type { SliceCache, } from '../slice-cache.ts';
@@ -53,30 +54,48 @@ export type ConsistencyAsked = ConsistencyRecord & {
  One heard ballot as the pass keeps it: the seat the roster asked and the ballot's
  own fields, nothing else a reply carried.
 
+ The places the ballot names are stored as the sheet showed them (its choice, its kept places and the label of each quote), whatever
+ form the judge wrote them in (the lead's ruling of 2026-10-15).
+
  @param seat - roster seat that answered, which no reply field can replace
 
  @param ballot - the reply, of the right shape
+
+ @param labels - labels the sheet showed
 
  @returns The ballot with its seat
 
  @example
  ```ts
- const voice = voiceOf({ seat: 'glm-5.3', ballot, },);
+ const voice = voiceOf({ seat: 'glm-5.3', ballot, labels: consistencyLabels({ count: 2, },), },);
  ```
  */
 function voiceOf(
   {
     seat,
     ballot,
+    labels,
   }: {
     readonly seat: string;
     readonly ballot: ConsistencyBallotWire;
+    readonly labels: readonly string[];
   },
 ): ConsistencyVoice {
+  /**
+   The ballot with the shown labels; the ballot as heard when it names none, which the gather's guard has already refused.
+   */
+  const [shown,] = canonicalBallotOf({
+    ballot,
+    labels,
+  },);
+  /**
+   The ballot to keep.
+   */
+  const kept = shown ?? ballot;
   return {
     seat,
-    reason: ballot.reason,
-    quotes: ballot.quotes
+    reason: kept.reason,
+    quotes: kept.quotes
       .map(function quoteOf(entry,): ConsistencyBallotWire['quotes'][number] {
         return {
           label: entry.label,
@@ -84,8 +103,8 @@ function voiceOf(
           ...((entry.slot === undefined) ? {} : { slot: entry.slot, }),
         };
       },),
-    choice: ballot.choice,
-    keep: [...ballot.keep,],
+    choice: kept.choice,
+    keep: [...kept.keep,],
   };
 }
 
@@ -116,11 +135,13 @@ function storedBallots(value: ConsistencyCacheValue,): readonly ConsistencyRecor
 
  @param findings - what the gather reported
 
+ @param labels - labels the sheet showed, which each ballot's places are stored as
+
  @returns The record, as the cache keeps it
 
  @example
  ```ts
- const record = ballotRecordOf({ quorum: 2, voices, findings: [], },);
+ const record = ballotRecordOf({ quorum: 2, voices, findings: [], labels: consistencyLabels({ count: 2, },), },);
  ```
  */
 function ballotRecordOf(
@@ -128,10 +149,12 @@ function ballotRecordOf(
     quorum,
     voices,
     findings,
+    labels,
   }: {
     readonly quorum: number;
     readonly voices: readonly HeardVoice<ConsistencyBallotWire>[];
     readonly findings: readonly string[];
+    readonly labels: readonly string[];
   },
 ): ConsistencyRecord {
   return {
@@ -143,6 +166,7 @@ function ballotRecordOf(
       return voiceOf({
         seat: modelId,
         ballot: value,
+        labels,
       },);
     },),
     findings,
@@ -210,6 +234,11 @@ export async function askConsistencyBench(
    */
   const messages = buildConsistencyMessages({ subject, },);
   /**
+   Labels the sheet showed, the only labels a reply may use.
+   */
+  const labels = consistencyLabels({ count: subject.occurrences
+    .length, },);
+  /**
    The ballots' record, and whether the cache supplied it.
    */
   const {
@@ -221,11 +250,10 @@ export async function askConsistencyBench(
     messages,
     signal,
     exchangeTimeoutMs,
-    responseFormat: CONSISTENCY_RESPONSE_FORMAT,
+    responseFormat: consistencyResponseFormat({ labels, },),
     // A reply that cannot be counted against the places the sheet showed is
     // asked again like one that is not a ballot.
-    validate: usableConsistencyBallotFor({ labels: consistencyLabels({ count: subject.occurrences
-      .length, },), },),
+    validate: usableConsistencyBallotFor({ labels, },),
     stage: 'page-consistency',
     graceMs: stageSettings
       .grace
@@ -239,7 +267,12 @@ export async function askConsistencyBench(
       ...((subject.subjectNames === undefined) ? {} : { subjectNames: subject.subjectNames, }),
     },),
     readStored: storedBallots,
-    recordOf: ballotRecordOf,
+    recordOf: function recordFor(gathered,): ConsistencyRecord {
+      return ballotRecordOf({
+        ...gathered,
+        labels,
+      },);
+    },
     l: al,
   },);
   return {

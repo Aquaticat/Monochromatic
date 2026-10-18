@@ -298,9 +298,19 @@ import type { SliceReplacement, } from './splice-slices.ts';
  Version 17 also covers the tense of quoted words (n161, TianqiChen666): the house rule and the writer's tense line now say that
  words quoted as someone wrote or said them keep the speaker's tense, so a writer's answer stored under 16 may hold a quotation
  moved into the past. The key hashes the version, the roster and the texts and not the sheet, so a record written under the old
- sheet would be served under the new one; no record has been written at 17, so this rides inside the number n159 set.
+ sheet would be served under the new one; no record had been written at 17 when this was written: the numbers n159 set were first
+ committed in `277145a862` together with R1, and the audit of that commit found 0 slice-cache records under the keyless
+ worktree's runs directory (`s228/cache-audit-n161.txt`, line 992), so this rides inside the number n159 set.
+
+ Version 18 covers the tense sentences moving again (n166, Z11): the house rule's sentence that puts the narrative of a life in the
+ past, which the translate sheet carries, now holds the quoted-words exception inside it, so a writer's answer stored under 17 was
+ written under the earlier wording of the same rule. The key hashes the version, the roster and the texts and not the sheet, so such
+ a record would be served under the new one. Whether one exists is not measured here: the audit of n161 found none, but the launch
+ started since at `5f6c8593d7` runs at 17 and no runs directory is read in this round, so the number moves, as the consolidate,
+ lane-contest, repair slice, refine and page title versions move for the same sheets. No record has been written at 18, which this
+ change sets first.
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 17;
+export const TRANSLATE_SLICE_CACHE_VERSION = 18;
 
 /**
  Models the translate lane seats.

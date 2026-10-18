@@ -7,8 +7,10 @@ import {
   isKeptByMajority,
   usableVoicesOf,
 } from '../consistency-majority.ts';
+import { containedQuoteWordsOf, } from '../consistency-span-agreement.ts';
 import { planConsistencyEdit, } from '../consistency-splice.ts';
 import { consistencyLabels, } from '../consistency-wire.ts';
+import { rendersAsNothing, } from '../renders-as-nothing.ts';
 import {
   artifactGenerationCarriesPartialUnits,
   artifactGenerationRecordsMarks,
@@ -124,20 +126,44 @@ function assertSpanRenderingAgrees(
       .length, },),
   },);
   /**
-   The folded words a strict majority quoted for this place.
+   The spans a strict majority of the quotes naming this place contain, in the fold, longest first. THE RECOUNT CANNOT SAY WHICH OF
+   THEM STANDS EXACTLY ONCE in the English (the file does not hold the English of a slice the pass left alone), so a located
+   rendering is held to be one of them and an unlocated one is held to a reason one of them allows.
    */
-  const words = agreedWordsOf({
+  const candidates = containedQuoteWordsOf({
     voices,
     label: occurrence.label,
+  },);
+  /**
+   The candidates that show a reader something, which the pass searches the English for.
+   */
+  const readable = candidates.filter(function showsSomething(words,): boolean {
+    return !rendersAsNothing({ text: words, },);
   },);
   /**
    What the ballots allow the recorded rendering to say.
    */
   const { rendering, } = occurrence;
   if (rendering.kind === 'unlocated') {
+    // A FILE OF THE SEVENTEENTH GENERATION WRITTEN BEFORE THE SPANS WERE LOCATED BY CONTAINMENT (the run of TianqiChen66625 and
+    // those before it) recorded `no-agreement` where a strict majority of the usable ballots had quoted no one text, so the
+    // recorded reason is refused only when NEITHER reading allows it: the words a strict majority of the ballots quoted, as the
+    // pass located them before, and the spans a strict majority of the quotes contain, as it does now. The earlier agreed
+    // words are always among the candidates, so the two readings differ only for a place the earlier one left unlocated.
     if (reasonContradictedBySpan({
       reason: rendering.reason,
-      words,
+      // No agreement is contradicted by any candidate; the other reasons are read against the first candidate that shows
+      // something, or against the first candidate when none does.
+      words: ((rendering.reason === 'no-agreement') || (readable.length === 0)) ? candidates : readable.slice(
+        0,
+        1,
+      ),
+    },) && reasonContradictedBySpan({
+      reason: rendering.reason,
+      words: agreedWordsOf({
+        voices,
+        label: occurrence.label,
+      },),
     },)) {
       throw new ArtifactParseError({
         path: `${path}.rendering.reason`,
@@ -147,13 +173,13 @@ function assertSpanRenderingAgrees(
     return rendering;
   }
   /**
-   The folded words, none when the ballots agreed on none.
+   The folded words of the recorded rendering, which are one of the spans the ballots allow.
    */
-  const [agreed,] = words;
-  if ((agreed === undefined) || (foldedWordsOf({ text: rendering.quote, },) !== agreed)) {
+  const agreed = foldedWordsOf({ text: rendering.quote, },);
+  if (!readable.includes(agreed,)) {
     throw new ArtifactParseError({
       path: `${path}.rendering`,
-      reason: 'the words a strict majority of the usable ballots quoted, as the place\'s English holds them',
+      reason: 'words that a strict majority of the quotes naming the place contain, as the place\'s English holds them',
     },);
   }
   if (locatedContradictedBySpan({ rendering, },)) {

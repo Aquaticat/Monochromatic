@@ -505,9 +505,19 @@ import type { RepairModels, } from './repair-contract.ts';
  lines of the judges, the polish gate and the selection sheets now say that words quoted as someone wrote or said them keep the
  speaker's tense, so a critic, editor or judge answer stored under 35 may hold a quotation moved into the past. The key hashes the
  version, the run shape and the texts and not the sheet, so a record written under the old sheet would be served under the new
- one; no record has been written at 36, so this rides inside the number n159 set.
+ one; no record had been written at 36 when this was written: the numbers n159 set were first committed in `277145a862` together
+ with R1, and the audit of that commit found 0 slice-cache records under the keyless worktree's runs directory
+ (`s228/cache-audit-n161.txt`, line 992), so this rides inside the number n159 set.
+
+ Version 37 covers the tense sentences moving again (n166, Z11): the house rule's sentence that puts the narrative of a life in the
+ past and the judge tail's sentence that says no rule holds a life in the present now hold the quoted-words exception inside them,
+ so a critic, editor or judge answer stored under 36 was written under the earlier wording of the same rule. The key hashes the
+ version, the run shape and the texts and not the sheet, so such a record would be served under the new one. Whether one exists is
+ not measured here: the audit of n161 found none, but the launch started since at `5f6c8593d7` runs at 36 and no runs directory is
+ read in this round, so the number moves, as the consolidate, lane-contest, refine, translate and page title versions move for the
+ same sheets. No record has been written at 37, which this change sets first.
  */
-export const SLICE_CACHE_VERSION = 36;
+export const SLICE_CACHE_VERSION = 37;
 /**
  Everything about a repair run that changes what the models are ASKED, folded
  into every cache key.

@@ -150,9 +150,20 @@ export async function reaskElsewhereNudged<ValueT,>(
     }
     // THE FIRST ANSWER IS RETURNED WHEN BOTH FAIL: it came from the provider
     // the policy preferred, and the caller's own handling is written against
-    // it. Both are logged, so a reader can see the re-ask happened.
+    // it. Both are logged, so a reader can see the re-ask happened, and the
+    // second failure rides on the returned outcome, so the line that records
+    // the lost voice names both failures and not only the first's (the lead's
+    // ruling of 2026-10-15 on the run of TianqiChen66625).
     rl.info(`${request.modelId}: ${reply.servedBy ?? 'another provider'} answered ${second.kind} too`,);
-    return first.outcome;
+    return {
+      ...first.outcome,
+      reaskFailure: {
+        servedBy: reply.servedBy ?? 'another provider',
+        kind: second.kind,
+        rawText: second.rawText,
+        cause: (second.kind === 'schema-mismatch') ? second.detail : second.marker,
+      },
+    };
   }
   catch (error) {
     if (request.signal

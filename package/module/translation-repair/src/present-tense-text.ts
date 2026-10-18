@@ -1,3 +1,4 @@
+import { nestedSinglePairs, } from './nested-single-quotes.ts';
 import { isWhitespace, } from './present-tense-words.ts';
 
 //region Text reading
@@ -175,19 +176,18 @@ export function visibleWords({ text, }: { readonly text: string; },): string {
 }
 
 /**
- Blanks every character inside a quotation, so the rules never read speech. The
- result keeps the length of the input, so offsets into it match the visible text.
+ Blanks every character inside a quotation in double marks (curly, guillemets, low-nine or straight), marks included.
 
  @param text - visible words of one paragraph
 
- @returns The same text with quoted characters replaced by spaces
+ @returns The same text with the characters of quotations in double marks replaced by spaces
 
  @example
  ```ts
- const masked = maskQuotedSpeech({ text: 'The vet said, "She naps."', },);
+ const masked = maskDoubleQuotations({ text: 'The vet said, "She naps."', },);
  ```
  */
-export function maskQuotedSpeech({ text, }: { readonly text: string; },): string {
+function maskDoubleQuotations({ text, }: { readonly text: string; },): string {
   return (function mask(): string {
     /**
      Whether the scan is inside a quotation, which any closing mark or a second straight quote ends.
@@ -222,6 +222,141 @@ export function maskQuotedSpeech({ text, }: { readonly text: string; },): string
     }
     return masked.join('',);
   })();
+}
+
+/**
+ Blanks every character inside a quotation in single curly marks, marks included, where the marks pair. A closing single mark is the
+ character of an apostrophe (`cat’s`, `cats’ bowls`), so no mark is taken for a closing one alone: the text is read with its curly
+ single marks written straight by the package's pairing reader (`nestedSinglePairs`, `nested-single-quotes.ts`), which pairs a mark
+ that opens after a space or an opening mark with a mark that closes after a non-space with no word after it, and leaves an apostrophe
+ inside a word, an opening mark that no mark closes, and every mark of an apostrophe unpaired. Only a pair whose opening is `‘` and
+ whose closing is `’` is blanked, the outermost where pairs nest.
+
+ @param text - visible words of one paragraph, its double quotations already blanked
+
+ @returns The same text with the characters of each paired quotation in single curly marks replaced by spaces
+
+ @example
+ ```ts
+ const masked = maskSingleCurlyQuotations({ text: 'The vet said, ‘She naps.’ Then she left.', },); // the quotation is spaces
+ ```
+ */
+function maskSingleCurlyQuotations({ text, }: { readonly text: string; },): string {
+  if ((!text.includes('‘',)) || (!text.includes('’',)))
+    return text;
+  /**
+   The text with each curly single mark written as the one unit it is, a straight one, the form the pairing reader reads.
+   */
+  const straight = text
+    .replaceAll(
+      '‘',
+      '\'',
+    )
+    .replaceAll(
+      '’',
+      '\'',
+    );
+  /**
+   Offsets of the paired marks.
+   */
+  const {
+    openings,
+    closings,
+  } = nestedSinglePairs({
+    text: straight,
+    mask: Array.from(
+      { length: text.length, },
+      function prose(): boolean {
+        return true;
+      },
+    ),
+  },);
+  /**
+   Spans of the outermost quotations, each from its opening mark to its closing mark, found in the order the marks stand.
+   */
+  const spans: SentenceSpan[] = [];
+  /**
+   Where the outermost quotation now open began and how deep the quotations nest, mutated only inside this function.
+   */
+  const open = {
+    start: -1,
+    depth: 0,
+  };
+  for (let index = 0; index < text.length; index += 1) {
+    /**
+     The unit at the offset, a mark only where the pairing reader paired it.
+     */
+    const character = text.charAt(index,);
+    /**
+     Whether the pairing reader took the unit as an opening mark.
+     */
+    const pairedOpening = openings.has(index,);
+    /**
+     Whether the pairing reader took the unit as a closing mark.
+     */
+    const pairedClosing = closings.has(index,);
+    /**
+     Whether the unit is a curly closing mark the pairing reader paired.
+     */
+    const closesPairedQuote = pairedClosing && (character === '’');
+    if (pairedOpening && (character === '‘')) {
+      if (open.depth === 0)
+        open.start = index;
+      open.depth += 1;
+    }
+    else if (closesPairedQuote && (open.depth > 0)) {
+      open.depth -= 1;
+      if (open.depth === 0) {
+        spans.push({
+          start: open.start,
+          end: index + 1,
+        },);
+      }
+    }
+  }
+  /**
+   Whether an offset lies inside a span, which the spans of one scan make a single pass over the text.
+   */
+  const blanked = new Set<number>(spans.flatMap(function offsetsOf({
+    start,
+    end,
+  },): readonly number[] {
+    return Array.from(
+      { length: end - start, },
+      function offsetAt(
+        _unused,
+        position,
+      ): number {
+        return start + position;
+      },
+    );
+  },),);
+  return text
+    .split('',)
+    .map(function masked(
+      character,
+      index,
+    ): string {
+      return blanked.has(index,) ? ' ' : character;
+    },)
+    .join('',);
+}
+
+/**
+ Blanks every character inside a quotation, so the rules never read speech: double marks (curly, guillemets, low-nine, straight) and
+ paired single curly marks, marks included. The result keeps the length of the input, so offsets into it match the visible text.
+
+ @param text - visible words of one paragraph
+
+ @returns The same text with quoted characters replaced by spaces
+
+ @example
+ ```ts
+ const masked = maskQuotedSpeech({ text: 'The vet said, "She naps."', },);
+ ```
+ */
+export function maskQuotedSpeech({ text, }: { readonly text: string; },): string {
+  return maskSingleCurlyQuotations({ text: maskDoubleQuotations({ text, },), },);
 }
 
 /**

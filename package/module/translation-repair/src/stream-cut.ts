@@ -109,17 +109,29 @@ export class StreamCutShortError extends Error {
   readonly progress: StreamProgress;
 
   /**
+   Decoded characters of the answer and of the reasoning the stream had produced, as its watch counted them; absent where
+   the caller had no count. `partialText` is the stream as it arrived with its framing, about 27 times the reasoning in the
+   cuts of Qwen on the run of TianqiChen66625, so an abandonment line reads these and names the wire length apart.
+   */
+  readonly generatedChars?: {
+    readonly content: number;
+    readonly reasoning: number;
+  };
+
+  /**
    @param label - model or endpoint
 
    @param partialText - text delivered before the cut
 
    @param progress - what the stream did
 
+   @param generatedChars - decoded characters of the answer and of the reasoning the watch counted, where the caller had them
+
    @param cause - original failure, kept so its identity survives
 
    @example
    ```ts
-   const error = new StreamCutShortError({ label, partialText, progress, cause, },);
+   const error = new StreamCutShortError({ label, partialText, progress, generatedChars, cause, },);
    ```
    */
   constructor(
@@ -127,11 +139,16 @@ export class StreamCutShortError extends Error {
       label,
       partialText,
       progress,
+      generatedChars,
       cause,
     }: {
       readonly label: string;
       readonly partialText: string;
       readonly progress: StreamProgress;
+      readonly generatedChars?: {
+        readonly content: number;
+        readonly reasoning: number;
+      };
       readonly cause: unknown;
     },
   ) {
@@ -149,6 +166,8 @@ export class StreamCutShortError extends Error {
     this.label = label;
     this.partialText = partialText;
     this.progress = progress;
+    if (generatedChars !== undefined)
+      this.generatedChars = generatedChars;
   }
 }
 

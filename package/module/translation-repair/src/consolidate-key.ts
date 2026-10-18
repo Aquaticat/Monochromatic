@@ -322,10 +322,20 @@ import type { LaneText, } from './translate-candidates.ts';
  23 also covers the tense of quoted words (n161, TianqiChen666): the house rule, the producer's tense line and the judges' tense
  lines now say that words quoted as someone wrote or said them keep the speaker's tense, so a consolidation or a ballot stored
  under 22 may hold a quotation moved into the past. The key hashes the version, the shape of the run and the texts and not the
- sheet, so a record written under the old sheet would be served under the new one; no record has been written at 23, so this rides
- inside the number n159 set.
+ sheet, so a record written under the old sheet would be served under the new one; no record had been written at 23 when this was
+ written: the numbers n159 set were first committed in `277145a862` together with R1, and the audit of that commit found 0
+ slice-cache records under the keyless worktree's runs directory (`s228/cache-audit-n161.txt`, line 992), so this rides inside the
+ number n159 set.
+
+ 24: the tense sentences moved again (n166, Z11). The house tense rule's sentence that puts the narrative of a life in the past now
+ holds the quoted-words exception inside it, and the judge tail's sentence that says no rule holds a life in the present holds it
+ too, so the sheets the consolidation and its judges read word the rule differently from 23. The key hashes the version, the shape
+ of the run and the texts and not the sheet, so a record written at 23 under the earlier wording of the same rule would be served
+ under the new one. Whether such a record exists is not measured here: the audit of n161 found none, but the launch started since at
+ `5f6c8593d7` runs at 23 and no runs directory is read in this round, so the number moves, as the lane-contest, slice, refine,
+ translate and page title versions move for the same sheets. No record has been written at 24, which this change sets first.
  */
-export const CONSOLIDATE_CACHE_VERSION = 23;
+export const CONSOLIDATE_CACHE_VERSION = 24;
 
 /**
  What a line-structured slice appends to its key material.

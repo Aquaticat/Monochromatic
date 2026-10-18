@@ -358,7 +358,10 @@ export async function runPassConsistency(
     for (const [position, group,] of applied.groups
       .entries()) {
       cl.info(`group ${String(position + 1,)} of ${String(applied.groups
-        .length,)}: ${groupLine({ group, },)}`,);
+        .length,)}: ${groupLine({
+        group,
+        groupNumber: position + 1,
+      },)}`,);
     }
     cl.info(
       `settled groups=${String(applied.groups

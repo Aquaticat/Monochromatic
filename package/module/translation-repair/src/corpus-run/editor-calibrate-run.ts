@@ -137,6 +137,11 @@ const DEFAULT_SLICES = 6;
  @param contestLedger - where the launch keeps its judged contests, which the
  entry file read
 
+ @param editorBenchStart - seat the editor bench's rotation starts at, which
+ only a fixture hands in so that the seats credited move with no sheet text
+ (`StageSettings.editorBenchStart`); the launch never gives it, and the prompt
+ decides
+
  @throws {@link StatedRefusalError} when the count, the overlap or a window
  is not one this run can read
 
@@ -155,6 +160,7 @@ export async function runEditorCalibrate(
     readWriterGrace,
     newClient,
     contestLedger,
+    editorBenchStart,
   }: {
     readonly line: CommandLineOf<'editor-calibrate'>;
     readonly readOverlap: (input: { readonly fallback: number; },) => number;
@@ -164,6 +170,7 @@ export async function runEditorCalibrate(
     readonly readWriterGrace: () => WriterGrace;
     readonly newClient: () => SyntheticClient;
     readonly contestLedger: ContestLedger;
+    readonly editorBenchStart?: number;
   },
 ): Promise<void> {
   /**
@@ -280,6 +287,7 @@ export async function runEditorCalibrate(
         stageSettings: {
           grace: writerGrace,
           contestLedger,
+          ...((editorBenchStart === undefined) ? {} : { editorBenchStart, }),
         },
       },);
     },

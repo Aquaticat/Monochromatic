@@ -8,6 +8,7 @@ import {
 } from './consistency-fold-offsets.ts';
 import { singleMarkAt, } from './consistency-loose-marks.ts';
 import {
+  CLOSING_BRACKETS,
   CLOSING_CURLY_DOUBLE,
   destinationEndOf,
   type DestinationStop,
@@ -100,16 +101,6 @@ const OPENING_MARKS: ReadonlySet<string> = new Set([
   '「',
   '『',
   '«',
-],);
-
-/**
- Marks that close a bracketed or linked stretch: when one stands directly before
- an apostrophe that a letter follows, the apostrophe belongs to what the stretch
- names (`[the cat](x)'s`, `(grey cat)'s`).
- */
-export const CLOSING_BRACKETS: ReadonlySet<string> = new Set([
-  ')',
-  ']',
 ],);
 
 /**
@@ -241,10 +232,10 @@ function apostropheBeforeLetter(
  @example
  ```ts
  const text = 'Fill the "cat"\'s bowl.';
- const inside = closingJointsOf({ folded: text, originals: Array.from(text,), closing: new Set(), },).has(14,); // true
+ const inside = closingJointsInText({ folded: text, originals: Array.from(text,), closing: new Set(), },).has(14,); // true
  ```
  */
-export function closingJointsOf(
+export function closingJointsInText(
   {
     folded,
     originals,
@@ -346,7 +337,7 @@ export function closingJointsOf(
 /**
  The apostrophes of an English that join the letter or digit after them across closing marks, at the offsets of the English
  as it was written: the `'` in `**cat**'s`, `"cat"'s`, `(grey cat)'s` and `[the cat](x)'s`. It is the reading
- `closingJointsOf` makes for the cut of a word, made once for the whole English, so a reader of those marks as the
+ `closingJointsInText` makes for the cut of a word, made once for the whole English, so a reader of those marks as the
  character that opens a quotation reads the one the cut reads.
 
  @param english - the English as it was written
@@ -392,7 +383,7 @@ export function joinedMarksOf(
     originals,
   } = read;
   for (
-    const at of closingJointsOf({
+    const at of closingJointsInText({
       folded,
       originals,
       closing: offsetsInFold({

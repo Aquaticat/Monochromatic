@@ -1,6 +1,7 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import { citedReferenceBlockText, } from './cited-reference-rule.ts';
+import { labelsSentenceOf, } from './consistency-label-sentence.ts';
 import {
   aroundBlocksOf,
   type CarryChosenPlace,
@@ -356,7 +357,16 @@ export function buildCarryChoiceMessages(
           receiving: subject.receiving,
           fence,
         },)
-      }${candidateBlocks.join('',)}${tenseBlock}${fence} END ${fence}\nReply with JSON only: {"reason":"...","choice":"<the label of the candidate you choose>"}`,
+      }${candidateBlocks.join('',)}${tenseBlock}${fence} END ${fence}\n${
+        labelsSentenceOf({
+          labels: subject.candidates
+            .map(function labelOf({ label, },): string {
+              return label;
+            },),
+          // NO QUOTED FIELD NAME HERE: the reply shape that follows is where `"reason"` is shown before `"choice"`.
+          fields: ['the choice',],
+        },)
+      }\nReply with JSON only: {"reason":"...","choice":"<the label of the candidate you choose>"}`,
     },
   ];
 }

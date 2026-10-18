@@ -215,6 +215,11 @@ export class EnvelopeOverlapError extends Error {
 
  @throws {@link EnvelopeOverlapError} when two envelopes overlap
 
+ @throws {@link FragmentLandingError} when an envelope whose current text matched its base text lies where the targetText cannot hold
+ a fragment: an offset that is no whole number, a start before the text, an end past it, or an end before its start. An envelope with
+ empty base text and an end before its start passes the drift check (the empty slice of a backward range equals the empty base text)
+ and is refused here, which is its refusal; no other refusal of the applier comes before it
+
  @example
  ```ts
  const { patchedText, rejected, } = applyPatchOperations({ targetText, envelopes, operations, preservation, },);

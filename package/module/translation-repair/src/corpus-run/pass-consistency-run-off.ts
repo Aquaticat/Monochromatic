@@ -3,8 +3,9 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { SyntheticClient, } from '../chat-contract.ts';
 import type { ConsistencyRendering, } from '../consistency-count-types.ts';
 import {
-  CONSISTENCY_CHOICE_RESPONSE_FORMAT,
+  canonicalChoiceOf,
   type ConsistencyChoiceVoice,
+  consistencyChoiceResponseFormat,
   usableChoiceFor,
 } from '../consistency-choice.ts';
 import { buildConsistencyRunOffMessages, } from '../consistency-run-off.ts';
@@ -66,11 +67,14 @@ export function storedChoices(value: ConsistencyCacheValue,): readonly Consisten
 
  @param findings - what the gather reported
 
+ @param labels - labels the sheet showed, which each choice is stored as the shown label it names (the lead's ruling of
+ 2026-10-15); each choice is stored as heard where absent
+
  @returns The record
 
  @example
  ```ts
- const record = choiceRecordOf({ quorum: 2, voices, findings: [], },);
+ const record = choiceRecordOf({ quorum: 2, voices, findings: [], labels: ['OCCURRENCE 1', 'OCCURRENCE 2',], },);
  ```
  */
 export function choiceRecordOf(
@@ -78,6 +82,7 @@ export function choiceRecordOf(
     quorum,
     voices,
     findings,
+    labels,
   }: {
     readonly quorum: number;
     readonly voices: readonly {
@@ -88,6 +93,7 @@ export function choiceRecordOf(
       };
     }[];
     readonly findings: readonly string[];
+    readonly labels?: readonly string[];
   },
 ): ConsistencyChoiceRecord {
   return {
@@ -97,10 +103,20 @@ export function choiceRecordOf(
       modelId,
       value,
     },): ConsistencyChoiceVoice {
+      /**
+       The choice with the shown label it names, as a list of zero or one; none where the labels are not given or the choice
+       names none, which the gather's guard has already refused.
+       */
+      const [shown,] = (labels === undefined)
+        ? []
+        : canonicalChoiceOf({
+          ballot: value,
+          labels,
+        },);
       return {
         seat: modelId,
         reason: value.reason,
-        choice: value.choice,
+        choice: shown?.choice ?? value.choice,
       };
     },),
     findings,
@@ -184,7 +200,7 @@ export async function askRunOff(
     messages,
     signal,
     exchangeTimeoutMs,
-    responseFormat: CONSISTENCY_CHOICE_RESPONSE_FORMAT,
+    responseFormat: consistencyChoiceResponseFormat({ labels: finalists, },),
     validate: usableChoiceFor({ labels: finalists, },),
     stage: 'page-consistency-run-off',
     graceMs: stageSettings
@@ -199,7 +215,12 @@ export async function askRunOff(
       ...((subject.subjectNames === undefined) ? {} : { subjectNames: subject.subjectNames, }),
     },),
     readStored: storedChoices,
-    recordOf: choiceRecordOf,
+    recordOf: function recordFor(gathered,): ConsistencyChoiceRecord {
+      return choiceRecordOf({
+        ...gathered,
+        labels: finalists,
+      },);
+    },
     l,
   },);
   return {

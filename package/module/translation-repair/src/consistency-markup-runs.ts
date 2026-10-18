@@ -69,6 +69,17 @@ export const EMPHASIS_CHARACTERS: ReadonlySet<string> = new Set([
 export const CLOSING_CURLY_DOUBLE = '\u{201D}';
 
 /**
+ Marks that close a bracketed or linked stretch: when one stands directly before
+ an apostrophe that a letter follows, the apostrophe belongs to what the stretch
+ names (`[the cat](x)'s`, `(grey cat)'s`). Declared here, beside the other marks the readers of a run share, so that the reading of
+ a link's label (`consistency-link-label.ts`) tells a last mark that closes from one that does not by the same set.
+ */
+export const CLOSING_BRACKETS: ReadonlySet<string> = new Set([
+  ')',
+  ']',
+],);
+
+/**
  The characters of the refusal run on the trailing side of a span besides the delimiters of emphasis, as the English wrote
  them: the backtick of inline code, the closing round and square brackets and the double quotation marks that close, and the
  closing corner brackets.

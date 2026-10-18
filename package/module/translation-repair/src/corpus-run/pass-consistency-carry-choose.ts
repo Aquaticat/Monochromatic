@@ -1,6 +1,10 @@
+import { tagged, } from '@monochromatic-dev/module-logger/ts';
+
+import type { CarryChoiceSubject, } from '../consistency-carry-choice-sheet.ts';
 import {
   carryChoiceOf,
   type CarryOffer,
+  carryRunOffFinalistsOf,
 } from '../consistency-carry.ts';
 import { ConsistencyInvariantError, } from '../consistency-invariant-error.ts';
 import type {
@@ -305,51 +309,128 @@ export async function choose(
     unit,
   },);
   /**
+   Logger pre-tagged with this function's name.
+   */
+  const cl = tagged({
+    tag: choose.name,
+    l: context.l,
+  },);
+  /**
+   The sheet's subject: what both sheets show of the places and every candidate on offer.
+   */
+  const subject: CarryChoiceSubject = {
+    repeat,
+    receiving: shown.receiving,
+    chosen: shown.chosen,
+    keeping: shown.keeping,
+    ...((shown.before === undefined) ? {} : { before: shown.before, }),
+    ...((shown.after === undefined) ? {} : { after: shown.after, }),
+    candidates: offers.map(function shownCandidate({
+      label,
+      kind,
+      text,
+    },) {
+      return {
+        label,
+        current: kind === 'current',
+        text,
+      };
+    },),
+    ...((context.identityContext === undefined) ? {} : { identityContext: context.identityContext, }),
+    ...((context.referenceContext === undefined) ? {} : { referenceContext: context.referenceContext, }),
+    ...((context.lifeEnded === undefined) ? {} : { lifeEnded: context.lifeEnded, }),
+    ...((context.subjectNames === undefined) ? {} : { subjectNames: context.subjectNames, }),
+  };
+  /**
    The judges' choices.
    */
   const asked = await askCarryChoice({
     client: context.client,
     modelIds: context.judgeModelIds,
-    subject: {
-      repeat,
-      receiving: shown.receiving,
-      chosen: shown.chosen,
-      keeping: shown.keeping,
-      ...((shown.before === undefined) ? {} : { before: shown.before, }),
-      ...((shown.after === undefined) ? {} : { after: shown.after, }),
-      candidates: offers.map(function shownCandidate({
-        label,
-        kind,
-        text,
-      },) {
-        return {
-          label,
-          current: kind === 'current',
-          text,
-        };
-      },),
-      ...((context.identityContext === undefined) ? {} : { identityContext: context.identityContext, }),
-      ...((context.referenceContext === undefined) ? {} : { referenceContext: context.referenceContext, }),
-      ...((context.lifeEnded === undefined) ? {} : { lifeEnded: context.lifeEnded, }),
-      ...((context.subjectNames === undefined) ? {} : { subjectNames: context.subjectNames, }),
-    },
+    subject,
     cache: context.cache,
     signal: context.signal,
     exchangeTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
-    l: context.l,
+    l: cl,
     stageSettings: context.stageSettings,
   },);
   /**
    What the choices decided.
    */
   const {
-    usable,
-    choice,
+    usable: firstUsable,
+    choice: firstChoice,
   } = carryChoiceOf({
     voices: asked.voices,
     labels,
     quorum: asked.quorum,
   },);
+  /**
+   The candidates tied for first when the choices reached the quorum and none has a strict majority, whose run-off the owner's
+   rule of 2026-10-11 asks for among contests (the lead's adoption of 2026-10-15 for this ask, open to the owner's veto).
+   */
+  const finalists = carryRunOffFinalistsOf({
+    voices: asked.voices,
+    labels,
+    quorum: asked.quorum,
+  },);
+  if (finalists.length > 0) {
+    cl.info(
+      `the choice among the candidates had no strict majority (${String(firstUsable,)} usable); asking the bench once more among the tied ${
+        finalists.join(' and ',)
+      }`,
+    );
+  }
+  /**
+   The bench asked once more among the candidates that tied, absent when none tied. Its sheet shows those candidates only,
+   under the labels they had, and its answer is kept under a key of its own.
+   */
+  const runOffAsked = (finalists.length === 0)
+    ? undefined
+    : await askCarryChoice({
+      client: context.client,
+      modelIds: context.judgeModelIds,
+      subject: {
+        ...subject,
+        candidates: subject.candidates
+          .filter(function isFinalist({ label, },): boolean {
+            return finalists.includes(label,);
+          },),
+      },
+      cache: context.cache,
+      signal: context.signal,
+      exchangeTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
+      l: cl,
+      stageSettings: context.stageSettings,
+      runOff: true,
+    },);
+  /**
+   What the run-off's choices decided, counted against the finalists only with the run-off's own quorum; a second split keeps
+   the page as it stands.
+   */
+  const runOffCounted = (runOffAsked === undefined)
+    ? undefined
+    : carryChoiceOf({
+      voices: runOffAsked.voices,
+      labels: finalists,
+      quorum: runOffAsked.quorum,
+    },);
+  /**
+   What the carry came to: the run-off's count when there was a run-off, the first count otherwise.
+   */
+  const choice = runOffCounted?.choice ?? firstChoice;
+  if ((runOffAsked !== undefined) && (runOffCounted !== undefined)) {
+    cl.info(
+      `the run-off among the candidates counted ${String(runOffCounted.usable,)} usable of ${
+        String(runOffAsked.voices
+          .length,)
+      } heard (quorum ${String(runOffAsked.quorum,)}): ${
+        (runOffCounted.choice
+          .kind
+          === 'chosen') ? `${runOffCounted.choice.label} won` : `no winner (${runOffCounted.choice.reason})`
+      }`,
+    );
+  }
   /**
    The candidate the choices named, as a list of zero or one.
    */
@@ -375,8 +456,27 @@ export async function choose(
               choice: chose,
             };
           },),
-        usable,
+        usable: firstUsable,
         quorum: asked.quorum,
+        ...((runOffAsked === undefined) ? {} : {
+          runOff: {
+            finalists,
+            ballots: runOffAsked.voices
+              .map(function recordedRunOffBallot({
+                seat,
+                reason,
+                choice: chose,
+              },) {
+                return {
+                  seat,
+                  reason,
+                  choice: chose,
+                };
+              },),
+            usable: runOffCounted?.usable ?? 0,
+            quorum: runOffAsked.quorum,
+          },
+        }),
         decision: choice,
       };
     },),
@@ -387,6 +487,7 @@ export async function choose(
     findings: [
       ...findings,
       ...asked.findings,
+      ...(runOffAsked?.findings ?? []),
       ...partlyCarriedFindingOf({
         unit,
         winner,

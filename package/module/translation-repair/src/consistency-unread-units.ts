@@ -365,8 +365,10 @@ const LINE_BREAKS: ReadonlySet<string> = new Set([
  not here (`unreadUnitsOf` keeps it for the refusal run, which steps over it). A unit of a hidden stretch is hidden whatever its
  width, so a reference, an escape or an astral character inside a link's destination, a tag's attribute or a comment hides every
  unit it is written with (`consistency-shown-edge.ts` reads the flag of the unit's first character). The backticks of inline code
- are hidden and the content of inline code is shown as the code word it is, as the typography side reads it
- (`typography-shown-view.ts`), so a word of code beside a word of text reads as the one word it shows. An English the grammar
+ are hidden and the content of inline code is shown as the code word it is, without the one space CommonMark strips from each side
+ of content that begins and ends with a space and is not all spaces (`consistency-markup-ranges.ts`), so a word of code beside a
+ word of text reads as the one word it shows. The typography side (`typography-shown-view.ts`) keeps that padding as shown text.
+ An English the grammar
  refuses blanks nothing. What separates or annotates (a line break, a block tag, a table cell, an image, a ruby annotation) is
  told apart by `unitKindsOf` (`consistency-shown-kinds.ts`), which starts from these flags.
 
@@ -419,6 +421,16 @@ export function transparentUnitsOf(
   ]) {
     for (let at = start; at < end; at += 1)
       hidden[at] = false;
+  }
+  // A LINE BREAK INSIDE THE RESOURCE OF A LINK OR AN IMAGE (n169) is part of the link's destination, title or reference, which the
+  // grammar reads across lines, and shows a reader nothing, so it is hidden with the rest of the resource. A line break between
+  // words stays shown.
+  for (const {
+    start,
+    end,
+  } of view.linkResources) {
+    for (let at = start; at < end; at += 1)
+      hidden[at] = true;
   }
   for (const region of commentRegionsOf({ text: english, },)) {
     if (!region.terminated)
