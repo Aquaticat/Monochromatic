@@ -1645,8 +1645,8 @@ The original sealed handoff is preserved; the corrected row projection is in the
 
 The remaining finite factual queue is independently owned:
 
-- Complete the active corrected public Mac/Windows matrix and preserve actual owner bodies and failures.
-- Execute the matched admitted Depot Mac/Windows matrix under its separate USD2 guard.
+- Complete the corrected GNU-only continuation; the initial GNU context stopped at argument parsing.
+- Seal the terminal matched Depot Mac/Windows owner receipts and resource ledger.
 - Seal the per-package source feature/assertion and observed execution manifest,
   retaining counts, missing reach, cross-lane contexts and historical hash boundaries separately.
 - Finish source-backed troubleshooting notes and rendered Markdown checks.
@@ -1772,3 +1772,20 @@ Each LFS payload matches its frozen pointer OID and size;
 each remaining payload matches its frozen Git blob identity.
 This qualifies the local source inputs, not execution of a consumer.
 No asset, screenshot or embedded image bytes are added to this note.
+
+## Terminal matched Depot host owners
+
+Depot-managed GitHub run `39148580870` is terminal.
+Mac job `117737397487` ran for 359 seconds;
+Windows job `117737397295` ran for 674 seconds.
+The nominal elapsed-interval list-rate proxy is USD0.6584.
+The USD1.92 reservation under the separate USD2 guard is released after terminal status.
+No invoice or included-minute debit was queried or established.
+
+Mac executed 1,495 Nextest binary/case identities, 1,468 passed and 27 failed,
+plus one skipped summary entry.
+Windows executed 1,494, with 1,493 passed and one failed, plus one skipped entry.
+Logger retains separate child failures and aggregate emissions, not an assertion total.
+The matched GNU context is still a finite continuation because its public adapter duplicated
+an authored scheduler argument; the [troubleshooting note](../troubleshooting/nextest-owning-task-scheduler-arguments.md)
+retains that pre-body boundary and the qualified parser controls.
