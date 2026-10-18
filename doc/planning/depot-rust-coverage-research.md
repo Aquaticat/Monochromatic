@@ -209,6 +209,37 @@ existing planted controls and seed immutability remain in the owned queue.
 
 ## Owned work queue
 
+### Recovered ordinary consumer
+
+Run `zxlt43t7g1`,
+from harness `ee873be6f753c611b15cbfd0e925d0048a631dbb`,
+finished successfully.
+The unchanged `processors_consumer.rs` compiled against Cargo-discovered archive and matching full metadata,
+then printed `processor artifact consumer passed`.
+The fresh sandbox verified the prepared cargo-fuzz and Codex bytes,
+registry manifest digest,
+synthetic source/secret exclusion markers,
+and unchanged source before and after execution.
+This gives `tools-r3-fuzz-codex` ordinary-consumer evidence;
+it does not represent a Codex model turn or fuzz execution.
+
+Artifact `01a14e95-7e1f-70e2-a82d-b8ea65ea6fd7` passed its upload SHA-256 and ZIP CRC checks.
+The recovery retains the preceding failed runs separately.
+Its 197-second requested-to-finish upper bound adds USD 0.0394,
+bringing the cumulative compute proxy to USD 1.6564,
+with USD 3.3436 remaining.
+
+The next profiles reserve USD 0.36 each:
+bounded GNU/AddressSanitizer fuzz execution and the deterministic installed Codex host fixture,
+each limited to 8 CPU,
+32 GB and 15 minutes.
+Their combined conservative forecast is USD 2.3764.
+Runtime fuzz processes remain mount-free,
+network-disabled containers with 2 CPU,
+2 GiB memory and 128 tasks.
+Committed corpora remain source inputs;
+only owned copies receive generated units and crash artifacts.
+
 The tool-preparation run `jf0c9llb1v` finished with the same 415 passing Nextest cases,
 1 skipped and 416 enumerated,
 and retained a real executable transport artifact.
