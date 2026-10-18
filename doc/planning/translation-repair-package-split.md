@@ -539,6 +539,80 @@ so the order adds sibling builds to a dependency that exists.
   unused values) and the other whole-package source scans
   measure the family as one program,
   so a function one package exports and another uses still counts as reached.
+- `build-entries.ts` moves to `coverage-census` (the map said `stage`;
+  only the census reads it in production).
+  The move gives every runner package its own `src/build-entries.ts` listing its own runners,
+  so the census must read every package's list;
+  until it does it sees a subset,
+  and a control holds it to the pre-split runner source set.
+
+### Readers that find a file by path
+
+The move rewrites import specifiers only.
+A scan over every string literal and template text in the package
+(`literal-paths.ts` in the split's scratch directory)
+lists the code that names a family file as text and resolves it by path or key at run time,
+which a move breaks without a type or build error:
+
+- Source scans and their allowlist fixtures,
+  keyed by `src/<file>` path.
+  The 48 scans (the `source-scans` task plus every importer of the scan fixtures)
+  and the 11 fixtures only scans import
+  (the `position-references-*` allowlists and the scan helpers)
+  all move to `source-scan`,
+  which reads every family package's `src`.
+- The coverage census,
+  through `build-entries.ts`.
+- The cache-account audit (`corpus-run/cache-account-run.ts`),
+  which lists its own package's `src` with `git ls-files` to find the cache versions;
+  it must list every family package's `src`.
+- `semantic-wrap-binary.ts`,
+  which finds `semantic-wrap.config.jsonc` at `../../../src` from the running file.
+  Runner bundles in other packages inline it,
+  so the build copies the config into `dist/final/node` and the built module reads it there;
+  the pipeline digest then covers the config's bytes,
+  which it did not before although the config changes output line breaks.
+  This lands before the move as its own change.
+  The config itself moves to `typography`,
+  the only file under `src` that is not TypeScript.
+- Tests and fixtures that start a child over the built package
+  (`built-child.test-fixture.ts`,
+   `child-environment.test-fixture.ts`,
+   `published-run.test-fixture.ts`,
+   `parse-mdx-cold-refusal.unit.test.ts`,
+   `console-warn-lines.unit.test.ts`
+   and the census and runs-lock tests,
+   15 files):
+  they join `dist/final/node` or a sibling file to their own directory,
+  and some read classes off the built index by name inside the child's source text.
+  Each must resolve the package that defines what it needs,
+  by `import.meta.resolve('<package name>')` for a built entry
+  and `<package name>/ts/<path>` for a source file.
+- `typography-prose-mask.unit.test.ts` reads five rule sources by path;
+  it moves with the scans' path reading.
+
+Messages and case names that mention a file by its base name stay true after the move
+and need no change.
+
+## The pilot
+
+Run in a keyless worktree at `fee1f64f15` with `markup` and `test-fixture` moved out
+and the rest left in place:
+
+- Both packages build;
+  the remaining library index imports 83 names from `@monochromatic-dev/translation-repair-markup`
+  and declares none of markup's 104 exports,
+  and its declarations file imports the same bare name.
+  Runner bundles inline markup.
+- Markup's tests pass 45 cases,
+  the fixture package's 6,
+  the remaining package's 2429.
+  Every case the baseline gate g99b passed and the pilot did not
+  belongs to a reader in the list above:
+  the source scans,
+  the message-class inventory,
+  the task-runner guard reach
+  and the stack-edge child test.
 
 ### Docs
 
@@ -570,6 +644,8 @@ in a fresh keyless worktree:
   lints clean and type-checks;
 - the suite holds the same case names and counts;
 - every source scan passes;
+- the coverage census and the cache-account audit read the same source files as before the move,
+  under their new paths;
 - the replay and the corpus measure,
   run against the new `corpus-pass` runner bundle and the new library builds,
   match the pre-split outputs byte for byte except for labels;

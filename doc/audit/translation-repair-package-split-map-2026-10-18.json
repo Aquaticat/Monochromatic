@@ -81,7 +81,7 @@
   "block-pairing-question.ts": "slice-reading",
   "budget-hold-wait.ts": "provider",
   "budget-routing.ts": "provider",
-  "build-entries.ts": "stage",
+  "build-entries.ts": "coverage-census",
   "call-deadline.ts": "provider",
   "candidate-judge-rules.ts": "house-rule",
   "candidate-ledger.ts": "house-rule",
