@@ -29,12 +29,22 @@ async function buildRelease(packageRoot: string): Promise<string> {
   return result.stdout;
 }
 
+/**
+ Require the outer platform fixture's exact mount argument before touching the filesystem.
+
+ @param value - original process argument candidate
+ */
+function assertMountArgument(value: unknown): asserts value is string {
+  assert.equal(typeof value, 'string');
+  assert.notEqual(value, undefined);
+}
+
+/** Process invocation keeps node and script identity out of the mount arguments. */
+const [, ...invocation] = process.argv;
 /** Previous-file mount owned exclusively by the outer platform fixture. */
-const [, , previousMount, outputMount] = process.argv;
-assert.equal(typeof previousMount, 'string');
-assert.equal(typeof outputMount, 'string');
-assert.notEqual(previousMount, undefined);
-assert.notEqual(outputMount, undefined);
+const [, previousMount, outputMount] = invocation;
+assertMountArgument(previousMount);
+assertMountArgument(outputMount);
 /** Previous fixture remains outside the output mount even when device identifiers agree. */
 const previous = await mkdtemp(join(previousMount, 'reuse-prior-'));
 /** New fixture never replaces a real installation or another session's files. */

@@ -94,6 +94,11 @@ async function previousMetadata(original: string): Promise<Stats | typeof NO_PRE
  @returns complete reused-file and byte counts
  
  @throws original filesystem error when comparison or linking fails for reasons other than an unsupported mount boundary
+ 
+ @example
+ ```ts
+ const reused = await reuseNativeBuildFiles({ output: '/var/tmp/release-next', active: '/opt/auto-mode/current' });
+ ```
  */
 export async function reuseNativeBuildFiles({
   output,
