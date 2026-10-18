@@ -14,7 +14,7 @@ and it sits above `consolidate`,
 ## What it provides
 
 `src/index.ts` re-exports each public name from the module that declares it.
-The groups below name the main ones.
+The groups that follow name the main ones.
 
 - Document drivers:
   translate a document,

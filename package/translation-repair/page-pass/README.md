@@ -15,7 +15,7 @@ shape and `corpus-source` packages below it.
 ## What it provides
 
 `src/index.ts` re-exports each public name from the module that declares it.
-The groups below name the main ones.
+The groups that follow name the main ones.
 
 - Patch application and preservation:
   apply a set of patch operations to a text,

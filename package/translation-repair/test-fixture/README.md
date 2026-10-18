@@ -15,7 +15,7 @@ instead of each package keeping a copy.
 
 Every file is a `*.test-fixture.ts`,
 reached by file through the `./ts/*` export.
-The groups below name the main ones.
+The groups that follow name the main ones.
 
 - Test infrastructure:
   `scratch-dir.test-fixture.ts` gives `scratchDir` and `scratchDirWith`,

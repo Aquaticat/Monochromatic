@@ -16,7 +16,7 @@ translate and report layers all read the same policy text and it needs only `doc
 ## What it provides
 
 `src/index.ts` re-exports each public name from the module that declares it.
-The groups below name the main ones.
+The groups that follow name the main ones.
 
 - House policy and rules:
   the policy blocks the prompts quote and the rules about forms,

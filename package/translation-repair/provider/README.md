@@ -8,13 +8,13 @@ Anthropic,
 Hyper and Synthetic clients and catalogues,
 retries,
 deadlines and spend reporting.
-It is its own package so the stage and lane layers above call one routing client and the clients load from one
+It is its own package so the stage and lane layers that build on it call one routing client and the clients load from one
 built file.
 
 ## What it provides
 
 `src/index.ts` re-exports each public name from the module that declares it.
-The groups below name the main ones.
+The groups that follow name the main ones.
 
 - Routing and budgets:
   choose the provider for a model,

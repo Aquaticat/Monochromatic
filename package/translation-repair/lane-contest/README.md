@@ -14,7 +14,7 @@ and it sits above `stage`,
 ## What it provides
 
 `src/index.ts` re-exports each public name from the module that declares it.
-The groups below name the main ones.
+The groups that follow name the main ones.
 
 - Lane contest:
   settle one contested slice by asking the roster which candidate the original supports,

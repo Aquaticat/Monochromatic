@@ -8,12 +8,12 @@ patch and document models,
 and the provider catalogue pieces more than one client needs.
 It mixes families on purpose,
 because each module is imported from several layers,
-and keeping them together lets the layers above share one built copy without importing each other.
+and keeping them together lets the layers that build on them share one built copy without importing each other.
 
 ## What it provides
 
 `src/index.ts` re-exports each public name from the module that declares it.
-The groups below name the main ones.
+The groups that follow name the main ones.
 
 - Issues and claims:
   the issue claim,

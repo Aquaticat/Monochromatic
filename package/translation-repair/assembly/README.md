@@ -14,7 +14,7 @@ and it sits above the text and `adjudication` packages.
 ## What it provides
 
 `src/index.ts` re-exports each public name from the module that declares it.
-The groups below name the main ones.
+The groups that follow name the main ones.
 
 - Assembly integrity:
   check that replacements change something,

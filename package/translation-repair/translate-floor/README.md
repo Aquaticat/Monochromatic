@@ -15,7 +15,7 @@ provider and `stage` packages.
 ## What it provides
 
 `src/index.ts` re-exports each public name from the module that declares it.
-The groups below name the main ones.
+The groups that follow name the main ones.
 
 - Floors and validation:
   findings raised for a translated slice that leaves Han text,

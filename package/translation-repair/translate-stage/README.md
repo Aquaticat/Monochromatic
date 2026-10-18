@@ -15,7 +15,7 @@ and it sits above `stage` and `translate-floor`.
 ## What it provides
 
 `src/index.ts` re-exports each public name from the module that declares it.
-The groups below name the main ones.
+The groups that follow name the main ones.
 
 - The translate stage:
   produce the slate,

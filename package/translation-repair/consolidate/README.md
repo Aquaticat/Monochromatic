@@ -17,7 +17,7 @@ and it sits above `repair`,
 ## What it provides
 
 `src/index.ts` re-exports each public name from the module that declares it.
-The groups below name the main ones.
+The groups that follow name the main ones.
 
 - Settling a consolidation:
   produce the proposals,

@@ -15,7 +15,7 @@ and it sits below `corpus-pass`.
 ## What it provides
 
 `src/index.ts` re-exports each public name from the module that declares it.
-The groups below name the main ones.
+The groups that follow name the main ones.
 
 - Insertion admission:
   admit insertions that carry a container half,

@@ -13,7 +13,7 @@ the translate floors and the probes all read the same audit library and page-nam
 ## What it provides
 
 `src/index.ts` re-exports each public name from the module that declares it.
-The groups below name the main ones.
+The groups that follow name the main ones.
 
 - Audit library:
   build the audit prompt,

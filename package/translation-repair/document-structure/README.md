@@ -5,13 +5,13 @@ It holds the MDX and Markdown parse,
 front-matter splitting,
 the footnote graph,
 container masks and the heading and block alignment that pairs original and translation.
-It is its own package because nearly every layer above needs the parse,
+It is its own package because nearly every layer that builds on it needs the parse,
 and it needs only `markup` below it.
 
 ## What it provides
 
 `src/index.ts` re-exports each public name from the module that declares it.
-The groups below name the main ones.
+The groups that follow name the main ones.
 
 - MDX and Markdown parsing:
   parse a page body,

@@ -12,7 +12,7 @@ and a repaired candidate translation.
 
 Until 2026-10-18 the pipeline was one package,
 `package/module/translation-repair`.
-It was split into the packages below because its lint took too long as one unit,
+It was split into the packages that follow because its lint took too long as one unit,
 and the owner asked for packages of a manageable size.
 The measurements and the map of every moved file are in
 [the split plan](../../doc/planning/translation-repair-package-split.md).

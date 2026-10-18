@@ -11,7 +11,7 @@ which production code tests with `instanceof`.
 ## What it provides
 
 `src/index.ts` re-exports each public name from the module that declares it.
-The groups below name the main ones.
+The groups that follow name the main ones.
 
 - Credential masking:
   strip API keys and their encoded forms from text before it is logged or stored.

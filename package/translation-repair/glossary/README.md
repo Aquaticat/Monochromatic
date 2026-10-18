@@ -14,7 +14,7 @@ and it needs only `document-structure`,
 ## What it provides
 
 `src/index.ts` re-exports each public name from the module that declares it.
-The groups below name the main ones.
+The groups that follow name the main ones.
 
 - Community glossary and matching:
   the glossary data,

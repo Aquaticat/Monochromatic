@@ -16,7 +16,7 @@ and it sits above `adjudication`,
 ## What it provides
 
 `src/index.ts` re-exports each public name from the module that declares it.
-The groups below name the main ones.
+The groups that follow name the main ones.
 
 - Repair entry and chunks:
   the text-in entry point,
