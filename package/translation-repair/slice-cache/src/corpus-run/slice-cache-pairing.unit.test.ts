@@ -1,8 +1,10 @@
 /**
  Tests for the block and section pairing caches, which store one shape and
  share one validator (audit area six, ledger B18): a record round-trips
- through each, and a record whose findings are not all text, or a bare list,
- is never resumed. Fixtures are cat-themed invention written into throwaway
+ through each, a record whose findings are not all text, or a bare list,
+ is never resumed, and a record filled by another built pipeline is never
+ resumed by this one, which is what keeps a pairing from outliving the code
+ that settled it (the pairing cache version does not carry that). Fixtures are cat-themed invention written into throwaway
  directories.
 
  @module
@@ -142,6 +144,80 @@ await describe({
           ),
           serialized: JSON.stringify([],),
         },),).toEqual([[], [],],);
+      },
+    },),
+    it({
+      name: 'NEVER RESUMES A RECORD FILLED BY ANOTHER BUILT PIPELINE, in either cache, and the build that filled it finds it gone '
+        + 'once the other has opened the directory: the pairing cache version is not what retires a stored pairing when the '
+        + 'code that settled it changes',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'whiskers-pairing-cache-', },);
+        /**
+         A build other than the one that fills the fixtures.
+         */
+        const otherGeneration = `sha256-tree-v1:${'c'.repeat(64,)}`;
+        expect(await Promise.all(OPENERS.map(async function openedByAnotherBuild({ name, open, },): Promise<unknown> {
+          /**
+           Directory of this cache's own case.
+           */
+          const caseDir = join(
+            scratch.path,
+            name,
+          );
+          await (await open({
+            dir: caseDir,
+            generation: TEST_GENERATION,
+          },)).persist({
+            key: 'paws',
+            serialized: JSON.stringify({
+              pairs: [],
+              findings: [],
+            },),
+          },);
+          /**
+           What the build that fills the directory resumes while it is the only one to have opened it.
+           */
+          const before = [
+            ...(await open({
+              dir: caseDir,
+              generation: TEST_GENERATION,
+            },)).resumed.keys(),
+          ];
+          /**
+           What another build resumes from it.
+           */
+          const other = [
+            ...(await open({
+              dir: caseDir,
+              generation: otherGeneration,
+            },)).resumed.keys(),
+          ];
+          /**
+           What the first build resumes once the other has opened the directory and discarded what it held.
+           */
+          const after = [
+            ...(await open({
+              dir: caseDir,
+              generation: TEST_GENERATION,
+            },)).resumed.keys(),
+          ];
+          return {
+            before,
+            other,
+            after,
+          };
+        },),),).toEqual([
+          {
+            before: ['paws',],
+            other: [],
+            after: [],
+          },
+          {
+            before: ['paws',],
+            other: [],
+            after: [],
+          },
+        ],);
       },
     },),
   ],
