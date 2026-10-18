@@ -126,5 +126,103 @@ A prototype in a scratch worktree would measure it before any merge.
 On 2026-10-18 the owner chose to prototype this design in a scratch worktree,
 with the verification mode,
 and to see the measured cold time and mismatch count before any change lands.
-The prototype is in progress;
-its results will be added here.
+
+## Prototype results
+
+The prototype is on the detached head of the keyless scratch worktree `w177`
+(`0f2f380e59` to `1b0cdd8653`, on top of `da4c8dcab9`, unmerged);
+scripts and per-package logs are under `/var/home/user/temp/agent/tr-fan/w177-notes/`.
+I re-totalled the timings and lint results from its `out/<round>/results.json` files
+(`s245/split/lint/proto-totals.ts`)
+and the verification counters from its per-process files (`w177-notes/sum-verify.ts`).
+
+### What it builds
+
+- The key is a digest of the analyzer digest, file name, source digest,
+  the closure of every file reached through module references
+  (walked through declaration and external files, each with its content digest),
+  an ambient surface,
+  the augmentation surface,
+  the lockfile digest,
+  the compiler options by value,
+  and the analysis root.
+- The ambient surface holds every program file that applies without an import:
+  scripts (including `lib` files),
+  files with module or global augmentations or ambient module names,
+  and declaration files with `export as namespace`.
+- Left out of the key:
+  the project's file list,
+  its unreachable declaration files,
+  and the resolution-only options
+  (`paths`, `baseUrl`, `rootDirs`, `rootDir`, `outDir`, `declarationDir`, `tsBuildInfoFile`, `typeRoots`,
+  `mapRoot`, `sourceRoot`, `project`, `configFilePath`, `pathsBasePath`).
+- An option on neither list sends the whole project back to per-project entries.
+  So does a source that is a global script,
+  reaches a `.tsx`, `.jsx`, `.astro`, `.mdx`, `.vue` or `.svelte` file (implicit JSX import),
+  names a specifier that does not resolve,
+  or has an unresolved existing closure.
+- Shared entries live at `shared/<hash(file)>/<keyDigest>.json` under the cache root;
+  a read tries the shared entry first, then the per-project one.
+- `PRPT_VERIFY_SHARED=1` analyses every shared hit afresh and compares callable summaries,
+  omitted callables and omission reasons.
+
+### Family lint times
+
+Each round linted all 36 family packages in a fresh `systemd-run` unit,
+cold (cache emptied) then warm.
+
+- Baseline (`da4c8dcab9`): cold 325.6, 323.9 and 318.2 s; warm 71.0, 74.0 and 70.8 s.
+- Prototype (`ce6354e62f`, verification off): cold 130.5 and 131.9 s; warm 73.3 and 73.2 s.
+  Warm is inside the baseline's spread.
+- Prototype with verification on: cold 410.5 s and more,
+  so the mode is a probe, not a gate setting.
+- The slowest packages cold went from 30 to 33 s to 15 s (`corpus-pass`),
+  24 s to 7 s (`probe`) and 21 s to 10 s (`bench`).
+
+The family computed 1611 analyses instead of 8467.
+The remaining 131 s cold is not attributed;
+without the plugin the family lints in 11.5 s,
+so per-project program load and walks are the next thing to measure.
+
+### Outside the family
+
+48 other packages
+(Astro, DOM, CLI, config, plugin and harness packages; lists in `w177-notes/extra-list.txt` and `group2-list.txt`)
+showed no speedup claim: cold 56.2 against 57.7 s and 124.2 against 111.6 s in single paired runs.
+Sharing there is thin:
+166 shared hits, 123 across projects.
+`pi-plugin/auto-mode` takes about 356 s cold and 374 s warm in both baseline and prototype,
+so the cache does not help that package at all; this is not investigated.
+
+### Equality
+
+- Verification over the family, cold:
+  8467 keys, 1611 shared writes, 6856 shared hits (6628 across projects),
+  6856 verified, 0 mismatches, 0 invalid entries;
+  110 fallbacks, all unresolved specifiers
+  (`node:*` names in `nano-spawn`'s JavaScript, one `undici-types` path).
+- Outside the family: 166 hits verified, 0 mismatches, 241 unresolved-specifier fallbacks.
+- Lint output (exit code, summary line, sorted diagnostic headers) was identical to baseline in every package run:
+  144 family runs per comparison, all with no diagnostics,
+  and 96 outside-family runs, 74 of them with diagnostics and 6 with this rule's (10 diagnostics, cold and warm).
+  This is thin evidence for the rule's output where sharing is heavy:
+  the family has no diagnostics to lose.
+- The plugin's unit suite passes (27 suites), including the existing invalidation suite
+  and 11 new sharing cases.
+
+### Not proven
+
+- The non-literal `import()` type case is the only fallback shown to fail with its guard removed.
+- No fixture covers `export ... from` or `import =` specifiers,
+  a `/// <reference types>` global added to one project,
+  or the implicit JSX import refusal (never hit).
+- The option lists beyond TypeScript's option interface rest on one probe.
+- Program file order and call edges that are not module references are not in the key;
+  the existing workspace-only dependency check is the only guard for the latter.
+- Verification compares only hits; it cannot see a source that should have shared and did not.
+- `EFFECT_CACHE_SCHEMA` is not bumped;
+  `readonly-declaration-ownership.ts` still classifies a symlink-reached workspace file as external;
+  the `projectSourceText` TSDoc is still wrong.
+
+The prototype agent's summary said "6751 cross-project shared hits";
+its own counter files total 6628, and its detailed section said so.
