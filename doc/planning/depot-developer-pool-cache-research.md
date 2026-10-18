@@ -582,8 +582,8 @@ The proven result is automatic Cache authorization in this standalone CI job.
 It does not establish direct OIDC exchange on ordinary GitHub-hosted compute,
 the credential's exact lifetime,
 fork-job write isolation,
-cross-job entry reuse,
 or full compiler/task-cache compatibility.
+The compiler-cache follow-up separately establishes cross-job Rust compiler-entry reuse.
 Depot GitHub Actions runners have a separately documented automatic Cache credential;
 ordinary GitHub compute still needs a valid documented credential route for this remote-cache design.
 
@@ -618,10 +618,58 @@ the third allocation adds a compiler flag as a cache-miss positive control.
 The task uses only the supplied Cache credential,
 records cache statistics and consumer behavior,
 and preserves failures and server shutdown evidence.
-The next action is terminal artifact reconciliation.
-No compiler hit,
-invalidation result,
-or elapsed-time benefit is inferred from dispatch acceptance.
+All jobs completed successfully.
+The [validated compiler-cache receipt](../audit/depot-sccache-fresh-jobs-2026-10-18.evidence.json)
+binds the different sandbox IDs,
+all source hashes,
+compiler executable and version identity,
+Cargo identity,
+identical paths,
+and artifact upload/download digests.
+Each target directory and Cargo home was absent at job start.
+The reported backend is WebDAV.
+
+The seed recorded no Rust cache hits,
+11 Rust misses,
+and 11 successful cache writes.
+The unchanged fresh allocation recorded 11 Rust hits,
+no misses,
+and no writes.
+The changed-flag allocation recorded no Rust hits,
+11 misses,
+and 11 successful writes.
+All reported read/write error counters were zero.
+The task built the real library,
+then compiled and executed an independent consumer in every allocation.
+Both the public gain and one-sample meter assertions passed.
+Server shutdown returned success in every job.
+
+`cargo nextest --version` reported that the subcommand was unavailable.
+No unit-test pass is claimed,
+and no `cargo test` fallback was used.
+The optional service/fingerprint features and shipped applications were not built by this probe.
+The changed compiler flag is a positive invalidation control;
+changed source,
+dependency versions,
+and compiler versions remain separate unexercised cases.
+
+Precise allocation intervals were 26.897 seconds for the seed,
+23.718 seconds for the unchanged consumer,
+and 30.955 seconds for the changed flags.
+Their total is 81.570 seconds,
+giving a gross timestamp-based compute estimate of USD $0.008157 at the published rate.
+The request-to-terminal interval was 72.764 seconds.
+There is only one allocation per condition,
+so these elapsed intervals do not establish unchanged-input spread or a speed multiplier.
+The demonstrated benefit is reuse of all 11 cacheable Rust compilation requests in a fresh allocation.
+No target directory,
+package archive,
+or broad new credential supplied that reuse.
+
+The local terminal collector initially combined the waiter's stderr progress with stdout JSON.
+The retained final JSON was recovered from that combined capture without repeating any cloud job.
+This was a collector stream-separation error,
+not a failed CI job or a malformed stdout JSON response.
 
 ## Sources and limits
 
@@ -630,7 +678,7 @@ Historical linked reports establish only their measured workloads.
 The persistent-disk and automatic-authorization ledgers establish their specific exercised boundaries.
 New archive comparisons,
 snapshot designs,
-and full remote compiler-cache designs require their corresponding consumer runs before adoption.
+and broader remote compiler-cache designs require their corresponding consumer runs before adoption.
 No overall cached speedup,
 cross-provider shared archive,
 safe untrusted-writer boundary,
