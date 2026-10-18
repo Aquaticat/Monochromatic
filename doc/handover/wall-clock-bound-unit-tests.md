@@ -59,10 +59,14 @@ after the phase-2 research):
 Tracker state:
 the correction comment is posted on [issue 1762][i1762] ([comment][c1762]),
 and [#1771][i1771] carries the `withTimeout` cross-domain clear deadlock.
+The implementation plan for external review is
+[doc/planning/wall-clock-bound-test-remedies.md](../planning/wall-clock-bound-test-remedies.md);
+a reviewer colleague answers its numbered questions before implementation starts.
 
 How to respond:
-lift the pause to start implementation;
-the ranked remedy space is the approved plan
+read the review verdict on the plan,
+then lift the pause to start implementation;
+the plan's work items elaborate the ranked remedy space
 (the resolution workflow in `doc/agent/issue-tracker.md` applies).
 
 ## The framing disagreement
