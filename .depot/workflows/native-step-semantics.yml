@@ -16,96 +16,96 @@ jobs:
     outputs:
       receipt_sha256: ${{ steps.receipt.outputs.receipt_sha256 }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          persist-credentials: false
-      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
-        with:
-          # Keep the exercised bootstrap fixed independently of application source.
-          version: 2026.10.9
-          install: false
-          cache: false
-      - run: mise install node
-      - id: retry_state
-        run: mise run //.depot/research/native-semantics:retry-state
-        retry:
-          retries: 2
-          delay-seconds: 0
-          max-delay-seconds: 0
-      - run: mise run //.depot/research/native-semantics:assert-retry
-        env:
-          PROBE_RETRY_OUTPUT: ${{ steps.retry_state.outputs.attempt }}
-      - parallel:
-          - sequential:
-              - id: branch_a
-                run: mise run //.depot/research/native-semantics:parallel-first
-                env:
-                  PROBE_ROLE: a
-              - run: mise run //.depot/research/native-semantics:parallel-next
-                env:
-                  PROBE_ROLE: a
-          - sequential:
-              - id: branch_b
-                run: mise run //.depot/research/native-semantics:parallel-first
-                env:
-                  PROBE_ROLE: b
-              - run: mise run //.depot/research/native-semantics:parallel-next
-                env:
-                  PROBE_ROLE: b
-      - run: mise run //.depot/research/native-semantics:assert-parallel
-        env:
-          PROBE_A_OUTPUT: ${{ steps.branch_a.outputs.value }}
-          PROBE_B_OUTPUT: ${{ steps.branch_b.outputs.value }}
-      - id: renewal
-        run: mise run //.depot/research/native-semantics:timeout-renew
-        timeout-minutes: 1
-        retry:
-          retries: 1
-          delay-seconds: 0
-          max-delay-seconds: 0
-      - id: exhausted
-        run: mise run //.depot/research/native-semantics:always-fail
-        continue-on-error: true
-        env:
-          PROBE_FAIL_KEY: absorbed
-        retry:
-          retries: 1
-          delay-seconds: 0
-          max-delay-seconds: 0
-      - id: receipt
-        run: mise run //.depot/research/native-semantics:finish-state
-        env:
-          PROBE_EXHAUSTED_OUTCOME: ${{ steps.exhausted.outcome }}
-          PROBE_EXHAUSTED_CONCLUSION: ${{ steps.exhausted.conclusion }}
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        if: always()
-        with:
-          name: research-native-semantics-state
-          path: .depot/research/native-semantics/evidence/
-          retention-days: 7
-          if-no-files-found: error
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Keep the exercised bootstrap fixed independently of application source.
+        version: 2026.10.9
+        install: false
+        cache: false
+    - run: mise install node
+    - id: retry_state
+      run: mise run //.depot/research/native-semantics:retry-state
+      retry:
+        retries: 2
+        delay-seconds: 0
+        max-delay-seconds: 0
+    - run: mise run //.depot/research/native-semantics:assert-retry
+      env:
+        PROBE_RETRY_OUTPUT: ${{ steps.retry_state.outputs.attempt }}
+    - parallel:
+      - sequential:
+        - id: branch_a
+          run: mise run //.depot/research/native-semantics:parallel-first
+          env:
+            PROBE_ROLE: a
+        - run: mise run //.depot/research/native-semantics:parallel-next
+          env:
+            PROBE_ROLE: a
+      - sequential:
+        - id: branch_b
+          run: mise run //.depot/research/native-semantics:parallel-first
+          env:
+            PROBE_ROLE: b
+        - run: mise run //.depot/research/native-semantics:parallel-next
+          env:
+            PROBE_ROLE: b
+    - run: mise run //.depot/research/native-semantics:assert-parallel
+      env:
+        PROBE_A_OUTPUT: ${{ steps.branch_a.outputs.value }}
+        PROBE_B_OUTPUT: ${{ steps.branch_b.outputs.value }}
+    - id: renewal
+      run: mise run //.depot/research/native-semantics:timeout-renew
+      timeout-minutes: 1
+      retry:
+        retries: 1
+        delay-seconds: 0
+        max-delay-seconds: 0
+    - id: exhausted
+      run: mise run //.depot/research/native-semantics:always-fail
+      continue-on-error: true
+      env:
+        PROBE_FAIL_KEY: absorbed
+      retry:
+        retries: 1
+        delay-seconds: 0
+        max-delay-seconds: 0
+    - id: receipt
+      run: mise run //.depot/research/native-semantics:finish-state
+      env:
+        PROBE_EXHAUSTED_OUTCOME: ${{ steps.exhausted.outcome }}
+        PROBE_EXHAUSTED_CONCLUSION: ${{ steps.exhausted.conclusion }}
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      if: always()
+      with:
+        name: research-native-semantics-state
+        path: .depot/research/native-semantics/evidence/
+        retention-days: 7
+        if-no-files-found: error
   timeout:
     runs-on: depot-ubuntu-24.04
     timeout-minutes: 2
     continue-on-error: true
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          persist-credentials: false
-      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
-        with:
-          # Match the state job's independently fixed bootstrap.
-          version: 2026.10.9
-          install: false
-          cache: false
-      - run: mise install node
-      - run: mise run //.depot/research/native-semantics:always-fail
-        env:
-          PROBE_FAIL_KEY: backoff
-        retry:
-          retries: 10
-          delay-seconds: 60
-          max-delay-seconds: 60
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Match the state job's independently fixed bootstrap.
+        version: 2026.10.9
+        install: false
+        cache: false
+    - run: mise install node
+    - run: mise run //.depot/research/native-semantics:always-fail
+      env:
+        PROBE_FAIL_KEY: backoff
+      retry:
+        retries: 10
+        delay-seconds: 60
+        max-delay-seconds: 60
   parallel_default:
     needs: state
     if: always()
@@ -117,29 +117,29 @@ jobs:
     env:
       PROBE_BLOCK: default
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          persist-credentials: false
-      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
-        with:
-          # Match the state job's independently fixed bootstrap.
-          version: 2026.10.9
-          install: false
-          cache: false
-      - run: mise install node
-      - parallel:
-          - run: mise run //.depot/research/native-semantics:parallel-delayed-fail
-          - run: mise run //.depot/research/native-semantics:parallel-sibling
-      - id: receipt
-        run: mise run //.depot/research/native-semantics:record-parallel-failure
-        if: always()
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        if: always()
-        with:
-          name: research-native-semantics-default
-          path: .depot/research/native-semantics/evidence/
-          retention-days: 7
-          if-no-files-found: error
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Match the state job's independently fixed bootstrap.
+        version: 2026.10.9
+        install: false
+        cache: false
+    - run: mise install node
+    - parallel:
+      - run: mise run //.depot/research/native-semantics:parallel-delayed-fail
+      - run: mise run //.depot/research/native-semantics:parallel-sibling
+    - id: receipt
+      run: mise run //.depot/research/native-semantics:record-parallel-failure
+      if: always()
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      if: always()
+      with:
+        name: research-native-semantics-default
+        path: .depot/research/native-semantics/evidence/
+        retention-days: 7
+        if-no-files-found: error
   parallel_allrun:
     needs: timeout
     if: always()
@@ -151,58 +151,58 @@ jobs:
     env:
       PROBE_BLOCK: allrun
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          persist-credentials: false
-      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
-        with:
-          # Match the state job's independently fixed bootstrap.
-          version: 2026.10.9
-          install: false
-          cache: false
-      - run: mise install node
-      - fail-fast: false
-        parallel:
-          - run: mise run //.depot/research/native-semantics:parallel-delayed-fail
-          - run: mise run //.depot/research/native-semantics:parallel-sibling
-      - id: receipt
-        run: mise run //.depot/research/native-semantics:record-parallel-failure
-        if: always()
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        if: always()
-        with:
-          name: research-native-semantics-allrun
-          path: .depot/research/native-semantics/evidence/
-          retention-days: 7
-          if-no-files-found: error
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Match the state job's independently fixed bootstrap.
+        version: 2026.10.9
+        install: false
+        cache: false
+    - run: mise install node
+    - fail-fast: false
+      parallel:
+      - run: mise run //.depot/research/native-semantics:parallel-delayed-fail
+      - run: mise run //.depot/research/native-semantics:parallel-sibling
+    - id: receipt
+      run: mise run //.depot/research/native-semantics:record-parallel-failure
+      if: always()
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      if: always()
+      with:
+        name: research-native-semantics-allrun
+        path: .depot/research/native-semantics/evidence/
+        retention-days: 7
+        if-no-files-found: error
   consumer:
     needs: [state, timeout, parallel_default, parallel_allrun]
     if: always()
     runs-on: depot-ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          persist-credentials: false
-      - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
-        with:
-          # Match the state job's independently fixed bootstrap.
-          version: 2026.10.9
-          install: false
-          cache: false
-      - run: mise install node
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
-        with:
-          pattern: research-native-semantics-*
-          merge-multiple: true
-          path: .depot/research/native-semantics/received/
-      - run: mise run //.depot/research/native-semantics:artifact-consumer
-        env:
-          PROBE_NEEDS: ${{ toJSON(needs) }}
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        if: always()
-        with:
-          name: research-native-semantics-consumer
-          path: .depot/research/native-semantics/evidence/
-          retention-days: 7
-          if-no-files-found: error
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+    - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
+      with:
+        # Match the state job's independently fixed bootstrap.
+        version: 2026.10.9
+        install: false
+        cache: false
+    - run: mise install node
+    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        pattern: research-native-semantics-*
+        merge-multiple: true
+        path: .depot/research/native-semantics/received/
+    - run: mise run //.depot/research/native-semantics:artifact-consumer
+      env:
+        PROBE_NEEDS: ${{ toJSON(needs) }}
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      if: always()
+      with:
+        name: research-native-semantics-consumer
+        path: .depot/research/native-semantics/evidence/
+        retention-days: 7
+        if-no-files-found: error
