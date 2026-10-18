@@ -423,3 +423,14 @@ fn a_failure_that_is_not_a_stale_update_is_returned_unchanged() {
     );
     remove(&s.root);
 }
+
+#[test]
+fn an_unpublished_attempt_never_reports_success_and_keeps_a_real_exit_code() {
+    let from_zero = unpublished("before", 0, "reason");
+    assert_eq!(from_zero.exit_code, 1, "a failure must not carry exit code zero");
+    assert_eq!(
+        from_zero.output,
+        format!("before\n{RECONCILE_FAILED_PREFIX}reason")
+    );
+    assert_eq!(unpublished("before", 128, "reason").exit_code, 128);
+}
