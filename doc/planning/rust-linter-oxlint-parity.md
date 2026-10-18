@@ -309,7 +309,7 @@ in `package/linter/monochromatic-lint`,
 on branch `feat/lint-directives`
 (engine commit `b564c7ad15`,
 rule declarations `82d69a4036`;
-`landing: pending`).
+merge `6808166dfd`).
 The spelling is `monochromatic-lint-disable`,
 `-enable`,
 `-disable-line` and `-disable-next-line`;
@@ -937,7 +937,7 @@ rather than one umbrella task:
     variant.
      Verified by a fixture where a directive targets a
     non-suppressible rule.
-     Built 2026-10-18 (`landing: pending`);
+     Built 2026-10-18 (merge `6808166dfd`);
     that fixture is `a_listed_unsuppressible_rule_is_refused_and_reported`
     in `package/linter/monochromatic-lint/src/directive_apply_tests.rs`.
 6.  Autofix pipeline:

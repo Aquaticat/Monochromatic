@@ -913,8 +913,11 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     Rust packages other than the IDE have no closure check until each gets its own `lint:closures` gate.
     The record is the section "Removal of `rust/no-anonymous-functions`" of `doc/decision/rust-closure-lint-dylint.md`.
   - Inline directives in the linter (D2 of `doc/planning/rust-linter-oxlint-parity.md`, built after the Dylint gate above;
-    branch `feat/lint-directives`, worktree `.claude/worktrees/lint-directives`, an agent, 2026-10-18; `landing:
-    pending`). The owner decided D2 on 2026-07-25 and asked for it to be built. `monochromatic-lint-disable`, `-enable`,
+    branch `feat/lint-directives`, worktree `.claude/worktrees/lint-directives`, an agent, 2026-10-18; landed as merge
+    `6808166dfd`, after the coordinator reran 488 package tests, clippy, rustfmt and the fuzz sidecar tests on the
+    merged tree and ran the built binary over a disposable project: a covered finding stayed quiet, a directive aimed
+    at `rust/max-lines` was refused, one without a reason was reported). The owner decided D2 on 2026-07-25 and asked
+    for it to be built. `monochromatic-lint-disable`, `-enable`,
     `-disable-line` and `-disable-next-line` are read from `//` and `/* */` comments of Rust files and from HTML
     comments of Markdown files (not MDX), each needing a ` -- reason`. `rust/max-lines` and `rust/require-rustdoc`
     declare themselves unsuppressible in `RULES` (`src/run_modes.rs`, shown by `--rules`); a directive aimed at either is
