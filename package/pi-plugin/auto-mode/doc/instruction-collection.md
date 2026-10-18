@@ -98,6 +98,32 @@ and cancellation cases.
 The full-session heap failure remains under investigation;
 these measurements establish callback sharing rather than complete-session capacity.
 
+## Source-binding ownership
+
+Every original message source has a distinct frozen plain view bound to its request and source occurrence.
+`native/contract/integration/policy-source/run-messages.mjs` keeps identity checks with the governing snapshot.
+Its methods are shared within that snapshot;
+a private weak set authenticates each original binding before a method reads its view.
+Every freshness check still revalidates the governing parent.
+Equal content and shared checking code establish neither source identity nor permission.
+
+Per-source closures previously multiplied retained allocation across successive decisions.
+The real host's 100,000-receipt sampling profile attributes 476,526,736 bytes to that binding callback.
+The profile retains a separate positive-control allocation.
+This identifies an allocation owner rather than proving complete-session repair.
+
+`test:native:source-binding-capacity` creates genuine manager inputs and retains complete source collections
+across separate governing snapshots.
+Its committed red run retains 48,724,128 bytes and exceeds the 36 MiB regression budget.
+The test also requires original source ordering,
+distinct views,
+frozen plain records,
+foreign receiver rejection,
+source substitution rejection,
+and retired-parent rejection.
+The class alternative is rejected because it changes the binding's prototype and constructor surface.
+Complete configured-host replays remain required after the maintained source rebuild.
+
 ## Verification
 
 `test:native:resource-input`,
