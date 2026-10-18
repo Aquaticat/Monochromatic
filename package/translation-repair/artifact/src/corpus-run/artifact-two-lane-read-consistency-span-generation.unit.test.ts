@@ -267,6 +267,34 @@ await describe({
           },
         },),
         it({
+          name: 'ACCEPTS A GENERATION EIGHTEEN SLOT GIVEN BESIDE A QUOTE THAT HOLDS THE LOCATED WORDS BEFORE A JOINT, and refuses the '
+            + 'same group stamped nineteen: the words "big cat" are contained in three of four quotes either way, but the judge who '
+            + 'quoted "big cat\'s bowl" with the slot "big" counts for the slot only while the joint bars nothing',
+          fn: async () => {
+            /**
+             The group: four judges, one quoted the longer text with the slot, two quoted the words with it and one without it.
+             */
+            const group = groupOf({
+              quotes: [
+                { first: 'big cat\'s bowl', second: 'big cat\'s bowl', slot: 'big', },
+                { first: 'big cat', second: 'big cat', slot: 'big', },
+                { first: 'big cat', second: 'big cat', slot: 'big', },
+                { first: 'big cat', second: 'big cat', },
+              ],
+              first: { kind: 'located', quote: 'big cat', start: 0, slot: 'big', },
+              second: { kind: 'located', quote: 'big cat', start: 0, slot: 'big', },
+              repeat: FRAME,
+            });
+            expect({
+              eighteen: recountOf({ group, generation: ARTIFACT_SCHEMA_VERSION_V18, },),
+              nineteen: recountOf({ group, generation: ARTIFACT_SCHEMA_VERSION_V19, },),
+            },).toEqual({
+              eighteen: 'accepted',
+              nineteen: SLOT_REFUSAL,
+            },);
+          },
+        },),
+        it({
           name: 'ACCEPTS A GENERATION EIGHTEEN GROUP WHOSE SLOT STANDS BESIDE INLINE CODE PADDED BY LINE ENDINGS, and refuses the same '
             + 'group stamped nineteen: the pass that wrote it found "kit" in the span as a word of its own, and from nineteen the '
             + 'padding line endings are not shown, so "kit" is half of "kittens" and the ballots give no slot',
