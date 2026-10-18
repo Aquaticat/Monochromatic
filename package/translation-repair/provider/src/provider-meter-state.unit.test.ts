@@ -17,7 +17,10 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { SyntheticHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
+import {
+  parseQuotaSnapshot,
+  SyntheticHttpError,
+} from '@monochromatic-dev/translation-repair-provider-stream';
 import {
   meterRecordOf,
   routesAsDry,
@@ -166,6 +169,58 @@ await describe({
               state: 'unreadable',
               fields: [],
             },);
+          },
+        },),
+
+        it({
+          name: 'WARNS A QUOTAS BODY THAT VIOLATES EXPECTATIONS WITH THE KEYS IT HELD AND THE JSON TYPE OF EACH, never a value: an '
+            + 'empty body, and a body that lacks the five-hour block, whose values a reader of the log must not see',
+          fn: async () => {
+            /**
+             The warning a body comes to when the meter reads it.
+             */
+            async function warnedFor({ bodyText, }: { readonly bodyText: string; },): Promise<readonly string[]> {
+              const { warned, } = await warnLinesDuring({
+                run: async function readBody() {
+                  return await meterRecordOf({
+                    name: 'synthetic',
+                    signal: AbortSignal.timeout(HANG_STOP_MS,),
+                    readLevel: async () => {
+                      parseQuotaSnapshot({ bodyText, },);
+                      throw new MeterUnreachableError('a body that parses is not reached by this case',);
+                    },
+                  },);
+                },
+              },);
+              return warned;
+            }
+            /**
+             A body of the older shape, with values an account would not want in a log.
+             */
+            const older = JSON.stringify({
+              subscription: {
+                limit: 135,
+                requests: 41,
+                renewsAt: '2026-09-21T14:36:14.288Z',
+                plan: 'whiskers-private-plan',
+              },
+              freeToolCalls: { limit: 0, },
+            },);
+            const lines = [
+              await warnedFor({ bodyText: '{}', },),
+              await warnedFor({ bodyText: older, },),
+            ];
+            expect(lines,).toEqual([
+              [
+                '[translation-repair] [meterRecordOf] synthetic: budget unreadable, treating as spendable (Synthetic /quotas body '
+                + 'violated expectations: rollingFiveHourLimit is not an object; received {})',
+              ],
+              [
+                '[translation-repair] [meterRecordOf] synthetic: budget unreadable, treating as spendable (Synthetic /quotas body '
+                + 'violated expectations: rollingFiveHourLimit is not an object; received subscription:object, freeToolCalls:object)',
+              ],
+            ],);
+            expect(lines.flat().join('\n',),).not.toMatch(/135|41|whiskers-private-plan|2026-09-21/,);
           },
         },),
 

@@ -251,5 +251,37 @@ await describe({
         }
       },
     },),
+    it({
+      name: 'NAMES THE TOP-LEVEL KEYS OF A REFUSED BODY AND THE JSON TYPE OF EACH, and for a body that is no object the type of '
+        + 'the value, and never a value',
+      fn: async () => {
+        /**
+         The message a body is refused with, empty when it was accepted.
+         */
+        function refusalOf({ bodyText, }: { readonly bodyText: string; },): string {
+          try {
+            parseQuotaSnapshot({ bodyText, },);
+          }
+          catch (error) {
+            return (error instanceof QuotaShapeError) ? error.message : 'not a shape error';
+          }
+          return '';
+        }
+        expect([
+          refusalOf({ bodyText: '{}', },),
+          refusalOf({ bodyText: '{"rollingFiveHourLimit":"full","weeklyTokenLimit":5,"search":null,"x":[1],"y":true}', },),
+          refusalOf({ bodyText: '[1,2]', },),
+          refusalOf({ bodyText: '{"weeklyTokenLimit":{"percentRemaining":87}}', },),
+          refusalOf({ bodyText: '<html>maintenance</html>', },),
+        ],).toEqual([
+          'Synthetic /quotas body violated expectations: rollingFiveHourLimit is not an object; received {}',
+          'Synthetic /quotas body violated expectations: rollingFiveHourLimit is not an object; received '
+          + 'rollingFiveHourLimit:string, weeklyTokenLimit:number, search:null, x:array, y:boolean',
+          'Synthetic /quotas body violated expectations: body is not a JSON object; received array',
+          'Synthetic /quotas body violated expectations: rollingFiveHourLimit is not an object; received weeklyTokenLimit:object',
+          'Synthetic /quotas body violated expectations: body is not valid JSON',
+        ],);
+      },
+    },),
   ],
 },);
