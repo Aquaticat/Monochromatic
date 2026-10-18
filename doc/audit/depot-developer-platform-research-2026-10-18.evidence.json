@@ -453,7 +453,7 @@
     }
   ],
   "documentationVerification": {
-    "checkedAt": "2026-10-18T05:21:18.380Z",
+    "checkedAt": "2026-10-18T05:27:07.800Z",
     "markdown": [
       {
         "path": "doc/planning/depot-developer-pool-capabilities-research.md",
@@ -470,8 +470,8 @@
           "Budget enforcement and trial transition limits",
           "Evidence limits and remaining research decisions"
         ],
-        "renderedBytes": 28636,
-        "localLinksChecked": 5
+        "renderedBytes": 30454,
+        "localLinksChecked": 8
       },
       {
         "path": "doc/troubleshooting/depot-documentation-source-drift.md",
