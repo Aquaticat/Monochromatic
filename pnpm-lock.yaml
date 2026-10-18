@@ -5814,6 +5814,9 @@ importers:
       '@monochromatic-dev/translation-repair-archive':
         specifier: workspace:*
         version: link:../archive
+      '@monochromatic-dev/translation-repair-bench':
+        specifier: workspace:*
+        version: link:../bench
       '@monochromatic-dev/translation-repair-corpus-source':
         specifier: workspace:*
         version: link:../corpus-source
@@ -5847,6 +5850,9 @@ importers:
       '@monochromatic-dev/translation-repair-shared-contract':
         specifier: workspace:*
         version: link:../shared-contract
+      '@monochromatic-dev/translation-repair-slice-cache':
+        specifier: workspace:*
+        version: link:../slice-cache
       '@monochromatic-dev/translation-repair-slice-reading':
         specifier: workspace:*
         version: link:../slice-reading
