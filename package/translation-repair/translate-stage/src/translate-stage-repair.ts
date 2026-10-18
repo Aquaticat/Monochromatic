@@ -4,16 +4,14 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { SliceSyntax, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
-import type {
-  DisputedWording,
-  TranslateFollowupEvidence,
-} from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import type { DeclaredNamePair, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
+  type DisputedWording,
   type IncumbentKind,
   requireTranslateAbsence,
   TranslateAbsenceError,
+  type TranslateFollowupEvidence,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import { produceTranslateSlate, } from './translate-produce.ts';
 import { judgeSlateWithRetry, } from './translate-retry.ts';

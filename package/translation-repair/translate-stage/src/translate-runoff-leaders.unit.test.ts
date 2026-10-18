@@ -17,10 +17,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import {
-  type Candidate,
-  type CandidateWeight,
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type {
+  Candidate,
+  CandidateWeight,
 } from '@monochromatic-dev/translation-repair-house-rule';
 import { runoffFinalists, } from '../dist/final/node/index.mjs';
 

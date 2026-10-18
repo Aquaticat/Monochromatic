@@ -3,16 +3,18 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { SliceSyntax, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import type {
-  DisputedWording,
-  IncumbentKind,
-} from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import type { DeclaredNamePair, } from '@monochromatic-dev/translation-repair-house-rule/ts';
-import { assertJudgeableProducerRoster, } from '@monochromatic-dev/translation-repair-assembly/ts';
+import {
+  assertJudgeableProducerRoster,
+  type ProducerRosterError,
+} from '@monochromatic-dev/translation-repair-assembly/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
+  type DisputedWording,
   floorReach,
+  type IncumbentKind,
   requireComparedVerdict,
+  type TranslateAbsenceError,
   validateTranslatedSlice,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import { runTranslateRepairs, } from './translate-stage-repair.ts';
@@ -115,7 +117,7 @@ import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage
 
  @returns Shipped text with how it was decided
 
- @throws {@link import('@monochromatic-dev/translation-repair-assembly/ts').ProducerRosterError} when the
+ @throws {@link ProducerRosterError} when the
  roster could not select anything: repeats on either side, no translator, or
  judges too few to reach the minimum weight
 
@@ -126,7 +128,7 @@ import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage
  nothing for a source that says something, in EITHER mode, since that is a
  deletion rather than an outcome
 
- @throws {@link import('@monochromatic-dev/translation-repair-translate-floor/ts').TranslateAbsenceError}
+ @throws {@link TranslateAbsenceError}
  carrying `unfloored`, before any call, where the archive holds no
  translation and the floor can compare nothing written for the slice
  (ledger B43); where the archive holds one, it stands with nobody asked

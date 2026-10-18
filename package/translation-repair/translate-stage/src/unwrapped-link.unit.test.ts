@@ -20,7 +20,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { validateTranslatedSlice, } from '@monochromatic-dev/translation-repair-translate-floor';
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 import { floorTranslateVoices, } from '../dist/final/node/index.mjs';
 
 /**

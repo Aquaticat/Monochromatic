@@ -12,8 +12,8 @@ import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typogra
 import {
   TranslateAbsenceError,
   type TranslateAbsenceReason,
+  type TranslateCandidateValue,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import type { TranslateCandidateValue, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import type { TranslateStageResult, } from './translate-stage-result.ts';
 
 //region Translate run-off tie

@@ -20,10 +20,10 @@ import {
   positionOf,
   rotateCandidates,
   TranslateAbsenceError,
+  type TranslateCandidateValue,
   type TranslateJudgeResponsibility,
   translateSelectionTask,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import type { TranslateCandidateValue, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import { runoffFinalists, } from './translate-runoff.ts';
 import { settleAbsentDecline, } from './translate-runoff-tie.ts';
 import type { ProducedSlate, } from './translate-produce.ts';

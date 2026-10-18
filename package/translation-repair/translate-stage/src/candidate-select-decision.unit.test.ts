@@ -15,16 +15,16 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   NO_TYPED_ANSWER,
   selectDecision,
   TYPED_BALLOT_REASON,
 } from '@monochromatic-dev/translation-repair-adjudication';
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type SyntheticClient,
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
   type Candidate,

@@ -4,14 +4,13 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 
 import type { SliceSyntax, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import type {
-  DisputedWording,
-  TranslateReportWire,
-} from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import type { DeclaredNamePair, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import type { HeardVoice, } from '@monochromatic-dev/translation-repair-stage/ts';
 import {
+  type DisputedWording,
+  type FloorGroundDisagreementError,
   requireComparedVerdict,
+  type TranslateReportWire,
   validateTranslatedSlice,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 
@@ -64,7 +63,7 @@ const REFUSED_FINDING = 'translate-candidate-refused';
 
  @returns Candidates the rule accepts, with a finding per candidate withheld
 
- @throws {@link import('@monochromatic-dev/translation-repair-translate-floor/ts').FloorGroundDisagreementError}
+ @throws {@link FloorGroundDisagreementError}
  when the rule says it compared nothing, which the stage rules out before
  any candidate is written (ledger B43)
 

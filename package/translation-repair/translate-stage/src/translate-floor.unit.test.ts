@@ -18,7 +18,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 import { floorTranslateVoices, } from '../dist/final/node/index.mjs';
 import { capturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 

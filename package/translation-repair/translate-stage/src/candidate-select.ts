@@ -30,11 +30,11 @@ import {
 } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { ProducerRosterError, } from '@monochromatic-dev/translation-repair-assembly/ts';
-import type {
-  FanOutMode,
-  StageSettings,
+import {
+  type FanOutMode,
+  gatherStageVoices,
+  type StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
-import { gatherStageVoices, } from '@monochromatic-dev/translation-repair-stage/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Candidate selection stage
@@ -109,7 +109,7 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
  @returns Winner with the ballot weight it drew, or a decline carrying its
  reason; either way the round's tally and every ballot cast
 
- @throws {@link import('@monochromatic-dev/translation-repair-assembly/ts').ProducerRosterError} when a judge
+ @throws {@link ProducerRosterError} when a judge
  appears twice on the roster, which would let one model reach the minimum
  weight by itself
 

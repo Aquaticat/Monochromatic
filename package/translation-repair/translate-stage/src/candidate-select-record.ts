@@ -1,6 +1,9 @@
-import type { SelectionOutcome, } from '@monochromatic-dev/translation-repair-house-rule/ts';
-import { recordContest, } from '@monochromatic-dev/translation-repair-house-rule/ts';
+import {
+  recordContest,
+  type SelectionOutcome,
+} from '@monochromatic-dev/translation-repair-house-rule/ts';
 import { decideBestCandidate, } from './candidate-select.ts';
+import type { ProducerRosterError, } from '@monochromatic-dev/translation-repair-assembly/ts';
 
 //region Candidate selection recording
 // THE PUBLIC SELECTION ENTRY POINT, which is the deciding call plus the record
@@ -33,7 +36,7 @@ import { decideBestCandidate, } from './candidate-select.ts';
 
  @returns Whatever it decided, unchanged
 
- @throws {@link import('@monochromatic-dev/translation-repair-assembly/ts').ProducerRosterError} when a judge
+ @throws {@link ProducerRosterError} when a judge
  appears twice on the roster
 
  @example

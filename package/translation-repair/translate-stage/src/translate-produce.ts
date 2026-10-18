@@ -13,7 +13,9 @@ import type { SliceSyntax, } from '@monochromatic-dev/translation-repair-slice-r
 import {
   buildTranslateCandidates,
   buildTranslateMessages,
+  type DisputedWording,
   foldTranslatorVoices,
+  type IncumbentKind,
   isTranslateReportWire,
   producedVolumeBound,
   repairInvalidCandidates,
@@ -22,13 +24,11 @@ import {
   type TranslateFollowupEvidence,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type {
-  DisputedWording,
-  IncumbentKind,
-} from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import { floorTranslateVoices, } from './translate-floor.ts';
-import { gatherStageVoices, } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
+import {
+  gatherStageVoices,
+  type StageSettings,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Translate produce
 // The half of the translate stage that WRITES: several models render the slice

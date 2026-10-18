@@ -1,4 +1,7 @@
-import { parsedTopLevelBlocks, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import {
+  type MdxParseError,
+  parsedTopLevelBlocks,
+} from '@monochromatic-dev/translation-repair-document-structure/ts';
 import {
   BARE_VERBS,
   INVERTING_AUXILIARIES,
@@ -526,7 +529,7 @@ function candidatesOfParagraph(
 
  @returns Candidates in page order, each with its sentence, matched words and rule
 
- @throws {@link import('@monochromatic-dev/translation-repair-document-structure/ts').MdxParseError} when the shared slice grammar refuses this text
+ @throws {@link MdxParseError} when the shared slice grammar refuses this text
 
  @example
  ```ts

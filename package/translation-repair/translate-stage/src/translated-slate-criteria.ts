@@ -1,7 +1,9 @@
 import type { SliceSyntax, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import { renderedBreakPrompt, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
-import { translateSelectionCriteria, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import type { TranslateSlateEntry, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
+import {
+  translateSelectionCriteria,
+  type TranslateSlateEntry,
+} from '@monochromatic-dev/translation-repair-translate-floor/ts';
 
 /**
  Adds rendered-structure evidence to the actual anonymous slate's criteria.
