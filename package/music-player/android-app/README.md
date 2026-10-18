@@ -190,9 +190,25 @@ Use durable decisions for architecture and maintenance context:
 - [Just-in-time shuffle decision](../../../doc/decision/music-player-jit-shuffle.md)
 - [Peak-sweep parallelism decision](DECISION.peak-sweep-parallelism.md)
 
+## Licenses page
+
+Settings ends with an About group whose Licenses row opens the license notices of the app.
+The text is the APK asset `THIRD-PARTY-LICENSES.txt`.
+`ThirdPartyLicensesAssetTask` in [`app/build.gradle.kts`](app/build.gradle.kts) packs it into every variant:
+the file from `mise run //package/music-player/android-app:notices` when
+`app/build/third-party-licenses/THIRD-PARTY-LICENSES.txt` exists,
+else a short note, so `build` and the instrumented tests work without cargo-about.
+With `MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES=true` (the release workflow) a missing file fails the build.
+[`LicensesPage.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/LicensesPage.kt) reads the asset on the IO
+dispatcher, [`LicenseNoticeBlocks.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/core/LicenseNoticeBlocks.kt)
+cuts it into blocks (section and subsection titles, wrapped prose, preformatted lines; at most 40 lines each) on the
+default dispatcher, and a `LazyColumn` draws them.
+The list is one keyboard stop: Up, Down, Page Up, Page Down, Home and End scroll it.
+Back returns to Settings; on the unfolded screen Escape does too.
+
 ## Settings icons
 
-The Settings rows carry the Material Symbols `queue_music`, `play_circle` and `autoplay` icons,
+The Settings rows carry the Material Symbols `queue_music`, `play_circle`, `autoplay` and `description` icons,
 and the switch thumb carries `check` and `close`,
 embedded as vector path data in [`SettingsIcons.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/SettingsIcons.kt).
 The icons are Apache License 2.0 material from `google/material-design-icons`,

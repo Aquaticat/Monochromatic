@@ -481,7 +481,12 @@ On the cover display Settings is a single pane.
 It lists the two templates,
 Track rows and Playing track,
 each with a preview line,
-and the Auto-play on select switch under a Playback heading.
+the Auto-play on select switch under a Playback heading,
+and the Licenses row under an About heading.
+The Licenses row opens a page of its own with the license notices of the app,
+its Android libraries and its native crates,
+read from the APK's `assets/THIRD-PARTY-LICENSES.txt` and listed lazily;
+Back returns to Settings.
 
 ![Settings with the Auto-play on select switch off on the cover display in light appearance](https://monochromatic-lfs.aquaticat.workers.dev/eafa459ad9fd32bf09cf26e3b6d04c277ba94cd282b6a7fd2169a2be10b4fb92/package/music-player/asset/readme/android-cover-settings-light.png)
 
@@ -498,7 +503,10 @@ and the mode group wraps to two rows.
 ![Inner display with two panes in dark appearance and a playing track](https://monochromatic-lfs.aquaticat.workers.dev/bdfe6255fecba3dca4a8ebb349494e8ee2282c80757e011eeda75f5f2eeb2825/package/music-player/asset/readme/android-inner-two-pane-dark.png)
 
 On the inner display Settings keeps the template list on the left with Track rows selected,
-and the Auto-play on select switch under it, below the Playback heading.
+the Auto-play on select switch under it, below the Playback heading,
+and the Licenses row below the About heading.
+The Licenses page covers the whole window (the right half on a creased screen, so no text crosses the fold),
+and Back or Escape returns to the two panes.
 The right pane shows that template's preview from the open library,
 its template text,
 and the fields that can be inserted,
@@ -946,8 +954,11 @@ and for Android every Android library with its NOTICE files.
 - Android:
    the APK holds them as `assets/THIRD-PARTY-LICENSES.txt`,
    and the release file is `music-player-<version>-android-third-party-licenses.txt`.
-  The app has no screen that shows them yet;
-   that needs a design decision.
+  Settings has a Licenses row under the About heading that opens them in the app.
+  Every build packs the asset:
+   a build without the `notices` task's output holds a short note in its place,
+   and only a build with `MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES=true` (the release workflow) fails on a missing
+   file.
 
 The desktop programs are built with Slint,
 which this project uses under the GNU General Public License,
@@ -984,6 +995,8 @@ at commit `49d4db35df873165d6bd6ba09b063c7dafbac2f4`:
   for the Auto-play on select row,
   and `check` and `close`,
   for the marks in the switch thumb.
+- `description`,
+  for the Licenses row of the Android app.
 
 Each app embeds the path data as vector code,
 with no icon font and no network access at run time.
