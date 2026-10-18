@@ -1,5 +1,5 @@
 {
-  "name": "research current-source mvm GitHub controls",
+  "name": "research GitHub-hosted KVM capability diagnostic",
   "on": {
     "workflow_dispatch": {}
   },
@@ -11,27 +11,11 @@
     "MISE_LOCKED": "1"
   },
   "jobs": {
-    "lifecycle": {
-      "runs-on": "${{ matrix.label }}",
-      "timeout-minutes": 20,
-      "strategy": {
-        "fail-fast": false,
-        "max-parallel": 1,
-        "matrix": {
-          "include": [
-            {
-              "label": "ubuntu-24.04",
-              "provider": "github-hosted-ubuntu-24.04"
-            },
-            {
-              "label": "depot-ubuntu-24.04-4",
-              "provider": "github-depot-ubuntu-24.04-4"
-            }
-          ]
-        }
-      },
+    "capability": {
+      "runs-on": "ubuntu-24.04",
+      "timeout-minutes": 10,
       "env": {
-        "PROBE_PLATFORM_PROVIDER": "${{ matrix.provider }}"
+        "PROBE_PLATFORM_PROVIDER": "github-hosted-ubuntu-24.04"
       },
       "steps": [
         {
@@ -49,20 +33,17 @@
           }
         },
         {
-          "run": "mise install node pnpm"
+          "run": "mise install node"
         },
         {
-          "run": "mise run prepare:pnpm:install -- --frozen-lockfile"
-        },
-        {
-          "run": "mise run //.depot/research/mvm:lifecycle",
+          "run": "mise run //.depot/research/mvm:capability-diagnostic",
           "working-directory": ".depot/research/mvm"
         },
         {
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
           "if": "always()",
           "with": {
-            "name": "research-current-mvm-${{ matrix.provider }}",
+            "name": "research-github-hosted-kvm-capability",
             "path": ".depot/research/mvm/evidence/",
             "if-no-files-found": "error",
             "retention-days": 7
