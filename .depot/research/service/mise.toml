@@ -1,3 +1,14 @@
+[tasks.secret-presence]
+shell = "node --input-type=module-typescript -e"
+run = '''
+const fs = await import('node:fs');
+const token = process.env.PROBE_PULL_TOKEN ?? '';
+const record = { schemaVersion: 1, secretPresent: token.length > 0, tokenLength: token.length, githubRef: process.env.GITHUB_REF ?? null, githubRefName: process.env.GITHUB_REF_NAME ?? null, repository: process.env.GITHUB_REPOSITORY ?? null, harness: process.env.GITHUB_SHA ?? null, observedAt: new Date().toISOString() };
+fs.mkdirSync('evidence', { recursive: true });
+fs.writeFileSync('evidence/secret-presence.json', JSON.stringify(record, null, 2) + '\n');
+console.log(JSON.stringify(record));
+'''
+
 [tasks.consume]
 shell = "node --input-type=module-typescript -e"
 run = '''
