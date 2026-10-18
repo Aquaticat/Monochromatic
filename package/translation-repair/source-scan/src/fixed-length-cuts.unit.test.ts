@@ -71,6 +71,14 @@ const KEPT_CUTS: ReadonlyMap<string, string> = new Map([
     'a list of code points, one per element, so no character can be split',
   ],
   [
+    'provider-stream/synthetic-quota.ts#RECEIVED_KEYS_LISTED',
+    'a list of the keys of a refused body',
+  ],
+  [
+    'provider-stream/synthetic-quota.ts#RECEIVED_KEY_NAME_LENGTH',
+    'a list of code points, one per element, so no character can be split',
+  ],
+  [
     'slice-cache/corpus-run/slice-census-unpaired.ts#UNPAIRED_ENTRIES_LISTED',
     'a list of entries',
   ],
