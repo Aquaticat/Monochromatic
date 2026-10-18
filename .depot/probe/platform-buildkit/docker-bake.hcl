@@ -27,7 +27,7 @@ target "source" {
 target "evidence" {
   inherits = ["shared"]
   target = "evidence"
-  contexts = { fixtureInput = "fixture-input" }
+  contexts = { fixtureinput = "fixture-input" }
   args = { EXPECTED_SECRET_HASH = SECRET_HASH, EXPECTED_AGENT_NONCE = AGENT_NONCE }
   secret = ["id=fixture,src=${SECRET_FILE}"]
   ssh = ["fixture=${SSH_SOCKET}"]

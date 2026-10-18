@@ -18,7 +18,7 @@ COPY --from=base /proof/builder.json /builder.json
 FROM base AS forwarding
 ARG EXPECTED_SECRET_HASH
 ARG EXPECTED_AGENT_NONCE
-COPY --from=fixtureInput input.json /proof/context.json
+COPY --from=fixtureinput input.json /proof/context.json
 RUN --mount=type=secret,id=fixture,required=true --mount=type=ssh,id=fixture,required=true ["node","--input-type=module-typescript","-e","import {readFileSync,writeFileSync} from 'node:fs'; import {createHash} from 'node:crypto'; import {createConnection} from 'node:net'; import {once} from 'node:events'; const secret=readFileSync('/run/secrets/fixture'); const digest=createHash('sha256').update(secret).digest('hex'); if(digest!==process.env.EXPECTED_SECRET_HASH) throw new Error('Secret mount consumer digest mismatch'); const socket=createConnection({path:process.env.SSH_AUTH_SOCK}); await once(socket,'connect'); const packet=Buffer.alloc(5); packet.writeUInt32BE(1); packet[4]=11; socket.write(packet); let received=Buffer.alloc(0); for await(const chunk of socket){received=Buffer.concat([received,chunk]); if(received.length>4096) throw new Error('Agent fixture exceeded packet bound'); if(received.length>=4&&received.length>=4+received.readUInt32BE(0)) break;} socket.destroy(); if(received[4]!==12||received.readUInt32BE(5)!==1||!received.includes(Buffer.from(process.env.EXPECTED_AGENT_NONCE))) throw new Error('Forwarded keyless SSH agent identity response mismatch'); writeFileSync('/proof/forwarding.json',JSON.stringify({secretSha256:digest,sshAgentComment:process.env.EXPECTED_AGENT_NONCE,privateKeyUsed:false})+'\n');"]
 FROM scratch AS evidence
 COPY --from=forwarding /proof/ /
