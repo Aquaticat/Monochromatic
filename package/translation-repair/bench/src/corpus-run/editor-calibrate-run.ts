@@ -10,7 +10,6 @@ import {
   writerGraceOverrideNote,
 } from '@monochromatic-dev/translation-repair-glossary/ts';
 import type { sampleBenchSlices, } from './bench-sample.ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 import { driveEditorCalibrate, } from './editor-calibrate-drive.ts';
 import {
   printEditorCalibrateRefineReach,
@@ -19,7 +18,10 @@ import {
 import { runEditorLane, } from './editor-calibrate-lane.ts';
 import type { SliceRounds, } from './editor-calibrate-slice.ts';
 import { printEditorCalibrateStandings, } from './editor-calibrate-standings.ts';
-import { RUN_ROSTER, } from '@monochromatic-dev/translation-repair-run/ts';
+import {
+  type CommandLineOf,
+  RUN_ROSTER,
+} from '@monochromatic-dev/translation-repair-run/ts';
 import { CALIBRATION_OVERLAP, } from '@monochromatic-dev/translation-repair-slice-cache/ts';
 
 //region Editor calibrate run

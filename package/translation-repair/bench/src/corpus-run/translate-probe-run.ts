@@ -9,6 +9,7 @@ import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-pro
 import {
   isInsertionChunk,
   parseDocument,
+  type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   type CorpusPin,
@@ -21,8 +22,10 @@ import {
   subdivideChunkPair,
   TRANSLATE_RESPONSE_FORMAT,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import { gatherStageVoices, } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
+  gatherStageVoices,
+  type StageSettings,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 import {
   coverageOf,
   sparsestPair,
@@ -34,7 +37,6 @@ import {
   sliceHeading,
   slicesLine,
 } from './translate-probe-lines.ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Translate probe run
 // PROTOTYPE for the translate-first re-design. Asks whether a translate stage

@@ -3,12 +3,12 @@ import {
   sampleBenchSlices,
 } from './bench-sample.ts';
 import {
+  type CommandLineOf,
   createRunClient,
   readHeadSha,
   readRunCorpusPinSetting,
   reportingRefusals,
 } from '@monochromatic-dev/translation-repair-run/ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 import { runProducerCalibrate, } from './producer-calibrate-run.ts';
 import { readStageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 

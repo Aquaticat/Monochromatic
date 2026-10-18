@@ -3,8 +3,10 @@ import {
   type DocumentDisplacement,
   type RelocationCandidate,
 } from '@monochromatic-dev/translation-repair-artifact/ts';
-import { sliceSizesOf, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
-import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
+import {
+  type PreparedDocumentPair,
+  sliceSizesOf,
+} from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import { isMarkupOnly, } from '@monochromatic-dev/translation-repair-insertion/ts';
 import { sharesMedia, } from '@monochromatic-dev/translation-repair-glossary/ts';
 

@@ -1,6 +1,8 @@
 import { fetchTransport, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
-import { reportingRefusals, } from '@monochromatic-dev/translation-repair-run/ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
+import {
+  type CommandLineOf,
+  reportingRefusals,
+} from '@monochromatic-dev/translation-repair-run/ts';
 import { printRosterCard, } from './roster-card-print.ts';
 
 //region Roster card

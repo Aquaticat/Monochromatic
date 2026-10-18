@@ -39,7 +39,9 @@ const config: readonly ReturnType<typeof nodeConfig>[] = [
     },
   },),
   nodeConfig({
-    input: Object.fromEntries([...nodeEntries,].filter(([entry,],) => entry !== 'index'),),
+    input: Object.fromEntries([...nodeEntries,].filter(function isRunner([entry,],): boolean {
+      return entry !== 'index';
+    },),),
     outputOverrides: {
       cleanDir: false,
       sourcemap: true,

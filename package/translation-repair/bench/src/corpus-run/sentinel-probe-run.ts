@@ -5,8 +5,10 @@ import {
   readCorpusFile,
 } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import type { RepairModels, } from '@monochromatic-dev/translation-repair-assembly/ts';
-import { askedAmong, } from '@monochromatic-dev/translation-repair-run/ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
+import {
+  askedAmong,
+  type CommandLineOf,
+} from '@monochromatic-dev/translation-repair-run/ts';
 import {
   probeErrorLine,
   type ProbedResult,

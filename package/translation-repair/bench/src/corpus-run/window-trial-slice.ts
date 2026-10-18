@@ -4,9 +4,11 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import type { PreparedSheetFacts, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
-import { isInsertionChunk, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
+  isInsertionChunk,
+  type RosterModelId,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { neighbouringSource, } from '@monochromatic-dev/translation-repair-repair/ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   judgeTranslateSlate,
   produceTranslateSlate,

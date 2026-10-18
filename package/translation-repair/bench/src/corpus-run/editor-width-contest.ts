@@ -4,8 +4,10 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { PatchOutcome, } from '@monochromatic-dev/translation-repair-page-pass/ts';
 import type { Candidate, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
-import { selectChunkPatch, } from '@monochromatic-dev/translation-repair-repair/ts';
-import type { ShippedProducer, } from '@monochromatic-dev/translation-repair-repair/ts';
+import {
+  selectChunkPatch,
+  type ShippedProducer,
+} from '@monochromatic-dev/translation-repair-repair/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { ArmOutcome, } from './editor-width-arm.ts';
 import type { WidthProbeInput, } from './editor-width-input.ts';

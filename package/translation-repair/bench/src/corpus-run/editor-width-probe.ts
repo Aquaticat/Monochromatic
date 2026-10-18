@@ -1,12 +1,12 @@
 import { sampleBenchSlices, } from './bench-sample.ts';
 import {
+  type CommandLineOf,
   createRunClient,
   readHeadSha,
   readRunCorpusPinSetting,
   reportingRefusals,
   resolveRunsDir,
 } from '@monochromatic-dev/translation-repair-run/ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 import { widthControlHolds, } from './editor-width-control.ts';
 import { gatherWidthInput, } from './editor-width-input.ts';
 import { runEditorWidthProbe, } from './editor-width-probe-run.ts';

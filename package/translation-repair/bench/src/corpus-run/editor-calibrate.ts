@@ -8,11 +8,11 @@ import {
 } from '@monochromatic-dev/translation-repair-glossary/ts';
 import { sampleBenchSlices, } from './bench-sample.ts';
 import {
+  type CommandLineOf,
   createRunClient,
   readRunCorpusPinSetting,
   reportingRefusals,
 } from '@monochromatic-dev/translation-repair-run/ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 import { runEditorCalibrate, } from './editor-calibrate-run.ts';
 import { readOverlap, } from '@monochromatic-dev/translation-repair-slice-cache/ts';
 

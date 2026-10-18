@@ -8,7 +8,6 @@ import {
   StatedRefusalError,
 } from '@monochromatic-dev/translation-repair-glossary/ts';
 import type { sampleBenchSlices, } from './bench-sample.ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 import type { widthControlHolds, } from './editor-width-control.ts';
 import type { gatherWidthInput, } from './editor-width-input.ts';
 import type { WidthDraw, } from './editor-width-model.ts';
@@ -20,6 +19,7 @@ import {
 } from './editor-width-probe-draw.ts';
 import { runWidthDraw, } from './editor-width-probe-loop.ts';
 import {
+  type CommandLineOf,
   RUN_MODELS,
   RUN_ROSTER,
 } from '@monochromatic-dev/translation-repair-run/ts';

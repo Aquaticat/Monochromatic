@@ -1,8 +1,8 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import type { AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
+  type AdjudicatedIssue,
   aggregateClaims,
   dedupeAcceptedIssues,
   deriveEditableEnvelopes,

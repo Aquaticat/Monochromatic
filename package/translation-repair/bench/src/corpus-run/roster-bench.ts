@@ -4,6 +4,7 @@ import {
   sampleBenchSlices,
 } from './bench-sample.ts';
 import {
+  type CommandLineOf,
   createRunClient,
   readHeadSha,
   readRunCorpusPinSetting,
@@ -11,7 +12,6 @@ import {
   resolveRunsDir,
   RUN_ROSTER,
 } from '@monochromatic-dev/translation-repair-run/ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 import { runRosterBench, } from './roster-bench-run.ts';
 import { readStageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
