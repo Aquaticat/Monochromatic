@@ -223,3 +223,15 @@ This source trace explains the observed check failure;
 it does not establish an eval regression or a result for annotated TypeScript input.
 No upstream issue was filed because the supported syntax-check contract and duplicate reports
 have not been assessed.
+
+On 2026-10-18,
+a Depot fixture preflight reproduced this check-path failure with a typed binding under Node `v26.12.0`.
+The verified annotated-input workaround first calls `stripTypeScriptTypes()` from `node:module`,
+then passes the resulting JavaScript to `node --input-type=module --check`.
+The installed `node_modules/@types/node/module.d.ts` documents that stripping API.
+Every generated Dockerfile program passed this check;
+an intentionally malformed JavaScript body failed the same checker.
+The [BuildKit source archive](../audit/depot-buildkit-platform-campaign-2026-10-18.sources.json.gz)
+retains the preflight commands and results.
+This checks syntax only;
+the subsequent remote consumers establish execution separately.
