@@ -107,6 +107,14 @@ Reproduce with actual native progress callbacks and a complete parallel group,
 then preserve real governing-source,
 tool-input and cancellation invalidation while removing the false progress invalidation.
 Do not fix it by ignoring arbitrary stale-source errors or weakening permission guards.
+Source inspection finds an existing execution-retention handoff after automatic approval
+in `native/contract/integration/native-batch/prepared-group.mjs`,
+but none after confirmation resolves an automatic Ask to Allow.
+The collector already supports append-only event receipts after that handoff.
+The maintained decision-fallback fixture now emits tracked progress from both tools
+and registers an asynchronous original extension observer for every existing decision mode.
+New `allow-stale` and `allow-abort` cases change governing policy or cancel during confirmation.
+The first paired automatic/manual regression run is still pending.
 At this checkpoint,
 Git shows no MiMo source edits yet;
 its first lint slice is still analysis.

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {writeFile} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 import {join} from 'node:path';
+import {setImmediate as yieldProgress} from 'node:timers/promises';
 import {logger} from '@monochromatic-dev/module-logger/ts';
 import {createEnvironment} from '../dist/native/contract/integration/native-batch/environment.mjs';
 import {createRootSessionFactory} from '../dist/native/contract/integration/native-batch/session-root.ts';
@@ -15,9 +16,9 @@ const requestedMode=process.argv[2]??'approve';
 const clauseDenial=requestedMode.startsWith('clause-deny-');
 const startupFailure=requestedMode.startsWith('startup-failure-');
 const mode=startupFailure?requestedMode.slice('startup-failure-'.length):clauseDenial?requestedMode.slice('clause-deny-'.length):requestedMode;
-assert.ok(['approve','deny','transient','transient-deny','unknown','low','transport','malformed','initial-failure','stop','cancel','headless','stale','abort','prohibition','deadline','fresh'].includes(mode));
+assert.ok(['approve','deny','transient','transient-deny','unknown','low','transport','malformed','initial-failure','stop','cancel','headless','stale','abort','prohibition','deadline','fresh','allow-stale','allow-abort'].includes(mode));
 const {askUser,VERDICT_ENTRY_TYPE}=await import(maintainedPolicyEntry);
-const observations={assessments:0,httpCalls:0,attempts:0,selections:0,executions:0};
+const observations={assessments:0,httpCalls:0,attempts:0,selections:0,executions:0,updates:0};
 /** @type {{pi:unknown,abortTask:Promise<void>|undefined}} */
 const fixture={pi:undefined,abortTask:undefined};
 const logs=[];
@@ -28,10 +29,20 @@ logger.debug=function captureDiagnostic(message){
  if(message.includes('[auto-mode-assessment-evidence]'))assessments.push(JSON.parse(message.slice(message.indexOf('{'))));
  originalDebug(message);
 };
-const env=await createEnvironment({...(startupFailure?{createRelevance:createStartupRelevance}:{}),policyText:'RUL:\n The complete proposed local inspection is permitted.\n',useNativeProvider:true,extensionFactories:[function capturePi(pi){fixture.pi=pi;} ]});
+const env=await createEnvironment({...(startupFailure?{createRelevance:createStartupRelevance}:{}),policyText:'RUL:\n The complete proposed local inspection is permitted.\n',useNativeProvider:true,extensionFactories:[function capturePi(pi){
+ fixture.pi=pi;
+ pi.on('tool_execution_update',async function observeProgress(event){
+  if(event.partialResult.details?.fallbackProgress)observations.updates++;
+  await yieldProgress();
+ });
+} ]});
 const {createBashToolDefinition}=await import(pathToFileURL(join(env.packageRoot,'dist/core/tools/bash.js')).href);
 const originalBash=createBashToolDefinition(env.options.cwd);
-const bash={...originalBash,async execute(toolCallId,input,signal,onUpdate,context){observations.executions++;return await Reflect.apply(originalBash.execute,originalBash,[toolCallId,input,signal,onUpdate,context]);}};
+const bash={...originalBash,async execute(toolCallId,input,signal,onUpdate,context){
+ observations.executions++;
+ onUpdate({content:[{type:'text',text:'Native fallback progress'}],details:{fallbackProgress:true}});
+ return await Reflect.apply(originalBash.execute,originalBash,[toolCallId,input,signal,onUpdate,context]);
+}};
 const {session,root,lifecycle}=await createRootSessionFactory(env).create({options:{...env.options,tools:['bash'],customTools:[bash]}});
 session.agent.getApiKey=function fixtureKey(){return process.env.FIXTURE_API_KEY;};
 const decision=['approve','transient','initial-failure','stale','abort','deadline'].includes(mode)?'approve':['deny','transient-deny','prohibition'].includes(mode)?'deny':'unknown';
@@ -50,6 +61,8 @@ const runtime=bindNativePolicyRuntime({root,lifecycle,policyInput:env.policyInpu
   assert.deepEqual(options,['Allow','Stop']);
   for(const command of commands)assert.ok(title.includes(command));
   if(mode==='cancel'){fixture.abortTask=session.abort();return undefined;}
+  if(mode==='allow-stale')await writeFile(join(env.options.cwd,'AGENTS.md'),'RUL:\n The proposed operation is prohibited.\n');
+  if(mode==='allow-abort')fixture.abortTask=session.abort();
   return mode==='stop'?'Stop':'Allow';
  }}}};},
  async sendWire(input){
@@ -103,9 +116,10 @@ if(mode==='stop'||mode==='cancel'){
 }
 const allowed=['approve','transient','unknown','low','transport','malformed','initial-failure','deadline','fresh'].includes(mode);
 assert.equal(observations.executions,allowed?2:0);
+assert.equal(observations.updates,allowed?2:0,'Both admitted parallel members must reach original extension progress callbacks');
 assert.equal(observations.attempts,startupFailure?0:mode.startsWith('transient')?3:2);
 if(mode.startsWith('transient'))assert.equal(observations.httpCalls,3);
-const manual=(startupFailure&&mode!=='headless')||['unknown','low','transport','malformed','stop','cancel','fresh'].includes(mode);
+const manual=(startupFailure&&mode!=='headless')||['unknown','low','transport','malformed','stop','cancel','fresh','allow-stale','allow-abort'].includes(mode);
 assert.equal(observations.selections,manual?1:0);
 if(!startupFailure){
 assert.ok(logs.length>0,'The actual tagged logger must receive decision evidence');
