@@ -745,9 +745,22 @@ and Node-26-qualified derivative were then copied into a private OCI layout with
 All three original index digests were retained.
 Every reachable descriptor size and SHA256 was checked:
 57 unique blobs totaling 260,363,228 bytes.
-The complete source and output graphs are preserved before deleting the solely owned registry tags and project.
-Deletion is still pending;
-no physical-erasure or unseen-storage-billing conclusion follows from this export.
+The complete source and output graphs were preserved before deleting the solely owned registry tags and project.
+All six exact owned tags were removed,
+then authenticated requests for each original index returned `404`.
+The explicit project-deletion request succeeded;
+the same digest requests again returned `404`.
+The receipt retains the initial collector errors without repeating tag deletion.
+No physical-erasure or unseen-storage-billing conclusion follows from logical deletion.
+
+An empty installed-CLI `depot image list --output json` result is plain `No images found` with exit status zero.
+The source returns that message before selecting its JSON formatter.
+The JSON-only cleanup collector therefore stopped after its successful tag deletion.
+Recovery checked the retained operation and source-defined empty result,
+then continued with the remaining project deletion.
+The failed preflight used the opaque pull token as a raw Bearer credential;
+the already captured registry challenge requires Basic authentication with username `x-token`.
+That caller defect did not indicate token expiry or revocation.
 
 ## Actual Bake graph, mount lifetime and CNI controls
 
