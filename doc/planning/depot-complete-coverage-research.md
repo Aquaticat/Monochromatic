@@ -1458,3 +1458,18 @@ These are list-rate planning proxies and conservative reservations,
 not invoices.
 Public GitHub standard compute is recorded separately from storage and artifact uncertainty.
 No account-wide usage or invoice endpoint is queried.
+
+## public-host-controls finite admission
+
+The immutable research harness is `334a5b75f376eb467e30b426a14369690bc2795f`;
+the application remains `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+The retained finite plan is `public-host-controls-plan.json`.
+The deduplicated ledger contains 43 completed owned job rows,
+USD1.4880 completed GitHub rounded-minute compute,
+USD3.24 completed native conservative maxima,
+and USD0.00 reserved for this finite profile.
+The committed and reserved guard is USD4.7280 of USD5.
+These are list-rate planning proxies and conservative reservations,
+not invoices.
+Public GitHub standard compute is recorded separately from storage and artifact uncertainty.
+No account-wide usage or invoice endpoint is queried.
