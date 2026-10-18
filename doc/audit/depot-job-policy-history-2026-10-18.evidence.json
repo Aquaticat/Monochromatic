@@ -1921,7 +1921,7 @@
     "splitAndReportKeys": "split-key scopes independent logical suites; report-key distinguishes uploads within a job. These are separate client fields; private history mapping is not inferred from that alone."
   },
   "limits": [
-    "Both continuation consumers explicitly use always(); default downstream eligibility remains a separate control.",
+    "The initial paired observers use always(); the later native default-condition observer independently passed without always().",
     "The failed producer is an intentional ordinary failure without a cancelled timeout job.",
     "Native needs.result is success, yet native API aggregate is failed; paired GitHub workflow conclusion is success. Native GitHub check and suite conclusions are recorded separately.",
     "History controls are read-only requests with no additional test runs or report uploads.",
@@ -1930,9 +1930,9 @@
   ],
   "archive": {
     "path": "depot-job-policy-history-2026-10-18.archives.json.gz",
-    "bytes": 4555,
-    "sha256": "a7be467cfdf6f2844e5fcad6cc67929aecb4f4d4a417ed6cf89ba1368eb155a8",
-    "originalZipCount": 5
+    "bytes": 5899,
+    "sha256": "c96e692b6dacebaffac76c045c46286fbd49b92262b91b7395dd0bec1597ac6c",
+    "originalZipCount": 8
   },
   "admission": {
     "source": "f446852c42d4a382ba7931e6730a17cb3d8308e0",
@@ -1955,5 +1955,393 @@
     "historyReadOnly": true,
     "applicationTestsExecuted": false,
     "timeoutProbeInContinuationComparison": false
-  }
+  },
+  "additionalContinuationControls": [
+    {
+      "run": "pfzfjrqdpq",
+      "label": "ordinary-default-needs",
+      "status": {
+        "org_id": "l4zncjjbj5",
+        "run_id": "pfzfjrqdpq",
+        "status": "failed",
+        "workflows": [
+          {
+            "workflow_id": "gdddxmsxff",
+            "status": "failed",
+            "name": "research ordinary continuation with default downstream condition",
+            "jobs": [
+              {
+                "job_display_name": "allowed_failure",
+                "job_id": "t37tgs8627",
+                "job_key": "_inline_0.yaml:allowed_failure",
+                "status": "failed",
+                "attempts": [
+                  {
+                    "attempt_id": "dj9zz1j0fj",
+                    "attempt": 1,
+                    "status": "failed",
+                    "sandbox_id": "xg7xg08lr364tqwbln0q",
+                    "session_id": "51c37863-03f5-4f62-acd1-def8020417e7",
+                    "logs_command": "depot ci logs dj9zz1j0fj --org l4zncjjbj5",
+                    "download_available": false,
+                    "view_url": "https://depot.dev/orgs/l4zncjjbj5/workflows/gdddxmsxff?job=t37tgs8627&attempt=dj9zz1j0fj",
+                    "ssh_available": false
+                  }
+                ]
+              },
+              {
+                "job_display_name": "consumer",
+                "job_id": "s8x35w912d",
+                "job_key": "_inline_0.yaml:consumer",
+                "status": "finished",
+                "attempts": [
+                  {
+                    "attempt_id": "l2gs9jvjnf",
+                    "attempt": 1,
+                    "status": "finished",
+                    "sandbox_id": "kh2plrp5s8dvk03qm7d5",
+                    "session_id": "9831a26e-4de0-4e68-a4a9-cd335fc1de9e",
+                    "logs_command": "depot ci logs l2gs9jvjnf --org l4zncjjbj5",
+                    "download_available": true,
+                    "download_command": "depot ci logs l2gs9jvjnf --output-file logs.txt --org l4zncjjbj5",
+                    "view_url": "https://depot.dev/orgs/l4zncjjbj5/workflows/gdddxmsxff?job=s8x35w912d&attempt=l2gs9jvjnf",
+                    "ssh_available": false
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "workflow": {
+        "org_id": "l4zncjjbj5",
+        "run": {
+          "run_id": "pfzfjrqdpq",
+          "repo": "Aquaticats/Monochromatic",
+          "ref": "714a3cad36c20da75969454fe33f28dab7770e9b",
+          "sha": "714a3cad36c20da75969454fe33f28dab7770e9b",
+          "head_sha": "714a3cad36c20da75969454fe33f28dab7770e9b",
+          "trigger": "api",
+          "status": "failed",
+          "created_at": "2026-10-18T11:20:05Z",
+          "started_at": "2026-10-18T11:20:06Z",
+          "finished_at": "2026-10-18T11:21:09Z"
+        },
+        "workflow": {
+          "workflow_id": "gdddxmsxff",
+          "name": "research ordinary continuation with default downstream condition",
+          "workflow_path": "",
+          "status": "failed",
+          "error_message": "",
+          "created_at": "2026-10-18T11:20:14Z",
+          "started_at": "2026-10-18T11:20:14Z",
+          "finished_at": "2026-10-18T11:21:09Z"
+        },
+        "executions": [
+          {
+            "execution_id": "3ssvqccd5h",
+            "execution": 1,
+            "status": "failed",
+            "created_at": "2026-10-18T11:20:14Z",
+            "started_at": "2026-10-18T11:20:14Z",
+            "finished_at": "2026-10-18T11:21:09Z"
+          }
+        ],
+        "jobs": [
+          {
+            "job_display_name": "consumer",
+            "job_id": "s8x35w912d",
+            "job_key": "_inline_0.yaml:consumer",
+            "status": "finished",
+            "started_at": "2026-10-18T11:20:48Z",
+            "finished_at": "2026-10-18T11:21:08Z",
+            "attempts": [
+              {
+                "attempt_id": "l2gs9jvjnf",
+                "attempt": 1,
+                "status": "finished",
+                "sandbox_id": "kh2plrp5s8dvk03qm7d5",
+                "session_id": "9831a26e-4de0-4e68-a4a9-cd335fc1de9e",
+                "started_at": "2026-10-18T11:20:48Z",
+                "finished_at": "2026-10-18T11:21:08Z"
+              }
+            ]
+          },
+          {
+            "job_display_name": "allowed_failure",
+            "job_id": "t37tgs8627",
+            "job_key": "_inline_0.yaml:allowed_failure",
+            "status": "failed",
+            "started_at": "2026-10-18T11:20:16Z",
+            "finished_at": "2026-10-18T11:20:37Z",
+            "attempts": [
+              {
+                "attempt_id": "dj9zz1j0fj",
+                "attempt": 1,
+                "status": "failed",
+                "sandbox_id": "xg7xg08lr364tqwbln0q",
+                "session_id": "51c37863-03f5-4f62-acd1-def8020417e7",
+                "started_at": "2026-10-18T11:20:16Z",
+                "finished_at": "2026-10-18T11:20:37Z"
+              }
+            ]
+          }
+        ]
+      },
+      "archives": [
+        {
+          "artifact": {
+            "artifact_id": "01a14ebd-ffe1-7800-9012-e963defdba04",
+            "run_id": "pfzfjrqdpq",
+            "workflow_id": "gdddxmsxff",
+            "workflow_path": "",
+            "job_id": "t37tgs8627",
+            "job_key": "_inline_0.yaml:allowed_failure",
+            "attempt_id": "dj9zz1j0fj",
+            "attempt": 1,
+            "name": "research-job-policy-failure-native-depot",
+            "size_bytes": 316,
+            "created_at": "2026-10-18T11:20:37Z"
+          },
+          "bytes": 316,
+          "sha256": "6c805e74ccfdb2cdfcfe651941c0f872475772c60a1fa54d3920c5097a4fd2f6",
+          "members": [
+            "failure.json"
+          ],
+          "observations": [
+            {
+              "member": "failure.json",
+              "value": {
+                "probe": "ordinary-job-continue-on-error",
+                "intentionalFailure": true,
+                "timeoutUsed": false,
+                "platform": "native-depot",
+                "source": "714a3cad36c20da75969454fe33f28dab7770e9b",
+                "uid": 1001,
+                "at": "2026-10-18T11:20:36.386Z"
+              }
+            }
+          ]
+        },
+        {
+          "artifact": {
+            "artifact_id": "01a14ebe-7b40-75e6-8440-f1f1c87586dd",
+            "run_id": "pfzfjrqdpq",
+            "workflow_id": "gdddxmsxff",
+            "workflow_path": "",
+            "job_id": "s8x35w912d",
+            "job_key": "_inline_0.yaml:consumer",
+            "attempt_id": "l2gs9jvjnf",
+            "attempt": 1,
+            "name": "research-job-policy-consumer-native-depot",
+            "size_bytes": 366,
+            "created_at": "2026-10-18T11:21:08Z"
+          },
+          "bytes": 366,
+          "sha256": "3f1b4ab767f547fb43062c33f9bb333934fde418d65cdb99b11ac828fa36b7c7",
+          "members": [
+            "consumer.json"
+          ],
+          "observations": [
+            {
+              "member": "consumer.json",
+              "value": {
+                "probe": "ordinary-job-continue-on-error-consumer",
+                "passed": true,
+                "needs": {
+                  "allowed_failure": {
+                    "outputs": {},
+                    "result": "success"
+                  }
+                },
+                "timeoutJobPresent": false,
+                "platform": "native-depot",
+                "source": "714a3cad36c20da75969454fe33f28dab7770e9b",
+                "at": "2026-10-18T11:21:07.960Z"
+              }
+            }
+          ]
+        }
+      ],
+      "observation": {
+        "probe": "ordinary-job-continue-on-error-consumer",
+        "passed": true,
+        "needs": {
+          "allowed_failure": {
+            "outputs": {},
+            "result": "success"
+          }
+        },
+        "timeoutJobPresent": false,
+        "platform": "native-depot",
+        "source": "714a3cad36c20da75969454fe33f28dab7770e9b",
+        "at": "2026-10-18T11:21:07.960Z"
+      }
+    },
+    {
+      "run": "lrhfzwrwl2",
+      "label": "isolated-step-workaround",
+      "status": {
+        "org_id": "l4zncjjbj5",
+        "run_id": "lrhfzwrwl2",
+        "status": "finished",
+        "workflows": [
+          {
+            "workflow_id": "j1qhhxk7dg",
+            "status": "finished",
+            "name": "research advisory step failure with passing workflow",
+            "jobs": [
+              {
+                "job_display_name": "advisory",
+                "job_id": "cx04nqd5c3",
+                "job_key": "_inline_0.yaml:advisory",
+                "status": "finished",
+                "attempts": [
+                  {
+                    "attempt_id": "k99btsdvfp",
+                    "attempt": 1,
+                    "status": "finished",
+                    "sandbox_id": "g1f65gzvjfn8mhzr02m3",
+                    "session_id": "c610d9ad-ef8b-4ece-9c84-3b0a4411a2d8",
+                    "logs_command": "depot ci logs k99btsdvfp --org l4zncjjbj5",
+                    "download_available": true,
+                    "download_command": "depot ci logs k99btsdvfp --output-file logs.txt --org l4zncjjbj5",
+                    "view_url": "https://depot.dev/orgs/l4zncjjbj5/workflows/j1qhhxk7dg?job=cx04nqd5c3&attempt=k99btsdvfp",
+                    "ssh_available": false
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "workflow": {
+        "org_id": "l4zncjjbj5",
+        "run": {
+          "run_id": "lrhfzwrwl2",
+          "repo": "Aquaticats/Monochromatic",
+          "ref": "714a3cad36c20da75969454fe33f28dab7770e9b",
+          "sha": "714a3cad36c20da75969454fe33f28dab7770e9b",
+          "head_sha": "714a3cad36c20da75969454fe33f28dab7770e9b",
+          "trigger": "api",
+          "status": "finished",
+          "created_at": "2026-10-18T11:20:06Z",
+          "started_at": "2026-10-18T11:20:06Z",
+          "finished_at": "2026-10-18T11:20:48Z"
+        },
+        "workflow": {
+          "workflow_id": "j1qhhxk7dg",
+          "name": "research advisory step failure with passing workflow",
+          "workflow_path": "",
+          "status": "finished",
+          "error_message": "",
+          "created_at": "2026-10-18T11:20:14Z",
+          "started_at": "2026-10-18T11:20:14Z",
+          "finished_at": "2026-10-18T11:20:48Z"
+        },
+        "executions": [
+          {
+            "execution_id": "6h8gh6hwdb",
+            "execution": 1,
+            "status": "finished",
+            "created_at": "2026-10-18T11:20:14Z",
+            "started_at": "2026-10-18T11:20:14Z",
+            "finished_at": "2026-10-18T11:20:48Z"
+          }
+        ],
+        "jobs": [
+          {
+            "job_display_name": "advisory",
+            "job_id": "cx04nqd5c3",
+            "job_key": "_inline_0.yaml:advisory",
+            "status": "finished",
+            "started_at": "2026-10-18T11:20:16Z",
+            "finished_at": "2026-10-18T11:20:37Z",
+            "attempts": [
+              {
+                "attempt_id": "k99btsdvfp",
+                "attempt": 1,
+                "status": "finished",
+                "sandbox_id": "g1f65gzvjfn8mhzr02m3",
+                "session_id": "c610d9ad-ef8b-4ece-9c84-3b0a4411a2d8",
+                "started_at": "2026-10-18T11:20:16Z",
+                "finished_at": "2026-10-18T11:20:37Z"
+              }
+            ]
+          }
+        ]
+      },
+      "archives": [
+        {
+          "artifact": {
+            "artifact_id": "01a14ebe-00af-7a85-b86a-c08379b89a40",
+            "run_id": "lrhfzwrwl2",
+            "workflow_id": "j1qhhxk7dg",
+            "workflow_path": "",
+            "job_id": "cx04nqd5c3",
+            "job_key": "_inline_0.yaml:advisory",
+            "attempt_id": "k99btsdvfp",
+            "attempt": 1,
+            "name": "research-step-policy-workaround",
+            "size_bytes": 631,
+            "created_at": "2026-10-18T11:20:37Z"
+          },
+          "bytes": 631,
+          "sha256": "ee08c6112278d5283ab1f7154bb85a8878d4e62f02cac4c781494a8423336252",
+          "members": [
+            "failure.json",
+            "step-consumer.json"
+          ],
+          "observations": [
+            {
+              "member": "failure.json",
+              "value": {
+                "probe": "ordinary-job-continue-on-error",
+                "intentionalFailure": true,
+                "timeoutUsed": false,
+                "platform": "native-depot-step-control",
+                "source": "714a3cad36c20da75969454fe33f28dab7770e9b",
+                "uid": 1001,
+                "at": "2026-10-18T11:20:36.300Z"
+              }
+            },
+            {
+              "member": "step-consumer.json",
+              "value": {
+                "probe": "step-policy-workaround",
+                "passed": true,
+                "source": "714a3cad36c20da75969454fe33f28dab7770e9b",
+                "outcome": "failure",
+                "conclusion": "success",
+                "platform": "native-depot-step-control",
+                "at": "2026-10-18T11:20:36.596Z"
+              }
+            }
+          ]
+        }
+      ],
+      "observation": {
+        "probe": "step-policy-workaround",
+        "passed": true,
+        "source": "714a3cad36c20da75969454fe33f28dab7770e9b",
+        "outcome": "failure",
+        "conclusion": "success",
+        "platform": "native-depot-step-control",
+        "at": "2026-10-18T11:20:36.596Z"
+      }
+    }
+  ],
+  "additionalContinuationAdmission": {
+    "source": "714a3cad36c20da75969454fe33f28dab7770e9b",
+    "observedAt": "2026-10-18T11:20:04.870Z",
+    "workflows": [
+      "ordinary-job-default-consumer.yml",
+      "advisory-step-result.yml"
+    ],
+    "maximumConcurrentParentJobs": 2,
+    "addedFullWindowReservationUsd": 0.036,
+    "cumulativeConservativeReservationUsd": 0.96,
+    "campaignGuardUsd": 1
+  },
+  "laterReconciledAt": "2026-10-18T11:35:37.080Z"
 }

@@ -4624,8 +4624,22 @@
   "interpretation": [
     "CLI ingestion was checked again through attempt-scoped stored-result APIs: 102 seed events plus17 events per physical shard.",
     "The same34 unique cases ran repeatedly;136passing events are not136unique cases.",
-    "Zero timing coverage remains a separate unresolved history identity/availability boundary.",
+    "Later read-only controls establish an adapter identity mismatch: actual JUnit classname has history, while full testName values supplied as classname do not. This is not a provider history availability failure.",
     "The complete1956-case application suite is not qualified by this diagnostic cohort.",
     "Provider terminal metadata and nominal budget reservations are not an invoice or deallocation measurement."
-  ]
+  ],
+  "laterIdentityQualification": {
+    "run": "kjf78stmkb",
+    "evidence": "depot-job-policy-history-2026-10-18.evidence.json",
+    "documentation": "https://depot.dev/docs/ci/how-to-guides/split-tests.md",
+    "actualClassname": "monochromatic-git-policy-cli",
+    "actualClassPositiveTimingCounts": [
+      1,
+      1,
+      1
+    ],
+    "fullTestNamesAsClassCandidatesMatchActualJunitClass": false,
+    "historyAvailabilityFailureEstablished": false,
+    "mappingRequiresClassOrFileCandidates": true
+  }
 }

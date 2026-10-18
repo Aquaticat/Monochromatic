@@ -3009,5 +3009,14 @@
     "Raw action logs may contain signed URLs and are kept private; only filtered numeric-ID/digest/error events and raw-log hashes are public.",
     "Native archive verification uses API byte sizes, local SHA256 and CRC; no native server-provided digest is claimed.",
     "Terminal API states and budget reservations do not prove deallocation timing or actual billing."
-  ]
+  ],
+  "causalQualification": {
+    "sdkNumericOrderingVulnerabilityProven": true,
+    "actualStaleArchiveSelected": true,
+    "failingActionRawPreFilterResponseCaptured": false,
+    "bothSameNameRowsVisibleAtFailureProven": false,
+    "specificIncidentMechanismIsolatedFromVisibilityRace": false,
+    "contentBoundFreshAndFullRerunConsumersVerified": true,
+    "independentReview": "../planning/depot-orchestration-independent-review.md"
+  }
 }
