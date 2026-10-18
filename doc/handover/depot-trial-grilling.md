@@ -263,8 +263,22 @@ Both recorded owned client trees are reaped and absent.
 No paused-tmate leg was selected and no final workflow resume/file consumer appeared.
 This is partial transport execution,
 not completed pause/resume qualification.
-Platform classifies the retained logs before proposing any correction;
-no second dispatch is admitted automatically.
+Read-only collection matches both source/boot/challenge responses.
+Direct OpenSSH runs as UID 0/GID 0 in `/root`;
+native CLI RPC runs as UID 1001/GID 117 in `/home/runner`.
+Neither inherits the synthetic workflow environment.
+All recorded owned identities and the askpass socket are freshly absent.
+The final 276 log events show the paused action entering `apt-get update`
+and emitting only the 237-byte `/etc/apt/apt-mirrors.txt` Mirrorlist line before cancellation.
+No tmate target was logged.
+This is an uncompleted installer phase,
+not evidence that tmate transport fails or is unsupported.
+Pinned action source `src/index.js:82` through `src/index.js:110`
+shows `install-dependencies: false` skips both package installation and static-binary download,
+then uses `tmate` from `PATH`.
+Platform prepares a source-bound same-binary correction without unconditional apt update;
+Root must review changed identities before the remaining attempt.
+No second dispatch is admitted automatically.
 The single reserved slot is released,
 so Coverage may use both global slots for admitted work.
 The three-minute server job and USD 0.036 two-attempt guard remain unchanged.
@@ -275,11 +289,21 @@ Platform durably queues the read-only GitHub check-runs/commit-status consumer c
 `doc/planning/depot-native-ssh-runtime-research.md` at `0567953a15`.
 The positive control is the owned GitHub graph source/run;
 the native probe uses an exact owned source with actor/output bodies kept private.
+Its exact `b6a60493c16087043a7043f50cd31d8aebf4bdee` SHA has GitHub check `117756320157`,
+`native-ssh-acceptance / ssh-proof`,
+completed/cancelled under app `219785`,
+`depot-code-access` (Depot Code Access).
+The known GitHub graph source has six checks:
+four GitHub Actions checks for run `39140975786` and two Depot Code Access native-graph checks.
+Both exact SHAs have zero legacy commit statuses.
+Details/external-ID correspondence with the owned SSH run is still being joined;
+the installed app name alone does not mean the optional Depot Code product was enabled.
+No app/account settings were inspected or changed.
 Coverage committed and pushed the seven-owner material harness at
 `015ee75186e697a05160913dbd8006eceb90b2e5` before its actual bootstrap/Mise/Node preflight.
 It preserves the admitted profile/prerequisite/argv boundaries and adds actual OS/CPU/memory probes.
 No material allocation has begun at this checkpoint.
-Rust is checking the actual locked Mise 2026.10.9 affected-task selector,
+Rust checked the actual locked Mise 2026.10.9 affected-task selector,
 separately from the installed 2026.10.0 failure.
 Its actual locked-version metadata probe now confirms the identical workspace cycle,
 after changed-producer/development-consumer,
