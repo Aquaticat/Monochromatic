@@ -63,6 +63,21 @@ complete the original configured-host replay,
 check actual outgoing payloads and prohibitions,
 and finish the durable troubleshooting record.
 
+Shared-text fixture runs retain 3,609,280 to 3,610,472 heap bytes with unchanged receipt accounting.
+The source-sharing build is `native-release-iQw5fd`.
+Its full unit suite passes.
+The first full replay of this build reaches the private recorder's 4 MiB output cap;
+this is not another recorded host heap failure.
+The recorder now discards transient `message_update` events while retaining actual terminal messages,
+tool results,
+selectors,
+provider requests,
+and stderr.
+The actual host still consumes every original streamed delta.
+The revised full replay remains required before readiness is renewed.
+The native-root guard mutation is running in a private module loader;
+production source and output remain untouched.
+
 ## Verified MiMo lint handoff on 2026-10-17
 
 The current handoff is [MiMo lint handoff](pi-auto-mode-mimo-lint-prompt.md).

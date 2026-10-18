@@ -434,6 +434,22 @@ before saying it matches, QAB):
   itself (nobody looked at a Windows desktop), any Windows or macOS binary, arm64 binaries, a real device. The
   0.1.4 notes keep the PowerShell redirection sentence (`| Out-File`).
 
+- 2026-10-17, review issues 1451 to 1458, 1460 and 1463 (assigned to (g) in the GitHub issues item), branch
+  `fix/music-player-desktop-review-issues`, worktree `music-player-deskissues`; not merged to `main`, no version bump.
+  All ten were real and are fixed, each commit closing its own issue: the session file is saved by temporary file,
+  sync and rename and a failed load is logged with its path (1453, 1452), `PlayerError::source` forwards the wrapped
+  error (1455), the queue wrap comments quote the code they document (1456), each Search result row is a named button
+  (1451, new `SearchRow.spoken` label built in Rust), a single probe window starts at the final legal start (1460),
+  the bench feasibility search reads `Policy::max_too_loud_db` (1463, new `truepeak-core.bench:test` task), and the
+  `truepeak-core` README, `Cargo.toml`, `mise.toml` and `lib.rs` header and `HANDOVER.md` describe the shipped crate and
+  dependency versions (1457, 1458, 1454). Verified on the branch after merging `main`: desktop `lint:slint` exit 0,
+  nextest 1476 passed and 1 skipped (1460 passed before), `lint:clippy` exit 0; `truepeak-core` 83 passed and clippy
+  exit 0; `truepeak-core.bench` 3 passed and clippy exit 0; the Android native crate has no Rust tests, so
+  `android-app:lint:clippy` compiled it against the changed `truepeak-core` for both ABIs (exit 0). Open for the human:
+  whether one window should sit at the end (chosen, per the module contract) or at frame 0; the Search row announces
+  name, kind and parent folder but not the D77 action wording (Select track, Play track), which needs the Auto-play
+  setting threaded into `search_view_of`; `PlayerError` now prints the wrapped error text twice in a full chain.
+
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
 
 - The workflows of tasks 95 and 96 were told to cache properly and prove it; `doc/decision/ci-caching.md` binds them

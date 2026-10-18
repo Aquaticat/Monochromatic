@@ -8,7 +8,7 @@
 //! divider in the wrong role, a row ring that is a square, or a status block that sits where it did before.
 //! Note: element lookup by id needs `SLINT_EMIT_DEBUG_INFO=1` at build time, which the repo test task sets.
 
-use i_slint_backend_testing::ElementHandle;
+use i_slint_backend_testing::{AccessibleRole, ElementHandle};
 use music_player::search_results::SearchState;
 use slint::platform::WindowEvent;
 use slint::{ComponentHandle, LogicalPosition, ModelRc, VecModel};
@@ -83,6 +83,7 @@ fn result_rows(count: i32) -> Vec<crate::SearchRow> {
                 has_parent: true,
                 current: false,
                 playing: false,
+                spoken: format!("Lantern {index}, {}, Aster Vale", if index % 2 == 0 { "Track" } else { "Folder" }).into(),
                 index,
             };
         })
@@ -458,4 +459,52 @@ fn the_match_highlight_keeps_square_corners_and_the_result_copy_is_unchanged() {
         .filter_map(|element| return element.accessible_label().map(|label| return label.to_string()))
         .collect();
     assert_eq!(parents, vec!["Aster Vale", "Aster Vale"], "the second line is unchanged");
+}
+
+// ---- Each result row is one named button (D77) ----
+
+/// What: `row_taps` lists the tap targets of the result rows that are on screen, in tree order.
+fn row_taps(rendered: &Rendered) -> Vec<ElementHandle> {
+    return ElementHandle::find_by_element_id(&rendered.app, "SearchPage::row-touch")
+        .filter(|element| return box_of(element).2 > 0.0)
+        .collect();
+}
+
+#[test]
+fn every_result_row_is_a_named_button_that_opens_its_result() {
+    let rendered = Rendered::new(443, 900);
+    // Row 0 is a track and the current one; row 1 is a folder.
+    let rows: Vec<crate::SearchRow> = result_rows(2)
+        .into_iter()
+        .map(|row| return crate::SearchRow { current: row.index == 0, ..row })
+        .collect();
+    rendered.app.set_search_rows(ModelRc::new(VecModel::from(rows)));
+    open_search(&rendered);
+    let opened = std::rc::Rc::new(std::cell::RefCell::new(Vec::<i32>::new()));
+    let sink = std::rc::Rc::clone(&opened);
+    rendered.app.on_search_open(move |index| sink.borrow_mut().push(index));
+    let taps = row_taps(&rendered);
+    assert_eq!(taps.len(), 2, "one tap target per result row");
+    assert!(
+        taps.iter().all(|tap| return tap.accessible_role() == Some(AccessibleRole::Button)),
+        "each result row is exposed as a button"
+    );
+    let labels: Vec<String> = taps.iter().map(|tap| return tap.accessible_label().unwrap_or_default().to_string()).collect();
+    assert_eq!(labels, vec!["Lantern 0, Track, Aster Vale", "Lantern 1, Folder, Aster Vale"], "name, kind and parent folder");
+    assert_eq!(taps[0].accessible_checkable(), Some(true), "a track can be the current one");
+    assert_eq!(taps[0].accessible_checked(), Some(true), "the current track reads as checked");
+    assert_ne!(taps[1].accessible_checkable(), Some(true), "a folder is never the current track");
+    for tap in &taps {
+        tap.invoke_accessible_default_action();
+    }
+    assert_eq!(*opened.borrow(), vec![0, 1], "the default action of each row opens that row's result");
+}
+
+#[test]
+fn a_result_row_adds_no_second_label_for_its_title_pieces() {
+    let rendered = search_with_rows(443, 900, 2);
+    let taps = row_taps(&rendered);
+    let titled: Vec<String> = taps.iter().filter_map(|tap| return tap.accessible_label()).map(|label| return label.to_string()).collect();
+    assert_eq!(titled.len(), 2, "only the row buttons carry the spoken label");
+    assert!(titled.iter().all(|label| return label.matches("Lantern").count() == 1), "the name is spoken once: {titled:?}");
 }

@@ -637,6 +637,7 @@ fn the_search_results_have_a_scrollbar_and_a_long_title_ends_inside_the_page() {
                 has_parent: true,
                 current: false,
                 playing: false,
+                spoken: "".into(),
                 index,
             };
         })

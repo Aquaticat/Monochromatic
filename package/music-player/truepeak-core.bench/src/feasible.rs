@@ -29,10 +29,6 @@ use std::collections::HashSet;
 /// Imports the shared dB and policy math.
 use truepeak_core::{Policy, default_policy, peak_dbtp};
 
-/// The too-loud bound in dB;
-///  the margin must keep every error at or below it.
-const TOO_LOUD_DB: f64 = 1.0 / 2.0;
-
 /// Convert a linear peak to dBTP,
 ///  treating silence as a very negative level.
 fn db(peak: f64) -> f64 {
@@ -73,12 +69,12 @@ pub struct Feasible {
 /// exceeds the bounds,
 ///  with no full-scan classifier.
 pub fn evaluate_density(
+    policy: &Policy,
     tracks: &[Track],
     candidate: Candidate,
     target_secs: f64,
     quiet_bound_db: f64,
 ) -> Feasible {
-    let policy: Policy = default_policy();
     let threshold = candidate.window_count as f64 * candidate.window_seconds;
 
     // Short tracks pay their length; long tracks pay one probe; track the worst under-read.
@@ -98,7 +94,7 @@ pub fn evaluate_density(
         }
     }
 
-    let margin_db = (max_under_read - TOO_LOUD_DB).max(0.0);
+    let margin_db = (max_under_read - policy.max_too_loud_db).max(0.0);
     let worst_quiet_db = -margin_db;
     // Feasible when the margin stays inside the too-quiet bound and the probe cost fits.
     let feasible = worst_quiet_db >= quiet_bound_db && decoded <= target_secs;
@@ -137,11 +133,11 @@ pub struct ProvenanceMargin {
 ///  lowering the average
 /// too-quiet error even though the worst case is still set by the louder margin.
 pub fn provenance_margin(
+    policy: &Policy,
     tracks: &[Track],
     candidate: Candidate,
     safe_paths: &HashSet<String>,
 ) -> ProvenanceMargin {
-    let policy: Policy = default_policy();
     let threshold = candidate.window_count as f64 * candidate.window_seconds;
     let mut max_under_read_safe = 0.0f64;
     let mut max_under_read_unsafe = 0.0f64;
@@ -162,8 +158,8 @@ pub fn provenance_margin(
             max_under_read_unsafe = max_under_read_unsafe.max(under_read);
         }
     }
-    let margin_safe_db = (max_under_read_safe - TOO_LOUD_DB).max(0.0);
-    let margin_unsafe_db = (max_under_read_unsafe - TOO_LOUD_DB).max(0.0);
+    let margin_safe_db = (max_under_read_safe - policy.max_too_loud_db).max(0.0);
+    let margin_unsafe_db = (max_under_read_unsafe - policy.max_too_loud_db).max(0.0);
     return ProvenanceMargin {
         margin_safe_db,
         margin_unsafe_db,
@@ -188,6 +184,7 @@ pub fn best_feasible(
     target_secs: f64,
     quiet_bound_db: f64,
 ) -> Vec<Feasible> {
+    let policy: Policy = default_policy();
     let mut results = Vec::new();
     for &window_count in counts {
         for &threshold in thresholds {
@@ -196,7 +193,7 @@ pub fn best_feasible(
                 window_seconds: threshold / window_count as f64,
                 probe_margin_db: 0.0,
             };
-            results.push(evaluate_density(tracks, candidate, target_secs, quiet_bound_db));
+            results.push(evaluate_density(&policy, tracks, candidate, target_secs, quiet_bound_db));
         }
     }
     // Best feasible first: smallest margin, then smallest decoded cost as a tie-break.
@@ -209,3 +206,8 @@ pub fn best_feasible(
     });
     return results
 }
+
+/// Tests for the feasible no-classifier model.
+#[cfg(test)]
+#[path = "feasible_tests.rs"]
+mod tests;
