@@ -42,11 +42,18 @@ preserves the missing fields.
 `src/filesystem.ts:201` and `src/filesystem.ts:208` identify read failures as `open`:
 
 ```typescript
-// depot/sandbox-sdk src/filesystem.ts:201,208, abbreviated unrelated body
+// depot/sandbox-sdk src/filesystem.ts:201
 async readFile(path: string, opts?: ReadFileOpts): Promise<Buffer | string> {
-  // The implementation consumes the ReadFile response stream.
-  // Its catch converts the failure with the operation and path.
-  throw toFileSystemError(err, 'open', path)
+  const chunks: Uint8Array[] = []
+  try {
+    for await (const chunk of this.client.rpc.readFile({...this.ref(), path})) {
+      if (chunk.data.length > 0) chunks.push(chunk.data)
+    }
+  } catch (err) {
+    throw toFileSystemError(err, 'open', path)
+  }
+  const buf = Buffer.concat(chunks)
+  return opts?.encoding ? buf.toString(opts.encoding) : buf
 }
 ```
 

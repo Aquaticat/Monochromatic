@@ -82,6 +82,12 @@ The installed CLI is audited against release `v2.102.23`,
 source commit `1f96d6d488f938de97ea640b115e9567ebfd6fbf`.
 Visible help traversal initially missed a single-space command column;
 the `configure-docker` control exposed that parser defect and the inventory was corrected.
+That correction initially covered only the root.
+Re-parsing every cached node found `ci migrate secrets-and-vars`
+and generated completion/help descendants of the manually dispatched Claude secrets command.
+The recursive parser now has single-space,
+multiple-space,
+and flag-section controls.
 Source inspection then exposed hidden root commands and manually dispatched Claude subcommands.
 The expanded inventory contains 99 help invocations,
 including the failed Cargo-wrapper help invocation described in the source gaps.
@@ -272,8 +278,8 @@ and SDK filesystem operations.
 The added compute proxy reservation is USD 0.012,
 bringing the original BuildKit proxy plus both full sandbox reservations to USD 0.562584
 under the USD 2 research ceiling.
-That proxy uses the public two-CPU CI rate;
-it does not establish SDK invoice pricing,
+That proxy uses the documented SDK two-CPU CI rate;
+it does not confirm actual invoiced compute quantities,
 storage charges,
 included-allowance accounting,
 or an aggregate account cap.
@@ -908,24 +914,26 @@ The installed Docker configuration uninstall path will not be exercised against 
   bundled CLI schemas,
   SDK exports,
   and source release dates method by method.
-- Follow advanced BuildKit and Bake features into implementation:
-  remote Git contexts,
-  named contexts,
-  native architectures,
-  SSH and secret forwarding,
-  cache export/import,
-  local exports,
-  provenance,
-  SBOMs,
-  OCI lazy-pull formats,
-  deduplication,
-  and builder lifecycle.
-- Qualify service containers,
-  reusable workflow current-source behavior,
-  retry side effects,
-  parallel state,
-  event supersession,
-  and status attempts with bounded real probes coordinated with the parent investigation.
+- Reconcile the executed BuildKit graph,
+  Git contexts,
+  mounts,
+  exports,
+  and image consumers against each documented feature.
+  Preserve the native OCI empty attestation subject-array distinction,
+  unexecuted autoscaling,
+  and lack of measured lazy-pull startup improvement.
+- Finish the built-in Dockerfile lint diagnosis:
+  Hadolint has a working positive control,
+  but the configured old Semgrep image did not match the selected missing-user control.
+  Compare a current pinned scanner and retain the security-scanning coverage gap.
+- Document the verified empty image-catalog `--output json` plaintext branch
+  and complete its upstream contribution gate.
+- Keep the successful service/job-container receipts separate from the remaining
+  cross-attempt artifact identity,
+  job-level continued-failure,
+  timeout/cancellation,
+  and aggregate-status controls.
+  An intentionally cancelled job confounds the current job-level continuation observation.
 - The Cargo wrapper checks for local `sccache` before providing delegated help.
   This machine's help invocation failed with `sccache not found in PATH`.
   That is a local prerequisite failure,
@@ -935,10 +943,21 @@ The installed Docker configuration uninstall path will not be exercised against 
   artifact deletion,
   exports,
   and support commitments.
-- Keep SDK lifecycle smoke tests distinct from prepared-image,
-  agent configuration,
-  snapshot,
-  and real repository consumers.
+- Reconcile SDK custom thin-image success and default-image lifecycle controls
+  with the conflicting deployed reference,
+  separate file-snapshot semantics,
+  secret authorization,
+  retained-log gaps,
+  and unexercised ordinary OCI or named runtimes.
+- Replace generic page and command states with cited applicability and evidence boundaries,
+  including source-only network,
+  Code,
+  Agents,
+  managed AWS,
+  external CI integrations,
+  and language recipes.
+- Finish public status-history pagination and component coverage before interpreting reliability;
+  no uptime denominator is currently established.
 
 The source/evidence ledger will distinguish discovered,
 retrieved,
