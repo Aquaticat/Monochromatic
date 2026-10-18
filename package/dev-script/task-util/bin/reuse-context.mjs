@@ -1,7 +1,7 @@
 import { spawnSync, execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync, openSync, closeSync, existsSync } from 'node:fs';
-import { cpus, totalmem } from 'node:os';
+import { cpus, totalmem, hostname } from 'node:os';
 import { join } from 'node:path';
 import { strict as assert } from 'node:assert';
 
@@ -33,7 +33,7 @@ export function run({ name, command, args, cwd = root, limit = 600_000, expected
   }
   const record = { name, command: [command, ...args], cwd, startedAt, finishedAt: new Date().toISOString(), elapsedSeconds: (performance.now() - started) / 1000, exitStatus: result.status, signal: result.signal, error: result.error?.message, expected };
   records.push(record);
-  writeFileSync(join(evidence, 'commands.json'), JSON.stringify({ baseSourceSha: manifest.baseSourceSha, imagePreparationSha: manifest.sourceSha, harnessSha: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(), imageManifestSha256: sha(readFileSync(join(prefix, 'image-manifest.json'))), records, allocation: { name: process.env.RUNNER_NAME, cpus: cpus().length, memoryBytes: totalmem(), cpuModel: cpus()[0]?.model }, phase: process.env.REUSE_PHASE, kind: process.env.REUSE_KIND }, null, 2) + '\n');
+  writeFileSync(join(evidence, 'commands.json'), JSON.stringify({ baseSourceSha: manifest.baseSourceSha, imagePreparationSha: manifest.sourceSha, harnessSha: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(), imageManifestSha256: sha(readFileSync(join(prefix, 'image-manifest.json'))), records, allocation: { name: process.env.RUNNER_NAME, hostname: hostname(), bootId: readFileSync('/proc/sys/kernel/random/boot_id', 'utf8').trim(), cpus: cpus().length, memoryBytes: totalmem(), cpuModel: cpus()[0]?.model }, phase: process.env.REUSE_PHASE, kind: process.env.REUSE_KIND }, null, 2) + '\n');
   console.log(JSON.stringify(record));
   if (result.error) throw result.error;
   if (expected === 'success') assert.equal(result.status, 0, name + ' failed; retain frozen-source failure');
