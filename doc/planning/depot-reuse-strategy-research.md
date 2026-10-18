@@ -114,17 +114,14 @@ Controls allocation `r328mp420m` runs the owner and separate documented/undocume
 retaining native CLI help/version and exact JAR hashes.
 This does not substitute for the root `lint:detekt` task's repository-wide fanout.
 
-Fifteen completed allocations account for 2,587 request-to-terminal seconds,
-or USD 1.0348 at the declared eight-vCPU timestamp-price proxy.
-The approved job ceiling is now 18,
+Eighteen completed allocations account for 3,428 request-to-terminal seconds,
+or USD 1.3712 at the declared eight-vCPU timestamp-price proxy.
+The completed cache campaign's job ceiling was 18,
 with the same two-simultaneous,
 eight-vCPU,
 32-GB,
 15-minute and USD 5 limits.
-Three remaining slots,
-including active scanner producer `v7njncr47d` and diagnostic archive `7sm49f324d`,
-reserve USD 1.08 at their full ceilings,
-giving a USD 2.1148 forecast.
+Its last dispatch reserved USD 0.36 and forecast USD 1.644 before the reader completed.
 This excludes storage,
 network,
 other agents and any account bill.
@@ -155,8 +152,9 @@ No matched filesystem/provider control has established the cause.
 These are observed failures at a filesystem boundary,
 not established source defects or cache-caused regressions.
 
-The unchanged Rust warm pair each restored 131 Rust compiler entries with zero compiler misses,
-compilations or writes at the CLI-build checkpoint.
+The unchanged Rust warm pair each recorded 131 Rust compiler-cache hits,
+with zero `cache_misses`,
+`compilations` or `cache_writes` at the CLI-build checkpoint.
 The corresponding seed populated 131 misses/writes with no hits.
 Building and linking the real dev-profile CLI took 52.646 seconds in the seed,
 then 41.495 and 39.534 seconds in the warm allocations.
@@ -164,6 +162,19 @@ The warm spread was 1.961 seconds.
 There is no repeated cache-off Rust baseline,
 so this comparison does not establish a cache-off benefit or full-job multiplier.
 Final linking and compiler requests that sccache cannot cache still execute.
+The deciding sccache `0.18.0` source,
+`src/compiler/rust.rs:1179`,
+rejects non-rlib/staticlib crate types because it cannot identify all system-linker inputs.
+Its `compilations` counter therefore does not count every Rust compiler process.
+The retained wrapper journal shows the large native library's test compilation still taking
+7.423 seconds in the seed and 7.220 and 7.328 seconds in the warm pair.
+Those requests overlap other work and cannot be added to wall-clock totals.
+The scanner also has real build-script execution:
+`package/cli/forbidden-strings/build.rs:98` declares its baseline/parser inputs
+and emits serialized rules under Cargo's `OUT_DIR`.
+A compiler cache of the build-script executable and a target archive containing its generated output
+cover different work.
+The present timing receipts do not isolate that script's execution time.
 
 The warm allocations each ran 1,951 Nextest cases,
 with five skipped cases and 1,956 enumerated in total.
@@ -177,15 +188,14 @@ whose terminal assertion was `a change time with a millisecond part was observed
 The raw per-case logs and denominators are retained for a matched provider/filesystem control.
 This variability is not evidence that compiler-cache restoration caused the failures.
 
-Remaining allocation work is separately admitted:
-an existing forbidden-strings CLI producer and fresh target reader,
-with the CLI's own complete Nextest suite required to pass before its target archive is published.
-A distinct exact-source Nextest/Git diagnostic archive may retain failing native tests for matched provider controls.
+The independent forbidden-strings CLI producer and fresh target reader both passed,
+with the CLI's own complete Nextest suite required to pass before its target archive was published.
+A distinct exact-source Nextest/Git diagnostic archive retains failing native tests for matched provider controls.
 That diagnostic artifact is not a success-only target-cache publication or a passing gate.
-Both active profiles use pushed harness `360abf1382631750c3f26928c2342d0acd13eb6b`.
-The scanner uses a distinct target disk and compiler-cache prefix;
+Both producer profiles used pushed harness `360abf1382631750c3f26928c2342d0acd13eb6b`.
+The scanner used a distinct target disk and compiler-cache prefix;
 its release CLI,
-entire owned Nextest task and source/dependency/compiler controls must pass before target publication.
+entire owned Nextest task and source/dependency/compiler controls passed before target publication.
 The diagnostic profile audits actual Nextest archive/run help,
 then packages exact-source test executables,
 Git 2.56 and the host tools with hashes for the parent to exercise independently.
@@ -194,6 +204,72 @@ but does not rewrite embedded Rust `env!` strings.
 Frozen native Git-config tests contain such a string;
 therefore the filtered replacement-lock/metadata cohort is the transport control,
 and general relocation of the complete suite remains unproved.
+
+### Independent successful target archive and fresh reader
+
+Producer `v7njncr47d` passed all 237 cases through the scanner's existing release Nextest owner,
+with zero skipped cases.
+Changing the real warning source ran one case and produced the expected failed assertion.
+Enabling the locked dependency feature `gix-index/serde` passed all 237 cases.
+Changing compiler flags to `-C debuginfo=1` moved Rust compiler-cache misses from 148 to 275.
+The final original-input run again passed all 237 cases before publication.
+
+The compressed target is 128,391,415 bytes,
+SHA-256 `c0ebdf4d623deaad706d1aee02e57245bfc29994d935ad1a3780f67df08513f5`.
+Its manifest is independently pinned as
+`e8f233474e03ca54e18f59fe02dc2020a3fd942623b228e643ae046ee953569c`.
+Fresh reader `zq7cc1nd4b`,
+from pushed harness `670d84778d24567e36b01a22c33833310d44d659`,
+verified a real `fuse.archil` mount,
+rejected partial archive bytes,
+changed real source and a missing-manifest fixture,
+then restored the admitted archive.
+The release CLI build reported 116 `Fresh`,
+zero `Compiling` and zero `Dirty` records.
+The complete owned Nextest task passed all 237 cases with zero skipped cases.
+
+Seed release CLI build took 52.228 seconds;
+the admitted reader's build took 0.070 seconds.
+Archive extraction took 0.334 seconds,
+excluding preceding archive reads,
+hash admission and mount setup.
+The complete reader Nextest command took 45.200 seconds,
+including 22.506 seconds of actual tests.
+Seed Nextest took 39.233 seconds,
+including 21.449 seconds of tests.
+These boundaries establish working target reuse and continued real test execution.
+There is one target-reader sample,
+so neither a stable restoration ratio nor a whole-job speedup is established.
+
+### Diagnostic archive and matched control extension
+
+Diagnostic run `7sm49f324d` created a 17,046,905-byte Nextest archive,
+SHA-256 `d6b7edef092cad3c81a88deb293777665e4f38e5b9caf27221a5225c4965d596`,
+plus exact Git and host-tool bundles.
+Its initial replay failed before enumeration because the explicit extraction directory did not exist.
+The corrected local read-only Podman transport control created that directory,
+verified all 1,079 frozen source hashes and both tool hashes,
+and passed all 34 selected lock/metadata cases,
+with 1,922 cases skipped by the selection.
+The [Nextest recovery note](../troubleshooting/depot-native-nextest-completion.md)
+retains the deciding source and the fixture identity correction.
+Local tmpfs success does not establish the cause of the distinct native filesystem failures.
+
+The coordinator has admitted three additional cloud allocations for the matched portability control,
+raising the combined campaign ceiling from 18 to 21.
+Only those additional allocations use four CPUs,
+16 GB and ten-minute bounds;
+the two-simultaneous and cumulative USD 5 timestamp-price guard remain.
+Their total conservative reservation is USD 0.36,
+giving a USD 1.7312 forecast from the completed cache campaign.
+Each provider will run three unchanged repeats of the exact archived 34-case cohort,
+then compare its ordinary owned fixture directory with an owned 256-MiB tmpfs when privileged mounting works.
+The providers are native Depot,
+GitHub-hosted Ubuntu 24.04 and a four-CPU Depot GitHub runner.
+Signed object-read URLs are limited to the existing diagnostic artifact;
+no broad credential is installed in either CI service.
+Fixture clock/inode fields,
+actual mount types and every failed outcome remain evidence boundaries.
 
 ### Repeated Gradle task-output comparison
 
@@ -458,24 +534,19 @@ This campaign does not launch or delegate emulator work.
 
 ## Campaign work queue
 
-- Finish the active required-Git Rust consumer `w16c45njf5`,
-  then repeat unchanged fresh allocations and inspect actual target publication/restoration.
-- Compare pnpm content-store reuse with installed dependency/virtual-store restoration,
-  workspace linking and actual existing JavaScript consumers.
-- Add repeated Kotlin cache-off baselines,
-  changed source/dependency/compiler controls,
-  isolated bad-cache responses and the real Detekt CLI plugin host consumer.
-- Exercise the native Rust CLI's compile,
-  link and Nextest consumers with repeated unchanged allocations and changed inputs.
-- Probe stale,
-  missing,
-  partial and corrupted state only within isolated research fixtures.
-- Reconcile Android/JDK/SDK/NDK preparation with the parent graphics feasibility evidence;
-  inspect existing BuildKit/container preparation owners and applicable cache-mount behavior.
-- Retain timings,
-  allocation spread,
-  artifact/source hashes,
-  stored bytes and exact resource/cost exclusions before proposing a reuse strategy.
+- Execute the admitted matched archived-lock cohort on native Depot,
+  GitHub-hosted Ubuntu and Depot GitHub runners,
+  with repeated ordinary-directory and tmpfs consumers and exact fixture-field receipts.
+- Remove only the extension's collision-checked temporary repository secrets after their consumers finish.
+- Reconcile the separate Android,
+  runtime and BuildKit agents' measured preparation boundaries without claiming their work as this campaign's probes.
+- Retain the reusable harness worktree while the portability comparison needs it,
+  then inspect and remove only its owned state with the repository's cleanup checks.
+
+The 18-allocation cache campaign is complete within its declared consumer boundaries.
+Its native Git-policy aggregate remains failed;
+its scanner target producer/reader,
+Gradle controls and Detekt fixture consumers have their separate passing evidence.
 
 ## Measured fresh Gradle reuse
 
@@ -497,7 +568,8 @@ transform/compile restoration,
 actual test execution and JAR generation.
 The seed also uploads outputs;
 warm consumers read only.
-There is only one seed sample and no repeated cache-off baseline yet.
+There is one seed sample;
+the subsequently completed repeated cache-off pair is quantified in `Repeated Gradle task-output comparison`.
 These results establish real reuse and the observed warm spread,
 not a general provider or whole-CI multiplier.
 The seed uses a Mise action while the warm jobs use the preserved executable,
@@ -507,10 +579,15 @@ The same image-backed pnpm content store restores all 582 packages with zero dow
 but reimporting/linking takes 71.447,
 75.891 and 65.810 seconds across those fresh jobs.
 Pnpm's own completion reports agree with the measured command boundary.
-The separate first Rust allocation extracts the installed dependency archive in 1.583 seconds
-and passes the existing semantic plugin consumers.
-That archive observation is currently one sample;
-it does not establish a stable ratio between strategies.
+The installed-archive strategy now has nine fresh-job observations,
+from 1.434 to 1.631 seconds,
+each followed by the real semantic plugin build,
+host consumer and external consumer with passing exits.
+The five content-store import/link observations span 57.243 to 75.891 seconds.
+These are repeated preparation observations,
+but the archive cohort includes a later Git/sccache tool image and different subsequent jobs.
+They do not establish a fully matched causal ratio between dependency strategies.
+All observations preserve the same frozen dependency files and workspace-link check.
 No cause for the image-backed content-store import time has been established.
 
 ## Required-Git tool image
@@ -539,7 +616,7 @@ The helper's capture/upload digest identifies its sparse layer;
 it is different from the final pushed manifest digest.
 The verified preparation ZIP contains 16 members and matches its upload-log SHA-256.
 The source checkout and newly written synthetic source/secret markers were removed before capture.
-The first fresh full Rust consumer is active as `w16c45njf5`,
+The first fresh full Rust consumer `w16c45njf5` completed with failed application assertions,
 using immutable harness `883fa0eb6363b43a82a5c8c3fb8237cc60c26da6`.
 Preparation success alone does not establish a passing full Rust test suite.
 
@@ -563,6 +640,56 @@ or whether there is any charge.
 Further collection uses run metadata,
 raw logs and artifacts only.
 Research conclusions use the actual tool diagnostics and receipts.
+
+## Cache trust and lifecycle boundaries
+
+The official [Actions-cache integration][actions-cache-doc] is a repository-scoped API replacement on Depot runners.
+Its branch namespace is shared unless the workflow's key includes a trust/branch boundary.
+It does not route standard GitHub-hosted `actions/cache` requests to Depot.
+The separate generic Gradle and sccache endpoints use job-scoped automatic credentials in the measured Depot CI jobs;
+that does not establish an equivalent automatic credential exchange on standard GitHub-hosted compute.
+No broad user token was added as a GitHub secret.
+
+The official [disk guide][cache-disk-doc] specifies organization-global names,
+including cross-repository access,
+and concurrent mount/read/write support.
+Names partition this experiment's data;
+they are not access-control boundaries.
+The pinned mount action skips a public-fork pull request,
+but the current private-branch settings and organization credential policy were not inspected.
+Overlapping writes to a Cargo target directory or Gradle user home would require their own locking semantics;
+mount concurrency alone does not make those tools safe against concurrent modification.
+This campaign uses one writer,
+atomic archive publication and separately admitted readers.
+
+Mutable cache bytes are admitted with source,
+tool,
+profile and archive hashes retained outside the same cache.
+A manifest copied solely from that writable disk would not authenticate those bytes against another writer.
+The pending scanner reader is designed to reject changed real source and a partial archive before restoring outputs.
+Release artifacts require their own producer/run provenance and consumer verification;
+the diagnostic archive deliberately retains failing cases and cannot satisfy a success-only publication gate.
+
+The documented disk default retention is 14 days under the organization's configured policy.
+The action's post-job unmount and credential release do not delete a disk.
+Snapshot `max-age: 6h` decides reuse freshness,
+not a six-hour image deletion guarantee.
+The research leaves named images and disks retained for its readers;
+actual storage retention,
+reclamation and any resulting charge remain unmeasured.
+The block upload sizes and compressed target sizes are recorded as separate quantities.
+They are not an account-level storage invoice.
+
+Installed tools and dependency archives are filesystem preparation,
+not a captured running service.
+A fresh JVM,
+cache service client,
+systemd user manager or device still needs a real startup/readiness probe.
+The parent's separate native-runtime findings are recorded in
+[the snapshot/runtime troubleshooting note](../troubleshooting/depot-snapshot-mise-cache.md).
+
+[actions-cache-doc]: https://depot.dev/docs/cache/integrations/github-actions
+[cache-disk-doc]: https://depot.dev/docs/ci/how-to-guides/cache-disks
 
 ## Primary sources
 
