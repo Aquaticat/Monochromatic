@@ -24,6 +24,7 @@
 ///  planning and per-source pipeline.
 use monochromatic_lint::{
     config_lookup::ConfigurationSource,
+    directive_options::DirectiveOptions,
     config_match::{FileConfiguration, PreparedConfiguration, prepare_configuration},
     configuration::parse_configuration,
     diagnostic::{Diagnostic, Span},
@@ -254,6 +255,7 @@ pub fn plan(name: &str) -> FilePlan {
         language,
         config,
         root,
+        directives: DirectiveOptions::default(),
     };
 }
 

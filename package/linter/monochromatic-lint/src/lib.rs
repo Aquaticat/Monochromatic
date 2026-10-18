@@ -47,6 +47,21 @@ mod configuration_rules;
 /// Internal typed JSONL findings shared by rule execution and processor mapping.
 #[doc(hidden)]
 pub mod diagnostic;
+/// Inline disable directives:
+///  the filter that suppresses covered findings and reports broken or unused directives.
+mod directive_apply;
+/// Findings about directives themselves,
+///  with stable identifiers.
+mod directive_findings;
+/// Unused-directive reporting settings shared by the command line and file plans.
+#[doc(hidden)]
+pub mod directive_options;
+/// The directive comment grammar.
+mod directive_parse;
+/// Active directives and the findings about the broken ones.
+mod directive_resolve;
+/// Candidate comments found by a real Rust or Markdown parse.
+mod directive_scan;
 /// Internal all-or-nothing grouped source edits.
 #[doc(hidden)]
 pub mod edits;
@@ -245,6 +260,13 @@ mod test_fs;
 ///  parsed command lines and JSONL decoding.
 #[cfg(test)]
 mod run_test_support;
+
+/// End-to-end directive controls through real rules,
+///  processors,
+///  the semantic engine,
+///  the fix loop and the command.
+#[cfg(test)]
+mod run_directive_tests;
 
 /// Full semantic annotation controls,
 ///  including source-overlay cache changes.

@@ -210,7 +210,7 @@ fn execute(
         return Ok(output);
     }
     let mut store: ConfigStore = match ConfigStore::new(cwd, options.config.as_deref()) {
-        Ok(value) => value,
+        Ok(value) => value.with_directives(options.directive_options()),
         Err(error) => return Err(SetupError::from_display(&error)),
     };
     if let Some(path) = &options.print_config {

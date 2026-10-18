@@ -24,6 +24,7 @@
 use crate::{
     config_match::FileConfiguration,
     diagnostic::Diagnostic,
+    directive_apply::{DirectiveContext, apply_directives},
     edits::FixError,
     fix_loop::SourceChecker,
     markdown_dispatch::check_markdown_rules,
@@ -407,9 +408,36 @@ impl<'run> HostChecker<'run> {
 /// checkSnapshot(source: string): Diagnostic[]
 /// ```
 impl HostChecker<'_> {
-    /// Check the host's own rules,
-    ///  then every virtual file extracted from this snapshot.
+    /// What:
+    ///  Check the host's own rules,
+    ///  then every virtual file extracted from this snapshot,
+    ///  and apply the host's inline directives to all of those findings.
+    /// Why:
+    ///  Directives are read from the host only,
+    ///  in the host's own comment syntax,
+    ///  and filter findings in host coordinates:
+    ///  the rules, the semantic engine and the embedded-source processors are all covered by one filter,
+    ///  and a suppressed finding never reaches the fix loop with its fix.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// checkSnapshot(source: string): Diagnostic[]
+    /// ```
     pub fn check_snapshot(&mut self, source: &str) -> Vec<Diagnostic> {
+        let findings: Vec<Diagnostic> = self.collect_findings(source);
+        let context: DirectiveContext<'_> = DirectiveContext {
+            language: self.plan.language,
+            filename: self.plan.display.as_str(),
+            source,
+            options: self.plan.directives,
+        };
+        return apply_directives(&context, findings);
+    }
+
+    /// Check the host's own rules,
+    ///  then every virtual file extracted from this snapshot,
+    ///  before directives are applied.
+    fn collect_findings(&mut self, source: &str) -> Vec<Diagnostic> {
         let mut findings: Vec<Diagnostic> = Vec::<Diagnostic>::new();
         let plan: &FilePlan = self.plan;
         let parsed: bool = match &plan.root {
