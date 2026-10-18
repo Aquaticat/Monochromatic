@@ -433,9 +433,11 @@ before the other queued work.
     a `pi` sol review;
     the cache-account audit;
     the relaunch of TianqiChen666 through the runbook's keyed task.
-6.  Tell the owner that the classifier refused the issue comments on 527 and 541,
-    that 527 and 541 no longer hold on the branch (`cbedea3574` removed the code),
-    and that 542 is fixed by ledger X15.
+6.  Done 2026-10-18:
+    the owner authorized issue comments and added a permission rule;
+    status comments posted on 527 and 541 (`cbedea3574` removed the code on the branch)
+    and 542 (fixed by ledger X15),
+    each saying the issue stays open until the branch merges to `main`.
 
 ## Repository state
 
