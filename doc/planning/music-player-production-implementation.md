@@ -557,6 +557,23 @@ before saying it matches, QAB):
   0.1.4 and older verify with `--owner Aquaticat`, 0.1.5 with `--repo Aquaticats/Monochromatic` (README and runbook
   corrected). Not run by me: any Windows or macOS binary (so the normal-close fix is proven by CI only on forced
   paths, not by closing a window on Windows), arm64 binaries, anything on a real device.
+  RELEASED `music-player-v0.1.6` on 2026-10-18 (bump commit after `b9d5c4e8d7`, run `39108583307`, all jobs green,
+  after a green dry run on main, `39107058640`): the Licenses rows on both platforms (desktop opens `ui/licenses.slint`
+  with the `AboutSlint` widget; Android opens a LazyColumn page of the notices from an APK asset), the desktop
+  programs under the Slint Royalty-free license 2.0 (owner decision 2026-10-18), and Android unplayable-file routing
+  (D131: moves walk past the file and post one system notification, a tap keeps the in-app message). Eleven files;
+  `sha256sum --check` passed for all eleven, attestation exit 0 for all eleven with
+  `--repo Aquaticats/Monochromatic`, APK certificate `9de6e9a4...6926`, Linux x64 and musl x64 (in `alpine:3.24`)
+  print `music-player 0.1.6`, `--licenses` names the Slint royalty-free license, the APK asset starts with the
+  Android notices, `pefile` shows Subsystem 2 on the three Windows exes. Not run by me: any Windows or macOS binary,
+  arm64 binaries, a real device, TalkBack. Merged earlier the same day: Android licenses row (1,334 tests), the
+  load-failure routing (1,361 tests), desktop licenses row (nextest 1,546 passed, 1 skipped). Open for the human
+  (veto): whether the Licenses page counts as the "About screen accessible from the top level menu" of Slint's
+  license section 2(a) (adding the "Made with Slint" badge to the release notes would satisfy 2(b) as well); the
+  two platforms use different icons (`license` desktop, `description` Android); `design/decisions.md` has D131 but
+  no entry for the About heading and Licenses rows; the Android channel is still named "Analysis problems". The
+  repo cache was at 10.28 GB; a real `cache-prune` run (`39109951532`) deleted four superseded entries (2.33 GB), now
+  7.95 GB.
 
 - 2026-10-17, review issues 1451 to 1458, 1460 and 1463 (assigned to (g) in the GitHub issues item), branch
   `fix/music-player-desktop-review-issues`, worktree `music-player-deskissues`; not merged to `main`, no version bump.
