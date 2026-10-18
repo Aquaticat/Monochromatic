@@ -170,6 +170,16 @@ const RECEIVED_KEYS_LISTED = 20;
 const RECEIVED_KEY_NAME_LENGTH = 40;
 
 /**
+ The first code point of printable ASCII, the space.
+ */
+const FIRST_PRINTABLE = 0x20;
+
+/**
+ The last code point of printable ASCII, the tilde.
+ */
+const LAST_PRINTABLE = 0x7E;
+
+/**
  The JSON type of a parsed value.
 
  @param value - parsed JSON value
@@ -185,6 +195,37 @@ function jsonTypeOf({ value, }: { readonly value: unknown; },): string {
   if (value === null)
     return 'null';
   return Array.isArray(value,) ? 'array' : (typeof value);
+}
+
+/**
+ A key name as a refusal prints it: printable ASCII only, each other character as a question mark, and cut to a bounded length, since a
+ key is provider text that reaches a log.
+
+ @param key - a top-level key of the refused body
+
+ @returns The key name to print
+
+ @example
+ ```ts
+ const printed = boundedKeyOf({ key: 'subscri\u0000ption', },); // 'subscri?ption'
+ ```
+ */
+function boundedKeyOf({ key, }: { readonly key: string; },): string {
+  return Array.from(
+    key,
+    function printable(character,): string {
+      /**
+       The code point of the character.
+       */
+      const code = character.codePointAt(0,) ?? 0;
+      return ((code >= FIRST_PRINTABLE) && (code <= LAST_PRINTABLE)) ? character : '?';
+    },
+  )
+    .slice(
+      0,
+      RECEIVED_KEY_NAME_LENGTH,
+    )
+    .join('',);
 }
 
 /**
@@ -218,10 +259,7 @@ function receivedShapeOf({ parsed, }: { readonly parsed: unknown; },): string {
       RECEIVED_KEYS_LISTED,
     )
     .map(function described([key, value,],): string {
-      return `${key.replaceAll(/[^\u0020-\u007E]/gu, '?',).slice(
-        0,
-        RECEIVED_KEY_NAME_LENGTH,
-      )}:${jsonTypeOf({ value, },)}`;
+      return `${boundedKeyOf({ key, },)}:${jsonTypeOf({ value, },)}`;
     },);
   return (entries.length > RECEIVED_KEYS_LISTED)
     ? `${listed.join(', ',)}, and ${String(entries.length - RECEIVED_KEYS_LISTED,)} more`
@@ -239,10 +277,21 @@ function receivedShapeOf({ parsed, }: { readonly parsed: unknown; },): string {
 
  @example
  ```ts
- throw shapeRefusal({ detail: 'weeklyTokenLimit is not an object', parsed, },);
+ throw shapeRefusal({
+   detail: 'weeklyTokenLimit is not an object',
+   parsed,
+ },);
  ```
  */
-function shapeRefusal({ detail, parsed, }: { readonly detail: string; readonly parsed: unknown; },): QuotaShapeError {
+function shapeRefusal(
+  {
+    detail,
+    parsed,
+  }: {
+    readonly detail: string;
+    readonly parsed: unknown;
+  },
+): QuotaShapeError {
   return new QuotaShapeError({
     detail,
     received: receivedShapeOf({ parsed, },),
@@ -273,21 +322,30 @@ export function parseQuotaSnapshot(
    */
   const parsed = parseQuotaJson({ bodyText, },);
   if (!isJsonRecord(parsed,))
-    throw shapeRefusal({ detail: 'body is not a JSON object', parsed, },);
+    throw shapeRefusal({
+      detail: 'body is not a JSON object',
+      parsed,
+    },);
 
   /**
    Rolling five-hour block as delivered.
    */
   const { rollingFiveHourLimit: fiveHour, } = parsed;
   if (!isJsonRecord(fiveHour,))
-    throw shapeRefusal({ detail: 'rollingFiveHourLimit is not an object', parsed, },);
+    throw shapeRefusal({
+      detail: 'rollingFiveHourLimit is not an object',
+      parsed,
+    },);
 
   /**
    Weekly credit block as delivered.
    */
   const { weeklyTokenLimit: weekly, } = parsed;
   if (!isJsonRecord(weekly,))
-    throw shapeRefusal({ detail: 'weeklyTokenLimit is not an object', parsed, },);
+    throw shapeRefusal({
+      detail: 'weeklyTokenLimit is not an object',
+      parsed,
+    },);
 
   /**
    Five-hour fields pulled out for type validation.
@@ -299,13 +357,25 @@ export function parseQuotaSnapshot(
     nextTickAt,
   } = fiveHour;
   if ((typeof remaining) !== 'number')
-    throw shapeRefusal({ detail: 'rollingFiveHourLimit.remaining is not a number', parsed, },);
+    throw shapeRefusal({
+      detail: 'rollingFiveHourLimit.remaining is not a number',
+      parsed,
+    },);
   if ((typeof max) !== 'number')
-    throw shapeRefusal({ detail: 'rollingFiveHourLimit.max is not a number', parsed, },);
+    throw shapeRefusal({
+      detail: 'rollingFiveHourLimit.max is not a number',
+      parsed,
+    },);
   if ((typeof limited) !== 'boolean')
-    throw shapeRefusal({ detail: 'rollingFiveHourLimit.limited is not a boolean', parsed, },);
+    throw shapeRefusal({
+      detail: 'rollingFiveHourLimit.limited is not a boolean',
+      parsed,
+    },);
   if ((typeof nextTickAt) !== 'string')
-    throw shapeRefusal({ detail: 'rollingFiveHourLimit.nextTickAt is not a string', parsed, },);
+    throw shapeRefusal({
+      detail: 'rollingFiveHourLimit.nextTickAt is not a string',
+      parsed,
+    },);
 
   /**
    Weekly fields pulled out for type validation.
@@ -315,9 +385,15 @@ export function parseQuotaSnapshot(
     nextRegenAt,
   } = weekly;
   if ((typeof percentRemaining) !== 'number')
-    throw shapeRefusal({ detail: 'weeklyTokenLimit.percentRemaining is not a number', parsed, },);
+    throw shapeRefusal({
+      detail: 'weeklyTokenLimit.percentRemaining is not a number',
+      parsed,
+    },);
   if ((typeof nextRegenAt) !== 'string')
-    throw shapeRefusal({ detail: 'weeklyTokenLimit.nextRegenAt is not a string', parsed, },);
+    throw shapeRefusal({
+      detail: 'weeklyTokenLimit.nextRegenAt is not a string',
+      parsed,
+    },);
 
   return {
     fiveHour: {
