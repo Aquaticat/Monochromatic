@@ -964,6 +964,10 @@ run = "node --max-old-space-size=1536 --expose-gc --import ./dist/native/loader.
 description = "Keep complete native callback receipts while sharing repeated event values"
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-event-sharing.test.mjs"
 
+[tasks."test:native:source-binding-capacity"]
+description = "Bound allocation of complete original source bindings and reject foreign receivers"
+run = "node --max-old-space-size=512 --expose-gc --import ./dist/native/loader.mjs src/native-source-binding-capacity.test.mjs"
+
 [tasks."test:native:phases"]
 description = "Verify real native phases and complete lifecycle stderr"
 run = "node --max-old-space-size=512 src/native-phase.unit.test.ts"

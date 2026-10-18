@@ -280,6 +280,23 @@ before saying it matches, QAB):
   (f) `a24e53faf2449563e` (andlarge, plus issues 1438, 1439, 1440), (g) `a4826ac87de5272d2`, branch
   `fix/music-player-desktop-review-issues`, worktree `music-player-deskissues`: review issues 1451 to 1458, 1460,
   1463 against desktop-app and truepeak-core (not the cache code). The older ids below are the dead Opus agents.
+- 2026-10-18 progress: MERGED to `main` after fresh desktop verification each (nextest 1476, 1480, 1518 and 1524
+  passed, 1 skipped; lint:slint and clippy clean; Android native clippy clean for the cache branch): (g) the ten
+  desktop review issues (1451 to 1458, 1460, 1463; each commit carries its own Closes), (e) batched cache commits
+  (isolated benchmark 83.5 s to 0.52 s median for 10,000 rows, 256 rows per transaction; the end-to-end cold start
+  was not re-measured; Android keeps per-row commits, needs a device measurement), (d) the Windows startup message
+  box, ANSI gating and a Search-service shutdown guard (a normal window close on Windows aborted with 0xC0000409 in
+  0.1.4 because `ui_search.rs` dropped a service from a thread-local during process exit; fixed on main, so the next
+  patch release is urgent), (c) license notices, and the CI fixes for issues 1612 and 1610 and the digest pins of
+  three music player Containerfiles (part of 1758). Reopened 1763 (the README for `musicplayer-native` landed, the
+  test-fixture packages did not). A dry run of the release workflow on main (`39098277889`) was started at
+  `d101ad91a2` before the 0.1.5 bump.
+- Human decisions 2026-10-18 (question tool): use the Slint royalty-free license for the desktop releases instead of
+  GPL-3.0-only; source offered as the tagged tree plus crates.io; add a Licenses row to Settings on both platforms,
+  "doesn't need mockups, just do it". Agents `ad19cbb1a5dabeac0` (desktop: license switch plus Settings row with
+  the AboutSlint widget, branch `feat/music-player-desktop-licenses-row`) and `a8d200663bbc131bb` (Android Settings
+  row, branch `feat/music-player-android-licenses-row`) are running; (f) `a24e53faf2449563e` (andlarge) is still
+  running.
 - In flight on 2026-10-15 after the 0.1.4 release (cap five agents):
   (c) agent `a861ba9cb4849c4bd`, branch `feat/music-player-license-notices`, worktree `music-player-licenses`: third-party
   license notices (Rust crates, Android libraries, fonts) in every release asset, an allow-list gate, a

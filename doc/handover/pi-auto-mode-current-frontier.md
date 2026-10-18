@@ -9,6 +9,26 @@ Updated 2026-10-18.
 
 ## Reopened MiMo preparation failure on 2026-10-18
 
+### Current status and user instructions
+
+The MiMo lint handoff is **not ready**.
+The user reports at least five premature readiness claims and explicitly requires continuing until the work is done.
+Treat passing narrow catalogs as evidence for their exercised boundaries only.
+Inspect actual Pi, Node, Linux, dependencies, and the configured consumer wherever the evidence points.
+The user clarified that their concern is platform behavior exposing defects in our code,
+not suspected defects in Pi, Node, or Linux themselves.
+The user authorizes shared logger repairs and requires a version bump to trigger auto-publish if it changes.
+The measured logger version is `0.4.1`; no logger repair is applied in the current memory investigation.
+Root `TCV` stays unchanged; missed-boundary guidance belongs in package-local docs.
+There is no adopted 13k line target.
+
+The active output is `native-release-6z61x7`, verified through `dist/native` on 2026-10-18.
+Both complete configured-host replays still exit 134 from Node heap exhaustion.
+The immediate work is source-binding memory ownership, followed by complete consumer verification.
+Private experiments are not production repairs.
+
+### Incident and completed repairs
+
 The user supplied later MiMo calls that return `Complete group preparation or assessment failed`.
 The readiness claim applies only to the earlier replay corpus and does not establish readiness for these calls.
 The actual session is `2026-10-17T15-47-34-073Z_01a14a8c-0a38-760f-aca3-aa17ebd2a725`.
@@ -17,7 +37,8 @@ and `call_8cacc98bebf7433a9945f1d3`.
 They belong to one parallel group.
 Earlier Python heredocs in the same session succeed,
 including `call_fe5cc4c2d73542b097c79140`.
-The installed output remains `native-release-qWSxFz`.
+The incident used `native-release-qWSxFz`;
+the active output changed to `native-release-6z61x7` on 2026-10-18.
 Private evidence and the active reproduction work live in
 `${HOME}/temp/agent/pi-mimo-preparation-failure-20261018`.
 The original log retains a `RangeError: Invalid string length` in run prompt owner `charge()`
@@ -97,7 +118,7 @@ mutation,
 output,
 or source occurrence is discarded.
 The existing native receipt fixture expands this lossless representation before checking all original assertions.
-The source is committed but still needs a native rebuild and verification.
+The source is committed and rebuilt as `native-release-6z61x7` on 2026-10-18.
 
 The rebuilt output is `native-release-6z61x7`.
 The event-sharing regression retains all 60 phases from 30 callbacks in 36,476 bytes,
@@ -123,9 +144,76 @@ other retained context versions,
 and pending diagnostic writes;
 the source counters can falsify the first hypothesis before another storage change.
 
+Private pool profiling reaches 103,200 retained occurrences,
+including 102,228 tool-loadout query observations,
+while unique content totals 61,899,464 characters and the sampled heap reaches 1,396,560,032 bytes.
+The source is `pool-profile-summary.json` in the incident scratch;
+the profiled fixture is `pi-mimo-failure-rpc-uaHgtz` and still exits 134.
+This distinguishes source text volume from the overhead of retained publications and other owners.
+A private module-loader probe now measures whether input-only publication views unnecessarily retain
+the complete message-projection owner.
+Input-only views cannot match provider payloads;
+the probe shares their false matcher without changing distinct occurrences or native aliases.
+A separate faithful replay removes only private diagnostic module rewrites,
+to check whether the recorder's stack tracing contributes to the heap failure.
+
+The clean replay also exits 134,
+so removing private diagnostic rewrites is insufficient.
+The private input-view probe lowers the existing 600-input fixture's retained heap to 2,753,896 bytes;
+this is not a complete-session repair and is not applied to production.
+An inspector sampling profile at 20,000 original receipts retains its explicit 2,097,168-byte
+positive control and attributes the largest sampled allocation group to queued file-log writes.
+The sampled profile and its paths are private incident artifacts.
+A separate configured-host control changes only the bundled logger's append completion to synchronous I/O,
+preserving all records and native callbacks.
+Fixture `pi-mimo-failure-rpc-YW5iY2` confirms that the early loader hook applies and still exits 134.
+The earlier late-hook attempt has no application receipt and is not causal evidence.
+Production logger source remains unchanged.
+
+### Latest allocation evidence and immediate next action
+
+`allocation-summary.json` in the incident scratch summarizes fixture `pi-mimo-failure-rpc-e8GtWu`
+at 100,000 original receipts.
+Its retained 2,097,168-byte positive control is present.
+The largest sampled allocation is 476,526,736 bytes attributed to `bindOriginalRunMessage`
+in `native/contract/integration/policy-source/run-messages.mjs`.
+`createMessagePublication` accounts for another 153,547,688 sampled bytes.
+Total sampled live allocation is 1,150,318,896 bytes.
+The earlier 20,000-receipt logger profile was a startup snapshot, not the complete-session cause.
+
+Each original source currently receives its own frozen view plus closures for identity and freshness checks.
+A private class experiment measures 120,000 genuine source bindings across twelve governing snapshots.
+It reduces a measured 48,741,184-byte retained-heap result to 20,186,064 bytes.
+This is preliminary evidence, not an accepted implementation:
+the class changes the plain-record prototype and constructor surface.
+The scratch harness also emits a read-only default-log-directory error;
+set `MONOCHROMATIC_LOG_DIRECTORY` to its disposable writable home before trusting repeated measurements.
+
+The old bundled policy lacks that environment support;
+the corrected probe mounts its discovered log directory writable and preserves every diagnostic.
+Three unchanged runs retain 48,742,376 to 48,742,952 bytes.
+The plain-record shared-method probe retains 30,762,600 to 30,763,960 bytes across three runs.
+The committed red test `c6ece26944` fails at 48,724,128 bytes against its 36 MiB budget.
+Source repair `23f24480de` preserves plain records and checks receiver membership through a per-snapshot weak set.
+Both JavaScript policy and native ownership output are rebuilt as `native-release-2vxGY8`.
+Its source-binding regression passes at 30,747,064 retained bytes,
+including forged receivers, cross-snapshot methods, substituted sources, and retired parents.
+Complete faithful and fragmented configured-host replays are running against that output.
+The isolated memory reduction does not establish complete-session repair.
+
+Next, measure shared methods within each governing snapshot,
+using a private `WeakSet` to authenticate the original frozen plain binding records.
+Preserve every source occurrence, request identity, original ordering, and parent freshness check.
+Exercise wrong-member, forged-receiver, cross-snapshot, substituted-source, and retired-parent cases.
+Commit a genuine failing memory regression before applying the production repair.
+Use the existing private `binding-capacity.mjs`,
+`prepare-binding-probe.ts`,
+and bounded binding runners as experiment scaffolding, not production source.
+
 Next actions:
 
-- Rebuild the event snapshot change and run event sharing plus the complete native event receipt catalog.
+- Repair source-binding allocation with measured baseline spread and a genuine red regression.
+  Rebuild the maintained native contract after the source change.
 - Repeat full native units,
   both configured-host replays,
   outgoing-payload audits,
@@ -136,8 +224,21 @@ Next actions:
   update package/troubleshooting/handoff docs,
   render Markdown,
   and review inactive generated releases before final footprint measurement.
+- If shared logger source changes, verify it and bump its package version for auto-publish.
+- Consolidate final handover and package-local ownership lessons;
+  verify the final scoped commits reached the remote before reporting readiness.
 
-## Verified MiMo lint handoff on 2026-10-17
+Replay harness cautions:
+
+- Concurrent controllers overwrite `latest-fixture.txt`; pass explicit fixture paths to auditors.
+- The live bridge permits 128 requests;
+  `prepare-replay.ts` can restore an obsolete 30-request bridge if regenerated carelessly.
+- Parent recorders omit transient `message_update` events to avoid their own output cap;
+  the actual host consumes every streamed delta and terminal results remain recorded.
+- The bounded native owner rebuild copies existing `dist/final/node` policy output.
+  TypeScript policy or logger changes require a fresh JavaScript build before that rebuild.
+
+## Historical MiMo lint handoff on 2026-10-17
 
 The current handoff is [MiMo lint handoff](pi-auto-mode-mimo-lint-prompt.md).
 The prepared group now owns automatic and manual review and execution membership.

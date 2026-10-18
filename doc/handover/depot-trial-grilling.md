@@ -1,5 +1,40 @@
 # Depot trial interview
 
+## Active Developer additional-pool research on 2026-10-18
+
+The user requested Depot Developer as an additional pool alongside GitHub,
+then required comprehensive research before grilling.
+They clarified that migration is the wrong framing:
+use Depot's full capabilities and greatly expand the current lackluster CI setup.
+The research now covers all CI-relevant Depot capabilities and desired repository coverage,
+not only placement of existing jobs.
+Developer remains the intended base plan;
+record eligibility gaps rather than excluding capabilities from discovery.
+Depot and GitHub Actions research experiments are authorized.
+The [research plan](../planning/depot-developer-additional-pool-research.md)
+tracks independently verifiable areas and the stop condition for beginning the interview.
+Developer plus continued GitHub availability is settled;
+pool placement and operational preferences will be grilled after factual research.
+
+Current work:
+primary-source provider and billing research,
+repository routing and trust inventory,
+cache integration research,
+fresh-job cache measurements and orchestration probes.
+The main agent owns experiment harnesses and the combined decision tree.
+The research agents own separate cited capability,
+routing and cache notes.
+Do not begin the interview while factual prerequisites remain investigable.
+Do not change production routing or the subscription before shared understanding is reached.
+Prior account-wide-access exclusions remain in force.
+The user also requires performance claims to name the exact jobs and cache system.
+The measured pnpm-store regression is GitHub `actions/cache`
+in `readonly-semantic-bridge.yml`'s semantic-bridge jobs,
+not Depot Cache and not separately measured logger/TOML regressions.
+The cache decision now names that boundary.
+The research plan retains a concrete proposed `QNB` tightening for the later interview;
+`AGENTS.md` is unchanged.
+
 ## Cache benefit clarification on 2026-10-18
 
 The user asked how caching changes the performance assessment.

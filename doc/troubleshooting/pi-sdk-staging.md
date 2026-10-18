@@ -8895,8 +8895,10 @@ Passing measured boundaries:
   single-call catalogs,
   and type checking with a disposable writable package cache.
 
-The configured full-conversation replay of `native-release-iQw5fd` remains in progress at this record.
-The lint handoff remains reopened until that replay and its negative controls complete.
+The configured full-conversation replay of `native-release-iQw5fd` subsequently exhausts the heap.
+The later callback-sharing build `native-release-6z61x7` also exits 134 in both full replays.
+Those results supersede the pending status recorded on 2026-10-18.
+The lint handoff remains reopened until complete replay and negative controls pass on the final output.
 
 Reproduction tasks:
 
@@ -8937,6 +8939,65 @@ The first read-only type-check container fails with
 The existing type-check task removes its own build-info cache before checking.
 Mounting a disposable writable package cache makes that same task pass.
 This harness filesystem error is distinct from the product's capture and Stop failures.
+
+### Full-session source-binding allocation
+
+The original capture failure and later heap failures are distinct observed boundaries.
+Removing dead aggregate serialization repairs the original `RangeError`,
+but complete configured-host replays still expose retained allocation growth.
+The callback-sharing build preserves all ordered callback phases with per-emission value sharing;
+it still exhausts the heap after 28 fragmented-stream or 34 faithful-stream live assessments.
+
+Private pool profiling reaches 103,200 original occurrences and 61,899,464 unique content characters.
+The sampled heap reaches 1,396,560,032 bytes.
+An inspector allocation sample at 100,000 receipts retains its explicit 2,097,168-byte positive control.
+It attributes 476,526,736 sampled bytes to `bindOriginalRunMessage`
+and 153,547,688 to `createMessagePublication`.
+Its total sampled live allocation is 1,150,318,896 bytes.
+These are allocation samples, not exact object counts or exclusive proof of a complete-session cause.
+The private source is `allocation-summary.json` for fixture `pi-mimo-failure-rpc-e8GtWu`
+in the incident scratch.
+
+`package/pi-plugin/auto-mode/native/contract/integration/policy-source/run-messages.mjs:33`
+now owns shared checking methods within each governing snapshot.
+A private weak set authenticates the original frozen plain binding before its view is read.
+The source view, request, occurrence, ordering, and parent freshness remain independently checked.
+This removes checking closures per source while preserving separate records and original publications.
+
+Three unchanged 120,000-binding probes retain 48,742,376 to 48,742,952 bytes.
+Three shared-method probes retain 30,762,600 to 30,763,960 bytes.
+The committed capacity regression fails on the old output at 48,724,128 bytes,
+against a 36 MiB budget.
+The rebuilt `native-release-2vxGY8` passes at 30,747,064 bytes,
+including foreign receivers, cross-snapshot borrowing, substituted sources, and retired parents.
+A private receiver-guard mutation makes the forged-receiver assertion fail;
+the production owner hash remains `0ad7cf1e86d17bcde704bb0d610b986eef81d1b7132bb948a965bca8e43724e7`.
+Complete configured-host replay remains required after this isolated improvement.
+
+The earlier 20,000-receipt allocation sample emphasizes queued log writes.
+A positively confirmed synchronous-append counterfactual still exits 134,
+so append completion alone is insufficient.
+The private input-only publication probe reduces its separate capacity fixture to 2,753,896 bytes;
+it is not applied to production and does not establish a full-session repair.
+The class-based binding probe is also rejected:
+it changes the existing plain-record prototype and constructor surface.
+
+### Disposable build and logging controls
+
+The first binding probes discover a default file-log destination outside their writable mounts
+and emit `logger internal error: file sink verification failed: EROFS: read-only file system`.
+Setting the new logger directory environment variable cannot repair an older bundled policy
+that lacks that implementation.
+The corrected probe mounts its discovered diagnostic directory writable and preserves the records.
+Its repeated measurements contain no corresponding file-sink error.
+
+The owned native rebuild copies existing JavaScript policy output.
+A fresh `build:js` precedes the `native-release-2vxGY8` rebuild;
+the emitted policy now contains `MONOCHROMATIC_LOG_DIRECTORY` support.
+The disposable JavaScript build initially fails with `Error: spawnSync mise ENOENT`
+because the parent task invokes child tasks by executable name.
+Adding the mounted `/fixture-bin` to the container's `PATH` makes the same task complete.
+Neither harness filesystem error nor missing executable establishes a product preparation failure.
 
 ### Upstream filing decision
 
