@@ -1,6 +1,14 @@
 [tasks.build]
 extends = "build"
 
+[tasks."research:rust:coverage"]
+description = "Execute immutable current-source Rust consumers within the explicitly bounded Depot research allocation"
+run = "node bin/rust-coverage.mjs"
+
+[tasks."research:rust:harness-check"]
+description = "Parse the new owned research harness without compiling application code"
+run = "node --check bin/rust-coverage.mjs"
+
 [tasks.'build:js']
 extends = "build:js"
 
