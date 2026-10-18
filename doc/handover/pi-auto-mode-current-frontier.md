@@ -11,14 +11,17 @@ including read-only fallback and escaped terminal-control diagnostics.
 Private pnpr publication still returns `E401`; the Coolify/SSH/API access question remains pending.
 The deployed pnpr trust configuration has not been inspected.
 
-The current source worker is `pi-mimo-rpc-session-QGwl5f`,
-resumed from the heap-failed worker's full saved history at unchanged bounds.
+The current source worker is `pi-mimo-rpc-session-RNZs7C`,
+resumed from `QGwl5f` after normal closure with the full saved history and unchanged bounds.
 Its corrected evidence delivery is accepted as `ad1be29e0d` after original transient parity,
 complete fallback/startup matrices,
 fresh types and fourteen-file lint pass.
 Its new read-only full `src` scan reports 905 warnings and 42 errors across 355 files and 486 rules.
-The worker confirms parsed severity counts match the emitting tool;
-its coherent next-path recommendation is still running.
+The worker confirms parsed severity and per-file counts match the emitting tool.
+All errors belong to six consumer-test files.
+The profiled continuation now owns the leading `native-phase` catalog,
+its stable JavaScript entry and new `src/native-phase-` TypeScript siblings.
+The existing wrapper may change only if its dispatch contract requires it.
 The old native worker closes normally before its full-history resume as `pi-mimo-rpc-session-9Tl0ts`.
 That worker delivers the two build-reuse paths;
 the supervisor's qualified host commit succeeds as `9363d8998b`.
@@ -30,6 +33,16 @@ The minimal interop declaration is written;
 the proposed implementation write is stopped before application because it changes `#state in input`
 into a public string-property check and references an undeclared capability type.
 The supervisor resumes the worker with those exact corrections and the original three-path authorization.
+The subsequent class-rule finding prompts an authorized internal factory redesign,
+using a module-private issued-capability-to-loader-state `WeakMap` instead of the class's private field.
+The original loader factory stays statically wired.
+The worker must inspect consumers for object-layout dependencies and preserve authentication of borrowed receivers.
+No lint suppression or new injectable builder is authorized.
+The supervisor's committed built identity consumer passes against the original class artifact;
+its first lint/type failures are test declarations and opaque receiver inference,
+with corrections committed and follow-up verification pending.
+New paths are `src/native-policy-input-identity.unit.test.ts`
+and its package task `test:native:policy-input-identity`.
 Neither worker may retry Git writes;
 the supervisor owns delivery after their distinct commit failures.
 Both current workers use the immutable `IFS6IL` correction with the measured resource bounds retained.
@@ -97,6 +110,16 @@ owned native generation,
 fresh package types and the complete fallback/startup catalogs.
 The corresponding configured original-interaction replay is running against that frozen artifact,
 with the actual Luna service and captured request auditing still required.
+That replay completes 52 tools with zero selectors and 62 successful Luna requests.
+Its bounded audit parses all requests and 1,025 questions,
+passes required/excluded positive controls and finds no excluded structured thinking or raw command fields.
+The complete stderr audit has no bare shutdown or fatal errors,
+but retains 32 private diagnostic reserve stacks from the legacy replay hook.
+These are harness transformations absent from maintained source.
+The supervisor removes both native-transforming hook registrations through parsed statement ranges,
+retains the fetch fixture and repeats the configured replay as `coherent-clean-reported-replay`.
+The first bounded audit misses the physical scratch mount and fails `ENOENT` before reading input;
+the corrected audit explicitly mounts the original fixture at `/input` and passes.
 
 The source-freshness,
 host-isolation and complete session-action tasks pass for the shared approval fix.
@@ -167,14 +190,18 @@ The remaining independently verifiable areas are:
 - Long-session failures: retain the heap-limit incident separately from generic supervisor-abort diagnostics
   and the unresolved Git packet error.
   Diagnose retention without treating a higher heap ceiling as a fix.
-  After the source worker finishes its read-only inventory,
-  close it normally and resume its complete saved history with the prepared allocation-sampling preload.
-  Keep immutable `IFS6IL`,
+  The source worker finishes its inventory and closes normally;
+  its full-history continuation now uses the allocation-sampling preload.
+  Immutable `IFS6IL`,
   2 GiB memory,
-  two CPUs and the 1,536 MiB V8 ceiling unchanged.
+  two CPUs and the 1,536 MiB V8 ceiling stay unchanged.
   `smoke-worker-allocation-profile` proves the retained allocation control appears
   and normal shutdown leaves stdout/stderr empty.
   The preload uses an in-process inspector session without opening a TCP inspector.
+  A bounded initial analysis sees 174,243,336 heap bytes at its selected interval,
+  with sampled `structuredClone` allocations leading that sample.
+  This is allocation evidence without a retainer graph or forced GC,
+  and does not establish the earlier heap failure's cause.
 - Final configured consumer: coherent logger `0.4.4` build,
   original interaction replay,
   long requests and required/excluded provider controls,
