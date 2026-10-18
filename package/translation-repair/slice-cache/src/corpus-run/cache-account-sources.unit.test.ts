@@ -21,11 +21,13 @@ import {
 import {
   auditCacheAccounts,
   auditedSourcesOf,
+  citedHash,
 } from '../../dist/final/node/index.mjs';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import {
   commitFileAt,
   makeCacheAccountRepo,
+  moveFileAt,
 } from './cache-account-repo.test-fixture.ts';
 import { lineOf, } from '@monochromatic-dev/translation-repair-run/ts/corpus-run/command-line.test-fixture.ts';
 import { divertingConsoleLog, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/console-log-capture.test-fixture.ts';
@@ -164,6 +166,64 @@ await describe({
           settings: [
             `  ALPHA_CACHE_VERSION = 2 (${FAMILY}/alpha/src/alpha-cache-version.ts)`,
             `  BETA_CACHE_VERSION = 5 (${FAMILY}/beta/src/beta-cache-version.ts)`,
+          ],
+        },);
+      },
+    },),
+    it({
+      name: 'NAMES THE COMMIT THAT SET A VERSION BEFORE THE SPLIT as its setting, and reads the source commits '
+        + 'from it, not from the commit that moved the file into the family',
+      fn: async (ctx) => {
+        using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
+        await using repo = await makeCacheAccountRepo({ versions: 'none', },);
+        await using runs = await scratchDir({ prefix: 'cache-account-sources-runs-', },);
+        const setBeforeSplit = await commitFileAt({
+          cloneDir: repo.path,
+          day: 5,
+          path: 'package/module/translation-repair/src/gamma-cache-version.ts',
+          text: 'export const GAMMA_CACHE_VERSION = 3;\n',
+          subject: 'set the gamma cache version',
+        },);
+        await moveFileAt({
+          cloneDir: repo.path,
+          day: 6,
+          from: 'package/module/translation-repair/src/gamma-cache-version.ts',
+          to: `${FAMILY}/gamma/src/gamma-cache-version.ts`,
+          subject: 'split the translation-repair package',
+        },);
+
+        await auditCacheAccounts({
+          line: lineOf({ command: 'cache-account-audit', typed: [], },),
+          packageDirectory: join(
+            repo.path,
+            FAMILY,
+            'gamma',
+          ),
+          runsDir: runs.path,
+        },);
+
+        expect({
+          settings: printed.lines
+            .filter(function namesVersion(line,): boolean {
+              return line.startsWith('  GAMMA',);
+            },)
+            .map(function beforeTime(line,): string {
+              return line.slice(
+                0,
+                line.indexOf(' at ',),
+              );
+            },),
+          since: printed.lines.filter(function opensCount(line,): boolean {
+            return line.startsWith('source commits since ',);
+          },),
+        },).toEqual({
+          settings: [
+            `  GAMMA_CACHE_VERSION = 3 (${FAMILY}/gamma/src/gamma-cache-version.ts): set in ${
+              citedHash({ hash: setBeforeSplit.hash, },)
+            }`,
+          ],
+          since: [
+            `source commits since ${citedHash({ hash: setBeforeSplit.hash, },)}: 1, named by an account: 0, by none: 1`,
           ],
         },);
       },

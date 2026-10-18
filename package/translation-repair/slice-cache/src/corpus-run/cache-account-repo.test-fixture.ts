@@ -1,5 +1,6 @@
 import {
   mkdir,
+  rename,
   utimes,
   writeFile,
 } from 'node:fs/promises';
@@ -291,6 +292,67 @@ export async function commitFileAt(
     path,
     text,
   },);
+  return await commitAt({
+    cloneDir,
+    day,
+    subject,
+  },);
+}
+
+/**
+ Moves one tracked file to another path and commits the move at a fixed time,
+ the way the split moved the translation-repair sources into the family's
+ packages: the content is unchanged, so git reads the commit as a rename.
+
+ @param cloneDir - repository directory
+
+ @param day - days after the first commit's time
+
+ @param from - path from the repository's top the file leaves
+
+ @param to - path from the repository's top the file arrives at
+
+ @param subject - commit subject
+
+ @returns The commit made
+
+ @example
+ ```ts
+ const moved = await moveFileAt({ cloneDir, day: 6, from: 'src/nap.ts', to: 'package/nap/src/nap.ts', subject: 'move the nap', },);
+ ```
+ */
+export async function moveFileAt(
+  {
+    cloneDir,
+    day,
+    from,
+    to,
+    subject,
+  }: {
+    readonly cloneDir: string;
+    readonly day: number;
+    readonly from: string;
+    readonly to: string;
+    readonly subject: string;
+  },
+): Promise<RepoCommit> {
+  await mkdir(
+    dirname(join(
+      cloneDir,
+      to,
+    ),),
+    { recursive: true, },
+  );
+  await rename(
+    join(
+      cloneDir,
+      from,
+    ),
+    join(
+      cloneDir,
+      to,
+    ),
+  );
   return await commitAt({
     cloneDir,
     day,

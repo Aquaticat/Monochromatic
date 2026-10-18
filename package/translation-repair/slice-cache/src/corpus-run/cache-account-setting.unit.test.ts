@@ -22,6 +22,7 @@ import { cacheVersionSetting, } from '../../dist/final/node/index.mjs';
 import {
   commitFileAt,
   makeCacheAccountRepo,
+  moveFileAt,
 } from './cache-account-repo.test-fixture.ts';
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/rejection-of.test-fixture.ts';
 
@@ -33,6 +34,24 @@ const STAGE_VERSION = {
   value: 1,
   path: 'src/stage-cache-version.ts',
   declaration: 'STAGE_CACHE_VERSION = 1',
+};
+
+/**
+ Where the translation-repair sources stood before the family was split out of them.
+ */
+const PRE_SPLIT_SOURCES = 'package/module/translation-repair/src';
+
+/**
+ Pathspec of every file under the sources of the family's packages, as the audit hands the lookup.
+ */
+const FAMILY_SOURCES = ':(glob)package/translation-repair/*/src/**';
+
+/**
+ The stage version as the split left it: declared in a package of the family.
+ */
+const SPLIT_STAGE_VERSION = {
+  ...STAGE_VERSION,
+  path: 'package/translation-repair/stage/src/stage-cache-version.ts',
 };
 
 await describe({
@@ -75,6 +94,63 @@ await describe({
           sources: 'src',
           version: STAGE_VERSION,
         },),).toEqual(setBack,);
+      },
+    },),
+    it({
+      name: 'FINDS THE COMMIT THAT SET A VERSION BEFORE THE SPLIT, not the commit that moved the file into the '
+        + 'family, since a move sets nothing',
+      fn: async () => {
+        await using repo = await makeCacheAccountRepo({ versions: 'none', },);
+        const setBeforeSplit = await commitFileAt({
+          cloneDir: repo.path,
+          day: 5,
+          path: `${PRE_SPLIT_SOURCES}/stage-cache-version.ts`,
+          text: 'export const STAGE_CACHE_VERSION = 1;\n',
+          subject: 'set the stage cache version',
+        },);
+        await moveFileAt({
+          cloneDir: repo.path,
+          day: 6,
+          from: `${PRE_SPLIT_SOURCES}/stage-cache-version.ts`,
+          to: SPLIT_STAGE_VERSION.path,
+          subject: 'split the translation-repair package',
+        },);
+
+        expect(await cacheVersionSetting({
+          root: repo.path,
+          sources: FAMILY_SOURCES,
+          version: SPLIT_STAGE_VERSION,
+        },),).toEqual(setBeforeSplit,);
+      },
+    },),
+    it({
+      name: 'FINDS THE MOVE AS THE SETTING where the package stands outside the family, whose sources never stood '
+        + 'at the pre-split path',
+      fn: async () => {
+        await using repo = await makeCacheAccountRepo({ versions: 'none', },);
+        await commitFileAt({
+          cloneDir: repo.path,
+          day: 5,
+          path: `${PRE_SPLIT_SOURCES}/stage-cache-version.ts`,
+          text: 'export const STAGE_CACHE_VERSION = 1;\n',
+          subject: 'set the stage cache version',
+        },);
+        const moved = await moveFileAt({
+          cloneDir: repo.path,
+          day: 6,
+          from: `${PRE_SPLIT_SOURCES}/stage-cache-version.ts`,
+          to: 'package/stray/src/stage-cache-version.ts',
+          subject: 'move the stage cache version to the stray package',
+        },);
+
+        expect(await cacheVersionSetting({
+          root: repo.path,
+          sources: 'package/stray/src',
+          version: {
+            ...STAGE_VERSION,
+            path: 'package/stray/src/stage-cache-version.ts',
+          },
+        },),).toEqual(moved,);
       },
     },),
     it({
