@@ -4971,21 +4971,6 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@monochromatic-dev/translation-repair-bench':
-        specifier: workspace:*
-        version: link:../bench
-      '@monochromatic-dev/translation-repair-coverage-census':
-        specifier: workspace:*
-        version: link:../coverage-census
-      '@monochromatic-dev/translation-repair-probe':
-        specifier: workspace:*
-        version: link:../probe
-      '@monochromatic-dev/translation-repair-run':
-        specifier: workspace:*
-        version: link:../run
-      '@monochromatic-dev/translation-repair-slice-cache':
-        specifier: workspace:*
-        version: link:../slice-cache
       '@monochromatic-dev/translation-repair-test-fixture':
         specifier: workspace:*
         version: link:../test-fixture
@@ -6523,9 +6508,6 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@monochromatic-dev/translation-repair-bench':
-        specifier: workspace:*
-        version: link:../bench
       '@monochromatic-dev/translation-repair-test-fixture':
         specifier: workspace:*
         version: link:../test-fixture
@@ -6985,9 +6967,6 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
-      '@monochromatic-dev/translation-repair-probe':
-        specifier: workspace:*
-        version: link:../probe
       '@monochromatic-dev/translation-repair-test-fixture':
         specifier: workspace:*
         version: link:../test-fixture

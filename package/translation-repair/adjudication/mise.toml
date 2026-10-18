@@ -32,8 +32,6 @@ extends = "lint:types"
 
 [tasks."test:unit"]
 extends = "test:unit"
-# Cases start the built commands of packages that import this one, so those build first.
-depends = ["//package/translation-repair/bench:build:js:node", "//package/translation-repair/coverage-census:build:js:node", "//package/translation-repair/probe:build:js:node", "//package/translation-repair/run:build:js:node", "//package/translation-repair/slice-cache:build:js:node"]
 
 [tasks.buildAndTest]
 description = "Build the node bundle, then run unit tests against the built dist"

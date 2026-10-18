@@ -46,7 +46,6 @@
     "@monochromatic-dev/config-rolldown": "workspace:*",
     "@monochromatic-dev/config-typescript": "workspace:*",
     "@monochromatic-dev/module-test": "workspace:*",
-    "@monochromatic-dev/translation-repair-bench": "workspace:*",
     "@monochromatic-dev/translation-repair-test-fixture": "workspace:*",
     "@monochromatic-dev/translation-repair-translate-floor": "workspace:*",
     "@monochromatic-dev/translation-repair-translate-lane": "workspace:*",
