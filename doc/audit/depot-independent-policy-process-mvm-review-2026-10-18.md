@@ -565,3 +565,14 @@ The completed guest-review section and reconciled Rust handoff pass targeted `li
 Their rendered CommonMark output was inspected.
 The new original gzip retains SHA256
 `6f0bf7c1ea1891b24d8702b373fc9c30b8eb885a0827e6e056cb483cac0183d9`.
+
+## Expanded graph local preflight queue
+
+The coordinator requested independent review of frozen driver and plan
+at `815591bf307b1237d31b1c4e644463d7c13654fa`
+after all jobs of `39135886118` failed at the omitted configured `cargo-binstall` prerequisite.
+The local-only queue is source review,
+a fresh selected-tool installation probe if practical,
+and actual driver execution against explicitly fake owning commands in a disposable 2 CPU, 2 GiB container.
+No application test credit or new cloud allocation belongs to this preflight.
+The coordinator owns workflow corrections and dispatch; its graph worktree will not be edited.
