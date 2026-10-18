@@ -815,6 +815,47 @@ the items after it are the record of 2026-10-05 and older.
     bundle 8 cases). Test suites on the branch: `test` 783, `test:native` 197, `test:language` 379, `test:syntax` 64,
     `test:wrap` 62 and 15, all passed. Also issue #1756: the container lint now applies the root `clippy.toml`, and
     `Result::unwrap` sites use `json_value!` (one scoped allowance) or `Value::from`.
+  - Dylint gate over the IDE (stage 2b of `doc/decision/rust-closure-lint-dylint.md`; branch `feat/ide-closure-lint`,
+    worktree `.claude/worktrees/ide-dylint`, an agent, 2026-10-18; not merged, not pushed). The lint
+    `avoidable_closure` now reports nothing on the IDE: `mise run //package/desktop-app/ide:lint:closures` exits 0.
+    The 83 distinct reports (84 in the stage logs, because `src/syntax_loader.rs:188` is reported in both the library
+    and the binary) became: 78 conversions (5 in `src/bin`, 27 in 16 `*_tests.rs` files, 46 in 19
+    files of `tests/`) by `for` loops, `contains`, `OsStr::to_str`, `?` helpers (`debugged` and `identified` in
+    `src/bin/ide-language-inspect/render.rs`; a bare `match .. None => None` there is `clippy::manual_map`), and small
+    test helpers (`named`, `has_line_with`, `styled`, `some_contains`, `listed_as_directory`, `has_content_hit`,
+    `instance_of`), and 5 `#[cfg_attr(dylint_lib = "monochromatic_lint_closure", expect(avoidable_closure, reason =
+    ".."))]` attributes: the `catch_unwind` bodies of `src/native/minimap_build.rs` and `src/native/tile_build.rs`, the
+    two `tree_house` callbacks of `src/syntax_loader.rs`, and the `let` statement of the caret callback in
+    `src/native/language/actions.rs` (the attribute cannot sit on a `let` initializer, and two setter calls would
+    duplicate the body). Removing any one attribute makes the lint report exactly that site, and an `expect` on a
+    closure that is allowed is reported as `this lint expectation is unfulfilled`. The `check-cfg` entry
+    comes from `file-enforcer.config.ts` (`CARGO_DYLINT_DIRS`, so only the IDE manifest changed). No suppression other
+    than those five, no change to `monochromatic-lint.config.jsonc`, root `mise*.toml` or `mise.lock`; the syntax-only
+    `rust/no-anonymous-functions` rule still reports 67 (the 62 the new lint allows and the 5 it expects), unchanged in
+    count. The conversions evaluate every element where an `any` or `all` stopped early; no converted expression has a
+    side effect, so only failure messages differ.
+    The task: it depends on `runtime` and `notices`, fetches with `cargo +stable fetch --locked` (the nightly cargo of
+    this host cannot reach crates.io), builds offline on the shared nightly into `target/dylint` (links to
+    `target/debug/runtime` and `target/crate-licenses.json`, which `build.rs` finds relative to the build directory),
+    and runs `cargo dylint --all-targets --keep-going` with `DYLINT_RUSTFLAGS='-D avoidable_closure -D
+    unfulfilled_lint_expectations'`. Wall time with load average 12 to 19: 78.9 to 87.1 s with `target/dylint` deleted,
+    15.0 to 16.9 s unchanged, 16.5 to 21.6 s after touching a source file (3 runs each, all exit 0), and about 30 s
+    more for a first driver build with an empty `DYLINT_DRIVER_PATH`. It is the last entry of the IDE `lint` aggregate
+    (whole aggregate 33 s warm); dropping that one line returns it to a separate task, which is the owner's call
+    because it puts the host nightly with `rustc-dev` and a network step into every `lint` fan-out.
+    Verified on the branch: container clippy, `lint:rustfmt`, `lint:release`, `monochromatic-lint` on the IDE (67
+    warnings, no error), `test` 783, `test:cli` 13, `test:native` 197, `test:language` 379, `test:syntax` 64,
+    `test:minimap` 19, `test:wrap` 15 and 62, `test:annotations` 54, `test:annotations-native` 25, `test:fonts` 330,
+    `test:search` 335, `test:open` 7, `test:tree` 20, `test:find` 350, `test:raster` 1, `test:ignored` 10, 1, 28 and 1,
+    `test:reader-lifecycle` 316, and `inspect:language` against disposable projects, all passed. All 411 anchors of the
+    `bin/inspect-*-guards.mjs` scripts still match their files (none moved); the 21 guard cases whose test functions
+    or anchored files this branch touched were run again and failed on their guard as designed (source 12, annotation
+    2, find 1, language 2, search 1, watch 3). Not rerun: the other guard cases, `bundle` and `inspect:bundle`. The
+    README of the lint package still calls itself a stage-1 package.
+    Still open: the fate of the syntax-only rule once the gate is accepted (proposal in the agent's report: switch it
+    off for `package/desktop-app/ide/**` by a configuration override, since the new lint covers the same closures with
+    type information and sees macro arguments, and keep it elsewhere until each other Rust package has its own
+    `lint:closures`).
   - Ignored entries dimmed in the tree (branch `feat/ide-ignored-dim`, request of 2026-10-14: "Apply 0.8 opacity to text
     for gitignored files/dirs"; the user chose the `ignore` crate 0.4.33, the only new package). Before, the tree
     listed ignored entries at full ink (`Workspace::list` is a plain `read_dir`). The reader thread now decides the
