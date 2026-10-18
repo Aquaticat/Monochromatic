@@ -4,7 +4,7 @@ shell = "node --input-type=module-typescript -e"
 run = '''
 import {createServer} from 'node:http2';
 import {once} from 'node:events';
-import {execFile} from 'node:child_process';
+import {execFile,execFileSync} from 'node:child_process';
 import {promisify} from 'node:util';
 import {readFileSync,writeFileSync,mkdirSync,chmodSync} from 'node:fs';
 import {homedir} from 'node:os';
@@ -59,7 +59,8 @@ try{
   assert.notEqual(remote.status,0);assert(remote.stderr.includes('cannot use remote target with --print'));
   assert.equal(requests.length,1,'Print controls contacted the local API observer');
   const version=await run(['--version']);assert.equal(version.status,0);
-  const receipt={verifiedAt:new Date().toISOString(),repositoryBase:
+  const receipt={verifiedAt:new Date().toISOString(),harnessCommit:
+    execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),repositoryBase:
     'e02be6c8b8fe9efb41a7f8f1a0b311c17796588a',requests,commands,
     controls:{apiObserverPositive:true,sharedTargetInheritance:true,overridePositive:true,
       invalidTargetNegative:true,remotePrintUnsupported:true,noPrintApiRequests:true},cloudAllocation:false};
