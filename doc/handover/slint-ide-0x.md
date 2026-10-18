@@ -763,16 +763,16 @@ the items after it are the record of 2026-10-05 and older.
     closes the measured gaps (test sidecars under `cfg(test)`, the IDE dependency graph and generated code, the
     5.9 s breakdown, wrapper cases). Both reported (proposal sections "Research results" and "Round two results"):
     comment directives are already decided (D2 of `doc/planning/rust-linter-oxlint-parity.md`, unbuilt); the type
-    criterion gives 62 allowed and 5 reported of the 67 only with the full dependency graph, `cfg(test)` plus `cfg(debug_assertions)` and
-    `BuildGenerated`, at 22 to 39 s on the IDE package against 0.063 s; under `SourceOnly` 25 of 67. The spike branch
-    `spike/linter-closure-static` (local commits `fad1074bd2`, `37bcb6f5b3`; origin holds only `7c5cee6d30`) stays
-    until the user decides, then the remote branch is deleted. Decided 2026-10-18 (the user chose it from three
+    criterion gives 62 allowed and 5 reported of the 67 only with the full dependency graph, `cfg(test)` plus
+    `cfg(debug_assertions)` and `BuildGenerated`, at 22 to 39 s on the IDE package against 0.063 s; under
+    `SourceOnly` 25 of 67. The spike branch `spike/linter-closure-static` keeps its local commits (`fad1074bd2`,
+    `37bcb6f5b3`); the remote copy was deleted. Decided 2026-10-18 (the user chose it from three
     options): a Dylint rustc lint plus comment directives, recorded in `doc/decision/rust-closure-lint-dylint.md`
     (the Dylint lint is suppressed by rustc's own `expect(.., reason)`; whether the user meant the comment form for it
     too was not asked and is open to veto). Stage 1 runs as an agent on branch `feat/dylint-closure-lint` (worktree
     `.claude/worktrees/dylint-closure`): the new package, tests with controls, README, and a run over a disposable
-    copy of the IDE; no IDE edit and no root toolchain edit (not approved). Stage 1 reported (verified by the coordinating
-    session: 13 tests pass in an independent run, and disabling the capture guard fails `adversarial.rs` and
+    copy of the IDE; no IDE edit and no root toolchain edit (not approved then). Stage 1 reported (verified by the
+    coordinating session: 13 tests pass in an independent run, and disabling the capture guard fails `adversarial.rs` and
     `not_kept_by_callee.rs`): package `package/linter/monochromatic-lint-closure`, lint `avoidable_closure`, library
     `monochromatic_lint_closure`; on a disposable IDE copy 62 of the 67 pass and 5 report (`language/actions.rs:134`
     let-bound, `minimap_build.rs:399` and `tile_build.rs:140` `catch_unwind(AssertUnwindSafe(..))`,
@@ -784,8 +784,7 @@ the items after it are the record of 2026-10-05 and older.
     `tests/ui` in `monochromatic-lint.config.jsonc`. Stage 2a runs as an agent in the same worktree (root toolchain,
     lock, config, package clean-shell proof). Stage 2b (queued): IDE `check-cfg` through file-enforcer, `expect`
     attributes on the 4 non-let reports, the let-bound site, the 78 conversions, an IDE `lint:closures` task, then
-    the fate of the syntax-only rule. The remote spike branch was deleted from origin (local branch kept). The user also asked to
-    look at their oxlint setup; findings: shared config `package/config/oxlint/src/config-base.ts` sets
+    the fate of the syntax-only rule. The user also asked to look at their oxlint setup; findings: shared config `package/config/oxlint/src/config-base.ts` sets
     `reportUnusedDisableDirectives: 'warn'` with `denyWarnings: true`; the repository holds 861
     `oxlint-disable-next-line`, 401 `oxlint-disable` and 332 `oxlint-enable` directives, 698 of 734 next-line ones with
     a ` -- reason`; an audit (`doc/audit/oxlint-unused-disable-directives.md`) found and removed 301 unused ones; the
