@@ -137,7 +137,8 @@
         "PROBE_SERVICE_NONCE": "${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.provider }}-container",
         "PROBE_EXPECTED_ARCH": "${{ matrix.architecture }}",
         "PROBE_PLATFORM_PROVIDER": "${{ matrix.provider }}",
-        "PROBE_JOB_CONTAINER": "true"
+        "PROBE_JOB_CONTAINER": "true",
+        "PROBE_JOB_IMAGE_REFERENCE": "registry.depot.dev/27m5m3vjlv@sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346"
       },
       "steps": [
         {
@@ -180,7 +181,7 @@
       ],
       "if": "always()",
       "container": {
-        "image": "registry.depot.dev/27m5m3vjlv@sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+        "image": "registry.depot.dev/27m5m3vjlv@sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346",
         "credentials": {
           "username": "x-token",
           "password": "${{ secrets.MONO_RESEARCH_SERVICE_PULL_20261018 }}"
