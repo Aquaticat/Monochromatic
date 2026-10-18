@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "collectedAt": "2026-10-18T08:40:38.392Z",
+  "collectedAt": "2026-10-18T08:57:10.415Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
-  "status": "Research ongoing: native filesystem and OCI exports, registry bridge and derived OCI job image exercised; archive statement subjects differ; forwarding and repository cache mounts pending",
+  "status": "Research ongoing: native exports, registry bridge and Node26-qualified OCI derivative exercised; forwarding, immutable Git and remaining Cargo mount cases active",
   "sourceArchive": {
     "path": "doc/audit/depot-buildkit-platform-campaign-2026-10-18.sources.json.gz",
-    "bytes": 1725200,
-    "sha256": "6eeb3a2ad560c5c55962f472ace24347f01d4a8bd08b27d7707d073872c58b8a"
+    "bytes": 2967655,
+    "sha256": "7ced24886c6297fa891062d3629ff59ad6d83f32eb5dc78293f5eb323e4e5304"
   },
   "service": {
     "source": "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
@@ -142,12 +142,15 @@
     ]
   },
   "immutableFixtureSources": [
+    "eb915fccbefd9601f038c8a851a7861d2c7b3ea4",
     "d9cf7458443c5c4b7d169ba18cdb80a7fcf34cbf",
     "b00f8c834b51bed8ba619dddb15b24274f4350ad",
     "898e2fdd6aac05471cf340231a50042ba6e43bc7",
     "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
+    "aa89e372f09c82286695d80cddf7f86b602051c9",
     "0b471538cd549cb2181088803c1e0a6d542d791e",
-    "aa89e372f09c82286695d80cddf7f86b602051c9"
+    "7f22f25adbb05e0c1add22211b12f1d275a29c17",
+    "7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f"
   ],
   "attempts": [
     {
@@ -234,6 +237,19 @@
       "elapsedMilliseconds": 35456,
       "guardFired": false,
       "phase": "ci-derived",
+      "projectId": "27m5m3vjlv"
+    },
+    {
+      "receipt": "ci-node26-image-build.json",
+      "buildId": "1ng4qs1pmq",
+      "source": "7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-10-18T08:50:59.092Z",
+      "finishedAt": "2026-10-18T08:51:30.622Z",
+      "elapsedMilliseconds": 31529,
+      "guardFired": false,
+      "phase": "ci-node26",
       "projectId": "27m5m3vjlv"
     }
   ],
@@ -1227,6 +1243,527 @@
       "healthcheckNone": true
     }
   },
+  "node26CiImage": {
+    "nativeBuild": {
+      "kind": "native-build",
+      "phase": "ci-node26",
+      "source": "7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f",
+      "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "projectId": "27m5m3vjlv",
+      "args": [
+        "bake",
+        "--file",
+        "docker-bake.hcl",
+        "--project",
+        "27m5m3vjlv",
+        "--save",
+        "--save-tag",
+        "monochromatic-platform-ci-node26-20261018-v1",
+        "--metadata-file",
+        "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/ci-node26-image-build/metadata.json",
+        "--progress",
+        "plain",
+        "ci-node26"
+      ],
+      "startedAt": "2026-10-18T08:50:59.092Z",
+      "maximumMilliseconds": 180000,
+      "maximumArchitectureBuilders": 2,
+      "cpuPerBuilder": 16,
+      "memoryGiBPerBuilder": 32,
+      "budget": {
+        "priorObservedMilliseconds": 139103,
+        "reservedUsd": 0.42547066666666666,
+        "ceilingUsd": 2,
+        "invoiceCapProven": false
+      },
+      "purpose": "Separate two-architecture custom OCI job image with actual checkout/Mise and frozen Node26 loader prerequisites",
+      "finishedAt": "2026-10-18T08:51:30.622Z",
+      "elapsedMilliseconds": 31529,
+      "exitCode": 0,
+      "signal": null,
+      "guardFired": false,
+      "logPath": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/ci-node26-image-build/build.log",
+      "indexDigest": "sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31",
+      "imageReference": "registry.depot.dev/27m5m3vjlv@sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31",
+      "holdUntilParentConsumersFinish": true
+    },
+    "registry": {
+      "verifiedAt": "2026-10-18T08:53:39.086Z",
+      "source": "7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f",
+      "buildId": "1ng4qs1pmq",
+      "imageReference": "registry.depot.dev/27m5m3vjlv@sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31",
+      "indexDigest": "sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31",
+      "runtimes": [
+        {
+          "architecture": "amd64",
+          "manifestDigest": "sha256:658645c48353be0debbfc8c6f551cb10b961a312ce15bad1cf2ea266cb555548",
+          "configDigest": "sha256:4a26267c4990f3f6d85c727afd41fecd3346edc8ca61e85518d5dc67752004e6",
+          "cmd": [
+            "bash"
+          ],
+          "healthcheckDisabled": true,
+          "layers": [
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:7fd1ebe418b5079d4aa36f416af9b143d127bc75b0155d71cb5fd559b5e04d39",
+              "size": 28249323
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:fb7da8a11632ec8a1daa7a740e634c10c151eccee31d49ba459b25877c5780e4",
+              "size": 3314
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:b9a701dba9fbaed52af5239f5eeaeec384346d232313fe2278e50f9259b8e3bc",
+              "size": 51041014
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:182ecac4702d154abbcf12044dcb36915e067902b76ad52919b967c71be97f53",
+              "size": 1713055
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:4cec569cef036288a370045819d1a4fed7630cc6eb5e0c8051745f2b7d37c5f2",
+              "size": 446
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:6bf6469ab11c5533f6da6a53c7bdf90b444178091f198b22412477bcd0c3411c",
+              "size": 99
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:499b4cf736404b0fa8a90d1c24f2a3e6cb0bd5d90c906bcae639860eb59b8612",
+              "size": 273
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:36375cfa8f3c2b1fa65f723c41f73d7856c1ff39c20abf93e25843cd205d3f22",
+              "size": 314
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:7eb3865777b69a8cc4b5196916f664c4b47d8d6f7230539e6cc369ccde73428f",
+              "size": 38768514
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:a53a92f3a6a35aa2671fdf12f5e895513d14bc8c2be83194d76d91cdf48d1daa",
+              "size": 100610
+            }
+          ]
+        },
+        {
+          "architecture": "arm64",
+          "manifestDigest": "sha256:a336d2ae848f416d3cce997b7a558b22a69394b7de5b693bf2402cb7f539d419",
+          "configDigest": "sha256:44f1291213e1aa7f31e62786042d275058fc11c7d2be2f5e5795887215f96a86",
+          "cmd": [
+            "bash"
+          ],
+          "healthcheckDisabled": true,
+          "layers": [
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:c75f989a229d12b2d2613a5997de9ff3546f664c22da9248720033a2410220f6",
+              "size": 28137179
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:f3b7fa076fe63b12118c87ec7c84133db790c4942081273fd6f71f91598d297d",
+              "size": 3314
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:0c847615531065f69ea6ddc554bb40067455e42aa9274e29bf1245dc03140888",
+              "size": 51021488
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:f8951e871b2569bbd90a0461aadc9526beb7da501769f25e02a0c921ed819c80",
+              "size": 1712994
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:66095d3064d1b18399d076b3b93108d12a0f352ade634c55c11fc1770d14dd5d",
+              "size": 448
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:6bf6469ab11c5533f6da6a53c7bdf90b444178091f198b22412477bcd0c3411c",
+              "size": 99
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:499b4cf736404b0fa8a90d1c24f2a3e6cb0bd5d90c906bcae639860eb59b8612",
+              "size": 273
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:965a7ac3622ae34644035cc13f77183b075f12b7718029176c285487c0333694",
+              "size": 306
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:111a0faca818842e0c5429dd69f9982fbc093276ac2fd61113c2c573464f6a26",
+              "size": 38366497
+            },
+            {
+              "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip",
+              "digest": "sha256:d7a95b20ae77034a0c98a5069e71719261ced6fddb5d4e8684272017387466bc",
+              "size": 101827
+            }
+          ]
+        }
+      ],
+      "attestations": [
+        {
+          "manifestDigest": "sha256:8e0e6e147b0e467ba97793d9f359a61ed4cbfa7fc6ec2cb418836c38c0cd03fd",
+          "annotatedRuntimeSubject": "sha256:658645c48353be0debbfc8c6f551cb10b961a312ce15bad1cf2ea266cb555548",
+          "predicateType": "https://spdx.dev/Document",
+          "subjects": [
+            {
+              "name": "pkg:docker/registry.depot.dev/27m5m3vjlv@latest?platform=linux%2Famd64",
+              "digest": {
+                "sha256": "658645c48353be0debbfc8c6f551cb10b961a312ce15bad1cf2ea266cb555548"
+              }
+            }
+          ]
+        },
+        {
+          "manifestDigest": "sha256:8e0e6e147b0e467ba97793d9f359a61ed4cbfa7fc6ec2cb418836c38c0cd03fd",
+          "annotatedRuntimeSubject": "sha256:658645c48353be0debbfc8c6f551cb10b961a312ce15bad1cf2ea266cb555548",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "subjects": [
+            {
+              "name": "pkg:docker/registry.depot.dev/27m5m3vjlv@latest?platform=linux%2Famd64",
+              "digest": {
+                "sha256": "658645c48353be0debbfc8c6f551cb10b961a312ce15bad1cf2ea266cb555548"
+              }
+            }
+          ]
+        },
+        {
+          "manifestDigest": "sha256:09564ea91d4655909a184176c87518eeb0705587d8656ad9fdbbd184213e63c1",
+          "annotatedRuntimeSubject": "sha256:a336d2ae848f416d3cce997b7a558b22a69394b7de5b693bf2402cb7f539d419",
+          "predicateType": "https://spdx.dev/Document",
+          "subjects": [
+            {
+              "name": "pkg:docker/registry.depot.dev/27m5m3vjlv@latest?platform=linux%2Farm64",
+              "digest": {
+                "sha256": "a336d2ae848f416d3cce997b7a558b22a69394b7de5b693bf2402cb7f539d419"
+              }
+            }
+          ]
+        },
+        {
+          "manifestDigest": "sha256:09564ea91d4655909a184176c87518eeb0705587d8656ad9fdbbd184213e63c1",
+          "annotatedRuntimeSubject": "sha256:a336d2ae848f416d3cce997b7a558b22a69394b7de5b693bf2402cb7f539d419",
+          "predicateType": "https://slsa.dev/provenance/v0.2",
+          "subjects": [
+            {
+              "name": "pkg:docker/registry.depot.dev/27m5m3vjlv@latest?platform=linux%2Farm64",
+              "digest": {
+                "sha256": "a336d2ae848f416d3cce997b7a558b22a69394b7de5b693bf2402cb7f539d419"
+              }
+            }
+          ]
+        }
+      ],
+      "crossBuildRead": {
+        "pullTokenRequestedForBuildId": "fxzj58r8m2",
+        "imageFromBuildId": "1ng4qs1pmq",
+        "tokenRefreshedBeforeDerivedBuild": true,
+        "readSucceeded": true,
+        "scope": "This token reads another build in the same project; cross-project isolation untested"
+      },
+      "holdUntilParentConsumersFinish": true,
+      "rawRequestCount": 11,
+      "rawRequestsPreservedInCompressedArchive": true
+    },
+    "filesystemAndReadOnlyScope": {
+      "verifiedAt": "2026-10-18T08:55:45.483Z",
+      "source": "7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f",
+      "imageReference": "registry.depot.dev/27m5m3vjlv@sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31",
+      "crossBuildRead": {
+        "pullTokenRequestedForBuildId": "fxzj58r8m2",
+        "imageFromBuildId": "1ng4qs1pmq",
+        "tokenRefreshedBeforeDerivedBuild": true,
+        "readSucceeded": true,
+        "scope": "This token reads another build in the same project; cross-project isolation untested"
+      },
+      "tools": [
+        {
+          "architecture": "amd64",
+          "layerDigest": "sha256:a53a92f3a6a35aa2671fdf12f5e895513d14bc8c2be83194d76d91cdf48d1daa",
+          "layerBytes": 100610,
+          "receiptPath": "/opt/depot-research/image-tools.json",
+          "receiptSha256": "53d2d2c340ef8214c8b9caf2da0b94c38327c63655d4656729a3b54c5d1e7f96",
+          "receiptBytes": 4154,
+          "value": {
+            "architecture": "x64",
+            "nodeVersion": "v24.22.0",
+            "harnessCommit": "7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f",
+            "serviceBase": "registry.depot.dev/27m5m3vjlv@sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+            "miseAction": "c2a87611a18de5b3828c5652fe268e992400cb5c",
+            "tools": {
+              "git": "git version 2.39.5\n",
+              "curl": "curl 7.88.1 (x86_64-pc-linux-gnu) libcurl/7.88.1 OpenSSL/3.0.22 zlib/1.2.13 brotli/1.0.9 zstd/1.5.4 libidn2/2.3.3 libpsl/0.21.2 (+libidn2/2.3.3) libssh2/1.10.0 nghttp2/1.52.0 librtmp/2.3 OpenLDAP/2.5.13\nRelease-Date: 2023-02-20, security patched: 7.88.1-10+deb12u15\nProtocols: dict file ftp ftps gopher gophers http https imap imaps ldap ldaps mqtt pop3 pop3s rtmp rtsp scp sftp smb smbs smtp smtps telnet tftp\nFeatures: alt-svc AsynchDNS brotli GSS-API HSTS HTTP2 HTTPS-proxy IDN IPv6 Kerberos Largefile libz NTLM NTLM_WB PSL SPNEGO SSL threadsafe TLS-SRP UnixSockets zstd\n",
+              "tar": "tar (GNU tar) 1.34\nCopyright (C) 2021 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by John Gilmore and Jay Fenlason.\n",
+              "gzip": "gzip 1.12\nCopyright (C) 2018 Free Software Foundation, Inc.\nCopyright (C) 1993 Jean-loup Gailly.\nThis is free software.  You may redistribute copies of it under the terms of\nthe GNU General Public License <https://www.gnu.org/licenses/gpl.html>.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by Jean-loup Gailly.\n",
+              "xz": "xz (XZ Utils) 5.4.1\nliblzma 5.4.1\n",
+              "zstd": "*** Zstandard CLI (64-bit) v1.5.4, by Yann Collet ***\n",
+              "bash": "GNU bash, version 5.2.15(1)-release (x86_64-pc-linux-gnu)\nCopyright (C) 2022 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n\nThis is free software; you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n"
+            },
+            "installedPackages": "ca-certificates\t20250419~deb12u1\ncurl\t7.88.1-10+deb12u15\ngit\t1:2.39.5-0+deb12u3\ngzip\t1.12-1\ntar\t1.34+dfsg-1.2+deb12u1\nxz-utils\t5.4.1-1+deb12u2\nzstd\t1.5.4+dfsg2-5\n",
+            "priorHarnessCommit": "0b471538cd549cb2181088803c1e0a6d542d791e",
+            "originalCiBase": "registry.depot.dev/27m5m3vjlv@sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346",
+            "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+            "libatomicPackage": "libatomic1\t12.2.0-14+deb12u1\tamd64\n",
+            "repositoryNode": {
+              "url": "https://nodejs.org/dist/v26.12.0/node-v26.12.0-linux-x64.tar.gz",
+              "sha256": "d9f88af72ad34f7ddf8e67289829f1698f54b6254f7d4f54b7453117ff1a3d2c",
+              "archiveBytes": 62862851,
+              "binarySha256": "caa24debe02770c92a70677e2a62ca98890150e7ac1c17bcfe31bcc98cc89943",
+              "binaryBytes": 150275912,
+              "elfMachine": 62,
+              "ldd": "\tlinux-vdso.so.1 (0x00007f9037d37000)\n\tlibatomic.so.1 => /lib/x86_64-linux-gnu/libatomic.so.1 (0x00007f9037d23000)\n\tlibdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x00007f9037d1e000)\n\tlibm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007f9037c3e000)\n\tlibstdc++.so.6 => /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007f9037a24000)\n\tlibgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007f9037a04000)\n\tlibpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007f90379fd000)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f903781b000)\n\t/lib64/ld-linux-x86-64.so.2 (0x00007f9037d39000)\n",
+              "probe": {
+                "version": "v26.12.0",
+                "architecture": "x64",
+                "sha256": "ff71dfbecf8e47e72bb0dd2856a38baa51abd950d2f9432dc30b201824a8dc2b",
+                "versions": {
+                  "node": "26.12.0",
+                  "acorn": "8.19.0",
+                  "ada": "4.0.0",
+                  "amaro": "1.1.11",
+                  "ares": "1.34.8",
+                  "brotli": "1.2.0",
+                  "cldr": "48.0",
+                  "icu": "78.3",
+                  "libffi": "3.8.0",
+                  "lief": "1.0.0",
+                  "llhttp": "9.4.3",
+                  "merve": "1.2.2",
+                  "modules": "147",
+                  "napi": "10",
+                  "nbytes": "0.1.4",
+                  "ncrypto": "0.0.1",
+                  "nghttp2": "1.70.0",
+                  "nghttp3": "",
+                  "ngtcp2": "",
+                  "openssl": "3.5.9",
+                  "simdjson": "5.0.3",
+                  "simdutf": "7.7.0",
+                  "sqlite": "3.54.0",
+                  "tz": "2026e",
+                  "undici": "8.11.2",
+                  "unicode": "17.0",
+                  "uv": "1.52.1",
+                  "uvwasi": "0.0.23",
+                  "v8": "14.6.202.34-node.39",
+                  "zlib": "1.3.2.1-motley-456ae73",
+                  "zstd": "1.5.7"
+                }
+              },
+              "retainedInstallation": false
+            }
+          }
+        },
+        {
+          "architecture": "arm64",
+          "layerDigest": "sha256:d7a95b20ae77034a0c98a5069e71719261ced6fddb5d4e8684272017387466bc",
+          "layerBytes": 101827,
+          "receiptPath": "/opt/depot-research/image-tools.json",
+          "receiptSha256": "1229b983f4c529867d6a0fb1d0b1f1c1ba00f8b941c04d599ecd3d6845f3afa2",
+          "receiptBytes": 4179,
+          "value": {
+            "architecture": "arm64",
+            "nodeVersion": "v24.22.0",
+            "harnessCommit": "7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f",
+            "serviceBase": "registry.depot.dev/27m5m3vjlv@sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+            "miseAction": "c2a87611a18de5b3828c5652fe268e992400cb5c",
+            "tools": {
+              "git": "git version 2.39.5\n",
+              "curl": "curl 7.88.1 (aarch64-unknown-linux-gnu) libcurl/7.88.1 OpenSSL/3.0.22 zlib/1.2.13 brotli/1.0.9 zstd/1.5.4 libidn2/2.3.3 libpsl/0.21.2 (+libidn2/2.3.3) libssh2/1.10.0 nghttp2/1.52.0 librtmp/2.3 OpenLDAP/2.5.13\nRelease-Date: 2023-02-20, security patched: 7.88.1-10+deb12u15\nProtocols: dict file ftp ftps gopher gophers http https imap imaps ldap ldaps mqtt pop3 pop3s rtmp rtsp scp sftp smb smbs smtp smtps telnet tftp\nFeatures: alt-svc AsynchDNS brotli GSS-API HSTS HTTP2 HTTPS-proxy IDN IPv6 Kerberos Largefile libz NTLM NTLM_WB PSL SPNEGO SSL threadsafe TLS-SRP UnixSockets zstd\n",
+              "tar": "tar (GNU tar) 1.34\nCopyright (C) 2021 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by John Gilmore and Jay Fenlason.\n",
+              "gzip": "gzip 1.12\nCopyright (C) 2018 Free Software Foundation, Inc.\nCopyright (C) 1993 Jean-loup Gailly.\nThis is free software.  You may redistribute copies of it under the terms of\nthe GNU General Public License <https://www.gnu.org/licenses/gpl.html>.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by Jean-loup Gailly.\n",
+              "xz": "xz (XZ Utils) 5.4.1\nliblzma 5.4.1\n",
+              "zstd": "*** Zstandard CLI (64-bit) v1.5.4, by Yann Collet ***\n",
+              "bash": "GNU bash, version 5.2.15(1)-release (aarch64-unknown-linux-gnu)\nCopyright (C) 2022 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n\nThis is free software; you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n"
+            },
+            "installedPackages": "ca-certificates\t20250419~deb12u1\ncurl\t7.88.1-10+deb12u15\ngit\t1:2.39.5-0+deb12u3\ngzip\t1.12-1\ntar\t1.34+dfsg-1.2+deb12u1\nxz-utils\t5.4.1-1+deb12u2\nzstd\t1.5.4+dfsg2-5\n",
+            "priorHarnessCommit": "0b471538cd549cb2181088803c1e0a6d542d791e",
+            "originalCiBase": "registry.depot.dev/27m5m3vjlv@sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346",
+            "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+            "libatomicPackage": "libatomic1\t12.2.0-14+deb12u1\tarm64\n",
+            "repositoryNode": {
+              "url": "https://nodejs.org/dist/v26.12.0/node-v26.12.0-linux-arm64.tar.gz",
+              "sha256": "ec53c915c3fdd8786c5685abd25ae3fe9fba0692307f9811d7caaadea1bcaf03",
+              "archiveBytes": 62583030,
+              "binarySha256": "eb9c23a331c876ff7eeb7fd08b5c215da294bc18dc3a066d526254357f0f6942",
+              "binaryBytes": 150293600,
+              "elfMachine": 183,
+              "ldd": "\tlinux-vdso.so.1 (0x0000ffffa12dc000)\n\tlibatomic.so.1 => /lib/aarch64-linux-gnu/libatomic.so.1 (0x0000ffffa1270000)\n\tlibdl.so.2 => /lib/aarch64-linux-gnu/libdl.so.2 (0x0000ffffa1240000)\n\tlibm.so.6 => /lib/aarch64-linux-gnu/libm.so.6 (0x0000ffffa1190000)\n\tlibstdc++.so.6 => /lib/aarch64-linux-gnu/libstdc++.so.6 (0x0000ffffa0f70000)\n\tlibgcc_s.so.1 => /lib/aarch64-linux-gnu/libgcc_s.so.1 (0x0000ffffa0f30000)\n\tlibpthread.so.0 => /lib/aarch64-linux-gnu/libpthread.so.0 (0x0000ffffa0f00000)\n\tlibc.so.6 => /lib/aarch64-linux-gnu/libc.so.6 (0x0000ffffa0d50000)\n\t/lib/ld-linux-aarch64.so.1 (0x0000ffffa12a0000)\n",
+              "probe": {
+                "version": "v26.12.0",
+                "architecture": "arm64",
+                "sha256": "ff71dfbecf8e47e72bb0dd2856a38baa51abd950d2f9432dc30b201824a8dc2b",
+                "versions": {
+                  "node": "26.12.0",
+                  "acorn": "8.19.0",
+                  "ada": "4.0.0",
+                  "amaro": "1.1.11",
+                  "ares": "1.34.8",
+                  "brotli": "1.2.0",
+                  "cldr": "48.0",
+                  "icu": "78.3",
+                  "libffi": "3.8.0",
+                  "lief": "1.0.0",
+                  "llhttp": "9.4.3",
+                  "merve": "1.2.2",
+                  "modules": "147",
+                  "napi": "10",
+                  "nbytes": "0.1.4",
+                  "ncrypto": "0.0.1",
+                  "nghttp2": "1.70.0",
+                  "nghttp3": "",
+                  "ngtcp2": "",
+                  "openssl": "3.5.9",
+                  "simdjson": "5.0.3",
+                  "simdutf": "7.7.0",
+                  "sqlite": "3.54.0",
+                  "tz": "2026e",
+                  "undici": "8.11.2",
+                  "unicode": "17.0",
+                  "uv": "1.52.1",
+                  "uvwasi": "0.0.23",
+                  "v8": "14.6.202.34-node.39",
+                  "zlib": "1.3.2.1-motley-456ae73",
+                  "zstd": "1.5.7"
+                }
+              },
+              "retainedInstallation": false
+            }
+          }
+        }
+      ],
+      "emptyUploadControl": {
+        "path": "/v2/27m5m3vjlv/blobs/uploads/",
+        "method": "POST",
+        "status": 403,
+        "bodyBytesSent": 0,
+        "permissionDenialProven": true,
+        "responseBody": "{\"errors\":[{\"code\":\"DENIED\",\"message\":\"requested access to the resource is denied\"}]}\n"
+      },
+      "cloudAllocation": false
+    },
+    "localControl": {
+      "source": "7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f",
+      "startedAt": "2026-10-18T08:50:17.867Z",
+      "finishedAt": "2026-10-18T08:50:31.157Z",
+      "elapsedMilliseconds": 13290,
+      "args": [
+        "build",
+        "--pull=missing",
+        "--authfile",
+        "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/service-podman-auth.private.json",
+        "--format",
+        "docker",
+        "--memory",
+        "2g",
+        "--cpu-period",
+        "100000",
+        "--cpu-quota",
+        "200000",
+        "--jobs",
+        "1",
+        "--http-proxy=false",
+        "--build-arg",
+        "CI_NODE26_HARNESS_SHA=7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f",
+        "--tag",
+        "localhost/depot-ci-node26-7590bcde15e5:research",
+        "[home]/temp/agent/depot-platform-buildkit-20261018/.depot/probe/platform-buildkit/ci-node26-context"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "guardFired": false,
+      "image": "localhost/depot-ci-node26-7590bcde15e5:research",
+      "logPath": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/ci-node26-local-control.log",
+      "cloudAllocation": false,
+      "consumer": {
+        "architecture": "x64",
+        "nodeVersion": "v24.22.0",
+        "harnessCommit": "7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f",
+        "serviceBase": "registry.depot.dev/27m5m3vjlv@sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+        "miseAction": "c2a87611a18de5b3828c5652fe268e992400cb5c",
+        "tools": {
+          "git": "git version 2.39.5\n",
+          "curl": "curl 7.88.1 (x86_64-pc-linux-gnu) libcurl/7.88.1 OpenSSL/3.0.22 zlib/1.2.13 brotli/1.0.9 zstd/1.5.4 libidn2/2.3.3 libpsl/0.21.2 (+libidn2/2.3.3) libssh2/1.10.0 nghttp2/1.52.0 librtmp/2.3 OpenLDAP/2.5.13\nRelease-Date: 2023-02-20, security patched: 7.88.1-10+deb12u15\nProtocols: dict file ftp ftps gopher gophers http https imap imaps ldap ldaps mqtt pop3 pop3s rtmp rtsp scp sftp smb smbs smtp smtps telnet tftp\nFeatures: alt-svc AsynchDNS brotli GSS-API HSTS HTTP2 HTTPS-proxy IDN IPv6 Kerberos Largefile libz NTLM NTLM_WB PSL SPNEGO SSL threadsafe TLS-SRP UnixSockets zstd\n",
+          "tar": "tar (GNU tar) 1.34\nCopyright (C) 2021 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by John Gilmore and Jay Fenlason.\n",
+          "gzip": "gzip 1.12\nCopyright (C) 2018 Free Software Foundation, Inc.\nCopyright (C) 1993 Jean-loup Gailly.\nThis is free software.  You may redistribute copies of it under the terms of\nthe GNU General Public License <https://www.gnu.org/licenses/gpl.html>.\nThere is NO WARRANTY, to the extent permitted by law.\n\nWritten by Jean-loup Gailly.\n",
+          "xz": "xz (XZ Utils) 5.4.1\nliblzma 5.4.1\n",
+          "zstd": "*** Zstandard CLI (64-bit) v1.5.4, by Yann Collet ***\n",
+          "bash": "GNU bash, version 5.2.15(1)-release (x86_64-pc-linux-gnu)\nCopyright (C) 2022 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n\nThis is free software; you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n"
+        },
+        "installedPackages": "ca-certificates\t20250419~deb12u1\ncurl\t7.88.1-10+deb12u15\ngit\t1:2.39.5-0+deb12u3\ngzip\t1.12-1\ntar\t1.34+dfsg-1.2+deb12u1\nxz-utils\t5.4.1-1+deb12u2\nzstd\t1.5.4+dfsg2-5\n",
+        "priorHarnessCommit": "0b471538cd549cb2181088803c1e0a6d542d791e",
+        "originalCiBase": "registry.depot.dev/27m5m3vjlv@sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346",
+        "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+        "libatomicPackage": "libatomic1\t12.2.0-14+deb12u1\tamd64\n",
+        "repositoryNode": {
+          "url": "https://nodejs.org/dist/v26.12.0/node-v26.12.0-linux-x64.tar.gz",
+          "sha256": "d9f88af72ad34f7ddf8e67289829f1698f54b6254f7d4f54b7453117ff1a3d2c",
+          "archiveBytes": 62862851,
+          "binarySha256": "caa24debe02770c92a70677e2a62ca98890150e7ac1c17bcfe31bcc98cc89943",
+          "binaryBytes": 150275912,
+          "elfMachine": 62,
+          "ldd": "\tlinux-vdso.so.1 (0x00007fc0bd253000)\n\tlibatomic.so.1 => /lib/x86_64-linux-gnu/libatomic.so.1 (0x00007fc0bd23f000)\n\tlibdl.so.2 => /lib/x86_64-linux-gnu/libdl.so.2 (0x00007fc0bd23a000)\n\tlibm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007fc0bd15a000)\n\tlibstdc++.so.6 => /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007fc0bcf40000)\n\tlibgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007fc0bcf20000)\n\tlibpthread.so.0 => /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007fc0bcf19000)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007fc0bcd37000)\n\t/lib64/ld-linux-x86-64.so.2 (0x00007fc0bd255000)\n",
+          "probe": {
+            "version": "v26.12.0",
+            "architecture": "x64",
+            "sha256": "ff71dfbecf8e47e72bb0dd2856a38baa51abd950d2f9432dc30b201824a8dc2b",
+            "versions": {
+              "node": "26.12.0",
+              "acorn": "8.19.0",
+              "ada": "4.0.0",
+              "amaro": "1.1.11",
+              "ares": "1.34.8",
+              "brotli": "1.2.0",
+              "cldr": "48.0",
+              "icu": "78.3",
+              "libffi": "3.8.0",
+              "lief": "1.0.0",
+              "llhttp": "9.4.3",
+              "merve": "1.2.2",
+              "modules": "147",
+              "napi": "10",
+              "nbytes": "0.1.4",
+              "ncrypto": "0.0.1",
+              "nghttp2": "1.70.0",
+              "nghttp3": "",
+              "ngtcp2": "",
+              "openssl": "3.5.9",
+              "simdjson": "5.0.3",
+              "simdutf": "7.7.0",
+              "sqlite": "3.54.0",
+              "tz": "2026e",
+              "undici": "8.11.2",
+              "unicode": "17.0",
+              "uv": "1.52.1",
+              "uvwasi": "0.0.23",
+              "v8": "14.6.202.34-node.39",
+              "zlib": "1.3.2.1-motley-456ae73",
+              "zstd": "1.5.7"
+            }
+          },
+          "retainedInstallation": false
+        }
+      }
+    }
+  },
+  "cargoCacheMountCases": [],
   "registry": {
     "complete": true,
     "anonymousStatus": 401,
@@ -1418,13 +1955,13 @@
     "hostBindMounts": 0
   },
   "timestampComputeModel": {
-    "observedNativeRequestMilliseconds": 139103,
+    "observedNativeRequestMilliseconds": 170632,
     "maximumArchitectureBuilders": 2,
     "cpusPerBuilder": 16,
     "memoryGiBPerBuilder": 32,
     "publicRateUsdPerBuilderMinute": 0.04,
-    "nominalWindowEstimateUsd": 0.18547066666666667,
-    "ceilingUsd": 1,
+    "nominalWindowEstimateUsd": 0.22750933333333334,
+    "ceilingUsd": 2,
     "invoiceOrAccountCapProven": false,
     "initialExpiredWallClockRetained": true
   },
@@ -1438,7 +1975,6 @@
     "Synthetic secret and keyless SSH forwarding consumers",
     "Remote Git immutable context and local overlay control",
     "Real firstparty BuildKit cache-mount consumer",
-    "OCI health metadata runtime controls and deciding source",
     "Cross-project pull-token isolation",
     "Independent parent nativeCI and GitHub consumers",
     "Image/project deletion after shared consumers"
