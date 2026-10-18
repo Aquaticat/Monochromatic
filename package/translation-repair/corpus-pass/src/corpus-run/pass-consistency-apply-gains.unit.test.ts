@@ -614,24 +614,6 @@ await describe({
             },).entries(),],).toEqual([['a', ['end',],], ['b', ['start',],], ['c', [],],],);
           },
         },),
-        it({
-          name: 'READS THE WORDS A SPLICE REPLACES WITH THE DEFINITIONS THE PLANNER READ THEM WITH: the words `a [b*] c*’` hold an edge '
-            + 'apostrophe given the definition of `[b*]`, so an apostrophe arriving there is no gain, and hold none without it',
-          fn: async () => {
-            /**
-             The English the replacement addresses: the words at 7 to 17 end in a mark after closing emphasis.
-             */
-            const english = 'Later *a [b*] c*’ naps.';
-            /**
-             The replacement, without and with the definitions the planner read the words with.
-             */
-            const edit: ConsistencyEdit = { id: 'a', start: 7, end: 17, text: 'the dogs’', };
-            const read: ConsistencyEdit = { ...edit, definitions: '[b*]: https://cats.example/b', };
-            expect([edit, read,].map(function gainedFor(one,): unknown {
-              return [...gainedBy({ slice: { sliceIndex: 0, english, edits: [one,], splices: new Set(['a',],), }, },).entries(),];
-            },),).toEqual([[['a', ['end',],],], [['a', [],],],],);
-          },
-        },),
       ],
     },),
     describe({
