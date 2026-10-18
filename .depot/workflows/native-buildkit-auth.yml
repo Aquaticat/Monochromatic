@@ -18,11 +18,13 @@ jobs:
         fetch-depth: 64
     - uses: depot/setup-action@91bc8495a33ebfc504ffc89e5674379ccf23c29c
       with:
+        # Match the installed CLI release and the audited authentication source.
         version: '2.102.23'
         oidc: 'false'
         configure-docker: 'false'
     - uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
       with:
+        # Reuse the qualified native bootstrap; Node remains bound by frozen mise.lock.
         version: '2026.10.9'
         cache: 'false'
         install: 'true'
