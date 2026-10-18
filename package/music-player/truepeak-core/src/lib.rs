@@ -135,7 +135,7 @@ pub use crate::fingerprint::{FINGERPRINT_DOMAIN_TAG, track_fingerprint};
 /// Re-exports the decision cache and its error,
 ///  behind the `service` feature.
 #[cfg(feature = "service")]
-pub use crate::cache::{CacheError, DecisionCache};
+pub use crate::cache::{CacheError, DecisionCache, WRITE_BATCH_LIMIT};
 
 /// Re-exports the cache-aware resolve,
 ///  behind the `service` feature.

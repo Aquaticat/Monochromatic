@@ -420,7 +420,8 @@ fn bench_setting(name: &str, fallback: Option<&str>) -> String {
 // Benchmark, skipped in normal runs: store `CACHE_BENCH_ROWS` (default 10,000) invented exact decisions into a
 // fresh database file under `CACHE_BENCH_DIR`, as a first analysis does, and print the wall time.
 // `CACHE_BENCH_MODE` picks the write path: `row` stores each decision with its own `put` (one commit per row),
-// `normal` does the same after `PRAGMA synchronous = NORMAL`.
+// `normal` does the same after `PRAGMA synchronous = NORMAL`, `batch` stores `CACHE_BENCH_BATCH` rows (default
+// 256) per `put_batch` call, and `batch-normal` combines both.
 // The directory must be on a real disk: on tmpfs an fsync costs nothing and the benchmark measures nothing.
 #[tokio::test]
 #[ignore = "benchmark; run through the bench:cache mise task with CACHE_BENCH_DIR on a real disk"]
@@ -430,33 +431,49 @@ async fn bench_cold_write() {
     let rows: u64 = bench_setting("CACHE_BENCH_ROWS", Some("10000"))
         .parse()
         .expect("CACHE_BENCH_ROWS should be a whole number");
+    let batch_size: usize = bench_setting("CACHE_BENCH_BATCH", Some("256"))
+        .parse()
+        .expect("CACHE_BENCH_BATCH should be a whole number");
+    assert!(
+        ["row", "normal", "batch", "batch-normal"].contains(&mode.as_str()),
+        "unknown CACHE_BENCH_MODE {mode}"
+    );
     let path = directory.join(format!("bench-{}-{mode}.db", std::process::id()));
     remove_scratch_db(&path);
     let path_text = path.to_str().expect("bench path should be UTF-8");
     let cache = DecisionCache::open(path_text)
         .await
         .expect("bench database should open");
-    if mode == "normal" {
+    if mode.ends_with("normal") {
         cache
             .conn
             .execute("PRAGMA synchronous = NORMAL", ())
             .await
             .expect("synchronous pragma should apply");
     }
+    let entries: Vec<(u64, Decision)> = (0..rows).map(|index| return (invented_fingerprint(index), exact(0.5))).collect();
     let started = std::time::Instant::now();
-    if mode == "row" || mode == "normal" {
-        for index in 0..rows {
+    if mode.starts_with("batch") {
+        for chunk in entries.chunks(batch_size) {
             cache
-                .put(invented_fingerprint(index), identity(), &exact(0.5))
+                .put_batch(identity(), chunk)
+                .await
+                .expect("bench batch should be cached");
+        }
+    } else {
+        for (fingerprint, decision) in &entries {
+            cache
+                .put(*fingerprint, identity(), decision)
                 .await
                 .expect("bench decision should be cached");
         }
-    } else {
-        panic!("unknown CACHE_BENCH_MODE {mode}");
     }
     let elapsed = started.elapsed();
     assert_eq!(count_rows(&cache).await, i64::try_from(rows).expect("row count fits i64"));
-    println!("CACHE_BENCH mode={mode} rows={rows} wall_ms={:.1}", elapsed.as_secs_f64() * 1000.0);
+    println!(
+        "CACHE_BENCH mode={mode} rows={rows} batch={batch_size} wall_ms={:.1}",
+        elapsed.as_secs_f64() * 1000.0
+    );
     drop(cache);
     remove_scratch_db(&path);
 }
