@@ -1,6 +1,50 @@
 # Depot trial interview
 
-## Execution checkpoint on 2026-10-18 at 09:47 UTC
+## Execution checkpoint on 2026-10-18 at 10:24 UTC
+
+The actual single-job retry of native run `xgq2429hqv` completed artifact download on attempt two.
+Its consumer then correctly rejected the old fixture's failed assertion.
+The corrected fresh run `1jqm5wjmlj`,
+harness `bf3c4a98b32826c1c16e8755b8775256340fab79`,
+passed its downstream consumer with the current producer hashes and rejection controls.
+The subsequent full workflow rerun regenerated passing producer receipts,
+but its downloader selected the first attempt's `allrun` archive alongside current state/default archives.
+The consumer rejected the current-output hash mismatch.
+All seven producer/consumer archives across both attempts are retained privately with CRC and SHA checks.
+The parent owns source diagnosis and qualification of unique content-bound artifact names;
+the backend cause is not established.
+
+The earlier [Depot Tests trial](../audit/depot-test-feature-2026-10-16.md)
+already qualifies physical binary-level sharding,
+failure/skip retrieval,
+retry history and analytics on its own source.
+The new current-source profile extends that evidence to 34 individual test names,
+with unchanged-input seed repeats and separate physical shards.
+Its exact Nextest selector controls and local CLI `2.102.23` preflight passed.
+It is committed at `aec580b2ddbc62126eb9264d8d8cff36cd8f1c06`,
+not dispatched yet,
+with four bounded allocations and a USD 0.174 full-window compute reservation under a USD 1 campaign guard.
+Do not repeat the prior failure/skip/duplicate trials as though those capabilities were untested.
+Issue `1046` remains open;
+the current public service protocol still says `duplicate_invocation` is always false.
+
+The broader Rust work executed 336 passing core cases with 13 skips among 349 enumerated cases.
+The current-source Rust linter executed 415 passing cases with one skip among 416 enumerated cases.
+Its standalone compiler-consumer recovery remains separate from those passing tests.
+The actual frozen-source `wg-quicker-exempt` producer was consumed by GitHub run `39118628603`:
+all 44 owning invocations passed,
+including the formerly missing companion boundary.
+The exact transport secret was removed and HTTP 404 verified.
+The original missing-producer fixture remains retained.
+
+The raw GitHub-hosted KVM diagnostic completed as run `39115506319`.
+QEMU `q35` with KVM passed as the ordinary user after scoped device access was granted;
+the later `none` machine user probe failed opening `/dev/kvm`,
+while the root probe passed.
+Libvirt's KVM capability probe still failed.
+This disproves a GitHub-wide KVM-absence claim;
+the access change between probes is not yet explained.
+The parent owns its public receipt and deciding-source note.
 
 Research remains open;
 do not resume the interview or declare readiness from the completed module sample.

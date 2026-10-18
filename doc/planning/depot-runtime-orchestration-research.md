@@ -1,5 +1,41 @@
 # Depot runtime and orchestration research
 
+## Current execution boundary on 2026-10-18 at 10:24 UTC
+
+Native single-job retry now has actual transport evidence:
+attempt two of `xgq2429hqv` downloaded the producer archives,
+then rejected the old fixture's failed assertion.
+The corrected fresh run `1jqm5wjmlj` passed the final consumer at source
+`bf3c4a98b32826c1c16e8755b8775256340fab79`.
+The consumer bound each receipt's raw SHA256 to its producer output and passed rejection controls.
+Its full workflow rerun exposed a distinct boundary:
+the download Action returned the first attempt's `allrun` ZIP with current state/default ZIPs,
+and the hash guard rejected that mixed result.
+All seven archives across both attempts are retained and integrity checked.
+Exact content-bound names are the next consumer-side qualification;
+neither the private backend cause nor a general retry failure is established.
+
+The [earlier Tests trial](../audit/depot-test-feature-2026-10-16.md)
+already proves actual physical binary-level splitting and report/history controls.
+The current profile adds individual-test granularity on the frozen source:
+34 exact selectors,
+unchanged-input seed repeats,
+two physical shards and a downstream identity consumer.
+Local selector and CLI-version preflight passed at harness
+`aec580b2ddbc62126eb9264d8d8cff36cd8f1c06`.
+It remains undispatched;
+four job windows reserve USD 0.174 under a USD 1 campaign guard.
+The prior repeated-upload defect remains open in issue `1046`;
+current protocol source still documents the duplicate response flag as always false.
+
+The raw KVM diagnostic `39115506319` passed QEMU `q35` KVM as an ordinary user
+after scoped device-access repair.
+Its later `none` machine user probe failed with device-open permission denied,
+while the root control passed and libvirt still rejected KVM capability.
+This is a changing access boundary,
+not evidence that GitHub-hosted runners categorically lack KVM.
+Per-probe access-state diagnosis and publication remain open.
+
 ## Scope and execution manifest
 
 The reopened research uses repository source `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
