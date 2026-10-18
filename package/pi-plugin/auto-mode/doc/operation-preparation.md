@@ -48,6 +48,24 @@ callbacks,
 and completion states remain with the dispatcher.
 Freshness failures cannot reuse an established answer for changed inputs.
 
+## Review lifetime
+
+The native handler reads the full review before its operation lifetime closes.
+The runtime keeps that actual latest review for diagnostics.
+Completed group contexts retain their terminal outcome and reject further execution checks;
+they release the full derived review and automatic-review references.
+Original source receipts and native member results remain with their existing owners.
+This prevents retained execution callbacks from preserving every past collection of derived source views.
+
+`test:native:review-retirement` uses original native membership and execution owners with visible fixture review storage.
+It keeps completed contexts and the actual latest full review alive.
+The old output retains 96,805,456 bytes across twelve groups and fails its 32 MiB budget.
+A private retirement probe retains 8,792,696 bytes,
+preserves terminal outcomes and the latest diagnostic,
+rejects execution after closure,
+and still rejects a changed latest source.
+Complete consumer and lifecycle catalogs remain required after the maintained source rebuild.
+
 ## Model projection
 
 `src/review-operation.ts` replaces `bash.command` and `process.start.command`
