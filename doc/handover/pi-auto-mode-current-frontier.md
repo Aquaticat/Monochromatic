@@ -41,6 +41,28 @@ Next actions:
 - Add a genuine native Stop regression and preserve its withheld reason through cancellation.
 - Rebuild and replay the reported group and denial controls before renewing the lint handoff.
 
+Source fixes are committed in `2f90217589` and `daf6b8e179`.
+Build `native-release-cXp8co` passes the actual aggregate string-limit regression,
+the Stop/cancel regressions,
+the complete decision fallback catalog,
+run history,
+prompt capacity,
+run-message freshness,
+native phases,
+and single-call catalogs.
+Type checking passes with a disposable writable package cache;
+the first read-only container attempt fails only because its cache cannot be unlinked.
+The full character-fragmented MiMo replay still exhausts the 2 GiB container,
+so readiness remains open.
+The unchanged repeated-JSON capture fixture retains 688,995,568 to 689,029,488 heap bytes across three runs.
+Commit `77620b6c23` shares equal stored text and hashes inside the existing pool,
+while retaining every source occurrence and publication separately.
+Its regression includes a distinct later input and keeps per-occurrence byte accounting.
+Next: measure this change against that baseline,
+complete the original configured-host replay,
+check actual outgoing payloads and prohibitions,
+and finish the durable troubleshooting record.
+
 ## Verified MiMo lint handoff on 2026-10-17
 
 The current handoff is [MiMo lint handoff](pi-auto-mode-mimo-lint-prompt.md).

@@ -58,12 +58,20 @@ its counters have consumers and count separate source records.
 
 `test:native:retained-context-capacity` passes genuine manager argument frames through the original pool
 and run context owner.
-Its separate records total 686,653,200 bytes,
+Its repeated JSON records and final distinct record total 713,092,714 bytes,
 exceeding the tested engine's 536,870,888-character string limit.
 The test checks original publication identities,
 repeat observation,
 and rejection after the native root changes.
 The old build fails at the same `charge()` call as the reported session.
+
+The existing manager pool shares equal immutable content,
+content hashes,
+and serialized metadata within that pool's lifetime.
+Every receipt still has its own source occurrence and publication capability.
+Equal text does not merge provenance,
+and receipt accounting still counts every occurrence.
+The capacity fixture checks distinct publications and a later changed input as separate boundaries.
 
 ## Verification
 
