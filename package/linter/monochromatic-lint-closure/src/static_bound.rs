@@ -84,7 +84,8 @@ fn type_requires_static<'tcx>(cx: &LateContext<'tcx>, callee: DefId, parameter: 
 /// Why:
 ///  `param_env` already merges the impl and trait parents' clauses and elaborates supertraits,
 ///  so `F: Task` with `trait Task: 'static` yields `F: 'static` without a separate elaboration step
-///  (measured: removing an explicit elaboration pass changed no fixture result).
+///  (measured:
+///  removing an explicit elaboration pass changed no fixture result).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
