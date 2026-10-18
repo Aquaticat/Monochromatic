@@ -71,18 +71,21 @@ raw command logs and JUnit.
 - `jf0c9llb1v` repeats the same application test counts,
   retains the tested CLI executable,
   and stops at the harness's fixed `debug/deps` lookup before attempting the revised consumer.
-- The next isolated ordinary consumer discovers the library and dependency filenames
+- `zxlt43t7g1` discovers the library and dependency filenames
   from Cargo's `compiler-artifact` JSON,
   admits co-produced archive and metadata hashes,
-  and will execute the unchanged `src/processors_consumer.rs` only after successful compilation.
+  compiles the unchanged `src/processors_consumer.rs`,
+  and executes it successfully with `processor artifact consumer passed`.
+  Its harness is `ee873be6f753c611b15cbfd0e925d0048a631dbb`.
+  Artifact `01a14e95-7e1f-70e2-a82d-b8ea65ea6fd7` passed the provider upload digest and ZIP CRC checks.
 
 The passing catalog currently includes application compilation,
 the full Nextest boundary and actual CLI help/rule enumeration.
 The failing catalog includes the archive-only direct invocation
 and the separate fixed-directory harness assumption.
-No recovered consumer execution is claimed before its retained run receipt exists.
+The recovered ordinary consumer's command logs and artifact hashes are retained in that ledger.
 
-## Workaround under verification
+## Verified workaround
 
 Preserve the link archive and full metadata from the same Cargo build.
 Pass both paths explicitly to direct `rustc`,
@@ -127,8 +130,8 @@ Upstream communication is outside this research campaign's authorized scope.
 5.  The existing [metadata-embedding tracking issue](https://github.com/rust-lang/rust/issues/139165)
     covers the unstable option and links its implementation and Cargo integration.
     Its instructions exclude using the tracking thread for bug reports or discussion.
-6.  The consumer-side pairing prototype is admitted for actual execution;
-    its verification status remains explicit until the run completes.
+6.  The consumer-side pairing prototype passed its actual execution in `zxlt43t7g1`;
+    no upstream source patch was necessary.
 
 There is nothing additive to file about the intentional archive-only rejection.
 No new issue or comment was posted,
