@@ -193,3 +193,26 @@ export {
   RESULT_RELATION_RECEIVER_VALUE,
   VERIFIED_RESULT_RELATION_COUNT,
 } from './prefer-readonly-parameter-types/effect-result-provenance-authority.ts';
+
+/**
+ Cross-project analysis key, project fingerprint and shared-hit verification,
+ exported so the sharing tests can read a key's fallback reason and components from built output.
+ 
+ @internal
+ */
+export {
+  createSharedKeyResolver,
+  type SharedKey,
+} from './prefer-readonly-parameter-types/shared-analysis-key.ts';
+
+export {
+  type EffectProjectFingerprint,
+  effectProjectFingerprint,
+} from './prefer-readonly-parameter-types/effect-project-fingerprint.ts';
+
+export { verifySharedHit, } from './prefer-readonly-parameter-types/shared-analysis-verification.ts';
+
+export {
+  VERIFY_SHARED_DIRECTORY_ENVIRONMENT_VARIABLE,
+  VERIFY_SHARED_ENVIRONMENT_VARIABLE,
+} from './prefer-readonly-parameter-types/shared-analysis-telemetry.ts';
