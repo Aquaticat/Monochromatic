@@ -142,7 +142,14 @@ but projection used to throw before window selection.
 The first green probe incorrectly required that marker in the final selected window;
 the corrected probe explicitly checks its actual prefix and retains the failed harness log.
 Source regression commit `a9b1766942` records both failing catalogs before implementation adoption.
-Guard mutations and the configured Pi replay remain pending.
+Guard removals for unrelated-error propagation,
+strict current proposals and raw historical-source exclusion each build,
+fail the maintained catalog and pass after restoration and rebuilding.
+Root source and publication hashes remain unchanged.
+The first raw-source mutation harness expected the shell catalog to run,
+but the process catalog correctly failed first;
+the corrected diagnostic check passes and the original private source is restored.
+Committed `e8b7a17e03` passes scoped lint on all six affected source/test files and fresh-cache types.
 Root published `dist` remains unchanged.
 The first configured replay fails before Pi startup because its capture preload cannot resolve the private
 candidate's canonical scratch path inside the container.
@@ -152,6 +159,39 @@ command session `97637`,
 on `I3dKHQ` with the original `j2yRJI` saved history.
 Its final-child Git-wrapper and LFS preflight passes.
 Finish this repair before resuming the native typing assignment.
+
+The corrected scoped read executes automatically on `dwTJVg`;
+the first authored probe accidentally includes a final dot operand and is withheld before correction.
+The initial payload audit fails because its capture hook records no requests.
+The dispatcher import used the candidate's physical scratch namespace,
+while the actual CLI imported its repository mount namespace.
+Node treats those module URLs as distinct instances;
+the second dispatcher instance replaces the fixture fetch hook.
+Control `ONKvxX` records `attached: false` at registration and session start.
+The corrected preloader resolves the actual CLI namespace in the child and checks its release name.
+Replay `NEymiB` records `attached: true` at registration,
+session start and agent start,
+executes one scoped Bash call with zero selectors/errors and closes with exit 0.
+Its actual four-request Luna audit covers 239 questions and two review requests,
+passes two required-data and four excluded-data positive controls,
+and finds no excluded structured fields.
+Receipt: `history-replay-payload-audit.log` in primary scratch.
+
+### Expected parser diagnostics
+
+The historical recovery exposed another user-visible issue:
+known syntax rejection still emitted low-level error logs on every context projection.
+Shared analyzer commit `8d0b81653b` keeps the same thrown value,
+logs expected syntax rejection at debug level and retains error logging for unexpected parser failures.
+Its version is bumped to `0.0.2` for publishing.
+Private build,
+fresh-cache types and all unit tests pass.
+A built consumer proves valid syntax and expected syntax rejection emit no error diagnostic,
+while injected unexpected JSON serialization failure retains its original cause and does emit an error diagnostic.
+The scoped lint invocation failed before Oxlint because the inherited task does not declare path arguments.
+This exact invocation limitation is recorded in `doc/troubleshooting/mise-usage-args-inline-node.md`.
+The corrected full-package lint is running;
+publication verification is pending.
 
 ### Launcher acceptance checks
 
@@ -197,6 +237,8 @@ installed helper or workspace dependency is changed.
 
 - Finish and verify the source lint clusters,
   including the precise navigation assertion correction.
+- Complete shared analyzer `0.0.2` lint and publication verification,
+  then build and consumer-verify the coherent default auto-mode artifact.
 - Verify the native policy-input cluster and continue typed native consolidation without rule weakening.
 - Finish affected consumer catalogs and repeat original configured interaction,
   compaction,
@@ -207,7 +249,11 @@ installed helper or workspace dependency is changed.
   final zero lint,
   complete branch coverage and rendered documentation.
 
-The latest renderer receipt before this refresh reports 31 files and no broken links.
+Full `src/` lint on frozen `e8b7a17e03` reports 1,037 warnings and 47 errors.
+The independently validated aggregate is `source-e8-lint-summary.json` in primary scratch.
+These are still open source findings;
+scoped clean checks are not package completeness.
+The latest renderer receipt before this refresh reports 32 files and no broken links.
 Render this updated checkpoint before final documentation completion.
 
 ## Historical checkpoints retained for evidence

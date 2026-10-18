@@ -574,6 +574,17 @@ After mounting both paths, it also needed to preload the candidate's HTTP dispat
 Preloading the installed release's dispatcher allowed candidate initialization to replace that fixture transport.
 These are harness corrections, not additional provider incidents.
 
+The `NEymiB` replay on 2026-10-18 verifies this namespace requirement against a private candidate
+mounted at the repository's `dist` path.
+Preloading the physical scratch URL while the CLI imports the repository mount URL creates distinct
+dispatcher module instances.
+The `ONKvxX` control records the capture hook as detached during extension registration and session start.
+Resolving the actual CLI namespace inside the child preserves the hook at registration,
+session start and agent start.
+The corrected replay captures four Luna requests;
+the required/excluded-data audit passes with its positive controls.
+The earlier replay's empty capture does not establish payload correctness.
+
 One verification attempt ended with Mise's `killed by SIGABRT` without a retained native fatal diagnostic.
 A later commit hook reported `cannot fork()` and `Resource temporarily unavailable`.
 The shared worker task limit was 256; a later sample measured 245 tasks.

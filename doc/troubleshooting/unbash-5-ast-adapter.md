@@ -290,6 +290,23 @@ No shared source or installed parser is changed yet.
 This is an auto-mode role-boundary defect,
 not an Unbash parsing defect or a cancellation failure.
 
+The adopted correction is `e8b7a17e03`.
+Both new regression catalogs fail before the correction and pass after it,
+with fresh-cache types and full units.
+Rebuilt removals of strict proposal validation,
+raw historical-source exclusion and unrelated-error propagation each fail the maintained catalog;
+restored sources rebuild and pass.
+Actual Pi replay `NEymiB` resumes the original saved history and executes the scoped read automatically.
+Its captured Luna requests pass required-data and excluded-data controls.
+
+Known rejected historical syntax also emitted repeated parser error diagnostics.
+Shared analyzer `0.0.2`,
+commit `8d0b81653b`,
+keeps its thrown error and records expected rejection at debug level.
+Unexpected parser/serialization failures retain error diagnostics and their original cause.
+The built consumer exercises both classifications with an injected unexpected serialization failure as its
+error-capture positive control.
+
 ## Upstream filing decision
 
 1.  Upstream fault:
