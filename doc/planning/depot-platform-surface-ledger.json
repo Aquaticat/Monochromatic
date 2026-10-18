@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-18T15:41:12.820Z",
+  "updatedAt": "2026-10-18T15:42:42.486Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research reopened; no readiness claim",
   "sourceArchive": {
@@ -16211,21 +16211,24 @@
     "nativeBuildkitJobAuthentication": {
       "note": "doc/planning/depot-native-buildkit-auth-research.md",
       "evidence": "doc/audit/depot-native-buildkit-job-auth-2026-10-18.evidence.json",
-      "status": "Actual injected-token local build and frozen file consumer passed; separately bounded org-hosted project-registry consumer admitted but not allocated",
+      "status": "Qualified native injected-token BuildKit local export and org-hosted project-registry OCI/file consumer; all native runs terminal and solely-owned project/images removed",
       "failedRun": "dzsf27t0xx",
       "failedBuild": "j9r23brwtx",
       "passedLocalRun": "pxx75mxnw2",
       "passedLocalBuild": "xwq746tv4z",
-      "registryHarness": "f0865228da0123433face17054ca7f7f62538c9b",
+      "passedRegistryRun": "38z4wlq9d3",
+      "passedRegistryBuild": "20l2bllb5n",
+      "registryImageDigest": "sha256:6af2ea8c461c034d875f805cc973972b7e2977ca324690be65f9133db30f5469",
       "cumulativeFullWindowReservationUsd": 0.69,
       "sourceArchive": {
         "path": "doc/audit/depot-native-buildkit-job-auth-2026-10-18.sources.json.gz",
-        "bytes": 83447,
-        "sha256": "23b34c6e85ff3262b12af64721ca383b9f19211dd5a7b1a23997f6248a7cc741",
-        "uncompressedBytes": 435556,
-        "originalZips": 2,
-        "registryFixtureFiles": 10
-      }
+        "bytes": 128260,
+        "sha256": "73c1e95822919d9029144fd6892ecb5a9273f244db3ea39be634eac7e7c4b8a3",
+        "uncompressedBytes": 632781,
+        "originalZips": 3,
+        "fullSourceAndTerminalCleanup": true
+      },
+      "cleanupComplete": true
     }
   },
   "publicDocumentationReconciliation": {

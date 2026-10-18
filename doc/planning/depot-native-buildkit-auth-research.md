@@ -3,8 +3,12 @@
 Native run `pxx75mxnw2` passed the actual frozen-source queue producer and exported-file consumer
 using only its automatically injected job credential.
 The initial exporter fixture failure is retained separately.
-A separately admitted image-only registry consumer remains unallocated;
-its authentication and OCI assertions must pass before claiming native registry access.
+Native run `38z4wlq9d3` also passed a separate image-only build,
+project-registry token exchange,
+complete OCI graph/blob validation,
+and actual extracted-source execution using its injected job token.
+All three native runs are terminal;
+the solely owned project and saved image tags were removed with fresh absence controls.
 
 ## Scope and admission
 
@@ -185,7 +189,8 @@ and separately admit another native request before allocation.
 The proposed local-only consumer would reserve a further `USD 0.23`,
 for `USD 0.46` cumulative full-window timestamp-compute arithmetic under the admitted `USD 1` guard.
 Registry image-read authorization would remain a distinct boundary if no image were exported.
-The solely owned project remains pending exact cleanup or a separately admitted correction.
+At that failed checkpoint the solely owned project remained pending cleanup or an admitted correction.
+The qualified corrections and final cleanup are retained in this record.
 
 ## Qualified local-export correction
 
@@ -264,10 +269,95 @@ The additional full-window reservation is `USD 0.23`,
 bringing conservative cumulative reservation to `USD 0.69` under the same `USD 1` campaign guard.
 The admitted shape remains one two-CPU/eight-GiB native job and one sixteen-CPU/thirty-two-GiB AMD64 builder,
 each with a five-minute server guard.
-No registry allocation has occurred at this checkpoint.
-After terminal collection,
-the solely owned project and any saved image need exact deletion/absence verification,
-then the native slot returns directly to the parent's graph campaign.
+No registry allocation had occurred at that admission checkpoint.
+
+## Qualified injected-token registry consumer
+
+Harness `f0865228da0123433face17054ca7f7f62538c9b` ran as `38z4wlq9d3`.
+Its workflow was `ptf21f5lhg`,
+job `833d5l1vdh`,
+attempt `4fbdgxpspd`,
+and sandbox `whvmz0ljglpkk547x1tx`.
+Build `20l2bllb5n` finished successfully;
+fresh native status confirmed completion at `2026-10-18T15:33:29.579Z`.
+
+The anonymous manifest request and invented-token exchange each returned `401`.
+The native injected token obtained a repository-scoped bearer in process,
+then read the saved index,
+both child manifests,
+and every referenced configuration/layer blob with `200`.
+Authorization was removed on cross-origin redirects;
+no signed URL or credential value is published.
+
+The saved index is
+`sha256:6af2ea8c461c034d875f805cc973972b7e2977ca324690be65f9133db30f5469`.
+Its runnable AMD64 manifest is
+`sha256:003e7caae307e87f0e77b8ab77e9e08518aa35449fcd77e96e448f3758582c0d`.
+The native consumer and independent local verifier checked every descriptor's byte count and SHA-256,
+the decompressed runnable layer's configuration `diff_id`,
+and the exact frozen first-party source bytes.
+The native consumer imported and executed that extracted source,
+checking FIFO behavior,
+clear/rejection,
+and the empty queue.
+This qualifies the actual project-repository OCI/file consumer,
+not an arbitrary named organization repository or an ordinary container-runtime pull.
+
+The attestation child carries a SLSA provenance `v0.2` statement whose subjects bind the runnable manifest.
+Its complete graph was read and rehashed.
+This is generated provenance evidence,
+not signature verification or a claim about a trusted signer.
+
+The original artifact has seventeen members and is `15759` bytes,
+with SHA-256 `1b8e0b6fae36cd890b4c592cf759c57381caae4b834dcd25f43ade48ed4e7417`.
+ZIP CRCs,
+API byte length,
+and the upload Action's log digest match.
+The API does not return an artifact digest.
+The [campaign receipt][receipt] and its linked source archive retain all three original ZIPs,
+the complete OCI graph,
+exact source,
+raw logs,
+and independently fetched workflow metadata.
+
+## Exact owned cleanup and allocation limits
+
+Project-scoped build metadata retained these request intervals:
+
+- Failed exporter fixture `j9r23brwtx`: `14:54:39.892` to `14:54:47.759` UTC.
+- Qualified local export `xwq746tv4z`: `15:13:27.293` to `15:13:35.527` UTC.
+- Qualified registry image `20l2bllb5n`: `15:33:16.579` to `15:33:24.324` UTC.
+
+These are request timestamps,
+not billed builder allocation intervals.
+The core `GetBuild` endpoint rejected the existing user token with `401`,
+explicitly requiring an organization token.
+No broader token was created.
+The scoped CLI build-list response retained the known IDs and its nonempty pagination cursor;
+it is not claimed as an exhausted account-wide history.
+
+Both successful jobs measured two native CPUs and `8336855040` memory bytes,
+and sixteen builder CPUs and `32997224448` memory bytes.
+The failed first request did not reach the hardware consumer.
+The image CLI command took `7817` milliseconds in one sample.
+No performance ratio or complete package-test claim follows.
+
+At `2026-10-18T15:38:26.135Z`,
+the exact saved manifest was readable with `200`.
+Only the two owned image tags were removed;
+the same manifest then returned `404`.
+The solely owned project `ng17dl3xrn` was deleted,
+a fresh project query returned `not_found`,
+and the manifest remained `404` at `15:38:29.592Z`.
+These controls establish logical absence,
+not physical erasure or completed storage garbage collection.
+The native slot was released to the parent after terminal collection and cleanup.
+
+The cumulative three-window reservation remains `USD 0.69` under the admitted `USD 1` guard.
+It is conservative admission arithmetic,
+not an invoice,
+unseen account usage,
+or a measured combined-platform bill.
 
 [native-builds]: https://depot.dev/docs/container-builds/integrations/depot-ci
 [github-builds]: https://depot.dev/docs/container-builds/integrations/github-actions
