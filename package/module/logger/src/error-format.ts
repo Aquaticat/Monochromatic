@@ -9,6 +9,7 @@
  */
 
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
+import { neutralizeControlCharacters, } from './sink/console-control-chars.ts';
 
 /**
  Report fallback directly because a sink cannot recursively log through itself.
@@ -39,10 +40,9 @@ export function reportLoggerFallback({
     : ((typeof console.error) === 'function' ? console.error : console.log);
   if ((typeof report) !== 'function')
     return;
-  report.call(
-    console,
-    `logger file sink: ${reason}; using fallback ${JSON.stringify(directory,)}`,
-  );
+  /** Diagnostic paths and caught values remain readable without executing terminal control sequences. */
+  const message = `logger file sink: ${reason}; using fallback ${JSON.stringify(directory,)}`;
+  report.call(console, neutralizeControlCharacters(message,),);
 }
 
 /**
@@ -89,8 +89,7 @@ export function reportLoggerInternalError(
   if ((typeof report) !== 'function')
     return;
 
-  report.call(
-    console,
-    `logger internal error: ${context}: ${caughtValueText(error,)}`,
-  );
+  /** Internal failures cross the same terminal boundary as ordinary sink records. */
+  const message = `logger internal error: ${context}: ${caughtValueText(error,)}`;
+  report.call(console, neutralizeControlCharacters(message,),);
 }
