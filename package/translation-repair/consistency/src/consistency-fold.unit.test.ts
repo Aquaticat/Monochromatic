@@ -811,6 +811,25 @@ await describe({
           },
         },),
         it({
+          name: 'CUTS THE FINAL EDGE BY THE REFERENCES THE PAGE DEFINES, so a word that a reference shows a letter before names no span '
+            + 'when its definition stands in the page or is handed in, and does where no definition of that label stands',
+          fn: async () => {
+            const rows = ['a [x][r]*kit*', 'a[][r]*kit*',];
+            expect(rows.map(function onPageDefining(haystack,): string {
+              return locateWords({ haystack, words: 'kit', page: { text: `${haystack}\n\n[r]: u`, offset: 0, }, },).kind;
+            },),).toEqual(['none', 'none',],);
+            expect(rows.map(function handedDefinitions(haystack,): string {
+              return locateWords({ haystack, words: 'kit', definitions: '[r]: u', },).kind;
+            },),).toEqual(['none', 'none',],);
+            expect(rows.map(function onPageDefiningAnother(haystack,): string {
+              return locateWords({ haystack, words: 'kit', page: { text: `${haystack}\n\n[q]: u`, offset: 0, }, },).kind;
+            },),).toEqual(['once', 'once',],);
+            expect(rows.map(function onNoPage(haystack,): string {
+              return locateWords({ haystack, words: 'kit', },).kind;
+            },),).toEqual(['once', 'once',],);
+          },
+        },),
+        it({
           name: 'KEEPS THE APOSTROPHE A JOINT after a link that holds a letter, and after an empty link whose own neighbour joins it '
             + 'to the word before (n168 controls)',
           fn: async () => {

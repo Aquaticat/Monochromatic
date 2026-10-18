@@ -240,6 +240,21 @@ await describe({
       },
     },),
     it({
+      name: 'GIVES THE SLOT AT ITS WORDS ALONE, leaving an apostrophe beside it outside the slot, as the span already holds the '
+        + 'apostrophes of the located words',
+      fn: async () => {
+        expect({
+          opening: slotOf({ span: '’round the cat', slots: [['round',], ['round',],], },),
+          closingOfPlural: slotOf({ span: 'the parents’ cat', slots: [['parents',], ['parents',],], },),
+          closingOfCats: slotOf({ span: 'the cats’ bowl', slots: [['cats',], ['cats',],], },),
+        },).toEqual({
+          opening: [{ slot: 'round', slotStart: 1, },],
+          closingOfPlural: [{ slot: 'parents', slotStart: 4, },],
+          closingOfCats: [{ slot: 'cats', slotStart: 4, },],
+        },);
+      },
+    },),
+    it({
       name: 'GIVES NO SLOT THAT CUTS MARKUP, beside a slot of the same span that cuts none',
       fn: async () => {
         expect({
