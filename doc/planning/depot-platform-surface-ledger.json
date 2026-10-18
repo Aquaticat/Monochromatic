@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-18T14:00:39.674Z",
+  "updatedAt": "2026-10-18T14:08:40.242Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research reopened; no readiness claim",
   "sourceArchive": {
@@ -493,8 +493,22 @@
       "family": "cache",
       "applicability": "Cross-job acceleration, auth, isolation and storage exposure",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed cache contract read; scoped auth/retention/meter/runtime evidence reconciled",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:08:40.242Z",
+        "sourceSha256": "925068874355a072fe6dd7e5ed42b4937d593bdff7cfbdf4e75023d626ab1421",
+        "findings": [
+          "User/org tokens supported; project tokens excluded",
+          "Automatic GHA job Cache token documented; nativeCI automatic token independently exercised",
+          "Generic remote cache auth does not establish standard GHA Actions-archive replacement"
+        ],
+        "runtimeEvidence": [
+          "doc/audit/depot-cache-job-identity-2026-10-18.evidence.json",
+          "doc/audit/depot-reuse-strategy-2026-10-18.evidence.json"
+        ],
+        "boundary": "No retention policy mutation/account-state read, physical deletion proof or generic cache-benefit claim"
+      }
     },
     {
       "title": "Configure Bazel to use Depot Cache",
@@ -925,8 +939,23 @@
       "family": "cache",
       "applicability": "Cross-job acceleration, auth, isolation and storage exposure",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed cache contract read; scoped auth/retention/meter/runtime evidence reconciled",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:08:40.242Z",
+        "sourceSha256": "c8a4d279731822e194bf8e93a610d76f228c8bd2b9c387f044676dc731924696",
+        "findings": [
+          "Remote tool cache available outside Depot with separate auth",
+          "Documented default14days and size-unlimited; configurable7/14/30days and size tiers, not inspected org policy",
+          "Docker layer retention is project-specific and excluded from generic retention setting",
+          "Storage billed hourly snapshots averaged monthly, separate from compute allowances"
+        ],
+        "runtimeEvidence": [
+          "doc/audit/depot-cache-job-identity-2026-10-18.evidence.json",
+          "doc/audit/depot-reuse-strategy-2026-10-18.evidence.json"
+        ],
+        "boundary": "No retention policy mutation/account-state read, physical deletion proof or generic cache-benefit claim"
+      }
     },
     {
       "title": "Depot CI compatibility with GitHub Actions",
@@ -2668,8 +2697,18 @@
       "family": "container-recipes",
       "applicability": "Compare language recipes to repository language/toolchain policy; presence does not authorize replacement",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed recipe read; immutable repository marker scope and concrete adaptation/runtime boundary recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:08:40.242Z",
+        "sourceSha256": "957ef5bcdcb5dd86379b7aed2b214dffc0dc0e0d7f15d8b376ce450dca07765a",
+        "repositoryUse": "No corresponding owned project/source filename marker in frozen git tree; configured/downloaded tool dependencies remain distinct",
+        "findings": [
+          "NuGet package/metadata/plugin/scratch mounts and self-contained versus framework-dependent runtime patterns",
+          "ASP.NET and Worker templates describe different runtime artifacts"
+        ],
+        "boundary": "Source-reviewed capability pattern only; no unrelated language workload or recipe execution created"
+      }
     },
     {
       "title": "Optimal Dockerfile for .NET ASP.NET Core",
@@ -2697,8 +2736,18 @@
       "family": "container-recipes",
       "applicability": "Compare language recipes to repository language/toolchain policy; presence does not authorize replacement",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed recipe read; immutable repository marker scope and concrete adaptation/runtime boundary recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:08:40.242Z",
+        "sourceSha256": "f86539a582e1613ec240bc21d4e3b25eb05cc25c3eceb762cfaa8a586b3a1ca4",
+        "repositoryUse": "No corresponding owned project/source filename marker in frozen git tree; configured/downloaded tool dependencies remain distinct",
+        "findings": [
+          "NuGet package/metadata/plugin/scratch mounts and self-contained versus framework-dependent runtime patterns",
+          "ASP.NET and Worker templates describe different runtime artifacts"
+        ],
+        "boundary": "Source-reviewed capability pattern only; no unrelated language workload or recipe execution created"
+      }
     },
     {
       "title": "Optimal Dockerfile for .NET Worker Service",
@@ -2728,8 +2777,18 @@
       "family": "container-recipes",
       "applicability": "Compare language recipes to repository language/toolchain policy; presence does not authorize replacement",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed recipe read; immutable repository marker scope and concrete adaptation/runtime boundary recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:08:40.242Z",
+        "sourceSha256": "c778c23a235d9aefccbb74e04f07e0c446e1baf0e16d6d1305cd54b0ccc953e5",
+        "repositoryUse": "No corresponding owned project/source filename marker in frozen git tree; configured/downloaded tool dependencies remain distinct",
+        "findings": [
+          "NuGet package/metadata/plugin/scratch mounts and self-contained versus framework-dependent runtime patterns",
+          "ASP.NET and Worker templates describe different runtime artifacts"
+        ],
+        "boundary": "Source-reviewed capability pattern only; no unrelated language workload or recipe execution created"
+      }
     },
     {
       "title": "Optimal Dockerfile for Go",
@@ -2756,8 +2815,18 @@
       "family": "container-recipes",
       "applicability": "Compare language recipes to repository language/toolchain policy; presence does not authorize replacement",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed recipe read; immutable repository marker scope and concrete adaptation/runtime boundary recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:08:40.242Z",
+        "sourceSha256": "379775413d8c1d8e7d5e9a5b38b983ce9ad1b22f19a4c9e13a9717f752af3f06",
+        "repositoryUse": "No corresponding owned project/source filename marker in frozen git tree; configured/downloaded tool dependencies remain distinct",
+        "findings": [
+          "Go module/build cache mounts and vendor-conditioned preparation",
+          "Go-based installed tools such as toml-test are separate from a repository-owned Go module"
+        ],
+        "boundary": "Source-reviewed capability pattern only; no unrelated language workload or recipe execution created"
+      }
     },
     {
       "title": "Optimal Dockerfiles for Java",
@@ -2777,8 +2846,19 @@
       "family": "container-recipes",
       "applicability": "Compare language recipes to repository language/toolchain policy; presence does not authorize replacement",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed recipe read; immutable repository marker scope and concrete adaptation/runtime boundary recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:08:40.242Z",
+        "sourceSha256": "88bf2f51709828430d8ed4a7996cdce7783d3614daee51e4f6e46005a15618ec",
+        "repositoryUse": "Kotlin linter and Android Gradle owners",
+        "findings": [
+          "Gradle template uses Java21/Gradle8.10, copies build.gradle and explicitly skips tests",
+          "Frozen Kotlin DSL, settings, catalogs/wrappers/plugins and JDK/tool identities need their owning configuration",
+          "Maven .m2/go-offline/package patterns are a different build system"
+        ],
+        "boundary": "Actual Gradle HTTP cache/Kotlin tests and Android builds do not qualify this unexecuted BuildKit Gradle/Maven recipe"
+      }
     },
     {
       "title": "Optimal Dockerfile for Java with Gradle",
@@ -2806,8 +2886,19 @@
       "family": "container-recipes",
       "applicability": "Compare language recipes to repository language/toolchain policy; presence does not authorize replacement",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed recipe read; immutable repository marker scope and concrete adaptation/runtime boundary recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:08:40.242Z",
+        "sourceSha256": "26cbc136af099e88369825f9789d3d4c916c2cf05602dc1430f491d50110606a",
+        "repositoryUse": "Kotlin linter and Android Gradle owners",
+        "findings": [
+          "Gradle template uses Java21/Gradle8.10, copies build.gradle and explicitly skips tests",
+          "Frozen Kotlin DSL, settings, catalogs/wrappers/plugins and JDK/tool identities need their owning configuration",
+          "Maven .m2/go-offline/package patterns are a different build system"
+        ],
+        "boundary": "Actual Gradle HTTP cache/Kotlin tests and Android builds do not qualify this unexecuted BuildKit Gradle/Maven recipe"
+      }
     },
     {
       "title": "Optimal Dockerfile for Java with Maven",
@@ -2836,8 +2927,19 @@
       "family": "container-recipes",
       "applicability": "Compare language recipes to repository language/toolchain policy; presence does not authorize replacement",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed recipe read; immutable repository marker scope and concrete adaptation/runtime boundary recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:08:40.242Z",
+        "sourceSha256": "3cbc1940cc6e7160a97597e5c5274b44c614b41555003396ea8fa5d4a2fc74f0",
+        "repositoryUse": "No owned Maven project marker; Gradle publication is a separate client",
+        "findings": [
+          "Gradle template uses Java21/Gradle8.10, copies build.gradle and explicitly skips tests",
+          "Frozen Kotlin DSL, settings, catalogs/wrappers/plugins and JDK/tool identities need their owning configuration",
+          "Maven .m2/go-offline/package patterns are a different build system"
+        ],
+        "boundary": "Actual Gradle HTTP cache/Kotlin tests and Android builds do not qualify this unexecuted BuildKit Gradle/Maven recipe"
+      }
     },
     {
       "title": "Optimal Dockerfiles for Node.js",
@@ -2857,8 +2959,19 @@
       "family": "container-recipes",
       "applicability": "Compare language recipes to repository language/toolchain policy; presence does not authorize replacement",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed recipe read; immutable repository marker scope and concrete adaptation/runtime boundary recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:08:40.242Z",
+        "sourceSha256": "f91597d0706082b1f9c8e29e8e16a241898de10406c86ffddd37c71393e7d1ab",
+        "repositoryUse": "Root pnpm workspace, shared module build/test owners, CLI/fuzz container consumers",
+        "findings": [
+          "pnpm template separates fetch/install/source layers and uses a store cache mount",
+          "Literal Node LTS/Corepack, prod-only dependencies and pnpm build differ from frozen Node26/pnpm12/Mise tasks",
+          "npm app recipe uses package-lock workflow and copies complete build directory; not an automatic workspace recipe"
+        ],
+        "boundary": "Actual Node service/CI-image and native ARM owner consumers passed; no pnpm BuildKit cache-mount benefit inferred from Cargo mounts or separate native cache probes"
+      }
     },
     {
       "title": "Optimal Dockerfile for Node.js with npm",
@@ -2885,8 +2998,19 @@
       "family": "container-recipes",
       "applicability": "Compare language recipes to repository language/toolchain policy; presence does not authorize replacement",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed recipe read; immutable repository marker scope and concrete adaptation/runtime boundary recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:08:40.242Z",
+        "sourceSha256": "8d2fb4e15f294d2ce9c77b933e78135a54a4890ddce81b6cb5d386520b93bbdd",
+        "repositoryUse": "Root pnpm workspace, shared module build/test owners, CLI/fuzz container consumers",
+        "findings": [
+          "pnpm template separates fetch/install/source layers and uses a store cache mount",
+          "Literal Node LTS/Corepack, prod-only dependencies and pnpm build differ from frozen Node26/pnpm12/Mise tasks",
+          "npm app recipe uses package-lock workflow and copies complete build directory; not an automatic workspace recipe"
+        ],
+        "boundary": "Actual Node service/CI-image and native ARM owner consumers passed; no pnpm BuildKit cache-mount benefit inferred from Cargo mounts or separate native cache probes"
+      }
     },
     {
       "title": "Optimal Dockerfile for Node.js with pnpm",
@@ -2913,8 +3037,19 @@
       "family": "container-recipes",
       "applicability": "Compare language recipes to repository language/toolchain policy; presence does not authorize replacement",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed recipe read; immutable repository marker scope and concrete adaptation/runtime boundary recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:08:40.242Z",
+        "sourceSha256": "132ba0f72cf5ec48722a0cd8dde2691ce5dfa38734f412e97968541b562a1fa4",
+        "repositoryUse": "Root pnpm workspace, shared module build/test owners, CLI/fuzz container consumers",
+        "findings": [
+          "pnpm template separates fetch/install/source layers and uses a store cache mount",
+          "Literal Node LTS/Corepack, prod-only dependencies and pnpm build differ from frozen Node26/pnpm12/Mise tasks",
+          "npm app recipe uses package-lock workflow and copies complete build directory; not an automatic workspace recipe"
+        ],
+        "boundary": "Actual Node service/CI-image and native ARM owner consumers passed; no pnpm BuildKit cache-mount benefit inferred from Cargo mounts or separate native cache probes"
+      }
     },
     {
       "title": "Optimal Dockerfiles",
@@ -2939,8 +3074,18 @@
       "family": "container-recipes",
       "applicability": "Compare language recipes to repository language/toolchain policy; presence does not authorize replacement",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed recipe read; immutable repository marker scope and concrete adaptation/runtime boundary recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:08:40.242Z",
+        "sourceSha256": "7a8ad6d4ce8cd97dedb5bf969e760683eba4fb9cd02a90a37bd95e787e1f2829",
+        "repositoryUse": "Cross-language BuildKit patterns",
+        "findings": [
+          "Separates mutable cache mounts from layer reuse and source/lifecycle/runtime claims",
+          "References id/target/sharing; no template is an exercised repo migration"
+        ],
+        "boundary": "Actual Cargo mount and CI-image consumers qualify only their retained arguments/toolchains"
+      }
     },
     {
       "title": "Optimal Dockerfile for PHP with Composer",
@@ -2967,8 +3112,17 @@
       "family": "container-recipes",
       "applicability": "Compare language recipes to repository language/toolchain policy; presence does not authorize replacement",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed recipe read; immutable repository marker scope and concrete adaptation/runtime boundary recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:08:40.242Z",
+        "sourceSha256": "ef794f3e300a6458efe0945741d96cb334b71be7820135acad077f196d68bd9b",
+        "repositoryUse": "No corresponding owned project/source filename marker in frozen git tree; configured/downloaded tool dependencies remain distinct",
+        "findings": [
+          "Composer cache plus PHP-FPM/Nginx/Supervisor and extension compilation are application-specific"
+        ],
+        "boundary": "Source-reviewed capability pattern only; no unrelated language workload or recipe execution created"
+      }
     },
     {
       "title": "Optimal Dockerfiles for Python",
@@ -2988,8 +3142,19 @@
       "family": "container-recipes",
       "applicability": "Compare language recipes to repository language/toolchain policy; presence does not authorize replacement",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed recipe read; immutable repository marker scope and concrete adaptation/runtime boundary recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:08:40.242Z",
+        "sourceSha256": "780bb167b674f08922a5d74721a367fb635e2a532fb5e8b1f390f999477f4d31",
+        "repositoryUse": "No corresponding owned project/source filename marker in frozen git tree; configured/downloaded tool dependencies remain distinct",
+        "findings": [
+          "pip/Poetry/uv templates expose separate downloaded-package caches and venv/runtime copying",
+          "uv uses copy link mode and no-dev/frozen stages; no Python application was invented",
+          "Vendor10to100x prose is not a repository performance measurement"
+        ],
+        "boundary": "Source-reviewed capability pattern only; no unrelated language workload or recipe execution created"
+      }
     },
     {
       "title": "Optimal Dockerfile for Python with pip",
@@ -3015,8 +3180,19 @@
       "family": "container-recipes",
       "applicability": "Compare language recipes to repository language/toolchain policy; presence does not authorize replacement",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed recipe read; immutable repository marker scope and concrete adaptation/runtime boundary recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:08:40.242Z",
+        "sourceSha256": "adeaaea2242cf944116f61bcb5824a3fa2f5a4ec96aa9de38fa3f3ba51a12b02",
+        "repositoryUse": "No corresponding owned project/source filename marker in frozen git tree; configured/downloaded tool dependencies remain distinct",
+        "findings": [
+          "pip/Poetry/uv templates expose separate downloaded-package caches and venv/runtime copying",
+          "uv uses copy link mode and no-dev/frozen stages; no Python application was invented",
+          "Vendor10to100x prose is not a repository performance measurement"
+        ],
+        "boundary": "Source-reviewed capability pattern only; no unrelated language workload or recipe execution created"
+      }
     },
     {
       "title": "Optimal Dockerfile for Python with poetry",
@@ -3044,8 +3220,19 @@
       "family": "container-recipes",
       "applicability": "Compare language recipes to repository language/toolchain policy; presence does not authorize replacement",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed recipe read; immutable repository marker scope and concrete adaptation/runtime boundary recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:08:40.242Z",
+        "sourceSha256": "74812180ae34324daf7584eb1adab9ff3e40584ff1edd812dae9542c788ebc4b",
+        "repositoryUse": "No corresponding owned project/source filename marker in frozen git tree; configured/downloaded tool dependencies remain distinct",
+        "findings": [
+          "pip/Poetry/uv templates expose separate downloaded-package caches and venv/runtime copying",
+          "uv uses copy link mode and no-dev/frozen stages; no Python application was invented",
+          "Vendor10to100x prose is not a repository performance measurement"
+        ],
+        "boundary": "Source-reviewed capability pattern only; no unrelated language workload or recipe execution created"
+      }
     },
     {
       "title": "Optimal Dockerfile for Python with uv",
@@ -3072,8 +3259,19 @@
       "family": "container-recipes",
       "applicability": "Compare language recipes to repository language/toolchain policy; presence does not authorize replacement",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed recipe read; immutable repository marker scope and concrete adaptation/runtime boundary recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:08:40.242Z",
+        "sourceSha256": "ee5a94132b7e88fbb1cb1a911ee63ecb9a5304904eca93a67e9a7854a422c927",
+        "repositoryUse": "No corresponding owned project/source filename marker in frozen git tree; configured/downloaded tool dependencies remain distinct",
+        "findings": [
+          "pip/Poetry/uv templates expose separate downloaded-package caches and venv/runtime copying",
+          "uv uses copy link mode and no-dev/frozen stages; no Python application was invented",
+          "Vendor10to100x prose is not a repository performance measurement"
+        ],
+        "boundary": "Source-reviewed capability pattern only; no unrelated language workload or recipe execution created"
+      }
     },
     {
       "title": "Optimal Dockerfile for Ruby on Rails with Bundler",
@@ -3101,8 +3299,17 @@
       "family": "container-recipes",
       "applicability": "Compare language recipes to repository language/toolchain policy; presence does not authorize replacement",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed recipe read; immutable repository marker scope and concrete adaptation/runtime boundary recorded",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:08:40.242Z",
+        "sourceSha256": "2e0727b32c37ac87fa18e74f5a69265a1f931ad6373aa00a3196479c5a343385",
+        "repositoryUse": "No corresponding owned project/source filename marker in frozen git tree; configured/downloaded tool dependencies remain distinct",
+        "findings": [
+          "Bundler dual caches and Rails/Puma/YJIT runtime are application-specific"
+        ],
+        "boundary": "Source-reviewed capability pattern only; no unrelated language workload or recipe execution created"
+      }
     },
     {
       "title": "Optimal Dockerfile for Rust with cargo-chef and sccache",
@@ -3133,8 +3340,23 @@
       "family": "container-recipes",
       "applicability": "Compare language recipes to repository language/toolchain policy; presence does not authorize replacement",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Full deployed recipe read; immutable repository marker scope and concrete adaptation/runtime boundary recorded",
+      "runtimeEvidence": [
+        "doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json",
+        "doc/audit/depot-rust-coverage-2026-10-18.evidence.json",
+        "doc/audit/depot-arm64-functional-2026-10-18.evidence.json"
+      ],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T14:08:40.242Z",
+        "sourceSha256": "ed19b1178c1c719da4281f5b5eaab84318d246c25dfef3f1bd6049f182f1d925",
+        "repositoryUse": "Frozen Cargo manifests and their owning Rust tasks",
+        "findings": [
+          "Template combines cargo-chef, local sccache directory, registry/git cache mounts and sharing=locked",
+          "Template rust1.90/unversioned cargo install and --bin app do not match all frozen nightly/library/native ABI owners",
+          "Cache locking serializes participating mounts, not untrusted-project access or compiler-output validity"
+        ],
+        "boundary": "Actual frozen Truepeak no-default-feature release producer/Cargo mount controls are separate from full native Nextest and from unexercised cargo-chef/sccache mounts"
+      }
     },
     {
       "title": "Depot container builds",
@@ -16227,5 +16449,57 @@
     "macosStartupCreditTreatment": "unresolved; earlier categorical exclusion withdrawn",
     "buildkitReservation": "Existing model is request-window milliseconds times maximum2 builders times USD0.04/builder-minute; not USD0.08 per single builder",
     "aggregateAllProductCapProven": false
+  },
+  "recipeApplicabilityInventory": {
+    "measuredAt": "2026-10-18T14:08:40.238Z",
+    "frozenSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+    "trackedPaths": 13860,
+    "listingSha256": "d79ceefcbb2324a8891cb7c3d466856d5b3387d5d74d53d59e13f2a5c751cc21",
+    "scope": "Uncapped complete immutable git tree including hidden tracked paths; filename markers are not logical workload counts",
+    "inventory": {
+      "dotnet": [],
+      "go": [],
+      "gradle": [
+        "package/linter/kotlin/build.gradle.kts",
+        "package/linter/kotlin/settings.gradle.kts",
+        "package/music-player/android-app/app/build.gradle.kts",
+        "package/music-player/android-app/build.gradle.kts",
+        "package/music-player/android-app/settings.gradle.kts"
+      ],
+      "maven": [],
+      "npm": [],
+      "pnpm": [
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml"
+      ],
+      "python": [],
+      "php": [],
+      "ruby": [],
+      "rust": [
+        "package/cli/forbidden-strings.fuzz/Cargo.toml",
+        "package/cli/forbidden-strings/Cargo.toml",
+        "package/cli/nested-wayland-session/Cargo.toml",
+        "package/cli/wg-quicker-exempt/Cargo.toml",
+        "package/codex-plugin/bash-limit/Cargo.toml",
+        "package/desktop-app/file-manager-gtk-sticky/Cargo.toml",
+        "package/desktop-app/file-manager-qt/Cargo.toml",
+        "package/desktop-app/file-manager/Cargo.toml",
+        "package/desktop-app/ide/Cargo.toml",
+        "package/desktop-app/terminal/Cargo.toml",
+        "package/git-policy/cli.fuzz/Cargo.toml",
+        "package/git-policy/cli/Cargo.toml",
+        "package/linter/monochromatic-lint.fuzz/Cargo.toml",
+        "package/linter/monochromatic-lint/Cargo.toml",
+        "package/music-player/android-app/rust/Cargo.toml",
+        "package/music-player/desktop-app/Cargo.toml",
+        "package/music-player/truepeak-core.bench/Cargo.toml",
+        "package/music-player/truepeak-core/Cargo.toml",
+        "package/rust-module/forbidden-regex.bench/Cargo.toml",
+        "package/rust-module/forbidden-regex.fuzz/Cargo.toml",
+        "package/rust-module/forbidden-regex/Cargo.toml",
+        "package/rust-module/jsonc-edit.fuzz/Cargo.toml",
+        "package/rust-module/jsonc-edit/Cargo.toml"
+      ]
+    }
   }
 }
