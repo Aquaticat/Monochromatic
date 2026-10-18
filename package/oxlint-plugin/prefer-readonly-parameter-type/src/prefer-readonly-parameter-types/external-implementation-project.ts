@@ -15,6 +15,7 @@ import {
 import { effectProjectFingerprint, } from './effect-project-fingerprint.ts';
 import { externalProjectConfigPath, } from './external-project-config.ts';
 import { externalRuntimeShadowFiles, } from './external-runtime-shadow-files.ts';
+import { memoizeApiSnapshotRequests, } from './semantic-request-memo.ts';
 import {
   configureNativeApiChildShutdown,
   nativeApiChild,
@@ -82,6 +83,7 @@ export function initializeExternalImplementationApi(): void {
    */
   const api = new API({ cwd: process.cwd(), },);
   configureNativeApiChildShutdown(nativeApiChild(api,),);
+  memoizeApiSnapshotRequests({ api, },);
   externalApiState.current = api;
 }
 
