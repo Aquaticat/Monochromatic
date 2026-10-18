@@ -275,6 +275,10 @@ A longer campaign passes the time per target after the task name,
 for example `mise run //package/git-policy/cli.fuzz:smoke -- --seconds-per-target=1800`;
 the value is a whole number of seconds from 1 to 86,400,
 and the manifest in the evidence directory records it.
+`--targets=<name,...>` limits the run to the named targets.
+Each target's standard output and standard error go straight to `stdout.log` and `stderr.log` in the evidence directory,
+because a target such as `wrapper_controls` prints a line for every commit it forwards
+(about 140 KiB per second measured on 2026-10-17), which overflowed the earlier in-memory capture.
 Corpora,
 artifacts,
 and logs are retained under `target/verification/campaign-*`.
