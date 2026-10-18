@@ -95,22 +95,27 @@ execFileSync('git',['diff','--quiet'],{cwd:root});
 execFileSync('git',['diff','--cached','--quiet'],{cwd:root});
 assert.equal(resource.eligibleForBuild,true);assert.equal(resource.project.hardware,'HARDWARE_16X32');
 assert.equal(resource.project.buildTimeoutMinutes,5);assert.equal(resource.project.maxConcurrentBuilds,undefined);
-const intentPath=join(state,'service-build-intent.json');
+const intentPath=join(state,'service-build-v2-intent.json');
 assert(!existsSync(intentPath),'A service build intent exists; reconcile that attempt before any retry');
-const output=join(state,'service-build');mkdirSync(output,{recursive:true});chmodSync(output,0o700);
+const output=join(state,'service-build-v2');mkdirSync(output,{recursive:true});chmodSync(output,0o700);
 const dockerConfig=join(state,'docker-config');mkdirSync(dockerConfig,{recursive:true});chmodSync(dockerConfig,0o700);
 const token=execFileSync('depot',['login','token'],{encoding:'utf8',maxBuffer:64*1024}).trim();
 assert(token&&!/\s/u.test(token));
 const projectId=resource.project.projectId;
 const metadataPath=join(output,'metadata.json');
 const args=['bake','--file','docker-bake.hcl','--project',projectId,'--save','--save-tag',manifest.cohort,
-  '--metadata-file',metadataPath,'--progress','plain','service','source'];
+  '--set','service.output=type=image','--metadata-file',metadataPath,'--progress','plain','service'];
+const printed=JSON.parse(execFileSync('depot',['bake','--file','docker-bake.hcl','--set',
+  'service.output=type=image','--print','service'],{encoding:'utf8',maxBuffer:1024*1024}));
+assert.equal(printed.target.service.output.length,1);
+assert.equal(printed.target.service.output[0].type,'image');
 const startedAt=new Date().toISOString();const startedMilliseconds=Date.now();
-const clock={startedAt,maximumWallClockMinutes:8,deadline:new Date(startedMilliseconds+8*60000).toISOString(),
-  maximumArchitectureBuilders:2,cpuPerBuilder:16,memoryGiBPerBuilder:32,publishedRateUsdPerBuilderMinute:0.04};
-writeFileSync(join(state,'campaign-clock.json'),JSON.stringify(clock,null,2)+'\n');
+const clock=JSON.parse(readFileSync(join(state,'campaign-clock.json'),'utf8'));
+const remainingMilliseconds=Date.parse(clock.deadline)-Date.now();
+assert(remainingMilliseconds>30000,'The original campaign clock lacks time for another bounded request');
+const maximumJobMilliseconds=Math.min(300000,remainingMilliseconds);
 const intent={startedAt,args,source,repositoryBase:manifest.repositoryBase,projectId,clock,
-  declaredTargets:['service','source'],maximumJobMilliseconds:300000};
+  declaredTargets:['service'],maximumJobMilliseconds,priorRejectedBuildId:'7wjrw9szj0'};
 writeFileSync(intentPath,JSON.stringify(intent,null,2)+'\n');
 const logPath=join(output,'build.log');const descriptor=openSync(logPath,'wx',0o600);
 const child=spawn('depot',args,{stdio:['ignore',descriptor,descriptor],env:{...process.env,PROJECT:projectId,
@@ -118,7 +123,7 @@ const child=spawn('depot',args,{stdio:['ignore',descriptor,descriptor],env:{...p
   DOCKER_CONFIG:dockerConfig,DEPOT_DEBUG:'',DEPOT_DEBUG_OIDC:'',DEPOT_NO_SUMMARY_LINK:'',DEPOT_IN_AUTOMATION:''}});
 let terminatedByGuard=false;let hardGuard;
 const guard=setTimeout(()=>{terminatedByGuard=true;child.kill('SIGINT');
-  hardGuard=setTimeout(()=>child.kill('SIGKILL'),10000);hardGuard.unref();},300000);
+  hardGuard=setTimeout(()=>child.kill('SIGKILL'),10000);hardGuard.unref();},maximumJobMilliseconds);
 guard.unref();
 let code;let signal;
 try{[code,signal]=await once(child,'close');}finally{
@@ -129,22 +134,8 @@ const result={...intent,finishedAt,exitCode:code,signal,pid:child.pid,terminated
   elapsedMilliseconds:Date.now()-startedMilliseconds,resourceConfigurationProvenByCreateResponse:true,
   buildMetadata:existsSync(metadataPath)?JSON.parse(readFileSync(metadataPath,'utf8')):undefined,
   holdSharedImageAndProjectUntilParentConsumersFinish:true};
-writeFileSync(join(state,'service-build.json'),JSON.stringify(result,null,2)+'\n');
+writeFileSync(join(state,'service-build-v2.json'),JSON.stringify(result,null,2)+'\n');
 assert.equal(code,0,'Native build failed; exact diagnostic retained in '+logPath);
-const proofs=[];const directory=join(output,'builder-proof');
-for(const platform of readdirSync(directory)){
-  const platformRoot=join(directory,platform);
-  const identity=JSON.parse(readFileSync(join(platformRoot,'builder.json'),'utf8'));
-  const payload=JSON.parse(readFileSync(join(platformRoot,'probe.json'),'utf8'));
-  assert.equal(payload.repositoryBase,manifest.repositoryBase);assert.equal(payload.sourceMarker,'committed-source');
-  assert.equal(identity.harnessCommit,source);assert(identity.cpuCount<=16);assert(identity.memoryBytes<=32*1024**3);
-  assert.equal(identity.nodeVersion,'v24.22.0');
-  assert.equal(identity.architecture,identity.targetArchitecture==='amd64'?'x64':'arm64');
-  proofs.push({platform,identity,payload});
-}
-assert.equal(proofs.length,2);
-const archivePath=join(output,'service.oci.tar');const hash=createHash('sha256');
-for await(const chunk of createReadStream(archivePath))hash.update(chunk);
 const registryImages=JSON.parse(execFileSync('depot',['image','list','--project',projectId,'--output','json'],
   {encoding:'utf8',env:{...process.env,DEPOT_TOKEN:token},maxBuffer:1024*1024}));
 assert(Array.isArray(registryImages));
@@ -155,15 +146,15 @@ const pullToken=execFileSync('depot',['pull-token','--project',projectId],
 assert(pullToken&&!/\s/u.test(pullToken));
 const pullTokenPath=join(state,'service-pull-token.private');
 writeFileSync(pullTokenPath,pullToken,{mode:0o600});
-result.consumerProofs=proofs;result.registryImages=registryImages;
-result.ociArchive={bytes:statSync(archivePath).size,sha256:hash.digest('hex'),path:archivePath};
+result.registryImages=registryImages;
+result.separateSingleExporterConsumersPending=['Local builder/source identities','OCI archive and attestation subjects'];
 result.sharedService={tag:serviceTag,digest:serviceImage.digest,
   imageReference:'registry.depot.dev/'+projectId+'@'+serviceImage.digest,
   taggedImageReference:'registry.depot.dev/'+projectId+':'+serviceTag,
   username:'x-token',pullTokenPrivatePath:pullTokenPath,pullTokenValuePublished:false,
   documentedPullTokenLifetimeSeconds:3600,pullTokenRecordedAt:new Date().toISOString(),
   nonceEnvironment:'MONO_RESEARCH_NONCE',healthPath:'/health',port:8080};
-writeFileSync(join(state,'service-build.json'),JSON.stringify(result,null,2)+'\n');
+writeFileSync(join(state,'service-build-v2.json'),JSON.stringify(result,null,2)+'\n');
 process.stdout.write(JSON.stringify({projectId,source,exitCode:code,elapsedMilliseconds:result.elapsedMilliseconds,
-  platforms:proofs.map(proof=>proof.identity),sharedService:result.sharedService,ociArchive:result.ociArchive})+'\n');
+  sharedService:result.sharedService})+'\n');
 '''
