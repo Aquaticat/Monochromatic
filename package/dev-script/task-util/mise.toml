@@ -258,3 +258,6 @@ shell = "node --input-type=module-typescript -e"
 run = '''
 const{strict:assert}=await import('node:assert');const{execFileSync,spawnSync}=await import('node:child_process');const root=execFileSync('git',['rev-parse','--show-toplevel'],{encoding:'utf8'}).trim();const malformed=execFileSync('git',['show','c9259269e5f58a5049c38bb4f6b7d72544dc0141:.depot/workflows/rust-wg-privileged.yml'],{cwd:root});const control=spawnSync('python3',['-c','import sys,yaml; yaml.safe_load(sys.stdin.read())'],{input:malformed,encoding:'utf8'});assert.notEqual(control.status,0);assert(control.stderr.includes('yaml.scanner.ScannerError'));const python="import glob,json,yaml\nr=[]\nfor path in sorted(glob.glob('.depot/workflows/rust-*.yml')):\n doc=yaml.safe_load(open(path))\n for name,job in doc['jobs'].items():\n  assert job['timeout-minutes']>0 and isinstance(job['steps'],list)\n r.append({'path':path,'jobs':list(doc['jobs'])})\nprint(json.dumps({'yamlVersion':yaml.__version__,'malformedCommittedControlRejected':True,'workflows':r}))";console.log(execFileSync('python3',['-c',python],{cwd:root,encoding:'utf8'}));
 '''
+
+[tasks."research:rust:corpus-audit"]
+run = "node bin/rust-corpus-audit.mjs"

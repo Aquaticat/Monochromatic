@@ -1,0 +1,42 @@
+name: Frozen Rust corpus-audit bounded consumer
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  consumer:
+    runs-on:
+      size: 4x16
+      image: l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r3-fuzz-codex
+    timeout-minutes: 10
+    env:
+      CI: 'true'
+      MISE_AUTO_INSTALL: 'false'
+      MISE_LOCKED: '1'
+      MISE_TRUSTED_CONFIG_PATHS: ${{ github.workspace }}
+      RESEARCH_RUST_IMAGE: l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r3-fuzz-codex
+      RESEARCH_REUSE_ROLE: consume
+      REUSE_IMAGE_TAG: tools-r3-fuzz-codex
+      REUSE_IMAGE_DIGEST: sha256:1c2b469a9d7fae8bc364e6392f771c28565647a04c40847f345bc140dfce4e88
+      RESEARCH_RUST_PROFILE: corpus-audit
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        fetch-depth: 64
+        clean: false
+    - name: Bind prepared image to its actual captured manifest
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:reuse:registry
+    - name: Execute immutable source corpus-audit owner boundary
+      timeout-minutes: 8
+      run: PATH="${HOME}/.local/share/mise/bin:${PATH}" "${HOME}/.local/share/mise/bin/mise" run //package/dev-script/task-util:research:rust:corpus-audit
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      if: always()
+      with:
+        name: rust-coverage-corpus-audit
+        path: |
+          .research-rust-corpus-audit/receipts
+          .research-reuse/receipts
+        include-hidden-files: true
+        retention-days: 7
+        if-no-files-found: error
