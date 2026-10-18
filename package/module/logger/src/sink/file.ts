@@ -1,3 +1,4 @@
+import { randomUUID, } from 'node:crypto';
 import {
   appendFile,
   mkdir,
@@ -13,6 +14,18 @@ import { reportLoggerInternalError, } from '../error-format.ts';
 
 import type { Sink, } from '../types.ts';
 import { createFileAppendQueue, } from './file-append.ts';
+
+/**
+ Object serialization completed without producing a JSON value suitable for a JSONL record.
+ */
+class FileRecordSerializationError extends Error {
+  /**
+   Identify the serializer boundary without retaining the rejected object.
+   */
+  constructor() {
+    super('File sink record serialization produced no JSON value',);
+  }
+}
 
 //region Ancestor search
 // Locates the project the process belongs to so log files land beside its
@@ -155,6 +168,10 @@ export function createFileSink({
     .MONOCHROMATIC_LOG_DIRECTORY,
 }: Readonly<{ directory?: string }> = {}): Sink {
   /**
+   Empty destinations preserve ancestor discovery; other supplied paths remain literal.
+   */
+  const explicitDirectory = directory === '' ? undefined : directory;
+  /**
    Instance-local file-sink resources. `appends` is populated during
    verification and read by `write`; `verifyPromise` memoizes concurrent
    verification so a caller arriving mid-flight shares the same async work
@@ -182,7 +199,7 @@ export function createFileSink({
       /**
        Resolved absolute path of the closest ancestor `node_modules`, or the sentinel when none exists (e.g. a stray cwd).
        */
-      const nodeModulesDir = (directory !== undefined && directory !== '') ? directory : await findNodeModulesUp({
+      const nodeModulesDir = explicitDirectory ?? await findNodeModulesUp({
         cwd: process.cwd(),
         stat,
         dirname,
@@ -199,7 +216,7 @@ export function createFileSink({
       /**
        Directory under the chosen `node_modules` where every monochromatic log file lands.
        */
-      const LOG_DIR = (directory !== undefined && directory !== '') ? directory : join(
+      const LOG_DIR = explicitDirectory ?? join(
         nodeModulesDir,
         '.monochromatic',
       );
@@ -224,9 +241,8 @@ export function createFileSink({
        */
       const filePath = join(
         LOG_DIR,
-        `${timestamp}.log.jsonl`,
+        `${timestamp}.${randomUUID()}.log.jsonl`,
       );
-      state.appends = createFileAppendQueue({ filePath, },);
 
       // Verify by writing and reading test data.
       /**
@@ -236,6 +252,7 @@ export function createFileSink({
       await appendFile(
         filePath,
         testData,
+        { flag: 'ax', },
       );
       /**
        Probe contents read back; matching the literal `"test":true` proves the append + read path works end-to-end.
@@ -244,7 +261,10 @@ export function createFileSink({
         filePath,
         'utf8',
       );
-      return content.includes('"test":true',);
+      const verified = content.includes('"test":true',);
+      if (verified)
+        state.appends = createFileAppendQueue({ filePath, },);
+      return verified;
     }
     catch (error: unknown) {
       reportLoggerInternalError({
@@ -289,7 +309,10 @@ export function createFileSink({
       /**
        Serialization finishes before queue admission, including reentrant writes from user serialization hooks.
        */
-      return appends.append(`${JSON.stringify(record,)}\n`,);
+      const serialized = JSON.stringify(record,);
+      if (serialized === undefined)
+        throw new FileRecordSerializationError();
+      return appends.append(`${serialized}\n`,);
     }
     catch (error: unknown) {
       reportLoggerInternalError({
