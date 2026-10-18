@@ -36,7 +36,7 @@ Shared builds followed by a Node branch form all six observed longest paths;
 Rust is not on those paths.
 The cost note replaces its stale claim that no aggregate ledger exists.
 The frozen 223-row baseline stays unchanged;
-the current 30-row follow-on separately records a USD 0.6041 known-provider-window proxy,
+the independently frozen 30-row follow-on snapshot records a USD 0.6041 known-provider-window proxy,
 including desktop's exact 263-second attempt at USD 0.1052.
 The previous 279-second run envelope and USD 0.1116 estimate are superseded,
 with their history retained in the allocation ledger.
@@ -96,6 +96,7 @@ Coverage is preparing exact finite profiles for actual owner tests and real prer
 including the IDE's pinned grammar producer and terminal font/Zig dependencies.
 The concrete proposal is now reviewed and admitted through
 `doc/audit/depot-material-owner-parent-admission-2026-10-18.evidence.json`.
+The admission publisher is reaped at zero at `c297a446bc`.
 Its bound proposal SHA-256 is `8ebd2766f5e64f13d180ea6027853a97efa969748ba4ec04e9f0d6795becb82e`.
 The parent independently joins 24 frozen blob/hash/byte/object inputs across 18 distinct paths.
 Seven primary jobs reserve USD 1.08 nominal compute;
@@ -210,7 +211,18 @@ The combined nominal job-window proxy is USD 0.6584,
 separate from its USD 1.92 reservation and invoice cost.
 Its observed case counts match the public count boundaries;
 Coverage seals exact original artifact/case/host evidence and actual OS/machine differences before final integration.
-No coverage allocation remains active.
+GNU-only correction `39152147229` is now the sole coverage allocation,
+on harness `b76aab1964bfe9ac21aec3e9c5d24de443ec4992`
+and dedicated branch `research/depot-gnu-owner-correction-20261018`.
+Its single standard public Windows job has a 30-minute cap and 27-minute inner bound,
+with zero nominal public compute and finite watcher `11329` owning its 40-minute campaign guard.
+The decoded bootstrap and duplicate-versus-single-argument controls pass before dispatch.
+Coverage sequences the material campaign after this GNU attempt is terminal.
+Platform's pending SSH source includes a third native CLI PTY-RPC consumer,
+separate from direct OpenSSH and pinned tmate.
+Its reseal must retain bounded child escalation/reaping,
+the same three-minute job and USD 0.036 total guard,
+and no runtime credit before actual execution.
 
 Kotlin's claimed unexecuted six JVM methods are retracted and positively resolved.
 The missing semantic projection alone did not prove missing execution.
