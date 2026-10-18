@@ -1,5 +1,91 @@
 # Depot trial interview
 
+## Native follow-up terminal result on 2026-10-18
+
+The authorized Depot native runner follow-up is complete at the consumer boundary.
+All six workflow runs and 12 allocated job rows are terminal.
+Ten rows use actual Depot runners;
+the two preserved Windows ARM rows use GitHub.
+No application source was fixed,
+no production workflow routing was changed,
+and no subscription or account-wide usage setting was inspected.
+
+The [first wave](../audit/depot-native-runner-first-wave-2026-10-18.evidence.json),
+[recovery wave](../audit/depot-native-recovery-wave-2026-10-18.evidence.json)
+and [consumer reconciliation](../audit/depot-native-consumers-and-variation-2026-10-18.evidence.json)
+retain source/common pairs,
+Git-verified input hashes,
+provider artifact digests,
+per-step logs and individual nextest identities.
+Private validator assertions were corrected after reading the frozen harnesses:
+`caseName` is the `PROVENANCE_CASE` execution profile (`native` or `windows`),
+while `commonManifest.caseId` identifies the frozen source case (`native` or `desktop`).
+Both bindings and the exact source revision are checked independently.
+
+- Native Mac,
+  both repetitions:
+  1382 executed identities,
+  1356 passed,
+  26 failed and one additional summary skip.
+  Outcomes match the last GitHub native Mac retry.
+- Desktop Mac,
+  both repetitions:
+  1433 executed identities,
+  1406 passed,
+  27 failed and one additional summary skip.
+  Identities and outcomes match the GitHub reference.
+- Native Windows:
+  original release build and CLI consumer pass;
+  test compilation retains the frozen source's `E0433` errors.
+- Recovered desktop Windows:
+  both Depot x64 variants and the GitHub ARM row each pass 1432 nextest identities,
+  with one additional summary skip.
+  Original PE,
+  Bash runtime and launch consumers pass.
+  Keep the failed original PowerShell file assertion beside its passing independent stream probes.
+
+The [path measurements](../audit/depot-native-checkout-paths-2026-10-18.evidence.json)
+establish a 260-character Depot harness fixture path,
+versus 247 characters on GitHub ARM and 243 with the shorter Depot native harness path.
+The long-path bootstrap fixes checkout at the original 260-character path.
+The first failed allocations remain included in both label-proration estimates.
+
+Mac hardware is heterogeneous:
+the four probes report seven,
+seven,
+seven and nine CPUs,
+all with `18253611008` memory bytes.
+All native cache lookups miss and failed jobs skip post-save.
+The desktop timing difference therefore cannot isolate a provider effect or warm-cache benefit.
+The native Mac pair reports the same CPU count and memory but does not identify the physical CPU model.
+
+The original recovery watcher session `46364` ended on local GitHub CLI TLS handshake timeouts;
+the real provider runs remained active.
+Read-only watch resumed in session `84033`,
+which is now complete.
+No workflow was redispatched for that transport failure.
+All artifact collection and source/consumer checks are complete.
+
+The native follow-up label-proration estimates total USD `3.231466666666667`
+using GitHub job intervals,
+or USD `3.089866666666667` using first-step-to-terminal intervals.
+Neither is a provider invoice.
+The [hybrid model](../audit/depot-native-hybrid-routing-model-2026-10-18.evidence.json)
+uses the dated Bank of Canada observation `2026-10-16`,
+CAD `1.4154` per USD.
+For CI usage alone,
+Developer plus overage is always cheaper than Startup at the published rates:
+the extra USD 180 fee buys USD 108 more CI allowance.
+Other product pools and native Mac access remain separate considerations.
+
+Next action:
+publish the expanded six-section evaluation with the corrected intentional-routing scope,
+render and verify its evidence links,
+record the invoice and unexecuted-surface limits,
+then remove only this follow-up's disposable worktrees after scoped cleanup checks.
+Keep earlier source-failure ownership and historical resource gaps as explicitly unresolved evidence,
+without claiming a complete trial invoice or accepted complete graph.
+
 ## Completed trial execution and remaining acceptance gaps
 
 ### Reopened native Depot runner evaluation
@@ -61,9 +147,42 @@ the native cache namespace and the added hardware probe differ.
 
 All six initial jobs are in progress.
 All five Depot-labelled jobs have actual `depot-*` runner names.
-The private `wait-native-followup-terminals` task waits for all routes in command session `75523`,
-writing terminal receipts under `depot-native-followup-dispatches/`.
-It emits only terminal results.
+
+The first desktop Mac route is terminal:
+`1433` nextest cases run,
+`1406` passed,
+`27` failed and one summary skip,
+plus the two existing Clippy `missing return` diagnostics.
+Do not claim identity parity until the individual test names are compared.
+Its hardware probe reports seven CPUs and `18253611008` memory bytes,
+which differs from the published eight-CPU,
+24-GB runner specification.
+Record measured hardware separately from the priced label.
+
+The first desktop Windows Depot rows stopped at harness checkout with `Filename too long`.
+They receive no desktop consumer credit.
+The original GitHub ARM row reached the existing PowerShell failure.
+All logs and the ARM provenance archive are retained under
+private `depot-native-followup-artifacts/` with provider digests checked.
+The [long-path recovery](../troubleshooting/depot-windows-long-path-checkout.md)
+uses new Windows harness `20b7e331ad5a4e29bd493aba1829fff5f07d27a8`.
+Recovery cohort `native-recovery-20261018T035939491Z`
+retains the original native harness for unchanged repetitions and all historical case digests.
+The recovery [bound manifest](../audit/depot-complete-cohort-native-recovery-20261018T035939491Z.json)
+is committed as `738e501267` and its published bytes are independently verified.
+All recovery routes are dispatched:
+native hosts run `39095637308`,
+desktop Mac run `39095642563` and desktop Windows run `39095647113`.
+The native harness remains `3e51a06848ba363a90d4ce30816760042153f349`.
+The private `depot-native-long-path-publication.json`
+and `depot-native-long-path-dispatches/` retain the authoritative clock and receipts.
+Inspect those receipts before any repeated dispatch.
+
+The first wave is fully terminal and command session `75523` has completed.
+Its terminal receipts are under `depot-native-followup-dispatches/`.
+The recovery `wait-native-long-path-terminals` task is active;
+it writes terminal receipts under `depot-native-long-path-dispatches/`
+and emits only terminal results.
 Continue independent source-issue reconciliation while those inputs remain unchanged.
 Then collect actual logs and archives,
 validate hardware,

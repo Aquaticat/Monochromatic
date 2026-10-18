@@ -952,7 +952,13 @@ jobs:
       run: |
         set -euo pipefail
         sdk=$(mise where android-sdk)
-        tools="${sdk}/build-tools/37.0.0"
+        # One owner of the version: the same mise.toml constant that drives the SDK install and the cache key.
+        build_tools=$(sed --quiet 's/^const wantBuildTools = "\([^"]*\)";$/\1/p' mise.toml)
+        if [ -z "$build_tools" ]; then
+          echo '::error::Could not read wantBuildTools from mise.toml.'
+          exit 1
+        fi
+        tools="${sdk}/build-tools/${build_tools}"
         built='package/music-player/android-app/app/build/outputs/apk/release/app-release.apk'
         mkdir -p dist
         asset="music-player-${VERSION}-android.apk"

@@ -55,6 +55,9 @@ jobs:
           /^(music-player-alpine-[A-Za-z0-9]+)-rustc_/u,
           // The Gradle key has no toolchain date: the family is the runner, then a 64-digit hash.
           /^(music-player-gradle-v1-[A-Za-z0-9]+-[A-Za-z0-9]+)-[0-9a-f]{64}$/u,
+          // The MSYS2 package cache of the Windows GNU jobs: operating system, architecture and MSYS2 environment are
+          // the family; the month is the superseded tail.
+          /^(msys2-pkg-v1-[A-Za-z0-9]+-[A-Za-z0-9]+-[A-Za-z0-9]+)-[0-9]{4}-[0-9]{2}$/u,
         ]
         const api = `https://api.github.com/repos/${process.env.REPO}/actions/caches`
         const headers = {
