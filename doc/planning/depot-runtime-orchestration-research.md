@@ -263,7 +263,7 @@ The current-source `mvm` campaign is admitted as a separate functional qualifica
 - Every host uses a disposable home and private libvirt session.
   GitHub-hosted KVM access may receive a recorded per-user ACL change inside its owned ephemeral VM.
   No local host daemon or Hetzner resource is used.
-- The bounded campaign permits at most three functional jobs,
+- The initial admission permitted at most three functional jobs,
   at most two simultaneous jobs,
   a 20-minute job timeout,
   and a 16-minute inner lifecycle deadline that reserves cleanup time.
@@ -332,11 +332,22 @@ previously measured primary-group mismatch and its verified owned-process relaun
 The follow-up must record actual process and passwd identities,
 retain daemon logs before cleanup,
 and apply that workaround only when its measured prerequisite is present.
-The VM campaign now permits four total functional jobs within the same USD 1 guard:
+The subsequent admission permitted four total functional jobs within the same USD 1 guard:
 the first failed native job,
 one diagnostic native follow-up,
 and the two GitHub controls.
 Four full 20-minute windows at USD 0.012 per minute would total USD 0.96.
+All four are now terminal.
+The fifth-allocation diagnostic admission retains 358 request-to-terminal seconds
+for those completed jobs,
+modeled conservatively at USD 0.0716.
+One further ten-minute GitHub-hosted QEMU/libvirt capability diagnostic reserves USD 0.12,
+for a USD 0.1916 forecast under the unchanged USD 1 guard.
+The diagnostic workflow at harness `0a2fd7678b` runs TCG positive controls,
+unprivileged and root KVM attempts,
+and libvirt capability queries;
+it does not boot an application guest.
+Explicit owned-daemon cleanup remains required.
 
 ### Successful diagnostic VM consumer
 
@@ -394,24 +405,42 @@ their owned ports had no listeners,
 and the original device configuration still matched its preflight content.
 New instrumentation classes added to main after the frozen source are outside this cohort.
 
-The derived CI-image repair is executing in native run `rvvg2kv0jk`
+The first derived CI-image repair completed in native run `rvvg2kv0jk`
 and GitHub run `39112162357`,
 both at harness `9779cb896b92969b84f45e2737117231638aa700`.
 The HTTP service still uses its original immutable image.
 Job containers use the separate derived image
 `registry.depot.dev/27m5m3vjlv@sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346`.
 The derived image contains Git 2.39.5 and the measured Mise-action prerequisite tools.
+All its job-container checkouts passed,
+then the actual locked Node 26.12.0 loader failed because `libatomic.so.1` was absent.
+An image-local Node 24 probe did not qualify the repository's locked runtime.
 Its actual tool-receipt bytes and architecture must match the builder's retained hashes.
 The original build's read-only token fetched both new architecture layers;
 an empty owned registry upload initiation returned 403 after authenticated GET positives.
 Those controls establish the observed token scope without inferring its closed server implementation.
+
+The corrected derived image is
+`registry.depot.dev/27m5m3vjlv@sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31`,
+with builder harness `7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f`.
+It adds measured `libatomic1` version `12.2.0-14+deb12u1`.
+Native run `g02lgcbfgq` and GitHub run `39113547458`,
+both at consumer harness `5485cc0d12805f330d568b358e5ff0bb988d4d37`,
+completed successfully.
+All four native and all six GitHub host/job-container jobs passed their actual HTTP consumer.
+Job-container consumers additionally verify builder/tool receipt hashes,
+the actual locked Node 26 executable hash,
+and a loaded `libatomic` mapping.
+This separates the base image's Node 24 identity from the repository runtime actually exercised.
+Original artifact consolidation and exact owned pull-secret cleanup are the parent's next steps.
 
 GitHub run `39109462308`,
 at harness `1438ecde4b643a606e0a75f85067e3d0153e9bb5`,
 passed its host-to-service HTTP consumers on GitHub-hosted AMD64,
 Depot AMD64,
 and Depot Arm64.
-Its job-container consumers are separate pending evidence.
+Its original-image job containers timed out in checkout's REST fallback without Git;
+the separately identified derived-image results qualify the corrected consumer instead.
 The original invalid workflow run `39108872769` is a fixture failure:
 job-level `env` cannot reference `job.services` in the inspected GitHub runner schema.
 The corrected workflow puts that expression in the consuming step's `env`.
@@ -420,9 +449,13 @@ Native secret-presence run `c8lwr60rdm` used the same harness.
 It observed an empty pull-secret value and empty `GITHUB_REF` and `GITHUB_REF_NAME`.
 This explains the missing credential at that consumer boundary,
 but does not establish the closed backend's selector mechanism.
-The next control adds a separately named repository-only variant of the same owned,
-short-lived read-only pull credential.
-Retain and later delete both exact owned variants.
+Repository-only presence control `3s4ctdsn8f` observed the same owned secret as present,
+and host run `kl548vchg7` passed both native architecture consumers.
+These observations qualify the tested repository-only binding,
+without identifying the closed backend's branch-selector mechanism.
+The short-lived read-only credential was refreshed only in the existing owned GitHub secret
+and repository-only native variant for the final image consumers.
+Delete both exact native variants and the exact GitHub secret after retention.
 Do not inspect account-wide secrets or mint broader credentials.
 
 The local Android consumer uses a private reflink AVD,

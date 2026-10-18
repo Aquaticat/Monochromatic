@@ -83,6 +83,116 @@ through selector `8fae1bc3-3ebf-48e8-a050-f0d718b9c744`.
 These are scoped diagnostics,
 not a clean-lint or completed-edit claim.
 
+### Reopened parallel progress freshness failure
+
+The actual two-command histogram group exposes a separate runtime failure after RPC Allow.
+`call_712e50eea8bb4a3397ce36d2` executes;
+`call_7da656b11baa42d5971c1183` is withheld with
+`The established policy decision is no longer current; propose the operation again`.
+The cause is `PolicySlotBindingError: Native extension event callbacks changed after source capture`.
+The saved domain changes from revision 3992,
+`tool_call`,
+pending zero to revision 3993,
+`tool_execution_update`,
+pending one;
+registered event kinds are unchanged.
+There is no active RPC steering message in this incident.
+Keep it separate from the earlier steering freshness guard and signal-prototype defect.
+
+Evidence is `mimo-parallel-allow-stderr.log`,
+`mimo-parallel-allow-events.jsonl` and `mimo-parallel-allow-next-state.json` in the scratch.
+The deciding guard is
+`package/pi-plugin/auto-mode/native/contract/integration/policy-source/policy-input-collector.mjs`.
+Reproduce with actual native progress callbacks and a complete parallel group,
+then preserve real governing-source,
+tool-input and cancellation invalidation while removing the false progress invalidation.
+Do not fix it by ignoring arbitrary stale-source errors or weakening permission guards.
+Source inspection finds an existing execution-retention handoff after automatic approval
+in `native/contract/integration/native-batch/prepared-group.mjs`,
+but none after confirmation resolves an automatic Ask to Allow.
+The collector already supports append-only event receipts after that handoff.
+The maintained decision-fallback fixture now emits tracked progress from both tools
+and registers an asynchronous original extension observer for every existing decision mode.
+New `allow-stale` and `allow-abort` cases change governing policy or cancel during confirmation.
+The paired regression is now proven on `native-release-dXedQJ`:
+automatic approval executes both tools and observes both tracked updates;
+confirmed Allow fails with `1 !== 2` and the same callback-revision freshness cause.
+Evidence is `progress-manual-red.log` and `progress-automatic-control.log`.
+Commit `83b10e751f` preserves the failing regression before the repair.
+The source repair shares the existing approved-dependency handoff across automatic approval
+and confirmation of a captured automatic review.
+Manual fallback without captured automatic sources keeps its original behavior.
+Repair commit `9f357591dd` builds as `native-release-rKKphY`
+from an archived committed contract snapshot while the worker keeps its previous pinned runtime.
+The complete `test:native:decision-fallback` task passes,
+including tracked progress after automatic approval and confirmed Allow,
+Stop,
+dismissal,
+headless withholding,
+source replacement,
+cancellation,
+prohibition and the new confirmation-time source/cancellation controls.
+Evidence is `confirmed-progress-suite.log` and its bounded-task receipt.
+A private source-copy rebuild removes only the confirmed-approval retention call.
+The maintained `unknown` regression fails with `1 !== 2` and the original callback-revision cause.
+`confirmed-progress-mutant-receipt.json` verifies unchanged production hashes and active publication.
+Next run the execution/ownership/phase safety tasks,
+then restart the RPC worker on the verified runtime with its saved session preserved.
+Add private actual-request capture and exercise RPC compaction before continuing the scoped edits.
+
+### Reopened persisted assistant-content capture failure
+
+The preserved real worker session opens in captured RPC fixture `pi-mimo-rpc-session-6nOsXz`
+on `native-release-rKKphY`,
+but startup retains `SessionInputCaptureError` with `Run message profile supports text content only`.
+The original failure is `loaded-history.mjs` calling the text-only validator on assistant content.
+Live manager capture already uses `assertManagerMessageContent`,
+which preserves native text signatures,
+thinking and tool-call blocks.
+Keep this incident separate from progress freshness and cancellation-handle projection.
+RPC `compact` succeeds with `tokensBefore: 145267`,
+and the probe confirms actual `session_before_compact`,
+an original cancellation handle and 108 branch entries.
+That success does not clear the retained history error or establish the next tool review.
+The maintained SDK persistence and live/load differential regression is committed before the repair.
+Commit `927ad36265` preserves the regression before repair.
+The actual SDK reopen fails with the same retained text-only error on `rKKphY`;
+evidence is `loaded-message-content-red.log`.
+The repair reuses the existing manager-content validator in loaded history,
+preserving supported blocks and its rejection of unsupported fields/types.
+Repair commit `af6ac2a5c1` builds as `native-release-hGuAfo`.
+The first green attempt passes actual SDK capture after reopen,
+then exposes an incorrect test call to the internal input-origin reader.
+The test now uses the SDK's returned message content for persistence fidelity
+and the original pool publications for the live/load source comparison.
+The corrected maintained regression passes on `hGuAfo`:
+actual SDK persistence,
+seven supported live/load content cases and four rejected content cases,
+with opaque signatures preserved locally.
+Evidence is `loaded-message-content-green2.log`.
+The guard mutation and actual resumed-session compaction/next-review checks remain pending.
+
+The worker is restarted fresh as `pi-mimo-rpc-session-JTeYFr`,
+session `44944`,
+with actual Luna-body capture and verified runtime `rKKphY`.
+Its current editing checkpoint is only the CLI network guard and process consumer pair.
+The supervisor owns the other original checkpoint files during the history/compaction investigation;
+their lint work stays queued.
+This keeps lint implementation independent of the failing resumed-session consumer.
+The worker's relative-path lint probes report `No files found to lint`;
+do not count those as clean results.
+An explicit package cwd plus absolute source paths checks both actual files:
+initially 72 warnings and six errors,
+then 31 warnings and six errors after scoped formatting.
+The worker has modified only its assigned CLI pair so far.
+Its intentional supervisor-steering pause withholds two old inspection calls;
+the resumed implementation prompt keeps the human's original task active.
+The exact failed and successful command cwd/path combinations are still being compared.
+At this checkpoint,
+Git shows no MiMo source edits yet;
+its first lint slice is still analysis.
+The supervisor allows the subsequent one-command private-summary preview only.
+
 The first checkpoint clears all findings in these package-relative files:
 
 - `native/contract/collector/run-prompt-custody-v3/event-controls.ts`.
@@ -221,6 +331,10 @@ Do not equate any error-word hit with a bare shutdown error or filter the noise 
   rebuild affected consumers,
   run types and meaningful native controls,
   then continue through the remaining full-package lint clusters.
+- First reproduce and repair the parallel progress freshness failure,
+  with automatic and exact-group Allow controls,
+  genuine source-change rejection and rebuilt guard mutations.
+  Coordinate source ownership with the live worker and restart its pinned host after the repair.
 - Obtain a fresh complete lint result with zero warnings and errors,
   passing appropriate tests,
   and comparison of exported/implementation branches against exercised consumers.

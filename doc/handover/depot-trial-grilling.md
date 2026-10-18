@@ -1,5 +1,106 @@
 # Depot trial interview
 
+## Execution checkpoint on 2026-10-18 at 09:14 UTC
+
+Research remains open;
+do not resume the interview or declare readiness from the completed module sample.
+The frozen application source is `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+Later main changes do not silently enlarge a frozen cohort.
+
+The exact cloud APK pair now has a completed local headful consumer in
+[`depot-android-consumer-2026-10-18.evidence.json`](../audit/depot-android-consumer-2026-10-18.evidence.json).
+All 16 source-derived cases were reported:
+14 passed,
+two retained the known `SessionStoreTest` context-fixture failure,
+and none skipped.
+Private emulator/ADB cleanup completed.
+The successful producer and its matching certificates remain distinct from the first APK-only launch.
+
+Both native Depot and Depot's GitHub runner completed the frozen `mvm` Linux lifecycle.
+GitHub-hosted Ubuntu failed libvirt's KVM capability boundary after a successful device-access adjustment.
+The parent owns a further bounded raw QEMU/libvirt diagnostic,
+the public VM/process receipts,
+PR cleanup receipt completion,
+and the associated source-backed troubleshooting notes.
+
+The repaired container consumers completed successfully in native run `g02lgcbfgq`
+and GitHub run `39113547458`,
+at harness `5485cc0d12805f330d568b358e5ff0bb988d4d37`.
+Native AMD64/Arm64 host and job-container jobs passed;
+GitHub-hosted AMD64 and Depot AMD64/Arm64 host and job-container jobs passed.
+The job image digest is
+`sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31`.
+The actual consumer checks the locked Node 26 binary hash and its loaded `libatomic` mapping,
+separately from the image's base Node 24.
+Earlier Git-absent and `libatomic.so.1`-absent fixtures stay retained as failed prerequisite controls.
+The parent is consolidating original artifact ZIPs and must remove only its exact owned
+GitHub/native pull-secret variants before releasing its image hold to the builder researcher.
+
+The matched lock/evidence campaign is complete on native Depot,
+GitHub-hosted Ubuntu and Depot GitHub runners.
+Every ordinary-directory repeat failed within the same 34-case cohort;
+all nine tmpfs repeats passed 34 of 34.
+Provider-labelled receipts and deciding source are in the cache report and
+[`git-policy-replaced-lock-filesystem.md`](../troubleshooting/git-policy-replaced-lock-filesystem.md).
+Do not attribute these failures to Depot alone.
+The exact temporary signed-URL secrets were deleted and absence verified.
+The cache audit now has 21 job-attempt records across 20 workflow runs,
+with a conservative USD 1.407 request-to-job-terminal proxy,
+not allocated CPU time or an invoice.
+
+After finishing that evidence's lint/render and owned cleanup,
+the cache researcher owns the broader frozen Rust/current-source linter and Rust fuzz area.
+It must classify all 23 standalone Cargo manifests,
+compare exact prior source/dependency/toolchain evidence for valid carryover,
+and prepare documented bounded profiles before launches.
+Its unchanged cumulative USD 5 proxy guard includes the completed USD 1.407;
+at most two of its jobs may be active.
+Main remains docs/evidence only;
+heavy work stays in isolated cloud jobs or bounded containers.
+
+The parent still owns physical Depot Tests shards/report consumers,
+native retry/rerun and corrected state-artifact consumption,
+the raw GitHub-hosted KVM diagnostic,
+the cost/critical-path model,
+and the approved final report.
+The frozen inventory contains five Rust fuzz sidecars,
+not only the two `rust-module` sidecars:
+`cli/forbidden-strings.fuzz`,
+`git-policy/cli.fuzz`,
+`linter/monochromatic-lint.fuzz`,
+`rust-module/forbidden-regex.fuzz`,
+and `rust-module/jsonc-edit.fuzz` under `package/`.
+Inspect each owning task before running;
+some already implement container bounds and planted controls,
+and some dual-corpus commands can mutate committed seed inputs.
+The cache researcher owns their source preservation and explicit ASan/GNU target evidence.
+
+The KVM follow-up is a fifth allocation after four terminal guest jobs.
+The retained admission measures 358 preceding request-to-terminal seconds,
+models them at USD 0.0716,
+and reserves USD 0.12 for one ten-minute GitHub-hosted diagnostic.
+The USD 0.1916 forecast stays under the unchanged USD 1 campaign guard.
+Harness `0a2fd7678b` calls the source-bound raw QEMU/libvirt capability task;
+it does not execute an application guest.
+The parent must dispatch it,
+retain its TCG positives and KVM outcomes,
+and check explicit daemon cleanup.
+
+The capability researcher's additional admission is USD 2 cumulative timestamp compute,
+with its existing two-builder/sixteen-CPU/thirty-two-GB bounds unchanged.
+Actual Bake,
+secret/SSH forwarding,
+real Cargo cache mounts,
+and remote-source controls remain its owned work.
+Captured docs/repository enumeration is not complete substantive feature review.
+Current source confirms `depot cargo` is a local Cargo wrapper for the same remote sccache backend,
+not a separate remote Rust compiler.
+The capability researcher is verifying its prerequisite,
+authentication precedence and environment-forwarding boundaries.
+The substantive chronology pass also covers Dockerfile lint,
+Cache Explorer/export,
+builder networking and Datadog's current availability.
+
 ## Research reopened and interview withdrawn on 2026-10-18
 
 The user rejected the readiness claim:

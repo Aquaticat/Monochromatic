@@ -241,6 +241,68 @@ an observed terminal job,
 and stopped billing remain distinct facts.
 No excluded account-wide analytics method is invoked here.
 
+## Live plan eligibility and autoscaling boundary
+
+The [live public pricing capture](../audit/depot-live-public-pricing-2026-10-18.evidence.json.gz)
+retains every feature row's SVG,
+every FAQ answer,
+and each compute tab from an isolated unauthenticated browser session.
+Text-only fetching omitted the availability icons and collapsed FAQ answers.
+The capture did not inspect account state,
+cookies,
+invoices,
+or subscriptions.
+
+Developer includes Linux and Windows GitHub runners,
+multi-platform builds,
+Build Insights,
+API access,
+autoscaling,
+agent sandboxes,
+test reporting,
+OIDC,
+egress filtering,
+and community support.
+macOS runners require Startup or Business;
+the [GitHub runner overview][github-runners] independently confirms this plan boundary.
+A successful Startup-trial macOS job does not establish Developer eligibility.
+GPU builds,
+custom regions,
+dedicated infrastructure,
+static outbound IPs,
+PrivateLink,
+and AWS deployment are Business features in this capture.
+This eligibility statement is separate from ordinary CI device probes and their lack of GPU devices.
+The managed GPU documentation requires customer AWS capacity and a provider-prepared custom runner AMI;
+it does not expose a Developer GPU sandbox label.
+
+The FAQ defines storage billing as the month's average combined build-cache,
+Depot Cache,
+and registry storage,
+sampled hourly.
+Developer's 25 GB is shared among those products.
+The project schema's minimum `keep_gb: 25` applies per architecture,
+not to total project storage or a reserved allocation.
+The pricing page lists usage caps but does not document one aggregate dollar cap covering all products.
+The older cap announcements separately describe build minutes and GitHub Actions minutes.
+
+The [autoscaling documentation][build-autoscaling]
+and the captured `depot/core/v1/project.proto` agree that `max_concurrent_builds`
+means builds per instance before adding an instance.
+It does not limit the total instance count.
+The audited create/update schemas expose no total-instance ceiling.
+Autoscaling remains off under this campaign's maximum-builder bound;
+there is no actual scale-out claim.
+The executed Bake graph counts as one build per project,
+regardless of its target count.
+
+Additional builders clone the main cache but do not merge their new layers back.
+Work on different builders is not deduplicated.
+The docs exclude temporary clones from cache storage charges while retaining normal compute charges.
+These consequences make project separation,
+larger builders,
+and scale-out distinct CI architecture choices.
+
 ## Registry lifecycle and export surface
 
 [Registry v2][registry] supports arbitrary OCI artifacts,
@@ -395,8 +457,9 @@ Anonymous manifest access returned 401.
 The temporary pull token used the observed Basic authentication challenge and successfully read the image.
 Cross-origin signed blob redirects were followed without forwarding the Authorization header.
 The token value is excluded from committed evidence.
-The CLI reference describes a build-ID form while the registry overview describes project-path read access;
-the narrowness of that build-ID form still needs a distinct-artifact control.
+The CLI reference describes a build-ID form while the registry overview describes project-path read access.
+The token's successful read of the subsequently created CI image establishes cross-build project access.
+Cross-project isolation remains unexercised.
 
 Podman 5.8.7 pulled the immutable remote image and ran its unmodified entrypoint and command.
 The health,
@@ -406,14 +469,20 @@ and controlled stop exited zero.
 However,
 `podman healthcheck run` returned 125 with `has no defined healthcheck`,
 even though the raw OCI configuration contains the Docker `Healthcheck` extension.
-The aggregate consumer therefore remains failed pending format and runtime controls.
+The aggregate consumer remains failed.
+The [pinned Podman source diagnosis](../troubleshooting/podman-oci-healthchecks.md)
+now explains the omitted metadata;
+the parent-run Docker consumer honored the same original image's check.
 
 The expired initial eight-minute wall-clock window is retained.
 The authorized recovery used a fresh five-minute request guard,
 the same builder sizes,
 and the same USD 1 timestamp-compute ceiling.
 That model is not proof of an invoice cap or aggregate account expenditure.
-The shared images and project remain held for independent native CI and GitHub consumers.
+The shared images and project were held for independent native CI and GitHub consumers.
+The parent's final consumer cohort completed and released that hold on 2026-10-18.
+The builder project remains solely for the remaining bounded source/lifecycle probes,
+followed by exact owned-resource cleanup.
 
 Build `d0xtstnptt` exercised a multi-node local filesystem exporter with the base stage forced to execute.
 The exported x64 identity reports 16 CPUs,
@@ -489,15 +558,157 @@ After positive authenticated reads,
 an owned empty blob-upload initiation returned HTTP 403 with registry error `DENIED`.
 No upload was created.
 
-The next action is the independent GitHub and native CI job-container consumer,
-while forwarding,
-remote source,
-and firstparty cache-mount campaigns continue.
+That checkpoint preceded the Node26 correction and the completed Cargo/forwarding controls.
 The timestamp-compute model covers 139,103 milliseconds across native requests,
 giving USD 0.1854707 at the declared two-builder rate.
 This is a request-window estimate,
 not billed usage or an aggregate invoice guarantee.
 No account-wide billing or usage query is authorized or required by this campaign.
+
+## Repository Node26 image prerequisite correction
+
+The subsequent cloud job-image consumers reached checkout,
+then the frozen Node `26.12.0` loader failed with a missing `libatomic.so.1`.
+The base Node `24.22.0` check did not exercise the repository's different runtime.
+The failed CI image remains retained.
+A further owned derivative adds Debian `libatomic1`
+and executes both exact architecture archives from the frozen root `mise.lock` during its build.
+The archive hashes,
+ELF machine identifiers,
+dynamic-library resolution,
+TypeScript execution,
+and runtime versions must pass before that derivative receives consumer credit.
+The second Node installation is removed within the same build step.
+
+The isolated source `7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f` contains the executed correction.
+Build `1ng4qs1pmq` completed in 31,529 milliseconds and produced immutable index
+`sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31`.
+The actual Node `26.12.0` module executed on both AMD64 and Arm64 builders
+after SHA256 verification against the frozen lock.
+The probes exercised TypeScript,
+crypto,
+and top-level `await`,
+and verified ELF machine 62 or 183 and resolved `libatomic.so.1`.
+Both architectures report Debian `libatomic1` version `12.2.0-14+deb12u1`.
+Base Node remains `24.22.0`.
+The temporary repository Node installation was removed in the same step
+and does not appear in the final filesystem layer.
+
+Independent registry reads verified the corrected configurations and their attestation subject bindings.
+The original-build token read the new index and both final layers;
+an empty blob-upload initiation again returned HTTP 403 `DENIED`.
+The corrected `/opt/depot-research/image-tools.json` hashes are
+`53d2d2c340ef8214c8b9caf2da0b94c38327c63655d4656729a3b54c5d1e7f96` for AMD64
+and `1229b983f4c529867d6a0fb1d0b1f1c1ba00f8b941c04d599ecd3d6845f3afa2` for Arm64.
+They contain 4,154 and 4,179 bytes respectively.
+The [BuildKit receipt](../audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json)
+records this derivative separately from the retained missing-library image.
+The parent owns the subsequent full checkout and Mise consumers.
+
+The same research branch now includes the frozen firstparty `truepeak-core` Cargo cache-mount fixture
+from source `7f22f25adb`.
+Its mount controls distinguish an empty offline failure,
+an online seed,
+offline target reuse,
+offline registry reuse with a fresh target,
+and changed-flag invalidation.
+Remote build `lskskmk4hn` exercised the empty-cache offline negative control.
+Cargo returned its expected exit 101 in 27 milliseconds,
+with no compiler artifacts and absent registry and target markers.
+The outer guarded build passed in 19,670 milliseconds.
+The coherent continuation used the same harness and frozen crate for every case:
+
+- Seed `12139n3wbg`: 12 Cargo compiler-artifact records,
+  none fresh;
+  Cargo 3,120 milliseconds and outer build 17,147 milliseconds.
+- Offline warm `x33zr9szff`: all 12 records fresh;
+  Cargo 376 milliseconds and outer build 13,781 milliseconds.
+- Offline target reset `x98z3btb21`: all 12 records recompiled using the retained registry cache;
+  Cargo 3,005 milliseconds and outer build 16,755 milliseconds.
+- Offline changed flags `71x7kn2wqr`: all 12 records recompiled using the original target mount;
+  Cargo 3,096 milliseconds and outer build 18,193 milliseconds.
+
+Each case consumed a new run nonce,
+so the warm result executed Cargo rather than returning a cached Docker layer.
+The mount markers prove the registry/target reuse and the separate empty target.
+The lock hash stayed unchanged.
+These are Cargo artifact records,
+not the prior sccache request counter.
+This cohort proves the narrow firstparty compilation/cache mechanism;
+it does not run nextest or the optional service/fingerprint graph.
+There is only one sample per case,
+so the recorded durations do not establish a speedup ratio or run-to-run spread.
+The actual local prerequisite control started pinned Node `24.22.0`,
+Rust `1.97.1`,
+and Cargo `1.97.1`
+with the frozen lock hash under a two-CPU,
+two-GiB,
+network-disabled runtime.
+
+The parent-authorized cumulative timestamp-compute model ceiling is now USD 2.
+Its fresh forecast includes the seven observed request intervals,
+the Cargo cohort,
+the forwarding graph,
+and the immutable remote-Git controls.
+The owned project remains `HARDWARE_16X32`,
+with at most two architecture builders and a five-minute server build timeout.
+This model does not inspect or constrain unseen account charges.
+
+## Current Cargo wrapper and historical feature chronology
+
+The installed root CLI exposes `depot cargo`.
+Its help invocation entered the command and failed because sccache was absent;
+the command-tree inventory retains that failure.
+The [current-source diagnosis](../troubleshooting/depot-cargo-cache-wrapper.md)
+and real isolated CLI controls establish a local Cargo/sccache wrapper,
+including its automatic job-token fallback,
+credential precedence,
+argument forwarding,
+and removal of inherited `SCCACHE_*` tuning.
+It is not a separate remote Rust execution pool.
+
+The full captured changelog also exposes Cache Explorer downloads,
+Dockerfile Hadolint/Semgrep integration,
+builder CNI isolation,
+separate historical build-minute and GitHub-minute caps,
+and Datadog's transition to general availability.
+Their applicability and deciding-current-source reconciliation are active work.
+The secret/SSH and multi-target Bake controls are now exercised in the forwarding campaign.
+Immutable remote Git contexts remain pending runtime probes.
+
+## Actual Bake graph, mount lifetime and CNI controls
+
+Build `tf3tp8b4tx`,
+source `b0e3247a279507c759964162ec9eb816e3dcc402`,
+ran the reviewed `forwarding-graph` Bake group rather than only printing its configuration.
+Its source and named-context evidence targets executed on AMD64 and Arm64.
+Both architectures consumed the expected synthetic secret hash and forwarded SSH-agent identity.
+The following `RUN` had no secret file and no `SSH_AUTH_SOCK`.
+The owned keyless agent answered only identity-list requests and closed without errors.
+No private key or SSH signing operation was used;
+authenticated Git-over-SSH is outside this result.
+
+Separate terminal controls rejected the missing required mounts:
+
+- Build `c92mvpvs0t`: `secret fixture: not found`.
+- Build `mqpxcrcbgn`: `unset ssh forward key fixture`.
+  The initial assertion expected different wording;
+  the retained terminal log was reconciled without another allocation.
+
+The graph's independent AMD64 network targets each bound loopback port `38429`.
+Their successful bind intervals overlapped by 20,008 milliseconds,
+their hashed kernel boot identities matched,
+and their network-namespace identities differed.
+A local same-namespace collision first produced `EADDRINUSE`.
+This is actual concurrent build-container network-isolation evidence.
+It does not establish separate hardware per target,
+host-escape resistance,
+or cross-organization cache isolation.
+
+The graph finished in 34,293 milliseconds.
+The generated programs passed an annotated-input syntax preflight,
+with the [Node check-path correction](../troubleshooting/node-eval-module-detection.md) retained separately.
+The positive and rejected-mount receipts are in the BuildKit evidence archive.
 
 ## Unreleased CLI changes expose additional research cases
 
@@ -571,6 +782,8 @@ No completion or interview-readiness conclusion is made.
 [metal-launch]: https://depot.dev/blog/announcing-depot-metal
 [metal-gha-rollout]: https://depot.dev/blog/how-we-load-tested-depot-metal-before-scaling-up
 [metal-autoscaler]: https://depot.dev/blog/autoscaling-depot-metal
+[github-runners]: https://depot.dev/docs/github-actions/overview
+[build-autoscaling]: https://depot.dev/docs/container-builds/how-to-guides/autoscaling
 [manage-runs]: https://depot.dev/docs/ci/how-to-guides/manage-workflow-runs
 [retry]: https://depot.dev/docs/ci/how-to-guides/retry-steps
 [parallel]: https://depot.dev/docs/ci/how-to-guides/parallel-steps

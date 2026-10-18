@@ -495,13 +495,26 @@ with zero skipped cases,
 failures,
 or errors.
 The case-identity multiset matches the first run.
+The [task-level execution proof][android-jvm-execution]
+retains both complete Gradle logs,
+every task outcome,
+and each XML report's timestamp and hash.
+Both invocations show `:app:testDebugUnitTest` executing without `FROM-CACHE` or `UP-TO-DATE`.
+Every report timestamp falls inside its actual test command's recorded interval.
+Each invocation separately restores `:app:javaPreCompileDebugUnitTest` from cache;
+that compilation-cache result is distinct from test execution.
 Tracked source remained unchanged.
 The byte comparison is narrower:
 the 4 AndroidX payloads match between builds,
 while the 6 engine/Turso payloads differ.
-The retained evidence records both hashes;
-the cause is not established,
-and source identity is not being promoted into a bit-reproducibility claim.
+The [section-level comparison and original-source controls][android-reproducibility]
+show matching `.text` bytes for all 8 inspected 64-bit libraries.
+Each differing engine/Turso library contains the corresponding build's clock timestamp in `.rodata`;
+the isolated unchanged `turso_core` build script reproduces deterministic output with `SOURCE_DATE_EPOCH`.
+Symbol-table and string-table differences are retained separately.
+The [timestamp diagnosis][android-timestamp-diagnosis] describes the verified seed control
+and the absence of a complete normalized native or APK rebuild comparison.
+Source identity is not being promoted into a whole-artifact bit-reproducibility claim.
 
 The parent consumed the exact second-run pair on a private headful API 37,
 `x86_64` device using emulator `37.2.12` and host GPU rendering.
@@ -516,13 +529,21 @@ Of those,
 2 failed,
 and zero were skipped.
 The runner completed normally and the parent retained the raw failures and verified cleanup.
-The public device receipt and exact failure identities are pending incorporation.
+The [public device receipt][android-device-consumer] retains the exact failure identities:
+`SessionStoreTest#migratesEveryLegacyCombination`
+and `SessionStoreTest#currentPlaybackModeWinsOverLegacyKeys`.
+Both report a null-context `getSharedPreferences` call,
+matching the parent's freshly checked open issue `1002`.
 These are consumer assertion failures,
 separate from successful APK assembly and host-JVM tests.
 The newer main checkout's 3 additional instrumentation classes are outside the frozen cohort.
 
 [android-page-sizes]: https://developer.android.com/guide/practices/page-sizes
 [android-receipts]: depot-complete-coverage-android-receipts.json.gz
+[android-jvm-execution]: depot-complete-coverage-android-junit-execution.json.gz
+[android-reproducibility]: depot-complete-coverage-android-reproducibility.json.gz
+[android-timestamp-diagnosis]: ../troubleshooting/turso-android-native-build-timestamps.md
+[android-device-consumer]: ../audit/depot-android-consumer-2026-10-18.evidence.json
 
 ## Remaining Node static and build campaign
 
@@ -606,6 +627,55 @@ process,
 and native-prerequisite profiles remain separate pending work.
 The profile is dispatched as run `39112145763`,
 with the API-confirmed workflow head `588275a55c7efefef93dbbc529078d31fdcfafd8`.
+It is now terminal:
+126 of 127 invocations passed.
+The `unused-export` default task fails 2 real consumer cases with
+`TypeError: analyzer.addFile is not a function`.
+Its frozen type-check also reports `TS2339` for `addFile`,
+`referencesOf`,
+and the diagnostic's `module` property.
+The locked `yuku-analyzer` `0.19.0` declarations and implementation instead expose `setFile`.
+The VM-builder discovery control exits successfully with zero default-shaped files,
+so it receives no executed-test credit.
+
+The reviewed process profile is dispatched as run `39114552347`,
+with API-confirmed harness commit `8fa5b508c061e9caec82847037a40a5ef414aa7b`.
+Its 17 owning default tasks have 191 files confirmed by the actual filesystem glob,
+with a source hash for each discovered file.
+It invokes 131 commands across 2 sequential Depot `8CPU/32GB` jobs,
+with a 15-minute job cap,
+3-minute command cap,
+and 9-minute campaign cap.
+Both shards build the reviewed cross-package prerequisites before their assigned default tasks.
+The CPU-cap and desktop-E2E owning configurations declare no build task.
+The initial characterization of desktop-E2E as only pure and stand-in-socket helpers was incomplete:
+`compositor-path.unit.test.ts` actually queries the installed Mise compositor,
+and `image.unit.test.ts` invokes ImageMagick for PNG decoding.
+Neither check starts a GUI,
+but both require separately qualified installed tools.
+The WireGuard companion lookup also requires the real `wg-quicker-exempt` release artifact.
+The profile uses injected provider transports,
+temporary Git repositories,
+temporary file-enforcer configurations,
+fake `sudo`,
+fixture hardware paths,
+and an invalid VM backend sentinel.
+Actual paid provisioning,
+physical compositor control,
+and host hardware writes are outside these fixture tests.
+The completed run invoked all 131 commands:
+128 passed,
+and the WireGuard,
+CPU-cap,
+and desktop-E2E default tasks failed.
+Both workers used UID `1001`,
+so the WireGuard fixture did enter its intended nonroot privilege path.
+Both source receipts retain unchanged tracked files.
+The missing native companion,
+compositor lookup,
+decoder prerequisite,
+and CPU-cap assertion remain distinct diagnoses;
+they are not assigned collectively to a provider.
 
 Auto Mode's `build:native` and `test:native:*` names describe a maintained Pi host built from JavaScript/TypeScript.
 They are not covered by the Cargo campaign.
@@ -619,15 +689,17 @@ Its actual session/transport fixtures and capacity cases still require separate 
 
 The active queue remains independently verifiable:
 
-- Incorporate the parent's public receipt for the completed source-bound device consumer,
-  preserving its 2 failed assertions and the current-main source drift.
-  Investigate the measured engine/Turso byte differences before making any reproducible-build claim.
+- Keep the completed source-bound device consumer's 2 failed assertions
+  and current-main source drift visible in aggregate acceptance.
+  The isolated Turso build-script seed controls are complete;
+  full normalized native-library or APK rebuild equivalence remains unmeasured.
 - Finish the immutable package/feature/command manifest,
   including active and inactive roots,
   actual imported/generated influences,
   and native/Kotlin/Slint/build-tool consumers.
-- Publish the completed matched provider repeat `39106784923`
-  and filesystem-watch positive controls for the four failed default suites.
+- Classify the published static,
+  matched-provider,
+  and default-task receipts against the exact first-party source assertions.
 - Execute remaining applicable Node quality,
   product,
   plugin,
@@ -656,7 +728,8 @@ The active queue remains independently verifiable:
 
 ## Current next action
 
-Collect the running static wave's terminal receipts,
-finish default-test process and recursion review,
-then execute the applicable default-test and bounded non-default profiles.
+Collect process run `39114552347` at its terminal state.
+While it runs,
+finish the guarded Pi-host command review
+and prepare the remaining applicable default and bounded non-default profiles.
 The immutable feature and consumer manifest remains under semantic review.

@@ -943,6 +943,8 @@ run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs prohibition",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs deadline",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs fresh",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs allow-stale",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs allow-abort",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs clause-deny-approve",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs clause-deny-deny",
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs clause-deny-unknown",
@@ -954,6 +956,10 @@ run = [
 description = "Exercise one actual native decision fallback mode"
 usage = 'arg "<mode>" help="Native decision fallback fixture mode"'
 run = 'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs "$usage_mode"'
+
+[tasks."test:native:loaded-message-content"]
+description = "Verify persisted and live native message blocks retain the same content and validation"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-loaded-message-content.test.mjs"
 
 [tasks."test:native:retained-context-capacity"]
 description = "Retain separate authenticated inputs whose aggregate exceeds the engine string limit"

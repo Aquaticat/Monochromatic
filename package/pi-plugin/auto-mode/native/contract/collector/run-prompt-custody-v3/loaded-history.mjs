@@ -1,5 +1,6 @@
 import {SourceCollectionError} from "../collector.mjs";
 import {copyMessageData,assertTextMessageContent} from "../run-prompt-custody/messages.mjs";
+import {assertManagerMessageContent} from './manager-message-content.mjs';
 import {dataField,messageMetadata,systemInputFields,assertSystemInput,bashInput} from './loaded-fields.mjs';
 //region Loaded history retains original entry identity.
 /** Capture loaded and appended historical inputs through the original pool. */
@@ -173,7 +174,7 @@ try{
    const value=copyMessageData(dataField({
      value:message,
      key:'content'
-   }));assertTextMessageContent(value);
+   }));assertManagerMessageContent(value);
    retain({
      carrier:entry,
      value,
