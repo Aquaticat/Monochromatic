@@ -585,6 +585,42 @@ or full compiler/task-cache compatibility.
 Depot GitHub Actions runners have a separately documented automatic Cache credential;
 ordinary GitHub compute still needs a valid documented credential route for this remote-cache design.
 
+## Compiler-cache execution ledger
+
+The bounded compiler-cache follow-up was dispatched as
+[run `gmrm0ff71h`](https://depot.dev/orgs/l4zncjjbj5/workflows/gmrm0ff71h)
+from pushed harness `298860fd9db1b894bba0f4531f2307df6881e0b0`.
+Its workflow hash is `6b8056b6b6990e426b4cffa87f9bfb30a595a8e4d5f3b85591a05c3c4a09a00f`.
+It permits at most three fresh allocations,
+each requesting two CPUs/eight GB and a five-minute timeout.
+It builds the existing `truepeak-core` default-feature library with its lockfile,
+using fresh isolated Cargo target and package-download paths.
+An independent executable calls the compiled library's public gain and meter functions.
+Existing Rust tests run through Nextest only when that command is available.
+
+The upstream `sccache` release `v0.18.0` was inspected before dispatch.
+The 9,730,540-byte x86_64-musl archive matched both GitHub release metadata
+and its published SHA256 file:
+`45f1447fbe231e3037bde351ef70677dd212216c8d62ae7ca409fecc4d6acc89`.
+The extracted executable hash is
+`973cb15f6a986d84ca334bbed3bbe2eb8f1ee8fd81bf9e115b8539a293bf8d59`.
+Its actual `--help` reports WebDAV support and JSON statistics.
+The checked-out release source is `01c35e69b97f516c2ebfbdb418b5cd6277bde280`.
+
+The probe's unique WebDAV prefix isolates its writes from existing cache entries.
+The seed and unchanged consumer use the same source,
+compiler,
+paths,
+and flags;
+the third allocation adds a compiler flag as a cache-miss positive control.
+The task uses only the supplied Cache credential,
+records cache statistics and consumer behavior,
+and preserves failures and server shutdown evidence.
+The next action is terminal artifact reconciliation.
+No compiler hit,
+invalidation result,
+or elapsed-time benefit is inferred from dispatch acceptance.
+
 ## Sources and limits
 
 Official docs and open source establish supported interfaces and documented boundaries.
