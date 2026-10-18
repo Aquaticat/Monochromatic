@@ -745,7 +745,7 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     parameter, so they stay reported. Thread locals are not a way out: a spawned thread cannot read the parent's
     thread locals (`src/find_worker.rs:179` hands two channel ends to its worker), and for the UI callbacks they
     would swap `Rc<RefCell<..>>` captures for hidden global state. The helper route the user picked first (generic
-    helpers with a suppression each) is withdrawn: `monochromatic-lint` has no inline suppression, and a Rust
+    helpers with a suppression each) is withdrawn: `monochromatic-lint` had no inline suppression then (comment directives were built afterwards), and a Rust
     `#[allow]` does not reach it (`src/rust_no_anonymous_functions.rs` has no option but severity). The user then
     asked to change the rule itself, with type resolution and ignore comments. The proposal is
     `doc/planning/linter-selective-anonymous-functions.md` (not accepted): directive comments with a mandatory
@@ -763,7 +763,7 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     syntax in oxlint, ESLint, Biome, Ruff and Clippy; closure bans elsewhere; a Dylint or rustc-driver route), one
     closes the measured gaps (test sidecars under `cfg(test)`, the IDE dependency graph and generated code, the
     5.9 s breakdown, wrapper cases). Both reported (proposal sections "Research results" and "Round two results"):
-    comment directives are already decided (D2 of `doc/planning/rust-linter-oxlint-parity.md`, unbuilt); the type
+    comment directives were already decided (D2 of `doc/planning/rust-linter-oxlint-parity.md`; built since, see the bullet "Inline directives in the linter"); the type
     criterion gives 62 allowed and 5 reported of the 67 only with the full dependency graph, `cfg(test)` plus
     `cfg(debug_assertions)` and `BuildGenerated`, at 22 to 39 s on the IDE package against 0.063 s; under
     `SourceOnly` 25 of 67. The spike branch `spike/linter-closure-static` keeps its local commits (`fad1074bd2`,
@@ -894,6 +894,21 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     The Dylint lint `avoidable_closure` is the only closure check from then on.
     Rust packages other than the IDE have no closure check until each gets its own `lint:closures` gate.
     The record is the section "Removal of `rust/no-anonymous-functions`" of `doc/decision/rust-closure-lint-dylint.md`.
+  - Inline directives in the linter (D2 of `doc/planning/rust-linter-oxlint-parity.md`, built after the Dylint gate above;
+    branch `feat/lint-directives`, worktree `.claude/worktrees/lint-directives`, an agent, 2026-10-18; `landing:
+    pending`). The owner decided D2 on 2026-07-25 and asked for it to be built. `monochromatic-lint-disable`, `-enable`,
+    `-disable-line` and `-disable-next-line` are read from `//` and `/* */` comments of Rust files and from HTML
+    comments of Markdown files (not MDX), each needing a ` -- reason`. `rust/max-lines` and `rust/require-rustdoc`
+    declare themselves unsuppressible in `RULES` (`src/run_modes.rs`, shown by `--rules`); a directive aimed at either is
+    reported as `directive/non-suppressible`. The other findings are `directive/missing-justification`,
+    `directive/unknown-rule`, `directive/malformed` and, on request, `directive/unused`
+    (`--report-unused-disable-directives`, or `--report-unused-disable-directives-severity` with oxlint's five values).
+    One filter in `HostChecker::check_snapshot` covers the syntax rules, the semantic rule and the rustdoc and fence
+    processors, so `--fix` never sees a suppressed finding's fix. The README section "Inline directives" lists the
+    stricter readings taken where the planning documents were silent. The installed `monochromatic-lint` 0.1.3 predates
+    this and ignores such comments; the package version was not bumped, and no IDE file, configuration or root file
+    changed. The Dylint lint's own `expect(.., reason)` attributes are unaffected: the comment form for it is still the
+    open veto above.
   - Ignored entries dimmed in the tree (branch `feat/ide-ignored-dim`, request of 2026-10-14: "Apply 0.8 opacity to text
     for gitignored files/dirs"; the user chose the `ignore` crate 0.4.33, the only new package). Before, the tree
     listed ignored entries at full ink (`Workspace::list` is a plain `read_dir`). The reader thread now decides the
