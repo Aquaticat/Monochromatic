@@ -782,10 +782,22 @@ the items after it are the record of 2026-10-05 and older.
     macro arguments such as `json_value!`; 57 capture nothing): stage 2b converts them. The user's answers of
     2026-10-18: repoint the two stray mise symlinks (`nightly-2026-10-13`, `nightly-2026-10-17` pointed into scratch
     after stage 1 and the coordinator's verification run; repaired), add `rustc-dev` to the shared nightly, exempt
-    `tests/ui` in `monochromatic-lint.config.jsonc`. Stage 2a runs as an agent in the same worktree (root toolchain,
-    lock, config, package clean-shell proof). Stage 2b (queued): IDE `check-cfg` through file-enforcer, `expect`
-    attributes on the 4 non-let reports, the let-bound site, the 78 conversions, an IDE `lint:closures` task, then
-    the fate of the syntax-only rule. The user also asked to look at their oxlint setup; findings: shared config
+    `tests/ui` in `monochromatic-lint.config.jsonc`. Stage 2a landed on `main` as `00829db75b` (pushed): root
+    `rust` components gained `rustc-dev`, `cargo:cargo-dylint` and `cargo:dylint-link` (unpinned) joined the tools,
+    and refreshing `mise.lock` moved the floating nightly from `nightly-2026-10-17` to `nightly-2026-10-18` (the
+    toolchain is installed in `~/.rustup`, 24 GB to 27 GB; every session's next mise run uses it); the `tests/ui`
+    exemption (entry `ui-fixture-exemptions`) cleared the 86 fixture warnings; the package, on the shared nightly
+    with `build` and `lint` task names again, passed 13 tests, clippy, rustfmt and `monochromatic-lint` from a clean
+    shell, and the IDE copy still gave 62 of 67 allowed. The coordinator reran the package tests and the IDE
+    `test:cli` (13) on the new nightly after the final merge. Known host problem, not diagnosed: cargo from the
+    1.101 nightlies (`nightly-2026-10-17` and `nightly-2026-10-18`) cannot connect to crates.io on this host
+    (`Could not connect to server` in 17 ms; reproduced outside the sandbox in a user unit; curl over IPv4 and IPv6,
+    stable cargo and the 1.100 nightly `nightly-2026-09-22` work; no upstream issue found). Fetch with
+    `cargo +stable fetch --locked` and run nightly offline until it is understood. Stage 2b runs as an agent (branch
+    `feat/ide-closure-lint`, worktree `.claude/worktrees/ide-dylint`): IDE `check-cfg` through file-enforcer, an IDE
+    `lint:closures` task, the 78 conversions, `expect` attributes on the 5 unavoidable reports; the fate of the
+    syntax-only rule is a proposal in its report, not an edit. The coordinator reruns the full IDE gate set on the
+    merged tree before landing. The user also asked to look at their oxlint setup; findings: shared config
     `package/config/oxlint/src/config-base.ts` sets `reportUnusedDisableDirectives: 'warn'` with
     `denyWarnings: true`; the repository holds 861
     `oxlint-disable-next-line`, 401 `oxlint-disable` and 332 `oxlint-enable` directives, 698 of 734 next-line ones with
