@@ -44069,7 +44069,36 @@
         },
         "state": "queued"
       }
-    ]
+    ],
+    "executionCheckpointAt": "2026-10-18T19:03:48.931Z",
+    "immutableHarnessSha": "e270285361b526793ff1db3af9f8224630c28e70",
+    "privateJournal": "material-owner-campaign-controller.json",
+    "runIdentities": [
+      {
+        "profile": "ide-full",
+        "run": 39156168838,
+        "state": "in_progress",
+        "conclusion": null
+      },
+      {
+        "profile": "file-manager-gtk-release",
+        "run": 39156185253,
+        "state": "completed",
+        "conclusion": "success"
+      },
+      {
+        "profile": "terminal-release",
+        "run": 39156454419,
+        "state": "completed",
+        "conclusion": "success"
+      },
+      {
+        "profile": "file-manager-sticky-release",
+        "run": 39156802925,
+        "state": "in_progress"
+      }
+    ],
+    "runtimeCasesRequireArtifactJoin": true
   },
   "gnuOwningRuntimeContinuation": {
     "publicRun": 39152147229,
@@ -44080,5 +44109,13 @@
     "summaryOnlySkipped": 1,
     "sourceEvidence": "doc/audit/depot-current-host-gnu-owner-2026-10-18.evidence.json.gz",
     "matchedDepotProposalState": "queued exact-source proposal; no allocation"
+  },
+  "matchedDepotGnuControlProposal": {
+    "path": "doc/audit/depot-matched-windows-gnu-control-proposal-2026-10-18.evidence.json",
+    "planningPath": "doc/planning/depot-matched-windows-gnu-control.md",
+    "harnessSha": "28f3167d8f0e731d13378d072dd5f23a7e392554",
+    "state": "pending Parent exact-source admission; no allocation",
+    "nominalGuardUsd": 0.64,
+    "materialCampaignPriority": true
   }
 }

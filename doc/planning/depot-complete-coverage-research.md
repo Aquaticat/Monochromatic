@@ -1837,3 +1837,16 @@ No matched Depot GNU allocation is admitted by this executable material-owner re
 [material-parent-admission]: ../audit/depot-material-owner-parent-admission-2026-10-18.evidence.json
 [material-executable-admission]: ../audit/depot-material-owner-executable-admission-2026-10-18.evidence.json
 [gnu-terminal-owner]: ../audit/depot-current-host-gnu-owner-2026-10-18.evidence.json.gz
+
+## Material-owner dispatch checkpoint and matched GNU queue
+
+The material campaign uses immutable harness `e270285361b526793ff1db3af9f8224630c28e70`.
+Its owned controller retains exact per-dispatch admission and terminal metadata.
+The completed primary reservation plus corrections and unpriced reserve remains within the separate `USD 5` guard.
+Workflow success alone is not a parsed assertion or case count; artifact/body joins remain pending.
+
+The matched Depot GNU control is separately reviewable in
+[`depot-matched-windows-gnu-control.md`](depot-matched-windows-gnu-control.md).
+Its harness is `28f3167d8f0e731d13378d072dd5f23a7e392554`, with a separate `USD 0.64` nominal compute guard.
+No GNU allocation is authorized or dispatched by preparing this proposal.
+After exact-source admission, dispatch only with a coordinated slot and preserve the seven-owner queue.
