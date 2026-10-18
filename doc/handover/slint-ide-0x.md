@@ -749,8 +749,10 @@ the items after it are the record of 2026-10-05 and older.
     asked to change the rule itself, with type resolution and ignore comments. The proposal is
     `doc/planning/linter-selective-anonymous-functions.md` (not accepted): directive comments with a mandatory
     reason, and a semantic criterion (a closure that captures state and is passed to a callee requiring `'static`
-    stays unreported; `ra_ap_hir` 0.0.336 gives `Closure::captured_items`). Open: the user's acceptance, then a
-    spike on the unverified points. Until then the 67 stay reported as warnings, listed in
+    stays unreported; `ra_ap_hir` 0.0.336 gives `Closure::captured_items`). The user asked for the spikes on
+    2026-10-18: an agent runs them on branch `spike/linter-closure-static` (worktree `.claude/worktrees/linter-spike`;
+    the generated Slint setter bound, whether hir answers the `'static` question, and the added lint time); its
+    report goes to `~/temp/agent/linter-spike/report.md`. Acceptance of the proposal itself is still open. Until then the 67 stay reported as warnings, listed in
     `~/temp/agent/ide-closures/final-unconverted.txt`. Landing of this branch: the agent's gates ran on the tree
     before `main` was merged in; the coordinating session reran them on the merged tree (lint, tests, bundle and
     guards) before the fast-forward.
