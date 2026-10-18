@@ -3,11 +3,9 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   applyConsistencyEdits,
   blockHolding,
+  type CarryChosenPlace,
+  type CarryReceivingPlace,
   ConsistencyInvariantError,
-} from '@monochromatic-dev/translation-repair-consistency/ts';
-import type {
-  CarryChosenPlace,
-  CarryReceivingPlace,
 } from '@monochromatic-dev/translation-repair-consistency/ts';
 import { UnhandledMemberInvariantError, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import type { ArtifactConsistencyRepeat, } from '@monochromatic-dev/translation-repair-artifact/ts';

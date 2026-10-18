@@ -1,9 +1,9 @@
 import { compareCodePoints, } from '@monochromatic-dev/translation-repair-markup/ts';
-import type {
-  CarryBlock,
-  SpliceOnlyKind,
+import {
+  type CarryBlock,
+  ConsistencyInvariantError,
+  type SpliceOnlyKind,
 } from '@monochromatic-dev/translation-repair-consistency/ts';
-import { ConsistencyInvariantError, } from '@monochromatic-dev/translation-repair-consistency/ts';
 import { crossingOfUnit, } from './pass-consistency-carry-crossing.ts';
 import type { ConsistencyPlace, } from './pass-consistency-group.ts';
 import type { ConsistencySliceFacts, } from './pass-consistency-slices.ts';

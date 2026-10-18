@@ -15,13 +15,11 @@ import {
 import type { PassOutsideReads, } from './pass-outside-reads.ts';
 import type { PassVisualEvidenceReader, } from './pass-visual-evidence.ts';
 import type { PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary/ts';
-import type {
-  JudgeSeats,
-  RunClient,
-} from '@monochromatic-dev/translation-repair-run/ts';
 import {
+  type JudgeSeats,
   readJudgeSeats,
   RUN_PER_CALL_TIMEOUT_MS,
+  type RunClient,
   type SeatReadingClient,
 } from '@monochromatic-dev/translation-repair-run/ts';
 import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';

@@ -1,10 +1,10 @@
 import {
+  type ConsistencyCount,
   ConsistencyInvariantError,
   consistencyLabel,
   countConsistency,
   usableVoicesOf,
 } from '@monochromatic-dev/translation-repair-consistency/ts';
-import type { ConsistencyCount, } from '@monochromatic-dev/translation-repair-consistency/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import type {
   ArtifactConsistencyBallot,

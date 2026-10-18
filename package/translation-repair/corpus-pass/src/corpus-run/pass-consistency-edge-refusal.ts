@@ -1,5 +1,7 @@
-import type { ConsistencyRendering, } from '@monochromatic-dev/translation-repair-consistency/ts';
-import { planConsistencyEdit, } from '@monochromatic-dev/translation-repair-consistency/ts';
+import {
+  type ConsistencyRendering,
+  planConsistencyEdit,
+} from '@monochromatic-dev/translation-repair-consistency/ts';
 import type { ConsistencyKeptReason, } from '@monochromatic-dev/translation-repair-artifact/ts';
 
 //region Pass consistency edge refusal

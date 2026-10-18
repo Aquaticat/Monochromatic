@@ -4,7 +4,6 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 
 import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
-import type { ConsistencyVoice, } from '@monochromatic-dev/translation-repair-consistency/ts';
 import {
   buildConsistencyMessages,
   canonicalBallotOf,
@@ -12,6 +11,7 @@ import {
   consistencyLabels,
   consistencyResponseFormat,
   type ConsistencySubject,
+  type ConsistencyVoice,
   usableConsistencyBallotFor,
 } from '@monochromatic-dev/translation-repair-consistency/ts';
 import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor/ts';

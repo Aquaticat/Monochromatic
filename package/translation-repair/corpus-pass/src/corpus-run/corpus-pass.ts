@@ -13,6 +13,7 @@ import {
 import { fetchTransport, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { monotonicMs, } from '@monochromatic-dev/translation-repair-markup/ts';
 import {
+  type CommandLineOf,
   createRunClient,
   HARD_CAP_VAR,
   readHeadSha,
@@ -24,7 +25,6 @@ import {
   SPEND_CEILING_USD,
   SPEND_CEILING_VAR,
 } from '@monochromatic-dev/translation-repair-run/ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 import {
   HARD_CAP_MINUTES,
   PASS_MS_PER_MINUTE,

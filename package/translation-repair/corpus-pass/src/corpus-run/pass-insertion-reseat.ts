@@ -14,12 +14,12 @@ import {
   type Reseated,
   reseatHookFor,
 } from './pass-reseat-hook.ts';
-import type {
-  JudgeSeats,
-  RunClient,
-  SeatReadingClient,
+import {
+  type JudgeSeats,
+  RUN_PER_CALL_TIMEOUT_MS,
+  type RunClient,
+  type SeatReadingClient,
 } from '@monochromatic-dev/translation-repair-run/ts';
-import { RUN_PER_CALL_TIMEOUT_MS, } from '@monochromatic-dev/translation-repair-run/ts';
 import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Insertion admission re-seating

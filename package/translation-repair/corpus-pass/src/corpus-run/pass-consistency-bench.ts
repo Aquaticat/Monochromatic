@@ -8,9 +8,11 @@ import {
   exchangeFailureText,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import type { DeclaredNamePair, } from '@monochromatic-dev/translation-repair-house-rule/ts';
-import { mapOverlapped, } from '@monochromatic-dev/translation-repair-stage/ts';
+import {
+  mapOverlapped,
+  type StageSettings,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   type AskedDecision,
@@ -31,8 +33,10 @@ import type {
 } from './pass-consistency-types.ts';
 import { settleFailed, } from './pass-consistency-unasked.ts';
 import type { PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary/ts';
-import type { RunClient, } from '@monochromatic-dev/translation-repair-run/ts';
-import { readPhaseSeats, } from '@monochromatic-dev/translation-repair-run/ts';
+import {
+  readPhaseSeats,
+  type RunClient,
+} from '@monochromatic-dev/translation-repair-run/ts';
 
 export {
   type AskedDecision,

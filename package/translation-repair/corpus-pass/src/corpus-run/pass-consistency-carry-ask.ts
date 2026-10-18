@@ -13,11 +13,14 @@ import { codePointLength, } from '@monochromatic-dev/translation-repair-markup/t
 import {
   isTranslateReportWire,
   producedVolumeBound,
+  type SliceCache,
   TRANSLATE_RESPONSE_FORMAT,
   type TranslateReportWire,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
+import type {
+  StageRosterRepeatError,
+  StageSettings,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   type ConsistencyCacheValue,
@@ -152,7 +155,7 @@ function writersRecordOf(
 
  @returns The paragraphs heard, the quorum the gather closed on and its findings
 
- @throws {@link import('@monochromatic-dev/translation-repair-stage/ts').StageRosterRepeatError} when the bench seats one model twice
+ @throws {@link StageRosterRepeatError} when the bench seats one model twice
 
  @example
  ```ts
@@ -267,7 +270,7 @@ export async function askCarryWriters(
 
  @returns The choices heard, the quorum the gather closed on and its findings
 
- @throws {@link import('@monochromatic-dev/translation-repair-stage/ts').StageRosterRepeatError} when the bench seats one model twice
+ @throws {@link StageRosterRepeatError} when the bench seats one model twice
 
  @example
  ```ts

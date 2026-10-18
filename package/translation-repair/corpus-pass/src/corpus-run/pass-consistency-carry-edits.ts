@@ -1,5 +1,7 @@
-import type { CarryOffer, } from '@monochromatic-dev/translation-repair-consistency/ts';
-import { ConsistencyInvariantError, } from '@monochromatic-dev/translation-repair-consistency/ts';
+import {
+  type CarryOffer,
+  ConsistencyInvariantError,
+} from '@monochromatic-dev/translation-repair-consistency/ts';
 import {
   sliceOfUnit,
   unitLabelsOf,

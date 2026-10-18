@@ -3,6 +3,11 @@ import {
   assertArtifactsPlaceable,
   assertBuildGenerationResumable,
   assertResumableSchemaGeneration,
+  type UnplaceableArtifactError,
+  type LegacyPipelineError,
+  type SchemaGenerationError,
+  type MislabelledArtifactError,
+  type GenerationDriftError,
 } from '@monochromatic-dev/translation-repair-slice-cache/ts';
 
 //region Corpus pass guards
@@ -38,19 +43,19 @@ import {
 
  @param driftAllowed - whether the launch asked for a mixed directory
 
- @throws {@link import('@monochromatic-dev/translation-repair-slice-cache/ts').UnplaceableArtifactError} when an artifact
+ @throws {@link UnplaceableArtifactError} when an artifact
  records nothing usable
 
- @throws {@link import('@monochromatic-dev/translation-repair-slice-cache/ts').LegacyPipelineError} when artifacts predate
+ @throws {@link LegacyPipelineError} when artifacts predate
  generation identity
 
- @throws {@link import('@monochromatic-dev/translation-repair-slice-cache/ts').SchemaGenerationError} when an artifact is of
+ @throws {@link SchemaGenerationError} when an artifact is of
  another schema generation
 
- @throws {@link import('@monochromatic-dev/translation-repair-slice-cache/ts').MislabelledArtifactError} when an artifact declares
+ @throws {@link MislabelledArtifactError} when an artifact declares
  this generation and fails its reader
 
- @throws {@link import('@monochromatic-dev/translation-repair-slice-cache/ts').GenerationDriftError} when entries of another
+ @throws {@link GenerationDriftError} when entries of another
  build are here and drift was not asked for
 
  @throws whatever a guard's read of the directory failed with

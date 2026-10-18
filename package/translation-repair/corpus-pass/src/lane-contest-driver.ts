@@ -30,15 +30,13 @@ import {
   storedContestOf,
 } from '@monochromatic-dev/translation-repair-lane-contest/ts';
 import {
+  type FanOutMode,
   mapOverlapped,
   reuseTwinOrBuy,
+  type StageSettings,
   type TwinMemo,
 } from '@monochromatic-dev/translation-repair-stage/ts';
 import type { ProjectedLanes, } from '@monochromatic-dev/translation-repair-artifact/ts';
-import type {
-  FanOutMode,
-  StageSettings,
-} from '@monochromatic-dev/translation-repair-stage/ts';
 import type {
   BenchSeating,
   SliceCache,

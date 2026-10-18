@@ -37,8 +37,10 @@ import {
   settleFailed,
   unplacedOf,
 } from './pass-consistency-unasked.ts';
-import type { RunClient, } from '@monochromatic-dev/translation-repair-run/ts';
-import { RUN_PER_CALL_TIMEOUT_MS, } from '@monochromatic-dev/translation-repair-run/ts';
+import {
+  RUN_PER_CALL_TIMEOUT_MS,
+  type RunClient,
+} from '@monochromatic-dev/translation-repair-run/ts';
 
 //region Pass consistency bench decide
 // ASKING THE JUDGE BENCH ABOUT ONE GROUP AND DECIDING IT: the first round's

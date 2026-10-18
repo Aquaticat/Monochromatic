@@ -14,7 +14,10 @@ import {
   isJsonArray,
   isJsonRecord,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import { PAGE_TITLE_CACHE_VERSION, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
+  PAGE_TITLE_CACHE_VERSION,
+  type RosterModelId,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   pageTitleLines,
   type SettledPageTitle,
@@ -24,7 +27,6 @@ import {
   type RepeatedTitleSpan,
   repeatedTitleSpans,
 } from '@monochromatic-dev/translation-repair-rendering-audit/ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   openNamespacedCache,
   PAGE_TITLES_NAMESPACE,

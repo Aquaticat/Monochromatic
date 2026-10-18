@@ -7,13 +7,11 @@ import {
   writeAttemptMap,
 } from '@monochromatic-dev/translation-repair-glossary/ts';
 import {
+  type CorpusPair,
   countCachedSlices,
+  type EntryOutcome,
   runAttemptQueue,
   stopBeforeNextEntry,
-} from '@monochromatic-dev/translation-repair-slice-cache/ts';
-import type {
-  CorpusPair,
-  EntryOutcome,
 } from '@monochromatic-dev/translation-repair-slice-cache/ts';
 
 //region Corpus pass queue

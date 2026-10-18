@@ -2,11 +2,12 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { DeclaredNamePair, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 
 import type { DocumentLanesResult, } from '@monochromatic-dev/translation-repair-translate-lane/ts';
-import type { RunClient, } from '@monochromatic-dev/translation-repair-run/ts';
 import { contestDocumentLanes, } from '../lane-contest-driver.ts';
 import { damageClaimLinesBySlice, } from '@monochromatic-dev/translation-repair-repair/ts';
-import { withTenseCandidates, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
-import type { ArtifactContestSlice, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
+import {
+  type ArtifactContestSlice,
+  withTenseCandidates,
+} from '@monochromatic-dev/translation-repair-lane-contest/ts';
 import type { ProjectedLanes, } from '@monochromatic-dev/translation-repair-artifact/ts';
 import type { PreparedSheetFacts, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import { openLaneContestCache, } from '@monochromatic-dev/translation-repair-slice-cache/ts';
@@ -15,6 +16,7 @@ import type { PipelineDigest, } from '@monochromatic-dev/translation-repair-glos
 import {
   readJudgeSeats,
   RUN_PER_CALL_TIMEOUT_MS,
+  type RunClient,
 } from '@monochromatic-dev/translation-repair-run/ts';
 import { contestHooksFor, } from './pass-contest-reseat.ts';
 import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';

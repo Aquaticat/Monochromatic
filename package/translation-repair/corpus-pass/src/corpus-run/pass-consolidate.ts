@@ -2,12 +2,12 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import type { ArchiveDispute, } from '@monochromatic-dev/translation-repair-archive/ts';
 
 import { consolidateDocument, } from '../consolidate-driver.ts';
-import type { RunClient, } from '@monochromatic-dev/translation-repair-run/ts';
 import { configuredConsolidationPolish, } from '@monochromatic-dev/translation-repair-consolidate/ts';
-import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import { sliceNeighbourContexts, } from '@monochromatic-dev/translation-repair-repair/ts';
-import type { PairedReading, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import { slicePictureContexts, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
+import {
+  type PairedReading,
+  slicePictureContexts,
+} from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import type {
   ArtifactConsolidateSlice,
   ProjectedLanes,
@@ -18,10 +18,14 @@ import type { PipelineDigest, } from '@monochromatic-dev/translation-repair-glos
 import {
   readJudgeSeats,
   RUN_PER_CALL_TIMEOUT_MS,
+  type RunClient,
 } from '@monochromatic-dev/translation-repair-run/ts';
 import { consolidationHooksFor, } from './pass-consolidate-reseat.ts';
 import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
-import { preparedSheetFactsOf, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
+import {
+  type PreparedDocumentPair,
+  preparedSheetFactsOf,
+} from '@monochromatic-dev/translation-repair-corpus-source/ts';
 
 //region Corpus pass consolidation
 

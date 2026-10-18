@@ -1,8 +1,8 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import type { CarryChoiceSubject, } from '@monochromatic-dev/translation-repair-consistency/ts';
 import {
   carryChoiceOf,
+  type CarryChoiceSubject,
   type CarryOffer,
   carryRunOffFinalistsOf,
 } from '@monochromatic-dev/translation-repair-consistency/ts';

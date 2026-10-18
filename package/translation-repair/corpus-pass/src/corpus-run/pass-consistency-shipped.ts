@@ -3,14 +3,16 @@ import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-rea
 import type { ArchiveOriginalSpan, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import type { SliceReplacement, } from '@monochromatic-dev/translation-repair-page-pass/ts';
 import type { ArtifactComparisonRow, } from '@monochromatic-dev/translation-repair-artifact-pool/ts';
-import type { ArtifactConsolidateSlice, } from '@monochromatic-dev/translation-repair-artifact/ts';
 import type { ArtifactContestSlice, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
-import { NO_PAGE_ASSEMBLY, } from '@monochromatic-dev/translation-repair-artifact/ts';
+import {
+  type ArtifactConsolidateSlice,
+  NO_PAGE_ASSEMBLY,
+} from '@monochromatic-dev/translation-repair-artifact/ts';
 import {
   guardPageAssembly,
   shippableReplacements,
+  type WouldShipSource,
 } from '@monochromatic-dev/translation-repair-page-check/ts';
-import type { WouldShipSource, } from '@monochromatic-dev/translation-repair-page-check/ts';
 
 //region Pass consistency shipped
 // WHAT A PAGE SHIPS FOR THE ENGLISH THE PASS READS, BY THE CODE THAT SHIPS IT. The consistency pass's rows enter the page

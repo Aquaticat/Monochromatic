@@ -1,11 +1,11 @@
-import type { DisputedWording, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import {
+  type DeclaredNamePair,
   declaredNameRefusalFinding,
   findDroppedDeclaredNames,
 } from '@monochromatic-dev/translation-repair-house-rule/ts';
-import type { DeclaredNamePair, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import { assessSliceAlignment, } from '@monochromatic-dev/translation-repair-translate-lane/ts';
 import {
+  type DisputedWording,
   floorReach,
   requireComparedVerdict,
   validateTranslatedSlice,

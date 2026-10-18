@@ -5,9 +5,11 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { armCallDeadline, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { monotonicMs, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { archiveDisputesOfRepair, } from '@monochromatic-dev/translation-repair-archive/ts';
-import type { CorpusPin, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import {
+  type CorpusPair,
   entryArchiveOriginalOf,
+  type EntryOutcome,
+  type OverlapSetting,
   recordEntryDecline,
   settledTallyLine,
   tallyCaughtEntry,
@@ -19,11 +21,6 @@ import { settledPageArtifact, } from './pass-page-assembly.ts';
 import { assertPageGuards, } from './pass-page-guards.ts';
 import { projectLanes, } from '@monochromatic-dev/translation-repair-artifact/ts';
 import { runPassContest, } from './pass-contest.ts';
-import type {
-  CorpusPair,
-  EntryOutcome,
-  OverlapSetting,
-} from '@monochromatic-dev/translation-repair-slice-cache/ts';
 import { foldPassCarried, } from './pass-carried-fold.ts';
 import { admitPassInsertions, } from './pass-insertion-reseat.ts';
 import { runPassSettlement, } from './pass-settlement.ts';
@@ -47,7 +44,10 @@ import {
 } from './pass-entry-caches.ts';
 import { readLanesSeats, } from './pass-reseat.ts';
 import { runPassLanes, } from './pass-lanes.ts';
-import { preparedSheetFactsOf, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
+import {
+  type CorpusPin,
+  preparedSheetFactsOf,
+} from '@monochromatic-dev/translation-repair-corpus-source/ts';
 
 //region Pass entry
 

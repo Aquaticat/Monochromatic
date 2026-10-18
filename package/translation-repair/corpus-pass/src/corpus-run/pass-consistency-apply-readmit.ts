@@ -1,4 +1,7 @@
-import { applyConsistencyEdits, } from '@monochromatic-dev/translation-repair-consistency/ts';
+import {
+  applyConsistencyEdits,
+  type ConsistencyInvariantError,
+} from '@monochromatic-dev/translation-repair-consistency/ts';
 import {
   candidatesOf,
   clonedLedgerOf,
@@ -340,7 +343,7 @@ function readmittedLedgerOf(
  @returns The settled slices, each with the reason every splice it leaves out is left out for; a slice that puts a splice back
  has the plan, the made slice and the verdict of the floors with it, and the round itself where no slice left a splice out
 
- @throws {@link import('@monochromatic-dev/translation-repair-consistency/ts').ConsistencyInvariantError} when the text between the slices does
+ @throws {@link ConsistencyInvariantError} when the text between the slices does
  not count one more than the slices
 
  @example

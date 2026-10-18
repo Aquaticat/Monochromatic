@@ -1,24 +1,25 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
-import type {
-  ChunkPair,
-  OcrReader,
-  PairedReading,
-} from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import { readDocumentPictures, } from '@monochromatic-dev/translation-repair-translate-lane/ts';
 import {
+  type ChunkPair,
+  type OcrReader,
   ocrReaderOver,
+  type PairedReading,
   runInstalledProgram,
 } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { CorpusPin, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import { photoReferences, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
+  photoReferences,
+  type RosterModelId,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { PictureReaderSeating, } from '@monochromatic-dev/translation-repair-glossary/ts';
 import {
   assertVisualEvidenceComplete,
   gatherEntryPictures,
+  type VisualEvidenceInterruptedError,
 } from '@monochromatic-dev/translation-repair-slice-cache/ts';
 
 //region Pass visual evidence
@@ -106,7 +107,7 @@ export const RUN_PICTURE_SOURCES: PassPictureSources = {
 
  @returns Corroborated or reviewed no-text evidence by asset
 
- @throws {@link import('@monochromatic-dev/translation-repair-slice-cache/ts').VisualEvidenceInterruptedError}
+ @throws {@link VisualEvidenceInterruptedError}
  when any referenced asset lacks usable evidence
 
  @example

@@ -5,9 +5,9 @@ import {
 import type { AttemptMap, } from '@monochromatic-dev/translation-repair-glossary/ts';
 import {
   askedAmong,
+  type CommandLineOf,
   readOnlyIds,
 } from '@monochromatic-dev/translation-repair-run/ts';
-import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
 import {
   passIncompleteLine,
   passOnlyLines,
@@ -16,9 +16,9 @@ import {
 import { orderPendingEntries, } from './corpus-pass-order.ts';
 import {
   collectEligiblePairs,
+  type CorpusPair,
   listResumableEntries,
 } from '@monochromatic-dev/translation-repair-slice-cache/ts';
-import type { CorpusPair, } from '@monochromatic-dev/translation-repair-slice-cache/ts';
 
 //region Corpus pass select
 // Which entries a pass runs and in what order, with what it could not pair said

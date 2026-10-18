@@ -1,11 +1,9 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import { shortestHold, } from '@monochromatic-dev/translation-repair-provider/ts';
-import type {
-  JudgeSeatPhase,
-  JudgeSeats,
-} from '@monochromatic-dev/translation-repair-run/ts';
 import {
+  type JudgeSeatPhase,
+  type JudgeSeats,
   readJudgeSeats,
   type SeatReadingClient,
 } from '@monochromatic-dev/translation-repair-run/ts';

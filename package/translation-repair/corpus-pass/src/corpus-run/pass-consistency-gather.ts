@@ -14,6 +14,7 @@ import type { SliceCache, } from '@monochromatic-dev/translation-repair-translat
 import {
   gatherStageVoices,
   type HeardVoice,
+  type StageRosterRepeatError,
 } from '@monochromatic-dev/translation-repair-stage/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { ConsistencyCacheValue, } from './pass-consistency-cache.ts';
@@ -129,7 +130,7 @@ export function recordFits(
 
  @returns The record and whether it was read back
 
- @throws {@link import('@monochromatic-dev/translation-repair-stage/ts').StageRosterRepeatError} when the bench seats one model twice
+ @throws {@link StageRosterRepeatError} when the bench seats one model twice
 
  @example
  ```ts

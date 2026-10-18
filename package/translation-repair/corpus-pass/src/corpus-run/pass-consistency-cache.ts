@@ -2,10 +2,10 @@ import { createHash, } from 'node:crypto';
 
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
-import type { ConsistencyVoice, } from '@monochromatic-dev/translation-repair-consistency/ts';
 import {
   CONSISTENCY_CACHE_VERSION,
   type ConsistencyChoiceVoice,
+  type ConsistencyVoice,
   isConsistencyBallotWire,
   isConsistencyChoiceWire,
 } from '@monochromatic-dev/translation-repair-consistency/ts';

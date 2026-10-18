@@ -3,11 +3,11 @@ import {
   type Logger,
 } from '@monochromatic-dev/module-logger/ts';
 
-import type {
-  CarryBlock,
-  CarryEdgeWords,
+import {
+  type CarryBlock,
+  type CarryEdgeWords,
+  standsOf,
 } from '@monochromatic-dev/translation-repair-consistency/ts';
-import { standsOf, } from '@monochromatic-dev/translation-repair-consistency/ts';
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import type { DeclaredNamePair, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import { pageDefinitionsOf, } from '@monochromatic-dev/translation-repair-shared-contract/ts';

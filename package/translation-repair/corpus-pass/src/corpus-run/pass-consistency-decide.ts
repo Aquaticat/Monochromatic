@@ -1,10 +1,8 @@
-import type {
-  ConsistencyCount,
-  ConsistencyRendering,
-} from '@monochromatic-dev/translation-repair-consistency/ts';
 import {
+  type ConsistencyCount,
   ConsistencyInvariantError,
   consistencyLabel,
+  type ConsistencyRendering,
   pageApostropheFormOf,
   planConsistencyEdit,
   quoteReferencesIn,

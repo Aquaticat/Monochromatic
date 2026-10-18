@@ -11,12 +11,13 @@ import {
   type PassVisualEvidenceReader,
   readPassVisualEvidence,
 } from './pass-visual-evidence.ts';
-import type { RunClient, } from '@monochromatic-dev/translation-repair-run/ts';
 import {
   readJudgeSeats,
   RUN_PER_CALL_TIMEOUT_MS,
+  type RunClient,
 } from '@monochromatic-dev/translation-repair-run/ts';
 import { picturesHooksFor, } from './pass-pictures-reseat.ts';
+import type { VisualEvidenceInterruptedError, } from '@monochromatic-dev/translation-repair-slice-cache/ts';
 
 //region Seated picture reading
 // WHO READS THE PICTURES IS DECIDED THE WAY THE BENCHES ARE. The reader
@@ -67,7 +68,7 @@ import { picturesHooksFor, } from './pass-pictures-reseat.ts';
 
  @returns Corroborated or reviewed no-text evidence by asset
 
- @throws {@link import('@monochromatic-dev/translation-repair-slice-cache/ts').VisualEvidenceInterruptedError}
+ @throws {@link VisualEvidenceInterruptedError}
  when any referenced asset lacks usable evidence
 
  @example

@@ -1,8 +1,10 @@
 import type { RepeatGroup, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
-import type { ConsistencyOccurrenceView, } from '@monochromatic-dev/translation-repair-consistency/ts';
 import type { ArtifactConsistencyRepeat, } from '@monochromatic-dev/translation-repair-artifact/ts';
 import type { ConsistencySliceFacts, } from './pass-consistency-slices.ts';
-import { ConsistencyInvariantError, } from '@monochromatic-dev/translation-repair-consistency/ts';
+import {
+  ConsistencyInvariantError,
+  type ConsistencyOccurrenceView,
+} from '@monochromatic-dev/translation-repair-consistency/ts';
 
 //region Pass consistency group
 // WHAT THE PASS MAKES OF ONE REPEAT GROUP BEFORE ANY JUDGE IS ASKED: the

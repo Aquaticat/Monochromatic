@@ -9,12 +9,10 @@ import {
 } from '@monochromatic-dev/translation-repair-reference/ts';
 import {
   type CorpusName,
+  type CorpusPin,
+  type listCorpusPeople,
+  type readCorpusFile,
   readCorpusNames,
-} from '@monochromatic-dev/translation-repair-corpus-source/ts';
-import type {
-  CorpusPin,
-  listCorpusPeople,
-  readCorpusFile,
 } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 
 import {

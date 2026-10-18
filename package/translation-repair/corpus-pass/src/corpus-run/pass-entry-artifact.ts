@@ -1,11 +1,11 @@
 import type { DocumentLanesResult, } from '@monochromatic-dev/translation-repair-translate-lane/ts';
 import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
-import { buildSettledTwoLaneArtifact, } from '@monochromatic-dev/translation-repair-artifact/ts';
-import type {
-  ArtifactConsistency,
-  ArtifactConsolidation,
-  ArtifactPageAssembly,
-  SettledArtifact,
+import {
+  type ArtifactConsistency,
+  type ArtifactConsolidation,
+  type ArtifactPageAssembly,
+  buildSettledTwoLaneArtifact,
+  type SettledArtifact,
 } from '@monochromatic-dev/translation-repair-artifact/ts';
 import type { ArtifactLaneSelection, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
 import type { PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary/ts';

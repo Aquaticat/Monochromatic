@@ -3,36 +3,33 @@ import type { DeclaredNamePair, } from '@monochromatic-dev/translation-repair-ho
 import {
   archiveFlawedByMajority,
   archiveStandInFor,
+  type ArtifactConsolidateSlice,
+  type ConsolidateRoster,
   consolidateRunShape,
   consolidateSliceKey,
+  type ConsolidateSliceSeating,
   laneTextsForSlate,
+  type ProjectedLanes,
 } from '@monochromatic-dev/translation-repair-artifact/ts';
 import {
   type Logger,
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
-import type {
-  ConsolidationPolishConfig,
-  ConsolidationSettlement,
-} from '@monochromatic-dev/translation-repair-consolidate/ts';
 import type { PreparedSheetFacts, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import {
   buyConsolidationSlice,
   ConsolidationLedgerGapError,
+  type ConsolidationPolishConfig,
+  type ConsolidationSettlement,
   persistConsolidationSettlement,
   readStandingVerdict,
   standingTextFor,
 } from '@monochromatic-dev/translation-repair-consolidate/ts';
-import type {
-  ArtifactConsolidateSlice,
-  ConsolidateRoster,
-  ConsolidateSliceSeating,
-  ProjectedLanes,
-} from '@monochromatic-dev/translation-repair-artifact/ts';
 import type { ArtifactContestSlice, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
 import {
   contestedRows,
+  contestedSliceName,
   indexConsolidationInputs,
 } from './consolidate-driver-index.ts';
 import {
@@ -42,18 +39,20 @@ import {
 } from './consolidate-driver-records.ts';
 import { acquireConsolidation, } from './consolidate-driver-acquire.ts';
 import type { SliceNeighbourContext, } from '@monochromatic-dev/translation-repair-repair/ts';
-import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import { armSliceCost, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
+import {
+  armSliceCost,
+  type SliceCache,
+} from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type {
-  StageSettings,
-  TwinMemo,
-} from '@monochromatic-dev/translation-repair-stage/ts';
 import {
   inSliceLogContext,
   wordForCount,
 } from '@monochromatic-dev/translation-repair-typography/ts';
-import { mapOverlapped, } from '@monochromatic-dev/translation-repair-stage/ts';
+import {
+  mapOverlapped,
+  type StageSettings,
+  type TwinMemo,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Consolidate driver
 // THE CONSOLIDATION OVER ONE DOCUMENT: which slices get a third rendering
@@ -75,25 +74,6 @@ import { mapOverlapped, } from '@monochromatic-dev/translation-repair-stage/ts';
 // names everything the stages see, while `ConsolidationSettlement` carries no
 // slice index needing restamp. An unsettled panel is neither persisted nor
 // memoized, so its twin asks again exactly as a warm run would.
-
-/**
- Names a contested slice on the lines the overlapped map writes about a
- failure it leaves unthrown.
-
- @param item - contested row and its contest
-
- @returns The slice by its index
-
- @example
- ```ts
- contestedSliceName({ item: { row: { sliceIndex: 3, }, }, },); // 'slice 3'
- ```
- */
-function contestedSliceName(
-  { item: { row, }, }: { readonly item: { readonly row: { readonly sliceIndex: number; }; }; },
-): string {
-  return `slice ${String(row.sliceIndex,)}`;
-}
 
 /**
  Asks the roster for a third rendering at every slice the contest was asked

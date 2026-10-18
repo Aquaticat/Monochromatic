@@ -10,8 +10,8 @@ import type {
   ProjectedLanes,
 } from '@monochromatic-dev/translation-repair-artifact/ts';
 import type { ArtifactContestSlice, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
-import type { ConsistencyEnglish, } from '@monochromatic-dev/translation-repair-consistency/ts';
 import {
+  type ConsistencyEnglish,
   ConsistencyInvariantError,
   type PageEnglish,
   type PageLayout,

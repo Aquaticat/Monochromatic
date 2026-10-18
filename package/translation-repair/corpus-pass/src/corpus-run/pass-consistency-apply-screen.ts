@@ -4,10 +4,10 @@ import {
   continuesLatinWordOrCompatibilityForm,
 } from '@monochromatic-dev/translation-repair-markup/ts';
 import {
+  type ConsistencyEdit,
   partsMarkFromWord,
   WRITTEN_APOSTROPHES,
 } from '@monochromatic-dev/translation-repair-consistency/ts';
-import type { ConsistencyEdit, } from '@monochromatic-dev/translation-repair-consistency/ts';
 import {
   type GainedSides,
   madeIn,

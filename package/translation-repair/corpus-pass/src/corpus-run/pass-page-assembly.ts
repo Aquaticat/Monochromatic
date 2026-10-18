@@ -3,13 +3,13 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import type { DocumentLanesResult, } from '@monochromatic-dev/translation-repair-translate-lane/ts';
 import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
-import type {
-  ArtifactConsistency,
-  ArtifactConsolidation,
-  SettledArtifact,
-} from '@monochromatic-dev/translation-repair-artifact/ts';
 import type { ArtifactLaneSelection, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
-import { NO_PAGE_ASSEMBLY, } from '@monochromatic-dev/translation-repair-artifact/ts';
+import {
+  type ArtifactConsistency,
+  type ArtifactConsolidation,
+  NO_PAGE_ASSEMBLY,
+  type SettledArtifact,
+} from '@monochromatic-dev/translation-repair-artifact/ts';
 import { guardPageAssembly, } from '@monochromatic-dev/translation-repair-page-check/ts';
 import { settledEntryArtifact, } from './pass-entry-artifact.ts';
 import type { PipelineDigest, } from '@monochromatic-dev/translation-repair-glossary/ts';

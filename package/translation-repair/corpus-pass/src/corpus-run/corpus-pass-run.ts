@@ -23,10 +23,10 @@ import { selectPendingEntries, } from './corpus-pass-select.ts';
 import {
   artifactBackedIds,
   entriesFinishedThisRun,
+  type EntryOutcome,
   finishedEntryIds,
   republishRunPages,
 } from '@monochromatic-dev/translation-repair-slice-cache/ts';
-import type { EntryOutcome, } from '@monochromatic-dev/translation-repair-slice-cache/ts';
 import {
   assertRequiredProvidersReady,
   lockRunsDir,

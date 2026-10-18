@@ -8,18 +8,21 @@ import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-pro
 import {
   isInsertionChunk,
   parseDocument,
+  type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { TargetRegion, } from '@monochromatic-dev/translation-repair-archive/ts';
 import {
   readUntranslatedTail,
   runCoverageStage,
+  type TargetRegion,
 } from '@monochromatic-dev/translation-repair-archive/ts';
 import type {
   InsertionAdmission,
   PreparedDocumentPair,
 } from '@monochromatic-dev/translation-repair-corpus-source/ts';
-import { mapOverlapped, } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
+  mapOverlapped,
+  type StageSettings,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 import { TranslationRepairInterruptedError, } from '@monochromatic-dev/translation-repair-translate-stage/ts';
 import { droppedDestinations, } from '@monochromatic-dev/translation-repair-page-check/ts';
 import {
@@ -31,7 +34,6 @@ import {
   type InsertionCoverageRow,
 } from '@monochromatic-dev/translation-repair-insertion/ts';
 import type { BenchSeating, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Pass insertion admission
 // Production proof for writing source-only passages into a memorial page.

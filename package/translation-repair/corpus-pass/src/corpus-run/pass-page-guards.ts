@@ -3,8 +3,8 @@ import type { CarriedInsertion, } from '@monochromatic-dev/translation-repair-co
 import {
   assertCarriedInsertionsRemain,
   assertPageFootnotesIntact,
+  type WouldShipSource,
 } from '@monochromatic-dev/translation-repair-page-check/ts';
-import type { WouldShipSource, } from '@monochromatic-dev/translation-repair-page-check/ts';
 
 //region Pass page guards
 // The guards the pass asks of the would-ship page before it tallies, in one

@@ -1,11 +1,11 @@
 import {
+  type ConsistencyEdit,
   ConsistencyInvariantError,
   type PageLayout,
   pageOfSlices,
   pageReadingOf,
   type PageSlice,
 } from '@monochromatic-dev/translation-repair-consistency/ts';
-import type { ConsistencyEdit, } from '@monochromatic-dev/translation-repair-consistency/ts';
 import {
   editsChangingLocatedWords,
   type LeftOutEdit,

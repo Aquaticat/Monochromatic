@@ -1,5 +1,7 @@
-import { ConsistencyInvariantError, } from '@monochromatic-dev/translation-repair-consistency/ts';
-import type { ConsistencyEdit, } from '@monochromatic-dev/translation-repair-consistency/ts';
+import {
+  type ConsistencyEdit,
+  ConsistencyInvariantError,
+} from '@monochromatic-dev/translation-repair-consistency/ts';
 import {
   type MadeSlice,
   unprovenOnPage,

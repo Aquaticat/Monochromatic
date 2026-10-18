@@ -1,10 +1,8 @@
-import type {
-  ConsistencyEdit,
-  ConsistencyRendering,
-} from '@monochromatic-dev/translation-repair-consistency/ts';
 import {
+  type ConsistencyEdit,
   ConsistencyInvariantError,
   consistencyLabel,
+  type ConsistencyRendering,
 } from '@monochromatic-dev/translation-repair-consistency/ts';
 import type {
   ArtifactConsistencyGroup,

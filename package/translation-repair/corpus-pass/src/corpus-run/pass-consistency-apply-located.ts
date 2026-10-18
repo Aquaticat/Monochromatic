@@ -1,8 +1,8 @@
 import {
   consistencyLabel,
+  type PageEnglish,
   standsOf,
 } from '@monochromatic-dev/translation-repair-consistency/ts';
-import type { PageEnglish, } from '@monochromatic-dev/translation-repair-consistency/ts';
 import { pageDefinitionsOf, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   replacedKeyOf,

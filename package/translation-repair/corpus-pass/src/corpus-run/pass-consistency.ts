@@ -4,21 +4,21 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 
 import type { ArchiveDispute, } from '@monochromatic-dev/translation-repair-archive/ts';
-import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import type { DeclaredNamePair, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import {
   exchangeFailureLogText,
   exchangeFailureText,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
-import { repeatGroupsOf, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
+import {
+  type PreparedDocumentPair,
+  repeatGroupsOf,
+} from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
-import type {
-  ArtifactConsolidateSlice,
-  ProjectedLanes,
-} from '@monochromatic-dev/translation-repair-artifact/ts';
 import {
   type ArtifactConsistency,
+  type ArtifactConsolidateSlice,
   NO_CONSISTENCY,
+  type ProjectedLanes,
 } from '@monochromatic-dev/translation-repair-artifact/ts';
 import type { ArtifactContestSlice, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
 import { applyConsistency, } from './pass-consistency-apply.ts';

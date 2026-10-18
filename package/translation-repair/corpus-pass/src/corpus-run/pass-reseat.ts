@@ -9,8 +9,8 @@ import {
   type Reseated,
   reseatHookFor,
 } from './pass-reseat-hook.ts';
-import type { JudgeSeats, } from '@monochromatic-dev/translation-repair-run/ts';
 import {
+  type JudgeSeats,
   readJudgeSeats,
   type SeatReadingClient,
 } from '@monochromatic-dev/translation-repair-run/ts';

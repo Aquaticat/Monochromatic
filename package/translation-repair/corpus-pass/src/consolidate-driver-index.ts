@@ -134,4 +134,23 @@ export function contestedRows(
     },);
 }
 
+/**
+ Names a contested slice on the lines the overlapped map writes about a
+ failure it leaves unthrown.
+
+ @param item - contested row and its contest
+
+ @returns The slice by its index
+
+ @example
+ ```ts
+ contestedSliceName({ item: { row: { sliceIndex: 3, }, }, },); // 'slice 3'
+ ```
+ */
+export function contestedSliceName(
+  { item: { row, }, }: { readonly item: { readonly row: { readonly sliceIndex: number; }; }; },
+): string {
+  return `slice ${String(row.sliceIndex,)}`;
+}
+
 //endregion Consolidation driver index

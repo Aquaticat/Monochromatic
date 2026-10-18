@@ -8,17 +8,17 @@ import type {
 import {
   type DocumentLanesResult,
   runDocumentLanes,
+  type TranslateSliceRecord,
 } from '@monochromatic-dev/translation-repair-translate-lane/ts';
 import type { PairedReading, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import type { RefinedSliceSettlement, } from '@monochromatic-dev/translation-repair-repair/ts';
 import type { ChunkRepairOutcome, } from '@monochromatic-dev/translation-repair-assembly/ts';
 import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import type { TranslateSliceRecord, } from '@monochromatic-dev/translation-repair-translate-lane/ts';
-import type {
-  JudgeSeats,
-  RunClient,
+import {
+  type JudgeSeats,
+  RUN_PER_CALL_TIMEOUT_MS,
+  type RunClient,
 } from '@monochromatic-dev/translation-repair-run/ts';
-import { RUN_PER_CALL_TIMEOUT_MS, } from '@monochromatic-dev/translation-repair-run/ts';
 import type { LanesHooks, } from './pass-reseat.ts';
 import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 

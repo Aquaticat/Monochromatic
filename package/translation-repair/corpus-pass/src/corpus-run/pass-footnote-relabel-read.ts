@@ -1,5 +1,5 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
-import { type RelabelClosure, } from '@monochromatic-dev/translation-repair-page-pass/ts';
+import type { RelabelClosure, } from '@monochromatic-dev/translation-repair-page-pass/ts';
 import {
   closeFootnoteRelabel,
   documentLabels,

@@ -11,12 +11,12 @@ import { writeFileAtomic, } from '@monochromatic-dev/translation-repair-glossary
 import {
   assertFinalNaturalnessComplete,
   defectsLine,
+  type DestinationCheck,
   destinationsLine,
   finalSelectionFindings,
   type PublishDefect,
   publishFixedPage,
 } from '@monochromatic-dev/translation-repair-page-check/ts';
-import type { DestinationCheck, } from '@monochromatic-dev/translation-repair-page-check/ts';
 
 //region Pass entry persistence
 // Publication precedes artifact persistence so artifact remains done sentinel:

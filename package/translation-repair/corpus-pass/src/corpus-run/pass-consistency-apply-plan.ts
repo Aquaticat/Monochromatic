@@ -1,4 +1,7 @@
-import { applyConsistencyEdits, } from '@monochromatic-dev/translation-repair-consistency/ts';
+import {
+  applyConsistencyEdits,
+  type ConsistencyInvariantError,
+} from '@monochromatic-dev/translation-repair-consistency/ts';
 import { withoutUnprovenGains, } from './pass-consistency-apply-gains.ts';
 import { readmittedSlicesOf, } from './pass-consistency-apply-readmit.ts';
 import {
@@ -57,7 +60,7 @@ import type { SettledGroup, } from './pass-consistency-types.ts';
 
  @returns The plan of each slice that has replacements, in page order
 
- @throws {@link import('@monochromatic-dev/translation-repair-consistency/ts').ConsistencyInvariantError} when the text between the slices does
+ @throws {@link ConsistencyInvariantError} when the text between the slices does
  not count one more than the slices
 
  @example
@@ -271,7 +274,7 @@ function roundOf(
  floors' verdict, and for a refused slice the plan as it stood when the floors refused it; each with the reason every splice
  it leaves out is left out for
 
- @throws {@link import('@monochromatic-dev/translation-repair-consistency/ts').ConsistencyInvariantError} when two replacements of one group overlap in a slice
+ @throws {@link ConsistencyInvariantError} when two replacements of one group overlap in a slice
 
  @example
  ```ts
