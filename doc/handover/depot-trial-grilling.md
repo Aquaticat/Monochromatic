@@ -1,6 +1,6 @@
 # Depot trial interview
 
-## Current execution checkpoint on 2026-10-18 at 18:23 UTC
+## Current execution checkpoint on 2026-10-18
 
 Research remains active and the interview has not started.
 All parent graph cloud jobs are terminal,
@@ -243,21 +243,49 @@ Parent source admission is recorded in
 It independently joins current and retained source bodies,
 fixture Git blobs,
 the direct remote branch and controller/helper/bridge/manifest hashes.
-The private gate is written but dispatch waits for the parent's explicit ready message after publication.
-Reserve one global cloud-job slot for this experiment until its terminal/reaped release;
-Coverage may use the other slot and dispatches at most one material owner at a time.
+The parent admission publisher is reaped at zero at `dc62a35802`,
+and the explicit ready message was sent after its JSON/Markdown checks passed.
+Native SSH run `sqrz4sml30` used job `q74vcmxkk1`,
+attempt `fhxx4s51rf` and sandbox `g64shw2rl3jzrxsmq92x`.
+Dispatch started at `18:37:23.441 UTC`;
+the 150-second watchdog cancelled the run.
+Fresh terminal status is cancelled,
+and controller `68688` is reaped at exit one at `18:40:00.760 UTC`.
+Direct OpenSSH and native CLI RPC both emitted VM challenge proofs;
+their client exits were 255 and zero respectively.
+Both recorded owned client trees are reaped and absent.
+No paused-tmate leg was selected and no final workflow resume/file consumer appeared.
+This is partial transport execution,
+not completed pause/resume qualification.
+Platform classifies the retained logs before proposing any correction;
+no second dispatch is admitted automatically.
+The single reserved slot is released,
+so Coverage may use both global slots for admitted work.
 The three-minute server job and USD 0.036 two-attempt guard remain unchanged.
 The 210-second local point starts cleanup;
 there is no independent whole-controller hard backstop.
 Runtime outcomes use a successor receipt so the admitted proposal/source seal stays immutable.
 No runtime credit exists before execution.
+Platform durably queues the read-only GitHub check-runs/commit-status consumer comparison in
+`doc/planning/depot-native-ssh-runtime-research.md` at `0567953a15`.
+The positive control is the owned GitHub graph source/run;
+the native probe uses an exact owned source with actor/output bodies kept private.
 Coverage committed and pushed the seven-owner material harness at
 `015ee75186e697a05160913dbd8006eceb90b2e5` before its actual bootstrap/Mise/Node preflight.
 It preserves the admitted profile/prerequisite/argv boundaries and adds actual OS/CPU/memory probes.
 No material allocation has begun at this checkpoint.
 Rust is checking the actual locked Mise 2026.10.9 affected-task selector,
 separately from the installed 2026.10.0 failure.
-This source/runtime check must close before prescribing a replacement selector from the older failure.
+Its actual locked-version metadata probe now confirms the identical workspace cycle,
+after changed-producer/development-consumer,
+unchanged-revision empty-selection and synthetic-cycle controls.
+All 419 frozen metadata hashes stay unchanged in an offline two-CPU,
+two-GiB,
+256-PID container.
+No owner task,
+credential,
+installation or upgrade is involved.
+Rust is sealing exact binary/source/arguments and the existing troubleshooting update.
 
 Kotlin's claimed unexecuted six JVM methods are retracted and positively resolved.
 The missing semantic projection alone did not prove missing execution.
