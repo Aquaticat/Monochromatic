@@ -9,8 +9,8 @@ import { root, evidence, env, sha, run } from './reuse-context.mjs';
 
 //region Use a job credential through a bounded recorder, with no local output-cache fallback
 assert(process.env.DEPOT_CACHE_TOKEN, 'Use the existing automatic job identity');
-const kind = process.env.REUSE_PHASE;
-assert(['seed', 'warm', 'off', 'faults', 'inputs', 'controls'].includes(kind));
+const kind = process.env.REUSE_GRADLE_PHASE ?? process.env.REUSE_PHASE;
+assert(['seed', 'warm', 'off', 'faults', 'inputs', 'controls', 'host'].includes(kind));
 const project = join(root, 'package/linter/kotlin');
 run({ name: 'frozen-kotlin-source-admission', command: 'git', args: ['diff', '--exit-code', 'e02be6c8b8fe9efb41a7f8f1a0b311c17796588a', '--', 'package/linter/kotlin'] });
 const journal = join(evidence, 'gradle-cache-requests.jsonl');
@@ -74,8 +74,8 @@ function consumePlugin() {
   const good = join(fixtures, 'Documented.kt');
   const bad = join(fixtures, 'Undocumented.kt');
   // Use the same minimal consumer shape as the package's existing publication verification owner.
-  writeFileSync(good, '/** Documented fixture for the real plugin host. */\nfun documented(): Int = 1\n');
-  writeFileSync(bad, 'fun undocumented(): Int = 1\n');
+  writeFileSync(good, '/** Trim surrounding whitespace. */\nfun documented(value: String): String = value.trim()\n');
+  writeFileSync(bad, 'fun undocumented(value: String): String = value.trim()\n');
   run({ name: 'detekt-documented-consumer', command: 'mise', args: ['exec', 'java', '--', './gradlew', 'detektCheck', '-PdetektInput=' + good, ...argumentsAfterTask], cwd: project, childEnv: buildEnv, limit: 90_000 });
   const rejected = run({ name: 'detekt-undocumented-positive-control', command: 'mise', args: ['exec', 'java', '--', './gradlew', 'detektCheck', '-PdetektInput=' + bad, ...argumentsAfterTask], cwd: project, childEnv: buildEnv, expected: 'failure', limit: 90_000 });
   assert(rejected.log.includes("Missing KDoc on function 'undocumented'.") && rejected.log.includes('[RequireKDoc]'));
@@ -139,7 +139,7 @@ try {
     } finally { writeFileSync(buildFile, originalBuild); }
     build({ label: 'gradle-input-controls-original-recovery' });
   }
-  if (kind === 'controls') consumePlugin();
+  if (kind === 'controls' || kind === 'host') consumePlugin();
 } finally {
   writeFileSync(wrapper, originalWrapper);
   proxy.send({ command: 'shutdown' });
