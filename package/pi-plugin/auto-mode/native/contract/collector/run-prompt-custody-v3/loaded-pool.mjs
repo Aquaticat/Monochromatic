@@ -1,4 +1,3 @@
-import {createHash} from "node:crypto";
 import {SourceCollectionError} from "../collector.mjs";
 import {createInputOnlyPublication} from "./handler-publication.mjs";
 import {dataField} from './loaded-fields.mjs';
@@ -8,6 +7,7 @@ import {createLoadedEventInputs} from './loaded-event-inputs.mjs';
 import {createLoadedToolInputs} from './loaded-tool-inputs.mjs';
 import {createLoadedAgentInputs} from './loaded-agent-inputs.mjs';
 import {createLoadedUserInputs} from './loaded-user-inputs.mjs';
+import {createInputContentStore,freezeInputContentSource} from './input-content.ts';
 //region Original session and resource inputs share their pool state.
 /**
  Capture owned native loaded values before migration changes their representation.
@@ -19,7 +19,7 @@ export function createInputPool({
 }){
  const occurrence=Object.freeze({});
  const origins=new WeakMap();
- const sourceDataByContent=new Map();
+ const retainContent=createInputContentStore();
  const metadataTexts=new Map();
  const constructedInputs=[];
  const poolState={bytes:0,pendingEventBytes:0,count:0,failure:undefined,constructedSnapshot:Object.freeze([])};
@@ -40,17 +40,12 @@ export function createInputPool({
  }){
   const contentFormat=(typeof value)==='string'?'text':'native-content-json';
   const serialized=contentFormat==='text'?value:JSON.stringify(value??[]);
-  let data=sourceDataByContent.get(serialized);
-  if(data===undefined){
-   data=Object.freeze({content:serialized,sha256:createHash('sha256').update(serialized).digest('hex')});
-   sourceDataByContent.set(serialized,data);
-  }
+  const data=retainContent({text:serialized,json:contentFormat==='native-content-json'});
   const serializedMetadata=JSON.stringify({...metadata,contentFormat});
   const metadataJSON=metadataTexts.get(serializedMetadata)??serializedMetadata;
   if(!metadataTexts.has(serializedMetadata))metadataTexts.set(serializedMetadata,metadataJSON);
-  const source=Object.freeze({
+  const source=freezeInputContentSource({content:data,fields:{
     kind,
-    content:data.content,
     contentFormat,
     inputOrigin,
     inputLocation:Object.freeze({
@@ -64,7 +59,7 @@ export function createInputPool({
     registration:undefined,
     historicalIssuer:'not-established',
     permission:false
-  });
+  }});
   poolState.bytes+=Buffer.byteLength(JSON.stringify(source));
   const publisher=createInputOnlyPublication({source,systemInput});publisher.capture(carrier);
   const origin=Object.freeze({

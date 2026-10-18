@@ -8,10 +8,10 @@ import {readNativeSessionInputUsage,readNativeConstructedInputOrigins} from '../
 
 await using cleanup={async [Symbol.asyncDispose](){await env.drain();}};
 const count=1600;
-const step=128;
+const step=127;
 const maximumRetainedBytes=32*1024*1024;
 const state={callbacks:0};
-const text='Native streamed thinking-like text. '.repeat(12000);
+const text=Array.from({length:4000},function nonRepeatingText(_,index){return createHash('sha256').update(String(index)).digest('hex');}).join('');
 const message={role:'assistant',content:[{type:'thinking',thinking:''}]};
 const observed=fixture({kind:'message_update',handlers:[function observeOriginalUpdate(event){
  assert.equal(event.message,message);

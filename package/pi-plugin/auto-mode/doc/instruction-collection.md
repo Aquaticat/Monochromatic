@@ -1,5 +1,43 @@
 # Instruction collection
 
+## Retained native input storage
+
+Every native input keeps its original occurrence,
+publication and complete immutable content.
+Streaming callbacks repeatedly receive growing versions of the same mutable message.
+Keeping a flat JSON string for every version retains the sum of all prefixes.
+The native streaming regression reproduces 331,029,264 retained heap bytes for 1,600 observations.
+
+`input-content.ts` owns a manager-local content store;
+`input-content-chunks.ts` splits generated JSON at string-token boundaries and bounded intervals.
+Resetting chunk alignment at each string token lets both copies of a growing message share storage,
+even when another preceding string changes its length.
+Escaped quotes remain inside their original token.
+Detached UTF-16 chunks preserve unpaired surrogates and cannot retain a larger temporary parent string.
+An encoded sequence of chunk identities establishes exact content equality;
+the existing UTF-8 digest does not replace that comparison.
+Identical digests can occur for distinct unpaired surrogate inputs after UTF-8 replacement.
+
+The public source still returns its complete original string through a pure,
+producer-created content accessor.
+The manager-growth guard accepts that accessor only for the exact registered frozen source and descriptor.
+Copying the accessor onto another source does not qualify it;
+foreign getters are rejected without invocation.
+This storage check grants no source authority:
+the caller must still authenticate the original manager,
+source occurrence and publication before comparing growth.
+Callback inputs,
+ordinary metadata and every other source field keep their existing strict descriptor rules.
+
+`test:native:streaming-context-capacity` checks original callback identities,
+distinct publications,
+independent earlier/later snapshots and hashes,
+with a 32-MiB retained-storage ceiling.
+`test:native:input-content` checks exact code units,
+JSON boundaries,
+the surrogate digest control and rejection of borrowed or foreign accessors.
+The source repair still needs rebuilding and consumer verification.
+
 ## Purpose and callers
 
 `native/contract/integration/policy-source` binds readable project policy and visible conversation

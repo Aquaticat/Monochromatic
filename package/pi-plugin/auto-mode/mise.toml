@@ -969,6 +969,10 @@ run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/nativ
 description = "Retain exact original streamed snapshots without complete-prefix storage growth"
 run = "node --max-old-space-size=512 --expose-gc --import ./dist/native/loader.mjs src/native-streaming-context-capacity.test.mjs"
 
+[tasks."test:native:input-content"]
+description = "Verify exact shared text and producer-bound source content accessors"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-input-content.test.mjs"
+
 [tasks."test:native:retained-context-capacity"]
 description = "Retain separate authenticated inputs whose aggregate exceeds the engine string limit"
 # The regression reaches the engine string limit before the disposable container's 2 GiB memory limit.

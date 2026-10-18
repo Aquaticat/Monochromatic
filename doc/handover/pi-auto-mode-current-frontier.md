@@ -294,7 +294,16 @@ Logs are `input-pool-pressure-queries.log`,
 The new maintained `test:native:streaming-context-capacity` regression preserves original callbacks,
 distinct publications,
 sampled complete before/after snapshots and their hashes while bounding retained storage.
-Run it red before replacing the full-string content cache with shared chunks.
+The maintained regression fails on `q83LlN` with
+`Original native streaming snapshots retain 331029264 bytes, exceeding 33554432`.
+`native-streaming-context-red.log` retains that failure before the source repair.
+The source repair now shares detached UTF-16 chunks,
+resets boundaries at generated JSON string tokens,
+and returns exact content through producer-owned pure accessors.
+The strict manager-growth guard recognizes only the exact registered source/accessor pair;
+other source fields and foreign getters keep their existing rejection.
+New storage tests include surrogate hash collisions and borrowed-accessor rejection.
+The repair is not built or type-checked yet.
 At this checkpoint,
 Git shows no MiMo source edits yet;
 its first lint slice is still analysis.
