@@ -572,6 +572,38 @@ including both jobs.
 The intended static wave is run `39109937957`,
 whose actual API record binds head `82ea6108c57c9ef9cf6880e6d4506679812a6776`
 and workflow name `Research remaining Linux Node quality and build graph`.
+That run is now terminal.
+All 465 scheduled commands ran:
+418 succeeded and 47 failed.
+The failures comprise a product build,
+39 Oxlint tasks,
+and 7 type-check tasks.
+The Doodle Widget build reports `Could not resolve 'canvg'` from its `jspdf` consumer.
+Type failures involving an absent Auto Mode build remain prerequisite failures pending the owning build;
+they are not being counted wholesale as source type defects.
+All cloud inventories match the frozen 2,425-task names hash.
+The builds also regenerated 17 tracked derived outputs,
+including Claude plugin bundles and the IntelliJ JAR.
+Those paths are retained explicitly;
+this wave does not support an unchanged-tracked-tree claim.
+
+The next default-test profile selects 24 roots with 75 tracked default-shaped files.
+It runs the owning tasks and reviewed build prerequisites in 2 sequential 8 CPU/32 GB jobs,
+with a 15-minute job cap,
+90-second command cap,
+and 9-minute campaign cap.
+Its 127 scheduled invocations include shared build prerequisites.
+Reviewed Electron cases import the produced app domain modules or perform disposable dry-run staging;
+they do not establish a launched Electron application.
+The terminal-launch test only checks the exported function's type,
+and KWin cases exercise pure command selection.
+The VM builder's default task has zero tracked default-shaped files;
+its exit is a discovery control,
+not credit for executed tests or a VM consumer.
+Agent-host,
+transport,
+process,
+and native-prerequisite profiles remain separate pending work.
 
 The active queue remains independently verifiable:
 
