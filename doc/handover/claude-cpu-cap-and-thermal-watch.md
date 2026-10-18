@@ -26,7 +26,8 @@ The operating instructions live in `doc/runbook/claude-cpu-cap.md`.
 - No deliberate stress tests: the user needs the machine to work. Temperatures are judged from real work.
 - Boost and PBO stay off. The user disabled them (`/sys/devices/system/cpu/cpufreq/boost` is 0).
 - Commit eagerly.
-- The user allowed storing the CoolerControl token on disk and will rotate it on 2026-10-14.
+- The user allowed storing the CoolerControl token on disk. They planned to rotate it on 2026-10-14, then said on
+  2026-10-18 that they are not rotating it and that sessions may keep using it (`~/.config/claude-cpu-cap/cc-token`).
   The watcher stopped reading it on 2026-10-18 (see the section on the board swap).
 - The user's own fan changes no longer count as an excuse for an alert: they are confident that tinkering will not
   push the CPU to 95 degrees as before, so every alert is real and no alert is exempt (2026-10-13).
@@ -671,8 +672,8 @@ The day-one checks under "Checks before buying" still decide it.
 - The hold paragraph in `doc/handover/cli-git-rust-implementation.md` should point to this work.
   The session `monochromatic-18` was asked to update it.
 - A reboot has not been tested against the persistent setup.
-- The token rotation no longer matters to the watcher: it does not read CoolerControl since 2026-10-18.
-  The old `cc-token` file may still sit in `~/.config/claude-cpu-cap/` and is unused.
+- The token is not being rotated (user, 2026-10-18) and still works for ad hoc CoolerControl API reads.
+  The watcher does not read CoolerControl since 2026-10-18, so `cc-token` is only for manual use.
 
 ## Next actions
 
