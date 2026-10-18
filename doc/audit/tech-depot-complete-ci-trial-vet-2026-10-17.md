@@ -1,5 +1,5 @@
 <!--
-status: completed evaluation; no adoption recommendation
+status: interim evaluation; native Depot runner follow-up authorized
 lifecycle-phase: validation incomplete; no validated finalist
 subject: Depot complete CI trial
 scope: Frozen four-case complete affected CI graph; no migration or adoption
@@ -31,7 +31,7 @@ overlays:
 
 ## Decision and acceptance limits
 
-This trial does not establish acceptance of Depot as the replacement for the complete affected CI graph.
+This trial does not yet establish the intended GitHub/Depot routing under the user's budget and waiting-time objective.
 The reconciled registry contains 770 primary gates:
 654 pass,
 115 fail,
@@ -444,11 +444,18 @@ but has no complete-graph capacity,
 isolation or operating-cost comparison in this trial
 ([Android execution](depot-coherent-android-2026-10-17.evidence.json)).
 
-Depot currently documents Linux x86/Arm sandboxes and no native macOS or Windows support.
-Therefore the trial's existing mixed-provider arrangement remains necessary for those measured host boundaries.
-Unrecognized runner labels are mapped to Depot Ubuntu rather than establishing the named foreign platform
-([current compatibility documentation](https://depot.dev/docs/ci/compatibility),
-[retained primary text](depot-repository-accounting-2026-10-17.evidence.json)).
+#### Depot GitHub Actions runners
+
+The standalone Depot CI service provides Linux x86/Arm sandboxes.
+Its native OS restriction does not apply to Depot's separate GitHub Actions runner product,
+which offers Windows Server and Apple Silicon macOS runners.
+GitHub Actions orchestrates those jobs while Depot supplies the compute.
+The original native jobs in this report used GitHub-hosted machines;
+that placement is not evidence that another compute provider is required.
+The user has instructed execution of the missing Depot native-runner evaluation
+([Depot CI sandbox scope](https://depot.dev/docs/ci/overview),
+[Depot GitHub runner types](https://depot.dev/docs/github-actions/runner-types),
+[correction and follow-up](../troubleshooting/depot-ci-versus-github-runner-platforms.md)).
 
 This is a named-candidate workload evaluation,
 not saturated vendor discovery.
