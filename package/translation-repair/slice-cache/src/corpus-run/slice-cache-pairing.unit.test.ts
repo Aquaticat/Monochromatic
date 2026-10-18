@@ -156,7 +156,10 @@ await describe({
          A build other than the one that fills the fixtures.
          */
         const otherGeneration = `sha256-tree-v1:${'c'.repeat(64,)}`;
-        expect(await Promise.all(OPENERS.map(async function openedByAnotherBuild({ name, open, },): Promise<unknown> {
+        /**
+         What each cache resumes for the build that filled it, for another build, and for the first again.
+         */
+        const resumed = await Promise.all(OPENERS.map(async function openedByAnotherBuild({ name, open, },): Promise<unknown> {
           /**
            Directory of this cache's own case.
            */
@@ -206,7 +209,8 @@ await describe({
             other,
             after,
           };
-        },),),).toEqual([
+        },),);
+        expect(resumed,).toEqual([
           {
             before: ['paws',],
             other: [],
