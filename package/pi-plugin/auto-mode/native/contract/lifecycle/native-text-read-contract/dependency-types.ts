@@ -23,7 +23,7 @@ export type DependencyFacadeInput<Source extends DependencySources, Root extends
     prepare: () => Root;
     finalize: (root: Root) => unknown
   }>;
-  deadlineAt: number;
+  targetAt: number;
   rootDirectory: string;
   files: readonly Omit<FileObservationInput, 'root'>[];
   trace: (event: string) => void;
@@ -35,7 +35,7 @@ export type DependencyFacadeInput<Source extends DependencySources, Root extends
  */
 export type DependencyProjection = Readonly<{
   mechanicalDependenciesCurrent: true;
-  decisionDeadlineChecked: boolean;
+  decisionClockChecked: boolean;
   unqualifiedCoverage: unknown;
   instructionAuthority: 'not-established';
   humanWitness: 'not-established';
@@ -92,6 +92,6 @@ export type DependencyRecord<Source extends DependencySources, Root extends obje
 }>;
 
 /**
- Live checks use the original deadline; retained checks observe original cancellation only.
+ Live checks use the original performance target; retained checks observe original cancellation only.
  */
 export type DependencyVerification = (signal: AbortSignal) => void;

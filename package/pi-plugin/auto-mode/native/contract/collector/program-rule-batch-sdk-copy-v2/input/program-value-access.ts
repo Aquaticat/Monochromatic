@@ -7,10 +7,6 @@ import {
   NativeScriptValueGuardError,
   scriptValueGuard
 } from './script-value-guard.ts';
-import type {
-  NativeReturnInput,
-  NativeReturnOutcome
-} from './native-return-types.ts';
 import type { ProgramContext } from './program-operation-types.ts';
 import type { ProgramOwnership } from './program-ownership.ts';
 import type { ProgramGroup } from './program-state-types.ts';
@@ -45,37 +41,7 @@ export function createProgramValueAccess({
     currentGroup,
     knownSlot
   } = ownership;
-  /**
-   Native callbacks may prepare the group while its original invocation remains in flight.
-
-   @param group - original opaque group handle
-
-   @param slot - original opaque slot handle
-
-   @param call - original native call forwarded unchanged
-
-   @param options - original native options forwarded unchanged
-
-   @returns exact original native outcome
-   */
-  async function invokeProgramNative({
-    group: handle,
-    slot,
-    call,
-    options
-  }: NativeReturnInput & Readonly<{ group: object }>): Promise<NativeReturnOutcome> {
-    /**
-     Original reached-group identity remains independent of copied declaration metadata.
-     */
-    const group = knownGroup(handle);
-    if (!group.consumer) throw new JudgmentConstructionError('Reached group has no fixed native consumer');
-    return await group.consumer
-      .invoke({
-        slot,
-        call,
-        options
-      });
-  }
+  
   /**
    Retain the first failure and every distinct original guard occurrence.
 
@@ -243,7 +209,6 @@ export function createProgramValueAccess({
     }
   }
   return {
-    invokeProgramNative,
     scriptValueFor,
     markProgramGuard
   };

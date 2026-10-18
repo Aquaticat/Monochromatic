@@ -34,7 +34,7 @@ await describe({ name: '', children: [
     assert.equal(Object.isFrozen(view), true);
     assert.deepEqual(f.events, ['clock']);
     f.events.length = 0;
-    assert.equal(owner.finalize(handle).decisionDeadlineChecked, true);
+    assert.equal(owner.finalize(handle).decisionClockChecked, true);
     assert.deepEqual(f.events, [
       ...finalizationEvents.slice(0, 12),
       'clock',
@@ -43,7 +43,7 @@ await describe({ name: '', children: [
       'clock',
       ...finalizationEvents.slice(12),
     ]);
-    assert.equal(owner.checkRetained(handle).decisionDeadlineChecked, false);
+    assert.equal(owner.checkRetained(handle).decisionClockChecked, false);
     await writeFile(f.path, Buffer.from('changed original file'));
     assert.deepEqual(owner.originalFile({ handle, absolutePath: f.path }), view);
     assert.throws(function changedLive() { 

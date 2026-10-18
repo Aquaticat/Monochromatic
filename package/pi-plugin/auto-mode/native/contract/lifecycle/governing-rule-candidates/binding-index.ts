@@ -12,11 +12,6 @@ import type {
 } from './binding-types.ts';
 
 /**
- One source cannot exceed the original question binding profile.
- */
-const MAX_SOURCE_CLAUSES = 512;
-
-/**
  Source admission preserves the original owner record without interpreting occurrence metadata.
 
  @param source - original source reader result
@@ -85,8 +80,6 @@ export function readGoverningBindingIndex({
 
  @returns original headings referenced by retained source intervals
 
- @throws GoverningRuleBindingError when clauses and orphan headings exceed the declared profile
-
  @example referencedGoverningHeadings(index);
  */
 export function referencedGoverningHeadings(index: GoverningBindingIndex): ReadonlySet<PolicyHeading> {
@@ -100,16 +93,5 @@ export function referencedGoverningHeadings(index: GoverningBindingIndex): Reado
   ]) {
     for (const heading of record.headings ?? []) referenced.add(heading);
   }
-  /**
-   Unreferenced headings consume individual candidate slots.
-   */
-  const orphanHeadings = (index.headings ?? []).filter(function isUnreferencedHeading(heading) { 
-    return !referenced.has(heading); 
-  });
-  if ((index.records
-    .length
-    + index.unclassified
-    .length
-    + orphanHeadings.length) > MAX_SOURCE_CLAUSES) throw new GoverningRuleBindingError('Policy clause count exceeds the original question binding profile');
   return referenced;
 }

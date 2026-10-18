@@ -26,6 +26,10 @@ export async function capturePolicyInputs({
    ...sourceBinding.additionalSources
  ]:[];
  const instructionSources=Object.freeze(sources.map(function readSourceView(source) { return (source.view); }));
+ const provenanceSources=sourceBinding?Object.freeze([
+   sourceBinding.view,
+   ...(sourceBinding.provenanceSources??sourceBinding.additionalSources).map(function readRetainedView(source){return source.view;})
+ ]):instructionSources;
  const instructionCarriers=sourceBinding?.instructionCarriers??Object.freeze([]);
  const requestObservation=sourceBinding?.view
    .request;
@@ -134,7 +138,7 @@ export async function capturePolicyInputs({
   return inspectNativeSourceDomain({
     snapshot:sourceBinding.view
       .sources,
-    instructionSources,
+    instructionSources:provenanceSources,
     sourceCoverage:ruleSourceCoverage
   });
  }
@@ -150,6 +154,7 @@ export async function capturePolicyInputs({
    sourceViewFor,
    authorityFor,
    instructionSources,
+   provenanceSources,
    instructionCarriers,
    requestObservation,
    requestSourceContributions,

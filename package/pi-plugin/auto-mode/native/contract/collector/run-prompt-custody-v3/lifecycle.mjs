@@ -1,4 +1,5 @@
 import {SourceCollectionError} from '../collector.mjs';
+import {isCustomDataInput} from './custom-data-input.mjs';
 
 //region Read and refresh the current run without treating retained ancestry as current.
 /** Read and refresh the current run without treating retained ancestry as current. */
@@ -66,7 +67,16 @@ function read({options}){
     const constructedInputs=readConstructedInputs?.();
     if((constructedInputs!==scope.constructedInputs)&&(constructedInputs?.length
       ||scope.constructedInputs
-      ?.length))retainContextInputs([]);
+      ?.length)){
+      const previous=scope.constructedInputs??[];
+      const customOnly=constructedInputs!==undefined&&constructedInputs.length>=previous.length
+        &&previous.every((origin,index)=>origin===constructedInputs[index])
+        &&constructedInputs.slice(previous.length).every(isCustomDataInput);
+      // Pending custom data has not changed this run's governing inputs or its serialized request.
+      // Its original publication remains available when a real context callback admits the message.
+      if(customOnly)scope.constructedInputs=constructedInputs;
+      else retainContextInputs([]);
+    }
     return phase({
       scope,
       at:'current-read',
@@ -78,7 +88,6 @@ function read({options}){
         for(const original of history){
           if((original===scope)||(original.rootOccurrence!==root))continue;
           if((original.state!=='published')||(!original.node))throw new SourceCollectionError('Original run input history contains an unpublished processing receipt');
-          if(prior.length>=64)throw new SourceCollectionError('Original run input history exceeds the bounded native run profile');
           prior.push(original.node);
         }
         if(readRoot()!==root)throw new SourceCollectionError('Native root changed while reading original run input history');
@@ -93,7 +102,6 @@ function read({options}){
             ...scope.view,
             priorRuns:Object.freeze(prior)
           });
-          if(Buffer.byteLength(JSON.stringify(view))>8_388_608)throw new SourceCollectionError('Original run history exceeds the native source byte bound');
           scope.view=view;
         }
       }

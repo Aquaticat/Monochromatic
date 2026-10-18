@@ -94,12 +94,13 @@ export async function executeReachedProgramGroup({
   assertParentCurrent();
   origin.signal
     .throwIfAborted();
+  /** Preparation uses the same context snapshot for every original reached member. */
+  const context = runner.host.getContext();
   await dispatchPreparedBatch({
     calls,
     tools,
     assistantMessage: origin.response,
-    context: runner.host
-      .getContext(),
+    context,
     signal: origin.signal,
     executionJudgment: judgment,
     executionMode: exclusive ? 'sequential' : 'parallel',
@@ -109,11 +110,15 @@ export async function executeReachedProgramGroup({
       group,
       bound: {
         ordinals,
-        slots
+        slots,
+        tools
       },
       assertParentCurrent,
       parentId,
-      assessment
+      assessment,
+      context,
+      response: origin.response,
+      signal: origin.signal
     }),
     ...createProgramRunnerEvents({
       runner,

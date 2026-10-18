@@ -14,7 +14,6 @@ export const publicKeys = [
   'reachedGroupFor',
   'bindProgramCalls',
   'prepareReachedMembers',
-  'invokeProgramNative',
   'scriptValueFor',
   'markProgramGuard',
   'inspectReachedGroup',
@@ -41,6 +40,7 @@ export const publicKeys = [
   'requestMaterialFor',
   'claimRequestMaterial',
   'claimHeadingContext',
+  'claimOperationDecision',
   'issueBoundPolicyBatch',
   'indexedRuleCandidates',
   'indexedInstructionCandidates',
@@ -67,7 +67,6 @@ export const publicKeys = [
  Direct owners retain identity and accept the caller's original argument list.
  */
 export const directKeys = [
-  'invokeProgramNative',
   'scriptValueFor',
   'inspectReachedGroup',
   'inspectProgram',
@@ -86,6 +85,7 @@ export const noInputKeys = [
   'indexedUnitAdoptionPairs',
   'requestMaterialFor',
   'claimRequestMaterial',
+  'claimOperationDecision',
   'indexedRuleCandidates',
   'indexedInstructionCandidates',
   'indexedHeadingContextCandidates',

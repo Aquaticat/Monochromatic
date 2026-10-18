@@ -14,7 +14,7 @@ await describe({ name: '', children: [
     const fixture = nativeReturnFixture();
     expect(fixture.consumer.inspect(fixture.handle)).toEqual({ retainedOnly: true, state: 'uninvoked', identity: undefined, conversionCount: 0, conversion: undefined, failure: undefined });
     /** The generated consumer forwards both original argument objects. */
-    const outcome = await fixture.consumer.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
+    const outcome = await fixture.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
     expect(outcome).toBe(fixture.outcome);
     fixture.outcome.result.content = [{ type: 'text', text: 'later mutation' }];
     expect(fixture.consumer.valueFor({ slot: fixture.handle, outcome })).toBe('original text');
@@ -26,7 +26,7 @@ await describe({ name: '', children: [
     expect(fixture.state.invocations).toBe(1);
     /** A second reservation must fail without executing native work again. */
     const repeated = await nativeReturnFailure(function repeat() {
-      return fixture.consumer.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
+      return fixture.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
     });
     expect(repeated).toBeInstanceOf(nativeReturn.NativeReturnContractError);
     expect(fixture.state.invocations).toBe(1);
@@ -39,7 +39,7 @@ await describe({ name: '', children: [
       return deferred.promise;
     } });
     /** Invocation reserves the original slot synchronously. */
-    const pending = fixture.consumer.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
+    const pending = fixture.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
     expect(fixture.consumer.inspect(fixture.handle).state).toBe('running');
     fixture.state.current = false;
     deferred.resolve(fixture.outcome);
@@ -61,7 +61,7 @@ await describe({ name: '', children: [
       return deferred.promise;
     } });
     /** Native settlement queues the consumer before the later mutation. */
-    const pending = fixture.consumer.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
+    const pending = fixture.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
     deferred.resolve(fixture.outcome);
     queueMicrotask(function mutateAfterNativeSettlement() {
       fixture.outcome.result.content = [{ type: 'text', text: 'later queued mutation' }];
@@ -72,7 +72,7 @@ await describe({ name: '', children: [
   it({ name: 'rejects copied outcomes and incomplete prepared members independently', fn: async function originalMembership() {
     /** The positive control uses the same original return as both rejection controls. */
     const fixture = nativeReturnFixture();
-    await fixture.consumer.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
+    await fixture.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
     expect(fixture.consumer.valueFor({ slot: fixture.handle, outcome: fixture.outcome })).toBe('original text');
     /** Equal field values cannot replace the original native return. */
     const copied = await nativeReturnFailure(function copiedReturn() {
@@ -96,7 +96,7 @@ await describe({ name: '', children: [
       throw failure;
     } });
     expect(await nativeReturnFailure(function invoke() {
-      return fixture.consumer.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
+      return fixture.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
     })).toBe(failure);
     expect(fixture.consumer.inspect(fixture.handle)).toMatchObject({ state: 'threw', failure, conversionCount: 0 });
   } }); }),
@@ -104,7 +104,7 @@ await describe({ name: '', children: [
     /** Native failure text is captured before later result mutation. */
     const fixture = nativeReturnFixture();
     fixture.outcome.isError = true;
-    await fixture.consumer.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
+    await fixture.invoke({ slot: fixture.handle, call: fixture.call, options: fixture.options });
     fixture.state.returned = false;
     /** An ordinary tool failure does not consult the successful-member guard. */
     const failure = await nativeReturnFailure(function nativeErrorValue() {

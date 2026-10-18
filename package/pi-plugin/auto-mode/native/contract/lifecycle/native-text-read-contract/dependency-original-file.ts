@@ -18,13 +18,13 @@ import type {
  */
 const l = tagged({ tag: 'auto-mode-dependency-original-file' });
 
-//region Original file reads require issuing ownership and live original cancellation and deadline.
+//region Original file reads require issuing ownership and live original cancellation and performance target.
 /**
  Bind original file inspection to the original owner map and declared profile.
 
  @param handles - original dependency record owner
 
- @param checkpoint - original live cancellation and deadline check
+ @param checkpoint - original live cancellation and performance target check
 
  @param profile - validated original declarations in observation order
 

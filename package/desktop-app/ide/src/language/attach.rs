@@ -19,6 +19,8 @@ use super::identity::ServerIdentity;
 use super::lifecycle::send_did_open;
 /// States reported to the interface thread.
 use super::status::{DocumentState, ServerState};
+/// The worker's messages to itself,
+///  one of which carries the last standard-error lines of a server whose start failed.
 use super::worker::Internal;
 /// The worker whose state these steps change.
 use super::worker::Worker;

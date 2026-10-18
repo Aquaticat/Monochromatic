@@ -11,9 +11,16 @@ mod geometry;
 /// The picture of the whole text, built within a work budget.
 mod raster;
 
+/// The geometry's sizes,
+///  the target of a position,
+///  and the maps between pixels and visual rows.
 pub use geometry::{
     Geometry, MIN_BOX, NARROWEST, PIXELS_PER_ROW, Target, VIEW_SHARE, WIDTH, width_for,
 };
+/// The picture's build,
+///  its inputs,
+///  its two work budgets,
+///  and what it reports.
 pub use raster::{
     Built, FULL_WORK, IMAGE_ALPHA, Input, QUICK_WORK, Stats, TAB_COLUMNS, build, column_advance,
 };

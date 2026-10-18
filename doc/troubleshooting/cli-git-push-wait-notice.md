@@ -143,3 +143,53 @@ no listed exemption determined this result.
 6.  Prototype: not applicable because the observed operation succeeded and the fault premise failed.
 
 There is nothing to file or add to an external tracker.
+
+## Concurrent main commits on 2026-10-17
+
+The same advisory named processes `174748` and `173660` during concurrent scoped commits.
+The owner of commit session `48904` retained terminal exit `0` for prepared commit `ce54`,
+replayed as `1d27d625583d142722d8cd4df24db175f6f9a2dc`.
+Session `57030` had saved `8dda808f086d26b6b1d0d9d75fb5c0e0bcc52bc8`,
+but its terminal outcome was not available to this investigation.
+The waiting notice alone did not establish a failure for either command.
+
+Direct remote discovery returned `787f21579c67bd22869e5621f592111ad03d9587` for `refs/heads/main`.
+Both affected landed commits were ancestors of that exact remote OID:
+
+```sh
+# Run from the repository root; both ancestry commands exited zero in this incident.
+git ls-remote origin refs/heads/main
+git merge-base --is-ancestor 1d27d625583d142722d8cd4df24db175f6f9a2dc 787f21579c67bd22869e5621f592111ad03d9587
+git merge-base --is-ancestor 8dda808f086d26b6b1d0d9d75fb5c0e0bcc52bc8 787f21579c67bd22869e5621f592111ad03d9587
+```
+
+The contemporaneous `.git/cli-git/push/refs%2Fheads%2Fmain.last-pushed.json` independently recorded that tip,
+`outcome: pushed`,
+and `exitCode: 0`.
+Neither named process existed when inspected with `ps --pid 174748,173660`.
+The main push lock's `owner.json` appeared in the initial file listing,
+then vanished before its contents could be read.
+The investigation did not capture its owner identity or remove any lock,
+interrupt a push,
+retry publication,
+or change a ref.
+These snapshots establish publication and changing coordination state,
+not why either original holder exited.
+
+The active wrapper still resolved to `cargo-monochromatic-git-policy-cli/0.1.4`;
+forwarded Git reported `2.56.0`.
+Source inspected at `787f21579c67bd22869e5621f592111ad03d9587` retained the advisory and failure paths quoted here.
+`package/git-policy/cli/src/native/bounded_push.rs:139` derives the default wait limit from
+the `600` second push deadline,
+`5` second stop grace,
+and `60` second margin.
+Thus `665 seconds` is a configured future limit,
+not an elapsed-time measurement.
+`package/git-policy/cli/src/native/owner_lock.rs:146` separately emits `gave up after waiting` on exhaustion.
+
+Current-repository issue searches for `cli-git push lock`,
+`CLI_GIT_PUSH_LOCK_WAIT_SECONDS`,
+`"cli-git" "waiting"`,
+and `"giving up after"` found no distinct matching defect to update.
+No new issue or production patch was warranted by this recurrence.
+The earlier diagnostic interpretation and verified handling remain applicable.

@@ -3,7 +3,6 @@
  */
 import type {
   NativeReturnCall,
-  NativeReturnOwner,
   NativeReturnTool
 } from './native-return-types.ts';
 import type { ProgramPreparedMember } from './program-declaration-types.ts';
@@ -49,7 +48,7 @@ export type BindProgramCallsInput = Readonly<{
   group: object;
   calls: readonly ProgramNativeCall[];
   tools: readonly ProgramNativeToolLookup[];
-  runNative: NativeReturnOwner['runNative'];
+  
 }>;
 
 /**

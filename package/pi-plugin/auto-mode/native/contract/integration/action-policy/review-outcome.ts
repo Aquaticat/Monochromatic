@@ -4,7 +4,9 @@
 import { tagged } from '@monochromatic-dev/module-logger/ts';
 import type { GuardOutcome } from '../../../../src/guard-outcome.ts';
 import type { InstructionRule } from '../../../../src/instruction-rule.ts';
+import type { AuthorizationRequirement } from '../../../../src/authorization-requirement.ts';
 import {
+  inspectAuthorizationRequirements,
   resolveGuardOutcome,
   resolveInstructionEffects
 } from '../maintained-policy.mjs';
@@ -15,7 +17,7 @@ import {
 type CompiledProgram = {
   readonly premises: 'complete' | 'incomplete';
   readonly rules: readonly InstructionRule[];
-  readonly authorizationRequirements?: readonly unknown[];
+  readonly authorizationRequirements?: readonly AuthorizationRequirement[];
 };
 
 /**
@@ -54,7 +56,7 @@ export function resolveManualReviewOutcome(program: CompiledProgram): GuardOutco
    Resolved automatic decisions retain their existing precedence and authorization behavior.
    */
   const outcome = resolveGuardOutcome(program);
-  if (outcome.state === 'resolved') return outcome;
+  if ((outcome.state === 'resolved') && (outcome.verdict === 'deny')) return outcome;
   /**
    The compiler retains admitted rules even when unrelated interpretations remain unresolved.
    */
@@ -75,8 +77,56 @@ export function resolveManualReviewOutcome(program: CompiledProgram): GuardOutco
       resolution
     });
   }
-  rl.debug('retaining uncertainty for original host confirmation');
+  /**
+   Independent prerequisites remain visible even when directive premises are incomplete.
+   */
+  const authorization = inspectAuthorizationRequirements(program.authorizationRequirements ?? []);
+  if (authorization.state === 'unresolved') {
+    rl.debug('retaining unresolved clause prerequisites for whole-operation model review');
+    return Object.freeze({
+      state: 'unresolved',
+      reason: 'Clause assessment left authorization requirements unresolved; the complete operation needs decision-model review',
+      authorizationRequirements: authorization,
+      resolution
+    });
+  }
+  rl.debug('retaining automatic outcome for original host confirmation');
   return outcome;
+}
+
+/**
+ Preserve final model denials after automatic review and apply authenticated exact-group Allow to uncertainty.
+ Manual authorization does not assert that an estimated external prerequisite was satisfied.
+
+ @param program - original compiled facts retained through native confirmation
+
+ @param reconsideredOutcome - complete-operation review superseding preliminary clause estimates
+
+ @returns operation outcome after applying only the scoped confirmation fact
+
+ @throws InstructionResolutionInputError for malformed internal policy facts
+ */
+export function resolveConfirmedOutcome({ program, reconsideredOutcome }: {
+  readonly program: CompiledProgram;
+  readonly reconsideredOutcome?: GuardOutcome;
+}): GuardOutcome {
+  tagged({ tag: resolveConfirmedOutcome.name, l }).debug('resolving original policy after scoped confirmation');
+  /**
+   A terminal complete-operation denial remains binding; unresolved review leaves clause estimates diagnostic.
+   */
+  const automatic = reconsideredOutcome ?? resolveManualReviewOutcome(program);
+  if ((automatic.state === 'resolved') && (automatic.verdict === 'deny')) return automatic;
+  /**
+   Retain prerequisite estimates for diagnostics without promoting them into an established terminal restriction.
+   */
+  const authorization = inspectAuthorizationRequirements(program.authorizationRequirements ?? []);
+  return Object.freeze({
+    state: 'resolved',
+    verdict: 'approve',
+    reason: 'The user approved this exact prepared operation after automatic review could not resolve it',
+    ...(automatic.resolution === undefined ? {} : { resolution: automatic.resolution }),
+    authorizationRequirements: authorization
+  });
 }
 
 //endregion Established prohibitions precede manual confirmation

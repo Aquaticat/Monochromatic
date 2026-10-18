@@ -12,8 +12,7 @@ import type {
 import {createJudgmentDispatcher} from './dispatch.ts';
 import {
   JudgmentBudgetError,
-  JudgmentCancelledError,
-  JudgmentDeadlineError
+  JudgmentCancelledError
 } from './errors.ts';
 
 export {
@@ -25,12 +24,12 @@ export {
 
 //region Cooperative accounting for one enclosing judgment, never a permission or execution lease.
 /**
- Original preparation-inclusive duration in milliseconds.
+ Advisory preparation-inclusive performance target in milliseconds.
  */
-const durationMs = 5_000;
+const durationMs = 15_000;
 
 /**
- Own one preparation-inclusive deadline and client-attempt ceiling.
+ Own preparation timing, cancellation, and client-attempt accounting.
  Trusted transport classification never reads model claims.
  
  @param now - original monotonic clock
@@ -62,16 +61,18 @@ export function createJudgmentBudget({
    */
   const startedAt=now();
   /**
-   Fixed expiry never changes after creation.
+   Fixed performance target never expires the operation.
    */
-  const deadlineAt=startedAt+durationMs;
-  if((!Number.isFinite(startedAt))||(!Number.isFinite(deadlineAt))
-    ||(deadlineAt<=startedAt))throw new JudgmentBudgetError('Judgment clock cannot represent its deadline');
+  const targetAt=startedAt+durationMs;
+  if((!Number.isFinite(startedAt))||(!Number.isFinite(targetAt))
+    ||(targetAt<=startedAt))throw new JudgmentBudgetError('Judgment clock cannot represent its performance target');
   if(((typeof signal?.aborted)!=='boolean')||((typeof isRetryableTransportFailure)!=='function'))throw new JudgmentBudgetError('Judgment requires cancellation and an owned transport classifier');
   /**
    One original lifetime owns every mutable accounting field.
    */
   const accounting: JudgmentAccounting={
+    bundles:0,
+    calls:0,
     lastAt:startedAt,
     attempts:0,
     retryUsed:false,
@@ -93,9 +94,9 @@ export function createJudgmentBudget({
    */
   const records=new Map<number, JudgmentAttemptRecord>();
   /**
-   Reject expired, cancelled or previously retired evidence.
+   Reject cancelled or previously retired evidence; elapsed time remains diagnostic.
    
-   @returns remaining milliseconds in the original lifetime
+   @returns milliseconds until advisory target, negative after the target
    */
   function checkpoint(): number {
     if(accounting.retired)throw accounting.retirement;
@@ -121,12 +122,11 @@ export function createJudgmentBudget({
       const current=now();
       if((!Number.isFinite(current))||(current<accounting.lastAt))throw new JudgmentBudgetError('Judgment clock moved backwards or became non-finite');
       accounting.lastAt=current;
-      if(current>=deadlineAt)throw new JudgmentDeadlineError('Judgment preparation and assessment deadline expired');
       if(signal.aborted)throw new JudgmentCancelledError(
         'Judgment was cancelled',
         {cause:signal.reason}
       );
-      return deadlineAt-current;
+      return targetAt-current;
     } catch(error) {
       accounting.retired=true;
       accounting.retirement=error;
@@ -142,7 +142,7 @@ export function createJudgmentBudget({
     isRetryableTransportFailure,
     accounting,
     records,
-    deadlineAt,
+    targetAt,
     signal
   });
   /**
@@ -152,8 +152,10 @@ export function createJudgmentBudget({
    */
   function diagnostics(): JudgmentBudgetSnapshot {
     return Object.freeze({
+    bundles:accounting.bundles,
+    calls:accounting.calls,
     startedAt,
-    deadlineAt,
+    targetAt,
     attempts:accounting.attempts,
     retryUsed:accounting.retryUsed,
     running:accounting.running,

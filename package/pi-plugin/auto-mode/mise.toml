@@ -1,3 +1,6 @@
+[env]
+MONOCHROMATIC_LOG_DIRECTORY = "{{env.HOME}}/temp/agent/pi-auto-mode-diagnostics"
+
 [vars]
 # The full semantic lint uses both Node and Go workers. These are the worker
 # settings verified under the session's 4-GiB aggregate cgroup limit; no rules are disabled.
@@ -94,12 +97,12 @@ extends = "test:unit"
 description = "Verify built approval decisions and unified stop behavior"
 run = [
   "node src/ask-user.unit.test.ts",
-  "node src/evaluate.unit.test.ts",
 ]
 
 [tasks."test:assessment-transport"]
 description = "Verify the built direct HTTP sender without provider requests"
 run = [
+  "node src/assessment-failure.unit.test.ts",
   "node src/assessment-transport.unit.test.ts",
   "node src/assessment-http.unit.test.ts",
   "node src/assessment-http-failure.unit.test.ts",
@@ -108,6 +111,10 @@ run = [
 [tasks."test:decision-wire"]
 description = "Verify lossless Luna request conversion, exact response attribution, and original lifetime"
 run = "node src/decision-wire.unit.test.ts"
+
+[tasks."test:assessment-bundles"]
+description = "Verify complete question partitioning through owned parallel call bundles"
+run = "node --max-old-space-size=512 src/assessment-bundles.unit.test.ts"
 
 [tasks."test:native:assessment-transport"]
 description = "Exercise the maintained HTTP sender through original native policy review with authored responses"
@@ -119,7 +126,10 @@ run = [
 
 [tasks."test:semantic-operating-policy"]
 description = "Verify adopted native categorical admission through the built package"
-run = "node src/semantic-operating-policy.unit.test.ts"
+run = [
+  "node src/semantic-operating-policy.unit.test.ts",
+  "node src/semantic-admission-scope.unit.test.ts",
+]
 
 [tasks."test:native:semantic-operating-policy"]
 description = "Exercise the adopted policy through original SDK requests and maintained HTTP transport"
@@ -148,9 +158,17 @@ run = "node native/build.ts"
 description = "Rebuild owned native transformations against the already emitted qualified Pi source"
 run = "node native/build.ts --owned"
 
+[tasks."test:native:build-activation"]
+description = "Verify failed release generation and loading preserve a usable disposable installation"
+run = "node --max-old-space-size=512 native/build.unit.test.ts"
+
 [tasks."test:native:source-freshness-work"]
 description = "Bound repeated governing-file observation through the built native approval consumer"
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/source-freshness-work.test.mjs"
+
+[tasks."test:native:run-message-freshness"]
+description = "Keep full parent scans independent of retained tool catalog size"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-run-message-freshness.test.mjs"
 
 [tasks."test:native:request-claim"]
 description = "Verify original whole-request selection, repeated claims, foreign handles and retired dependencies"
@@ -246,11 +264,11 @@ run = [
  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-schedule-policy.unit.test.ts",
 ]
 
-[tasks."test:native:prepared-completion"]
-description = "Verify original completion envelopes, native outcomes, and retained failure precedence"
+[tasks."test:native:profile-call"]
+description = "Verify original source call admission, spans, pattern ownership, and failure order"
 run = [
- "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-completion.unit.test.ts",
- "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-prepared-completion-failure.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-profile-call.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-profile-call-failure.unit.test.ts",
 ]
 
 [tasks."test:native:group-lifetime"]
@@ -433,7 +451,7 @@ run = [
 ]
 
 [tasks."test:native:resource-input"]
-description = "Verify built native resource copies preserve values, ownership, descriptors, and byte limits"
+description = "Verify built native resource copies preserve complete values, ownership, and descriptors"
 run = [
   "node src/native-resource-input.unit.test.ts",
   "node src/native-resource-input-rejection.unit.test.ts",
@@ -472,6 +490,10 @@ run = [
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs prohibited",
   "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/approval-domain.test.mjs retired",
 ]
+
+[tasks."test:native:manual-group"]
+description = "Verify exact manual approval ownership, native retirement, cancellation, and returned tokens"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-manual-group.test.mjs"
 
 [tasks."test:native:sdk-stream"]
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/domain-frontier.test.mjs permission --require-resolution --sdk-stream"
@@ -599,6 +621,25 @@ console.log(JSON.stringify({ complete: true, installedCommandVerified: true, set
 
 [tasks."test:native:host-lifecycle"]
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-host/lifecycle.test.mjs"
+
+[tasks."test:native:session-actions"]
+description = "Verify provider switching and tree navigation preserve usable prompts without reviving old leases"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs switch",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs tree",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs retry",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs reload",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs abort",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs inflight",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs combined",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs tree-cancel",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs tree-noop",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs tree-summary",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs fork",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs resume",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs automatic-retry",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-session-actions.test.mjs provider-retry",
+]
 
 [tasks."test:native:cli-process"]
 run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-host/process.test.mjs"
@@ -788,3 +829,132 @@ run = [
   'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-instruction-lifetime.unit.test.ts',
   'node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-instruction-batch.unit.test.ts',
 ]
+
+[tasks."test:native:pattern-decoder"]
+description = "Verify original bounded pattern decoding and private ownership"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-pattern-decoder.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-pattern-decoder-failure.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-pattern-decoder-ownership.unit.test.ts",
+]
+
+[tasks."test:native:profile-successors"]
+description = "Verify original complete parallel successor inspection and borrowed identities"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-profile-successors.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-profile-successors-failure.unit.test.ts",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-profile-successors-ownership.unit.test.ts",
+]
+[tasks."test:native:bypass"]
+description = "Verify the native Shift+Tab bypass control and restored policy checks"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/bypass.test.mjs prohibited --native-context --reload-context --bypass-fixture",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/bypass.test.mjs prohibited --native-context --reload-context --bypass-fixture --outside-profile",
+]
+
+[tasks."test:native:decision-context"]
+description = "Verify selected conversation and readable policy excerpts in actual native assessment requests"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/decision-context.test.mjs satisfied --native-context --reload-context"
+
+[tasks."test:native:prompt-capacity"]
+description = "Verify original prompt and tool bundles retain their complete native input capacity"
+run = [
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/capture-data.test.mjs",
+  "node --max-old-space-size=512 --import ./dist/native/loader.mjs ./dist/native/contract/integration/native-batch/prompt-capacity.test.mjs",
+  "node --max-old-space-size=512 src/input-receipt-budget.unit.test.ts",
+]
+
+[tasks."test:native:startup-relevance"]
+description = "Verify startup, changed-rule cache reuse, uncertainty culling, and selected provider inputs"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-startup-relevance.test.mjs",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs startup-failure-approve",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs startup-failure-stop",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs startup-failure-headless",
+]
+
+[tasks."test:native:shell-projection"]
+description = "Verify parsed Bash control flow, literal data, and thinking exclusion at the built model boundary"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-shell-projection.test.mjs"
+
+[tasks."test:visible-context"]
+description = "Verify built conversation windows, thinking exclusion, and parsed historical Bash inputs"
+run = [
+ "node --max-old-space-size=512 src/visible-process-result.unit.test.ts",
+ "node --max-old-space-size=512 src/visible-context.unit.test.ts",
+ "node --max-old-space-size=512 src/visible-context-message-roles.unit.test.ts",
+ "node --max-old-space-size=512 src/visible-context-window.unit.test.ts",
+]
+
+[tasks."test:native:runtime-hooks"]
+description = "Verify native hook installation and rollback without message listeners"
+run = [
+ "node src/native-runtime-hooks.unit.test.ts",
+ "node src/native-runtime-rollback.unit.test.ts",
+ "node src/native-runtime-slots.unit.test.ts",
+]
+
+[tasks."test:native:host-isolation"]
+description = "Verify tool admission survives navigation and fails independently of chat"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-passive-observer.test.mjs",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-passive-prompt.test.mjs",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-tool-after-navigation.test.mjs permission --sdk-stream --http-transport --operating-policy",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-tool-after-navigation.test.mjs prohibition --sdk-stream --http-transport --operating-policy",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-observation-isolation.test.mjs permission --sdk-stream --http-transport --operating-policy",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-observation-isolation.test.mjs permission --sdk-stream --http-transport --operating-policy --manual=stop",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-observation-isolation.test.mjs permission --sdk-stream --http-transport --operating-policy --manual=cancel",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-observation-isolation.test.mjs permission --sdk-stream --http-transport --operating-policy --manual=headless",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-observation-isolation.test.mjs permission --sdk-stream --http-transport --operating-policy --assessment-failure",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-observation-isolation.test.mjs permission --sdk-stream --http-transport --operating-policy --assessment-failure --manual=stop",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-observation-isolation.test.mjs permission --sdk-stream --http-transport --operating-policy --assessment-failure --manual=cancel",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-observation-isolation.test.mjs permission --sdk-stream --http-transport --operating-policy --assessment-failure --manual=headless",
+]
+[tasks."test:native:tool-schema-capacity"]
+description = "Retain complete native schemas and reject changed descriptors without a property ceiling"
+run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-tool-schema-capacity.test.mjs"
+[tasks."test:native:direct-bash"]
+description = "Review complete direct Bash and mixed groups before native execution"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-direct-bash.test.mjs permission",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-direct-bash.test.mjs prohibition",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-direct-bash.test.mjs unknown",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-direct-bash.test.mjs mixed",
+]
+
+[tasks."test:native:decision-fallback"]
+description = "Reconsider unresolved clause prerequisites through the whole-operation model before manual review"
+run = [
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs transient",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs transient-deny",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-direct-bash.test.mjs misclassified-prerequisite",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs approve",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs deny",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs unknown",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs low",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs transport",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs malformed",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs initial-failure",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs stop",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs cancel",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs headless",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs stale",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs abort",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs prohibition",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs deadline",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs fresh",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs clause-deny-approve",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs clause-deny-deny",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs clause-deny-unknown",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs clause-deny-transport",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs clause-deny-stop",
+ "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/native-decision-fallback.test.mjs clause-deny-headless",
+]
+[tasks."test:native:phases"]
+description = "Verify real native phases and complete lifecycle stderr"
+run = "node --max-old-space-size=512 src/native-phase.unit.test.ts"
+
+[tasks."test:native:phase"]
+description = "Exercise one actual native group lifecycle mode"
+usage = 'arg "<mode>" help="Native phase fixture mode"'
+run = 'node --max-old-space-size=512 src/native-phase.unit.test.ts "$usage_mode"'

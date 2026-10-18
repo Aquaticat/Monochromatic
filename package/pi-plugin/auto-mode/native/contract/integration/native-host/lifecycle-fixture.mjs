@@ -23,9 +23,13 @@ export const fixtureState = {
   trustCalls: 0,
   constructions: 0,
   cancelReplacement: false,
+  cancelNavigation: false,
   replacementCallbacks: 0
 };
 function observeExtensions(pi) {
+  pi.on('session_before_tree', function chooseTreeCancellation() {
+    return {cancel:fixtureState.cancelNavigation};
+  });
   pi.on(
     'session_before_switch',
     function chooseFixtureCancellation() { return ( ({ cancel: fixtureState.cancelReplacement })); }

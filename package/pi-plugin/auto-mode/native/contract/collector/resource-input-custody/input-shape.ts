@@ -8,11 +8,6 @@ import { SourceCollectionError } from '../errors.ts';
 //region Ordinary records and arrays retain the native resource profile
 
 /**
- A single captured text retains the original input byte ceiling.
- */
-const MAX_TEXT_BYTES = 65_536;
-
-/**
  Narrow ordinary records without asserting types for their unexamined fields.
 
  @param value - original native value requiring named property access
@@ -148,9 +143,9 @@ export function requireInputFields({
 
  @param label - input named in rejection diagnostics
 
- @returns complete input text within the original byte ceiling
+ @returns complete input text
 
- @throws SourceCollectionError when text is missing or exceeds the original profile
+ @throws SourceCollectionError when text is missing
 
  @example
  ```ts
@@ -164,7 +159,7 @@ export function requireInputText({
   readonly value: unknown;
   readonly label: string;
 }): string {
-  if (((typeof value) !== 'string') || (Buffer.byteLength(value) > MAX_TEXT_BYTES)) throw new SourceCollectionError(`${label} requires bounded text`);
+  if ((typeof value) !== 'string') throw new SourceCollectionError(`${label} requires text`);
   return value;
 }
 
@@ -180,13 +175,11 @@ function isOrdinaryArray(value: unknown): value is readonly unknown[] {
 }
 
 /**
- Retain only bounded dense arrays with enumerable own data entries.
+ Retain dense arrays with enumerable own data entries.
 
  @param value - original list to validate before copying
 
  @param label - input named in rejection diagnostics
-
- @param maximum - original schema's entry ceiling
 
  @returns original list after every entry descriptor is checked
 
@@ -194,22 +187,20 @@ function isOrdinaryArray(value: unknown): value is readonly unknown[] {
 
  @example
  ```ts
- requireInputList({ value: ['complete source'], label: 'Append input', maximum: 32 });
+ requireInputList({ value: ['complete source'], label: 'Append input' });
  ```
  */
 export function requireInputList({
   value,
-  label,
-  maximum
+  label
 }: {
   readonly value: unknown;
   readonly label: string;
-  readonly maximum: number;
 }): readonly unknown[] {
-  if ((!isOrdinaryArray(value)) || (value.length > maximum)
+  if ((!isOrdinaryArray(value))
     || (Reflect.ownKeys(value)
       .length
-      !== (value.length + 1))) throw new SourceCollectionError(`${label} requires a bounded ordinary dense array`);
+      !== (value.length + 1))) throw new SourceCollectionError(`${label} requires an ordinary dense array`);
   for (let index = 0; index < value.length; index++) {
     readInputData({
       value,

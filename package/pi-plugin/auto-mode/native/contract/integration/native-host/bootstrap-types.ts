@@ -8,6 +8,7 @@ import type {
   ExtensionAPI,
   SessionManager
 } from '@earendil-works/pi-coding-agent';
+import type {RelevanceCacheInput} from '../../lifecycle/rule-relevance-cache/cache-types.ts';
 
 /**
  Only accessed SDK fields receive concrete types; native ownership objects stay opaque here.
@@ -48,6 +49,10 @@ export type NativePolicyDesignation = {
     readonly root: string;
     readonly relativePath: string;
     readonly requiredMode: number;
+    /**
+     Startup and reload classify changed policy rules through the existing cache owner.
+     */
+    readonly relevance?:Omit<RelevanceCacheInput,'selection'>;
   };
   /**
    Designation supplies source authority separately from semantic interpretation.

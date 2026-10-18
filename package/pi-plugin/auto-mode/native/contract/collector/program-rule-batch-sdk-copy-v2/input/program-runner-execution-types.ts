@@ -4,6 +4,25 @@
 import type { JudgmentPrograms } from './program-api.ts';
 import type { ProgramPreparedMember } from './program-declaration-types.ts';
 import type { NativeReturnCall } from './native-return-types.ts';
+import type { ProgramRunnerTool } from './program-runner-binding-types.ts';
+
+/** Original native phase inputs keep the same actual call and preparation throughout the lifecycle. */
+export type ProgramNativePhaseRun = Readonly<{
+  call: NativeReturnCall;
+  prepared: unknown;
+  execute: (...args: unknown[]) => unknown;
+  onUpdate?: (partial: unknown) => unknown;
+  after?: (hook: unknown) => unknown;
+}>;
+/** The qualified SDK owns both phase bodies and their signal. */
+export type ProgramNativePhasePipeline = Readonly<{
+  prepare: (input: Readonly<{ call: NativeReturnCall; before: (hook: unknown) => unknown }>) => Promise<unknown>;
+  run: (input: ProgramNativePhaseRun) => unknown;
+}>;
+/** Each child call captures its own cancellation through the same SDK factory as root groups. */
+export type ProgramNativePhaseFactory = (input: Readonly<{
+  context: unknown; assistantMessage: unknown; signal: AbortSignal; tools: readonly ProgramRunnerTool[];
+}>) => ProgramNativePhasePipeline;
 import type {
   ProgramRunnerBinding,
   ProgramRunnerGroup
@@ -20,6 +39,7 @@ import type { ProgramQueue } from './program-scope.ts';
  */
 export type ProgramExecutionRunner = ProgramQueue & Readonly<{
   host: ProgramRunnerEventsInput['runner']['host'] & Readonly<{
+    createOwnedToolPhases: ProgramNativePhaseFactory;
     isSequential: () => boolean;
     getContext: () => unknown;
     prepareOwnedToolCall: (
@@ -37,7 +57,7 @@ export type ProgramExecutionRunner = ProgramQueue & Readonly<{
  */
 export type ProgramExecutionOrigin = Readonly<{
   prepared: Readonly<{ id: string }>;
-  judgment: Pick<JudgmentPrograms, 'invokeProgramNative' | 'reachedGroupFor' | 'prepareReachedMembers'>;
+  judgment: Pick<JudgmentPrograms, 'reachedGroupFor' | 'prepareReachedMembers'>;
   signal: AbortSignal;
   response: unknown;
 }>;
@@ -50,10 +70,10 @@ export type ProgramAssessment = { handles?: readonly object[] };
  */
 export type ProgramExecutionCallbacks = Readonly<{
   memberForExecution: (id: string) => object;
-  runToolCall: (
-    call: NativeReturnCall,
-    options: unknown
-  ) => unknown;
+  nativePhases: ProgramNativePhasePipeline & Readonly<{
+    retain: (input: Readonly<{ call: NativeReturnCall; outcome: unknown }>) => void;
+    failed: (input: Readonly<{ call: NativeReturnCall; error: unknown }>) => void;
+  }>;
   prepare: (hook: unknown) => unknown;
   after: (hook: unknown) => unknown;
   assertFresh: () => void;
@@ -87,7 +107,10 @@ export type ProgramRunnerExecutionInput = Readonly<{
  */
 export type ProgramExecutionCallbacksInput = Pick<ProgramRunnerExecutionInput, 'runner' | 'group' | 'assertParentCurrent'> & Readonly<{
   judgment: ProgramExecutionOrigin['judgment'];
-  bound: Pick<ProgramRunnerBinding<ProgramEventRecorder>, 'ordinals' | 'slots'>;
+  bound: Pick<ProgramRunnerBinding<ProgramEventRecorder>, 'ordinals' | 'slots' | 'tools'>;
+  context: unknown;
+  response: unknown;
+  signal: AbortSignal;
   parentId: string;
   assessment: ProgramAssessment;
 }>;

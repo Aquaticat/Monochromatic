@@ -12,6 +12,7 @@ import type {
 import { JudgmentConstructionError } from './judgment-error.ts';
 import { memberProjection } from './instruction-member-projection.ts';
 import { retainInstructionHandle } from './instruction-ownership.ts';
+import { createOperationDecisionClaim } from './instruction-operation.ts';
 import type { InstructionSources } from './instruction-sources.ts';
 
 //region Canonical original program selectors cannot be resampled through another member.
@@ -313,6 +314,7 @@ export function createProgramInstructions({
   return {
     requestMaterialFor,
     claimRequestMaterial,
+    claimOperationDecision: createOperationDecisionClaim(context),
     claimHeadingContext,
     claimProgramRuleCandidate,
     claimUnitAdoption

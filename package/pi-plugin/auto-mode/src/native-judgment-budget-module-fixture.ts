@@ -8,6 +8,11 @@
  Original attempt fields visible to a transport consumer.
  */
 type BudgetAttempt = {
+  readonly runBundle: <Result>(operations: readonly ((input: {
+    readonly signal: AbortSignal;
+    readonly targetAt: number;
+    readonly attempt: number;
+  })=>Promise<Result>)[])=>Promise<readonly Result[]>;
   /**
    Original cancellation lineage.
    */
@@ -15,7 +20,7 @@ type BudgetAttempt = {
   /**
    Original absolute deadline.
    */
-  readonly deadlineAt: number;
+  readonly targetAt: number;
   /**
    Original judgment-wide invocation ordinal.
    */
@@ -26,6 +31,8 @@ type BudgetAttempt = {
  Retained diagnostics asserted by the consumer suites.
  */
 type BudgetSnapshot = {
+  readonly bundles: number;
+  readonly calls: number;
   /**
    Consumed transport attempts.
    */

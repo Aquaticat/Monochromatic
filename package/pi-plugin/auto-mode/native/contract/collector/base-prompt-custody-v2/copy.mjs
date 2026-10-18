@@ -2,7 +2,6 @@ import {SourceCollectionError} from '../collector.mjs';
 
 /** Copy the declared SDK prompt-option schema without freezing borrowed skill/source records. */
 export function copyPromptOptions(input){
-  let bytes=0;
   function record({
     value,
     required,
@@ -25,17 +24,15 @@ export function copyPromptOptions(input){
     return value;
   }
   function text(value){
-    if(((typeof value)!=='string')||(Buffer.byteLength(value)>65_536))throw new SourceCollectionError('Prompt input text exceeds its declared profile');
-    bytes+=Buffer.byteLength(JSON.stringify(value));if(bytes>1_048_576)throw new SourceCollectionError('Prompt option text exceeds total byte bound');return value;
+    if((typeof value)!=='string')throw new SourceCollectionError('Prompt input requires text');
+    return value;
   }
   function optionalText(value){return value===undefined?undefined:text(value);}
   function array({
     value,
-    maximum,
     copy
   }){
     if((!Array.isArray(value))||(Object.getPrototypeOf(value)!==Array.prototype)
-      ||(value.length>maximum)
       ||(Reflect.ownKeys(value)
         .length
         !==(value.length
@@ -50,7 +47,6 @@ export function copyPromptOptions(input){
   }
   function texts(value){return array({
     value,
-    maximum:512,
     copy:text
   });}
   function mapping({
@@ -58,10 +54,7 @@ export function copyPromptOptions(input){
     copy
   }){
     if((!value)||((typeof value)!=='object')
-      ||(Object.getPrototypeOf(value)!==Object.prototype)
-      ||(Reflect.ownKeys(value)
-        .length
-        >512))throw new SourceCollectionError('Prompt map requires a bounded ordinary record');
+      ||(Object.getPrototypeOf(value)!==Object.prototype))throw new SourceCollectionError('Prompt map requires a bounded ordinary record');
     const result={};for(const key of Reflect.ownKeys(value)){const item=Object.getOwnPropertyDescriptor(
       value,
       key
@@ -167,16 +160,14 @@ export function copyPromptOptions(input){
     cwd:text(input.cwd),
     contextFiles:array({
       value:input.contextFiles,
-      maximum:64,
       copy:file
     }),
     skills:array({
       value:input.skills,
-      maximum:128,
       copy:skill
     })
   };
-  if(Buffer.byteLength(JSON.stringify(result))>1_048_576)throw new SourceCollectionError('Complete prompt option snapshot exceeds total byte bound');return result;
+  return result;
 }
 /** Freeze only owned copies; mutable run copies retain the SDK's documented handler contract. */
 export function freezePromptOptions(input){

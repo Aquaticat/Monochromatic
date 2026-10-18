@@ -5,7 +5,7 @@ edition = "2024"
 description = "Repository-owned Git policy wrapper: forwards Git commands and checks commits against configured policies."
 license = "LGPL-3.0-or-later"
 readme = "README.md"
-repository = "https://github.com/Aquaticat/Monochromatic.git"
+repository = "https://github.com/Aquaticats/Monochromatic.git"
 # `include` patterns are gitignore-style, so an unanchored `README.md` would also package `e2e/README.md`.
 include = [
   "src/native/**/*.rs",
@@ -16,7 +16,7 @@ include = [
   "/README.md",
   "LICENSES/*.txt",
 ]
-homepage = "https://github.com/Aquaticat/Monochromatic/tree/main/package/git-policy/cli"
+homepage = "https://github.com/Aquaticats/Monochromatic/tree/main/package/git-policy/cli"
 
 [lib]
 name = "git_policy_cli"

@@ -115,6 +115,7 @@ export function createJudgmentInstructions(input: JudgmentInstructionsInput) : J
     claimUnitAdoption: program.claimUnitAdoption,
     requestMaterialFor: program.requestMaterialFor,
     claimRequestMaterial: program.claimRequestMaterial,
+    claimOperationDecision: program.claimOperationDecision,
     claimHeadingContext: program.claimHeadingContext,
     issueBoundPolicyBatch: batches.issueBoundPolicyBatch,
     claim: member.claim,

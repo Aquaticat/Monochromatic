@@ -186,12 +186,15 @@ function publishScope(scope){
       otherInputCoverage:'not-established'
     });
     const ancestors=[];let {parent} = scope;
-    while(parent){if(ancestors.length>=64)throw new SourceCollectionError('Run source ancestry exceeds its declared profile');ancestors.push(parent.node);parent=parent.parent;}
+    const seen=new Set();
+    while(parent){
+      if(seen.has(parent))throw new SourceCollectionError('Run source ancestry contains a cycle');
+      seen.add(parent);ancestors.push(parent.node);parent=parent.parent;
+    }
     scope.view=Object.freeze({
       ...scope.node,
       ancestors:Object.freeze(ancestors)
     });
-    if(Buffer.byteLength(JSON.stringify(scope.view))>8_388_608)throw new SourceCollectionError('Complete run ancestry exceeds its declared byte bound');
     scope.state='published';state.current=scope;state.active=undefined;return options;
   }
 return {publishScope};

@@ -199,6 +199,7 @@ pub(super) enum Internal {
 
 /// The sending ends of every channel the interface thread polls.
 mod outputs;
+/// The channel ends the worker publishes to.
 pub(super) use outputs::Outputs;
 
 /// All state of the worker thread.

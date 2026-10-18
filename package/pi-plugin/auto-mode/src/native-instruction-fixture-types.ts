@@ -54,6 +54,7 @@ export type FixtureInstructions = Readonly<{
   inspectRuleSources: () => readonly FixtureGoverningSnapshot[];
   requestMaterialFor: () => object;
   claimRequestMaterial: () => object;
+  claimOperationDecision: () => object;
   claimHeadingContext: (input: Readonly<{ candidate: unknown }>) => object;
   claimUnitAdoption: (input: Readonly<{ pair: unknown }>) => object;
   claim: (input: Readonly<{

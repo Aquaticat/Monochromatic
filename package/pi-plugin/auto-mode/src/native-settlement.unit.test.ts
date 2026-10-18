@@ -96,7 +96,6 @@ await describe({
       '[{"id":"q0","status":"estimate","value":0.5},{"id":"q1","status":"unresolved","reason":"unknown","extra":true}]',
       '[{"id":"q0","status":"estimate","value":0.5},{"id":"q1","status":"other"}]',
       ' '.repeat(65_537),
-      JSON.stringify([{ id: 'q0', status: 'estimate', value: 0.5 }, { id: 'q1', status: 'unresolved', reason: 'é'.repeat(33_000) }]),
     ].map(function malformedCase(answerText, index) {
       return it({
         name: `retains malformed response ${index} across every selected claim`,
@@ -109,7 +108,7 @@ await describe({
           assert.equal(record.discarded, false);
           assert.ok(Error.isError(record.failure,));
           assert.deepEqual(record.answers, [{ status: 'malformed' }, { status: 'malformed' }]);
-          assert.equal(Object.hasOwn(record, 'raw'), ((typeof answerText) === 'string') && (Buffer.byteLength(answerText) <= 65_536));
+          assert.equal(Object.hasOwn(record, 'raw'), ((typeof answerText) === 'string'));
           assert.equal(Object.hasOwn(record, 'model'), false);
           assert.equal(fixture.batch.settled, true);
           for (const [answerIndex, claim] of fixture.batch.selected.entries()) {
@@ -136,7 +135,7 @@ await describe({
       });
     }),
     it({
-      name: 'admits exact raw and model byte bounds and discards oversized raw text',
+      name: 'retains complete raw answers beyond the removed ceiling and checks model attribution',
       fn: async function checksByteBounds() {
         /** JSON whitespace reaches the boundary without changing answer membership. */
         const fixture = createSettlementFixture();
@@ -148,8 +147,8 @@ await describe({
         assert.equal(fixture.batch.record?.malformed, false);
         /** Oversized text still produces a terminal diagnostic without retained raw data. */
         const oversized = createSettlementFixture();
-        assert.equal(oversized.settle({ batch: oversized.handle, answerText: `${raw} ` }).raw, undefined);
-        assert.equal(oversized.batch.record?.malformed, true);
+        assert.equal(oversized.settle({ batch: oversized.handle, answerText: `${raw} ` }).raw, `${raw} `);
+        assert.equal(oversized.batch.record?.malformed, false);
       },
     }),
 

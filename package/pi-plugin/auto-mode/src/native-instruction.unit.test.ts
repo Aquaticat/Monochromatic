@@ -10,6 +10,28 @@ await describe({
   children: [
     //region Request and prepared-member selectors retain original occurrences and reject foreign ownership.
     it({
+      name: 'retains complete-operation decision identity without projecting the archived request body',
+      fn: async function originalOperationDecision() {
+        const fixture = createInstructionFixture();
+        const { instructions, receipt, declarations, input } = fixture;
+        const first = instructions.claimOperationDecision();
+        assert.equal(instructions.claimOperationDecision(), first);
+        assert.equal(declarations[0]?.definitionId, 'operation_decision');
+        const binding = instructions.resolveBinding(first);
+        assert.equal(binding.identity, receipt.request);
+        assert.deepEqual(binding.projection, { claimScope: 'complete-prepared-operation' });
+        assert.equal(Object.isFrozen(binding.projection), true);
+        assert.notEqual(instructions.claimRequestMaterial(), first);
+        assert.throws(function foreignOwner() {
+          createFixtureInstructions(input).resolveBinding(first);
+        }, { name: 'JudgmentConstructionError' });
+        receipt.request = Object.freeze({ ...receipt.request });
+        assert.throws(function replacedRequest() {
+          instructions.resolveBinding(first);
+        }, { name: 'JudgmentConstructionError' });
+      },
+    }),
+    it({
       name: 'retains original request identity, repeated declaration, and independent owner membership',
       fn: async function originalRequest() {
         const fixture = createInstructionFixture();

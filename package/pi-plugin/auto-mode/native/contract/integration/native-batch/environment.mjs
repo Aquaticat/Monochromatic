@@ -16,6 +16,7 @@ import {createNativeMarkdownParser} from '../../native-index/native-parser.ts';
 
 /** One isolated fixture process; the provider and global network paths never dispatch. */
 export async function createEnvironment({
+  createRelevance,
   agentsFilesOverride,
   appendSystemPromptOverride,
   promptTemplateText,
@@ -217,6 +218,7 @@ export async function createEnvironment({
    readSessionBase:readActiveSessionBaseComposition,
    readSessionRun:readActiveSessionRunComposition
  });
+ const parser=await createNativeMarkdownParser({expectedVersion:'0.10.5'});
  const policyInput=createGoverningPolicyLoader({
    owner,
    readResourceToolInputs:readNativeExtensionToolInputs,
@@ -229,7 +231,8 @@ export async function createEnvironment({
    policy:{
      root:cwd,
      relativePath:'AGENTS.md',
-     requiredMode:0o600
+     requiredMode:0o600,
+     ...(createRelevance?{relevance:createRelevance({root:cwd,parse:parser.parse})}:{})
    },
    authority:{
      tier:'user',
@@ -256,9 +259,6 @@ export async function createEnvironment({
    }
  });
  await policyInput.reload();
- const parser=await createNativeMarkdownParser({
-   expectedVersion:'0.10.5'
- });
  return {
    packageRoot:pkg,
    createAgentSession,

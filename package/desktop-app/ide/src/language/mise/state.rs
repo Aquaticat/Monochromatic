@@ -67,9 +67,16 @@ pub enum MiseState {
         String,
     ),
     /// The project's mise configuration was read.
-    Provided(Provided),
+    Provided(
+        /// The directories and configuration files mise provided.
+        Provided,
+    ),
     /// The project has a mise configuration that mise could not use.
-    Failed(Failed),
+    Failed(
+        /// Mise's message,
+        ///  and the file it refused when there is one.
+        Failed,
+    ),
 }
 
 /// Facts about a state.

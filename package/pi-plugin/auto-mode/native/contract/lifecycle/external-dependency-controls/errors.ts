@@ -56,17 +56,17 @@ export class DependencyCancellationError extends Error {
 /**
  Bootstrap deadline cannot be extended by preparation or cache release.
  */
-export class DependencyDeadlineError extends Error {
+export class DependencyClockError extends Error {
   /**
    Expiry cannot be mistaken for a renewable observation failure.
    */
-  override readonly name = 'DependencyDeadlineError';
+  override readonly name = 'DependencyClockError';
 
   /**
    Preserve the original assessment deadline diagnostic.
    */
   constructor() {
-    super('Original dependency assessment deadline expired');
+    super('Original dependency assessment clock or performance target is invalid');
   }
 }
 /**

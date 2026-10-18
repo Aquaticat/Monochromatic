@@ -237,7 +237,7 @@ function selectedAfterRead({
  
  @param requiredMode - exact expected permission bits
  
- @param maxBytes - maximum admitted file size before allocation
+ @param maxBytes - maximum admitted file size, or null for complete instruction capture
  
  @param read - original synchronous reader or fixture-owned interception
  
@@ -270,7 +270,7 @@ export function observeDeclaredFile({
   const initial = initialStat(path);
   if ((!initial.isFile()) || initial.isSymbolicLink()) throw new ObservedFileTypeError(relativePath);
   if (Number(initial.mode & permissionMask) !== requiredMode) throw new ObservedFileModeError(relativePath);
-  if (initial.size > BigInt(maxBytes)) throw new ObservedFileOversizeError(relativePath);
+  if ((maxBytes !== null) && (initial.size > BigInt(maxBytes))) throw new ObservedFileOversizeError(relativePath);
   /**
    Only completed resource acquisition and observation publish these fields.
    */

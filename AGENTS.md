@@ -342,13 +342,14 @@ ODM:
 ### Exhaust evidence layers when assessing system usage
 
 EVL:
- "Should we use X better?":
- before recommending,
- report X's usage + conf,
- parallel systems meeting the same need (with content),
- TODO/workaround comments,
+ Usage/migration advice:
+ inspect usage/config,
+ parallel implementations,
+ TODOs/workarounds,
  suppressions,
- and stated policies.
+ and policies.
+Evaluate desired capabilities and target workload,
+not just today's jobs.
 
 EL4:
  Codebase health signals:
@@ -788,12 +789,14 @@ LN7:
 ### Logging and diagnostics
 
 LOG:
- Log extensively:
- entry points,
- branch decisions,
- error paths,
- async lifecycle;
- never remove logging to "clean up".
+ Log entry points,
+ branches,
+ errors,
+ and async lifecycle.
+Decision logs retain correlated inputs,
+ clause/source references,
+ model scores,
+ and fallback reasons sufficient to reconstruct a verdict.
 
 TLG:
  Production code logs only via tagged loggers from `@monochromatic-dev/module-logger`;
@@ -1127,11 +1130,14 @@ CXL:
 ### Verify at the user boundary
 
 VUB:
- After building,
- deploying,
- or installing,
- verify the artifact the way its consumer uses it;
- compiling or installing alone isn't verification.
+ After build,
+ deployment,
+ or install,
+ verify the consumer with configured extensions,
+ skills,
+ tool catalogs,
+ and the reported interaction's preceding turns;
+ compilation alone is insufficient.
 
 VB1:
  Servers:

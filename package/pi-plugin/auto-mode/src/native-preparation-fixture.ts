@@ -10,6 +10,7 @@ import {
   type FixturePreparation
 } from './native-preparation-module-fixture.ts';
 import type { ExecutionFixtureMember } from './native-execution-fixture.ts';
+import { groupContextModule } from './native-group-context-module-fixture.ts';
 
 //region Each fixture owns independent native capabilities and exact failure observations.
 /**
@@ -102,7 +103,9 @@ export function createPreparationFixture({ catalog }: Readonly<{ catalog?: strin
   /**
    Original response identity must reach source sealing unchanged.
    */
-  const response = Object.freeze({ original: 'response' });
+  const response = Object.freeze({ original: 'response', content: members.map(function nativeCall(member) {
+    return { type: 'toolCall', id: member.id, name: member.name, arguments: member.input };
+  }) });
   /**
    The original request body remains distinct from its enclosing receipt.
    */
@@ -138,11 +141,20 @@ export function createPreparationFixture({ catalog }: Readonly<{ catalog?: strin
   /**
    Complete root identifier membership starts unpublished.
    */
-  const byMember = new Map<string, object>();
+  const group = groupContextModule.createPreparedGroupContext({ response, stream: {},
+    signal: budgetFixture.controller.signal,
+    readClosure() { throw new Error('This source-preparation fixture never admits native execution'); },
+    readJudgment() { throw new Error('This source-preparation fixture has no running native judgment'); },
+    assertDependenciesCurrent() { throw new Error('This source-preparation fixture never enters native execution'); },
+  });
+  /** Native preparation remains lazy for this isolated source consumer. */
+  const native = { prepared: false };
+  /** Native declaration lookup uses the real group's published records. */
+  const byMember = group.byMember;
   /**
    Published records are shared with native instruction and execution consumers.
    */
-  const bindings = new WeakMap<object, PreparationFixtureRecord>();
+  const bindings = group.bindings;
   /**
    Observe exact callback order before injecting selected failures or reentry.
 
@@ -264,6 +276,10 @@ export function createPreparationFixture({ catalog }: Readonly<{ catalog?: strin
     },
     bindings,
     byMember,
+    preparedJSON(prepared: unknown): string {
+      if (!native.prepared) { group.prepare(prepared); native.prepared = true; }
+      return group.preparedJSON(prepared);
+    },
   };
   /**
    Actual preparation remains lazy until its original operation is invoked.

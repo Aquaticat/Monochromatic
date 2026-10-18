@@ -21,16 +21,16 @@ await describe({
         const f = createNativeHookFixture();
         const installed = installNativePolicyHooks({
           ...f.options,
-          registerJudgmentStart() {
+          registerExecutionTools() {
             expect(f.agent.executeToolBatch,).toBe(f.options.executeToolBatch,);
             expect(f.agent.streamFunction,).toBe(f.options.observedStream,);
-            return f.options.registerJudgmentStart();
+            return f.options.registerExecutionTools();
           },
         },);
         expect(installed.isDetached(),).toBe(false,);
-        expect(f.events,).toEqual(['register-start', 'register-tools',],);
+        expect(f.events,).toEqual(['register-tools',],);
         expect(installed.detach,).toThrow(NativePolicyRuntimeError,);
-        expect(f.events,).toEqual(['register-start', 'register-tools', 'disposed',],);
+        expect(f.events,).toEqual(['register-tools', 'disposed',],);
         expect(f.agent.executeToolBatch,).toBe(f.options.executeToolBatch,);
         f.controls.disposed = true;
         f.controls.active = true;
@@ -39,12 +39,12 @@ await describe({
         f.controls.active = false;
         f.events.length = 0;
         installed.detach();
-        expect(f.events,).toEqual(['disposed', 'signal', 'remove-tools', 'remove-start', 'invalidate', 'detached',],);
+        expect(f.events,).toEqual(['disposed', 'signal', 'remove-tools', 'invalidate', 'detached',],);
         expect(f.agent.executeToolBatch,).toBeUndefined();
         expect(f.agent.streamFunction,).toBe(f.options.observedStream,);
         expect(installed.isDetached(),).toBe(true,);
         installed.detach();
-        expect(f.events.length,).toBe(6,);
+        expect(f.events.length,).toBe(5,);
         expect(Object.isFrozen(installed,),).toBe(true,);
         expect(Object.isFrozen(f.agent,),).toBe(false,);
         expect(Object.isFrozen(f.options,),).toBe(false,);
@@ -73,7 +73,7 @@ await describe({
         expect(failure.errors,).toEqual([original,],);
         expect(installed.isDetached(),).toBe(false,);
         expect(f.agent.executeToolBatch,).toBe(f.options.executeToolBatch,);
-        expect(f.events.slice(-3),).toEqual(['remove-tools', 'remove-start', 'invalidate',],);
+        expect(f.events.slice(-2),).toEqual(['remove-tools', 'invalidate',],);
         state.fail = false;
         f.events.length = 0;
         installed.detach();

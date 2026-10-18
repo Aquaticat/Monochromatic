@@ -36,6 +36,28 @@ function inputs(): SemanticAdmissionInputs {
 await describe({
   name: inspectSemanticAdmissionScope.name,
   children: [
+    ...[
+      { name: 'direct command', command: 'printf "quoted; value"\nprintf done', tool: 'bash', matching: true, },
+      { name: 'non-string command', command: 42, tool: 'bash', matching: false, },
+      { name: 'absent command', command: undefined, tool: 'bash', matching: false, },
+      { name: 'another direct tool', command: 'printf done', tool: 'read', matching: false, },
+    ].map(function directCommandCase(sample,) {
+      return it({
+        name: `checks complete native ${sample.name}`,
+        fn: async function checkDirectCommand() {
+          const original = inputs();
+          const scope = inspectSemanticAdmissionScope({
+            policy: { ...policy(), programProfile: 'native-inspected-programs-v2', },
+            inputs: {
+              ...original,
+              effects: [{ prepared: { name: sample.tool, input: { command: sample.command, }, }, },],
+            },
+            expectedModel: 'fixture-model',
+          },);
+          expect(scope.state,).toBe(sample.matching ? 'matching' : 'out-of-profile',);
+        },
+      },);
+    },),
     ...['awaited-literal-single-call', 'awaited-string-result-then-literal-parallel', 'native-inspected-programs-v2', 'arbitrary-javascript',].map(function nativeProfile(profile,) {
       return it({
         name: `checks adopted native profile membership for ${profile}`,
