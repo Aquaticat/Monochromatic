@@ -8,8 +8,9 @@ test-result evidence,
 and release artifacts.
 It is research for the later interview,
 not a production routing change or a subscription change.
-The parent investigation owns new provider experiments and their results.
-The probe designs here remain unmeasured until their actual consumer runs complete.
+The parent investigation owns provider-comparison experiments.
+This note also records completed standalone disk and automatic Cache-identity probes.
+Other probe designs remain unmeasured until their actual consumer runs complete.
 
 Sources were checked on 2026-10-18.
 The repository inspection ended at `bff874861fbae3f4c043714d43b2c4c948567122`;
@@ -78,6 +79,12 @@ and gives Depot runners a job-lifetime `DEPOT_CACHE_TOKEN`.
 No documented direct sccache OIDC exchange was established in the inspected sources.
 An existing project-build authorization is insufficient evidence of remote-cache authorization.
 The experiment must not create a broad credential to conceal this limit.
+
+The standalone CI identity experiment in this note establishes an additional automatic route:
+its fresh job received `DEPOT_CACHE_TOKEN`
+and used that credential successfully for a small HTTP Cache write/read.
+No new user token or organization token was provisioned.
+The token's lifetime and untrusted-branch permissions were not independently audited.
 
 [Depot's Gradle integration][gradle] also works outside Depot compute.
 It requires build caching to be enabled and an `HttpBuildCache` pointing to Depot,
@@ -504,14 +511,88 @@ These values are neither an invoice nor a dependency-cache speed comparison.
 The uniquely named fixture disk remains for provider retention;
 no shared disk or retention setting was changed.
 
+## Automatic remote Cache authorization ledger
+
+Standalone CI
+[run `tgf0n48bmp`](https://depot.dev/orgs/l4zncjjbj5/workflows/tgf0n48bmp)
+ran committed and pushed harness `401f074072978217786371baf95d2925a9f752a0`.
+The [validated identity receipt](../audit/depot-cache-job-identity-2026-10-18.evidence.json)
+binds the independent sandbox,
+workflow and task hashes,
+provider job/attempt,
+and artifact upload/download SHA256.
+
+The job observed `DEPOT_CACHE_TOKEN`,
+`SCCACHE_WEBDAV_TOKEN`,
+and `SCCACHE_WEBDAV_ENDPOINT` already present.
+It recorded only presence booleans,
+never their values.
+It used only `DEPOT_CACHE_TOKEN`,
+with explicit organization-scoped Basic authentication,
+to write a unique 144-byte fixture to `https://cache.depot.dev`.
+The response was HTTP 201.
+The subsequent HTTP 200 read reproduced exactly the same bytes and SHA256.
+`DEPOT_TOKEN`,
+local CLI credentials,
+the Actions runtime token,
+and project OIDC exchange were excluded from this request.
+
+The inspected CLI release `v2.102.23`,
+`pkg/cmd/cargo/cargo.go`,
+calls `helpers.ResolveOrgAuth`.
+In that release's `pkg/helpers/token.go`,
+`ResolveOrgAuth` uses `ResolveStaticOrgAuth`,
+whose final fallback is `resolveJITToken`:
+
+```go
+// depot/cli/pkg/helpers/token.go, release v2.102.23
+func resolveJITToken() string {
+  if token := os.Getenv("DEPOT_JIT_TOKEN"); token != "" {
+    return token
+  }
+
+  if token := os.Getenv("DEPOT_CACHE_TOKEN"); token != "" {
+    return token
+  }
+
+  return ""
+}
+```
+
+`ResolveProjectAuth` separately attempts OIDC;
+that exchange is not in `ResolveOrgAuth`.
+This distinction explains why a successful project-build authorization alone was insufficient evidence,
+while the real Cache credential and accepted request now establish the standalone route.
+The same default sandbox had Cargo and rustc `1.97.1`,
+but `sccache --version` failed to spawn with `ENOENT`.
+An actual sccache compile therefore still requires installing or preparing that tool.
+This tiny HTTP test is not a full Cargo or Gradle cache-hit measurement.
+
+The allocation interval was 27.761 seconds.
+At the published rate,
+its gross timestamp-based compute estimate is USD $0.0027761.
+The request-to-terminal interval was 43.029 seconds.
+The initial local dispatch collector incorrectly assumed the CLI's default output was JSON.
+The retained `Run: tgf0n48bmp` line recovered the already accepted run without redispatch.
+All final metadata and artifact checks passed.
+
+The proven result is automatic Cache authorization in this standalone CI job.
+It does not establish direct OIDC exchange on ordinary GitHub-hosted compute,
+the credential's exact lifetime,
+fork-job write isolation,
+cross-job entry reuse,
+or full compiler/task-cache compatibility.
+Depot GitHub Actions runners have a separately documented automatic Cache credential;
+ordinary GitHub compute still needs a valid documented credential route for this remote-cache design.
+
 ## Sources and limits
 
 Official docs and open source establish supported interfaces and documented boundaries.
 Historical linked reports establish only their measured workloads.
-The new archive,
-disk,
-snapshot,
-and remote compiler-cache designs require real invocations before adoption.
+The persistent-disk and automatic-authorization ledgers establish their specific exercised boundaries.
+New archive comparisons,
+snapshot designs,
+and full remote compiler-cache designs require their corresponding consumer runs before adoption.
 No overall cached speedup,
 cross-provider shared archive,
 safe untrusted-writer boundary,
