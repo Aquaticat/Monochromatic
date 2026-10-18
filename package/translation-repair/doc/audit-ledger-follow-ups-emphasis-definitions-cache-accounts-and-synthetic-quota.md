@@ -234,8 +234,24 @@ and the body was not recorded.
 No second shape was added,
 and the unknown-shape path stays as it was (a warning and a budget treated as spendable).
 
+Follow-up written on 2026-10-18.
+The refusal now says what arrived,
+so the next reading settles the open point without the body being kept.
+`QuotaShapeError` ends its message with the received top-level key names and the JSON type of each
+(`received subscription:object, freeToolCalls:object`, or `received {}` for an empty object),
+or the type of a body that is no object (`received array`),
+and never a value.
+Key names are bounded to twenty listed, forty characters each, printable ASCII only,
+since a key is provider text that reaches a log.
+The meter warning carries the message whole.
+Red tests: `provider-stream/src/synthetic-quota.unit.test.ts` (five bodies)
+and `provider/src/provider-meter-state.unit.test.ts`
+(an empty body and the older shape, with values that must not appear).
+Guard demo: with the line that adds the received description removed, both cases fail.
+
 Open:
-the body of the refused reading is needed to say what the provider now returns.
+the first reading after this change says what the provider returns,
+and no second shape is read until it does.
 
 ## B672: local file times written as UTC in the account of the pairing cache version
 
