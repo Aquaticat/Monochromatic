@@ -393,8 +393,9 @@ Re-run on 2026-10-18 at the branch head after merging `main` (each number from a
   `cargo tree --edges normal,no-proc-macro --features alsa-fallback --target x86_64-unknown-linux-gnu` names 440
   lines, 2 of them path crates (`music-player`, `truepeak-core`), so 438 third-party crates, all in the file
   (the task reports 438 for that target).
-  The union over the eight targets is 501 and, with procedural-macro edges, 576; the 8 crates named in the
-  list above are the only ones of those 576 that the file lacks.
+  The union over the eight targets is 501 and, with procedural-macro edges, 576; the only ones of those 576 that
+  the file lacks are the 8 compile-time dependencies of procedural macros named in the 2026-10-15 measurement
+  (rayon, rayon-core, crossbeam-deque, rspolib, natord, snafu, snafu-derive, toml_writer).
   `twox-hash 2.1.5`, `slint 1.18.1`, `symphonia 0.6.1` and `turso_core 0.8.2` are entries of the file.
 - A debug build with the file embedded prints it byte for byte with `--licenses` (2,004,190 bytes), also into a closed
   pipe with exit status 0.
