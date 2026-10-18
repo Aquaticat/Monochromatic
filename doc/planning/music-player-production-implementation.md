@@ -235,8 +235,21 @@ in the worktree, rerun that platform's verification as a systemd unit, forced fr
 files, `git -C /var/home/user/Monochromatic merge --ff-only <branch>`, push, update this file; run the real behavior
 before saying it matches, QAB):
 
-- 2026-10-15, agent `a861ba9cb4849c4bd`, branch `feat/music-player-license-notices`, worktree
-  `music-player-licenses` (head `56ea2b8611` plus this entry): third-party license notices for every release
+- 2026-10-18, READY TO MERGE, NOT merged and NOT released (the agent that finished it was told not to merge, release
+  or bump versions): branch `feat/music-player-license-notices`, worktree `music-player-licenses`, `main` merged in at
+  `60ba6d71bf`, code head `29ccfb516b` (the commits after it only change docs). Run fresh on that head: notices tasks
+  (desktop 438 crates for x86_64 Linux, cross-checked with `cargo tree` as 440 lines minus 2 path crates; 501 across
+  the eight targets; 570 cargo-about entries; Android 121 libraries against 124 `group:artifact` entries minus 3 BOMs,
+  232 native crates), desktop verification (1,466 nextest tests with 1 skipped, clippy and `lint:slint` clean),
+  Android verification (detekt and `lintDebug` clean, 1,289 unit tests, 0 failures, 127 result files), a debug build
+  whose `--licenses` output equals the file byte for byte, and release dry run `39094642435` green on every job
+  (notices, six desktop jobs, two Alpine jobs, Android, checksums, release), each desktop job comparing `--licenses` to
+  the notices job's 2,004,178 byte file. A first Android unit-test run failed only on a Gradle journal lock held by
+  another agent's container in the shared `aps-gradle-home`; the rerun passed. Not done: ff-merge to `main`, push of
+  `main`, the version bump that releases the notices; not run: the Windows and macOS binaries on real machines, any
+  device, a real release. Merge steps: `git merge main --no-edit` in the worktree, rerun both verification units, then
+  `git -C /var/home/user/Monochromatic merge --ff-only feat/music-player-license-notices`, push, bump both manifests.
+  Original entry (2026-10-15, agent `a861ba9cb4849c4bd`): third-party license notices for every release
   asset, closing product gap (4) "no third-party license notices" of task 92. Decision
   `doc/decision/music-player-third-party-licenses.md`. cargo-about 0.9.2 (mise tool) writes the Rust crate texts
   against an accepted list in `desktop-app/about.toml` and `android-app/rust/about.toml`; `app.cash.licensee` 1.14.1
