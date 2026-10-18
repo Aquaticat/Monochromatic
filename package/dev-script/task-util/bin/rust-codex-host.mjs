@@ -25,6 +25,16 @@ delete environment.ANTHROPIC_API_KEY;
 delete environment.CODEX_API_KEY;
 delete environment.CODEX_BASH_LIMIT_HOST_FIXTURE;
 try {
+  // The official standalone Codex executable needs either an admitted system Bubblewrap or its bundled resource.
+  run('owned-package-manager-help', 'apt-get', ['--help']);
+  run('owned-package-index-refresh', 'sudo', ['--non-interactive', 'apt-get', 'update']);
+  run('owned-bubblewrap-prerequisite-install', 'sudo', ['--non-interactive', 'apt-get', 'install', '--assume-yes', '--no-install-recommends', 'bubblewrap']);
+  run('owned-bubblewrap-package-version', 'dpkg-query', ['--show', '--showformat=${binary:Package}\t${Version}\n', 'bubblewrap']);
+  run('owned-bubblewrap-package-verification', 'dpkg', ['--verify', 'bubblewrap']);
+  run('owned-bubblewrap-version', 'bwrap', ['--version']);
+  run('owned-bubblewrap-help', 'bwrap', ['--help']);
+  run('owned-bubblewrap-real-namespace-probe', 'bwrap', ['--unshare-user', '--unshare-pid', '--unshare-net', '--ro-bind', '/', '/', '--proc', '/proc', '--dev', '/dev', '--', '/usr/bin/true']);
+  writeFileSync(join(evidence, 'system-bubblewrap.json'), JSON.stringify({ path:'/usr/bin/bwrap', sha256:hash(readFileSync('/usr/bin/bwrap')), installationBoundary:'This disposable CI sandbox only; no account settings or prepared image tag changed' }, null,2) + '\n');
   run('official-host-version', manifest.tools.codex.path, ['--version']);
   run('official-host-help', manifest.tools.codex.path, ['--no-daemon', 'app-server', '--help']);
   const project = join(root, 'package/codex-plugin/bash-limit');
