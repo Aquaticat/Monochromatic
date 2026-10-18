@@ -90,17 +90,23 @@ including issues and pull requests,
 returned no result.
 That is not a claim about the separate Git mailing-list archive.
 
-1.  Fault: no upstream fault is established;
+1.  Fault:
+    no upstream fault is established;
     the command used an unsupported option.
-2.  Fixability: adding an alias could be a feature request,
+2.  Fixability:
+    adding an alias could be a feature request,
     but it is unnecessary for the intended inventory.
-3.  Supported use: recursive enumeration is explicitly supported as `-r`.
-4.  Contribution policy: `.github/CONTRIBUTING.md` and `.github/PULL_REQUEST_TEMPLATE.md`
+3.  Supported use:
+    recursive enumeration is explicitly supported as `-r`.
+4.  Contribution policy:
+    `.github/CONTRIBUTING.md` and `.github/PULL_REQUEST_TEMPLATE.md`
     direct contributions and bug reports to Git's mailing list,
     with GitGitGadget as an optional submission bridge.
-5.  Maintainer disposition: no maintainer response about adding this alias was collected;
+5.  Maintainer disposition:
+    no maintainer response about adding this alias was collected;
     the documented spelling already satisfies this task.
-6.  Prototype: not applicable because the upstream-fault premise fails.
+6.  Prototype:
+    not applicable because the upstream-fault premise fails.
 
 There is nothing to file or add upstream.
 No third-party source was modified and no external message was sent.
