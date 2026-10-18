@@ -86,7 +86,10 @@ export type SnapshotRequestMemoStats = {
  Surface of the synchronous API client the memo wraps.
  */
 export type SnapshotRequestClient = {
-  apiRequest: (method: string, params?: unknown,) => unknown;
+  apiRequest: (
+    method: string,
+    params?: unknown,
+  ) => unknown;
 };
 
 /**
@@ -190,10 +193,16 @@ export function memoizeSnapshotRequests({
      Empty store registered under the snapshot.
      */
     const created = new Map<string, unknown>();
-    responsesBySnapshot.set(snapshot, created,);
+    responsesBySnapshot.set(
+      snapshot,
+      created,
+    );
     return created;
   }
-  client.apiRequest = function memoizedApiRequest(method: string, params?: unknown,): unknown {
+  client.apiRequest = function memoizedApiRequest(
+    method: string,
+    params?: unknown,
+  ): unknown {
     if (method === RELEASE_REQUEST) {
       /**
        Snapshot being given back to the native server.
@@ -205,16 +214,37 @@ export function memoizeSnapshotRequests({
         totals.releases += 1;
         rl.debug(`dropped memo for released snapshot ${String(released,)}`,);
       }
-      return Reflect.apply(forward, client, [method, params,],);
+      return Reflect.apply(
+        forward,
+        client,
+        [
+          method,
+          params,
+        ],
+      );
     }
     if (!MEMOIZED_SNAPSHOT_REQUESTS.has(method,))
-      return Reflect.apply(forward, client, [method, params,],);
+      return Reflect.apply(
+        forward,
+        client,
+        [
+          method,
+          params,
+        ],
+      );
     /**
      Snapshot this request is addressed to.
      */
     const snapshot = snapshotOf(params,);
     if (snapshot === NO_SNAPSHOT)
-      return Reflect.apply(forward, client, [method, params,],);
+      return Reflect.apply(
+        forward,
+        client,
+        [
+          method,
+          params,
+        ],
+      );
     /**
      Responses already held for that snapshot, created on its first memoized request.
      */
@@ -235,7 +265,14 @@ export function memoizeSnapshotRequests({
     /**
      Answer from the native server, which throws for a refused request before anything is stored.
      */
-    const answer = Reflect.apply(forward, client, [method, params,]);
+    const answer = Reflect.apply(
+      forward,
+      client,
+      [
+        method,
+        params,
+      ]
+    );
     if (held.size >= maximumResponses) {
       /**
        Key stored first, which a Map yields first.
@@ -249,7 +286,10 @@ export function memoizeSnapshotRequests({
         rl.debug(`snapshot ${String(snapshot,)} reached the bound of ${String(maximumResponses,)} responses; oldest are dropped from now on`,);
       }
     }
-    held.set(key, answer,);
+    held.set(
+      key,
+      answer,
+    );
     return answer;
   };
   rl.debug(`memoizing ${String(MEMOIZED_SNAPSHOT_REQUESTS.size,)} request kinds, at most ${String(maximumResponses,)} responses per snapshot`,);
@@ -258,9 +298,15 @@ export function memoizeSnapshotRequests({
       return {
         ...totals,
         entries: [...responsesBySnapshot.values(),]
-          .reduce(function addSize(sum, responses,): number {
+          .reduce(
+            function addSize(
+              sum,
+              responses,
+            ): number {
             return sum + responses.size;
-          }, 0,),
+          },
+            0,
+          ),
       };
     },
   };

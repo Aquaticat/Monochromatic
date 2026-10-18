@@ -510,7 +510,8 @@ export function closeSemanticBridge(): void {
     bridgeState.snapshot = NO_SNAPSHOT;
   }
   if (bridgeState.requestMemo !== NO_REQUEST_MEMO) {
-    rl.debug(`request memo totals ${JSON.stringify(bridgeState.requestMemo.stats(),)}`,);
+    rl.debug(`request memo totals ${JSON.stringify(bridgeState.requestMemo
+      .stats(),)}`,);
     bridgeState.requestMemo = NO_REQUEST_MEMO;
   }
   if (bridgeState.api !== NO_API) {
