@@ -574,6 +574,18 @@ before saying it matches, QAB):
   no entry for the About heading and Licenses rows; the Android channel is still named "Analysis problems". The
   repo cache was at 10.28 GB; a real `cache-prune` run (`39109951532`) deleted four superseded entries (2.33 GB), now
   7.95 GB.
+  RELEASED `music-player-v0.1.7` on 2026-10-18 (run `39116435211`, first attempt, green): the "Made with Slint" badge
+  at the top of the release notes (Slint license section 2(b); also in the published body, checked with `gh release
+  view`), the `license` icon on the Android Licenses row, and D132 in `design/decisions.md`. Eleven files;
+  `sha256sum --check` passed for all eleven, attestation exit 0 for all eleven, APK certificate `9de6e9a4...6926`,
+  Linux x64 and musl x64 (in `alpine:3.24`) print `music-player 0.1.7`, `pefile` shows Subsystem 2 on the three
+  Windows exes. Fresh verification before the bump: nextest 1,546 passed, 1 skipped; Android 1,361 unit tests,
+  detekt and lintDebug clean. Not seen: the new Android icon in the running app (the emulator crashed on three
+  launches, gfxstream SIGSEGV, SIGABRT and a crash-consent dialog; the vector path equals upstream
+  `license_24px.svg` byte for byte), any Windows or macOS binary, a real device. A push of merge commits was blocked
+  once by the forbidden-strings guard on another thread's evidence file (`hashicorp-tf-password` on a fixture token
+  in `doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json`, not mine and not bypassed); the same
+  commits reached `origin/main` on a later automatic retry.
 
 - 2026-10-18, license polish after 0.1.6, branch `fix/music-player-license-polish`, worktree `music-player-licpolish`;
   not merged to `main`, no version bump. Three commits: the Slint attribution badge (`#MadeWithSlint`, the
