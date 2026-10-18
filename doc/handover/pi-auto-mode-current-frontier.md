@@ -2,6 +2,40 @@
 
 ## Latest verified boundary and user steering
 
+Subsequent affected-catalog checks on private `FGiMf5` pass startup relevance
+and judgment preparation.
+The host-isolation catalog passes passive observer,
+passive prompt and permission-after-navigation checks,
+then fails prohibition-after-navigation at the assessment-count assertion:
+actual 2,
+expected 1.
+The independently frozen predecessor `68e7ce538a` reproduces the identical failure against `LytMAt`.
+This is not established as a formatting regression.
+`action-policy/decision-core.mjs` explicitly adjudicates a complete operation after a non-approve clause outcome;
+the stale assertion does not represent that branch.
+MiMo has received the evidence and a scoped request to preserve permission count 1,
+prohibition count 2,
+denial,
+zero executions and stale-operation rejection.
+No loose positive-count assertion is authorized.
+The receipt confirms RPC `follow_up` acceptance,
+not completion of that correction.
+
+The latest committed documentation renders through the package renderer:
+30 files,
+no broken links.
+Commit `9f4f676ca2` contains exactly the intended five documentation and patch paths.
+GitHub issue 1768 is open with `needs-triage`.
+
+The next private native cluster is compaction-file-path projection,
+frozen from `8b34f75c03` in `native-compaction-candidate-sDcd8G`.
+It retains explicit native-iterator receiver ownership,
+fills the declaration documentation gaps,
+and separates the changed-field branch into one statement per line.
+Its formatter,
+types and real built consumer results are not yet claimed.
+No maintained native source is changed by that experiment.
+
 The user keeps root `CPN` unchanged and places the checkpoint lesson in package docs.
 The user also states the UX requirement:
 reasonable consumers must use the tool correctly without unexpected behavior;
