@@ -8,25 +8,16 @@
  */
 
 import {
-  readdirSync,
-  readFileSync,
-} from 'node:fs';
-import {
-  dirname,
-  join,
-} from 'node:path';
-
-import {
   describe,
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import {
+  pathUnderSrc,
+  readPackageSource,
+  type SourceText,
+} from './source-scan.test-fixture.ts';
 import { expectRecordAsListed, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scan-findings.test-fixture.ts';
-
-/**
- This package's source directory.
- */
-const SRC = import.meta.dirname;
 
 /**
  Declaration that opens a sheet builder.
@@ -91,41 +82,28 @@ function buildersIn({ text, }: { readonly text: string; },): readonly string[] {
 }
 
 /**
- Every non-test source file under the package's source directory.
-
- @returns Paths relative to the source directory
-
- @example
- ```ts
- const files = sourceFiles();
- ```
- */
-function sourceFiles(): readonly string[] {
-  return readdirSync(SRC, { recursive: true, encoding: 'utf8', },)
-    .filter(function isSource(name,): boolean {
-      return name.endsWith('.ts',)
-        && (!name.endsWith('.test.ts',))
-        && (!name.endsWith('.test-fixture.ts',));
-    },);
-}
-
-/**
  Text of every rendered-sheets fixture.
+
+ @param files - every file of the family
 
  @returns The fixtures, joined
 
  @example
  ```ts
- const fixtures = fixtureText();
+ const fixtures = fixtureText({ files, },);
  ```
  */
-function fixtureText(): string {
-  return readdirSync(SRC, { encoding: 'utf8', },)
-    .filter(function isSheetFixture(name,): boolean {
+function fixtureText({ files, }: { readonly files: readonly SourceText[]; },): string {
+  return files
+    .filter(function isSheetFixture({ path, },): boolean {
+      /**
+       Path under the package's source directory.
+       */
+      const name = pathUnderSrc({ path, },);
       return name.startsWith('rendered-sheets',) && name.endsWith('.test-fixture.ts',);
     },)
-    .map(function read(name,): string {
-      return readFileSync(join(SRC, name,), 'utf8',);
+    .map(function read({ text, },): string {
+      return text;
     },)
     .join('\n',);
 }
@@ -137,15 +115,23 @@ await describe({
       name: 'RENDERS EVERY SHEET BUILDER THE PACKAGE DEFINES, so "every sheet" means every sheet',
       fn: async () => {
         /**
+         Every file of every family package.
+         */
+        const files = await readPackageSource();
+        /**
          Every builder, by name.
          */
-        const builders = sourceFiles().flatMap(function buildersOf(name,): readonly string[] {
-          return buildersIn({ text: readFileSync(join(SRC, name,), 'utf8',), },);
-        },);
+        const builders = files
+          .filter(function isSource({ isTest, },): boolean {
+            return !isTest;
+          },)
+          .flatMap(function buildersOf({ text, },): readonly string[] {
+            return buildersIn({ text, },);
+          },);
         /**
          The fixtures' text.
          */
-        const fixtures = fixtureText();
+        const fixtures = fixtureText({ files, },);
         expectRecordAsListed({
           found: {
             // The census reads the builders at all: two it must find.

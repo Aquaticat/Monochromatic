@@ -5,10 +5,10 @@
  start, so a task that starts a built command must name it, and an entry file
  must hand the guard the environment it runs in.
 
- WHAT THE SCAN READS, for each runner entry `src/build-entries.ts` lists (the
- library index left out):
+ WHAT THE SCAN READS, for each runner entry the `src/build-entries.ts` of every family package lists
+ (the library indexes left out):
 
- - `mise.toml`: every task whose `run` names `dist/final/node/<command>.mjs`
+ - the `mise.toml` of every family package, read as one: every task whose `run` names `dist/final/node/<command>.mjs`
    must set `env.TRANSLATION_REPAIR_STARTED_BY` to that same `<command>`, and
    every command must have such a task;
  - the entry's source: its one `reportingRefusals` call must be handed
@@ -24,13 +24,10 @@
 
  THE FIXTURE CASE COMES FIRST, so the package case is read against a scan shown
  able to find each failure (ledger M21). Fixtures are cat-themed; the package
- case reads this package's own `mise.toml` and source.
+ case reads the family's own `mise.toml` files and source.
 
  @module
  */
-
-import { readFile, } from 'node:fs/promises';
-import { join, } from 'node:path';
 
 import {
   describe,
@@ -38,7 +35,6 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { nodeEntries, } from '@monochromatic-dev/translation-repair-coverage-census';
 import {
   identifierName,
   isTreeNode,
@@ -46,6 +42,8 @@ import {
   nodesUnder,
   parseSource,
   readPackageSource,
+  readTaskFiles,
+  runnerEntriesOf,
   type SourceText,
   type TreeNode,
   unwrapped,
@@ -346,27 +344,22 @@ await describe({
             + 'command has a task, and every entry hands reportingRefusals the process\'s environment',
           fn: async () => {
             /**
-             Every runner the build makes and the path of its entry, relative to `src`.
+             Every file of the family.
              */
-            const entries = [...nodeEntries,]
-              .filter(function isRunner([name,],): boolean {
-                return name !== 'index';
-              },)
-              .map(function entryOf([name, path,],): readonly [string, string,] {
-                return [name, path.slice('./src/'.length,),];
-              },);
+            const files = await readPackageSource();
+            /**
+             Every runner the family builds and the location of its entry.
+             */
+            const entries = runnerEntriesOf({ files, },).map(function entryOf({ name, path, },): readonly [string, string,] {
+              return [name, path,];
+            },);
             expectNoFindings({
               findings: taskRunnerFindings({
-                mise: await readFile(
-                  join(
-                    import.meta.dirname,
-                    '..',
-                    'mise.toml',
-                  ),
-                  'utf8',
-                ),
+                mise: (await readTaskFiles()).map(function textOf({ text, },): string {
+                  return text;
+                },).join('\n',),
                 entries,
-                files: await readPackageSource(),
+                files,
               },),
             },);
           },

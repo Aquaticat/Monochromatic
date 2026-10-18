@@ -23,11 +23,18 @@ import {
 import {
   isTreeNode,
   parseSource,
+  pathUnderSrc,
   readPackageSource,
   type SourceText,
   type TreeNode,
 } from './source-scan.test-fixture.ts';
 import { expectNoFindings, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scan-findings.test-fixture.ts';
+
+/**
+ The one module every runner package keeps beside its own runners (the split gave each of them a `build-entries.ts`
+ exporting the same `runnerEntrySources`), whose name the packages share by design: each reads its own list.
+ */
+const PER_PACKAGE_MODULE = 'build-entries.ts';
 
 /**
  Names of the functions one file exports where it declares them: function
@@ -91,7 +98,10 @@ function sharedExportedNames({ files, }: { readonly files: readonly SourceText[]
   }
   return [...exporters,]
     .filter(function shared([, paths,],): boolean {
-      return paths.length > 1;
+      return (paths.length > 1)
+        && (!paths.every(function isPerPackage(path,): boolean {
+          return pathUnderSrc({ path, },) === PER_PACKAGE_MODULE;
+        },));
     },)
     .map(function described([name, paths,],): string {
       return `${name}: ${paths.toSorted()

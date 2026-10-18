@@ -35,7 +35,6 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { nodeEntries, } from '@monochromatic-dev/translation-repair-coverage-census';
 import {
   identifierName,
   isTreeNode,
@@ -43,6 +42,7 @@ import {
   nodesUnder,
   parseSource,
   readPackageSource,
+  runnerEntriesOf,
   type SourceText,
   type TreeNode,
   unwrapped,
@@ -74,9 +74,9 @@ const ALLOWED: Readonly<Record<string, string>> = {
 };
 
 /**
- Folder the runner entries sit in, as the scan names paths.
+ Folder the runner entries sit in, under a family package's `src`.
  */
-const RUNNER_FOLDER = 'corpus-run/';
+const RUNNER_FOLDER = '/corpus-run/';
 
 /**
  Name of the property a member expression or object property names, as
@@ -223,7 +223,7 @@ function commandLineReadsOf({ file, }: { readonly file: SourceText; },): {
   /**
    Runner this file is, by its name, when it sits among the runners.
    */
-  const runner = file.path.startsWith(RUNNER_FOLDER,)
+  const runner = `/${file.path}`.includes(RUNNER_FOLDER,)
     ? basename(
       file.path,
       '.ts',
@@ -485,18 +485,19 @@ await describe({
         + 'the build makes hands its line on',
       fn: async () => {
         /**
+         Every file of the family.
+         */
+        const files = await readPackageSource();
+        /**
          Runner entry files, as the scan names paths.
          */
-        const runners = [...nodeEntries,]
-          .filter(function isRunner([name,],): boolean {
-            return name !== 'index';
-          },)
-          .map(function scanPath([, path,],): string {
-            return path.slice('./src/'.length,);
+        const runners = runnerEntriesOf({ files, },)
+          .map(function scanPath({ path, },): string {
+            return path;
           },)
           .toSorted();
         expectRecordAsListed({
-          found: commandLineReads({ files: await readPackageSource(), },),
+          found: commandLineReads({ files, },),
           listed: {
             reads: Object.keys(ALLOWED,).toSorted(),
             handOffs: runners,

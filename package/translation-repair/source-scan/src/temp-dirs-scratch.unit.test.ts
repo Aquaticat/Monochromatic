@@ -325,7 +325,7 @@ function tempDirCalls({ files, }: { readonly files: readonly SourceText[]; },): 
 /**
  Suffix of the module path a bare `scratchDir` import must come from.
  */
-const SCRATCH_DIR_MODULE_SUFFIX = 'test-fixture/scratch-dir.test-fixture.ts';
+const SCRATCH_DIR_MODULE_SUFFIX = 'scratch-dir.test-fixture.ts';
 
 /**
  Node kinds a call's result passes through unchanged, for finding where

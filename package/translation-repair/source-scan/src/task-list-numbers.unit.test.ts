@@ -610,7 +610,7 @@ await describe({
           return path.startsWith(join('doc', 'audit-ledger-process-',),);
         },),).toBe(true,);
         expect(files.some(function isSource({ path, },): boolean {
-          return path.startsWith('src',) && path.endsWith('.ts',);
+          return path.endsWith('.ts',);
         },),).toBe(true,);
         /**
          Every citation found.

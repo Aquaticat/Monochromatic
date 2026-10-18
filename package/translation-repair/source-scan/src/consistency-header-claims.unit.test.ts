@@ -17,24 +17,23 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-/**
- The text of a source file of this package.
+import { sourcePathOf, } from './source-scan.test-fixture.ts';
 
- @param name - file name inside `src`
+/**
+ The text of a source file of the family.
+
+ @param name - package directory and file name inside its `src`
 
  @returns The file's text
 
  @example
  ```ts
- const header = sourceOf({ name: 'consistency-shown-edge.ts', },);
+ const header = sourceOf({ name: 'consistency/consistency-shown-edge.ts', },);
  ```
  */
 function sourceOf({ name, }: { readonly name: string; },): string {
   return readFileSync(
-    new URL(
-      name,
-      import.meta.url,
-    ),
+    sourcePathOf({ path: name, },),
     'utf8',
   );
 }

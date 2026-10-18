@@ -8,6 +8,8 @@ import {
   join,
 } from 'node:path';
 
+import { familyPackages, } from './source-scan.test-fixture.ts';
+
 //region Living repository-level docs
 // The repository-level translation-repair docs that state current fact and are
 // kept current (ledger D26 and D30): the decision records, the canonical
@@ -28,6 +30,24 @@ export const REPOSITORY_ROOT: string = join(
   '..',
   '..',
   '..',
+);
+
+/**
+ The package the family was split out of, from the repository root. Its docs and README stay there until the docs
+ move to the family, so the guards over package-level docs read it beside every family package's own.
+ */
+export const LEGACY_PACKAGE: string = join(
+  'package',
+  'module',
+  'translation-repair',
+);
+
+/**
+ Directory holding the family's packages, from the repository root.
+ */
+export const FAMILY_PACKAGES: string = join(
+  'package',
+  'translation-repair',
 );
 
 /**
@@ -131,6 +151,90 @@ function linkTargets({ text, }: { readonly text: string; },): readonly string[] 
         fragment,
       ),];
     },);
+}
+
+/**
+ The Markdown a package keeps: every `.md` directly under its `doc`, sorted, then its README.
+
+ @param root - package directory, from the repository root
+
+ @returns Paths from the repository root; a doc directory or README the package lacks adds none
+
+ @example
+ ```ts
+ const docs = await markdownDocsIn({ root: 'package/translation-repair/archive', },);
+ ```
+ */
+async function markdownDocsIn({ root, }: { readonly root: string; },): Promise<readonly string[]> {
+  /**
+   Names directly in the package directory.
+   */
+  const entries = await readdir(join(
+    REPOSITORY_ROOT,
+    root,
+  ),);
+  /**
+   Markdown directly under its `doc`.
+   */
+  const docs = entries.includes('doc',)
+    ? (await readdir(join(
+      REPOSITORY_ROOT,
+      root,
+      'doc',
+    ),))
+      .filter(function isMarkdown(name,): boolean {
+        return name.endsWith('.md',);
+      },)
+      .toSorted()
+      .map(function underDoc(name,): string {
+        return join(
+          root,
+          'doc',
+          name,
+        );
+      },)
+    : [];
+  return [
+    ...docs,
+    ...(entries.includes('README.md',) ? [join(root, 'README.md',),] : []),
+  ];
+}
+
+/**
+ The package-level Markdown the guards read: the docs and README of the package the family was split out of,
+ which still holds the family's docs, then each family package's README and docs. The family's own docs
+ replace the legacy ones when they move, and this read follows them without a change.
+
+ @returns Paths from the repository root, the legacy package first
+
+ @example
+ ```ts
+ const paths = await readPackageDocPaths();
+ ```
+ */
+export async function readPackageDocPaths(): Promise<readonly string[]> {
+  /**
+   Packages that stay under `package/module`, among them the legacy one while it holds docs.
+   */
+  const legacyParents = await readdir(join(
+    REPOSITORY_ROOT,
+    dirname(LEGACY_PACKAGE,),
+  ),);
+  /**
+   Roots whose Markdown is read.
+   */
+  const roots = [
+    ...(legacyParents.includes(basename(LEGACY_PACKAGE,),) ? [LEGACY_PACKAGE,] : []),
+    ...(await familyPackages()).map(function underFamily(name,): string {
+      return join(
+        FAMILY_PACKAGES,
+        name,
+      );
+    },),
+  ];
+  return (await Promise.all(roots.map(function docsOf(root,): Promise<readonly string[]> {
+    return markdownDocsIn({ root, },);
+  },),)).flat();
 }
 
 /**

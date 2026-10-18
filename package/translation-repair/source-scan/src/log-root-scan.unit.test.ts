@@ -12,23 +12,16 @@
  */
 
 import {
-  readdir,
-  readFile,
-} from 'node:fs/promises';
-import { join, } from 'node:path';
-
-import {
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import {
+  readPackageSource,
+  type SourceText,
+} from './source-scan.test-fixture.ts';
 import { expectNoFindings, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scan-findings.test-fixture.ts';
-
-/**
- Source directory this scan reads, which is the one holding this file.
- */
-const SOURCE_DIR = import.meta.dirname;
 
 /**
  How a context-less root begins, at module scope.
@@ -71,25 +64,19 @@ function rootsIn(
 }
 
 /**
- Source files the scan reads: every `.ts` under `src` but tests and fixtures.
+ Source files the scan reads: every `.ts` under the `src` of every family package but tests and fixtures.
 
- @returns Paths relative to the source directory
+ @returns Files, each located by its package directory and path under `src`
 
  @example
  ```ts
  const files = await sourceFiles();
  ```
  */
-async function sourceFiles(): Promise<readonly string[]> {
-  return (await readdir(
-    SOURCE_DIR,
-    { recursive: true, },
-  ))
-    .filter(function isSource(name,): boolean {
-      return name.endsWith('.ts',)
-        && (!name.endsWith('.test.ts',))
-        && (!name.endsWith('.test-fixture.ts',))
-        && (!name.endsWith('.d.ts',));
+async function sourceFiles(): Promise<readonly SourceText[]> {
+  return (await readPackageSource())
+    .filter(function isSource({ path, isTest, },): boolean {
+      return (!isTest) && (!path.endsWith('.d.ts',));
     },);
 }
 
@@ -112,21 +99,11 @@ await describe({
         /**
          Every root declaration per source file.
          */
-        const scanned = await Promise.all((await sourceFiles()).map(async function scanOne(name,): Promise<{
+        const scanned = (await sourceFiles()).map(function scanOne({ path: name, text, },): {
           readonly name: string;
           readonly plain: readonly string[];
           readonly context: readonly string[];
-        }> {
-          /**
-           File contents.
-           */
-          const text = await readFile(
-            join(
-              SOURCE_DIR,
-              name,
-            ),
-            'utf8',
-          );
+        } {
           return {
             name,
             plain: rootsIn({
@@ -138,7 +115,7 @@ await describe({
               shape: CONTEXT_ROOT,
             },),
           };
-        },),);
+        },);
 
         // The scan read real roots, so an empty `hasContextRoot` list is not a
         // scan that read nothing.

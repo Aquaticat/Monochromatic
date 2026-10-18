@@ -1,7 +1,8 @@
 /**
- The texts the package's reference guards read, shared so each guard reads the
- same set: the package's TypeScript under `src`, its docs, its README and its
- task file, and the living repository-level docs.
+ The texts the family's reference guards read, shared so each guard reads the
+ same set: the TypeScript under every family package's `src`, the docs and README of the
+ package the family was split out of, each family package's README and task file, and
+ the living repository-level docs.
 
  MOVED OUT OF `task-list-numbers.unit.test.ts` when a second guard needed the
  same set (ledger D33), since two copies of one reader drift apart.
@@ -9,20 +10,27 @@
  @module
  */
 
+import { readFile, } from 'node:fs/promises';
 import {
-  readdir,
-  readFile,
-} from 'node:fs/promises';
-import { join, } from 'node:path';
+  join,
+  relative,
+} from 'node:path';
 
 import {
+  FAMILY_PACKAGES,
+  LEGACY_PACKAGE,
   readLivingRepositoryDocs,
+  readPackageDocPaths,
   REPOSITORY_ROOT,
 } from './living-docs.test-fixture.ts';
-import { readPackageSource, } from './source-scan.test-fixture.ts';
+import {
+  familyPackages,
+  readPackageSource,
+} from './source-scan.test-fixture.ts';
 
 /**
- One file a guard reads, named from the package root, or from the repository
+ One file a guard reads, named from its package root (a source file by its package directory and its path under
+ `src`, as `readPackageSource` names it), or from the repository
  root for a living repository-level doc.
 
  @example
@@ -32,7 +40,7 @@ import { readPackageSource, } from './source-scan.test-fixture.ts';
  */
 export type PackageText = {
   /**
-   Path from the package root, which names locations.
+   Path from the package root, or package directory and path under `src` for source, which names locations.
    */
   readonly path: string;
 
@@ -43,8 +51,29 @@ export type PackageText = {
 };
 
 /**
- Every file the guard reads: the package's TypeScript under `src`, its docs,
- its README and its task file.
+ Name of a package-level doc as a guard names it: from its package root, the legacy package's by the
+ bare `doc/<name>.md` or `README.md`, a family package's by its directory.
+
+ @param path - path from the repository root
+
+ @returns The path from the package root, led by the package directory for a family package
+
+ @example
+ ```ts
+ const named = packageRootedName({ path: 'package/translation-repair/archive/README.md', },); // 'archive/README.md'
+ ```
+ */
+function packageRootedName({ path, }: { readonly path: string; },): string {
+  return relative(
+    path.startsWith(LEGACY_PACKAGE,) ? LEGACY_PACKAGE : FAMILY_PACKAGES,
+    path,
+  );
+}
+
+/**
+ Every file the guard reads: the TypeScript under every family package's `src`, the docs and README of the
+ package the family was split out of, each family package's README and docs, and each family package's
+ task file.
 
  @returns Files with their text
 
@@ -55,43 +84,33 @@ export type PackageText = {
  */
 export async function readPackageTexts(): Promise<readonly PackageText[]> {
   /**
-   Package root, which holds `src`.
+   Docs and READMEs, from the repository root.
    */
-  const root = join(
-    import.meta.dirname,
-    '..',
-  );
+  const docs = await readPackageDocPaths();
   /**
-   Markdown files under `doc`.
+   Task files, one per family package, from the repository root.
    */
-  const docs = (await readdir(join(
-    root,
-    'doc',
-  ),))
-    .filter(function isMarkdown(name,): boolean {
-      return name.endsWith('.md',);
-    },)
-    .map(function underDoc(name,): string {
-      return join(
-        'doc',
-        name,
-      );
-    },);
+  const tasks = (await familyPackages()).map(function taskFileOf(name,): string {
+    return join(
+      FAMILY_PACKAGES,
+      name,
+      'mise.toml',
+    );
+  },);
   /**
-   Non-source files, read from the package root.
+   Non-source files, read from the repository root and named from their package root.
    */
   const others = await Promise.all([
     ...docs,
-    'README.md',
-    'mise.toml',
+    ...tasks,
   ].map(async function read(
     path,
   ): Promise<PackageText> {
     return {
-      path,
+      path: packageRootedName({ path, },),
       text: await readFile(
         join(
-          root,
+          REPOSITORY_ROOT,
           path,
         ),
         'utf8',
@@ -99,14 +118,11 @@ export async function readPackageTexts(): Promise<readonly PackageText[]> {
     };
   },),);
   /**
-   Source and test files, named from the package root.
+   Source and test files, named by package directory and path under `src`.
    */
   const source = (await readPackageSource()).map(function fromRoot(file,): PackageText {
     return {
-      path: join(
-        'src',
-        file.path,
-      ),
+      path: file.path,
       text: file.text,
     };
   },);

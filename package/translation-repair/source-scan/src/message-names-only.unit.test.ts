@@ -30,9 +30,6 @@
  @module
  */
 
-import { readdir, readFile, } from 'node:fs/promises';
-import { join, } from 'node:path';
-
 import {
   describe,
   expect,
@@ -54,11 +51,6 @@ import {
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/scan-findings.test-fixture.ts';
 
 //region Marked message inventory
-
-/**
- Source directory this scan reads, which is the one holding this file.
- */
-const SOURCE_DIR = import.meta.dirname;
 
 /**
  Key naming the byte offset a JSON read reports, or nothing when it has none.
@@ -675,7 +667,7 @@ function isBareIdentifier({ argument, }: { readonly argument: string; },): boole
 
  @example
  ```ts
- const declared = classesIn({ source: await readFile(path, 'utf8',), },);
+ const declared = classesIn({ source: text, },);
  ```
  */
 function classesIn({ source, }: { readonly source: string; },): readonly ScannedClass[] {
@@ -746,9 +738,9 @@ function classesIn({ source, }: { readonly source: string; },): readonly Scanned
 }
 
 /**
- Reads every non-test source file and returns the classes they declare.
+ Reads every non-test source file of every family package and returns the classes they declare.
 
- @returns Every scanned class across the package source
+ @returns Every scanned class across the family's source
 
  @example
  ```ts
@@ -757,32 +749,15 @@ function classesIn({ source, }: { readonly source: string; },): readonly Scanned
  */
 async function scanSource(): Promise<readonly ScannedClass[]> {
   /**
-   Every entry under the source directory, at any depth.
-   */
-  const entries = await readdir(SOURCE_DIR, {
-    recursive: true,
-    withFileTypes: true,
-  },);
-
-  /**
    Files this scan reads, which excludes the suites.
    */
-  const sources = entries.filter(function isSource(entry,): boolean {
-    return entry.isFile()
-      && entry.name.endsWith('.ts',)
-      && (!entry.name.includes('.test.',));
+  const sources = (await readPackageSource()).filter(function isSource({ path, },): boolean {
+    return !(path.split('/',).at(-1,) ?? '').includes('.test.',);
   },);
 
-  /**
-   Classes each of those files declares.
-   */
-  const scanned = await Promise.all(sources.map(async function one(entry,): Promise<readonly ScannedClass[]> {
-    return classesIn({
-      source: await readFile(join(entry.parentPath, entry.name,), 'utf8',),
-    },);
-  },),);
-
-  return scanned.flat();
+  return sources.flatMap(function one({ text, },): readonly ScannedClass[] {
+    return classesIn({ source: text, },);
+  },);
 }
 
 //endregion Source scan

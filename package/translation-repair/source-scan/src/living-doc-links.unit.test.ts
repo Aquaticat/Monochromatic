@@ -22,10 +22,7 @@ import {
   existsSync,
   readFileSync,
 } from 'node:fs';
-import {
-  readdir,
-  readFile,
-} from 'node:fs/promises';
+import { readFile, } from 'node:fs/promises';
 import {
   dirname,
   join,
@@ -45,6 +42,7 @@ import {
 import { parseMarkdownBody, } from '@monochromatic-dev/translation-repair-document-structure';
 import {
   readLivingRepositoryDocs,
+  readPackageDocPaths,
   REPOSITORY_ROOT,
 } from './living-docs.test-fixture.ts';
 import { expectNoFindings, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scan-findings.test-fixture.ts';
@@ -285,10 +283,6 @@ function diskReader(): DocReader {
  */
 async function readLinkingDocs(): Promise<readonly string[]> {
   /**
-   Package root, from the repository root.
-   */
-  const pkg = join('package', 'module', 'translation-repair',);
-  /**
    Living repository-level docs.
    */
   const { decisionRecords, handover, currentPlanning, operations, } = await readLivingRepositoryDocs();
@@ -297,12 +291,7 @@ async function readLinkingDocs(): Promise<readonly string[]> {
     ...handover,
     ...currentPlanning,
     ...operations,
-    ...(await readdir(join(REPOSITORY_ROOT, pkg, 'doc',),)).filter(function isMarkdown(name,): boolean {
-      return name.endsWith('.md',);
-    },).map(function underDoc(name,): string {
-      return join(pkg, 'doc', name,);
-    },),
-    join(pkg, 'README.md',),
+    ...await readPackageDocPaths(),
   ];
 }
 

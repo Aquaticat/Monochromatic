@@ -26,10 +26,7 @@
  @module
  */
 
-import {
-  readdir,
-  readFile,
-} from 'node:fs/promises';
+import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -40,11 +37,15 @@ import {
 
 import { isAsciiDigit, } from '@monochromatic-dev/translation-repair-markup';
 import {
+  FAMILY_PACKAGES,
   readLivingRepositoryDocs,
+  readPackageDocPaths,
   REPOSITORY_ROOT,
 } from './living-docs.test-fixture.ts';
 import {
+  packageDirectoryOf,
   parseSource,
+  pathUnderSrc,
   readPackageSource,
 } from './source-scan.test-fixture.ts';
 import { expectNoFindings, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scan-findings.test-fixture.ts';
@@ -625,10 +626,6 @@ function commentProse(
  */
 async function readLivingProse(): Promise<readonly Prose[]> {
   /**
-   Package root, from the repository root.
-   */
-  const pkg = join('package', 'module', 'translation-repair',);
-  /**
    Living repository-level docs.
    */
   const { decisionRecords, handover, currentPlanning, operations, } = await readLivingRepositoryDocs();
@@ -636,12 +633,7 @@ async function readLivingProse(): Promise<readonly Prose[]> {
    Markdown paths from the repository root.
    */
   const markdown = [
-    ...(await readdir(join(REPOSITORY_ROOT, pkg, 'doc',),)).filter(function isMarkdown(name,): boolean {
-      return name.endsWith('.md',);
-    },).map(function underDoc(name,): string {
-      return join(pkg, 'doc', name,);
-    },),
-    join(pkg, 'README.md',),
+    ...await readPackageDocPaths(),
     ...decisionRecords,
     ...handover,
     ...currentPlanning,
@@ -657,7 +649,10 @@ async function readLivingProse(): Promise<readonly Prose[]> {
    Comment prose of every TypeScript file.
    */
   const comments = (await readPackageSource()).map(function prose(source,): Prose {
-    return commentProse({ path: join('package', 'module', 'translation-repair', 'src', source.path,), source, },);
+    return commentProse({
+      path: join(FAMILY_PACKAGES, packageDirectoryOf({ path: source.path, },), 'src', pathUnderSrc({ path: source.path, },),),
+      source,
+    },);
   },);
   return [...comments, ...docs,];
 }

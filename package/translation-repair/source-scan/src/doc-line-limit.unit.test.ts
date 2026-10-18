@@ -43,6 +43,7 @@ import {
 
 import { isAsciiDigits, } from '@monochromatic-dev/translation-repair-markup';
 import {
+  readPackageDocPaths,
   REPOSITORY_ROOT,
   withFiles,
 } from './living-docs.test-fixture.ts';
@@ -338,10 +339,6 @@ function unlistedFileFindings(
  */
 async function readGuardedDocs(): Promise<readonly string[]> {
   /**
-   Package root, from the repository root.
-   */
-  const pkg = join('package', 'module', 'translation-repair',);
-  /**
    Docs in each repository family the guard reads.
    */
   const families = await Promise.all(FAMILIES.map(async function inFamily(family,): Promise<readonly string[]> {
@@ -358,12 +355,7 @@ async function readGuardedDocs(): Promise<readonly string[]> {
   },),);
   return [
     ...families.flat(),
-    ...(await readdir(join(REPOSITORY_ROOT, pkg, 'doc',),)).filter(function isMarkdown(name,): boolean {
-      return name.endsWith('.md',);
-    },).toSorted().map(function underDoc(name,): string {
-      return join(pkg, 'doc', name,);
-    },),
-    join(pkg, 'README.md',),
+    ...await readPackageDocPaths(),
   ];
 }
 

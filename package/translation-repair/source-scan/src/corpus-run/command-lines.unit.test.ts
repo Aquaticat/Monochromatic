@@ -8,10 +8,7 @@
  @module
  */
 
-import {
-  readdir,
-  readFile,
-} from 'node:fs/promises';
+import { readFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
 import {
@@ -20,22 +17,26 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { nodeEntries, } from '@monochromatic-dev/translation-repair-coverage-census';
 import { isAsciiLowerLetter, } from '@monochromatic-dev/translation-repair-markup';
 import { COMMAND_LINES, } from '@monochromatic-dev/translation-repair-run';
 import {
   readLivingRepositoryDocs,
+  readPackageDocPaths,
   REPOSITORY_ROOT,
 } from '../living-docs.test-fixture.ts';
+import {
+  readPackageSource,
+  readTaskFiles,
+  runnerEntriesOf,
+} from '../source-scan.test-fixture.ts';
 
 /**
- The package's task file, beside `src`.
+ The package directory that owns each runner, by runner name, which names the task a doc starts it by.
  */
-const MISE_TOML = join(
-  import.meta.dirname,
-  '../..',
-  'mise.toml',
-);
+const RUNNER_OWNERS: ReadonlyMap<string, string> = new Map(runnerEntriesOf({ files: await readPackageSource(), },)
+  .map(function ownerOf({ name, directory, },): readonly [string, string,] {
+    return [name, directory,];
+  },),);
 
 /**
  Start of a task's run line naming a built runner.
@@ -192,13 +193,13 @@ function flagsSpelled({ text, }: { readonly text: string; },): readonly string[]
  runner whose task this cannot find is missing from the answer, which the
  case holds against the runner list, so a change of layout fails loudly.
 
- @param text - the task file
+ @param text - the family's task files, joined
 
  @returns Description of the task that runs each runner, by runner name
 
  @example
  ```ts
- const descriptions = taskDescriptions({ text: await readFile(MISE_TOML, 'utf8',), },);
+ const descriptions = taskDescriptions({ text: (await readTaskFiles()).map(({ text, },) => text).join('\n',), },);
  ```
  */
 function taskDescriptions({ text, }: { readonly text: string; },): ReadonlyMap<string, string> {
@@ -237,8 +238,9 @@ function taskDescriptions({ text, }: { readonly text: string; },): ReadonlyMap<s
 
 /**
  How a doc spells an invocation of a runner, up to what is typed after it:
- the package task, the same task named from the repository root, and the
- built file.
+ the package task, the same task named from the repository root (under the
+ package the family was split out of, and under the family package that owns the runner),
+ and the built file.
 
  @param runner - runner name
 
@@ -250,9 +252,14 @@ function taskDescriptions({ text, }: { readonly text: string; },): ReadonlyMap<s
  ```
  */
 function invocationsOf({ runner, }: { readonly runner: string; },): readonly string[] {
+  /**
+   Package directory that owns the runner, absent for a name no entry lists.
+   */
+  const owner = RUNNER_OWNERS.get(runner,);
   return [
     `mise run ${runner} `,
     `mise run //package/module/translation-repair:${runner} `,
+    ...((owner === undefined) ? [] : [`mise run //package/translation-repair/${owner}:${runner} `,]),
     `node dist/final/node/${runner}.mjs`,
   ];
 }
@@ -367,8 +374,8 @@ function undeclaredFlagsIn(
 
 /**
  The docs the invocation case reads, from the repository root: the living
- repository-level docs and the package's docs and README. The audit ledger is
- left out, since it records what was typed when it was typed.
+ repository-level docs and the docs and READMEs of the package the family was split out of and of
+ every family package. The audit ledger is left out, since it records what was typed when it was typed.
 
  @returns Paths from the repository root
 
@@ -378,15 +385,6 @@ function undeclaredFlagsIn(
  ```
  */
 async function invokingDocs(): Promise<readonly string[]> {
-  /**
-   Package root, from the repository root.
-   */
-  const pkg = join(
-    'package',
-    'module',
-    'translation-repair',
-  );
-
   /**
    Living repository-level docs.
    */
@@ -401,28 +399,11 @@ async function invokingDocs(): Promise<readonly string[]> {
     ...handover,
     ...currentPlanning,
     ...operations,
-    ...(await readdir(join(
-      REPOSITORY_ROOT,
-      pkg,
-      'doc',
-    ),))
-      .filter(function isLivingMarkdown(name,): boolean {
+    ...(await readPackageDocPaths())
+      .filter(function isLivingMarkdown(path,): boolean {
         // The ledger and its parts keep the command lines of their time as written.
-        if (name.startsWith('audit-ledger',))
-          return false;
-        return name.endsWith('.md',);
-      },)
-      .map(function underDoc(name,): string {
-        return join(
-          pkg,
-          'doc',
-          name,
-        );
+        return !(path.split('/',).at(-1,) ?? '').startsWith('audit-ledger',);
       },),
-    join(
-      pkg,
-      'README.md',
-    ),
   ];
 }
 
@@ -432,13 +413,7 @@ await describe({
     it({
       name: 'DECLARES every runner the build makes and nothing else, so no runner reads a line undeclared',
       fn: async () => {
-        expect(Object.keys(COMMAND_LINES,).toSorted(),).toEqual(
-          [...nodeEntries.keys(),]
-            .filter(function isRunner(name,): boolean {
-              return name !== 'index';
-            },)
-            .toSorted(),
-        );
+        expect(Object.keys(COMMAND_LINES,).toSorted(),).toEqual([...RUNNER_OWNERS.keys(),].toSorted(),);
       },
     },),
     it({
@@ -487,7 +462,9 @@ await describe({
         /**
          Each runner's task description.
          */
-        const descriptions = taskDescriptions({ text: await readFile(MISE_TOML, 'utf8',), },);
+        const descriptions = taskDescriptions({ text: (await readTaskFiles()).map(function textOf({ text, },): string {
+          return text;
+        },).join('\n',), },);
         expect([...descriptions.keys(),].toSorted(),).toEqual(Object.keys(COMMAND_LINES,).toSorted(),);
 
         /**

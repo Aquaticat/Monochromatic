@@ -479,6 +479,27 @@ export function pathUnderSrc({ path, }: { readonly path: string; },): string {
 }
 
 /**
+ File system path of a location.
+
+ @param path - location as `readPackageSource` names it
+
+ @returns The absolute path of the file under its package's `src`
+
+ @example
+ ```ts
+ const at = sourcePathOf({ path: 'run/corpus-run/cli-refusal.ts', },); // '.../package/translation-repair/run/src/corpus-run/cli-refusal.ts'
+ ```
+ */
+export function sourcePathOf({ path, }: { readonly path: string; },): string {
+  return join(
+    FAMILY_ROOT,
+    packageDirectoryOf({ path, },),
+    'src',
+    pathUnderSrc({ path, },),
+  );
+}
+
+/**
  Package directory of a location.
 
  @param path - location as `readPackageSource` names it
@@ -673,6 +694,123 @@ export function declaringModule(
   if (subpath !== undefined)
     return `${directory}/${subpath}`;
   return indexDeclarers({ directory, },).get(imported,) ?? `${directory}/index.ts`;
+}
+
+/**
+ One package's task file.
+ */
+export type TaskFile = {
+  /**
+   Package directory that holds it.
+   */
+  readonly directory: string;
+
+  /**
+   File text.
+   */
+  readonly text: string;
+};
+
+/**
+ The task file of every family package, which together carry the tasks the single package's task file once did.
+
+ @returns One file per package that has a `src`, in package order
+
+ @example
+ ```ts
+ const tasks = await readTaskFiles(); // [{ directory: 'adjudication', text: '[tasks.build]...', }, ...]
+ ```
+ */
+export async function readTaskFiles(): Promise<readonly TaskFile[]> {
+  return await Promise.all((await familyPackages()).map(async function readTaskFile(directory,): Promise<TaskFile> {
+    return {
+      directory,
+      text: await readFile(
+        join(
+          FAMILY_ROOT,
+          directory,
+          'mise.toml',
+        ),
+        'utf8',
+      ),
+    };
+  },),);
+}
+
+/**
+ One runner the family builds: a command the pipeline's tasks start, found in the `build-entries.ts` of the
+ package that owns its entry file.
+ */
+export type RunnerEntry = {
+  /**
+   The command's name, which names its built file and its task.
+   */
+  readonly name: string;
+
+  /**
+   Package directory that lists it.
+   */
+  readonly directory: string;
+
+  /**
+   The entry file's location, as `readPackageSource` names it.
+   */
+  readonly path: string;
+};
+
+/**
+ Opening every runner entry's source path carries in a `build-entries.ts`.
+ */
+const ENTRY_SOURCE_OPENING = './src/';
+
+/**
+ Name of the entry that builds a package's library index rather than a runner.
+ */
+const INDEX_ENTRY = 'index';
+
+/**
+ Every runner the family builds, read off each package's `build-entries.ts`: the packages that own runners each list
+ their own, and the library index each of them lists is left out, since what it reaches is library source.
+
+ @param files - every file of the family; a package without a `build-entries.ts` lists none
+
+ @returns One entry per runner, packages in path order and the runners of one package in no particular order
+
+ @example
+ ```ts
+ const runners = runnerEntriesOf({ files: await readPackageSource(), },); // [{ name: 'corpus-pass', directory: 'corpus-pass', path: 'corpus-pass/corpus-run/corpus-pass.ts', }, ...]
+ ```
+ */
+export function runnerEntriesOf({ files, }: { readonly files: readonly SourceText[]; },): readonly RunnerEntry[] {
+  return files
+    .filter(function isBuildEntries({ path, },): boolean {
+      return pathUnderSrc({ path, },) === 'build-entries.ts';
+    },)
+    .toSorted(function byPath(left, right,): number {
+      return left.path < right.path ? -1 : 1;
+    },)
+    .flatMap(function entriesOf(file,): readonly RunnerEntry[] {
+      return nodesUnder({ root: parseSource({ file, },).program, },)
+        .filter(function isPair(node,): boolean {
+          return node.type === 'ArrayExpression';
+        },)
+        .flatMap(function pairOf(node,): readonly RunnerEntry[] {
+          /**
+           The two strings of a name and a source path, absent for any other array.
+           */
+          const [name = '', source = '', ...rest] = (node.elements as readonly unknown[]).map(function textOf(element,): string {
+            return literalText({ node: element, },);
+          },);
+          if ((rest.length > 0) || (name === '') || (name === INDEX_ENTRY)
+            || (!source.startsWith(ENTRY_SOURCE_OPENING,)) || (!source.endsWith('.ts',)))
+            return [];
+          return [{
+            name,
+            directory: packageDirectoryOf({ path: file.path, },),
+            path: `${packageDirectoryOf({ path: file.path, },)}/${source.slice(ENTRY_SOURCE_OPENING.length,)}`,
+          },];
+        },);
+    },);
 }
 
 //endregion Source scan
