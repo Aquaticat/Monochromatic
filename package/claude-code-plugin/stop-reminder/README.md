@@ -43,8 +43,10 @@ The response-quality detectors run either way.
 
 When enabled,
  separately from the response-quality detectors,
- the hook blocks a stop without reading the response text at all,
- releasing only when state shows another turn cannot help.
+ the hook decides whether the stop is premature.
+Luna reads the final message and names the situation it describes (see "Luna situation check"),
+ and state decides on its own when the depth limit is reached or the last forced continuation issued no tool call.
+When Luna is unavailable, the hook falls back to the state-only behavior described in "Releases".
 It was built for one observed failure:
  in this repository's transcripts,
  `claude-opus-5` sessions often ended a turn by announcing their next action
@@ -67,21 +69,58 @@ and a state-changing call 84% of the time,
 Goal-condition blocks scored 100% on every metric,
  which is why pooling the two overstates the case.
 
-This detector reads none of the response text.
-That is the point:
- every text-conditioned rule can be satisfied by changing the text,
+The state-only fallback reads none of the response text.
+That was the point of its design:
+ every pattern-conditioned rule can be satisfied by changing the text,
  and a rule keyed on the phrase `Next:` is satisfied by deleting that sentence,
  which turns an informative stop into a silent one.
+The Luna check reads the text, so it can be satisfied by writing a message that reads as closed;
+ a background wait is therefore blocked only on state the agent cannot rewrite (no running task).
 
 A trailing question takes precedence,
  because instructing Claude to resume work
 and to route its question through `AskUserQuestion`
 in the same reason would be contradictory.
 
+## Luna situation check
+
+Since 2026-10-18, with forced continuation on, a model reads the final message and picks one of five situations.
+The model is `openai/gpt-6-luna-decisions`, reached through the Gateway Decisions route.
+
+- **announces_own_next_step**:
+   blocks with the resume-now reason.
+- **waits_on_user**:
+   blocks and routes the question through `AskUserQuestion`.
+- **waits_on_background_work**:
+   blocks only when the Stop event reports no running background task, since then nothing can resume the turn;
+   with a task running the stop is released.
+- **pauses_for_handoff** and **work_closed**:
+   release.
+
+A label is acted on at probability 0.60 or higher (interim; revisit from the verdict log).
+The message is sent in full, the end kept when it exceeds 16000 characters, with no thinking blocks.
+One request, 5 second deadline, no retry.
+Any failure falls back to the state-only behavior and adds a `Stop says:` notice.
+
+Environment:
+
+- `STOP_REMINDER_LLMGATEWAY_API_KEY`:
+   read from the hook environment first, else from one `mise env --json` in the session directory.
+   The mise read is a stopgap until a mise-independent credential mechanism exists.
+- `MONOCHROMATIC_STOP_LUNA`:
+   `off`, `0`, `false`, or `no` skips the model.
+- `MONOCHROMATIC_STOP_VERDICT_LOG`:
+   overrides the verdict log path, `~/.local/state/monochromatic/stop-reminder/verdicts.jsonl` by default.
+
+Measurements, limits, and the retraction of the blanket background-task release are in
+[`claude-code-opus-5-premature-turn-end.md`](../../../doc/troubleshooting/claude-code-opus-5-premature-turn-end.md).
+
 ## Releases
 
 The hook lets a stop through in four situations,
  three of them read from state rather than from the response text.
+With the Luna check answering, only the depth limit and the no-tool-call release apply before it;
+ the background-task and finished-tasks releases below belong to the state-only fallback.
 
 - **A background task is running.
 ** The session waits on something another turn cannot advance;
