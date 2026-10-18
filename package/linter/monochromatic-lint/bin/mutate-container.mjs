@@ -63,7 +63,8 @@ function fileArguments(glob) {
  * `run` decides how each mutant is built and tested and comes last because it may end with libtest arguments,
  * and `timeoutSeconds` is the per-mutant test limit when it differs from the default.
  * cargo-mutants copies everything after its own `--` into the `cargo nextest run` command line, where nextest
- * accepts several test-name filters and `--skip` options.
+ * accepts several test-name filters; a second `--` hands the remaining arguments to nextest's own filter
+ * position, the only place it accepts `--skip` (probed: a `--skip` before it is an unexpected argument).
  */
 const scopes = new Map([
   ['--rust-style', {
@@ -112,7 +113,7 @@ const scopes = new Map([
       'src/run_*.rs', 'src/main.rs', 'src/rust_dispatch.rs', 'src/rust_rule_settings.rs',
       'src/file_discovery.rs', 'src/path_inputs.rs', 'src/fix_loop.rs',
     ].flatMap(fileArguments),
-    run: ['--', ...workspaceTests.flatMap(skipArguments)],
+    run: ['--', '--', ...workspaceTests.flatMap(skipArguments)],
   }],
   // Shared layers below every rule: configuration parsing, lookup, matching and merging, rule-option validation,
   // findings, grouped edits, and the syntax-only Rust rules with their shared parse. None loads a Cargo workspace.
@@ -122,7 +123,7 @@ const scopes = new Map([
       'src/config_*.rs', 'src/configuration*.rs', 'src/diagnostic.rs', 'src/edits.rs', 'src/resolved_rules.rs',
       'src/rust_rules.rs', 'src/rust_source.rs',
     ].flatMap(fileArguments),
-    run: ['--', ...workspaceTests.flatMap(skipArguments)],
+    run: ['--', '--', ...workspaceTests.flatMap(skipArguments)],
   }],
   // The semantic engine: workspace discovery and loading, the compiler query, the per-invocation engine, the
   // session and the explicit-type rule. Its tests are the Cargo-workspace suites, so this scope runs the whole
