@@ -23,7 +23,7 @@ it does not introduce test-name candidates.
 
 The inspected CLI is version `2.102.23`,
 source `1f96d6d488f938de97ea640b115e9567ebfd6fbf`.
-In `proto/depot/testresults/v1/test_results.proto:153`,
+In `proto/depot/testresults/v1/test_results.proto:145`,
 the candidate enum has file and classname variants:
 
 ```text
