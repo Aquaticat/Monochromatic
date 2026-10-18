@@ -4,7 +4,7 @@
   "applicationBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "producer": {
     "run": "1jxc80q7q7",
-    "harness": "8256d8bb9d",
+    "harness": "8256d8bb9dd20b8c9b373c2c08b0a73560d93564",
     "artifactBoundary": "Exact matching debug and AndroidTest APK pair from the successful cloud producer; producer layout/signature/JVM evidence is separate"
   },
   "apks": [
