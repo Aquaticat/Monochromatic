@@ -23,7 +23,7 @@ import {
   type SliceReplacement,
   spliceSlices,
 } from '@monochromatic-dev/translation-repair-page-pass';
-import { type ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
 import {
   pageOfSlices,
   type PageSlice,

@@ -2,10 +2,10 @@ import type { Nodes, } from 'mdast';
 
 import { withDefinitions, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
+  type DeepReadonlyData,
   parseSliceBody,
   requireMdxRefusal,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import type { DeepReadonlyData, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 
 //region Consistency paragraphs
 // WHERE THE BLOCKS OF RUNNING TEXT OF AN ENGLISH ARE, by offset: its paragraphs and the text of its headings. The refusal run

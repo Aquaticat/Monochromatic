@@ -8,8 +8,8 @@ import {
   requireFrontMatterRefusal,
   splitFrontMatter,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import type { PlacedSlice, } from '@monochromatic-dev/translation-repair-page-pass/ts';
 import {
+  type PlacedSlice,
   placeSlices,
   type SliceReplacement,
 } from '@monochromatic-dev/translation-repair-page-pass/ts';

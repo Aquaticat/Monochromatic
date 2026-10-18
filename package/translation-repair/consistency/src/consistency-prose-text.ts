@@ -7,10 +7,10 @@ import {
 } from './consistency-markup-ranges.ts';
 import { withDefinitions, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
+  type DeepReadonlyData,
   parseSliceBody,
   requireMdxRefusal,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import type { DeepReadonlyData, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 
 //region Consistency prose text
 // THE PROSE OF AN ENGLISH, with every other stretch blanked and no offset moved.
