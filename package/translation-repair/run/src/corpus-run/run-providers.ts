@@ -1,0 +1,206 @@
+import {
+  type BedrockClient,
+  bedrockLedgerFromEnv,
+  createBedrockClient,
+  createHyperClient,
+  createOpenRouterClient,
+  createProviderBudgets,
+  createSyntheticClient,
+  type HyperClient,
+  hyperRequestsPerHour,
+  type OpenRouterClient,
+  type ProviderBudgets,
+} from '@monochromatic-dev/translation-repair-provider/ts';
+import type {
+  Decider,
+  SyntheticClient,
+} from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelTransport, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
+import { createDecisionsClient, } from '../decisions-client.ts';
+import { RunConfigError, } from './run-config-error.ts';
+
+//region Run providers
+// WHICH PROVIDERS A RUN HAS, read off the environment: one client per key
+// present, and the shared budget view over them. Split out of
+// `run-config.ts` on 2026-09-07 when the fourth provider put that file over
+// the line budget. Any number of keys may be absent; the owner, 2026-09-07:
+// "any number of provider being dry or lacking API key is expected and normal
+// operation". Only no key at all is a refusal.
+
+/**
+ Clients a run may route to, each present when its key is, plus the budget
+ view over all of them.
+
+ @example
+ ```ts
+ const { budgets, } = configureProviders({ env: process.env, transport: fetchTransport, },);
+ ```
+ */
+export type ConfiguredProviders = {
+  /**
+   First provider client, when its key is set.
+   */
+  readonly synthetic?: SyntheticClient;
+
+  /**
+   Second provider client, when its key is set.
+   */
+  readonly hyper?: HyperClient;
+
+  /**
+   Fourth provider client, when its key is set.
+   */
+  readonly bedrock?: BedrockClient;
+
+  /**
+   Third provider client, when its key is set.
+   */
+  readonly openrouter?: OpenRouterClient;
+
+  /**
+   Client of OpenRouter's decisions endpoint, on the same key, for the
+   decision-only seats.
+   */
+  readonly decisions?: Decider;
+
+  /**
+   Shared budget view every provider is routed by.
+   */
+  readonly budgets: ProviderBudgets;
+};
+
+/**
+ Builds every configured provider's client and the budget view over them.
+
+ @param env - environment the keys, the Hyper pace and the Bedrock ledger's
+ place are read from: `process.env` in a run, a test's own otherwise
+
+ @param transport - HTTP every client calls over: `fetchTransport` in a run.
+ Both are REQUIRED (ledger M43, M68): a test that took the process's
+ environment would build clients on the keys the suite inherits and a
+ Bedrock client over the real spend ledger
+
+ @returns Clients present per key, plus the budgets
+
+ @throws {@link RunConfigError} when every provider key variable is unset or empty
+
+ @example
+ ```ts
+ const providers = configureProviders({ env: process.env, transport: fetchTransport, },);
+ ```
+ */
+export function configureProviders(
+  {
+    env,
+    transport,
+  }: {
+    readonly env: Readonly<NodeJS.ProcessEnv>;
+    readonly transport: ModelTransport;
+  },
+): ConfiguredProviders {
+  /**
+   Synthetic API key, resolved by name from the environment handed over.
+   */
+  const apiKey = env.TRANSLATION_REPAIR_SYNTHETIC_API_KEY ?? '';
+  /**
+   Second provider key,
+   independently optional because either provider may run alone.
+   */
+  const hyperKey = env.TRANSLATION_REPAIR_CHARM_HYPER_API_KEY ?? '';
+  /**
+   Third provider key, the paid fallback, optional for the same reason.
+   */
+  const openRouterKey = env.TRANSLATION_REPAIR_OPENROUTER_API_KEY ?? '';
+  /**
+   Fourth provider key, the prepaid per-token provider, optional likewise.
+   */
+  const bedrockKey = env.TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY ?? '';
+  /**
+   Whether no provider at all is configured, which nothing can run on.
+   */
+  const noKeyAtAll = (apiKey === '')
+    && (hyperKey === '')
+    && (bedrockKey === '')
+    && (openRouterKey === '');
+  if (noKeyAtAll) {
+    throw new RunConfigError({
+      variable: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY, TRANSLATION_REPAIR_CHARM_HYPER_API_KEY, '
+        + 'TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY or TRANSLATION_REPAIR_OPENROUTER_API_KEY',
+    },);
+  }
+
+  /**
+   First provider client when configured.
+   */
+  const synthetic = (apiKey === '')
+    ? undefined
+    : createSyntheticClient({
+      apiKey,
+      transport,
+    },);
+
+  /**
+   Second provider client when configured.
+   */
+  const hyper = (hyperKey === '')
+    ? undefined
+    : createHyperClient({
+      apiKey: hyperKey,
+      requestsPerHour: hyperRequestsPerHour({ env, },),
+      transport,
+    },);
+
+  /**
+   Third provider client when configured.
+   */
+  const openrouter = (openRouterKey === '')
+    ? undefined
+    : createOpenRouterClient({
+      apiKey: openRouterKey,
+      transport,
+    },);
+
+  /**
+   Decisions client on the OpenRouter key when configured; the endpoint
+   draws on the same credit balance.
+   */
+  const decisions = (openRouterKey === '')
+    ? undefined
+    : createDecisionsClient({
+      apiKey: openRouterKey,
+      transport,
+    },);
+
+  /**
+   Fourth provider client when configured, over the durable spend ledger
+   the environment names.
+   */
+  const bedrock = (bedrockKey === '')
+    ? undefined
+    : createBedrockClient({
+      apiKey: bedrockKey,
+      ledger: bedrockLedgerFromEnv({ env, },),
+      transport,
+    },);
+
+  /**
+   Shared budget view every provider is routed by.
+   */
+  const budgets = createProviderBudgets({
+    ...((synthetic === undefined) ? {} : { synthetic, }),
+    ...((hyper === undefined) ? {} : { hyper, }),
+    ...((bedrock === undefined) ? {} : { bedrock, }),
+    ...((openrouter === undefined) ? {} : { openrouter, }),
+  },);
+
+  return {
+    ...((synthetic === undefined) ? {} : { synthetic, }),
+    ...((hyper === undefined) ? {} : { hyper, }),
+    ...((bedrock === undefined) ? {} : { bedrock, }),
+    ...((openrouter === undefined) ? {} : { openrouter, }),
+    ...((decisions === undefined) ? {} : { decisions, }),
+    budgets,
+  };
+}
+
+//endregion Run providers

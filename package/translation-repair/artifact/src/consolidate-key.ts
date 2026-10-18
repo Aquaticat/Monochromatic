@@ -1,0 +1,657 @@
+import type { DeclaredNamePair, } from '@monochromatic-dev/translation-repair-house-rule/ts';
+import type { SliceSyntax, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
+import type { ConsolidationPolishConfig, } from '@monochromatic-dev/translation-repair-consolidate/ts';
+import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import type { LaneContestBallot, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import type { LaneText, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
+
+//region Consolidate key
+// What makes two runs' consolidations the SAME consolidation, for cache
+// purposes.
+//
+// Split from the driver for the reason `lane-contest-key.ts` gives: the key is
+// the one piece of a driver testable without a client, and a reader of the
+// driver does not want the cache reasoning in the middle of it.
+
+/**
+ Generation of the consolidation cache.
+
+ MOVES WHEN THE QUESTION MOVES: either sheet, either schema, the structural
+ guard, the validity floor, the gate's settling rule, or the wrap. Every one
+ of those changes what a voice is asked or how its answer is read.
+
+ IT MOVES FOR THE WRAP TOO, which is the case worth naming. The wrap runs
+ after both rounds and looks like a recording change, but it can demote a
+ consolidation to the standing text, which is a different settlement and not a
+ different way of writing the same one.
+
+ VERSION 3 adds target-authoritative contributor spelling to producer,
+ selector, validity floor and gate. Version 2 settlements did not answer it.
+
+ VERSION 4 adds body naturalness polish after fidelity gate. Earlier
+ settlements never bought that stage and cannot resume as though they did.
+
+ VERSION 5 gives final polish every structurally eligible body paragraph and
+ makes target contributor public identities explicit in producer rule.
+
+ VERSION 6 asks final polish to remove source-grammar calques and finish every
+ clear issue in a changed paragraph. Version 5 asked a weaker question.
+
+ VERSION 7 adds candidate-bound absolute review and one bounded correction.
+ Earlier settlements could approve relative improvement with defects remaining.
+
+ VERSION 8 makes absolute-review correction a distinct non-fallback mode and
+ gives selectors its required findings. Version 7 selectors answered generic polish question.
+
+ VERSION 9 permits a second candidate-bound correction when first correction
+ exposes further material defects. Version 8 exhausted after one generation.
+
+ VERSION 10 binds revised absolute-review and required-correction questions:
+ Markdown soft breaks render as spaces, rejected base is not approved fallback,
+ and findings are a minimum rather than an edit whitelist.
+
+ VERSION 11 requires absolute reviewers and correction rewriters to perform
+ separate local and whole-passage scans, makes publication-quality
+ naturalness a hard selector eligibility floor rather than relative ranking,
+ and requires a second acceptance before publication approval.
+
+ VERSION 12 starts every direct roster round and absolute acceptance at
+ exact-half quorum rather than requiring every provider seat.
+
+ VERSION 13 replaces two-correction terminal refusal with continuous
+ latest-rejection correction and distinct acceptance-challenge review.
+
+ VERSION 14 threads every reviewed rejection into failed-strategy evidence
+ and adds durable raw-payload replay across interrupted invocations.
+
+ VERSION 15 floors every candidate on target-authoritative contributor identity.
+ Earlier settlements could resume wording final publication guard rejects.
+
+ VERSION 16 continuously replaces unendorsed standing wording using prior
+ consolidation slate, ballots, gate ballots, terminal, and findings.
+ Version 15 could resume settlement final publication guard rejects.
+
+ VERSION 17 sends the gate's objections over an ineligible standing to the
+ polish as an objection correction (owner, 2026-09-27). Version 16
+ settlements polished comparatively and never saw the objections.
+
+ VERSION 18 ships a slate declined twice over an ineligible standing by
+ preference and sends its reasons to the polish beside the gate's, and tells
+ the slate judges so (owner, 2026-09-27, "Preference + polish"). Version 17
+ raised on that slate and stopped the entry, and its polish sheet carried
+ one set of objections.
+
+ VERSION 19 refuses a disputed slice's archive wording, and the repair
+ lane's text where the checkers confirmed no repair of the disputed reading,
+ as standing, incumbent, lane offer and proposal, and keys the dispute note
+ (owner, 2026-09-27, "No eligible standing"). Version 18 stood the repair
+ lane's text in for the archive whatever the checkers said, and keyed a
+ disputed slice like an undisputed one.
+
+ VERSION 20, the same day, for every change to what this stage asks or
+ accepts after version 19 landed at 06:34 UTC, none of which moved the number
+ (ledger M25): the floors a proposal is held to (F-1 to F-11, Han left in
+ prose, a Han signer left in Han or romanized with no meaning), the gate and
+ the polish gate reading the page and line rules, the refiner and writer no
+ longer keeping what the house rules render, the naturalness review reading
+ the house rules, the windowed gates and the naturalness review sizing their
+ quorum on the reachable bench (ledger E3 and X8), and a slice with no valid
+ wording keeping the archive, which is never persisted. A settlement written
+ before any of these could resume past a floor it now fails. It costs
+ nothing: no slice-cache file under the agent runs was written after 04:26 UTC
+ that day, before version 19 existed.
+
+ Two later changes ride inside 20 on the same reasoning, checked on
+ 2026-09-28 against that newest file: the house rules' "-re" line names the
+ meter that measures beside the metre (ledger K13, `403db3c6e`), on every
+ sheet this stage shows; and the prose ranges the Han-residue floor reads,
+ which a proposal is held to, now look past a JSX comment, a stray quote mark
+ and a lone backtick (ledger K7, `1873b23dc` and `dc325d847`).
+
+ VERSION 21 (owner answers of 2026-10-11, "Majority flawed yes", "Run off
+ the tied finalists" and "Majority, like the run-off") changes three things a
+ settlement records. A tied slate over an eligible standing is run off once
+ over its tied finalists when the standing drew no ballot, where version 20
+ kept the standing unchallenged. The run-off over an eligible standing is
+ triggered by a strict majority of the contest ballots calling the archive
+ flawed, where version 20 required every ballot. And the same majority forfeits
+ that standing past an undecided gate, where version 20 again required every
+ ballot. A settlement written under version 20 kept a standing no judge chose,
+ and kept an archive a majority condemned, so it cannot resume as though it
+ still answered the question. The forfeit's move landed after 21 was set and
+ before any pass ran on it, so no settlement was stored under 21 without it.
+
+ The glossary audit's corrections ride inside 20 too (ledger C3 to R16,
+ `357f534b7`), checked on 2026-09-28 against the newest slice-cache file under
+ the agent runs, still 04:26 UTC on 2026-09-27 (eighteen files after 04:20 UTC that
+ day, none after 04:27 UTC): the source-carry floor a proposal is held to refuses
+ and passes other forms, the COMMUNITY RENDERINGS block on the gate and the
+ polish gate counts a rendering inflected and bounded, and the grammatical
+ English house rule states the doubled preposition. The terms, renderings and
+ whys reach the identity context, which the key hashes.
+
+ Rides inside 20 too: every gather now keeps a seat that answered unreadably
+ out of the same-prompt retry rounds and re-asks each such seat, whichever
+ round it came in, in the nudged recovery round (ledger P2, `005692e11`),
+ which changes whose voices a round closes on; checked on 2026-09-28: still no
+ slice-cache file newer than 04:26 UTC on 2026-09-27.
+
+ Rides inside 20 too: a reply whose complete JSON value more text follows is
+ read rather than lost (ledger P8, `cac097368`), which changes whose voices
+ every round hears; checked on 2026-09-28: still no slice-cache file newer
+ than 04:26 UTC on 2026-09-27.
+
+ Rides inside 20 too: a reply that could not be used is re-asked once,
+ nudged, of the same model on another provider through the uniqueness
+ wrapper's claims (ledger P9, `7011d72cc`), which changes whose voices every
+ round hears; checked on 2026-09-28: still no slice-cache file newer than
+ 04:26 UTC on 2026-09-27.
+
+ Rides inside 20 too: a disputed slice's repair text never stands in when it
+ is the archive's own wording, and the refused-wording finding says why the
+ repair lane's text is refused (ledger L12, `f66e96f06` and `3ffbcec10`). No
+ settled slice moves: 0 of 1,132 fully resolved disputes over every artifact
+ had unchanged text. Checked on 2026-09-28: still no slice-cache file newer
+ than 04:26 UTC on 2026-09-27.
+
+ Rides inside 20 too: Bedrock reads dry with 1.33 USD still left, and its
+ ledger holds every billed attempt at its bound (ledger P1, `2a108dfb3`,
+ `107763dbb` and `7cfd5ae4b`), so a Gemma call moves to OpenRouter sooner
+ as Bedrock nears its credit, which changes whose voices a round hears;
+ checked on 2026-09-28: still no slice-cache file newer than 04:26 UTC on
+ 2026-09-27.
+
+ Rides inside 20 too: the recovery round re-asks a reply the length
+ limit cut with a nudge naming the cut, apart from one off the shape
+ (ledger P10, `ce0ef7b51`), which changes what such a seat is asked and
+ whose voices a round hears; checked on 2026-09-28: still no slice-cache
+ file newer than 04:26 UTC on 2026-09-27.
+
+ Rides inside 20 too: the run shape carries the slate judges beside the
+ writers (ledger X11), which left it when `9a7d48354` split them from the
+ writers on 2026-09-02, so a settlement another judging bench reached never
+ resumes; every key moves, and none was written under 20. Checked on
+ 2026-09-28: still no slice-cache file newer than 04:26 UTC on 2026-09-27.
+
+ Rides inside 20 too: a slice the per-slice hook re-seats under a hold runs
+ on the writers, slate judges and naturalness roles it hands over and is
+ keyed by them (ledger H5); a slice nobody re-seated keys as before, so no
+ key moves. Same check, same result.
+
+ Rides inside 20 too: the strict parse reads a formula as the site does
+ (`5ce9370ac`), and a proposal forming a formula its original lacks is
+ refused before any judge (ledger X22, `translate-formula.ts`), which
+ changes what the consolidation accepts; checked on 2026-09-29: still no
+ slice-cache file newer than 04:26 UTC on 2026-09-27.
+
+ Rides inside 20 too: the declared-name guard and the Han residue floor
+ read text by code point, so a handle written in letters beyond the first
+ plane is checked rather than projected to nothing, and an ideograph beyond
+ it left in prose is refused (ledger B21, `declared-name-survival.ts`,
+ `translate-han-residue.ts`); over the pinned archives and settled pages no
+ survival answer changes, and neither they nor any stored artifact carries
+ such an ideograph; same check, same result.
+
+ Rides inside 20 too: the validator's link-name floor and contributor
+ authority, which judge the standing and every lane text offered to the
+ slate, carry a declared name only where it stands as a name, and the link
+ floor reads a Latin source form, a mention and a page handle at handle edges
+ (ledger B23, `name-projection.ts`, `11d029fde`); over the would-ship slices
+ of every settled artifact neither answer moves that this change explains;
+ checked on 2026-09-29: still no slice-cache file newer than 04:26 UTC on
+ 2026-09-27.
+
+ Rides inside 20 too: the consolidation slate collapses a rendering apart
+ from the standing or a lane text only in straight against curly prose quotes
+ into it (ledger B24, `collapseKey`, `straightenProseQuotes`); over the 2,905
+ stored translate and consolidation slates, 305 carried such a twin; checked
+ on 2026-09-29: the newest slice-cache file is still the one of 04:26 UTC on
+ 2026-09-27.
+
+ Rides inside 20 too: the validator that judges the standing, every lane
+ text offered and each consolidation candidate refuses prose guillemets and
+ the editor sheet's «REGION marker and line heads (ledger B24,
+ `translate-guillemets.ts`, `translate-sheet-leak.ts`); one comparison row
+ of 6,285 across the stored artifacts carries a guillemet its incumbent
+ lacks; checked on 2026-09-29: the newest slice-cache file is still the one
+ of 04:26 UTC on 2026-09-27.
+
+ Rides inside 20 too: whether a proposal changes anything is read as the page
+ shows it (ledger B26, `sameWording`). The consolidation slate collapses a
+ rendering apart from the standing or a lane text only in where its soft line
+ breaks fall; a lane text that is the standing in all but layout is not
+ offered back; the shipping wrap demotes a consolidation that is the standing
+ in all but layout, and on a line-structured slice one that is the standing
+ but for a trailing newline; the polish round demotes a refinement that is
+ the base in all but layout. Over the 2,905 stored slates, 490 carried such a
+ twin; checked on 2026-09-29: no slice-cache file was written after 04:27 UTC
+ on 2026-09-27, where a control from midnight finds 494.
+
+ Rides inside 20 too: the final polish refuses a rewrite that is one of the
+ slice's disputed wordings, as the standing verdict, the lane offer and the
+ producers' floor already did (ledger B29, `consolidation-polish-apply.ts`);
+ the find over the three slice-cache roots, rerun for this change, finds no
+ file written after 04:27 UTC on 2026-09-27 against a control of 494.
+
+ Rides inside 20 too: where the original has explicit breaks and no archive
+ wording, the writer's sheet states the break counts of the lane candidates
+ it displays, as the gates after it state theirs (ledger B29,
+ `consolidate-wire.ts`), which changes what such a writer is asked; the same
+ find, rerun on 2026-09-29, again finds no file written after 04:27 UTC on
+ 2026-09-27 against a control of 494.
+
+ Rides inside 20 too: the validator that judges the standing, every lane
+ text offered and each consolidation candidate no longer lists the PRIOR
+ FAILED CONSOLIDATION STRATEGY heading among the sheet labels it refuses
+ unfenced (ledger B30, `translate-sheet-leak.ts`, `32e07afb7`), since no
+ sheet has carried it since the single consolidation attempt (`1ba8f713a`);
+ a fenced copy is still refused. An rg for the heading over the run
+ directories, the agent runs and the user cache finds it only in logs,
+ source copies and build output, in no stored slate, artifact or cache
+ record; checked on 2026-09-29: no slice-cache file was written after 04:27
+ UTC on 2026-09-27, where a control from midnight finds 494 and an earlier
+ check's own output file.
+
+ Rides inside 20 too: a consolidate-gate or polish-gate ballot whose findings
+ key is left out keeps its choice, read as no findings, where either gate
+ refused it whole (ledger B46, `findingsOrNone` in `contest-ballot-wire.ts`,
+ `consolidate-gate-wire.ts`, `consolidation-polish-gate-wire.ts`), which
+ changes whose voices a gate round hears; checked on 2026-09-30: no
+ slice-cache file was written after 04:27 UTC on 2026-09-27, where a control
+ from midnight that day finds 494.
+
+ Rides inside 20 too: a polish round whose original or base no grammar reads
+ keeps the base with a `consolidation-polish-unfloored` finding and asks
+ nobody, where it paid its refiners and judges for a polish the structural
+ check then left unvalidated (ledger B48, `consolidation-polish-round.ts`);
+ checked on 2026-09-30: no slice-cache file was written after 04:27 UTC on
+ 2026-09-27, where a control from midnight that day finds 494.
+
+ Rides inside 20 too: an absence the slate judging raises over a withheld
+ standing, which no judging reaches, throws `WithheldSlateAbsenceError`
+ where the settlement kept the archive on it (ledger B51,
+ `consolidate-settle-judge.ts`); checked on 2026-09-30: no slice-cache file
+ was written after 04:27 UTC on 2026-09-27, where a control from midnight
+ that day finds 494.
+
+ Rides inside 20 too: the floor every consolidation validity check calls
+ compares quoted passages at every depth and refuses a wording carrying
+ fewer than its page (ledger B110, `translate-validate-blocks.ts`), which
+ changes which candidates and standings a slate holds; checked on
+ 2026-10-01: the newest of 13,714 slice-cache records under 391 runs
+ directories is still the one of 04:26 UTC on 2026-09-27.
+
+ THE PRE-LAUNCH CHECK OF 2026-09-28 (ledger M28): 20 was set
+ in `66703994a` at 02:56 UTC on 2026-09-28, after the newest slice-cache file under the
+ agent runs (04:26 UTC on 2026-09-27), and no slice-cache file has been written
+ since, so no answer cached under an earlier question can be served under
+ this number. Every source commit since then rides inside it, those the
+ accounts in this TSDoc name and those they do not (`corpus-run/cache-account-audit.ts`, ledger M28).
+
+ Rides inside 21 too: the slate judges and the gate of an entry that records a
+ death are shown the tense candidates of each text on offer
+ (`tense-candidate-block.ts`, `consolidate-gate-wire.ts`,
+ `translate-slate-evidence.ts`), and the identity context carries the recorded
+ date of death (`identity-context.ts`). No answer cached under the earlier
+ question can be served under the new one: the run shape of such an entry names
+ the recorded death and the subject names, and its identity context differs, so
+ its key differs. An entry that records no death asks the question it asked
+ before and keeps its key, so the version stays where it is and the answers
+ already bought for those entries stay usable.
+
+ 22: the slate's twin collapse (`collapseKey`, `straightenProseQuotes`) and the
+ validator's prose guillemet floor (`translate-guillemets.ts`) read prose from
+ the page parse (`typography-prose-mask.ts`), so two renderings that differ by a
+ mark in a comment or a link address no longer collapse, and a text the grammar
+ refuses has no prose. That changes which candidates a slate holds as one. The
+ check that would let the change ride inside 21 (no slice-cache record written
+ after the change, shown beside a control that finds records) could not be made
+ with a working control, so the number moves, as the slice, refine and translate
+ versions moved for the same reader.
+
+ 23: the same readers read more of the page (n159). The text of a shortcut or collapsed reference (`[dogs' bowl]`) and the
+ text of a link whose label is an address are no prose to the mask (`typography-link-text.ts`), so the slate's twin collapse
+ (`collapseKey`, `straightenProseQuotes`) keeps the marks in them and two renderings that differ by such a mark no longer
+ collapse; and the validator's prose guillemet floor (`translate-guillemets.ts`) refuses a candidate the grammar refuses when
+ it carries a guillemet, since no parse tells its prose from code. Both change which candidates a slate holds as one and
+ which it accepts. The check that would let the change ride inside 22 (no slice-cache record written after the change, shown
+ beside a control that finds records) was not made, since no runs directory is read in this round, so the number moves, as
+ the lane-contest, slice, refine and translate versions move for the same readers.
+
+ 23 also covers the tense of quoted words (n161, TianqiChen666): the house rule, the producer's tense line and the judges' tense
+ lines now say that words quoted as someone wrote or said them keep the speaker's tense, so a consolidation or a ballot stored
+ under 22 may hold a quotation moved into the past. The key hashes the version, the shape of the run and the texts and not the
+ sheet, so a record written under the old sheet would be served under the new one; no record had been written at 23 when this was
+ written: the numbers n159 set were first committed in `277145a862` together with R1, and the audit of that commit found 0
+ slice-cache records under the keyless worktree's runs directory (`s228/cache-audit-n161.txt`, line 992), so this rides inside the
+ number n159 set.
+
+ 24: the tense sentences moved again (n166, Z11). The house tense rule's sentence that puts the narrative of a life in the past now
+ holds the quoted-words exception inside it, and the judge tail's sentence that says no rule holds a life in the present holds it
+ too, so the sheets the consolidation and its judges read word the rule differently from 23. The key hashes the version, the shape
+ of the run and the texts and not the sheet, so a record written at 23 under the earlier wording of the same rule would be served
+ under the new one. Whether such a record exists is not measured here: the audit of n161 found none, but the launch started since at
+ `5f6c8593d7` runs at 23 and no runs directory is read in this round, so the number moves, as the lane-contest, slice, refine,
+ translate and page title versions move for the same sheets. No record has been written at 24, which this change sets first.
+ */
+export const CONSOLIDATE_CACHE_VERSION = 24;
+
+/**
+ What a line-structured slice appends to its key material.
+
+ APPENDED, NEVER INSERTED, and only when the rule governs. A prose slice
+ therefore hashes exactly the material it hashed before this mark existed,
+ so every prose consolidation already settled stays resumable. Only the
+ governed slices, whose producer sheet genuinely gained a rule, are re-bought.
+
+ NOT A CACHE VERSION BUMP, which would have been correct and wasteful: it
+ would discard the prose settlements too, and they were bought under a sheet
+ identical to the one they would be re-bought under.
+ */
+const LINE_STRUCTURED_KEY_MARK = 'line-structured';
+
+/**
+ What a slice carrying picture readings labels them with.
+
+ LABELLED AND PAIRED, unlike the mark above it, because this append carries
+ CONTENT rather than a fact. A bare append of the readings could collide with
+ the mark for a reading whose words happen to be `line-structured`, and a
+ label in front of them costs one array element to make that impossible.
+ */
+const PICTURE_KEY_LABEL = 'pictures';
+
+/**
+ What a slice carrying a window labels its ORIGINAL side with.
+
+ TWO LABELS RATHER THAN ONE, because the two sides are independently absent:
+ a slice can stand beside a section the archive never translated, and folding
+ them under a single label would let a source-only window and an
+ incumbent-only one collide.
+
+ SPELLED AS `translateSliceKey` SPELLS IT, so a reader tracing one window
+ through both keys meets the same two words.
+ */
+const NEIGHBOURING_SOURCE_KEY_LABEL = 'neighbouring';
+
+/**
+ What a slice carrying a window labels its ARCHIVE side with.
+ */
+const NEIGHBOURING_INCUMBENT_KEY_LABEL = 'neighbouring-incumbent';
+
+/**
+ What a slice whose lane texts were offered on the slate labels them with
+ (class forty, 2026-09-17). Appended only when any were, so every slice
+ whose standing was an endorsed eligible lane keys as it always did.
+ */
+const LANE_TEXTS_KEY_LABEL = 'lane-texts';
+
+/**
+ Everything about this run that changes what the voices are ASKED.
+
+ Without it a resumed slice could return a settlement reached by a different
+ roster and nothing would look wrong, since the texts match and so the key
+ matches. Identity context belongs here for the same reason the contest gives:
+ it is front-matter-derived prompt content that varies per pair and measurably
+ changes the answer.
+
+ `perCallTimeoutMs` is deliberately ABSENT, on the reasoning every other lane
+ gives: it changes how long a voice has to answer, not what it is asked.
+
+ @param modelIds - writers asked to produce, and the judges where none are named
+
+ @param judgeModelIds - slate judges and gate, which decide what ships, so a
+ settlement another bench reached never resumes (ledger X11: they left the key
+ when `9a7d48354` split them from the writers on 2026-09-02)
+
+ @param identityContext - names and handles both documents declare
+
+ @param lifeEnded - whether the entry records a death, folded in only when it
+ does, so an entry that records none keys as before
+
+ @param subjectNames - names the translation declares for its subject, folded in
+ with a recorded death, since the tense candidates read each as a subject
+
+ @param referenceContext - what the pages the original cites say, folded in
+ only when the original cites any
+
+ @param polishConfig - naturalness roles and document guard facts
+
+ @param declaredNamePairs - names the front matter declares, source beside
+ rendering, which the standing and slate floors read; folded in only when
+ there are any (ledger A13: they reached the key only through the identity
+ context, which lists the same fields in other words)
+
+ @returns Stable string for the key
+
+ @example
+ ```ts
+ const runShape = consolidateRunShape({ modelIds, identityContext, declaredNamePairs: [], },);
+ ```
+ */
+export function consolidateRunShape(
+  {
+    modelIds,
+    judgeModelIds = modelIds,
+    identityContext,
+    lifeEnded,
+    subjectNames,
+    referenceContext,
+    polishConfig,
+    declaredNamePairs,
+  }: {
+    readonly modelIds: readonly RosterModelId[];
+    readonly judgeModelIds?: readonly RosterModelId[];
+    readonly identityContext?: string;
+    readonly lifeEnded?: boolean;
+    readonly subjectNames?: readonly string[];
+    readonly referenceContext?: string;
+    readonly polishConfig?: ConsolidationPolishConfig;
+    readonly declaredNamePairs: readonly DeclaredNamePair[];
+  },
+): string {
+  return JSON.stringify([
+    modelIds,
+    judgeModelIds,
+    identityContext ?? '',
+    ...(((referenceContext ?? '') === '') ? [] : [referenceContext,]),
+    ...((lifeEnded === true)
+      ? [
+        [
+          'life-ended',
+          subjectNames ?? [],
+        ],
+      ]
+      : []),
+    ...((polishConfig === undefined)
+      ? []
+      : [
+        polishConfig.refinerModelIds,
+        polishConfig.judgeModelIds,
+        polishConfig.gateModelIds,
+        polishConfig.declaredNames,
+        polishConfig.definitions,
+      ]),
+    ...((declaredNamePairs.length === 0) ? [] : [declaredNamePairs,]),
+  ],);
+}
+
+/**
+ Cross-run key for one consolidated slice.
+
+ THE CONTEST BALLOTS ARE IN IT, which is what separates this key from the
+ contest's own. The consolidation sheet shows the producers what the contest
+ judges said about each lane, as claims rather than as verdicts, so two
+ consolidations over identical candidates and different ballots are not the
+ same question and must not resume into one another.
+
+ THE STANDING TEXT IS IN IT SEPARATELY from the two lane renderings, because
+ it is not derivable from them here: the contest may have declined, in which
+ case nothing stands, and the deciding half behaves differently.
+
+ THE SLICE INDEX IS NOT IN IT, matching every other lane. Where a slice sits
+ changes nothing a voice is asked, and keeping the index would discard every
+ settled consolidation after a renumbering.
+
+ @param runShape - what this run asks, from {@link consolidateRunShape}
+
+ @param sourceText - slice original, which is the standard
+
+ @param incumbentText - archive rendering, which is the structural standard
+
+ @param syntax - syntax role changing producer, judge and gate policies
+
+ @param repairText - what the repair lane would ship
+
+ @param translateText - what the translate lane would ship
+
+ @param standingText - what ships today, empty where the contest declined
+
+ @param ballots - what the contest judges said, shown to the producers
+
+ @param lineStructured - whether the enclosing chunk is line-structured,
+ which decides whether the producer sheet carries the rule against merging
+ lines, and so decides what was bought
+
+ @param pictureContext - what the pictures this slice and its neighbours
+ show were read to say, absent where none were read
+
+ @param neighbouringSourceText - original of the passages either side, absent
+ where the slice stands alone, since the window is shown to the producers
+
+ @param neighbouringIncumbentText - archive rendering of the passages either
+ side, absent for the same reason
+
+ @param laneTexts - lane texts offered on the slate beside the proposals,
+ absent or empty where the standing was an endorsed eligible lane (class
+ forty, 2026-09-17)
+
+ @param archiveDisputeNote - the dispute note a disputed slice is settled
+ under, absent on an undisputed one
+
+ @returns Hash keying this slice's settlement
+
+ @example
+ ```ts
+ const key = consolidateSliceKey({ runShape, sourceText, incumbentText, repairText, translateText, standingText, ballots, lineStructured, },);
+ ```
+ */
+export function consolidateSliceKey(
+  {
+    runShape,
+    sourceText,
+    incumbentText,
+    syntax,
+    repairText,
+    translateText,
+    standingText,
+    ballots,
+    lineStructured,
+    pictureContext,
+    neighbouringSourceText,
+    neighbouringIncumbentText,
+    laneTexts = [],
+    archiveDisputeNote,
+  }: {
+    readonly runShape: string;
+    readonly sourceText: string;
+    readonly incumbentText: string;
+    readonly syntax?: SliceSyntax;
+    readonly repairText: string;
+    readonly translateText: string;
+    readonly standingText: string;
+    readonly ballots: readonly LaneContestBallot[];
+    readonly lineStructured: boolean;
+    readonly pictureContext?: string;
+    readonly neighbouringSourceText?: string;
+    readonly neighbouringIncumbentText?: string;
+    readonly laneTexts?: readonly LaneText[];
+    readonly archiveDisputeNote?: string;
+  },
+): string {
+  return hashContent({
+    content: JSON.stringify([
+      'consolidate',
+      CONSOLIDATE_CACHE_VERSION,
+      runShape,
+      sourceText,
+      incumbentText,
+      ...((syntax === undefined)
+        ? []
+        : [
+          'syntax',
+          syntax,
+        ]),
+      repairText,
+      translateText,
+      standingText,
+      ballots,
+      ...(lineStructured ? [LINE_STRUCTURED_KEY_MARK,] : []),
+      // THE READING'S WORDS RATHER THAN ITS OWN KEY, matching
+      // `translate-slice-key.ts` exactly, and for its reason: what changes a
+      // producer's answer is the words it was shown, so two runs that read one
+      // picture into different words asked different questions however identical
+      // their texts were.
+      //
+      // APPENDED AND ONLY WHEN PRESENT, so a slice near no readable picture
+      // hashes the array it always hashed. Most slices carry no pictures, and
+      // discarding their settled consolidations to record an absence would buy
+      // the corpus nothing.
+      ...(((pictureContext === undefined) || (pictureContext === ''))
+        ? []
+        : [
+          PICTURE_KEY_LABEL,
+          pictureContext,
+        ]),
+      // THE WINDOW, on the same terms and for the same reason: the judges of a
+      // consolidation read the passages either side from 2026-08-22, and a
+      // settlement decided without them answered a different question.
+      //
+      // AFTER THE PICTURES RATHER THAN BEFORE, which is where the sibling
+      // `translateSliceKey` puts the same two fields. Appending is this file's
+      // own convention and the labels make position irrelevant to correctness,
+      // so the orders differ and neither is wrong; a reader comparing the two
+      // keys side by side should not read the difference as a defect.
+      //
+      // UNLIKE THE PICTURE APPEND, THIS IS NOT CHEAP. Most slices carry no
+      // picture, so that field left almost every settled consolidation
+      // resumable. Nearly every slice of a multi-slice document HAS a window,
+      // so nearly every settlement keyed before this is re-bought. That is the
+      // correct outcome rather than a regrettable one: resuming them would
+      // return answers to a question nobody asked.
+      ...(((neighbouringSourceText === undefined) || (neighbouringSourceText === ''))
+        ? []
+        : [
+          NEIGHBOURING_SOURCE_KEY_LABEL,
+          neighbouringSourceText,
+        ]),
+      ...(((neighbouringIncumbentText === undefined) || (neighbouringIncumbentText === ''))
+        ? []
+        : [
+          NEIGHBOURING_INCUMBENT_KEY_LABEL,
+          neighbouringIncumbentText,
+        ]),
+      // THE LANE TEXTS OFFERED, appended only when any were, so a slate that
+      // carries them is never served a settlement bought by one that did not
+      // and every other slice keys as before (class forty, 2026-09-17).
+      ...((laneTexts.length === 0)
+        ? []
+        : [
+          LANE_TEXTS_KEY_LABEL,
+          laneTexts,
+        ]),
+      // THE DISPUTE NOTE, appended only when present: a slice settled under
+      // accepted claims against its archive, whose archive the rule may refuse,
+      // asks a different question from the same texts undisputed (owner,
+      // 2026-09-27, "No eligible standing").
+      ...(((archiveDisputeNote === undefined) || (archiveDisputeNote === ''))
+        ? []
+        : [
+          'dispute',
+          archiveDisputeNote,
+        ]),
+    ],),
+  },);
+}
+
+//endregion Consolidate key

@@ -1,0 +1,296 @@
+import type { CompletionUsage, } from '@monochromatic-dev/module-llm-type/ts';
+
+import { wholeOpening, } from '@monochromatic-dev/translation-repair-markup/ts';
+import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import type { StreamWireFormat, } from './stream-wire-format.ts';
+
+//region Completion shape
+// Provider protocol reading the streaming clients share. A 200 reply that fails
+// these expectations is a provider defect and throws; what the model wrote is
+// never judged here, that is chatJson's job and flows as data. The non-streaming
+// body parser that once lived here went with the last non-streaming call
+// (ledger B30).
+//
+// BOTH PROVIDERS THROW THESE CLASSES, so neither message names one. `hyper-client.ts`
+// records why it reuses `SyntheticHttpError` rather than adding a class of its own,
+// and states that the name is wrong and the rename is held with the `SyntheticClient`
+// rename. That note covers the NAME. The MESSAGES were a separate problem, because a
+// name is read by whoever edits this file and a message is read by whoever is holding
+// a broken run at two in the morning.
+//
+// FOUND IN A LIVE LOG, not by reading: `panel gemma-4-26b-a4b-it: MalformedCompletionError:
+// Synthetic completion body violated the OpenAI-compatible contract`. Every one of that
+// model's 51 billed calls that run went to Charm Hyper. The message sent the reader to
+// the wrong provider's status page.
+//
+// SO A MESSAGE HERE STATES ONLY WHAT THIS FILE KNOWS: a status, a detail, an excerpt.
+// A caller that does know which provider answered says so through `summary`, which the
+// two meter endpoints now do because each is bound to one provider by construction.
+//
+// THE CONTRACT A BODY BROKE IS THE READER'S TO NAME (ledger B90). The fix for that live
+// log took the provider's name out and kept "the OpenAI-compatible contract", which the
+// Hyper call it showed did not speak either: it was an Anthropic Messages stream. Every
+// `MalformedCompletionError` now carries the wire format its reader read the body as.
+
+/**
+ Most UTF-16 units of the body excerpt embedded in thrown errors,
+ bounding log size while keeping enough context to diagnose; the excerpt
+ ends on a whole character (`wholeOpening`).
+ */
+const BODY_EXCERPT_LIMIT = 600;
+
+/**
+ Signals a non-success HTTP status from the Synthetic API.
+
+ @example
+ ```ts
+ throw new SyntheticHttpError({ status: 429, bodyText: reply.bodyText, },);
+ ```
+ */
+export class SyntheticHttpError extends Error {
+  /**
+   HTTP status the API returned; drivers branch on 429 for backoff.
+   */
+  public readonly status: number;
+
+  /**
+   Opening of the response body for diagnosis.
+   */
+  public readonly bodyExcerpt: string;
+
+  /**
+   Builds failure carrying status and body opening.
+
+   @param status - non-success HTTP status
+
+   @param bodyText - raw response body, excerpted for the message
+
+   @param summary - what went wrong, where a subclass knows something this
+   class cannot infer from a status. Absent leaves the plain status line.
+   The excerpt is appended either way, so no subclass has to know how long
+   an excerpt runs or how to label whose words it quotes
+
+   @example
+   ```ts
+   new SyntheticHttpError({ status: 500, bodyText: 'upstream exploded', },);
+   ```
+   */
+  public constructor(
+    {
+      status,
+      bodyText,
+      summary,
+      excerpt = 'quoted',
+    }: {
+      readonly status: number;
+      readonly bodyText: string;
+      readonly summary?: string;
+      readonly excerpt?: 'quoted' | 'withheld';
+    },
+  ) {
+    // THE EXCERPT IS QUOTED INTO THE MESSAGE ON PURPOSE for this class, which
+    // stays unmarked for that reason; a subclass that declares its message
+    // quote-free withholds it and keeps it on `bodyExcerpt`, which
+    // `exchangeFailureLogText` (`exchange-failure-text.ts`) reads for log
+    // lines alone; `provider-budget-refusal.ts` and
+    // `decision-context-refusal.ts` read it to classify a refusal.
+    super(
+      (excerpt === 'withheld')
+        ? (summary ?? `provider API returned HTTP ${String(status,)}`)
+        : `${summary ?? `provider API returned HTTP ${String(status,)}:`} ${
+          wholeOpening({
+            text: bodyText,
+            units: BODY_EXCERPT_LIMIT,
+          },)
+        }`,
+    );
+    this.name = 'SyntheticHttpError';
+    this.status = status;
+    this.bodyExcerpt = wholeOpening({
+      text: bodyText,
+      units: BODY_EXCERPT_LIMIT,
+    },);
+  }
+}
+
+/**
+ Contract each wire format holds a body to, as a refusal names it.
+
+ NAMED BY THE READER THAT REFUSED, never assumed here (ledger B90). The
+ Anthropic readers throw this class too, and a message naming only the
+ OpenAI-compatible contract told a reader holding a failed Hyper call that
+ an OpenAI-shaped body was broken. The keys are the closed set of formats
+ the stream readers declare, never text from a body.
+ */
+const CONTRACT_NAMES: Readonly<Record<StreamWireFormat, string>> = {
+  openai: 'OpenAI-compatible',
+  anthropic: 'Anthropic Messages',
+};
+
+/**
+ Signals a success-status completion body that violates the contract of the
+ wire format it was read as; always a provider defect, never a
+ model-content defect.
+
+ @example
+ ```ts
+ throw new MalformedCompletionError({ wireFormat: 'openai', detail: 'stream event is not valid JSON', },);
+ ```
+ */
+export class MalformedCompletionError extends Error {
+  /**
+   Declares this message safe to forward: it names which part of the protocol the body broke, never the body.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   Builds failure naming the violated expectation.
+
+   @param wireFormat - format the refusing reader read the body as, which names the contract
+
+   @param detail - which contract expectation the body violated
+
+   @param cause - underlying parse error when JSON itself failed
+
+   @example
+   ```ts
+   new MalformedCompletionError({ wireFormat: 'anthropic', detail: 'stream event is not JSON', cause: error, },);
+   ```
+   */
+  public constructor(
+    {
+      wireFormat,
+      detail,
+      cause,
+    }: {
+      readonly wireFormat: StreamWireFormat;
+      readonly detail: string;
+      readonly cause?: unknown;
+    },
+  ) {
+    super(
+      `completion body violated the ${CONTRACT_NAMES[wireFormat]} contract: ${detail}`,
+      // Conditional spread keeps cause absent when none was supplied.
+      ...(cause === undefined
+        ? []
+        : [{ cause, },]),
+    );
+    this.name = 'MalformedCompletionError';
+  }
+}
+
+/**
+ Text and optional usage extracted from one completion body.
+
+ @example
+ ```ts
+ const extracted: ExtractedCompletion = { text: '{"issues":[]}', };
+ ```
+ */
+export type ExtractedCompletion = {
+  /**
+   Verbatim `message.content` of the first choice;
+   empty when the API refused and returned no content.
+   Reasoning arrives in a separate field, so content is the answer channel.
+   THAT FIELD'S NAME VARIES BY MODEL on this provider, `reasoning_content` on
+   some and `reasoning` on others, measured 2026-08-21; `stream-delta-scan.ts`
+   carries the per-model counts. Nothing here has to choose between them,
+   because this path reads the answer and never the thinking.
+   */
+  readonly text: string;
+
+  /**
+   First-class refusal from the message `refusal` field;
+   a stronger signal than any heuristic over content.
+   */
+  readonly refusal?: string;
+
+  /**
+   Token usage when the server reported it; feeds budget observability.
+   Completion counts include thinking tokens,
+   which dominate output on these models.
+   */
+  readonly usage?: CompletionUsage;
+
+  /**
+   Why the model stopped, verbatim from `choices[0].finish_reason`.
+
+   READ BECAUSE A COMPLETION THAT STOPPED EARLY IS INDISTINGUISHABLE FROM A
+   MALFORMED ONE WITHOUT IT. A model cut off mid-answer delivers a whole,
+   well-formed stream with no unreadable frames, and the only symptom
+   downstream is that its content does not parse. Reported as a schema
+   mismatch, that sends a reader to the prompt and the schema; reported as
+   `length`, it sends them to the token ceiling instead. Measured on a live
+   lane-contest round where one voice stopped mid-string at 287 characters.
+
+   ABSENT RATHER THAN DEFAULTED when the provider omits it, since guessing
+   `stop` would assert the very thing this exists to establish.
+   */
+  readonly finishReason?: string;
+};
+
+/**
+ Reads why one choice stopped, when the provider said.
+
+ @param choice - one entry of the choices array
+
+ @returns Spreadable fragment carrying the reason, or nothing
+
+ @example
+ ```ts
+ const fragment = readFinishReason({ choice, },);
+ ```
+ */
+export function readFinishReason(
+  { choice, }: { readonly choice: Readonly<Record<string, unknown>>; },
+): { readonly finishReason?: string; } {
+  /**
+   Reason as delivered, which providers may omit or send as null.
+   */
+  const reason = choice.finish_reason;
+  return (((typeof reason) === 'string') && (reason !== ''))
+    ? { finishReason: reason, }
+    : {};
+}
+
+/**
+ Reads optional usage block when both component counts are numbers.
+
+ @param parsed - whole parsed completion body
+
+ @returns Usage block, or nothing when absent or mistyped
+
+ @example
+ ```ts
+ const usage = readUsage({ parsed, },);
+ ```
+ */
+export function readUsage({ parsed, }: { readonly parsed: Readonly<Record<string, unknown>>; },): {
+  readonly usage?: CompletionUsage;
+} {
+  /**
+   Usage block as delivered, when any.
+   */
+  const { usage, } = parsed;
+  if (!isJsonRecord(usage,))
+    return {};
+
+  /**
+   Component token counts pulled out for numeric validation.
+   */
+  const {
+    prompt_tokens: promptTokens,
+    completion_tokens: completionTokens,
+  } = usage;
+  if (((typeof promptTokens) !== 'number') || ((typeof completionTokens) !== 'number'))
+    return {};
+
+  return {
+    usage: {
+      prompt_tokens: promptTokens,
+      completion_tokens: completionTokens,
+    },
+  };
+}
+
+//endregion Completion shape
