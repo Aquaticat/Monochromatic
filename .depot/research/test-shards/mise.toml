@@ -1,3 +1,7 @@
+[tools]
+# Hold the CLI version whose split/report and credential source paths were audited for this experiment.
+"github:depot/cli" = "2.102.23"
+
 [tasks.prepare]
 dir = "{{config_root}}/../../.."
 shell = "node --input-type=module-typescript -e"
