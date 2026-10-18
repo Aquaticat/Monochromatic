@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "measuredAt": "2026-10-18T12:39:36.916Z",
+  "measuredAt": "2026-10-18T13:02:58.232Z",
   "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "guardUsd": 5,
   "pricingSource": {
@@ -20,6 +20,37 @@
     "rateUsdPerMinute": 0
   },
   "rows": [
+    {
+      "id": 117675260634,
+      "name": "Actual finite compiler conformance and mutation fixture (a)",
+      "status": "completed",
+      "conclusion": "failure",
+      "labels": [
+        "depot-ubuntu-24.04-8"
+      ],
+      "runner": "depot-hd7dpn8lzv",
+      "startedAt": "2026-10-18T12:27:57Z",
+      "completedAt": "2026-10-18T12:30:33Z",
+      "seconds": 156,
+      "rateUsdPerMinute": 0.024,
+      "nominalElapsedUsd": 0.062400000000000004,
+      "conservativeRoundedMinuteUsd": 0.07200000000000001,
+      "dedupeKey": "github:Aquaticats/Monochromatic:run:39127382413:attempt:1:job:117675260634",
+      "provider": "depot-github-runner",
+      "run": 39127382413,
+      "attempt": 1,
+      "workflowSha": "775d735adbc34c4caea7c626a43f27cd27d0d971",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "resourceShape": {
+        "requestedLabel": [
+          "depot-ubuntu-24.04-8"
+        ],
+        "vcpu": 8,
+        "memoryGiB": 32
+      },
+      "reservationUsd": 0,
+      "invoice": false
+    },
     {
       "id": 117673897828,
       "name": "Explicit active source specs after retained inactive-root discovery failure (a)",
@@ -1028,26 +1059,55 @@
       "spentUpperBoundUsd": 0.72,
       "reservationUsd": 0,
       "invoice": false
+    },
+    {
+      "dedupeKey": "depot-ci:l4zncjjbj5:run:9zvpr3t592:job:2mkshtfs6m:attempt:sjm3wrr50d",
+      "provider": "depot-ci",
+      "run": "9zvpr3t592",
+      "job": "2mkshtfs6m",
+      "attempt": "sjm3wrr50d",
+      "workflowSha": "799b35f63ffaaa869996dc34800fd2ef05ca5995",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "resourceShape": {
+        "size": "8x32",
+        "vcpu": 8,
+        "memoryGiB": 32
+      },
+      "startedAt": "2026-10-18T12:41:03Z",
+      "completedAt": "2026-10-18T12:50:38Z",
+      "intervalScope": "provider run interval, not independently sampled worker interval",
+      "seconds": 575,
+      "listRateUsdPerMinute": 0.024,
+      "listRateBasis": "8 vCPU times Depot CI published0.00005USD per vCPU-second times60; source-bound planning rate, no invoice",
+      "nominalRunIntervalProxyUsd": 0.23,
+      "spentUpperBoundUsd": 0.72,
+      "reservationUsd": 0,
+      "invoice": false
     }
   ],
   "activeReservation": {
-    "profile": "current-desktop",
-    "provider": "depot-ci",
-    "workflowSha": "799b35f63ffaaa869996dc34800fd2ef05ca5995",
+    "profile": "packed-install",
+    "provider": "depot-github-runner",
+    "workflowSha": "0ef69d6b90dcf7ba948bdaa10aa26fbbf3c7f12f",
     "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
     "resourceShape": {
       "vcpu": 8,
       "memoryGiB": 32,
-      "jobMinutes": 30,
-      "campaignMinutes": 27,
-      "buildJobs": 4
+      "jobMinutes": 15,
+      "maximumParallelJobs": 1,
+      "consumerContainer": {
+        "vcpu": 2,
+        "memoryGiB": 2,
+        "pids": 256,
+        "network": false
+      }
     },
-    "reservationUsd": 0.72
+    "reservationUsd": 0.36
   },
   "nominalMeasuredGithubElapsedUsd": 1.0500000000000003,
   "conservativeCompletedGithubRoundedMinuteUsd": 1.3200000000000007,
-  "conservativeCompletedNativeReservedUpperBoundUsd": 1.44,
-  "guardCommittedAndReservedUsd": 3.4800000000000004,
+  "conservativeCompletedNativeReservedUpperBoundUsd": 2.16,
+  "guardCommittedAndReservedUsd": 3.8400000000000007,
   "limits": [
     "Source-bound campaign compute only",
     "No account usage or invoice inspected",

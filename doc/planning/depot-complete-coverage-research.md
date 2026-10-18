@@ -1141,3 +1141,49 @@ Its 391550 bytes have SHA-256 `e93b3f330656a5f7c7c7c629d915cc70e0dda8a1bfdc8fb6a
 The desktop prerequisite,
 packed-install,
 and semantic-manifest queue items remain independently owned.
+
+## Desktop producer and remaining finite controls
+
+Depot CI run `9zvpr3t592` at `799b35f63ffaaa869996dc34800fd2ef05ca5995` is terminal.
+The original frozen compositor build succeeds and reports version `0.6.0`;
+the actual Mise lookup resolves that real producer.
+The desktop E2E unit owner passes with the installed ImageMagick and actual PNG fixtures.
+The original desktop release owner first fails bindgen's configured libclang lookup.
+After installing a symlink to the real Ubuntu libclang library at the frozen task's `/usr/lib64` path,
+the unchanged build owner succeeds.
+Both current-source release binaries are retained and hash-verified.
+The actual default E2E owner starts private audio and a transient user unit,
+then stops before its first check because compositor `0.6.0` defaults to nested winit without a live parent display.
+The source requires an explicit `--headless` flag for display-free rendering.
+A separate finite consumer will restore those exact binaries and forward that supported option;
+it will preserve the default failure and every product assertion.
+Both scoped cleanup receipts prove no owned runtime container,
+application process,
+or active test unit remains,
+and private sink names are restored.
+The failed remote asset observer returned `stream error: internal: proxy connection failed`;
+its artifact contains no observer receipt,
+so no producer asset-byte result is claimed from it.
+
+The independently verifiable remaining queue is:
+
+- Restore the current-source desktop binaries,
+  capture actual materialized asset hashes,
+  and run the original graphical consumer through its supported headless compositor boundary.
+- Execute the prepared proper pnpr packed-install profile,
+  retaining raw Git object IDs,
+  actual working-file hashes,
+  actual tarball hashes,
+  dependency-free rejection,
+  installed consumers,
+  CLI output,
+  and real bundler/plugin behavior.
+- Complete the feature/assertion/generator/consumer classification with explicit unproven surfaces.
+- Reconcile current e02 source/task/dependency inputs against historical Mac/Windows cohorts;
+  retain material current-source owner gaps and prepare the smallest finite host control.
+
+The current packed-install reservation is USD0.36.
+The campaign guard conservatively retains USD1.32 rounded GitHub time plus USD2.16 completed native job maxima,
+for USD3.84 committed and reserved against USD5.
+These are source-bound published-rate bounds and proxies,
+not invoices or account-wide usage.
