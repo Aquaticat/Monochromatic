@@ -1,6 +1,6 @@
 # Depot trial interview
 
-## Published research and pending first interview round on 2026-10-18
+## Published research and accepted first interview round on 2026-10-18
 
 Research tip `64d814b21cae7399270cfcc244ad98c78aa905ec` is published through the isolated merge worktree.
 Direct remote readback is `3bd497b16a46b08f45a06d09b8c767ce83dbcad4`;
@@ -12,9 +12,7 @@ The finite factual execution and reconciliation queue is closed with the limits 
 This does not assert complete product-feature or source-branch coverage.
 No fresh independent whole-report review ran after the agent service quota was exhausted.
 
-The first interview round is posted through the question tool.
-Q1 and Q2 are answered;
-Q3 remains pending:
+The first interview round is answered through the question tool:
 
 - Q1 is accepted: use a regression ratchet.
   Enforce known-good checks and block new or changed failures.
@@ -26,18 +24,29 @@ Q3 remains pending:
   This replaces the recommended nightly breadth.
   Private personal fixtures stay local.
   Dependency-based selection still needs qualification because the frozen task graph has a cycle.
-- Q3: Linux orchestration order.
-  Recommend GitHub orchestration with Depot runners first and explicit native promotion criteria,
-  over keeping GitHub as the default indefinitely,
-  then immediately making native CI the eligible Linux default.
-  Both products remain in scope;
-  native paused-session attachment is still unqualified.
+- Q3 is accepted: staged native promotion.
+  Introduce Depot-managed runners under GitHub orchestration,
+  then qualify selected Linux workflows for native Depot CI against explicit acceptance criteria.
+  This is a rollout order within a permanent hybrid,
+  not a path to making Depot the default for all eligible Linux work.
+  Native paused-session attachment is still unqualified.
+
+The user explicitly clarified that Depot never fully replaces GitHub Actions.
+GitHub-hosted runners themselves remain heavily used,
+including ordinary eligible work rather than only platform exceptions or emergency fallback.
+Retaining GitHub orchestration while moving its execution to Depot does not satisfy this requirement.
+The permanent design has GitHub-hosted execution,
+Depot-managed GitHub runners and selected native Depot CI workflows.
+Provider placement follows workload suitability and measured benefit within that constraint.
+The report's former description of native Depot as the Linux orchestration pool is retracted.
+The user's correction confirms the intentional hybrid already recorded in the Q14 trial answer.
+It does not reopen provider replacement as an interview choice.
 
 The Developer baseline,
 additional-pool approach and USD 200 all-provider planning ceiling remain settled.
 No production implementation is unlocked by posting this round.
-The next action is to record Q3,
-recompute the dependent interview frontier and obtain confirmation of shared understanding before implementation.
+The next action is to verify and publish these accepted constraints,
+then ask the dependent interview frontier and obtain confirmation of shared understanding before implementation.
 
 ## Final local capture and publication checkpoint on 2026-10-18
 
