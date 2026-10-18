@@ -65,6 +65,19 @@ The expanded checkpoint contains 542 source files from those repositories,
 including the complete installed CLI implementation and additional SDK and integration source.
 Retrieval state and substantive review state are separate fields.
 
+A further source pass captures metadata for all 93 enumerated official repositories
+and 142 additional root README,
+license,
+policy,
+and dependency-manifest files.
+The public `depot/docs` repository at `e40bfe1683ae561156d415513f2a648f89e82f12` contains 117 MDX pages.
+Every public-source route matched a deployed page.
+The deployed GitHub Actions API,
+Nx Cache,
+and Xcode Cache pages are absent from that public source tree.
+The compressed receipt preserves this route map and the exact public MDX source.
+Claim-level content differences and supplementary implementation relevance remain under review.
+
 The installed CLI is audited against release `v2.102.23`,
 source commit `1f96d6d488f938de97ea640b115e9567ebfd6fbf`.
 Visible help traversal initially missed a single-space command column;
