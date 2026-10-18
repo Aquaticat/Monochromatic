@@ -993,3 +993,17 @@ The separately requested three-ZIP guest-transformation review remains queued af
 GitHub run `39132577785`,
 harness `3829831039cc43aa717c6c927f835b867e9313b6`.
 This queue item admits no allocation by the reviewer.
+
+### Installed Nextest fail-fast source handoff
+
+The desktop-control owner requested read-only evidence for an environment-only fail-fast override.
+The installed `cargo-nextest 0.9.148` reports commit `cd1d6d5467322dbc0d39a80cb671d000ac302798`;
+a fresh official tag lookup binds that release to the same commit.
+Its clean existing source clone and actual `run --help` agree:
+`cargo-nextest/src/dispatch/core/run.rs:169` to `191` declares the fail-fast flags without an environment binding.
+The default config at `nextest-runner/default-config.toml:58` sets `fail-fast = true`.
+`NEXTEST_FAIL_FAST=false` was not qualified as an override.
+The explicit `NEXTEST_PROFILE` parser binding at `cargo-nextest/src/dispatch/common.rs:75`
+requires an appropriately configured profile;
+this source check does not qualify an unexecuted workaround.
+No test build or allocation was performed for this handoff.

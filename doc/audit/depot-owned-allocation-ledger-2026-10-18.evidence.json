@@ -29,7 +29,7 @@
     },
     {
       "area": "coverage",
-      "status": "canonical inventory requested"
+      "status": "canonical public/private inventories received"
     },
     {
       "area": "Rust/reuse",
@@ -37,15 +37,122 @@
     },
     {
       "area": "platform/BuildKit/SDK",
-      "status": "canonical inventory requested"
+      "status": "canonical BuildKit/SDK/ARM inventories received"
     }
   ],
-  "sources": [],
+  "sources": [
+    {
+      "path": "doc/audit/depot-runtime-platform-2026-10-18.evidence.json",
+      "bytes": 41178,
+      "sha256": "bd7343f9da42347e1f4120db594e1a16e81138c4a0ca46f81007fb575466fa56"
+    },
+    {
+      "path": "doc/audit/depot-native-orchestration-2026-10-18.evidence.json",
+      "bytes": 107578,
+      "sha256": "6ca4b3da50cca5c5cb663d62e99c60316092401fa940fd9b08356f948dca4d9e"
+    },
+    {
+      "path": "doc/audit/depot-physical-test-shards-2026-10-18.evidence.json",
+      "bytes": 274465,
+      "sha256": "8f60677242795919c87c4df463e59867ff3259c3b73bc36b7bfdf531ec9558c0"
+    },
+    {
+      "path": "doc/audit/depot-runtime-pr-2026-10-18.evidence.json",
+      "bytes": 68505,
+      "sha256": "77c81b7a905aea61dd169168be35fd285668d7368c22bf176f171a102d95fb57"
+    },
+    {
+      "path": "doc/audit/depot-service-containers-2026-10-18.evidence.json",
+      "bytes": 109619,
+      "sha256": "263c908bbac51e083607a34fe45f98a1e484b5b748ad89ca59430d27390e7dd2"
+    },
+    {
+      "path": "doc/audit/depot-container-prerequisites-2026-10-18.evidence.json",
+      "bytes": 10110,
+      "sha256": "2f815850559c5b6bb51179197ce29b014869fcd762b527e73a8cf05a3e140d32"
+    },
+    {
+      "path": "doc/audit/depot-process-timeouts-2026-10-18.evidence.json",
+      "bytes": 40121,
+      "sha256": "f4235d4ee6c3cbc440d4644d61004f9e731dca279dcc3a8150f8e9fdd76f62b5"
+    },
+    {
+      "path": "doc/audit/depot-job-policy-history-2026-10-18.evidence.json",
+      "bytes": 122264,
+      "sha256": "86ba8e4e6c037d9d3b46ab2b13865719631506dc7156b44d969c95cee45d1f50"
+    },
+    {
+      "path": "doc/audit/depot-mvm-kvm-2026-10-18.evidence.json",
+      "bytes": 699540,
+      "sha256": "27e7ce1448eb866b75cafd47514e39fd3772fd45f75c7847ba6c69f35062fedc"
+    },
+    {
+      "path": "doc/audit/depot-github-kvm-documentation-contradiction-2026-10-18.evidence.json",
+      "bytes": 40813,
+      "sha256": "60ac5e5e1a7f8130eee4312d5d7bd65dd671085080ca0039cd74d03dae01154e"
+    },
+    {
+      "path": "doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json",
+      "bytes": 211336,
+      "sha256": "5fd82136c26b007aba1dc7c7484d9bb974ac84bf568738e649a3b09a923fd72b"
+    },
+    {
+      "path": "doc/audit/depot-sdk-custom-runtime-2026-10-18.evidence.json",
+      "bytes": 62613,
+      "sha256": "c59389080c2afdb1f0333aad47f39222655803b966b085cc865724938f49a862"
+    },
+    {
+      "path": "doc/audit/depot-developer-sandbox-sdk-2026-10-18.evidence.json",
+      "bytes": 45663,
+      "sha256": "00b33e0e40e7ee248f8c9772ff28dfcb7951d73b2f6a38121d613fbd2893b48f"
+    },
+    {
+      "path": "doc/audit/depot-tests-identity-adapter-2026-10-18.evidence.json",
+      "bytes": 40888,
+      "sha256": "d797f2e82d4a411f04ca850b4c0d90c6ae6bc122a7937d98d26cbd7a25acd605"
+    },
+    {
+      "path": "doc/audit/depot-arm64-functional-2026-10-18.evidence.json",
+      "bytes": 32677,
+      "sha256": "3518b6fe8b26c0e9232088728c4e69b451880d6c256e9c13d1b17970dfa379cf"
+    },
+    {
+      "path": "doc/audit/depot-reuse-strategy-2026-10-18.evidence.json",
+      "bytes": 2136385,
+      "sha256": "953c19261abc6502610dd3bb5388eb2bc9282e5e6b095d0028e926fd3c3a7d85"
+    },
+    {
+      "path": "doc/audit/depot-rust-coverage-2026-10-18.evidence.json",
+      "bytes": 13526147,
+      "sha256": "2029eca3c85114de70598297f7e8d2d263ca9e84e497012f60c981a72ed03ff1"
+    },
+    {
+      "path": "doc/audit/depot-included-allowance-2026-10-18.evidence.json",
+      "bytes": 7644,
+      "sha256": "73eea6bc8ad717e76d1e6f158328a29ed6f056b06ae4b0ffd3a0ae6314a931be"
+    },
+    {
+      "path": "doc/audit/depot-combined-product-pricing-2026-10-18.evidence.json",
+      "bytes": 8964,
+      "sha256": "933fa5192300d380bd01ba456709de4406ce2af7733579a937f4ff6e59d29b1d"
+    },
+    {
+      "path": "doc/planning/depot-complete-coverage-budget-ledger.json",
+      "bytes": 64980,
+      "sha256": "e0acb60dce45b0e6c251b79e93042297fb8072ce614f2ac3d5dd6edb2a39610d"
+    }
+  ],
   "rows": [],
   "totals": null,
   "pendingIndependentGuestReview": {
     "githubRunId": "39132577785",
     "harnessSha": "3829831039cc43aa717c6c927f835b867e9313b6",
     "status": "queued after publication; separate from allocation normalization"
+  },
+  "reconciliationProgress": {
+    "sourceDocuments": 20,
+    "candidateNativeRunIds": 75,
+    "candidateGithubRunIds": 40,
+    "candidateClassification": "Exact owned identifiers from retained source; jobs/attempts, omitted prerequisites and cumulative mirrors still being reconciled"
   }
 }
