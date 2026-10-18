@@ -81,6 +81,9 @@ Options:
 - `--no-error-on-unmatched-pattern` accepts a path argument that matches nothing.
 - `--debug` adds execution notes on standard error,
   including every file selected or ignored.
+- `--report-unused-disable-directives` reports inline directives that suppressed nothing as warnings,
+  and `--report-unused-disable-directives-severity <SEVERITY>` sets their severity;
+  see "Inline directives".
 
 ## Configuration
 
@@ -423,10 +426,12 @@ their absence is not a completion claim.
 `mutation:markdown` runs full container tests and Clippy before scoped native Markdown mutation.
 `mutation:executable` does the same for the orchestration modules,
 the executable's entry point,
+the command grammar,
 Rust rule selection,
 input expansion and the fix loop;
 `mutation:core` for configuration,
 findings,
+inline directives,
 grouped edits and the syntax-only Rust rules;
 `mutation:semantic` for the semantic engine and the explicit-type rule;
 and `mutation:processors:files` for the processor modules.

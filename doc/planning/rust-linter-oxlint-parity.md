@@ -324,6 +324,8 @@ doc comments are not directives,
 although the coverage ledger listed "any comment token".
 Markdown directives are HTML comments,
 and MDX has none.
+The `README.md:66` and `README.md:132` lines cited above no longer exist in the package README;
+its section "Inline directives" replaces them.
 
 ### D3. Config file format and location
 
