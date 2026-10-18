@@ -904,8 +904,18 @@ A mount-free local container using the resolved Semgrep image reproduced the can
 Its positive single-pattern controls matched `FROM $BASE` and `CMD ...`,
 while the current rule's `CMD $...VARS` pattern did not match the same file.
 The scanned file's bytes were independently checked inside that container.
-The pinned engine's source represents JSON argv and shell commands differently;
-the complete integration diagnosis and replacement-tool qualification remain open.
+The pinned engine's source represents JSON argv and shell commands differently.
+A separate current-scanner control now detects the same missing-user input with the exact fixed rule pack:
+official Semgrep `1.181.0`,
+image digest `sha256:81474464c1f07483ba0682a44787fd93c91397419762a04abe2bafaae396304b`,
+reports one finding and no errors.
+The `CMD $...VARS` control also changes from no match to one match,
+while `FROM $BASE` matches in both versions.
+The current image resolves `semgrep` through its configured `PATH`;
+the old integration's absolute `/usr/local/bin/semgrep` path fails with exit 127 in that image.
+That fixture failure is retained separately from the corrected consumer.
+Updating only the image version is therefore not a qualified integration fix.
+The precise upstream engine change and the complete Depot integration upgrade remain unqualified.
 Separately,
 the suffix filename was excluded from Semgrep's scanned paths.
 The CLI's source also discards scanner process-wait errors and silently skips malformed JSON output.
@@ -1019,7 +1029,8 @@ The installed Docker configuration uninstall path will not be exercised against 
 - Finish the built-in Dockerfile lint diagnosis:
   Hadolint has a working positive control,
   but the configured old Semgrep image did not match the selected missing-user control.
-  Compare a current pinned scanner and retain the security-scanning coverage gap.
+  The separate current pinned scanner detects the same control.
+  Finish source and upstream recording without counting it as a repaired built-in integration.
 - Document the verified empty image-catalog `--output json` plaintext branch
   and complete its upstream contribution gate.
 - Keep the successful service/job-container receipts separate from the remaining
@@ -1052,6 +1063,16 @@ The installed Docker configuration uninstall path will not be exercised against 
   and language recipes.
 - Finish public status-history pagination and component coverage before interpreting reliability;
   no uptime denominator is currently established.
+- Qualify a per-test Nextest identity adapter after checking for a built-in classname control.
+  Preserve raw JUnit and frozen application input,
+  derive explicitly labeled identities only if needed,
+  and test positive and rejected mappings before an owned serial physical-shard profile.
+  The parent admitted one concurrent VM,
+  unchanged seeds,
+  separate physical shards,
+  a consumer,
+  and a bounded read-only history follow-up under the shared USD 1 physical-campaign ceiling.
+  No production reporting or routing change follows from that admission.
 
 The source/evidence ledger will distinguish discovered,
 retrieved,
