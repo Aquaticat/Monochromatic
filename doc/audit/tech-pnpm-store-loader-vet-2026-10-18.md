@@ -1,6 +1,6 @@
 <!--
-status: in progress; context, hard constraints and rubric frozen; evidence collection in flight
-lifecycle-phase: discovery and screening delegated; no finalist validated yet
+status: in progress; worktree experiment evidence recorded; upstream audit and repository inventory in flight
+lifecycle-phase: candidate B hard-gate probes executed; final gate outcomes pending the remaining evidence classes
 subject: pnpm store-loader
 scope: Decide whether the Monochromatic monorepo can migrate dependency linking from the pnpm isolated node_modules linker to the pnpm experimental loaded linker (store loader).
 started: 2026-10-18
@@ -292,9 +292,119 @@ with citations when the delegations return; the scratch files are the raw backin
 
 ### Repository inventory (pending)
 
-### Experiment results (pending)
+### Experiment results (disposable worktree, 2026-10-18)
 
-## Hard-gate outcomes (pending)
+Raw backing: `${HOME}/temp/agent/store-loader-research-20261018/experiment.md` (execution manifest,
+484 lines) with artifacts `install-1.log`, `install-2.log`, `install-3.log`, `probe-timings.md`
+(19 timed probes via `probes.mjs`), `rolldown-build-phase2.log`, `rolldown-build-phase2-preload.log`,
+`store-manifest.phase1.json`, `main-nm-baseline.log`.
+Worktree `cas-worktree`, detached at `a1dfc3ab92a03ce6e647b1a5ccafab11e6cfd070`,
+pnpm 12.14.0, Node v26.12.0, mise 2026.10.0.
+Environment deviation: the worktree lives on the encrypted volume, so pnpm fell back from the home
+store to `/var/mnt/encrypted/.pnpm-store/v11` (hard links cannot cross devices); recorded in every
+install log and harmless to the classification results.
+
+Configuration acceptance and install gates:
+
+- `nodeLinker: { type: loaded }` (object form) is accepted by pnpm 12.14.0;
+  `node_modules/.modules.yaml` records `"nodeLinker": "loaded"`.
+- Install attempt 1 failed in 0.433 s with `ERR_PNPM_CAS_REQUIRES_MATERIALIZATION`:
+  `Package core-js needs materialization with the loaded linker`, even though `allowBuilds` maps
+  `core-js: false`. The materialization gate fired despite disabled build scripts; recorded as an
+  upstream-evidence wrinkle (lead-verified in `install-1.log`).
+- With `excluded: [core-js]`, the warm install completed in 0.804 s (`Done in 770ms`);
+  lockfile and supply-chain gates passed (`Lockfile passes supply-chain policies`).
+- Phase 2 excluded 8 names (`core-js`, `rolldown`, `oxlint`, `oxlint-tsgolint`, `typescript`, `sharp`,
+  `satteri`, `@bruits/satteri`): install 0.685 s, `+57` packages materialized into the GVS.
+
+Layout facts (phase 1 unless noted; lead-verified directly against the worktree):
+
+- Root `node_modules` holds only `.bin` (32 shims), `.modules.yaml`,
+  `.pnpm/` (`.store-loader.mjs` 115821 B, `.store-manifest.json` 6268011 B, `cas-bins/` with 51
+  hashed JS bin wrappers, `lock.yaml`) and `.pnpm-workspace-state-v1.json`.
+  No package directories and no `@monochromatic-dev/` symlinks exist anywhere in the project.
+- Manifest v1 phase 1: 762 entries = 181 `root` (project root, 179 workspace directories,
+  core-js GVS) + 581 CAS `files` entries; the lockfile carries 652 packages over 181 workspace
+  projects. Phase 2: 238 roots / 524 files / 58 `resolution: "node"` entries.
+- The `link:` override shims appear as `root` entries pointing at their real `package/shim/*`
+  directories (lead-verified in `store-manifest.phase1.json`: `node-domexception`, `proper-lockfile`,
+  `readable-stream`, `ungap-structured-clone`), so the substitution mechanism survives at loader level.
+- The GVS lives outside the project at `/var/mnt/encrypted/.pnpm-store/v11/links`
+  (shared directory measured 535 M across projects).
+- CAS bin shims self-register the loader and export
+  `NODE_OPTIONS=--import=file://.../node_modules/.pnpm/.store-loader.mjs` to children;
+  GVS-materialized bin shims do not register the loader.
+- The logger sink directory `node_modules/.monochromatic` was still created and written by the
+  unit-test probe run, so that first-party writer tolerates the layout.
+
+Runtime probes (phase 1, then phase 2 delta):
+
+- Bare `node` third-party import: FAIL (`Cannot find package 'execa'`); with the `--import` preload:
+  PASS; `pnpm exec node`: PASS via the NODE_OPTIONS mechanism. The repository's mise tasks spawn bare
+  `node` and `.bin` shims directly, never `pnpm run/test/exec`, so no current workflow receives the
+  preload (corroborated by the repository inventory).
+- CJS (`yaml`), JSON (require and ESM `with { type: 'json' }` on `@changesets/config/schema.json`),
+  cross-package `createRequire`, exports gating: PASS.
+- Virtual URLs behave as documented: `import.meta.resolve('execa')` returns
+  `.pnpm-loader/<sha256>/index.js`; `fs` reads of it fail ENOENT; the directory never exists.
+- Workspace TypeScript unit test (`package/module/or-throw/src/non-nullish-or-throw.unit.test.ts`):
+  bare node FAIL (`Cannot find package '@monochromatic-dev/module-test'`); under preload PASS
+  (exit 0) once the built `dist` exists for the self-reference import; sibling `/ts` workspace imports
+  and their third-party dependencies resolve under the loader because workspace roots are real
+  directories and Node's own type stripping applies.
+- Native/napi packages from CAS: FAIL (`rolldown`, `sharp`, `satteri` with
+  `Cannot find native binding`; TypeScript 7's JS launcher ENOENTs reading its own virtual
+  `package.json`). Under phase-2 exclusions all six import/CLI probes PASS
+  (`tsc --version` 7.0.2, `rolldown` v1.2.13, `oxlint` 1.88.0, `sharp`, `satteri`).
+  The loader also enforces declared-dependency edges
+  (`Package package/ssg/aquati.cat does not declare @bruits/satteri`).
+- `tsc --build` on `package/module/or-throw` (phase 2, typescript materialized): exit 2 with 83
+  errors; TS2307 for every workspace `/ts` import and the shared config packages, cascading
+  TS5097/TS2550 from the lost base tsconfig. tsc's own fs-based resolution sees neither CAS nor GVS.
+- rolldown build on `package/module/async-iter` (phase 2): without preload, config resolution fails
+  (`Cannot find package '@monochromatic-dev/config-rolldown'`); with NODE_OPTIONS preload the config
+  loads but the build fails with Rust-side `TSCONFIG_ERROR` on
+  `@monochromatic-dev/config-typescript/dom` plus a transitive napi package
+  (`@yuku-core/binding-linux-x64-gnu` via `rolldown-plugin-dts`) whose `.node` blob cannot load from
+  CAS. The napi exclusion tail is discovered at runtime, not statically.
+- Bin shims: pure-JS bins PASS standalone (`browserslist` 4.29.3); napi bins FAIL in phase 1 and
+  PASS in phase 2.
+
+Scale deltas (measured):
+
+- Main worktree `node_modules` under the isolated linker: 20 G, 1761060 files
+  (`du`/`find`, wall 1 m 11.6 s for the count).
+- CAS worktree `node_modules`: 6.9 M / 96 files (phase 1), 6.7 M / 97 files (phase 2).
+- Warm-store CAS install under 1 s for the whole 181-project graph.
+
+Experiment conclusion (gate outcomes recorded in the Hard-gate outcomes section):
+pure-JS runtime consumption works as documented today; the type-check and bundle workflows are broken
+under the loaded layout even with the toolchain materialized, because fs-based resolvers outside
+Node's loader hooks (tsc, rolldown's Rust side) cannot see CAS or GVS packages, and the napi
+materialization tail is long and only discovered at runtime.
+
+## Hard-gate outcomes (interim)
+
+Candidate B (loaded linker), from the worktree experiment; final dispositions await the upstream
+audit and repository inventory:
+
+- Constraint 1 (mise-run workflows keep working): **FAIL, proven**. `tsc --build` exits 2 with 83
+  errors on one small package even with `typescript` materialized (probe h); rolldown builds fail on
+  the Rust-side tsconfig lookup and a hidden napi dependency even with preload and exclusions
+  (probe j); unit tests pass only with an explicit `--import` preload that no current mise task
+  injects, and `.bin` shims for GVS-materialized tools do not self-register the loader.
+- Constraint 2 (native/napi/WASM loadable): **conditional pass** via `excluded` materialization;
+  the exclusion set is discovered at runtime (hidden napi deps such as `@yuku-core` surfaced only
+  during a build), which conflicts with reproducible CI expectations pending the inventory.
+- Constraint 3 (supply-chain policy keeps effect): **pass so far**; lockfile and policy checks run
+  unchanged, `link:` shims resolve as manifest root entries; `.pnpmfile` hook execution under CAS
+  installs pending the upstream source audit.
+- Constraint 7 (Node floor): host **pass** (v26.12.0 >= 26.2.0); Playwright container and Electron
+  surfaces pending the repository inventory.
+- Constraints 4, 5, 6, 8: pending; no counterevidence observed yet.
+
+Candidates A, C, D, E: no gate executed yet; A is the incumbent baseline, C/D/E screening evidence
+arrives with the upstream audit and repository inventory.
 
 ## Scoring and sensitivity (pending)
 
