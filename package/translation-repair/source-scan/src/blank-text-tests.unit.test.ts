@@ -891,1298 +891,1298 @@ const HELD_TESTS: Readonly<Record<string, {
   readonly tests: number;
   readonly why: string;
 }>> = {
-  'absolute-naturalness-review-stage.ts#summarizeSeat': {
+  'archive/absolute-naturalness-review-stage.ts#summarizeSeat': {
     tests: 2,
     why: ASSEMBLED,
   },
-  'adjudicate-prompt.ts#buildAdjudicationMessages': {
+  'adjudication/adjudicate-prompt.ts#buildAdjudicationMessages': {
     tests: 3,
     why: ASSEMBLED,
   },
-  'anthropic-completion.ts#extractAnthropicCompletion': {
+  'provider/anthropic-completion.ts#extractAnthropicCompletion': {
     tests: 3,
     why: 'a payload line and a stop reason of the provider\'s protocol, and the prose beside a tool answer, '
       + 'compared only to log how much of it was set aside; whether the tool answered is asked of '
       + '`rendersAsNothing`',
   },
-  'anthropic-completion.ts#foldMessageDelta': {
+  'provider/anthropic-completion.ts#foldMessageDelta': {
     tests: 1,
     why: PROTOCOL,
   },
-  'anthropic-delta-scan.ts#readDelta': {
+  'provider-stream/anthropic-delta-scan.ts#readDelta': {
     tests: 1,
     why: DELTA,
   },
-  'anthropic-delta-scan.ts#readLine': {
+  'provider-stream/anthropic-delta-scan.ts#readLine': {
     tests: 1,
     why: PROTOCOL,
   },
-  'anthropic-tool.ts#renderToolSystemPrompt': {
+  'provider/anthropic-tool.ts#renderToolSystemPrompt': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'anthropic-whole-message.ts#framesOf': {
+  'provider/anthropic-whole-message.ts#framesOf': {
     tests: 1,
     why: PROTOCOL,
   },
-  'anthropic-whole-message.ts#isProtocolWord': {
+  'provider/anthropic-whole-message.ts#isProtocolWord': {
     tests: 1,
     why: PROTOCOL,
   },
-  'archive-block-review-wire.ts#buildArchiveBlockReviewMessages': {
+  'archive/archive-block-review-wire.ts#buildArchiveBlockReviewMessages': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'archive-block-review-wire.ts#isWritten': {
+  'archive/archive-block-review-wire.ts#isWritten': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'archive-replacement-candidates.ts#replacementCandidates': {
+  'archive/archive-replacement-candidates.ts#replacementCandidates': {
     tests: 1,
     why: DECIDED_REMOVAL,
   },
-  'archive-revision-shape.ts#revisionShapeFindings': {
+  'archive/archive-revision-shape.ts#revisionShapeFindings': {
     tests: 1,
     why: DECIDED_REMOVAL,
   },
-  'ascii-letters.ts#isAsciiDigits': {
+  'markup/ascii-letters.ts#isAsciiDigits': {
     tests: 1,
     why: SCANNER,
   },
-  'assembly-container-halves.ts#carriesText': {
+  'assembly/assembly-container-halves.ts#carriesText': {
     tests: 1,
     why: 'a replacement at a slice the archive never translated, where the empty string is how a half '
       + 'ships nothing; the translate lane decides no wording there that shows a reader nothing '
       + '(`assertAbsentSliceFilled`), and `spliceSlices` asks `rendersAsNothing` again',
   },
-  'assembly-orphan-trim.ts#isDefinition': {
+  'assembly/assembly-orphan-trim.ts#isDefinition': {
     tests: 1,
     why: SENTINEL,
   },
-  'assembly-orphan-trim.ts#isGone': {
+  'assembly/assembly-orphan-trim.ts#isGone': {
     tests: 1,
     why: SENTINEL,
   },
-  'assembly-orphan-trim.ts#isProse': {
+  'assembly/assembly-orphan-trim.ts#isProse': {
     tests: 1,
     why: SENTINEL,
   },
-  'assembly-orphan-trim.ts#keep': {
+  'assembly/assembly-orphan-trim.ts#keep': {
     tests: 4,
     why: 'a footnote label a helper returns empty for a block that is no definition, and the gap and text '
       + 'the function itself is putting together',
   },
-  'assembly-orphan-trim.ts#walkLine': {
+  'assembly/assembly-orphan-trim.ts#walkLine': {
     tests: 2,
     why: 'a blank line by the markup\'s own grammar, and a footnote label a helper returns empty for a line '
       + 'that is no definition',
   },
-  'assembly-repetition.ts#whitespaceTokensOf': {
+  'assembly/assembly-repetition.ts#whitespaceTokensOf': {
     tests: 1,
     why: SCANNER,
   },
-  'bedrock-ledger.ts#bedrockCreditUsdFrom': {
+  'provider/bedrock-ledger.ts#bedrockCreditUsdFrom': {
     tests: 1,
     why: SETTING,
   },
-  'bedrock-ledger.ts#bedrockLedgerPathFrom': {
+  'provider/bedrock-ledger.ts#bedrockLedgerPathFrom': {
     tests: 1,
     why: SETTING,
   },
-  'bedrock-ledger.ts#toEntry': {
+  'provider/bedrock-ledger.ts#toEntry': {
     tests: 1,
     why: RECORD,
   },
-  'bedrock-stream-end.ts#isUsageChunk': {
+  'provider/bedrock-stream-end.ts#isUsageChunk': {
     tests: 1,
     why: PROTOCOL,
   },
-  'bilingual-pair-bound.ts#nonEmpty': {
+  'translate-floor/bilingual-pair-bound.ts#nonEmpty': {
     tests: 1,
     why: SCANNER,
   },
-  'bilingual-pair-bound.ts#pairBoundFindings': {
+  'translate-floor/bilingual-pair-bound.ts#pairBoundFindings': {
     tests: 1,
     why: ARCHIVE_ABSENT,
   },
-  'candidate-ledger.ts#readContestLedger': {
+  'house-rule/candidate-ledger.ts#readContestLedger': {
     tests: 1,
     why: SETTING,
   },
-  'candidate-select-wire.ts#isCanonicalIndexText': {
+  'adjudication/candidate-select-wire.ts#isCanonicalIndexText': {
     tests: 1,
     why: 'the text of a ballot\'s quoted index, asked whether it spells a whole number; the empty text is '
       + 'none, and any invisible character fails the digit test that follows',
   },
-  'chat-json-outcome.ts#readJsonOutcome': {
+  'provider/chat-json-outcome.ts#readJsonOutcome': {
     tests: 2,
     why: SENTINEL,
   },
-  'cited-reference-fetch.ts#failureOf': {
+  'slice-reading/cited-reference-fetch.ts#failureOf': {
     tests: 1,
     why: TOOL,
   },
-  'cited-reference-fetch.ts#fetchedOf': {
+  'slice-reading/cited-reference-fetch.ts#fetchedOf': {
     tests: 3,
     why: TOOL,
   },
-  'cited-reference-lookup.ts#citedReferenceBlock': {
+  'reference/cited-reference-lookup.ts#citedReferenceBlock': {
     tests: 1,
     why: SETTING,
   },
-  'cited-reference-lookup.ts#referenceLineOf': {
+  'reference/cited-reference-lookup.ts#referenceLineOf': {
     tests: 2,
     why: TOOL,
   },
-  'cited-reference-rule.ts#citedReferenceBlockText': {
+  'slice-reading/cited-reference-rule.ts#citedReferenceBlockText': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'cited-reference-rule.ts#citedReferenceCandidateLines': {
+  'slice-reading/cited-reference-rule.ts#citedReferenceCandidateLines': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'cited-reference-rule.ts#citedReferenceEvidence': {
+  'slice-reading/cited-reference-rule.ts#citedReferenceEvidence': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'cited-reference-scan.ts#hasContent': {
+  'reference/cited-reference-scan.ts#hasContent': {
     tests: 1,
     why: SCANNER,
   },
-  'community-glossary.ts#departuresOf': {
+  'glossary/community-glossary.ts#departuresOf': {
     tests: 1,
     why: ARCHIVE_ABSENT,
   },
-  'completion-shape.ts#readFinishReason': {
+  'provider-stream/completion-shape.ts#readFinishReason': {
     tests: 1,
     why: PROTOCOL,
   },
-  'consolidate-driver.ts#consolidateInContext': {
+  'corpus-pass/consolidate-driver.ts#consolidateInContext': {
     tests: 3,
     why: ASSEMBLED,
   },
-  'consolidate-gate-wire.ts#buildConsolidateGateMessages': {
+  'consolidate/consolidate-gate-wire.ts#buildConsolidateGateMessages': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'consolidate-gate-wire.ts#hasPolicy': {
+  'consolidate/consolidate-gate-wire.ts#hasPolicy': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'consolidate-key.ts#consolidateRunShape': {
+  'artifact/consolidate-key.ts#consolidateRunShape': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'consolidate-key.ts#consolidateSliceKey': {
+  'artifact/consolidate-key.ts#consolidateSliceKey': {
     tests: 4,
     why: ASSEMBLED,
   },
-  'consolidate-settle-context.ts#settlementContextOf': {
+  'consolidate/consolidate-settle-context.ts#settlementContextOf': {
     tests: 3,
     why: ASSEMBLED,
   },
-  'consolidate-settle.ts#settleConsolidation': {
+  'consolidate/consolidate-settle.ts#settleConsolidation': {
     tests: 1,
     why: STANDING,
   },
-  'consolidate-slice-buy.ts#buyConsolidationAttempt': {
+  'consolidate/consolidate-slice-buy.ts#buyConsolidationAttempt': {
     tests: 1,
     why: STANDING,
   },
-  'consolidate-standing-verdict.ts#readStandingVerdict': {
+  'consolidate/consolidate-standing-verdict.ts#readStandingVerdict': {
     tests: 1,
     why: ARCHIVE_ABSENT,
   },
-  'consolidate-wire.ts#buildConsolidateMessages': {
+  'consolidate/consolidate-wire.ts#buildConsolidateMessages': {
     tests: 2,
     why: ASSEMBLED,
   },
-  'consolidate-wire.ts#isDisplayed': {
+  'consolidate/consolidate-wire.ts#isDisplayed': {
     tests: 1,
     why: 'a lane\'s candidate on the producer sheet, which the package passes empty for a lane that wrote '
       + 'none',
   },
-  'consolidate-wire.ts#isPresent': {
+  'consolidate/consolidate-wire.ts#isPresent': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'consolidate-wire.ts#renderBlock': {
+  'consolidate/consolidate-wire.ts#renderBlock': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'consolidation-polish-gate-wire.ts#buildConsolidationPolishGateMessages': {
+  'consolidate/consolidation-polish-gate-wire.ts#buildConsolidationPolishGateMessages': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'consolidation-polish-gate-wire.ts#hasRule': {
+  'consolidate/consolidation-polish-gate-wire.ts#hasRule': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'consolidation-polish-round.ts#present': {
+  'consolidate/consolidation-polish-round.ts#present': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'container-integrity.ts#nameOf': {
+  'slice-reading/container-integrity.ts#nameOf': {
     tests: 1,
     why: PARSED,
   },
-  'contributor-name-authority.ts#carriesNames': {
+  'house-rule/contributor-name-authority.ts#carriesNames': {
     tests: 1,
     why: PARSED,
   },
-  'contributor-name-authority.ts#contributorDeclarationLines': {
+  'house-rule/contributor-name-authority.ts#contributorDeclarationLines': {
     tests: 2,
     why: PARSED,
   },
-  'contributor-name-authority.ts#nonempty': {
+  'house-rule/contributor-name-authority.ts#nonempty': {
     tests: 1,
     why: PARSED,
   },
-  'corpus-name-index.ts#nonEmpty': {
+  'corpus-source/corpus-name-index.ts#nonEmpty': {
     tests: 1,
     why: PARSED,
   },
-  'corpus-run/archive-block-repair.ts#repairArchiveBlocks': {
+  'page-check/corpus-run/archive-block-repair.ts#repairArchiveBlocks': {
     tests: 1,
     why: DECIDED_REMOVAL,
   },
-  'corpus-run/archive-italic-spans.ts#titleLike': {
+  'page-check/corpus-run/archive-italic-spans.ts#titleLike': {
     tests: 1,
     why: PARSED,
   },
-  'corpus-run/archive-italic-title-restore.ts#isTitleInProse': {
+  'page-check/corpus-run/archive-italic-title-restore.ts#isTitleInProse': {
     tests: 1,
     why: SENTINEL,
   },
-  'corpus-run/archive-stub.ts#stripStubMarkersWithOrigins': {
+  'page-check/corpus-run/archive-stub.ts#stripStubMarkersWithOrigins': {
     tests: 3,
     why: SCANNER,
   },
-  'corpus-run/artifact-generation.ts#censusByGeneration': {
+  'artifact-pool/corpus-run/artifact-generation.ts#censusByGeneration': {
     tests: 1,
     why: RECORD,
   },
-  'corpus-run/artifact-placement.ts#readPlacement': {
+  'artifact-pool/corpus-run/artifact-placement.ts#readPlacement': {
     tests: 1,
     why: RECORD,
   },
-  'corpus-run/artifact-pool.ts#resolvePool': {
+  'artifact-pool/corpus-run/artifact-pool.ts#resolvePool': {
     tests: 4,
     why: 'a required commit as the invoker wrote it, which the entry reads from its environment and hands in, '
       + 'and the full id the function resolved it to, which it leaves empty when none was required',
   },
-  'corpus-run/artifact-provenance.ts#assertArtifactProvenance': {
+  'artifact-pool/corpus-run/artifact-provenance.ts#assertArtifactProvenance': {
     tests: 2,
     why: RECORD,
   },
-  'corpus-run/artifact-two-lane-read-naturalness-seat.ts#parseFinding': {
+  'artifact/corpus-run/artifact-two-lane-read-naturalness-seat.ts#parseFinding': {
     tests: 1,
     why: 'a finding stored in an artifact, held to the empty-string rule the record was written under; the '
       + 'wire guard asks `rendersAsNothing` before a finding is ever stored',
   },
-  'corpus-run/artifact-two-lane-read-naturalness-seat.ts#parseNaturalnessReviewSeat': {
+  'artifact/corpus-run/artifact-two-lane-read-naturalness-seat.ts#parseNaturalnessReviewSeat': {
     tests: 1,
     why: RECORD,
   },
-  'corpus-run/artifact-two-lane-rebuild-rows.ts#carveDivergence': {
+  'artifact-pool/corpus-run/artifact-two-lane-rebuild-rows.ts#carveDivergence': {
     tests: 1,
     why: SENTINEL,
   },
-  'corpus-run/artifact-two-lane-rebuild.ts#rebuildPreparation': {
+  'artifact/corpus-run/artifact-two-lane-rebuild.ts#rebuildPreparation': {
     tests: 1,
     why: SENTINEL,
   },
-  'corpus-run/attribution-line.ts#readSignature': {
+  'rendering-audit/corpus-run/attribution-line.ts#readSignature': {
     tests: 1,
     why: 'whether any name span stands between a signature\'s dashes and its end mark; a span that shows a '
       + 'reader nothing is still where the signer belongs, the name restore writes the signer\'s rendering '
       + 'into it, and `nameAuthorities` asks `rendersAsNothing` before a page name becomes a rendering',
   },
-  'corpus-run/attribution-read.ts#attributionEntryOf': {
+  'probe/corpus-run/attribution-read.ts#attributionEntryOf': {
     tests: 1,
     why: RECORD,
   },
-  'corpus-run/audit-sensitivity-oracle.ts#meetsOracle': {
+  'probe/corpus-run/audit-sensitivity-oracle.ts#meetsOracle': {
     tests: 1,
     why: AUDIT_FOCUS,
   },
-  'corpus-run/audit-sensitivity-oracle.ts#shownText': {
+  'probe/corpus-run/audit-sensitivity-oracle.ts#shownText': {
     tests: 1,
     why: AUDIT_FOCUS,
   },
-  'corpus-run/audit-sensitivity-print.ts#voiceLines': {
+  'probe/corpus-run/audit-sensitivity-print.ts#voiceLines': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'corpus-run/blockquote-paragraphs.ts#blockquoteParagraphs': {
+  'page-check/corpus-run/blockquote-paragraphs.ts#blockquoteParagraphs': {
     tests: 2,
     why: SCANNER,
   },
-  'corpus-run/blockquote-quote-unify.ts#wraps': {
+  'page-check/corpus-run/blockquote-quote-unify.ts#wraps': {
     tests: 1,
     why: SCANNER,
   },
-  'corpus-run/budget-sample-keys.ts#readProviderKeys': {
+  'run/corpus-run/budget-sample-keys.ts#readProviderKeys': {
     tests: 8,
     why: SETTING,
   },
-  'corpus-run/cache-account-commits.ts#sourceCommitOf': {
+  'slice-cache/corpus-run/cache-account-commits.ts#sourceCommitOf': {
     tests: 1,
     why: TOOL,
   },
-  'corpus-run/cache-account-git.ts#written': {
+  'slice-cache/corpus-run/cache-account-git.ts#written': {
     tests: 1,
     why: TOOL,
   },
-  'corpus-run/cache-account-run.ts#listed': {
+  'slice-cache/corpus-run/cache-account-run.ts#listed': {
     tests: 1,
     why: TOOL,
   },
-  'corpus-run/canadian-date-parts.ts#monthStartsName': {
+  'page-check/corpus-run/canadian-date-parts.ts#monthStartsName': {
     tests: 1,
     why: SCANNER,
   },
-  'corpus-run/canadian-date-parts.ts#readDay': {
+  'page-check/corpus-run/canadian-date-parts.ts#readDay': {
     tests: 1,
     why: SCANNER,
   },
-  'corpus-run/canadian-spelling-capital.ts#hasLetter': {
+  'page-check/corpus-run/canadian-spelling-capital.ts#hasLetter': {
     tests: 1,
     why: SCANNER,
   },
-  'corpus-run/canadian-spelling-context.ts#isTokenCharacter': {
+  'page-check/corpus-run/canadian-spelling-context.ts#isTokenCharacter': {
     tests: 2,
     why: SCANNER,
   },
-  'corpus-run/cap-census-read.ts#endsField': {
+  'run/corpus-run/cap-census-read.ts#endsField': {
     tests: 1,
     why: RECORD,
   },
-  'corpus-run/cap-override.ts#resolveHardCapMinutes': {
+  'run/corpus-run/cap-override.ts#resolveHardCapMinutes': {
     tests: 1,
     why: SETTING,
   },
-  'corpus-run/command-flags.ts#isNamed': {
+  'run/corpus-run/command-flags.ts#isNamed': {
     tests: 1,
     why: SETTING,
   },
-  'corpus-run/command-line.ts#optionReading': {
+  'run/corpus-run/command-line.ts#optionReading': {
     tests: 1,
     why: SETTING,
   },
-  'corpus-run/corpus-pass-lines.ts#isSaid': {
+  'corpus-pass/corpus-run/corpus-pass-lines.ts#isSaid': {
     tests: 1,
     why: SENTINEL,
   },
-  'corpus-run/corpus-pin-override.ts#readCorpusPinSetting': {
+  'run/corpus-run/corpus-pin-override.ts#readCorpusPinSetting': {
     tests: 6,
     why: SETTING,
   },
-  'corpus-run/coverage-census-commit.ts#named': {
+  'coverage-census/corpus-run/coverage-census-commit.ts#named': {
     tests: 1,
     why: TOOL,
   },
-  'corpus-run/coverage-census-commit.ts#packageCommit': {
+  'coverage-census/corpus-run/coverage-census-commit.ts#packageCommit': {
     tests: 1,
     why: TOOL,
   },
-  'corpus-run/coverage-census-input.ts#readBaselineCensus': {
+  'coverage-census/corpus-run/coverage-census-input.ts#readBaselineCensus': {
     tests: 1,
     why: RECORD,
   },
-  'corpus-run/coverage-census-print.ts#outermostInPackage': {
+  'coverage-census/corpus-run/coverage-census-print.ts#outermostInPackage': {
     tests: 1,
     why: TOOL,
   },
-  'corpus-run/coverage-control-decoy.ts#isLocatable': {
+  'coverage-census/corpus-run/coverage-control-decoy.ts#isLocatable': {
     tests: 1,
     why: 'a span the decoy cut keeps clear of, where an empty one has no place in the text; `tryCase` '
       + 'throws on a span that shows a reader nothing before any decoy is cut',
   },
-  'corpus-run/coverage-control.ts#tryCase': {
+  'coverage-census/corpus-run/coverage-control.ts#tryCase': {
     tests: 1,
     why: SENTINEL,
   },
-  'corpus-run/directory-id-name.ts#fits': {
+  'glossary/corpus-run/directory-id-name.ts#fits': {
     tests: 1,
     why: PARSED,
   },
-  'corpus-run/directory-id-name.ts#isId': {
+  'glossary/corpus-run/directory-id-name.ts#isId': {
     tests: 1,
     why: PARSED,
   },
-  'corpus-run/directory-id-name.ts#isOtherRendering': {
+  'glossary/corpus-run/directory-id-name.ts#isOtherRendering': {
     tests: 1,
     why: PARSED,
   },
-  'corpus-run/directory-id-name.ts#nonEmpty': {
+  'glossary/corpus-run/directory-id-name.ts#nonEmpty': {
     tests: 1,
     why: PARSED,
   },
-  'corpus-run/directory-id-name.ts#readsAs': {
+  'glossary/corpus-run/directory-id-name.ts#readsAs': {
     tests: 1,
     why: PARSED,
   },
-  'corpus-run/dropped-destinations.ts#markdownDestinations': {
+  'page-check/corpus-run/dropped-destinations.ts#markdownDestinations': {
     tests: 1,
     why: 'a link\'s destination, an address and no wording, where an empty one leads nowhere a page could '
       + 'owe',
   },
-  'corpus-run/editor-calibrate-run.ts#runEditorCalibrate': {
+  'bench/corpus-run/editor-calibrate-run.ts#runEditorCalibrate': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'corpus-run/editor-width-control.ts#damageable': {
+  'bench/corpus-run/editor-width-control.ts#damageable': {
     tests: 1,
     why: SENTINEL,
   },
-  'corpus-run/editor-width-model.ts#classifyWidths': {
+  'bench/corpus-run/editor-width-model.ts#classifyWidths': {
     tests: 2,
     why: WIDTH_ARM,
   },
-  'corpus-run/editor-width-slice.ts#runWidthSlice': {
+  'bench/corpus-run/editor-width-slice.ts#runWidthSlice': {
     tests: 2,
     why: WIDTH_ARM,
   },
-  'corpus-run/env-text-setting.ts#textSettingOf': {
+  'glossary/corpus-run/env-text-setting.ts#textSettingOf': {
     tests: 1,
     why: SETTING,
   },
-  'corpus-run/handle-gloss-place.ts#carriesGloss': {
+  'page-pass/corpus-run/handle-gloss-place.ts#carriesGloss': {
     tests: 1,
     why: 'an appearance\'s gloss after `appearancesIn` has read a parenthesis that shows a reader nothing '
       + 'as none, so the empty string is the decided absence',
   },
-  'corpus-run/heading-title-lines.ts#titleOf': {
+  'page-pass/corpus-run/heading-title-lines.ts#titleOf': {
     tests: 1,
     why: 'the title a helper returns empty for a line that is no HTML heading; whether a heading\'s '
       + 'rendering shows a reader anything is asked of `rendersAsNothing` where a rendering is taken from '
       + 'it (`title-reference-unify.ts`)',
   },
-  'corpus-run/insertion-carried-anchor.ts#abutting': {
+  'insertion/corpus-run/insertion-carried-anchor.ts#abutting': {
     tests: 1,
     why: PARSED,
   },
-  'corpus-run/markup-slice.ts#hasContent': {
+  'insertion/corpus-run/markup-slice.ts#hasContent': {
     tests: 1,
     why: SCANNER,
   },
-  'corpus-run/meter-report-text.ts#spanText': {
+  'run/corpus-run/meter-report-text.ts#spanText': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'corpus-run/model-catalog-compare.ts#classify': {
+  'bench/corpus-run/model-catalog-compare.ts#classify': {
     tests: 2,
     why: TOOL,
   },
-  'corpus-run/model-catalog-print.ts#printModelCatalog': {
+  'bench/corpus-run/model-catalog-print.ts#printModelCatalog': {
     tests: 1,
     why: SETTING,
   },
-  'corpus-run/name-gloss-restore.ts#readGlossLine': {
+  'page-check/corpus-run/name-gloss-restore.ts#readGlossLine': {
     tests: 1,
     why: PARSED,
   },
-  'corpus-run/ordinal-style.ts#filled': {
+  'page-pass/corpus-run/ordinal-style.ts#filled': {
     tests: 1,
     why: SCANNER,
   },
-  'consistency-sheet.ts#buildConsistencyMessages': {
+  'consistency/consistency-sheet.ts#buildConsistencyMessages': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'consistency-run-off.ts#buildConsistencyRunOffMessages': {
+  'consistency/consistency-run-off.ts#buildConsistencyRunOffMessages': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'consistency-carry-writer-sheet.ts#buildCarryWriterMessages': {
+  'consistency/consistency-carry-writer-sheet.ts#buildCarryWriterMessages': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'consistency-carry-writer-sheet.ts#isPresent': {
+  'consistency/consistency-carry-writer-sheet.ts#isPresent': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'consistency-carry-choice-sheet.ts#buildCarryChoiceMessages': {
+  'consistency/consistency-carry-choice-sheet.ts#buildCarryChoiceMessages': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'consistency-fold.ts#locateWords': {
+  'consistency/consistency-fold.ts#locateWords': {
     tests: 1,
     why: EMPTY_NEEDLE,
   },
-  'consistency-span-agreement.ts#containsWords': {
+  'consistency/consistency-span-agreement.ts#containsWords': {
     tests: 2,
     why: EMPTY_NEEDLE,
   },
-  'consistency-label-form.ts#trailingNumberOf': {
+  'consistency/consistency-label-form.ts#trailingNumberOf': {
     tests: 1,
     why: SENTINEL,
   },
-  'latin-letters.ts#isSpacedScriptWordCharacter': {
+  'markup/latin-letters.ts#isSpacedScriptWordCharacter': {
     tests: 1,
     why: SCANNER,
   },
-  'page-definitions.ts#withDefinitions': {
+  'shared-contract/page-definitions.ts#withDefinitions': {
     tests: 1,
     why: SENTINEL,
   },
-  'typography-link-text.ts#isSpace': {
+  'typography/typography-link-text.ts#isSpace': {
     tests: 1,
     why: SCANNER,
   },
-  'corpus-run/ordinal-style.ts#renderOrdinal': {
+  'page-pass/corpus-run/ordinal-style.ts#renderOrdinal': {
     tests: 1,
     why: SENTINEL,
   },
-  'corpus-run/pass-attest-references.ts#attestPassReferences': {
+  'corpus-pass/corpus-run/pass-attest-references.ts#attestPassReferences': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'corpus-run/pass-entry-persist.ts#printSettledLines': {
+  'corpus-pass/corpus-run/pass-entry-persist.ts#printSettledLines': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'corpus-run/pass-page-titles.ts#passPageTitles': {
+  'corpus-pass/corpus-run/pass-page-titles.ts#passPageTitles': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'corpus-run/pass-prepare.ts#isLine': {
+  'corpus-pass/corpus-run/pass-prepare.ts#isLine': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'corpus-run/pass-prepare.ts#prepareOver': {
+  'corpus-pass/corpus-run/pass-prepare.ts#prepareOver': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'corpus-run/pass-prepare.ts#preparePassEntry': {
+  'corpus-pass/corpus-run/pass-prepare.ts#preparePassEntry': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'corpus-run/pool-generation.ts#isKnown': {
+  'insertion/corpus-run/pool-generation.ts#isKnown': {
     tests: 1,
     why: RECORD,
   },
-  'corpus-run/process-identity.ts#startTicksOfStat': {
+  'run/corpus-run/process-identity.ts#startTicksOfStat': {
     tests: 1,
     why: TOOL,
   },
-  'corpus-run/prose-ranges.ts#pastConstruct': {
+  'glossary/corpus-run/prose-ranges.ts#pastConstruct': {
     tests: 2,
     why: SCANNER,
   },
-  'corpus-run/published-page-check.ts#filledAnAnchor': {
+  'page-check/corpus-run/published-page-check.ts#filledAnAnchor': {
     tests: 1,
     why: ARCHIVE_ABSENT,
   },
-  'corpus-run/quote-style-unify.ts#unifyQuoteStyle': {
+  'page-check/corpus-run/quote-style-unify.ts#unifyQuoteStyle': {
     tests: 1,
     why: SENTINEL,
   },
-  'corpus-run/rendering-audit-settled-buy.ts#readPage': {
+  'probe/corpus-run/rendering-audit-settled-buy.ts#readPage': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'corpus-run/rendering-audit-settled-digest.ts#digestAuditedText': {
+  'probe/corpus-run/rendering-audit-settled-digest.ts#digestAuditedText': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'corpus-run/rendering-audit-settled-report-run.ts#runSettledReport': {
+  'probe/corpus-run/rendering-audit-settled-report-run.ts#runSettledReport': {
     tests: 1,
     why: SETTING,
   },
-  'corpus-run/report-log-read.ts#linesOfLog': {
+  'run/corpus-run/report-log-read.ts#linesOfLog': {
     tests: 1,
     why: SCANNER,
   },
-  'corpus-run/required-providers.ts#assertRequiredProvidersReady': {
+  'run/corpus-run/required-providers.ts#assertRequiredProvidersReady': {
     tests: 1,
     why: SETTING,
   },
-  'corpus-run/roster-card-ask.ts#readAsk': {
+  'bench/corpus-run/roster-card-ask.ts#readAsk': {
     tests: 1,
     why: SETTING,
   },
-  'corpus-run/roster-card-listing.ts#fetchListing': {
+  'bench/corpus-run/roster-card-listing.ts#fetchListing': {
     tests: 1,
     why: SETTING,
   },
-  'corpus-run/run-config.ts#resolveRunsDir': {
+  'run/corpus-run/run-config.ts#resolveRunsDir': {
     tests: 1,
     why: SETTING,
   },
-  'corpus-run/run-providers.ts#configureProviders': {
+  'run/corpus-run/run-providers.ts#configureProviders': {
     tests: 9,
     why: SETTING,
   },
-  'corpus-run/run-timing-parse.ts#countIn': {
+  'run/corpus-run/run-timing-parse.ts#countIn': {
     tests: 1,
     why: RECORD,
   },
-  'corpus-run/run-timing-parse.ts#readCallTiming': {
+  'run/corpus-run/run-timing-parse.ts#readCallTiming': {
     tests: 2,
     why: RECORD,
   },
-  'corpus-run/runner-closure.ts#readRunnerClosure': {
+  'insertion/corpus-run/runner-closure.ts#readRunnerClosure': {
     tests: 1,
     why: SETTING,
   },
-  'corpus-run/runner-closure.ts#scanFor': {
+  'insertion/corpus-run/runner-closure.ts#scanFor': {
     tests: 1,
     why: SCANNER,
   },
-  'corpus-run/score-crosscheck-authors.ts#isSet': {
+  'probe/corpus-run/score-crosscheck-authors.ts#isSet': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'corpus-run/sheet-path.ts#isSeedSafe': {
+  'glossary/corpus-run/sheet-path.ts#isSeedSafe': {
     tests: 1,
     why: SETTING,
   },
-  'corpus-run/slice-cache-namespace.ts#belongsToNamespace': {
+  'slice-cache/corpus-run/slice-cache-namespace.ts#belongsToNamespace': {
     tests: 1,
     why: SENTINEL,
   },
-  'corpus-run/slice-cache-namespace.ts#discardNamespace': {
+  'slice-cache/corpus-run/slice-cache-namespace.ts#discardNamespace': {
     tests: 1,
     why: RECORD,
   },
-  'corpus-run/slice-cache-namespace.ts#isNamed': {
+  'slice-cache/corpus-run/slice-cache-namespace.ts#isNamed': {
     tests: 1,
     why: SENTINEL,
   },
-  'corpus-run/slice-census-entry.ts#censusEntry': {
+  'slice-cache/corpus-run/slice-census-entry.ts#censusEntry': {
     tests: 1,
     why: SENTINEL,
   },
-  'corpus-run/slice-cost-report-run.ts#reportSliceCost': {
+  'slice-cache/corpus-run/slice-cost-report-run.ts#reportSliceCost': {
     tests: 1,
     why: SETTING,
   },
-  'corpus-run/slice-overlap.ts#readOverlapSetting': {
+  'slice-cache/corpus-run/slice-overlap.ts#readOverlapSetting': {
     tests: 1,
     why: SETTING,
   },
-  'corpus-run/spend-ceiling.ts#resolveSpendCeilingUsd': {
+  'run/corpus-run/spend-ceiling.ts#resolveSpendCeilingUsd': {
     tests: 1,
     why: SETTING,
   },
-  'corpus-run/spend-read.ts#readSpendLine': {
+  'run/corpus-run/spend-read.ts#readSpendLine': {
     tests: 1,
     why: RECORD,
   },
-  'corpus-run/spend-read.ts#usdOf': {
+  'run/corpus-run/spend-read.ts#usdOf': {
     tests: 1,
     why: RECORD,
   },
-  'corpus-run/title-reference-rewrite.ts#nonEmpty': {
+  'page-pass/corpus-run/title-reference-rewrite.ts#nonEmpty': {
     tests: 1,
     why: SCANNER,
   },
-  'corpus-run/title-reference-rewrite.ts#rewriteLocated': {
+  'page-pass/corpus-run/title-reference-rewrite.ts#rewriteLocated': {
     tests: 1,
     why: 'whether the small-letter words leading into a glossed run used the whole run up; what is left is '
       + 'replaced by the heading\'s rendering whatever it shows, so a remainder that shows a reader '
       + 'nothing is written over with the title',
   },
-  'corpus-run/title-reference-scope.ts#framedPageLine': {
+  'page-pass/corpus-run/title-reference-scope.ts#framedPageLine': {
     tests: 2,
     why: SENTINEL,
   },
-  'corpus-run/window-trial-ledger.ts#endAtLineBoundary': {
+  'bench/corpus-run/window-trial-ledger.ts#endAtLineBoundary': {
     tests: 2,
     why: RECORD,
   },
-  'corpus-run/window-trial-ledger.ts#toPlaced': {
+  'bench/corpus-run/window-trial-ledger.ts#toPlaced': {
     tests: 1,
     why: RECORD,
   },
-  'corpus-run/window-trial-slice.ts#runSliceArms': {
+  'bench/corpus-run/window-trial-slice.ts#runSliceArms': {
     tests: 1,
     why: PARSED,
   },
-  'corpus-run/would-ship-text.ts#archiveStandsOr': {
+  'page-check/corpus-run/would-ship-text.ts#archiveStandsOr': {
     tests: 1,
     why: RECORD,
   },
-  'corpus-run/would-ship-text.ts#lanesAgreedOn': {
+  'page-check/corpus-run/would-ship-text.ts#lanesAgreedOn': {
     tests: 1,
     why: RECORD,
   },
-  'corpus-source.ts#nonEmpty': {
+  'corpus-source/corpus-source.ts#nonEmpty': {
     tests: 1,
     why: TOOL,
   },
-  'coverage-wire.ts#buildCoverageMessages': {
+  'archive/coverage-wire.ts#buildCoverageMessages': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'critic-prompt.ts#buildCriticMessages': {
+  'adjudication/critic-prompt.ts#buildCriticMessages': {
     tests: 2,
     why: ASSEMBLED,
   },
-  'declared-identity-rule.ts#declaredNamesBlock': {
+  'adjudication/declared-identity-rule.ts#declaredNamesBlock': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'declared-names-evidence.ts#declaredNamesEvidence': {
+  'adjudication/declared-names-evidence.ts#declaredNamesEvidence': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'delivery-coherence.ts#assertDeliveryCoherent': {
+  'lane-contest/delivery-coherence.ts#assertDeliveryCoherent': {
     tests: 2,
     why: RECORD,
   },
-  'derive-seeds.ts#splitSentences': {
+  'repair/derive-seeds.ts#splitSentences': {
     tests: 1,
     why: SCANNER,
   },
-  'disputed-wording.ts#disputedWordingFindings': {
+  'translate-floor/disputed-wording.ts#disputedWordingFindings': {
     tests: 1,
     why: 'a candidate with its whitespace taken out, asked whether any character is left to search for a '
       + 'disputed wording; an invisible one is searched and holds none',
   },
-  'document-preparation.ts#prepareDocumentPair': {
+  'adjudication/document-preparation.ts#prepareDocumentPair': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'edit-prompt.ts#buildEditorMessages': {
+  'repair/edit-prompt.ts#buildEditorMessages': {
     tests: 3,
     why: ASSEMBLED,
   },
-  'edit-prompt.ts#isPresent': {
+  'repair/edit-prompt.ts#isPresent': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'edit-prompt.ts#regionBlock': {
+  'repair/edit-prompt.ts#regionBlock': {
     tests: 1,
     why: ARCHIVE_ABSENT,
   },
-  'entry-notes.ts#isWhitespace': {
+  'rendering-audit/entry-notes.ts#isWhitespace': {
     tests: 1,
     why: SCANNER,
   },
-  'fidelity-damage.ts#alterSharedNumber': {
+  'repair/fidelity-damage.ts#alterSharedNumber': {
     tests: 2,
     why: SENTINEL,
   },
-  'fidelity-damage.ts#deleteOneSentence': {
+  'repair/fidelity-damage.ts#deleteOneSentence': {
     tests: 2,
     why: 'a sentence a helper returns empty when the slice offers none, and the archive text left once the '
       + 'control has cut that sentence',
   },
-  'fidelity-damage.ts#insertBorrowedSentence': {
+  'repair/fidelity-damage.ts#insertBorrowedSentence': {
     tests: 2,
     why: SENTINEL,
   },
-  'fidelity-damage.ts#isUsable': {
+  'repair/fidelity-damage.ts#isUsable': {
     tests: 1,
     why: SENTINEL,
   },
-  'fidelity-reference-build.ts#buildReviewedFidelityReference': {
+  'probe/fidelity-reference-build.ts#buildReviewedFidelityReference': {
     tests: 2,
     why: PARSED,
   },
-  'fidelity-reference-read.ts#readReference': {
+  'probe/fidelity-reference-read.ts#readReference': {
     tests: 1,
     why: PARSED,
   },
-  'fidelity-reference-request.ts#blankIdentity': {
+  'probe/fidelity-reference-request.ts#blankIdentity': {
     tests: 1,
     why: SETTING,
   },
-  'fidelity-reference-text.ts#applyReviewedEdits': {
+  'probe/fidelity-reference-text.ts#applyReviewedEdits': {
     tests: 2,
     why: PARSED,
   },
-  'fidelity-window-positions.ts#fidelityWindowPositions': {
+  'repair/fidelity-window-positions.ts#fidelityWindowPositions': {
     tests: 1,
     why: PARSED,
   },
-  'fidelity-window.ts#present': {
+  'repair/fidelity-window.ts#present': {
     tests: 2,
     why: PARSED,
   },
-  'footnote-graph.ts#collectRegionHits': {
+  'document-structure/footnote-graph.ts#collectRegionHits': {
     tests: 1,
     why: SCANNER,
   },
-  'footnote-graph.ts#scanFullwidthMarkers': {
+  'document-structure/footnote-graph.ts#scanFullwidthMarkers': {
     tests: 1,
     why: SCANNER,
   },
-  'footnote-identifier.ts#carriesText': {
+  'document-structure/footnote-identifier.ts#carriesText': {
     tests: 1,
     why: SCANNER,
   },
-  'footnote-mentions.ts#opensDefinition': {
+  'document-structure/footnote-mentions.ts#opensDefinition': {
     tests: 1,
     why: SCANNER,
   },
-  'footnote-rewrite-map.ts#footnoteRewriteMap': {
+  'page-pass/footnote-rewrite-map.ts#footnoteRewriteMap': {
     tests: 1,
     why: EMPTY_NEEDLE,
   },
-  'front-matter-comment-authority.ts#contributorAttribution': {
+  'slice-reading/front-matter-comment-authority.ts#contributorAttribution': {
     tests: 1,
     why: PARSED,
   },
-  'front-matter-comment-authority.ts#locationComment': {
+  'slice-reading/front-matter-comment-authority.ts#locationComment': {
     tests: 1,
     why: PARSED,
   },
-  'front-matter-translation.ts#validateFrontMatterTranslation': {
+  'translate-floor/front-matter-translation.ts#validateFrontMatterTranslation': {
     tests: 1,
     why: 'what a front matter candidate writes outside its metadata block, where anything but whitespace, '
       + 'an invisible character included, is text shipped outside the block and is refused',
   },
-  'glossary-match.ts#isSpaceLike': {
+  'glossary/glossary-match.ts#isSpaceLike': {
     tests: 1,
     why: SCANNER,
   },
-  'glossary-match.ts#occurrenceStarts': {
+  'glossary/glossary-match.ts#occurrenceStarts': {
     tests: 1,
     why: EMPTY_NEEDLE,
   },
-  'grace-override.ts#adoptCalibrationGrace': {
+  'glossary/grace-override.ts#adoptCalibrationGrace': {
     tests: 1,
     why: SETTING,
   },
-  'grace-override.ts#readWindowDial': {
+  'glossary/grace-override.ts#readWindowDial': {
     tests: 1,
     why: SETTING,
   },
-  'grade-sheet-read.ts#headedWords': {
+  'slice-reading/grade-sheet-read.ts#headedWords': {
     tests: 1,
     why: RECORD,
   },
-  'handle-token.ts#carriesHandleToken': {
+  'glossary/handle-token.ts#carriesHandleToken': {
     tests: 1,
     why: EMPTY_NEEDLE,
   },
-  'identity-context.ts#isDeclared': {
+  'house-rule/identity-context.ts#isDeclared': {
     tests: 1,
     why: PARSED,
   },
-  'identity-han-items.ts#nonEmpty': {
+  'house-rule/identity-han-items.ts#nonEmpty': {
     tests: 1,
     why: PARSED,
   },
-  'image-reading-pair.ts#stated': {
+  'slice-reading/image-reading-pair.ts#stated': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'image-reading-sense.ts#solidCharacters': {
+  'slice-reading/image-reading-sense.ts#solidCharacters': {
     tests: 1,
     why: SCANNER,
   },
-  'image-reading-stage.ts#readImageAsset': {
+  'slice-reading/image-reading-stage.ts#readImageAsset': {
     tests: 1,
     why: 'a reply of no characters, which the log names an empty reply; one that shows a reader nothing '
       + 'and is not empty is refused as too short by `readingMakesSense`, and either way the picture '
       + 'stays unread',
   },
-  'inline-container-tags.ts#scan': {
+  'markup/inline-container-tags.ts#scan': {
     tests: 1,
     why: SCANNER,
   },
-  'insertion-separator.ts#composedInsertion': {
+  'corpus-source/insertion-separator.ts#composedInsertion': {
     tests: 4,
     why: 'the join of the fragments that say something, empty exactly when none did, and the archive text '
       + 'either side of the boundary; each fragment is asked of `rendersAsNothing` before the join',
   },
-  'inspect-paragraph.ts#inspectParagraph': {
+  'repair/inspect-paragraph.ts#inspectParagraph': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'introduced-defect-probe.ts#runIntroducedDefectProbe': {
+  'adjudication/introduced-defect-probe.ts#runIntroducedDefectProbe': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'introduced-defect-screen.ts#restatesPriorIssue': {
+  'adjudication/introduced-defect-screen.ts#restatesPriorIssue': {
     tests: 1,
     why: 'a claim\'s quote as the screen folded it, thrown on when empty since an empty quote sits inside '
       + 'every prior quote; the screen asks `rendersAsNothing` of each side before this reader runs',
   },
-  'introduced-defect-wire.ts#buildIntroducedDefectMessages': {
+  'adjudication/introduced-defect-wire.ts#buildIntroducedDefectMessages': {
     tests: 3,
     why: ASSEMBLED,
   },
-  'judge-fidelity.ts#runFidelityTrial': {
+  'run/judge-fidelity.ts#runFidelityTrial': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'lane-contest-key.ts#laneContestRunShape': {
+  'lane-contest/lane-contest-key.ts#laneContestRunShape': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'lane-contest-stage.ts#contestLaneSlice': {
+  'lane-contest/lane-contest-stage.ts#contestLaneSlice': {
     tests: 1,
     why: ARCHIVE_ABSENT,
   },
-  'lane-contest-wire.ts#buildLaneContestMessages': {
+  'lane-contest/lane-contest-wire.ts#buildLaneContestMessages': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'lane-contest-wire.ts#hasPolicy': {
+  'lane-contest/lane-contest-wire.ts#hasPolicy': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'licensed-quotes.ts#isUsable': {
+  'glossary/licensed-quotes.ts#isUsable': {
     tests: 1,
     why: 'the quoted text of a claim\'s anchored span, the document\'s own slice, empty at an insertion '
       + 'point; `locateQuote` anchors no quote that shows a reader nothing',
   },
-  'line-structure-addendum.ts#isPresent': {
+  'slice-reading/line-structure-addendum.ts#isPresent': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'linked-title-declared-name.ts#differs': {
+  'house-rule/linked-title-declared-name.ts#differs': {
     tests: 1,
     why: PARSED,
   },
-  'linked-title-declared-name.ts#nonEmpty': {
+  'house-rule/linked-title-declared-name.ts#nonEmpty': {
     tests: 1,
     why: PARSED,
   },
-  'log-context.ts#isNamed': {
+  'typography/log-context.ts#isNamed': {
     tests: 2,
     why: ASSEMBLED,
   },
-  'log-context.ts#laneSliceText': {
+  'typography/log-context.ts#laneSliceText': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'lookup-cache.ts#lookupCacheDir': {
+  'reference/lookup-cache.ts#lookupCacheDir': {
     tests: 1,
     why: SETTING,
   },
-  'lookup-cache.ts#packageCacheDir': {
+  'reference/lookup-cache.ts#packageCacheDir': {
     tests: 1,
     why: SETTING,
   },
-  'markup-atom-scan.ts#isFootnoteLabel': {
+  'markup/markup-atom-scan.ts#isFootnoteLabel': {
     tests: 2,
     why: SCANNER,
   },
-  'markup-atom-scan.ts#tagEnd': {
+  'markup/markup-atom-scan.ts#tagEnd': {
     tests: 1,
     why: SCANNER,
   },
-  'mask-container-tags.ts#multiLineTagEnd': {
+  'document-structure/mask-container-tags.ts#multiLineTagEnd': {
     tests: 1,
     why: SCANNER,
   },
-  'mdx-tag-start.ts#opensMdxTag': {
+  'markup/mdx-tag-start.ts#opensMdxTag': {
     tests: 1,
     why: SCANNER,
   },
-  'name-projection.ts#carriesName': {
+  'house-rule/name-projection.ts#carriesName': {
     tests: 1,
     why: EMPTY_NEEDLE,
   },
-  'nested-single-quotes.ts#isDigitAt': {
+  'typography/nested-single-quotes.ts#isDigitAt': {
     tests: 1,
     why: SCANNER,
   },
-  'nested-single-quotes.ts#opensAfter': {
+  'typography/nested-single-quotes.ts#opensAfter': {
     tests: 1,
     why: SCANNER,
   },
-  'nested-single-quotes.ts#opensBeforeMarkup': {
+  'typography/nested-single-quotes.ts#opensBeforeMarkup': {
     tests: 1,
     why: SCANNER,
   },
-  'nested-single-quotes.ts#singleShape': {
+  'typography/nested-single-quotes.ts#singleShape': {
     tests: 1,
     why: SCANNER,
   },
-  'openrouter-endpoint.ts#nameOf': {
+  'provider/openrouter-endpoint.ts#nameOf': {
     tests: 1,
     why: PROTOCOL,
   },
-  'openrouter-error-finish.ts#openRouterErrorFinishOf': {
+  'provider/openrouter-error-finish.ts#openRouterErrorFinishOf': {
     tests: 1,
     why: PROTOCOL,
   },
-  'page-name-glossary.ts#toPair': {
+  'rendering-audit/page-name-glossary.ts#toPair': {
     tests: 1,
     why: PARSED,
   },
-  'page-title-lexicon-wire.ts#buildPageTitleLexiconMessages': {
+  'artifact/page-title-lexicon-wire.ts#buildPageTitleLexiconMessages': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'pair-blocks-wire.ts#buildBlockPairingMessages': {
+  'stage/pair-blocks-wire.ts#buildBlockPairingMessages': {
     tests: 2,
     why: ASSEMBLED,
   },
-  'photo-reference.ts#assetNameOf': {
+  'shared-contract/photo-reference.ts#assetNameOf': {
     tests: 1,
     why: PARSED,
   },
-  'prepare-block-pairing.ts#prepareBlockPairing': {
+  'archive/prepare-block-pairing.ts#prepareBlockPairing': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'present-tense-words.ts#isWhitespace': {
+  'translate-stage/present-tense-words.ts#isWhitespace': {
     tests: 2,
     why: SCANNER,
   },
-  'present-tense-words.ts#isWordCharacter': {
+  'translate-stage/present-tense-words.ts#isWordCharacter': {
     tests: 1,
     why: SCANNER,
   },
-  'present-tense-words.ts#namesAt': {
+  'translate-stage/present-tense-words.ts#namesAt': {
     tests: 1,
     why: EMPTY_NEEDLE,
   },
-  'preservation-check.ts#blank': {
+  'page-pass/preservation-check.ts#blank': {
     tests: 1,
     why: EMPTY_NEEDLE,
   },
-  'producer-silence.ts#coverageGapLines': {
+  'adjudication/producer-silence.ts#coverageGapLines': {
     tests: 3,
     why: ASSEMBLED,
   },
-  'quote-depth-clamp.ts#clampLine': {
+  'provider-stream/quote-depth-clamp.ts#clampLine': {
     tests: 1,
     why: SCANNER,
   },
-  'quote-line.ts#carriesContent': {
+  'provider-stream/quote-line.ts#carriesContent': {
     tests: 1,
     why: SCANNER,
   },
-  'quote-line.ts#pastQuoteMarkers': {
+  'provider-stream/quote-line.ts#pastQuoteMarkers': {
     tests: 1,
     why: SCANNER,
   },
-  'reading-corroboration.ts#collapsedWhitespace': {
+  'markup/reading-corroboration.ts#collapsedWhitespace': {
     tests: 1,
     why: SCANNER,
   },
-  'reading-refusal.ts#readsAsRefusal': {
+  'markup/reading-refusal.ts#readsAsRefusal': {
     tests: 1,
     why: 'a length bound on a picture reading, past which it is no refusal sentence; no test of whether it '
       + 'is blank',
   },
-  'reference-line-head.ts#numberedReferenceLines': {
+  'reference/reference-line-head.ts#numberedReferenceLines': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'reference-line-head.ts#pageText': {
+  'reference/reference-line-head.ts#pageText': {
     tests: 1,
     why: SENTINEL,
   },
-  'refine-slice-key.ts#refineRunShape': {
+  'repair/refine-slice-key.ts#refineRunShape': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'refine-slice-key.ts#refineSliceKey': {
+  'repair/refine-slice-key.ts#refineSliceKey': {
     tests: 2,
     why: ASSEMBLED,
   },
-  'rendered-break-prompt.ts#renderedBreakPrompt': {
+  'corpus-source/rendered-break-prompt.ts#renderedBreakPrompt': {
     tests: 1,
     why: ARCHIVE_ABSENT,
   },
-  'rendering-audit-prompt.ts#buildRenderingAuditMessages': {
+  'rendering-audit/rendering-audit-prompt.ts#buildRenderingAuditMessages': {
     tests: 2,
     why: ASSEMBLED,
   },
-  'repair-chunk.ts#repairChunk': {
+  'repair/repair-chunk.ts#repairChunk': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'repair-selection-evidence.ts#repairSelectionSourceEvidence': {
+  'adjudication/repair-selection-evidence.ts#repairSelectionSourceEvidence': {
     tests: 2,
     why: ASSEMBLED,
   },
-  'repair-sheet.ts#renderRegion': {
+  'assembly/repair-sheet.ts#renderRegion': {
     tests: 1,
     why: ARCHIVE_ABSENT,
   },
-  'repair-slice-buy.ts#repairUnderSignal': {
+  'repair/repair-slice-buy.ts#repairUnderSignal': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'repair-slice-key.ts#repairRunShape': {
+  'repair/repair-slice-key.ts#repairRunShape': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'repair-slice-key.ts#repairSliceKey': {
+  'repair/repair-slice-key.ts#repairSliceKey': {
     tests: 3,
     why: ASSEMBLED,
   },
-  'request-pace.ts#hyperRequestsPerHour': {
+  'provider/request-pace.ts#hyperRequestsPerHour': {
     tests: 1,
     why: SETTING,
   },
-  'resolution-wire.ts#buildResolutionMessages': {
+  'adjudication/resolution-wire.ts#buildResolutionMessages': {
     tests: 2,
     why: ASSEMBLED,
   },
-  'sheet-binding.ts#assertSheetMatchesManifest': {
+  'lane-contest/sheet-binding.ts#assertSheetMatchesManifest': {
     tests: 1,
     why: RECORD,
   },
-  'sheet-binding.ts#requireSheetSeed': {
+  'lane-contest/sheet-binding.ts#requireSheetSeed': {
     tests: 1,
     why: RECORD,
   },
-  'semantic-wrap-binary.ts#wrapWithLintBinary': {
+  'typography/semantic-wrap-binary.ts#wrapWithLintBinary': {
     tests: 2,
     why: STREAM,
   },
-  'sheet-line-text.ts#flattenSpace': {
+  'house-rule/sheet-line-text.ts#flattenSpace': {
     tests: 1,
     why: SCANNER,
   },
-  'slice-cost-read.ts#spelledAs': {
+  'translate-floor/slice-cost-read.ts#spelledAs': {
     tests: 1,
     why: RECORD,
   },
-  'source-break-display.ts#sourceBreakDisplay': {
+  'translate-floor/source-break-display.ts#sourceBreakDisplay': {
     tests: 1,
     why: ARCHIVE_ABSENT,
   },
-  'source-only-breaks.ts#sourceOnlyBreakFindings': {
+  'glossary/source-only-breaks.ts#sourceOnlyBreakFindings': {
     tests: 1,
     why: ARCHIVE_ABSENT,
   },
-  'stream-completion.ts#extractStreamedCompletion': {
+  'provider/stream-completion.ts#extractStreamedCompletion': {
     tests: 1,
     why: PROTOCOL,
   },
-  'stream-completion.ts#foldChunk': {
+  'provider/stream-completion.ts#foldChunk': {
     tests: 1,
     why: DELTA,
   },
-  'stream-cut.ts#reportStreamProgress': {
+  'provider-stream/stream-cut.ts#reportStreamProgress': {
     tests: 1,
     why: PROTOCOL,
   },
-  'stream-degeneration.ts#watchForDegeneration': {
+  'provider-stream/stream-degeneration.ts#watchForDegeneration': {
     tests: 1,
     why: DELTA,
   },
-  'stream-delta-scan.ts#readLine': {
+  'provider-stream/stream-delta-scan.ts#readLine': {
     tests: 4,
     why: 'a payload line and a served-by name of the provider\'s protocol, and one frame\'s content and '
       + 'reasoning deltas, where an empty delta adds nothing and any other is part of the reply',
   },
-  'stream-delta-scan.ts#reasoningField': {
+  'provider-stream/stream-delta-scan.ts#reasoningField': {
     tests: 1,
     why: DELTA,
   },
-  'stream-recurrence-watch.ts#watchForRecurrence': {
+  'provider-stream/stream-recurrence-watch.ts#watchForRecurrence': {
     tests: 1,
     why: DELTA,
   },
-  'translate-community-term.ts#findingsFor': {
+  'translate-floor/translate-community-term.ts#findingsFor': {
     tests: 1,
     why: SENTINEL,
   },
-  'translate-floor-ground.ts#readFrontMatterGround': {
+  'translate-floor/translate-floor-ground.ts#readFrontMatterGround': {
     tests: 1,
     why: ARCHIVE_ABSENT,
   },
-  'translate-quote-balance.ts#isBlank': {
+  'glossary/translate-quote-balance.ts#isBlank': {
     tests: 1,
     why: SCANNER,
   },
-  'translate-sheet-leak.ts#fencedLabel': {
+  'translate-floor/translate-sheet-leak.ts#fencedLabel': {
     tests: 1,
     why: 'whether a line\'s two fence runs leave any character between them; whether what lies between is a '
       + 'label is asked of `rendersAsNothing`',
   },
-  'translate-signer-handle.ts#findingsAt': {
+  'translate-floor/translate-signer-handle.ts#findingsAt': {
     tests: 1,
     why: SENTINEL,
   },
-  'translate-skeleton-page.ts#readPageSkeleton': {
+  'glossary/translate-skeleton-page.ts#readPageSkeleton': {
     tests: 1,
     why: ARCHIVE_ABSENT,
   },
-  'translate-slate-evidence.ts#translateSlateEvidence': {
+  'translate-stage/translate-slate-evidence.ts#translateSlateEvidence': {
     tests: 5,
     why: ASSEMBLED,
   },
-  'translate-slice-key.ts#translateRunShape': {
+  'translate-lane/translate-slice-key.ts#translateRunShape': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'translate-slice-key.ts#translateSliceKey': {
+  'translate-lane/translate-slice-key.ts#translateSliceKey': {
     tests: 4,
     why: ASSEMBLED,
   },
-  'translate-slice.ts#settleTranslateSlice': {
+  'translate-lane/translate-slice.ts#settleTranslateSlice': {
     tests: 1,
     why: ARCHIVE_ABSENT,
   },
-  'translate-untranslated.ts#withoutWhitespace': {
+  'translate-floor/translate-untranslated.ts#withoutWhitespace': {
     tests: 1,
     why: SCANNER,
   },
-  'translate-validate-blocks.ts#describeBlock': {
+  'glossary/translate-validate-blocks.ts#describeBlock': {
     tests: 1,
     why: SENTINEL,
   },
-  'translate-wire.ts#buildTranslateMessages': {
+  'translate-floor/translate-wire.ts#buildTranslateMessages': {
     tests: 5,
     why: 'blocks the package assembled for the sheet, written empty when it has none, and the archive text '
       + 'of the slice, empty where the archive holds nothing',
   },
-  'translate-wire.ts#isPresent': {
+  'translate-floor/translate-wire.ts#isPresent': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'translated-slate-criteria.ts#translatedSlateCriteria': {
+  'translate-stage/translated-slate-criteria.ts#translatedSlateCriteria': {
     tests: 1,
     why: ASSEMBLED,
   },
-  'unwrap-container.ts#UnpositionedContainerError': {
+  'document-structure/unwrap-container.ts#UnpositionedContainerError': {
     tests: 1,
     why: PARSED,
   },
-  'word-bounds.ts#tokenStarts': {
+  'markup/word-bounds.ts#tokenStarts': {
     tests: 1,
     why: EMPTY_NEEDLE,
   },
-  'word-bounds.ts#wordStarts': {
+  'markup/word-bounds.ts#wordStarts': {
     tests: 1,
     why: EMPTY_NEEDLE,
   },
-  'wording-coherence.ts#assertWordingCoherent': {
+  'translate-floor/wording-coherence.ts#assertWordingCoherent': {
     tests: 1,
     why: ARCHIVE_ABSENT,
   },
-  'work-title-lookup.ts#toLine': {
+  'reference/work-title-lookup.ts#toLine': {
     tests: 1,
     why: TOOL,
   },
-  'work-title-lookup.ts#workTitleLookupLines': {
+  'reference/work-title-lookup.ts#workTitleLookupLines': {
     tests: 1,
     why: SETTING,
   },
-  'writer-grace-override.ts#readWriterGrace': {
+  'glossary/writer-grace-override.ts#readWriterGrace': {
     tests: 1,
     why: SETTING,
   },
-  'corpus-run/repeat-census-lines.ts#lineRole': {
+  'run/corpus-run/repeat-census-lines.ts#lineRole': {
     tests: 1,
     why: PARSED,
   },
-  'corpus-run/repeat-census-refrain.ts#censusClausesOf': {
+  'run/corpus-run/repeat-census-refrain.ts#censusClausesOf': {
     tests: 1,
     why: SCANNER,
   },
-  'repeat-groups-wording.ts#cutEndAt': {
+  'corpus-source/repeat-groups-wording.ts#cutEndAt': {
     tests: 1,
     why: SCANNER,
   },
-  'repeat-groups-wording.ts#wordingStreamOf': {
+  'corpus-source/repeat-groups-wording.ts#wordingStreamOf': {
     tests: 1,
     why: SCANNER,
   },

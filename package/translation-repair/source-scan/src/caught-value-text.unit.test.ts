@@ -109,50 +109,50 @@ const MEMBER_FORMS: ReadonlySet<string> = new Set([
  `path#function`, each with the reason it is not a disclosure.
  */
 const HELD: Readonly<Record<string, string>> = {
-  'artifact-change-sets.ts#readCheckedSets':
+  'artifact/artifact-change-sets.ts#readCheckedSets':
     'reads the message of an AssemblyContractError, the only class the clause lets through, which declares it safe',
-  'corpus-run/artifact-two-lane-read-comparison.ts#deriveComparison':
+  'artifact-pool/corpus-run/artifact-two-lane-read-comparison.ts#deriveComparison':
     'reads the message of an ArtifactComparisonError, the only class the clause lets through, which declares it safe',
-  'corpus-run/artifact-two-lane-read-row-relations.ts#assertRowsCoherent':
+  'artifact/corpus-run/artifact-two-lane-read-row-relations.ts#assertRowsCoherent':
     'text of a WordingCoherenceError or a DeliveryCoherenceError, the only classes the clause lets through, both marked',
-  'corpus-run/cap-census-walk.ts#reportCapCensusUnreadable':
+  'run/corpus-run/cap-census-walk.ts#reportCapCensusUnreadable':
     'a directory listing or log read failure printed to the terminal of the cap-census command; no provider is called',
-  'corpus-run/cli-refusal.ts#framesOf':
+  'run/corpus-run/cli-refusal.ts#framesOf':
     'destructures the stack and the message, but the message is only searched for in the stack to find where its '
     + 'header ends, and only the lines after that end are printed',
-  'corpus-run/coverage-census-steps.ts#commandExit':
+  'coverage-census/corpus-run/coverage-census-steps.ts#commandExit':
     'a child process failure whose message is the command line and exit code (nano-spawn result.js), the '
     + 'output going to a log file; no provider is called',
-  'corpus-run/coverage-probe-pair.ts#readPair':
+  'coverage-census/corpus-run/coverage-probe-pair.ts#readPair':
     'a corpus read failure on the probe\'s own command; the corpus is public and no provider is called',
-  'corpus-run/editor-standing-read-artifact.ts#readStandingArtifact':
+  'bench/corpus-run/editor-standing-read-artifact.ts#readStandingArtifact':
     'reads the message of an OffRosterModelError, which declares it safe and names a path and a model id',
-  'corpus-run/entry-pictures.ts#gather':
+  'slice-cache/corpus-run/entry-pictures.ts#gather':
     'reads the message of a CorpusReadError that isMissingCorpusObject narrowed, a marked class',
-  'corpus-run/git-command.ts#detectGit':
+  'glossary/corpus-run/git-command.ts#detectGit':
     'an access check of one fixed system path, which fails with a filesystem code and that path',
-  'corpus-run/judge-fidelity-probe-run.ts#requestedSpecs':
+  'probe/corpus-run/judge-fidelity-probe-run.ts#requestedSpecs':
     'reads the message of a FidelityReferenceError, the only class its catch lets through, which declares it safe',
-  'corpus-run/pass-eligibility.ts#readSide':
+  'slice-cache/corpus-run/pass-eligibility.ts#readSide':
     'reads the message of a CorpusReadError that isMissingCorpusObject narrowed, a marked class',
-  'corpus-run/producer-calibrate-run.ts#refuseUnjudgeableRoster':
+  'bench/corpus-run/producer-calibrate-run.ts#refuseUnjudgeableRoster':
     'reads the message of a ProducerRosterError, the only class its catch lets through, which declares it safe',
-  'corpus-run/publish-defects.ts#defectOf':
+  'page-check/corpus-run/publish-defects.ts#defectOf':
     'reads the message of the refusal class a check names, which the step type holds to a class declaring '
     + 'messageNamesOnly',
-  'corpus-run/run-timing-report-run.ts#reportRunTiming':
+  'run/corpus-run/run-timing-report-run.ts#reportRunTiming':
     'reads the message of a NothingInFlightError, the only class the clause lets through, which declares it safe',
-  'corpus-run/runner-closure.ts#readEntryText':
+  'insertion/corpus-run/runner-closure.ts#readEntryText':
     'a read failure of the built entry the run is executing, which quotes that path; no provider is called',
-  'corpus-run/translate-probe-run.ts#probeTranslate':
+  'bench/corpus-run/translate-probe-run.ts#probeTranslate':
     'printed to the terminal of a probe command whose operator owns the provider keys, not logged or stored',
-  'corpus-run/window-trial-probe-draw.ts#readPairTexts':
+  'bench/corpus-run/window-trial-probe-draw.ts#readPairTexts':
     'a missing-object corpus read narrowed by isMissingCorpusObject; the corpus is public',
-  'refusal-text.ts#refusalText':
+  'document-structure/refusal-text.ts#refusalText':
     'reads the message only of a class that declares messageNamesOnly, which is what this function exists to do',
-  'run-json-read.ts#parseRunJson':
+  'shared-contract/run-json-read.ts#parseRunJson':
     'copies the digits after the position phrase and nothing else of the message (offsetIn)',
-  'transient-retry.ts#sleepBackoff':
+  'provider/transient-retry.ts#sleepBackoff':
     'the rejection of a timers/promises sleep under an aborted signal: an AbortError whose message is the fixed '
     + 'phrase "The operation was aborted" and whose cause, not its message, holds the abort reason (measured on Node '
     + 'with a custom abort reason)',

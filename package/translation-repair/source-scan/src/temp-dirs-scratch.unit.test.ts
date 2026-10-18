@@ -76,7 +76,7 @@ import {
  Path of the one fixture allowed to call `mkdtemp` or `tmpdir` for itself:
  the single mechanism every other test or fixture goes through instead.
  */
-const SCRATCH_DIR_FIXTURE_PATH = 'scratch-dir.test-fixture.ts';
+const SCRATCH_DIR_FIXTURE_PATH = 'test-fixture/scratch-dir.test-fixture.ts';
 
 /**
  Modules a bare `mkdtemp` import, or a namespace or default import reaching
@@ -95,29 +95,29 @@ const TMPDIR_MODULE = 'node:os';
  replace it.
  */
 const KEPT: Readonly<Record<string, string>> = {
-  'corpus-run/artifact-pool-conflict.unit.test.ts: tmpdir()':
+  'corpus-pass/corpus-run/artifact-pool-conflict.unit.test.ts: tmpdir()':
     'builds an artifacts directory path guaranteed not to exist, for a pool conflict refusal; nothing is '
     + 'created, so scratchDir would create and dispose of a directory for no reason',
-  'corpus-run/entry-pictures.unit.test.ts: tmpdir()':
+  'slice-cache/corpus-run/entry-pictures.unit.test.ts: tmpdir()':
     'builds a clone directory path guaranteed not to exist, standing in for a pin no read may touch; nothing '
     + 'is created, so scratchDir would create and dispose of a directory for no reason',
-  'corpus-run/entry-reattempt.unit.test.ts: tmpdir()':
+  'slice-cache/corpus-run/entry-reattempt.unit.test.ts: tmpdir()':
     'builds a cache directory path guaranteed not to exist, for the count a never-bought entry reads as zero; '
     + 'nothing is created, so scratchDir would create and dispose of a directory for no reason',
-  'corpus-run/pass-eligibility.unit.test.ts: tmpdir()':
+  'slice-cache/corpus-run/pass-eligibility.unit.test.ts: tmpdir()':
     'builds a clone directory path guaranteed not to exist, for a walk over a clone that has gone away; '
     + 'nothing is created, so scratchDir would create and dispose of a directory for no reason',
-  'corpus-run/run-config.unit.test.ts: tmpdir()':
+  'run/corpus-run/run-config.unit.test.ts: tmpdir()':
     'moves the process working directory to the real OS temp root for a case about reading outside any '
     + 'git-tracked directory; the root always exists and needs no disposal, which scratchDir would add for no '
     + 'behavioural gain',
-  'corpus-run/runner-closure.unit.test.ts: tmpdir()':
+  'insertion/corpus-run/runner-closure.unit.test.ts: tmpdir()':
     'builds an entry path guaranteed not to exist, for the closure reader\'s "unavailable" answer; nothing is '
     + 'created, so scratchDir would create and dispose of a directory for no reason',
-  'corpus-source.unit.test.ts: tmpdir()':
+  'adjudication/corpus-source.unit.test.ts: tmpdir()':
     'builds a clone directory path guaranteed not to exist, for a corpus read against a missing clone; '
     + 'nothing is created, so scratchDir would create and dispose of a directory for no reason',
-  'run-json-read.unit.test.ts: tmpdir()':
+  'shared-contract/run-json-read.unit.test.ts: tmpdir()':
     'reads the literal OS temp root string to assert a refusal never names it; scratchDir\'s own directory is '
     + 'a subdirectory of that root and would not stand in for the value under test',
 };
@@ -325,7 +325,7 @@ function tempDirCalls({ files, }: { readonly files: readonly SourceText[]; },): 
 /**
  Suffix of the module path a bare `scratchDir` import must come from.
  */
-const SCRATCH_DIR_MODULE_SUFFIX = 'scratch-dir.test-fixture.ts';
+const SCRATCH_DIR_MODULE_SUFFIX = 'test-fixture/scratch-dir.test-fixture.ts';
 
 /**
  Node kinds a call's result passes through unchanged, for finding where

@@ -87,7 +87,7 @@ import { expectFindingsAsListed, } from '@monochromatic-dev/translation-repair-t
 /**
  Path of the fixture that declares the shared hang stop, relative to `src`.
  */
-const HANG_STOP_PATH = 'hang-stop.test-fixture.ts';
+const HANG_STOP_PATH = 'test-fixture/hang-stop.test-fixture.ts';
 
 /**
  Name the fixture exports the shared hang stop under.
@@ -294,592 +294,592 @@ const WRITER_GRACE_READ_BACK = 'a window of a writer grace the case reads back: 
  Bounds that keep a value of their own, keyed `path#site: form value`.
  */
 const LISTED: Readonly<Record<string, ListedBound>> = {
-  'abandon-kind-answer-reasoning.unit.test.ts#<module>: firstByteMs: 40': {
+  'provider-stream/abandon-kind-answer-reasoning.unit.test.ts#<module>: firstByteMs: 40': {
     count: 1,
     bound: 'read back',
     reason: RECORD_FIELD,
   },
-  'abandon-kind-answer-reasoning.unit.test.ts#<module>: firstByteMs: 5': {
+  'provider-stream/abandon-kind-answer-reasoning.unit.test.ts#<module>: firstByteMs: 5': {
     count: 1,
     bound: 'read back',
     reason: RECORD_FIELD,
   },
-  'abandon-kind-answer-reasoning.unit.test.ts#<module>: firstByteMs: 812': {
+  'provider-stream/abandon-kind-answer-reasoning.unit.test.ts#<module>: firstByteMs: 812': {
     count: 1,
     bound: 'read back',
     reason: RECORD_FIELD,
   },
-  'abandon-kind-answer-reasoning.unit.test.ts#cutAfter: firstByteMs: firstByteMs': {
+  'provider-stream/abandon-kind-answer-reasoning.unit.test.ts#cutAfter: firstByteMs: firstByteMs': {
     count: 1,
     bound: 'other',
     reason: HANDED_ON,
   },
-  'abandon-kind.unit.test.ts#<module>: firstByteMs: -1': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
-  'abandon-kind.unit.test.ts#<module>: firstByteMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
-  'abandon-kind.unit.test.ts#cutWith: firstByteMs: firstByteMs': { count: 1, bound: 'other', reason: HANDED_ON, },
-  'absolute-naturalness-review-stage.unit.test.ts#<module>: wait of module-async-time 0': {
+  'provider-stream/abandon-kind.unit.test.ts#<module>: firstByteMs: -1': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
+  'provider-stream/abandon-kind.unit.test.ts#<module>: firstByteMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
+  'provider-stream/abandon-kind.unit.test.ts#cutWith: firstByteMs: firstByteMs': { count: 1, bound: 'other', reason: HANDED_ON, },
+  'archive/absolute-naturalness-review-stage.unit.test.ts#<module>: wait of module-async-time 0': {
     count: 1,
     bound: 'other',
     reason: TIMER_TURN,
   },
-  'absolute-naturalness-review-stage.unit.test.ts#reviewClient: wait of module-async-time 30': {
+  'archive/absolute-naturalness-review-stage.unit.test.ts#reviewClient: wait of module-async-time 30': {
     count: 1,
     bound: 'other',
     reason: 'makes the rejecting seat late: its peers answer in microtasks, so it lands after quorum on any '
       + 'machine, inside a window that is the hang stop',
   },
-  'absolute-naturalness-review-stage.unit.test.ts#runReview: graceMs = 0': {
+  'archive/absolute-naturalness-review-stage.unit.test.ts#runReview: graceMs = 0': {
     count: 1,
     bound: 'reached',
     reason: 'the window of 0 the held-seat case reaches: that seat answers only when the case opens its gate after '
       + 'the review settles, and every other seat answers in microtasks, before any timer can close it',
   },
-  'absolute-naturalness-review-stage.unit.test.ts#runReview: graceMs: graceMs': {
+  'archive/absolute-naturalness-review-stage.unit.test.ts#runReview: graceMs: graceMs': {
     count: 1,
     bound: 'other',
     reason: HANDED_ON,
   },
-  'all-in-input-order.unit.test.ts#settle: wait of module-async-time 0': { count: 1, bound: 'other', reason: TIMER_TURN, },
-  'bedrock-client.unit.test.ts#<module>: createBedrockClient of the built package (none)': {
+  'document-structure/all-in-input-order.unit.test.ts#settle: wait of module-async-time 0': { count: 1, bound: 'other', reason: TIMER_TURN, },
+  'provider/bedrock-client.unit.test.ts#<module>: createBedrockClient of the built package (none)': {
     count: 1,
     bound: 'other',
     reason: 'a client that reads the catalog\'s own bound and is asked only for the gpt-oss card, which carries '
       + 'none (unbounded), so no timer is armed; the case shows the transport handed the caller\'s own signal',
   },
-  'bedrock-client.unit.test.ts#<module>: exchangeTimeoutMs: 50': {
+  'provider/bedrock-client.unit.test.ts#<module>: exchangeTimeoutMs: 50': {
     count: 1,
     bound: 'reached',
     reason: 'the deadline the case reaches and reads back in the refusal: the transport answers only once its '
       + 'exchange is aborted',
   },
-  'bedrock-client.unit.test.ts#<module>: streamBoundMsOverride: TEST_BOUND_MS': {
+  'provider/bedrock-client.unit.test.ts#<module>: streamBoundMsOverride: TEST_BOUND_MS': {
     count: 2,
     bound: 'reached',
     reason: 'the stream bound two cases cross: one cuts a sleep armed after it and twice as long, which ends after '
       + 'the bound on any machine; in the other both attempts answer at once and the backoff between them outlasts it',
   },
-  'bedrock-client.unit.test.ts#queuedPastTheBound: sleepFor of node:timers/promises TEST_BOUND_MS * 2': {
+  'provider/bedrock-client.unit.test.ts#queuedPastTheBound: sleepFor of node:timers/promises TEST_BOUND_MS * 2': {
     count: 1,
     bound: 'reached',
     reason: 'the work the stream bound cuts: armed after the bound and twice as long, so the bound ends first on any '
       + 'machine (measured 2026-10-06: timers armed in that order fire in it however long the loop stalls)',
   },
-  'call-deadline.unit.test.ts#<module>: timeoutMs: SHORT_DEADLINE_MS': {
+  'provider/call-deadline.unit.test.ts#<module>: timeoutMs: SHORT_DEADLINE_MS': {
     count: 1,
     bound: 'reached',
     reason: 'the deadline the case reaches: armed before the case\'s wait of three times its length, so it fires '
       + 'first on any machine',
   },
-  'call-deadline.unit.test.ts#<module>: wait of module-async-time PAST_DEADLINE_MS': {
+  'provider/call-deadline.unit.test.ts#<module>: wait of module-async-time PAST_DEADLINE_MS': {
     count: 2,
     bound: 'reached',
     reason: 'the wait that must outlast a deadline armed before it, three times its length, so the deadline fires '
       + 'first on any machine, and one disposal failed to defuse would fire too',
   },
-  'call-deadline.unit.test.ts#armAndDispose: timeoutMs: SHORT_DEADLINE_MS': {
+  'provider/call-deadline.unit.test.ts#armAndDispose: timeoutMs: SHORT_DEADLINE_MS': {
     count: 1,
     bound: 'reached',
     reason: 'the deadline disposal must defuse: armed before the case\'s longer wait, so one disposal left armed '
       + 'fires inside it on any machine',
   },
-  'client-log-context.unit.test.ts#note: wait of module-async-time 0': { count: 1, bound: 'other', reason: TIMER_TURN, },
-  'client-log-context.unit.test.ts#transport: wait of module-async-time 0': {
+  'provider/client-log-context.unit.test.ts#note: wait of module-async-time 0': { count: 1, bound: 'other', reason: TIMER_TURN, },
+  'provider/client-log-context.unit.test.ts#transport: wait of module-async-time 0': {
     count: 1,
     bound: 'other',
     reason: 'a timer turn that keeps a call in its one slot while the queued calls wait behind it; the order is the '
       + 'slot\'s, not the clock\'s',
   },
-  'consolidate-driver.unit.test.ts#driveWith: wait of module-async-time startPosition === 0 ? 20 : 5': {
+  'corpus-pass/consolidate-driver.unit.test.ts#driveWith: wait of module-async-time startPosition === 0 ? 20 : 5': {
     count: 1,
     bound: 'other',
     reason: SERIAL_HEAD_START,
   },
-  'corpus-run/artifact-two-lane-build.unit.test.ts#catArtifact: perCallTimeoutMs: 600_000': {
+  'artifact/corpus-run/artifact-two-lane-build.unit.test.ts#catArtifact: perCallTimeoutMs: 600_000': {
     count: 1,
     bound: 'read back',
     reason: CALL_CONFIG,
   },
-  'corpus-run/artifact-two-lane-corpus-verify.unit.test.ts#writeAndRead: perCallTimeoutMs: 600_000': {
+  'artifact/corpus-run/artifact-two-lane-corpus-verify.unit.test.ts#writeAndRead: perCallTimeoutMs: 600_000': {
     count: 1,
     bound: 'read back',
     reason: CALL_CONFIG,
   },
-  'corpus-run/cap-census-log.test-fixture.ts#streamLine: firstByteMs: 3_644': {
+  'provider-stream/corpus-run/cap-census-log.test-fixture.ts#streamLine: firstByteMs: 3_644': {
     count: 1,
     bound: 'read back',
     reason: RECORD_FIELD,
   },
-  'corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 120_000': { count: 1, bound: 'read back', reason: PRINTED, },
-  'corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 25_200_000': {
+  'corpus-pass/corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 120_000': { count: 1, bound: 'read back', reason: PRINTED, },
+  'corpus-pass/corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 25_200_000': {
     count: 2,
     bound: 'read back',
     reason: 'production\'s built-in cap of 420 minutes, read back in the launch lines',
   },
-  'corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 450_000': { count: 1, bound: 'read back', reason: PRINTED, },
-  'corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 600_000': { count: 1, bound: 'read back', reason: PRINTED, },
-  'corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 60_000': { count: 1, bound: 'read back', reason: PRINTED, },
-  'corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 90_000': { count: 1, bound: 'read back', reason: PRINTED, },
-  'corpus-run/corpus-pass-lines.unit.test.ts#<module>: softBudgetMs: 259_200_000': {
+  'corpus-pass/corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 450_000': { count: 1, bound: 'read back', reason: PRINTED, },
+  'corpus-pass/corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 600_000': { count: 1, bound: 'read back', reason: PRINTED, },
+  'corpus-pass/corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 60_000': { count: 1, bound: 'read back', reason: PRINTED, },
+  'corpus-pass/corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 90_000': { count: 1, bound: 'read back', reason: PRINTED, },
+  'corpus-pass/corpus-run/corpus-pass-lines.unit.test.ts#<module>: softBudgetMs: 259_200_000': {
     count: 1,
     bound: 'read back',
     reason: 'production\'s soft budget of three days, read back in the start line',
   },
-  'corpus-run/corpus-pass-lines.unit.test.ts#<module>: softBudgetMs: 60_000': { count: 1, bound: 'read back', reason: PRINTED, },
-  'corpus-run/corpus-pass-queue.unit.test.ts#<module>: softBudgetMs: 1_000': {
+  'corpus-pass/corpus-run/corpus-pass-lines.unit.test.ts#<module>: softBudgetMs: 60_000': { count: 1, bound: 'read back', reason: PRINTED, },
+  'corpus-pass/corpus-run/corpus-pass-queue.unit.test.ts#<module>: softBudgetMs: 1_000': {
     count: 5,
     bound: 'read back',
     reason: 'a soft budget judged against the case\'s scripted clock readings, which the case lists; no timer is '
       + 'armed with it',
   },
-  'corpus-run/corpus-pass-run.unit.test.ts#runPass: hardCapMs: 25_200_000': {
+  'corpus-pass/corpus-run/corpus-pass-run.unit.test.ts#runPass: hardCapMs: 25_200_000': {
     count: 1,
     bound: 'read back',
     reason: 'production\'s built-in cap of 420 minutes, read back in the start line every case reads',
   },
-  'corpus-run/coverage-control-probe-run.unit.test.ts#<module>: exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS': {
+  'coverage-census/corpus-run/coverage-control-probe-run.unit.test.ts#<module>: exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS': {
     count: 1,
     bound: 'read back',
     reason: 'the deadline the scripted control records, read back in what it was asked; the inert client arms none',
   },
-  'corpus-run/coverage-control-probe-run.unit.test.ts#scripted: exchangeTimeoutMs: input.exchangeTimeoutMs': {
+  'coverage-census/corpus-run/coverage-control-probe-run.unit.test.ts#scripted: exchangeTimeoutMs: input.exchangeTimeoutMs': {
     count: 1,
     bound: 'other',
     reason: HANDED_ON,
   },
-  'corpus-run/coverage-control-probe-run.unit.test.ts#walk: exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS': {
+  'coverage-census/corpus-run/coverage-control-probe-run.unit.test.ts#walk: exchangeTimeoutMs: EXCHANGE_TIMEOUT_MS': {
     count: 1,
     bound: 'read back',
     reason: 'the deadline handed to the walk, which the scripted control records and the case reads back',
   },
-  'corpus-run/damage-region-entry-id.unit.test.ts#censusOverOneEntry: perCallTimeoutMs: 600_000': {
+  'probe/corpus-run/damage-region-entry-id.unit.test.ts#censusOverOneEntry: perCallTimeoutMs: 600_000': {
     count: 1,
     bound: 'read back',
     reason: CALL_CONFIG,
   },
-  'corpus-run/model-health-probe.unit.test.ts#askThrowingModel: timeoutMs: TIMEOUT_MS': {
+  'bench/corpus-run/model-health-probe.unit.test.ts#askThrowingModel: timeoutMs: TIMEOUT_MS': {
     count: 1,
     bound: 'read back',
     reason: 'the deadline the probe hands its call, read back off the request the client saw',
   },
-  'corpus-run/model-health-probe.unit.test.ts#askWith: timeoutMs: TIMEOUT_MS': {
+  'bench/corpus-run/model-health-probe.unit.test.ts#askWith: timeoutMs: TIMEOUT_MS': {
     count: 1,
     bound: 'read back',
     reason: 'the deadline the probe hands its call, read back off the request the client saw',
   },
-  'corpus-run/pass-entry.unit.test.ts#entryClient: wait of module-async-time 10': {
+  'corpus-pass/corpus-run/pass-entry.unit.test.ts#entryClient: wait of module-async-time 10': {
     count: 1,
     bound: 'other',
     reason: SAME_TURN_METER,
   },
-  'corpus-run/pass-schema-guard.unit.test.ts#emptyVersionTwoArtifact: perCallTimeoutMs: 600_000': {
+  'slice-cache/corpus-run/pass-schema-guard.unit.test.ts#emptyVersionTwoArtifact: perCallTimeoutMs: 600_000': {
     count: 1,
     bound: 'read back',
     reason: CALL_CONFIG,
   },
-  'corpus-run/pass-stop-before-next.unit.test.ts#<module>: softBudgetMs: ROOMY_BUDGET_MS': {
+  'slice-cache/corpus-run/pass-stop-before-next.unit.test.ts#<module>: softBudgetMs: ROOMY_BUDGET_MS': {
     count: 5,
     bound: 'read back',
     reason: 'a budget handed to a pure decision beside the elapsed time the case gives it; no clock is read',
   },
-  'corpus-run/recall-benchmark-run.unit.test.ts#<module>: perCallTimeoutMs: 360_000': {
+  'probe/corpus-run/recall-benchmark-run.unit.test.ts#<module>: perCallTimeoutMs: 360_000': {
     count: 1,
     bound: 'read back',
     reason: RECALL_CALL_CONFIG,
   },
-  'corpus-run/recall-benchmark-run.unit.test.ts#<module>: streamFirstByteMs: 600_000': {
+  'probe/corpus-run/recall-benchmark-run.unit.test.ts#<module>: streamFirstByteMs: 600_000': {
     count: 1,
     bound: 'read back',
     reason: RECALL_CALL_CONFIG,
   },
-  'corpus-run/recall-benchmark-run.unit.test.ts#<module>: streamIdleMs: 600_000': {
+  'probe/corpus-run/recall-benchmark-run.unit.test.ts#<module>: streamIdleMs: 600_000': {
     count: 1,
     bound: 'read back',
     reason: RECALL_CALL_CONFIG,
   },
-  'corpus-run/recall-scorecard-store.unit.test.ts#<module>: perCallTimeoutMs: 600_000': {
+  'probe/corpus-run/recall-scorecard-store.unit.test.ts#<module>: perCallTimeoutMs: 600_000': {
     count: 1,
     bound: 'read back',
     reason: CALL_CONFIG,
   },
-  'corpus-run/required-providers.unit.test.ts#refusesHyperFirst: wait of module-async-time 0': {
+  'run/corpus-run/required-providers.unit.test.ts#refusesHyperFirst: wait of module-async-time 0': {
     count: 1,
     bound: 'other',
     reason: TIMER_TURN,
   },
-  'corpus-run/run-timing-report.test-fixture.ts#timedCallLine: firstByteMs: 40': {
+  'run/corpus-run/run-timing-report.test-fixture.ts#timedCallLine: firstByteMs: 40': {
     count: 1,
     bound: 'read back',
     reason: RECORD_FIELD,
   },
-  'corpus-run/run-timing.unit.test.ts#<module>: firstByteMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
-  'corpus-run/sentinel-probe-run.unit.test.ts#<module>: perCallTimeoutMs: CALL_TIMEOUT_MS': {
+  'run/corpus-run/run-timing.unit.test.ts#<module>: firstByteMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
+  'bench/corpus-run/sentinel-probe-run.unit.test.ts#<module>: perCallTimeoutMs: CALL_TIMEOUT_MS': {
     count: 1,
     bound: 'read back',
     reason: SENTINEL_DEADLINE,
   },
-  'corpus-run/sentinel-probe-run.unit.test.ts#scripted: perCallTimeoutMs: input.perCallTimeoutMs': {
+  'bench/corpus-run/sentinel-probe-run.unit.test.ts#scripted: perCallTimeoutMs: input.perCallTimeoutMs': {
     count: 1,
     bound: 'other',
     reason: HANDED_ON,
   },
-  'corpus-run/sentinel-probe-run.unit.test.ts#walk: perCallTimeoutMs: CALL_TIMEOUT_MS': {
+  'bench/corpus-run/sentinel-probe-run.unit.test.ts#walk: perCallTimeoutMs: CALL_TIMEOUT_MS': {
     count: 1,
     bound: 'read back',
     reason: SENTINEL_DEADLINE,
   },
-  'corpus-run/settled-artifact.test-fixture.ts#settledArtifactOver: perCallTimeoutMs: 600_000': {
+  'artifact/corpus-run/settled-artifact.test-fixture.ts#settledArtifactOver: perCallTimeoutMs: 600_000': {
     count: 1,
     bound: 'read back',
     reason: CALL_CONFIG,
   },
-  'corpus-run/settled-artifact.test-fixture.ts#settledArtifactOverRows: perCallTimeoutMs: 600_000': {
+  'artifact/corpus-run/settled-artifact.test-fixture.ts#settledArtifactOverRows: perCallTimeoutMs: 600_000': {
     count: 1,
     bound: 'read back',
     reason: CALL_CONFIG,
   },
-  'corpus-run/settled-carve.unit.test.ts#writeArtifact: perCallTimeoutMs: 600_000': {
+  'slice-cache/corpus-run/settled-carve.unit.test.ts#writeArtifact: perCallTimeoutMs: 600_000': {
     count: 1,
     bound: 'read back',
     reason: CALL_CONFIG,
   },
-  'corpus-run/run-timing.unit.test.ts#<module>: graceMs: 30_001': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
-  'document-lanes.unit.test.ts#lanesClient: wait of module-async-time 10': {
+  'run/corpus-run/run-timing.unit.test.ts#<module>: graceMs: 30_001': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
+  'translate-lane/document-lanes.unit.test.ts#lanesClient: wait of module-async-time 10': {
     count: 1,
     bound: 'other',
     reason: SAME_TURN_METER,
   },
-  'hyper-client.unit.test.ts#<module>: wait of module-async-time SLOW_TRANSPORT_MS': {
+  'provider/hyper-client.unit.test.ts#<module>: wait of module-async-time SLOW_TRANSPORT_MS': {
     count: 1,
     bound: 'other',
     reason: 'a settle wait for calls to reach a gated transport, which they do within one turn of the event loop: '
       + 'the case passes with microtask turns only and fails with none (census of 2026-10-06)',
   },
-  'hyper-client.unit.test.ts#transport: wait of module-async-time SLOW_TRANSPORT_MS': {
+  'provider/hyper-client.unit.test.ts#transport: wait of module-async-time SLOW_TRANSPORT_MS': {
     count: 1,
     bound: 'other',
     reason: SAME_TURN_METER,
   },
-  'lane-contest-driver.unit.test.ts#drive: wait of module-async-time startPosition < ROSTER.length ? 20 : 5': {
+  'corpus-pass/lane-contest-driver.unit.test.ts#drive: wait of module-async-time startPosition < ROSTER.length ? 20 : 5': {
     count: 1,
     bound: 'other',
     reason: SERIAL_HEAD_START,
   },
-  'lane-contest-stage.unit.test.ts#<module>: graceMs: 0': {
+  'lane-contest/lane-contest-stage.unit.test.ts#<module>: graceMs: 0': {
     count: 1,
     bound: 'reached',
     reason: 'the window of 0 that cuts the seats scripted to answer only past twice the hang stop, abandoned at '
       + 'quorum on any machine',
   },
-  'lane-contest-stage.unit.test.ts#cannedTransport: abortableWait of node:timers/promises delayByModel[at] ?? 0': {
+  'lane-contest/lane-contest-stage.unit.test.ts#cannedTransport: abortableWait of node:timers/promises delayByModel[at] ?? 0': {
     count: 1,
     bound: 'other',
     reason: 'the delay each case scripts per seat: none, 30 ms for voices that land inside a window that is the hang '
       + 'stop, or twice the hang stop for seats a window of 0 cuts',
   },
-  'log-context.unit.test.ts#settleOne: wait of module-async-time 0': { count: 1, bound: 'other', reason: TIMER_TURN, },
-  'monotonic-clock.unit.test.ts#<module>: wait of module-async-time 5': {
+  'typography/log-context.unit.test.ts#settleOne: wait of module-async-time 0': { count: 1, bound: 'other', reason: TIMER_TURN, },
+  'markup/monotonic-clock.unit.test.ts#<module>: wait of module-async-time 5': {
     count: 1,
     bound: 'other',
     reason: 'a real wait the case crosses, after which it asserts only that the reading has not gone back, which '
       + 'load cannot break',
   },
-  'openrouter-abandoned-spend.unit.test.ts#<module>: firstByteMs: 500': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
-  'overlapped-map.unit.test.ts#settle: wait of module-async-time 0': { count: 1, bound: 'other', reason: TIMER_TURN, },
-  'provider-budget.unit.test.ts#<module>: cooldownMs: 10_000': { count: 7, bound: 'read back', reason: SCRIPTED_CLOCK, },
-  'provider-budget.unit.test.ts#<module>: cooldownMs: 300': { count: 2, bound: 'read back', reason: SCRIPTED_CLOCK, },
-  'provider-budget.unit.test.ts#<module>: freshForMs: 100': { count: 1, bound: 'read back', reason: SCRIPTED_CLOCK, },
-  'provider-budget.unit.test.ts#<module>: freshForMs: 500': { count: 2, bound: 'read back', reason: SCRIPTED_CLOCK, },
-  'provider-budget.unit.test.ts#<module>: rateLimitBackoffMs: 300': { count: 7, bound: 'read back', reason: SCRIPTED_CLOCK, },
-  'provider-budget.unit.test.ts#<module>: rateLimitBackoffMs: 50': { count: 2, bound: 'read back', reason: SCRIPTED_CLOCK, },
-  'provider-budget.unit.test.ts#<module>: statedWaitMs: 5_000': { count: 2, bound: 'read back', reason: SCRIPTED_CLOCK, },
-  'provider-budget.unit.test.ts#credits: wait of module-async-time 20': {
+  'provider/openrouter-abandoned-spend.unit.test.ts#<module>: firstByteMs: 500': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
+  'stage/overlapped-map.unit.test.ts#settle: wait of module-async-time 0': { count: 1, bound: 'other', reason: TIMER_TURN, },
+  'provider/provider-budget.unit.test.ts#<module>: cooldownMs: 10_000': { count: 7, bound: 'read back', reason: SCRIPTED_CLOCK, },
+  'provider/provider-budget.unit.test.ts#<module>: cooldownMs: 300': { count: 2, bound: 'read back', reason: SCRIPTED_CLOCK, },
+  'provider/provider-budget.unit.test.ts#<module>: freshForMs: 100': { count: 1, bound: 'read back', reason: SCRIPTED_CLOCK, },
+  'provider/provider-budget.unit.test.ts#<module>: freshForMs: 500': { count: 2, bound: 'read back', reason: SCRIPTED_CLOCK, },
+  'provider/provider-budget.unit.test.ts#<module>: rateLimitBackoffMs: 300': { count: 7, bound: 'read back', reason: SCRIPTED_CLOCK, },
+  'provider/provider-budget.unit.test.ts#<module>: rateLimitBackoffMs: 50': { count: 2, bound: 'read back', reason: SCRIPTED_CLOCK, },
+  'provider/provider-budget.unit.test.ts#<module>: statedWaitMs: 5_000': { count: 2, bound: 'read back', reason: SCRIPTED_CLOCK, },
+  'provider/provider-budget.unit.test.ts#credits: wait of module-async-time 20': {
     count: 4,
     bound: 'other',
     reason: 'a meter read held while reads launched in the same turn arrive; the cases pass with no hold at all '
       + '(census of 2026-10-06), so it decides nothing',
   },
-  'provider-budget.unit.test.ts#quotas: wait of module-async-time 20': {
+  'provider/provider-budget.unit.test.ts#quotas: wait of module-async-time 20': {
     count: 2,
     bound: 'other',
     reason: 'a meter read held while reads launched in the same turn arrive; the cases pass with no hold at all '
       + '(census of 2026-10-06), so it decides nothing',
   },
-  'provider-router-decide.unit.test.ts#expectMarkedAndThrown: statedWaitMs: statedWaitMsOf({ error: refusal, },)': {
+  'provider/provider-router-decide.unit.test.ts#expectMarkedAndThrown: statedWaitMs: statedWaitMsOf({ error: refusal, },)': {
     count: 1,
     bound: 'read back',
     reason: 'the wait a refusal states, read back in what the router marked',
   },
-  'provider-router-decide.unit.test.ts#markRefused: statedWaitMs: statedWaitMs': {
+  'provider/provider-router-decide.unit.test.ts#markRefused: statedWaitMs: statedWaitMs': {
     count: 1,
     bound: 'other',
     reason: HANDED_ON,
   },
-  'provider-router-model-hold.unit.test.ts#<module>: modelHoldMs: HOLD_MS': {
+  'provider/provider-router-model-hold.unit.test.ts#<module>: modelHoldMs: HOLD_MS': {
     count: 1,
     bound: 'read back',
     reason: SCRIPTED_CLOCK,
   },
-  'provider-router-stream-bound.unit.test.ts#chatText: boundMs: BOUND_MS': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
-  'provider-router-stream-bound.unit.test.ts#chatText: firstByteMs: 15_000': {
+  'provider/provider-router-stream-bound.unit.test.ts#chatText: boundMs: BOUND_MS': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
+  'provider/provider-router-stream-bound.unit.test.ts#chatText: firstByteMs: 15_000': {
     count: 1,
     bound: 'read back',
     reason: RECORD_FIELD,
   },
-  'provider-router-stream-bound.unit.test.ts#routerOver: modelHoldMs: HOLD_MS': {
+  'provider/provider-router-stream-bound.unit.test.ts#routerOver: modelHoldMs: HOLD_MS': {
     count: 1,
     bound: 'read back',
     reason: 'a hold on the case\'s own injected clock, which the case moves by hand and reads back in the refusal',
   },
-  'provider-router.unit.test.ts#chatText: wait of module-async-time SLOT_HOLD_MS': {
+  'provider/provider-router.unit.test.ts#chatText: wait of module-async-time SLOT_HOLD_MS': {
     count: 1,
     bound: 'other',
     reason: 'a slot hold the cases pass without (census of 2026-10-06), so it decides nothing',
   },
-  'provider-router.unit.test.ts#markRefused: statedWaitMs = 0': {
+  'provider/provider-router.unit.test.ts#markRefused: statedWaitMs = 0': {
     count: 1,
     bound: 'read back',
     reason: 'the default of a stub\'s parameter, recording the stated wait the router hands it',
   },
-  'refine-phase.unit.test.ts#measuringRefiners: wait of module-async-time startPosition === 0 ? 20 : 5': {
+  'repair/refine-phase.unit.test.ts#measuringRefiners: wait of module-async-time startPosition === 0 ? 20 : 5': {
     count: 1,
     bound: 'other',
     reason: SERIAL_HEAD_START,
   },
-  'repair-benchmark.unit.test.ts#<module>: runBudgetMs: 0': {
+  'repair/repair-benchmark.unit.test.ts#<module>: runBudgetMs: 0': {
     count: 1,
     bound: 'reached',
     reason: 'a budget of 0 that every entry finds spent, on any machine',
   },
-  'repair-benchmark.unit.test.ts#<module>: runBudgetMs: HOUR_MS': {
+  'repair/repair-benchmark.unit.test.ts#<module>: runBudgetMs: HOUR_MS': {
     count: 1,
     bound: 'read back',
     reason: 'the budget of an hour the case\'s name states, against a two-hour step of the stubbed wall clock; the '
       + 'run takes milliseconds of the monotonic clock it is judged on',
   },
-  'repair-translation.unit.test.ts#steeringClient: wait of module-async-time 10': {
+  'corpus-pass/repair-translation.unit.test.ts#steeringClient: wait of module-async-time 10': {
     count: 2,
     bound: 'other',
     reason: SAME_TURN_METER,
   },
-  'request-pace.unit.test.ts#<module>: windowMs: 1_000': { count: 1, bound: 'read back', reason: SCRIPTED_CLOCK, },
-  'request-pace.unit.test.ts#<module>: windowMs: REAL_WINDOW_MS': {
+  'provider/request-pace.unit.test.ts#<module>: windowMs: 1_000': { count: 1, bound: 'read back', reason: SCRIPTED_CLOCK, },
+  'provider/request-pace.unit.test.ts#<module>: windowMs: REAL_WINDOW_MS': {
     count: 1,
     bound: 'reached',
     reason: 'the window the case sleeps through on the real clock, with the pacer\'s clock held still until the '
       + 'second take sleeps, and only a lower bound asserted',
   },
-  'request-pace.unit.test.ts#<module>: windowMs: WINDOW_MS': { count: 6, bound: 'read back', reason: SCRIPTED_CLOCK, },
-  'request-pace.unit.test.ts#builds: windowMs: 1_000': {
+  'provider/request-pace.unit.test.ts#<module>: windowMs: WINDOW_MS': { count: 6, bound: 'read back', reason: SCRIPTED_CLOCK, },
+  'provider/request-pace.unit.test.ts#builds: windowMs: 1_000': {
     count: 2,
     bound: 'read back',
     reason: 'a window of a pacer whose construction is refused, so it is never armed',
   },
-  'request-pace.unit.test.ts#patienceRunsOut: pause of module-async-time RELEASE_PATIENCE_MS': {
+  'provider/request-pace.unit.test.ts#patienceRunsOut: pause of module-async-time RELEASE_PATIENCE_MS': {
     count: 1,
     bound: 'reached',
     reason: 'the patience that fails the case when a release is stuck; the release settles before any timer (the '
       + 'case passes with a patience of 0, census of 2026-10-06)',
   },
-  'request-pace.unit.test.ts#scriptedPace: windowMs: WINDOW_MS': { count: 1, bound: 'read back', reason: SCRIPTED_CLOCK, },
-  'retry-abort-after-transport-failure.unit.test.ts#<module>: setTimeout 0': {
+  'provider/request-pace.unit.test.ts#scriptedPace: windowMs: WINDOW_MS': { count: 1, bound: 'read back', reason: SCRIPTED_CLOCK, },
+  'provider/retry-abort-after-transport-failure.unit.test.ts#<module>: setTimeout 0': {
     count: 1,
     bound: 'reached',
     reason: 'the caller abort, armed before the ladder\'s backoff of at least 10 s, so it fires first on any machine',
   },
-  'stage-call.unit.test.ts#callWith: exchangeTimeoutMs: 1_000': {
+  'stage/stage-call.unit.test.ts#callWith: exchangeTimeoutMs: 1_000': {
     count: 1,
     bound: 'read back',
     reason: 'the deadline the pass-through case reads back off the request the client saw; the scripted client arms '
       + 'none',
   },
-  'stage-quorum.unit.test.ts#<module>: graceMs: 50': {
+  'stage/stage-quorum.unit.test.ts#<module>: graceMs: 50': {
     count: 1,
     bound: 'reached',
     reason: 'the window the abandoning case reaches: the hung seat answers only once it is aborted',
   },
-  'stage-quorum.unit.test.ts#<module>: graceMs: RECOVERY_GRACE_MS': {
+  'stage/stage-quorum.unit.test.ts#<module>: graceMs: RECOVERY_GRACE_MS': {
     count: 1,
     bound: 'reached',
     reason: 'the window the bounded recovery case reaches: the re-asked seat answers only once it is aborted',
   },
-  'stage-quorum.unit.test.ts#hangingClient: wait of module-async-time lateMs': {
+  'stage/stage-quorum.unit.test.ts#hangingClient: wait of module-async-time lateMs': {
     count: 1,
     bound: 'other',
     reason: 'the delay of a late voice, 20 ms, which lands inside a window that is the hang stop',
   },
-  'stage-round-refill.unit.test.ts#<module>: graceMs: GRACE_MS': {
+  'stage/stage-round-refill.unit.test.ts#<module>: graceMs: GRACE_MS': {
     count: 3,
     bound: 'reached',
     reason: 'the window that cuts the slow seat, which answers only once it is aborted',
   },
-  'stage-round.unit.test.ts#<module>: graceMs: GRACE_MS': {
+  'stage/stage-round.unit.test.ts#<module>: graceMs: GRACE_MS': {
     count: 1,
     bound: 'reached',
     reason: 'the window the case that loses a voice reaches: its hanging seat answers only once the round cuts it, '
       + 'and its slow voice, armed before the window and shorter, lands inside it on any machine',
   },
-  'stage-round.unit.test.ts#<module>: wait of module-async-time SLOW_MS': {
+  'stage/stage-round.unit.test.ts#<module>: wait of module-async-time SLOW_MS': {
     count: 1,
     bound: 'other',
     reason: 'the turn at which the whole-roster case reads the round\'s line: armed after the slow voice\'s own wait '
       + 'and as long, so it fires after that answer and its microtasks however long the loop stalls (measured '
       + '2026-10-10); a round still waiting on a window has written no line by then',
   },
-  'stage-round.unit.test.ts#scheduledClient: wait of module-async-time SLOW_MS': {
+  'stage/stage-round.unit.test.ts#scheduledClient: wait of module-async-time SLOW_MS': {
     count: 1,
     bound: 'other',
     reason: 'the delay of the slow voice: inside the window in the case that loses a voice, and before quorum, as a '
       + 'floor only, in the whole-roster case',
   },
-  'stage-settings.test-fixture.ts#scriptedStageSettingsWaiting: roundMs: graceMs': {
+  'stage/stage-settings.test-fixture.ts#scriptedStageSettingsWaiting: roundMs: graceMs': {
     count: 1,
     bound: 'other',
     reason: HANDED_ON,
   },
-  'stage-settings.test-fixture.ts#scriptedStageSettingsWaiting: writerMs: graceMs': {
+  'stage/stage-settings.test-fixture.ts#scriptedStageSettingsWaiting: writerMs: graceMs': {
     count: 1,
     bound: 'other',
     reason: HANDED_ON,
   },
-  'stage-settings.unit.test.ts#<module>: roundMs: 90_000': { count: 1, bound: 'read back', reason: READER_OUTPUT, },
-  'stage-settings.unit.test.ts#<module>: roundMs: STRAGGLER_GRACE_MS': {
+  'stage/stage-settings.unit.test.ts#<module>: roundMs: 90_000': { count: 1, bound: 'read back', reason: READER_OUTPUT, },
+  'stage/stage-settings.unit.test.ts#<module>: roundMs: STRAGGLER_GRACE_MS': {
     count: 1,
     bound: 'read back',
     reason: READER_OUTPUT,
   },
-  'stage-settings.unit.test.ts#<module>: writerMs: 240_000': { count: 1, bound: 'read back', reason: READER_OUTPUT, },
-  'stage-settings.unit.test.ts#<module>: writerMs: WRITER_GRACE_MS': {
+  'stage/stage-settings.unit.test.ts#<module>: writerMs: 240_000': { count: 1, bound: 'read back', reason: READER_OUTPUT, },
+  'stage/stage-settings.unit.test.ts#<module>: writerMs: WRITER_GRACE_MS': {
     count: 1,
     bound: 'read back',
     reason: READER_OUTPUT,
   },
-  'stage-windowed-rounds.unit.test.ts#runBench: graceMs: graceMs': { count: 1, bound: 'other', reason: HANDED_ON, },
-  'stream-bound.unit.test.ts#<module>: boundMs: SHORT_BOUND_MS': {
+  'stage/stage-windowed-rounds.unit.test.ts#runBench: graceMs: graceMs': { count: 1, bound: 'other', reason: HANDED_ON, },
+  'provider/stream-bound.unit.test.ts#<module>: boundMs: SHORT_BOUND_MS': {
     count: 2,
     bound: 'reached',
     reason: 'the bound the cutting case reaches, armed before its wait of twice the length, and the same value as the '
       + 'bound field of the error the reading case builds',
   },
-  'stream-bound.unit.test.ts#<module>: firstByteMs: 15_000': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
-  'stream-bound.unit.test.ts#<module>: wait of module-async-time SHORT_BOUND_MS * 2': {
+  'provider/stream-bound.unit.test.ts#<module>: firstByteMs: 15_000': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
+  'provider/stream-bound.unit.test.ts#<module>: wait of module-async-time SHORT_BOUND_MS * 2': {
     count: 1,
     bound: 'reached',
     reason: 'the wait that must outlast a bound armed before it and half its length, so the bound fires first on '
       + 'any machine',
   },
-  'stream-cut.unit.test.ts#<module>: firstByteMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
-  'stream-drain.unit.test.ts#<module>: firstByteMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
-  'stream-drain.unit.test.ts#<module>: idleMs: 60_000': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
-  'stream-idle-guard.unit.test.ts#<module>: firstByteMs: TINY_MS': {
+  'provider-stream/stream-cut.unit.test.ts#<module>: firstByteMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
+  'provider-stream/stream-drain.unit.test.ts#<module>: firstByteMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
+  'provider-stream/stream-drain.unit.test.ts#<module>: idleMs: 60_000': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
+  'provider-stream/stream-idle-guard.unit.test.ts#<module>: firstByteMs: TINY_MS': {
     count: 3,
     bound: 'reached',
     reason: 'the window the tripping cases reach, waited out by polling the guard\'s own signal, and the one the '
       + 'disposal case defuses',
   },
-  'stream-idle-guard.unit.test.ts#<module>: idleMs: 1_500': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
-  'stream-idle-guard.unit.test.ts#<module>: idleMs: TINY_MS': {
+  'provider-stream/stream-idle-guard.unit.test.ts#<module>: idleMs: 1_500': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
+  'provider-stream/stream-idle-guard.unit.test.ts#<module>: idleMs: TINY_MS': {
     count: 3,
     bound: 'reached',
     reason: 'the window the tripping cases reach, waited out by polling the guard\'s own signal, and the one the '
       + 'disposal case defuses',
   },
-  'stream-idle-guard.unit.test.ts#<module>: wait of module-async-time TINY_MS': {
+  'provider-stream/stream-idle-guard.unit.test.ts#<module>: wait of module-async-time TINY_MS': {
     count: 1,
     bound: 'other',
     reason: 'a real span so the first byte lands past zero; the case asserts only lower bounds, which load widens',
   },
-  'stream-idle-guard.unit.test.ts#settle: setTimeout TINY_MS * 5': {
+  'provider-stream/stream-idle-guard.unit.test.ts#settle: setTimeout TINY_MS * 5': {
     count: 1,
     bound: 'reached',
     reason: 'the wait past windows a disposal defused, armed after them and five times as long, so a window left '
       + 'armed fires inside it on any machine',
   },
-  'stream-idle-guard.unit.test.ts#tick: setTimeout TINY_MS': {
+  'provider-stream/stream-idle-guard.unit.test.ts#tick: setTimeout TINY_MS': {
     count: 1,
     bound: 'other',
     reason: 'the poll interval of a wait that ends on the guard\'s own signal, not on time',
   },
-  'stream-overrun.unit.test.ts#<module>: firstByteMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
-  'synthetic-client.unit.test.ts#<module>: exchangeTimeoutMs: 50': {
+  'provider-stream/stream-overrun.unit.test.ts#<module>: firstByteMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
+  'provider/synthetic-client.unit.test.ts#<module>: exchangeTimeoutMs: 50': {
     count: 1,
     bound: 'reached',
     reason: 'the deadline the hung-exchange case reaches: the transport answers only once it is aborted',
   },
-  'synthetic-client.unit.test.ts#<module>: exchangeTimeoutMs: QUEUED_DEADLINE_MS': {
+  'provider/synthetic-client.unit.test.ts#<module>: exchangeTimeoutMs: QUEUED_DEADLINE_MS': {
     count: 1,
     bound: 'reached',
     reason: 'the deadline the queued call must not reach: shorter than its wait in the queue, while its exchange '
       + 'answers at once when its slot opens',
   },
-  'synthetic-client.unit.test.ts#<module>: wait of module-async-time SETTLE_MS': {
+  'provider/synthetic-client.unit.test.ts#<module>: wait of module-async-time SETTLE_MS': {
     count: 2,
     bound: 'other',
     reason: 'a settle wait for calls to reach a gated transport, which they do within one turn of the event loop: '
       + 'the case passes with microtask turns only and fails with none (census of 2026-10-06)',
   },
-  'synthetic-client.unit.test.ts#holdFirstReply: wait of module-async-time QUEUE_HOLD_MS': {
+  'provider/synthetic-client.unit.test.ts#holdFirstReply: wait of module-async-time QUEUE_HOLD_MS': {
     count: 1,
     bound: 'reached',
     reason: 'the hold that keeps the queued call waiting past its own deadline',
   },
-  'transient-retry.unit.test.ts#<module>: firstByteMs: 10': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
-  'transient-retry.unit.test.ts#<module>: setTimeout 0': {
+  'provider/transient-retry.unit.test.ts#<module>: firstByteMs: 10': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
+  'provider/transient-retry.unit.test.ts#<module>: setTimeout 0': {
     count: 1,
     bound: 'reached',
     reason: 'the caller abort, armed before the ladder\'s backoff of at least 10 s, so it fires first on any machine',
   },
-  'translate-document.unit.test.ts#laneClient: wait of module-async-time 10': {
+  'corpus-pass/translate-document.unit.test.ts#laneClient: wait of module-async-time 10': {
     count: 1,
     bound: 'other',
     reason: SAME_TURN_METER,
   },
-  'twin-memo.unit.test.ts#settle: wait of module-async-time 0': { count: 1, bound: 'other', reason: TIMER_TURN, },
-  'wall-clock-stub.unit.test.ts#<module>: sleepFor of node:timers/promises 1': {
+  'stage/twin-memo.unit.test.ts#settle: wait of module-async-time 0': { count: 1, bound: 'other', reason: TIMER_TURN, },
+  'test-fixture/wall-clock-stub.unit.test.ts#<module>: sleepFor of node:timers/promises 1': {
     count: 1,
     bound: 'other',
     reason: 'a timer turn the case crosses to show the stub holds across it; its length decides nothing',
   },
-  'writer-grace-override.unit.test.ts#<module>: roundMs: CALIBRATION_STRAGGLER_GRACE_MS': {
+  'stage/writer-grace-override.unit.test.ts#<module>: roundMs: CALIBRATION_STRAGGLER_GRACE_MS': {
     count: 1,
     bound: 'read back',
     reason: WRITER_GRACE_READ_BACK,
   },
-  'writer-grace-override.unit.test.ts#<module>: roundMs: LONG_ROUND': {
+  'stage/writer-grace-override.unit.test.ts#<module>: roundMs: LONG_ROUND': {
     count: 2,
     bound: 'read back',
     reason: WRITER_GRACE_READ_BACK,
   },
-  'writer-grace-override.unit.test.ts#<module>: roundMs: ROUND': {
+  'stage/writer-grace-override.unit.test.ts#<module>: roundMs: ROUND': {
     count: 6,
     bound: 'read back',
     reason: WRITER_GRACE_READ_BACK,
   },
-  'writer-grace-override.unit.test.ts#<module>: roundMs: STRAGGLER_GRACE_MS': {
+  'stage/writer-grace-override.unit.test.ts#<module>: roundMs: STRAGGLER_GRACE_MS': {
     count: 3,
     bound: 'read back',
     reason: WRITER_GRACE_READ_BACK,
   },
-  'writer-grace-override.unit.test.ts#<module>: writerMs: CALIBRATION_STRAGGLER_GRACE_MS': {
+  'stage/writer-grace-override.unit.test.ts#<module>: writerMs: CALIBRATION_STRAGGLER_GRACE_MS': {
     count: 1,
     bound: 'read back',
     reason: WRITER_GRACE_READ_BACK,
   },
-  'writer-grace-override.unit.test.ts#<module>: writerMs: LONG_ROUND': {
+  'stage/writer-grace-override.unit.test.ts#<module>: writerMs: LONG_ROUND': {
     count: 2,
     bound: 'read back',
     reason: WRITER_GRACE_READ_BACK,
   },
-  'writer-grace-override.unit.test.ts#<module>: writerMs: ROUND': {
+  'stage/writer-grace-override.unit.test.ts#<module>: writerMs: ROUND': {
     count: 1,
     bound: 'read back',
     reason: WRITER_GRACE_READ_BACK,
   },
-  'writer-grace-override.unit.test.ts#<module>: writerMs: WRITER': {
+  'stage/writer-grace-override.unit.test.ts#<module>: writerMs: WRITER': {
     count: 4,
     bound: 'read back',
     reason: WRITER_GRACE_READ_BACK,
   },
-  'writer-grace-override.unit.test.ts#<module>: writerMs: WRITER_GRACE_MS': {
+  'stage/writer-grace-override.unit.test.ts#<module>: writerMs: WRITER_GRACE_MS': {
     count: 4,
     bound: 'read back',
     reason: WRITER_GRACE_READ_BACK,

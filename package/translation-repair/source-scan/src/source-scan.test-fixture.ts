@@ -1,28 +1,39 @@
+import { readFileSync, } from 'node:fs';
 import {
   readdir,
   readFile,
 } from 'node:fs/promises';
-import { join, } from 'node:path';
+import {
+  join,
+  resolve,
+} from 'node:path';
 
 // Rolldown's parser (oxc), as the repository's import-attributes plugin reads
 // source; TypeScript 7 exposes no stable compiler API to parse with.
 import { parseSync, } from 'rolldown/utils';
 
 //region Source scan
-// What the package-wide guards over this package's own source share (audit
-// area six, ledger B19): the package's TypeScript files as text, each parsed
+// What the package-wide guards over the translation-repair family's source share (audit
+// area six, ledger B19): the family's TypeScript files as text, each parsed
 // once, a walk over the syntax tree, and the reading of names and wrapped
 // expressions the scans share. Every scan that parses the source parses it
 // here (scans that read the text alone, such as `log-root-scan.unit.test.ts`,
 // list the files themselves); the walk and name helpers came here with ledger
 // B77, and the scans written before it still carry copies of their own.
+//
+// ONE PROGRAM, ONE KEY. The family is split into packages under
+// `package/translation-repair`, and the scans measure it as the one program it was
+// before the split. Every file is named by its package directory and its path under that
+// package's `src`, joined by a slash (`adjudication/adjudicate-prompt.ts`,
+// `run/corpus-run/cli-refusal.ts`), since every package has a `src/index.ts` and a bare
+// path would name several files. Allowlists, findings and locations all use this key.
 
 /**
- One TypeScript file under the package's `src`.
+ One TypeScript file under a family package's `src`.
  */
 export type SourceText = {
   /**
-   Path relative to `src`, which names locations.
+   Package directory and path relative to that package's `src`, joined by a slash, which names locations.
    */
   readonly path: string;
 
@@ -359,57 +370,145 @@ export function parseSource({ file, }: { readonly file: SourceText; },): ParsedS
 }
 
 /**
- Every TypeScript file under the package's `src`, with its text.
+ Directory holding the family's packages, one directory each.
+ */
+export const FAMILY_ROOT: string = resolve(
+  import.meta.dirname,
+  '..',
+  '..',
+);
 
- @returns Files in no particular order
+/**
+ Names of the family's package directories, which prefix every location.
+
+ @returns Directory names, sorted, those without a `src` directory left out
 
  @example
  ```ts
- const files = await readPackageSource();
+ const packages = await familyPackages(); // ['adjudication', 'archive', ...]
+ ```
+ */
+export async function familyPackages(): Promise<readonly string[]> {
+  /**
+   Entries of the family directory.
+   */
+  const entries = await readdir(
+    FAMILY_ROOT,
+    { withFileTypes: true, },
+  );
+  /**
+   Directories among them that hold a `src` directory.
+   */
+  const withSource = await Promise.all(entries
+    .filter(function isDirectory(entry,): boolean {
+      return entry.isDirectory();
+    },)
+    .map(async function hasSource({ name, },): Promise<string> {
+      return (await readdir(join(
+        FAMILY_ROOT,
+        name,
+      ),)).includes('src',) ? name : '';
+    },),);
+  return withSource
+    .filter(function named(name,): boolean {
+      return name !== '';
+    },)
+    .toSorted();
+}
+
+/**
+ Every TypeScript file under every family package's `src`, with its text.
+
+ @returns Files in no particular order, each located as the package directory and its path under `src`
+
+ @example
+ ```ts
+ const files = await readPackageSource(); // paths like 'adjudication/adjudicate-prompt.ts'
  ```
  */
 export async function readPackageSource(): Promise<readonly SourceText[]> {
-  /**
-   Source root, which holds this fixture.
-   */
-  const srcDir = import.meta.dirname;
-  /**
-   Paths of the TypeScript files under it.
-   */
-  const paths = (await readdir(
-    srcDir,
-    { recursive: true, },
-  ))
-    .filter(function isTypeScript(path,): boolean {
-      return path.endsWith('.ts',);
-    },);
-  return await Promise.all(paths.map(async function read(path,): Promise<SourceText> {
-    return {
-      path,
-      text: await readFile(
-        join(
-          srcDir,
-          path,
+  return (await Promise.all((await familyPackages()).map(async function readPackage(name,): Promise<readonly SourceText[]> {
+    /**
+     Source root of this package.
+     */
+    const srcDir = join(
+      FAMILY_ROOT,
+      name,
+      'src',
+    );
+    /**
+     Paths of the TypeScript files under it.
+     */
+    const paths = (await readdir(
+      srcDir,
+      { recursive: true, },
+    ))
+      .filter(function isTypeScript(path,): boolean {
+        return path.endsWith('.ts',);
+      },);
+    return await Promise.all(paths.map(async function read(path,): Promise<SourceText> {
+      return {
+        path: `${name}/${path}`,
+        text: await readFile(
+          join(
+            srcDir,
+            path,
+          ),
+          'utf8',
         ),
-        'utf8',
-      ),
-      isTest: path.endsWith('.test.ts',) || path.endsWith('.test-fixture.ts',),
-    };
-  },),);
+        isTest: path.endsWith('.test.ts',) || path.endsWith('.test-fixture.ts',),
+      };
+    },),);
+  },),)).flat();
+}
+
+/**
+ Path of a location under its package's `src`, the package directory cut away.
+
+ @param path - location as `readPackageSource` names it
+
+ @returns The path relative to the package's `src`
+
+ @example
+ ```ts
+ const underSrc = pathUnderSrc({ path: 'run/corpus-run/cli-refusal.ts', },); // 'corpus-run/cli-refusal.ts'
+ ```
+ */
+export function pathUnderSrc({ path, }: { readonly path: string; },): string {
+  return path.slice(path.indexOf('/',) + 1,);
+}
+
+/**
+ Package directory of a location.
+
+ @param path - location as `readPackageSource` names it
+
+ @returns The directory name of the package holding the file
+
+ @example
+ ```ts
+ const directory = packageDirectoryOf({ path: 'run/corpus-run/cli-refusal.ts', },); // 'run'
+ ```
+ */
+export function packageDirectoryOf({ path, }: { readonly path: string; }): string {
+  return path.slice(
+    0,
+    path.indexOf('/',),
+  );
 }
 
 /**
  Resolves a relative module specifier against the file that holds it.
 
- @param fromPath - importing file's path, relative to `src`
+ @param fromPath - importing file's location
 
  @param specifier - relative specifier the import or re-export names
 
- @returns The path it names, relative to `src`
+ @returns The location it names
 
  @example
  ```ts
- resolveSpecifier({ fromPath: 'corpus-run/a.test.ts', specifier: '../b.test-fixture.ts', },); // 'b.test-fixture.ts'
+ resolveSpecifier({ fromPath: 'run/corpus-run/a.test.ts', specifier: '../b.test-fixture.ts', },); // 'run/b.test-fixture.ts'
  ```
  */
 export function resolveSpecifier(
@@ -437,6 +536,143 @@ export function resolveSpecifier(
       resolved.push(segment,);
   }
   return resolved.join('/',);
+}
+
+/**
+ What a family package specifier names: the package directory, and the path under `src` after `/ts/`, empty for
+ the package's index (`<name>` or `<name>/ts`).
+ */
+const FAMILY_SPECIFIER = /^@monochromatic-dev\/translation-repair-(?<directory>[a-z0-9-]+)(?:\/ts(?:\/(?<subpath>.+))?)?$/u;
+
+/**
+ Declaring module of every name a family package's index re-exports, read once per package.
+ */
+const INDEX_DECLARERS = new Map<string, ReadonlyMap<string, string>>();
+
+/**
+ The module that declares each name a package's `src/index.ts` re-exports.
+
+ @param directory - package directory
+
+ @returns Exported name to the location of the module the index re-exports it from
+
+ @example
+ ```ts
+ const declarers = indexDeclarers({ directory: 'archive', },); // 'confirmAbsoluteNaturalness' to 'archive/absolute-naturalness-confirmation.ts'
+ ```
+ */
+function indexDeclarers({ directory, }: { readonly directory: string; },): ReadonlyMap<string, string> {
+  /**
+   Table read earlier.
+   */
+  const cached = INDEX_DECLARERS.get(directory,);
+  if (cached !== undefined)
+    return cached;
+  /**
+   Location the index goes by.
+   */
+  const indexPath = `${directory}/index.ts`;
+  /**
+   The index parsed.
+   */
+  const { program, } = parseSource({
+    file: {
+      path: indexPath,
+      text: readFileSync(
+        join(
+          FAMILY_ROOT,
+          directory,
+          'src',
+          'index.ts',
+        ),
+        'utf8',
+      ),
+      isTest: false,
+    },
+  },);
+  /**
+   Table built from its re-exports.
+   */
+  const declarers = new Map<string, string>();
+  for (const statement of (program.body as readonly TreeNode[])) {
+    if (statement.type !== 'ExportNamedDeclaration')
+      continue;
+    /**
+     Module the statement re-exports from, empty for an export list of the index's own names.
+     */
+    const from = literalText({ node: statement.source, },);
+    if (from === '')
+      continue;
+    for (const specifier of (statement.specifiers as readonly TreeNode[])) {
+      declarers.set(
+        identifierName({ node: specifier.exported, },) || literalText({ node: specifier.exported, },),
+        resolveSpecifier({
+          fromPath: indexPath,
+          specifier: from,
+        },),
+      );
+    }
+  }
+  INDEX_DECLARERS.set(
+    directory,
+    declarers,
+  );
+  return declarers;
+}
+
+/**
+ The module a name imported through a specifier is declared in: the file a relative specifier names, the file
+ under `src` a family package's `/ts/<path>` names, the module a family package's index (`<name>` or
+ `<name>/ts`) re-exports the name from, or the specifier itself for any other package.
+
+ @param fromPath - importing file's location
+
+ @param specifier - module specifier the import or re-export names
+
+ @param imported - name taken from the module, `*` for a namespace and `default` for a default
+
+ @returns The declaring module's location, the package's index when it re-exports no such name, or the specifier
+ for a package outside the family
+
+ @example
+ ```ts
+ const at = declaringModule({ fromPath: 'run/a.ts', specifier: '@monochromatic-dev/translation-repair-archive/ts', imported: 'confirmAbsoluteNaturalness', },);
+ ```
+ */
+export function declaringModule(
+  {
+    fromPath,
+    specifier,
+    imported,
+  }: {
+    readonly fromPath: string;
+    readonly specifier: string;
+    readonly imported: string;
+  },
+): string {
+  if (specifier.startsWith('.',)) {
+    return resolveSpecifier({
+      fromPath,
+      specifier,
+    },);
+  }
+  /**
+   The family package the specifier names, absent for any other package.
+   */
+  const family = FAMILY_SPECIFIER.exec(specifier,)?.groups;
+  if (family === undefined)
+    return specifier;
+  /**
+   Package directory the specifier names.
+   */
+  const directory = family['directory'] as string;
+  /**
+   Path after `/ts/`, absent for the package's index.
+   */
+  const subpath = family['subpath'];
+  if (subpath !== undefined)
+    return `${directory}/${subpath}`;
+  return indexDeclarers({ directory, },).get(imported,) ?? `${directory}/index.ts`;
 }
 
 //endregion Source scan

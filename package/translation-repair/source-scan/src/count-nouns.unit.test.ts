@@ -157,72 +157,72 @@ function isModifierWord({ word, }: { readonly word: string; },): boolean {
  */
 const EXEMPT_COUNTS: ReadonlyMap<string, string> = new Map([
   [
-    'artifact-change-sets.ts#readArtifactChangeSets: records',
+    'artifact/artifact-change-sets.ts#readArtifactChangeSets: records',
     'a verb after a schema version',
   ],
   [
-    'assembly-contract-fault.ts#assemblySentence: claims',
+    'assembly/assembly-contract-fault.ts#assemblySentence: claims',
     'a verb after a slice index',
   ],
   [
-    'candidate-select.ts#decideBestCandidate: ballots',
+    'translate-stage/candidate-select.ts#decideBestCandidate: ballots',
     'MIN_SELECTION_BALLOTS, a constant above one',
   ],
   [
-    'corpus-run/artifact-two-lane-verify.ts#assertLedgerDescribesPreparation: calls',
+    'artifact/corpus-run/artifact-two-lane-verify.ts#assertLedgerDescribesPreparation: calls',
     'a verb after a slice index',
   ],
   [
-    'corpus-run/command-line.ts#repeatRefusal: times',
+    'run/corpus-run/command-line.ts#repeatRefusal: times',
     'only flags written more than once are listed',
   ],
   [
-    'corpus-run/coverage-probe-args.ts#readCoverageProbeArguments: candidates',
+    'coverage-census/corpus-run/coverage-probe-args.ts#readCoverageProbeArguments: candidates',
     'DEFAULT_CANDIDATE_CAP, a constant above one',
   ],
   [
-    'corpus-run/window-trial-slice.ts#runSliceArms: arms',
+    'bench/corpus-run/window-trial-slice.ts#runSliceArms: arms',
     'the length of TRIAL_ARM_SET, a constant above one',
   ],
   [
-    'count-word.ts#howOften: times',
+    'typography/count-word.ts#howOften: times',
     'the form for every count but one',
   ],
   [
-    'pair-media-adjacency.ts#toFinding: claims',
+    'stage/pair-media-adjacency.ts#toFinding: claims',
     'a verb after a section index',
   ],
   [
-    'prepare-block-pairing.ts#prepareBlockPairing: pairs',
+    'archive/prepare-block-pairing.ts#prepareBlockPairing: pairs',
     'a verb after a section index',
   ],
   [
-    'span-contiguity.ts#assertSpanContiguity: cuts',
+    'slice-reading/span-contiguity.ts#assertSpanContiguity: cuts',
     'a verb after a slice index',
   ],
   [
-    'span-contiguity.ts#assertSpanContiguity: spans',
+    'slice-reading/span-contiguity.ts#assertSpanContiguity: spans',
     'a verb after a slice index',
   ],
   [
-    'corpus-run/artifact-pool-refusal.ts#MixedGenerationError: pipeline generations',
+    'artifact-pool/corpus-run/artifact-pool-refusal.ts#MixedGenerationError: pipeline generations',
     'generationCount, guarded above one before this error is constructed (artifact-eligible.ts, selectEligible)',
   ],
   [
-    'corpus-run/artifact-pool-refusal.ts#MixedGenerationError: settled entries',
+    'artifact-pool/corpus-run/artifact-pool-refusal.ts#MixedGenerationError: settled entries',
     'census.total, at least generationCount (itself guarded above one) since every generation group holds at '
       + 'least one entry',
   ],
   [
-    'corpus-run/pipeline-digest.ts#<module>: lowercase hex characters',
+    'glossary/corpus-run/pipeline-digest.ts#<module>: lowercase hex characters',
     'DIGEST_LENGTH, a constant above one',
   ],
   [
-    'corpus-run/slice-census-widest.ts#sliceCensusWidestLines: target chars',
+    'slice-cache/corpus-run/slice-census-widest.ts#sliceCensusWidestLines: target chars',
     'PROBE_TIMEOUT_CHARS, a constant above one',
   ],
   [
-    'preparation-identity.ts#<module>: lowercase hex characters',
+    'corpus-source/preparation-identity.ts#<module>: lowercase hex characters',
     'DIGEST_LENGTH, a constant above one',
   ],
 ],);

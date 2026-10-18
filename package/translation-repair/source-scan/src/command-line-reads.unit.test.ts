@@ -68,7 +68,7 @@ const HAND_OFF = 'reportingRefusals';
  Reads allowed outside a runner's hand-off, each as `path: what`, with why.
  */
 const ALLOWED: Readonly<Record<string, string>> = {
-  'corpus-run/command-line.ts: imports parseArgs from node:util':
+  'run/corpus-run/command-line.ts: imports parseArgs from node:util':
     'the one reader of the whole line, which hands parseArgs the arguments after the script and reads its '
     + 'tokens against the declaration',
 };

@@ -636,19 +636,19 @@ function floorInputOmissions({ files, }: { readonly files: readonly SourceText[]
  in one is theirs.
  */
 const MEASUREMENT_FILES: Readonly<Record<string, string>> = {
-  'corpus-run/checker-sensitivity-run.ts': 'asks whether the resolution checkers can say no, on cat-themed sheets',
-  'corpus-run/coverage-control.ts': 'asks the coverage roster about a passage before and after its anchors are cut',
-  'corpus-run/editor-calibrate-lane.ts': 'ranks every model on the editor\'s job over drawn slices',
-  'corpus-run/editor-width-arm.ts': 'one arm of the editor-width probe',
-  'corpus-run/editor-width-contest.ts': 'the editor-width probe\'s head-to-head between its arms\' winners',
-  'corpus-run/editor-width-input.ts': 'the critic and panel findings the editor-width probe\'s arms share',
-  'corpus-run/probe-relabel-case.ts': 'locates a relabelled probe case in its drawn entry',
-  'corpus-run/probe-relabel-control.ts': 'gathers the relabel probe\'s control cases',
-  'corpus-run/producer-calibrate-round.ts': 'ranks producers on drawn bare slices, every seat filled',
-  'corpus-run/roster-bench-round.ts': 'benches roster widths on drawn bare slices',
-  'corpus-run/translate-probe-run.ts': 'prints the translate sheet for a drawn slice',
-  'corpus-run/window-trial-probe-draw.ts': 'draws the entries the judging-window trial runs on',
-  'corpus-run/window-trial-slice.ts': 'runs one slice of the judging-window trial in both arms',
+  'bench/corpus-run/checker-sensitivity-run.ts': 'asks whether the resolution checkers can say no, on cat-themed sheets',
+  'coverage-census/corpus-run/coverage-control.ts': 'asks the coverage roster about a passage before and after its anchors are cut',
+  'bench/corpus-run/editor-calibrate-lane.ts': 'ranks every model on the editor\'s job over drawn slices',
+  'bench/corpus-run/editor-width-arm.ts': 'one arm of the editor-width probe',
+  'bench/corpus-run/editor-width-contest.ts': 'the editor-width probe\'s head-to-head between its arms\' winners',
+  'bench/corpus-run/editor-width-input.ts': 'the critic and panel findings the editor-width probe\'s arms share',
+  'probe/corpus-run/probe-relabel-case.ts': 'locates a relabelled probe case in its drawn entry',
+  'probe/corpus-run/probe-relabel-control.ts': 'gathers the relabel probe\'s control cases',
+  'bench/corpus-run/producer-calibrate-round.ts': 'ranks producers on drawn bare slices, every seat filled',
+  'bench/corpus-run/roster-bench-round.ts': 'benches roster widths on drawn bare slices',
+  'bench/corpus-run/translate-probe-run.ts': 'prints the translate sheet for a drawn slice',
+  'bench/corpus-run/window-trial-probe-draw.ts': 'draws the entries the judging-window trial runs on',
+  'bench/corpus-run/window-trial-slice.ts': 'runs one slice of the judging-window trial in both arms',
 };
 
 /**
@@ -672,43 +672,43 @@ type NamedOmission = {
  */
 const NAMED_OMISSIONS: readonly NamedOmission[] = [
   {
-    omission: 'archive-dispute.ts#archiveDisputeNotesOf -> archiveDisputesOf: omits [withdrawnSliceIndices]',
+    omission: 'archive/archive-dispute.ts#archiveDisputeNotesOf -> archiveDisputesOf: omits [withdrawnSliceIndices]',
     why: 'the note states the accepted claims alone; the withdrawn slices decide only whether the repair text may stand '
       + 'in, which no note reads',
   },
   {
-    omission: 'lane-contest-eligibility.ts#candidateEligibility -> validateTranslatedSlice: omits [declared, disputedWordings, '
+    omission: 'lane-contest/lane-contest-eligibility.ts#candidateEligibility -> validateTranslatedSlice: omits [declared, disputedWordings, '
       + 'lineStructured]',
     why: 'the front-matter branch reads neither the line structure nor the declared names, and no dispute exists at a '
       + 'front-matter slice (front-matter-slice.unit.test.ts, "RAISES NO ISSUE")',
   },
   {
-    omission: 'lane-contest-eligibility.ts#excluded -> validateTranslatedSlice: omits [declared, disputedWordings, lineStructured]',
+    omission: 'lane-contest/lane-contest-eligibility.ts#excluded -> validateTranslatedSlice: omits [declared, disputedWordings, lineStructured]',
     why: 'the front-matter branch reads neither the line structure nor the declared names, and no dispute exists at a '
       + 'front-matter slice (front-matter-slice.unit.test.ts, "RAISES NO ISSUE")',
   },
   {
-    omission: 'lane-contest-eligibility.ts#laneContestChoiceVerdict -> validateTranslatedSlice: omits [disputedWordings]',
+    omission: 'lane-contest/lane-contest-eligibility.ts#laneContestChoiceVerdict -> validateTranslatedSlice: omits [disputedWordings]',
     why: 'the verdict decides only whether the contest ballots persist and what the log says; the consolidation re-reads '
       + 'every contested slice\'s standing against the disputed wordings, endorsed or not (consolidate-driver.ts, '
       + 'readStandingVerdict)',
   },
   {
-    omission: 'repair-entry.ts#repairTranslation -> prepareDocumentPair: omits [attestedDetails, referenceContext]',
+    omission: 'repair/repair-entry.ts#repairTranslation -> prepareDocumentPair: omits [attestedDetails, referenceContext]',
     why: 'the library entry takes no cited references or attestations; the corpus pass fetches and attests them '
       + '(corpus-run/pass-prepare.ts)',
   },
   {
-    omission: 'seed-detection.ts#gradeSeedDetection -> prepareDocumentPair: omits [attestedDetails, referenceContext]',
+    omission: 'lane-contest/seed-detection.ts#gradeSeedDetection -> prepareDocumentPair: omits [attestedDetails, referenceContext]',
     why: 'grading a seeded-error benchmark reads the pair and the seeds alone',
   },
   {
-    omission: 'corpus-run/artifact-two-lane-rebuild.ts#rebuildPreparation -> prepareDocumentPair: omits [attestedDetails, '
+    omission: 'artifact/corpus-run/artifact-two-lane-rebuild.ts#rebuildPreparation -> prepareDocumentPair: omits [attestedDetails, '
       + 'referenceContext]',
     why: 'the rebuild re-carves the slices an artifact recorded, which neither input moves, and artifacts record neither',
   },
   {
-    omission: 'translate-slice.ts#settleTranslateSlice -> runTranslateStage: unreadable <opaque:stageInput> [archiveDisputeNote, '
+    omission: 'translate-lane/translate-slice.ts#settleTranslateSlice -> runTranslateStage: unreadable <opaque:stageInput> [archiveDisputeNote, '
       + 'attestedLines, declared, disputedWordings, identityContext, pictureContext, referenceContext]',
     why: 'stageInput is translateSliceInput\'s stage input, whose literal states each of them (translate-slice-input.ts); '
       + 'this scan cannot read a returned literal, so translate-slice-input.unit.test.ts and the stage-threading tests '

@@ -196,7 +196,7 @@ const RELATIONAL_OPERATORS: ReadonlySet<string> = new Set([
  another canonical form.
  */
 const CODE_UNIT_ORDER_EXEMPTIONS: ReadonlySet<string> = new Set([
-  'prompt-uniqueness-client.ts#canonicalPromptValue: bare sort',
+  'stage/prompt-uniqueness-client.ts#canonicalPromptValue: bare sort',
 ],);
 
 /**

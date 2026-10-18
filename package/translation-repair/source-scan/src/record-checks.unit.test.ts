@@ -67,31 +67,31 @@ const EQUALITY_OPERATORS: ReadonlySet<string> = new Set([
  */
 const EXEMPT_CHECKS: ReadonlyMap<string, string> = new Map([
   [
-    'json-guard.ts#isJsonRecord',
+    'document-structure/json-guard.ts#isJsonRecord',
     'the guard itself',
   ],
   [
-    'corpus-source.ts#classifyCorpusReadFailure',
+    'corpus-source/corpus-source.ts#classifyCorpusReadFailure',
     'reads a caught error for its stderr',
   ],
   [
-    'parse-mdx.ts#stopPointOf',
+    'document-structure/parse-mdx.ts#stopPointOf',
     'reads a caught compiler error for the place it names',
   ],
   [
-    'corpus-run/artifact-two-lane-project.ts#refuseUnknownMember',
+    'artifact/corpus-run/artifact-two-lane-project.ts#refuseUnknownMember',
     'names the runtime type of a member its type says cannot exist',
   ],
   [
-    'corpus-run/artifact-placement.ts#shapeOf',
+    'artifact-pool/corpus-run/artifact-placement.ts#shapeOf',
     'names the shape of a value for a message, after its own array case',
   ],
   [
-    'corpus-run/directory-listing.ts#carriesFilesystemCode',
+    'glossary/corpus-run/directory-listing.ts#carriesFilesystemCode',
     'reads a caught error for its filesystem code',
   ],
   [
-    'corpus-run/cap-census-read.ts#readCapLog',
+    'run/corpus-run/cap-census-read.ts#readCapLog',
     'narrows a spend-line reading whose other members are text',
   ],
 ],);

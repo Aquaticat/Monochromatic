@@ -52,7 +52,7 @@ import { expectNoFindings, } from '@monochromatic-dev/translation-repair-test-fi
 /**
  Path, relative to `src`, of the one file allowed to start a child.
  */
-const SHARED_FIXTURE = 'child-environment.test-fixture.ts';
+const SHARED_FIXTURE = 'adjudication/child-environment.test-fixture.ts';
 
 /**
  Modules that start a child process.
@@ -221,7 +221,7 @@ await describe({
               isTest: true,
             },
             {
-              path: 'child-environment.test-fixture.ts',
+              path: 'adjudication/child-environment.test-fixture.ts',
               text: 'import spawn from \'nano-spawn\'; export const run = () => spawn(\'git\', [],);',
               isTest: true,
             },

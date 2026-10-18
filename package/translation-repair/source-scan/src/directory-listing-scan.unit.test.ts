@@ -61,11 +61,11 @@ const LISTING_NAMES: ReadonlySet<string> = new Set([
  with why.
  */
 const WALKERS: Readonly<Record<string, string>> = {
-  'corpus-run/cap-census-walk.ts: readdir':
+  'run/corpus-run/cap-census-walk.ts: readdir':
     'walks the log directories named on its command line by stat, following links into other '
     + 'agents\' directories on purpose, and takes every kind of entry as a path to visit',
-  'corpus-run/directory-listing.ts: readdir': 'the one lister, handing each reader the kind of entry it takes',
-  'corpus-run/pipeline-digest.ts: readdir':
+  'glossary/corpus-run/directory-listing.ts: readdir': 'the one lister, handing each reader the kind of entry it takes',
+  'glossary/corpus-run/pipeline-digest.ts: readdir':
     'digests the whole build recursively and must see every entry to refuse a link or special file '
     + 'it cannot identify',
 };

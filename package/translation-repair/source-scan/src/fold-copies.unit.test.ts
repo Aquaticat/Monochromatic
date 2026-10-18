@@ -84,21 +84,21 @@ const COPYING_CONSTRUCTORS: ReadonlySet<string> = new Set(['Map', 'Set',],);
  `path#site: names`, with why.
  */
 const BOUNDED_OR_SEQUENTIAL: Readonly<Record<string, string>> = {
-  'assembly-repetition-span.ts#grownSpans: covered':
+  'assembly/assembly-repetition-span.ts#grownSpans: covered':
     'each run is checked against the regions the runs before it left, merged, so the regions are rebuilt between checks',
-  'corpus-run/archive-block-repair.ts#repairArchiveBlocks: revisedText':
+  'page-check/corpus-run/archive-block-repair.ts#repairArchiveBlocks: revisedText':
     'each removal span reads the separators the later blocks\' revisions left, so the text is rewritten block by block',
-  'corpus-run/archive-stub.ts#isStubMarkerParagraph/unwrap: text':
+  'page-check/corpus-run/archive-stub.ts#isStubMarkerParagraph/unwrap: text':
     'folds over the fixed MARKER_WRAPS table, not over the input',
-  'corpus-run/name-gloss-restore.ts#restore/place: current':
+  'page-check/corpus-run/name-gloss-restore.ts#restore/place: current':
     'each gloss is placed by a search of the text the glosses before it left',
-  'invisible-variants.ts#foldInvisibleVariants/fold: folded':
+  'markup/invisible-variants.ts#foldInvisibleVariants/fold: folded':
     'folds over the fixed FOLDS table, not over the input',
-  'seeded-error.ts#applySeededErrors/applyOne: state':
+  'lane-contest/seeded-error.ts#applySeededErrors/applyOne: state':
     'each needle is found in the text the seeds before it left, and their regions shift with it',
-  'splice-slices.ts#placeSlices/spliceOne: current':
+  'page-pass/splice-slices.ts#placeSlices/spliceOne: current':
     'each edit composes its separators against the tail the later edits wrote',
-  'stage-quorum.ts#collectRounds: pending':
+  'stage/stage-quorum.ts#collectRounds: pending':
     'the next round\'s queue, rebuilt once per round, and the rounds are bounded by maxRetryRounds',
 };
 

@@ -499,191 +499,191 @@ function receiverIsTypedArray(
  */
 const ALLOWED_BLIND_SETS: ReadonlyMap<string, string> = new Map<string, string>([
   [
-    'active-footnote-markers.ts#activeFootnoteMarkers: runReferences.set(run.opener,...)',
+    'shared-contract/active-footnote-markers.ts#activeFootnoteMarkers: runReferences.set(run.opener,...)',
     'the key is the tree node that opens a run, and each run of unpositioned text has its own first member',
   ],
   [
-    'consistency-folded-links.ts#foldedLinksOf: emptyStarts.set(last,...)',
+    'consistency/consistency-folded-links.ts#foldedLinksOf: emptyStarts.set(last,...)',
     'the key is the folded unit of the last character of a link the parse positions, and no two links end at the same character '
     + 'of the English, since a link ends where its own closing bracket stands',
   ],
   [
-    'consistency-folded-links.ts#foldedLinksOf: emptyEnds.set(first,...)',
+    'consistency/consistency-folded-links.ts#foldedLinksOf: emptyEnds.set(first,...)',
     'the key is the folded unit of the first character of a link the parse positions, and no two links start at the same character '
     + 'of the English, since a link starts where its own opening bracket stands',
   ],
   [
-    'consistency-folded-links.ts#foldedLinksOf: closingSpans.set(first,...)',
+    'consistency/consistency-folded-links.ts#foldedLinksOf: closingSpans.set(first,...)',
     'the key is the folded unit of the first character of a link the parse positions, and no two links start at the same character '
     + 'of the English, since a link starts where its own opening bracket stands',
   ],
   [
-    'consistency-link-twin.ts#settlePending: removedBefore.set(units.length,...)',
+    'consistency/consistency-link-twin.ts#settlePending: removedBefore.set(units.length,...)',
     'the key is the number of units the twin holds when the links taken out are settled, which grows with the next unit written, so '
     + 'no two settlements share a key',
   ],
   [
-    'consistency-page-english.ts#pageOfSlices: offsets.set(slice.sliceIndex,...)',
+    'consistency/consistency-page-english.ts#pageOfSlices: offsets.set(slice.sliceIndex,...)',
     'one write per slice of the list the pass builds from the prepared slices, whose indexes `assertSliceIndexing` holds distinct',
   ],
   [
-    'consistency-page-english.ts#laidOutPage: byIndex.set(entry.sliceIndex,...)',
+    'consistency/consistency-page-english.ts#laidOutPage: byIndex.set(entry.sliceIndex,...)',
     'one write per place the assembly reports, and it reports each replacement once, since a slice holds at most one '
     + 'replacement and `assertSliceIndexing` holds the indexes of the list distinct',
   ],
   [
-    'consistency-page-english.ts#laidOutPage: offsets.set(sliceIndex,...)',
+    'consistency/consistency-page-english.ts#laidOutPage: offsets.set(sliceIndex,...)',
     'one write per slice of the list the pass builds from the prepared slices, whose indexes `assertSliceIndexing` holds distinct',
   ],
   [
-    'consistency-page-english.ts#laidOutPage: shipped.set(sliceIndex,...)',
+    'consistency/consistency-page-english.ts#laidOutPage: shipped.set(sliceIndex,...)',
     'one write per replacement of the list the assembly was just given, and the assembly refuses two replacements naming one '
     + 'slice before this write runs',
   ],
   [
-    'consistency-page-english.ts#pageOfSlices: shipped.set(slice.sliceIndex,...)',
+    'consistency/consistency-page-english.ts#pageOfSlices: shipped.set(slice.sliceIndex,...)',
     'one write per slice of the list the pass builds from the prepared slices, whose indexes `assertSliceIndexing` holds distinct',
   ],
   [
-    'corpus-run/pass-consistency-slices.ts#consistencySlicesOf: raw.set(sliceIndex,...)',
+    'corpus-pass/corpus-run/pass-consistency-slices.ts#consistencySlicesOf: raw.set(sliceIndex,...)',
     'one write per slice of the list the pass reads from the prepared slices, whose indexes `assertSliceIndexing` holds distinct',
   ],
   [
-    'contributor-name-authority.ts#referenceLinkLabels: labels.set(markup,...)',
+    'house-rule/contributor-name-authority.ts#referenceLinkLabels: labels.set(markup,...)',
     'the label is cut from inside the markup the key is, so two links written alike carry one value',
   ],
   [
-    'corpus-run/artifact-eligible.ts#verdictsByTip: verdicts.set(tip,...)',
+    'artifact-pool/corpus-run/artifact-eligible.ts#verdictsByTip: verdicts.set(tip,...)',
     'the tips come from a set of the census\'s commits, each asked once',
   ],
   [
-    'corpus-run/artifact-generation.ts#censusByGeneration: tipByEntry.set(entryId,...)',
+    'artifact-pool/corpus-run/artifact-generation.ts#censusByGeneration: tipByEntry.set(entryId,...)',
     'an entry id is the stem of an artifact file name, and a directory lists a name once',
   ],
   [
-    'corpus-run/assembly-page-text.ts#pageTextBySlice: text.set(replacement.sliceIndex,...)',
+    'page-pass/corpus-run/assembly-page-text.ts#pageTextBySlice: text.set(replacement.sliceIndex,...)',
     'a replacement supersedes the archive\'s text for its slice on purpose, and `spliceSlices` refuses two replacements naming one slice before any page pass reads the list',
   ],
   [
-    'corpus-run/attempt-store.ts#countAttempt: attempts.set(id,...)',
+    'glossary/corpus-run/attempt-store.ts#countAttempt: attempts.set(id,...)',
     'the count is read through `attemptsOf` and written back plus one',
   ],
   [
-    'corpus-run/command-line.ts#optionsOf: options.set(name,...)',
+    'run/corpus-run/command-line.ts#optionsOf: options.set(name,...)',
     'the names are the spec\'s own, and a measurement over every command found none declaring a flag in two groups (42 commands, 31 flags)',
   ],
   [
-    'corpus-run/command-line.ts#readCommandLine: values.set(reading.name,...)',
+    'run/corpus-run/command-line.ts#readCommandLine: values.set(reading.name,...)',
     'a flag written twice is counted in `timesWritten` and refused by `countRefusals` unless it is declared repeatable',
   ],
   [
-    'corpus-run/contributor-name-restore.ts#restoreContributorNames: rewritten.set(sliceIndex,...)',
+    'page-pass/corpus-run/contributor-name-restore.ts#restoreContributorNames: rewritten.set(sliceIndex,...)',
     'one write per slice of a loop over the prepared slices, whose indexes `assertSliceIndexing` holds distinct',
   ],
   [
-    'corpus-run/coverage-tally.ts#cut: pieces.set(bundle,...)',
+    'coverage-census/corpus-run/coverage-tally.ts#cut: pieces.set(bundle,...)',
     'the loop reads a map keyed by bundle, and `cut` returns at once when it has run',
   ],
   [
-    'corpus-run/coverage-tally.ts#paint: sites.set(key,...)',
+    'coverage-census/corpus-run/coverage-tally.ts#paint: sites.set(key,...)',
     'the key names the bundle, the range and the function, so a repeat is the same site with the same value',
   ],
   [
-    'corpus-run/entry-pictures.ts#gather: gathered.set(assetName,...)',
+    'slice-cache/corpus-run/entry-pictures.ts#gather: gathered.set(assetName,...)',
     'the names come from a set of the document\'s pictures, each read once',
   ],
   [
-    'corpus-run/insertion-container-blocks.ts#countSide: byPosition.set(position,...)',
+    'insertion/corpus-run/insertion-container-blocks.ts#countSide: byPosition.set(position,...)',
     'the position is the loop\'s own place among the prepared slices',
   ],
   [
-    'corpus-run/insertion-container-deficit.ts#admitContainerDeficit: admitted.set(position,...)',
+    'insertion/corpus-run/insertion-container-deficit.ts#admitContainerDeficit: admitted.set(position,...)',
     'a row inside two nested carried containers is admitted by each, spends each one\'s deficit because it fills both, and keeps the later container\'s finding, one finding per passage as the TSDoc says',
   ],
   [
-    'corpus-run/insertion-container-deficit.ts#spendDeficit: admitted.set(row.position,...)',
+    'insertion/corpus-run/insertion-container-deficit.ts#spendDeficit: admitted.set(row.position,...)',
     'one row per position among the rows still unresolved, each visited once',
   ],
   [
-    'corpus-run/jsx-attribute-restore.ts#restoreJsxAttributes: rewritten.set(sliceIndex,...)',
+    'page-check/corpus-run/jsx-attribute-restore.ts#restoreJsxAttributes: rewritten.set(sliceIndex,...)',
     'one write per slice of a loop over the prepared slices, whose indexes `assertSliceIndexing` holds distinct',
   ],
   [
-    'corpus-run/list-spread-restore.ts#restoreListSpread: rewritten.set(sliceIndex,...)',
+    'page-check/corpus-run/list-spread-restore.ts#restoreListSpread: rewritten.set(sliceIndex,...)',
     'one write per slice of a loop over the prepared slices, whose indexes `assertSliceIndexing` holds distinct',
   ],
   [
-    'corpus-run/pass-consistency-apply-gains.ts#gainedBy: sides.set(edit.id,...)',
+    'corpus-pass/corpus-run/pass-consistency-apply-gains.ts#gainedBy: sides.set(edit.id,...)',
     'the id names a group and a place, a place belongs to exactly one replacement, and a slice lists each replacement '
     + 'once, so each id is written once',
   ],
   [
-    'corpus-run/pass-consistency-apply.ts#recordGaveWay: gaveWayTo.set(key,...)',
+    'corpus-pass/corpus-run/pass-consistency-apply.ts#recordGaveWay: gaveWayTo.set(key,...)',
     'the key names a group and a place, a place belongs to exactly one replacement, a replacement lies in one slice and '
     + 'the loop visits each slice once, and a replacement is either left out for changing another group\'s words or '
     + 'overlapped by an earlier one and never both, so each key is written once',
   ],
   [
-    'corpus-run/pass-consistency-apply.ts#recordKept: keptBecause.set(key,...)',
+    'corpus-pass/corpus-run/pass-consistency-apply.ts#recordKept: keptBecause.set(key,...)',
     'the key names a group and a place, a place belongs to exactly one replacement, a replacement lies in one slice and '
     + 'the loop visits each slice once, and a replacement is left out once and given one reason, so each key is written once',
   ],
   [
-    'corpus-run/pass-consistency-apply.ts#recordOutcome: outcomes.set(key,...)',
+    'corpus-pass/corpus-run/pass-consistency-apply.ts#recordOutcome: outcomes.set(key,...)',
     'the key names a group and a place, a place belongs to exactly one replacement, a replacement lies in one slice and '
     + 'the loop visits each slice once, and a replacement is either left out or applied and never both, so each key is '
     + 'written once',
   ],
   [
-    'corpus-run/pass-seated-pictures.ts#readPictures: priorReadings.set(name,...)',
+    'corpus-pass/corpus-run/pass-seated-pictures.ts#readPictures: priorReadings.set(name,...)',
     'a later reading of a picture supersedes the retained one on purpose, since it was read with the earlier as evidence',
   ],
   [
-    'corpus-run/prose-ranges.ts#inlineCodeSpans: spans.set(bodyOffset+nonNullishOrThrow(node.position?.star,...)',
+    'glossary/corpus-run/prose-ranges.ts#inlineCodeSpans: spans.set(bodyOffset+nonNullishOrThrow(node.position?.star,...)',
     'two nodes of one tree never open at one offset',
   ],
   [
-    'corpus-run/rendering-audit-settled-repeat.ts#rowsBySubject: byKey.set(key,...)',
+    'probe/corpus-run/rendering-audit-settled-repeat.ts#rowsBySubject: byKey.set(key,...)',
     'a row naming a subject an earlier row named is refused before this write, by the read of `firstAt` under the same key, a second map this scan does not follow',
   ],
   [
-    'corpus-run/slice-cache-namespace.ts#loadNamespacedSlices: resumed.set(key,...)',
+    'slice-cache/corpus-run/slice-cache-namespace.ts#loadNamespacedSlices: resumed.set(key,...)',
     'the key is the file name without its prefix and suffix, which no two names of one directory share, and the file\'s own `cacheKey` must equal it',
   ],
   [
-    'document-readings.ts#readDocumentPictures: readings.set(assetName,...)',
+    'translate-lane/document-readings.ts#readDocumentPictures: readings.set(assetName,...)',
     'the names come from a set of the document\'s pictures, each visited once',
   ],
   [
-    'footnote-graph.ts#collectBlockHits: runs.set(opened.opener,...)',
+    'document-structure/footnote-graph.ts#collectBlockHits: runs.set(opened.opener,...)',
     'the key is the tree node that opens a run, and each run of unpositioned text has its own first member',
   ],
   [
-    'footnote-unpositioned-runs.ts#zoneByRawOffset: byOffset.set(at,...)',
+    'document-structure/footnote-unpositioned-runs.ts#zoneByRawOffset: byOffset.set(at,...)',
     'the offset advances through the scan, and each occurrence is paired once',
   ],
   [
-    'introduced-defect-screen.ts#resolveProberChecks: checks.set(modelId,...)',
+    'adjudication/introduced-defect-screen.ts#resolveProberChecks: checks.set(modelId,...)',
     'the model ids are the own keys of one record, which holds each once',
   ],
   [
-    'pairing-pictures.ts#pairingPictureContext: reduced.set(assetName,...)',
+    'slice-reading/pairing-pictures.ts#pairingPictureContext: reduced.set(assetName,...)',
     'the loop reads a map keyed by picture name',
   ],
   [
-    'prepare-with-pairing.ts#prepareDocumentPairWithRoster: blockPairings.set(pairIndex,...)',
+    'archive/prepare-with-pairing.ts#prepareDocumentPairWithRoster: blockPairings.set(pairIndex,...)',
     'the index is the loop\'s own place among the aligned section pairs',
   ],
   [
-    'rendering-audit-corroborate.ts#keepDistinct: groups.set(JSON.stringify(textsInCodePointOrder({texts:grou,...)',
+    'rendering-audit/rendering-audit-corroborate.ts#keepDistinct: groups.set(JSON.stringify(textsInCodePointOrder({texts:grou,...)',
     'one group per distinct membership on purpose, and two groups of one membership hold the same voices and defects',
   ],
   [
-    'stage-quorum.ts#collectRounds: unreadableSeats.set(outcome.modelId,...)',
+    'stage/stage-quorum.ts#collectRounds: unreadableSeats.set(outcome.modelId,...)',
     'a later round\'s unreadable answer of a seat replaces the earlier on purpose, and a seat that then answers readably is deleted',
   ],
   [
-    'stage-round.ts#askOnce: arrived.set(position,...)',
+    'stage/stage-round.ts#askOnce: arrived.set(position,...)',
     'each position is asked once, and the abandoned outcome is written only where the answer did not arrive',
   ],
 ],);

@@ -115,8 +115,8 @@ type LocatedDeclaration = TopDeclaration & {
  (each slice once, n159, X5); the count is module-private state, which no fixture can reach without an export.
  */
 const PACKAGE_SEAMS: ReadonlySet<string> = new Set([
-  'run-spend-meter.ts#resetRunSpend',
-  'typography-prose-mask.ts#proseMaskBuilds',
+  'shared-contract/run-spend-meter.ts#resetRunSpend',
+  'typography/typography-prose-mask.ts#proseMaskBuilds',
 ],);
 
 /**

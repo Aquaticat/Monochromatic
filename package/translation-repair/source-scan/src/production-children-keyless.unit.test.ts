@@ -555,7 +555,7 @@ await describe({
         const files = await readPackageSource();
         expectNoFindings({ findings: childrenWithoutBuiltEnvironment({ files, },), },);
         expect(files.some(function isHelper(file,): boolean {
-          return file.path === 'child-process-environment.ts';
+          return file.path === 'typography/child-process-environment.ts';
         },),).toBe(true,);
       },
     },),

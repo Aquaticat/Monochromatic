@@ -849,28 +849,28 @@ const FORWARDING_SITES: readonly (Forwarding & {
   readonly names: string;
 })[] = [
   {
-    file: 'artifact-change-sets.ts',
+    file: 'artifact/artifact-change-sets.ts',
     className: 'ArtifactParseError',
     narrowedTo: ['AssemblyContractError',],
     kind: 'forwards',
     names: 'slice indexes and index-set sizes',
   },
   {
-    file: 'corpus-run/artifact-two-lane-read-comparison.ts',
+    file: 'artifact-pool/corpus-run/artifact-two-lane-read-comparison.ts',
     className: 'ArtifactParseError',
     narrowedTo: ['ArtifactComparisonError',],
     kind: 'forwards',
     names: 'lane names, counts, positions, slice indexes, archive-wording kinds and comparison-row field names',
   },
   {
-    file: 'corpus-run/artifact-two-lane-read-row-relations.ts',
+    file: 'artifact/corpus-run/artifact-two-lane-read-row-relations.ts',
     className: 'ArtifactParseError',
     narrowedTo: ['DeliveryCoherenceError', 'WordingCoherenceError',],
     kind: 'forwards',
     names: 'a slice index and fault and outcome kinds',
   },
   {
-    file: 'corpus-run/judge-fidelity-probe-run.ts',
+    file: 'probe/corpus-run/judge-fidelity-probe-run.ts',
     className: 'StatedRefusalError',
     narrowedTo: ['FidelityReferenceError',],
     kind: 'forwards',
@@ -878,14 +878,14 @@ const FORWARDING_SITES: readonly (Forwarding & {
       + 'families, and a closed operation name',
   },
   {
-    file: 'corpus-run/producer-calibrate-run.ts',
+    file: 'bench/corpus-run/producer-calibrate-run.ts',
     className: 'StatedRefusalError',
     narrowedTo: ['ProducerRosterError',],
     kind: 'forwards',
     names: 'roster roles, model ids and counts',
   },
   {
-    file: 'run-json-read.ts',
+    file: 'shared-contract/run-json-read.ts',
     className: 'RunJsonUnreadableError',
     narrowedTo: [],
     kind: 'read-for-a-number',

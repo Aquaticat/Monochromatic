@@ -55,7 +55,7 @@ const FUNCTION_KINDS: ReadonlySet<string> = new Set(['ArrowFunctionExpression', 
  Accumulators that do not read text, each as `path#site: name`, with why.
  */
 const NOT_TEXT: Readonly<Record<string, string>> = {
-  'corpus-run/ordinal-style.ts#roman: out':
+  'page-pass/corpus-run/ordinal-style.ts#roman: out':
     'builds a roman numeral from a small number over a fixed table; the loop reads the table, not text',
 };
 

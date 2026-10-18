@@ -49,7 +49,7 @@ await describe({
         /**
          The header and code of the shown-edge test.
          */
-        const source = sourceOf({ name: 'consistency-shown-edge.ts', },);
+        const source = sourceOf({ name: 'consistency/consistency-shown-edge.ts', },);
         expect(source.includes('is a Latin letter or digit',),).toBe(false,);
         expect(source,).toContain('word character of a script that sets its words apart by spaces',);
       },
@@ -61,7 +61,7 @@ await describe({
         /**
          The header and code of the unread-units reader.
          */
-        const source = sourceOf({ name: 'consistency-unread-units.ts', },);
+        const source = sourceOf({ name: 'consistency/consistency-unread-units.ts', },);
         expect(source.includes('which the inline-code floor refuses by its own rule',),).toBe(false,);
         expect(source,).toContain('the content of inline code is shown as the code word it is',);
       },

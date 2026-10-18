@@ -39,91 +39,91 @@ import { expectNoFindings, } from '@monochromatic-dev/translation-repair-test-fi
  */
 const KEPT_CUTS: ReadonlyMap<string, string> = new Map([
   [
-    'translate-slate.ts#ROTATION_HEX_DIGITS',
+    'translate-floor/translate-slate.ts#ROTATION_HEX_DIGITS',
     'a hex digest',
   ],
   [
-    'stage-call.ts#RAW_PREVIEW_CHARS',
+    'stage/stage-call.ts#RAW_PREVIEW_CHARS',
     'a list of grapheme clusters',
   ],
   [
-    'refusal.ts#REFUSAL_SCAN_WINDOW',
+    'house-rule/refusal.ts#REFUSAL_SCAN_WINDOW',
     'a window searched for refusal markers, which a cut character cannot match',
   ],
   [
-    'image-reading-sense.ts#REFUSAL_WINDOW_CHARS',
+    'slice-reading/image-reading-sense.ts#REFUSAL_WINDOW_CHARS',
     'a window searched for refusal markers, which a cut character cannot match',
   ],
   [
-    'stream-recurrence-watch.ts#BUFFER_CHARS',
+    'provider-stream/stream-recurrence-watch.ts#BUFFER_CHARS',
     'a buffer compared unit for unit with its own tail',
   ],
   [
-    'stream-recurrence-watch.ts#TAIL_CHARS',
+    'provider-stream/stream-recurrence-watch.ts#TAIL_CHARS',
     'a tail compared unit for unit with the buffer it came from',
   ],
   [
-    'repeat-groups-refrain.ts#REFRAIN_PREFIX_MINIMUM',
+    'corpus-source/repeat-groups-refrain.ts#REFRAIN_PREFIX_MINIMUM',
     'a list of code points, one per element, so no character can be split',
   ],
   [
-    'repeat-groups-refrain.ts#REFRAIN_SUFFIX_MINIMUM',
+    'corpus-source/repeat-groups-refrain.ts#REFRAIN_SUFFIX_MINIMUM',
     'a list of code points, one per element, so no character can be split',
   ],
   [
-    'corpus-run/slice-census-unpaired.ts#UNPAIRED_ENTRIES_LISTED',
+    'slice-cache/corpus-run/slice-census-unpaired.ts#UNPAIRED_ENTRIES_LISTED',
     'a list of entries',
   ],
   [
-    'corpus-run/coverage-census-report.ts#MISPLACED_NAMED',
+    'coverage-census/corpus-run/coverage-census-report.ts#MISPLACED_NAMED',
     'a list of uncalled functions',
   ],
   [
-    'corpus-run/window-trial-order.ts#DIGEST_CHARS',
+    'bench/corpus-run/window-trial-order.ts#DIGEST_CHARS',
     'a hex digest',
   ],
   [
-    'corpus-run/window-trial-probe-lines.ts#PROTOCOL_LOG_CHARS',
+    'bench/corpus-run/window-trial-probe-lines.ts#PROTOCOL_LOG_CHARS',
     'a hex digest',
   ],
   [
-    'corpus-run/probe-store.ts#DIGEST_IN_NAME',
+    'probe/corpus-run/probe-store.ts#DIGEST_IN_NAME',
     'a hex digest',
   ],
   [
-    'corpus-run/recall-scorecard-store.ts#TIP_IN_NAME',
+    'probe/corpus-run/recall-scorecard-store.ts#TIP_IN_NAME',
     'a commit hash',
   ],
   [
-    'corpus-run/cache-account-read.ts#CITED_HASH_LENGTH',
+    'slice-cache/corpus-run/cache-account-read.ts#CITED_HASH_LENGTH',
     'a commit hash',
   ],
   [
-    'corpus-run/cache-account-commits.ts#ISO_MINUTES_LENGTH',
+    'slice-cache/corpus-run/cache-account-commits.ts#ISO_MINUTES_LENGTH',
     'an ISO time stamp',
   ],
   [
-    'corpus-run/roster-card-print.ts#DATE_CHARS',
+    'bench/corpus-run/roster-card-print.ts#DATE_CHARS',
     'an ISO date stamp',
   ],
   [
-    'corpus-run/editor-width-control.ts#CONTROL_SLICES',
+    'bench/corpus-run/editor-width-control.ts#CONTROL_SLICES',
     'a list of slices',
   ],
   [
-    'corpus-run/damage-sample-draw.ts#DAMAGE_SAMPLE_SIZE',
+    'probe/corpus-run/damage-sample-draw.ts#DAMAGE_SAMPLE_SIZE',
     'a list of samples',
   ],
   [
-    'corpus-run/translate-probe-run.ts#PROBE_SLICES',
+    'bench/corpus-run/translate-probe-run.ts#PROBE_SLICES',
     'a list of slices',
   ],
   [
-    'corpus-run/run-config.ts#CHECKER_BENCH_WIDTH',
+    'run/corpus-run/run-config.ts#CHECKER_BENCH_WIDTH',
     'a list of model ids',
   ],
   [
-    'corpus-run/pass-schema-guard.ts#NAMED_EXAMPLES',
+    'slice-cache/corpus-run/pass-schema-guard.ts#NAMED_EXAMPLES',
     'a list of entry ids',
   ],
 ],);

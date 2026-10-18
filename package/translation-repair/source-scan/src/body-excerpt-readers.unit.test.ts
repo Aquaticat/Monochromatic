@@ -43,11 +43,11 @@ const FIELD = 'bodyExcerpt';
  Files that name the field, each with why it may.
  */
 const NAMED_READERS: Readonly<Record<string, string>> = {
-  'completion-shape.ts': 'declares the field and builds it, bounded, from the reply body',
-  'request-size-refusal.ts': 'comment saying where the withheld excerpt is read',
-  'exchange-failure-text.ts': 'reads it for log lines alone, labelled as the provider\'s and quoted onto one line',
-  'provider-budget-refusal.ts': 'classifies a refusal by what the excerpt names and reads a wait out of it, text never kept',
-  'decision-context-refusal.ts': 'classifies a refusal by the error type the excerpt names, text never kept',
+  'provider-stream/completion-shape.ts': 'declares the field and builds it, bounded, from the reply body',
+  'provider/request-size-refusal.ts': 'comment saying where the withheld excerpt is read',
+  'provider-stream/exchange-failure-text.ts': 'reads it for log lines alone, labelled as the provider\'s and quoted onto one line',
+  'provider/provider-budget-refusal.ts': 'classifies a refusal by what the excerpt names and reads a wait out of it, text never kept',
+  'provider/decision-context-refusal.ts': 'classifies a refusal by the error type the excerpt names, text never kept',
 };
 
 /**

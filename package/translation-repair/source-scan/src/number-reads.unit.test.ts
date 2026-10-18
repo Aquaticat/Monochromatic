@@ -120,179 +120,179 @@ const HELD_READS: Readonly<Record<string, {
   readonly calls: number;
   readonly why: string;
 }>> = {
-  'bedrock-ledger.ts#bedrockCreditUsdFrom: Number': {
+  'provider/bedrock-ledger.ts#bedrockCreditUsdFrom: Number': {
     calls: 1,
     why: PLAIN_DECIMAL,
   },
-  'candidate-select-wire.ts#readCandidateBallotWire: Number': {
+  'adjudication/candidate-select-wire.ts#readCandidateBallotWire: Number': {
     calls: 1,
     why: 'reads only a ballot index isCanonicalIndexText took when the reply was checked',
   },
-  'consistency-quote-references.ts#decode: Number': {
+  'consistency/consistency-quote-references.ts#decode: Number': {
     calls: 1,
     why: 'reads the digits of a character reference referenceEndOf took, ASCII digits or, behind 0x, hexadecimal digits',
   },
-  'corpus-run/asked-count.ts#readAskedCount: Number': {
+  'glossary/corpus-run/asked-count.ts#readAskedCount: Number': {
     calls: 1,
     why: WHOLE_NUMBER,
   },
-  'corpus-run/cache-account-commits.ts#sourceCommitOf: Number': {
+  'slice-cache/corpus-run/cache-account-commits.ts#sourceCommitOf: Number': {
     calls: 1,
     why: WHOLE_NUMBER,
   },
-  'corpus-run/cache-account-commits.ts#utcMinutes: new Date': {
+  'slice-cache/corpus-run/cache-account-commits.ts#utcMinutes: new Date': {
     calls: 1,
     why: EPOCH_MILLISECONDS,
   },
-  'corpus-run/cache-account-read.ts#declaresVersion: Number': {
+  'slice-cache/corpus-run/cache-account-read.ts#declaresVersion: Number': {
     calls: 1,
     why: WHOLE_NUMBER,
   },
-  'corpus-run/cache-account-read.ts#versionOf: Number': {
+  'slice-cache/corpus-run/cache-account-read.ts#versionOf: Number': {
     calls: 1,
     why: WHOLE_NUMBER,
   },
-  'corpus-run/canadian-date-parts.ts#readDay: Number': {
+  'page-check/corpus-run/canadian-date-parts.ts#readDay: Number': {
     calls: 1,
     why: 'reads a run its own scan bounded to ASCII digits, then refuses a run longer than a day takes',
   },
-  'corpus-run/cap-census-read.ts#<module>: Date.parse': {
+  'run/corpus-run/cap-census-read.ts#<module>: Date.parse': {
     calls: 1,
     why: 'reads a literal with its zone written, so it names the same instant on every machine',
   },
-  'corpus-run/cap-census-read.ts#stampOf: Date.parse': {
+  'run/corpus-run/cap-census-read.ts#stampOf: Date.parse': {
     calls: 1,
     why: LOG_STAMP,
   },
-  'corpus-run/cap-census-read.ts#streamContentOf: Number': {
+  'run/corpus-run/cap-census-read.ts#streamContentOf: Number': {
     calls: 1,
     why: WHOLE_NUMBER,
   },
-  'corpus-run/cap-override.ts#resolveHardCapMinutes: Number': {
+  'run/corpus-run/cap-override.ts#resolveHardCapMinutes: Number': {
     calls: 1,
     why: PLAIN_DECIMAL,
   },
-  'corpus-run/command-flags.ts#wholeNumberFlag: Number': {
+  'run/corpus-run/command-flags.ts#wholeNumberFlag: Number': {
     calls: 1,
     why: WHOLE_NUMBER,
   },
-  'corpus-run/corpus-pass-order.ts#byResumeThenBandThenAttempts: Number': {
+  'corpus-pass/corpus-run/corpus-pass-order.ts#byResumeThenBandThenAttempts: Number': {
     calls: 2,
     why: TRUTH_VALUE,
   },
-  'corpus-run/coverage-census-steps.ts#commandExit: Number': {
+  'coverage-census/corpus-run/coverage-census-steps.ts#commandExit: Number': {
     calls: 1,
     why: 'reads an exit code Number.isInteger took as a number; no text is read',
   },
-  'corpus-run/meter-report-text.ts#stampText: new Date': {
+  'run/corpus-run/meter-report-text.ts#stampText: new Date': {
     calls: 1,
     why: EPOCH_MILLISECONDS,
   },
-  'corpus-run/meter-sample-read.ts#stampOf: Date.parse': {
+  'run/corpus-run/meter-sample-read.ts#stampOf: Date.parse': {
     calls: 1,
     why: LOG_STAMP,
   },
-  'corpus-run/ordinal-style.ts#readHanNumeral: Number': {
+  'page-pass/corpus-run/ordinal-style.ts#readHanNumeral: Number': {
     calls: 1,
     why: WHOLE_NUMBER,
   },
-  'corpus-run/roster-card-render.ts#numberFrom: Number': {
+  'bench/corpus-run/roster-card-render.ts#numberFrom: Number': {
     calls: 1,
     why: 'reads only a listing price isUnsignedNumberText takes, then refuses a reading that is not finite',
   },
-  'corpus-run/run-timing-parse.ts#countIn: Number': {
+  'run/corpus-run/run-timing-parse.ts#countIn: Number': {
     calls: 1,
     why: WHOLE_NUMBER,
   },
-  'corpus-run/run-timing-parse.ts#durationIn: Number': {
+  'run/corpus-run/run-timing-parse.ts#durationIn: Number': {
     calls: 1,
     why: WHOLE_NUMBER,
   },
-  'corpus-run/run-timing-parse.ts#readCallTiming: Date.parse': {
+  'run/corpus-run/run-timing-parse.ts#readCallTiming: Date.parse': {
     calls: 1,
     why: LOG_STAMP,
   },
-  'corpus-run/slice-overlap.ts#readOverlapSetting: Number': {
+  'slice-cache/corpus-run/slice-overlap.ts#readOverlapSetting: Number': {
     calls: 1,
     why: WHOLE_NUMBER,
   },
-  'corpus-run/spend-ceiling.ts#resolveSpendCeilingUsd: Number': {
+  'run/corpus-run/spend-ceiling.ts#resolveSpendCeilingUsd: Number': {
     calls: 1,
     why: PLAIN_DECIMAL,
   },
-  'corpus-run/spend-read.ts#countOf: Number': {
+  'run/corpus-run/spend-read.ts#countOf: Number': {
     calls: 1,
     why: WHOLE_NUMBER,
   },
-  'corpus-run/spend-read.ts#usdOf: Number': {
+  'run/corpus-run/spend-read.ts#usdOf: Number': {
     calls: 1,
     why: 'reads an amount the package wrote with String, and refuses text String does not write back',
   },
-  'corpus-run/window-trial-order.ts#armOrderFor: Number.parseInt': {
+  'bench/corpus-run/window-trial-order.ts#armOrderFor: Number.parseInt': {
     calls: 1,
     why: HASH_PREFIX,
   },
-  'fidelity-alteration.ts#unsupportedVariant: Number': {
+  'repair/fidelity-alteration.ts#unsupportedVariant: Number': {
     calls: 1,
     why: 'reads the last character of a run its own scan bounded to ASCII digits',
   },
-  'grace-override.ts#readWindowDial: Number': {
+  'glossary/grace-override.ts#readWindowDial: Number': {
     calls: 1,
     why: WHOLE_NUMBER,
   },
-  'grade-sheet-read.ts#toItem: Number': {
+  'slice-reading/grade-sheet-read.ts#toItem: Number': {
     calls: 1,
     why: WHOLE_NUMBER,
   },
-  'iso-stamp-text.ts#isIsoStampText: Date.parse': {
+  'markup/iso-stamp-text.ts#isIsoStampText: Date.parse': {
     calls: 1,
     why: 'the shared rule itself, which writes what it read back with toISOString and compares',
   },
-  'iso-stamp-text.ts#isIsoStampText: new Date': {
+  'markup/iso-stamp-text.ts#isIsoStampText: new Date': {
     calls: 1,
     why: EPOCH_MILLISECONDS,
   },
-  'page-headings.ts#htmlHeadings: Number': {
+  'rendering-audit/page-headings.ts#htmlHeadings: Number': {
     calls: 1,
     why: 'reads one character after `<h`, then refuses any reading outside the heading levels',
   },
-  'reference-line-head.ts#numbered: Number': {
+  'reference/reference-line-head.ts#numbered: Number': {
     calls: 1,
     why: WHOLE_NUMBER,
   },
-  'request-pace.ts#hyperRequestsPerHour: Number': {
+  'provider/request-pace.ts#hyperRequestsPerHour: Number': {
     calls: 1,
     why: PLAIN_DECIMAL,
   },
-  'retry-stated-wait.ts#readWaitPart: Number': {
+  'provider/retry-stated-wait.ts#readWaitPart: Number': {
     calls: 1,
     why: 'reads a run its own scan bounded to ASCII digits with at most one point between digits',
   },
-  'run-json-read.ts#offsetIn: Number.parseInt': {
+  'shared-contract/run-json-read.ts#offsetIn: Number.parseInt': {
     calls: 1,
     why: 'reads the digits opening an engine message nobody here wrote, refusing NaN, unsafe and negative readings',
   },
-  'slice-cost-read.ts#countField: Number': {
+  'translate-floor/slice-cost-read.ts#countField: Number': {
     calls: 1,
     why: WHOLE_NUMBER,
   },
-  'stage-roster.ts#readVoices: Number': {
+  'stage/stage-roster.ts#readVoices: Number': {
     calls: 2,
     why: WHOLE_NUMBER,
   },
-  'translate-slate.ts#rotateCandidates: Number.parseInt': {
+  'translate-floor/translate-slate.ts#rotateCandidates: Number.parseInt': {
     calls: 1,
     why: HASH_PREFIX,
   },
-  'whole-number-text.ts#isNegativeWholeNumberText: Number': {
+  'markup/whole-number-text.ts#isNegativeWholeNumberText: Number': {
     calls: 1,
     why: 'the shared rule itself, reading the magnitude isWholeNumberText took',
   },
-  'whole-number-text.ts#isWholeNumberText: Number': {
+  'markup/whole-number-text.ts#isWholeNumberText: Number': {
     calls: 1,
     why: 'the shared rule itself, reading only ASCII digits',
   },
-  'work-title-lookup.ts#namingFirst: Number': {
+  'reference/work-title-lookup.ts#namingFirst: Number': {
     calls: 2,
     why: TRUTH_VALUE,
   },

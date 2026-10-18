@@ -2204,7 +2204,7 @@ function unexcusedCombinators(
  */
 const LISTED_CALLS: readonly ListedSite[] = [
   {
-    site: 'all-in-input-order.ts#allInInputOrder',
+    site: 'document-structure/all-in-input-order.ts#allInInputOrder',
     combinator: 'all',
     reason: 'cannot-reject',
     restsOn: [],
@@ -2213,7 +2213,7 @@ const LISTED_CALLS: readonly ListedSite[] = [
       + 'gives the result the tuple type Promise.all gives',
   },
   {
-    site: 'cited-reference-lookup.ts#citedReferenceBlock',
+    site: 'reference/cited-reference-lookup.ts#citedReferenceBlock',
     combinator: 'all',
     reason: 'catches-own',
     restsOn: ['failedPageOutcome',],
@@ -2222,14 +2222,14 @@ const LISTED_CALLS: readonly ListedSite[] = [
       + 'rejects; the block writes every page\'s line in order of citation and then throws the first stop\'s reason',
   },
   {
-    site: 'corpus-run/attribution-read.ts#gatherAttributionEntries',
+    site: 'probe/corpus-run/attribution-read.ts#gatherAttributionEntries',
     combinator: 'all',
     reason: 'catches-own',
     restsOn: [CATCH_ANCHOR,],
     note: 'readOne holds the read and the parse in a try whose catch answers a malformed artifact named by refusalText',
   },
   {
-    site: 'corpus-run/cache-account-slice-report.ts#reportSliceCaches',
+    site: 'slice-cache/corpus-run/cache-account-slice-report.ts#reportSliceCaches',
     combinator: 'all',
     reason: 'cannot-reject',
     restsOn: ['runsDirsUnder',],
@@ -2237,7 +2237,7 @@ const LISTED_CALLS: readonly ListedSite[] = [
       + 'unlistable directory as data; the rest only sorts',
   },
   {
-    site: 'corpus-run/cache-account-slices.ts#runsDirsBelow',
+    site: 'slice-cache/corpus-run/cache-account-slices.ts#runsDirsBelow',
     combinator: 'all',
     reason: 'cannot-reject',
     restsOn: ['runsDirsBelow', 'namesIn',],
@@ -2245,7 +2245,7 @@ const LISTED_CALLS: readonly ListedSite[] = [
       + 'as data, and the names the members are made from come from that same read',
   },
   {
-    site: 'corpus-run/editor-standing-read-run.ts#reportStandings',
+    site: 'bench/corpus-run/editor-standing-read-run.ts#reportStandings',
     combinator: 'all',
     reason: 'cannot-reject',
     restsOn: ['standingArtifactPaths',],
@@ -2253,7 +2253,7 @@ const LISTED_CALLS: readonly ListedSite[] = [
       + 'only joins names; the procedure prints what each listing says once all are listed',
   },
   {
-    site: 'corpus-run/editor-standing-read-run.ts#reportStandings',
+    site: 'bench/corpus-run/editor-standing-read-run.ts#reportStandings',
     combinator: 'all',
     reason: 'catches-own',
     restsOn: ['readStandingArtifact',],
@@ -2261,14 +2261,14 @@ const LISTED_CALLS: readonly ListedSite[] = [
       + 'outcome with the line it says and rethrows nothing',
   },
   {
-    site: 'corpus-run/ledger-directory.ts#readLedgerDirectory',
+    site: 'run/corpus-run/ledger-directory.ts#readLedgerDirectory',
     combinator: 'all',
     reason: 'catches-own',
     restsOn: [CATCH_ANCHOR,],
     note: 'each file is read and parsed in a try whose catch answers a refused outcome through refusalOf',
   },
   {
-    site: 'corpus-run/page-republish.ts#republishSettledPages',
+    site: 'page-check/corpus-run/page-republish.ts#republishSettledPages',
     combinator: 'all',
     reason: 'catches-own',
     restsOn: ['republishOne',],
@@ -2276,14 +2276,14 @@ const LISTED_CALLS: readonly ListedSite[] = [
       + 'errorName',
   },
   {
-    site: 'corpus-run/runs-lock.ts#lockRunsDir',
+    site: 'run/corpus-run/runs-lock.ts#lockRunsDir',
     combinator: 'all',
     reason: 'catches-own',
     restsOn: ['hostIdentity', 'startTicksOf',],
     note: 'hostIdentity and startTicksOf each hold their reads in a try whose catch logs and answers an unread kind',
   },
   {
-    site: 'overlapped-map.ts#mapOverlapped',
+    site: 'stage/overlapped-map.ts#mapOverlapped',
     combinator: 'all',
     reason: 'catches-own',
     restsOn: ['drain',],
@@ -2291,7 +2291,7 @@ const LISTED_CALLS: readonly ListedSite[] = [
       + 'position\'s failure once every lane has ended, having written each other failure, stopped or not',
   },
   {
-    site: 'provider-meters.ts#readEveryMeter',
+    site: 'provider/provider-meters.ts#readEveryMeter',
     combinator: 'all',
     reason: 'catches-own',
     restsOn: ['meterRecordOf',],
@@ -2299,7 +2299,7 @@ const LISTED_CALLS: readonly ListedSite[] = [
       + 'unreadable state; an unconfigured one is a resolved constant',
   },
   {
-    site: 'fidelity-reference-read.ts#readReference',
+    site: 'probe/fidelity-reference-read.ts#readReference',
     combinator: 'allSettled',
     reason: 'settled-in-input-order',
     restsOn: ['sourceRead', 'archiveRead',],
@@ -2307,7 +2307,7 @@ const LISTED_CALLS: readonly ListedSite[] = [
       + 'own abort is checked',
   },
   {
-    site: 'image-reading-pair.ts#readImagePair',
+    site: 'slice-reading/image-reading-pair.ts#readImagePair',
     combinator: 'allSettled',
     reason: 'settled-in-input-order',
     restsOn: ['contained',],
@@ -2315,7 +2315,7 @@ const LISTED_CALLS: readonly ListedSite[] = [
       + 'abort is raised from the caller\'s signal',
   },
   {
-    site: 'stage-round.ts#runGatherRound',
+    site: 'stage/stage-round.ts#runGatherRound',
     combinator: 'allSettled',
     reason: 'cannot-reject',
     restsOn: ['settleWithin',],
@@ -2323,7 +2323,7 @@ const LISTED_CALLS: readonly ListedSite[] = [
       + 'the grace, and the outcomes come from arrived by position',
   },
   {
-    site: 'stage-round.ts#nextSettled',
+    site: 'stage/stage-round.ts#nextSettled',
     combinator: 'race',
     reason: 'shared-abort',
     restsOn: [{ inHandler: 'throwIfAborted', },],
@@ -2333,7 +2333,7 @@ const LISTED_CALLS: readonly ListedSite[] = [
       + 'its own call as it ended',
   },
   {
-    site: 'stage-recovery-round.ts#runRecoveryRound',
+    site: 'stage/stage-recovery-round.ts#runRecoveryRound',
     combinator: 'all',
     reason: 'shared-abort',
     restsOn: ['runGatherRound',],
@@ -2341,7 +2341,7 @@ const LISTED_CALLS: readonly ListedSite[] = [
       + 'only through throwIfAborted, with the caller\'s reason every group shares',
   },
   {
-    site: 'work-title-lookup.ts#workTitleLookupLines',
+    site: 'reference/work-title-lookup.ts#workTitleLookupLines',
     combinator: 'all',
     reason: 'catches-own',
     restsOn: ['failedTitleOutcome',],
@@ -2357,7 +2357,7 @@ const LISTED_CALLS: readonly ListedSite[] = [
  The helper's own call as a fixture lists it.
  */
 const FIXTURE_HELPER: ListedSite = {
-  site: 'all-in-input-order.ts#allInInputOrder',
+  site: 'document-structure/all-in-input-order.ts#allInInputOrder',
   combinator: 'all',
   reason: 'cannot-reject',
   restsOn: [],
@@ -2368,7 +2368,7 @@ const FIXTURE_HELPER: ListedSite = {
  The helper as a fixture plants it, making its one call.
  */
 const FIXTURE_HELPER_FILE: SourceText = {
-  path: 'all-in-input-order.ts',
+  path: 'document-structure/all-in-input-order.ts',
   text: 'export async function allInInputOrder(members) { return await Promise.all(members,); }',
   isTest: false,
 };
@@ -3149,7 +3149,7 @@ await describe({
         expect(unexcusedCombinators({
           files: [
             {
-              path: 'all-in-input-order.ts',
+              path: 'document-structure/all-in-input-order.ts',
               text: [
                 'export async function allInInputOrder(members) {',
                 '  await Promise.all(members,);',
@@ -3189,8 +3189,8 @@ await describe({
             },
           ],
         },),).toEqual([
-          'all-in-input-order.ts#allInInputOrder: the list excuses 1 Promise.all call and the function holds 2, at '
-            + 'all-in-input-order.ts:2, all-in-input-order.ts:3, so no entry can be paired with the call it was read '
+          'document-structure/all-in-input-order.ts#allInInputOrder: the list excuses 1 Promise.all call and the function holds 2, at '
+            + 'document-structure/all-in-input-order.ts:2, all-in-input-order.ts:3, so no entry can be paired with the call it was read '
             + 'against; list the site\'s calls one entry each, in the order they stand',
           'lykoi.ts#sort: the list excuses 1 Promise.all call and the function holds 2, at lykoi.ts:2, lykoi.ts:3, so '
             + 'no entry can be paired with the call it was read against; list the site\'s calls one entry each, in the '

@@ -54,30 +54,30 @@ const FROZEN_COPIES: readonly {
 }[] = [
   {
     locations: [
-      'corpus-run/artifact-two-lane-comparison.ts#judgeTwoLaneSlice',
-      'lane-comparison.ts#judgeSlice',
+      'artifact-pool/corpus-run/artifact-two-lane-comparison.ts#judgeTwoLaneSlice',
+      'lane-contest/lane-comparison.ts#judgeSlice',
     ],
     reason: 'the two-lane artifact reader recomputes each slice verdict with the rule its version was written '
       + 'under and refuses a file that disagrees (ledger B15)',
   },
   {
     locations: [
-      'absolute-naturalness-review-stage.ts#uniqueFindings',
-      'corpus-run/artifact-two-lane-read-naturalness-seat.ts#uniqueNaturalnessFindings',
+      'archive/absolute-naturalness-review-stage.ts#uniqueFindings',
+      'artifact/corpus-run/artifact-two-lane-read-naturalness-seat.ts#uniqueNaturalnessFindings',
     ],
     reason: 'the naturalness seat reader recomputes its version\'s findings list and refuses disagreement (B15)',
   },
   {
     locations: [
-      'absolute-naturalness-review-stage.ts#firstOccurrence',
-      'corpus-run/artifact-two-lane-read-naturalness-seat.ts#firstOccurrence',
+      'archive/absolute-naturalness-review-stage.ts#firstOccurrence',
+      'artifact/corpus-run/artifact-two-lane-read-naturalness-seat.ts#firstOccurrence',
     ],
     reason: 'nested inside the frozen copy of uniqueFindings',
   },
   {
     locations: [
-      'absolute-naturalness-review-stage.ts#same',
-      'corpus-run/artifact-two-lane-read-naturalness-seat.ts#same',
+      'archive/absolute-naturalness-review-stage.ts#same',
+      'artifact/corpus-run/artifact-two-lane-read-naturalness-seat.ts#same',
     ],
     reason: 'nested inside the frozen copy of uniqueFindings',
   },

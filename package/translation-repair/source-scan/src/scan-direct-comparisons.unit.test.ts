@@ -872,7 +872,7 @@ await describe({
           ),
           'utf8',
         );
-        expect(scanPathsOf({ mise, },).includes('scan-direct-comparisons.unit.test.ts',),).toBe(true,);
+        expect(scanPathsOf({ mise, },).includes('source-scan/scan-direct-comparisons.unit.test.ts',),).toBe(true,);
         expectNoFindings({
           findings: scanComparisons({
             mise,

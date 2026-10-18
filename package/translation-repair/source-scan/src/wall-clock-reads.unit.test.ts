@@ -59,8 +59,8 @@ import { expectNoFindings, } from '@monochromatic-dev/translation-repair-test-fi
  clock in a case beside one that stepped it (ledger M100).
  */
 const STUB_PATHS: ReadonlySet<string> = new Set([
-  'wall-clock-stub.test-fixture.ts',
-  'wall-clock-stub.unit.test.ts',
+  'test-fixture/wall-clock-stub.test-fixture.ts',
+  'test-fixture/wall-clock-stub.unit.test.ts',
 ],);
 
 /**
