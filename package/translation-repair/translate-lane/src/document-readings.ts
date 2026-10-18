@@ -3,21 +3,23 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 
-import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
+  type ChunkPair,
   imageReadingKey,
   isResumableReading,
   type OcrReader,
   type PairedReading,
   readImagePair,
 } from '@monochromatic-dev/translation-repair-slice-reading/ts';
-import { photoReferences, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
+  photoReferences,
+  type RosterModelId,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { PictureReaderSeating, } from '@monochromatic-dev/translation-repair-glossary/ts';
 
 import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Document readings
 // EVERY PICTURE IN ONE DOCUMENT, READ ONCE, before any of its slices is

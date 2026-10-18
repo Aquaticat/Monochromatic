@@ -6,25 +6,25 @@ import {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
-import type {
-  ChunkPair,
-  PairedReading,
-} from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import { isInsertionChunk, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import {
   neighbouringIncumbent,
   neighbouringSource,
 } from '@monochromatic-dev/translation-repair-repair/ts';
-import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import {
   absenceFinding,
   armSliceCost,
   type IncumbentKind,
   resumedSliceDiscardFinding,
+  type SliceCache,
   sliceRecordAgrees,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import { slicePictures, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
+import {
+  type ChunkPair,
+  type PairedReading,
+  slicePictures,
+} from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import type {
   TranslateModels,
   TranslateSliceRecord,
@@ -41,10 +41,10 @@ import {
 } from './translate-unheard.ts';
 import {
   reuseTwinOrBuy,
+  type StageSettings,
   type TwinMemo,
   type TwinStored,
 } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Translate slice settle
 // One slice of the translate lane, from its window to its settled record: the

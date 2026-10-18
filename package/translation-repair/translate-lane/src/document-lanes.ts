@@ -14,28 +14,33 @@ import type {
   PairedReading,
 } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
-import { assertDeliveryAgreesWithDocument, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
-import type {
-  InsertionAdmission,
-  PreparedDocumentPair,
+import {
+  assertDeliveryAgreesWithDocument,
+  type IdentifiedDeliveryLedger,
+} from '@monochromatic-dev/translation-repair-lane-contest/ts';
+import {
+  type InsertionAdmission,
+  preparationIdentity,
+  type PreparedDocumentPair,
 } from '@monochromatic-dev/translation-repair-corpus-source/ts';
-import type { IdentifiedDeliveryLedger, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
-import type {
-  LaneSliceText,
-  SliceCache,
-} from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import { preparationIdentity, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import type {
   ChunkRepairOutcome,
   RepairModels,
   RepairSliceSeating,
   RepairTranslationResult,
 } from '@monochromatic-dev/translation-repair-assembly/ts';
-import { repairPreparedDocument, } from '@monochromatic-dev/translation-repair-repair/ts';
-import { assertRostersConfigured, } from '@monochromatic-dev/translation-repair-stage/ts';
-import type { RefinedSliceSettlement, } from '@monochromatic-dev/translation-repair-repair/ts';
+import {
+  type RefinedSliceSettlement,
+  repairPreparedDocument,
+} from '@monochromatic-dev/translation-repair-repair/ts';
+import {
+  assertRostersConfigured,
+  type StageSettings,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 import {
   buildSliceDelivery,
+  type LaneSliceText,
+  type SliceCache,
   type SliceDeliveryRecord,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import type { SliceReplacement, } from '@monochromatic-dev/translation-repair-page-pass/ts';
@@ -46,7 +51,6 @@ import type {
   TranslateSliceSeating,
 } from './translate-document-contract.ts';
 import { translateDocument, } from './translate-document.ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Document lanes
 // Both lanes over ONE preparation, arbitrating nothing.

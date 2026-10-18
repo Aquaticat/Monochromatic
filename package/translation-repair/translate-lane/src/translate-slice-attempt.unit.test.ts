@@ -17,12 +17,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source';
-import { type ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
-import {
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type SyntheticClient,
+import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source';
+import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  SyntheticClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { validateTranslatedSlice, } from '@monochromatic-dev/translation-repair-translate-floor';
 import { TranslationRepairInterruptedError, } from '@monochromatic-dev/translation-repair-translate-stage';

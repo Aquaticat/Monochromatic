@@ -27,9 +27,9 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source';
-import { type ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source';
+import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
 import {
   type ChatJsonOutcome,
   type ChatJsonRequest,

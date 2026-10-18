@@ -5,10 +5,10 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
-import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import {
   absenceFinding,
   assertSettledRecordAgrees,
+  type SliceCache,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import type {
   TranslateModels,

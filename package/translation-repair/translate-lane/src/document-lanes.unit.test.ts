@@ -21,12 +21,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor';
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import {
-  type ChunkRepairOutcome,
-  type RepairModels,
-  type RepairSliceSeating,
+import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type {
+  ChunkRepairOutcome,
+  RepairModels,
+  RepairSliceSeating,
 } from '@monochromatic-dev/translation-repair-assembly';
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication';
 import {

@@ -27,7 +27,10 @@ import {
   type TranslateSliceRecord,
   TRANSLATE_SLICE_CACHE_VERSION,
 } from './translate-document-contract.ts';
-import { runTranslateStage, } from '@monochromatic-dev/translation-repair-translate-stage/ts';
+import {
+  runTranslateStage,
+  type TranslationRepairInterruptedError,
+} from '@monochromatic-dev/translation-repair-translate-stage/ts';
 import { translateSliceInput, } from './translate-slice-input.ts';
 import {
   type ArchiveDispute,
@@ -92,7 +95,7 @@ import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage
 
  @returns Settled record, whether the stage's text was accepted or refused
 
- @throws {@link import('@monochromatic-dev/translation-repair-translate-stage/ts').TranslationRepairInterruptedError}
+ @throws {@link TranslationRepairInterruptedError}
  when absent-passage correction repeats exact task or providers remain unavailable
 
  @example

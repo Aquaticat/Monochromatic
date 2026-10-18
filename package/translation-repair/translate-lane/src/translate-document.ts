@@ -6,11 +6,11 @@ import {
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider/ts';
-import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import type { PairedReading, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import {
   admitInsertions,
   type InsertionAdmission,
+  type PreparedDocumentPair,
 } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import {
   inSliceLogContext,
@@ -19,6 +19,8 @@ import {
 import {
   assertRostersConfigured,
   mapOverlapped,
+  type StageSettings,
+  type TwinMemo,
 } from '@monochromatic-dev/translation-repair-stage/ts';
 import { attestedDetailLines, } from '@monochromatic-dev/translation-repair-reference/ts';
 import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
@@ -32,10 +34,6 @@ import type {
 } from './translate-document-contract.ts';
 import { resumeReuseOrBuyTranslateSlice, } from './translate-slice-settle.ts';
 import { translateRunShape, } from './translate-slice-key.ts';
-import type {
-  StageSettings,
-  TwinMemo,
-} from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Translate document
 // The lane's document driver: every prepared slice is translated, judged, and

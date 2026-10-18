@@ -1,8 +1,10 @@
 import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import { describeStandingVerdict, } from '@monochromatic-dev/translation-repair-consolidate/ts';
-import type { DisputedWording, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
-import { validateTranslatedSlice, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
+import {
+  type DisputedWording,
+  validateTranslatedSlice,
+} from '@monochromatic-dev/translation-repair-translate-floor/ts';
 
 //region Translate archive floor
 // LEDGER X6 (the whole-package audit, 2026-09-28): the translate lane's

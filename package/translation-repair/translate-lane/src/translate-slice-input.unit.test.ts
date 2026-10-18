@@ -1,5 +1,5 @@
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
-import { type PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source';
+import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source';
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication';
 import { makeInsertionChunk, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {

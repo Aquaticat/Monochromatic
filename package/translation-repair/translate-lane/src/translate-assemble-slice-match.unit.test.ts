@@ -26,7 +26,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source';
+import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source';
 import {
   assembleTranslation,
   type TranslateSliceRecord,

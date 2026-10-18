@@ -19,7 +19,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication';
-import { type PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source';
+import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source';
 import { makeInsertionChunk, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   assembleTranslation,

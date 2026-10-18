@@ -6,13 +6,15 @@ import { isInsertionChunk, } from '@monochromatic-dev/translation-repair-shared-
 import {
   type DisputedWording,
   disputedWordingFindings,
+  type IncumbentKind,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import type { DeclaredNamePair, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import { attestedDetailLines, } from '@monochromatic-dev/translation-repair-reference/ts';
 import { splitTargetOnlyRun, } from './target-only-run.ts';
-import type { IncumbentKind, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import { preparedSheetFactsOf, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
+import {
+  type PreparedDocumentPair,
+  preparedSheetFactsOf,
+} from '@monochromatic-dev/translation-repair-corpus-source/ts';
 
 //region Deterministic pre-stage surface
 // Production settlement and calibration share inputs without sharing publication-disposition guards.

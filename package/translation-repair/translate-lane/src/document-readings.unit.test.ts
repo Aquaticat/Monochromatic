@@ -30,13 +30,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import { type SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
-import { type SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor';
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type PictureReaderSeating, } from '@monochromatic-dev/translation-repair-glossary';
-import {
-  type ChunkPair,
-  type PairedReading,
+import type { SyntheticClient, } from '@monochromatic-dev/translation-repair-provider';
+import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { PictureReaderSeating, } from '@monochromatic-dev/translation-repair-glossary';
+import type {
+  ChunkPair,
+  PairedReading,
 } from '@monochromatic-dev/translation-repair-slice-reading';
 import { readDocumentPictures, } from '../dist/final/node/index.mjs';
 import {

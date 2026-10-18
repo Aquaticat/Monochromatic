@@ -7,7 +7,10 @@ import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-rea
 import { isInsertionChunk, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import type { PreparedDocumentPair, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
-import { failureWritten, } from '@monochromatic-dev/translation-repair-stage/ts';
+import {
+  failureWritten,
+  type StageSettings,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 import {
   TranslateAbsenceError,
   type TranslateAbsenceReason,
@@ -17,7 +20,6 @@ import type {
   TranslateSliceRecord,
 } from './translate-document-contract.ts';
 import { settleTranslateSlice, } from './translate-slice.ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Translate slice attempt
 // One slice's round, with settled and unfilled shapes named.
