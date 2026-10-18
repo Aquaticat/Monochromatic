@@ -76,5 +76,18 @@
       "phase": "restore-cross",
       "branch": "research/depot-cache-scope-b-20261018"
     }
-  ]
+  ],
+  "harnessSource": "62de6a858d059b20a43c04f103c45dc8116e4f37",
+  "originalHarnessSource": "7e953864e6",
+  "localPreflight": {
+    "containerCpuMax": "200000 100000",
+    "containerMemoryMax": 2147483648,
+    "controls": 6,
+    "expectedPasses": 4,
+    "expectedRejections": 2,
+    "allCleanupPassed": true,
+    "actualCacheApiExecuted": false,
+    "correction": "Absent optional zstd has undefined stdout; normalize empty diagnostic before trimming. Initial local workdir did not exist; disposable tmpfs provides it. Neither failed local setup allocated cloud."
+  },
+  "workflowSha256": "8e1f18815ed41888efb3a8df2e0a3991d7ff9f3dbcd182d18dcd8a36043b5eac"
 }
