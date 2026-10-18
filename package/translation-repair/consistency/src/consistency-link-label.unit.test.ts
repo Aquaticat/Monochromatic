@@ -308,6 +308,33 @@ await describe({
     },),
 
     it({
+      name: 'READS THE CHILDREN OF A NESTED NODE IN THE ORDER A READER SEES THEM, so a closing bracket then a hyphen inside emphasis '
+        + 'ends in the hyphen (marks), a hyphen then a closing bracket ends in the bracket (other)',
+      fn: async () => {
+        /**
+         Emphasis holding two texts, in the order given.
+
+         @param values - what the texts say
+
+         @returns The emphasis node
+         */
+        function emphasisOf({ values, }: { readonly values: readonly string[]; },): TreeNode {
+          return {
+            type: 'emphasis',
+            children: values.map(function textOf(value,): { readonly type: 'text'; readonly value: string; } {
+              return { type: 'text', value, };
+            },),
+          };
+        }
+        expect([
+          linkLabelKindOf({ node: linkOf({ children: [emphasisOf({ values: [')', '-',], },),], },), },),
+          linkLabelKindOf({ node: linkOf({ children: [emphasisOf({ values: ['-', ')',], },),], },), },),
+          linkLabelKindOf({ node: linkOf({ children: [emphasisOf({ values: [')', ' ', '-',], },),], },), },),
+        ],).toEqual(['marks', 'other', 'marks',],);
+      },
+    },),
+
+    it({
       name: 'SAYS OTHER for a label that holds a node the tree does not say the text of, such as raw markup, even where nothing else is in it',
       fn: async () => {
         expect([

@@ -228,6 +228,19 @@ await describe({
           },
         },),
         it({
+          name: 'IS FALSE FOR A STAND WITH A LETTER DIRECTLY BESIDE IT AND NO LINK BETWEEN, since a stand inside a longer word is '
+            + 'refused by the word starts and the reading of a link run goes on only past a link that shows nothing',
+          fn: async () => {
+            expect([
+              cutIn({ text: 'kitten', word: 'kit', },),
+              cutIn({ text: 'kitten', word: 'ten', },),
+              cutIn({ text: 'a kitten', word: 'kit', },),
+              cutIn({ text: 'a kitten', word: 'ten', },),
+              cutIn({ text: 'a kit tens', word: 'kit', },),
+            ],).toEqual([false, false, false, false, false,],);
+          },
+        },),
+        it({
           name: 'IS TRUE WHERE A FULL STOP OR A COMMA JOINS THE STAND TO A DIGIT, and where the stand itself starts or ends '
             + 'with the joint',
           fn: async () => {

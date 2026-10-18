@@ -286,6 +286,87 @@ await describe({
     },),
 
     it({
+      name: 'LEAVES OUT A LINK OF CLOSING MARKS AND A STRETCH OF A LINK WITH A LABEL whose first or last character the fold holds no '
+        + 'unit for, or whose first unit stands after its last, and keeps the others (n169, n173)',
+      fn: async () => {
+        /**
+         The English: a link of closing marks and a link with a label, each before an apostrophe.
+         */
+        const english = ' [)](u)\'a [kit](v)\'b';
+        /**
+         The English in the fold, which holds a unit for every character of it.
+         */
+        const whole = foldWithOffsets({ text: english, },);
+        /**
+         The closing links and the stretches that show nothing as the fold holds them when the offsets of the units are changed.
+
+         @param changes - for each unit to change, the offset of the English it stands for in place of its own
+
+         @returns The closing links by first unit, and the hidden stretches by last unit and by first unit
+         */
+        function linksWith({ changes, }: { readonly changes: ReadonlyMap<number, number>; },): {
+          readonly closing: readonly (readonly [number, number])[];
+          readonly starts: readonly (readonly [number, number])[];
+          readonly ends: readonly (readonly [number, number])[];
+        } {
+          /**
+           What the fold makes of the links.
+           */
+          const links = foldedLinksOf({
+            english,
+            folded: {
+              ...whole,
+              starts: whole.starts.map(function changed(
+                start,
+                unit,
+              ): number {
+                return changes.get(unit,) ?? start;
+              },),
+            },
+          },);
+          return {
+            closing: [...links.closingSpans.entries(),],
+            starts: [...links.hiddenStarts.entries(),].toSorted(function byLast([first,], [second,],): number {
+              return first - second;
+            },),
+            ends: [...links.hiddenEnds.entries(),].toSorted(function byFirst([first,], [second,],): number {
+              return first - second;
+            },),
+          };
+        }
+        // The opening bracket stands at offset 10 and the resource `](v)` from 14 to 17; the closing link at 1 to 6.
+        expect(linksWith({ changes: new Map(), },),).toEqual({
+          closing: [[1, 7,],],
+          starts: [[10, 10,], [17, 14,],],
+          ends: [[10, 11,], [14, 18,],],
+        },);
+        // A closing link whose first unit stands after its last.
+        expect(linksWith({ changes: new Map([[1, 6,], [6, 1,],],), },),).toEqual({
+          closing: [],
+          starts: [[10, 10,], [17, 14,],],
+          ends: [[10, 11,], [14, 18,],],
+        },);
+        // A resource whose first unit stands after its last.
+        expect(linksWith({ changes: new Map([[14, 17,], [17, 14,],],), },),).toEqual({
+          closing: [[1, 7,],],
+          starts: [[10, 10,],],
+          ends: [[10, 11,],],
+        },);
+        // A resource the fold holds no unit for at its last character, and one it holds none for at its first.
+        expect(linksWith({ changes: new Map([[17, 99,],],), },),).toEqual({
+          closing: [[1, 7,],],
+          starts: [[10, 10,],],
+          ends: [[10, 11,],],
+        },);
+        expect(linksWith({ changes: new Map([[14, 99,],],), },),).toEqual({
+          closing: [[1, 7,],],
+          starts: [[10, 10,],],
+          ends: [[10, 11,],],
+        },);
+      },
+    },),
+
+    it({
       name: 'MAPS THE OPENING BRACKET AND THE RESOURCE OF A LINK WITH A LABEL as two stretches that show a reader nothing, by their last '
         + 'unit and by their first, for a link, a link with a title, a reference and a link of marks, and none for a link with no label, '
         + 'a link of closing marks, an image or an autolink (n173)',
