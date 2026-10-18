@@ -1546,3 +1546,40 @@ No cloud allocation occurred for the superseded preparation.
 The public reservation remains USD0 and the separate Depot reservation remains USD1.92.
 The updated admission gzip is 25554 bytes, SHA-256
 `c25fc9c62a39f31922736e61ba53fe71217c96e0c77497a613543962331a5ef3`.
+
+## Current-source public host handoff and finite recovery
+
+Run `39141147245` at harness `c50ed764237d45d5fc7aa123e86b3dc43891e9da` is terminal.
+Its five allocated standard GitHub jobs ran sequentially;
+public compute has nominal USD0, while artifact and storage charges remain unmeasured.
+The unselected Depot matrix has no allocated runner and is excluded from cost rows.
+Mac 15 and Windows x64 each built the actual frozen desktop binary and passed its `--version` consumer.
+Their Nextest commands exited 1, but individual cases and failure causes are unobserved.
+The research logger used slashes in task names as path components,
+so the first shared-build and logger calls lost their output at an `ENOENT` write.
+The uploader then reported `No files were found with the provided path: .coverage-host-evidence`.
+No artifact was uploaded.
+Mac latest completed the actual authored filesystem owner successfully.
+The Windows ARM and GNU contexts retain their failed dispositions without invented case totals.
+
+The corrected research harness is `aa501f4a5c0e74a0a993b668c98b00fe3be2da19`.
+It sanitizes log basenames and exclusively creates each log before child execution;
+it explicitly includes hidden files in the restricted receipt directory.
+The actual pinned uploader bundle found zero files with its default hidden-root filter
+and four fixture files with explicit inclusion.
+The real logger accepted adversarial names and rejected an existing log before executing its child.
+This local control used Node26.12, 2 CPU, 2 GiB, 128 PIDs,
+no network, a read-only root and a 90-second bound; the container is absent.
+It qualifies the deployed uploader function on that local runtime, not the runner action Node version.
+The bootstrap and decoded task preflight passed for the corrected harness.
+Application assertions and frozen owners are unchanged.
+
+The same five public contexts are admitted for one bounded recovery matrix,
+maximum one parallel job and 30 minutes per job.
+The ledger has 48 completed owned rows and USD4.7280 committed and reserved
+under the original USD5 guard; the USD6 fallback is unused.
+The separately admitted Depot OS profile remains unallocated with USD1.92 reserved under its USD2 guard.
+The immutable first-handoff evidence is [`depot-current-host-first-handoff-2026-10-18.evidence.json.gz`](../audit/depot-current-host-first-handoff-2026-10-18.evidence.json.gz),
+121319 bytes, SHA-256 `c7d97ade72711bc3386591871419757f97f05afb5055f03b8e671dfeadd1cf85`.
+The finite queue still owns matched Depot Mac/Windows execution,
+the per-package semantic assertion manifest, and the desktop screenshot publication audit.
