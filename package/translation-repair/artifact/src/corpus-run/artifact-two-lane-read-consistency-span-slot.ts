@@ -4,6 +4,8 @@ import {
   slotInSpan,
 } from '@monochromatic-dev/translation-repair-consistency/ts';
 import {
+  artifactGenerationCutsContainmentAtJoints,
+  artifactGenerationReadsLineEndingsAsCodePadding,
   artifactGenerationReadsSlotsBesideContainingQuotes,
   type TwoLaneArtifactGeneration,
 } from './artifact-two-lane-contract.ts';
@@ -15,6 +17,11 @@ import {
 // them; a place of generation seventeen or earlier records none and is recounted over the span alone, the limit written at the head
 // of `artifact-two-lane-read-consistency-span.ts`. Recorded definitions that move no slot are refused, since the pass records
 // them only where they move one.
+//
+// TWO READINGS ARE GATED ON THE GENERATION, so a file is recounted under the rules its pass counted by: a joint of a longer word bars
+// a quote from containing the located words, and a line ending pads inline code in the span, from generation nineteen
+// (`artifactGenerationCutsContainmentAtJoints`, `artifactGenerationReadsLineEndingsAsCodePadding`). A file of eighteen or earlier is
+// counted with only the letters beside a match barring containment and a literal space alone padding code.
 
 /**
  The slot the ballots pin down inside a place's words, as a list of zero or one.
@@ -38,7 +45,8 @@ type SlotReading = ReturnType<typeof slotInSpan>;
 
  @param definitions - the page definitions the place records, absent where it records none
 
- @param generation - generation the section was written under, which says how a slot is counted and whether definitions are read
+ @param generation - generation the section was written under, which says how a slot is counted, whether definitions are read, whether a
+ joint of a longer word bars a quote from containing the words, and whether line endings pad the inline code of the span
 
  @param path - where the place's rendering sits, for the parse error
 
@@ -88,6 +96,8 @@ export function expectedSlotOf(
       words: agreed,
       span,
       slotAgreement: artifactGenerationReadsSlotsBesideContainingQuotes({ generation, },) ? 'containing-quote' : 'exact-quote',
+      edges: artifactGenerationCutsContainmentAtJoints({ generation, },) ? 'locator' : 'letters',
+      codePadding: artifactGenerationReadsLineEndingsAsCodePadding({ generation, },) ? 'spaces-and-line-endings' : 'spaces',
       ...reading,
     },);
   }

@@ -23,6 +23,7 @@ import {
 } from '@monochromatic-dev/translation-repair-consistency';
 import { ArtifactParseError, } from '@monochromatic-dev/translation-repair-artifact-pool';
 import {
+  ARTIFACT_SCHEMA_VERSION_V19,
   asLocatedBySpan,
   locatedContradictedBySpan,
   reasonContradictedBySpan,
@@ -43,6 +44,7 @@ await describe({
             expect(asLocatedBySpan({
               rendering: { kind: 'located', quote: 'The cat naps', start: 9, },
               path: 'cat.rendering',
+              generation: ARTIFACT_SCHEMA_VERSION_V19,
             },),).toEqual({ kind: 'located', quote: 'The cat naps', core: 'The cat naps', start: 9, },);
           },
         },),
@@ -58,6 +60,7 @@ await describe({
                 slot: 'gentle, tender-hearted',
               },
               path: 'cat.rendering',
+              generation: ARTIFACT_SCHEMA_VERSION_V19,
             },),).toEqual({
               kind: 'located',
               quote: 'So she was a gentle,\ntender-hearted girl,\nwasn’t she',
@@ -76,14 +79,17 @@ await describe({
               asLocatedBySpan({
                 rendering: { kind: 'located', quote: 'The cat naps', start: 9, markBefore: '‘', markAfter: '’', },
                 path: 'cat.rendering',
+                generation: ARTIFACT_SCHEMA_VERSION_V19,
               },),
               asLocatedBySpan({
                 rendering: { kind: 'located', quote: 'the cat naps', start: 9, markAfter: '\'', slot: 'cat', },
                 path: 'cat.rendering',
+                generation: ARTIFACT_SCHEMA_VERSION_V19,
               },),
               asLocatedBySpan({
                 rendering: { kind: 'located', quote: 'The cat naps', start: 9, },
                 path: 'cat.rendering',
+                generation: ARTIFACT_SCHEMA_VERSION_V19,
               },),
             ],).toEqual([
               { kind: 'located', quote: 'The cat naps', core: 'The cat naps', start: 9, markBefore: '‘', markAfter: '’', },
@@ -107,6 +113,7 @@ await describe({
             expect(asLocatedBySpan({
               rendering: { kind: 'located', quote: 'a[b]c', start: 0, definitions: '[b]: https://x.example/b', },
               path: 'cat.rendering',
+              generation: ARTIFACT_SCHEMA_VERSION_V19,
             },),).toEqual({
               kind: 'located',
               quote: 'a[b]c',
@@ -124,6 +131,7 @@ await describe({
               return asLocatedBySpan({
                 rendering: { kind: 'located', quote: 'The cat naps', },
                 path: 'cat.rendering',
+                generation: ARTIFACT_SCHEMA_VERSION_V19,
               },);
             },);
             expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
@@ -144,6 +152,7 @@ await describe({
                 return asLocatedBySpan({
                   rendering: { kind: 'located', quote: 'the cat naps and the cat dozes', start: 0, slot, },
                   path: 'cat.rendering',
+                  generation: ARTIFACT_SCHEMA_VERSION_V19,
                 },);
               },),);
             }
@@ -157,6 +166,7 @@ await describe({
               return asLocatedBySpan({
                 rendering: { kind: 'located', quote: 'the cat naps', start: 0, slot: 'dozes', },
                 path: 'cat.rendering',
+                generation: ARTIFACT_SCHEMA_VERSION_V19,
               },);
             },),).toBeInstanceOf(ArtifactParseError,);
           },

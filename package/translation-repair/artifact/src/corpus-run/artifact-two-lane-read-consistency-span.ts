@@ -12,6 +12,7 @@ import {
 import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
   artifactGenerationCarriesPartialUnits,
+  artifactGenerationCutsContainmentAtJoints,
   artifactGenerationRecordsMarks,
   type TwoLaneArtifactGeneration,
 } from './artifact-two-lane-contract.ts';
@@ -145,11 +146,14 @@ function assertSpanRenderingAgrees(
   /**
    The spans the quotes of more than half of all the usable ballots contain, in the fold, longest first. THE RECOUNT CANNOT SAY WHICH OF
    THEM STANDS EXACTLY ONCE in the English (the file does not hold the English of a slice the pass left alone), so a located
-   rendering is held to be one of them and an unlocated one is held to a reason one of them allows.
+   rendering is held to be one of them and an unlocated one is held to a reason one of them allows. A joint of a longer word bars
+   containment from generation nineteen, as the locator reads it; a file of eighteen or earlier is recounted as its pass counted,
+   with only a letter, a digit or a combining mark beside the match barring it (`artifactGenerationCutsContainmentAtJoints`).
    */
   const candidates = containedQuoteWordsOf({
     voices,
     label: occurrence.label,
+    edges: artifactGenerationCutsContainmentAtJoints({ generation, },) ? 'locator' : 'letters',
   },);
   /**
    The candidates that show a reader something, which the pass searches the English for.
@@ -236,6 +240,7 @@ function assertSpanRenderingAgrees(
   return asLocatedBySpan({
     rendering,
     path: `${path}.rendering`,
+    generation,
   },);
 }
 

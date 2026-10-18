@@ -9,6 +9,10 @@ import {
   type UnlocatedReason,
 } from '@monochromatic-dev/translation-repair-consistency/ts';
 import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typography/ts';
+import {
+  artifactGenerationReadsLineEndingsAsCodePadding,
+  type TwoLaneArtifactGeneration,
+} from './artifact-two-lane-contract.ts';
 import type { ArtifactConsistencyRendering, } from './artifact-two-lane-consistency.ts';
 
 //region Artifact consistency span located
@@ -52,6 +56,9 @@ import type { ArtifactConsistencyRendering, } from './artifact-two-lane-consiste
 
  @param path - where the rendering sits, for the parse error
 
+ @param generation - generation the section was written under, which says whether line endings pad the inline code of the words when
+ a recorded slot is located in them (from nineteen) or a literal space alone does
+
  @returns The counter's form, with the recorded offset and, for a frame that
  has one, the slot and its offset in the words, and the definitions it was located with; the slot is located with the recorded
  definitions, and with none of the page's where the rendering records none (the head of this file says why)
@@ -64,16 +71,18 @@ import type { ArtifactConsistencyRendering, } from './artifact-two-lane-consiste
 
  @example
  ```ts
- const located = asLocatedBySpan({ rendering, path, },);
+ const located = asLocatedBySpan({ rendering, path, generation: 19, },);
  ```
  */
 export function asLocatedBySpan(
   {
     rendering,
     path,
+    generation,
   }: {
     readonly rendering: Extract<ArtifactConsistencyRendering, { readonly kind: 'located'; }>;
     readonly path: string;
+    readonly generation: TwoLaneArtifactGeneration;
   },
 ): Extract<ConsistencyRendering, { readonly kind: 'located'; }> {
   if (rendering.start === undefined) {
@@ -101,6 +110,7 @@ export function asLocatedBySpan(
     haystack: rendering.quote,
     words: rendering.slot,
     apostrophes: 'outside',
+    codePadding: artifactGenerationReadsLineEndingsAsCodePadding({ generation, },) ? 'spaces-and-line-endings' : 'spaces',
     ...((rendering.definitions === undefined) ? {} : { definitions: rendering.definitions, }),
   },);
   if (inside.kind !== 'once') {

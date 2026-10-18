@@ -725,6 +725,48 @@ export function artifactGenerationRecordsDefinitions(
 }
 
 /**
+ Reports whether generation recounts containment of the judges' quotes as the locator reads it: a quote is contained in another only
+ where no joint of a longer word (an apostrophe or a hyphen between letters, a full stop between digits) stands at an edge of the
+ match, so `cat` is not contained in `cat's bowl`. An older section was written when only a letter, a digit or a combining mark beside
+ the match barred containment, and its reader keeps that reading, so the agreement it recorded is not refused for a rule it was not
+ written under.
+
+ @param generation - known two-lane artifact generation
+
+ @returns Whether a joint of a longer word bars a quote from containing another in the recount of the candidate spans and the slot words
+
+ @example
+ ```ts
+ artifactGenerationCutsContainmentAtJoints({ generation: 19, });
+ ```
+ */
+export function artifactGenerationCutsContainmentAtJoints(
+  { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
+): boolean {
+  return generation >= ARTIFACT_SCHEMA_VERSION_V19;
+}
+
+/**
+ Reports whether generation recounts inline code as CommonMark reads it, with each line ending that pads the code read as a space, so
+ the locator refuses a word beside code padded by line endings. An older section was written when a literal space alone padded code,
+ and its reader keeps that reading.
+
+ @param generation - known two-lane artifact generation
+
+ @returns Whether a slot is located in a span with the line endings that pad inline code read as spaces
+
+ @example
+ ```ts
+ artifactGenerationReadsLineEndingsAsCodePadding({ generation: 19, });
+ ```
+ */
+export function artifactGenerationReadsLineEndingsAsCodePadding(
+  { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
+): boolean {
+  return generation >= ARTIFACT_SCHEMA_VERSION_V19;
+}
+
+/**
  Reports whether generation may record a unit carried in part: a splice chosen
  for a block whose places are not all ones code can move the chosen words into,
  the others `kept-current`. An older section was written when one such place

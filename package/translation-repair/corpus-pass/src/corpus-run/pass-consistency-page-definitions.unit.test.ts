@@ -18,7 +18,10 @@ import type {
   CarryBlock,
   PageEnglish,
 } from '@monochromatic-dev/translation-repair-consistency';
-import { asLocatedBySpan, } from '@monochromatic-dev/translation-repair-artifact';
+import {
+  ARTIFACT_SCHEMA_VERSION_V19,
+  asLocatedBySpan,
+} from '@monochromatic-dev/translation-repair-artifact';
 import { ArtifactParseError, } from '@monochromatic-dev/translation-repair-artifact-pool';
 import {
   type ConsistencySliceFacts,
@@ -179,6 +182,7 @@ await describe({
               asLocatedBySpan({
                 rendering: { kind: 'located', quote: 'kit[][r]\'kit kit', start: 0, slot: 'kit', },
                 path: 'cat.rendering',
+                generation: ARTIFACT_SCHEMA_VERSION_V19,
               },);
             }
             catch (error) {
