@@ -752,8 +752,8 @@ the items after it are the record of 2026-10-05 and older.
     stays unreported; `ra_ap_hir` 0.0.336 gives `Closure::captured_items`). The user asked for the spikes on
     2026-10-18: an agent runs them on branch `spike/linter-closure-static` (worktree `.claude/worktrees/linter-spike`;
     the generated Slint setter bound, whether hir answers the `'static` question, and the added lint time); its
-    report goes to `~/temp/agent/linter-spike/report.md`. Acceptance of the proposal itself is still open. Until then the 67 stay reported as warnings, listed in
-    `~/temp/agent/ide-closures/final-unconverted.txt`. Landing of this branch: the agent's gates ran on the tree
+    report goes to `~/temp/agent/linter-spike/report.md`. Acceptance of the proposal itself is still open.
+    Until then the 67 stay reported as warnings, listed in `~/temp/agent/ide-closures/final-unconverted.txt`. Landing of this branch: the agent's gates ran on the tree
     before `main` was merged in; the coordinating session reran them on the merged tree (lint, tests, bundle and
     guards) before the fast-forward.
     Files added: `src/json_value.rs`, `src/language/diagnostics/store/pulled.rs`,
