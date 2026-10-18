@@ -114,7 +114,15 @@ The collector already supports append-only event receipts after that handoff.
 The maintained decision-fallback fixture now emits tracked progress from both tools
 and registers an asynchronous original extension observer for every existing decision mode.
 New `allow-stale` and `allow-abort` cases change governing policy or cancel during confirmation.
-The first paired automatic/manual regression run is still pending.
+The paired regression is now proven on `native-release-dXedQJ`:
+automatic approval executes both tools and observes both tracked updates;
+confirmed Allow fails with `1 !== 2` and the same callback-revision freshness cause.
+Evidence is `progress-manual-red.log` and `progress-automatic-control.log`.
+Commit `83b10e751f` preserves the failing regression before the repair.
+The source repair shares the existing approved-dependency handoff across automatic approval
+and confirmation of a captured automatic review.
+Manual fallback without captured automatic sources keeps its original behavior.
+The repair is not built or verified yet.
 At this checkpoint,
 Git shows no MiMo source edits yet;
 its first lint slice is still analysis.
