@@ -1701,3 +1701,29 @@ All 121 failed command logs were rehashed successfully before diagnostic classif
 No runtime branch coverage, assertion instrumentation, complete package test success,
 or execution of every declared owner is claimed.
 Current host controls remain a separate finite queue item.
+
+## Material owner completion queue after the current host controls
+
+The source audit found authored existing owners without an execution receipt in the current semantic join.
+These are execution gaps, not a claim that authored assertions are absent.
+The finite preparation queue is now explicit:
+
+- `package/desktop-app/ide`: full owning test with its real pinned Helix grammar producer,
+  plus a separately labelled reader-lifecycle subset/control.
+- `package/desktop-app/file-manager`: actual release Nextest owner.
+- `package/desktop-app/file-manager-gtk-sticky`: actual release Nextest owner,
+  excluding its compositor-launch Wayland task.
+- `package/desktop-app/file-manager-qt`: actual release Nextest owner.
+- `package/desktop-app/terminal`: actual Nextest owner with the real Zig/font/native prerequisites
+  or its authored Containerfile.
+- `package/linter/kotlin`: actual JVM Gradle test owner, with no Android or publication task.
+- `package/music-player/design`: the actual authored Node and browser owners,
+  with PNG/HTML/font materialization qualified and screenshot bytes excluded from publication.
+
+The proposed separate nominal guard is at most USD5,
+with at most two concurrent jobs in that later campaign,
+a maximum of 30 minutes per job and at most 16 CPU/64 GB for a justified native profile.
+This is a request to prepare concrete admission profiles, not an admitted allocation.
+No emulator, compositor-launch or desktop application relaunch is included.
+The current public and matched Depot host controls keep their existing guards and allocation boundary.
+Raw Git pointer bytes, materialized LFS payloads, source test markers and runtime cases remain distinct.
