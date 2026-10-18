@@ -4,6 +4,9 @@
  @module
  */
 import { fail } from 'node:assert/strict';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from '@monochromatic-dev/module-test/ts';
 import spawn, { SubprocessError } from 'nano-spawn';
@@ -49,11 +52,21 @@ await describe({
     it({
       name: 'retains the fixture blocker through initial and repeated native dispatcher configuration',
       fn: async function retainsFixtureBlocker() {
+        /** Disposable directory holding the guard's private request receipt. */
+        const receiptDir = await mkdtemp(join(tmpdir(), 'native-cli-network-guard-'));
+        await using _receiptCleanup = {
+          async [Symbol.asyncDispose]() {
+            await rm(receiptDir, { recursive: true, force: true });
+          }
+        };
         const result = await spawn(process.execPath, [
           '--import', guard.href, '--input-type=module', '--eval', dispatcherProbe,
         ], {
           cwd,
-          env: { PI_AUTO_MODE_CLI_FIXTURE_CHILD: '1' },
+          env: {
+            PI_AUTO_MODE_CLI_FIXTURE_CHILD: '1',
+            PI_AUTO_MODE_CLI_FIXTURE_REQUESTS: join(receiptDir, 'requests.jsonl'),
+          },
           signal: AbortSignal.timeout(CHILD_DEADLINE_MS),
         });
         expect(result.stdout).toBe('native fixture network blocker retained');
