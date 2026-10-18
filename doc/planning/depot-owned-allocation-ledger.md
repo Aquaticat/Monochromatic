@@ -4,29 +4,29 @@ The [normalized baseline](../audit/depot-owned-allocation-ledger-2026-10-18.evid
 reconciles expanded research targeting application
 `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
 Input captures start at `2026-10-18T13:59:27.911853+00:00`;
-the latest inventory refresh is `2026-10-18T14:33:35.609490+00:00`.
+the latest inventory refresh is `2026-10-18T14:47:19.720513+00:00`.
 This is a captured owned-ID inventory,
 not an account-wide usage or invoice census.
 No allocation or settings mutation was performed by the reviewer.
 
 ## Identities and measured boundaries
 
-The baseline contains 222 distinct records:
+The baseline contains 223 distinct records:
 115 native job attempts from 77 runs,
-78 GitHub job records from 44 runs,
+79 GitHub job records from 45 runs,
 seven SDK VMs and 22 BuildKit builds.
-The GitHub records distinguish 51 Depot-runner requests,
+The GitHub records distinguish 52 Depot-runner requests,
 25 standard public GitHub jobs and two unassigned corrupt-label jobs.
 Two additional zero-job workflow requests and one SDK request without a returned VM identity retain explicit unknowns.
-Fresh read-only metadata and 121 exact immutable workflow definitions support the CI joins.
+Fresh read-only metadata and 122 exact immutable workflow definitions support the CI joins.
 Overlapping receipt pointers do not create additional allocations.
 
 ## Nominal compute and reservations
 
 Priced observed intervals give native CI `USD 4.8546`,
-Depot GitHub runners `USD 1.3308` and SDK VMs `USD 0.0081959`.
+Depot GitHub runners `USD 1.3372` and SDK VMs `USD 0.0081959`.
 Standard public GitHub compute is `USD 0` under the current public-repository rule.
-Their known subtotal is `USD 6.1935959` before allowances.
+Their known subtotal is `USD 6.1999959` before allowances.
 It excludes missing execution boundaries and unknown BuildKit architecture-builder intervals;
 it is not an invoice or observed VM billing lifetime.
 
@@ -58,6 +58,9 @@ Its record pointers apply to parsed `bodyUtf8` for JSON sources.
 Every input and original body has byte-length and SHA256 metadata.
 Currency strings avoid floating-point rounding in the normalized arithmetic.
 Functional coverage remains qualified by each owning receipt.
+Actions API `head_sha` stays distinct from actual checkout identity.
+Six retained PR consumer observations supply actual merge SHAs and corresponding immutable workflow lookups;
+other unobserved GitHub checkout SHAs remain null.
 
 The coordinator will append its coherent graph `39135886118` after measurement.
 Later coverage/platform follow-ons require separate measured appends.

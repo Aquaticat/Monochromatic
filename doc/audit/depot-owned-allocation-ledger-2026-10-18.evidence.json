@@ -167,7 +167,7 @@
       "snapshotFile": "depot-complete-coverage-budget-ledger.json",
       "bytes": 68043,
       "sha256": "d8ac1db220b9bcd94b28905db6bf0558567ac1728b765a8de52358895ae5913a",
-      "capturedAt": "2026-10-18T14:33:35.608757+00:00",
+      "capturedAt": "2026-10-18T14:47:19.719588+00:00",
       "archiveRecord": "inputs/doc/planning/depot-complete-coverage-budget-ledger.json"
     },
     {
@@ -175,15 +175,15 @@
       "snapshotFile": "depot-mvm-guest-files-2026-10-18.evidence.json",
       "bytes": 52304,
       "sha256": "9ca21658e97fdfb38d3dbc0021ad9b1e6e9b7ee7bf716730f7aa0f2c84acdc5e",
-      "capturedAt": "2026-10-18T14:33:35.609178+00:00",
+      "capturedAt": "2026-10-18T14:47:19.719983+00:00",
       "archiveRecord": "inputs/doc/audit/depot-mvm-guest-files-2026-10-18.evidence.json"
     },
     {
       "path": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
       "snapshotFile": "coverage-owned-github-budget.json",
-      "bytes": 27028,
-      "sha256": "7e1c942e7b15500d226e04755edf8d4de3f007df4a7b94f3a8118e9a71100d86",
-      "capturedAt": "2026-10-18T14:33:35.609484+00:00",
+      "bytes": 27861,
+      "sha256": "e241a6c88ca0183de83cdf11111806ae8642617e12c414eba61da1611c4c6a23",
+      "capturedAt": "2026-10-18T14:47:19.720506+00:00",
       "archiveRecord": "inputs/home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json"
     }
   ],
@@ -11841,7 +11841,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "platform (ubuntu-24.04)",
-      "executionSha": "15ee06968996212b97111accc2013c2780ed1944",
+      "apiHeadSha": "15ee06968996212b97111accc2013c2780ed1944",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-github-kvm-documentation-contradiction-2026-10-18.evidence.json",
@@ -11930,7 +11933,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "platform (depot-ubuntu-24.04)",
-      "executionSha": "15ee06968996212b97111accc2013c2780ed1944",
+      "apiHeadSha": "15ee06968996212b97111accc2013c2780ed1944",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-github-kvm-documentation-contradiction-2026-10-18.evidence.json",
@@ -12019,7 +12025,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Frozen libraries b",
-      "executionSha": "7a3b8dd2ca31110565ab1f05b913b4943d9f9dd3",
+      "apiHeadSha": "7a3b8dd2ca31110565ab1f05b913b4943d9f9dd3",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -12035,7 +12044,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/22/run"
+          "pointer": "/runs/23/run"
         }
       ],
       "configurationSource": {
@@ -12096,7 +12105,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Frozen libraries a",
-      "executionSha": "7a3b8dd2ca31110565ab1f05b913b4943d9f9dd3",
+      "apiHeadSha": "7a3b8dd2ca31110565ab1f05b913b4943d9f9dd3",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -12112,7 +12124,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/22/run"
+          "pointer": "/runs/23/run"
         }
       ],
       "configurationSource": {
@@ -12173,7 +12185,13 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "research-github-gate",
-      "executionSha": "0f45cf8730753a3e986d567c27314cb2632ad668",
+      "apiHeadSha": "0f45cf8730753a3e986d567c27314cb2632ad668",
+      "executionSha": "4c8807b2deea319a71fd6295c7a3c329e8e84139",
+      "checkoutSourceReference": {
+        "source": "doc/audit/depot-runtime-pr-2026-10-18.evidence.json",
+        "pointer": "/github/5/artifacts/0/observation/checkout"
+      },
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-runtime-pr-2026-10-18.evidence.json",
@@ -12193,8 +12211,8 @@
         }
       ],
       "configurationSource": {
-        "record": "workflowSources/0f45cf8730753a3e986d567c27314cb2632ad668-.github_workflows_research-runtime-pr.yml",
-        "commit": "0f45cf8730753a3e986d567c27314cb2632ad668",
+        "record": "workflowSources/4c8807b2deea319a71fd6295c7a3c329e8e84139-.github_workflows_research-runtime-pr.yml",
+        "commit": "4c8807b2deea319a71fd6295c7a3c329e8e84139",
         "path": ".github/workflows/research-runtime-pr.yml",
         "sha256": "7368b3936e1e8a2de8fce6d6a5f223a7a2739d027387adc78fc3cefedd31aa7e",
         "jobKey": "gate"
@@ -12250,7 +12268,13 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "research-github-gate",
-      "executionSha": "4fca286e107bc7cbe54bc004a322e3db748f21ce",
+      "apiHeadSha": "4fca286e107bc7cbe54bc004a322e3db748f21ce",
+      "executionSha": "7a5ce9a371cc0e552c66ce2374a9ce8f97b3c1c4",
+      "checkoutSourceReference": {
+        "source": "doc/audit/depot-runtime-pr-2026-10-18.evidence.json",
+        "pointer": "/github/4/artifacts/0/observation/checkout"
+      },
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-runtime-pr-2026-10-18.evidence.json",
@@ -12266,8 +12290,8 @@
         }
       ],
       "configurationSource": {
-        "record": "workflowSources/4fca286e107bc7cbe54bc004a322e3db748f21ce-.github_workflows_research-runtime-pr.yml",
-        "commit": "4fca286e107bc7cbe54bc004a322e3db748f21ce",
+        "record": "workflowSources/7a5ce9a371cc0e552c66ce2374a9ce8f97b3c1c4-.github_workflows_research-runtime-pr.yml",
+        "commit": "7a5ce9a371cc0e552c66ce2374a9ce8f97b3c1c4",
         "path": ".github/workflows/research-runtime-pr.yml",
         "sha256": "7368b3936e1e8a2de8fce6d6a5f223a7a2739d027387adc78fc3cefedd31aa7e",
         "jobKey": "gate"
@@ -12323,7 +12347,13 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "research-github-gate",
-      "executionSha": "201cc461120c723468d6f2dd43b93895bf5f6114",
+      "apiHeadSha": "201cc461120c723468d6f2dd43b93895bf5f6114",
+      "executionSha": "e21eb45a57cab29c178a571718f96f132337e145",
+      "checkoutSourceReference": {
+        "source": "doc/audit/depot-runtime-pr-2026-10-18.evidence.json",
+        "pointer": "/github/3/artifacts/0/observation/checkout"
+      },
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-runtime-pr-2026-10-18.evidence.json",
@@ -12339,8 +12369,8 @@
         }
       ],
       "configurationSource": {
-        "record": "workflowSources/201cc461120c723468d6f2dd43b93895bf5f6114-.github_workflows_research-runtime-pr.yml",
-        "commit": "201cc461120c723468d6f2dd43b93895bf5f6114",
+        "record": "workflowSources/e21eb45a57cab29c178a571718f96f132337e145-.github_workflows_research-runtime-pr.yml",
+        "commit": "e21eb45a57cab29c178a571718f96f132337e145",
         "path": ".github/workflows/research-runtime-pr.yml",
         "sha256": "7368b3936e1e8a2de8fce6d6a5f223a7a2739d027387adc78fc3cefedd31aa7e",
         "jobKey": "gate"
@@ -12396,7 +12426,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Frozen module graph b",
-      "executionSha": "b9c84e42b72f7e0abfa942a98a61029e4f3f252c",
+      "apiHeadSha": "b9c84e42b72f7e0abfa942a98a61029e4f3f252c",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-arm64-functional-2026-10-18.evidence.json",
@@ -12416,7 +12449,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/21/run"
+          "pointer": "/runs/22/run"
         }
       ],
       "configurationSource": {
@@ -12477,7 +12510,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Frozen module graph a",
-      "executionSha": "b9c84e42b72f7e0abfa942a98a61029e4f3f252c",
+      "apiHeadSha": "b9c84e42b72f7e0abfa942a98a61029e4f3f252c",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-arm64-functional-2026-10-18.evidence.json",
@@ -12497,7 +12533,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/21/run"
+          "pointer": "/runs/22/run"
         }
       ],
       "configurationSource": {
@@ -12558,7 +12594,13 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "research-github-gate",
-      "executionSha": "7bbd8250204091ed4ab52b1897f7c372673164bf",
+      "apiHeadSha": "7bbd8250204091ed4ab52b1897f7c372673164bf",
+      "executionSha": "81dab95c58840fa0d8df1d0f5257fc48457426da",
+      "checkoutSourceReference": {
+        "source": "doc/audit/depot-runtime-pr-2026-10-18.evidence.json",
+        "pointer": "/github/2/artifacts/0/observation/checkout"
+      },
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-runtime-pr-2026-10-18.evidence.json",
@@ -12574,8 +12616,8 @@
         }
       ],
       "configurationSource": {
-        "record": "workflowSources/7bbd8250204091ed4ab52b1897f7c372673164bf-.github_workflows_research-runtime-pr.yml",
-        "commit": "7bbd8250204091ed4ab52b1897f7c372673164bf",
+        "record": "workflowSources/81dab95c58840fa0d8df1d0f5257fc48457426da-.github_workflows_research-runtime-pr.yml",
+        "commit": "81dab95c58840fa0d8df1d0f5257fc48457426da",
         "path": ".github/workflows/research-runtime-pr.yml",
         "sha256": "7368b3936e1e8a2de8fce6d6a5f223a7a2739d027387adc78fc3cefedd31aa7e",
         "jobKey": "gate"
@@ -12631,7 +12673,13 @@
       "status": "completed",
       "conclusion": "cancelled",
       "jobName": "research-github-gate",
-      "executionSha": "b043aa1d88d9f49fd8391ea05db7126826edce41",
+      "apiHeadSha": "b043aa1d88d9f49fd8391ea05db7126826edce41",
+      "executionSha": "1485d80c301069d41ff8d7d250d22b75cf692193",
+      "checkoutSourceReference": {
+        "source": "doc/audit/depot-runtime-pr-2026-10-18.evidence.json",
+        "pointer": "/github/1/artifacts/0/observation/checkout"
+      },
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-runtime-pr-2026-10-18.evidence.json",
@@ -12651,8 +12699,8 @@
         }
       ],
       "configurationSource": {
-        "record": "workflowSources/b043aa1d88d9f49fd8391ea05db7126826edce41-.github_workflows_research-runtime-pr.yml",
-        "commit": "b043aa1d88d9f49fd8391ea05db7126826edce41",
+        "record": "workflowSources/1485d80c301069d41ff8d7d250d22b75cf692193-.github_workflows_research-runtime-pr.yml",
+        "commit": "1485d80c301069d41ff8d7d250d22b75cf692193",
         "path": ".github/workflows/research-runtime-pr.yml",
         "sha256": "7368b3936e1e8a2de8fce6d6a5f223a7a2739d027387adc78fc3cefedd31aa7e",
         "jobKey": "gate"
@@ -12708,7 +12756,13 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "research-github-gate",
-      "executionSha": "c61f59f6869d5f6c733d4024f32d8fca1e25cdde",
+      "apiHeadSha": "c61f59f6869d5f6c733d4024f32d8fca1e25cdde",
+      "executionSha": "69e64f40bf8699cac1f36e5251a3ed5e9a587a87",
+      "checkoutSourceReference": {
+        "source": "doc/audit/depot-runtime-pr-2026-10-18.evidence.json",
+        "pointer": "/github/0/artifacts/0/observation/checkout"
+      },
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-runtime-pr-2026-10-18.evidence.json",
@@ -12728,8 +12782,8 @@
         }
       ],
       "configurationSource": {
-        "record": "workflowSources/c61f59f6869d5f6c733d4024f32d8fca1e25cdde-.github_workflows_research-runtime-pr.yml",
-        "commit": "c61f59f6869d5f6c733d4024f32d8fca1e25cdde",
+        "record": "workflowSources/69e64f40bf8699cac1f36e5251a3ed5e9a587a87-.github_workflows_research-runtime-pr.yml",
+        "commit": "69e64f40bf8699cac1f36e5251a3ed5e9a587a87",
         "path": ".github/workflows/research-runtime-pr.yml",
         "sha256": "7368b3936e1e8a2de8fce6d6a5f223a7a2739d027387adc78fc3cefedd31aa7e",
         "jobKey": "gate"
@@ -12785,7 +12839,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Matched Linux assertions depot",
-      "executionSha": "a6292671a136a9552f9deeca6b005c2a826731c9",
+      "apiHeadSha": "a6292671a136a9552f9deeca6b005c2a826731c9",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -12801,7 +12858,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/20/run"
+          "pointer": "/runs/21/run"
         }
       ],
       "configurationSource": {
@@ -12862,7 +12919,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Matched Linux assertions github",
-      "executionSha": "a6292671a136a9552f9deeca6b005c2a826731c9",
+      "apiHeadSha": "a6292671a136a9552f9deeca6b005c2a826731c9",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -12878,7 +12938,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/20/run"
+          "pointer": "/runs/21/run"
         }
       ],
       "configurationSource": {
@@ -12939,7 +12999,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "process (depot-ubuntu-24.04)",
-      "executionSha": "44b3303eca52a58806e28a6e8b681be07d43c278",
+      "apiHeadSha": "44b3303eca52a58806e28a6e8b681be07d43c278",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-process-timeouts-2026-10-18.evidence.json",
@@ -13020,7 +13083,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "process (ubuntu-24.04)",
-      "executionSha": "44b3303eca52a58806e28a6e8b681be07d43c278",
+      "apiHeadSha": "44b3303eca52a58806e28a6e8b681be07d43c278",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-process-timeouts-2026-10-18.evidence.json",
@@ -13101,7 +13167,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "research-service-host-github-depot-x64",
-      "executionSha": "1438ecde4b643a606e0a75f85067e3d0153e9bb5",
+      "apiHeadSha": "1438ecde4b643a606e0a75f85067e3d0153e9bb5",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-service-containers-2026-10-18.evidence.json",
@@ -13166,7 +13235,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "research-service-host-github-depot-arm64",
-      "executionSha": "1438ecde4b643a606e0a75f85067e3d0153e9bb5",
+      "apiHeadSha": "1438ecde4b643a606e0a75f85067e3d0153e9bb5",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-service-containers-2026-10-18.evidence.json",
@@ -13231,7 +13303,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "research-service-host-github-hosted-x64",
-      "executionSha": "1438ecde4b643a606e0a75f85067e3d0153e9bb5",
+      "apiHeadSha": "1438ecde4b643a606e0a75f85067e3d0153e9bb5",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-service-containers-2026-10-18.evidence.json",
@@ -13296,7 +13371,10 @@
       "status": "completed",
       "conclusion": "cancelled",
       "jobName": "research-service-container-github-hosted-x64",
-      "executionSha": "1438ecde4b643a606e0a75f85067e3d0153e9bb5",
+      "apiHeadSha": "1438ecde4b643a606e0a75f85067e3d0153e9bb5",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-service-containers-2026-10-18.evidence.json",
@@ -13361,7 +13439,10 @@
       "status": "completed",
       "conclusion": "cancelled",
       "jobName": "research-service-container-github-depot-x64",
-      "executionSha": "1438ecde4b643a606e0a75f85067e3d0153e9bb5",
+      "apiHeadSha": "1438ecde4b643a606e0a75f85067e3d0153e9bb5",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-service-containers-2026-10-18.evidence.json",
@@ -13426,7 +13507,10 @@
       "status": "completed",
       "conclusion": "cancelled",
       "jobName": "research-service-container-github-depot-arm64",
-      "executionSha": "1438ecde4b643a606e0a75f85067e3d0153e9bb5",
+      "apiHeadSha": "1438ecde4b643a606e0a75f85067e3d0153e9bb5",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-service-containers-2026-10-18.evidence.json",
@@ -13491,7 +13575,10 @@
       "status": "completed",
       "conclusion": "cancelled",
       "jobName": "Matched Linux assertions depot",
-      "executionSha": "8256d8bb9dd20b8c9b373c2c08b0a73560d93564",
+      "apiHeadSha": "8256d8bb9dd20b8c9b373c2c08b0a73560d93564",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -13507,7 +13594,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/19/run"
+          "pointer": "/runs/20/run"
         }
       ],
       "configurationSource": {
@@ -13568,7 +13655,10 @@
       "status": "completed",
       "conclusion": "cancelled",
       "jobName": "Matched Linux assertions github",
-      "executionSha": "8256d8bb9dd20b8c9b373c2c08b0a73560d93564",
+      "apiHeadSha": "8256d8bb9dd20b8c9b373c2c08b0a73560d93564",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -13584,7 +13674,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/19/run"
+          "pointer": "/runs/20/run"
         }
       ],
       "configurationSource": {
@@ -13645,7 +13735,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Frozen Node quality d",
-      "executionSha": "82ea6108c57c9ef9cf6880e6d4506679812a6776",
+      "apiHeadSha": "82ea6108c57c9ef9cf6880e6d4506679812a6776",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -13669,7 +13762,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/18/run"
+          "pointer": "/runs/19/run"
         }
       ],
       "configurationSource": {
@@ -13730,7 +13823,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Frozen Node quality b",
-      "executionSha": "82ea6108c57c9ef9cf6880e6d4506679812a6776",
+      "apiHeadSha": "82ea6108c57c9ef9cf6880e6d4506679812a6776",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -13754,7 +13850,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/18/run"
+          "pointer": "/runs/19/run"
         }
       ],
       "configurationSource": {
@@ -13815,7 +13911,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Frozen Node quality a",
-      "executionSha": "82ea6108c57c9ef9cf6880e6d4506679812a6776",
+      "apiHeadSha": "82ea6108c57c9ef9cf6880e6d4506679812a6776",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -13839,7 +13938,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/18/run"
+          "pointer": "/runs/19/run"
         }
       ],
       "configurationSource": {
@@ -13900,7 +13999,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Frozen Node quality c",
-      "executionSha": "82ea6108c57c9ef9cf6880e6d4506679812a6776",
+      "apiHeadSha": "82ea6108c57c9ef9cf6880e6d4506679812a6776",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -13924,7 +14026,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/18/run"
+          "pointer": "/runs/19/run"
         }
       ],
       "configurationSource": {
@@ -13985,7 +14087,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "lifecycle (ubuntu-24.04, github-hosted-ubuntu-24.04)",
-      "executionSha": "1438ecde4b643a606e0a75f85067e3d0153e9bb5",
+      "apiHeadSha": "1438ecde4b643a606e0a75f85067e3d0153e9bb5",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-mvm-kvm-2026-10-18.evidence.json",
@@ -14078,7 +14183,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "lifecycle (depot-ubuntu-24.04-4, github-depot-ubuntu-24.04-4)",
-      "executionSha": "1438ecde4b643a606e0a75f85067e3d0153e9bb5",
+      "apiHeadSha": "1438ecde4b643a606e0a75f85067e3d0153e9bb5",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-mvm-kvm-2026-10-18.evidence.json",
@@ -14171,7 +14279,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Frozen default Node b",
-      "executionSha": "588275a55c7efefef93dbbc529078d31fdcfafd8",
+      "apiHeadSha": "588275a55c7efefef93dbbc529078d31fdcfafd8",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -14187,7 +14298,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/17/run"
+          "pointer": "/runs/18/run"
         }
       ],
       "configurationSource": {
@@ -14248,7 +14359,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "Frozen default Node a",
-      "executionSha": "588275a55c7efefef93dbbc529078d31fdcfafd8",
+      "apiHeadSha": "588275a55c7efefef93dbbc529078d31fdcfafd8",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -14264,7 +14378,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/17/run"
+          "pointer": "/runs/18/run"
         }
       ],
       "configurationSource": {
@@ -14325,7 +14439,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "research-service-host-github-depot-arm64",
-      "executionSha": "9779cb896b92969b84f45e2737117231638aa700",
+      "apiHeadSha": "9779cb896b92969b84f45e2737117231638aa700",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-service-containers-2026-10-18.evidence.json",
@@ -14390,7 +14507,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "research-service-host-github-hosted-x64",
-      "executionSha": "9779cb896b92969b84f45e2737117231638aa700",
+      "apiHeadSha": "9779cb896b92969b84f45e2737117231638aa700",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-service-containers-2026-10-18.evidence.json",
@@ -14455,7 +14575,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "research-service-host-github-depot-x64",
-      "executionSha": "9779cb896b92969b84f45e2737117231638aa700",
+      "apiHeadSha": "9779cb896b92969b84f45e2737117231638aa700",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-service-containers-2026-10-18.evidence.json",
@@ -14520,7 +14643,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "research-service-container-github-hosted-x64",
-      "executionSha": "9779cb896b92969b84f45e2737117231638aa700",
+      "apiHeadSha": "9779cb896b92969b84f45e2737117231638aa700",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-service-containers-2026-10-18.evidence.json",
@@ -14585,7 +14711,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "research-service-container-github-depot-arm64",
-      "executionSha": "9779cb896b92969b84f45e2737117231638aa700",
+      "apiHeadSha": "9779cb896b92969b84f45e2737117231638aa700",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-service-containers-2026-10-18.evidence.json",
@@ -14650,7 +14779,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "research-service-container-github-depot-x64",
-      "executionSha": "9779cb896b92969b84f45e2737117231638aa700",
+      "apiHeadSha": "9779cb896b92969b84f45e2737117231638aa700",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-service-containers-2026-10-18.evidence.json",
@@ -14715,7 +14847,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "research-service-host-github-hosted-x64",
-      "executionSha": "5485cc0d12805f330d568b358e5ff0bb988d4d37",
+      "apiHeadSha": "5485cc0d12805f330d568b358e5ff0bb988d4d37",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-container-prerequisites-2026-10-18.evidence.json",
@@ -14812,7 +14947,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "research-service-host-github-depot-x64",
-      "executionSha": "5485cc0d12805f330d568b358e5ff0bb988d4d37",
+      "apiHeadSha": "5485cc0d12805f330d568b358e5ff0bb988d4d37",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-container-prerequisites-2026-10-18.evidence.json",
@@ -14909,7 +15047,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "research-service-host-github-depot-arm64",
-      "executionSha": "5485cc0d12805f330d568b358e5ff0bb988d4d37",
+      "apiHeadSha": "5485cc0d12805f330d568b358e5ff0bb988d4d37",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-container-prerequisites-2026-10-18.evidence.json",
@@ -15006,7 +15147,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "research-service-container-github-depot-arm64",
-      "executionSha": "5485cc0d12805f330d568b358e5ff0bb988d4d37",
+      "apiHeadSha": "5485cc0d12805f330d568b358e5ff0bb988d4d37",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-container-prerequisites-2026-10-18.evidence.json",
@@ -15103,7 +15247,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "research-service-container-github-hosted-x64",
-      "executionSha": "5485cc0d12805f330d568b358e5ff0bb988d4d37",
+      "apiHeadSha": "5485cc0d12805f330d568b358e5ff0bb988d4d37",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-container-prerequisites-2026-10-18.evidence.json",
@@ -15200,7 +15347,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "research-service-container-github-depot-x64",
-      "executionSha": "5485cc0d12805f330d568b358e5ff0bb988d4d37",
+      "apiHeadSha": "5485cc0d12805f330d568b358e5ff0bb988d4d37",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-container-prerequisites-2026-10-18.evidence.json",
@@ -15297,7 +15447,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "github",
-      "executionSha": "8a615939f096ba0c4b0f1a28815b759be719368f",
+      "apiHeadSha": "8a615939f096ba0c4b0f1a28815b759be719368f",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-reuse-strategy-2026-10-18.evidence.json",
@@ -15390,7 +15543,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "depot",
-      "executionSha": "8a615939f096ba0c4b0f1a28815b759be719368f",
+      "apiHeadSha": "8a615939f096ba0c4b0f1a28815b759be719368f",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-reuse-strategy-2026-10-18.evidence.json",
@@ -15483,7 +15639,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Frozen process Node a",
-      "executionSha": "8fa5b508c061e9caec82847037a40a5ef414aa7b",
+      "apiHeadSha": "8fa5b508c061e9caec82847037a40a5ef414aa7b",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -15499,7 +15658,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/16/run"
+          "pointer": "/runs/17/run"
         }
       ],
       "configurationSource": {
@@ -15560,7 +15719,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Frozen process Node b",
-      "executionSha": "8fa5b508c061e9caec82847037a40a5ef414aa7b",
+      "apiHeadSha": "8fa5b508c061e9caec82847037a40a5ef414aa7b",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -15576,7 +15738,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/16/run"
+          "pointer": "/runs/17/run"
         }
       ],
       "configurationSource": {
@@ -15637,7 +15799,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "capability",
-      "executionSha": "0a2fd7678b719d9039df318003a43bbc4713cd7c",
+      "apiHeadSha": "0a2fd7678b719d9039df318003a43bbc4713cd7c",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-mvm-kvm-2026-10-18.evidence.json",
@@ -15718,7 +15883,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Frozen guarded host b",
-      "executionSha": "3f3a8f0bf3733f0c97bf29c56e9010e27371b0f2",
+      "apiHeadSha": "3f3a8f0bf3733f0c97bf29c56e9010e27371b0f2",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -15738,7 +15906,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/15/run"
+          "pointer": "/runs/16/run"
         }
       ],
       "configurationSource": {
@@ -15799,7 +15967,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Frozen guarded host a",
-      "executionSha": "3f3a8f0bf3733f0c97bf29c56e9010e27371b0f2",
+      "apiHeadSha": "3f3a8f0bf3733f0c97bf29c56e9010e27371b0f2",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -15819,7 +15990,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/15/run"
+          "pointer": "/runs/16/run"
         }
       ],
       "configurationSource": {
@@ -15880,7 +16051,10 @@
       "status": "completed",
       "conclusion": "skipped",
       "jobName": "Frozen Rust companion consumer",
-      "executionSha": "3f3a8f0bf3733f0c97bf29c56e9010e27371b0f2",
+      "apiHeadSha": "3f3a8f0bf3733f0c97bf29c56e9010e27371b0f2",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -15900,7 +16074,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/15/run"
+          "pointer": "/runs/16/run"
         }
       ],
       "configurationSource": {
@@ -15961,7 +16135,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "Frozen Rust companion consumer (wg)",
-      "executionSha": "3f3a8f0bf3733f0c97bf29c56e9010e27371b0f2",
+      "apiHeadSha": "3f3a8f0bf3733f0c97bf29c56e9010e27371b0f2",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -15977,7 +16154,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/14/run"
+          "pointer": "/runs/15/run"
         }
       ],
       "configurationSource": {
@@ -16038,7 +16215,10 @@
       "status": "completed",
       "conclusion": "skipped",
       "jobName": "Frozen guarded host ${{ matrix.shard }}",
-      "executionSha": "3f3a8f0bf3733f0c97bf29c56e9010e27371b0f2",
+      "apiHeadSha": "3f3a8f0bf3733f0c97bf29c56e9010e27371b0f2",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -16054,7 +16234,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/14/run"
+          "pointer": "/runs/15/run"
         }
       ],
       "configurationSource": {
@@ -16115,7 +16295,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Frozen guarded host b",
-      "executionSha": "47aef8d403e4151593725943456fa3b0a8bce626",
+      "apiHeadSha": "47aef8d403e4151593725943456fa3b0a8bce626",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -16131,7 +16314,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/13/run"
+          "pointer": "/runs/14/run"
         }
       ],
       "configurationSource": {
@@ -16192,7 +16375,10 @@
       "status": "completed",
       "conclusion": "skipped",
       "jobName": "Frozen Rust companion consumer",
-      "executionSha": "47aef8d403e4151593725943456fa3b0a8bce626",
+      "apiHeadSha": "47aef8d403e4151593725943456fa3b0a8bce626",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -16208,7 +16394,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/13/run"
+          "pointer": "/runs/14/run"
         }
       ],
       "configurationSource": {
@@ -16269,7 +16455,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Frozen bounded TypeScript properties (a)",
-      "executionSha": "7e1b030e7e6898a7d1e7876cd0723dd61292c65a",
+      "apiHeadSha": "7e1b030e7e6898a7d1e7876cd0723dd61292c65a",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -16281,7 +16470,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/12/run"
+          "pointer": "/runs/13/run"
         }
       ],
       "configurationSource": {
@@ -16342,7 +16531,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "allowed_failure",
-      "executionSha": "f446852c42d4a382ba7931e6730a17cb3d8308e0",
+      "apiHeadSha": "f446852c42d4a382ba7931e6730a17cb3d8308e0",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-job-policy-history-2026-10-18.evidence.json",
@@ -16419,7 +16611,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "consumer",
-      "executionSha": "f446852c42d4a382ba7931e6730a17cb3d8308e0",
+      "apiHeadSha": "f446852c42d4a382ba7931e6730a17cb3d8308e0",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-job-policy-history-2026-10-18.evidence.json",
@@ -16496,7 +16691,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Frozen actual browser owner baseline (a)",
-      "executionSha": "6328647d8b7113a920d777044944612f3bc47a58",
+      "apiHeadSha": "6328647d8b7113a920d777044944612f3bc47a58",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -16508,7 +16706,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/11/run"
+          "pointer": "/runs/12/run"
         }
       ],
       "configurationSource": {
@@ -16569,7 +16767,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "capability",
-      "executionSha": "fb143279d6adc8a2dd6f0b6c77ad584ae5a2daef",
+      "apiHeadSha": "fb143279d6adc8a2dd6f0b6c77ad584ae5a2daef",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-mvm-kvm-2026-10-18.evidence.json",
@@ -16650,7 +16851,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "Frozen native compiled producer with hidden resources (b)",
-      "executionSha": "28bf38b0281f3bcace40b70d8b989d6e0ef7f875",
+      "apiHeadSha": "28bf38b0281f3bcace40b70d8b989d6e0ef7f875",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -16666,7 +16870,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/10/run"
+          "pointer": "/runs/11/run"
         }
       ],
       "configurationSource": {
@@ -16727,7 +16931,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Fresh restored compiled native host consumer (b)",
-      "executionSha": "28bf38b0281f3bcace40b70d8b989d6e0ef7f875",
+      "apiHeadSha": "28bf38b0281f3bcace40b70d8b989d6e0ef7f875",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -16743,7 +16950,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/10/run"
+          "pointer": "/runs/11/run"
         }
       ],
       "configurationSource": {
@@ -16804,7 +17011,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "capability",
-      "executionSha": "bafc75bb388a9f92dfc056f0bb409d86d48cc1ee",
+      "apiHeadSha": "bafc75bb388a9f92dfc056f0bb409d86d48cc1ee",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-mvm-kvm-2026-10-18.evidence.json",
@@ -16885,7 +17095,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "capability",
-      "executionSha": "64d6a666e63e4773ee56666148ae9c8ba371877a",
+      "apiHeadSha": "64d6a666e63e4773ee56666148ae9c8ba371877a",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-mvm-kvm-2026-10-18.evidence.json",
@@ -16966,7 +17179,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Same artifact flattened versus source-owned activation topology (b)",
-      "executionSha": "0d8123ea327f5beddedcf3ba99d698288ea6d979",
+      "apiHeadSha": "0d8123ea327f5beddedcf3ba99d698288ea6d979",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -16978,7 +17194,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/9/run"
+          "pointer": "/runs/10/run"
         }
       ],
       "configurationSource": {
@@ -17039,7 +17255,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Preserved flattened failure versus original source-owned topology (b)",
-      "executionSha": "bb659f0f7fea71de9a2ba850bd04c5d0919fcb8e",
+      "apiHeadSha": "bb659f0f7fea71de9a2ba850bd04c5d0919fcb8e",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -17051,7 +17270,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/8/run"
+          "pointer": "/runs/9/run"
         }
       ],
       "configurationSource": {
@@ -17112,7 +17331,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Matching image with unchanged browser and E2E specifications (a)",
-      "executionSha": "552831830ef2f059b7efa5149fe20f053428c220",
+      "apiHeadSha": "552831830ef2f059b7efa5149fe20f053428c220",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -17124,7 +17346,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/7/run"
+          "pointer": "/runs/8/run"
         }
       ],
       "configurationSource": {
@@ -17185,7 +17407,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "Explicit active source specs after retained inactive-root discovery failure (a)",
-      "executionSha": "26d238d84acb484d50bbf2e35c6fba42f2300338",
+      "apiHeadSha": "26d238d84acb484d50bbf2e35c6fba42f2300338",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -17197,7 +17422,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/6/run"
+          "pointer": "/runs/7/run"
         }
       ],
       "configurationSource": {
@@ -17258,7 +17483,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Actual finite compiler conformance and mutation fixture (a)",
-      "executionSha": "775d735adbc34c4caea7c626a43f27cd27d0d971",
+      "apiHeadSha": "775d735adbc34c4caea7c626a43f27cd27d0d971",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -17270,7 +17498,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/4/run"
+          "pointer": "/runs/5/run"
         }
       ],
       "configurationSource": {
@@ -17331,7 +17559,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Actual frozen packing and consumers (a)",
-      "executionSha": "0ef69d6b90dcf7ba948bdaa10aa26fbbf3c7f12f",
+      "apiHeadSha": "0ef69d6b90dcf7ba948bdaa10aa26fbbf3c7f12f",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -17339,7 +17570,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/3/run"
+          "pointer": "/runs/4/run"
         }
       ],
       "configurationSource": {
@@ -17400,7 +17631,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Actual frozen packing and consumers (a)",
-      "executionSha": "d7447847d5d7c38e6d08164bba6f9fadd841564e",
+      "apiHeadSha": "d7447847d5d7c38e6d08164bba6f9fadd841564e",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -17408,7 +17642,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/2/run"
+          "pointer": "/runs/3/run"
         }
       ],
       "configurationSource": {
@@ -17469,7 +17703,10 @@
       "status": "completed",
       "conclusion": "cancelled",
       "jobName": "guestFiles (github, ubuntu-24.04, github-hosted-ubuntu-24.04, device)",
-      "executionSha": "3829831039cc43aa717c6c927f835b867e9313b6",
+      "apiHeadSha": "3829831039cc43aa717c6c927f835b867e9313b6",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-mvm-guest-files-2026-10-18.evidence.json",
@@ -17538,7 +17775,10 @@
       "status": "completed",
       "conclusion": "cancelled",
       "jobName": "guestFiles (depot, depot-ubuntu-24.04-4, github-depot-ubuntu-24.04-4)",
-      "executionSha": "3829831039cc43aa717c6c927f835b867e9313b6",
+      "apiHeadSha": "3829831039cc43aa717c6c927f835b867e9313b6",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-mvm-guest-files-2026-10-18.evidence.json",
@@ -17607,7 +17847,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Restored frozen packed consumers (a)",
-      "executionSha": "c4c0d6fa8d3714849dc952f412102902eaf4d181",
+      "apiHeadSha": "c4c0d6fa8d3714849dc952f412102902eaf4d181",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -17615,7 +17858,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/1/run"
+          "pointer": "/runs/2/run"
         }
       ],
       "configurationSource": {
@@ -17676,7 +17919,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "guestFiles (github, ubuntu-24.04, github-hosted-ubuntu-24.04, device)",
-      "executionSha": "1373e624739fbc93502b0c8ca502820c6ff99b45",
+      "apiHeadSha": "1373e624739fbc93502b0c8ca502820c6ff99b45",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-mvm-guest-files-2026-10-18.evidence.json",
@@ -17745,7 +17991,10 @@
       "status": "completed",
       "conclusion": "success",
       "jobName": "guestFiles (depot, depot-ubuntu-24.04-4, github-depot-ubuntu-24.04-4)",
-      "executionSha": "1373e624739fbc93502b0c8ca502820c6ff99b45",
+      "apiHeadSha": "1373e624739fbc93502b0c8ca502820c6ff99b45",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/audit/depot-mvm-guest-files-2026-10-18.evidence.json",
@@ -17814,7 +18063,10 @@
       "status": "completed",
       "conclusion": "failure",
       "jobName": "Restored frozen packed consumers (a)",
-      "executionSha": "cf498cc94be2dbaaf4634ab862d76c46aea49520",
+      "apiHeadSha": "cf498cc94be2dbaaf4634ab862d76c46aea49520",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
       "sourceReferences": [
         {
           "source": "doc/planning/depot-complete-coverage-budget-ledger.json",
@@ -17822,7 +18074,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/0/run"
+          "pointer": "/runs/1/run"
         }
       ],
       "configurationSource": {
@@ -17858,6 +18110,74 @@
       },
       "nominalListCompute": {
         "usd": "0.021",
+        "rateUsdPerSecond": "0.0002",
+        "eligible": true,
+        "scope": "Nominal elapsed list compute before allowances; not invoice or measured VM billing"
+      },
+      "maximumFullTimeoutReservation": {
+        "minutes": 10,
+        "usd": "0.12",
+        "scope": "Counterfactual full configured timeout; not active reservation or spending"
+      },
+      "actualInvoiceObserved": false,
+      "billableVmLifetimeObserved": false
+    },
+    {
+      "key": "depot:github-actions-runners:run:39136177894:job:117701044029:attempt:1",
+      "provider": "depot",
+      "product": "github-actions-runners",
+      "kind": "job-attempt",
+      "identifiers": {
+        "runId": "39136177894",
+        "jobId": "117701044029",
+        "attemptNumber": 1
+      },
+      "status": "completed",
+      "conclusion": "failure",
+      "jobName": "Restored frozen packed consumers (a)",
+      "apiHeadSha": "1aab4fb2eb81e8288cea56e800a0ae15fb179dfb",
+      "executionSha": null,
+      "checkoutSourceReference": null,
+      "checkoutQualification": "Actual checkout only when retained consumer observation supplies it; Actions head_sha alone is not used as execution SHA",
+      "sourceReferences": [
+        {
+          "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
+          "pointer": "/runs/0/run"
+        }
+      ],
+      "configurationSource": {
+        "record": "workflowSources/1aab4fb2eb81e8288cea56e800a0ae15fb179dfb-.github_workflows_music-player-windows.yml",
+        "commit": "1aab4fb2eb81e8288cea56e800a0ae15fb179dfb",
+        "path": ".github/workflows/music-player-windows.yml",
+        "sha256": "fccbe67c692dafebaadf286662cd94bff6c1c3d28ad9e52bc4949445c0e4b66d",
+        "jobKey": "libraries"
+      },
+      "requestedResources": {
+        "label": "depot-ubuntu-24.04-4",
+        "vcpu": 4,
+        "memoryGb": 16,
+        "usdPerMinute": "0.012",
+        "rateSource": "pricing/github-runners"
+      },
+      "runnerAssignment": {
+        "id": 235,
+        "name": "depot-m8494kgsc0",
+        "actualStepObserved": true
+      },
+      "intervals": {
+        "jobAttempt": {
+          "startedAt": "2026-10-18T14:28:59Z",
+          "finishedAt": "2026-10-18T14:29:31Z",
+          "seconds": "32",
+          "scope": "GitHub job interval; allocation qualification requires assigned runner and actual step",
+          "source": {
+            "record": "metadata/github-jobs-39136177894",
+            "pointer": "/jobs/0"
+          }
+        }
+      },
+      "nominalListCompute": {
+        "usd": "0.0064",
         "rateUsdPerSecond": "0.0002",
         "eligible": true,
         "scope": "Nominal elapsed list compute before allowances; not invoice or measured VM billing"
@@ -19917,7 +20237,7 @@
     }
   ],
   "totals": {
-    "knownPricedObservedIntervalNominalListComputeUsd": "6.1935959",
+    "knownPricedObservedIntervalNominalListComputeUsd": "6.1999959",
     "scope": "Sum of priced native CI, Depot GitHub runners, SDK intervals and standard public GitHub zero compute only; partial because missing execution/builder boundaries are excluded",
     "standardPublicGitHubActionsComputeUsd": "0",
     "maximumAdmittedBuilderRequestWindowProxyUsd": "0.538584",
@@ -19928,20 +20248,20 @@
     "unmeasuredInvoicesOrVmBilling": true,
     "doNotAddReservationsOrPriorCampaignProxies": true
   },
-  "recordedAt": "2026-10-18T14:40:34.526062+00:00",
+  "recordedAt": "2026-10-18T14:48:21.195529+00:00",
   "snapshot": {
     "initialInputCaptureAt": "2026-10-18T13:59:27.911853+00:00",
-    "lastInputRefreshAt": "2026-10-18T14:33:35.609490+00:00",
+    "lastInputRefreshAt": "2026-10-18T14:47:19.720513+00:00",
     "nativeRunIds": 77,
-    "githubRunIds": 44,
+    "githubRunIds": 45,
     "nativeJobAttempts": 115,
-    "githubJobRecords": 78,
+    "githubJobRecords": 79,
     "sdkVms": 7,
     "buildKitBuilds": 22,
-    "rowCount": 222,
+    "rowCount": 223,
     "inputDocuments": 22,
-    "readOnlyMetadataResponses": 242,
-    "immutableWorkflowDefinitions": 121,
+    "readOnlyMetadataResponses": 244,
+    "immutableWorkflowDefinitions": 122,
     "laterMeasurements": "Root coherent graph39135886118 and later coverage/platform follow-ons are outside this captured source inventory; append separately after exact IDs and terminal measurement"
   },
   "totalsByProduct": {
@@ -19953,11 +20273,11 @@
       "hypotheticalFullTimeoutSumUsd": null
     },
     "github-actions-runners": {
-      "records": 51,
-      "pricedObservedIntervals": 48,
+      "records": 52,
+      "pricedObservedIntervals": 49,
       "unpricedRecords": 3,
-      "nominalElapsedListComputeUsd": "1.3308",
-      "hypotheticalFullTimeoutSumUsd": "11.88",
+      "nominalElapsedListComputeUsd": "1.3372",
+      "hypotheticalFullTimeoutSumUsd": "12",
       "subtotalCompleteForAllRecords": false
     },
     "native-ci": {
@@ -20039,7 +20359,7 @@
         },
         {
           "source": "home-relative:temp/agent/depot-complete-coverage-20261018/owned-github-budget.json",
-          "pointer": "/runs/5/run"
+          "pointer": "/runs/6/run"
         }
       ],
       "metadataRecord": "metadata/github-run-39126952499",
@@ -20683,11 +21003,11 @@
   ],
   "sourceArchive": {
     "path": "doc/audit/depot-owned-allocation-ledger-2026-10-18.sources.json.gz",
-    "bytes": 7974048,
-    "sha256": "bebbc6d2a710a25bdb2f62124653037635cd99ec75c369d71307a771f32387ce",
-    "uncompressedBytes": 53605290,
-    "uncompressedSha256": "7b32cb0f2ca20527960286778ac5addd04b45fbffdfa2e5ec2cbec5f9c1fc60c",
-    "records": 394
+    "bytes": 8005387,
+    "sha256": "d711cec9f3d93740a5af22f0cf454cfbb39ff0197380cd2da70195bd120ece16",
+    "uncompressedBytes": 53850357,
+    "uncompressedSha256": "9990a7d5f64127f35190459458623fc08f251c1098eb3cddf73382e1da03208c",
+    "records": 410
   },
   "independentGuestReview": {
     "status": "passed_original_bytes_crc_member_source_command_and_payload_hash_joins",
@@ -20727,5 +21047,6 @@
       "campaignGuardUsd": "1",
       "addedToObservedCompute": false
     }
-  ]
+  ],
+  "sourceIdentityPolicy": "GitHub apiHeadSha is separate from actual executionSha. Retained PR consumer observations supply six actual merge checkouts and their immutable workflow lookups; other GitHub checkout SHA stays null rather than being inferred from Actions head_sha."
 }
