@@ -14,6 +14,7 @@ import {
 import { join, } from 'node:path';
 
 import {
+  DEFAULT_CONCURRENCY,
   describe,
   expect,
   it,
@@ -176,324 +177,331 @@ async function writeCatFamily({ directory, }: { readonly directory: string; },):
 }
 
 await describe({
-  name: censusScopeOf.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'FINDS THE MEMBERS BESIDE A PACKAGE WITH A COVERAGE BUILD CONFIG: those with a config build, those with a '
-        + 'task file run their unit suite, each in code-point order',
-      fn: async () => {
-        await using scratch = await scratchDir({ prefix: 'coverage-census-family-', },);
-        await writeCatFamily({ directory: scratch.path, },);
+    describe({
+      name: censusScopeOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'FINDS THE MEMBERS BESIDE A PACKAGE WITH A COVERAGE BUILD CONFIG: those with a config build, those with a '
+            + 'task file run their unit suite, each in code-point order',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'coverage-census-family-', },);
+            await writeCatFamily({ directory: scratch.path, },);
 
-        expect(await censusScopeOf({
-          packageDirectory: join(
-            scratch.path,
-            'alpha',
-          ),
-        },),).toEqual({
-          kind: 'family',
-          family: {
-            directory: scratch.path,
-            builds: [
-              'alpha',
-              'beta',
-            ],
-            suites: [
-              'alpha',
-              'beta',
-              'gamma',
-            ],
-          },
-        },);
-      },
-    },),
-    it({
-      name: 'FINDS THE DIRECTORY ALONE where the package has no coverage build config, so the census reads that package alone',
-      fn: async () => {
-        await using scratch = await scratchDir({ prefix: 'coverage-census-family-', },);
-        await writeCatFamily({ directory: scratch.path, },);
-
-        expect(await censusScopeOf({
-          packageDirectory: join(
-            scratch.path,
-            'gamma',
-          ),
-        },),).toEqual({ kind: 'alone', },);
-        expect(await censusScopeOf({ packageDirectory: scratch.path, },),).toEqual({ kind: 'alone', },);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: requireFamilyCoverageBuild.name,
-  children: [
-    it({
-      name: 'READS EVERY MEMBER\'S COVERAGE BUILD and names each bundle by its path from the family directory, '
-        + 'split by whether a map stands beside it',
-      fn: async () => {
-        await using scratch = await scratchDir({ prefix: 'coverage-census-family-', },);
-        await writeCatFamily({ directory: scratch.path, },);
-        const { logger, } = capturingLoggerPair();
-
-        expect(await requireFamilyCoverageBuild({
-          family: {
-            directory: scratch.path,
-            builds: [
-              'alpha',
-              'beta',
-            ],
-            suites: [
-              'alpha',
-              'beta',
-              'gamma',
-            ],
-          },
-          l: logger,
-          readText: readUtf8Text,
-        },),).toEqual({
-          mapped: [
-            'alpha/dist/final/node/nap.mjs',
-            'beta/dist/final/node/bee.mjs',
-          ],
-          unmapped: ['alpha/dist/final/node/index.mjs',],
-        },);
-      },
-    },),
-    it({
-      name: 'REFUSES A MEMBER WITH NO BUILD DIRECTORY as the single package does, naming that member\'s directory',
-      fn: async () => {
-        await using scratch = await scratchDir({ prefix: 'coverage-census-family-', },);
-        await writeCatFamily({ directory: scratch.path, },);
-        await writeFamily({
-          directory: scratch.path,
-          members: {
-            delta: {
-              coverageConfig: true,
-              taskFile: true,
-            },
-          },
-        },);
-        const { logger, } = capturingLoggerPair();
-
-        /**
-         What the read rejected with.
-         */
-        const refusal = await rejectionOf({
-          promise: requireFamilyCoverageBuild({
-            family: {
-              directory: scratch.path,
-              builds: [
+            expect(await censusScopeOf({
+              packageDirectory: join(
+                scratch.path,
                 'alpha',
-                'delta',
+              ),
+            },),).toEqual({
+              kind: 'family',
+              family: {
+                directory: scratch.path,
+                builds: [
+                  'alpha',
+                  'beta',
+                ],
+                suites: [
+                  'alpha',
+                  'beta',
+                  'gamma',
+                ],
+              },
+            },);
+          },
+        },),
+        it({
+          name: 'FINDS THE DIRECTORY ALONE where the package has no coverage build config, so the census reads that package alone',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'coverage-census-family-', },);
+            await writeCatFamily({ directory: scratch.path, },);
+
+            expect(await censusScopeOf({
+              packageDirectory: join(
+                scratch.path,
+                'gamma',
+              ),
+            },),).toEqual({ kind: 'alone', },);
+            expect(await censusScopeOf({ packageDirectory: scratch.path, },),).toEqual({ kind: 'alone', },);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: requireFamilyCoverageBuild.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS EVERY MEMBER\'S COVERAGE BUILD and names each bundle by its path from the family directory, '
+            + 'split by whether a map stands beside it',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'coverage-census-family-', },);
+            await writeCatFamily({ directory: scratch.path, },);
+            const { logger, } = capturingLoggerPair();
+
+            expect(await requireFamilyCoverageBuild({
+              family: {
+                directory: scratch.path,
+                builds: [
+                  'alpha',
+                  'beta',
+                ],
+                suites: [
+                  'alpha',
+                  'beta',
+                  'gamma',
+                ],
+              },
+              l: logger,
+              readText: readUtf8Text,
+            },),).toEqual({
+              mapped: [
+                'alpha/dist/final/node/nap.mjs',
+                'beta/dist/final/node/bee.mjs',
               ],
-              suites: [],
-            },
-            l: logger,
-            readText: readUtf8Text,
-          },),
-        },);
-
-        expect(refusal,).toBeInstanceOf(StatedRefusalError,);
-        expect(
-          String(refusal,).includes(join(
-          scratch.path,
-          'delta',
-          'dist',
-          'final',
-          'node',
-        ),),
-        ).toBe(true,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: familySuiteRunsOf.name,
-  children: [
-    it({
-      name: 'RUNS EVERY SUITE MEMBER\'S WHOLE SUITE where no test file is named, each in its own directory',
-      fn: async () => {
-        expect(familySuiteRunsOf({
-          family: {
-            directory: '/cats',
-            builds: ['alpha',],
-            suites: [
-              'alpha',
-              'gamma',
-            ],
+              unmapped: ['alpha/dist/final/node/index.mjs',],
+            },);
           },
-          testFiles: [],
-        },),).toEqual([
-          {
-            member: 'alpha',
-            cwd: '/cats/alpha',
-            files: [],
+        },),
+        it({
+          name: 'REFUSES A MEMBER WITH NO BUILD DIRECTORY as the single package does, naming that member\'s directory',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'coverage-census-family-', },);
+            await writeCatFamily({ directory: scratch.path, },);
+            await writeFamily({
+              directory: scratch.path,
+              members: {
+                delta: {
+                  coverageConfig: true,
+                  taskFile: true,
+                },
+              },
+            },);
+            const { logger, } = capturingLoggerPair();
+
+            /**
+             What the read rejected with.
+             */
+            const refusal = await rejectionOf({
+              promise: requireFamilyCoverageBuild({
+                family: {
+                  directory: scratch.path,
+                  builds: [
+                    'alpha',
+                    'delta',
+                  ],
+                  suites: [],
+                },
+                l: logger,
+                readText: readUtf8Text,
+              },),
+            },);
+
+            expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+            expect(
+              String(refusal,).includes(join(
+              scratch.path,
+              'delta',
+              'dist',
+              'final',
+              'node',
+            ),),
+            ).toBe(true,);
           },
-          {
-            member: 'gamma',
-            cwd: '/cats/gamma',
-            files: [],
+        },),
+      ],
+    },),
+    describe({
+      name: familySuiteRunsOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'RUNS EVERY SUITE MEMBER\'S WHOLE SUITE where no test file is named, each in its own directory',
+          fn: async () => {
+            expect(familySuiteRunsOf({
+              family: {
+                directory: '/cats',
+                builds: ['alpha',],
+                suites: [
+                  'alpha',
+                  'gamma',
+                ],
+              },
+              testFiles: [],
+            },),).toEqual([
+              {
+                member: 'alpha',
+                cwd: '/cats/alpha',
+                files: [],
+              },
+              {
+                member: 'gamma',
+                cwd: '/cats/gamma',
+                files: [],
+              },
+            ],);
           },
-        ],);
-      },
-    },),
-    it({
-      name: 'GIVES EACH NAMED TEST FILE TO THE MEMBER IT STANDS IN, as an absolute path whether it was named from the '
-        + 'family directory or absolutely, and runs no other member',
-      fn: async () => {
-        expect(familySuiteRunsOf({
-          family: {
-            directory: '/cats',
-            builds: ['alpha',],
-            suites: [
-              'alpha',
-              'gamma',
-            ],
+        },),
+        it({
+          name: 'GIVES EACH NAMED TEST FILE TO THE MEMBER IT STANDS IN, as an absolute path whether it was named from the '
+            + 'family directory or absolutely, and runs no other member',
+          fn: async () => {
+            expect(familySuiteRunsOf({
+              family: {
+                directory: '/cats',
+                builds: ['alpha',],
+                suites: [
+                  'alpha',
+                  'gamma',
+                ],
+              },
+              testFiles: [
+                'gamma/src/purr.unit.test.ts',
+                '/cats/gamma/src/nap.unit.test.ts',
+              ],
+            },),).toEqual([{
+              member: 'gamma',
+              cwd: '/cats/gamma',
+              files: [
+                '/cats/gamma/src/purr.unit.test.ts',
+                '/cats/gamma/src/nap.unit.test.ts',
+              ],
+            },],);
           },
-          testFiles: [
-            'gamma/src/purr.unit.test.ts',
-            '/cats/gamma/src/nap.unit.test.ts',
-          ],
-        },),).toEqual([{
-          member: 'gamma',
-          cwd: '/cats/gamma',
-          files: [
-            '/cats/gamma/src/purr.unit.test.ts',
-            '/cats/gamma/src/nap.unit.test.ts',
-          ],
-        },],);
-      },
+        },),
+        it({
+          name: 'REFUSES A TEST FILE OUTSIDE THE FAMILY\'S SUITES as stated, naming the file and the forms it reads',
+          fn: async () => {
+            /**
+             What the grouping threw for a file outside the family.
+             */
+            let outside: unknown;
+            try {
+              familySuiteRunsOf({
+                family: {
+                  directory: '/cats',
+                  builds: ['alpha',],
+                  suites: ['alpha',],
+                },
+                testFiles: ['/dogs/src/bark.unit.test.ts',],
+              },);
+            }
+            catch (error) {
+              outside = error;
+            }
+            /**
+             What it threw for a file in a directory that runs no suite.
+             */
+            let stranger: unknown;
+            try {
+              familySuiteRunsOf({
+                family: {
+                  directory: '/cats',
+                  builds: ['alpha',],
+                  suites: ['alpha',],
+                },
+                testFiles: ['delta/src/purr.unit.test.ts',],
+              },);
+            }
+            catch (error) {
+              stranger = error;
+            }
+
+            expect(outside,).toBeInstanceOf(StatedRefusalError,);
+            expect(String(outside,),).toBe(
+              'StatedRefusalError: /dogs/src/bark.unit.test.ts is not a test file of a package beside this one; name it '
+              + 'from the family directory (/cats), as <package>/src/<file>.unit.test.ts, or by its absolute path',
+            );
+            expect(stranger,).toBeInstanceOf(StatedRefusalError,);
+            expect(String(stranger,),).toBe(
+              'StatedRefusalError: /cats/delta/src/purr.unit.test.ts is not a test file of a package beside this one; '
+              + 'name it from the family directory (/cats), as <package>/src/<file>.unit.test.ts, or by its absolute path',
+            );
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'REFUSES A TEST FILE OUTSIDE THE FAMILY\'S SUITES as stated, naming the file and the forms it reads',
-      fn: async () => {
-        /**
-         What the grouping threw for a file outside the family.
-         */
-        let outside: unknown;
-        try {
-          familySuiteRunsOf({
-            family: {
-              directory: '/cats',
-              builds: ['alpha',],
-              suites: ['alpha',],
-            },
-            testFiles: ['/dogs/src/bark.unit.test.ts',],
-          },);
-        }
-        catch (error) {
-          outside = error;
-        }
-        /**
-         What it threw for a file in a directory that runs no suite.
-         */
-        let stranger: unknown;
-        try {
-          familySuiteRunsOf({
-            family: {
-              directory: '/cats',
-              builds: ['alpha',],
-              suites: ['alpha',],
-            },
-            testFiles: ['delta/src/purr.unit.test.ts',],
-          },);
-        }
-        catch (error) {
-          stranger = error;
-        }
-
-        expect(outside,).toBeInstanceOf(StatedRefusalError,);
-        expect(String(outside,),).toBe(
-          'StatedRefusalError: /dogs/src/bark.unit.test.ts is not a test file of a package beside this one; name it '
-          + 'from the family directory (/cats), as <package>/src/<file>.unit.test.ts, or by its absolute path',
-        );
-        expect(stranger,).toBeInstanceOf(StatedRefusalError,);
-        expect(String(stranger,),).toBe(
-          'StatedRefusalError: /cats/delta/src/purr.unit.test.ts is not a test file of a package beside this one; '
-          + 'name it from the family directory (/cats), as <package>/src/<file>.unit.test.ts, or by its absolute path',
-        );
-      },
+    describe({
+      name: isFamilyBundleName.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ACCEPTS A FILE OF A MEMBER\'S BUILD DIRECTORY and nothing else: not a source, not a file deeper or shallower, '
+            + 'not a build directory with no member',
+          fn: async () => {
+            expect(isFamilyBundleName('alpha/dist/final/node/nap.mjs',),).toBe(true,);
+            expect(isFamilyBundleName('alpha/src/nap.ts',),).toBe(false,);
+            expect(isFamilyBundleName('alpha/dist/final/node/deeper/nap.mjs',),).toBe(false,);
+            expect(isFamilyBundleName('alpha/dist/final/nap.mjs',),).toBe(false,);
+            expect(isFamilyBundleName('/dist/final/node/nap.mjs',),).toBe(false,);
+            expect(isFamilyBundleName('alpha/dist/final/node/',),).toBe(false,);
+            expect(isFamilyBundleName('alpha/dist/other/node/nap.mjs',),).toBe(false,);
+          },
+        },),
+      ],
     },),
-  ],
-},);
+    describe({
+      name: bundleScriptsOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'KEEPS ONLY THE SCRIPTS A BUNDLE PATTERN ACCEPTS, so a source file a test loaded from the family directory '
+            + 'is not read as a bundle',
+          fn: async () => {
+            /**
+             A coverage file of one process that loaded a bundle and a source file of the family.
+             */
+            const text = JSON.stringify({
+              result: [
+                {
+                  url: 'file:///cats/alpha/dist/final/node/nap.mjs',
+                  functions: [{
+                    functionName: 'nap',
+                    ranges: [{
+                      startOffset: 0,
+                      endOffset: 4,
+                      count: 1,
+                    },],
+                  },],
+                },
+                {
+                  url: 'file:///cats/alpha/src/nap.test-fixture.ts',
+                  functions: [{
+                    functionName: 'fixture',
+                    ranges: [{
+                      startOffset: 0,
+                      endOffset: 4,
+                      count: 1,
+                    },],
+                  },],
+                },
+              ],
+            },);
 
-await describe({
-  name: isFamilyBundleName.name,
-  children: [
-    it({
-      name: 'ACCEPTS A FILE OF A MEMBER\'S BUILD DIRECTORY and nothing else: not a source, not a file deeper or shallower, '
-        + 'not a build directory with no member',
-      fn: async () => {
-        expect(isFamilyBundleName('alpha/dist/final/node/nap.mjs',),).toBe(true,);
-        expect(isFamilyBundleName('alpha/src/nap.ts',),).toBe(false,);
-        expect(isFamilyBundleName('alpha/dist/final/node/deeper/nap.mjs',),).toBe(false,);
-        expect(isFamilyBundleName('alpha/dist/final/nap.mjs',),).toBe(false,);
-        expect(isFamilyBundleName('/dist/final/node/nap.mjs',),).toBe(false,);
-        expect(isFamilyBundleName('alpha/dist/final/node/',),).toBe(false,);
-        expect(isFamilyBundleName('alpha/dist/other/node/nap.mjs',),).toBe(false,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: bundleScriptsOf.name,
-  children: [
-    it({
-      name: 'KEEPS ONLY THE SCRIPTS A BUNDLE PATTERN ACCEPTS, so a source file a test loaded from the family directory '
-        + 'is not read as a bundle',
-      fn: async () => {
-        /**
-         A coverage file of one process that loaded a bundle and a source file of the family.
-         */
-        const text = JSON.stringify({
-          result: [
-            {
-              url: 'file:///cats/alpha/dist/final/node/nap.mjs',
-              functions: [{
-                functionName: 'nap',
-                ranges: [{
-                  startOffset: 0,
-                  endOffset: 4,
-                  count: 1,
-                },],
-              },],
-            },
-            {
-              url: 'file:///cats/alpha/src/nap.test-fixture.ts',
-              functions: [{
-                functionName: 'fixture',
-                ranges: [{
-                  startOffset: 0,
-                  endOffset: 4,
-                  count: 1,
-                },],
-              },],
-            },
-          ],
-        },);
-
-        expect(bundleScriptsOf({
-          path: '/raw/coverage-1.json',
-          text,
-          bundleUrlPrefix: 'file:///cats/',
-          isBundleName: isFamilyBundleName,
-        },).map(function bundleOf({ bundle, },): string {
-          return bundle;
-        },),).toEqual(['alpha/dist/final/node/nap.mjs',],);
-        expect(bundleScriptsOf({
-          path: '/raw/coverage-1.json',
-          text,
-          bundleUrlPrefix: 'file:///cats/',
-        },).map(function bundleOf({ bundle, },): string {
-          return bundle;
-        },),).toEqual([
-          'alpha/dist/final/node/nap.mjs',
-          'alpha/src/nap.test-fixture.ts',
-        ],);
-      },
+            expect(bundleScriptsOf({
+              path: '/raw/coverage-1.json',
+              text,
+              bundleUrlPrefix: 'file:///cats/',
+              isBundleName: isFamilyBundleName,
+            },).map(function bundleOf({ bundle, },): string {
+              return bundle;
+            },),).toEqual(['alpha/dist/final/node/nap.mjs',],);
+            expect(bundleScriptsOf({
+              path: '/raw/coverage-1.json',
+              text,
+              bundleUrlPrefix: 'file:///cats/',
+            },).map(function bundleOf({ bundle, },): string {
+              return bundle;
+            },),).toEqual([
+              'alpha/dist/final/node/nap.mjs',
+              'alpha/src/nap.test-fixture.ts',
+            ],);
+          },
+        },),
+      ],
     },),
   ],
 },);
