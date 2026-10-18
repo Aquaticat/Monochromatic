@@ -489,6 +489,16 @@ These are concrete migration checks,
 not reasons to prohibit requested work.
 The live permission names differ from older bundled reference material;
 validate current schema and behavior before copying configuration.
+The documented keys are `actions`,
+`checks`,
+`code-quality`,
+`contents`,
+`id-token`,
+`issues`,
+`packages`,
+`pull-requests`,
+`security-events`,
+and `statuses`.
 
 Depot remote BuildKit can build containerized application or toolchain artifacts while GitHub retains orchestration.
 Account for context transfer,
@@ -649,6 +659,11 @@ subscriptions,
 secrets,
 and production workflow files were not changed.
 Third-party source clones were read without modification.
+The disposable research worktree was removed after checking tracked status,
+ignored files,
+and possible root Git-directory artifacts.
+Its only ignored file was the generated forbidden-strings rule cache;
+the research branch and provider run artifacts remain available.
 
 ## Adoption conditions and remaining evidence
 

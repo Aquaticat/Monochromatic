@@ -6619,6 +6619,26 @@
       "Provider runner sizes and labels are exercised only for 4-CPU Ubuntu 24.04 x64",
       "Receipt artifacts are consumer fixtures, not application build or runtime coverage",
       "completedAt is GitHub run updated_at, not a billed-duration measurement"
+    ],
+    "immutableWorkflowSourcesVerified": [
+      {
+        "source": "02d1d845baf27a3613fc44f5382866d930ffe1f3",
+        "workflow": ".github/workflows/music-player-windows.yml",
+        "sourceWorkflowBlob": "4270abdcbf3562d14d16547f30c3603fa436639b",
+        "sha256": "b8f4d1f609c0583cecdce919b9f63047b48da6b6f5cc4e8edae61fe6802efc6b"
+      },
+      {
+        "source": "3ea5cab1cba6ca42b4eb9ad8b63f91e21ec04ea9",
+        "workflow": ".github/workflows/music-player-windows.yml",
+        "sourceWorkflowBlob": "a6e50bf3af1fa60a04329a1de129733b76c260f2",
+        "sha256": "328209ab0de6634adaebce36759d7538ef9b8a4e9265c1deb9ab250dd0995fd3"
+      },
+      {
+        "source": "0cbfa748cbd3219502b8ae8c62172da08ba292c9",
+        "workflow": ".github/workflows/music-player-windows.yml",
+        "sourceWorkflowBlob": "d504cc508d5aaaeb889570b460af113b8b44bde0",
+        "sha256": "1a3408cae68a4a9b6f902ae435a1619ff0fc69561ef37623612efd45f3ae474c"
+      }
     ]
   }
 }
