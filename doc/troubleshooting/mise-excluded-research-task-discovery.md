@@ -36,7 +36,7 @@ commit `ac91d06fa6100935b7a07b08bebf03dd6dd9a0dd`,
 `src/config/mod.rs:5466` chooses explicit roots instead of walking the tree:
 
 ```rust
-// jdx/mise, src/config/mod.rs:5466
+//! jdx/mise, src/config/mod.rs:5466
 if let Some(patterns) = config_roots
     && !patterns.is_empty()
 {
@@ -103,13 +103,20 @@ and would enlarge the active task graph.
 Nothing to add upstream.
 The consumer selected the wrong working directory for the repository's explicit configuration scope.
 
-- Responsibility: the research launcher,
+- Responsibility:
+  the research launcher,
   rather than an established Mise defect.
-- Fixability: the committed one-field launcher change passed actual cloud execution.
-- Supported use: explicit configuration roots are the deciding source path.
-- Contribution policy: no upstream change is proposed because the consumer remedy is sufficient.
-- Maintainer intent: the source deliberately uses explicit roots instead of walking every directory.
-- Minimal patch: the owned launcher change is verified;
+- Fixability:
+  the committed one-field launcher change passed actual cloud execution.
+- Supported use:
+  explicit configuration roots are the deciding source path.
+- Contribution policy:
+  the inspected `CONTRIBUTING.md` restricts AI replies on other people's issues and discussions.
+  No upstream reply or change is proposed.
+- Maintainer intent:
+  the source deliberately uses explicit roots instead of walking every directory.
+- Minimal patch:
+  the owned launcher change is verified;
   no upstream prototype is required.
 
 The `.out-of-scope/` inventory has no matching Mise exemption.

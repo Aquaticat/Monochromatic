@@ -1,4 +1,4 @@
-# Depot CI reruns can download an older same-name artifact through numeric ID ordering
+# Actions artifact SDK 6.2.1 can select an older same-name artifact on Depot CI reruns
 
 ## Symptom
 
@@ -114,15 +114,21 @@ Changing a broad pattern to an unchanged exact name therefore retains this selec
 No upstream message was sent.
 This remains an integration finding for the current repository.
 
-- Responsibility: the observed Depot IDs do not preserve the chronology assumed by the SDK selector.
+- Responsibility:
+  the observed Depot IDs do not preserve the chronology assumed by the SDK selector.
   The backend mechanism is unknown.
-- Fixability: content-bound naming is an owned consumer remedy under cloud qualification.
+- Fixability:
+  content-bound naming is an owned consumer remedy under cloud qualification.
   No public backend patch is available to evaluate.
-- Supported use: native workflows execute the pinned upload/download Actions in this trial.
-- Contribution policy: the inspected Toolkit `.github/CONTRIBUTING.md` accepts issues and patches.
+- Supported use:
+  native workflows execute the pinned upload/download Actions in this trial.
+- Contribution policy:
+  the inspected Toolkit `.github/CONTRIBUTING.md` accepts issues and patches.
   That policy does not authorize an external message in this task.
-- Maintainer intent: no evidence establishes intended Depot ID-ordering semantics.
-- Minimal patch: the consumer change is committed;
+- Maintainer intent:
+  no evidence establishes intended Depot ID-ordering semantics.
+- Minimal patch:
+  the consumer change is committed;
   no backend prototype is possible from the inspected public source.
 
 The `.out-of-scope/` inventory has no matching Depot exemption.
