@@ -2,7 +2,8 @@
 
 ## Symptom
 
-On 2026-10-18, reading the public `depot/docs` main checkout alone
+On 2026-10-18,
+reading the public `depot/docs` main checkout alone
 incorrectly excluded deployed Depot CI and Sandbox capabilities.
 The checkout was `e40bfe1683ae561156d415513f2a648f89e82f12`,
 whose latest commit was dated 2026-09-11.
@@ -11,16 +12,19 @@ The [deployed documentation][docs] gave different answers when fetched directly 
 The stale exclusions concerned cross-repository reusable workflows,
 Sandbox public-beta availability and custom runtimes,
 and default Depot Code standalone CI triggers.
-This was a research evidence-selection failure, not a demonstrated failure to execute those features.
+This was a research evidence-selection failure,
+not a demonstrated failure to execute those features.
 
 ## Root cause and evidence
 
-The mistaken chain was: shallow-clone the public docs repository,
+The mistaken chain was:
+shallow-clone the public docs repository,
 read its current branch as the complete deployed contract,
 and treat historical restrictions as present exclusions.
 Direct deployed-page HTTP 200 responses and rendered text disproved that chain.
 
-At the cited checkout, `content/ci/compatibility.mdx:197` says:
+At the cited checkout,
+`content/ci/compatibility.mdx:197` says:
 
 ```md
 <!-- depot/docs/content/ci/compatibility.mdx:197 at e40bfe1683ae561156d415513f2a648f89e82f12 -->
@@ -58,7 +62,9 @@ A [contributor comment on PR 188][source-authority] says:
 Together these are evidence that the public repository is a synchronization target.
 The precise deployment and synchronization schedule was not established.
 
-The earlier private-beta, opt-in, and unsupported-reusable-workflow conclusions were retracted.
+The earlier private-beta,
+opt-in,
+and unsupported-reusable-workflow conclusions were retracted.
 This does not imply every deployed capability is available on Developer:
 the live runner plan matrix still puts macOS on Startup and Business.
 
@@ -70,19 +76,25 @@ and exact text matches for the conflicting claims.
 Pages were also converted with Pandoc and their actual rendered text inspected.
 
 The verification task compared pinned public source text against live rendered documentation.
-Its complete runnable Mise definition, `verify-deployed-versus-mirrored-docs`,
+Its complete runnable Mise definition,
+`verify-deployed-versus-mirrored-docs`,
 is retained in the evidence's `harnesses` field.
 Its working controls were the current public-beta statement,
-cross-repository workflow support, and enabled standalone triggers.
+cross-repository workflow support,
+and enabled standalone triggers.
 The failing readings were the corresponding exclusions in the pinned source snapshot.
-This checks the reading boundary; it does not itself execute reusable workflows or create a Code repository.
+This checks the reading boundary;
+it does not itself execute reusable workflows or create a Code repository.
 The [separate SDK probes][sdk-evidence] exercised default amd64 and Arm64 sandboxes.
 
 ## Verified workaround
 
 Fetch the deployed document that owns the capability,
 then exercise a bounded consumer when that fact determines the design.
-Retain the fetched date, body digest, source revision, and actual outcome separately.
+Retain the fetched date,
+body digest,
+source revision,
+and actual outcome separately.
 The generic SDK's [registry restriction][runtime-boundary] demonstrates why
 a current page or an installed type comment alone still cannot replace the real consumer probe.
 
@@ -103,19 +115,27 @@ The `.out-of-scope/` files were searched for Depot and documentation mirrors;
 no matching exemption was found.
 Open and closed issue/PR listings were read,
 including the automated synchronization PR and the redirected snapshot documentation PR.
-No message, issue, or comment was sent upstream.
+No message,
+issue,
+or comment was sent upstream.
 
-1.  Upstream fault: no deployed product failure was established.
+1.  Upstream fault:
+    no deployed product failure was established.
     The corrected failure was our choice to infer current capabilities from a historical mirror.
-2.  Fixability: synchronizing documentation is possible in principle,
+2.  Fixability:
+    synchronizing documentation is possible in principle,
     but the private `depot/app` publishing implementation was not inspected.
-3.  Supported use case: the repository README describes documentation hosted at `depot.dev/docs`.
-4.  Contribution path: the contributor comment identifies `depot/app` as the authoring location;
+3.  Supported use case:
+    the repository README describes documentation hosted at `depot.dev/docs`.
+4.  Contribution path:
+    the contributor comment identifies `depot/app` as the authoring location;
     editing this public mirror would not establish a durable publishing fix.
     No prohibition on AI-assisted research is inferred.
-5.  Upstream movement: PR 187 already contains a synchronization proposal,
+5.  Upstream movement:
+    PR 187 already contains a synchronization proposal,
     and PR 188 was redirected to the authoring repository.
-6.  Prototype: no product fix was prototyped because no product defect was demonstrated.
+6.  Prototype:
+    no product fix was prototyped because no product defect was demonstrated.
     The consumer-side evidence comparison was implemented and run instead.
 
 Nothing fileable is proposed.
