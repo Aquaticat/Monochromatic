@@ -366,7 +366,7 @@ The retained verification control joins `711` selected scalar values,
 and all five private-original hashes.
 Its unauthenticated public run request also matches the actor and triggering-actor identities.
 The current archive includes that compact control as its `35th` source record.
-# Terminal managed Mac and Windows allocation follow-on
+## Terminal managed Mac and Windows allocation follow-on
 
 The owner seal `depot-current-host-owner-complete-2026-10-18.evidence.json.gz`
 has compressed SHA-256 `d29c7887cf4df674346d850db3f2186345a55cbc53bbacd98ef33c7977221a35`.
@@ -406,7 +406,8 @@ or artifact/storage charge was observed.
 
 The existing `depot-owned-allocation-follow-on-verification-2026-10-18.evidence.json`
 remains the immutable `35` row snapshot verification.
-The host successor receives a separate verification receipt.
+The host successor has a
+[separate verification receipt](../audit/depot-owned-allocation-follow-on-hosts-verification-2026-10-18.evidence.json).
 Only a selected provider jobs projection is published;
 the full original remains private with its byte count and hash.
 The five public recovery rows in the new owner seal match existing rows and are not added again.

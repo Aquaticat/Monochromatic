@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "all_current_terminal_root_and_first_host_handoff_rows_normalized_recovery_pending",
+  "status": "terminal_known_root_and_host_rows_normalized_later_owner_receipts_pending",
   "recordedAt": "2026-10-18T18:06:32.326Z",
   "baseline": {
     "path": "doc/audit/depot-owned-allocation-ledger-2026-10-18.evidence.json",
@@ -2635,7 +2635,11 @@
         "memoryGB": 16,
         "diskGB": 130,
         "ownerProcessMaximumMinutes": 17,
-        "shapeScope": "documented requested catalog shape; not measured hardware"
+        "shapeScope": "documented requested catalog shape; not measured hardware",
+        "labels": [
+          "depot-windows-2025-4"
+        ],
+        "timeoutMinutes": 20
       },
       "observedResources": {
         "vcpu": null,
@@ -2716,7 +2720,11 @@
         "memoryGB": 24,
         "diskGB": 400,
         "ownerProcessMaximumMinutes": 17,
-        "shapeScope": "documented requested catalog shape; not measured hardware"
+        "shapeScope": "documented requested catalog shape; not measured hardware",
+        "labels": [
+          "depot-macos-15"
+        ],
+        "timeoutMinutes": 20
       },
       "observedResources": {
         "vcpu": null,
@@ -3552,7 +3560,24 @@
         "unnecessaryFieldsKeptPrivate": true,
         "privateOriginalNeverPublishedByThisAppend": true,
         "nonpublicActorEmailObserved": null,
-        "gitHistoryRemoved": false
+        "gitHistoryRemoved": false,
+        "fieldsActuallyPresent": [
+          "/jobs/2/run_url",
+          "/jobs/2/url",
+          "/jobs/2/html_url",
+          "/jobs/2/check_run_url",
+          "/jobs/1/run_url",
+          "/jobs/1/url",
+          "/jobs/1/html_url",
+          "/jobs/1/check_run_url",
+          "/jobs/0/run_url",
+          "/jobs/0/url",
+          "/jobs/0/html_url",
+          "/jobs/0/check_run_url"
+        ],
+        "credentialMaterialFound": false,
+        "signedUrlOrUrlCredentialsFound": false,
+        "connectionMaterialFound": false
       }
     ],
     "fullPrivateOriginalsRetained": true,
@@ -3620,5 +3645,30 @@
       "bytes": 14201235,
       "sha256": "d29c7887cf4df674346d850db3f2186345a55cbc53bbacd98ef33c7977221a35"
     }
+  },
+  "terminalOsPrivacyInspection": {
+    "recordedAt": "2026-10-18T18:08:38.647Z",
+    "privateOriginalSha256": "ad869f05370f2ceed2e68ef8f3460fab92809743e188af8ff0b243ecd3ed8e36",
+    "privateOriginalBytes": 9166,
+    "valuesInspected": 329,
+    "stringValuesInspected": 228,
+    "standardPublicGithubUrlsKeptPrivate": 12,
+    "unnecessaryFieldsActuallyPresent": [
+      "/jobs/2/run_url",
+      "/jobs/2/url",
+      "/jobs/2/html_url",
+      "/jobs/2/check_run_url",
+      "/jobs/1/run_url",
+      "/jobs/1/url",
+      "/jobs/1/html_url",
+      "/jobs/1/check_run_url",
+      "/jobs/0/run_url",
+      "/jobs/0/url",
+      "/jobs/0/html_url",
+      "/jobs/0/check_run_url"
+    ],
+    "actorEmailFieldsPresent": false,
+    "credentialSignedUrlOrConnectionMaterialFound": false,
+    "fullRawOriginalPublished": false
   }
 }
