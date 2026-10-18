@@ -34,10 +34,18 @@
  runner spawns `node` once per test FILE, so nothing outside this file is
  touched, and nothing inside it may overlap.
 
+ TWO KINDS OF CASE LIVE IN OTHER FILES, because the names they need belong to
+ packages above the one that owns `reportingRefusals`, and a test file may
+ import only from its own package and the packages that package depends on.
+ The bench report's refusal is held in `bench-report-refusal.unit.test.ts`,
+ and the coverage census's baseline reader and source map refusal are held in
+ `coverage-census-refusals.unit.test.ts`. What the three files share (the two
+ swaps, the arguments and environment, and the name and body of the case an
+ operator's own mistake is reported by) is in
+ `cli-refusal-cases.test-fixture.ts`.
+
  @module
  */
-
-import { join, } from 'node:path';
 
 import {
   describe,
@@ -47,7 +55,6 @@ import {
 
 import {
   BedrockCreditOverrideError,
-  BenchReportError,
   CorpusReadError,
   createSeatTally,
   EmptyPoolError,
@@ -55,24 +62,30 @@ import {
   HardCapOverrideError,
   LedgerShapeError,
   MixedGenerationError,
-  readBaselineFile,
   reportingRefusals,
   RUN_SEATS,
   RunConfigError,
   RunJsonUnreadableError,
   RunsDirectoryBusyError,
   SheetBindingError,
-  SourceMapFileError,
   SpendCeilingOverrideError,
   StatedRefusalError,
   UnsafeSeedError,
 } from '../../dist/final/node/index.mjs';
-import { scratchDir, } from '../scratch-dir.test-fixture.ts';
 import {
   SEAT_HYPER_TEXT_BEDROCK,
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 } from '../roster-seats.test-fixture.ts';
+import {
+  BARE_ARGV,
+  caseName,
+  collectingErrors,
+  holdingExitCode,
+  NO_KEYS,
+  REFUSED_AS_STATED,
+  reportsMistake,
+} from './cli-refusal-cases.test-fixture.ts';
 import { withFreshRunSeats, } from './fresh-run-seats.test-fixture.ts';
 
 //region CLI refusal tests
@@ -116,11 +129,6 @@ const FAULT_MESSAGE = 'a tabby walked across Pouncewick';
 const FIXTURE_BYTE = 27;
 
 /**
- Exit code a CLI leaves behind when it declined in its own words.
- */
-const REFUSED_AS_STATED = 6;
-
-/**
  Lines a stated refusal is expected to print: the sentence, and nothing after.
  */
 const STATED_LINES = 1;
@@ -142,76 +150,6 @@ const LEDGER_FILE = 'ledger/000007.json';
  Field the ledger fixture reports missing, which its message may repeat.
  */
 const LEDGER_FIELD = 'ballots';
-
-/**
- Process arguments of a run that typed nothing after the script, which every
- command reads (ledger B75).
- */
-const BARE_ARGV: readonly string[] = [
-  '/usr/bin/node',
-  'dist/final/node/runner.mjs',
-];
-
-/**
- Environment of a process that holds no provider key and was started by no
- task, which no case here reads for anything but the guard.
- */
-const NO_KEYS: Readonly<NodeJS.ProcessEnv> = {};
-
-/**
- Collects what would have gone to stderr, restoring the real one on disposal.
-
- @param lines - collector the caller reads afterwards
-
- @returns Collected lines, and the restore that disposal runs
-
- @example
- ```ts
- using printed = collectingErrors({ lines: [], },);
- ```
- */
-function collectingErrors(
-  { lines, }: { readonly lines: string[]; },
-): { readonly lines: readonly string[]; } & Disposable {
-  /**
-   Real reporter, put back on disposal.
-   */
-  const reported = console.error;
-
-  console.error = (...parts: readonly unknown[]) => {
-    lines.push(parts.map(String,)
-      .join(' ',),);
-  };
-  return {
-    lines,
-    [Symbol.dispose]: () => {
-      console.error = reported;
-    },
-  };
-}
-
-/**
- Puts the process exit code back to whatever it was, however a case ends.
-
- @returns Restore that disposal runs
-
- @example
- ```ts
- using held = holdingExitCode();
- ```
- */
-function holdingExitCode(): Disposable {
-  /**
-   Exit code standing before this case ran.
-   */
-  const before = process.exitCode;
-
-  return {
-    [Symbol.dispose]: () => {
-      process.exitCode = before;
-    },
-  };
-}
 
 /**
  Builds the refusal these cases are reported about.
@@ -294,16 +232,11 @@ const OPERATOR_MISTAKES: readonly Error[] = [
     sheetPath: '/runs/grading-sheet-sunbeam.md',
     manifestPath: '/runs/sample-manifest-moonbeam.json',
   },),
-  new SourceMapFileError({
-    path: 'dist/final/node/index.mjs.map',
-    says: 'it has no mappings',
-  },),
   new CorpusReadError({
     detail: 'people/whiskers/page.md at feedfac',
     cause: new Error('fatal: not a git repository',),
     commit: 'unopened',
   },),
-  new BenchReportError({ seats: 1, },),
 ];
 
 await describe({
@@ -546,57 +479,10 @@ await describe({
         expect(printed.lines[0],).toBe(`score-verify: ${STATED_MESSAGE}`,);
       },
     },),
-    it({
-      name: 'REPEATS a baseline the operator named wrongly in its own words, at the stated-refusal code and with no '
-        + 'fault line or frames, where the census command reads it',
-      fn: async () => {
-        using held = holdingExitCode();
-        using printed = collectingErrors({ lines: [], },);
-        await using scratch = await scratchDir({ prefix: 'cli-refusal-baseline-', },);
-        /**
-         A path nothing stands at, as a baseline named with a typo would be.
-         */
-        const path = join(
-          scratch.path,
-          'purr.json',
-        );
-
-        await reportingRefusals({
-          what: 'coverage-census',
-          argv: BARE_ARGV,
-          env: NO_KEYS,
-          run: async () => {
-            await readBaselineFile({ path, },);
-          },
-        },);
-
-        expect(process.exitCode,).toBe(REFUSED_AS_STATED,);
-        expect(printed.lines,).toEqual([
-          `coverage-census: baseline ${path} does not read as a census this command wrote: it could not be read `
-          + '(ENOENT)',
-        ],);
-      },
-    },),
     ...OPERATOR_MISTAKES.map(function operatorMistakeCase(refusal,) {
       return it({
-        name: `REPEATS ${refusal.name}, the operator's own mistake, in its own words at the stated-refusal code `
-          + 'with no fault line or frames',
-        fn: async () => {
-          using held = holdingExitCode();
-          using printed = collectingErrors({ lines: [], },);
-
-          await reportingRefusals({
-            what: 'draw-sample',
-            argv: BARE_ARGV,
-            env: NO_KEYS,
-            run: async () => {
-              throw refusal;
-            },
-          },);
-
-          expect(process.exitCode,).toBe(REFUSED_AS_STATED,);
-          expect(printed.lines,).toEqual([`draw-sample: ${refusal.message}`,],);
-        },
+        name: caseName({ refusal, },),
+        fn: () => reportsMistake({ refusal, },),
       },);
     },),
     it({
