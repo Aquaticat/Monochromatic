@@ -146,8 +146,11 @@ shell = "node --input-type=module-typescript -e"
 run = '''
 const fs = await import('node:fs');
 const { execFileSync } = await import('node:child_process');
+const { setTimeout } = await import('node:timers/promises');
 const block = process.env.PROBE_BLOCK;
 if (!['default', 'allrun'].includes(block)) throw new Error('Unexpected parallel failure control');
+// Wait beyond the sibling's intended eight-second completion before asserting its absence.
+await setTimeout(9000);
 const actual = { failureStarted: fs.existsSync('evidence/failure-started'), siblingStarted: fs.existsSync('evidence/sibling-started'), siblingFinished: fs.existsSync('evidence/sibling-finished') };
 const passed = actual.failureStarted && actual.siblingStarted && actual.siblingFinished === (block === 'allrun');
 const result = { schemaVersion: 1, probe: 'parallel-' + block, passed, applicationBase: 'e02be6c8b8fe9efb41a7f8f1a0b311c17796588a', harness: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), actual, at: new Date().toISOString() };
