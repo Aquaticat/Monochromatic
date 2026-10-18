@@ -114,15 +114,19 @@ it did not select production entries by age or key prefix.
 
 The initial seed run `39100149452` stalled in the parent-authored archive-size guard,
 before either save step.
-The harness passed an unsupported `--output` option to Zstd `1.5.7`;
+Local reproduction with Zstd `1.5.7` identified the harness's unsupported `--output` option;
 the supported output spelling is `-o`.
 With a larger input,
 the compressor's exit left the tar producer blocked because the guard waited for both exits
 before checking either result.
 This is a research-harness fault,
 not a cache-service failure.
-Both ordinary and force-cancellation requests were submitted;
-terminal reconciliation remains necessary before claiming the allocation stopped.
+Both ordinary and force-cancellation requests were submitted.
+GitHub subsequently confirmed both jobs and the workflow `cancelled` at `05:32:36Z`.
+This confirms terminal workflow state,
+not the VM destruction or billing-stop timestamp.
+The final log request returned `log not found: 117594589204`;
+the local reproduction establishes the harness defect without recovering the old cloud step's diagnostic.
 
 Corrected source `165e0fb3f7` uses the supported option,
 an abortable stream pipeline and child cleanup on failure.

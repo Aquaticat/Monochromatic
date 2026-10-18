@@ -30,17 +30,23 @@ every created sandbox was independently confirmed finished.
 The main remaining experiment is the repeated fresh-job pnpm-store comparison.
 An initial cold cohort passed,
 but seed run `39100149452` stalled in the parent-authored archive-size guard before saving.
-Ordinary and force cancellation were requested;
-reconcile its terminal state before claiming stopped allocation.
-The corrected harness is `165e0fb3f7` on `research/depot-pnpm-cache-20261018`.
+Both old seed jobs and the workflow are confirmed `cancelled` at `05:32:36Z`.
+This establishes terminal workflow state,
+not VM destruction or stopped billing.
+The corrected harness is `2a155eec49` on `research/depot-pnpm-cache-20261018`.
 Its real success and intentional-failure controls pass.
 The final cohort adds explicit cache-disabled controls,
 uses unique scope `20261018-pnpm-cache-v3`
 and has a 5-minute job timeout.
-Parent monitor session `26919` runs its sequential phases and records terminal receipts
+Parent monitor session `14886` runs its sequential phases and records terminal receipts
 under private `depot-developer-pool-research/receipts-v3`.
-The superseded seed monitor is session `59066`;
-it must stop on the unsuccessful old seed rather than dispatch warm consumers.
+The superseded seed monitor `59066` stopped on cancellation without dispatching warm consumers.
+Initial v3 dispatch returned HTTP `422` for the unquoted `off` choice before allocating a job.
+Its failed receipt is retained;
+the quoted choice was accepted as run `39101112370`,
+which passed all cache-disabled jobs.
+Explicit-miss run `39101194478` also passed every job;
+seed run `39101280802` is the next phase.
 The [pnpm research note](../planning/depot-pnpm-store-fresh-job-research.md)
 records protocol,
 storage ownership and failure details.
