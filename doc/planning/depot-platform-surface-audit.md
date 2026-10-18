@@ -241,6 +241,44 @@ an observed terminal job,
 and stopped billing remain distinct facts.
 No excluded account-wide analytics method is invoked here.
 
+### Nondefault SDK runtimes need an execution environment contract
+
+The [custom-runtime receipt](../audit/depot-sdk-custom-runtime-2026-10-18.evidence.json)
+admits the exact existing `tools-r2-git256` reference using registry challenge authentication,
+manifest and configuration hashes,
+and the snapshot owner's permission for read-only use.
+Its Depot thin configuration describes a 150 GiB logical disk;
+the descriptor and layer sizes alone do not establish that value.
+This is a Depot block snapshot,
+not an ordinary OCI root filesystem image.
+
+SDK sandbox `6m8d0p0pvnrqlb8` accepted that reference and reached `running`
+with the requested AMD64 architecture,
+2 CPUs,
+4 GiB memory,
+150 GiB disk,
+and two-minute expiry.
+The first actual command failed with
+`exec: "node": executable file not found in $PATH`.
+Native CI's Mise environment cannot be assumed to accompany an SDK runtime.
+The cleanup request completed,
+and a fresh `Get` confirmed `finished`.
+This proves reference admission and terminal cleanup,
+not execution of the intended Git consumer.
+
+One replacement sandbox is admitted with the same resource and lifetime limits.
+Its consumer uses the independently measured absolute Git executable path
+and SDK filesystem operations.
+The added compute proxy reservation is USD 0.012,
+bringing the original BuildKit proxy plus both full sandbox reservations to USD 0.562584
+under the USD 2 research ceiling.
+That proxy uses the public two-CPU CI rate;
+it does not establish SDK invoice pricing,
+storage charges,
+included-allowance accounting,
+or an aggregate account cap.
+The replacement has not yet been allocated in this checkpoint.
+
 ## Live plan eligibility and autoscaling boundary
 
 The [live public pricing capture](../audit/depot-live-public-pricing-2026-10-18.evidence.json.gz)
