@@ -803,7 +803,7 @@ fn a_clipped_tile_holds_the_pixels_of_its_band() {
     assert_eq!(moved.origin, 26.0 + CODE_ROW + band.top);
 }
 
-/// At the real limit a line that no raster can hold is refused whole and painted in a clip,
+/// At the real limit a line that no raster can hold is cut by the shaper and painted in a clip,
 /// at both display scales:
 ///  the band's raster is within the limit,
 /// and every code row of it has ink.
@@ -825,10 +825,22 @@ fn a_line_past_the_real_limit_paints_inside_a_clip() {
             (rows as f32 * CODE_ROW * scale) as u64 > limit_rows,
             "scale {scale}: {rows} rows of the line fit one raster of {limit_rows} rows"
         );
-        let refused = TextRaster::new().paint(&whole, PALETTE, 0.0);
+        // The shaper cuts a line no raster can hold, so the frame it prepares for the whole line is within the limit.
+        assert!(
+            whole.viewport.clip.is_some(),
+            "scale {scale}: the whole line was not cut"
+        );
+        assert!(
+            u64::from(whole.width) * u64::from(whole.height) * 4 <= MAX_RASTER_BYTES,
+            "scale {scale}: the frame of the whole line passes the limit"
+        );
+        // The raster still refuses a frame past the limit that did not come through the shaper.
+        let mut oversized = shaper.prepare_rows(&document, base, &[], &plain);
+        oversized.height = limit_rows as u32 + 1;
+        let refused = TextRaster::new().paint(&oversized, PALETTE, 0.0);
         assert!(
             refused.is_err(),
-            "scale {scale}: the whole line was painted past the limit"
+            "scale {scale}: a frame past the limit was painted"
         );
         // A band of 200 code rows from the middle of the line: well inside the limit at both scales.
         let top = (rows as f32 / 2.0).floor() * CODE_ROW;
