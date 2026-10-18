@@ -170,3 +170,29 @@ The [coherent Android evidence](../audit/depot-coherent-android-2026-10-17.evide
 retains the producer join,
 complete device results,
 and verified cleanup.
+
+## Node 26.12 recurrence on 2026-10-18
+
+The later private preparer used `fs.cpSync` with `COPYFILE_FICLONE_FORCE`.
+It failed with `EINVAL: invalid argument, copyfile` on a 14-byte `tmpAdbCmds` member,
+before launching an emulator.
+Fresh `lsattr -l` output reported `No_COW` for that source file,
+and source and destination parent had the same filesystem device number.
+These observations match the recorded clone-flag boundary;
+the Node caller is a separate recurrence from the GNU cp invocation.
+
+The verified cold-boot selection was reused:
+exclude `snapshots` and `tmpAdbCmds`,
+retain mandatory reflinks for selected files,
+and disable snapshot load/save for the private emulator.
+That copy and the actual headful device consumer completed.
+Its frozen source-derived catalog reported 16 cases,
+14 passes,
+two known context-fixture failures,
+and no skips.
+Explicit emulator/ADB cleanup completed and original configuration content remained unchanged.
+The [2026-10-18 device receipt](../audit/depot-android-consumer-2026-10-18.evidence.json)
+retains the APK identities,
+raw instrumentation output,
+and cleanup results.
+No snapshot-preserving copy or new upstream fault is claimed.
