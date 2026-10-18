@@ -73,6 +73,13 @@
     "originalImageUnchanged": true,
     "originalServiceHealthcheckRetained": true,
     "derivedJobHealthcheck": "NONE",
-    "scope": "Checkout and Mise setup prerequisites, not the complete repository toolchain"
+    "scope": "Checkout and Mise setup prerequisites, not the complete repository toolchain",
+    "localControlCorrection": {
+      "source": "aa89e372f09c82286695d80cddf7f86b602051c9",
+      "actualInheritedHarness": "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
+      "observed": "The service base ENV BUILD_HARNESS_SHA took precedence over the same-name derived ARG",
+      "corrected": "Separate CI_IMAGE_HARNESS_SHA argument identifies the derived build; original base environment stays inherited",
+      "remoteAllocationBeforeCorrection": false
+    }
   }
 }
