@@ -25,7 +25,7 @@ commit `01c35e69b97f516c2ebfbdb418b5cd6277bde280`,
 `src/server.rs:1563` increments the counter for a failed compilation result:
 
 ```rust
-// mozilla/sccache/src/server.rs
+//! Excerpt from mozilla/sccache/src/server.rs.
 CompileResult::CompileFailed(dt, duration) => {
     debug!("[{}]: compile result: compile failed", out_pretty);
     dist_type = dt;
@@ -38,7 +38,7 @@ CompileResult::CompileFailed(dt, duration) => {
 `src/server.rs:1600` also increments it when request handling returns a compiler-process error:
 
 ```rust
-// mozilla/sccache/src/server.rs
+//! Excerpt from mozilla/sccache/src/server.rs.
 Ok(ProcessError(output)) => {
     debug!("Compilation failed: {:?}", output);
     stats.compile_fails += 1;
@@ -88,7 +88,7 @@ It does not restore a Cargo target or registry archive.
 ### Non-success and unexercised observations
 
 - The compiler-request failure counter was one in every job.
-- `cargo nextest --version` returned 101 with ``error: no such command: `nextest` ``.
+- `cargo nextest --version` returned 101 with `` error: no such command: `nextest` ``.
   No unit-test execution or pass was claimed.
 - Optional features,
   application builds,
