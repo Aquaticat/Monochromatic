@@ -516,13 +516,18 @@ Of those,
 2 failed,
 and zero were skipped.
 The runner completed normally and the parent retained the raw failures and verified cleanup.
-The public device receipt and exact failure identities are pending incorporation.
+The [public device receipt][android-device-consumer] retains the exact failure identities:
+`SessionStoreTest#migratesEveryLegacyCombination`
+and `SessionStoreTest#currentPlaybackModeWinsOverLegacyKeys`.
+Both report a null-context `getSharedPreferences` call,
+matching the parent's freshly checked open issue `1002`.
 These are consumer assertion failures,
 separate from successful APK assembly and host-JVM tests.
 The newer main checkout's 3 additional instrumentation classes are outside the frozen cohort.
 
 [android-page-sizes]: https://developer.android.com/guide/practices/page-sizes
 [android-receipts]: depot-complete-coverage-android-receipts.json.gz
+[android-device-consumer]: ../audit/depot-android-consumer-2026-10-18.evidence.json
 
 ## Remaining Node static and build campaign
 
@@ -606,6 +611,16 @@ process,
 and native-prerequisite profiles remain separate pending work.
 The profile is dispatched as run `39112145763`,
 with the API-confirmed workflow head `588275a55c7efefef93dbbc529078d31fdcfafd8`.
+It is now terminal:
+126 of 127 invocations passed.
+The `unused-export` default task fails 2 real consumer cases with
+`TypeError: analyzer.addFile is not a function`.
+Its frozen type-check also reports `TS2339` for `addFile`,
+`referencesOf`,
+and the diagnostic's `module` property.
+The locked `yuku-analyzer` `0.19.0` declarations and implementation instead expose `setFile`.
+The VM-builder discovery control exits successfully with zero default-shaped files,
+so it receives no executed-test credit.
 
 Auto Mode's `build:native` and `test:native:*` names describe a maintained Pi host built from JavaScript/TypeScript.
 They are not covered by the Cargo campaign.
