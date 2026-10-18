@@ -44,12 +44,15 @@
     "maxSimultaneous": 2,
     "firstLinterReservationUsd": 0.36,
     "forecastIncludingLinterUsd": 1.767,
-    "rationale": "Conservative admission at8CPU times0.00005USD per CPUsecond times900seconds =0.36USD. Timestamp proxy, not invoice."
+    "rationale": "Conservative admission at8CPU times0.00005USD per CPUsecond times900seconds =0.36USD. Timestamp proxy, not invoice.",
+    "completedNewCampaignProxyUsd": 0.085,
+    "cumulativeCompletedProxyUsd": 1.492,
+    "remainingComputeGuardUsd": 3.508
   },
   "profiles": [
     {
       "name": "linter",
-      "state": "admitted-not-dispatched",
+      "state": "completed",
       "cpus": 8,
       "memoryGb": 32,
       "jobTimeoutMinutes": 15,
@@ -70,7 +73,1335 @@
       "incremental": "0",
       "imageRef": "l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r2-git256",
       "imageDigest": "sha256:fb197837831d438592d9455b3a31d808a20ad8bdc2ae76b05d8b36f6656419cd"
+    },
+    {
+      "name": "core",
+      "state": "completed",
+      "cpus": 4,
+      "memoryGb": 16,
+      "jobTimeoutMinutes": 15,
+      "reservationUsd": 0.18,
+      "workflow": ".depot/workflows/rust-coverage-core.yml"
     }
   ],
-  "runs": []
+  "runs": [
+    {
+      "phase": "linter",
+      "runId": "j50kf2jlqx",
+      "harnessSha": "21883c2409b5bb9a7556f869a37cfd43b6045f12",
+      "status": "failed",
+      "requestedAt": "2026-10-18T09:39:58.755Z",
+      "providerCreatedAt": "2026-10-18T09:40:00Z",
+      "finishedAt": "2026-10-18T09:42:12Z",
+      "cpus": 8,
+      "memoryGb": 32,
+      "jobMaximumMinutes": 15,
+      "reservedUsd": 0.36,
+      "requestedToFinishSecondsUpperBound": 134,
+      "conservativeTimestampComputeProxyUsd": 0.0536,
+      "artifact": {
+        "artifact_id": "01a14e63-e443-7d6a-af0f-92e07b470f7f",
+        "run_id": "j50kf2jlqx",
+        "workflow_id": "7kfxbv1p7m",
+        "workflow_path": "",
+        "job_id": "wbwt366swp",
+        "job_key": "_inline_0.yaml:linter",
+        "attempt_id": "l83ggkpc0s",
+        "attempt": 1,
+        "name": "rust-coverage-current-linter",
+        "size_bytes": 49540,
+        "created_at": "2026-10-18T09:42:11Z",
+        "zipBytes": 49540,
+        "zipSha256": "188b4f55aca482014b806fd47b9f654f5e36e90bbc81604545eea80e46b6809d",
+        "providerDigestVerified": true,
+        "zipCrcVerified": true,
+        "members": [
+          {
+            "name": "current-source-linter-library-artifact.log",
+            "bytes": 626,
+            "sha256": "79de2352a03da8d0c9bae5dcce26f340fca5e6d372cc6680aa63fe6b93cb1c63"
+          },
+          {
+            "name": "current-source-linter-real-help.log",
+            "bytes": 2122,
+            "sha256": "8e6306859eba1e0b30a0e30019aa17af169156a87321214f94c2af94071f035c"
+          },
+          {
+            "name": "current-source-linter-complete-nextest.log",
+            "bytes": 62878,
+            "sha256": "1125358b412e078929b0fdcf4e8ecf4288ce3a1373014e35be7494bcfa8471ab"
+          },
+          {
+            "name": "cargo-store-and-built-target-bytes.log",
+            "bytes": 131,
+            "sha256": "2ba919b046fb1c82ce19f0dbbc599588232c071f2564459ed0aed370cc65dd07"
+          },
+          {
+            "name": "current-source-linter-real-rules.log",
+            "bytes": 1172,
+            "sha256": "7ecc670fb3f53ac7c0880cf557adde695d35e8572310ab919fd7e9288bcc2281"
+          },
+          {
+            "name": "existing-processor-consumer-build.log",
+            "bytes": 877,
+            "sha256": "982375524968c2b3720b372812f830edcd59c96e9791029518619212fecd417b"
+          },
+          {
+            "name": "final-frozen-source-admission.log",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "name": "initial-frozen-source-admission.log",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "name": "linter-locked-dependency-preparation.log",
+            "bytes": 8865,
+            "sha256": "27aebdaf87ebf3abb8a3d5161f4dfd48e3486b1df893338f14bef8bddd614412"
+          },
+          {
+            "name": "linter-receipt.json",
+            "bytes": 45364,
+            "sha256": "b7f27c472beb60489d667d268551520e8c2b8bfc87f6c47b078688e2e76a3277"
+          },
+          {
+            "name": "nextest/default/linter.xml",
+            "bytes": 78238,
+            "sha256": "e289427cc33850dfb1fbeb94002132e6ef5d59ecd74559ceb24fb4558efafd73"
+          },
+          {
+            "name": "produced-current-linter.json",
+            "bytes": 308,
+            "sha256": "078047ee0d9ab688187693c3d1f8ae823b4586fb74394a3a5fe4e32d58e1daed"
+          },
+          {
+            "name": "rustc-path.log",
+            "bytes": 45,
+            "sha256": "6554b64e1ccd7486c15d42083c6d0552d3aa7f348b8193f2a80005bcfef7fd74"
+          },
+          {
+            "name": "tool-binaries.json",
+            "bytes": 364,
+            "sha256": "61c4e1df28c0e52cb7cd6e3031dc8e3322f12e45568d8aed08ced3a5d83f821a"
+          },
+          {
+            "name": "tool-cargo.log",
+            "bytes": 611,
+            "sha256": "d9deb84ac416ccbbae79a9cb83e1b9760fa41a43619148560f04309f8360298c"
+          },
+          {
+            "name": "tool-nextest-run-help.log",
+            "bytes": 17419,
+            "sha256": "f99446e78fd98d5f94d44e970679a52ad75390c563f863cbb29f9e0b23a535fd"
+          },
+          {
+            "name": "tool-nextest.log",
+            "bytes": 737,
+            "sha256": "cbc830232af6f425a909ed675a03caace7682745f415cb6c84ccc7e222de65bb"
+          },
+          {
+            "name": "tool-rustc.log",
+            "bytes": 780,
+            "sha256": "b4e4682d828e36083de261e000d73be20f52cc531ecbea7b89667cc40d21a9a9"
+          }
+        ]
+      },
+      "junit": [
+        {
+          "path": "nextest/default/linter.xml",
+          "enumeratedTotal": 416,
+          "skipped": 1,
+          "testsRun": 415,
+          "failed": 0,
+          "errors": 0,
+          "passed": 415,
+          "sha256": "e289427cc33850dfb1fbeb94002132e6ef5d59ecd74559ceb24fb4558efafd73"
+        }
+      ],
+      "commands": [
+        {
+          "name": "initial-frozen-source-admission",
+          "command": [
+            "git",
+            "diff",
+            "--exit-code",
+            "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+            "--",
+            "package/linter/monochromatic-lint",
+            "package/rust-module/jsonc-edit",
+            "mise.lock",
+            "mise.toml",
+            ".cargo/config.toml"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:40:33.350Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:40:33.357Z",
+          "elapsedSeconds": 0.005208995999999999,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "name": "tool-rustc",
+          "command": [
+            "mise",
+            "exec",
+            "rust",
+            "cargo:cargo-nextest",
+            "--",
+            "rustc",
+            "--version",
+            "--verbose"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:40:33.359Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:40:33.697Z",
+          "elapsedSeconds": 0.336552651,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "b4e4682d828e36083de261e000d73be20f52cc531ecbea7b89667cc40d21a9a9"
+        },
+        {
+          "name": "tool-cargo",
+          "command": [
+            "mise",
+            "exec",
+            "rust",
+            "cargo:cargo-nextest",
+            "--",
+            "cargo",
+            "--version"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:40:33.700Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:40:33.774Z",
+          "elapsedSeconds": 0.072523304,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "d9deb84ac416ccbbae79a9cb83e1b9760fa41a43619148560f04309f8360298c"
+        },
+        {
+          "name": "tool-nextest",
+          "command": [
+            "mise",
+            "exec",
+            "rust",
+            "cargo:cargo-nextest",
+            "--",
+            "cargo",
+            "nextest",
+            "--version"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:40:33.777Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:40:33.847Z",
+          "elapsedSeconds": 0.06848121699999996,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "cbc830232af6f425a909ed675a03caace7682745f415cb6c84ccc7e222de65bb"
+        },
+        {
+          "name": "tool-nextest-run-help",
+          "command": [
+            "mise",
+            "exec",
+            "rust",
+            "cargo:cargo-nextest",
+            "--",
+            "cargo",
+            "nextest",
+            "run",
+            "--help"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:40:33.850Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:40:33.888Z",
+          "elapsedSeconds": 0.036751162000000025,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "f99446e78fd98d5f94d44e970679a52ad75390c563f863cbb29f9e0b23a535fd"
+        },
+        {
+          "name": "rustc-path",
+          "command": [
+            "mise",
+            "which",
+            "rustc"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:40:33.890Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:40:33.915Z",
+          "elapsedSeconds": 0.02343200200000001,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "6554b64e1ccd7486c15d42083c6d0552d3aa7f348b8193f2a80005bcfef7fd74"
+        },
+        {
+          "name": "linter-locked-dependency-preparation",
+          "command": [
+            "mise",
+            "exec",
+            "rust",
+            "cargo:cargo-nextest",
+            "--",
+            "cargo",
+            "fetch",
+            "--locked"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/monochromatic-lint",
+          "startedAt": "2026-10-18T09:40:33.930Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:40:35.872Z",
+          "elapsedSeconds": 1.939535378,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "27aebdaf87ebf3abb8a3d5161f4dfd48e3486b1df893338f14bef8bddd614412"
+        },
+        {
+          "name": "current-source-linter-complete-nextest",
+          "command": [
+            "mise",
+            "exec",
+            "rust",
+            "cargo:cargo-nextest",
+            "--",
+            "cargo",
+            "nextest",
+            "--config-file",
+            "/home/runner/work/Monochromatic/Monochromatic/.research-rust/nextest.toml",
+            "run",
+            "--locked",
+            "--offline",
+            "--all-targets",
+            "--no-fail-fast"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/monochromatic-lint",
+          "startedAt": "2026-10-18T09:40:35.877Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:42:10.889Z",
+          "elapsedSeconds": 95.007243123,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "1125358b412e078929b0fdcf4e8ecf4288ce3a1373014e35be7494bcfa8471ab"
+        },
+        {
+          "name": "current-source-linter-real-help",
+          "command": [
+            "/home/runner/work/Monochromatic/Monochromatic/.research-rust/linter-target/debug/monochromatic-lint",
+            "--help"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:42:10.958Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:42:10.964Z",
+          "elapsedSeconds": 0.0027391479999932925,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "8e6306859eba1e0b30a0e30019aa17af169156a87321214f94c2af94071f035c"
+        },
+        {
+          "name": "current-source-linter-real-rules",
+          "command": [
+            "/home/runner/work/Monochromatic/Monochromatic/.research-rust/linter-target/debug/monochromatic-lint",
+            "--rules"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:42:10.965Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:42:10.969Z",
+          "elapsedSeconds": 0.0021717179999977817,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "7ecc670fb3f53ac7c0880cf557adde695d35e8572310ab919fd7e9288bcc2281"
+        },
+        {
+          "name": "current-source-linter-library-artifact",
+          "command": [
+            "mise",
+            "exec",
+            "rust",
+            "cargo:cargo-nextest",
+            "--",
+            "cargo",
+            "build",
+            "--locked",
+            "--offline",
+            "--lib"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/monochromatic-lint",
+          "startedAt": "2026-10-18T09:42:10.971Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:42:11.081Z",
+          "elapsedSeconds": 0.10838976700000058,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "79de2352a03da8d0c9bae5dcce26f340fca5e6d372cc6680aa63fe6b93cb1c63"
+        },
+        {
+          "name": "existing-processor-consumer-build",
+          "command": [
+            "mise",
+            "exec",
+            "rust",
+            "cargo:cargo-nextest",
+            "--",
+            "rustc",
+            "--edition=2024",
+            "--extern",
+            "monochromatic_lint=/home/runner/work/Monochromatic/Monochromatic/.research-rust/linter-target/debug/libmonochromatic_lint.rlib",
+            "-L",
+            "dependency=/home/runner/work/Monochromatic/Monochromatic/.research-rust/linter-target/debug/deps",
+            "src/processors_consumer.rs",
+            "--out-dir",
+            "/home/runner/work/Monochromatic/Monochromatic/.research-rust"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/monochromatic-lint",
+          "startedAt": "2026-10-18T09:42:11.084Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:42:11.127Z",
+          "elapsedSeconds": 0.04174684799999522,
+          "exitStatus": 1,
+          "signal": null,
+          "logSha256": "982375524968c2b3720b372812f830edcd59c96e9791029518619212fecd417b"
+        },
+        {
+          "name": "final-frozen-source-admission",
+          "command": [
+            "git",
+            "diff",
+            "--exit-code",
+            "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+            "--",
+            "package/linter/monochromatic-lint",
+            "package/rust-module/jsonc-edit",
+            "mise.lock",
+            "mise.toml",
+            ".cargo/config.toml"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:42:11.132Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:42:11.139Z",
+          "elapsedSeconds": 0.0048857270000007705,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "name": "cargo-store-and-built-target-bytes",
+          "command": [
+            "du",
+            "--summarize",
+            "--bytes",
+            "/opt/depot-reuse-20261018-r1/cargo",
+            "/home/runner/work/Monochromatic/Monochromatic/.research-rust/linter-target"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:42:11.141Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:42:11.204Z",
+          "elapsedSeconds": 0.06195992199999455,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "2ba919b046fb1c82ce19f0dbbc599588232c071f2564459ed0aed370cc65dd07"
+        }
+      ],
+      "sourceFilesSha256": "065fc99270cc12a2c32cce46334655e7167b2be8f7eb4a0822c3dddffae7cc94",
+      "sourceFileCount": 205,
+      "producedExecutable": {
+        "path": "/home/runner/work/Monochromatic/Monochromatic/.research-rust/linter-target/debug/monochromatic-lint",
+        "bytes": 110558616,
+        "sha256": "e698c16275e71a142cd95538c59c0543ab94a6ce3a382727c889e0dbe58da88d",
+        "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+        "publishedPrerequisite": false
+      }
+    },
+    {
+      "phase": "core",
+      "runId": "lwp0vbb2vq",
+      "harnessSha": "3a7e85d395cb67a5d189224963782c9b45527c71",
+      "status": "finished",
+      "requestedAt": "2026-10-18T09:45:33.211Z",
+      "providerCreatedAt": "2026-10-18T09:45:34Z",
+      "finishedAt": "2026-10-18T09:48:10Z",
+      "cpus": 4,
+      "memoryGb": 16,
+      "jobMaximumMinutes": 15,
+      "reservedUsd": 0.18,
+      "requestedToFinishSecondsUpperBound": 157,
+      "conservativeTimestampComputeProxyUsd": 0.0314,
+      "artifact": {
+        "artifact_id": "01a14e69-58c8-7104-88fd-fea5620fbe2f",
+        "run_id": "lwp0vbb2vq",
+        "workflow_id": "brhfnk74rp",
+        "workflow_path": "",
+        "job_id": "mp0hlg1fjl",
+        "job_key": "_inline_0.yaml:core",
+        "attempt_id": "gp5m589spr",
+        "attempt": 1,
+        "name": "rust-coverage-core-and-wg-producer",
+        "size_bytes": 281403,
+        "created_at": "2026-10-18T09:48:09Z",
+        "zipBytes": 281403,
+        "zipSha256": "67316ad9a73a202a715cfb511fc46623a5479527e799f1a15dd2054967d7eb43",
+        "providerDigestVerified": true,
+        "zipCrcVerified": true,
+        "members": [
+          {
+            "name": "bash-limit-complete-nextest.log",
+            "bytes": 1759,
+            "sha256": "9b5f26ece00e6828c5960b31e0d1bbd785463aad212153aa4a3d6f5d2441a829"
+          },
+          {
+            "name": "bash-limit-locked-dependency-preparation.log",
+            "bytes": 892,
+            "sha256": "fc8acfa61903e940b5cf267c4c1a8f83f9a3283ea639f6d835674cc19759d74a"
+          },
+          {
+            "name": "bash-limit-built-target-bytes.log",
+            "bytes": 93,
+            "sha256": "e5928e668ce31f5b9341efa420210147882c497664a79975c076de080153b0ad"
+          },
+          {
+            "name": "bin/wg-quicker-exempt",
+            "bytes": 473368,
+            "sha256": "02053fc5338835abb4d6a7812a3b71244a2190512724040219cdd68595dee921"
+          },
+          {
+            "name": "cargo-store-bytes.log",
+            "bytes": 45,
+            "sha256": "e90f879b4f913a73aee39d32f73e4c37a3e4bbebca3a13e798c9f74df2974dab"
+          },
+          {
+            "name": "core-receipt.json",
+            "bytes": 41986,
+            "sha256": "e7874510e399fbe01ef35ba2386a5c90420fa3e0e55a00cdd6dd1769ff0c1d2b"
+          },
+          {
+            "name": "final-frozen-source-admission.log",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "name": "initial-frozen-source-admission.log",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "name": "jsonc-built-target-bytes.log",
+            "bytes": 87,
+            "sha256": "eddcc8c8ea6892d2b98c9b2e788baf0e4683bb43a4d6d4e9557a029d1dd18b0b"
+          },
+          {
+            "name": "jsonc-complete-nextest.log",
+            "bytes": 9618,
+            "sha256": "ea6cc159640b1ceac6851649a406d16ae20f92453b931342975f6f52f7b32d19"
+          },
+          {
+            "name": "jsonc-locked-dependency-preparation.log",
+            "bytes": 566,
+            "sha256": "62530b8c87b8b761c3f9758732133ade3a41a12d7de031f2a18aa286be3577a8"
+          },
+          {
+            "name": "nextest/default/bash-limit.xml",
+            "bytes": 1765,
+            "sha256": "4e4d8c882b00f5ac302ab5a470c3b9388aab96fb3588cc46c9acc5382410aac8"
+          },
+          {
+            "name": "nextest/default/jsonc.xml",
+            "bytes": 13895,
+            "sha256": "4798ac227ef0b550a344ba22676a8af9cb6ce5ccc20f4feb611cc60aa21e94d3"
+          },
+          {
+            "name": "nextest/default/regex.xml",
+            "bytes": 39829,
+            "sha256": "ddb83b88fed90f89c34d7fc68fb75e907af60b1b29f5b53f5d6eaefd2d058bb9"
+          },
+          {
+            "name": "nextest/default/wg.xml",
+            "bytes": 5972,
+            "sha256": "0ef13f7afd0946aa01dc4b7eb62cef4998e240e8e37f8665d7a199374bf2fd28"
+          },
+          {
+            "name": "regex-built-target-bytes.log",
+            "bytes": 88,
+            "sha256": "4c28f66c5e3a94dc3e78fb4127e05ad71e211210c17d30d4169886a12c5fac75"
+          },
+          {
+            "name": "regex-complete-nextest.log",
+            "bytes": 26847,
+            "sha256": "06dd3bf8f378c373419fe5616e42069366b929a1e4f430ed529562e9c835b328"
+          },
+          {
+            "name": "regex-locked-dependency-preparation.log",
+            "bytes": 704,
+            "sha256": "6e2429d5b9ddabe82cbc48f1128a0683d03f8bb8adaa824223b634c4563f410a"
+          },
+          {
+            "name": "rustc-path.log",
+            "bytes": 45,
+            "sha256": "6554b64e1ccd7486c15d42083c6d0552d3aa7f348b8193f2a80005bcfef7fd74"
+          },
+          {
+            "name": "tool-binaries.json",
+            "bytes": 364,
+            "sha256": "61c4e1df28c0e52cb7cd6e3031dc8e3322f12e45568d8aed08ced3a5d83f821a"
+          },
+          {
+            "name": "tool-cargo.log",
+            "bytes": 611,
+            "sha256": "d9deb84ac416ccbbae79a9cb83e1b9760fa41a43619148560f04309f8360298c"
+          },
+          {
+            "name": "tool-nextest-run-help.log",
+            "bytes": 17419,
+            "sha256": "f99446e78fd98d5f94d44e970679a52ad75390c563f863cbb29f9e0b23a535fd"
+          },
+          {
+            "name": "tool-nextest.log",
+            "bytes": 737,
+            "sha256": "cbc830232af6f425a909ed675a03caace7682745f415cb6c84ccc7e222de65bb"
+          },
+          {
+            "name": "tool-rustc.log",
+            "bytes": 780,
+            "sha256": "b4e4682d828e36083de261e000d73be20f52cc531ecbea7b89667cc40d21a9a9"
+          },
+          {
+            "name": "wg-built-target-bytes.log",
+            "bytes": 85,
+            "sha256": "fe426e1ac46a8ae34940c924c91094f20137b50310c12ed1ecb9558c28f49eba"
+          },
+          {
+            "name": "wg-complete-nextest.log",
+            "bytes": 3009,
+            "sha256": "0688b1266b8458caf1207c3f9126d62276d2a1bcdc42e216fee0d9da55bdd7f2"
+          },
+          {
+            "name": "wg-locked-dependency-preparation.log",
+            "bytes": 617,
+            "sha256": "8ea676118a0d9ce5bd6c53a924045e59578ec7c4f0a10172876aec743c093efb"
+          },
+          {
+            "name": "wg-produced-dynamic-dependencies.log",
+            "bytes": 230,
+            "sha256": "3046736487e5aab9802daf4e511274b398e45e74f94df26045932a5eb43d0a9d"
+          },
+          {
+            "name": "wg-produced-elf-identity.log",
+            "bytes": 307,
+            "sha256": "06645855f91aeab30a0036fea388bea5d5b93e2f8fc290b6a298206b14b805ac"
+          },
+          {
+            "name": "wg-real-usage.log",
+            "bytes": 245,
+            "sha256": "2efe78569900d901a352cda08d2e9e5104db5343e67699213c11b6d64a094dc7"
+          },
+          {
+            "name": "wg-real-zero-mark-control.log",
+            "bytes": 29,
+            "sha256": "ba37479c7e0863f9604fb4a809c7921d13de8efb745db785581e740aeda223ab"
+          },
+          {
+            "name": "wg-routing-binary-manifest.json",
+            "bytes": 4667,
+            "sha256": "88da59ac1afa500c3b9090b36486284b7411cf7251cbc70bec521f0143144959"
+          },
+          {
+            "name": "wg-routing-release-producer.log",
+            "bytes": 771,
+            "sha256": "9afc2ffc67df69452f0500cdb0d56e9158e2ed23a75f51a8a856ff513c221a94"
+          }
+        ]
+      },
+      "junit": [
+        {
+          "path": "nextest/default/bash-limit.xml",
+          "enumeratedTotal": 6,
+          "skipped": 1,
+          "testsRun": 5,
+          "failed": 0,
+          "errors": 0,
+          "passed": 5,
+          "sha256": "4e4d8c882b00f5ac302ab5a470c3b9388aab96fb3588cc46c9acc5382410aac8"
+        },
+        {
+          "path": "nextest/default/jsonc.xml",
+          "enumeratedTotal": 81,
+          "skipped": 0,
+          "testsRun": 81,
+          "failed": 0,
+          "errors": 0,
+          "passed": 81,
+          "sha256": "4798ac227ef0b550a344ba22676a8af9cb6ce5ccc20f4feb611cc60aa21e94d3"
+        },
+        {
+          "path": "nextest/default/regex.xml",
+          "enumeratedTotal": 236,
+          "skipped": 1,
+          "testsRun": 235,
+          "failed": 0,
+          "errors": 0,
+          "passed": 235,
+          "sha256": "ddb83b88fed90f89c34d7fc68fb75e907af60b1b29f5b53f5d6eaefd2d058bb9"
+        },
+        {
+          "path": "nextest/default/wg.xml",
+          "enumeratedTotal": 26,
+          "skipped": 11,
+          "testsRun": 15,
+          "failed": 0,
+          "errors": 0,
+          "passed": 15,
+          "sha256": "0ef13f7afd0946aa01dc4b7eb62cef4998e240e8e37f8665d7a199374bf2fd28"
+        }
+      ],
+      "commands": [
+        {
+          "name": "initial-frozen-source-admission",
+          "command": [
+            "git",
+            "diff",
+            "--exit-code",
+            "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+            "--",
+            "package/cli/wg-quicker-exempt",
+            "package/codex-plugin/bash-limit",
+            "package/rust-module/forbidden-regex",
+            "package/rust-module/jsonc-edit",
+            "package/module/jsonc-edit.conformance/fixtures/jsonc-conformance.json",
+            "mise.lock",
+            "mise.toml",
+            ".cargo/config.toml"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:46:24.053Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:46:24.057Z",
+          "elapsedSeconds": 0.0027965300000000006,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "name": "tool-rustc",
+          "command": [
+            "mise",
+            "exec",
+            "rust",
+            "cargo:cargo-nextest",
+            "--",
+            "rustc",
+            "--version",
+            "--verbose"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:46:24.059Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:46:32.952Z",
+          "elapsedSeconds": 8.891337588,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "b4e4682d828e36083de261e000d73be20f52cc531ecbea7b89667cc40d21a9a9"
+        },
+        {
+          "name": "tool-cargo",
+          "command": [
+            "mise",
+            "exec",
+            "rust",
+            "cargo:cargo-nextest",
+            "--",
+            "cargo",
+            "--version"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:46:32.955Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:46:34.150Z",
+          "elapsedSeconds": 1.1933966690000015,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "d9deb84ac416ccbbae79a9cb83e1b9760fa41a43619148560f04309f8360298c"
+        },
+        {
+          "name": "tool-nextest",
+          "command": [
+            "mise",
+            "exec",
+            "rust",
+            "cargo:cargo-nextest",
+            "--",
+            "cargo",
+            "nextest",
+            "--version"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:46:34.153Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:46:35.101Z",
+          "elapsedSeconds": 0.9471430099999998,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "cbc830232af6f425a909ed675a03caace7682745f415cb6c84ccc7e222de65bb"
+        },
+        {
+          "name": "tool-nextest-run-help",
+          "command": [
+            "mise",
+            "exec",
+            "rust",
+            "cargo:cargo-nextest",
+            "--",
+            "cargo",
+            "nextest",
+            "run",
+            "--help"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:46:35.104Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:46:35.141Z",
+          "elapsedSeconds": 0.03561044000000038,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "f99446e78fd98d5f94d44e970679a52ad75390c563f863cbb29f9e0b23a535fd"
+        },
+        {
+          "name": "rustc-path",
+          "command": [
+            "mise",
+            "which",
+            "rustc"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:46:35.143Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:46:35.168Z",
+          "elapsedSeconds": 0.02328096000000005,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "6554b64e1ccd7486c15d42083c6d0552d3aa7f348b8193f2a80005bcfef7fd74"
+        },
+        {
+          "name": "wg-locked-dependency-preparation",
+          "command": [
+            "mise",
+            "exec",
+            "rust",
+            "cargo:cargo-nextest",
+            "--",
+            "cargo",
+            "fetch",
+            "--locked"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/cli/wg-quicker-exempt",
+          "startedAt": "2026-10-18T09:46:35.182Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:46:37.420Z",
+          "elapsedSeconds": 2.2360819389999995,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "8ea676118a0d9ce5bd6c53a924045e59578ec7c4f0a10172876aec743c093efb"
+        },
+        {
+          "name": "wg-complete-nextest",
+          "command": [
+            "mise",
+            "exec",
+            "rust",
+            "cargo:cargo-nextest",
+            "--",
+            "cargo",
+            "nextest",
+            "--config-file",
+            "/home/runner/work/Monochromatic/Monochromatic/.research-rust/wg-nextest.toml",
+            "run",
+            "--locked",
+            "--offline",
+            "--no-fail-fast"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/cli/wg-quicker-exempt",
+          "startedAt": "2026-10-18T09:46:37.423Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:46:49.512Z",
+          "elapsedSeconds": 12.087591687,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "0688b1266b8458caf1207c3f9126d62276d2a1bcdc42e216fee0d9da55bdd7f2"
+        },
+        {
+          "name": "wg-routing-release-producer",
+          "command": [
+            "mise",
+            "exec",
+            "rust",
+            "cargo:cargo-nextest",
+            "--",
+            "cargo",
+            "build",
+            "--locked",
+            "--offline",
+            "--release",
+            "--bin",
+            "wg-quicker-exempt"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/cli/wg-quicker-exempt",
+          "startedAt": "2026-10-18T09:46:49.514Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:46:53.120Z",
+          "elapsedSeconds": 3.6033023189999986,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "9afc2ffc67df69452f0500cdb0d56e9158e2ed23a75f51a8a856ff513c221a94"
+        },
+        {
+          "name": "wg-real-usage",
+          "command": [
+            "/home/runner/work/Monochromatic/Monochromatic/.research-rust/core-target/wg/release/wg-quicker-exempt"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:46:53.123Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:46:53.125Z",
+          "elapsedSeconds": 0.0006425899999994726,
+          "exitStatus": 2,
+          "signal": null,
+          "logSha256": "2efe78569900d901a352cda08d2e9e5104db5343e67699213c11b6d64a094dc7"
+        },
+        {
+          "name": "wg-real-zero-mark-control",
+          "command": [
+            "/home/runner/work/Monochromatic/Monochromatic/.research-rust/core-target/wg/release/wg-quicker-exempt",
+            "attach",
+            "0",
+            "/home/runner/work/Monochromatic/Monochromatic/.research-rust/never-created-cgroup"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:46:53.127Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:46:53.129Z",
+          "elapsedSeconds": 0.0006469900000010966,
+          "exitStatus": 2,
+          "signal": null,
+          "logSha256": "ba37479c7e0863f9604fb4a809c7921d13de8efb745db785581e740aeda223ab"
+        },
+        {
+          "name": "wg-produced-elf-identity",
+          "command": [
+            "file",
+            "/home/runner/work/Monochromatic/Monochromatic/.research-rust/core-target/wg/release/wg-quicker-exempt"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:46:53.130Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:46:53.162Z",
+          "elapsedSeconds": 0.029406780000001163,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "06645855f91aeab30a0036fea388bea5d5b93e2f8fc290b6a298206b14b805ac"
+        },
+        {
+          "name": "wg-produced-dynamic-dependencies",
+          "command": [
+            "ldd",
+            "/home/runner/work/Monochromatic/Monochromatic/.research-rust/core-target/wg/release/wg-quicker-exempt"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:46:53.164Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:46:53.177Z",
+          "elapsedSeconds": 0.01136519000000044,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "3046736487e5aab9802daf4e511274b398e45e74f94df26045932a5eb43d0a9d"
+        },
+        {
+          "name": "wg-built-target-bytes",
+          "command": [
+            "du",
+            "--summarize",
+            "--bytes",
+            "/home/runner/work/Monochromatic/Monochromatic/.research-rust/core-target/wg"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:46:53.192Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:46:53.195Z",
+          "elapsedSeconds": 0.0010820299999977578,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "fe426e1ac46a8ae34940c924c91094f20137b50310c12ed1ecb9558c28f49eba"
+        },
+        {
+          "name": "jsonc-locked-dependency-preparation",
+          "command": [
+            "mise",
+            "exec",
+            "rust",
+            "cargo:cargo-nextest",
+            "--",
+            "cargo",
+            "fetch",
+            "--locked"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/rust-module/jsonc-edit",
+          "startedAt": "2026-10-18T09:46:53.197Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:46:53.246Z",
+          "elapsedSeconds": 0.04734463999999934,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "62530b8c87b8b761c3f9758732133ade3a41a12d7de031f2a18aa286be3577a8"
+        },
+        {
+          "name": "jsonc-complete-nextest",
+          "command": [
+            "mise",
+            "exec",
+            "rust",
+            "cargo:cargo-nextest",
+            "--",
+            "cargo",
+            "nextest",
+            "--config-file",
+            "/home/runner/work/Monochromatic/Monochromatic/.research-rust/jsonc-nextest.toml",
+            "run",
+            "--locked",
+            "--offline",
+            "--no-fail-fast",
+            "--release"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/rust-module/jsonc-edit",
+          "startedAt": "2026-10-18T09:46:53.248Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:46:54.761Z",
+          "elapsedSeconds": 1.5110701399999997,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "ea6cc159640b1ceac6851649a406d16ae20f92453b931342975f6f52f7b32d19"
+        },
+        {
+          "name": "jsonc-built-target-bytes",
+          "command": [
+            "du",
+            "--summarize",
+            "--bytes",
+            "/home/runner/work/Monochromatic/Monochromatic/.research-rust/core-target/jsonc"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:46:54.763Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:46:54.766Z",
+          "elapsedSeconds": 0.000985130000000936,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "eddcc8c8ea6892d2b98c9b2e788baf0e4683bb43a4d6d4e9557a029d1dd18b0b"
+        },
+        {
+          "name": "regex-locked-dependency-preparation",
+          "command": [
+            "mise",
+            "exec",
+            "rust",
+            "cargo:cargo-nextest",
+            "--",
+            "cargo",
+            "fetch",
+            "--locked"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/rust-module/forbidden-regex",
+          "startedAt": "2026-10-18T09:46:54.768Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:46:57.504Z",
+          "elapsedSeconds": 2.7345914589999993,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "6e2429d5b9ddabe82cbc48f1128a0683d03f8bb8adaa824223b634c4563f410a"
+        },
+        {
+          "name": "regex-complete-nextest",
+          "command": [
+            "mise",
+            "exec",
+            "rust",
+            "cargo:cargo-nextest",
+            "--",
+            "cargo",
+            "nextest",
+            "--config-file",
+            "/home/runner/work/Monochromatic/Monochromatic/.research-rust/regex-nextest.toml",
+            "run",
+            "--locked",
+            "--offline",
+            "--no-fail-fast",
+            "--release"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/rust-module/forbidden-regex",
+          "startedAt": "2026-10-18T09:46:57.506Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:47:56.648Z",
+          "elapsedSeconds": 59.140081673000005,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "06dd3bf8f378c373419fe5616e42069366b929a1e4f430ed529562e9c835b328"
+        },
+        {
+          "name": "regex-built-target-bytes",
+          "command": [
+            "du",
+            "--summarize",
+            "--bytes",
+            "/home/runner/work/Monochromatic/Monochromatic/.research-rust/core-target/regex"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:47:56.650Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:47:56.654Z",
+          "elapsedSeconds": 0.0015220799999951851,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "4c28f66c5e3a94dc3e78fb4127e05ad71e211210c17d30d4169886a12c5fac75"
+        },
+        {
+          "name": "bash-limit-locked-dependency-preparation",
+          "command": [
+            "mise",
+            "exec",
+            "rust",
+            "cargo:cargo-nextest",
+            "--",
+            "cargo",
+            "fetch",
+            "--locked"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/codex-plugin/bash-limit",
+          "startedAt": "2026-10-18T09:47:56.656Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:47:56.923Z",
+          "elapsedSeconds": 0.26553687999999964,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "fc8acfa61903e940b5cf267c4c1a8f83f9a3283ea639f6d835674cc19759d74a"
+        },
+        {
+          "name": "bash-limit-complete-nextest",
+          "command": [
+            "mise",
+            "exec",
+            "rust",
+            "cargo:cargo-nextest",
+            "--",
+            "cargo",
+            "nextest",
+            "--config-file",
+            "/home/runner/work/Monochromatic/Monochromatic/.research-rust/bash-limit-nextest.toml",
+            "run",
+            "--locked",
+            "--offline",
+            "--no-fail-fast",
+            "--release"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/codex-plugin/bash-limit",
+          "startedAt": "2026-10-18T09:47:56.925Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:48:08.399Z",
+          "elapsedSeconds": 11.47176900700001,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "9b5f26ece00e6828c5960b31e0d1bbd785463aad212153aa4a3d6f5d2441a829"
+        },
+        {
+          "name": "bash-limit-built-target-bytes",
+          "command": [
+            "du",
+            "--summarize",
+            "--bytes",
+            "/home/runner/work/Monochromatic/Monochromatic/.research-rust/core-target/bash-limit"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:48:08.401Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:48:08.403Z",
+          "elapsedSeconds": 0.000992050000000745,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "e5928e668ce31f5b9341efa420210147882c497664a79975c076de080153b0ad"
+        },
+        {
+          "name": "final-frozen-source-admission",
+          "command": [
+            "git",
+            "diff",
+            "--exit-code",
+            "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+            "--",
+            "package/cli/wg-quicker-exempt",
+            "package/codex-plugin/bash-limit",
+            "package/rust-module/forbidden-regex",
+            "package/rust-module/jsonc-edit",
+            "package/module/jsonc-edit.conformance/fixtures/jsonc-conformance.json",
+            "mise.lock",
+            "mise.toml",
+            ".cargo/config.toml"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:48:08.407Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:48:08.411Z",
+          "elapsedSeconds": 0.0030041900000069293,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "name": "cargo-store-bytes",
+          "command": [
+            "du",
+            "--summarize",
+            "--bytes",
+            "/opt/depot-reuse-20261018-r1/cargo"
+          ],
+          "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+          "startedAt": "2026-10-18T09:48:08.413Z",
+          "state": "finished",
+          "finishedAt": "2026-10-18T09:48:08.467Z",
+          "elapsedSeconds": 0.05278518000000622,
+          "exitStatus": 0,
+          "signal": null,
+          "logSha256": "e90f879b4f913a73aee39d32f73e4c37a3e4bbebca3a13e798c9f74df2974dab"
+        }
+      ],
+      "sourceFilesSha256": "d59e4484ad2a9f6ac8a2ee6f8ff75800d69a660027f08030598b0f4165f37d72",
+      "sourceFileCount": 148,
+      "producedExecutable": {
+        "subject": "wg-quicker-exempt actual release producer and routing prerequisite",
+        "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+        "harnessSha": "3a7e85d395cb67a5d189224963782c9b45527c71",
+        "originalOwningTask": "//package/cli/wg-quicker-exempt:build",
+        "binary": {
+          "path": "bin/wg-quicker-exempt",
+          "bytes": 473368,
+          "sha256": "02053fc5338835abb4d6a7812a3b71244a2190512724040219cdd68595dee921"
+        },
+        "sourceFiles": [
+          {
+            "path": "package/cli/wg-quicker-exempt/Cargo.lock",
+            "sha256": "bd3638a5288926b8b864e483fa1324657143c4f2bfe17c6c434f949a8ef9c0d6"
+          },
+          {
+            "path": "package/cli/wg-quicker-exempt/Cargo.toml",
+            "sha256": "f9fa968328faa026e30b15f046c35915e1602aab2d75b3215908c8474c41ac28"
+          },
+          {
+            "path": "package/cli/wg-quicker-exempt/GPL-3.0-or-later.txt",
+            "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+          },
+          {
+            "path": "package/cli/wg-quicker-exempt/LGPL-3.0-or-later.txt",
+            "sha256": "e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118"
+          },
+          {
+            "path": "package/cli/wg-quicker-exempt/LICENSES/GPL-3.0-or-later.txt",
+            "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+          },
+          {
+            "path": "package/cli/wg-quicker-exempt/LICENSES/LGPL-3.0-or-later.txt",
+            "sha256": "e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118"
+          },
+          {
+            "path": "package/cli/wg-quicker-exempt/README.md",
+            "sha256": "d4047c7326600a598db98fa6b1350e60b36c3d723ec0246fd37550e89a8cad2c"
+          },
+          {
+            "path": "package/cli/wg-quicker-exempt/mise.toml",
+            "sha256": "1a765e259cccdc7166e303dbfc5f1a2ea28c29bbcb3fc197a20c1b69a68d40ac"
+          },
+          {
+            "path": "package/cli/wg-quicker-exempt/src/application_targets.rs",
+            "sha256": "807acb42c1df88801b6da6ee7a932d90b9b899dbc024a3561533aa260ce2cc7d"
+          },
+          {
+            "path": "package/cli/wg-quicker-exempt/src/application_targets_tests.rs",
+            "sha256": "6a96871cf3dcd5e57eaffd107077629446e178ec272f55ba4e1341610d286bd4"
+          },
+          {
+            "path": "package/cli/wg-quicker-exempt/src/application_watch.rs",
+            "sha256": "beae6e706068e0f46ad1ea4258e0c08751709c4a12c5ca9cd5f2f7c3e9785f07"
+          },
+          {
+            "path": "package/cli/wg-quicker-exempt/src/application_watch_service.rs",
+            "sha256": "5a27ae2f98367709713274f86c9d124f163a834ccae0489a990db5e9cfe38812"
+          },
+          {
+            "path": "package/cli/wg-quicker-exempt/src/application_watch_state.rs",
+            "sha256": "60bef688c7fbd9e3cc7ff7ad75c12f7df15c5c0044c821ae0b6fc866f7ce945a"
+          },
+          {
+            "path": "package/cli/wg-quicker-exempt/src/bpf.rs",
+            "sha256": "bc5e350a897c50a87836c1ceb6f01efb46223d3d5c56fdd4889b9938e1dc33a2"
+          },
+          {
+            "path": "package/cli/wg-quicker-exempt/src/bpf_error.rs",
+            "sha256": "2096b2ca398e7deeaadbe76f4ddca368e773d6cbce7d0ba5a170846b5c41260c"
+          },
+          {
+            "path": "package/cli/wg-quicker-exempt/src/bpf_tests.rs",
+            "sha256": "9b8cc0e14d67539da0740f94627d1e874f1055e504516a0a1e8ae3c779edb42b"
+          },
+          {
+            "path": "package/cli/wg-quicker-exempt/src/bpf_uapi.rs",
+            "sha256": "73e44b3b48aadb827299af522a263df6394f7305f94108c024bd7562cffcac64"
+          },
+          {
+            "path": "package/cli/wg-quicker-exempt/src/keeper.rs",
+            "sha256": "9c6909330e5012b77064795e4fc12c6b180b467ce3f20fe3b8b60f5bb9b26c18"
+          },
+          {
+            "path": "package/cli/wg-quicker-exempt/src/keeper_process.rs",
+            "sha256": "2b39b52e6edbdb122bd3ecb8b89869ce9e79ea4e0042940c8705beccb7fa5575"
+          },
+          {
+            "path": "package/cli/wg-quicker-exempt/src/keeper_state.rs",
+            "sha256": "6d7267c2efd58cc6e0553d33fc9fe716476417f7a139ff65e00c580c9687c6ed"
+          },
+          {
+            "path": "package/cli/wg-quicker-exempt/src/main.rs",
+            "sha256": "788d935416cb47717e2de368a7829e6c30f028149bd5e3ff74920cbbc5cdc76c"
+          },
+          {
+            "path": "package/cli/wg-quicker-exempt/src/pin.rs",
+            "sha256": "2a409a05c3f561cc9133bf6e0d63a01f0baa3b2558ebe88e72b93b72e37cdcff"
+          },
+          {
+            "path": "package/cli/wg-quicker-exempt/src/pin_tests.rs",
+            "sha256": "069ec014607b708123481b13a6f30832c6dd8ef70de41a10db24a925c42b41eb"
+          }
+        ],
+        "sourceUnitTestStatus": 0,
+        "releaseBuildStatus": 0,
+        "usageStatus": 2,
+        "invalidMarkStatus": 2,
+        "rustcSha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71",
+        "miseLockSha256": "80b1dda5ef694b0d19f9dd5a9d755057702833b82d56433250033b5e02a9ecc4",
+        "privilegedIgnoredCasesExecuted": false,
+        "consumerPlacement": "Copy exact verified ELF to package/cli/wg-quicker-exempt/target/release/wg-quicker-exempt in an owned exact-source consumer checkout."
+      }
+    }
+  ],
+  "receipts": {
+    "path": "doc/audit/depot-rust-coverage-2026-10-18.receipts.json.gz",
+    "compressedBytes": 88936,
+    "compressedSha256": "d99bc51f9e5220240aa62e673d53f596772956e458a46d6ade4947e03e41431a",
+    "rawBytes": 482127,
+    "rawSha256": "dc24e815e150ac748e6f055adcd92f465c60f7f4971877aa674fae402abf3d65"
+  }
 }

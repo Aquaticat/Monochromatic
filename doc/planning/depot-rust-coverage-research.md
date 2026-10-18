@@ -118,6 +118,91 @@ That artifact is the missing producer for the routing investigation's
 `finds repository sibling release outside secure path` consumer.
 Release-file presence by itself is not counted as that consumer passing.
 
+## Completed consumers and retained failures
+
+The [evidence ledger](../audit/depot-rust-coverage-2026-10-18.evidence.json)
+binds provider run metadata,
+command logs,
+source hashes,
+JUnit and artifact member hashes.
+Both downloaded artifact ZIPs match the provider-reported upload SHA-256 and pass CRC validation.
+The [compressed receipts](../audit/depot-rust-coverage-2026-10-18.receipts.json.gz)
+retain full command logs and JUnit rather than converting the owning task into a fictional inner test.
+
+Run `j50kf2jlqx` compiled the current linter and passed 415 Nextest cases,
+with zero failures,
+one skipped case and 416 enumerated cases.
+The produced CLI passed actual help and rule-list assertions.
+Its SHA-256 is `e698c16275e71a142cd95538c59c0543ab94a6ce3a382727c889e0dbe58da88d`.
+The job remains failed because the separate existing library consumer's direct Rust invocation reported:
+
+```text
+// existing-processor-consumer-build.log
+error: only metadata stub found for `rlib` dependency `monochromatic_lint`
+please provide path to the corresponding .rmeta file with full metadata
+```
+
+The application tests passed;
+the standalone consumer did not run.
+The source was unchanged before and after execution.
+Rust `1.101.0-nightly`,
+commit `5d8fec0669a64607db9ccbf663e7c23125bf4748`,
+contains an explicit compiler control passing both the link archive and its matching full metadata.
+The next harness-only recovery will test that exact calling convention.
+The first run retains an executable hash,
+not a downloadable executable handoff.
+
+Run `lwp0vbb2vq` completed successfully from harness `3a7e85d395cb67a5d189224963782c9b45527c71`:
+
+- `wg-quicker-exempt`: 15 cases run and passed,
+  zero failed,
+  11 skipped and 26 enumerated.
+- `jsonc-edit`: 81 cases run and passed,
+  zero failed or skipped and 81 enumerated.
+- `forbidden-regex`: 235 cases run and passed,
+  zero failed,
+  one skipped and 236 enumerated.
+- `codex-plugin/bash-limit`: five cases run and passed,
+  zero failed,
+  one skipped and six enumerated.
+
+The native release producer also passed its usage and zero-mark controls.
+Artifact `01a14e69-58c8-7104-88fd-fea5620fbe2f` retains the 473,368-byte executable,
+SHA-256 `02053fc5338835abb4d6a7812a3b71244a2190512724040219cdd68595dee921`,
+with its source and tool manifest.
+The routing consumer has received this concrete handoff;
+its result belongs to that separate investigation.
+
+The completed requested-to-provider-finish proxies add USD 0.0536 and USD 0.0314 respectively.
+The cumulative owned compute proxy is USD 1.492,
+leaving USD 3.508 beneath the research guard.
+This calculation rounds each observed interval upward to whole seconds and includes startup,
+checkout and artifact upload;
+it is not an invoice or measured CPU utilization.
+
+## Next admitted preparation and recovery
+
+The next profile reserves another USD 0.36 at 8 CPU,
+32 GB and 15 minutes,
+bringing the conservative forecast to USD 1.852.
+It will verify lock-bound `cargo-fuzz 0.13.2`,
+prepare the official `codex-cli 0.163.0` release for the separate deterministic host fixture,
+repeat the real source-linter tests and existing library consumer with full metadata,
+and retain the actual tested CLI bytes.
+It will then seal a distinct native tool snapshot,
+excluding the source checkout and synthetic secret fixture before capture.
+The image is preparation evidence,
+not an ordinary OCI container image or proof of general credential exclusion.
+
+The Codex release's GitHub tag is not immutable.
+The official compressed asset and signature bundle are therefore bound by their fetched SHA-256 values;
+source and signature provenance remain explicit gates before any host-fixture execution.
+Version and help inspection do not constitute a model turn.
+The installed-host case must use its owned home,
+local deterministic response provider and recursion guard.
+Actual ASan/GNU fuzz targets,
+existing planted controls and seed immutability remain in the owned queue.
+
 ## Owned work queue
 
 - Classify every standalone manifest,
