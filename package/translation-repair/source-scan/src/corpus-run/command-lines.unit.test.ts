@@ -18,7 +18,10 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { isAsciiLowerLetter, } from '@monochromatic-dev/translation-repair-markup';
-import { COMMAND_LINES, } from '@monochromatic-dev/translation-repair-run';
+import {
+  COMMAND_LINES,
+  COMMAND_OWNERS,
+} from '@monochromatic-dev/translation-repair-run';
 import {
   readLivingRepositoryDocs,
   readPackageDocPaths,
@@ -414,6 +417,13 @@ await describe({
       name: 'DECLARES every runner the build makes and nothing else, so no runner reads a line undeclared',
       fn: async () => {
         expect(Object.keys(COMMAND_LINES,).toSorted(),).toEqual([...RUNNER_OWNERS.keys(),].toSorted(),);
+      },
+    },),
+    it({
+      name: 'OWNS each runner in the package whose build entries list it, so the task a refusal names is the task '
+        + 'that starts the runner',
+      fn: async () => {
+        expect(Object.entries(COMMAND_OWNERS,).toSorted(),).toEqual([...RUNNER_OWNERS,].toSorted(),);
       },
     },),
     it({

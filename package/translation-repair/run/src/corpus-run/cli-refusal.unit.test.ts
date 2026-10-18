@@ -765,7 +765,7 @@ await describe({
           'score-verify: will not run in a process that holds provider keys '
             + '(1 variable whose name ends in _API_KEY has a value) unless that process names this command as the '
             + 'one it means to start. '
-            + 'The command\'s task does that: mise run //package/module/translation-repair:score-verify '
+            + 'The command\'s task does that: mise run //package/translation-repair/probe:score-verify '
             + '(the task builds the package first). '
             + 'To start the built file without building, as when a pass is running and nothing may rebuild, '
             + 'set TRANSLATION_REPAIR_STARTED_BY=score-verify for that one start. '

@@ -31,7 +31,7 @@ import {
 const ONE_KEY_REFUSAL = 'will not run in a process that holds provider keys '
   + '(1 variable whose name ends in _API_KEY has a value) unless that process names this command as the one it '
   + 'means to start. '
-  + 'The command\'s task does that: mise run //package/module/translation-repair:spend-report '
+  + 'The command\'s task does that: mise run //package/translation-repair/run:spend-report '
   + '(the task builds the package first). '
   + 'To start the built file without building, as when a pass is running and nothing may rebuild, '
   + 'set TRANSLATION_REPAIR_STARTED_BY=spend-report for that one start. '
@@ -59,7 +59,7 @@ await describe({
               {},
               { PLAIN_VARIABLE: 'nap', PATH: '/bin', },
               { TRANSLATION_REPAIR_STARTED_BY: 'purr-report', },
-            ].map((env,) => taskRunnerVerdict({ env, command: 'spend-report', },)),).toEqual([
+            ].map((env,) => taskRunnerVerdict({ env, command: 'spend-report', owner: 'run', },)),).toEqual([
               { allowed: true, },
               { allowed: true, },
               { allowed: true, },
@@ -74,6 +74,7 @@ await describe({
             expect(taskRunnerVerdict({
               env: { WHISKER_API_KEY: 'purr', TRANSLATION_REPAIR_STARTED_BY: 'spend-report', },
               command: 'spend-report',
+              owner: 'run',
             },),).toEqual({ allowed: true, },);
           },
         },),
@@ -85,7 +86,26 @@ await describe({
             expect(taskRunnerVerdict({
               env: { WHISKER_API_KEY: 'purr', },
               command: 'spend-report',
+              owner: 'run',
             },),).toEqual({ allowed: false, says: ONE_KEY_REFUSAL, },);
+          },
+        },),
+
+        it({
+          name: 'NAMES THE TASK OF THE OWNER IT IS GIVEN, so a command another package owns is started by that '
+            + 'package\'s task and not by a fixed one',
+          fn: async () => {
+            expect(taskRunnerVerdict({
+              env: { WHISKER_API_KEY: 'purr', },
+              command: 'spend-report',
+              owner: 'tabby',
+            },),).toEqual({
+              allowed: false,
+              says: ONE_KEY_REFUSAL.replace(
+                '//package/translation-repair/run:spend-report',
+                '//package/translation-repair/tabby:spend-report',
+              ),
+            },);
           },
         },),
 
@@ -100,12 +120,13 @@ await describe({
                 PLAIN_VARIABLE: 'nap',
               },
               command: 'cap-census',
+              owner: 'run',
             },),).toEqual({
               allowed: false,
               says: 'will not run in a process that holds provider keys '
                 + '(3 variables whose name ends in _API_KEY have a value) unless that process names this command as '
                 + 'the one it means to start. '
-                + 'The command\'s task does that: mise run //package/module/translation-repair:cap-census '
+                + 'The command\'s task does that: mise run //package/translation-repair/run:cap-census '
                 + '(the task builds the package first). '
                 + 'To start the built file without building, as when a pass is running and nothing may rebuild, '
                 + 'set TRANSLATION_REPAIR_STARTED_BY=cap-census for that one start. '
@@ -120,6 +141,7 @@ await describe({
             expect(taskRunnerVerdict({
               env: { WHISKER_API_KEY: 'purr', TRANSLATION_REPAIR_STARTED_BY: 'purr-report', },
               command: 'spend-report',
+              owner: 'run',
             },),).toEqual({
               allowed: false,
               says: `${ONE_KEY_REFUSAL} ${STARTED_BY_VARIABLE} is set in this process to purr-report, `
@@ -134,6 +156,7 @@ await describe({
             expect(taskRunnerVerdict({
               env: { WHISKER_API_KEY: 'purr', TRANSLATION_REPAIR_STARTED_BY: 'Purr Report; rm *', },
               command: 'spend-report',
+              owner: 'run',
             },),).toEqual({
               allowed: false,
               says: UNREPEATED_MARKER_REFUSAL,
@@ -156,6 +179,7 @@ await describe({
             ].map((marker,) => taskRunnerVerdict({
               env: { WHISKER_API_KEY: 'purr', TRANSLATION_REPAIR_STARTED_BY: marker, },
               command: 'spend-report',
+              owner: 'run',
             },)),).toEqual([
               {
                 allowed: false,
@@ -174,6 +198,7 @@ await describe({
             expect(taskRunnerVerdict({
               env: { WHISKER_API_KEY: 'purr', TRANSLATION_REPAIR_STARTED_BY: '', },
               command: 'spend-report',
+              owner: 'run',
             },),).toEqual({ allowed: false, says: ONE_KEY_REFUSAL, },);
           },
         },),
@@ -184,6 +209,7 @@ await describe({
             expect(taskRunnerVerdict({
               env: { WHISKER_API_KEY: '', CLAW_API_KEY: undefined, PAW_API_KEY: ' \t', },
               command: 'spend-report',
+              owner: 'run',
             },),).toEqual({ allowed: true, },);
           },
         },),
@@ -194,6 +220,7 @@ await describe({
             expect(taskRunnerVerdict({
               env: { WHISKER_API_KEY: '', CLAW_API_KEY: 'hiss', PAW_API_KEY: undefined, },
               command: 'spend-report',
+              owner: 'run',
             },),).toEqual({ allowed: false, says: ONE_KEY_REFUSAL, },);
           },
         },),
@@ -209,6 +236,7 @@ await describe({
                 whisker_api_key: 'hiss',
               },
               command: 'spend-report',
+              owner: 'run',
             },),).toEqual({ allowed: true, },);
           },
         },),

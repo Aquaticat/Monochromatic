@@ -67,6 +67,11 @@ type GuardedCommand = {
   readonly command: string;
 
   /**
+   Directory name, under the family, of the package that owns the command and so its task.
+   */
+  readonly owner: string;
+
+  /**
    URL of the built index of the package that owns the command, which the command's built file sits beside.
    */
   readonly packageEntry: string;
@@ -92,6 +97,7 @@ type GuardedCommand = {
 const COMMANDS: readonly GuardedCommand[] = [
   {
     command: 'probe-sensitivity',
+    owner: 'probe',
     packageEntry: PROBE_ENTRY,
     prepare: async function noArguments(): Promise<readonly string[]> {
       return [];
@@ -104,6 +110,7 @@ const COMMANDS: readonly GuardedCommand[] = [
   },
   {
     command: 'spend-report',
+    owner: 'run',
     packageEntry: RUN_ENTRY,
     prepare: async function oneLog(directory: string,): Promise<readonly string[]> {
       /**
@@ -133,6 +140,7 @@ const COMMANDS: readonly GuardedCommand[] = [
   },
   {
     command: 'cap-census',
+    owner: 'run',
     packageEntry: RUN_ENTRY,
     prepare: async function emptyDirectory(directory: string,): Promise<readonly string[]> {
       /**
@@ -165,18 +173,28 @@ const COMMANDS: readonly GuardedCommand[] = [
 
  @param command - the command the child ran
 
+ @param owner - directory name of the package that owns the command, which names its task
+
  @returns The line `reportingRefusals` prints, with its newline
 
  @example
  ```ts
- expect(run.stderr,).toBe(guardRefusal({ command: 'spend-report', },),);
+ expect(run.stderr,).toBe(guardRefusal({ command: 'spend-report', owner: 'run', },),);
  ```
  */
-function guardRefusal({ command, }: { readonly command: string; },): string {
+function guardRefusal(
+  {
+    command,
+    owner,
+  }: {
+    readonly command: string;
+    readonly owner: string;
+  },
+): string {
   return `${command}: will not run in a process that holds provider keys `
     + '(1 variable whose name ends in _API_KEY has a value) unless that process names this command as the one it '
     + 'means to start. '
-    + `The command's task does that: mise run //package/module/translation-repair:${command} `
+    + `The command's task does that: mise run //package/translation-repair/${owner}:${command} `
     + '(the task builds the package first). '
     + 'To start the built file without building, as when a pass is running and nothing may rebuild, '
     + `set TRANSLATION_REPAIR_STARTED_BY=${command} for that one start. `
@@ -242,7 +260,7 @@ await describe({
               expect(await runGuarded({ guarded, holdsKey: true, startedBy: 'nothing', },),).toEqual({
                 code: REFUSED_AS_STATED,
                 stdout: '',
-                stderr: guardRefusal({ command: guarded.command, },),
+                stderr: guardRefusal({ command: guarded.command, owner: guarded.owner, },),
               },);
             },
           },),
