@@ -80,7 +80,7 @@ jobs:
     - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       if: always()
       with:
-        name: research-native-semantics-state
+        name: research-native-semantics-state-${{ steps.receipt.outputs.receipt_sha256 }}
         path: .depot/research/native-semantics/evidence/
         retention-days: 7
         if-no-files-found: error
@@ -136,7 +136,7 @@ jobs:
     - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       if: always()
       with:
-        name: research-native-semantics-default
+        name: research-native-semantics-default-${{ steps.receipt.outputs.receipt_sha256 }}
         path: .depot/research/native-semantics/evidence/
         retention-days: 7
         if-no-files-found: error
@@ -171,7 +171,7 @@ jobs:
     - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
       if: always()
       with:
-        name: research-native-semantics-allrun
+        name: research-native-semantics-allrun-${{ steps.receipt.outputs.receipt_sha256 }}
         path: .depot/research/native-semantics/evidence/
         retention-days: 7
         if-no-files-found: error
@@ -193,8 +193,15 @@ jobs:
     - run: mise install node
     - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
       with:
-        pattern: research-native-semantics-*
-        merge-multiple: true
+        name: research-native-semantics-state-${{ needs.state.outputs.receipt_sha256 }}
+        path: .depot/research/native-semantics/received/
+    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        name: research-native-semantics-default-${{ needs.parallel_default.outputs.receipt_sha256 }}
+        path: .depot/research/native-semantics/received/
+    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        name: research-native-semantics-allrun-${{ needs.parallel_allrun.outputs.receipt_sha256 }}
         path: .depot/research/native-semantics/received/
     - run: mise run //.depot/research/native-semantics:artifact-consumer
       env:
