@@ -40,6 +40,15 @@ const ALIAS_INPUT_SOURCE = "import { area, } from '../shared/helper.js';\nexport
 /** Active source in each project importing the alias-callee helper. */
 const ALIAS_CALLEE_INPUT_SOURCE = "import { relay, } from '../shared/helper.js';\nexport function forward(value: { text: string; },): string { return relay(value); }\n";
 
+/** Helper source whose only dependency does not resolve to any file. */
+const UNRESOLVED_HELPER_SOURCE = "import { missing, } from './missing.js';\nexport function inspect(value: { text: string; },): string { return missing(value); }\n";
+
+/** Helper source that is a global script rather than a module. */
+const SCRIPT_HELPER_SOURCE = 'function globalInspect(value: { text: string; },): string { return value.text; }\n';
+
+/** Active source that reaches the global script helper without importing it. */
+const SCRIPT_INPUT_SOURCE = 'export function globalCaller(value: { text: string; },): string { return globalInspect(value); }\n';
+
 /** Observing dependency body written under two names so projects can resolve the alias to either. */
 const DEPENDENCY_SOURCE = 'export function dependency(value: { text: string; },): string { return value.text; }\n';
 
@@ -395,6 +404,93 @@ await describe({
             compilerOptions: STRICT_COMPILER_OPTIONS,
             inputSource: INPUT_SOURCE,
             files: { 'ambient.d.ts': 'declare const sharedAnalysisAmbient: number;\n', },
+          },
+        },);
+        expect(stats.sharedSourceCacheHitCount,).toBe(0,);
+        expect(stats.directSummaryBuildCount,).toBe(2,);
+        releaseCycle();
+      },
+    },),
+    it({
+      name: 'does not share a file whose module reference does not resolve',
+      fn: async () => {
+        using root = disposableFixtureRoot();
+        writeSharedDirectory({
+          root: root.path,
+          files: { 'helper.ts': UNRESOLVED_HELPER_SOURCE, },
+        },);
+        /** Counters of the second project, whose helper cannot prove its closure complete. */
+        const stats = buildBothProjects({
+          root: root.path,
+          first: {
+            name: 'first',
+            compilerOptions: STRICT_COMPILER_OPTIONS,
+            inputSource: INPUT_SOURCE,
+            files: {},
+          },
+          second: {
+            name: 'second',
+            compilerOptions: STRICT_COMPILER_OPTIONS,
+            inputSource: INPUT_SOURCE,
+            files: {},
+          },
+        },);
+        expect(stats.sharedSourceCacheHitCount,).toBe(0,);
+        expect(stats.directSummaryBuildCount,).toBe(2,);
+        releaseCycle();
+      },
+    },),
+    it({
+      name: 'does not share a file that is a global script',
+      fn: async () => {
+        using root = disposableFixtureRoot();
+        writeSharedDirectory({
+          root: root.path,
+          files: { 'helper.ts': SCRIPT_HELPER_SOURCE, },
+        },);
+        /** Counters of the second project, whose helper applies to every file without an import. */
+        const stats = buildBothProjects({
+          root: root.path,
+          first: {
+            name: 'first',
+            compilerOptions: STRICT_COMPILER_OPTIONS,
+            inputSource: SCRIPT_INPUT_SOURCE,
+            files: {},
+          },
+          second: {
+            name: 'second',
+            compilerOptions: STRICT_COMPILER_OPTIONS,
+            inputSource: SCRIPT_INPUT_SOURCE,
+            files: {},
+          },
+        },);
+        expect(stats.sharedSourceCacheHitCount,).toBe(0,);
+        expect(stats.directSummaryBuildCount,).toBe(2,);
+        releaseCycle();
+      },
+    },),
+    it({
+      name: 'does not share a file when a compiler option has not been classified',
+      fn: async () => {
+        using root = disposableFixtureRoot();
+        writeSharedDirectory({
+          root: root.path,
+          files: { 'helper.ts': HELPER_SOURCE, },
+        },);
+        /** Counters of the second project, whose configuration sets an option on neither list. */
+        const stats = buildBothProjects({
+          root: root.path,
+          first: {
+            name: 'first',
+            compilerOptions: `${STRICT_COMPILER_OPTIONS},"generateTrace":"first-trace"`,
+            inputSource: INPUT_SOURCE,
+            files: {},
+          },
+          second: {
+            name: 'second',
+            compilerOptions: `${STRICT_COMPILER_OPTIONS},"generateTrace":"first-trace"`,
+            inputSource: INPUT_SOURCE,
+            files: {},
           },
         },);
         expect(stats.sharedSourceCacheHitCount,).toBe(0,);
