@@ -120,6 +120,7 @@ mkdirSync(join(homedir(), '.config/depot'), { recursive: true });
 writeFileSync(sensitiveFixture, 'synthetic-secret-file-20261018-r1\n', { mode: 0o600 });
 run({ name: 'prepared-store-bytes', command: 'du', args: ['--summarize', '--bytes', join(prefix, 'mise-data'), join(prefix, 'mise-cache'), join(prefix, 'rustup'), join(prefix, 'cargo'), join(prefix, 'gradle'), join(prefix, 'pnpm-store'), join(prefix, 'installed-dependencies.tar.zst')] });
 writeFileSync(join(prefix, 'image-manifest.json'), JSON.stringify({ recordedAt: new Date().toISOString(), baseSourceSha: 'e02be6c8b8fe9efb41a7f8f1a0b311c17796588a', sourceSha: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(), identities, tools, dependencyDirectories, dependencyArchive: { bytes: statSync(join(prefix, 'installed-dependencies.tar.zst')).size, sha256: sha(readFileSync(join(prefix, 'installed-dependencies.tar.zst'))) }, syntheticFixtures: { sourcePath: syntheticPath, secretPath: sensitiveFixture }, preparationRecords: records }, null, 2) + '\n');
+writeFileSync(join(evidence, 'image-manifest.json'), readFileSync(join(prefix, 'image-manifest.json')));
 '''
 
 [tasks."research:reuse:seal"]
