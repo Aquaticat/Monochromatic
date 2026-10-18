@@ -1,4 +1,3 @@
-import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import {
   introducedFootnoteFindings,
   introducedStructuralRegressions,
@@ -7,7 +6,10 @@ import {
   type SliceReplacement,
   spliceSlices,
 } from '@monochromatic-dev/translation-repair-page-pass/ts';
-import { strictRefusalOffset, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
+import {
+  type ChunkPair,
+  strictRefusalOffset,
+} from '@monochromatic-dev/translation-repair-slice-reading/ts';
 
 //region Structural withdrawal proof
 // Before blanket withdrawal, test whether reverting one replacement repairs the

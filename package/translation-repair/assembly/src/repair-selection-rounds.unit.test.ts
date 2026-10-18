@@ -16,7 +16,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { type RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 import { producerStandings, } from '@monochromatic-dev/translation-repair-adjudication';
 import {
   EDITOR_ROUND_STAGES,

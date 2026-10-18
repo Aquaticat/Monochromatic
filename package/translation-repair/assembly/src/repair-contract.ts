@@ -4,6 +4,7 @@ import type {
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   FULL_VOTE_WEIGHT,
+  type IssueAuthorship,
   MIN_SELECTION_WEIGHT,
   SELF_VOTE_WEIGHT,
 } from '@monochromatic-dev/translation-repair-house-rule/ts';
@@ -14,7 +15,6 @@ import type {
   RepairRegion,
 } from '@monochromatic-dev/translation-repair-adjudication/ts';
 import type { RepairJudgedRound, } from './repair-round-record.ts';
-import type { IssueAuthorship, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 
 //region Repair contract
 // Role roster and chunk outcome types shared by the chunk runner, the

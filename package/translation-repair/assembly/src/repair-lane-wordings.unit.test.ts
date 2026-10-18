@@ -25,7 +25,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { type ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
 import { makeInsertionChunk, } from '@monochromatic-dev/translation-repair-shared-contract';
 import { LaneSliceCoverageError, } from '@monochromatic-dev/translation-repair-translate-floor';
 import {

@@ -4,12 +4,12 @@ import {
   type RepairDisposition,
   SHIPPED_DISPOSITION,
 } from './repair-record.ts';
-import type {
-  GradableRepair,
-  GradableRepairRegion,
-  GradingCandidate,
+import {
+  flattenSpace,
+  type GradableRepair,
+  type GradableRepairRegion,
+  type GradingCandidate,
 } from '@monochromatic-dev/translation-repair-house-rule/ts';
-import { flattenSpace, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 
 //region Repair grading sheet
 // The SECOND sheet: whether the text the pipeline wrote actually fixes the

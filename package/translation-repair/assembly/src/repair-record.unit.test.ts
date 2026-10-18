@@ -12,8 +12,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type RepairRegion, } from '@monochromatic-dev/translation-repair-adjudication';
-import { type AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract';
+import type { RepairRegion, } from '@monochromatic-dev/translation-repair-adjudication';
+import type { AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   buildIssueRecords,
   type ChunkRepairOutcome,

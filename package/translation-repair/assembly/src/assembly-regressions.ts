@@ -1,9 +1,10 @@
-import type { FootnoteGraphFinding, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import {
   parseDocument,
   type ParseFinding,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
+  type FootnoteGraphFinding,
+  type MarkdownParseError,
   requireMarkdownRefusal,
   withMarkdownExhaustionRefused,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';
@@ -184,7 +185,7 @@ function countParseFindings(
  A page the plain grammar refuses, nested past the bound, is the one kind
  {@link UNREADABLE_PAGE} alone, since it has no findings to count
 
- @throws {@link import('@monochromatic-dev/translation-repair-document-structure/ts').MarkdownParseError} when the
+ @throws {@link MarkdownParseError} when the
  incumbent is read by no grammar, which is the archive's own text and was read
  when the entry was prepared
 

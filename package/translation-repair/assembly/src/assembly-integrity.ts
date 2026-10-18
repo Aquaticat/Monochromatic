@@ -10,10 +10,10 @@ import {
   trimOrphanDefinitions,
 } from './assembly-orphan-trim.ts';
 import {
+  type FootnoteGraphFinding,
   footnoteIdentifiers,
   footnoteMentions,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import type { FootnoteGraphFinding, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import {
   introducedFootnoteFindings,
   introducedStructuralRegressions,

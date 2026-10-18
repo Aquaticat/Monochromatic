@@ -1,5 +1,7 @@
-import { scanGfmReferenceLiterals, } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import type { FootnoteGraphFinding, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import {
+  type FootnoteGraphFinding,
+  scanGfmReferenceLiterals,
+} from '@monochromatic-dev/translation-repair-document-structure/ts';
 import type { SliceReplacement, } from '@monochromatic-dev/translation-repair-page-pass/ts';
 
 //region Orphan definition trim

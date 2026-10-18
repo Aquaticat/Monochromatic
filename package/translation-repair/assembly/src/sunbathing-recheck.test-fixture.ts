@@ -1,10 +1,10 @@
-import { type ResolutionVerdict, } from '@monochromatic-dev/translation-repair-adjudication';
+import type { ResolutionVerdict, } from '@monochromatic-dev/translation-repair-adjudication';
 import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
-import {
-  type AdjudicatedIssue,
-  type RosterModelId,
+import type {
+  AdjudicatedIssue,
+  RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract';
-import { type ChunkRepairOutcome, } from '../dist/final/node/index.mjs';
+import type { ChunkRepairOutcome, } from '../dist/final/node/index.mjs';
 import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,

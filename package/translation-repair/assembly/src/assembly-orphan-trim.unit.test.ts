@@ -14,7 +14,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { type FootnoteGraphFinding, } from '@monochromatic-dev/translation-repair-document-structure';
+import type { FootnoteGraphFinding, } from '@monochromatic-dev/translation-repair-document-structure';
 import {
   cutDefinitionBlocks,
   definitionBlockCount,

@@ -21,7 +21,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { UNATTRIBUTED_TEXT, } from '@monochromatic-dev/translation-repair-house-rule';
-import { type ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
 import {
   assembleRepair,
   type ChunkRepairOutcome,

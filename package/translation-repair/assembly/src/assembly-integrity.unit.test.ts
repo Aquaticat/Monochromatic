@@ -20,7 +20,7 @@ import {
 import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adjudication';
 import { makeInsertionChunk, } from '@monochromatic-dev/translation-repair-shared-contract';
 import { footnoteIdentifiers, } from '@monochromatic-dev/translation-repair-document-structure';
-import { type ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
+import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading';
 import {
   AssemblyContractError,
   guardFootnoteAssembly,
