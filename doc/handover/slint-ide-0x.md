@@ -796,9 +796,13 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     (`/etc/opensnitchd/rules/`); it destroys the socket (`ECONNABORTED`). It is not a 1.101 bug: the same
     binary at an allowed path connects, and `nightly-2026-10-11` and `-10-12` (1.101) connect. An unanswered
     OpenSnitch pop-up (30 s timeout, default action reject, duration forever) mints such a rule for every new
-    toolchain path. Fix needs the user: delete the three rules and add one regexp allow rule (draft in
-    `doc/troubleshooting/cargo-nightly-1-101-cannot-reach-crates-io.md`). Until then fetch with
-    `cargo +nightly fetch --locked` or `cargo +stable fetch --locked` and run the pinned nightly offline.
+    toolchain path. Fixed on 2026-10-18 at the owner's request: the rule `000-allow-cargo.json` (regexp on the
+    `cargo` of any rustup toolchain under the home directory or an agent scratch rustup home, with `precedence`) was
+    added, a fetch on `nightly-2026-10-18` then worked, and the six toolchain `cargo` reject rules were moved to
+    `/etc/opensnitchd/rules.removed-2026-10-18/`
+    (`doc/troubleshooting/cargo-nightly-1-101-cannot-reach-crates-io.md`). The pop-up default (reject, forever, 30 s)
+    is unchanged, so a path outside every rule still gets a permanent reject; `lint:closures` still fetches with the
+    stable cargo and builds offline, which stays valid.
     Stage 2b landed after review (branch `feat/ide-closure-lint`; see the bullet "Dylint gate over the IDE").
     The user also asked to look at their oxlint setup; findings: shared config
     `package/config/oxlint/src/config-base.ts` sets `reportUnusedDisableDirectives: 'warn'` with
