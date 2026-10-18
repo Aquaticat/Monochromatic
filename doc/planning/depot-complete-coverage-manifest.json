@@ -43725,7 +43725,7 @@
       "fullEvidence": "depot-complete-coverage-packages.json.gz"
     }
   ],
-  "latestEvidenceAt": "2026-10-18T12:19:31.019Z",
+  "latestEvidenceAt": "2026-10-18T21:19:36.014Z",
   "packedConsumerQualification": {
     "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
     "producerRun": 39130630504,
@@ -43771,7 +43771,8 @@
     "generatorSites": 1045,
     "customDesktopRecorderDeclarations": 106,
     "runtimeCoverageNotInferred": true,
-    "packageSemanticJoin": "draft complete; cross-lane and failure-boundary enrichment pending"
+    "packageSemanticJoin": "Frozen script/README paths revalidated; assertion/generator totals and new terminal owner joins sealed; per-product semantic assertion contracts remain unvalidated",
+    "runtimeJoinEvidence": "doc/audit/depot-source-contract-runtime-join-2026-10-18.evidence.json"
   },
   "nonPackageSourceEntries": [
     {
@@ -43955,7 +43956,7 @@
   "materialOwnerCompletionCampaign": {
     "admission": "doc/audit/depot-material-owner-executable-admission-2026-10-18.evidence.json",
     "harnessSha": "e270285361b526793ff1db3af9f8224630c28e70",
-    "state": "parent-admitted execution queued",
+    "state": "all primary jobs terminal; exact artifact/case joins sealed; design libatomic correction passes",
     "profiles": [
       {
         "id": "ide-full",
@@ -43971,7 +43972,8 @@
           "campaignMinutes": 27,
           "nominalReservationUsd": 0.36
         },
-        "state": "queued"
+        "state": "terminal actual case identities sealed",
+        "run": 39156168838
       },
       {
         "id": "ide-reader-lifecycle",
@@ -43987,7 +43989,8 @@
           "campaignMinutes": 27,
           "nominalReservationUsd": 0.36
         },
-        "state": "queued"
+        "state": "terminal actual case identities sealed",
+        "run": 39157065281
       },
       {
         "id": "terminal-release",
@@ -44003,7 +44006,8 @@
           "campaignMinutes": 27,
           "nominalReservationUsd": 0.36
         },
-        "state": "queued"
+        "state": "terminal actual case identities sealed",
+        "run": 39156454419
       },
       {
         "id": "file-manager-gtk-release",
@@ -44019,7 +44023,8 @@
           "campaignMinutes": 27,
           "nominalComputeReservationUsd": 0
         },
-        "state": "queued"
+        "state": "terminal actual case identities sealed",
+        "run": 39156185253
       },
       {
         "id": "file-manager-sticky-release",
@@ -44035,7 +44040,8 @@
           "campaignMinutes": 27,
           "nominalComputeReservationUsd": 0
         },
-        "state": "queued"
+        "state": "terminal actual case identities sealed",
+        "run": 39156802925
       },
       {
         "id": "file-manager-qt-release",
@@ -44051,7 +44057,8 @@
           "campaignMinutes": 27,
           "nominalComputeReservationUsd": 0
         },
-        "state": "queued"
+        "state": "terminal actual case identities sealed",
+        "run": 39157239349
       },
       {
         "id": "design-authored-node-imagemagick",
@@ -44067,7 +44074,7 @@
           "campaignMinutes": 27,
           "nominalComputeReservationUsd": 0
         },
-        "state": "queued"
+        "state": "primary prerequisite failed; admitted correction thirteen programs passed"
       }
     ],
     "executionCheckpointAt": "2026-10-18T19:03:48.931Z",
@@ -44098,7 +44105,38 @@
         "state": "in_progress"
       }
     ],
-    "runtimeCasesRequireArtifactJoin": true
+    "runtimeCasesRequireArtifactJoin": false,
+    "historicalDispatchCheckpoint": {
+      "executionCheckpointAt": "2026-10-18T19:03:48.931Z",
+      "runIdentities": [
+        {
+          "profile": "ide-full",
+          "run": 39156168838,
+          "state": "in_progress",
+          "conclusion": null
+        },
+        {
+          "profile": "file-manager-gtk-release",
+          "run": 39156185253,
+          "state": "completed",
+          "conclusion": "success"
+        },
+        {
+          "profile": "terminal-release",
+          "run": 39156454419,
+          "state": "completed",
+          "conclusion": "success"
+        },
+        {
+          "profile": "file-manager-sticky-release",
+          "run": 39156802925,
+          "state": "in_progress"
+        }
+      ],
+      "state": "parent-admitted execution queued"
+    },
+    "terminalEvidence": "doc/audit/depot-material-owner-primary-2026-10-18.evidence.json",
+    "correctionEvidence": "doc/audit/depot-gnu-design-terminal-2026-10-18.evidence.json"
   },
   "gnuOwningRuntimeContinuation": {
     "publicRun": 39152147229,
@@ -44108,7 +44146,8 @@
     "failed": 2,
     "summaryOnlySkipped": 1,
     "sourceEvidence": "doc/audit/depot-current-host-gnu-owner-2026-10-18.evidence.json.gz",
-    "matchedDepotProposalState": "queued exact-source proposal; no allocation"
+    "matchedDepotProposalState": "terminal, same 1494 executed identities; 1493 passed and one retained source failure",
+    "matchedDepotEvidence": "doc/audit/depot-gnu-design-terminal-2026-10-18.evidence.json"
   },
   "matchedDepotGnuControlProposal": {
     "path": "doc/audit/depot-matched-windows-gnu-control-proposal-2026-10-18.evidence.json",
