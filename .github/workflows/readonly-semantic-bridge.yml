@@ -1,78 +1,110 @@
-name: readonly semantic bridge host evidence
-
-on:
-  pull_request:
-    branches: ['main']
-    paths:
-    - 'package/config/oxlint/**'
-    - 'package/ownership-markers/foreign-borrowed/**'
-    - 'package/oxlint-plugin/no-restricted-syntax/**'
-    - 'package/oxlint-plugin/prefer-readonly-parameter-type/**'
-    - 'package/oxlint-plugin/shared/**'
-    - 'package/test-fixture/oxlint-no-restricted-syntax/**'
-    - 'pnpm-lock.yaml'
-    - '.github/workflows/readonly-semantic-bridge.yml'
-  merge_group:
-    branches: ['main']
-  push:
-    branches: ['main']
-    paths:
-    - 'package/config/oxlint/**'
-    - 'package/ownership-markers/foreign-borrowed/**'
-    - 'package/oxlint-plugin/no-restricted-syntax/**'
-    - 'package/oxlint-plugin/prefer-readonly-parameter-type/**'
-    - 'package/oxlint-plugin/shared/**'
-    - 'package/test-fixture/oxlint-no-restricted-syntax/**'
-    - 'pnpm-lock.yaml'
-    - '.github/workflows/readonly-semantic-bridge.yml'
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-permissions:
-  contents: read
-
-jobs:
-  semantic-bridge:
-    name: semantic bridge (${{ matrix.os }})
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-        - ubuntu-latest
-        - macos-15
-        - windows-latest
-    runs-on: ${{ matrix.os }}
-    env:
-      MISE_AUTO_INSTALL: 'false'
-    steps:
-    - name: Checkout
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      with:
-        fetch-depth: 1
-
-    - name: Set up mise without repository-wide tool installation
-      uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c
-      with:
-        # Resolve "latest" through the GitHub releases API, published releases only,
-        # one day old like pnpm's minimumReleaseAge. Without it the action installs
-        # whatever mise.jdx.dev/VERSION names, which runs ahead of the GitHub release
-        # (2025.8.19, 2026.9.3): doc/troubleshooting/mise-action-version-ahead-of-release.md
-        minimum_release_age: 1d
-        install: false
-
-    - name: Install package tools
-      run: mise install node pnpm
-
-    - name: Install workspace dependencies
-      run: mise exec node pnpm -- pnpm install --frozen-lockfile
-
-    - name: Build semantic plugin artifact
-      run: mise run //package/oxlint-plugin/prefer-readonly-parameter-type:build:js:node
-
-    - name: Verify native bridge lifecycle and platform paths
-      run: mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:semantic-bridge-host
-
-    - name: Verify external consumer artifact
-      run: mise run //package/oxlint-plugin/prefer-readonly-parameter-type:test:external-consumer-host
+{
+  "name": "Research repeated immutable expanded Linux graph",
+  "on": {
+    "workflow_dispatch": {}
+  },
+  "permissions": {
+    "contents": "read"
+  },
+  "jobs": {
+    "graph": {
+      "runs-on": "${{ matrix.runner }}",
+      "timeout-minutes": 30,
+      "strategy": {
+        "fail-fast": false,
+        "max-parallel": 1,
+        "matrix": {
+          "include": [
+            {
+              "key": "github-1",
+              "provider": "github",
+              "repetition": "1",
+              "runner": "ubuntu-24.04"
+            },
+            {
+              "key": "depot-1",
+              "provider": "github-depot",
+              "repetition": "1",
+              "runner": "depot-ubuntu-24.04-4"
+            },
+            {
+              "key": "depot-2",
+              "provider": "github-depot",
+              "repetition": "2",
+              "runner": "depot-ubuntu-24.04-4"
+            },
+            {
+              "key": "github-2",
+              "provider": "github",
+              "repetition": "2",
+              "runner": "ubuntu-24.04"
+            }
+          ]
+        }
+      },
+      "env": {
+        "GRAPH_PROVIDER": "${{ matrix.provider }}",
+        "GRAPH_REPETITION": "${{ matrix.repetition }}",
+        "MISE_AUTO_INSTALL": "false",
+        "MISE_LOCKED": "1",
+        "MISE_JOBS": "2",
+        "NODE_OPTIONS": "--max-old-space-size=2048",
+        "OXLINT_THREADS": "2",
+        "GOMAXPROCS": "2",
+        "GOMEMLIMIT": "768MiB",
+        "CI": "true"
+      },
+      "steps": [
+        {
+          "uses": "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          "with": {
+            "persist-credentials": false,
+            "fetch-depth": 2,
+            "lfs": false
+          }
+        },
+        {
+          "uses": "jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c",
+          "with": {
+            "version": "2026.10.9",
+            "install": false,
+            "cache": false
+          }
+        },
+        {
+          "name": "Install only locked Node pnpm Rust and Nextest",
+          "run": "mise install --locked node pnpm rust cargo:cargo-nextest",
+          "timeout-minutes": 8
+        },
+        {
+          "name": "Install frozen dependencies without prepare umbrella",
+          "run": "mise exec node pnpm -- pnpm install --frozen-lockfile",
+          "timeout-minutes": 4
+        },
+        {
+          "name": "Set up qualified matching browser environment",
+          "run": "mise run bootstrap",
+          "working-directory": ".depot/research/graph",
+          "timeout-minutes": 1
+        },
+        {
+          "name": "Execute shared prerequisite graph and actual parallel owners",
+          "run": "mise run campaign",
+          "working-directory": ".depot/research/graph",
+          "timeout-minutes": 19
+        },
+        {
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "if": "always()",
+          "with": {
+            "name": "expanded-graph-${{ matrix.key }}-${{ github.run_id }}-${{ github.run_attempt }}",
+            "path": "${{ runner.temp }}/expanded-graph",
+            "if-no-files-found": "error",
+            "include-hidden-files": true,
+            "retention-days": 7
+          }
+        }
+      ]
+    }
+  }
+}

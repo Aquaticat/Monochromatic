@@ -1,0 +1,1674 @@
+{
+  "schemaVersion": 1,
+  "application": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+  "executionBoundary": "One four-CPU Linux job containing shared prerequisite and parallel consumer branches; not a distributed cross-job artifact DAG or whole-repository pipeline",
+  "cachePolicy": "No explicit repository package/compiler cache restoration or prepared snapshot; provider image/tool/registry caches are observed rather than assumed absent",
+  "checkoutLfs": false,
+  "jobMinutes": 30,
+  "campaignMilliseconds": 1080000,
+  "bootstrapSource": {
+    "harness": "552831830ef2f059b7efa5149fe20f053428c220",
+    "sha256": "3daeb4f5aa075502fa7cc7ae7c2c8cd935a50b30e67287f934c194dcb7d7aa19"
+  },
+  "shared": [
+    {
+      "task": "//package/module/test:build",
+      "packagePath": "package/module/test",
+      "kind": "shared_harness_build"
+    },
+    {
+      "task": "//package/module/logger:build",
+      "packagePath": "package/module/logger",
+      "kind": "shared_logger_build"
+    },
+    {
+      "task": "//package/config/oxlint:build:js:node",
+      "packagePath": "package/config/oxlint",
+      "kind": "shared_static_prerequisite"
+    },
+    {
+      "task": "//package/module/array-at:build",
+      "packagePath": "package/module/array-at",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/async-iter:build",
+      "packagePath": "package/module/async-iter",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/async-time:build",
+      "packagePath": "package/module/async-time",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/caught-value:build",
+      "packagePath": "package/module/caught-value",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/conf-fork:build",
+      "packagePath": "package/module/conf-fork",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/const:build",
+      "packagePath": "package/module/const",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/css-edit:build",
+      "packagePath": "package/module/css-edit",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/dom:build",
+      "packagePath": "package/module/dom",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/fs-id:build",
+      "packagePath": "package/module/fs-id",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/fs-path:build",
+      "packagePath": "package/module/fs-path",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/function-arity:build",
+      "packagePath": "package/module/function-arity",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/hyperscript:build",
+      "packagePath": "package/module/hyperscript",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/i18n-compose:build",
+      "packagePath": "package/module/i18n-compose",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/image-diff:build",
+      "packagePath": "package/module/image-diff",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/jsonc-edit:build",
+      "packagePath": "package/module/jsonc-edit",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/kv-store:build",
+      "packagePath": "package/module/kv-store",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/llm-type:build",
+      "packagePath": "package/module/llm-type",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/make-asynchronous-fork:build",
+      "packagePath": "package/module/make-asynchronous-fork",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/matcher-fork:build",
+      "packagePath": "package/module/matcher-fork",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/matrix:build",
+      "packagePath": "package/module/matrix",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/memoize:build",
+      "packagePath": "package/module/memoize",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/numeric-format:build",
+      "packagePath": "package/module/numeric-format",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/observable:build",
+      "packagePath": "package/module/observable",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/or-throw:build",
+      "packagePath": "package/module/or-throw",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/p-limit-fork:build",
+      "packagePath": "package/module/p-limit-fork",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/p-map-fork:build",
+      "packagePath": "package/module/p-map-fork",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/p-memoize-fork:build",
+      "packagePath": "package/module/p-memoize-fork",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/pify-fork:build",
+      "packagePath": "package/module/pify-fork",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/pipe:build",
+      "packagePath": "package/module/pipe",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/pnpm-workspace-catalog:build",
+      "packagePath": "package/module/pnpm-workspace-catalog",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/quick-lru-fork:build",
+      "packagePath": "package/module/quick-lru-fork",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/test-diagnostic:build",
+      "packagePath": "package/module/test-diagnostic",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/test-expect:build",
+      "packagePath": "package/module/test-expect",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/test-sandbox:build",
+      "packagePath": "package/module/test-sandbox",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/throws:build",
+      "packagePath": "package/module/throws",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/token-count:build",
+      "packagePath": "package/module/token-count",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/toml-edit:build",
+      "packagePath": "package/module/toml-edit",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/wg-allowedips:build",
+      "packagePath": "package/module/wg-allowedips",
+      "kind": "shared_module_build"
+    },
+    {
+      "task": "//package/module/zip-writer:build",
+      "packagePath": "package/module/zip-writer",
+      "kind": "shared_module_build"
+    }
+  ],
+  "modules": {
+    "a": [
+      {
+        "task": "//package/module/array-at:lint:types",
+        "packagePath": "package/module/array-at",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/array-at:lint:oxlint",
+        "packagePath": "package/module/array-at",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/array-at:test:unit",
+        "packagePath": "package/module/array-at",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/async-time:lint:types",
+        "packagePath": "package/module/async-time",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/async-time:lint:oxlint",
+        "packagePath": "package/module/async-time",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/async-time:test:unit",
+        "packagePath": "package/module/async-time",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/conf-fork:lint:types",
+        "packagePath": "package/module/conf-fork",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/conf-fork:lint:oxlint",
+        "packagePath": "package/module/conf-fork",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/conf-fork:test:unit",
+        "packagePath": "package/module/conf-fork",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/const:lint:types",
+        "packagePath": "package/module/const",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/const:lint:oxlint",
+        "packagePath": "package/module/const",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/const:test",
+        "packagePath": "package/module/const",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/css-edit.bench:lint:types",
+        "packagePath": "package/module/css-edit.bench",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/css-edit.bench:lint:oxlint",
+        "packagePath": "package/module/css-edit.bench",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/css-edit.fuzz:lint:types",
+        "packagePath": "package/module/css-edit.fuzz",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/css-edit.fuzz:lint:oxlint",
+        "packagePath": "package/module/css-edit.fuzz",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/css-edit.fuzz:test:unit",
+        "packagePath": "package/module/css-edit.fuzz",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/dom:lint:types",
+        "packagePath": "package/module/dom",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/dom:lint:oxlint",
+        "packagePath": "package/module/dom",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/fs-path:lint:types",
+        "packagePath": "package/module/fs-path",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/fs-path:lint:oxlint",
+        "packagePath": "package/module/fs-path",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/fs-path:test:unit",
+        "packagePath": "package/module/fs-path",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/hyperscript:lint:types",
+        "packagePath": "package/module/hyperscript",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/hyperscript:lint:oxlint",
+        "packagePath": "package/module/hyperscript",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/image-diff:lint:types",
+        "packagePath": "package/module/image-diff",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/image-diff:lint:oxlint",
+        "packagePath": "package/module/image-diff",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/image-diff:test:unit",
+        "packagePath": "package/module/image-diff",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/jsonc-edit.bench:lint:types",
+        "packagePath": "package/module/jsonc-edit.bench",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/jsonc-edit.bench:lint:oxlint",
+        "packagePath": "package/module/jsonc-edit.bench",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/jsonc-edit.fuzz:lint:types",
+        "packagePath": "package/module/jsonc-edit.fuzz",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/jsonc-edit.fuzz:lint:oxlint",
+        "packagePath": "package/module/jsonc-edit.fuzz",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/jsonc-edit.fuzz:test:unit",
+        "packagePath": "package/module/jsonc-edit.fuzz",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/llm-type:lint:types",
+        "packagePath": "package/module/llm-type",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/llm-type:lint:oxlint",
+        "packagePath": "package/module/llm-type",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/llm-type:test",
+        "packagePath": "package/module/llm-type",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/logger.fuzz:lint:types",
+        "packagePath": "package/module/logger.fuzz",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/logger.fuzz:lint:oxlint",
+        "packagePath": "package/module/logger.fuzz",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/logger.fuzz:test:unit",
+        "packagePath": "package/module/logger.fuzz",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/make-asynchronous-fork.fuzz:lint:types",
+        "packagePath": "package/module/make-asynchronous-fork.fuzz",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/make-asynchronous-fork.fuzz:lint:oxlint",
+        "packagePath": "package/module/make-asynchronous-fork.fuzz",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/make-asynchronous-fork.fuzz:test:unit",
+        "packagePath": "package/module/make-asynchronous-fork.fuzz",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/matcher-fork.fuzz:lint:types",
+        "packagePath": "package/module/matcher-fork.fuzz",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/matcher-fork.fuzz:lint:oxlint",
+        "packagePath": "package/module/matcher-fork.fuzz",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/matcher-fork.fuzz:test:unit",
+        "packagePath": "package/module/matcher-fork.fuzz",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/memoize:lint:types",
+        "packagePath": "package/module/memoize",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/memoize:lint:oxlint",
+        "packagePath": "package/module/memoize",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/memoize:test:unit",
+        "packagePath": "package/module/memoize",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/observable:lint:types",
+        "packagePath": "package/module/observable",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/observable:lint:oxlint",
+        "packagePath": "package/module/observable",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/observable:test:unit",
+        "packagePath": "package/module/observable",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/p-limit-fork:lint:types",
+        "packagePath": "package/module/p-limit-fork",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/p-limit-fork:lint:oxlint",
+        "packagePath": "package/module/p-limit-fork",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/p-limit-fork:test:unit",
+        "packagePath": "package/module/p-limit-fork",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/p-map-fork:lint:types",
+        "packagePath": "package/module/p-map-fork",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/p-map-fork:lint:oxlint",
+        "packagePath": "package/module/p-map-fork",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/p-map-fork:test:unit",
+        "packagePath": "package/module/p-map-fork",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/p-memoize-fork:lint:types",
+        "packagePath": "package/module/p-memoize-fork",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/p-memoize-fork:lint:oxlint",
+        "packagePath": "package/module/p-memoize-fork",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/p-memoize-fork:test:unit",
+        "packagePath": "package/module/p-memoize-fork",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/pify-fork:lint:types",
+        "packagePath": "package/module/pify-fork",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/pify-fork:lint:oxlint",
+        "packagePath": "package/module/pify-fork",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/pify-fork:test:unit",
+        "packagePath": "package/module/pify-fork",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/pipe:lint:types",
+        "packagePath": "package/module/pipe",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/pipe:lint:oxlint",
+        "packagePath": "package/module/pipe",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/pipe:test:unit",
+        "packagePath": "package/module/pipe",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/quick-lru-fork:lint:types",
+        "packagePath": "package/module/quick-lru-fork",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/quick-lru-fork:lint:oxlint",
+        "packagePath": "package/module/quick-lru-fork",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/quick-lru-fork:test:unit",
+        "packagePath": "package/module/quick-lru-fork",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/test:lint:types",
+        "packagePath": "package/module/test",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/test:lint:oxlint",
+        "packagePath": "package/module/test",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/test:test:unit",
+        "packagePath": "package/module/test",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/test-expect:lint:types",
+        "packagePath": "package/module/test-expect",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/test-expect:lint:oxlint",
+        "packagePath": "package/module/test-expect",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/test-expect:test:unit",
+        "packagePath": "package/module/test-expect",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/throws:lint:types",
+        "packagePath": "package/module/throws",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/throws:lint:oxlint",
+        "packagePath": "package/module/throws",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/throws:test:unit",
+        "packagePath": "package/module/throws",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/toml-edit:lint:types",
+        "packagePath": "package/module/toml-edit",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/toml-edit:lint:oxlint",
+        "packagePath": "package/module/toml-edit",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/toml-edit:test:unit",
+        "packagePath": "package/module/toml-edit",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/wg-allowedips:lint:types",
+        "packagePath": "package/module/wg-allowedips",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/wg-allowedips:lint:oxlint",
+        "packagePath": "package/module/wg-allowedips",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/wg-allowedips:test:unit",
+        "packagePath": "package/module/wg-allowedips",
+        "kind": "default_test"
+      }
+    ],
+    "b": [
+      {
+        "task": "//package/module/async-iter:lint:types",
+        "packagePath": "package/module/async-iter",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/async-iter:lint:oxlint",
+        "packagePath": "package/module/async-iter",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/async-iter:test:unit",
+        "packagePath": "package/module/async-iter",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/caught-value:lint:types",
+        "packagePath": "package/module/caught-value",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/caught-value:lint:oxlint",
+        "packagePath": "package/module/caught-value",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/caught-value:test:unit",
+        "packagePath": "package/module/caught-value",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/conf-fork.fuzz:lint:types",
+        "packagePath": "package/module/conf-fork.fuzz",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/conf-fork.fuzz:lint:oxlint",
+        "packagePath": "package/module/conf-fork.fuzz",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/conf-fork.fuzz:test:unit",
+        "packagePath": "package/module/conf-fork.fuzz",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/css-edit:lint:types",
+        "packagePath": "package/module/css-edit",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/css-edit:lint:oxlint",
+        "packagePath": "package/module/css-edit",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/css-edit:test:unit",
+        "packagePath": "package/module/css-edit",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/css-edit.conformance:lint:types",
+        "packagePath": "package/module/css-edit.conformance",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/css-edit.conformance:lint:oxlint",
+        "packagePath": "package/module/css-edit.conformance",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/css-edit.conformance:test:unit",
+        "packagePath": "package/module/css-edit.conformance",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/deepmerge-ts.fuzz:lint:types",
+        "packagePath": "package/module/deepmerge-ts.fuzz",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/deepmerge-ts.fuzz:lint:oxlint",
+        "packagePath": "package/module/deepmerge-ts.fuzz",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/deepmerge-ts.fuzz:test:unit",
+        "packagePath": "package/module/deepmerge-ts.fuzz",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/fs-id:lint:types",
+        "packagePath": "package/module/fs-id",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/fs-id:lint:oxlint",
+        "packagePath": "package/module/fs-id",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/fs-id:test:unit",
+        "packagePath": "package/module/fs-id",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/function-arity:lint:types",
+        "packagePath": "package/module/function-arity",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/function-arity:lint:oxlint",
+        "packagePath": "package/module/function-arity",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/function-arity:test:unit",
+        "packagePath": "package/module/function-arity",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/i18n-compose:lint:types",
+        "packagePath": "package/module/i18n-compose",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/i18n-compose:lint:oxlint",
+        "packagePath": "package/module/i18n-compose",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/i18n-compose:test:unit",
+        "packagePath": "package/module/i18n-compose",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/jsonc-edit:lint:types",
+        "packagePath": "package/module/jsonc-edit",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/jsonc-edit:lint:oxlint",
+        "packagePath": "package/module/jsonc-edit",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/jsonc-edit:test:unit",
+        "packagePath": "package/module/jsonc-edit",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/jsonc-edit.conformance:lint:types",
+        "packagePath": "package/module/jsonc-edit.conformance",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/jsonc-edit.conformance:lint:oxlint",
+        "packagePath": "package/module/jsonc-edit.conformance",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/jsonc-edit.conformance:test:unit",
+        "packagePath": "package/module/jsonc-edit.conformance",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/kv-store:lint:types",
+        "packagePath": "package/module/kv-store",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/kv-store:lint:oxlint",
+        "packagePath": "package/module/kv-store",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/kv-store:test:unit",
+        "packagePath": "package/module/kv-store",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/logger:lint:types",
+        "packagePath": "package/module/logger",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/logger:lint:oxlint",
+        "packagePath": "package/module/logger",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/logger:test:unit",
+        "packagePath": "package/module/logger",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/make-asynchronous-fork:lint:types",
+        "packagePath": "package/module/make-asynchronous-fork",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/make-asynchronous-fork:lint:oxlint",
+        "packagePath": "package/module/make-asynchronous-fork",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/make-asynchronous-fork:test:unit",
+        "packagePath": "package/module/make-asynchronous-fork",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/matcher-fork:lint:types",
+        "packagePath": "package/module/matcher-fork",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/matcher-fork:lint:oxlint",
+        "packagePath": "package/module/matcher-fork",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/matcher-fork:test:unit",
+        "packagePath": "package/module/matcher-fork",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/matrix:lint:types",
+        "packagePath": "package/module/matrix",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/matrix:lint:oxlint",
+        "packagePath": "package/module/matrix",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/matrix:test",
+        "packagePath": "package/module/matrix",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/numeric-format:lint:types",
+        "packagePath": "package/module/numeric-format",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/numeric-format:lint:oxlint",
+        "packagePath": "package/module/numeric-format",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/numeric-format:test",
+        "packagePath": "package/module/numeric-format",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/or-throw:lint:types",
+        "packagePath": "package/module/or-throw",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/or-throw:lint:oxlint",
+        "packagePath": "package/module/or-throw",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/or-throw:test:unit",
+        "packagePath": "package/module/or-throw",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/p-limit-fork.fuzz:lint:types",
+        "packagePath": "package/module/p-limit-fork.fuzz",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/p-limit-fork.fuzz:lint:oxlint",
+        "packagePath": "package/module/p-limit-fork.fuzz",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/p-limit-fork.fuzz:test:unit",
+        "packagePath": "package/module/p-limit-fork.fuzz",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/p-map-fork.fuzz:lint:types",
+        "packagePath": "package/module/p-map-fork.fuzz",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/p-map-fork.fuzz:lint:oxlint",
+        "packagePath": "package/module/p-map-fork.fuzz",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/p-map-fork.fuzz:test:unit",
+        "packagePath": "package/module/p-map-fork.fuzz",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/p-memoize-fork.fuzz:lint:types",
+        "packagePath": "package/module/p-memoize-fork.fuzz",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/p-memoize-fork.fuzz:lint:oxlint",
+        "packagePath": "package/module/p-memoize-fork.fuzz",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/p-memoize-fork.fuzz:test:unit",
+        "packagePath": "package/module/p-memoize-fork.fuzz",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/pify-fork.fuzz:lint:types",
+        "packagePath": "package/module/pify-fork.fuzz",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/pify-fork.fuzz:lint:oxlint",
+        "packagePath": "package/module/pify-fork.fuzz",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/pify-fork.fuzz:test:unit",
+        "packagePath": "package/module/pify-fork.fuzz",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/pnpm-workspace-catalog:lint:types",
+        "packagePath": "package/module/pnpm-workspace-catalog",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/pnpm-workspace-catalog:lint:oxlint",
+        "packagePath": "package/module/pnpm-workspace-catalog",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/pnpm-workspace-catalog:test:unit",
+        "packagePath": "package/module/pnpm-workspace-catalog",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/quick-lru-fork.fuzz:lint:types",
+        "packagePath": "package/module/quick-lru-fork.fuzz",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/quick-lru-fork.fuzz:lint:oxlint",
+        "packagePath": "package/module/quick-lru-fork.fuzz",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/quick-lru-fork.fuzz:test:unit",
+        "packagePath": "package/module/quick-lru-fork.fuzz",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/test-diagnostic:lint:types",
+        "packagePath": "package/module/test-diagnostic",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/test-diagnostic:lint:oxlint",
+        "packagePath": "package/module/test-diagnostic",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/test-diagnostic:test:unit",
+        "packagePath": "package/module/test-diagnostic",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/test-sandbox:lint:types",
+        "packagePath": "package/module/test-sandbox",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/test-sandbox:lint:oxlint",
+        "packagePath": "package/module/test-sandbox",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/test-sandbox:test:unit",
+        "packagePath": "package/module/test-sandbox",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/token-count:lint:types",
+        "packagePath": "package/module/token-count",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/token-count:lint:oxlint",
+        "packagePath": "package/module/token-count",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/token-count:test:unit",
+        "packagePath": "package/module/token-count",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/toml-edit.fuzz:lint:types",
+        "packagePath": "package/module/toml-edit.fuzz",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/toml-edit.fuzz:lint:oxlint",
+        "packagePath": "package/module/toml-edit.fuzz",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/toml-edit.fuzz:test:unit",
+        "packagePath": "package/module/toml-edit.fuzz",
+        "kind": "default_test"
+      },
+      {
+        "task": "//package/module/zip-writer:lint:types",
+        "packagePath": "package/module/zip-writer",
+        "kind": "lint:types"
+      },
+      {
+        "task": "//package/module/zip-writer:lint:oxlint",
+        "packagePath": "package/module/zip-writer",
+        "kind": "lint:oxlint"
+      },
+      {
+        "task": "//package/module/zip-writer:test:unit",
+        "packagePath": "package/module/zip-writer",
+        "kind": "default_test"
+      }
+    ]
+  },
+  "browser": [
+    {
+      "task": "//package/module/logger.fuzz:bundle:browser-properties",
+      "packagePath": "package/module/logger.fuzz",
+      "kind": "authored_browser_property_bundle"
+    },
+    {
+      "task": "//package/webapp-productivity/wc:build",
+      "packagePath": "package/webapp-productivity/wc",
+      "kind": "actual_product_single_file_build"
+    },
+    {
+      "task": "//package/dev-script/coverage-research:prepare:matched-image",
+      "packagePath": ".",
+      "kind": "matched_browser_image_only_environment_control",
+      "requiredSourceFiles": [
+        {
+          "path": "mise.toml",
+          "sha256": "f67fe7f09b64b0beb50cfd2d620f18534a8eba672498899ee47fbc55b70e8248"
+        },
+        {
+          "path": "package/module/dom/src/duplicateElement.e2e.test.ts",
+          "sha256": "acfb2b0ffc026fe66c6a0f8d7496cad587fbdf85286e1ec91ae0cc084f0f4f78"
+        },
+        {
+          "path": "package/module/dom/src/prompt.e2e.test.ts",
+          "sha256": "636e59175887cc4ca662417380283efb1cad481088a37df9b3a3d0e00282a415"
+        },
+        {
+          "path": "package/module/dom/src/redirectingTo.e2e.test.ts",
+          "sha256": "6c404752fd50b2cc078ec47159b8ca223c109cc87fd5604583af871cb4344276"
+        },
+        {
+          "path": "package/module/dom/src/set/cssFromParam.e2e.test.ts",
+          "sha256": "a9c16a5d1bcf34c5dae92e471649d0d244d754718d87e75d380f47f690ee0dea"
+        },
+        {
+          "path": "package/module/fs-path/src/opfs-root-discovery.browser.test.ts",
+          "sha256": "0b60e842dc36d31edcd95c35aeb22e09684697873e8057e9b9695921942a9d31"
+        },
+        {
+          "path": "package/module/logger.fuzz/src/browser/properties.browser.test.ts",
+          "sha256": "0a5892edbdbdc617cc025b5000245e6ac6fa1556598f102e5071a7cc2a407f50"
+        },
+        {
+          "path": "package/module/logger/src/sink/indexed-db.browser.test.ts",
+          "sha256": "e24b800bb59dea2e14999792c842882cab9f7e4f0e3fc8af9c9036a1cfcccf04"
+        },
+        {
+          "path": "package/module/logger/src/sink/local-storage.browser.test.ts",
+          "sha256": "dca8c7e058277a166ff77a08602f00e683dfb41254b5945ea2a902b102175224"
+        },
+        {
+          "path": "package/module/logger/src/sink/opfs.browser.test.ts",
+          "sha256": "c5c87179aaba429c50c48c64c36cb918d52832cfae1f86a2e83e194b413aaf54"
+        },
+        {
+          "path": "package/module/logger/src/sink/session-storage.browser.test.ts",
+          "sha256": "2a69896a6641ad0b9d4ba2443bab3a6ec0ab06e97eca7af12afd23172290bc01"
+        },
+        {
+          "path": "package/module/test/src/sinon.browser.test.ts",
+          "sha256": "aac4049bf3609e1bba2256df4a43633b49d2a1986ea012dd131699a029c6c672"
+        },
+        {
+          "path": "package/webapp-productivity/wc/src/page.browser.test.ts",
+          "sha256": "06ffb97d0d41b2b91ece8303aeced8b53239b5df8a2301dd1236dc935e635362"
+        },
+        {
+          "path": "playwright.Dockerfile",
+          "sha256": "e802ff364dc61464c1e868a5fe4d6be4c660dc2728ffb8dda16fcee53200ef83"
+        },
+        {
+          "path": "playwright.browser.config.ts",
+          "sha256": "22481714fd67d226521833e84b99baa0fe51922d3e2d9c1633ed2d4ae441118f"
+        },
+        {
+          "path": "playwright.e2e.config.ts",
+          "sha256": "6b35988518bdae0839af449415228647348ba04322a1c3bc4cf6a255f3a70b6a"
+        },
+        {
+          "path": "playwright/serve.ts",
+          "sha256": "d88b62296e3bd88612de22d748192bc3d564a6b754cadef7b4cf22a8139e68ee"
+        },
+        {
+          "path": "playwright/test-harness.html",
+          "sha256": "179ffca60c45c207ee154c7af1aed30734122cdb515d366222313b06c0fdc584"
+        }
+      ]
+    },
+    {
+      "task": "test:browser",
+      "packagePath": ".",
+      "kind": "actual_root_browser_owner",
+      "args": [
+        "--project=chromium",
+        "--workers=1",
+        "--retries=0",
+        "--timeout=15000",
+        "--global-timeout=120000",
+        "--reporter=json"
+      ],
+      "engine": "chromium",
+      "expectedSpecifications": [
+        "package/webapp-productivity/wc/src/page.browser.test.ts",
+        "package/module/test/src/sinon.browser.test.ts",
+        "package/module/logger.fuzz/src/browser/properties.browser.test.ts",
+        "package/module/logger/src/sink/indexed-db.browser.test.ts",
+        "package/module/logger/src/sink/local-storage.browser.test.ts",
+        "package/module/logger/src/sink/opfs.browser.test.ts",
+        "package/module/logger/src/sink/session-storage.browser.test.ts",
+        "package/module/fs-path/src/opfs-root-discovery.browser.test.ts"
+      ],
+      "requiredSourceFiles": [
+        {
+          "path": "mise.toml",
+          "sha256": "f67fe7f09b64b0beb50cfd2d620f18534a8eba672498899ee47fbc55b70e8248"
+        },
+        {
+          "path": "package/module/dom/src/duplicateElement.e2e.test.ts",
+          "sha256": "acfb2b0ffc026fe66c6a0f8d7496cad587fbdf85286e1ec91ae0cc084f0f4f78"
+        },
+        {
+          "path": "package/module/dom/src/prompt.e2e.test.ts",
+          "sha256": "636e59175887cc4ca662417380283efb1cad481088a37df9b3a3d0e00282a415"
+        },
+        {
+          "path": "package/module/dom/src/redirectingTo.e2e.test.ts",
+          "sha256": "6c404752fd50b2cc078ec47159b8ca223c109cc87fd5604583af871cb4344276"
+        },
+        {
+          "path": "package/module/dom/src/set/cssFromParam.e2e.test.ts",
+          "sha256": "a9c16a5d1bcf34c5dae92e471649d0d244d754718d87e75d380f47f690ee0dea"
+        },
+        {
+          "path": "package/module/fs-path/src/opfs-root-discovery.browser.test.ts",
+          "sha256": "0b60e842dc36d31edcd95c35aeb22e09684697873e8057e9b9695921942a9d31"
+        },
+        {
+          "path": "package/module/logger.fuzz/src/browser/properties.browser.test.ts",
+          "sha256": "0a5892edbdbdc617cc025b5000245e6ac6fa1556598f102e5071a7cc2a407f50"
+        },
+        {
+          "path": "package/module/logger/src/sink/indexed-db.browser.test.ts",
+          "sha256": "e24b800bb59dea2e14999792c842882cab9f7e4f0e3fc8af9c9036a1cfcccf04"
+        },
+        {
+          "path": "package/module/logger/src/sink/local-storage.browser.test.ts",
+          "sha256": "dca8c7e058277a166ff77a08602f00e683dfb41254b5945ea2a902b102175224"
+        },
+        {
+          "path": "package/module/logger/src/sink/opfs.browser.test.ts",
+          "sha256": "c5c87179aaba429c50c48c64c36cb918d52832cfae1f86a2e83e194b413aaf54"
+        },
+        {
+          "path": "package/module/logger/src/sink/session-storage.browser.test.ts",
+          "sha256": "2a69896a6641ad0b9d4ba2443bab3a6ec0ab06e97eca7af12afd23172290bc01"
+        },
+        {
+          "path": "package/module/test/src/sinon.browser.test.ts",
+          "sha256": "aac4049bf3609e1bba2256df4a43633b49d2a1986ea012dd131699a029c6c672"
+        },
+        {
+          "path": "package/webapp-productivity/wc/src/page.browser.test.ts",
+          "sha256": "06ffb97d0d41b2b91ece8303aeced8b53239b5df8a2301dd1236dc935e635362"
+        },
+        {
+          "path": "playwright.Dockerfile",
+          "sha256": "e802ff364dc61464c1e868a5fe4d6be4c660dc2728ffb8dda16fcee53200ef83"
+        },
+        {
+          "path": "playwright.browser.config.ts",
+          "sha256": "22481714fd67d226521833e84b99baa0fe51922d3e2d9c1633ed2d4ae441118f"
+        },
+        {
+          "path": "playwright.e2e.config.ts",
+          "sha256": "6b35988518bdae0839af449415228647348ba04322a1c3bc4cf6a255f3a70b6a"
+        },
+        {
+          "path": "playwright/serve.ts",
+          "sha256": "d88b62296e3bd88612de22d748192bc3d564a6b754cadef7b4cf22a8139e68ee"
+        },
+        {
+          "path": "playwright/test-harness.html",
+          "sha256": "179ffca60c45c207ee154c7af1aed30734122cdb515d366222313b06c0fdc584"
+        }
+      ]
+    },
+    {
+      "task": "test:browser",
+      "packagePath": ".",
+      "kind": "actual_root_browser_owner",
+      "args": [
+        "--project=firefox",
+        "--workers=1",
+        "--retries=0",
+        "--timeout=15000",
+        "--global-timeout=120000",
+        "--reporter=json"
+      ],
+      "engine": "firefox",
+      "expectedSpecifications": [
+        "package/webapp-productivity/wc/src/page.browser.test.ts",
+        "package/module/test/src/sinon.browser.test.ts",
+        "package/module/logger.fuzz/src/browser/properties.browser.test.ts",
+        "package/module/logger/src/sink/indexed-db.browser.test.ts",
+        "package/module/logger/src/sink/local-storage.browser.test.ts",
+        "package/module/logger/src/sink/opfs.browser.test.ts",
+        "package/module/logger/src/sink/session-storage.browser.test.ts",
+        "package/module/fs-path/src/opfs-root-discovery.browser.test.ts"
+      ],
+      "requiredSourceFiles": [
+        {
+          "path": "mise.toml",
+          "sha256": "f67fe7f09b64b0beb50cfd2d620f18534a8eba672498899ee47fbc55b70e8248"
+        },
+        {
+          "path": "package/module/dom/src/duplicateElement.e2e.test.ts",
+          "sha256": "acfb2b0ffc026fe66c6a0f8d7496cad587fbdf85286e1ec91ae0cc084f0f4f78"
+        },
+        {
+          "path": "package/module/dom/src/prompt.e2e.test.ts",
+          "sha256": "636e59175887cc4ca662417380283efb1cad481088a37df9b3a3d0e00282a415"
+        },
+        {
+          "path": "package/module/dom/src/redirectingTo.e2e.test.ts",
+          "sha256": "6c404752fd50b2cc078ec47159b8ca223c109cc87fd5604583af871cb4344276"
+        },
+        {
+          "path": "package/module/dom/src/set/cssFromParam.e2e.test.ts",
+          "sha256": "a9c16a5d1bcf34c5dae92e471649d0d244d754718d87e75d380f47f690ee0dea"
+        },
+        {
+          "path": "package/module/fs-path/src/opfs-root-discovery.browser.test.ts",
+          "sha256": "0b60e842dc36d31edcd95c35aeb22e09684697873e8057e9b9695921942a9d31"
+        },
+        {
+          "path": "package/module/logger.fuzz/src/browser/properties.browser.test.ts",
+          "sha256": "0a5892edbdbdc617cc025b5000245e6ac6fa1556598f102e5071a7cc2a407f50"
+        },
+        {
+          "path": "package/module/logger/src/sink/indexed-db.browser.test.ts",
+          "sha256": "e24b800bb59dea2e14999792c842882cab9f7e4f0e3fc8af9c9036a1cfcccf04"
+        },
+        {
+          "path": "package/module/logger/src/sink/local-storage.browser.test.ts",
+          "sha256": "dca8c7e058277a166ff77a08602f00e683dfb41254b5945ea2a902b102175224"
+        },
+        {
+          "path": "package/module/logger/src/sink/opfs.browser.test.ts",
+          "sha256": "c5c87179aaba429c50c48c64c36cb918d52832cfae1f86a2e83e194b413aaf54"
+        },
+        {
+          "path": "package/module/logger/src/sink/session-storage.browser.test.ts",
+          "sha256": "2a69896a6641ad0b9d4ba2443bab3a6ec0ab06e97eca7af12afd23172290bc01"
+        },
+        {
+          "path": "package/module/test/src/sinon.browser.test.ts",
+          "sha256": "aac4049bf3609e1bba2256df4a43633b49d2a1986ea012dd131699a029c6c672"
+        },
+        {
+          "path": "package/webapp-productivity/wc/src/page.browser.test.ts",
+          "sha256": "06ffb97d0d41b2b91ece8303aeced8b53239b5df8a2301dd1236dc935e635362"
+        },
+        {
+          "path": "playwright.Dockerfile",
+          "sha256": "e802ff364dc61464c1e868a5fe4d6be4c660dc2728ffb8dda16fcee53200ef83"
+        },
+        {
+          "path": "playwright.browser.config.ts",
+          "sha256": "22481714fd67d226521833e84b99baa0fe51922d3e2d9c1633ed2d4ae441118f"
+        },
+        {
+          "path": "playwright.e2e.config.ts",
+          "sha256": "6b35988518bdae0839af449415228647348ba04322a1c3bc4cf6a255f3a70b6a"
+        },
+        {
+          "path": "playwright/serve.ts",
+          "sha256": "d88b62296e3bd88612de22d748192bc3d564a6b754cadef7b4cf22a8139e68ee"
+        },
+        {
+          "path": "playwright/test-harness.html",
+          "sha256": "179ffca60c45c207ee154c7af1aed30734122cdb515d366222313b06c0fdc584"
+        }
+      ]
+    },
+    {
+      "task": "test:browser",
+      "packagePath": ".",
+      "kind": "actual_root_browser_owner",
+      "args": [
+        "--project=webkit",
+        "--workers=1",
+        "--retries=0",
+        "--timeout=15000",
+        "--global-timeout=120000",
+        "--reporter=json"
+      ],
+      "engine": "webkit",
+      "expectedSpecifications": [
+        "package/webapp-productivity/wc/src/page.browser.test.ts",
+        "package/module/test/src/sinon.browser.test.ts",
+        "package/module/logger.fuzz/src/browser/properties.browser.test.ts",
+        "package/module/logger/src/sink/indexed-db.browser.test.ts",
+        "package/module/logger/src/sink/local-storage.browser.test.ts",
+        "package/module/logger/src/sink/opfs.browser.test.ts",
+        "package/module/logger/src/sink/session-storage.browser.test.ts",
+        "package/module/fs-path/src/opfs-root-discovery.browser.test.ts"
+      ],
+      "requiredSourceFiles": [
+        {
+          "path": "mise.toml",
+          "sha256": "f67fe7f09b64b0beb50cfd2d620f18534a8eba672498899ee47fbc55b70e8248"
+        },
+        {
+          "path": "package/module/dom/src/duplicateElement.e2e.test.ts",
+          "sha256": "acfb2b0ffc026fe66c6a0f8d7496cad587fbdf85286e1ec91ae0cc084f0f4f78"
+        },
+        {
+          "path": "package/module/dom/src/prompt.e2e.test.ts",
+          "sha256": "636e59175887cc4ca662417380283efb1cad481088a37df9b3a3d0e00282a415"
+        },
+        {
+          "path": "package/module/dom/src/redirectingTo.e2e.test.ts",
+          "sha256": "6c404752fd50b2cc078ec47159b8ca223c109cc87fd5604583af871cb4344276"
+        },
+        {
+          "path": "package/module/dom/src/set/cssFromParam.e2e.test.ts",
+          "sha256": "a9c16a5d1bcf34c5dae92e471649d0d244d754718d87e75d380f47f690ee0dea"
+        },
+        {
+          "path": "package/module/fs-path/src/opfs-root-discovery.browser.test.ts",
+          "sha256": "0b60e842dc36d31edcd95c35aeb22e09684697873e8057e9b9695921942a9d31"
+        },
+        {
+          "path": "package/module/logger.fuzz/src/browser/properties.browser.test.ts",
+          "sha256": "0a5892edbdbdc617cc025b5000245e6ac6fa1556598f102e5071a7cc2a407f50"
+        },
+        {
+          "path": "package/module/logger/src/sink/indexed-db.browser.test.ts",
+          "sha256": "e24b800bb59dea2e14999792c842882cab9f7e4f0e3fc8af9c9036a1cfcccf04"
+        },
+        {
+          "path": "package/module/logger/src/sink/local-storage.browser.test.ts",
+          "sha256": "dca8c7e058277a166ff77a08602f00e683dfb41254b5945ea2a902b102175224"
+        },
+        {
+          "path": "package/module/logger/src/sink/opfs.browser.test.ts",
+          "sha256": "c5c87179aaba429c50c48c64c36cb918d52832cfae1f86a2e83e194b413aaf54"
+        },
+        {
+          "path": "package/module/logger/src/sink/session-storage.browser.test.ts",
+          "sha256": "2a69896a6641ad0b9d4ba2443bab3a6ec0ab06e97eca7af12afd23172290bc01"
+        },
+        {
+          "path": "package/module/test/src/sinon.browser.test.ts",
+          "sha256": "aac4049bf3609e1bba2256df4a43633b49d2a1986ea012dd131699a029c6c672"
+        },
+        {
+          "path": "package/webapp-productivity/wc/src/page.browser.test.ts",
+          "sha256": "06ffb97d0d41b2b91ece8303aeced8b53239b5df8a2301dd1236dc935e635362"
+        },
+        {
+          "path": "playwright.Dockerfile",
+          "sha256": "e802ff364dc61464c1e868a5fe4d6be4c660dc2728ffb8dda16fcee53200ef83"
+        },
+        {
+          "path": "playwright.browser.config.ts",
+          "sha256": "22481714fd67d226521833e84b99baa0fe51922d3e2d9c1633ed2d4ae441118f"
+        },
+        {
+          "path": "playwright.e2e.config.ts",
+          "sha256": "6b35988518bdae0839af449415228647348ba04322a1c3bc4cf6a255f3a70b6a"
+        },
+        {
+          "path": "playwright/serve.ts",
+          "sha256": "d88b62296e3bd88612de22d748192bc3d564a6b754cadef7b4cf22a8139e68ee"
+        },
+        {
+          "path": "playwright/test-harness.html",
+          "sha256": "179ffca60c45c207ee154c7af1aed30734122cdb515d366222313b06c0fdc584"
+        }
+      ]
+    },
+    {
+      "task": "test:e2e",
+      "packagePath": ".",
+      "kind": "actual_root_e2e_owner",
+      "args": [
+        "--project=chromium",
+        "--workers=1",
+        "--retries=0",
+        "--timeout=15000",
+        "--global-timeout=120000",
+        "--reporter=json"
+      ],
+      "engine": "chromium",
+      "expectedSpecifications": [
+        "package/module/dom/src/duplicateElement.e2e.test.ts",
+        "package/module/dom/src/prompt.e2e.test.ts",
+        "package/module/dom/src/redirectingTo.e2e.test.ts",
+        "package/module/dom/src/set/cssFromParam.e2e.test.ts"
+      ],
+      "requiredSourceFiles": [
+        {
+          "path": "mise.toml",
+          "sha256": "f67fe7f09b64b0beb50cfd2d620f18534a8eba672498899ee47fbc55b70e8248"
+        },
+        {
+          "path": "package/module/dom/src/duplicateElement.e2e.test.ts",
+          "sha256": "acfb2b0ffc026fe66c6a0f8d7496cad587fbdf85286e1ec91ae0cc084f0f4f78"
+        },
+        {
+          "path": "package/module/dom/src/prompt.e2e.test.ts",
+          "sha256": "636e59175887cc4ca662417380283efb1cad481088a37df9b3a3d0e00282a415"
+        },
+        {
+          "path": "package/module/dom/src/redirectingTo.e2e.test.ts",
+          "sha256": "6c404752fd50b2cc078ec47159b8ca223c109cc87fd5604583af871cb4344276"
+        },
+        {
+          "path": "package/module/dom/src/set/cssFromParam.e2e.test.ts",
+          "sha256": "a9c16a5d1bcf34c5dae92e471649d0d244d754718d87e75d380f47f690ee0dea"
+        },
+        {
+          "path": "package/module/fs-path/src/opfs-root-discovery.browser.test.ts",
+          "sha256": "0b60e842dc36d31edcd95c35aeb22e09684697873e8057e9b9695921942a9d31"
+        },
+        {
+          "path": "package/module/logger.fuzz/src/browser/properties.browser.test.ts",
+          "sha256": "0a5892edbdbdc617cc025b5000245e6ac6fa1556598f102e5071a7cc2a407f50"
+        },
+        {
+          "path": "package/module/logger/src/sink/indexed-db.browser.test.ts",
+          "sha256": "e24b800bb59dea2e14999792c842882cab9f7e4f0e3fc8af9c9036a1cfcccf04"
+        },
+        {
+          "path": "package/module/logger/src/sink/local-storage.browser.test.ts",
+          "sha256": "dca8c7e058277a166ff77a08602f00e683dfb41254b5945ea2a902b102175224"
+        },
+        {
+          "path": "package/module/logger/src/sink/opfs.browser.test.ts",
+          "sha256": "c5c87179aaba429c50c48c64c36cb918d52832cfae1f86a2e83e194b413aaf54"
+        },
+        {
+          "path": "package/module/logger/src/sink/session-storage.browser.test.ts",
+          "sha256": "2a69896a6641ad0b9d4ba2443bab3a6ec0ab06e97eca7af12afd23172290bc01"
+        },
+        {
+          "path": "package/module/test/src/sinon.browser.test.ts",
+          "sha256": "aac4049bf3609e1bba2256df4a43633b49d2a1986ea012dd131699a029c6c672"
+        },
+        {
+          "path": "package/webapp-productivity/wc/src/page.browser.test.ts",
+          "sha256": "06ffb97d0d41b2b91ece8303aeced8b53239b5df8a2301dd1236dc935e635362"
+        },
+        {
+          "path": "playwright.Dockerfile",
+          "sha256": "e802ff364dc61464c1e868a5fe4d6be4c660dc2728ffb8dda16fcee53200ef83"
+        },
+        {
+          "path": "playwright.browser.config.ts",
+          "sha256": "22481714fd67d226521833e84b99baa0fe51922d3e2d9c1633ed2d4ae441118f"
+        },
+        {
+          "path": "playwright.e2e.config.ts",
+          "sha256": "6b35988518bdae0839af449415228647348ba04322a1c3bc4cf6a255f3a70b6a"
+        },
+        {
+          "path": "playwright/serve.ts",
+          "sha256": "d88b62296e3bd88612de22d748192bc3d564a6b754cadef7b4cf22a8139e68ee"
+        },
+        {
+          "path": "playwright/test-harness.html",
+          "sha256": "179ffca60c45c207ee154c7af1aed30734122cdb515d366222313b06c0fdc584"
+        }
+      ]
+    },
+    {
+      "task": "test:e2e",
+      "packagePath": ".",
+      "kind": "actual_root_e2e_owner",
+      "args": [
+        "--project=firefox",
+        "--workers=1",
+        "--retries=0",
+        "--timeout=15000",
+        "--global-timeout=120000",
+        "--reporter=json"
+      ],
+      "engine": "firefox",
+      "expectedSpecifications": [
+        "package/module/dom/src/duplicateElement.e2e.test.ts",
+        "package/module/dom/src/prompt.e2e.test.ts",
+        "package/module/dom/src/redirectingTo.e2e.test.ts",
+        "package/module/dom/src/set/cssFromParam.e2e.test.ts"
+      ],
+      "requiredSourceFiles": [
+        {
+          "path": "mise.toml",
+          "sha256": "f67fe7f09b64b0beb50cfd2d620f18534a8eba672498899ee47fbc55b70e8248"
+        },
+        {
+          "path": "package/module/dom/src/duplicateElement.e2e.test.ts",
+          "sha256": "acfb2b0ffc026fe66c6a0f8d7496cad587fbdf85286e1ec91ae0cc084f0f4f78"
+        },
+        {
+          "path": "package/module/dom/src/prompt.e2e.test.ts",
+          "sha256": "636e59175887cc4ca662417380283efb1cad481088a37df9b3a3d0e00282a415"
+        },
+        {
+          "path": "package/module/dom/src/redirectingTo.e2e.test.ts",
+          "sha256": "6c404752fd50b2cc078ec47159b8ca223c109cc87fd5604583af871cb4344276"
+        },
+        {
+          "path": "package/module/dom/src/set/cssFromParam.e2e.test.ts",
+          "sha256": "a9c16a5d1bcf34c5dae92e471649d0d244d754718d87e75d380f47f690ee0dea"
+        },
+        {
+          "path": "package/module/fs-path/src/opfs-root-discovery.browser.test.ts",
+          "sha256": "0b60e842dc36d31edcd95c35aeb22e09684697873e8057e9b9695921942a9d31"
+        },
+        {
+          "path": "package/module/logger.fuzz/src/browser/properties.browser.test.ts",
+          "sha256": "0a5892edbdbdc617cc025b5000245e6ac6fa1556598f102e5071a7cc2a407f50"
+        },
+        {
+          "path": "package/module/logger/src/sink/indexed-db.browser.test.ts",
+          "sha256": "e24b800bb59dea2e14999792c842882cab9f7e4f0e3fc8af9c9036a1cfcccf04"
+        },
+        {
+          "path": "package/module/logger/src/sink/local-storage.browser.test.ts",
+          "sha256": "dca8c7e058277a166ff77a08602f00e683dfb41254b5945ea2a902b102175224"
+        },
+        {
+          "path": "package/module/logger/src/sink/opfs.browser.test.ts",
+          "sha256": "c5c87179aaba429c50c48c64c36cb918d52832cfae1f86a2e83e194b413aaf54"
+        },
+        {
+          "path": "package/module/logger/src/sink/session-storage.browser.test.ts",
+          "sha256": "2a69896a6641ad0b9d4ba2443bab3a6ec0ab06e97eca7af12afd23172290bc01"
+        },
+        {
+          "path": "package/module/test/src/sinon.browser.test.ts",
+          "sha256": "aac4049bf3609e1bba2256df4a43633b49d2a1986ea012dd131699a029c6c672"
+        },
+        {
+          "path": "package/webapp-productivity/wc/src/page.browser.test.ts",
+          "sha256": "06ffb97d0d41b2b91ece8303aeced8b53239b5df8a2301dd1236dc935e635362"
+        },
+        {
+          "path": "playwright.Dockerfile",
+          "sha256": "e802ff364dc61464c1e868a5fe4d6be4c660dc2728ffb8dda16fcee53200ef83"
+        },
+        {
+          "path": "playwright.browser.config.ts",
+          "sha256": "22481714fd67d226521833e84b99baa0fe51922d3e2d9c1633ed2d4ae441118f"
+        },
+        {
+          "path": "playwright.e2e.config.ts",
+          "sha256": "6b35988518bdae0839af449415228647348ba04322a1c3bc4cf6a255f3a70b6a"
+        },
+        {
+          "path": "playwright/serve.ts",
+          "sha256": "d88b62296e3bd88612de22d748192bc3d564a6b754cadef7b4cf22a8139e68ee"
+        },
+        {
+          "path": "playwright/test-harness.html",
+          "sha256": "179ffca60c45c207ee154c7af1aed30734122cdb515d366222313b06c0fdc584"
+        }
+      ]
+    }
+  ],
+  "rust": [
+    {
+      "task": "//package/music-player/truepeak-core:test",
+      "kind": "actual_truepeak_all_features_owner",
+      "args": [
+        "--",
+        "--locked",
+        "--no-fail-fast"
+      ]
+    },
+    {
+      "task": "//package/cli/forbidden-strings:test",
+      "kind": "actual_forbidden_strings_owner",
+      "args": [
+        "--",
+        "--locked",
+        "--no-fail-fast"
+      ]
+    }
+  ]
+}
