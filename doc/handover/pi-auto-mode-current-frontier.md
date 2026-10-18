@@ -122,7 +122,23 @@ Commit `83b10e751f` preserves the failing regression before the repair.
 The source repair shares the existing approved-dependency handoff across automatic approval
 and confirmation of a captured automatic review.
 Manual fallback without captured automatic sources keeps its original behavior.
-The repair is not built or verified yet.
+Repair commit `9f357591dd` builds as `native-release-rKKphY`
+from an archived committed contract snapshot while the worker keeps its previous pinned runtime.
+The complete `test:native:decision-fallback` task passes,
+including tracked progress after automatic approval and confirmed Allow,
+Stop,
+dismissal,
+headless withholding,
+source replacement,
+cancellation,
+prohibition and the new confirmation-time source/cancellation controls.
+Evidence is `confirmed-progress-suite.log` and its bounded-task receipt.
+A private source-copy rebuild removes only the confirmed-approval retention call.
+The maintained `unknown` regression fails with `1 !== 2` and the original callback-revision cause.
+`confirmed-progress-mutant-receipt.json` verifies unchanged production hashes and active publication.
+Next run the execution/ownership/phase safety tasks,
+then restart the RPC worker on the verified runtime with its saved session preserved.
+Add private actual-request capture and exercise RPC compaction before continuing the scoped edits.
 At this checkpoint,
 Git shows no MiMo source edits yet;
 its first lint slice is still analysis.
