@@ -92,9 +92,26 @@ Mise `2026.10.9` reported `No lockfile URL found` for explicitly versioned reque
 although the frozen lock contains their URLs under the configured `latest` specifiers.
 The corrected harness requests `mise install node pnpm` under `MISE_LOCKED=1`
 and asserts the resulting exact versions before measuring anything.
-Cold,
-seed,
-warm and branch results have not yet been established.
+The [request-binding investigation](../troubleshooting/mise-lock-pins-repo-tool-version.md)
+records the deciding source and verified repair.
+
+Corrected cold run `39099920300` passed every job on immutable harness
+`f8727149508e091e77799c2b25313f3bb9b40589`.
+Each pool used separate allocations for the repeated samples.
+Workspace installation,
+the plugin build and both existing artifact-consumer tasks passed.
+This control uses an explicit cache miss,
+not a cache-disabled workflow.
+No warm-cache benefit is established until the remaining phases finish.
+
+The owned historical cache deletion completed and its identifier disappeared from the cache listing.
+Repository usage after cleanup was `9,947,540,746` bytes across `16` entries.
+Concurrent writes explain why a before/after aggregate need not equal the deleted entry's byte count.
+The command deleted only identifier `9109200675`;
+it did not select production entries by age or key prefix.
+
+Seed,
+warm and branch results remain in progress.
 Each dispatch records the exact SHA,
 run URL,
 terminal job metadata and logs in private scratch before its findings are summarized here.
