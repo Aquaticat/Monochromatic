@@ -17,7 +17,8 @@ published-rate reservation,
 source/tool hashes and actual provider identifiers before results are compared.
 The initial current-source linter profile is admitted at USD 0.36,
 bringing the conservative forecast to USD 1.767.
-It has not been dispatched at this checkpoint.
+The first run is `j50kf2jlqx`,
+from harness `21883c2409b5bb9a7556f869a37cfd43b6045f12`.
 
 ## Source catalog checkpoint
 
@@ -94,6 +95,28 @@ locks and owner configuration are checked against the frozen tree before and aft
 Failures remain failures while receipts upload independently.
 The source linter's Cargo lock contains 294 packages and pins the rust-analyzer family to `0.0.336`.
 That compilation and its own tests are distinct from using the published `0.1.3` prerequisite.
+
+## Standalone and native prerequisite profile
+
+The next isolated workflow is `.depot/workflows/rust-coverage-core.yml`,
+with 4 CPU,
+16 GB,
+a 15-minute job limit and a 12-minute application-step limit.
+Its USD 0.18 reservation brings the still-conservative forecast,
+including the full initial linter reservation,
+to USD 1.947.
+The reviewed owner boundaries are release Nextest for `forbidden-regex`,
+`jsonc-edit` and `codex-plugin/bash-limit`,
+plus ordinary debug unit tests for `wg-quicker-exempt` adapted from Cargo test to Nextest.
+Build and test concurrency retain their defaults.
+Privileged ignored BPF cases and the installed Codex host case remain explicit separate prerequisites.
+
+The profile also builds the frozen `wg-quicker-exempt` release executable,
+checks its actual usage and invalid-zero-mark boundary,
+and retains the ELF with source and tool hashes.
+That artifact is the missing producer for the routing investigation's
+`finds repository sibling release outside secure path` consumer.
+Release-file presence by itself is not counted as that consumer passing.
 
 ## Owned work queue
 
