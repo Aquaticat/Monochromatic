@@ -83,6 +83,35 @@ through selector `8fae1bc3-3ebf-48e8-a050-f0d718b9c744`.
 These are scoped diagnostics,
 not a clean-lint or completed-edit claim.
 
+### Reopened parallel progress freshness failure
+
+The actual two-command histogram group exposes a separate runtime failure after RPC Allow.
+`call_712e50eea8bb4a3397ce36d2` executes;
+`call_7da656b11baa42d5971c1183` is withheld with
+`The established policy decision is no longer current; propose the operation again`.
+The cause is `PolicySlotBindingError: Native extension event callbacks changed after source capture`.
+The saved domain changes from revision 3992,
+`tool_call`,
+pending zero to revision 3993,
+`tool_execution_update`,
+pending one;
+registered event kinds are unchanged.
+There is no active RPC steering message in this incident.
+Keep it separate from the earlier steering freshness guard and signal-prototype defect.
+
+Evidence is `mimo-parallel-allow-stderr.log`,
+`mimo-parallel-allow-events.jsonl` and `mimo-parallel-allow-next-state.json` in the scratch.
+The deciding guard is
+`package/pi-plugin/auto-mode/native/contract/integration/policy-source/policy-input-collector.mjs`.
+Reproduce with actual native progress callbacks and a complete parallel group,
+then preserve real governing-source,
+tool-input and cancellation invalidation while removing the false progress invalidation.
+Do not fix it by ignoring arbitrary stale-source errors or weakening permission guards.
+At this checkpoint,
+Git shows no MiMo source edits yet;
+its first lint slice is still analysis.
+The supervisor allows the subsequent one-command private-summary preview only.
+
 The first checkpoint clears all findings in these package-relative files:
 
 - `native/contract/collector/run-prompt-custody-v3/event-controls.ts`.
@@ -221,6 +250,10 @@ Do not equate any error-word hit with a bare shutdown error or filter the noise 
   rebuild affected consumers,
   run types and meaningful native controls,
   then continue through the remaining full-package lint clusters.
+- First reproduce and repair the parallel progress freshness failure,
+  with automatic and exact-group Allow controls,
+  genuine source-change rejection and rebuilt guard mutations.
+  Coordinate source ownership with the live worker and restart its pinned host after the repair.
 - Obtain a fresh complete lint result with zero warnings and errors,
   passing appropriate tests,
   and comparison of exported/implementation branches against exercised consumers.
