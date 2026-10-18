@@ -1,7 +1,8 @@
 # Selective `rust/no-anonymous-functions` through types and directive comments
 
-Status: proposal of 2026-10-18, not accepted.
-Nothing in `package/linter/monochromatic-lint` changes until the owner accepts it.
+Status: proposal of 2026-10-18; on the same day the owner chose a Dylint lint plus comment directives, recorded in
+`doc/decision/rust-closure-lint-dylint.md`.
+The sections below are the evidence behind that choice.
 
 ## Problem
 
