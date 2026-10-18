@@ -471,6 +471,9 @@ before the other queued work.
     the identity-keyed label cache, a run-off on an unasked carry, and span-agreement TSDoc;
     each is reproduced red first and fixed in `w187` (on `bc9b2db70d`), ledger text to `s245/w187-notes.md`,
     then gated, landed and filed with the docs batch;
+    the guard demonstrations for n168, n169, n171 and n173 finished (`w181-notes/report-tables.md`):
+    of 287 mutations 64 still pass, three of them real behaviour changes no test sees,
+    and a test round pinning every reachable survivor, each shown to fail under its mutation, runs in `w188`;
     an independent Sonnet review of the same diff found R1 to R7, report `s245/sol-review/sonnet/review.md`;
     R1 is confirmed in the code: the carry run-off sheet is byte-identical to the first sheet when every candidate
     is a finalist (`runOff` only renames the stage, `pass-consistency-carry-ask.ts:328`),
