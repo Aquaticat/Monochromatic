@@ -572,3 +572,42 @@ The crate declares two executables and no `default-run`;
 its existing `cargo run --release --` selection is probed separately before explicit-binary execution.
 Its existing debug Nextest owner is also included.
 Both benchmark sidecars remain separate from the truepeak all-features library tests.
+
+### Planted Git-policy controls and attribution correction
+
+`gm2drnx19m` ran the unchanged Git-policy fuzz sidecar planted-control owner against disposable copies.
+The actual Nextest baseline passed all 38 generator cases.
+All 29 planted faults produced real failed Rust tests in the corresponding retained JUnit reports.
+These 29 expected failures are controls,
+not new product failures or extra distinct test cases.
+
+The first adapter incorrectly attributed failure names when a self-closing passing JUnit case preceded a failing case.
+Its greedy attribute capture could consume that passing case and pair its name with a later failure body.
+The synthetic identity regression was committed at `2d32fbe86f`,
+then reproduced exactly that mismatch before the parser correction.
+An independent Python `xml.etree.ElementTree` parse of every actual report confirms 38 cases per report,
+a clean baseline and real failures in all 29 planted variants.
+`consumerSummaries.gitPolicyPlanted` rebuilds exact failure names from that preserved XML.
+Original adapter names remain retained but are explicitly superseded.
+No application test was rerun during this correction,
+and no source or receipt was discarded.
+
+Linter fuzz `v17djp58z3` passed its generator controls and completed `configuration`,
+`markdown`,
+`merge_values` and `orchestration` before its step limit interrupted the next target.
+The exact frozen target list names the remaining targets `rust_explicit_types` and `rust_style`.
+A prior commentary mislabeled the latter as TypeScript;
+that scope error was corrected from the actual CLI listing and frozen filenames before dispatch.
+The target-filter assertion would reject an incomplete selection.
+The dedicated replay is `6z1fwznlrx` at `43a51584d0f3ab389490fbe010ec733aafc05cc9`.
+It does not repeat already-passed generator tests.
+
+Completed compute proxy is USD 3.0884,
+with USD 1.9116 remaining.
+The replay reserves USD 0.36.
+The tracked queue is corrected-parser linter planted controls,
+truepeak all-features Nextest,
+WG privileged namespaces,
+bounded benchmark repetitions and one final Codex stderr-retention pass.
+The last pass retains successful shutdown stderr,
+which the original passing fixture deletes with its temporary home.
