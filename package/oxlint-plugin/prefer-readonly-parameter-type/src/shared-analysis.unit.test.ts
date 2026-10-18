@@ -57,7 +57,7 @@ type DisposableFixtureRoot = {
 
 /**
  Creates disposable fixture root.
-
+ 
  @returns directory removed after the test scope.
  */
 function disposableFixtureRoot(): DisposableFixtureRoot {
@@ -80,11 +80,11 @@ type ProjectFixture = {
 
 /**
  Writes one project directory with its configuration, active source, and extra files.
-
+ 
  @param root - Disposable fixture root.
-
+ 
  @param project - Project name, configuration, and files.
-
+ 
  @returns absolute path of the project's active source.
  */
 function writeProject({
@@ -110,9 +110,9 @@ function writeProject({
 
 /**
  Writes the shared directory every project includes.
-
+ 
  @param root - Disposable fixture root.
-
+ 
  @param files - File names and sources written under the shared directory.
  */
 function writeSharedDirectory({
@@ -132,13 +132,13 @@ function writeSharedDirectory({
 
 /**
  Builds the effect index of one project's active source and reads the cache counters.
-
+ 
  @param inputPath - Active source path.
-
+ 
  @param inputSource - Active source text.
-
+ 
  @param cacheRoot - Persistent cache root shared by both projects.
-
+ 
  @returns counters observed after the build.
  */
 function buildProject({
@@ -169,13 +169,13 @@ function buildProject({
 
 /**
  Builds the first project cold, then the second against the cache the first wrote.
-
+ 
  @param root - Disposable fixture root.
-
+ 
  @param first - First project.
-
+ 
  @param second - Second project.
-
+ 
  @returns counters observed while building the second project.
  */
 function buildBothProjects({

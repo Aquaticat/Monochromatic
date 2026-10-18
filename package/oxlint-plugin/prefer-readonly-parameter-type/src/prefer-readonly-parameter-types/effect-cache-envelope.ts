@@ -49,6 +49,11 @@ export type EffectSummaryOmissionReason =
  `dependenciesResolved` marks whether module references resolved completely;
  an unresolved entry snapshots the whole indexed scope instead and must
  never seed another file's closure walk.
+ 
+ A shared entry carries `sharedKeyDigest`, the cross-project key it was
+ written under, and is addressed by file and that key rather than by project;
+ `projectKey` then names the project that wrote it, and `surfaces` records that
+ project's surfaces without being compared on read.
  */
 export type PersistentEffectCacheEnvelope = {
   readonly schema: number;
@@ -63,6 +68,7 @@ export type PersistentEffectCacheEnvelope = {
   readonly omittedCallableKeys: readonly string[];
   readonly omissionReasons: readonly EffectSummaryOmissionReason[];
   readonly payload: SerializedEffectSummaries;
+  readonly sharedKeyDigest?: string;
 };
 
 /**
@@ -218,6 +224,45 @@ function surfacesMatch({
 }
 
 /**
+ Tests whether the entry's scope matches the requested one.
+ 
+ A shared entry matches by its cross-project key alone,
+ because the key already binds every input the project surfaces would.
+ A per-project entry matches by project and by every whole-scope surface.
+ 
+ @param value - Parsed JSON envelope.
+ 
+ @param identity - Requested project and optional cross-project key.
+ 
+ @param surfaces - Current whole-scope surface digests.
+ 
+ @returns whether the entry belongs to the requested scope.
+ */
+function scopeMatches({
+  value,
+  identity,
+  surfaces,
+}: {
+  readonly value: Readonly<Record<string, unknown>>;
+  readonly identity: {
+    readonly projectKey: string;
+    readonly sharedKeyDigest?: string;
+  };
+  readonly surfaces: EffectProjectSurfaces;
+}): boolean {
+  if (identity.sharedKeyDigest !== undefined) {
+    return (value.sharedKeyDigest === identity.sharedKeyDigest)
+      && ((typeof value.projectKey) === 'string');
+  }
+  return (value.sharedKeyDigest === undefined)
+    && (value.projectKey === identity.projectKey)
+    && surfacesMatch({
+      value: value.surfaces,
+      surfaces,
+    },);
+}
+
+/**
  Tests whether every snapshot dependency digest matches current program.
  
  @param dependencyDigests - Parsed snapshot digests keyed by file path.
@@ -244,7 +289,7 @@ function dependenciesMatch({
  
  @param value - Parsed JSON value.
  
- @param identity - Requested analyzer, project, file, and source identity.
+ @param identity - Requested analyzer, project, file, source, and optional cross-project key identity.
  
  @param state - Current whole-scope surfaces and per-source digests.
  
@@ -266,17 +311,18 @@ export function validatePersistentEnvelope({
     readonly projectKey: string;
     readonly fileName: string;
     readonly sourceDigest: string;
+    readonly sharedKeyDigest?: string;
   };
   readonly state: PersistentEffectDependencyState;
 }): PersistentEffectCacheEnvelope | typeof ENVELOPE_INVALID {
   if ((!isRecord(value,))
     || (value.schema !== EFFECT_CACHE_SCHEMA)
     || (value.analyzerDigest !== identity.analyzerDigest)
-    || (value.projectKey !== identity.projectKey)
     || (value.fileName !== identity.fileName)
     || (value.sourceDigest !== identity.sourceDigest)
-    || (!surfacesMatch({
-      value: value.surfaces,
+    || (!scopeMatches({
+      value,
+      identity,
       surfaces: state.surfaces,
     },))
     || ((typeof value.dependenciesResolved) !== 'boolean')
@@ -306,10 +352,13 @@ export function validatePersistentEnvelope({
   return {
     schema: EFFECT_CACHE_SCHEMA,
     analyzerDigest: identity.analyzerDigest,
-    projectKey: identity.projectKey,
+    projectKey: (identity.sharedKeyDigest === undefined)
+      ? identity.projectKey
+      : String(value.projectKey,),
     fileName: identity.fileName,
     sourceDigest: identity.sourceDigest,
     surfaces: state.surfaces,
+    ...(identity.sharedKeyDigest === undefined) ? {} : { sharedKeyDigest: identity.sharedKeyDigest, },
     dependenciesResolved: value.dependenciesResolved,
     directDependencies: value.directDependencies
       .filter(function stringEntry(entry,): entry is string {

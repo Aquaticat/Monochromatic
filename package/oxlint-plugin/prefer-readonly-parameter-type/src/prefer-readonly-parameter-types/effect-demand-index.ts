@@ -6,8 +6,7 @@
 
 import type { SourceFile, } from 'typescript/unstable/ast';
 
-import { directEffectSummary, } from './direct-effect-summary.ts';
-import type { EffectSummaryOmissionReason, } from './effect-cache-envelope.ts';
+import { scanDirectSummaries, } from './direct-source-scan.ts';
 import type {
   DemandDrivenEffectIndexOptions,
   PendingEffectSummaryStore,
@@ -29,15 +28,11 @@ import {
   storeCreatedSummariesForSource,
 } from './effect-summary-cache.ts';
 import {
-  recordDirectSummaryOmission,
   reportDirectSummaryOmissions,
   restoreCachedSummaryOmissions,
 } from './effect-summary-omission.ts';
 import {
   callableKey,
-  collectAstNodes,
-  type EffectCallableDeclaration,
-  isEffectCallableDeclaration,
   type MutableEffectSummary,
 } from './effect-summary-model.ts';
 
@@ -46,12 +41,17 @@ import {
   type EffectSummaryIndex,
   NO_EFFECT_SUMMARY,
 } from './effect-summary-index.ts';
-import { externalCallableEffect, } from './external-callable-effect.ts';
 import { completeForeignBorrowedGraph, } from './foreign-borrowed-complete-graph.ts';
 import {
   provenRootEntry,
   scopeNamesOwnershipMarker,
 } from './foreign-borrowed-demand.ts';
+import { createSharedKeyResolver, } from './shared-analysis-key.ts';
+import {
+  recordSharedStore,
+  sharedVerificationEnabled,
+} from './shared-analysis-telemetry.ts';
+import { verifySharedSource, } from './shared-analysis-verification.ts';
 
 /**
  Creates mutable index that expands only from requested callable sources.
@@ -105,6 +105,14 @@ export function createDemandDrivenEffectIndex(
     project,
     indexedFileNames,
     sourceDigests: projectFingerprint.sourceDigests,
+  },);
+  /**
+   Cross-project cache keys for the sources of this snapshot.
+   */
+  const sharedKeys = createSharedKeyResolver({
+    project,
+    fingerprint: projectFingerprint,
+    ...(analysisRoot === undefined) ? {} : { analysisRoot, },
   },);
   /**
    Current program state validating persistent entries.
@@ -164,6 +172,11 @@ export function createDemandDrivenEffectIndex(
     readonly dependencies: readonly string[];
   } {
     /**
+     Cross-project key of current source,
+     ineligible when the source keeps its per-project entry.
+     */
+    const sharedKey = sharedKeys.keyFor(sourceFile,);
+    /**
      Layered cache identity for current source.
      */
     const identity = sourceIdentity({
@@ -171,6 +184,7 @@ export function createDemandDrivenEffectIndex(
       scopeKey,
       projectDigest,
       sourceFile,
+      ...(sharedKey.eligible) ? { sharedKeyDigest: sharedKey.digest, } : {},
       ...(cacheRootOverride === undefined) ? {} : { cacheRootOverride, },
     },);
     /**
@@ -191,6 +205,16 @@ export function createDemandDrivenEffectIndex(
         sourceFileName: sourceFile.fileName,
         reasons: hit.omissionReasons,
       },);
+      if (hit.shared && sharedVerificationEnabled()) {
+        verifySharedSource({
+          project,
+          sourceFile,
+          scopeKey,
+          hit,
+          buildIndex,
+          ...(analysisRoot === undefined) ? {} : { analysisRoot, },
+        },);
+      }
       return {
         fileSummaries: hit.summaries,
         dependencies: reachedSourceFileNames({
@@ -199,79 +223,28 @@ export function createDemandDrivenEffectIndex(
         },),
       };
     }
+    if (sharedKey.eligible)
+      recordSharedStore('miss',);
     /**
-     Callable declarations decoded only for reached source.
+     Fresh direct summaries and omissions for reached source.
      */
-    const declarations = collectAstNodes(sourceFile,)
-      .filter(function retainEffectCallable(node,): node is EffectCallableDeclaration {
-        return isEffectCallableDeclaration(node,);
-      },);
-    /**
-     Callable identities omitted while scanning this exact source.
-     */
-    const sourceOmittedCallableKeys = new Set<string>();
-    /**
-     Bounded reasons for every omission encountered in current source.
-     */
-    const sourceOmissionReasons = new Set<EffectSummaryOmissionReason>();
-    /**
-     Fresh direct summaries for reached source.
-     */
-    const fileSummaries = new Map(declarations.flatMap(function gatherCallable(declaration,): readonly [
-      string,
-      MutableEffectSummary,
-    ][] {
-      try {
-        return [[
-          callableKey(declaration,),
-          directEffectSummary({
-            project,
-            declaration,
-            ...(analysisRoot === undefined) ? {} : { analysisRoot, },
-            externalEffectResolver({
-              consumerProject,
-              call,
-              declaration: externalDeclaration,
-            },) {
-              return externalCallableEffect({
-                consumerProject,
-                call,
-                declaration: externalDeclaration,
-                buildIndex,
-              },);
-            },
-          },),
-        ],];
-      }
-      catch (error) {
-        /* One callable whose summary cannot be built must not cost the rest of the file.
-         * Omitting it is what makes the rest analyzable, and omission is fail-closed on
-         * both sides: its callers hit the absent-callee branch in
-         * `effect-fixed-point-propagation.ts` and take opacity, while the rule skips
-         * verifying it rather than reporting an internal failure against code whose author
-         * cannot act on it. The live cause is an upstream panic recorded in
-         * `doc/troubleshooting/typescript-go-tuple-type-panic.md`, which no ordering of API
-         * calls avoids. */
-        recordDirectSummaryOmission({
-          allOmittedKeys: omittedCallableKeys,
-          sourceOmittedKeys: sourceOmittedCallableKeys,
-          sourceOmissionReasons,
-          key: callableKey(declaration,),
-          error,
-        },);
-        return [];
-      }
-    },),);
+    const scan = scanDirectSummaries({
+      project,
+      sourceFile,
+      allOmittedKeys: omittedCallableKeys,
+      buildIndex,
+      ...(analysisRoot === undefined) ? {} : { analysisRoot, },
+    },);
     reportDirectSummaryOmissions({
-      omittedKeys: sourceOmittedCallableKeys,
+      omittedKeys: scan.sourceOmittedCallableKeys,
       sourceFileName: sourceFile.fileName,
-      reasons: sourceOmissionReasons,
+      reasons: scan.sourceOmissionReasons,
     },);
     /**
      Owned source dependencies discovered through semantic call edges.
      */
     const dependencies = reachedSourceFileNames({
-      fileSummaries,
+      fileSummaries: scan.fileSummaries,
       indexedFileNames,
     },);
     closureResolver.includeDirectDependencies({
@@ -282,13 +255,13 @@ export function createDemandDrivenEffectIndex(
       sourceFile.fileName,
       {
         sourceFile,
-        summaries: fileSummaries,
-        omittedCallableKeys: [...sourceOmittedCallableKeys,].toSorted(),
-        omissionReasons: [...sourceOmissionReasons,].toSorted(),
+        summaries: scan.fileSummaries,
+        omittedCallableKeys: [...scan.sourceOmittedCallableKeys,].toSorted(),
+        omissionReasons: [...scan.sourceOmissionReasons,].toSorted(),
       },
     );
     return {
-      fileSummaries,
+      fileSummaries: scan.fileSummaries,
       dependencies,
     };
   }
@@ -368,12 +341,17 @@ export function createDemandDrivenEffectIndex(
         pendingStore.sourceFile
           .fileName,
       );
+      /**
+       Cross-project key of the stored source.
+       */
+      const storedKey = sharedKeys.keyFor(pendingStore.sourceFile,);
       storeCreatedSummariesForSource({
         identity: sourceIdentity({
           project,
           scopeKey,
           projectDigest,
           sourceFile: pendingStore.sourceFile,
+          ...(storedKey.eligible) ? { sharedKeyDigest: storedKey.digest, } : {},
           ...(cacheRootOverride === undefined) ? {} : { cacheRootOverride, },
         },),
         summaries: pendingStore.summaries,

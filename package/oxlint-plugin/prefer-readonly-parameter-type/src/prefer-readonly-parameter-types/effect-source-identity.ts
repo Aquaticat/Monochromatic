@@ -21,6 +21,7 @@ export type EffectSourceIdentity = {
   readonly projectDigest: string;
   readonly fileName: string;
   readonly sourceText: string;
+  readonly sharedKeyDigest?: string;
   readonly cacheRootOverride?: string;
 };
 
@@ -34,6 +35,8 @@ export type EffectSourceIdentity = {
  @param projectDigest - Exact semantic project identity.
  
  @param sourceFile - Reached source whose summaries are requested.
+ 
+ @param sharedKeyDigest - Cross-project key digest when the source may share its entry.
  
  @param cacheRootOverride - Optional disposable cache root.
  
@@ -49,12 +52,14 @@ export function sourceIdentity({
   scopeKey,
   projectDigest,
   sourceFile,
+  sharedKeyDigest,
   cacheRootOverride,
 }: {
   readonly project: Project;
   readonly scopeKey: string;
   readonly projectDigest: string;
   readonly sourceFile: SourceFile;
+  readonly sharedKeyDigest?: string;
   readonly cacheRootOverride?: string;
 }): EffectSourceIdentity {
   return {
@@ -63,6 +68,7 @@ export function sourceIdentity({
     projectDigest,
     fileName: sourceFile.fileName,
     sourceText: sourceFile.text,
+    ...(sharedKeyDigest === undefined) ? {} : { sharedKeyDigest, },
     ...(cacheRootOverride === undefined) ? {} : { cacheRootOverride, },
   };
 }
