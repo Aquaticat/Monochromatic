@@ -526,7 +526,9 @@ before the other queued work.
     and a probe of 205,740 short strings found no case where reading with definitions is the faithful one.
     Decided 2026-10-18: the words of a place stay read alone (B673's first option), which planner, apply and
     reader already share; `withProvenApostrophes` takes definitions for the locator only.
-    Gate g104 on `67c9b1accb` runs before these commits land.
+    Gate g104 on `67c9b1accb` was green (every step exit 0, suite 2528 pass and 0 fail, scans pass),
+    and both `w186` rounds landed on 2026-10-18 by cherry-pick, pushed as far as `ce7be13112`;
+    the first round had not landed before, which the second round's conflicts showed.
     In `w177`: the hardening's follow-up is done (`83e43a4604` to `f931308964`: the sibling origin fix,
     external omissions persisted under schema 10, the 75 TS2307 packages built and re-compared identical),
     and the whole repository is compared once more under that bundle before `0f2f380e59` to `f931308964` land.
