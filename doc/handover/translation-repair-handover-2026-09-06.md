@@ -448,7 +448,10 @@ before the other queued work.
     the finalist extension (not started before 2026-10-18;
     the lead's veto-open rule that a lone leader without a majority is run off with the second-count labels,
     fixing the 2-1-1 regression the `TianqiChen66625` replay showed in n171)
-    runs as a red/fix pair in `w180`,
+    is done in `w180` (`c3d881805b`, `7123ffb2f8`, `114c8dbc52`, ledger B656; not yet on the branch):
+    the artifact reader's recount now refuses a recorded group with a lone leader and no run-off,
+    so whether any stored artifact is refused is being measured (`w180-notes/reader-check/`)
+    before it lands,
     and the guard-failure demonstrations
     (missing for n171 and n168, unmapped for n173's `s244/guards/`)
     run in `w181` (notes `w181-notes/report.md`);
