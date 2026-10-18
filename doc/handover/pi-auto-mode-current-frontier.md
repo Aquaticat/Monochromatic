@@ -20,15 +20,18 @@ The corrected class preserves the original assignment without another member dec
 Its worker commit fails with exit 128 and Git's
 `fatal: protocol error: bad line length character: Not ` diagnostic.
 Host delivery through the qualified wrapper succeeds as `98add8596e` without bypassing guards.
-The worker settles after 105 tools,
-then receives a separate six-call diagnostic assignment,
-`native-diagnose-private-home-git-filter-boundary-20261018`.
-That assignment permits read-only repository inspection and disposable fixtures only.
+The worker's separate read-only diagnostic assignments end at 111 tools and nine errors.
+The final single-call `git-lfs env` probe succeeds:
+its working directory and Git directory are the actual mounted repository,
+with the local media directory under `.git/lfs/objects`.
+Normal-root recognition does not establish behavior inside the failed commit's filter environment.
 The supervisor retains the queued `system-slot` and `policy-loader` changes.
 MiMo source controller `53002`, fixture `pi-mimo-rpc-session-B7AghW`,
 still owns only `native-decision-fallback.test.mjs` and new siblings for that catalog.
 Its observed errors are ordinary command/path failures, not the reported preparation diagnostic.
-It is now writing typed fallback helper modules; its complete delivery and checks are pending.
+Its typed catalog helpers and JavaScript task entry are written.
+The worker continues typing and validation at 111 tools;
+its complete delivery and full mode/variant checks remain pending.
 
 Native aborts produce three error tool results containing
 `Complete group preparation or assessment failed`.
@@ -56,9 +59,8 @@ including complete empty child stderr.
 The new built error regression covers arity,
 message/cause,
 inherited name accessors and facade identity.
-Scoped lint reports 20 warnings and zero errors across nine files;
-later unit/entry style fixes still need a fresh check.
-The remaining dynamic-error-name finding requires source/configuration investigation.
+That frozen checkpoint reports 20 warnings and zero errors across nine files.
+Subsequent typed-error and receipt-entry fixes supersede this scoped lint checkpoint.
 This does not clear the old full-source backlog of 1,037 warnings and 47 errors.
 
 Commit `5984de85c8` preserves dynamic inherited error naming with a declaration-scoped,
@@ -68,11 +70,33 @@ a literal-name positive control clears the warning but changes the consumer sett
 Its frozen build,
 fresh-cache types,
 named built-error consumer and receipt catalog pass.
-The nine-file lint now reports zero warnings and one `import/unambiguous` error in the receipt entry.
+Its nine-file lint reports zero warnings and one `import/unambiguous` error in the receipt entry.
 Commit `0df4fbcaa9` replaces that dynamic import with a static side-effect import;
-the fresh follow-up check remains pending.
-Built field and literal-name mutants are running against the maintained setter regression,
-with private input restoration and rebuilt passing controls required.
+the follow-up instead reports `import/no-unassigned-import`.
+Commit `3c12d88f7f` exposes an explicit catalog runner called by the stable JavaScript entry.
+The next five-file check reports six warnings:
+five statement-layout findings in the new size regression and a missing import separator in that entry.
+Commit `ebe81e3364` includes those layout corrections;
+its fresh scoped check is running.
+Both built field and literal-name mutants fail the maintained setter regression after successful builds,
+then pass after private source restoration and rebuilding.
+The root source and active native publication remain unchanged throughout those mutants.
+
+The live source worker's recent missing-evidence fallback has an independently reproduced cause:
+`RequestObservationProfileError: Serialized request exceeds observation byte bound`.
+The observer's default and constructor ceiling are both 1,048,576 bytes.
+Frozen `9fd552782b` reproduces the default observation failure and rejects a deliberately larger configured limit;
+its exact UTF-8 boundary and explicitly smaller-limit controls pass.
+The provider still receives the original body and returns its original response.
+Commit `ebe81e3364` removes the implicit ceiling and retains validated explicit caller limits.
+Its fresh private JavaScript/native build and all five named size cases pass.
+Fresh types,
+scoped lint,
+host-isolation,
+receipt and complete-unit checks are running against that immutable candidate.
+The configured-host long-session replay and guard mutants remain required.
+The live worker still uses pinned `kFkBoY`,
+so it has not received this runtime correction.
 
 The reported-interaction checkpoint retains 52 successful tools,
 zero selectors,
@@ -101,8 +125,8 @@ The source-level corrected/error-field controls and runnable pass/fail reproduct
 The durable diagnosis is `doc/troubleshooting/node-typescript-error-class-fields.md`.
 Oxlint `1.88.0` source is checked out as `6941b4ed45ead21c45bc2164cb80a180eed85b43`.
 Its custom-error-name rule requires a literal class name and declares no configuration options.
-Configuration probes remain pending:
-the first driver fails before spawning because an unopened WriteStream has `fd: null`.
+Configuration probes are complete.
+The first driver fails before spawning because an unopened WriteStream has `fd: null`.
 The corrected driver awaits an opened numeric file descriptor.
 
 The corrected probe completes all three cases.
@@ -128,10 +152,10 @@ Parsing the captured Node source reports zero syntax errors.
 The supervisor retracts that claim in the new worker prompt and supplies a parsed,
 single-call local-path metadata probe.
 Native worker state reaches 110 tools and nine errors after that Stop;
-the next probe is pending.
+the corrected metadata probe then succeeds as tool 111.
 Its earlier diagnostic error is `ls: unrecognized option '--long'`,
 not a Node syntax failure.
-Source MiMo reaches 105 tools and continues delivering its outcome assertions;
+Source MiMo reaches 111 tools and continues typing its completed catalog decomposition;
 automatic review currently falls back on missing usable request evidence for some writes.
 Those supervisory Allows are not automatic-review success evidence.
 
@@ -147,6 +171,7 @@ Remaining independently verified work areas:
   stale evidence and compaction through the configured host.
 - Rebuild the coherent final artifact and repeat the corrected reported-interaction replay,
   real MiMo editing,
+  a valid primary request exceeding the former observation ceiling,
   payload positive controls and complete raw-stderr checks.
 - Finish dependency/import measurements and review any artifact cleanup against actual live consumers.
 - Inspect deployed pnpr trust after the requested access route is available,
