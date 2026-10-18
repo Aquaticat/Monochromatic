@@ -39,18 +39,31 @@ and surfaced two harness sharp edges
 (a native-timer clear deadlock and a descriptor re-execution trap),
 all recorded in the phase-2 sections.
 
+Owner decisions (2026-10-18,
+after the phase-2 research):
+
+- Fix scope:
+  the test sites plus harness robustness
+  (ranked remedy space items 1-7);
+  the interval-exposure API change (item 8) is deferred as a design follow-up.
+- Logger-site remedy:
+  the fake-clock zero-advance proof (P2-verified),
+  not constant scaling.
+- Tracker disposition:
+  the native-timer clear deadlock is filed as its own issue ([#1771][i1771]);
+  the descriptor re-execution trap folds into the issue 1762 correction
+  and the docs work item.
+- Code changes remain paused;
+  only doc and issue-tracker updates were authorized in this turn.
+
 Tracker state:
-the user approved posting a correction comment on the issue and approved fixing all five sites,
-then paused the fixes pending this research.
-The comment is held too,
-so it carries the final remedy plan rather than the provisional phase-1 directions.
+the correction comment is posted on [issue 1762][i1762] ([comment][c1762]),
+and [#1771][i1771] carries the `withTimeout` cross-domain clear deadlock.
 
 How to respond:
-read the capability findings and the ranked remedy space,
-answer the open questions,
-and lift or keep the pause.
-Implementing fixes needs the pause lifted
-(the resolution workflow in `doc/agent/issue-tracker.md`).
+lift the pause to start implementation;
+the ranked remedy space is the approved plan
+(the resolution workflow in `doc/agent/issue-tracker.md` applies).
 
 ## The framing disagreement
 
@@ -88,6 +101,11 @@ with three corrections to the issue's record.
     and this session's repro
     (five batches at the runner's full 32-process width through the real task)
     produced zero failures.
+    Phase-2 qualification:
+    issue [#510][i510] records an observed failure of a sibling real-elapsed bound
+    in the logger file on a two-CPU container,
+    so the risk is hypothetical for the seven inventoried assertions
+    but observed for the family on smaller machines.
 
 The issue is still right about the real kernel:
 the `describe` concurrency proof (79 ms margin on a 101 ms span)
@@ -137,7 +155,17 @@ is the correct direction for those sites.
   and records observed flakiness.
   The six sites here are millisecond-scale timer,
   parse,
-  and short-lived-child tests with no observed failure on record.
+  and short-lived-child tests;
+  none of the seven inventoried assertions has an observed failure on record.
+  The logger file does carry observed history outside the inventory:
+  issue [#510][i510] records
+  `sinks verify concurrently rather than one after another`
+  failing `expected 108.877363 to be below 50` in a two-CPU container,
+  and that test has since been rewritten in-tree as a clock-free gated-promise
+  observation (`Promise.withResolvers` start flags plus a release gate).
+  The repo's chosen resolution of an actually-failing load-sensitive bound
+  was an observation rewrite,
+  not a quarantine.
 
 ### Complete inventory: seven assertions in five files
 
@@ -217,6 +245,10 @@ Contention repro through the real runner:
 - Zero failures in five trials is weak evidence of absence.
   A full-suite run sustains contention far longer than one 32-file batch,
   and a CI machine with fewer cores has a different contention profile.
+  Issue [#510][i510] is the existence proof for the smaller-machine case:
+  a sibling real-elapsed bound in `create-logger.unit.test.ts`
+  failed in a two-CPU container,
+  and its clock-free rewrite is the in-repo precedent for the remedy plan.
 
 ## Phase 2 correction: the harness itself is ours
 
@@ -526,41 +558,49 @@ A reprobing of this class needs a multiline shape such as
 
 ## Open questions
 
-- Did any of these assertions ever fail in CI or on a smaller machine?
-  Nothing is cited in the issue and nothing reproduced here;
-  CI logs would settle whether the false-red risk is observed or purely theoretical.
-- Do the two harness sharp edges (native-timer clear deadlock,
-  descriptor re-execution trap)
-  get filed as their own issues,
-  or ride inside the issue 1762 correction and fix work?
-- Interval exposure API shape (capability finding 1):
+- Did any of the seven inventoried assertions themselves ever fail in CI?
+  Still unknown;
+  the [#510][i510] history shows the family failing on two-CPU containers,
+  so a CI-log check remains useful but no longer decision-relevant.
+- Interval exposure API shape (deferred follow-up,
+  capability finding 1):
   raw per-child start and duration on the results,
   or a computed overlap summary?
   The choice touches `DescribeResult`,
   `ItResult`,
   and the verdict logging path.
-- Does the review pipeline prefer a correction comment on issue 1762,
-  or a corrected refiling?
 
 ## Next actions
 
-All site changes are paused by the user;
-nothing in the ranked remedy space is implemented yet.
+Code changes remain paused by the owner;
+the doc and tracker updates are done
+(correction comment on [issue 1762][i1762],
+[#1771][i1771] filed,
+this handover current).
+When the pause lifts,
+implement the approved scope
+(ranked remedy space items 1-7):
 
-1.  The user reviews the capability findings and the ranked remedy space,
-    and decides the logger-site remedy (fake-clock restructuring versus constant scaling)
-    and whether the interval-exposure design item proceeds.
-2.  Post the held correction comment on issue 1762 (already user-approved,
-    held so it carries this plan):
-    corrected inventory,
-    quarantine rejection,
-    per-site remedies,
-    and the two harness sharp edges found during research,
-    with their tracker disposition from the open questions.
-3.  On authorization,
-    implement in ranked order;
-    harness and module fixes carry guard tests proven failing before the fix.
-4.  The probe scripts are throwaway
+1.  The site fixes in ranked order:
+    the describe peak-counter rewrite,
+    the logger fake-clock zero-advance restructuring
+    (with the `shouldClearNativeTimers: true` workaround until [#1771][i1771] lands),
+    the gh-process `ABORT_ERR` assertion,
+    the mvm derived ceiling and documented discrimination,
+    and the wg-quicker documented slack.
+2.  The `withTimeout` domain-pairing fix ([#1771][i1771]),
+    with a guard test proven failing before the fix.
+3.  The docs work item:
+    the harness README fake-timer recipe
+    (`shouldClearNativeTimers` caveat,
+    single-consumption rule,
+    `concurrency: 1` sequencing),
+    descriptor re-execution semantics,
+    the upper-bound duration guidance section,
+    and the matching testing-practices skill updates.
+4.  Deferred beyond the approved scope:
+    the `DescribeResult` interval-exposure design item.
+5.  The probe scripts are throwaway
     (`~/temp/agent/proto-p1-fakeclock-concurrency.mjs`,
     `proto-p1b-negative-only.mjs`,
     `proto-p2-fakeclock-flush.mjs`);
@@ -647,5 +687,23 @@ Key commands and outputs:
   `it-attempt.ts`,
   `sandbox-runtime.ts`
   returns no matches.
+- [#510][i510] history:
+  the issue records the two-CPU-container failure
+  `expected 108.877363 to be below 50` for
+  `expect(elapsed).toBeLessThan(SLOW_WRITE_MS * 2)`;
+  the current-tree
+  `sinks verify concurrently rather than one after another`
+  test (create-logger.unit.test.ts:980)
+  uses `Promise.withResolvers` start flags and a release gate,
+  with no clock assertion.
+- Filed [#1771][i1771] in phase 2
+  (duplicate searches for `withTimeout clearTimeout`,
+  `fake timers deadlock`,
+  and `shouldClearNativeTimers` found no open matches).
+- Correction comment posted on issue 1762:
+  [comment permalink][c1762].
 
 [i1762]: https://github.com/Aquaticats/Monochromatic/issues/1762
+[i510]: https://github.com/Aquaticats/Monochromatic/issues/510
+[i1771]: https://github.com/Aquaticats/Monochromatic/issues/1771
+[c1762]: https://github.com/Aquaticats/Monochromatic/issues/1762#issuecomment-6255436442
