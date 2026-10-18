@@ -59,10 +59,9 @@ export {
   usableChoicesOf,
 } from './consistency-choice.ts';
 export { closingJointsOf, } from './consistency-closing-links.ts';
-export {
-  joinedMarksOf,
-  markPastRunOf,
-} from './consistency-closing-marks.ts';
+export { containsWords, } from './consistency-contains-words.ts';
+export { markPastRunOf, } from './consistency-closing-marks.ts';
+export { joinedMarksOf, } from './consistency-joined-marks.ts';
 export { isCornerBracket, } from './consistency-corner-brackets.ts';
 export { unlessOverlapping, } from './consistency-count-overlap.ts';
 export {
@@ -145,6 +144,8 @@ export {
   type QuotesByLabel,
   quotesByLabelOf,
   runOffFinalistsOf,
+  runOffTiedFinalistsOf,
+  type SlotAgreement,
   usableVoicesOf,
 } from './consistency-majority.ts';
 export {

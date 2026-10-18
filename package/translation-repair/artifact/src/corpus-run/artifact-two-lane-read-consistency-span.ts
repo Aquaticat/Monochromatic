@@ -13,6 +13,7 @@ import {
 import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
   artifactGenerationCarriesPartialUnits,
+  artifactGenerationReadsSlotsBesideContainingQuotes,
   artifactGenerationRecordsMarks,
   type TwoLaneArtifactGeneration,
 } from './artifact-two-lane-contract.ts';
@@ -44,7 +45,7 @@ import {
 // WHAT A RECORDED GROUP OF THE SIXTEENTH SHAPE SAYS ABOUT ITSELF, recounted. The
 // ballots are in the file, so the usable count, the words a strict majority
 // quoted for each place, the slot inside them, the places a majority kept, the
-// tie for first and the run-off that settled it, the winner, each receiving
+// finalists and the run-off that settled it, the winner, each receiving
 // place's carry and what became of each place are all recomputed here, and a
 // file that disagrees with its own ballots is refused. What the recount cannot
 // reach is the English of a slice, which the file does not hold for slices the
@@ -54,6 +55,18 @@ import {
 // compared from generation seventeen, which recorded them
 // (`consistency-splice.ts`), and by the words alone before, as those sections
 // were written.
+//
+// THE RECOUNT HOLDS NO PAGE, SO IT HANDS THE SLOT READERS NO DEFINITIONS (ledger B661). The pass reads a slot with the link and
+// footnote definitions of the whole page (`pageDefinitionsOf` over the page text, `consistency-count.ts`), so a shortcut reference
+// such as `[b]` inside a span is a link when its definition stands in another slice: `a[b]c` is then one word and `b` is no stand in
+// it, and the pass records no slot. The file cannot supply those definitions. `parseConsistency` is handed the section and the
+// indexes of the slices, the `slices` rows hold only the slices the pass changed (as they ended), the comparison rows hold each
+// lane's text before the consolidation, and the consolidated English the pass read is recorded nowhere; rebuilding it takes the
+// corpus files at the artifact's commit (`artifact-two-lane-rebuild.ts`), which a reader of one file does not have. So the slot is
+// recounted over the span alone, where `b` stands once: a pass-written refrain whose span holds a reference defined in another slice,
+// with a slot at the joint of the reference, is refused here (the recount expects a slot the pass could not find), and the converse
+// direction is the same limit in `asLocatedBySpan` (`artifact-two-lane-read-consistency-span-located.ts`). The shape needs a
+// cross-slice definition and a slot at a word joint, and a case pins it.
 //
 // A UNIT CARRIED IN PART IS READ FROM THE RECORD ALONE, from generation seventeen.
 // The places of one block share one bench record, so the carries recorded under
@@ -126,7 +139,7 @@ function assertSpanRenderingAgrees(
       .length, },),
   },);
   /**
-   The spans a strict majority of the quotes naming this place contain, in the fold, longest first. THE RECOUNT CANNOT SAY WHICH OF
+   The spans the quotes of more than half of all the usable ballots contain, in the fold, longest first. THE RECOUNT CANNOT SAY WHICH OF
    THEM STANDS EXACTLY ONCE in the English (the file does not hold the English of a slice the pass left alone), so a located
    rendering is held to be one of them and an unlocated one is held to a reason one of them allows.
    */
@@ -148,7 +161,7 @@ function assertSpanRenderingAgrees(
     // A FILE OF THE SEVENTEENTH GENERATION WRITTEN BEFORE THE SPANS WERE LOCATED BY CONTAINMENT (the run of TianqiChen66625 and
     // those before it) recorded `no-agreement` where a strict majority of the usable ballots had quoted no one text, so the
     // recorded reason is refused only when NEITHER reading allows it: the words a strict majority of the ballots quoted, as the
-    // pass located them before, and the spans a strict majority of the quotes contain, as it does now. The earlier agreed
+    // pass located them before, and the spans the quotes of more than half of all the usable ballots contain, as it does now. The earlier agreed
     // words are always among the candidates, so the two readings differ only for a place the earlier one left unlocated.
     if (reasonContradictedBySpan({
       reason: rendering.reason,
@@ -206,6 +219,11 @@ function assertSpanRenderingAgrees(
       label: occurrence.label,
       words: agreed,
       span: rendering.quote,
+      // A slot is counted beside the quotes the generation counted it beside: any quote that contains the located words from
+      // generation eighteen, and a quote that is the located words before it. The page's link and footnote definitions are not
+      // handed over: the file holds no page, so a reference whose definition stands in another slice reads as plain text here
+      // (the limit is written at the head of this file).
+      slotAgreement: artifactGenerationReadsSlotsBesideContainingQuotes({ generation, },) ? 'containing-quote' : 'exact-quote',
     },)
     : [];
   if (rendering.slot !== expected?.slot) {
@@ -464,6 +482,7 @@ export function assertSpanGroupCoherent(
       group,
       renderings,
       path,
+      generation,
     },),
     right: group.verdict
       .winner,

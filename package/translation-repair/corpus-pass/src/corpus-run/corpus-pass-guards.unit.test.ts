@@ -321,13 +321,14 @@ await describe({
                 ['Mittens',],
               ],
             ],),
-            writes: 17,
+            writes: 18,
           },).message}`,
         );
       },
     },),
     it({
-      name: 'STATES THE REFUSAL OF AN ARTIFACT THAT CARRIES THE LABEL OF THIS GENERATION AND NOT ITS BODY',
+      name: 'REFUSES A RESUME INTO A DIRECTORY OF GENERATION SEVENTEEN ARTIFACTS, which this pass no longer writes: it names them and '
+        + 'leaves them alone, since a resumed directory would otherwise mix two generations of the consistency recount',
       fn: async () => {
         await using scratch = await scratchDir({ prefix: 'corpus-pass-guards-', },);
         await writeFile(
@@ -352,12 +353,52 @@ await describe({
           driftAllowed: false,
         },);
 
+        expect(refusal,).toBeInstanceOf(SchemaGenerationError,);
+        expect(String(refusal,),).toBe(
+          `SchemaGenerationError: ${new SchemaGenerationError({
+            foreign: new Map([
+              [
+                'schema version 17',
+                ['Mittens',],
+              ],
+            ],),
+            writes: 18,
+          },).message}`,
+        );
+      },
+    },),
+    it({
+      name: 'STATES THE REFUSAL OF AN ARTIFACT THAT CARRIES THE LABEL OF THIS GENERATION AND NOT ITS BODY',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'corpus-pass-guards-', },);
+        await writeFile(
+          join(
+            scratch.path,
+            'Mittens.json',
+          ),
+          JSON.stringify({
+            artifactSchemaVersion: 18,
+            id: 'Mittens',
+            tip: FIXED_TIP,
+            pipelineDigest: RECORDED_DIGEST,
+          },),
+        );
+
+        /**
+         What the guards threw.
+         */
+        const refusal = await refusalOf({
+          artifactsDir: scratch.path,
+          pipelineDigest: RECORDED_DIGEST,
+          driftAllowed: false,
+        },);
+
         expect(refusal,).toBeInstanceOf(MislabelledArtifactError,);
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect(String(refusal,),).toBe(
           `MislabelledArtifactError: ${new MislabelledArtifactError({
             entryId: 'Mittens',
-            writes: 17,
+            writes: 18,
           },).message}`,
         );
       },

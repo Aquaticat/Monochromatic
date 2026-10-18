@@ -1416,7 +1416,7 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: EMPTY_NEEDLE,
   },
-  'consistency/consistency-span-agreement.ts#containsWords': {
+  'consistency/consistency-contains-words.ts#containsWords': {
     tests: 2,
     why: EMPTY_NEEDLE,
   },

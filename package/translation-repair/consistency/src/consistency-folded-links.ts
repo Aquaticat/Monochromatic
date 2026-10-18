@@ -1,5 +1,8 @@
 import type { OffsetFoldedText, } from './consistency-fold-offsets.ts';
-import type { MarkupRange, } from './consistency-markup-ranges.ts';
+import type {
+  LabelledLink,
+  MarkupRange,
+} from './consistency-markup-ranges.ts';
 import { rememberedViewOf, } from './consistency-prose-text.ts';
 
 //region Consistency folded links
@@ -16,6 +19,12 @@ import { rememberedViewOf, } from './consistency-prose-text.ts';
 // digits or marks (`[kit](u)`, `[-](u "t")`, `[kit][r]`) show a reader nothing, so each is a stretch the word reading steps over
 // (`hiddenStarts`, `hiddenEnds`) and the label between them is read as the text it is. A link with no label or a label of closing
 // marks keeps the reading it has (`emptyStarts`, `closingSpans`); an image is not listed, since an image is read whole.
+//
+// A LINK WHOSE LABEL ENDS IN AN OPEN MARK CLOSES NOTHING FOR AN APOSTROPHE after it. The bracket that closes `[kit!](u)`, `[Kit.](u)` or
+// `[kit ](u)` is a closing bracket in plain text only when the label ends in one (`[kit)](u)`): a reader sees `kit!'s`, and `!` closes
+// nothing. `openLabelEnds` names the last unit of such a link for the backward reading of an apostrophe (`consistency-word-joints.ts`)
+// and `openLabelStretches` its two hidden stretches for the forward one (`consistency-link-twin.ts`). A label that ends in a letter or a
+// digit keeps its reading, since the letter joins the word to the apostrophe whatever the link writes after it.
 //
 // THE PARSE IS ASKED ONLY WHERE A CLOSING SQUARE BRACKET STANDS IN THE FOLD, since every link has one and the fold asks nothing of a
 // link otherwise. An English the page grammar refuses has no parse, so no link is read in it. A reference with an empty label is a
@@ -56,6 +65,21 @@ export type FoldedLinks = {
    For the first unit of each stretch of a link with a label that shows a reader nothing, the offset after its last unit (n173).
    */
   readonly hiddenEnds: ReadonlyMap<number, number>;
+
+  /**
+   The offsets of the last unit of each link with a label that ends in an open mark: a label whose last character is neither a
+   closing round or square bracket or closing curly double quotation mark nor a letter or a digit (`[kit!](u)`, `[Kit.](u)`,
+   `[kit ](u)`). The `)` or `]` that closes such a link is no closing bracket to the apostrophe after it, as the label would
+   be none in plain text (`kit!'s`).
+   */
+  readonly openLabelEnds: ReadonlySet<number>;
+
+  /**
+   For the first unit of each of the two stretches (the opening square bracket and the resource) of a link with a label that ends
+   in an open mark, the offset after its last unit. The reading of closing marks writes such a link as its label, so that the
+   text it reads is the text a reader sees.
+   */
+  readonly openLabelStretches: ReadonlyMap<number, number>;
 };
 
 /**
@@ -68,6 +92,8 @@ export const NO_FOLDED_LINKS: FoldedLinks = {
   markOnlyEnds: new Set(),
   hiddenStarts: new Map(),
   hiddenEnds: new Map(),
+  openLabelEnds: new Set(),
+  openLabelStretches: new Map(),
 };
 
 /**
@@ -236,40 +262,81 @@ export function foldedLinksOf(
       markOnlyEnds.add(last,);
   }
   /**
+   The folded units of the stretches of some links with a label.
+
+   @param links - links with a label, each with the two stretches that show a reader nothing
+
+   @returns The stretches the fold holds units for, in the order of the links
+   */
+  function hiddenSpansOf({ links, }: { readonly links: readonly LabelledLink[]; },): readonly HiddenSpan[] {
+    return links
+      .flatMap(function stretchesOfLink({
+        opener,
+        resource,
+      },): readonly MarkupRange[] {
+        return [
+          opener,
+          resource,
+        ];
+      },)
+      .flatMap(function unitsOfStretch(stretch,): readonly HiddenSpan[] {
+        /**
+         The folded unit of the first character of the stretch.
+         */
+        const first = unitAt.get(stretch.start,);
+        /**
+         The folded unit of the last character of the stretch.
+         */
+        const last = unitAt.get(stretch.end - 1,);
+        if ((first === undefined) || (last === undefined))
+          return [];
+        return (first > last)
+          ? []
+          : [
+            {
+              first,
+              last,
+            },
+          ];
+      },);
+  }
+  /**
    The stretches of the links with a label that show a reader nothing, by the folded units of their first and last characters. One
    the fold holds no unit for, or whose first unit stands after its last, is left out. A map made from the pairs is never written
    over a key it has not read.
    */
-  const hiddenSpans = labelledLinks
-    .flatMap(function stretchesOfLink({
-      opener,
+  const hiddenSpans = hiddenSpansOf({ links: labelledLinks, },);
+  /**
+   The stretches of the links whose label ends in an open mark.
+   */
+  const openSpans = hiddenSpansOf({
+    links: labelledLinks.filter(function endsOpen({ endsOpen: open, },): boolean {
+      return open;
+    },),
+  },);
+  /**
+   The last units of the links whose label ends in an open mark, mutated only inside this function.
+   */
+  const openLabelEnds = new Set<number>();
+  for (
+    const {
       resource,
-    },): readonly MarkupRange[] {
-      return [
-        opener,
-        resource,
-      ];
-    },)
-    .flatMap(function unitsOfStretch(stretch,): readonly HiddenSpan[] {
-      /**
-       The folded unit of the first character of the stretch.
-       */
-      const first = unitAt.get(stretch.start,);
-      /**
-       The folded unit of the last character of the stretch.
-       */
-      const last = unitAt.get(stretch.end - 1,);
-      if ((first === undefined) || (last === undefined))
-        return [];
-      return (first > last)
-        ? []
-        : [
-          {
-            first,
-            last,
-          },
-        ];
-    },);
+      endsOpen: open,
+    } of labelledLinks
+  ) {
+    if (!open)
+      continue;
+    /**
+     The offset of the last character of the link.
+     */
+    const lastCharacter = resource.end - 1;
+    /**
+     The folded unit of the last character of the link.
+     */
+    const last = unitAt.get(lastCharacter,);
+    if (last !== undefined)
+      openLabelEnds.add(last,);
+  }
   return {
     emptyStarts,
     emptyEnds,
@@ -285,6 +352,16 @@ export function foldedLinksOf(
       ];
     },),),
     hiddenEnds: new Map(hiddenSpans.map(function byFirst({
+      first,
+      last,
+    },): UnitEntry {
+      return [
+        first,
+        last + 1,
+      ];
+    },),),
+    openLabelEnds,
+    openLabelStretches: new Map(openSpans.map(function byFirst({
       first,
       last,
     },): UnitEntry {

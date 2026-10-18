@@ -29,6 +29,7 @@ import {
   markEvidenceOf,
   quotesByLabelOf,
   runOffFinalistsOf,
+  runOffTiedFinalistsOf,
   usableVoicesOf,
 } from '../dist/final/node/index.mjs';
 import { countedList, } from '@monochromatic-dev/translation-repair-test-fixture/ts/element-reads.test-fixture.ts';
@@ -274,8 +275,8 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'NAMES THE FOLDED SLOT WORDS MORE THAN HALF OF THE USABLE BALLOTS GAVE beside the agreed words, a slot given '
-            + 'beside other words or not given counting against it',
+          name: 'NAMES THE FOLDED SLOT WORDS MORE THAN HALF OF THE USABLE BALLOTS GAVE beside a quote that contains the agreed words, '
+            + 'a slot given beside a quote that does not contain them or not given counting against it',
           fn: async () => {
             const voices = [
               voiceOf({ seat: 'a', over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'The cat naps', slot: 'cat', },], }, },),
@@ -286,7 +287,23 @@ await describe({
               agreedSlotWordsOf({ voices, label: 'OCCURRENCE 1', words: 'The cat naps', },),
               agreedSlotWordsOf({ voices, label: 'OCCURRENCE 1', words: 'The cat', },),
               agreedSlotWordsOf({ voices, label: 'OCCURRENCE 1', words: 'The kitten', },),
-            ],).toEqual([['cat',], [], [],],);
+            ],).toEqual([['cat',], ['cat',], [],],);
+          },
+        },),
+        it({
+          name: 'COUNTS ONLY A QUOTE THAT IS THE AGREED WORDS UNDER THE EXACT-QUOTE AGREEMENT of an artifact written before slots '
+            + 'were counted beside containing quotes, so the slot beside the longer quotes is not carried to the shorter words',
+          fn: async () => {
+            const voices = [
+              voiceOf({ seat: 'a', over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'The cat naps', slot: 'cat', },], }, },),
+              voiceOf({ seat: 'b', over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'The cat naps.', slot: 'cat', },], }, },),
+              voiceOf({ seat: 'c', over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'The cat', slot: 'cat', },], }, },),
+            ];
+            expect([
+              agreedSlotWordsOf({ voices, label: 'OCCURRENCE 1', words: 'The cat naps', slotAgreement: 'exact-quote', },),
+              agreedSlotWordsOf({ voices, label: 'OCCURRENCE 1', words: 'The cat', slotAgreement: 'exact-quote', },),
+              agreedSlotWordsOf({ voices, label: 'OCCURRENCE 1', words: 'The cat', slotAgreement: 'containing-quote', },),
+            ],).toEqual([['cat',], [], ['cat',],],);
           },
         },),
       ],
@@ -382,6 +399,41 @@ await describe({
               runOffFinalistsOf({ voices: [], labels, },),
               runOffFinalistsOf({ voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 9', 'OCCURRENCE 9',], },), labels, },),
             ],).toEqual([[], [], [], [], [],],);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: runOffTiedFinalistsOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES ONLY THE LABELS TIED FOR THE HIGHEST COUNT, as the artifacts written before the lone leader\'s rule were run off: '
+            + 'a lone leader without a majority names none, and a tie names the tied labels in the order of the sheet',
+          fn: async () => {
+            const labels = consistencyLabels({ count: 4, },);
+            expect([
+              runOffTiedFinalistsOf({
+                voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3', 'OCCURRENCE 1',], },),
+                labels,
+              },),
+              runOffTiedFinalistsOf({
+                voices: choosing({ choices: ['OCCURRENCE 3', 'OCCURRENCE 1', 'OCCURRENCE 3', 'OCCURRENCE 1', 'OCCURRENCE 2',], },),
+                labels,
+              },),
+              runOffTiedFinalistsOf({
+                voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3', 'OCCURRENCE 4',], },),
+                labels,
+              },),
+              runOffTiedFinalistsOf({ voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 2',], },), labels, },),
+              runOffTiedFinalistsOf({ voices: [], labels, },),
+            ],).toEqual([
+              [],
+              ['OCCURRENCE 1', 'OCCURRENCE 3',],
+              ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3', 'OCCURRENCE 4',],
+              [],
+              [],
+            ],);
           },
         },),
       ],

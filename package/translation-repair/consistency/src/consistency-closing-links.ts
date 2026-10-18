@@ -13,7 +13,9 @@ import {
 // (`closingJointsInText`, `consistency-closing-marks.ts`) runs over a folded English one unit at a time. A link shows a reader its
 // label and nothing of its brackets, destination or title, so where the parse holds a link that shows nothing or only closing marks
 // the reading is made over the text a reader sees (`consistency-link-twin.ts`) and its answer carried back to the offsets of the
-// English: `kit[](u)'kit` is read as `kit'kit` and `kit[\]](u)'kit` as `kit]'kit`.
+// English: `kit[](u)'kit` is read as `kit'kit` and `kit[\]](u)'kit` as `kit]'kit`. A link whose label ends in an open mark, neither a
+// closing mark nor a letter or a digit, is read as its label too: `[kit!](u)'s` as `kit!'s`, whose apostrophe no closing bracket
+// precedes, where `[kit)](u)'s` keeps the closing bracket its label ends in.
 
 /**
  The offsets of a folded English at which a run of closing marks ends in an apostrophe that a letter or a digit follows, as a
@@ -56,13 +58,21 @@ export function closingJointsOf(
   },
 ): ReadonlySet<number> {
   /**
-   The links of the English that show nothing or closing marks, by their first unit.
+   The links of the English that show nothing or closing marks, and the stretches of those with a label that ends in an open
+   mark, by their first unit.
    */
   const {
     emptyEnds,
     closingSpans,
+    openLabelStretches,
   } = links;
-  if ((emptyEnds.size === 0) && (closingSpans.size === 0)) {
+  /**
+   Whether no link of the English shows a reader anything but its label.
+   */
+  const noneRewritten = (emptyEnds.size === 0)
+    && (closingSpans.size === 0)
+    && (openLabelStretches.size === 0);
+  if (noneRewritten) {
     return closingJointsInText({
       folded,
       originals,

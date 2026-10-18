@@ -40,6 +40,33 @@ import {
 } from './consistency-carry.test-fixture.ts';
 
 /**
+ A judge that chooses the candidate its place on the bench points at, so a bench of three or more judges splits over three candidates.
+
+ @param judges - the bench, in roster order
+ @param seat - the judge asked
+ @param sheet - the sheet the judge was shown
+
+ @returns The behaviour of a judge that picks by its place on the bench
+ */
+function splitAmong(
+  {
+    judges,
+    seat,
+    sheet,
+  }: {
+    readonly judges: readonly string[];
+    readonly seat: string;
+    readonly sheet: string;
+  },
+): SeatBehaviour {
+  /**
+   The candidates the sheet shows, in the order of the sheet.
+   */
+  const candidates = candidateTextsOf({ sheet, },);
+  return choosing({ choice: candidates[judges.indexOf(seat,) % candidates.length]?.label ?? '', },);
+}
+
+/**
  A bench of six judges, whose quorum of three asks four seats, so that four choices can split two, one and one.
  */
 const SIX_SEATS = [
@@ -141,11 +168,8 @@ await describe({
             + 'an identical sheet is asked a new question',
           fn: async () => {
             const scene = carryScene({
-              behave: function alwaysSplits({ seat, sheet, },): SeatBehaviour {
-                const candidates = candidateTextsOf({ sheet, },);
-                return choosing({
-                  choice: candidates[scene.context.judgeModelIds.indexOf(seat,) % candidates.length]?.label ?? '',
-                },);
+              behave: function splitsByRosterPlace({ seat, sheet, },): SeatBehaviour {
+                return splitAmong({ judges: scene.context.judgeModelIds, seat, sheet, },);
               },
             },);
             await choose({
@@ -156,7 +180,8 @@ await describe({
               offers: OFFERS,
               findings: [],
             },);
-            const [firstSheet, , , runOffSheet,] = scene.sheets;
+            const [firstSheet,] = scene.sheets;
+            const [runOffSheet,] = scene.sheets.slice(3,);
             expect({
               asked: scene.sheets.length,
               firstAsksAreAlike: new Set(scene.sheets.slice(0, 3,),).size,
@@ -372,10 +397,7 @@ await describe({
           fn: async () => {
             const scene = carryScene({
               behave: function alwaysSplits({ seat, sheet, },): SeatBehaviour {
-                const candidates = candidateTextsOf({ sheet, },);
-                return choosing({
-                  choice: candidates[scene.context.judgeModelIds.indexOf(seat,) % candidates.length]?.label ?? '',
-                },);
+                return splitAmong({ judges: scene.context.judgeModelIds, seat, sheet, },);
               },
             },);
             const { carries, edits, } = await choose({

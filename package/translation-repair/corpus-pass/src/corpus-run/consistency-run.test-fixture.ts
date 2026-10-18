@@ -58,7 +58,7 @@ export const DIGEST: PipelineDigest = DIGEST_TEXT;
 /**
  What every seat does with a sheet that is not a first-round ballot unless a case says otherwise: the writers
  write nothing, a choice among candidates takes the first candidate that is not the paragraph as the page has it
- now (the chosen words moved in by code), and a run-off takes the first tied place.
+ now (the chosen words moved in by code), and a run-off takes the first finalist.
 
  @param call - the call the seat was handed, of which only the sheet is read
 

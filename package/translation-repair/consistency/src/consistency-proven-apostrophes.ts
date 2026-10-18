@@ -49,7 +49,7 @@ import { continuesLatinWordOrCompatibilityForm, } from '@monochromatic-dev/trans
 // (`consistency-word-joints.ts`) reads the same mark as joining the letter after it, across
 // emphasis, a closing double quotation mark, a closing bracket and a link's destination, and
 // the proof must not read one mark two ways. The caller names those marks in `attached`
-// (`joinedMarksOf` in `consistency-closing-marks.ts`, read on the English as written, not on the
+// (`joinedMarksOf` in `consistency-joined-marks.ts`, read on the English as written, not on the
 // prose where the closing marks are gone) and they are read like `don't`. A mark after an
 // OPENING mark (`*'Tis*`) is no such joint and stays what its neighbours make it.
 //
@@ -100,7 +100,7 @@ import { continuesLatinWordOrCompatibilityForm, } from '@monochromatic-dev/trans
 // excellent ideas`, where a backtick of the same page stands earlier in prose. The 4
 // leading ones that drop out are the `’s` after `*Yorushika*`, after `*Arcaea*` and after
 // the closing bracket of two links, which the joint rule that cuts a word reads as joining
-// the letter after it (`joinedMarksOf`, `consistency-closing-marks.ts`): they are attached,
+// the letter after it (`joinedMarksOf`, `consistency-joined-marks.ts`): they are attached,
 // like `don't`, and the one leading mark left is a dropped letter. The same pages cut into
 // the slices the package's own slicer makes (1,329 slices) prove 28 and 1 when each slice
 // is read alone, the mark with the backtick among them, since its backtick stands in an

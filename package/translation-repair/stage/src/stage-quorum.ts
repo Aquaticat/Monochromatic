@@ -243,6 +243,9 @@ type RoundsOutcome<ValueT,> = {
  @throws {@link StageRosterRepeatError} when the roster seats one model more
  than once, before any seat is asked
 
+ @throws {@link StageBenchStartError} when `benchStart` is not a whole number from zero to below the size of the bench, before
+ any seat is asked
+
  @example
  ```ts
  const gather = await gatherStageVoices({ ..., stage: 'critic', l, graceMs: stageSettings.grace.roundMs, },);

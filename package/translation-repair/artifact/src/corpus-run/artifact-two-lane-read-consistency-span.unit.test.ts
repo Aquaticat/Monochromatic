@@ -573,10 +573,13 @@ await describe({
               assertSpanGroupCoherent({ group: nonNullishOrThrow(withSlot,), path: GROUP, generation: GENERATION_EIGHTEEN, },),
             ],).toEqual([SLOT_REFUSAL, undefined,],);
             // Generation seventeen recorded no run-off for the split, so the same slots are read there without one.
-            const old = function withoutRunOff(group: AskedGroup,): AskedGroup {
+            /**
+             The group as generation seventeen recorded it: no run-off, and the winner of a split with no majority.
+             */
+            function old(group: AskedGroup,): AskedGroup {
               const { runOff: _dropped, ...verdict } = group.verdict;
               return { ...group, verdict: { ...verdict, winner: { kind: 'none', reason: 'no-majority', }, }, };
-            };
+            }
             expect([
               assertSpanGroupCoherent({ group: old(nonNullishOrThrow(without,),), path: GROUP, generation: 17, },),
               coherenceRefusal({ group: old(nonNullishOrThrow(withSlot,),), generation: 17, },),

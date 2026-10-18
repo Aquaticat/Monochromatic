@@ -233,7 +233,7 @@ function runOffOf({ choices, }: { readonly choices: readonly string[]; },): Arti
  */
 function winnerRefusal({ group, }: { readonly group: AskedGroup; },): string {
   return String(caught(function recounts(): unknown {
-    return expectedWinnerOf({ group, renderings: RENDERINGS, path: GROUP, },);
+    return expectedWinnerOf({ group, renderings: RENDERINGS, path: GROUP, generation: 18, },);
   },),);
 }
 
@@ -273,11 +273,13 @@ await describe({
                 group: groupOf({ choices: ['OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 2',], }),
                 renderings: RENDERINGS,
                 path: GROUP,
+                generation: 18,
               },),
               expectedWinnerOf({
                 group: groupOf({ choices: ['OCCURRENCE 1', 'OCCURRENCE 1',], }),
                 renderings: RENDERINGS,
                 path: GROUP,
+                generation: 18,
               },),
             ],).toEqual([
               { kind: 'chosen', label: 'OCCURRENCE 1', },
@@ -295,11 +297,13 @@ await describe({
                 group: groupOf({ choices: tied, runOff: runOffOf({ choices: ['OCCURRENCE 2', 'OCCURRENCE 2', 'OCCURRENCE 1',], }), }),
                 renderings: RENDERINGS,
                 path: GROUP,
+                generation: 18,
               },),
               expectedWinnerOf({
                 group: groupOf({ choices: tied, runOff: runOffOf({ choices: ['OCCURRENCE 1', 'OCCURRENCE 2',], }), }),
                 renderings: RENDERINGS,
                 path: GROUP,
+                generation: 18,
               },),
               expectedWinnerOf({
                 group: groupOf({
@@ -308,6 +312,7 @@ await describe({
                 }),
                 renderings: RENDERINGS,
                 path: GROUP,
+                generation: 18,
               },),
             ],).toEqual([
               { kind: 'chosen', label: 'OCCURRENCE 2', },
@@ -329,6 +334,7 @@ await describe({
                 }),
                 renderings: THREE_RENDERINGS,
                 path: GROUP,
+                generation: 18,
               },),
               expectedWinnerOf({
                 group: threePlaceGroupOf({
@@ -337,6 +343,7 @@ await describe({
                 }),
                 renderings: THREE_RENDERINGS,
                 path: GROUP,
+                generation: 18,
               },),
             ],).toEqual([
               { kind: 'chosen', label: 'OCCURRENCE 3', },
@@ -355,7 +362,7 @@ await describe({
               threePlaceGroupOf({ choices: split, runOff: runOffOf({ choices: ['OCCURRENCE 1', 'OCCURRENCE 2',], }), }),
             ].map(function refusedFor(group,): string {
               return String(caught(function recounts(): unknown {
-                return expectedWinnerOf({ group, renderings: THREE_RENDERINGS, path: GROUP, },);
+                return expectedWinnerOf({ group, renderings: THREE_RENDERINGS, path: GROUP, generation: 18, },);
               },),);
             },),).toEqual([refusal, refusal,],);
           },

@@ -5,11 +5,16 @@ import {
   type ConsistencyRendering,
   type ConsistencyWinner,
   majorityChoiceOf,
-  runOffWinnerOf,
   runOffFinalistsOf,
+  runOffTiedFinalistsOf,
+  runOffWinnerOf,
   usableVoicesOf,
   winnerOf,
 } from '@monochromatic-dev/translation-repair-consistency/ts';
+import {
+  artifactGenerationRunsOffLoneLeader,
+  type TwoLaneArtifactGeneration,
+} from './artifact-two-lane-contract.ts';
 import type { ArtifactConsistencyGroup, } from './artifact-two-lane-consistency.ts';
 
 //region Artifact consistency span winner
@@ -18,6 +23,12 @@ import type { ArtifactConsistencyGroup, } from './artifact-two-lane-consistency.
 // the winner of the run-off that settled the split. A run-off recorded for choices
 // that had no finalists, missing for choices that had, among other finalists, or
 // counted otherwise than its ballots give is refused.
+//
+// THE FINALISTS ARE THOSE OF THE RULE THE GENERATION WAS WRITTEN UNDER. From generation eighteen a lone leader that fell short of a
+// majority is run off with the labels next behind it (`runOffFinalistsOf`); a section of seventeen or earlier was written when
+// only the labels tied for the highest count were (`runOffTiedFinalistsOf`), so a group of two, one and one over four usable
+// ballots records no run-off there and is read as it was written. Nothing here tolerates a missing run-off in a generation that
+// requires one.
 
 /**
  A group the bench was asked about.
@@ -83,13 +94,16 @@ export function sameWinner(
 
  @param path - where the group sits, for the parse error
 
+ @param generation - generation the section was written under, which says whether a lone leader is run off with the labels next
+ behind it or only the labels tied for the highest count are
+
  @returns The winner the ballots, the quorum and the run-off give
 
  @throws {@link ArtifactParseError} when a run-off is recorded for choices that had no finalists, is missing for choices that had, names other finalists, or counts otherwise than its ballots give
 
  @example
  ```ts
- const expected = expectedWinnerOf({ group, renderings, path, },);
+ const expected = expectedWinnerOf({ group, renderings, path, generation: 18, },);
  ```
  */
 export function expectedWinnerOf(
@@ -97,10 +111,12 @@ export function expectedWinnerOf(
     group,
     renderings,
     path,
+    generation,
   }: {
     readonly group: AskedGroup;
     readonly renderings: readonly ConsistencyRendering[];
     readonly path: string;
+    readonly generation: TwoLaneArtifactGeneration;
   },
 ): ConsistencyWinner {
   /**
@@ -125,7 +141,7 @@ export function expectedWinnerOf(
    */
   const finalists = ((voices.length === 0) || (voices.length < quorum))
     ? []
-    : runOffFinalistsOf({
+    : (artifactGenerationRunsOffLoneLeader({ generation, },) ? runOffFinalistsOf : runOffTiedFinalistsOf)({
       voices,
       labels,
     },);

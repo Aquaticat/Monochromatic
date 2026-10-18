@@ -481,7 +481,7 @@ export function choosing({ choice, }: { readonly choice: string; },): SeatBehavi
  returns the paragraph as it stands (so it joins the current candidate and
  adds none), a choice among candidates takes the first candidate that is not
  the paragraph as the page has it now (the chosen words moved in by code), and a
- run-off takes the first tied place.
+ run-off takes the first finalist.
 
  @param sheet - the sheet the seat was shown
 
@@ -519,7 +519,7 @@ export function otherSheetBehaviour({ sheet, }: { readonly sheet: string; },): S
 /**
  What every seat does with a sheet that is not a first-round ballot when the bench splits a run-off in half: the
  first two late judges choose the first place the run-off shows, the next two the second, and the rest throw, so
- four usable choices tie two and two and the two places that tied for first tie again; the writers write nothing
+ four usable choices tie two and two and the two finalists tie again; the writers write nothing
  and a choice among candidates takes the candidate that is not the paragraph as the page has it now.
 
  @param seat - the seat asked

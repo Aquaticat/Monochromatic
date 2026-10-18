@@ -6,7 +6,8 @@ import type { FoldedLinks, } from './consistency-folded-links.ts';
 // shows a reader its label and nothing of its brackets, destination or title (`consistency-link-label.ts`), so the reading is made
 // over the twin of the English: the same text with each link that shows nothing taken out (`kit[](u)'kit` reads as `kit'kit`) and each
 // link that shows closing marks and nothing else written as one closing square bracket (`kit[\]](u)'kit` and `kit[”](u)'kit` read as
-// `kit]'kit`), and the offsets the twin finds are carried back to the English. A run of closing marks reaches the apostrophe through
+// `kit]'kit`), and each link with a label that ends in an open mark written as its label (`[kit!](u)'s` reads as `kit!'s`, whose
+// apostrophe no closing bracket precedes), and the offsets the twin finds are carried back to the English. A run of closing marks reaches the apostrophe through
 // a run of closing marks of any length, so one closing bracket stands for a label of several without changing any answer.
 //
 // THE OFFSET OF A STAND'S END IN THE ENGLISH IS EITHER SIDE OF A LINK THAT SHOWS NOTHING, since the two are one place to a reader. A
@@ -18,7 +19,8 @@ import type { FoldedLinks, } from './consistency-folded-links.ts';
  */
 export type LinkTwin = {
   /**
-   The folded English with each link that shows nothing taken out and each link of closing marks written as `]`.
+   The folded English with each link that shows nothing taken out, each link of closing marks written as `]` and each link with a
+   label that ends in an open mark written as its label.
    */
   readonly folded: string;
 
@@ -85,6 +87,7 @@ export function linkTwinOf(
   const {
     emptyEnds,
     closingSpans,
+    openLabelStretches,
   } = links;
   /**
    The units of the twin, mutated only inside this function.
@@ -128,9 +131,10 @@ export function linkTwinOf(
   const reading = { at: 0, };
   while (reading.at < folded.length) {
     /**
-     The offset after the link that shows nothing and starts at the offset reached, absent where none does.
+     The offset after the link that shows nothing, or the stretch of a link with a label that ends in an open mark (its opening
+     bracket or its resource), that starts at the offset reached, absent where none does.
      */
-    const emptyEnd = emptyEnds.get(reading.at,);
+    const emptyEnd = emptyEnds.get(reading.at,) ?? openLabelStretches.get(reading.at,);
     if (emptyEnd !== undefined) {
       pending.push(reading.at,);
       reading.at = emptyEnd;

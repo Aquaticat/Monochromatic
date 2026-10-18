@@ -113,6 +113,7 @@ export {
 } from './corpus-run/artifact-two-lane-consolidate.ts';
 export {
   ARTIFACT_SCHEMA_VERSION_V17,
+  ARTIFACT_SCHEMA_VERSION_V18,
   ARTIFACT_SCHEMA_VERSION_V2,
   ARTIFACT_SCHEMA_VERSION_V5,
   ARTIFACT_SCHEMA_VERSION_V6,

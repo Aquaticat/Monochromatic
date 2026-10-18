@@ -476,6 +476,35 @@ await describe({
             },).toEqual({ identity: true, paragraph: true, slot: true, keeping: true, before: true, after: true, replaced: true, },);
           },
         },),
+        it({
+          name: 'GIVES THE RUN-OFF ITS OWN RULES, saying a first round was split between these candidates and the judge is asked '
+            + 'again, so its messages differ from the first ask\'s even when every candidate is a finalist, and leaves the first '
+            + 'ask\'s messages as they were',
+          fn: async () => {
+            /**
+             The messages of the first ask and of the run-off over one subject, whose three candidates are all the finalists.
+             */
+            const [first, again,] = [false, true,].map(function messagesOf(runOff,) {
+              return buildCarryChoiceMessages({ subject: SUBJECT, ...(runOff ? { runOff, } : {}), },);
+            },);
+            expect({
+              sameUser: first?.[1]?.content === again?.[1]?.content,
+              sameSystem: first?.[0]?.content === again?.[0]?.content,
+              firstSaysSplit: first?.[0]?.content.includes('A first round of judges was split',),
+              againSaysSplit: again?.[0]?.content.includes('A first round of judges was split between the candidates',),
+              againAsksAgain: again?.[0]?.content.includes('you are asked again, between these candidates only',),
+              againKeepsRules: again?.[0]?.content.includes('Your task is to choose the candidate that renders the ORIGINAL best',),
+            },).toEqual({
+              sameUser: true,
+              sameSystem: false,
+              firstSaysSplit: false,
+              againSaysSplit: true,
+              againAsksAgain: true,
+              againKeepsRules: true,
+            },);
+            expect(first,).toEqual(buildCarryChoiceMessages({ subject: SUBJECT, runOff: false, },),);
+          },
+        },),
       ],
     },),
   ],

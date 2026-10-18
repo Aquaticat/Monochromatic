@@ -445,7 +445,14 @@ await describe({
               spanIn({ haystack: '[-](u&#116;)\'kit', words: 'kit', },),
               spanIn({ haystack: '-[_](u "&#116;")\'kit', words: 'kit', },),
               spanIn({ haystack: '![](u)\'kit', words: 'kit', },),
-            ],).toEqual(['kit', 'kit', 'kit', 'kit', 'kit', 'kit', 'kit',],);
+            // The apostrophe is the one that opens a word, as in the same text with no link there (the proof reads the twin of the
+            // English that a reader sees, as the cut of a word does), so the proven leading apostrophe is in the span: `'kit`.
+            ],).toEqual(['\'kit', '\'kit', '\'kit', '\'kit', '\'kit', '\'kit', '\'kit',],);
+            expect([
+              spanIn({ haystack: ' \'kit', words: 'kit', },),
+              spanIn({ haystack: '\'kit', words: 'kit', },),
+              spanIn({ haystack: '-\'kit', words: 'kit', },),
+            ],).toEqual(['\'kit', '\'kit', '\'kit',],);
           },
         },),
         it({

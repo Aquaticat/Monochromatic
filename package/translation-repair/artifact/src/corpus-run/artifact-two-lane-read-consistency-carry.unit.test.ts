@@ -1,6 +1,6 @@
 /**
  Tests for reading, key by key, the two records of the sixteenth shape that the
- first round does not hold: the run-off among the places that tied for first and
+ first round does not hold: the run-off among the finalists of a split first round and
  the carry of the chosen rendering to a receiving place. Each case breaks one
  valid record in one way and pins the whole refusal.
 

@@ -144,8 +144,7 @@ export const ARTIFACT_SCHEMA_VERSION_V15 = 15;
 export const ARTIFACT_SCHEMA_VERSION_V16 = 16;
 
 /**
- Generation seventeen, the one the pass writes (`artifact-two-lane-build.ts`,
- `pass-schema-guard.ts`): a place of the consistency section that ended
+ Generation seventeen, the one the pass wrote until generation eighteen: a place of the consistency section that ended
  `overlapped` names the place it gave way to, and a located place records the
  single marks the English holds beside its words.
 
@@ -217,8 +216,32 @@ export const ARTIFACT_SCHEMA_VERSION_V16 = 16;
  `kept-current`, which is how those sections were written.
 
  Everything else the generation sixteen record holds is this generation's too.
+
+ A reader of this generation counts the finalists of a run-off, and the slot of a frame, under the rules the passes that wrote
+ it used, which are the rules before generation eighteen: only the labels tied for the highest count are run off, and a slot
+ counts only when it was given beside a quote that is the located words.
  */
 export const ARTIFACT_SCHEMA_VERSION_V17 = 17;
+
+/**
+ Generation eighteen, the one the pass writes (`artifact-two-lane-build.ts`, `pass-schema-guard.ts`): the finalists of a run-off and
+ the slot of a frame are counted by the rules the lead adopted on 2026-10-15 and 2026-10-18, which the readers of generation seventeen
+ and earlier do not apply to files written before them.
+
+ WHAT MOVED FROM SEVENTEEN, in the recount of the `consistency` section and in no field it records: a first round with no strict
+ majority and a lone leader is run off among the leader and the labels with the second-highest count (`runOffFinalistsOf`), where
+ seventeen ran off only the labels tied for the highest count (`runOffTiedFinalistsOf`), so a group of two, one and one over four
+ usable ballots records a run-off among the three labels here and none in seventeen; and a slot a strict majority of the usable
+ ballots gave beside any quote that contains the located words counts for the frame (`SlotAgreement` `containing-quote`), where
+ seventeen counted only a slot given beside a quote that is the located words (`exact-quote`). A reader of this generation requires
+ the run-off its ballots call for and refuses a missing one, and a reader of seventeen refuses a run-off recorded for a lone
+ leader, which no pass of that generation recorded.
+
+ Everything else the generation seventeen record holds is this generation's too. The shape of the section is unchanged, so the
+ key vocabulary is generation seventeen's. No cache key of the passes reads the generation: the consistency cache digests the sheet
+ and its own version (`CONSISTENCY_CACHE_VERSION`), which did not move.
+ */
+export const ARTIFACT_SCHEMA_VERSION_V18 = 18;
 
 /**
  Generation before archive-original spans were sealed; the archive's front
@@ -330,6 +353,7 @@ export const TWO_LANE_GENERATIONS: readonly number[] = [
   ARTIFACT_SCHEMA_VERSION_V15,
   ARTIFACT_SCHEMA_VERSION_V16,
   ARTIFACT_SCHEMA_VERSION_V17,
+  ARTIFACT_SCHEMA_VERSION_V18,
 ];
 
 /**
@@ -356,7 +380,8 @@ export type TwoLaneArtifactGeneration =
   | typeof ARTIFACT_SCHEMA_VERSION_V14
   | typeof ARTIFACT_SCHEMA_VERSION_V15
   | typeof ARTIFACT_SCHEMA_VERSION_V16
-  | typeof ARTIFACT_SCHEMA_VERSION_V17;
+  | typeof ARTIFACT_SCHEMA_VERSION_V17
+  | typeof ARTIFACT_SCHEMA_VERSION_V18;
 
 /**
  Narrows numeric artifact version to known two-lane generation.
@@ -511,7 +536,7 @@ export function artifactGenerationRecordsConsistency(
 
 /**
  Reports whether generation counts the consistency ballots by the span of the
- place's own English they locate, runs off a tie for first and carries the
+ place's own English they locate, runs off a split first round and carries the
  chosen rendering by writers, so its section has the sixteenth shape. An older
  section is recounted by the exact text of the quotes, as it was written.
 
@@ -570,6 +595,46 @@ export function artifactGenerationRecordsMarks(
   { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
 ): boolean {
   return generation >= ARTIFACT_SCHEMA_VERSION_V17;
+}
+
+/**
+ Reports whether generation runs off a first round with no strict majority and a lone leader, among the leader and the labels with
+ the second-highest count. An older section was written when only the labels tied for the highest count were run off, and its
+ reader keeps that rule: such a group records no run-off, and one that records a run-off for a lone leader is refused.
+
+ @param generation - known two-lane artifact generation
+
+ @returns Whether the finalists of a run-off include the labels next behind a lone leader
+
+ @example
+ ```ts
+ artifactGenerationRunsOffLoneLeader({ generation: 18, });
+ ```
+ */
+export function artifactGenerationRunsOffLoneLeader(
+  { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
+): boolean {
+  return generation >= ARTIFACT_SCHEMA_VERSION_V18;
+}
+
+/**
+ Reports whether generation counts the slot of a frame from every quote that contains the located words, as the place itself is
+ located by containment. An older section counted only a slot given beside a quote that is the located words, and its reader keeps
+ that rule.
+
+ @param generation - known two-lane artifact generation
+
+ @returns Whether a slot given beside a longer quote that contains the located words counts toward the frame's slot
+
+ @example
+ ```ts
+ artifactGenerationReadsSlotsBesideContainingQuotes({ generation: 18, });
+ ```
+ */
+export function artifactGenerationReadsSlotsBesideContainingQuotes(
+  { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
+): boolean {
+  return generation >= ARTIFACT_SCHEMA_VERSION_V18;
 }
 
 /**
@@ -904,7 +969,7 @@ export type SettledArtifact = {
    Which generation this is, stated rather than inferred from which fields
    happen to be present.
    */
-  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V17;
+  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V18;
 
   /**
    Corpus entry this covers.

@@ -1,4 +1,4 @@
-import { joinedMarksOf, } from './consistency-closing-marks.ts';
+import { joinedMarksOf, } from './consistency-joined-marks.ts';
 import { marksPastMarkupOf, } from './consistency-marks-past-markup.ts';
 import { proseViewOf, } from './consistency-prose-text.ts';
 import { singleMarkAt, } from './consistency-loose-marks.ts';

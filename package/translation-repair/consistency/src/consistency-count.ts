@@ -38,8 +38,8 @@ import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typogra
 // OWN ENGLISH (`consistency-fold.ts`): a line break written as a space, a curly
 // apostrophe written straight, the closing full stop kept or left off and a run
 // of spaces do not make two quotes two texts. THE PLACE IS LOCATED BY THE LONGEST
-// OF ITS QUOTES THAT STANDS EXACTLY ONCE in its English and that a strict majority
-// of the quotes naming that place contain in the fold (`consistency-span-agreement.ts`,
+// OF ITS QUOTES THAT STANDS EXACTLY ONCE in its English and that the quotes of more
+// than half of all the usable ballots contain in the fold (`consistency-span-agreement.ts`,
 // the lead's ruling of 2026-10-15: quotes of one span of different lengths, the second
 // judge's a part of the first's, agree on the shorter, at the risk of leaving out words
 // a judge meant to carry); the place then carries the words the English holds there, never a
@@ -187,7 +187,7 @@ function locatedRendering(
    */
   const definitions = (page === undefined) ? '' : pageDefinitionsOf({ pageText: page.text, },);
   /**
-   The spans a strict majority of the quotes naming this place contain, in the fold, longest first.
+   The spans the quotes of more than half of all the usable ballots contain, in the fold, longest first.
    */
   const candidates = containedQuoteWordsOf({
     voices,

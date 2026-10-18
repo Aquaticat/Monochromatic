@@ -25,6 +25,12 @@ import type { ArtifactConsistencyRendering, } from './artifact-two-lane-consiste
 // (`artifact-two-lane-read-consistency-occurrence.ts`) has already checked that
 // each is one single mark.
 //
+// THE SLOT IS FOUND IN THE WORDS ALONE, WITHOUT THE DEFINITIONS OF THE PAGE. The pass finds a slot inside its span with the link and
+// footnote definitions of the whole page, and the file holds no page to rebuild them from (the head of
+// `artifact-two-lane-read-consistency-span.ts` says why, ledger B661), so a slot is located here as the span's own text reads: a
+// shortcut reference in the span whose definition stands in another slice is plain text, and a recorded slot at its joint can be
+// refused here although the pass found it, as the recount can expect a slot the pass could not find.
+//
 // A GENERATION SEVENTEEN QUOTE MAY END OR BEGIN WITH ONE APOSTROPHE the ballots'
 // folded words lack: the span takes in the proven apostrophe beside the words
 // (`the parents’`, `’round the`; `consistency-proven-apostrophes.ts`), and the record
@@ -45,7 +51,8 @@ import type { ArtifactConsistencyRendering, } from './artifact-two-lane-consiste
  @param path - where the rendering sits, for the parse error
 
  @returns The counter's form, with the recorded offset and, for a frame that
- has one, the slot and its offset in the words
+ has one, the slot and its offset in the words; the slot is located in the words alone, with no definitions of the page (the head
+ of this file says why)
 
  @throws {@link ArtifactParseError} when a recorded slot does not stand exactly
  once in the words of its quote

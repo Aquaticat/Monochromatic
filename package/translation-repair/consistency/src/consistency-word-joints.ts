@@ -364,7 +364,7 @@ function startOfEmptyLinksBefore(
  opening mark or the start of the text where the backward reading stops
  (`*'Tis the season*`, `('em)`), one after a straight double quotation mark
  (`"'Tis"`, and `s bowl` in `"cat"'s bowl`), which cannot say whether it closes or
- opens, one after a link whose label shows marks or spaces and no letter or digit (`[-](u)'kit`), and one that no letter follows.
+ opens, one after a link whose label shows marks or spaces and no letter or digit (`[-](u)'kit`), one after a link whose label ends in an open mark, neither a closing mark nor a letter or a digit (`[kit!](u)'s`, `[kit ](u)'s`), and one that no letter follows.
  A link whose label shows nothing (`[](u)`, `[](u "t")`, `[]()`, a reference with an empty label, an image with no alt text) is no
  neighbour of the apostrophe at all: the characters before the run of such links directly before the apostrophe are read as if the
  links were not there, so `a [](u)'kit` is no joint and `kit[](u)'kit` is one. A stand that ends before the apostrophe is
@@ -444,13 +444,18 @@ function apostropheJoinsAt(
   // sees as a word stands before, so the apostrophe after it is no joint (`consistency-link-label.ts`). A link that shows nothing is
   // stepped over by `startOfEmptyLinksBefore`, so what is read here is what stands before it.
   /**
-   The last unit of each link whose label shows marks and no letter or digit.
+   The last unit of each link whose label shows marks and no letter or digit, and of each link whose label ends in an open mark.
    */
-  const { markOnlyEnds, } = links;
+  const {
+    markOnlyEnds,
+    openLabelEnds,
+  } = links;
   /**
-   Whether the apostrophe stands after a closing bracket that continues the word run: a bracket that closes no link of marks.
+   Whether the apostrophe stands after a closing bracket that continues the word run: a bracket that closes no link of marks and
+   no link whose label ends in an open mark (`[kit!](u)'s` reads as `kit!'s`, and `!` closes nothing).
    */
-  const afterBracket = CLOSING_BRACKETS.has(folded.charAt(seen - 1,),) && (!markOnlyEnds.has(seen - 1,));
+  const afterBracket = CLOSING_BRACKETS.has(folded.charAt(seen - 1,),) && (!markOnlyEnds.has(seen - 1,))
+    && (!openLabelEnds.has(seen - 1,));
   return continuesLatinWordOrCompatibilityForm({ character: after, },)
     && (afterBracket || (originals[seen - 1] === CLOSING_CURLY_DOUBLE));
 }

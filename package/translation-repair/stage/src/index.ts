@@ -116,6 +116,10 @@ export {
   type StageDecision,
 } from './stage-decision-call.ts';
 export {
+  assertBenchStart,
+  StageBenchStartError,
+} from './stage-bench-start.ts';
+export {
   askingWindow,
   benchRotation,
   FANOUT_SPARE,

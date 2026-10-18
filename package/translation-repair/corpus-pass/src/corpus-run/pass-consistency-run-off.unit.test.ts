@@ -1,5 +1,5 @@
 /**
- Tests for asking the bench once more among the places that tied for first, or
+ Tests for asking the bench once more among the finalists of a split first round, or
  reading its earlier answer: the choices handed back in roster order beside the
  seat that gave each, the key of the run-off stage under which they are stored,
  what a resume reads back, and which stored values are a run-off's record.
@@ -51,7 +51,7 @@ import { recordingCache, } from './consistency-cache.test-fixture.ts';
 const BENCH: readonly RosterModelId[] = [SEAT_HYPER_ONLY, SEAT_BEDROCK_ONLY_TEXT, SEAT_HYPER_VISION,];
 
 /**
- The repeated sentence in three places, the first two of which tied for first.
+ The repeated sentence in three places, the first two of which are the finalists of a split first round.
  */
 const SUBJECT: ConsistencySubject = {
   repeat: { kind: 'maximal', wording: '小猫打盹', },

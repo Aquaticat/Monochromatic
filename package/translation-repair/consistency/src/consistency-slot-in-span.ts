@@ -4,15 +4,18 @@ import {
   agreedSlotWordsOf,
   type QuotesByLabel,
   quotesByLabelOf,
+  type SlotAgreement,
 } from './consistency-majority.ts';
 import type { ConsistencyVoice, } from './consistency-count-types.ts';
 import type { PageEnglish, } from './consistency-page-english.ts';
 import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typography/ts';
 
 //region Consistency slot in span
-// A SLOT IS NO CONDITION OF A SPAN. A frame's slot words are agreed the way its span is, by a strict majority of the usable
-// ballots that gave the agreed words, and they must stand once inside the span the place was located by, as the English holds
-// them; a slot the ballots do not agree on, that shows a reader nothing, that stands nowhere or twice in the span, that is all of
+// A SLOT IS NO CONDITION OF A SPAN. A frame's slot words are agreed the way its span is, by a strict majority of all the usable
+// ballots, each counting when the quote it gave the slot beside contains the located words at the edges of words (the place is
+// located by containment, so a slot given beside a longer quote lies inside the located words just as well; a recount of an
+// artifact written before that rule counts only a quote that is the words, `slotAgreement`), and they must stand once inside the
+// span the place was located by, as the English holds them; a slot the ballots do not agree on, that shows a reader nothing, that stands nowhere or twice in the span, that is all of
 // the span or that cuts markup is no slot, and the place is located without one (`consistency-count.ts`), which leaves the code
 // splice unavailable for it and the writers to carry the slot.
 
@@ -34,6 +37,9 @@ import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typogra
  @param page - the English of the whole page the span belongs to and where the span starts in it, whose link and footnote
  definitions a reference inside the span resolves against (n173); the span alone is the page where absent
 
+ @param slotAgreement - which quotes a slot given beside counts for the words: any quote that contains them, or only a quote that
+ is them, as a recount of an artifact written under the earlier rule reads it; containing quotes where absent
+
  @returns The slot as the span holds it and its offset in the span, as a list of
  zero or one; none when the ballots do not agree on a slot, it shows a reader
  nothing, it does not stand once inside the span, it is all of the span, or it
@@ -52,6 +58,7 @@ export function slotInSpan(
     span,
     quotesByLabel = quotesByLabelOf({ voices, },),
     page,
+    slotAgreement = 'containing-quote',
   }: {
     readonly voices: readonly ConsistencyVoice[];
     readonly label: string;
@@ -59,6 +66,7 @@ export function slotInSpan(
     readonly span: string;
     readonly quotesByLabel?: QuotesByLabel;
     readonly page?: PageEnglish;
+    readonly slotAgreement?: SlotAgreement;
   },
 ): readonly {
   readonly slot: string;
@@ -72,6 +80,7 @@ export function slotInSpan(
     label,
     quotesByLabel,
     words,
+    slotAgreement,
   },);
   if ((slotWords === undefined) || rendersAsNothing({ text: slotWords, },))
     return [];

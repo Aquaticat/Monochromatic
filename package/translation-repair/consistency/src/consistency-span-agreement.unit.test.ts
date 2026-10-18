@@ -2,7 +2,7 @@
  Tests for how a chosen place is located when the judges quoted different spans of it (the lead's ruling of 2026-10-15 on
  the run of TianqiChen66625, group 2, where three judges quoted three nested spans of one place and none was a strict
  majority of the text): the place is located by the longest of its quotes that stands exactly once in its English and that,
- after the fold, a strict majority of the quotes naming that place contain.
+ after the fold, the quotes of more than half of all the usable ballots contain.
 
  Fixtures are cat-themed invention, except the three quotes and the two English sentences of group 2, which are the
  run's own words (English only, as the artifact and the page hold them).

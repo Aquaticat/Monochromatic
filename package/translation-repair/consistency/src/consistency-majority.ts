@@ -1,3 +1,4 @@
+import { containsWords, } from './consistency-contains-words.ts';
 import type { ConsistencyVoice, } from './consistency-count-types.ts';
 import {
   foldedWordsOf,
@@ -15,6 +16,13 @@ import {
 // slot, a choice, a kept place, and the side of a quote's words on which a
 // single mark stood. Strict means more than half of the usable ballots, so a
 // tie agrees on nothing.
+
+/**
+ Which quotes a slot given beside counts for the located words: `containing-quote` for any quote that contains the words at the
+ edges of words, which is how the place itself is located (`consistency-span-agreement.ts`), and `exact-quote` for a quote that is
+ the words, which is how an artifact written before the change counted them (`artifactGenerationReadsSlotsBesideContainingQuotes`).
+ */
+export type SlotAgreement = 'containing-quote' | 'exact-quote';
 
 /**
  The text a strict majority of usable ballots gave, as a list of zero or one.
@@ -315,8 +323,11 @@ export function markEvidenceOf(
 
 /**
  The slot words a strict majority of the usable ballots gave for a place beside
- the agreed quote, read in the fold, as a list of zero or one. Only the ballots
- whose quote is the agreed words count, against all the usable ballots.
+ the located words, read in the fold, as a list of zero or one. Only the ballots
+ whose quote contains the located words count (or is them, for a recount under the
+ earlier rule), against all the usable ballots: a slot given beside a longer quote
+ that contains the words lies inside the located words just as well, or not at all,
+ which `locateWords` inside the span decides.
 
  @param voices - usable ballots
 
@@ -326,6 +337,10 @@ export function markEvidenceOf(
 
  @param quotesByLabel - the quote entries of these ballots by label, which a caller that asks many places reads once for the
  group; read from the ballots where absent
+
+ @param slotAgreement - which quotes a slot given beside counts: any quote that contains the words at the edges of words, as the
+ place is located by containment, or only a quote that is the words, as a recount of an artifact written before the change reads
+ it; containing quotes where absent
 
  @returns The folded slot words more than half of the usable ballots gave beside them, or none
 
@@ -340,11 +355,13 @@ export function agreedSlotWordsOf(
     label,
     words,
     quotesByLabel = quotesByLabelOf({ voices, },),
+    slotAgreement = 'containing-quote',
   }: {
     readonly voices: readonly ConsistencyVoice[];
     readonly label: string;
     readonly words: string;
     readonly quotesByLabel?: QuotesByLabel;
+    readonly slotAgreement?: SlotAgreement;
   },
 ): readonly string[] {
   return majorityText({
@@ -353,7 +370,16 @@ export function agreedSlotWordsOf(
       label,
     },)
       .filter(function besideTheWords(entry,): boolean {
-        return foldedWordsOf({ text: entry.quote, },) === words;
+        /**
+         The quote in the fold.
+         */
+        const quote = foldedWordsOf({ text: entry.quote, },);
+        return (slotAgreement === 'exact-quote')
+          ? (quote === words)
+          : containsWords({
+            outer: quote,
+            inner: words,
+          },);
       },)
       .flatMap(function slotOf(entry,): readonly string[] {
         return (entry.slot === undefined) ? [] : [foldedWordsOf({ text: entry.slot, },),];
@@ -438,6 +464,107 @@ export function majorityChoiceOf(
 }
 
 /**
+ The count of each label and the labels with the highest count, for choices that have no strict majority and name at least one
+ label; the reading the finalists of both rules share.
+
+ @param voices - usable ballots
+
+ @param labels - labels the sheet showed, in sheet order
+
+ @returns The count of each label in sheet order, the highest count and the labels that have it; none when no label drew a ballot
+ or a label has a strict majority
+
+ @example
+ ```ts
+ const [reading,] = leadersWithoutMajorityOf({ voices, labels: ['OCCURRENCE 1', 'OCCURRENCE 2',], },);
+ ```
+ */
+function leadersWithoutMajorityOf(
+  {
+    voices,
+    labels,
+  }: {
+    readonly voices: readonly { readonly choice: string; }[];
+    readonly labels: readonly string[];
+  },
+): readonly {
+  readonly counts: readonly number[];
+  readonly top: number;
+  readonly leaders: readonly string[];
+}[] {
+  /**
+   Ballots per label, in sheet order.
+   */
+  const counts = labels.map(function countOf(label,): number {
+    return voices.filter(function chooses(voice,): boolean {
+      return voice.choice === label;
+    },)
+      .length;
+  },);
+  /**
+   The highest count any label has.
+   */
+  const top = Math.max(
+    0,
+    ...counts,
+  );
+  if ((top === 0) || ((top * 2) > voices.length))
+    return [];
+  return [
+    {
+      counts,
+      top,
+      leaders: labels.filter(function isTop(
+        _label,
+        position,
+      ): boolean {
+        return counts[position] === top;
+      },),
+    },
+  ];
+}
+
+/**
+ The finalists of a run-off among the usable ballots' choices as the generations before the lone leader's rule read them: only
+ the labels tied for the highest count, when no label has more than half of the ballots. A recount of a stored artifact written
+ under that rule asks it; the pass asks {@link runOffFinalistsOf}.
+
+ @param voices - usable ballots
+
+ @param labels - labels the sheet showed, in sheet order
+
+ @returns The labels with the highest count in sheet order when two or more share it and none has a strict majority, none
+ otherwise
+
+ @example
+ ```ts
+ const finalists = runOffTiedFinalistsOf({ voices, labels: ['OCCURRENCE 1', 'OCCURRENCE 2',], },);
+ ```
+ */
+export function runOffTiedFinalistsOf(
+  {
+    voices,
+    labels,
+  }: {
+    readonly voices: readonly { readonly choice: string; }[];
+    readonly labels: readonly string[];
+  },
+): readonly string[] {
+  /**
+   The counts, as a list of zero or one.
+   */
+  const [reading,] = leadersWithoutMajorityOf({
+    voices,
+    labels,
+  },);
+  /**
+   The labels that lead, none when the counts name no leader.
+   */
+  const leaders = reading?.leaders ?? [];
+  return (leaders.length >= 2) ? leaders : [];
+}
+
+/**
  The finalists of a run-off among the usable ballots' choices, when no label has more
  than half of the ballots (the lead's rule, open to the owner's veto, extending the owner's rule of 2026-10-11).
  The leaders are the labels with the highest count. When two or more labels share it, they are the finalists, as a
@@ -466,32 +593,22 @@ export function runOffFinalistsOf(
   },
 ): readonly string[] {
   /**
-   Ballots per label, in sheet order.
+   The counts, as a list of zero or one.
    */
-  const counts = labels.map(function countOf(label,): number {
-    return voices.filter(function chooses(voice,): boolean {
-      return voice.choice === label;
-    },)
-      .length;
+  const [reading,] = leadersWithoutMajorityOf({
+    voices,
+    labels,
   },);
-  /**
-   The highest count any label has.
-   */
-  const top = Math.max(
-    0,
-    ...counts,
-  );
-  if ((top === 0) || ((top * 2) > voices.length))
+  if (reading === undefined)
     return [];
   /**
-   Labels with the highest count.
+   Ballots per label, the highest count and the labels that have it.
    */
-  const leaders = labels.filter(function isTop(
-    _label,
-    position,
-  ): boolean {
-    return counts[position] === top;
-  },);
+  const {
+    counts,
+    top,
+    leaders,
+  } = reading;
   if (leaders.length >= 2)
     return leaders;
   /**

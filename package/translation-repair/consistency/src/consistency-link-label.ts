@@ -9,8 +9,9 @@ import type { TreeNode, } from '@monochromatic-dev/translation-repair-typography
 // WHAT THE LABEL OF A LINK SHOWS A READER, read from the parse (n166 Z9, n168). The consistency pass reads words as a reader sees them,
 // and a link shows its label and nothing of its destination or its title. A link whose label shows nothing (`[](u)`, `[](u "t")`,
 // `[]()`, `[][r]` with its definition, an image `![](u)` with no alt text) neither ends a word nor starts one: the text on each side of
-// it meets as if the link were not there. A link whose label shows marks or spaces and no letter or digit (`[ ](u)`, `[-](u)`) shows
-// no word to the apostrophe after it, so that apostrophe starts a word, as it does after a space. Any other link shows its label, which
+// it meets as if the link were not there. A link whose label shows marks or spaces and no Latin letter or digit (`[ ](u)`, `[-](u)`; a Han,
+// Cyrillic or Greek label is marks here, since only the Latin letters and digits and the forms that fold to them make a word with
+// an apostrophe) shows no word to the apostrophe after it, so that apostrophe starts a word, as it does after a space. Any other link shows its label, which
 // the apostrophe after it joins as it joins a closing bracket (`[the cat](x)'s` is one word, `cat's`).
 //
 // THE LINK IS READ BY THE PARSE (`parseSliceBody`, micromark), so the rules of CommonMark for a destination (round brackets that
@@ -25,9 +26,9 @@ import type { TreeNode, } from '@monochromatic-dev/translation-repair-typography
 // an apostrophe (`consistency-closing-marks.ts`) reads such a link as the closing marks it shows (n169).
 
 /**
- What the label of a link shows a reader: nothing, marks and spaces that end in no closing mark and hold no letter or digit, closing
- marks and nothing else, or anything else (a letter or a digit, a closing mark after some other mark, or a shape the parse leaves
- unread such as raw markup).
+ What the label of a link shows a reader: nothing, marks and spaces that end in no closing mark and hold no Latin letter or digit
+ (nor a form that folds to one; a Han, Cyrillic or Greek letter is a mark here), closing marks and nothing else, or anything else (a
+ Latin letter or a digit, a closing mark after some other mark, or a shape the parse leaves unread such as raw markup).
  */
 export type LinkLabelKind = 'closing' | 'empty' | 'marks' | 'other';
 
@@ -128,12 +129,48 @@ function labelTextOf({ node, }: { readonly node: TreeNode; },): readonly string[
 }
 
 /**
+ Whether the label of a link ends in an open mark: its last shown character is neither a closing mark nor a Latin letter or digit
+ (or a compatibility form of one). The `)` or `]` that closes such a link is no closing bracket to the apostrophe after it, as the
+ label in plain text would be none (`kit!'s`, `Kit.'s`, `kit 's`); a label that ends in a closing mark (`[kit)](u)`) closes as
+ the mark does, and one that ends in a letter or a digit makes the apostrophe after it a joint of the word.
+
+ @param node - a link, a link reference, an image or an image reference
+
+ @returns Whether the label shows something and its last character is an open mark; false for a label that shows nothing and for a
+ label whose shown text the tree does not say
+
+ @example
+ ```ts
+ const open = linkLabelEndsOpenOf({ node, },); // true for `[kit!](u)` and `[-](u)`, false for `[kit](u)` and `[kit)](u)`
+ ```
+ */
+export function linkLabelEndsOpenOf({ node, }: { readonly node: TreeNode; },): boolean {
+  /**
+   The shown text of the label as a list of zero or one: none where the tree does not say what the label shows.
+   */
+  const [shown,] = labelTextOf({ node, },);
+  /**
+   The characters the label shows, none for a label that shows nothing or whose text the tree does not say.
+   */
+  const characters = Array.from(shown ?? '',);
+  /**
+   The last of them.
+   */
+  const last = characters.at(-1,);
+  if (last === undefined)
+    return false;
+  if (isClosingMark(last,))
+    return false;
+  return !continuesLatinWordOrCompatibilityForm({ character: last, },);
+}
+
+/**
  What the label of a link, a reference or an image shows a reader.
 
  @param node - a link, a link reference, an image or an image reference
 
  @returns `empty` for a label that shows nothing, `closing` for one that shows closing round or square brackets and closing curly double
- quotation marks and nothing else, `marks` for one that shows marks and spaces, no letter or digit, and no closing mark last, `other`
+ quotation marks and nothing else, `marks` for one that shows marks and spaces, no Latin letter or digit, and no closing mark last, `other`
  for every other label
 
  @example

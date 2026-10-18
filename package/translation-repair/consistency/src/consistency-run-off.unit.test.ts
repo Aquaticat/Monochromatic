@@ -1,6 +1,6 @@
 /**
- Tests for the run-off among the places that tied for first: the sheet that
- shows only the tied finalists, and the winner the run-off's choices give.
+ Tests for the run-off among the finalists of a split first round: the sheet that
+ shows only the finalists, and the winner the run-off's choices give.
 
  Fixtures are cat-themed invention; no corpus content appears here.
 

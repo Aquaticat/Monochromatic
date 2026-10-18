@@ -17,19 +17,26 @@
  and is stored as the shown label: a record of version four holds only replies the
  stricter guard counted, each already in the shown form, so none could hold a value
  computed under the old rule that the new rule would count differently. A choice among
- candidates that no candidate won by a strict majority is now run off among the candidates
- tied for first, under a key of its own (`choice-run-off`); a version four record of the
- choice stands for the first ask only, and the run-off it would now be followed by is
- asked afresh. The counting of quotes, which locates a chosen place by the longest quote
- that stands once and that a strict majority of the quotes naming the place contain, is
- not stored and moves no key.
+ candidates that no candidate won by a strict majority is now run off among the finalists,
+ under a key of its own (`choice-run-off`); no record of version four is read after the bump,
+ since the key hashes the number, so the choice and the run-off that follows it are both asked
+ afresh. The counting of quotes, which locates a chosen place by the longest quote that stands
+ once and that the quotes of more than half of all the usable ballots contain (a ballot that
+ quoted nothing of the place counts against every candidate), is not stored and moves no key.
 
  The finalists of a run-off moved no number either (the lead's rule, open to the owner's veto, extending the owner's
  rule of 2026-10-11): a first round or a carry choice with no strict majority and a lone leader is now run off among
  the leader and the labels next behind it, where it was kept. Which labels are the finalists is counted from the stored
  ballots and is not stored, and the sheet of a run-off shows only its finalists under a key that digests the sheet, so
  a run-off among three labels asks a question under a key of its own, and a run-off among the tied labels keeps its
- key byte for byte. The wording of the sheets is the same.
+ key byte for byte. The wording of the first round's sheet and of the run-off among places is the same.
+
+ The sheet of the run-off among a place's candidates changed its bytes (the lead's repair of 2026-10-18, ledger B657) and the
+ number still did not move. Its rules now say that a first round was split between these candidates and the judge is asked
+ again, because a run-off whose finalists are every candidate (a split of two, or of three over three) sent the first ask's sheet
+ byte for byte, and a client that answers a repeated model and prompt from its first payload replayed the first round's ballots.
+ Only the `choice-run-off` stage is affected: the sheet of the first ask is byte for byte what version five has, so the key of
+ every first ask is unchanged, and a carry run-off stored under its earlier key is asked afresh under the new one.
 
  Version four (the review of 2026-10-13): what the writers and the judges are
  shown changed again, before any pass wrote version three. The words of every

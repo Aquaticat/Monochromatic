@@ -1,6 +1,7 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
 import { rosterQuorumSize, } from './roster-quorum-size.ts';
+import { assertBenchStart, } from './stage-bench-start.ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Stage fan-out window
@@ -150,6 +151,9 @@ export function benchRotation(
 
  @returns Same seats, started at the pinned seat or at the prompt's rotation
 
+ @throws {@link StageBenchStartError} when a pinned start is not a whole number from zero to below the size of the bench, which
+ this is the one place to ask since the value and the bench are both in hand here
+
  @example
  ```ts
  const order = rotatedBench({ modelIds, messages, },);
@@ -167,6 +171,12 @@ export function rotatedBench(
     readonly start?: number;
   },
 ): readonly RosterModelId[] {
+  if (pinned !== undefined) {
+    assertBenchStart({
+      start: pinned,
+      benchSize: modelIds.length,
+    },);
+  }
   /**
    Seat the rotation starts at.
    */

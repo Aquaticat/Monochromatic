@@ -1,16 +1,19 @@
 import {
   isLinkNode,
   type LinkLabelKind,
+  linkLabelEndsOpenOf,
   linkLabelKindOf,
 } from './consistency-link-label.ts';
 import type { TreeNode, } from '@monochromatic-dev/translation-repair-typography/ts';
 
 //region Consistency markup ranges
-// THE STRETCHES OF FIVE KINDS OF MARKUP a parse holds, which the word test of a span edge reads apart from the prose
+// THE STRETCHES OF EIGHT KINDS OF MARKUP a parse holds. Three are read by the word test of a span edge apart from the prose
 // (`consistency-shown-kinds.ts`, n160 Y2 and Y4): the images, which show a reader a picture between two words; the rows of tables,
 // whose pipes and padding are written between the cells; and the content of inline code, which a reader sees as the code word it is.
-// The other two kinds are read by the fold of the consistency pass (`consistency-folded-links.ts`, n168): the links, references and
-// images whose label shows nothing, and those whose label shows marks and spaces and no letter or digit (`consistency-link-label.ts`).
+// Five are read by the fold of the consistency pass (`consistency-folded-links.ts`, n168, n173): the links, references and images
+// whose label shows nothing, those whose label shows marks and spaces and no letter or digit, and those whose label shows closing
+// marks and nothing else (`consistency-link-label.ts`); the resource of every link; and the links with a label, with the opening
+// bracket and the resource that show a reader nothing around it.
 
 /**
  One stretch of the English, from its start to its exclusive end.
@@ -28,7 +31,7 @@ export type MarkupRange = {
 };
 
 /**
- The stretches the three kinds of markup cover, each in the order the walk of the tree listed its nodes (no promise of position order).
+ The stretches the eight kinds of markup cover, each in the order the walk of the tree listed its nodes (no promise of position order).
  */
 export type MarkupRanges = {
   /**
@@ -91,6 +94,12 @@ export type LabelledLink = {
    reference.
    */
   readonly resource: MarkupRange;
+
+  /**
+   Whether the label ends in an open mark, neither a closing mark nor a letter or a digit (`[kit!](u)`, `[Kit.](u)`,
+   `[kit ](u)`): the closing bracket of such a link is no closing bracket to an apostrophe after it.
+   */
+  readonly endsOpen: boolean;
 };
 
 /**
@@ -307,6 +316,7 @@ function labelledLinksOf(
             end: start + 1,
           },
           resource,
+          endsOpen: linkLabelEndsOpenOf({ node, },),
         },
       ];
     },);

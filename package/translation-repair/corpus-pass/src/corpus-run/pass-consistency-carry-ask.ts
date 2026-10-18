@@ -265,8 +265,9 @@ export async function askCarryWriters(
 
  @param stageSettings - straggler windows the entry file read for this launch
 
- @param runOff - whether this is the run-off among the finalists, whose sheet shows those candidates only
- and whose answer is kept under a key of its own; the first ask among all of them where absent
+ @param runOff - whether this is the run-off among the finalists, whose sheet shows those candidates only and says a first round
+ was split between them, so that it differs from the first ask's sheet even when every candidate is a finalist, and whose answer
+ is kept under a key of its own; the first ask among all of them where absent
 
  @returns The choices heard, the quorum the gather closed on and its findings
 
@@ -301,9 +302,13 @@ export async function askCarryChoice(
   },
 ): Promise<CarryChoiceAsked> {
   /**
-   The sheet every judge reads.
+   The sheet every judge reads; a run-off's rules say a first round split between its candidates, so its messages are never
+   the first ask's, which a client that replays a repeated model and prompt would answer from the first round.
    */
-  const messages = buildCarryChoiceMessages({ subject, },);
+  const messages = buildCarryChoiceMessages({
+    subject,
+    runOff,
+  },);
   /**
    Labels the sheet shows, the only labels a reply may use.
    */

@@ -127,7 +127,7 @@ await describe({
                 return rotatedBench({ modelIds: BENCH, messages: [{ role: 'user', content: 'meow', },], start, },);
               }
               catch (error) {
-                return (error instanceof Error) ? { name: error.name, message: error.message, } : error;
+                return Error.isError(error,) ? { name: error.name, message: error.message, } : error;
               }
             },);
             expect(outcomes.map(function nameOf(outcome,): unknown {

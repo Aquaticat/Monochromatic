@@ -1,8 +1,10 @@
 /**
  The sheets of the page-level consistency pass beyond its first round, rendered
  for `rendered-sheets.test-fixture.ts` (ledger X17): the run-off among the
- places that tied for first, the writer asked to carry the chosen rendering to a
- receiving place, and the judge asked to choose among that place's candidates.
+ finalists of a first round with no strict majority (the labels with the top
+ count, and the labels next behind a lone leader), the writer asked to carry the
+ chosen rendering to a receiving place, and the judge asked to choose among that
+ place's candidates, in the first round and in the run-off.
 
  Fixtures are cat-themed invention; no corpus content appears here.
 
@@ -13,9 +15,15 @@ import {
   buildCarryChoiceMessages,
   buildCarryWriterMessages,
   buildConsistencyRunOffMessages,
-  type ConsistencyOccurrenceView,
 } from '@monochromatic-dev/translation-repair-consistency';
 
+import {
+  CHOSEN_PLACE,
+  FIRST_VIEW,
+  SECOND_VIEW,
+  SENTENCE,
+  THIRD_VIEW,
+} from './rendered-sheets-carry-places.test-fixture.ts';
 import { refrainCarrySheets, } from './rendered-sheets-carry-refrain.test-fixture.ts';
 import {
   IDENTITY,
@@ -25,65 +33,6 @@ import {
 } from '@monochromatic-dev/translation-repair-repair/ts/rendered-sheets-texts.test-fixture.ts';
 
 //region Carry sheets
-
-/**
- The first place of the repeated sentence as the consistency sheet shows it.
- */
-const FIRST_VIEW: ConsistencyOccurrenceView = {
-  sliceIndex: 0,
-  paragraph: '窗台上的阳光让小猫睡着了。',
-  markStart: 0,
-  markEnd: 12,
-  english: {
-    kind: 'present',
-    text: 'The sunny window put the kitten to sleep.',
-  },
-};
-
-/**
- The second place of the repeated sentence as the consistency sheet shows it.
- */
-const SECOND_VIEW: ConsistencyOccurrenceView = {
-  sliceIndex: 2,
-  paragraph: '傍晚的时候，窗台上的阳光让小猫睡着了，小鱼干也笑了。',
-  markStart: 6,
-  markEnd: 18,
-  english: {
-    kind: 'present',
-    text: 'In the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too.',
-  },
-};
-
-/**
- The third place of the repeated sentence as the consistency sheet shows it.
- */
-const THIRD_VIEW: ConsistencyOccurrenceView = {
-  sliceIndex: 4,
-  paragraph: '夜里，窗台上的阳光让小猫睡着了。',
-  markStart: 3,
-  markEnd: 15,
-  english: {
-    kind: 'present',
-    text: 'At night the sunny window put the kitten to sleep.',
-  },
-};
-
-/**
- The repeated sentence.
- */
-const SENTENCE = {
-  kind: 'maximal',
-  wording: '窗台上的阳光让小猫睡着了',
-} as const;
-
-/**
- The chosen place of the repeated sentence as the carry sheets show it: its words and the paragraph that holds them.
- */
-const CHOSEN_PLACE = {
-  view: FIRST_VIEW,
-  span: 'The sunny window put the kitten to sleep',
-  paragraph: 'The sunny window put the kitten to sleep.',
-} as const;
 
 /**
  The sheets of the run-off, the writer and the choice among candidates, each
@@ -272,6 +221,41 @@ export function carrySheets(): readonly RenderedSheet[] {
       name: 'page consistency carry choice, repeated sentence',
       text: joined({
         messages: buildCarryChoiceMessages({
+          subject: {
+            repeat: SENTENCE,
+            receiving: [
+              {
+                view: SECOND_VIEW,
+                span: 'the sunlight on the sill lulled the kitten to sleep',
+              },
+            ],
+            chosen: CHOSEN_PLACE,
+            keeping: [],
+            candidates: [
+              {
+                label: 'CANDIDATE 1',
+                current: true,
+                text: 'In the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too.',
+              },
+              {
+                label: 'CANDIDATE 2',
+                current: false,
+                text: 'In the evening, the sunny window put the kitten to sleep, and the fish snacks smiled too.',
+              },
+            ],
+            identityContext: IDENTITY,
+            referenceContext: REFERENCES,
+          },
+        },),
+      },),
+    },
+    {
+      // The run-off among finalists that are every candidate (an even split of two): its rules say a first round was split
+      // between these candidates, so the sheet is never the first round's.
+      name: 'page consistency carry choice run-off, repeated sentence, every candidate a finalist',
+      text: joined({
+        messages: buildCarryChoiceMessages({
+          runOff: true,
           subject: {
             repeat: SENTENCE,
             receiving: [
