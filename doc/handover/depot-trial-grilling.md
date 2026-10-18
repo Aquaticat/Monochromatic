@@ -1,6 +1,60 @@
 # Depot trial interview
 
-## Execution checkpoint on 2026-10-18 at 16:33 UTC
+## Execution checkpoint on 2026-10-18 at 16:54 UTC
+
+Research remains active and the interview has not started.
+All parent graph cloud jobs are terminal,
+all parent graph watchers and collectors are reaped,
+and no parent cloud allocation remains active.
+Corrected native run `fnvwqfg0bb` on `72af18d5b130dabef7ff5b656ffdc1b58df4fcde`
+produced both complete 222-command logs;
+actual attempt intervals are 390 and 388 seconds.
+Both repetitions pass browser prerequisites,
+Chromium and Firefox;
+WebKit reaches the OPFS assertion and root E2E fails discovery before running cases.
+Original and corrected native results are sealed in
+`doc/audit/depot-expanded-graph-native-correction-2026-10-18.evidence.json` at `f53c920cb2`.
+Repeated GitHub results are sealed in
+`doc/audit/depot-expanded-graph-github-repetition-2026-10-18.evidence.json` at `05d02428a0`.
+All eight originals independently pass ZIP scope checks and 1720 retained command-log byte/hash joins.
+The source-failure classification is
+`doc/planning/depot-expanded-graph-independent-review.md` through `31c4622c6a`.
+Two original WebKit streams mix stderr notices with stdout JSON;
+their explicitly derived cleaned views classify assertions without qualifying an original-JSON consumer.
+Corrected-native Rust parity at `e0790e738d` retains 652 emitted PASS statuses,
+with the same 89 Truepeak and 237 forbidden-strings identities per sample.
+Changed-case/status controls reject equality;
+skip identities remain unenumerated.
+
+Completed-phase mean ratios are 2.86825 for shared builds and 2.21112 for Rust on Depot GHA.
+Corrected native ratios are 3.37416 and 2.20532 respectively.
+No complete-CI multiplier is claimed.
+Critical-path receipt
+`doc/audit/depot-expanded-graph-critical-path-2026-10-18.evidence.json`
+is committed at `df360379b0` and binds the original public source archives.
+Shared builds followed by a Node branch form all six observed longest paths;
+Rust is not on those paths.
+The cost note replaces its stale claim that no aggregate ledger exists.
+The frozen 223-row baseline stays unchanged;
+the current 30-row follow-on separately records a USD 0.6105 known-provider-window proxy,
+including the qualified USD 0.1116 desktop run-envelope fallback.
+The parent's exact nominal Depot graph subtotal is USD 0.487.
+These figures are not invoices or evidence of VM/builder deallocation.
+
+Coverage owns public OS recovery `39144499822`,
+then the admitted matched Depot Mac/Windows controls,
+semantic assertion/generator reconciliation and the metadata-only screenshot-publication receipt.
+Rust owns exact desktop attempt boundaries,
+the final follow-on ledger and deletion/absence checks for the three owned prepared native images.
+Platform owns a narrow report capability-allocation completeness pass;
+the final whole-report independent sufficiency review follows factual closure.
+The parent owns its graph source-archive checks,
+rendered report/handover checks,
+independent cost-ledger reconciliation,
+final capability/OS/semantic integration and publication ancestry checks.
+Read the grilling skill and begin the interview only after those research queues close.
+
+## Recorded setup and recovery history on 2026-10-18 at 16:33 UTC
 
 Research remains active;
 do not start the interview.

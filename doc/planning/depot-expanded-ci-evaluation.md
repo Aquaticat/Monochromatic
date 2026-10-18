@@ -319,6 +319,29 @@ without command-budget termination or unstarted work.
 Passing setup does not convert these source gates into a passing pipeline
 ([original and corrected native consumers](../audit/depot-expanded-graph-native-correction-2026-10-18.evidence.json)).
 
+The independent review of all eight original graph samples verifies 1720 retained command-log hashes.
+It separates strict lint warnings,
+property counterexamples,
+WireGuard diagnostic expectations,
+logger Promise/JSON assertions and intermittent watch waits.
+The watch assertion fails in three samples across multiple provider contexts;
+the samples do not establish a provider-specific failure rate or cause.
+WireGuard's HTTP 500,
+`IPINFO_TOKEN` and `ENOTFOUND` lines belong passing injected negative fixtures,
+so those lines do not establish provider network failures.
+Reached WebKit reports retain 26 expected cases,
+one skip and one unexpected OPFS assertion;
+root E2E discovery reports contain zero executed cases
+([source and exact reporter classifications](depot-expanded-graph-independent-review.md)).
+
+Two public GitHub WebKit logs contain `npm notice` text interleaved with reporter JSON.
+The research collector merges command stdout and stderr into one file.
+The reviewer retains original hashes and explicitly derived views that remove only those identified notice lines.
+Those views support assertion classification;
+they do not qualify a strict machine consumer of the original mixed streams.
+The observation does not establish invalid JSON on Playwright's own stdout
+([collector source and derived-view boundary](depot-expanded-graph-independent-review.md)).
+
 The native-CI documentation review covers parallel shared-filesystem semantics,
 retry state,
 identity,
@@ -360,7 +383,7 @@ combined storage and passing results.
 Its scenario inputs are hypothetical monthly quantities,
 not observed future event rates.
 The [cost/critical-path work record](depot-expanded-ci-cost-model.md)
-owns allocation-row normalization and the remaining whole-graph calculation.
+owns allocation-row normalization and the observed dependency-path calculation.
 Standard GitHub public-repository compute remains a zero-compute-cost option;
 artifact/storage rules are separate
 ([GitHub billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions)).
@@ -418,6 +441,15 @@ their 326.719-second mean gives a 2.21 ratio against GitHub.
 Native uses the explicit rootful Podman prerequisite adapter and retains separate source/test failures,
 so these also remain completed-phase comparisons
 ([source and original artifact joins](../audit/depot-expanded-graph-native-correction-2026-10-18.evidence.json)).
+
+Independent native parity checks match the same 89 Truepeak and 237 forbidden-strings passing identities
+against the GitHub reference,
+including changed-case and changed-status negative controls
+([original-log parity](../audit/depot-expanded-graph-native-parity-review-2026-10-18.evidence.json)).
+The observed longest dependency path runs from shared builds into a Node consumer branch in all six profiles;
+the independent Rust branch is shorter.
+The model therefore does not add overlapping Rust and Node time reductions as human waiting savings
+([source-bound path arithmetic](../audit/depot-expanded-graph-critical-path-2026-10-18.evidence.json)).
 
 Cache conclusions name the workload and mechanism.
 Both fresh pnpm profiles use pinned `actions/cache/restore` and `actions/cache/save`
@@ -487,9 +519,10 @@ Remaining factual work is explicitly owned in the
 [execution handover](../handover/depot-trial-grilling.md):
 current-source macOS and Windows owner controls,
 semantic feature/assertion reconciliation,
-corrected native graph consumer reconciliation and combined allocation/cost normalization.
+capability allocation completeness and final combined allocation/cost normalization.
 All 120 captured documentation pages now have substantive applicability findings in the source ledger.
-The repeated GitHub graph phases are sealed;
+The repeated GitHub and corrected native graph phases,
+case parity and independent failure classifications are sealed;
 their failed full-graph outcomes remain qualified rather than converted into an overall speed claim.
 The desktop,
 packed-install and native automatic BuildKit/registry consumer queues are complete with the qualifications in
