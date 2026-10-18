@@ -63,7 +63,7 @@ fs.chmodSync(runtime, 0o700);
 const privateConfig = join(runtime, 'c');
 const longestSocket = join(privateConfig, 'libvirt/qemu/lib/domain-999-mvm-depot-current/monitor.sock');
 if (Buffer.byteLength(longestSocket) >= 108) throw new LifecycleProbeFailure('Private libvirt socket path exceeds the Linux boundary');
-commandEnvironment = { ...process.env, MVM_BACKEND: 'libvirt', HOME: privateHome, USER: os.userInfo().username, LOGNAME: os.userInfo().username, XDG_CONFIG_HOME: privateConfig, XDG_CACHE_HOME: join(privateHome, '.cache'), XDG_DATA_HOME: join(privateHome, '.local/share'), XDG_RUNTIME_DIR: runtime, MISE_DATA_DIR: join(originalHome, '.local/share/mise'), MISE_CONFIG_DIR: join(originalHome, '.config/mise'), MISE_CACHE_DIR: join(originalHome, '.cache/mise') };
+commandEnvironment = { ...process.env, MVM_BACKEND: 'libvirt', HOME: privateHome, USER: os.userInfo().username, LOGNAME: os.userInfo().username, XDG_CONFIG_HOME: privateConfig, XDG_CACHE_HOME: join(privateHome, '.cache'), XDG_DATA_HOME: join(privateHome, '.local/share'), XDG_RUNTIME_DIR: runtime, MISE_DATA_DIR: process.env.MISE_DATA_DIR ?? join(originalHome, '.local/share/mise'), MISE_CONFIG_DIR: process.env.MISE_CONFIG_DIR ?? join(originalHome, '.config/mise'), MISE_CACHE_DIR: process.env.MISE_CACHE_DIR ?? join(originalHome, '.cache/mise'), MISE_STATE_DIR: process.env.MISE_STATE_DIR ?? join(originalHome, '.local/state/mise'), MISE_TRUSTED_CONFIG_PATHS: [source, process.env.MISE_TRUSTED_CONFIG_PATHS].filter(Boolean).join(':') };
 const imageDirectory = join(privateHome, '.local/share/mvm/images');
 fs.mkdirSync(imageDirectory, { recursive: true });
 const imagePath = join(imageDirectory, 'noble-server-cloudimg-amd64.img');
