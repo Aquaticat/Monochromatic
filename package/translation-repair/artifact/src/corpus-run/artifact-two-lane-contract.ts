@@ -248,9 +248,9 @@ export const ARTIFACT_SCHEMA_VERSION_V17 = 17;
  the span alone, which is a limit it documents (ledger B661): a span that holds a reference defined in another slice is read as plain
  text there.
 
- THE RECOUNT READS THREE THINGS MORE STRICTLY, with no field moved (review of 2026-10-18), and they rode inside eighteen: no file of it
- was stored under the corpus-pass runs when they were made, and the two stored artifacts of those runs (TianqiChen66624 and
- TianqiChen66625, generation seventeen) still read. A quote is contained in another only where no joint of a longer word stands at an
+ THE RECOUNT READS THREE THINGS MORE STRICTLY, with no field moved (review of 2026-10-18), and they rode inside eighteen on the
+ evidence of the corpus-pass runs of TianqiChen66624, TianqiChen66625 and TianqiChen66626 alone: no file of eighteen is stored under
+ them, and the two artifacts they hold (generation seventeen) still read. A file of eighteen stored elsewhere has not been read. A quote is contained in another only where no joint of a longer word stands at an
  edge of the match, the locator's own test of an apostrophe, a hyphen or a joint of digits (`containsWords`,
  `consistency-contains-words.ts`), so the candidate spans and the slot words differ for quotes such as `cat` and `cat's bowl`. A line
  ending pads inline code as a space does (`codeContentOf`, `consistency-markup-ranges.ts`), so the locator refuses a word beside code

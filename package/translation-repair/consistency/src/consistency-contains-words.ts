@@ -12,6 +12,10 @@ import { cutsWord, } from './consistency-word-joints.ts';
 // the same notion of containment. A match is no containment when an edge of it is a joint of a longer word, which the locator
 // refuses too (`consistency-word-joints.ts`: an apostrophe or a hyphen between letters or digits, a full stop, comma, colon or
 // slash between digits), so `cat` is not contained in `cat's bowl` or `cat-nap` and `5` is not contained in `0.5`.
+// ONE KNOWN DIFFERENCE FROM THE LOCATOR: the fold writes a single corner bracket (`『cat』and`) as an apostrophe and the quote
+// handed here has lost which character it was, so the locator, which keeps it, finds `cat` in `『cat』and` and this test does not
+// contain `cat` in the folded quote `cat'and`. The difference only withholds a candidate span, which leaves a place unlocated
+// rather than located at the wrong words.
 
 /**
  No offsets: a quote in the fold holds no markup, so no closing joint and no emphasis delimiter is read in it.
