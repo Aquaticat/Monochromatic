@@ -1,27 +1,35 @@
 name: Depot pool routing research
-run-name: 'routing-${{ inputs.pool }}-negative-${{ inputs.fail_pool }}'
-
+run-name: routing-${{ inputs.pool }}-negative-${{ inputs.fail_pool }}-hold-${{ inputs.hold_seconds }}
 on:
   workflow_dispatch:
     inputs:
       pool:
         type: choice
-        options: [compare, github, depot]
+        options:
+          - compare
+          - github
+          - depot
         default: compare
         required: true
       fail_pool:
         type: choice
-        options: [none, depot]
+        options:
+          - none
+          - depot
         default: none
         required: true
-
+      hold_seconds:
+        type: choice
+        options:
+          - "0"
+          - "90"
+        default: "0"
+        required: true
 permissions:
   contents: read
-
 concurrency:
-  group: 'routing-research-${{ github.ref }}-${{ inputs.pool }}-${{ inputs.fail_pool }}'
+  group: routing-research-${{ github.ref }}-${{ inputs.pool }}-${{ inputs.fail_pool }}
   cancel-in-progress: false
-
 jobs:
   plan:
     runs-on: ubuntu-24.04
@@ -55,9 +63,8 @@ jobs:
             'matrix=' + JSON.stringify({ include }) + '\n' +
             'pools=' + JSON.stringify(pools) + '\n');
           console.log(JSON.stringify({ include, negativeControl: process.env.FAIL_POOL }));
-
   workers:
-    name: 'routing-worker-${{ matrix.pool }}'
+    name: routing-worker-${{ matrix.pool }}
     needs: plan
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 5
@@ -101,15 +108,24 @@ jobs:
           };
           writeFileSync('routing-receipt-' + receipt.selectedPool + '.json', JSON.stringify(receipt, null, 2) + '\n');
           console.log(JSON.stringify(receipt));
-
       - name: Upload source-bound receipt before the failure control
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: 'routing-receipt-${{ github.run_id }}-${{ matrix.pool }}'
-          path: 'routing-receipt-${{ matrix.pool }}.json'
+          name: routing-receipt-${{ github.run_id }}-${{ matrix.pool }}
+          path: routing-receipt-${{ matrix.pool }}.json
           if-no-files-found: error
           retention-days: 7
-
+      - name: Bounded hold for explicit cancellation control
+        if: matrix.pool == 'depot' && inputs.hold_seconds == '90'
+        shell: node {0}
+        run: |
+          const { setTimeout } = require('node:timers/promises');
+          async function hold() {
+            console.log('CANCELLATION_CONTROL_READY: bounded 90-second idle timer');
+            await setTimeout(90000);
+            console.log('CANCELLATION_CONTROL_COMPLETED_WITHOUT_CANCELLATION');
+          }
+          hold();
       - name: Intentional source failure control
         shell: node {0}
         env:
@@ -119,10 +135,11 @@ jobs:
           if (process.env.FAIL_POOL === process.env.SELECTED_POOL)
             throw new Error('INTENTIONAL_SOURCE_FAILURE_CONTROL: selected worker must fail the final gate');
           console.log('Worker source control passed.');
-
   gate:
     name: routing-proof-gate
-    needs: [plan, workers]
+    needs:
+      - plan
+      - workers
     if: always()
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -130,10 +147,9 @@ jobs:
       - name: Download receipts from this exact workflow run
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
-          pattern: 'routing-receipt-${{ github.run_id }}-*'
+          pattern: routing-receipt-${{ github.run_id }}-*
           path: receipts
           merge-multiple: true
-
       - name: Require all selected jobs and their original receipts
         shell: node {0}
         env:
