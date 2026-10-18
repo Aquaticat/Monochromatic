@@ -8,7 +8,7 @@ import {
   join,
 } from 'node:path';
 
-import { familyPackages, } from './source-scan.test-fixture.ts';
+import { familyPackages, } from './family-source.test-fixture.ts';
 
 //region Living repository-level docs
 // The repository-level translation-repair docs that state current fact and are
@@ -196,7 +196,10 @@ async function markdownDocsIn({ root, }: { readonly root: string; },): Promise<r
     : [];
   return [
     ...docs,
-    ...(entries.includes('README.md',) ? [join(root, 'README.md',),] : []),
+    ...(entries.includes('README.md',) ? [join(
+      root,
+      'README.md',
+    ),] : []),
   ];
 }
 

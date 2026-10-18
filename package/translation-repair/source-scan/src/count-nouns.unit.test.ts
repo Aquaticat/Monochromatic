@@ -54,13 +54,13 @@ import {
   isAsciiLetter,
   isAsciiLowerLetter,
 } from '@monochromatic-dev/translation-repair-markup';
+import { readPackageSource, } from './family-source.test-fixture.ts';
 import {
   childNodes,
   identifierName,
   isTreeNode,
   nodesUnder,
   parseSource,
-  readPackageSource,
   type SourceText,
   type TreeNode,
   unwrapped,

@@ -93,13 +93,13 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography';
+import { readPackageSource, } from './family-source.test-fixture.ts';
 import {
   identifierName,
   isTreeNode,
   nodesUnder,
   parentsOf,
   parseSource,
-  readPackageSource,
   type SourceText,
   type TreeNode,
   unwrapped,
@@ -3190,7 +3190,7 @@ await describe({
           ],
         },),).toEqual([
           'document-structure/all-in-input-order.ts#allInInputOrder: the list excuses 1 Promise.all call and the function holds 2, at '
-            + 'document-structure/all-in-input-order.ts:2, all-in-input-order.ts:3, so no entry can be paired with the call it was read '
+            + 'document-structure/all-in-input-order.ts:2, document-structure/all-in-input-order.ts:3, so no entry can be paired with the call it was read '
             + 'against; list the site\'s calls one entry each, in the order they stand',
           'lykoi.ts#sort: the list excuses 1 Promise.all call and the function holds 2, at lykoi.ts:2, lykoi.ts:3, so '
             + 'no entry can be paired with the call it was read against; list the site\'s calls one entry each, in the '

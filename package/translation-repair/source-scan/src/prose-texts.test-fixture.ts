@@ -26,7 +26,7 @@ import {
 import {
   familyPackages,
   readPackageSource,
-} from './source-scan.test-fixture.ts';
+} from './family-source.test-fixture.ts';
 
 /**
  One file a guard reads, named from its package root (a source file by its package directory and its path under

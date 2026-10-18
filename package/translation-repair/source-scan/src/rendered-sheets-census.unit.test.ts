@@ -15,8 +15,8 @@ import {
 import {
   pathUnderSrc,
   readPackageSource,
-  type SourceText,
-} from './source-scan.test-fixture.ts';
+} from './family-source.test-fixture.ts';
+import type { SourceText, } from './source-scan.test-fixture.ts';
 import { expectRecordAsListed, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scan-findings.test-fixture.ts';
 
 /**

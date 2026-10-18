@@ -28,10 +28,8 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import {
-  readPackageSource,
-  type SourceText,
-} from './source-scan.test-fixture.ts';
+import { readPackageSource, } from './family-source.test-fixture.ts';
+import type { SourceText, } from './source-scan.test-fixture.ts';
 import { expectFindingsAsListed, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scan-findings.test-fixture.ts';
 
 /**

@@ -44,6 +44,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { readPackageSource, } from './family-source.test-fixture.ts';
 import {
   ancestorsOf,
   childNodes,
@@ -53,7 +54,6 @@ import {
   nodesUnder,
   parentsOf,
   parseSource,
-  readPackageSource,
   type SourceText,
   type TreeNode,
   unwrapped,

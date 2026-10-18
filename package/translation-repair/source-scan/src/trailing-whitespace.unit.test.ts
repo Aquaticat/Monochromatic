@@ -30,10 +30,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { readPackageSource, } from './family-source.test-fixture.ts';
 import {
   nodesUnder,
   parseSource,
-  readPackageSource,
   type SourceText,
 } from './source-scan.test-fixture.ts';
 import { expectNoFindings, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scan-findings.test-fixture.ts';

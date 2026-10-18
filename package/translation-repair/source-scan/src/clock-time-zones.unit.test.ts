@@ -44,10 +44,10 @@ import {
 } from './living-docs.test-fixture.ts';
 import {
   packageDirectoryOf,
-  parseSource,
   pathUnderSrc,
   readPackageSource,
-} from './source-scan.test-fixture.ts';
+} from './family-source.test-fixture.ts';
+import { parseSource, } from './source-scan.test-fixture.ts';
 import { expectNoFindings, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scan-findings.test-fixture.ts';
 
 /**

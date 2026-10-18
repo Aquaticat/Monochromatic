@@ -65,14 +65,16 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  declaringModule,
+  readPackageSource,
+} from './family-source.test-fixture.ts';
+import {
   childNodes,
   identifierName,
   isTreeNode,
   literalText,
   memberName,
   parseSource,
-  readPackageSource,
-  resolveSpecifier,
   type SourceText,
   type TreeNode,
   unwrapped,
@@ -85,9 +87,19 @@ import { expectFindingsAsListed, } from '@monochromatic-dev/translation-repair-t
 // its enclosing named function, its form and its value.
 
 /**
- Path of the fixture that declares the shared hang stop, relative to `src`.
+ Locations of the fixture that declares the shared hang stop: where the family keeps it, and the bare
+ file name a fixture case in this file gives it, since such a case's files belong to no package.
  */
-const HANG_STOP_PATH = 'test-fixture/hang-stop.test-fixture.ts';
+const HANG_STOP_PATHS: ReadonlySet<string> = new Set([
+  'test-fixture/hang-stop.test-fixture.ts',
+  'hang-stop.test-fixture.ts',
+],);
+
+/**
+ Location of the module that declares the Bedrock client's builder, which a test reaches through the
+ built entry of its package or the package's name.
+ */
+const BEDROCK_CLIENT_MODULE = 'provider/bedrock-client.ts';
 
 /**
  Name the fixture exports the shared hang stop under.
@@ -958,15 +970,6 @@ function timerNamesOf(
      Module the declaration names.
      */
     const from = literalText({ node: statement.source, },);
-    /**
-     Where a relative specifier lands, empty for a package import.
-     */
-    const landsAt = from.startsWith('.',)
-      ? resolveSpecifier({
-        fromPath: file.path,
-        specifier: from,
-      },)
-      : '';
     for (const specifier of (statement.specifiers as readonly TreeNode[])) {
       if (specifier.type !== 'ImportSpecifier')
         continue;
@@ -975,6 +978,14 @@ function timerNamesOf(
        */
       const exported = identifierName({ node: specifier.imported, },) || literalText({ node: specifier.imported, },);
       /**
+       The module declaring that name when the specifier names a file of the family, the specifier otherwise.
+       */
+      const landsAt = declaringModule({
+        fromPath: file.path,
+        specifier: from,
+        imported: exported,
+      },);
+      /**
        Name the file uses.
        */
       const local = identifierName({ node: specifier.local, },);
@@ -982,9 +993,9 @@ function timerNamesOf(
         promiseSleeps.add(local,);
       if ((from === '@monochromatic-dev/module-async-time/ts') && (exported === 'wait'))
         waits.add(local,);
-      if ((landsAt === HANG_STOP_PATH) && (exported === HANG_STOP_NAME))
+      if (HANG_STOP_PATHS.has(landsAt,) && (exported === HANG_STOP_NAME))
         hangStops.add(local,);
-      if (from.endsWith(BUILT_INDEX_SUFFIX,) && (exported === BEDROCK_CLIENT_NAME))
+      if ((from.endsWith(BUILT_INDEX_SUFFIX,) || (landsAt === BEDROCK_CLIENT_MODULE)) && (exported === BEDROCK_CLIENT_NAME))
         bedrockClients.add(local,);
     }
   }

@@ -48,14 +48,16 @@ import {
 
 import { expectNoFindings, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scan-findings.test-fixture.ts';
 import {
+  declaringModule,
+  readPackageSource,
+} from './family-source.test-fixture.ts';
+import {
   identifierName,
   isTreeNode,
   literalText,
   memberName,
   nodesUnder,
   parseSource,
-  readPackageSource,
-  resolveSpecifier,
   type SourceText,
   type TreeNode,
   unwrapped,
@@ -93,8 +95,8 @@ const CUTTING_MATCHERS: ReadonlySet<string> = new Set([
  */
 type Binding = {
   /**
-   Module it comes from: a path relative to `src` for a relative import, the
-   specifier as written for any other.
+   Module it comes from: the location of the family file that declares the name for a relative import or
+   one naming a family package, the specifier as written for any other.
    */
   readonly module: string;
 
@@ -284,15 +286,6 @@ function bindingsOf(
      The specifier as written.
      */
     const specifier = literalText({ node: statement.source, },);
-    /**
-     The module it names.
-     */
-    const module = specifier.startsWith('.',)
-      ? resolveSpecifier({
-        fromPath: path,
-        specifier,
-      },)
-      : specifier;
     for (const bound of (Array.isArray(statement.specifiers,) ? statement.specifiers : []).filter(isNode,)) {
       /**
        The export it binds: its name, `default` or `*`.
@@ -303,7 +296,13 @@ function bindingsOf(
       bindings.set(
         identifierName({ node: bound.local, },),
         {
-          module,
+          // The file that declares the name, for a relative specifier or one naming a family package;
+          // the specifier as written for any other.
+          module: declaringModule({
+            fromPath: path,
+            specifier,
+            imported,
+          },),
           imported,
         },
       );
@@ -672,7 +671,10 @@ function reachedSyntaxes(
 
  @param mise - text of `mise.toml`
 
- @param files - the package's files, tests and fixtures among them
+ @param files - the family's files, tests and fixtures among them
+
+ @param prefix - what the task file's `src/` paths are located under in `files`: the scan package's
+ directory and a slash, empty where `files` belong to no package
 
  @returns Findings, scan by scan in the task's order and line by line within
  a scan
@@ -686,15 +688,19 @@ function scanComparisons(
   {
     mise,
     files,
+    prefix = '',
   }: {
     readonly mise: string;
     readonly files: readonly SourceText[];
+    readonly prefix?: string;
   },
 ): readonly string[] {
   /**
    The scans the task names.
    */
-  const scans = scanPathsOf({ mise, },);
+  const scans = scanPathsOf({ mise, },).map(function located(path,): string {
+    return `${prefix}${path}`;
+  },);
   /**
    What the scan reads of each scan and each file it imports.
    */
@@ -872,11 +878,12 @@ await describe({
           ),
           'utf8',
         );
-        expect(scanPathsOf({ mise, },).includes('source-scan/scan-direct-comparisons.unit.test.ts',),).toBe(true,);
+        expect(scanPathsOf({ mise, },).includes('scan-direct-comparisons.unit.test.ts',),).toBe(true,);
         expectNoFindings({
           findings: scanComparisons({
             mise,
             files: await readPackageSource(),
+            prefix: 'source-scan/',
           },),
         },);
       },

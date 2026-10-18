@@ -36,13 +36,15 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  readPackageSource,
+  runnerEntriesOf,
+} from './family-source.test-fixture.ts';
+import {
   identifierName,
   isTreeNode,
   literalText,
   nodesUnder,
   parseSource,
-  readPackageSource,
-  runnerEntriesOf,
   type SourceText,
   type TreeNode,
   unwrapped,

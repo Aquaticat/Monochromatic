@@ -6,18 +6,22 @@
  it until its line goes, so the list only shrinks.
 
  WHAT THE SCAN READS: every `.ts` file `readPackageSource` returns under
- `src`. A production module is any that is not `*.unit.test.ts`,
+ the `src` of every family package, each named by its package directory and
+ its path under `src`. A production module is any that is not `*.unit.test.ts`,
  `*.test-fixture.ts` or `*.scratch.ts`, and it has an own test when
- `<dir>/<stem>.unit.test.ts` is among the files.
+ `<dir>/<stem>.unit.test.ts` is among the files of its package, or, for a module whose path under
+ `src` no other package repeats, among the files of any package (the split put a test in the lowest
+ package that reaches every name it needs, so a test may sit beside neither its module nor its package).
+ A path every package repeats (`index.ts`, `build-entries.ts`) needs the test in its own package.
 
  WHAT IT EXEMPTS, read off each module's own syntax tree, since none of
  these carries logic a test could lose:
 
- - a runner entry, one of the `'./src/...'` paths `src/build-entries.ts`
-   lists, the library index left out: a program the corpus harness runs,
-   not a library export a unit test calls;
+ - a runner entry, one of the `'./src/...'` paths a family package's
+   `src/build-entries.ts` lists, read from the package that lists it, the library index left out: a program
+   the corpus harness runs, not a library export a unit test calls;
  - a barrel, every top-level statement an import, an `export * from` or an
-   export list with no inline declaration;
+   export list with no inline declaration, such as the generated `src/index.ts` of each package;
  - a types-only module, every top-level statement a type alias, an
    interface, an import, or a variable declaration whose every initialiser
    is absent or literal-like (a literal, a template with no expressions, a
@@ -47,11 +51,14 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  pathUnderSrc,
+  readPackageSource,
+} from './family-source.test-fixture.ts';
+import {
   isTreeNode,
   literalText,
   nodesUnder,
   parseSource,
-  readPackageSource,
   type SourceText,
   type TreeNode,
 } from './source-scan.test-fixture.ts';
@@ -67,7 +74,7 @@ import { expectRecordAsListed, } from '@monochromatic-dev/translation-repair-tes
  Whether a file's path names a production module: not a unit test, not a
  shared test fixture, not a scratch file.
 
- @param path - file path, relative to `src`
+ @param path - file location, a package directory and a path under its `src`
 
  @returns Whether the path is production rather than test support
 
@@ -86,7 +93,7 @@ function isProductionModulePath({ path, }: { readonly path: string; },): boolean
  Directory and stem (file name without its trailing `.ts`) a path splits
  into.
 
- @param path - file path, relative to `src`
+ @param path - file location, a package directory and a path under its `src`
 
  @returns Its directory, empty at the top of `src`, and its stem
 
@@ -116,7 +123,7 @@ function dirAndStem({ path, }: { readonly path: string; },): {
 /**
  Path a module's own unit test would sit at, beside it.
 
- @param path - module path, relative to `src`
+ @param path - module location, a package directory and a path under its `src`
 
  @returns The exact own-test path the scan looks for
 
@@ -134,77 +141,67 @@ function ownTestPathFor({ path, }: { readonly path: string; },): string {
 }
 
 /**
- A module's path as `ALLOWLIST` writes it: from the package root, `src`
- included.
-
- @param path - module path, relative to `src`
-
- @returns The path prefixed with `src/`
-
- @example
- ```ts
- const named = packagePath({ path: 'cited-reference.ts', },); // 'src/cited-reference.ts'
- ```
- */
-function packagePath({ path, }: { readonly path: string; },): string {
-  return `src/${path}`;
-}
-
-/**
  Opening every runner entry's source path carries in
  `src/build-entries.ts`.
  */
 const ENTRY_SOURCE_OPENING = './src/';
 
 /**
- Path of the file whose string literals name the runner entries, read off
- its parse: tests reach this package through its built bundle, never a
- relative import into `src`.
+ Name of the file in each package whose string literals name that package's runner entries, read off its
+ parse: tests reach a package through its built bundle, never a relative import into `src`.
  */
-const BUILD_ENTRIES_FILE_PATH = 'build-entries.ts';
+const BUILD_ENTRIES_FILE_NAME = 'build-entries.ts';
 
 /**
  The library index, which `nodeEntries` also holds but which names library
  source, not a runner the scan should exempt.
  */
-const LIBRARY_INDEX_SOURCE = 'src/index.ts';
+const LIBRARY_INDEX_SOURCE = 'index.ts';
 
 /**
- Runner entry sources `src/build-entries.ts` lists, read as text,
- package-rooted (`src/corpus-run/...`).
+ Runner entry sources every `src/build-entries.ts` lists, read as text, each located by the package that
+ lists it (`run/corpus-run/...`).
 
- @param files - files read; only one whose path is `build-entries.ts`
- matters, and its absence (the fixture case) yields no runner entries
+ @param files - files read; only those named `build-entries.ts` (in a package or, in a fixture, with
+ no package) matter, and their absence (the fixture case) yields no runner entries
 
- @returns Runner entry sources, the library index left out
+ @returns Runner entry sources, the library indexes left out
 
  @example
  ```ts
  const runners = runnerEntrySourcePaths({ files, },);
- runners.has('src/corpus-run/corpus-pass.ts',); // true
+ runners.has('run/corpus-run/corpus-pass.ts',); // true
  ```
  */
 function runnerEntrySourcePaths({ files, }: { readonly files: readonly SourceText[]; },): ReadonlySet<string> {
-  /**
-   `src/build-entries.ts`, absent in a fixture with no such file.
-   */
-  const buildEntriesFile = files.find(function isBuildEntriesFile({ path, },): boolean {
-    return path === BUILD_ENTRIES_FILE_PATH;
-  },);
-  if (buildEntriesFile === undefined)
-    return new Set();
-  return new Set(nodesUnder({ root: parseSource({ file: buildEntriesFile, },).program, },)
-    .map(function textOf(node,): string {
-      return literalText({ node, },);
+  return new Set(files
+    .filter(function isBuildEntriesFile({ path, },): boolean {
+      return (path === BUILD_ENTRIES_FILE_NAME) || path.endsWith(`/${BUILD_ENTRIES_FILE_NAME}`,);
     },)
-    .filter(function isEntrySource(text,): boolean {
-      return text.startsWith(ENTRY_SOURCE_OPENING,) && text.endsWith('.ts',);
-    },)
-    .map(function packageRooted(text,): string {
-      return text.slice('./'.length,);
-    },)
-    .filter(function isRunnerSource(source,): boolean {
-      return source !== LIBRARY_INDEX_SOURCE;
+    .flatMap(function entriesOf(file,): readonly string[] {
+      /**
+       Location prefix of the package that lists them, empty for a file with no package.
+       */
+      const prefix = file.path.slice(
+        0,
+        -BUILD_ENTRIES_FILE_NAME.length,
+      );
+      return nodesUnder({ root: parseSource({ file, },).program, },)
+        .map(function textOf(node,): string {
+          return literalText({ node, },);
+        },)
+        .filter(function isEntrySource(text,): boolean {
+          return text.startsWith(ENTRY_SOURCE_OPENING,) && text.endsWith('.ts',);
+        },)
+        .map(function underSrc(text,): string {
+          return text.slice(ENTRY_SOURCE_OPENING.length,);
+        },)
+        .filter(function isRunnerSource(source,): boolean {
+          return source !== LIBRARY_INDEX_SOURCE;
+        },)
+        .map(function located(source,): string {
+          return `${prefix}${source}`;
+        },);
     },),);
 }
 
@@ -421,7 +418,7 @@ function isTypesOnlyModule({ module, }: { readonly module: SourceText; },): bool
 
  @param module - module read, already known to lack an own test
 
- @param runnerEntrySources - runner entry sources `src/build-entries.ts` lists
+ @param runnerEntrySources - runner entry sources every `src/build-entries.ts` lists
 
  @returns Whether the module needs no `ALLOWLIST` line despite lacking one
 
@@ -439,31 +436,43 @@ function isExemptByShape(
     readonly runnerEntrySources: ReadonlySet<string>;
   },
 ): boolean {
-  return runnerEntrySources.has(packagePath({ path: module.path, },),)
+  return runnerEntrySources.has(module.path,)
     || isBarrelModule({ module, },)
     || isTypesOnlyModule({ module, },);
 }
 
 /**
- Paths, package-rooted and sorted, of every production module that lacks an
+ Locations, sorted, of every production module that lacks an
  own test and is not exempt by shape: the live set `ALLOWLIST` tracks.
 
  @param files - files read, production modules and their tests alike
 
- @returns Package-rooted paths needing an `ALLOWLIST` line, sorted
+ @returns Locations needing an `ALLOWLIST` line, sorted
 
  @example
  ```ts
- const needing = modulesNeedingAllowlistEntry({ files, },); // ['src/nap-schedule.ts']
+ const needing = modulesNeedingAllowlistEntry({ files, },); // ['stage/nap-schedule.ts']
  ```
  */
 function modulesNeedingAllowlistEntry({ files, }: { readonly files: readonly SourceText[]; },): readonly string[] {
   /**
-   Paths of every `.unit.test.ts` file read, own-test lookups check this.
+   Locations of every `.unit.test.ts` file read, own-test lookups check this.
    */
   const unitTestPaths = new Set(files
     .filter(function isUnitTest({ path, },): boolean { return path.endsWith('.unit.test.ts',); },)
     .map(function pathOf({ path, },): string { return path; },),);
+  /**
+   Paths under `src` of those, whichever package holds them.
+   */
+  const unitTestsUnderSrc = new Set([...unitTestPaths,]
+    .map(function underSrc(path,): string { return pathUnderSrc({ path, },); },),);
+  /**
+   How many production modules sit at each path under `src`: more than one for a path every package repeats.
+   */
+  const modulesAt = Map.groupBy(
+    files.filter(function isProduction({ path, },): boolean { return isProductionModulePath({ path, },); },),
+    function underSrc({ path, },): string { return pathUnderSrc({ path, },); },
+  );
   /**
    Runner entry sources, read once so every module's `isExemptByShape` call
    reuses them.
@@ -471,9 +480,13 @@ function modulesNeedingAllowlistEntry({ files, }: { readonly files: readonly Sou
   const runnerEntrySources = runnerEntrySourcePaths({ files, },);
   return files
     .filter(function isProduction({ path, },): boolean { return isProductionModulePath({ path, },); },)
-    .filter(function lacksOwnTest({ path, },): boolean { return !unitTestPaths.has(ownTestPathFor({ path, },),); },)
+    .filter(function lacksOwnTest({ path, },): boolean {
+      return !(unitTestPaths.has(ownTestPathFor({ path, },),)
+        || (((modulesAt.get(pathUnderSrc({ path, },),) ?? []).length === 1)
+          && unitTestsUnderSrc.has(ownTestPathFor({ path: pathUnderSrc({ path, },), },),)));
+    },)
     .filter(function notExempt(module,): boolean { return !isExemptByShape({ module, runnerEntrySources, },); },)
-    .map(function toPackagePath({ path, },): string { return packagePath({ path, },); },)
+    .map(function toPath({ path, },): string { return path; },)
     .toSorted();
 }
 
@@ -483,7 +496,7 @@ function modulesNeedingAllowlistEntry({ files, }: { readonly files: readonly Sou
  */
 type RatchetFindings = {
   /**
-   Package-rooted paths the live set holds that `ALLOWLIST` does not: a
+   Locations the live set holds that `ALLOWLIST` does not: a
    module lacking an own test and not exempt by shape, left unlisted.
    */
   readonly unlisted: readonly string[];
@@ -560,6 +573,13 @@ const ALLOWLIST: readonly string[] = [
   'assembly/assembly-regressions.ts',
   'provider/bedrock-bound-ledger.ts',
   'translate-floor/bench-seating.ts',
+  // The split gave each runner package its own build-entries.ts, and the one build-entries.unit.test.ts went with
+  // the coverage census, the first package to hold the file. The five copies listed here have no test of their own.
+  'bench/build-entries.ts',
+  'corpus-pass/build-entries.ts',
+  'probe/build-entries.ts',
+  'run/build-entries.ts',
+  'slice-cache/build-entries.ts',
   'house-rule/bilingual-line-clause.ts',
   'house-rule/candidate-judge-rules.ts',
   'adjudication/candidate-select-count.ts',
@@ -895,13 +915,13 @@ await describe({
               text: 'export function meow(): string { return \'meow\'; }',
             },
           ],
-          allowlist: ['src/whisker-count.ts',],
+          allowlist: ['whisker-count.ts',],
         },),).toEqual({
           unlisted: [
-            'src/index.ts',
-            'src/nap-schedule.ts',
+            'index.ts',
+            'nap-schedule.ts',
           ],
-          stale: ['src/whisker-count.ts',],
+          stale: ['whisker-count.ts',],
         },);
       },
     },),

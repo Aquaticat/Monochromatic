@@ -17,7 +17,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { sourcePathOf, } from './source-scan.test-fixture.ts';
+import { sourcePathOf, } from './family-source.test-fixture.ts';
 
 /**
  The text of a source file of the family.

@@ -48,14 +48,17 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  declaringModule,
+  namesFamilyModule,
+  readPackageSource,
+} from './family-source.test-fixture.ts';
+import {
   identifierName,
   isTreeNode,
   literalText,
   nodesUnder,
   parentsOf,
   parseSource,
-  readPackageSource,
-  resolveSpecifier,
   type SourceText,
   type TreeNode,
 } from './source-scan.test-fixture.ts';
@@ -484,8 +487,9 @@ function namesReadIn({ program, }: { readonly program: TreeNode; },): ReadonlySe
 }
 
 /**
- Names each file's static relative imports and re-exports take from the file
- they name, as `path#name` keys.
+ Names each file's static imports and re-exports take from the family file
+ that declares them, as `path#name` keys: through a relative specifier, a family package's
+ `/ts/<path>` or the index of a family package, which re-exports the name from its declaring file.
 
  @param files - files to read
 
@@ -501,23 +505,23 @@ function importedNames({ files, }: { readonly files: readonly SourceText[]; },):
     return nodesIn({ value: parseSource({ file, },).program.body, },)
       .filter(function namesSource(statement,): boolean {
         return ((statement.type === 'ImportDeclaration') || (statement.type === 'ExportNamedDeclaration'))
-          && literalText({ node: statement.source, },)
-            .startsWith('.',);
+          && namesFamilyModule({ specifier: literalText({ node: statement.source, },), },);
       },)
       .flatMap(function keys(statement,): readonly string[] {
-        /**
-         Path the statement's names come from.
-         */
-        const from = resolveSpecifier({
-          fromPath: file.path,
-          specifier: literalText({ node: statement.source, },),
-        },);
         return nodesIn({ value: statement.specifiers, },)
           .filter(function named(specifier,): boolean {
             return (specifier.type === 'ImportSpecifier') || (specifier.type === 'ExportSpecifier');
           },)
           .map(function key(specifier,): string {
-            return `${from}#${identifierName({ node: (specifier.type === 'ImportSpecifier') ? specifier.imported : specifier.local, },)}`;
+            /**
+             Name taken from the module the statement names.
+             */
+            const taken = identifierName({ node: (specifier.type === 'ImportSpecifier') ? specifier.imported : specifier.local, },);
+            return `${declaringModule({
+              fromPath: file.path,
+              specifier: literalText({ node: statement.source, },),
+              imported: taken,
+            },)}#${taken}`;
           },);
       },);
   },),);

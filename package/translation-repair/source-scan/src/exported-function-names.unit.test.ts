@@ -21,10 +21,12 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  isTreeNode,
-  parseSource,
   pathUnderSrc,
   readPackageSource,
+} from './family-source.test-fixture.ts';
+import {
+  isTreeNode,
+  parseSource,
   type SourceText,
   type TreeNode,
 } from './source-scan.test-fixture.ts';

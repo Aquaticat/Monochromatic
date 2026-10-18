@@ -28,7 +28,7 @@ import {
   readPackageSource,
   readTaskFiles,
   runnerEntriesOf,
-} from '../source-scan.test-fixture.ts';
+} from '../family-source.test-fixture.ts';
 
 /**
  The package directory that owns each runner, by runner name, which names the task a doc starts it by.

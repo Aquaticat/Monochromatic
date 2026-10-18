@@ -41,12 +41,12 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { readPackageSource, } from './family-source.test-fixture.ts';
 import {
   identifierName,
   isTreeNode,
   nodesUnder,
   parseSource,
-  readPackageSource,
   type SourceText,
   type TreeNode,
   unwrapped,

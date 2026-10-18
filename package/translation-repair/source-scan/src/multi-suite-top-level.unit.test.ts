@@ -35,13 +35,13 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { readPackageSource, } from './family-source.test-fixture.ts';
 import {
   ancestorsOf,
   identifierName,
   isTreeNode,
   parentsOf,
   parseSource,
-  readPackageSource,
   type SourceText,
   type TreeNode,
   unwrapped,
