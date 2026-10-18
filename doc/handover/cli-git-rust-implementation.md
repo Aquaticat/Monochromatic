@@ -1663,11 +1663,21 @@ that is verification, not a decision for the user.
   Issues 1768 to 1770 (2026-10-18, user chose the recommended option on 1769 and 1770; each has a triage comment):
   1768 is a launcher defect (a child `PATH` without `.cache/cli-git-bin`), so the wrapper binary does not change and
   the launcher owner verifies `realpath "$(command -v git)"` against the link target plus `git-lfs` in the final
-  child environment. 1769 is implemented in the wrapper: on a non-fast-forward rejection, auto-push merges origin's
-  tip with the landed commit in a temporary private worktree, pushes with a plain push, retries a bounded number of
-  times, never touches the active worktree, index or untracked files, and keeps an overlapping conflict unmerged with
-  a diagnosis (`auto_push.rs` `PUSH_FAILED_NOTE` and `UPSTREAM_PUSH_ARGUMENTS`); it needs a disposable bare-remote
-  regression, a gate, mutation of the new code and a minor release. 1770 is closed as an environment defect: a
+  child environment. 1769 is implemented in the wrapper (`auto_push_reconcile.rs`, `auto_push.rs`, SPEC section
+  "Auto-push", README): on a push refused with `[rejected]`, the same attempt fetches the remote branch into a private
+  ref, merges with `git merge-tree --write-tree` and `git commit-tree` (no worktree, index or untracked file is
+  read or written), pushes the merge with a plain push up to three times, names conflicting paths, and never merges an
+  amended or rebased branch (the last recorded push, or the upstream tip, must be an ancestor of the branch tip,
+  which keeps the amend invariant of `doc/decision/cli-git-concurrent-commits.md`). The local branch stays behind the
+  remote after a reconcile and the note names `git merge --ff-only`. Nine controls pass on the host, the real binary
+  was driven end to end, and the amend guard was shown to fail without it. Queued, in order: (1) read the gate and the
+  scoped mutation run (unit `cli-git-rec1`, tag `rec1`, logs `~/temp/agent/rec1-container.log` and
+  `rec1-mutation.log`) and kill or justify every survivor; (2) release 0.2.0 (README version lines, `Cargo.toml`,
+  `Cargo.lock`, `cli.fuzz:lock:members`, dry-run publish from a `systemd-run --user` unit, push, verify crates.io
+  and the release, `mise upgrade cargo:monochromatic-git-policy-cli`, `git checkout -- mise.lock`); (3) comment on
+  and close issue 1769 with the release; (4) remove image tag `rec1`. Open design follow-up: advance the local branch
+  after a reconcile when the worktree allows it (not done because it takes the index lock and touches files).
+  1770 is answered as an environment defect and stays open until the consumer confirms: a
   read-only `.git/lfs` without `tmp` reproduces the consumer's message with raw Git and the wrapper alike, and a
   present writable `tmp` fixes it (`doc/troubleshooting/git-policy-wrapper-launcher-path.md`); whether the
   consumer's `.git/lfs` was read-only is unconfirmed (`test -w .git/lfs` in its container), and no wrapper change
