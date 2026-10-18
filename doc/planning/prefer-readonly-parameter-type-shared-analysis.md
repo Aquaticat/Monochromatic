@@ -135,6 +135,17 @@ correct the `projectSourceText` TSDoc;
 show each fallback's test failing with its guard removed;
 add fixtures for `export ... from`, `import =` and an added `/// <reference types>` global;
 and compare lint output over every repository package against the baseline bundle.
+The hardening is done on `w177`'s detached head (`6cab24de4c` to `6899ef69af`, notes `w177-notes/harden/`):
+the schema is 9;
+the TSDoc says each project pays the fingerprint once and shares only the source analysis;
+every fallback's test fails with its guard removed (`guards.md`),
+including a newly found third layer (whole-scope snapshots) that had masked the unresolved-specifier case;
+the `export ... from`, `import =` and `/// <reference types>` fixtures do not share when their targets differ;
+`readonly-declaration-ownership.ts` now names a workspace path `workspace` whatever the library flag says;
+the README documents the sharing.
+A cold family lint with verification on gave the prototype's exact totals:
+6856 hits verified, 0 mismatches, 110 unresolved-specifier fallbacks.
+The comparison over every repository package against the baseline bundle runs in `w177-notes/fullrepo/`.
 The owner also chose to profile the remaining cold time
 (about 131 s against 11.5 s without the plugin)
 after landing, not before.

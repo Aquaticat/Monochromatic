@@ -430,13 +430,14 @@ before the other queued work.
     The verification mode's positive control passed (a tampered shared entry was reported, the clean rerun was not).
     The owner chose on 2026-10-18 to harden, then land,
     and to profile the remaining cold time after landing.
-    The hardening runs in a keyless worktree from `w177`'s head.
+    The hardening is done (`6cab24de4c` to `6899ef69af` in `w177`, recorded in the proposal);
+    the comparison over every package against the baseline bundle runs in `w177-notes/fullrepo/`.
     Landing path:
     first the hardening (schema bump, `projectSourceText` TSDoc, remove-the-guard checks on each fallback,
     fixtures for `export ... from` and `/// <reference types>`,
     and lint equality over every repository package against `w177-notes/baseline-oxlint-dist`;
     84 of 219 packages were compared),
-    then cherry-pick `0f2f380e59` to `1b0cdd8653` in order onto the branch.
+    then cherry-pick `0f2f380e59` to `6899ef69af` in order onto the branch.
     Running `mise` in `w177` moved the `tools.rust` nightly in `mise.lock` (`nightly-2026-10-13` to `2026-10-17`);
     the agent reverted it each time, and no landing commit may carry it.
     The docs batch of item 5 landed (`065353a34f` to `8194356f4d`: B629 to B655, D34, M234 to M255).
