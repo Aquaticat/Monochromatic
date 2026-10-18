@@ -218,3 +218,65 @@ The parent also owns the current-source mvm guest lifecycle,
 physical Depot Tests sharding,
 and the immutable BuildKit service-image consumers.
 The BuildKit researcher retains the service image until those consumers finish.
+# Reopened current-source execution, 2026-10-18
+
+The real PR campaign is retained in
+[`depot-runtime-pr-2026-10-18.evidence.json`](../audit/depot-runtime-pr-2026-10-18.evidence.json).
+PR 1766 merged only into its disposable research base.
+The deliberately failing checks produced an actual merge rejection;
+the replacement passing checks permitted the ordinary merge endpoint.
+The temporary classic protection and base branch have been removed.
+The main branch protection response remains equal to the retained pre-campaign response.
+The research head stays available for reproduction.
+
+The matched process control uses harness `44b3303eca52a58806e28a6e8b681be07d43c278`
+and application base `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+GitHub Actions run 39107000367 exercised GitHub-hosted Ubuntu and Depot GitHub Ubuntu;
+native run `cpjv1rfqzw` exercised native Depot Ubuntu.
+All observed the deliberately delayed writer complete at about 70 seconds
+despite a 60-second step timeout.
+The completed-writer positive control passed on every provider.
+The GitHub runners both reported version `2.337.0`.
+These controls retract any attribution of this descendant-process observation to Depot alone.
+They do not establish indefinite process survival or billing duration.
+The retained raw archives and exact timestamps will be consolidated into the durable process receipt.
+
+The current-source `mvm` campaign is admitted as a separate functional qualification:
+
+- Frozen application base `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`;
+  source and dependency inputs are compared before allocation-sensitive work.
+- Ubuntu cloud image SHA-256
+  `04e8f2461a16a44e78a370284471f29616cdd9baf1893df25807b71f985b6c94`,
+  fetched from the official origin checksum response at `2026-10-18T07:14:59.491Z`.
+  A cached search-fetch response held an older image checksum and was rejected for admission.
+- Current package-owned `mvm:run` commands exercise create,
+  actual guest execution,
+  stdout,
+  stderr and nonzero status,
+  host-to-guest-to-host bytes,
+  destroy,
+  empty private domain inventory,
+  and observed owned daemon PID exit.
+- Every guest requests the existing source defaults of 4 virtual CPUs and 8192 MiB;
+  hosts require the 4-CPU and 16-GB profile.
+  Actual monitor responses must report a running guest with KVM enabled.
+- Every host uses a disposable home and private libvirt session.
+  GitHub-hosted KVM access may receive a recorded per-user ACL change inside its owned ephemeral VM.
+  No local host daemon or Hetzner resource is used.
+- The bounded campaign permits at most three functional jobs,
+  at most two simultaneous jobs,
+  a 20-minute job timeout,
+  and a 16-minute inner lifecycle deadline that reserves cleanup time.
+  The nominal 60 job-minute ceiling is USD 0.72 at USD 0.012 per minute,
+  within a USD 1 timestamp-compute guard.
+  This guard is not an invoice or a guarantee that cancellation instantly stops billing.
+- Native Depot runs first;
+  GitHub-hosted and Depot GitHub controls follow on the same immutable harness.
+  These functional probes do not support a provider timing multiplier.
+
+The Android cloud build is owned by the coverage researcher.
+The parent will consume its exact APK artifacts in the required owned,
+headful local Android unit.
+The BuildKit researcher has produced a two-architecture service image;
+the parent next exercises native and GitHub job-container and service-container consumers
+after the digest and temporary pull credential are verified.
