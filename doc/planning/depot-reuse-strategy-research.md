@@ -254,12 +254,13 @@ This campaign does not launch or delegate emulator work.
 
 ## Campaign work queue
 
-- Verify snapshot capture/upload and fresh installed-tool reuse,
-  including source/secret marker controls and missing-tool behavior.
+- Finish the active required-Git Rust consumer `w16c45njf5`,
+  then repeat unchanged fresh allocations and inspect actual target publication/restoration.
 - Compare pnpm content-store reuse with installed dependency/virtual-store restoration,
   workspace linking and actual existing JavaScript consumers.
-- Exercise Kotlin remote caching with real tests,
-  repeated unchanged fresh allocations and changed source/dependency/tool inputs.
+- Add repeated Kotlin cache-off baselines,
+  changed source/dependency/compiler controls,
+  isolated bad-cache responses and the real Detekt CLI plugin host consumer.
 - Exercise the native Rust CLI's compile,
   link and Nextest consumers with repeated unchanged allocations and changed inputs.
 - Probe stale,
@@ -271,6 +272,93 @@ This campaign does not launch or delegate emulator work.
   allocation spread,
   artifact/source hashes,
   stored bytes and exact resource/cost exclusions before proposing a reuse strategy.
+
+## Measured fresh Gradle reuse
+
+The unchanged warm runs are `s9w4jkv0hc` and `rrlzfmp2qv`,
+both from `9f5923543640df2ee41a00ef7d098e1262a470e7`.
+They have independent sandbox boot IDs and the same eight-core AMD EPYC `9R45` model as the seed.
+Each restores 24 HTTP objects totaling 1,302,923 bytes.
+Every restored object matches the seed's uploaded SHA-256 and length.
+Both `compileKotlin` and `compileTestKotlin` report `FROM-CACHE` with identical task keys;
+`test` executes rather than restoring its result.
+Each run produces a fresh six-case JUnit report with zero failures,
+errors or skips.
+
+The timed `test --rerun jar` command takes 22.533 seconds for the seed,
+17.550 seconds for the first warm consumer and 15.836 seconds for the second.
+This includes JVM startup,
+dependency access,
+transform/compile restoration,
+actual test execution and JAR generation.
+The seed also uploads outputs;
+warm consumers read only.
+There is only one seed sample and no repeated cache-off baseline yet.
+These results establish real reuse and the observed warm spread,
+not a general provider or whole-CI multiplier.
+The seed uses a Mise action while the warm jobs use the preserved executable,
+so whole-job differences have another setup boundary.
+
+The same image-backed pnpm content store restores all 582 packages with zero downloads,
+but reimporting/linking takes 71.447,
+75.891 and 65.810 seconds across those fresh jobs.
+Pnpm's own completion reports agree with the measured command boundary.
+The separate first Rust allocation extracts the installed dependency archive in 1.583 seconds
+and passes the existing semantic plugin consumers.
+That archive observation is currently one sample;
+it does not establish a stable ratio between strategies.
+No cause for the image-backed content-store import time has been established.
+
+## Required-Git tool image
+
+Preparation `3jg1fmkc69` from `90c122d9a6074d86504c40ea1b45efdb73887f1b` passed.
+It extends the original image under the new tag
+`l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r2-git256`.
+The final pushed manifest is
+`sha256:fb197837831d438592d9455b3a31d808a20ad8bdc2ae76b05d8b36f6656419cd`.
+The original `tools-r1` remains unchanged.
+
+The repository's existing native verification owner supplies the Git revision and build flags.
+The exact upstream Git tree is `96aa7b9f343426cd28cf6c2da737b9f847a2919d` at revision
+`a018953688f1b10bddf91bff8747068f5f4746a4`.
+Its source build/install takes 57.829 seconds with the existing English/no-Tk choices
+and offline Rust support retained.
+Git `2.56.0` is installed at `/opt/depot-reuse-20261018-r1/git-2.56.0/bin/git`;
+its directory must be added explicitly to `PATH`.
+Provider `/usr/bin/git` remains `2.55.0`.
+The image also captures checksum-verified sccache `0.18.0` so future consumers need no client download.
+
+The incremental snapshot uploads 263,258,112 block bytes,
+measures 24.196 seconds for capture/upload and 25.187 seconds for the helper,
+and reuses the parent sparse/base layers.
+The helper's capture/upload digest identifies its sparse layer;
+it is different from the final pushed manifest digest.
+The verified preparation ZIP contains 16 members and matches its upload-log SHA-256.
+The source checkout and newly written synthetic source/secret markers were removed before capture.
+The first fresh full Rust consumer is active as `w16c45njf5`,
+using immutable harness `883fa0eb6363b43a82a5c8c3fb8237cc60c26da6`.
+Preparation success alone does not establish a passing full Rust test suite.
+
+The first eight completed request windows total 1,017 seconds,
+or USD 0.4068 at all eight requested CPUs and the declared timestamp-price rate.
+Eight remaining full job ceilings add USD 2.88,
+giving a USD 3.2868 scheduling forecast before the required-Git seed.
+Storage and other unmeasured charges remain excluded.
+
+The config blob contains block-map keys,
+including `metadata_chunks`,
+`layers` and `chunks`.
+Absent OCI environment fields or plaintext fixture values in that metadata cannot prove
+that referenced filesystem blocks contain no secrets.
+The filesystem/runtime fixture controls remain separate,
+narrow evidence.
+
+The initial collectors called Depot's AI-labelled diagnosis endpoint for the first five runs.
+Public client source does not establish whether analysis is stored or newly generated,
+or whether there is any charge.
+Further collection uses run metadata,
+raw logs and artifacts only.
+Research conclusions use the actual tool diagnostics and receipts.
 
 ## Primary sources
 
