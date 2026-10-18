@@ -487,9 +487,25 @@ and the desktop allow-list is now the same list plus the Slint identifier, in th
 The notice file is about 2 MB and 40,000 lines.
 The window does not hold it as a Slint string and the page builds nothing at startup:
 opening the page gives it a model (`ui_licenses.rs`, `NoticeLines`) that slices the embedded text one line at a time,
-and the ListView builds only the lines in view.
+and the ListView builds only the lines in view (a window test feeds 40,000 lines and finds fewer than 150 built).
 Closing the page releases the model.
-The startup measurement is in the handover (`doc/planning/music-player-production-implementation.md`).
+
+Measured on 2026-10-18 with release builds that embed their own notice file, `main` at `5b6e6d3061` against this branch:
+
+- Opening the page builds the model for 40,039 lines in 833 to 1,098 microseconds (four runs of the real app in the
+  nested compositor, from the `opened the Licenses page` log line).
+- Startup, taken as the app's own log timestamps from its first line to the first state line with a folder shown
+  (`ui_state_log`), five launches per batch.
+  Batch one: `main` 90 to 105 ms (fifteen launches, median 95), this branch 90 to 101 ms (ten launches, median 92).
+  Batch two, run later: `main` 109 to 126 ms (ten launches, median 114), this branch 102 to 113 ms (ten launches,
+  median 106).
+  The two batches of the same build differ by about 20 ms, more than any difference between the builds,
+  so no startup cost is measurable.
+- Binary size: `main` 55,544,040 bytes, this branch 55,816,872 bytes (272,832 more).
+  The first build of this branch was 57,790,760 bytes: `NOTICES` was a `const`, which Rust copies into every crate that
+  uses it, so the window crate carried a second 2 MB copy beside the library crate's.
+  It is a `static` now, and a test compares the address `--licenses` writes from with the address the page reads.
+  A build without the AboutSlint widget was 43,648 bytes smaller, so the widget itself costs that much.
 
 ### Decisions left to the owner
 
