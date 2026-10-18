@@ -15,8 +15,9 @@ without invoking its cancellation watchdog.
 The original artifact is `01a14f36-f474-743c-a8ae-9b448f73f983`,
 named `arm64-repository-functional`,
 with API size `31598` bytes.
-Its original ZIP and consumer results are being validated;
-terminal success alone does not establish the intended functional workload boundary.
+Its original ZIP and actual consumer results are independently validated in the
+[functional receipt](../audit/depot-arm64-functional-2026-10-18.evidence.json)
+and [retained source archive](../audit/depot-arm64-functional-2026-10-18.sources.json.gz).
 
 The parent admitted one bounded Linux ARM64 profile from frozen application source
 `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
@@ -113,13 +114,67 @@ The hypothesis that its linefeed escapes were doubled was rejected by an actual 
 with a deliberately doubled positive control;
 no linefeed rewrite was applied.
 
-## Next action
+## Actual ARM64 consumer outcomes
 
-Validate the original artifact ZIP,
-retained logs,
-actual compiler and runtime identities,
-ELF machine values,
-frozen source hashes,
-and individual consumer results.
-Publish those receipts with the source-bound fixture and explicit unexercised surfaces.
-No additional cloud allocation is queued for this profile.
+The job observed 8 online CPUs and `33606119424` memory bytes.
+Node `26.12.0` reported `arm64`,
+and its executable had ELF machine `183`.
+Its binary hash matches the independently exercised ARM Node archive consumer.
+`rustc --version --verbose` reported the expected nightly commit and host
+`aarch64-unknown-linux-gnu`.
+The ELF receipt at `/home/runner/.cargo/bin/rustc` describes the resolved command entrypoint;
+the compiler implementation binary was not separately hashed.
+
+The release all-feature Truepeak owner passed 89 tests and retained 2 deliberate skips,
+`cache::tests::bench_cold_write` and `cache::tests::crash_writer_child`.
+The original JUnit XML has 91 unique testcase identities,
+with zero failed or errored cases.
+Every classname,
+name,
+and status tuple matches the retained AMD64 XML from run `221vdm1f21`.
+Cargo and Nextest kept their default concurrency.
+The profile isolated the target and temporary directories but retained the toolchain `HOME`.
+
+The actual built `p-limit-fork` unit owner passed the same 11 runtime describe groups
+as AMD64 run `39105587003`.
+The ordered shared builds and owner build also succeeded.
+This is a group count,
+not a count of individual assertions or cases.
+The independent source check matched 199 recorded file hashes to frozen Git objects,
+and both complete tracked application diff commands returned zero.
+
+The original ZIP passed CRC validation,
+matched the API's byte count,
+and has SHA256 `3b973fea59b5a8a561c60d8b5214c5d9f1fbca6784059cbb32ec29927bf3ef3e`.
+The artifact API did not return a vendor digest;
+the recorded SHA256 is the hash of the downloaded original bytes.
+No additional allocation or secret was needed.
+The original ZIP,
+unmodified XML,
+comparison inputs,
+and immutable research fixture are retained in the source archive.
+
+The local result verifier initially selected shard `b`'s `094.log`,
+which belonged to `or-throw` lint.
+Its empty group set caused the comparison assertion to fail.
+The SHA-bound `p-limit-fork` unit log is shard `a`'s `094.log`,
+with SHA256 `f6fd1c48ede728350ecf0ed4c716f87a7935250ec4342f08afc1a5a5ef83b9b9`.
+Selecting that original log resolved the verifier defect without changing its group parser or rerunning the cloud job.
+The archive publisher also rejected Git's unsupported `--recursive` option;
+the installed `git ls-tree` help exposes only `-r` for that operation.
+These are local evidence-processing defects,
+not failed ARM workloads.
+
+## Remaining boundary
+
+This profile qualifies selected repository Rust and TypeScript functional execution on Linux ARM64 CI.
+It does not qualify the full repository,
+ARM graphics or browsers,
+Android emulation,
+KVM,
+or another operating system.
+Its JUnit XML was retained as an artifact and was not uploaded to Depot Test Results.
+No unchanged repetitions were run,
+so no speed ratio or cache benefit is claimed.
+The research worktree remains available for source verification;
+no additional cloud allocation is queued.
