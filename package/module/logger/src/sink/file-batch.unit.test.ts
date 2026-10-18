@@ -1,4 +1,4 @@
-import { chmod, mkdir, mkdtemp, readFile, readdir, rm, } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readFile, readdir, rename, rm, } from 'node:fs/promises';
 import { homedir, } from 'node:os';
 import { join, } from 'node:path';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
@@ -50,6 +50,45 @@ await describe({
   name: 'file sink batch completion',
   concurrency: 1,
   children: [
+    it({
+      name: 'keeps a record admitted during an issued append in a later complete batch',
+      fn: async () => {
+        await withFileSink(async function checkIssuedAppend({ sink, readRecords, },): Promise<void> {
+          const first = { level: 'info' as const, timestamp: 1, message: 'issued record', };
+          const later = { level: 'info' as const, timestamp: 2, message: 'admitted during append', };
+          /** Microtask admission happens before filesystem completion callbacks can run. */
+          async function admitLater(): Promise<void> {
+            await Promise.resolve();
+            await sink.write(later,);
+          }
+          const issued = sink.write(first,);
+          await Promise.all([issued, admitLater(),],);
+          expect((await readRecords()).slice(1,),).toEqual([first, later,],);
+        },);
+      },
+    },),
+    it({
+      name: 'reports append failure, releases its completion, and accepts the next restored write',
+      fn: async ({ sinon, },) => {
+        const warnings = sinon.stub(console, 'warn',);
+        await withFileSink(async function checkAppendFailure({ sink, directory, readRecords, },): Promise<void> {
+          const [filename,] = await readdir(directory,);
+          if (filename === undefined)
+            throw new Error('Verified sink has no log file',);
+          const file = join(directory, filename,);
+          const saved = join(directory, 'saved.jsonl',);
+          await rename(file, saved,);
+          await mkdir(file,);
+          await sink.write({ level: 'info', timestamp: 0, message: 'failed append', },);
+          await rm(file, { recursive: true, },);
+          await rename(saved, file,);
+          const after = { level: 'info' as const, timestamp: 1, message: 'after restored destination', };
+          await sink.write(after,);
+          expect((await readRecords()).slice(1,),).toEqual([after,],);
+          expect(warnings.callCount,).toBe(1,);
+        },);
+      },
+    },),
     it({
       name: 'reports rejected serializations without inserting non-JSON lines or disabling later writes',
       fn: async ({ sinon, },) => {
