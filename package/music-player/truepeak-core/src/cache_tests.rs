@@ -479,3 +479,237 @@ async fn bench_cold_write() {
 }
 
 //endregion
+
+//region put_batch: one transaction for many rows, with the same precedence rule as `put`.
+
+// Every row of a batch reads back unchanged.
+#[tokio::test]
+async fn put_batch_stores_every_row() {
+    let cache = DecisionCache::open(":memory:")
+        .await
+        .expect("in-memory cache should open");
+    let entries: Vec<(u64, Decision)> = (0..50_u64).map(|key| return (key, exact(0.25))).collect();
+    cache
+        .put_batch(identity(), &entries)
+        .await
+        .expect("batch should be cached");
+    assert_eq!(count_rows(&cache).await, 50);
+    for (key, decision) in &entries {
+        let hit = cache
+            .get(*key, identity())
+            .await
+            .expect("lookup should run")
+            .expect("every batched row should exist");
+        assert_eq!(&hit, decision);
+    }
+}
+
+// An empty batch opens no transaction and stores nothing.
+#[tokio::test]
+async fn an_empty_put_batch_is_a_no_op() {
+    let cache = DecisionCache::open(":memory:")
+        .await
+        .expect("in-memory cache should open");
+    cache
+        .put_batch(identity(), &[])
+        .await
+        .expect("an empty batch should succeed");
+    assert_eq!(count_rows(&cache).await, 0);
+}
+
+// The never-downgrade rule holds inside a batch, against a stored row and against an earlier row of the same batch.
+#[tokio::test]
+async fn put_batch_never_downgrades_an_exact_row() {
+    let cache = DecisionCache::open(":memory:")
+        .await
+        .expect("in-memory cache should open");
+    cache
+        .put(1, identity(), &exact(0.5))
+        .await
+        .expect("exact decision should be cached");
+    let entries = vec![(1, probe(0.9)), (2, exact(0.4)), (2, probe(0.9))];
+    cache
+        .put_batch(identity(), &entries)
+        .await
+        .expect("batch should be cached");
+    let stored = cache.get(1, identity()).await.expect("lookup should run");
+    assert_eq!(stored, Some(exact(0.5)));
+    let in_batch = cache.get(2, identity()).await.expect("lookup should run");
+    assert_eq!(in_batch, Some(exact(0.4)));
+}
+
+// A row the table refuses (a NaN gain is stored as NULL, which a NOT NULL column rejects) fails the batch's
+// transaction; the rows around it are still stored one by one, and the call reports how many failed.
+#[tokio::test]
+async fn a_refused_row_does_not_discard_its_neighbours() {
+    let cache = DecisionCache::open(":memory:")
+        .await
+        .expect("in-memory cache should open");
+    let refused = exact(f32::NAN);
+    cache
+        .put(99, identity(), &refused)
+        .await
+        .expect_err("positive control: a NaN gain is refused on its own");
+    let entries = vec![(1, exact(0.1)), (2, refused), (3, exact(0.3))];
+    let error = cache
+        .put_batch(identity(), &entries)
+        .await
+        .expect_err("the refused row should be reported");
+    assert!(error.message.contains("1 of 3"), "unexpected message: {}", error.message);
+    assert_eq!(count_rows(&cache).await, 2);
+    assert_eq!(cache.get(1, identity()).await.expect("lookup should run"), Some(exact(0.1)));
+    assert_eq!(cache.get(3, identity()).await.expect("lookup should run"), Some(exact(0.3)));
+}
+
+//endregion
+
+//region Crash safety: kill -9 during batched writes leaves a database that opens and holds whole batches only.
+
+// Rows per batch in the crash tests: small enough that a kill often lands inside one.
+const CRASH_BATCH: u64 = 64;
+
+// Child side of the crash tests, run only through `run_crash_cycles`: store invented rows from `CACHE_CRASH_START`
+// onward forever, `CRASH_BATCH` rows per commit, and print the running total after every commit.
+// `CACHE_CRASH_WRITE` is `batch` (one `put_batch` per commit) or `row` (one `put` per row, the control).
+// `CACHE_CRASH_SYNC` is `full` (the default) or `normal` (`PRAGMA synchronous = NORMAL`).
+#[tokio::test]
+#[ignore = "child process of the kill -9 tests; needs the CACHE_CRASH_* variables"]
+async fn crash_writer_child() {
+    let path = bench_setting("CACHE_CRASH_DB", None);
+    let mut next: u64 = bench_setting("CACHE_CRASH_START", None)
+        .parse()
+        .expect("CACHE_CRASH_START should be a whole number");
+    let write = bench_setting("CACHE_CRASH_WRITE", Some("batch"));
+    let cache = DecisionCache::open(&path)
+        .await
+        .expect("crash database should open");
+    if bench_setting("CACHE_CRASH_SYNC", Some("full")) == "normal" {
+        cache
+            .conn
+            .execute("PRAGMA synchronous = NORMAL", ())
+            .await
+            .expect("synchronous pragma should apply");
+    }
+    loop {
+        let entries: Vec<(u64, Decision)> = (next..next + CRASH_BATCH)
+            .map(|index| return (invented_fingerprint(index), exact(0.5)))
+            .collect();
+        if write == "row" {
+            for (fingerprint, decision) in &entries {
+                cache
+                    .put(*fingerprint, identity(), decision)
+                    .await
+                    .expect("crash row should be cached");
+            }
+        } else {
+            cache
+                .put_batch(identity(), &entries)
+                .await
+                .expect("crash batch should be cached");
+        }
+        next += CRASH_BATCH;
+        println!("CRASH_COMMITTED {next}");
+    }
+}
+
+// What a reopened database held after one kill.
+struct CrashOutcome {
+    // The total the child last reported before it was killed.
+    reported: u64,
+    // The rows found after reopening.
+    found: u64,
+}
+
+// Run `cycles` rounds: start the child on the same database file, wait until it has reported a few commits, kill it
+// with SIGKILL (`Child::kill`), then reopen the file and check it is a consistent prefix of the invented keys.
+// Returns what each round found, for the caller's alignment assertion.
+async fn run_crash_cycles(write: &str, sync: &str, cycles: u32) -> Vec<CrashOutcome> {
+    use std::io::BufRead;
+    let path = scratch_db_path(&format!("crash-{write}-{sync}"));
+    remove_scratch_db(&path);
+    let path_text = path.to_str().expect("crash path should be UTF-8").to_string();
+    let executable = std::env::current_exe().expect("the test binary should know its own path");
+    let mut outcomes = Vec::new();
+    let mut start: u64 = 0;
+    for _ in 0..cycles {
+        let mut child = std::process::Command::new(&executable)
+            .args(["--exact", "cache::tests::crash_writer_child", "--ignored", "--nocapture"])
+            .env("CACHE_CRASH_DB", &path_text)
+            .env("CACHE_CRASH_START", start.to_string())
+            .env("CACHE_CRASH_WRITE", write)
+            .env("CACHE_CRASH_SYNC", sync)
+            .stdout(std::process::Stdio::piped())
+            .spawn()
+            .expect("the crash writer should start");
+        let reader = std::io::BufReader::new(child.stdout.take().expect("the child's stdout is piped"));
+        let mut reported = start;
+        for line in reader.lines() {
+            let line = line.expect("the child's stdout should be readable");
+            if let Some(total) = line.strip_prefix("CRASH_COMMITTED ") {
+                reported = total.parse().expect("the child reports whole numbers");
+                if reported >= start + 5 * CRASH_BATCH {
+                    break;
+                }
+            }
+        }
+        assert!(reported >= start + 5 * CRASH_BATCH, "the child stopped before it wrote enough");
+        child.kill().expect("SIGKILL should reach the child");
+        child.wait().expect("the killed child should be reaped");
+        let reopened = DecisionCache::open(&path_text)
+            .await
+            .expect("the database should open after kill -9");
+        let mut check = reopened
+            .conn
+            .query("PRAGMA integrity_check", ())
+            .await
+            .expect("integrity check should run");
+        let verdict = check.next().await.expect("integrity row should be read").expect("integrity returns a row");
+        assert_eq!(verdict.get_value(0).expect("integrity cell").as_text().map(String::as_str), Some("ok"));
+        let found = u64::try_from(count_rows(&reopened).await).expect("row count is not negative");
+        let present = reopened
+            .exact_fingerprints(identity())
+            .await
+            .expect("fingerprints should be read");
+        assert!(found >= reported, "rows the child reported as committed were lost: {found} < {reported}");
+        assert_eq!(present.len() as u64, found, "every row should be exact under the test identity");
+        for index in 0..found {
+            assert!(present.contains(&invented_fingerprint(index)), "row {index} of the prefix is missing");
+        }
+        outcomes.push(CrashOutcome { reported, found });
+        start = found;
+        drop(reopened);
+    }
+    remove_scratch_db(&path);
+    return outcomes
+}
+
+// After a kill -9 during batched writes the database opens, passes the integrity check, holds every committed
+// batch, and holds only whole batches: no half-stored batch is visible.
+#[tokio::test]
+async fn batched_writes_survive_kill_nine_with_whole_batches_only() {
+    for sync in ["full", "normal"] {
+        for outcome in run_crash_cycles("batch", sync, 4).await {
+            assert_eq!(
+                outcome.found % CRASH_BATCH,
+                0,
+                "sync={sync}: a batch was torn (reported {}, found {})",
+                outcome.reported,
+                outcome.found
+            );
+        }
+    }
+}
+
+// Control for the test above: with one commit per row the same kill leaves a partial batch, which shows the kill
+// lands inside a batch's worth of work and that the alignment check can fail.
+#[tokio::test]
+async fn row_writes_after_kill_nine_leave_partial_batches() {
+    let outcomes = run_crash_cycles("row", "full", 6).await;
+    assert!(
+        outcomes.iter().any(|outcome| outcome.found % CRASH_BATCH != 0),
+        "no kill landed inside a batch of row commits: {:?}",
+        outcomes.iter().map(|outcome| (outcome.reported, outcome.found)).collect::<Vec<_>>()
+    );
+}
+
+//endregion
