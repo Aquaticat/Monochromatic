@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-18T12:55:51.647Z",
+  "updatedAt": "2026-10-18T13:54:54.839Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research reopened; no readiness claim",
   "sourceArchive": {
@@ -108,8 +108,19 @@
       "family": "agents",
       "applicability": "Remote coding capability inventory; paid external-model calls excluded",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Primary documentation and applicable CLI/API source reviewed; runtime product unexercised",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T13:54:54.838Z",
+        "sourceSha256": "c9af3ff5ca447f923eb26a08c900d3180dcf9a23e19796c41fe1f8ce3363c098",
+        "findings": [
+          "Requires Anthropic Max OAuth or API credential stored as an organization agent secret",
+          "Private Git access may require GitHub Code Access or a separately named Git credential",
+          "CLI defaults remote; --local still persists conversation JSONL to Depot"
+        ],
+        "repositoryUse": "Source-reviewed future agent access/model governance prerequisite, not a mandatory CI dependency",
+        "authorizationAndEvidenceBoundary": "No Claude execution or org-wide session/secret list was invoked; help-only controls precede authentication"
+      }
     },
     {
       "title": "Remote Agents",
@@ -140,8 +151,19 @@
       "family": "agents",
       "applicability": "Remote coding capability inventory; paid external-model calls excluded",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Primary documentation and applicable CLI/API source reviewed; runtime product unexercised",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T13:54:54.838Z",
+        "sourceSha256": "112905e1123e3f502c3626ad51b3c07f15f6286511a8525302f1c59639b745e1",
+        "findings": [
+          "Currently Claude Code only; persistent filesystem/conversation with launch, resume and fork",
+          "Default agent size2CPU/4GB; all plans at USD0.01/minute with no included agent usage",
+          "Build/cache integration is described as planned, not delivered automatic acceleration"
+        ],
+        "repositoryUse": "Potential optional investigation/repair assistant adjacent to CI; no current repository agent lane is being replaced",
+        "authorizationAndEvidenceBoundary": "No paid model session, organization agent secrets, or repository-write authorization admitted"
+      }
     },
     {
       "title": "AI and agent resources",
@@ -1839,8 +1861,19 @@
       "family": "code",
       "applicability": "Source hosting/mirroring and CI source identity; mirror creation excluded",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Primary documentation and applicable CLI/API source reviewed; runtime product unexercised",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T13:54:54.838Z",
+        "sourceSha256": "951cd203f1970c86b0863232d034d0464abacb223dae9414ada6ccae8d2a0b92",
+        "findings": [
+          "Public beta free during beta; standalone repositories and GitHub mirrors",
+          "Push-only Depot CI events; each newly pushed commit can trigger its own workflow",
+          "Overview retains author TODOs for scale/transaction reliability and mirror behavior; those are not measured guarantees"
+        ],
+        "repositoryUse": "Potential faster Git transport or standalone CI origin for a separate future evaluation",
+        "authorizationAndEvidenceBoundary": "No Code repository/mirror or trust connection created; no clone-speed claim"
+      }
     },
     {
       "title": "Quickstart for Depot Code",
@@ -1864,8 +1897,20 @@
       "family": "code",
       "applicability": "Source hosting/mirroring and CI source identity; mirror creation excluded",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Primary documentation and applicable CLI/API source reviewed; runtime product unexercised",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T13:54:54.838Z",
+        "sourceSha256": "732bfdf8ea845a1048cc7129d63a2ceb9cecd01fc5130ebbe7a989c5c01572ce",
+        "findings": [
+          "GitHub remains source of truth for mirrors; pushes through Depot are forwarded to GitHub",
+          "Upstream changes imported when mirror refreshes; cadence not established",
+          "HTTPS token credential shown once; source TODO leaves exact token scope unresolved",
+          "Public CodeService CreateRepository supports standalone or GitHub connection; DeleteRepository promises refs unreachable, not physical object erasure"
+        ],
+        "repositoryUse": "Potential transport/origin integration, with current GitHub required checks and source identity preserved only after qualification",
+        "authorizationAndEvidenceBoundary": "Mirroring and credential creation remain excluded; token scope, refresh cadence and physical retention not qualified"
+      }
     },
     {
       "title": "Build parallelism in Depot",
@@ -3586,8 +3631,19 @@
       "family": "managed",
       "applicability": "Discover AWS/GPU capabilities and eligibility; account/infrastructure changes excluded",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Primary documentation and applicable CLI/API source reviewed; runtime product unexercised",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T13:54:54.839Z",
+        "sourceSha256": "d91b54829b3c4d2d3747a9cd124460a86d3dc7aec12f333d12a111f92a61ba7a",
+        "findings": [
+          "Requires provider enablement and dedicated empty AWS subaccount",
+          "Published bootstrap creates two AdministratorAccess roles with DeletionPolicy Retain",
+          "Provider assumes delegated roles; quota/network/storage setup remains a customer-cloud responsibility"
+        ],
+        "repositoryUse": "Concrete trust/lifecycle prerequisite for optional customer-AWS deployment, not standard hosted CI",
+        "authorizationAndEvidenceBoundary": "No stack/role/account created; deleting the sample stack does not promise removing retained roles"
+      }
     },
     {
       "title": "Depot Managed Overview",
@@ -3609,8 +3665,18 @@
       "family": "managed",
       "applicability": "Discover AWS/GPU capabilities and eligibility; account/infrastructure changes excluded",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Primary documentation and applicable CLI/API source reviewed; runtime product unexercised",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T13:54:54.839Z",
+        "sourceSha256": "d68bab11bf9bc49d0c43c26d1eea1ad5277525e737685a21ecc6cd40e8d407c9",
+        "findings": [
+          "Business-only managed single-tenant AWS compute and customer-account data",
+          "PrivateLink/VPC/IAM/KMS/S3 integration and enterprise support; GCP is future consideration"
+        ],
+        "repositoryUse": "Only relevant if future private-network, customer-cloud or compliance requirements justify Business",
+        "authorizationAndEvidenceBoundary": "Outside settled Developer baseline; no AWS account/subscription/settings or provider contact"
+      }
     },
     {
       "title": "Using GPUs with Depot Managed",
@@ -3632,8 +3698,18 @@
       "family": "managed",
       "applicability": "Discover AWS/GPU capabilities and eligibility; account/infrastructure changes excluded",
       "retrievalValidated": true,
-      "reviewState": "retrieved; substantive audit in progress",
-      "runtimeEvidence": []
+      "reviewState": "Primary documentation and applicable CLI/API source reviewed; runtime product unexercised",
+      "runtimeEvidence": [],
+      "sourceReview": {
+        "reviewedAt": "2026-10-18T13:54:54.839Z",
+        "sourceSha256": "2f18df9403e12c716b619b060d31dd0661a5ab11c4b8eebbb57f9d0dcd9a7740",
+        "findings": [
+          "Customer AWS GPU capacity and provider-built custom AMI/unique runner label",
+          "Distinct from Business hosted GPU container builders and standard hosted CI device results"
+        ],
+        "repositoryUse": "Potential future GPU workloads only; no current source-owned GPU consumer established by this page",
+        "authorizationAndEvidenceBoundary": "No standard Developer GPU runner entitlement or GPU execution inferred"
+      }
     },
     {
       "title": "Depot observability overview",
@@ -4104,7 +4180,24 @@
       "sha256": "6da9aaa39729f828248e86f94439e8df58acdd1f9d66934127994d07a8e4ccec",
       "children": [],
       "statusInterpretation": "Native help only; no remote operation",
-      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+      "reviewState": "Native help and manual-dispatch/Claude source audited; no agent/model execution",
+      "sourceReview": {
+        "files": [
+          "pkg/cmd/claude/claude.go",
+          "pkg/cmd/claude/remote.go",
+          "pkg/cmd/claude/secrets.go",
+          "pkg/cmd/claude/listsessions.go"
+        ],
+        "commit": "1f96d6d488f938de97ea640b115e9567ebfd6fbf",
+        "boundaries": [
+          "Root --help invokes local Claude help before API authentication",
+          "Local mode uploads conversation JSONL continuously and at exit; auth preflight lists organization sessions",
+          "Remote resume enumerates organization agent sandboxes; no such call was made",
+          "Remote initialization wait timeout explicitly leaves sandbox running in background",
+          "Secret operations are organization-scoped; no new agent credential was admitted",
+          "List-sessions pagination hint references --page-token while flag registration is absent in captured source; source discrepancy remains unexercised"
+        ]
+      }
     },
     {
       "command": [
@@ -5216,7 +5309,24 @@
       "sha256": "fdbcd8372877c9cc7770f7fed671afba0b7fb00ac49b38c8ebcbe7407b3354f3",
       "children": [],
       "statusInterpretation": "Native help only; no remote operation",
-      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+      "reviewState": "Native help and manual-dispatch/Claude source audited; no agent/model execution",
+      "sourceReview": {
+        "files": [
+          "pkg/cmd/claude/claude.go",
+          "pkg/cmd/claude/remote.go",
+          "pkg/cmd/claude/secrets.go",
+          "pkg/cmd/claude/listsessions.go"
+        ],
+        "commit": "1f96d6d488f938de97ea640b115e9567ebfd6fbf",
+        "boundaries": [
+          "Root --help invokes local Claude help before API authentication",
+          "Local mode uploads conversation JSONL continuously and at exit; auth preflight lists organization sessions",
+          "Remote resume enumerates organization agent sandboxes; no such call was made",
+          "Remote initialization wait timeout explicitly leaves sandbox running in background",
+          "Secret operations are organization-scoped; no new agent credential was admitted",
+          "List-sessions pagination hint references --page-token while flag registration is absent in captured source; source discrepancy remains unexercised"
+        ]
+      }
     },
     {
       "command": [
@@ -5249,7 +5359,24 @@
         }
       ],
       "statusInterpretation": "Native help only; no remote operation",
-      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+      "reviewState": "Native help and manual-dispatch/Claude source audited; no agent/model execution",
+      "sourceReview": {
+        "files": [
+          "pkg/cmd/claude/claude.go",
+          "pkg/cmd/claude/remote.go",
+          "pkg/cmd/claude/secrets.go",
+          "pkg/cmd/claude/listsessions.go"
+        ],
+        "commit": "1f96d6d488f938de97ea640b115e9567ebfd6fbf",
+        "boundaries": [
+          "Root --help invokes local Claude help before API authentication",
+          "Local mode uploads conversation JSONL continuously and at exit; auth preflight lists organization sessions",
+          "Remote resume enumerates organization agent sandboxes; no such call was made",
+          "Remote initialization wait timeout explicitly leaves sandbox running in background",
+          "Secret operations are organization-scoped; no new agent credential was admitted",
+          "List-sessions pagination hint references --page-token while flag registration is absent in captured source; source discrepancy remains unexercised"
+        ]
+      }
     },
     {
       "command": [
@@ -5262,7 +5389,24 @@
       "sha256": "3ffd7cb2771f10a29a28630cdd01b7c9401439096af784ececfaabb08585a4bf",
       "children": [],
       "statusInterpretation": "Native help only; no remote operation",
-      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+      "reviewState": "Native help and manual-dispatch/Claude source audited; no agent/model execution",
+      "sourceReview": {
+        "files": [
+          "pkg/cmd/claude/claude.go",
+          "pkg/cmd/claude/remote.go",
+          "pkg/cmd/claude/secrets.go",
+          "pkg/cmd/claude/listsessions.go"
+        ],
+        "commit": "1f96d6d488f938de97ea640b115e9567ebfd6fbf",
+        "boundaries": [
+          "Root --help invokes local Claude help before API authentication",
+          "Local mode uploads conversation JSONL continuously and at exit; auth preflight lists organization sessions",
+          "Remote resume enumerates organization agent sandboxes; no such call was made",
+          "Remote initialization wait timeout explicitly leaves sandbox running in background",
+          "Secret operations are organization-scoped; no new agent credential was admitted",
+          "List-sessions pagination hint references --page-token while flag registration is absent in captured source; source discrepancy remains unexercised"
+        ]
+      }
     },
     {
       "command": [
@@ -5275,7 +5419,24 @@
       "sha256": "432203cdd3849948689bc40b1fa43407495eaf0a862605c02a41ebb99d229dab",
       "children": [],
       "statusInterpretation": "Native help only; no remote operation",
-      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+      "reviewState": "Native help and manual-dispatch/Claude source audited; no agent/model execution",
+      "sourceReview": {
+        "files": [
+          "pkg/cmd/claude/claude.go",
+          "pkg/cmd/claude/remote.go",
+          "pkg/cmd/claude/secrets.go",
+          "pkg/cmd/claude/listsessions.go"
+        ],
+        "commit": "1f96d6d488f938de97ea640b115e9567ebfd6fbf",
+        "boundaries": [
+          "Root --help invokes local Claude help before API authentication",
+          "Local mode uploads conversation JSONL continuously and at exit; auth preflight lists organization sessions",
+          "Remote resume enumerates organization agent sandboxes; no such call was made",
+          "Remote initialization wait timeout explicitly leaves sandbox running in background",
+          "Secret operations are organization-scoped; no new agent credential was admitted",
+          "List-sessions pagination hint references --page-token while flag registration is absent in captured source; source discrepancy remains unexercised"
+        ]
+      }
     },
     {
       "command": [
@@ -5288,7 +5449,24 @@
       "sha256": "e9f6bef9a119d8727064001d87bffef34df91ad882b5fe3caa71822703f247f4",
       "children": [],
       "statusInterpretation": "Native help only; no remote operation",
-      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+      "reviewState": "Native help and manual-dispatch/Claude source audited; no agent/model execution",
+      "sourceReview": {
+        "files": [
+          "pkg/cmd/claude/claude.go",
+          "pkg/cmd/claude/remote.go",
+          "pkg/cmd/claude/secrets.go",
+          "pkg/cmd/claude/listsessions.go"
+        ],
+        "commit": "1f96d6d488f938de97ea640b115e9567ebfd6fbf",
+        "boundaries": [
+          "Root --help invokes local Claude help before API authentication",
+          "Local mode uploads conversation JSONL continuously and at exit; auth preflight lists organization sessions",
+          "Remote resume enumerates organization agent sandboxes; no such call was made",
+          "Remote initialization wait timeout explicitly leaves sandbox running in background",
+          "Secret operations are organization-scoped; no new agent credential was admitted",
+          "List-sessions pagination hint references --page-token while flag registration is absent in captured source; source discrepancy remains unexercised"
+        ]
+      }
     },
     {
       "command": [
@@ -5364,7 +5542,24 @@
         }
       ],
       "statusInterpretation": "Native help only; no remote operation",
-      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+      "reviewState": "Native help and manual-dispatch/Claude source audited; no agent/model execution",
+      "sourceReview": {
+        "files": [
+          "pkg/cmd/claude/claude.go",
+          "pkg/cmd/claude/remote.go",
+          "pkg/cmd/claude/secrets.go",
+          "pkg/cmd/claude/listsessions.go"
+        ],
+        "commit": "1f96d6d488f938de97ea640b115e9567ebfd6fbf",
+        "boundaries": [
+          "Root --help invokes local Claude help before API authentication",
+          "Local mode uploads conversation JSONL continuously and at exit; auth preflight lists organization sessions",
+          "Remote resume enumerates organization agent sandboxes; no such call was made",
+          "Remote initialization wait timeout explicitly leaves sandbox running in background",
+          "Secret operations are organization-scoped; no new agent credential was admitted",
+          "List-sessions pagination hint references --page-token while flag registration is absent in captured source; source discrepancy remains unexercised"
+        ]
+      }
     },
     {
       "command": [
@@ -5377,7 +5572,24 @@
       "sha256": "8959169061e034fe8ec5272a0ef42a95ac6efb357e54b07a7abb1c20101e378e",
       "children": [],
       "statusInterpretation": "Native help only; no remote operation",
-      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+      "reviewState": "Native help and manual-dispatch/Claude source audited; no agent/model execution",
+      "sourceReview": {
+        "files": [
+          "pkg/cmd/claude/claude.go",
+          "pkg/cmd/claude/remote.go",
+          "pkg/cmd/claude/secrets.go",
+          "pkg/cmd/claude/listsessions.go"
+        ],
+        "commit": "1f96d6d488f938de97ea640b115e9567ebfd6fbf",
+        "boundaries": [
+          "Root --help invokes local Claude help before API authentication",
+          "Local mode uploads conversation JSONL continuously and at exit; auth preflight lists organization sessions",
+          "Remote resume enumerates organization agent sandboxes; no such call was made",
+          "Remote initialization wait timeout explicitly leaves sandbox running in background",
+          "Secret operations are organization-scoped; no new agent credential was admitted",
+          "List-sessions pagination hint references --page-token while flag registration is absent in captured source; source discrepancy remains unexercised"
+        ]
+      }
     },
     {
       "command": [
@@ -5391,7 +5603,24 @@
       "sha256": "0c16cccb570d332db42a04bef7f80200f0283e6b0232e777d242a22e337ee685",
       "children": [],
       "statusInterpretation": "Native help only; no remote operation",
-      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+      "reviewState": "Native help and manual-dispatch/Claude source audited; no agent/model execution",
+      "sourceReview": {
+        "files": [
+          "pkg/cmd/claude/claude.go",
+          "pkg/cmd/claude/remote.go",
+          "pkg/cmd/claude/secrets.go",
+          "pkg/cmd/claude/listsessions.go"
+        ],
+        "commit": "1f96d6d488f938de97ea640b115e9567ebfd6fbf",
+        "boundaries": [
+          "Root --help invokes local Claude help before API authentication",
+          "Local mode uploads conversation JSONL continuously and at exit; auth preflight lists organization sessions",
+          "Remote resume enumerates organization agent sandboxes; no such call was made",
+          "Remote initialization wait timeout explicitly leaves sandbox running in background",
+          "Secret operations are organization-scoped; no new agent credential was admitted",
+          "List-sessions pagination hint references --page-token while flag registration is absent in captured source; source discrepancy remains unexercised"
+        ]
+      }
     },
     {
       "command": [
@@ -5405,7 +5634,24 @@
       "sha256": "83f39d4d991753f031440eca5d6b56fe0265cac460af78361c0fc28cad1d6836",
       "children": [],
       "statusInterpretation": "Native help only; no remote operation",
-      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+      "reviewState": "Native help and manual-dispatch/Claude source audited; no agent/model execution",
+      "sourceReview": {
+        "files": [
+          "pkg/cmd/claude/claude.go",
+          "pkg/cmd/claude/remote.go",
+          "pkg/cmd/claude/secrets.go",
+          "pkg/cmd/claude/listsessions.go"
+        ],
+        "commit": "1f96d6d488f938de97ea640b115e9567ebfd6fbf",
+        "boundaries": [
+          "Root --help invokes local Claude help before API authentication",
+          "Local mode uploads conversation JSONL continuously and at exit; auth preflight lists organization sessions",
+          "Remote resume enumerates organization agent sandboxes; no such call was made",
+          "Remote initialization wait timeout explicitly leaves sandbox running in background",
+          "Secret operations are organization-scoped; no new agent credential was admitted",
+          "List-sessions pagination hint references --page-token while flag registration is absent in captured source; source discrepancy remains unexercised"
+        ]
+      }
     },
     {
       "command": [
@@ -5419,7 +5665,24 @@
       "sha256": "23cbfd9439638b857a6e2b13163e2a90cb48197ea87ac716db4a7fc97a0b1600",
       "children": [],
       "statusInterpretation": "Native help only; no remote operation",
-      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+      "reviewState": "Native help and manual-dispatch/Claude source audited; no agent/model execution",
+      "sourceReview": {
+        "files": [
+          "pkg/cmd/claude/claude.go",
+          "pkg/cmd/claude/remote.go",
+          "pkg/cmd/claude/secrets.go",
+          "pkg/cmd/claude/listsessions.go"
+        ],
+        "commit": "1f96d6d488f938de97ea640b115e9567ebfd6fbf",
+        "boundaries": [
+          "Root --help invokes local Claude help before API authentication",
+          "Local mode uploads conversation JSONL continuously and at exit; auth preflight lists organization sessions",
+          "Remote resume enumerates organization agent sandboxes; no such call was made",
+          "Remote initialization wait timeout explicitly leaves sandbox running in background",
+          "Secret operations are organization-scoped; no new agent credential was admitted",
+          "List-sessions pagination hint references --page-token while flag registration is absent in captured source; source discrepancy remains unexercised"
+        ]
+      }
     },
     {
       "command": [
@@ -5433,7 +5696,24 @@
       "sha256": "86cbd4f1771f2b12fa8c5de3182a69ac27f13663c9148c927743206121fa8603",
       "children": [],
       "statusInterpretation": "Native help only; no remote operation",
-      "reviewState": "All native help nodes recursively parsed; implementation/applicability reconciliation continues"
+      "reviewState": "Native help and manual-dispatch/Claude source audited; no agent/model execution",
+      "sourceReview": {
+        "files": [
+          "pkg/cmd/claude/claude.go",
+          "pkg/cmd/claude/remote.go",
+          "pkg/cmd/claude/secrets.go",
+          "pkg/cmd/claude/listsessions.go"
+        ],
+        "commit": "1f96d6d488f938de97ea640b115e9567ebfd6fbf",
+        "boundaries": [
+          "Root --help invokes local Claude help before API authentication",
+          "Local mode uploads conversation JSONL continuously and at exit; auth preflight lists organization sessions",
+          "Remote resume enumerates organization agent sandboxes; no such call was made",
+          "Remote initialization wait timeout explicitly leaves sandbox running in background",
+          "Secret operations are organization-scoped; no new agent credential was admitted",
+          "List-sessions pagination hint references --page-token while flag registration is absent in captured source; source discrepancy remains unexercised"
+        ]
+      }
     }
   ],
   "cliParserControl": {
@@ -14881,6 +15161,12 @@
       "providerSandboxIdsDistinct": true,
       "physicalHostsClaimed": false,
       "completeSuiteOrSpeedBenefitClaimed": false
+    },
+    "arm64Functional": {
+      "note": "doc/planning/depot-arm64-workload-research.md",
+      "evidence": "doc/audit/depot-arm64-functional-2026-10-18.evidence.json",
+      "run": "p4xj5dsh3s",
+      "status": "Finished selected functional owners: Truepeak89P2skipped/91same identities; p-limit-fork11passing groups; no timing ratio"
     }
   },
   "publicDocumentationReconciliation": {

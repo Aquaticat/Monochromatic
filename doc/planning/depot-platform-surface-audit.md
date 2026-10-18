@@ -1027,6 +1027,110 @@ The generated programs passed an annotated-input syntax preflight,
 with the [Node check-path correction](../troubleshooting/node-eval-module-detection.md) retained separately.
 The positive and rejected-mount receipts are in the BuildKit evidence archive.
 
+## Agents, Code, and customer AWS are distinct optional products
+
+The complete deployed [Agents overview][agents-overview]
+and [Claude quickstart][agents-quickstart] describe Claude Code sessions,
+persistent filesystem and conversation state,
+resume,
+and fork.
+Default remote agents use 2 CPUs and 4 GB,
+cost USD 0.01 per minute on all plans,
+and have no included agent usage.
+The overview describes automatic build/cache integration as planned.
+That wording does not qualify an already working integration.
+The quickstart requires Anthropic authentication and organization-scoped agent secrets.
+No model session or agent secret was created by this research.
+
+Installed CLI source `pkg/cmd/claude/claude.go`
+implements `--local` by running the local Claude executable,
+watching its conversation JSONL,
+and uploading that JSONL continuously and at exit.
+Its authentication preflight calls `ListSessions` for the organization.
+Local execution therefore does not mean conversation data stays local.
+`pkg/cmd/claude/remote.go` also enumerates agent sandboxes when resuming;
+its initialization wait timeout explicitly leaves the remote sandbox running.
+These are source-reviewed data and lifecycle boundaries,
+not exercised model or account-wide session operations.
+The root help control exits through local Claude help before that authentication path.
+
+The [Code overview][code-overview] describes a free public beta with standalone repositories and GitHub mirrors.
+Its CI event support is push-only,
+with each newly pushed commit eligible to trigger a run.
+The [Code quickstart][code-quickstart] says GitHub remains the source of truth for mirrors
+and pushes through Depot are forwarded to GitHub.
+It describes upstream import when the mirror refreshes,
+without establishing refresh cadence.
+The overview still contains author TODOs for reliability,
+scale,
+and mirror behavior;
+those are not measured guarantees.
+The quickstart also leaves exact token scope as an author TODO.
+No Code repository,
+mirror,
+token,
+or connection was created.
+Potential Git transport benefits remain unmeasured.
+
+The retained public schema `proto/depot/code/v1beta1/code.proto`
+exposes standalone/mirror `CreateRepository`
+and `DeleteRepository`.
+The deletion comment promises repository refs become unreachable
+and the operation cannot be undone.
+It does not promise immediate physical object erasure.
+The Code product needs its own reference,
+credential,
+event,
+and retention qualification before becoming a CI origin.
+Existing GitHub-backed CI receipts do not qualify those different contracts.
+
+The [Managed overview][managed-overview]
+and [AWS setup][managed-aws] describe a Business-only,
+customer-AWS product using a dedicated empty subaccount.
+The published bootstrap creates two roles with `AdministratorAccess`
+and `DeletionPolicy: Retain`.
+Deleting that example stack does not promise deleting its retained roles.
+PrivateLink,
+VPC,
+IAM,
+KMS,
+S3,
+quota,
+and provider delegation are separate operating prerequisites.
+No AWS resource or account setting was changed.
+The [Managed GPU guide][managed-gpu] requires customer GPU capacity,
+a provider-built AMI,
+and a unique runner label.
+That capability is distinct from hosted Business GPU container builders,
+the Developer baseline,
+and the retained standard CI device observations.
+
+These optional products have concrete repository applicability and authorization boundaries in the ledger.
+Reviewing them does not require adopting them or manufacturing unrelated workloads.
+The remaining generic page/command entries still require their substantive pass.
+
+## Selected repository owners actually execute on Linux ARM64 CI
+
+The [ARM64 functional profile](depot-arm64-workload-research.md)
+and [original-archive receipt](../audit/depot-arm64-functional-2026-10-18.evidence.json)
+close a different boundary from ARM image hello-world execution.
+Native run `p4xj5dsh3s` passed the frozen all-feature release Truepeak owner
+with 89 passing and 2 deliberately skipped tests.
+Every JUnit classname,
+name,
+and status tuple matched the 91 AMD64 identities.
+The built `p-limit-fork` unit owner passed the same 11 runtime describe groups as its AMD64 comparison.
+Node and the resolved Rust command entrypoint had ARM ELF machine `183`,
+and the compiler reported the expected nightly commit and `aarch64-unknown-linux-gnu` host.
+The original ZIP,
+source hashes,
+source-bound fixture,
+and comparison inputs are retained.
+This is one functional profile,
+without whole-repository coverage,
+unchanged timing repetitions,
+or cache-benefit credit.
+
 ## Unreleased CLI changes expose additional research cases
 
 The open [CLI upgrade pull request][cli-upgrade] documents differences from the installed release:
@@ -1099,10 +1203,10 @@ The installed Docker configuration uninstall path will not be exercised against 
   no uptime denominator is currently established.
 - Reconcile the completed identity-adapter receipt into the complete test-producer applicability map.
   Its selected passing single-binary report shape does not qualify arbitrary JUnit or complete-suite reporting.
-- Complete the [queued actual ARM64 repository profile](depot-arm64-workload-research.md)
-  after the current evidence-ledger reconciliation.
-  Existing ARM image/tool controls do not qualify repository Rust or TypeScript execution.
-  The admitted profile is one 8-CPU job with a finite 15-minute lifetime and nominal USD 1 campaign bound.
+- Reconcile the completed [ARM64 functional profile](depot-arm64-workload-research.md)
+  into each relevant source-owned workload entry.
+  It qualifies selected functional owners,
+  with one 8-CPU job and no performance ratio.
 
 The source/evidence ledger will distinguish discovered,
 retrieved,
@@ -1151,3 +1255,10 @@ No completion or interview-readiness conclusion is made.
 [dependabot]: https://depot.dev/docs/github-actions/integrations/dependabot
 [test-split]: https://depot.dev/docs/ci/how-to-guides/split-tests
 [test-results]: https://depot.dev/docs/ci/observability/depot-ci-test-results
+[agents-overview]: https://depot.dev/docs/agents/overview
+[agents-quickstart]: https://depot.dev/docs/agents/claude-code/quickstart
+[code-overview]: https://depot.dev/docs/code/overview
+[code-quickstart]: https://depot.dev/docs/code/quickstart
+[managed-overview]: https://depot.dev/docs/managed/overview
+[managed-aws]: https://depot.dev/docs/managed/on-aws
+[managed-gpu]: https://depot.dev/docs/managed/using-gpus
