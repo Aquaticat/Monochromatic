@@ -2950,6 +2950,79 @@ Production deployment remains outside the trial's authorization.
 
 ## Interview process correction
 
+### Reopened research execution queue, October 18
+
+The user rejected research readiness.
+Do not resume grilling until the expanded repository and vendor coverage has actual evidence.
+The parent owns native retry and parallel semantics,
+physical test shards,
+service and job-container consumers,
+the current-source VM controls,
+the local Android artifact consumer,
+and the integrated decision and cost report.
+The active coverage researcher owns the remaining non-module Node profiles
+and the corrected Android APK pair producer.
+The cache researcher owns the paired cache-off,
+warm,
+fault,
+and invalidation consumers.
+The platform researcher owns BuildKit exports,
+cache mounts,
+and reconciliation of deployed documentation with the first-party source repositories.
+
+The native VM consumer `zg88jz25gb` passed guest execution,
+the nonzero-stderr control,
+byte transfer,
+and explicit domain and daemon cleanup.
+GitHub runner VM controls are next after service consumers release a parent cloud slot.
+GitHub service run `39109462308` passed host HTTP consumers on its three declared platforms;
+job-container results remain pending.
+Native secret control `c8lwr60rdm` observed an absent branch-scoped secret
+and empty ref context in this manual run.
+Run the repository-only variant control before interpreting native container compatibility.
+
+The private Android unit is `mono-depot-ci-android-20261018`.
+Its private launch metadata is in the parent's scratch `android-local/launch.json`.
+The exact debug APK from `qvsjm5hmdp` is being installed and launched;
+the corrected Android producer must supply the instrumentation APK.
+Finish with the documented sync,
+eight-second wait,
+sync,
+and private-HOME `adb emu kill` sequence.
+Stop only the owned adb server after the emulator exits.
+
+Retain public hash-bound receipts for the VM,
+matched process timeout controls,
+service containers,
+and PR cleanup;
+render and review the updated documents.
+The corrected retry fixture must record late descendants independently of retry timeout renewal.
+Run its actual artifact consumer and the delayed parallel cancellation observer.
+Review the broader Rust workspace and current-source linter coverage after the Node inventory wave;
+the lock-bound published linter prerequisite does not prove a current-source linter build.
+Reconcile the final six approved report sections and measured expanded-workload cost paths.
+
+Remove the exact owned GitHub pull secret and native variants after service consumers finish,
+then tell the platform researcher to release the shared image and project.
+The temporary PR protection and disposable PR base are already removed;
+the private cleanup receipt confirms main protection still matches its baseline.
+
+The Codex maintenance clarification is complete in `.out-of-scope/codex-harness.md` only.
+The global search/fetch MCP configuration and fresh-client verification are recorded in
+[`codex-search-fetch-mcp.md`](../troubleshooting/codex-search-fetch-mcp.md).
+No general `AUT` clarification was accepted for that Codex correction.
+
+The proposed research-gap clarification remains pending:
+"Usage/migration advice:
+enumerate vendor features;
+inspect usage/config,
+parallel code,
+TODOs/workarounds,
+suppressions,
+policies;
+map desired workloads to source and runtime proof before readiness."
+Do not edit `AGENTS.md` without the user's acceptance.
+
 The user clarified that the migration is not apples to apples.
 The reports now distinguish controlled allocation measurements from the value and cost of expanded CI capabilities.
 The user approved this replacement for existing `AGENTS.md` rule `EVL`:

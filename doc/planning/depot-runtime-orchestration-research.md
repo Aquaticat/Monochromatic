@@ -337,3 +337,63 @@ the first failed native job,
 one diagnostic native follow-up,
 and the two GitHub controls.
 Four full 20-minute windows at USD 0.012 per minute would total USD 0.96.
+
+### Successful diagnostic VM consumer
+
+Native run `zg88jz25gb`,
+at harness `6b3c75517e798161e79ddb7e496b78cf1ffc4240`,
+completed the actual current-source VM consumer.
+QMP reported a running guest with KVM enabled and present.
+The guest returned the expected stdout nonce,
+reported the deliberately missing path on stderr with exit status 2,
+and round-tripped 51 bytes with SHA256
+`d769bca01c70c838e1234308623c7fedaf6630250a786758abf8f9090f208047`.
+Its retained metadata names Ubuntu,
+the `ubuntu` user,
+`/bin/bash`,
+and the virtiofs transfer route.
+Explicit cleanup left no domains,
+both owned libvirt daemon PIDs were gone,
+and the cleanup error list was empty.
+The group-normalized diagnostic fixture and retained daemon logs distinguish this result
+from the first failed final guest.
+GitHub-hosted and Depot GitHub runner controls remain unexecuted.
+
+### Container and Android consumer progress
+
+GitHub run `39109462308`,
+at harness `1438ecde4b643a606e0a75f85067e3d0153e9bb5`,
+passed its host-to-service HTTP consumers on GitHub-hosted AMD64,
+Depot AMD64,
+and Depot Arm64.
+Its job-container consumers are separate pending evidence.
+The original invalid workflow run `39108872769` is a fixture failure:
+job-level `env` cannot reference `job.services` in the inspected GitHub runner schema.
+The corrected workflow puts that expression in the consuming step's `env`.
+
+Native secret-presence run `c8lwr60rdm` used the same harness.
+It observed an empty pull-secret value and empty `GITHUB_REF` and `GITHUB_REF_NAME`.
+This explains the missing credential at that consumer boundary,
+but does not establish the closed backend's selector mechanism.
+The next control adds a separately named repository-only variant of the same owned,
+short-lived read-only pull credential.
+Retain and later delete both exact owned variants.
+Do not inspect account-wide secrets or mint broader credentials.
+
+The local Android consumer uses a private reflink AVD,
+a separate adb server,
+and systemd unit `mono-depot-ci-android-20261018`.
+The unit reports `MemoryMax=12884901888`,
+with four guest cores,
+4096 MiB guest memory,
+host GPU,
+and a visible window.
+Only the private copy is factory-reset;
+its copied SD card is disabled to avoid inherited media.
+The owned AVD remains unchanged.
+Initial preparation hit Node's `EINVAL` copying a measured `No_COW` temporary adb file.
+The existing verified cold-boot selection excludes `snapshots` and `tmpAdbCmds`;
+the corrected private copy and headful launch succeeded.
+Actual device settings,+APK installation,
+foreground activity,
+and instrumentation results remain separate consumer evidence.
