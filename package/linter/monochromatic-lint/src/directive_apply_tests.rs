@@ -635,14 +635,19 @@ fn only_registry_rule_findings_are_suppressed() {
         String::from("fixture"),
         span.clone(),
     );
-    let mut unknown_code: Diagnostic = Diagnostic::new(
+    let unknown_code: Diagnostic = Diagnostic::new(
         "rust/not-a-rule",
         Severity::Error,
         String::from("unknown"),
         String::from("fixture"),
         span.clone(),
     );
-    unknown_code.labels.clear();
+    // A finding that carries a registry code but is flagged as incomplete processing is never suppressed.
+    let mut flagged: Diagnostic = finding(Language::Rust, source, "fn a", SIDECARS);
+    flagged.processing_failure = true;
+    // A finding without a label has no position to match.
+    let mut unlabelled: Diagnostic = finding(Language::Rust, source, "fn a", SIDECARS);
+    unlabelled.labels.clear();
     let found: Vec<Diagnostic> = apply(
         Language::Rust,
         source,
@@ -650,14 +655,28 @@ fn only_registry_rule_findings_are_suppressed() {
             failure,
             refused,
             unknown_code,
+            flagged,
+            unlabelled,
             finding(Language::Rust, source, "fn a", SIDECARS),
         ],
         Some(Severity::Warn),
     );
-    assert_eq!(found.len(), 3);
-    assert_eq!(found[0].code, "core/processing-failure");
-    assert_eq!(found[1].code, "core/fix-refused");
-    assert_eq!(found[2].code, "rust/not-a-rule");
+    let codes: Vec<&str> = found
+        .iter()
+        .map(|item| return item.code.as_str())
+        .collect::<Vec<&str>>();
+    assert_eq!(
+        codes,
+        [
+            "core/processing-failure",
+            "core/fix-refused",
+            "rust/not-a-rule",
+            SIDECARS,
+            SIDECARS
+        ]
+    );
+    assert!(found[3].processing_failure);
+    assert!(found[4].labels.is_empty());
 }
 
 /// Unused directives are reported only on request,
@@ -783,6 +802,20 @@ fn redundant_directives_are_reported_as_unused() {
         Language::Rust,
         source,
         sidecar_findings(source, &["fn a", "fn b"]),
+        Some(Severity::Warn),
+    );
+    assert_eq!(summary(&found), ["directive/unused@1"]);
+}
+
+/// When two line directives cover one finding the later comment is credited,
+///  so the earlier one is the unused one.
+#[test]
+fn the_latest_line_directive_is_credited() {
+    let source: &str = "// monochromatic-lint-disable-next-line rust/tests-in-sidecars -- r\nfn a() {} // monochromatic-lint-disable-line rust/tests-in-sidecars -- r\n";
+    let found: Vec<Diagnostic> = apply(
+        Language::Rust,
+        source,
+        sidecar_findings(source, &["fn a"]),
         Some(Severity::Warn),
     );
     assert_eq!(summary(&found), ["directive/unused@1"]);

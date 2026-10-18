@@ -105,7 +105,7 @@ fn near_miss_keywords_are_malformed() {
 ///  and is trimmed.
 #[test]
 fn the_justification_follows_the_dash_separator() {
-    let cases: [(&str, Option<&str>); 9] = [
+    let cases: [(&str, Option<&str>); 10] = [
         (" monochromatic-lint-disable -- reason ", Some("reason")),
         (" monochromatic-lint-disable --- reason", Some("reason")),
         (
@@ -117,6 +117,7 @@ fn the_justification_follows_the_dash_separator() {
         (" monochromatic-lint-disable --", None),
         (" monochromatic-lint-disable --   \n ", None),
         (" monochromatic-lint-disable - reason", None),
+        (" monochromatic-lint-disable --reason", None),
         (" monochromatic-lint-disable rust/max-lines--reason", None),
     ];
     for (text, expected) in cases {
