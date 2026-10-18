@@ -23,14 +23,15 @@ import { proseMaskReading, } from '../dist/final/node/index.mjs';
 import { quoteFlags, } from './quote-flags.test-fixture.ts';
 
 /**
- Source files whose rules read the mask.
+ Source files whose rules read the mask, each named by the family package that holds it and its path under that
+ package's `src`.
  */
 const READERS: readonly string[] = [
-  'restore-typography.ts',
-  'restore-ellipsis.ts',
-  'quote-normalize.ts',
-  'translate-guillemets.ts',
-  'corpus-run/quote-style-unify.ts',
+  'page-pass/restore-typography.ts',
+  'page-pass/restore-ellipsis.ts',
+  'typography/quote-normalize.ts',
+  'translate-floor/translate-guillemets.ts',
+  'page-check/corpus-run/quote-style-unify.ts',
 ];
 
 await describe({
@@ -229,9 +230,10 @@ await describe({
           /**
            Source of the reader.
            */
+          const [directory = '', ...underSrc] = reader.split('/',);
           const source = await readFile(
             new URL(
-              reader,
+              `../../${directory}/src/${underSrc.join('/',)}`,
               import.meta.url,
             ),
             'utf8',
