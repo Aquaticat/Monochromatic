@@ -10,6 +10,43 @@ including read-only fallback and escaped terminal-control diagnostics.
 Private pnpr publication still returns `E401`; the Coolify/SSH/API access question remains pending.
 The deployed pnpr trust configuration has not been inspected.
 
+The current source worker is `pi-mimo-rpc-session-QGwl5f`,
+resumed from the heap-failed worker's full saved history at unchanged bounds.
+Its supervisor checkpoint is `6df4b5a423718c97f833aee743ff78c49e7e1c0d`:
+the explicit thirteen changed catalog paths match the actual committed paths.
+It is diagnosing the transient consumer's `2 !== 3` attempt count without weakening expectations.
+The old native worker closes normally before its full-history resume as `pi-mimo-rpc-session-9Tl0ts`.
+That native worker owns only `native/build-reuse.ts` and `native/build-reuse.platform.test.ts` for lint repair.
+Both current workers use the immutable `IFS6IL` correction with the measured resource bounds retained.
+
+Actual native publication passes across the disposable equal-device mount boundary:
+the first real build reports zero reused files and retains complete old and new license bytes;
+the next real build on one mount shares the license inode.
+The maintained platform regression now invokes `native/build.ts`,
+instead of importing the source-only reuse helper rejected by `test-import/require-eventual-artifact`.
+This actual-command test passes for the frozen checkpoint containing `57c1ae4c03`.
+Its scoped lint and updated types remain assigned to the native worker.
+
+The screened formatter composition at frozen `6df4b5a423` passes fresh types,
+complete units,
+real build-activation rollback and host isolation.
+Its source-freshness consumer fails `Each review captures its current native capabilities once`,
+with `2 !== 1`.
+The identical unformatted frozen revision builds independently and fails the same assertion.
+No formatter attribution is established.
+The source shows separate approval-host captures in automatic review and manual fallback;
+that cause still needs a retained call trace and a decision about the shared operation boundary.
+The rest of the independent native qualification runs without rerunning completed checks.
+No formatter output is adopted yet.
+
+Auto-push fails on divergent origin history.
+A wrapper merge stops safely because it would overwrite concurrent uncommitted edits in
+`doc/handover/slint-ide-0x.md` and `package/desktop-app/ide/README.md`.
+Neither file is changed,
+stashed or restored by this task.
+The owner-coordination question is pending;
+auto-mode commits and verification continue locally.
+
 Default native release `kFkBoY` remains pinned.
 The resumed source worker uses a separate immutable corrected runtime.
 A final coherent auto-mode rebuild embedding logger `0.4.4` is still required.
