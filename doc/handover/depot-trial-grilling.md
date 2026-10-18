@@ -20,7 +20,7 @@ they do not establish a repeated provider effect.
 The [default-builder concurrency trial](../audit/depot-runner-sizing-2026-10-15.md)
 records cold samples of `268.558` and `265.417` seconds,
 averaging `266.987` seconds.
-Comparing that mean to the earlier GitHub observation gives approximately `3.26` times the throughput
+Comparing the earlier GitHub observation to that mean gives an elapsed-time ratio of approximately `3.26`
 for that single build operation,
 or about 14 minutes 30 seconds versus 4 minutes 27 seconds.
 Hardware,
