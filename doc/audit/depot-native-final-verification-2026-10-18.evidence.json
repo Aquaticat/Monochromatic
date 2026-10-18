@@ -287,5 +287,16 @@
     "Unmeasured monthly arrival mix and complete-graph waiting benefit",
     "Variable Mac guest hardware and unmeasured physical CPU model"
   ],
-  "originalVerificationReceiptUnmodified": true
+  "originalVerificationReceiptUnmodified": true,
+  "closingChecks": {
+    "checkedAt": "2026-10-18T04:39:08.705Z",
+    "allFinalReceiptFileHashesMatched": true,
+    "originalVerificationReceiptUnmodifiedSince": "99f541b09f",
+    "scopedHandoverLintPassed": true,
+    "finalReceiptJsonFormattingPassed": true,
+    "updatedHandoverLinksVerified": 8,
+    "handoverRenderedHtml": "expanded-native-final-handover.html",
+    "handoverSourceSha256": "1b1e3b2c6e760612b284d819e926c4c03bdd195fe2f3b6a79788b9396ac1eda7",
+    "handoverRenderedHtmlInspected": true
+  }
 }
