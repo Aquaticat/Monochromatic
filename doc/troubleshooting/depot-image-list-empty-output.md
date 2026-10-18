@@ -14,7 +14,8 @@ The inspected upstream CLI checkout is `1f96d6d488f938de97ea640b115e9567ebfd6fbf
 the source for installed version `2.102.23`.
 Current upstream `pkg/cmd/image/list.go` also has Git blob
 `1b15d0e0b89cc892e8966f082e416faf18386114`.
-These are source identities, not a claim that every later CLI release behaves identically.
+These are source identities,
+not a claim that every later CLI release behaves identically.
 
 `pkg/cmd/image/list.go:56` fetches every returned page before dispatching the requested format.
 `pkg/cmd/image/list.go:65` returns early when the resulting slice is empty:
@@ -111,25 +112,34 @@ No account-wide inventory or broader credential is needed to diagnose this seria
 
 ### Upstream filing decision
 
-1.  Upstream behavior: yes.
+1.  Upstream behavior:
+    yes.
     The empty-result return precedes the selected serializer and format validation.
-2.  Fixable upstream: yes.
+2.  Fixable upstream:
+    yes.
     Removing that return lets the existing writers and error branch execute.
     The actual command prototype established the resulting behavior with the existing writers.
-3.  Supported use case: yes.
+3.  Supported use case:
+    yes.
     The command exposes `--output` and implements JSON and CSV writers.
-4.  Contribution welcome: provisionally yes.
+4.  Contribution welcome:
+    provisionally yes.
     The upstream README welcomes PR contributions.
-    The fresh checkout contains no `CONTRIBUTING`, agent-policy, issue-template,
+    The fresh checkout contains no `CONTRIBUTING`,
+    agent-policy,
+    issue-template,
     PR-template or code-of-conduct filename match.
     The all-state tracker search for `"AI" in:title,body` returned no matches.
-    These checks found no AI-assistance ban; they do not prove no policy can exist elsewhere.
-5.  Active refusal: none found.
+    These checks found no AI-assistance ban;
+    they do not prove no policy can exist elsewhere.
+5.  Active refusal:
+    none found.
     All-state searches for `"No images found"` and `image list json` returned no issues.
     The inspected path history ends with the Bubble Tea dependency upgrade on `2026-08-17`,
     following the image command's `2025-09-12` introduction.
     Absence of a matching issue or refusal is not a prediction of maintainer acceptance.
-6.  Prototype: yes.
+6.  Prototype:
+    yes.
     Removing only the early empty-result return passed the 14 paired controls.
     The exact patch is retained with the public evidence.
 

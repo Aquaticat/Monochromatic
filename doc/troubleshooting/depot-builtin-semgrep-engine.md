@@ -95,18 +95,25 @@ The process-wait and chunk-decoding source observations do not prove the inciden
 
 ### Upstream filing decision
 
-1.  Upstream ownership: the CLI selects the engine and invocation.
+1.  Upstream ownership:
+    the CLI selects the engine and invocation.
     A defect in the current Semgrep engine is not established.
-2.  Fixable integration: yes.
-    The CLI can change its engine, executable and filename selection.
+2.  Fixable integration:
+    yes.
+    The CLI can change its engine,
+    executable and filename selection.
     Process-status and capture behavior require separate evidence.
-3.  Supported use case: the CLI explicitly exposes Dockerfile linting,
+3.  Supported use case:
+    the CLI explicitly exposes Dockerfile linting,
     including the Semgrep invocation.
-4.  Contributions: the upstream README welcomes PR contributions;
+4.  Contributions:
+    the upstream README welcomes PR contributions;
     the fresh disposable clone's contribution-policy filename search and all-state AI tracker search found no ban.
-5.  Maintainer refusal: not established.
+5.  Maintainer refusal:
+    not established.
     A targeted duplicate/history review for this integration remains pending.
-6.  Prototype: pending the local source-bound command comparison.
+6.  Prototype:
+    pending the local source-bound command comparison.
     Current-engine success alone is not complete built-in-wrapper qualification.
 
 No upstream issue or PR has been sent.
