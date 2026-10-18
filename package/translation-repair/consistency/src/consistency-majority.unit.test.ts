@@ -77,6 +77,27 @@ function voiceOf(
 }
 
 /**
+ Builds ballots that choose the labels given, one each.
+
+ @param choices - label each seat chose, in seat order
+
+ @returns Ballots with their seats
+
+ @example
+ ```ts
+ const voices = choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 2',], },);
+ ```
+ */
+function choosing({ choices, }: { readonly choices: readonly string[]; },): readonly ConsistencyVoice[] {
+  return choices.map(function oneSeat(
+    choice,
+    at,
+  ): ConsistencyVoice {
+    return voiceOf({ seat: `seat-${String(at,)}`, over: { choice, }, },);
+  },);
+}
+
+/**
  The mark evidence of ballots that each quote the first place by one of the given quotes.
 
  @param quotes - what each ballot quotes for the first place, one ballot for each
@@ -276,35 +297,91 @@ await describe({
       children: [
         it({
           name: 'NAMES THE LABELS SHARING THE HIGHEST CHOICE COUNT when two or more share it and none has more than half, in '
-            + 'the order of the sheet',
+            + 'the order of the sheet, as a tie for first always has',
           fn: async () => {
-            const labels = consistencyLabels({ count: 3, },);
-            /**
-             Ballots that choose the labels given, one each.
-             */
-            function choosing({ choices, }: { readonly choices: readonly string[]; },): readonly ConsistencyVoice[] {
-              return choices.map(function oneSeat(
-                choice,
-                at,
-              ): ConsistencyVoice {
-                return voiceOf({ seat: `seat-${String(at,)}`, over: { choice, }, },);
-              },);
-            }
+            const labels = consistencyLabels({ count: 4, },);
             expect([
               tiedForFirstOf({ voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 2',], },), labels, },),
-              tiedForFirstOf({ voices: choosing({ choices: ['OCCURRENCE 3', 'OCCURRENCE 1', 'OCCURRENCE 3', 'OCCURRENCE 1', 'OCCURRENCE 2',], },), labels, },),
-              tiedForFirstOf({ voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 2',], },), labels, },),
-              tiedForFirstOf({ voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',], },), labels, },),
-              tiedForFirstOf({ voices: choosing({ choices: ['OCCURRENCE 2',], },), labels, },),
-              tiedForFirstOf({ voices: [], labels, },),
+              tiedForFirstOf({
+                voices: choosing({ choices: ['OCCURRENCE 3', 'OCCURRENCE 1', 'OCCURRENCE 3', 'OCCURRENCE 1', 'OCCURRENCE 2',], },),
+                labels,
+              },),
+              tiedForFirstOf({
+                voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3', 'OCCURRENCE 4',], },),
+                labels,
+              },),
             ],).toEqual([
               ['OCCURRENCE 1', 'OCCURRENCE 2',],
               ['OCCURRENCE 1', 'OCCURRENCE 3',],
-              [],
-              [],
-              [],
-              [],
+              ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3', 'OCCURRENCE 4',],
             ],);
+          },
+        },),
+        it({
+          name: 'ADDS THE LABELS WITH THE SECOND-HIGHEST COUNT TO A LONE LEADER that fell short of a majority: four ballots '
+            + 'splitting two, one and one name the three labels, in the order of the sheet',
+          fn: async () => {
+            const labels = consistencyLabels({ count: 4, },);
+            expect([
+              tiedForFirstOf({
+                voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3', 'OCCURRENCE 1',], },),
+                labels,
+              },),
+              tiedForFirstOf({
+                voices: choosing({ choices: ['OCCURRENCE 3', 'OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',], },),
+                labels,
+              },),
+            ],).toEqual([
+              ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',],
+              ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',],
+            ],);
+          },
+        },),
+        it({
+          name: 'ADDS EVERY LABEL THAT SHARES THE SECOND-HIGHEST COUNT, and no label behind them: five ballots splitting two, '
+            + 'one, one and one name all four labels, seven splitting three, two, two and none name the leader and both seconds, '
+            + 'and a label behind the seconds stays out',
+          fn: async () => {
+            const labels = consistencyLabels({ count: 4, },);
+            expect([
+              tiedForFirstOf({
+                voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3', 'OCCURRENCE 4',], },),
+                labels,
+              },),
+              tiedForFirstOf({
+                voices: choosing({
+                  choices: ['OCCURRENCE 2', 'OCCURRENCE 2', 'OCCURRENCE 2', 'OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 3', 'OCCURRENCE 3',],
+                },),
+                labels,
+              },),
+              tiedForFirstOf({
+                voices: choosing({
+                  choices: ['OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 2', 'OCCURRENCE 3', 'OCCURRENCE 4',],
+                },),
+                labels,
+              },),
+            ],).toEqual([
+              ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3', 'OCCURRENCE 4',],
+              ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',],
+              ['OCCURRENCE 1', 'OCCURRENCE 2',],
+            ],);
+          },
+        },),
+        it({
+          name: 'NAMES NONE WHEN A LABEL HAS A STRICT MAJORITY, such as two of three, WHEN NOTHING COUNTED, or WHEN NO OTHER '
+            + 'SHEET LABEL DREW A BALLOT behind a lone leader',
+          fn: async () => {
+            const labels = consistencyLabels({ count: 3, },);
+            expect([
+              tiedForFirstOf({ voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 2',], },), labels, },),
+              tiedForFirstOf({
+                voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 1',], },),
+                labels,
+              },),
+              tiedForFirstOf({ voices: choosing({ choices: ['OCCURRENCE 2',], },), labels, },),
+              tiedForFirstOf({ voices: [], labels, },),
+              tiedForFirstOf({ voices: choosing({ choices: ['OCCURRENCE 1', 'OCCURRENCE 9', 'OCCURRENCE 9',], },), labels, },),
+            ],).toEqual([[], [], [], [], [],],);
           },
         },),
       ],

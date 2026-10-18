@@ -1,8 +1,8 @@
 /**
  Tests for the run-off of a carry choice that no candidate won by a strict majority (the lead's adoption of 2026-10-15 of the
- owner's rule of 2026-10-11 for this ask, open to the owner's veto): the bench is asked once more among the candidates that tied
- for first, with the same quorum, window and label rules as the run-off among places, and a second split keeps the page as it
- stands.
+ owner's rule of 2026-10-11 for this ask, open to the owner's veto): the bench is asked once more among the finalists (the
+ candidates that tied for first, or a lone leader with the candidates next behind it), with the same quorum, window and label
+ rules as the run-off among places, and a second split keeps the page as it stands.
 
  Fixtures are cat-themed invention; no corpus content appears here.
 
@@ -17,6 +17,14 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { carryOffersOf, } from '@monochromatic-dev/translation-repair-consistency';
+import {
+  SEAT_BEDROCK_ONLY_TEXT,
+  SEAT_HYPER_ONLY,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_OPENROUTER_ONLY_CHECKER,
+} from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import { choose, } from '../../dist/final/node/index.mjs';
 import {
   choosing,
@@ -29,6 +37,23 @@ import {
   RECEIVING_ENGLISH,
   SPLICED_PARAGRAPH,
 } from './consistency-carry.test-fixture.ts';
+
+/**
+ A bench of six judges, whose quorum of three asks four seats, so that four choices can split two, one and one.
+ */
+const SIX_SEATS = [
+  SEAT_HYPER_ONLY,
+  SEAT_BEDROCK_ONLY_TEXT,
+  SEAT_HYPER_VISION,
+  SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_OPENROUTER_ONLY_CHECKER,
+];
+
+/**
+ The candidate each of four asks names in a split of two, one and one: the first twice, the second, the third.
+ */
+const SPLIT_POSITIONS = [0, 0, 1, 2,];
 
 /**
  What a writer wrote.
@@ -149,6 +174,73 @@ await describe({
           },
         },),
         it({
+          name: 'RUNS OFF A LONE LEADER WITH THE CANDIDATES NEXT BEHIND IT: four choices splitting two, one and one leave no strict '
+            + 'majority, so the bench is asked once more among the three candidates and carries the one the run-off chose',
+          fn: async () => {
+            const scene = carryScene({
+              behave: function leaderThenAgree({ before, sheet, },): SeatBehaviour {
+                const candidates = candidateTextsOf({ sheet, },);
+                if (before < SPLIT_POSITIONS.length) {
+                  // The first ask: the first two answers name the first candidate, the others the second and the third.
+                  return choosing({ choice: LABELS[SPLIT_POSITIONS[before] ?? 0] ?? '', },);
+                }
+                return choosing({ choice: candidates.at(-1,)?.label ?? '', },);
+              },
+            },);
+            const { carries, edits, } = await choose({
+              context: { ...scene.context, judgeModelIds: SIX_SEATS, },
+              repeat: CARRY_REPEAT,
+              chosen: scene.chosen,
+              unit: scene.unit,
+              offers: OFFERS,
+              findings: [],
+            },);
+            expect({
+              decision: carries[0]?.decision,
+              first: carries[0]?.ballots.map(function choiceOf({ choice, },): string {
+                return choice;
+              },),
+              runOffFinalists: carries[0]?.runOff?.finalists,
+              edited: edits.length > 0,
+            },).toEqual({
+              decision: { kind: 'chosen', label: LABELS[2], },
+              first: [LABELS[0], LABELS[0], LABELS[1], LABELS[2],],
+              runOffFinalists: LABELS,
+              edited: true,
+            },);
+          },
+        },),
+        it({
+          name: 'KEEPS THE PAGE AS IT STANDS ON A SECOND SPLIT OF A LONE LEADER\'S RUN-OFF, recording the run-off and its decision',
+          fn: async () => {
+            const scene = carryScene({
+              behave: function leaderThenSplitAgain({ before, sheet, },): SeatBehaviour {
+                const candidates = candidateTextsOf({ sheet, },);
+                return choosing({
+                  choice: candidates[SPLIT_POSITIONS[before % SPLIT_POSITIONS.length] ?? 0]?.label ?? '',
+                },);
+              },
+            },);
+            const { carries, edits, } = await choose({
+              context: { ...scene.context, judgeModelIds: SIX_SEATS, },
+              repeat: CARRY_REPEAT,
+              chosen: scene.chosen,
+              unit: scene.unit,
+              offers: OFFERS,
+              findings: [],
+            },);
+            expect({
+              decision: carries[0]?.decision,
+              runOffFinalists: carries[0]?.runOff?.finalists,
+              edits,
+            },).toEqual({
+              decision: { kind: 'none', reason: 'no-majority', },
+              runOffFinalists: LABELS,
+              edits: [],
+            },);
+          },
+        },),
+        it({
           name: 'KEEPS THE PAGE AS IT STANDS ON A SECOND SPLIT, recording the run-off and its decision',
           fn: async () => {
             const scene = carryScene({
@@ -179,8 +271,7 @@ await describe({
           },
         },),
         it({
-          name: 'ASKS NO SECOND TIME WHEN A STRICT MAJORITY CHOSE, WHEN THE QUORUM WAS MISSED OR WHEN ONE LEADER LEADS WITHOUT A '
-            + 'MAJORITY, and records no run-off',
+          name: 'ASKS NO SECOND TIME WHEN A STRICT MAJORITY CHOSE, and records no run-off',
           fn: async () => {
             const scene = carryScene({ behave: function allChoose(): SeatBehaviour {
               return choosing({ choice: WRITER_LABEL, },);

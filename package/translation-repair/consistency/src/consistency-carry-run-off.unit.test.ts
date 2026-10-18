@@ -1,7 +1,8 @@
 /**
  Tests for which candidates a carry choice runs off (the lead's adoption of 2026-10-15 of the owner's rule of 2026-10-11
  for this ask, open to the owner's veto): a choice that reached its quorum and gave no strict majority runs off among the
- candidates tied for first, as the first round runs off among places, and a single leader without a majority is not a tie.
+ candidates tied for first, and, when one candidate leads alone, among that candidate and the candidates with the
+ second-highest count, as the first round runs off among places.
 
  Fixtures are cat-themed invention; no corpus content appears here.
 
@@ -71,12 +72,38 @@ await describe({
           },
         },),
         it({
-          name: 'NAMES NONE WHEN A LABEL HAS A STRICT MAJORITY, WHEN ONE LABEL LEADS ALONE OR WHEN NOTHING COUNTED',
+          name: 'ADDS EVERY LABEL WITH THE SECOND-HIGHEST COUNT TO A LONE LEADER that fell short of a majority, in the order of '
+            + 'the sheet',
+          fn: async () => {
+            expect([
+              tiedChoicesOf({
+                voices: votesFor({ choices: ['CANDIDATE 2', 'CANDIDATE 1', 'CANDIDATE 3', 'CANDIDATE 2',], },),
+                labels: LABELS,
+              },),
+              tiedChoicesOf({
+                voices: votesFor({ choices: ['CANDIDATE 1', 'CANDIDATE 1', 'CANDIDATE 2', 'CANDIDATE 3', 'CANDIDATE 4',], },),
+                labels: LABELS,
+              },),
+              tiedChoicesOf({
+                voices: votesFor({
+                  choices: ['CANDIDATE 1', 'CANDIDATE 1', 'CANDIDATE 1', 'CANDIDATE 2', 'CANDIDATE 2', 'CANDIDATE 3', 'CANDIDATE 4',],
+                },),
+                labels: LABELS,
+              },),
+            ],).toEqual([
+              ['CANDIDATE 1', 'CANDIDATE 2', 'CANDIDATE 3',],
+              ['CANDIDATE 1', 'CANDIDATE 2', 'CANDIDATE 3', 'CANDIDATE 4',],
+              ['CANDIDATE 1', 'CANDIDATE 2',],
+            ],);
+          },
+        },),
+        it({
+          name: 'NAMES NONE WHEN A LABEL HAS A STRICT MAJORITY OR WHEN NOTHING COUNTED',
           fn: async () => {
             expect([
               tiedChoicesOf({ voices: votesFor({ choices: ['CANDIDATE 1', 'CANDIDATE 1', 'CANDIDATE 2',], },), labels: LABELS, },),
               tiedChoicesOf({
-                voices: votesFor({ choices: ['CANDIDATE 1', 'CANDIDATE 1', 'CANDIDATE 2', 'CANDIDATE 3', 'CANDIDATE 4',], },),
+                voices: votesFor({ choices: ['CANDIDATE 1', 'CANDIDATE 1', 'CANDIDATE 1', 'CANDIDATE 2', 'CANDIDATE 3',], },),
                 labels: LABELS,
               },),
               tiedChoicesOf({ voices: votesFor({ choices: ['CANDIDATE 9', 'nothing',], },), labels: LABELS, },),
@@ -109,16 +136,42 @@ await describe({
           },
         },),
         it({
-          name: 'RUNS OFF NOTHING BELOW THE QUORUM OR WHEN A CANDIDATE WON BY A STRICT MAJORITY',
+          name: 'RUNS OFF A LONE LEADER WITH THE CANDIDATES NEXT BEHIND IT when the choices reached their quorum and the leader '
+            + 'has no strict majority',
+          fn: async () => {
+            expect([
+              carryRunOffFinalistsOf({
+                voices: votesFor({ choices: ['CANDIDATE 1', 'CANDIDATE 1', 'CANDIDATE 2', 'CANDIDATE 3',], },),
+                labels: LABELS,
+                quorum: 2,
+              },),
+              carryRunOffFinalistsOf({
+                voices: votesFor({ choices: ['CANDIDATE 4', 'CANDIDATE 1', 'CANDIDATE 4', 'CANDIDATE 5', 'CANDIDATE 2',], },),
+                labels: LABELS,
+                quorum: 4,
+              },),
+            ],).toEqual([
+              ['CANDIDATE 1', 'CANDIDATE 2', 'CANDIDATE 3',],
+              ['CANDIDATE 1', 'CANDIDATE 2', 'CANDIDATE 4', 'CANDIDATE 5',],
+            ],);
+          },
+        },),
+        it({
+          name: 'RUNS OFF NOTHING BELOW THE QUORUM, a lone leader included, OR WHEN A CANDIDATE WON BY A STRICT MAJORITY',
           fn: async () => {
             expect([
               carryRunOffFinalistsOf({ voices: votesFor({ choices: ['CANDIDATE 3', 'CANDIDATE 5',], },), labels: LABELS, quorum: 3, },),
+              carryRunOffFinalistsOf({
+                voices: votesFor({ choices: ['CANDIDATE 1', 'CANDIDATE 1', 'CANDIDATE 2', 'CANDIDATE 3',], },),
+                labels: LABELS,
+                quorum: 5,
+              },),
               carryRunOffFinalistsOf({
                 voices: votesFor({ choices: ['CANDIDATE 3', 'CANDIDATE 3', 'CANDIDATE 5',], },),
                 labels: LABELS,
                 quorum: 2,
               },),
-            ],).toEqual([[], [],],);
+            ],).toEqual([[], [], [],],);
           },
         },),
       ],

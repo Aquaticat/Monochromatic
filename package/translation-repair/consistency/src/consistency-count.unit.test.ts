@@ -1532,7 +1532,8 @@ await describe({
           },
         },),
         it({
-          name: 'NAMES THE PLACES THAT TIED FOR FIRST as the finalists when the usable ballots reach the quorum and no choice '
+          name: 'NAMES THE PLACES THAT TIED FOR FIRST as the finalists, and a lone leader with the places next behind it (four '
+            + 'ballots splitting two, one and one name three places), when the usable ballots reach the quorum and no choice '
             + 'has a strict majority, and no finalists otherwise',
           fn: async () => {
             const tiedTwo = countOver({
@@ -1584,7 +1585,7 @@ await describe({
               ['OCCURRENCE 1', 'OCCURRENCE 3',],
               [],
               [],
-              [],
+              ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',],
               [],
             ],);
           },
@@ -1660,7 +1661,7 @@ await describe({
         it({
           name: 'REPLAYS THE LIVE GROUP ONE BALLOTS (the refrain): the quotes written with a line break, a space, a straight or a '
             + 'curly apostrophe and a closing mark agree on the English\'s own span, the slot spans are agreed by words, and '
-            + 'the two choices that tied for first are the finalists; a recurrence of the straight-against-curly and '
+            + 'the two choices that split the ballots evenly are the finalists; a recurrence of the straight-against-curly and '
             + 'trimmed-text families',
           fn: async () => {
             /**

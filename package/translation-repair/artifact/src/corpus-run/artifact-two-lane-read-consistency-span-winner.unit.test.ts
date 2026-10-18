@@ -1,7 +1,8 @@
 /**
  Tests for the winner a recorded group of the sixteenth shape must have: the
  strict majority of the first round, or the winner of the run-off that settled a
- tie for first; and the refusal of a run-off the ballots do not call for.
+ split (a tie for first, or a lone leader with the places next behind it); and the refusal of a run-off the ballots do not
+ call for.
 
  Fixtures are cat-themed invention; no corpus content appears here.
 
@@ -42,6 +43,14 @@ const GROUP = 'cat.consistency.groups[0]';
 const RENDERINGS: readonly ConsistencyRendering[] = [
   { kind: 'located', quote: 'The cat naps', core: 'The cat naps', start: 0, },
   { kind: 'located', quote: 'the kitten naps', core: 'the kitten naps', start: 6, },
+];
+
+/**
+ Three places located, as the counter holds them.
+ */
+const THREE_RENDERINGS: readonly ConsistencyRendering[] = [
+  ...RENDERINGS,
+  { kind: 'located', quote: 'The cat dozes', core: 'The cat dozes', start: 0, },
 ];
 
 /**
@@ -131,6 +140,63 @@ function groupOf(
 }
 
 /**
+ A group of three places, with the choices and the run-off a case gives.
+
+ @param choices - label each seat chose, in order
+
+ @param runOff - run-off recorded, if any
+
+ @returns The group
+
+ @example
+ ```ts
+ const group = threePlaceGroupOf({ choices: ['OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',], },);
+ ```
+ */
+function threePlaceGroupOf(
+  {
+    choices,
+    runOff,
+  }: {
+    readonly choices: readonly string[];
+    readonly runOff?: ArtifactConsistencyRunOff;
+  },
+): AskedGroup {
+  const group = groupOf({ choices, ...((runOff === undefined) ? {} : { runOff, }), },);
+  return {
+    ...group,
+    occurrences: [
+      ...group.occurrences,
+      {
+        label: 'OCCURRENCE 3',
+        sliceIndex: 2,
+        startOffset: 54,
+        endOffset: 66,
+        line: 7,
+        rendering: { kind: 'located', quote: 'The cat dozes', start: 0, },
+        outcome: 'replaced',
+      },
+    ],
+  };
+}
+
+/**
+ A run-off between the three places.
+
+ @param choices - label each seat chose, in order
+
+ @returns The run-off, with a quorum of the number of seats
+
+ @example
+ ```ts
+ const runOff = threeFinalistRunOffOf({ choices: ['OCCURRENCE 3', 'OCCURRENCE 3', 'OCCURRENCE 1',], },);
+ ```
+ */
+function threeFinalistRunOffOf({ choices, }: { readonly choices: readonly string[]; },): ArtifactConsistencyRunOff {
+  return { ...runOffOf({ choices, },), finalists: ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',], };
+}
+
+/**
  A run-off between the two places.
 
  @param choices - label each seat chose, in order
@@ -199,7 +265,7 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'GIVES THE FIRST ROUND\'S MAJORITY WHEN THE CHOICES DID NOT TIE FOR FIRST, no majority when none had one, and no '
+          name: 'GIVES THE FIRST ROUND\'S MAJORITY WHEN THE CHOICES HAD NO FINALISTS, no majority when none had one, and no '
             + 'quorum when too few were usable',
           fn: async () => {
             expect([
@@ -251,7 +317,51 @@ await describe({
           },
         },),
         it({
-          name: 'REFUSES A RUN-OFF RECORDED FOR CHOICES THAT DID NOT TIE, A TIE WITH NO RUN-OFF AND A RUN-OFF AMONG OTHER FINALISTS',
+          name: 'GIVES THE RUN-OFF\'S WINNER WHEN ONE PLACE LED ALONE WITHOUT A MAJORITY, the run-off among the leader and the '
+            + 'places next behind it, and the page as it stands when that run-off splits again',
+          fn: async () => {
+            const split = ['OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',];
+            expect([
+              expectedWinnerOf({
+                group: threePlaceGroupOf({
+                  choices: split,
+                  runOff: threeFinalistRunOffOf({ choices: ['OCCURRENCE 3', 'OCCURRENCE 3', 'OCCURRENCE 1',], }),
+                }),
+                renderings: THREE_RENDERINGS,
+                path: GROUP,
+              },),
+              expectedWinnerOf({
+                group: threePlaceGroupOf({
+                  choices: split,
+                  runOff: threeFinalistRunOffOf({ choices: ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',], }),
+                }),
+                renderings: THREE_RENDERINGS,
+                path: GROUP,
+              },),
+            ],).toEqual([
+              { kind: 'chosen', label: 'OCCURRENCE 3', },
+              { kind: 'none', reason: 'run-off-tied', },
+            ],);
+          },
+        },),
+        it({
+          name: 'REFUSES A LONE LEADER\'S SPLIT WITH NO RUN-OFF, AND ONE RUN OFF AMONG FEWER PLACES THAN THE FINALISTS',
+          fn: async () => {
+            const split = ['OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',];
+            const refusal = `ArtifactParseError: artifact parse failed at ${GROUP}.verdict.runOff: `
+              + 'expected a run-off among OCCURRENCE 1, OCCURRENCE 2, OCCURRENCE 3, the finalists of ballots with no strict majority.';
+            expect([
+              threePlaceGroupOf({ choices: split, }),
+              threePlaceGroupOf({ choices: split, runOff: runOffOf({ choices: ['OCCURRENCE 1', 'OCCURRENCE 2',], }), }),
+            ].map(function refusedFor(group,): string {
+              return String(caught(function recounts(): unknown {
+                return expectedWinnerOf({ group, renderings: THREE_RENDERINGS, path: GROUP, },);
+              },),);
+            },),).toEqual([refusal, refusal,],);
+          },
+        },),
+        it({
+          name: 'REFUSES A RUN-OFF RECORDED FOR CHOICES THAT HAD NO FINALISTS, A TIE WITH NO RUN-OFF AND A RUN-OFF AMONG OTHER FINALISTS',
           fn: async () => {
             const tied = ['OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 2',];
             expect([
@@ -268,11 +378,11 @@ await describe({
               return winnerRefusal({ group, },);
             },),).toEqual([
               `ArtifactParseError: artifact parse failed at ${GROUP}.verdict.runOff: `
-              + 'expected no run-off, since the usable ballots did not tie for first.',
+              + 'expected no run-off, since the usable ballots left no finalists.',
               `ArtifactParseError: artifact parse failed at ${GROUP}.verdict.runOff: `
-              + 'expected a run-off among OCCURRENCE 1, OCCURRENCE 2, which tied for first.',
+              + 'expected a run-off among OCCURRENCE 1, OCCURRENCE 2, the finalists of ballots with no strict majority.',
               `ArtifactParseError: artifact parse failed at ${GROUP}.verdict.runOff: `
-              + 'expected a run-off among OCCURRENCE 1, OCCURRENCE 2, which tied for first.',
+              + 'expected a run-off among OCCURRENCE 1, OCCURRENCE 2, the finalists of ballots with no strict majority.',
             ],);
           },
         },),

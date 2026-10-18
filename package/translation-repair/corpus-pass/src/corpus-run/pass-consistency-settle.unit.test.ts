@@ -197,6 +197,30 @@ function fourSplit(): readonly ConsistencyVoice[] {
 }
 
 /**
+ Four voices that give the same quotes and choose the first place twice, the second once and the third once, a lone leader
+ without a majority.
+
+ @returns The voices, in seat order
+
+ @example
+ ```ts
+ const voices = leaderSplit();
+ ```
+ */
+function leaderSplit(): readonly ConsistencyVoice[] {
+  return ['OCCURRENCE 1', 'OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',].map(function voiceFor(
+    choice,
+    at,
+  ): ConsistencyVoice {
+    return voiceOf({
+      seat: `seat-${String(at,)}`,
+      quotes: SENTENCE_QUOTES,
+      choice,
+    },);
+  },);
+}
+
+/**
  Settles the repeated sentence in its three places from what the bench came to.
 
  @param asked - the ballots heard, the quorum and the gather's findings
@@ -546,7 +570,7 @@ await describe({
         },),
         it({
           name: 'RUNS OFF A TIE FOR FIRST: the finalist the run-off\'s strict majority names is chosen, and the run-off is '
-            + 'recorded whole beside the first round with its findings',
+            + 'recorded whole beside the first round with its findings, the reason naming the finalists',
           fn: async () => {
             const voices = fourSplit();
             const decided = decideSentence({
@@ -584,12 +608,61 @@ await describe({
               },
               outcomes: ['kept-current', 'chosen', 'kept-current',],
               findings: [
-                'run-off asked: the choices tied for first between OCCURRENCE 1 (2 ballots) and OCCURRENCE 2 (2 ballots), '
-                + 'of 4 usable in all',
+                'run-off asked: the choices reached no strict majority, so the finalists are OCCURRENCE 1 (2 ballots) and '
+                + 'OCCURRENCE 2 (2 ballots), of 4 usable in all',
                 'page-consistency-run-off 3/3',
               ],
               receivers: ['OCCURRENCE 1', 'OCCURRENCE 3',],
             },);
+          },
+        },),
+        it({
+          name: 'RUNS OFF A LONE LEADER WITH THE PLACES NEXT BEHIND IT: four usable ballots splitting two, one and one name three '
+            + 'finalists, the run-off\'s strict majority chooses the third place, which led no ballot, and the run-off is '
+            + 'recorded whole',
+          fn: async () => {
+            const voices = leaderSplit();
+            const decided = decideSentence({
+              asked: askedOf({ voices, quorum: 3, }),
+              runOff: runOffOf({
+                choices: ['OCCURRENCE 3', 'OCCURRENCE 3', 'OCCURRENCE 1',],
+                quorum: 2,
+                findings: ['page-consistency-run-off 3/3',],
+              },),
+            },);
+            expect({
+              winner: decided.verdict.kind === 'asked' ? decided.verdict.winner : undefined,
+              finalists: decided.verdict.kind === 'asked' ? decided.verdict.runOff?.finalists : undefined,
+              outcomes: decided.outcomes,
+              findings: decided.findings,
+            },).toEqual({
+              winner: { kind: 'chosen', label: 'OCCURRENCE 3', },
+              finalists: ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',],
+              outcomes: ['consistent', 'kept-current', 'chosen',],
+              findings: [
+                'run-off asked: the choices reached no strict majority, so the finalists are OCCURRENCE 1 (2 ballots), '
+                + 'OCCURRENCE 2 (1 ballot) and OCCURRENCE 3 (1 ballot), of 4 usable in all',
+                'page-consistency-run-off 3/3',
+              ],
+            },);
+          },
+        },),
+        it({
+          name: 'LEAVES THE PAGE AS IT STANDS ON A SECOND SPLIT OF A LONE LEADER\'S RUN-OFF, the run-off dividing the three '
+            + 'finalists again, recorded with the run-off whole',
+          fn: async () => {
+            const decided = decideSentence({
+              asked: askedOf({ voices: leaderSplit(), quorum: 3, }),
+              runOff: runOffOf({ choices: ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',], quorum: 2, },),
+            },);
+            expect(decided.verdict.kind === 'asked'
+              ? [decided.verdict.winner, decided.verdict.runOff?.finalists, decided.outcomes, decided.receivers.length,]
+              : null,).toEqual([
+                { kind: 'none', reason: 'run-off-tied', },
+                ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',],
+                ['untouched', 'untouched', 'untouched',],
+                0,
+              ],);
           },
         },),
         it({
@@ -614,7 +687,7 @@ await describe({
           },
         },),
         it({
-          name: 'REFUSES A GROUP WHOSE TIE WAS NOT RUN OFF, and a run-off heard for choices that did not tie',
+          name: 'REFUSES A GROUP WHOSE FINALISTS WERE NOT RUN OFF, and a run-off heard for choices that had no finalists',
           fn: async () => {
             const tieWithoutRunOff = caught(function settleTie(): unknown {
               return decideSentence({ asked: askedOf({ voices: fourSplit(), quorum: 3, }), },);
@@ -627,10 +700,10 @@ await describe({
             },);
             expect(tieWithoutRunOff,).toBeInstanceOf(ConsistencyInvariantError,);
             expect([String(tieWithoutRunOff,), String(runOffWithoutTie,),],).toEqual([
-              'ConsistencyInvariantError: unreachable: the choices tied for first and the bench was not asked again, and a tie is '
-              + 'run off before the group is settled',
-              'ConsistencyInvariantError: unreachable: a run-off was heard for choices that did not tie for first, and the bench '
-              + 'is asked again only on a tie',
+              'ConsistencyInvariantError: unreachable: the choices had finalists and the bench was not asked again, and '
+              + 'finalists are run off before the group is settled',
+              'ConsistencyInvariantError: unreachable: a run-off was heard for choices that had no finalists, and the bench '
+              + 'is asked again only when the choices have finalists',
             ],);
           },
         },),
@@ -641,10 +714,11 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'NAMES THE PLACES THAT TIED FOR FIRST WITH THE BALLOTS EACH GOT and the usable ballots in all, and gives '
-            + 'nothing when the choices did not tie',
+          name: 'NAMES THE FINALISTS WITH THE BALLOTS EACH GOT and the usable ballots in all, three finalists as a list '
+            + 'of commas and an and, and gives nothing when the choices have no finalists',
           fn: async () => {
             const tiedAsked = askedOf({ voices: fourSplit(), quorum: 3, });
+            const leaderAsked = askedOf({ voices: leaderSplit(), quorum: 3, });
             const decidedAsked = askedOf({ voices: threeAlike({ quotes: SENTENCE_QUOTES, },), });
             expect([
               runOffReasonOf({
@@ -652,11 +726,18 @@ await describe({
                 asked: tiedAsked,
               },),
               runOffReasonOf({
+                count: countAsked({ repeat: SENTENCE, places: SENTENCE_PLACES, asked: leaderAsked, },),
+                asked: leaderAsked,
+              },),
+              runOffReasonOf({
                 count: countAsked({ repeat: SENTENCE, places: SENTENCE_PLACES, asked: decidedAsked, },),
                 asked: decidedAsked,
               },),
             ],).toEqual([
-              'the choices tied for first between OCCURRENCE 1 (2 ballots) and OCCURRENCE 2 (2 ballots), of 4 usable in all',
+              'the choices reached no strict majority, so the finalists are OCCURRENCE 1 (2 ballots) and OCCURRENCE 2 '
+              + '(2 ballots), of 4 usable in all',
+              'the choices reached no strict majority, so the finalists are OCCURRENCE 1 (2 ballots), OCCURRENCE 2 '
+              + '(1 ballot) and OCCURRENCE 3 (1 ballot), of 4 usable in all',
               '',
             ],);
           },
@@ -672,7 +753,8 @@ await describe({
               count: countAsked({ repeat: SENTENCE, places: SENTENCE_PLACES, asked, },),
               asked,
             },),).toBe(
-              'the choices tied for first between OCCURRENCE 1 (1 ballot) and OCCURRENCE 2 (1 ballot), of 2 usable in all',
+              'the choices reached no strict majority, so the finalists are OCCURRENCE 1 (1 ballot) and OCCURRENCE 2 '
+              + '(1 ballot), of 2 usable in all',
             );
           },
         },),

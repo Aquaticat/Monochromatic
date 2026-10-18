@@ -80,6 +80,7 @@ import {
 import {
   candidateTextsOf,
   currentParagraphOf,
+  finalistsOf,
   isRefrainSheet,
   sheetBlockOf,
   sheetKindOf,
@@ -1590,8 +1591,8 @@ await describe({
               lines,
             },);
             const refrain = nonNullishOrThrow(run.consistency.groups[1],);
-            const reason = 'the choices tied for first between OCCURRENCE 1 (2 ballots) and OCCURRENCE 2 (2 ballots), '
-              + 'of 4 usable in all';
+            const reason = 'the choices reached no strict majority, so the finalists are OCCURRENCE 1 (2 ballots) and '
+              + 'OCCURRENCE 2 (2 ballots), of 4 usable in all';
             expect({
               first: refrain.verdict.kind === 'asked'
                 ? [
@@ -1719,8 +1720,104 @@ await describe({
           },
         },),
         it({
-          name: 'ASKS NO RUN-OFF WHEN A PLURALITY IS NOT A TIE: five usable ballots splitting two, one, one and one leave '
-            + 'the group as it stands on no majority, as the first round had it',
+          name: 'RUNS OFF A LONE LEADER WITH THE PLACES NEXT BEHIND IT: four usable ballots splitting two, one and one have no '
+            + 'strict majority, so the bench is asked once more on a sheet showing the '
+            + 'three places that drew ballots, and the place it names, one that led no ballot, is carried to the others',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+            const lines: string[] = [];
+            const run = await runCatPass({
+              behave: refrainAnsweredInOrder({
+                answers: [
+                  refrainChoosing({ choice: 'OCCURRENCE 1', },),
+                  refrainChoosing({ choice: 'OCCURRENCE 1', },),
+                  refrainChoosing({ choice: 'OCCURRENCE 2', },),
+                  refrainChoosing({ choice: 'OCCURRENCE 3', },),
+                ],
+              },),
+              others: function runOffNamesTheLastFinalist(call,): SeatBehaviour {
+                return (sheetKindOf({ sheet: call.sheet, },) === 'run-off')
+                  ? choosing({ choice: finalistsOf({ sheet: call.sheet, },).at(-1,) ?? '', },)
+                  : otherSheetBehaviour({ sheet: call.sheet, },);
+              },
+              entryCacheDir: dir.path,
+              lines,
+            },);
+            const refrain = nonNullishOrThrow(run.consistency.groups[1],);
+            const reason = 'the choices reached no strict majority, so the finalists are OCCURRENCE 1 (2 ballots), '
+              + 'OCCURRENCE 2 (1 ballot) and OCCURRENCE 3 (1 ballot), of 4 usable in all';
+            expect({
+              first: refrain.verdict.kind === 'asked'
+                ? [refrain.verdict.usable, refrain.verdict.winner, refrain.verdict.runOff?.finalists,]
+                : [],
+              recorded: run.consistency.findings.filter(function isRunOffReason(finding,): boolean {
+                return finding.includes('run-off asked',);
+              },),
+              logged: lines.filter(function asksAgain(line,): boolean {
+                return line.includes('asking the bench once more',);
+              },),
+            },).toEqual({
+              first: [
+                4,
+                { kind: 'chosen', label: 'OCCURRENCE 3', },
+                ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',],
+              ],
+              recorded: [`group 2: run-off asked: ${reason}`,],
+              logged: [`info [runPassConsistency] [decideAskedGroup] asking the bench once more: ${reason}`,],
+            },);
+            const runOffSheets = run.sheets.filter(function isRunOff(sheet,): boolean {
+              return sheetKindOf({ sheet, },) === 'run-off';
+            },);
+            expect(runOffSheets.length > 0,).toBe(true,);
+            expect(runOffSheets.every(function showsOnlyTheFinalists(sheet,): boolean {
+              return sheet.includes('OCCURRENCE 1 ORIGINAL',) && sheet.includes('OCCURRENCE 2 ORIGINAL',)
+                && sheet.includes('OCCURRENCE 3 ORIGINAL',) && (!sheet.includes('OCCURRENCE 4 ORIGINAL',));
+            },),).toBe(true,);
+            expect(outcomesOf({ consistency: run.consistency, group: 1, },),).toEqual([
+              'replaced',
+              'replaced',
+              'chosen',
+              'replaced',
+            ],);
+          },
+        },),
+        it({
+          name: 'LEAVES A GROUP AS IT STANDS ON A SECOND SPLIT OF A LONE LEADER\'S RUN-OFF, four usable ballots splitting two, one '
+            + 'and one, then the run-off dividing the three places again, recording the run-off',
+          fn: async () => {
+            await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
+            const run = await runCatPass({
+              behave: refrainAnsweredInOrder({
+                answers: [
+                  refrainChoosing({ choice: 'OCCURRENCE 1', },),
+                  refrainChoosing({ choice: 'OCCURRENCE 1', },),
+                  refrainChoosing({ choice: 'OCCURRENCE 2', },),
+                  refrainChoosing({ choice: 'OCCURRENCE 3', },),
+                ],
+              },),
+              others: otherSheetsSplittingRunOff,
+              entryCacheDir: dir.path,
+            },);
+            const refrain = nonNullishOrThrow(run.consistency.groups[1],);
+            expect(refrain.verdict.kind === 'asked'
+              ? [refrain.verdict.usable, refrain.verdict.winner, refrain.verdict.runOff?.finalists, refrain.verdict.runOff?.usable,]
+              : [],).toEqual([
+                4,
+                { kind: 'none', reason: 'run-off-tied', },
+                ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3',],
+                4,
+              ],);
+            expect(outcomesOf({ consistency: run.consistency, group: 1, },),).toEqual([
+              'untouched',
+              'untouched',
+              'untouched',
+              'untouched',
+            ],);
+          },
+        },),
+        it({
+          name: 'RUNS OFF EVERY PLACE NEXT BEHIND A LONE LEADER: five usable ballots splitting two, one, one and one name all four '
+            + 'places',
           fn: async () => {
             await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
             const run = await runCatPass({
@@ -1733,19 +1830,16 @@ await describe({
                   refrainChoosing({ choice: 'OCCURRENCE 4', },),
                 ],
               },),
+              others: otherSheetsSplittingRunOff,
               entryCacheDir: dir.path,
             },);
             const refrain = nonNullishOrThrow(run.consistency.groups[1],);
             expect(refrain.verdict.kind === 'asked'
-              ? [refrain.verdict.usable, refrain.verdict.winner, refrain.verdict.runOff,]
+              ? [refrain.verdict.usable, refrain.verdict.runOff?.finalists,]
               : [],).toEqual([
                 5,
-                { kind: 'none', reason: 'no-majority', },
-                undefined,
+                ['OCCURRENCE 1', 'OCCURRENCE 2', 'OCCURRENCE 3', 'OCCURRENCE 4',],
               ],);
-            expect(run.sheets.some(function isRunOff(sheet,): boolean {
-              return sheetKindOf({ sheet, },) === 'run-off';
-            },),).toBe(false,);
           },
         },),
         it({
@@ -2751,7 +2845,7 @@ await describe({
         },),
         it({
           name: 'KEEPS THE PAGE\'S ENGLISH WHEN THE BENCH HAS NO MAJORITY AMONG THE CANDIDATES TWICE: the split is run off '
-            + 'among the tied candidates, the run-off splits again, and the carry records why',
+            + 'among the finalists, the run-off splits again, and the carry records why',
           fn: async () => {
             await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
             const run = await runCatPass({
