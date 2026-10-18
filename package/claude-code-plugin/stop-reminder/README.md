@@ -54,8 +54,8 @@ instead of performing it,
  leaving the user to type `Continue.`
 The same corpus shows a much lower rate on `claude-fable-5` and `claude-opus-4-8`,
  the comparison is confounded,
- and the repository owner reports that `claude-opus-5-5` does not show it,
- so it is now opt-in.
+ and the repository owner reports that `claude-opus-5-5` shows it much less but not never,
+ so it is opt-in and, when on, decided by the Luna check below.
 See [`claude-code-opus-5-premature-turn-end.md`](../../../doc/troubleshooting/claude-code-opus-5-premature-turn-end.md).
 Measured across this repository's transcripts,
  blocking a stop puts the agent back to work most of the time,

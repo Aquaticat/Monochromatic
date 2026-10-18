@@ -907,6 +907,7 @@ stored sops-encrypted in `.env.local.json` and decrypted by mise.
 The hook reads its own environment first and runs `mise env --json` once, in the session directory, only when the key is absent.
 That fallback is a stopgap until a credential mechanism that does not depend on mise exists;
 it costs 0.10 to 0.14 seconds when it runs.
+Replacing it is tracked in #1773.
 
 - `MONOCHROMATIC_STOP_AUTO_CONTINUE=on` enables forced continuation.
    It is set in `.claude/settings.local.json`.
@@ -942,7 +943,7 @@ Handler code logs at `debug` (stderr) or `warn`.
 ### Not yet known
 
 - Agreement between Luna's label and a human label.
-   The verdict log exists so it can be measured.
+   The verdict log exists so it can be measured; calibration is tracked in #1772.
 - Whether `background_tasks` is populated at the moments the idle waits happened.
    Hook input is not stored in transcripts.
 - The `pauses_for_handoff` label did not appear in the unbiased sample, so it is untested on real stops.
