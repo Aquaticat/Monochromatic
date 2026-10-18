@@ -65,8 +65,16 @@ or broad credential is printed or injected.
 
 ## Queue and cleanup
 
-Admission is recorded;
-no cache job has been dispatched at this checkpoint.
+The admission checkpoint preceded dispatch.
+All six jobs are now terminal and successful;
+no correction job was allocated.
+The observed sibling result is a GitHub miss and a Depot hit,
+after actual same-branch exact-hit controls for both products.
+The [source-traced troubleshooting note](../troubleshooting/depot-github-cache-sibling-branches.md)
+records exact runs,
+marker hashes,
+client behavior,
+and the source limits.
 Executable workflow changes live only in the owned research worktree.
 The private controller is
 `/var/home/user/temp/agent/depot-cache-trust-scope-20261018`.
@@ -74,16 +82,25 @@ The source branches are `research/depot-cache-scope-a-20261018`
 and `research/depot-cache-scope-b-20261018`.
 The default-branch workflow remains unchanged.
 
-After terminal collection,
-remove the owned remote branches and the job's owned temporary paths,
-retain original proof archives,
-and record explicit absence checks.
+Both owned remote branches were removed after terminal collection,
+and direct remote discovery verified their absence.
+The local probe branch was deleted;
+the existing research worktree returned to its original branch.
+Every job retained a cleanup record confirming both owned temporary paths absent.
+The twelve original ZIPs and their source/API bodies remain in the linked source archive.
 Cache deletion and organization settings changes are outside this experiment.
 The benign cache entries may remain under existing retention and eviction policies.
 Depot documents a default of fourteen days and configurable retention;
 GitHub documents removal after more than seven days without access.
 The actual organization settings and cache eviction times are unmeasured.
 Branch deletion will not be treated as proof of cache deletion.
+
+The observed Depot job intervals total `25` seconds,
+giving an elapsed list-compute proxy of `USD 0.0025`.
+Standard public GitHub's nominal compute remains zero.
+The uniform two-CPU rounded-completed proxy is `USD 0.036`;
+all remaining reservations and the unused correction window are released.
+No invoice or VM billing interval was measured.
 
 [depot-cache]: https://depot.dev/docs/cache/integrations/github-actions
 [github-cache]: https://docs.github.com/en/actions/reference/workflows-and-actions/dependency-caching
