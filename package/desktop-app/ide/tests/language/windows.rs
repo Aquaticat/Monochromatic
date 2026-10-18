@@ -25,27 +25,25 @@ const TIMEOUT: u64 = 20;
 /// The request number of the first `textDocument/inlayHint` request in the report,
 ///  once it is there.
 fn first_hint_request(lines: &[Value]) -> Option<Value> {
-    return lines
-        .iter()
-        .find(|line| return line["received"] == "textDocument/inlayHint")
-        .map(|line| return line["id"].clone());
+    let line = support::first_received(lines, "textDocument/inlayHint")?;
+    return Some(line["id"].clone());
 }
 
 /// How many answers to `textDocument/inlayHint` requests the server has written so far.
 fn hint_answers_sent(lines: &[Value]) -> usize {
     // `filter` keeps the received hint requests; `map` lends each one's id.
-    let asked: Vec<&Value> = lines
-        .iter()
-        .filter(|line| return line["received"] == "textDocument/inlayHint")
-        .map(|line| return &line["id"])
-        .collect();
+    let mut asked: Vec<&Value> = Vec::new();
+    for line in support::all_received(lines, "textDocument/inlayHint") {
+        asked.push(&line["id"]);
+    }
     // An answer is a written message with an id and no method.
-    return lines
-        .iter()
-        .filter(|line| {
-            return line["sent"]["method"].is_null() && asked.contains(&&line["sent"]["id"]);
-        })
-        .count();
+    let mut answers = 0;
+    for line in lines {
+        if line["sent"]["method"].is_null() && asked.contains(&&line["sent"]["id"]) {
+            answers += 1;
+        }
+    }
+    return answers;
 }
 
 /// The hints of an earlier window,
@@ -79,9 +77,13 @@ fn late_answer_for_an_earlier_window_does_not_replace_the_current_hints() {
             .request_hints(probe.stamp(), earlier)
             .expect("first window")
     );
-    support::report_until(&root, "the first hint request", |seen| {
-        return first_hint_request(seen).is_some();
-    });
+    {
+        let mut wait = support::ReportWait::new(&root, "the first hint request");
+        while !(first_hint_request(wait.lines()).is_some()) {
+            wait.again();
+        }
+        wait.into_lines()
+    };
     // The reader scrolled: the second window asks for lines 50 to 80 and is answered at once.
     let current = HintWindow {
         first_line: 60,
@@ -94,9 +96,13 @@ fn late_answer_for_an_earlier_window_does_not_replace_the_current_hints() {
             .expect("second window")
     );
     // The server writes the late answer right after the current one.
-    support::report_until(&root, "both hint answers written", |seen| {
-        return hint_answers_sent(seen) == 2;
-    });
+    {
+        let mut wait = support::ReportWait::new(&root, "both hint answers written");
+        while !(hint_answers_sent(wait.lines()) == 2) {
+            wait.again();
+        }
+        wait.into_lines()
+    };
     // Both answers were written before the server reads this hover, so the hover answer follows
     // them on the stream, and the worker handles both hint answers first.
     let number = probe.request(RequestKind::Hover, 0);

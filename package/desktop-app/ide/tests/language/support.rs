@@ -250,6 +250,11 @@ pub struct Probe {
     pub file: u64,
     /// Path of the displayed file.
     pub path: PathBuf,
+    /// What the current wait is for,
+    ///  named in the failure when the wait times out.
+    waiting_for: String,
+    /// When the current wait began.
+    wait_started: Instant,
 }
 
 impl Probe {
@@ -275,6 +280,8 @@ impl Probe {
             document: Document::new(""),
             file: 0,
             path: PathBuf::new(),
+            waiting_for: String::new(),
+            wait_started: Instant::now(),
         };
     }
 
@@ -352,25 +359,74 @@ impl Probe {
         }
     }
 
-    /// Poll until `done` holds,
-    ///  or fail with the last observed state.
-    pub fn until(&mut self, what: &str, done: impl Fn(&Probe) -> bool) {
-        let start = Instant::now();
-        loop {
-            self.poll();
-            if done(self) {
-                return;
+    /// Begin a wait for `what` and poll once,
+    ///  so the first check of the caller's loop reads fresh state.
+    /// The caller loops `while !condition { probe.step(); }`.
+    pub fn wait_for(&mut self, what: &str) {
+        self.waiting_for = what.to_string();
+        self.wait_started = Instant::now();
+        self.poll();
+    }
+
+    /// One more round of the wait begun by `wait_for`:
+    ///  fail with the last observed state when the patience ran out,
+    ///  else pause and poll again.
+    pub fn step(&mut self) {
+        assert!(
+            self.wait_started.elapsed() < PATIENCE,
+            "timed out waiting for {}; status {:?}; replies {:?}; diagnostics {:?}; hints {:?}",
+            self.waiting_for,
+            self.status,
+            self.replies,
+            self.diagnostics,
+            self.hints
+        );
+        std::thread::sleep(Duration::from_millis(5));
+        self.poll();
+    }
+
+    /// True when some reply answers request `number`.
+    pub fn has_reply(&self, number: u64) -> bool {
+        for reply in &self.replies {
+            if reply.request == number {
+                return true;
             }
-            assert!(
-                start.elapsed() < PATIENCE,
-                "timed out waiting for {what}; status {:?}; replies {:?}; diagnostics {:?}; hints {:?}",
-                self.status,
-                self.replies,
-                self.diagnostics,
-                self.hints
-            );
-            std::thread::sleep(Duration::from_millis(5));
         }
+        return false;
+    }
+
+    /// True when the last reply of request `number` arrived.
+    pub fn is_answered(&self, number: u64) -> bool {
+        for reply in &self.replies {
+            if reply.request == number && reply.remaining == 0 {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// True when the held diagnostics carry `stamp`.
+    pub fn diagnostics_stamped(&self, stamp: DocumentStamp) -> bool {
+        return match self.diagnostics.as_ref() {
+            Some(found) => found.stamp == stamp,
+            None => false,
+        };
+    }
+
+    /// True when the held hints carry `stamp`.
+    pub fn hints_stamped(&self, stamp: DocumentStamp) -> bool {
+        return match self.hints.as_ref() {
+            Some(held) => held.stamp == stamp,
+            None => false,
+        };
+    }
+
+    /// True when the notice entry exists and its text contains `part`.
+    pub fn notice_contains(&self, part: &str) -> bool {
+        return match self.notice() {
+            Some(entry) => entry.contains(part),
+            None => false,
+        };
     }
 
     /// State of the named server in the latest status.
@@ -385,19 +441,18 @@ impl Probe {
 
     /// Wait until the scripted server is ready.
     pub fn until_ready(&mut self) {
-        self.until("the scripted server to be ready", |probe| {
-            return probe.state(SERVER) == Some(&ServerState::Ready);
-        });
+        self.wait_for("the scripted server to be ready");
+        while self.state(SERVER) != Some(&ServerState::Ready) {
+            self.step();
+        }
     }
 
     /// Wait for the last reply of request `number` and return every reply it produced.
     pub fn answers(&mut self, number: u64) -> Vec<LanguageReply> {
-        self.until("the request to be answered", |probe| {
-            return probe
-                .replies
-                .iter()
-                .any(|reply| return reply.request == number && reply.remaining == 0);
-        });
+        self.wait_for("the request to be answered");
+        while !self.is_answered(number) {
+            self.step();
+        }
         let mut found = Vec::new();
         for reply in &self.replies {
             if reply.request == number {
@@ -429,11 +484,16 @@ impl Probe {
     ///  when the displayed diagnostics hold it.
     pub fn notice(&self) -> Option<String> {
         let snapshot = self.diagnostics.as_ref()?;
-        let group = snapshot
-            .groups
-            .iter()
-            .find(|group| return group.source == NOTICE_SOURCE)?;
-        return group.items.first().map(|item| return item.message.clone());
+        let mut noticed = None;
+        for group in snapshot.groups.iter() {
+            if group.source == NOTICE_SOURCE {
+                noticed = Some(group);
+                break;
+            }
+        }
+        let group = noticed?;
+        let item = group.items.first()?;
+        return Some(item.message.clone());
     }
 }
 
@@ -452,21 +512,115 @@ pub fn report(root: &Path) -> Vec<Value> {
     return lines;
 }
 
-/// Wait until the report satisfies `done`,
-///  and return it.
-pub fn report_until(root: &Path, what: &str, done: impl Fn(&[Value]) -> bool) -> Vec<Value> {
-    let start = Instant::now();
-    loop {
-        let lines = report(root);
-        if done(&lines) {
-            return lines;
-        }
+/// What:
+///  A wait for the scripted server's report to show something.
+///  The caller loops `while !condition(wait.lines()) { wait.again(); }`
+///  and takes the lines with `into_lines`.
+/// Why:
+///  The report is a file the server appends to,
+///  so the wait rereads it between pauses.
+pub struct ReportWait {
+    /// The project root whose report is read.
+    root: PathBuf,
+    /// What the wait is for,
+    ///  named in the failure when it times out.
+    what: String,
+    /// When the wait began.
+    started: Instant,
+    /// The report as last read.
+    lines: Vec<Value>,
+}
+
+impl ReportWait {
+    /// Begin a wait for `what` and read the report once.
+    pub fn new(root: &Path, what: &str) -> Self {
+        return Self {
+            root: root.to_path_buf(),
+            what: what.to_string(),
+            started: Instant::now(),
+            lines: report(root),
+        };
+    }
+
+    /// The report as last read.
+    pub fn lines(&self) -> &[Value] {
+        return &self.lines;
+    }
+
+    /// Fail with the last report when the patience ran out,
+    ///  else pause and read the report again.
+    pub fn again(&mut self) {
         assert!(
-            start.elapsed() < PATIENCE,
-            "timed out waiting for the server report to show {what}: {lines:?}"
+            self.started.elapsed() < PATIENCE,
+            "timed out waiting for the server report to show {}: {:?}",
+            self.what,
+            self.lines
         );
         std::thread::sleep(Duration::from_millis(5));
+        self.lines = report(&self.root);
     }
+
+    /// The report as last read,
+    ///  once the wait is over.
+    pub fn into_lines(self) -> Vec<Value> {
+        return self.lines;
+    }
+}
+
+/// The first reported line whose `received` method is `method`.
+pub fn first_received<'a>(
+    lines: &'a (impl AsRef<[Value]> + ?Sized),
+    method: &str,
+) -> Option<&'a Value> {
+    for line in lines.as_ref() {
+        if line["received"] == method {
+            return Some(line);
+        }
+    }
+    return None;
+}
+
+/// Every reported line whose `received` method is `method`,
+///  in order.
+pub fn all_received<'a>(lines: &'a (impl AsRef<[Value]> + ?Sized), method: &str) -> Vec<&'a Value> {
+    let mut found = Vec::new();
+    for line in lines.as_ref() {
+        if line["received"] == method {
+            found.push(line);
+        }
+    }
+    return found;
+}
+
+/// The first reported line that records a server start.
+pub fn first_started<'a>(lines: &'a (impl AsRef<[Value]> + ?Sized)) -> Option<&'a Value> {
+    for line in lines.as_ref() {
+        if !line["started"].is_null() {
+            return Some(line);
+        }
+    }
+    return None;
+}
+
+/// How many times the server received `method`.
+pub fn count_received(lines: &(impl AsRef<[Value]> + ?Sized), method: &str) -> usize {
+    let mut count = 0;
+    for received_method in received(lines.as_ref()) {
+        if received_method == method {
+            count += 1;
+        }
+    }
+    return count;
+}
+
+/// The position of the first entry equal to `method`.
+pub fn index_of(methods: &[String], method: &str) -> Option<usize> {
+    for (index, candidate) in methods.iter().enumerate() {
+        if candidate == method {
+            return Some(index);
+        }
+    }
+    return None;
 }
 
 /// Methods the server received,
@@ -498,13 +652,19 @@ pub fn server_text(lines: &[Value]) -> Option<(i64, String)> {
 
 /// Wait until the server's copy of the text equals `expected`.
 pub fn server_text_until(root: &Path, expected: &str) -> Vec<Value> {
-    return report_until(
-        root,
-        "the server text to equal the document text",
-        |lines| {
-            return server_text(lines).is_some_and(|(_, text)| return text == expected);
-        },
-    );
+    let mut wait = ReportWait::new(root, "the server text to equal the document text");
+    while !text_equals(wait.lines(), expected) {
+        wait.again();
+    }
+    return wait.into_lines();
+}
+
+/// True when the server's latest copy of the text equals `expected`.
+fn text_equals(lines: &[Value], expected: &str) -> bool {
+    return match server_text(lines) {
+        Some((_, text)) => text == expected,
+        None => false,
+    };
 }
 
 /// Processes whose parent is this process,
@@ -514,10 +674,10 @@ pub fn children() -> Vec<(u32, char, String)> {
     let mut found = Vec::new();
     for entry in fs::read_dir("/proc").expect("process table").flatten() {
         let name = entry.file_name();
-        let Some(pid) = name
-            .to_str()
-            .and_then(|text| return text.parse::<u32>().ok())
-        else {
+        let Some(text) = name.to_str() else {
+            continue;
+        };
+        let Ok(pid) = text.parse::<u32>() else {
             continue;
         };
         let Ok(stat) = fs::read_to_string(entry.path().join("stat")) else {

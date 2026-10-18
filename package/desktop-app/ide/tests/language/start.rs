@@ -24,9 +24,10 @@ fn files_without_language_or_server_start_nothing() {
     };
     let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     probe.open(&root.join("notes.unrecognized-extension"), "plain text\n");
-    probe.until("the no-language state", |seen| {
-        return seen.status.document == DocumentState::NoLanguage;
-    });
+    probe.wait_for("the no-language state");
+    while !(probe.status.document == DocumentState::NoLanguage) {
+        probe.step();
+    }
     assert!(probe.status.servers.is_empty());
     let number = probe.request(RequestKind::Hover, 0);
     let answers = probe.answers(number);
@@ -35,9 +36,10 @@ fn files_without_language_or_server_start_nothing() {
     assert_eq!(answers[0].server, None);
     // Helix's built-in SQL definition names no language server.
     probe.open(&root.join("query.sql"), "select 1;\n");
-    probe.until("the no-server state", |seen| {
-        return seen.status.document == DocumentState::NoServerConfigured;
-    });
+    probe.wait_for("the no-server state");
+    while !(probe.status.document == DocumentState::NoServerConfigured) {
+        probe.step();
+    }
     assert_eq!(probe.status.language.as_deref(), Some("sql"));
     assert!(
         support::children().is_empty(),
@@ -61,12 +63,13 @@ fn missing_program_is_reported_without_starting_anything() {
     );
     let mut probe = Probe::new(&root, definitions);
     probe.open(&root.join("file.scripted"), "one\n");
-    probe.until("the missing-executable state", |seen| {
-        return matches!(
-            seen.state(SERVER),
-            Some(ServerState::MissingExecutable { .. })
-        );
-    });
+    probe.wait_for("the missing-executable state");
+    while !(matches!(
+        probe.state(SERVER),
+        Some(ServerState::MissingExecutable { .. })
+    )) {
+        probe.step();
+    }
     assert_eq!(
         probe.state(SERVER),
         Some(&ServerState::MissingExecutable {
@@ -123,10 +126,7 @@ fn server_starts_on_demand_and_is_opened_once_after_initialized() {
         "the server did not receive exactly one didOpen: {received:?}"
     );
     assert!(received.contains(&"workspace/didChangeConfiguration".to_string()));
-    let initialize = lines
-        .iter()
-        .find(|line| return line["received"] == "initialize")
-        .expect("initialize");
+    let initialize = support::first_received(&lines, "initialize").expect("initialize");
     let root_uri = format!("file://{}", root.display());
     assert_eq!(initialize["params"]["rootUri"], root_uri.as_str());
     assert_eq!(
@@ -137,18 +137,12 @@ fn server_starts_on_demand_and_is_opened_once_after_initialized() {
         initialize["params"]["initializationOptions"]["scripted"]["nested"]["value"],
         42
     );
-    let started = lines
-        .iter()
-        .find(|line| return !line["started"].is_null())
-        .expect("start record");
+    let started = support::first_started(&lines).expect("start record");
     assert_eq!(
         started["started"]["cwd"],
         root.display().to_string().as_str()
     );
-    let opened = lines
-        .iter()
-        .find(|line| return line["received"] == "textDocument/didOpen")
-        .expect("didOpen");
+    let opened = support::first_received(&lines, "textDocument/didOpen").expect("didOpen");
     assert_eq!(opened["params"]["textDocument"]["version"], 0);
     assert_eq!(opened["params"]["textDocument"]["languageId"], "scripted");
     assert_eq!(
@@ -174,9 +168,10 @@ fn request_before_initialize_is_answered_starting_and_nothing_is_sent() {
     };
     let mut probe = Probe::new(&root, support::scripted(&root, &[("INIT", "hang")], 1));
     probe.open(&root.join("file.scripted"), "alpha\n");
-    probe.until("the starting state", |seen| {
-        return seen.state(SERVER) == Some(&ServerState::Starting);
-    });
+    probe.wait_for("the starting state");
+    while !(probe.state(SERVER) == Some(&ServerState::Starting)) {
+        probe.step();
+    }
     assert_eq!(probe.status.servers[0].features, None);
     for kind in [
         RequestKind::Hover,
@@ -212,9 +207,10 @@ fn request_before_initialize_is_answered_starting_and_nothing_is_sent() {
             .expect("a request before initialize stopped the language worker")
     );
     // The start deadline is the start allowance, three request timeouts (3 s), plus the margin.
-    probe.until("the failed-start state", |seen| {
-        return matches!(seen.state(SERVER), Some(ServerState::FailedToStart { .. }));
-    });
+    probe.wait_for("the failed-start state");
+    while !(matches!(probe.state(SERVER), Some(ServerState::FailedToStart { .. }))) {
+        probe.step();
+    }
     assert_eq!(
         probe.state(SERVER),
         Some(&ServerState::FailedToStart {
@@ -245,9 +241,10 @@ fn exit_during_initialize_is_a_failed_start() {
         support::scripted(&root, &[("INIT", "exit")], PRODUCT_TIMEOUT),
     );
     probe.open(&root.join("file.scripted"), "alpha\n");
-    probe.until("the failed-start state", |seen| {
-        return matches!(seen.state(SERVER), Some(ServerState::FailedToStart { .. }));
-    });
+    probe.wait_for("the failed-start state");
+    while !(matches!(probe.state(SERVER), Some(ServerState::FailedToStart { .. }))) {
+        probe.step();
+    }
     assert_eq!(
         probe.state(SERVER),
         Some(&ServerState::FailedToStart {
@@ -272,20 +269,24 @@ fn error_reply_to_initialize_is_a_failed_start_by_deadline() {
     };
     let mut probe = Probe::new(&root, support::scripted(&root, &[("INIT", "error")], 1));
     probe.open(&root.join("file.scripted"), "alpha\n");
-    probe.until("the starting state", |seen| {
-        return seen.state(SERVER) == Some(&ServerState::Starting);
-    });
+    probe.wait_for("the starting state");
+    while !(probe.state(SERVER) == Some(&ServerState::Starting)) {
+        probe.step();
+    }
     assert_eq!(support::children().len(), 1);
-    probe.until("the failed-start state", |seen| {
-        return matches!(seen.state(SERVER), Some(ServerState::FailedToStart { .. }));
-    });
+    probe.wait_for("the failed-start state");
+    while !(matches!(probe.state(SERVER), Some(ServerState::FailedToStart { .. }))) {
+        probe.step();
+    }
     support::children_until_none();
     // The next explicit open tries again with a new process.
     probe.open(&root.join("other.scripted"), "beta\n");
-    probe.until("a second start", |seen| {
-        return seen.state(SERVER) == Some(&ServerState::Starting)
-            && seen.status.servers[0].server.instance == 2;
-    });
+    probe.wait_for("a second start");
+    while !(probe.state(SERVER) == Some(&ServerState::Starting)
+        && probe.status.servers[0].server.instance == 2)
+    {
+        probe.step();
+    }
 }
 
 /// A server that answers `initialize` later than its request timeout,
@@ -308,21 +309,24 @@ fn initialize_answered_within_the_start_allowance_is_accepted() {
     let definitions = support::scripted(&root, &[("INIT_DELAY_MS", "5000")], 4);
     let mut probe = Probe::new(&root, definitions);
     probe.open(&root.join("file.scripted"), "alpha\n");
-    probe.until("the server to be ready or to fail", |seen| {
-        return matches!(
-            seen.state(SERVER),
-            Some(ServerState::Ready | ServerState::FailedToStart { .. })
-        );
-    });
+    probe.wait_for("the server to be ready or to fail");
+    while !matches!(
+        probe.state(SERVER),
+        Some(ServerState::Ready | ServerState::FailedToStart { .. })
+    ) {
+        probe.step();
+    }
     assert_eq!(
         probe.state(SERVER),
         Some(&ServerState::Ready),
         "a server that answered initialize within its start allowance was not accepted"
     );
     assert_eq!(probe.status.servers[0].server.instance, 1);
-    let started = support::report(&root)
-        .iter()
-        .filter(|line| return !line["started"].is_null())
-        .count();
+    let mut started = 0;
+    for line in support::report(&root).iter() {
+        if !line["started"].is_null() {
+            started += 1;
+        }
+    }
     assert_eq!(started, 1, "the server was started more than once");
 }

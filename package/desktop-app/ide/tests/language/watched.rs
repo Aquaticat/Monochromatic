@@ -33,6 +33,13 @@ struct Watching {
     probe: Probe,
     /// The project's change watcher.
     watcher: ChangeWatcher,
+    /// What the current wait is for,
+    ///  named in the failure when the wait times out.
+    waiting_for: String,
+    /// When the current wait began.
+    wait_started: Instant,
+    /// The changes the server had received when the wait last looked.
+    changes: Changes,
 }
 
 impl Watching {
@@ -43,18 +50,25 @@ impl Watching {
         let probe = Probe::new(root, support::scripted(root, variables, 20));
         let watcher =
             ChangeWatcher::new(Workspace::new(root).expect("workspace")).expect("change watcher");
-        return Self { probe, watcher };
+        return Self {
+            probe,
+            watcher,
+            waiting_for: String::new(),
+            wait_started: Instant::now(),
+            changes: Changes {
+                notifications: Vec::new(),
+            },
+        };
     }
 
     /// One application tick:
     ///  poll the worker and hand its feed to the watcher while it wants changes.
     fn relay(&mut self) {
         self.probe.poll();
-        let feed = self
-            .probe
-            .worker
-            .wants_file_changes()
-            .then(|| return self.probe.worker.file_change_sender());
+        let mut feed = None;
+        if self.probe.worker.wants_file_changes() {
+            feed = Some(self.probe.worker.file_change_sender());
+        }
         self.watcher.feed_servers(feed);
         // The tree's invalidations are not under test; taking them keeps them from piling up.
         let _tree = self.watcher.take();
@@ -74,28 +88,42 @@ impl Watching {
         }
     }
 
-    /// Relay until the changes the server received satisfy `done`,
-    ///  and return them.
-    fn until_changes(
-        &mut self,
-        root: &Path,
-        what: &str,
-        done: impl Fn(&Changes) -> bool,
-    ) -> Changes {
-        let start = Instant::now();
-        loop {
-            self.relay();
-            let changes = Changes::read(root);
-            if done(&changes) {
-                return changes;
-            }
-            assert!(
-                start.elapsed() < PATIENCE,
-                "timed out waiting for {what}; notifications: {:?}",
-                changes.notifications
-            );
-            std::thread::sleep(Duration::from_millis(10));
-        }
+    /// Begin a wait for `what`,
+    ///  relay once,
+    ///  and read the changes the server received.
+    /// The caller loops `while !condition { session.step_changes(root); }`.
+    fn wait_for_changes(&mut self, root: &Path, what: &str) {
+        self.waiting_for = what.to_string();
+        self.wait_started = Instant::now();
+        self.relay();
+        self.changes = Changes::read(root);
+    }
+
+    /// One more round of the wait begun by `wait_for_changes`:
+    ///  fail with the notifications seen when the patience ran out,
+    ///  else pause,
+    ///  relay,
+    ///  and read again.
+    fn step_changes(&mut self, root: &Path) {
+        assert!(
+            self.wait_started.elapsed() < PATIENCE,
+            "timed out waiting for {}; notifications: {:?}",
+            self.waiting_for,
+            self.changes.notifications
+        );
+        std::thread::sleep(Duration::from_millis(10));
+        self.relay();
+        self.changes = Changes::read(root);
+    }
+
+    /// Take the changes the last wait saw.
+    fn take_changes(&mut self) -> Changes {
+        return std::mem::replace(
+            &mut self.changes,
+            Changes {
+                notifications: Vec::new(),
+            },
+        );
     }
 
     /// Relay for `span`,
@@ -107,6 +135,38 @@ impl Watching {
             std::thread::sleep(Duration::from_millis(10));
         }
     }
+}
+
+/// True when a diagnostics request follows the first watched-file notification in the report.
+fn pulled_after_notification(lines: &[Value]) -> bool {
+    let methods = support::received(lines);
+    let Some(first) = support::index_of(&methods, "workspace/didChangeWatchedFiles") else {
+        return false;
+    };
+    for method in &methods[first..] {
+        if method == "textDocument/diagnostic" {
+            return true;
+        }
+    }
+    return false;
+}
+
+/// True when every path of the burst of `count` files was reported with its final kind.
+fn burst_complete(changes: &Changes, count: usize) -> bool {
+    let last = changes.last();
+    for index in 0..count {
+        let kind = last.get(&format!("src/f{index:03}.scripted")).copied();
+        // A burst split by the sending limit may report a later rewrite as a change.
+        let settled = if index % 2 == 0 {
+            kind == Some(3)
+        } else {
+            matches!(kind, Some(1 | 2))
+        };
+        if !settled {
+            return false;
+        }
+    }
+    return true;
 }
 
 /// Every `workspace/didChangeWatchedFiles` the server received,
@@ -151,20 +211,26 @@ impl Changes {
 
     /// True when some notification reported `path` with `kind`.
     fn has(&self, path: &str, kind: i64) -> bool {
-        return self
-            .notifications
-            .iter()
-            .flatten()
-            .any(|(found, found_kind)| return found == path && *found_kind == kind);
+        for events in &self.notifications {
+            for (found, found_kind) in events {
+                if found == path && *found_kind == kind {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /// True when some notification mentions a path starting with `prefix`.
     fn mentions(&self, prefix: &str) -> bool {
-        return self
-            .notifications
-            .iter()
-            .flatten()
-            .any(|(found, _)| return found.starts_with(prefix));
+        for events in &self.notifications {
+            for (found, _) in events {
+                if found.starts_with(prefix) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
 
@@ -219,34 +285,28 @@ fn changes_reach_the_server_by_glob_and_kind() {
     ] {
         fs::write(root.join(file), text).expect("external write");
     }
-    session.until_changes(&root, "the creations", |changes| {
-        return changes.has("src/other.scripted", 1) && changes.has("src/notes.txt", 1);
-    });
+    session.wait_for_changes(&root, "the creations");
+    while !(session.changes.has("src/other.scripted", 1) && session.changes.has("src/notes.txt", 1))
+    {
+        session.step_changes(&root);
+    }
     // Another file may change the displayed file's diagnostics, so they are pulled again afterwards.
-    support::report_until(
-        &root,
-        "a diagnostics pull after the file changes",
-        |lines| {
-            let methods = support::received(lines);
-            return methods
-                .iter()
-                .position(|method| return method == "workspace/didChangeWatchedFiles")
-                .is_some_and(|first| {
-                    return methods[first..]
-                        .iter()
-                        .any(|method| return method == "textDocument/diagnostic");
-                });
-        },
-    );
+    let mut pull_wait =
+        support::ReportWait::new(&root, "a diagnostics pull after the file changes");
+    while !pulled_after_notification(pull_wait.lines()) {
+        pull_wait.again();
+    }
     fs::write(root.join("src/other.scripted"), "changed").expect("external change");
     fs::remove_file(root.join("src/notes.txt")).expect("external deletion");
-    session.until_changes(&root, "the change", |changes| {
-        return changes.has("src/other.scripted", 2);
-    });
+    session.wait_for_changes(&root, "the change");
+    while !(session.changes.has("src/other.scripted", 2)) {
+        session.step_changes(&root);
+    }
     fs::remove_file(root.join("src/other.scripted")).expect("external deletion");
-    session.until_changes(&root, "the deletion", |changes| {
-        return changes.has("src/other.scripted", 3);
-    });
+    session.wait_for_changes(&root, "the deletion");
+    while !(session.changes.has("src/other.scripted", 3)) {
+        session.step_changes(&root);
+    }
     session.settle(SETTLE);
     let all = Changes::read(&root);
     assert!(
@@ -301,18 +361,11 @@ fn a_burst_arrives_gathered_with_the_final_kinds() {
     for index in (0..count).step_by(2) {
         fs::remove_file(root.join(format!("src/f{index:03}.scripted"))).expect("burst deletion");
     }
-    let changes = session.until_changes(&root, "every path of the burst", |changes| {
-        let last = changes.last();
-        return (0..count).all(|index| {
-            let kind = last.get(&format!("src/f{index:03}.scripted")).copied();
-            // A burst split by the sending limit may report a later rewrite as a change.
-            return if index % 2 == 0 {
-                kind == Some(3)
-            } else {
-                matches!(kind, Some(1 | 2))
-            };
-        });
-    });
+    session.wait_for_changes(&root, "every path of the burst");
+    while !burst_complete(&session.changes, count) {
+        session.step_changes(&root);
+    }
+    let changes = session.take_changes();
     assert!(
         changes.notifications.len() <= 10,
         "a burst of {} changes arrived in {} notifications",
@@ -361,10 +414,12 @@ fn new_folders_are_followed_unless_ignored() {
     fs::create_dir_all(root.join("src/module/deeper")).expect("nested new folder");
     fs::write(root.join("src/module/deeper/b.scripted"), "new")
         .expect("write in a nested new folder");
-    session.until_changes(&root, "the new folders' files", |changes| {
-        return changes.has("src/module/a.scripted", 1)
-            && changes.has("src/module/deeper/b.scripted", 1);
-    });
+    session.wait_for_changes(&root, "the new folders' files");
+    while !(session.changes.has("src/module/a.scripted", 1)
+        && session.changes.has("src/module/deeper/b.scripted", 1))
+    {
+        session.step_changes(&root);
+    }
     session.settle(SETTLE);
     let all = Changes::read(&root);
     assert!(

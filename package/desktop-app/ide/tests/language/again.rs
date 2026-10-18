@@ -54,12 +54,24 @@ const SUPERSEDED_WITH_NOTIFICATION: &str = "answer,modified,modified,modified,mo
 ///  without the notification.
 const SUPERSEDED: &str = "answer,modified,modified,modified,modified";
 
+/// True when the server wrote the answer to the fifth `textDocument/inlayHint` request.
+fn last_retry_answered(lines: &[Value]) -> bool {
+    let requests = hint_requests(lines);
+    // `get(4)` is the fifth request: the request after the reload plus three retries.
+    let Some(last) = requests.get(4) else {
+        return false;
+    };
+    for line in lines {
+        if line["sent"]["id"] == last["id"] {
+            return true;
+        }
+    }
+    return false;
+}
+
 /// The `textDocument/inlayHint` requests the server received so far.
 fn hint_requests(lines: &[Value]) -> Vec<&Value> {
-    return lines
-        .iter()
-        .filter(|line| return line["received"] == "textDocument/inlayHint")
-        .collect();
+    return support::all_received(lines, "textDocument/inlayHint");
 }
 
 /// Display `BEFORE`,
@@ -74,9 +86,10 @@ fn display_with_hints(probe: &mut Probe, root: &Path) {
             .request_hints(probe.stamp(), WINDOW)
             .expect("hint window")
     );
-    probe.until("hints for the first text", |seen| {
-        return seen.hints.is_some();
-    });
+    probe.wait_for("hints for the first text");
+    while !(probe.hints.is_some()) {
+        probe.step();
+    }
 }
 
 /// Wait for hints of the reloaded text.
@@ -85,17 +98,15 @@ fn display_with_hints(probe: &mut Probe, root: &Path) {
 ///  `what` names the wait in a failure.
 fn wait_for_reloaded_hints(probe: &mut Probe, what: &str) {
     let stamp = probe.stamp();
-    probe.until(what, |seen| {
-        let Some(hints) = seen.hints.as_ref() else {
-            return false;
-        };
-        assert_eq!(
-            hints.stamp, stamp,
-            "a hint snapshot for other text was handed out after the reload"
-        );
-        return true;
-    });
+    probe.wait_for(what);
+    while probe.hints.is_none() {
+        probe.step();
+    }
     let hints = probe.hints.clone().expect("hints");
+    assert_eq!(
+        hints.stamp, stamp,
+        "a hint snapshot for other text was handed out after the reload"
+    );
     // The request that was answered named the lines of the new text, which has one line more.
     assert_eq!((hints.first_line, hints.last_line), (0, 4));
     assert_eq!(hints.hints.len(), 1);
@@ -131,12 +142,10 @@ fn hints_are_asked_again_when_the_first_request_times_out() {
             .request_hints(probe.stamp(), WINDOW)
             .expect("hint window")
     );
-    probe.until(
-        "hints for the first text after the first request timed out",
-        |seen| {
-            return seen.hints.is_some();
-        },
-    );
+    probe.wait_for("hints for the first text after the first request timed out");
+    while !(probe.hints.is_some()) {
+        probe.step();
+    }
     let hints = probe.hints.clone().expect("hints");
     assert_eq!(hints.stamp, probe.stamp());
     assert_eq!((hints.first_line, hints.last_line), (0, 3));
@@ -200,21 +209,16 @@ fn pulled_diagnostics_are_asked_again_after_a_reload_when_the_request_times_out(
     );
     let mut probe = Probe::new(&root, definitions);
     probe.open(&root.join("main.scripted"), "first\n");
-    probe.until("pulled diagnostics for the first text", |seen| {
-        return seen.messages() == ["PULLED:first\n"];
-    });
+    probe.wait_for("pulled diagnostics for the first text");
+    while !(probe.messages() == ["PULLED:first\n"]) {
+        probe.step();
+    }
     probe.reload("second\n");
     let stamp = probe.stamp();
-    probe.until(
-        "pulled diagnostics for the reloaded text after the request timed out",
-        |seen| {
-            return seen.messages() == ["PULLED:second\n"]
-                && seen
-                    .diagnostics
-                    .as_ref()
-                    .is_some_and(|found| return found.stamp == stamp);
-        },
-    );
+    probe.wait_for("pulled diagnostics for the reloaded text after the request timed out");
+    while !(probe.messages() == ["PULLED:second\n"] && probe.diagnostics_stamped(stamp)) {
+        probe.step();
+    }
 }
 
 /// The request after a reload is superseded,
@@ -271,16 +275,10 @@ fn hints_are_asked_again_when_the_server_answers_another_request_after_every_ret
     reload(&mut probe);
     // Wait until the server wrote its answer to the last retry. The hover is sent after that,
     // so its answer follows on the stream, and the worker has given up asking by then.
-    support::report_until(&root, "the answer to the last retry", |seen| {
-        let requests = hint_requests(seen);
-        // `get(4)` is the fifth request: the request after the reload plus three retries.
-        let Some(last) = requests.get(4) else {
-            return false;
-        };
-        return seen
-            .iter()
-            .any(|line| return line["sent"]["id"] == last["id"]);
-    });
+    let mut retry_wait = support::ReportWait::new(&root, "the answer to the last retry");
+    while !last_retry_answered(retry_wait.lines()) {
+        retry_wait.again();
+    }
     // Nothing but the hover can make the worker ask again now: the server sends no other message.
     probe.poll();
     assert!(

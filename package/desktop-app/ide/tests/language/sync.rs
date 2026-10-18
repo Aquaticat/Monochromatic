@@ -26,10 +26,7 @@ const ACCENT_AFTER: &str = "caf\u{e9} \u{1F600} was here\nnew line\nlast line\r\
 
 /// Messages of one method the server received.
 fn of_method<'a>(lines: &'a [Value], method: &str) -> Vec<&'a Value> {
-    return lines
-        .iter()
-        .filter(|line| return line["received"] == method)
-        .collect();
+    return support::all_received(lines, method);
 }
 
 /// Open the first example,
@@ -50,9 +47,13 @@ fn follow_reloads(root: &Path, probe: &mut Probe, name: &str) -> Vec<Value> {
         ACCENT_AFTER,
     ]) {
         probe.reload(text);
-        lines = support::report_until(root, "the reloaded text", |seen| {
-            return support::server_text(seen) == Some((version, text.to_string()));
-        });
+        lines = {
+            let mut wait = support::ReportWait::new(root, "the reloaded text");
+            while !(support::server_text(wait.lines()) == Some((version, text.to_string()))) {
+                wait.again();
+            }
+            wait.into_lines()
+        };
     }
     return lines;
 }
@@ -172,9 +173,10 @@ fn server_without_synchronization_becomes_unsynchronized() {
         RequestOutcome::Hover(_)
     ));
     probe.reload(CAT_AFTER);
-    probe.until("the unsynchronized state", |seen| {
-        return seen.state(SERVER) == Some(&ServerState::Unsynchronized);
-    });
+    probe.wait_for("the unsynchronized state");
+    while !(probe.state(SERVER) == Some(&ServerState::Unsynchronized)) {
+        probe.step();
+    }
     let stale = probe.request(RequestKind::Hover, 0);
     assert_eq!(
         probe.answers(stale)[0].outcome,
@@ -215,18 +217,16 @@ fn did_save_follows_a_reload_when_the_server_asks_for_it() {
     probe.open(&root.join("saved.scripted"), CAT_BEFORE);
     probe.until_ready();
     probe.reload(CAT_AFTER);
-    let lines = support::report_until(&root, "didSave", |seen| {
-        return !of_method(seen, "textDocument/didSave").is_empty();
-    });
+    let lines = {
+        let mut wait = support::ReportWait::new(&root, "didSave");
+        while !(!of_method(wait.lines(), "textDocument/didSave").is_empty()) {
+            wait.again();
+        }
+        wait.into_lines()
+    };
     let received = support::received(&lines);
-    let change = received
-        .iter()
-        .position(|method| return method == "textDocument/didChange")
-        .expect("didChange");
-    let save = received
-        .iter()
-        .position(|method| return method == "textDocument/didSave")
-        .expect("didSave");
+    let change = support::index_of(&received, "textDocument/didChange").expect("didChange");
+    let save = support::index_of(&received, "textDocument/didSave").expect("didSave");
     assert!(change < save, "didSave must follow didChange: {received:?}");
     assert_eq!(of_method(&lines, "textDocument/didSave").len(), 1);
 }
@@ -249,9 +249,10 @@ fn reload_during_start_is_delivered_by_the_eventual_did_open() {
         support::scripted(&root, &[("INIT_GATE", gate_text.as_str())], PRODUCT_TIMEOUT);
     let mut probe = Probe::new(&root, definitions);
     probe.open(&root.join("slow.scripted"), CAT_BEFORE);
-    probe.until("the starting state", |seen| {
-        return seen.state(SERVER) == Some(&ServerState::Starting);
-    });
+    probe.wait_for("the starting state");
+    while !(probe.state(SERVER) == Some(&ServerState::Starting)) {
+        probe.step();
+    }
     probe.reload(CAT_AFTER);
     std::fs::write(&gate, "").expect("initialize gate");
     probe.until_ready();

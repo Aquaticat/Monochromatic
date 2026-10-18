@@ -4,7 +4,8 @@
 
 /// The session whose polled state the conditions read.
 use super::Session;
-/// The stamp of the displayed text, which latest-value snapshots must carry.
+/// The stamp of the displayed text,
+///  which latest-value snapshots must carry.
 use ide_app::language::identity::DocumentStamp;
 /// A server's state is compared with `Ready`.
 use ide_app::language::status::ServerState;
@@ -106,7 +107,8 @@ impl Condition for DiagnosticsWithin {
     }
 }
 
-/// The condition that is never met, so a step waits for its whole limit.
+/// The condition that is never met,
+///  so a step waits for its whole limit.
 pub(super) struct Never;
 
 /// The condition reads the polled session.

@@ -93,11 +93,13 @@ const ENDED: &str = "language server process ended";
 
 /// The whole lines of the log that contain `text`.
 fn records_with(log: &str, text: &str) -> Vec<String> {
-    return log
-        .lines()
-        .filter(|line| return line.contains(text))
-        .map(str::to_string)
-        .collect();
+    let mut found: Vec<String> = Vec::new();
+    for line in log.lines() {
+        if line.contains(text) {
+            found.push(line.to_string());
+        }
+    }
+    return found;
 }
 
 /// Assert that a record with this level and this ending is in the log.
@@ -139,9 +141,10 @@ fn log_of_a_clean_lifetime(root: &Path) -> String {
         "the one request of the lifetime was not answered after the worker asked again"
     );
     probe.worker.close().expect("close");
-    probe.until("the closed state", |seen| {
-        return seen.status.document == DocumentState::Closed;
-    });
+    probe.wait_for("the closed state");
+    while !(probe.status.document == DocumentState::Closed) {
+        probe.step();
+    }
     drop(probe);
     support::children_until_none();
     let received = support::received(&support::report(root));
@@ -225,9 +228,10 @@ fn unknown_helix_error_records_keep_their_level() {
     let capture = capture_the_log();
     let mut probe = Probe::new(&root, support::scripted(&root, &[("INIT", "error")], 1));
     probe.open(&root.join("file.scripted"), "alpha\n");
-    probe.until("the failed-start state", |seen| {
-        return matches!(seen.state(SERVER), Some(ServerState::FailedToStart { .. }));
-    });
+    probe.wait_for("the failed-start state");
+    while !(matches!(probe.state(SERVER), Some(ServerState::FailedToStart { .. }))) {
+        probe.step();
+    }
     drop(probe);
     support::children_until_none();
     let text = capture.text();
@@ -269,9 +273,10 @@ fn a_crashed_server_is_logged_with_its_last_stderr_lines() {
     probe.open(&root.join("file.scripted"), "alpha\n");
     probe.until_ready();
     let _crashing = probe.request(RequestKind::Hover, 1);
-    probe.until("the exited state", |seen| {
-        return seen.state(SERVER) == Some(&ServerState::Exited);
-    });
+    probe.wait_for("the exited state");
+    while !(probe.state(SERVER) == Some(&ServerState::Exited)) {
+        probe.step();
+    }
     drop(probe);
     support::children_until_none();
     let text = capture.text();
@@ -306,16 +311,18 @@ fn a_server_that_ends_during_its_start_is_logged_with_its_stderr_lines() {
     ];
     let mut probe = Probe::new(&root, support::scripted(&root, &variables, PRODUCT_TIMEOUT));
     probe.open(&root.join("file.scripted"), "alpha\n");
-    probe.until("the failed-start state", |seen| {
-        return matches!(seen.state(SERVER), Some(ServerState::FailedToStart { .. }));
-    });
+    probe.wait_for("the failed-start state");
+    while !(matches!(probe.state(SERVER), Some(ServerState::FailedToStart { .. }))) {
+        probe.step();
+    }
     // The server's last lines reach the reason once its standard error ended, after the first state.
-    probe.until("the cause in the reason", |seen| {
-        return matches!(
-            seen.state(SERVER),
-            Some(ServerState::FailedToStart { reason }) if reason.contains("cannot read the configuration")
-        );
-    });
+    probe.wait_for("the cause in the reason");
+    while !(matches!(
+        probe.state(SERVER),
+        Some(ServerState::FailedToStart { reason }) if reason.contains("cannot read the configuration")
+    )) {
+        probe.step();
+    }
     assert_eq!(
         probe.state(SERVER),
         Some(&ServerState::FailedToStart {
@@ -323,11 +330,10 @@ fn a_server_that_ends_during_its_start_is_logged_with_its_stderr_lines() {
         })
     );
     // The same words are on screen as the entry that says why nothing works.
-    probe.until("the cause in the entry", |seen| {
-        return seen
-            .notice()
-            .is_some_and(|entry| return entry.contains("cannot read the configuration"));
-    });
+    probe.wait_for("the cause in the entry");
+    while !(probe.notice_contains("cannot read the configuration")) {
+        probe.step();
+    }
     drop(probe);
     support::children_until_none();
     let text = capture.text();
@@ -366,9 +372,10 @@ fn a_timed_out_start_is_logged_with_its_stderr_lines() {
     // A request timeout of 1 s gives a start allowance of three request timeouts, 3 s.
     let mut probe = Probe::new(&root, support::scripted(&root, &variables, 1));
     probe.open(&root.join("file.scripted"), "alpha\n");
-    probe.until("the failed-start state", |seen| {
-        return matches!(seen.state(SERVER), Some(ServerState::FailedToStart { .. }));
-    });
+    probe.wait_for("the failed-start state");
+    while !(matches!(probe.state(SERVER), Some(ServerState::FailedToStart { .. }))) {
+        probe.step();
+    }
     assert_eq!(
         probe.state(SERVER),
         Some(&ServerState::FailedToStart {

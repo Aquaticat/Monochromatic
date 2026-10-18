@@ -13,9 +13,7 @@ use std::{fs, path::Path};
 
 /// The `initialize` message the scripted server received.
 fn initialize(lines: &[Value]) -> Value {
-    return lines
-        .iter()
-        .find(|line| return line["received"] == "initialize")
+    return support::first_received(lines, "initialize")
         .expect("initialize")
         .clone();
 }
@@ -42,12 +40,13 @@ fn working_directory_elsewhere_is_refused() {
     };
     let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     probe.open(&root.join("file.scripted"), "alpha\n");
-    probe.until("the wrong-working-directory state", |seen| {
-        return matches!(
-            seen.state(SERVER),
-            Some(ServerState::WrongWorkingDirectory { .. })
-        );
-    });
+    probe.wait_for("the wrong-working-directory state");
+    while !(matches!(
+        probe.state(SERVER),
+        Some(ServerState::WrongWorkingDirectory { .. })
+    )) {
+        probe.step();
+    }
     let expected = root.parent().expect("base").join("elsewhere");
     assert_eq!(
         probe.state(SERVER),
@@ -89,12 +88,13 @@ fn nested_project_without_root_marker_is_refused() {
     };
     let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     probe.open(&root.join("file.scripted"), "alpha\n");
-    probe.until("the root-outside-project state", |seen| {
-        return matches!(
-            seen.state(SERVER),
-            Some(ServerState::RootOutsideProject { .. })
-        );
-    });
+    probe.wait_for("the root-outside-project state");
+    while !(matches!(
+        probe.state(SERVER),
+        Some(ServerState::RootOutsideProject { .. })
+    )) {
+        probe.step();
+    }
     assert_eq!(
         probe.state(SERVER),
         Some(&ServerState::RootOutsideProject {
@@ -130,10 +130,7 @@ fn nested_project_with_root_marker_is_rooted_at_the_project() {
     let lines = support::server_text_until(&root, "alpha\n");
     let project = format!("file://{}", root.display());
     assert_eq!(initialize(&lines)["params"]["rootUri"], project.as_str());
-    let started = lines
-        .iter()
-        .find(|line| return !line["started"].is_null())
-        .expect("start record");
+    let started = support::first_started(&lines).expect("start record");
     assert_eq!(
         started["started"]["cwd"],
         root.display().to_string().as_str()
@@ -189,11 +186,8 @@ fn project_reached_through_a_linked_working_directory_is_rooted_at_the_project()
         );
         return;
     };
-    let spelled = root
-        .parent()
-        .and_then(|real| return real.parent())
-        .expect("base")
-        .join("link/project");
+    let real = root.parent().expect("base");
+    let spelled = real.parent().expect("base").join("link/project");
     assert_eq!(
         std::env::var_os("PWD").as_deref(),
         Some(spelled.as_os_str())
@@ -208,17 +202,15 @@ fn project_reached_through_a_linked_working_directory_is_rooted_at_the_project()
         format!("file://{}", spelled.display()).as_str(),
         "the server was not rooted at the project reached through the linked working directory"
     );
-    let opened = lines
-        .iter()
-        .find(|line| return line["received"] == "textDocument/didOpen")
-        .expect("didOpen");
+    let opened = support::first_received(&lines, "textDocument/didOpen").expect("didOpen");
     assert_eq!(
         opened["params"]["textDocument"]["uri"],
         format!("file://{}", spelled.join("file.scripted").display()).as_str()
     );
-    probe.until("diagnostics published under the linked spelling", |seen| {
-        return !seen.messages().is_empty();
-    });
+    probe.wait_for("diagnostics published under the linked spelling");
+    while !(!probe.messages().is_empty()) {
+        probe.step();
+    }
     let number = probe.request(RequestKind::Definition, 1);
     let answers = probe.answers(number);
     let RequestOutcome::Locations(targets) = &answers[0].outcome else {

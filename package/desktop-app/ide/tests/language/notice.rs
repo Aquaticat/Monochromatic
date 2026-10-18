@@ -40,9 +40,10 @@ fn a_missing_program_gives_the_entry_with_its_remedy() {
     );
     let mut probe = Probe::new(&root, definitions);
     probe.open(&root.join("file.scripted"), "one\n");
-    probe.until("the entry for a missing program", |seen| {
-        return seen.notice().is_some();
-    });
+    probe.wait_for("the entry for a missing program");
+    while !(probe.notice().is_some()) {
+        probe.step();
+    }
     let entry = probe.notice().expect("entry");
     assert_eq!(
         entry,
@@ -69,9 +70,10 @@ fn a_failed_start_gives_the_entry_and_a_server_still_starting_gives_none() {
         support::scripted(&root, &[("INIT", "exit")], PRODUCT_TIMEOUT),
     );
     probe.open(&root.join("file.scripted"), "alpha\n");
-    probe.until("the failed-start entry", |seen| {
-        return seen.notice().is_some();
-    });
+    probe.wait_for("the failed-start entry");
+    while !(probe.notice().is_some()) {
+        probe.step();
+    }
     let entry = probe.notice().expect("entry");
     assert!(
         entry.contains(
@@ -97,9 +99,10 @@ fn a_server_that_is_still_starting_gives_no_entry() {
         support::scripted(&root, &[("INIT", "hang")], PRODUCT_TIMEOUT),
     );
     probe.open(&root.join("file.scripted"), "alpha\n");
-    probe.until("the starting state", |seen| {
-        return seen.state(SERVER) == Some(&ide_app::language::status::ServerState::Starting);
-    });
+    probe.wait_for("the starting state");
+    while !(probe.state(SERVER) == Some(&ide_app::language::status::ServerState::Starting)) {
+        probe.step();
+    }
     // Starting is published before anything else could be; wait out several polls to see no entry.
     for _ in 0..20 {
         probe.poll();
@@ -127,7 +130,10 @@ fn a_server_that_offers_everything_gives_no_entry() {
             .request_hints(probe.stamp(), WINDOW)
             .expect("hint window")
     );
-    probe.until("hints", |seen| return seen.hints.is_some());
+    probe.wait_for("hints");
+    while !(probe.hints.is_some()) {
+        probe.step();
+    }
     for _ in 0..10 {
         probe.poll();
         std::thread::sleep(std::time::Duration::from_millis(20));
@@ -152,9 +158,10 @@ fn a_server_without_inlay_hints_is_named() {
     );
     probe.open(&root.join("file.scripted"), "alpha\n");
     probe.until_ready();
-    probe.until("the entry for a server without hints", |seen| {
-        return seen.notice().is_some();
-    });
+    probe.wait_for("the entry for a server without hints");
+    while !(probe.notice().is_some()) {
+        probe.step();
+    }
     assert_eq!(
         probe.notice().as_deref(),
         Some("Inlay hints are not offered by scripted-ls, so none are shown.")
@@ -184,9 +191,10 @@ fn a_failed_hint_request_is_named_and_a_later_answer_clears_it() {
             .request_hints(probe.stamp(), WINDOW)
             .expect("hint window")
     );
-    probe.until("the entry for a failed hint request", |seen| {
-        return seen.notice().is_some();
-    });
+    probe.wait_for("the entry for a failed hint request");
+    while !(probe.notice().is_some()) {
+        probe.step();
+    }
     assert_eq!(
         probe.notice().as_deref(),
         Some(
@@ -206,9 +214,10 @@ fn a_failed_hint_request_is_named_and_a_later_answer_clears_it() {
             )
             .expect("hint window")
     );
-    probe.until("the entry to go once hints arrive", |seen| {
-        return seen.hints.is_some() && seen.notice().is_none();
-    });
+    probe.wait_for("the entry to go once hints arrive");
+    while !(probe.hints.is_some() && probe.notice().is_none()) {
+        probe.step();
+    }
 }
 
 /// A hover the server never answers is named after its timeout,
@@ -229,9 +238,10 @@ fn a_hover_that_times_out_is_named() {
         "{:?}",
         answers[0].outcome
     );
-    probe.until("the entry for a hover that timed out", |seen| {
-        return seen.notice().is_some();
-    });
+    probe.wait_for("the entry for a hover that timed out");
+    while !(probe.notice().is_some()) {
+        probe.step();
+    }
     assert_eq!(
         probe.notice().as_deref(),
         Some("The hover request to scripted-ls failed: the server did not answer in time.")

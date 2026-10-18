@@ -159,10 +159,7 @@ fn hover_position_and_range_use_the_negotiated_column_unit() {
         assert!(hover.markdown);
         assert_eq!(hover.range, Some((position, position)));
         let lines = support::report(&root);
-        let sent = lines
-            .iter()
-            .find(|line| return line["received"] == "textDocument/hover")
-            .expect("hover request");
+        let sent = support::first_received(&lines, "textDocument/hover").expect("hover request");
         assert_eq!(sent["params"]["position"]["character"], column);
         assert_eq!(sent["params"]["position"]["line"], 0);
     }
@@ -182,9 +179,10 @@ fn hover_on_a_blank_line_is_an_empty_result() {
     let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     probe.open(&root.join("main.scripted"), SOURCE);
     probe.until_ready();
-    let blank = SOURCE
-        .find("\n\n")
-        .map(|bytes| return SOURCE[..bytes].chars().count() + 1);
+    let mut blank = None;
+    if let Some(bytes) = SOURCE.find("\n\n") {
+        blank = Some(SOURCE[..bytes].chars().count() + 1);
+    }
     let number = probe.request(RequestKind::Hover, blank.expect("blank line"));
     assert_eq!(probe.answers(number)[0].outcome, RequestOutcome::Empty);
     let outside = probe.request(RequestKind::Hover, 10_000);
@@ -273,10 +271,7 @@ fn superseded_request_is_retried_then_reported_as_superseded() {
         RequestOutcome::Superseded,
         "a superseded request was shown as a failure"
     );
-    let hovers = support::received(&support::report(&root))
-        .iter()
-        .filter(|method| return method.as_str() == "textDocument/hover")
-        .count();
+    let hovers = support::count_received(&support::report(&root), "textDocument/hover");
     assert_eq!(hovers, 4, "one request and three bounded retries");
     drop(probe);
     std::fs::remove_file(support::report_path(&root)).expect("previous report");
@@ -352,38 +347,23 @@ fn reply_overtaken_by_a_reload_or_file_switch_is_dropped() {
     // A file switch at equal revisions: only the file generation tells the reply apart.
     let before_switch = probe.request(RequestKind::Hover, 3);
     probe.open(&root.join("other.scripted"), "other file\n");
-    probe.until(
-        "the reply for the previous file to be dropped or delivered",
-        |seen| {
-            return seen.worker.fence_counts().other_file == 1
-                || seen
-                    .replies
-                    .iter()
-                    .any(|reply| return reply.request == before_switch);
-        },
-    );
+    probe.wait_for("the reply for the previous file to be dropped or delivered");
+    while !(probe.worker.fence_counts().other_file == 1 || probe.has_reply(before_switch)) {
+        probe.step();
+    }
     assert!(
-        !probe
-            .replies
-            .iter()
-            .any(|reply| return reply.request == before_switch),
+        !probe.has_reply(before_switch),
         "a reply for the previous file was accepted"
     );
     // A reload of the same file: only the revision tells the reply apart.
     let overtaken = probe.request(RequestKind::Hover, 3);
     probe.reload("changed text\n");
-    probe.until("the overtaken reply to be dropped or delivered", |seen| {
-        return seen.worker.fence_counts().stale_revision == 1
-            || seen
-                .replies
-                .iter()
-                .any(|reply| return reply.request == overtaken);
-    });
+    probe.wait_for("the overtaken reply to be dropped or delivered");
+    while !(probe.worker.fence_counts().stale_revision == 1 || probe.has_reply(overtaken)) {
+        probe.step();
+    }
     assert!(
-        !probe
-            .replies
-            .iter()
-            .any(|reply| return reply.request == overtaken),
+        !probe.has_reply(overtaken),
         "a reply for the previous revision was accepted"
     );
     let current = probe.request(RequestKind::Hover, 3);
@@ -415,25 +395,16 @@ fn superseded_answer_for_reloaded_text_is_dropped_by_the_fence() {
     probe.until_ready();
     let overtaken = probe.request(RequestKind::Hover, 3);
     probe.reload("changed text\n");
-    probe.until("the superseded answer to be dropped or delivered", |seen| {
-        return seen.worker.fence_counts().stale_revision == 1
-            || seen
-                .replies
-                .iter()
-                .any(|reply| return reply.request == overtaken);
-    });
+    probe.wait_for("the superseded answer to be dropped or delivered");
+    while !(probe.worker.fence_counts().stale_revision == 1 || probe.has_reply(overtaken)) {
+        probe.step();
+    }
     assert!(
-        !probe
-            .replies
-            .iter()
-            .any(|reply| return reply.request == overtaken),
+        !probe.has_reply(overtaken),
         "a superseded answer for reloaded text reached the interface"
     );
     std::thread::sleep(std::time::Duration::from_millis(600));
-    let hovers = support::received(&support::report(&root))
-        .iter()
-        .filter(|method| return method.as_str() == "textDocument/hover")
-        .count();
+    let hovers = support::count_received(&support::report(&root), "textDocument/hover");
     assert_eq!(
         hovers, 1,
         "a request for text that is no longer displayed was retried"
@@ -466,7 +437,10 @@ fn inlay_hints_are_shaped_and_follow_reloads() {
             .request_hints(probe.stamp(), window)
             .expect("hint window")
     );
-    probe.until("inlay hints", |seen| return seen.hints.is_some());
+    probe.wait_for("inlay hints");
+    while !(probe.hints.is_some()) {
+        probe.step();
+    }
     let first = probe.hints.clone().expect("hints");
     assert_eq!(first.stamp, probe.stamp());
     assert_eq!((first.first_line, first.last_line), (0, 3));
@@ -482,21 +456,16 @@ fn inlay_hints_are_shaped_and_follow_reloads() {
     assert_eq!(first.hints[0].server.name, SERVER);
     probe.reload("longer plain text line\nsecond\nthird\n");
     let stamp = probe.stamp();
-    probe.until("hints for the reloaded text", |seen| {
-        return seen
-            .hints
-            .as_ref()
-            .is_some_and(|hints| return hints.stamp == stamp);
-    });
+    probe.wait_for("hints for the reloaded text");
+    while !(probe.hints_stamped(stamp)) {
+        probe.step();
+    }
     // Exactly one request per displayed text. Only a request the server left unanswered for its
     // whole timeout is sent again, so each further request needs one more elapsed timeout; on a
     // machine that did not stall for that long the count is exactly two.
     let timeouts = usize::try_from(asked.elapsed().as_secs() / PRODUCT_TIMEOUT);
     let allowed = 2 + timeouts.expect("small count");
-    let requests = support::received(&support::report(&root))
-        .iter()
-        .filter(|method| return method.as_str() == "textDocument/inlayHint")
-        .count();
+    let requests = support::count_received(&support::report(&root), "textDocument/inlayHint");
     assert!(
         (2..=allowed).contains(&requests),
         "{requests} hint requests were sent where at most {allowed} can follow from timeouts"
@@ -519,9 +488,10 @@ fn versioned_diagnostics_follow_the_displayed_version() {
         support::scripted(&root, &[("DIAG_VERSION", "1")], PRODUCT_TIMEOUT),
     );
     probe.open(&root.join("main.scripted"), "first\n");
-    probe.until("diagnostics for the first text", |seen| {
-        return seen.messages() == ["TEXT:first\n"];
-    });
+    probe.wait_for("diagnostics for the first text");
+    while !(probe.messages() == ["TEXT:first\n"]) {
+        probe.step();
+    }
     let snapshot = probe.diagnostics.clone().expect("diagnostics");
     assert_eq!(snapshot.groups[0].source, "scripted");
     assert_eq!(snapshot.groups[0].items[0].freshness, Freshness::Versioned);
@@ -534,13 +504,10 @@ fn versioned_diagnostics_follow_the_displayed_version() {
     );
     probe.reload("second\n");
     let stamp = probe.stamp();
-    probe.until("diagnostics for the second text", |seen| {
-        return seen.messages() == ["TEXT:second\n"]
-            && seen
-                .diagnostics
-                .as_ref()
-                .is_some_and(|found| return found.stamp == stamp);
-    });
+    probe.wait_for("diagnostics for the second text");
+    while !(probe.messages() == ["TEXT:second\n"] && probe.diagnostics_stamped(stamp)) {
+        probe.step();
+    }
 }
 
 /// An unversioned set pushed right after a reload is kept back while the hold lasts and shown once
@@ -557,9 +524,10 @@ fn unversioned_set_pushed_during_the_hold_is_shown_once_the_server_answers() {
     };
     let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     probe.open(&root.join("main.scripted"), "first\n");
-    probe.until("diagnostics for the first text", |seen| {
-        return seen.messages() == ["TEXT:first\n"];
-    });
+    probe.wait_for("diagnostics for the first text");
+    while !(probe.messages() == ["TEXT:first\n"]) {
+        probe.step();
+    }
     let snapshot = probe.diagnostics.clone().expect("diagnostics");
     assert_eq!(
         snapshot.groups[0].items[0].freshness,
@@ -570,15 +538,10 @@ fn unversioned_set_pushed_during_the_hold_is_shown_once_the_server_answers() {
     let stamp = probe.stamp();
     // The server pushes once, at once, for the change; that set arrives inside the hold.
     support::server_text_until(&root, "second\n");
-    probe.until(
-        "the previous revision's diagnostics to leave the display",
-        |seen| {
-            return seen
-                .diagnostics
-                .as_ref()
-                .is_some_and(|found| return found.stamp == stamp);
-        },
-    );
+    probe.wait_for("the previous revision's diagnostics to leave the display");
+    while !(probe.diagnostics_stamped(stamp)) {
+        probe.step();
+    }
     std::thread::sleep(Duration::from_millis(300));
     probe.poll();
     // The hold ends by its fixed delay at the earliest `HOLD_FALLBACK` after the reload was sent,
@@ -599,16 +562,10 @@ fn unversioned_set_pushed_during_the_hold_is_shown_once_the_server_answers() {
     // The hover answer ends the hold; the kept set is shown, and the server pushes nothing more.
     let number = probe.request(RequestKind::Hover, 1);
     probe.answers(number);
-    probe.until(
-        "the set pushed during the hold, shown once the server answered",
-        |seen| {
-            return seen.messages() == ["TEXT:second\n"]
-                && seen
-                    .diagnostics
-                    .as_ref()
-                    .is_some_and(|found| return found.stamp == stamp);
-        },
-    );
+    probe.wait_for("the set pushed during the hold, shown once the server answered");
+    while !(probe.messages() == ["TEXT:second\n"] && probe.diagnostics_stamped(stamp)) {
+        probe.step();
+    }
 }
 
 /// An unversioned set pushed right after a reload is shown when the hold's fixed delay passes,
@@ -624,21 +581,16 @@ fn unversioned_set_pushed_during_the_hold_is_shown_when_the_hold_expires() {
     };
     let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     probe.open(&root.join("main.scripted"), "first\n");
-    probe.until("diagnostics for the first text", |seen| {
-        return seen.messages() == ["TEXT:first\n"];
-    });
+    probe.wait_for("diagnostics for the first text");
+    while !(probe.messages() == ["TEXT:first\n"]) {
+        probe.step();
+    }
     probe.reload("second\n");
     let stamp = probe.stamp();
-    probe.until(
-        "the set pushed during the hold, shown when its fixed delay passed",
-        |seen| {
-            return seen.messages() == ["TEXT:second\n"]
-                && seen
-                    .diagnostics
-                    .as_ref()
-                    .is_some_and(|found| return found.stamp == stamp);
-        },
-    );
+    probe.wait_for("the set pushed during the hold, shown when its fixed delay passed");
+    while !(probe.messages() == ["TEXT:second\n"] && probe.diagnostics_stamped(stamp)) {
+        probe.step();
+    }
 }
 
 /// Pull diagnostics are requested after open and after every reload,
@@ -662,16 +614,18 @@ fn pulled_diagnostics_follow_open_and_reload() {
             .expect("features")
             .pull_diagnostics
     );
-    probe.until("pulled diagnostics", |seen| {
-        return seen.messages() == ["PULLED:first\n"];
-    });
+    probe.wait_for("pulled diagnostics");
+    while !(probe.messages() == ["PULLED:first\n"]) {
+        probe.step();
+    }
     let snapshot = probe.diagnostics.clone().expect("diagnostics");
     assert_eq!(snapshot.groups[0].source, "scripted-pull");
     assert_eq!(snapshot.groups[0].items[0].freshness, Freshness::Pulled);
     probe.reload("second\n");
-    probe.until("pulled diagnostics for the reloaded text", |seen| {
-        return seen.messages() == ["PULLED:second\n"];
-    });
+    probe.wait_for("pulled diagnostics for the reloaded text");
+    while !(probe.messages() == ["PULLED:second\n"]) {
+        probe.step();
+    }
     assert_eq!(
         probe.diagnostics.clone().expect("diagnostics").stamp,
         probe.stamp()

@@ -8,6 +8,16 @@ use ide_app::json_value;
 use ide_app::language::reply::{RequestKind, RequestOutcome};
 use serde_json::{Value, json};
 
+/// True when the scripted server reported the end of its probe.
+fn probe_done(lines: &[Value]) -> bool {
+    for line in lines {
+        if line["probe-done"] == true {
+            return true;
+        }
+    }
+    return false;
+}
+
 /// The reply the scripted server recorded for a method;
 ///  the second `workspace/applyEdit` is the malformed one.
 fn replies(lines: &[Value], method: &str) -> Vec<Value> {
@@ -39,9 +49,11 @@ fn server_requests_get_policy_replies_and_edits_change_nothing() {
     let original = "original bytes \u{e9}\nsecond line\n";
     probe.open(&file, original);
     probe.until_ready();
-    let lines = support::report_until(&root, "the end of the server's probe", |seen| {
-        return seen.iter().any(|line| return line["probe-done"] == true);
-    });
+    let mut probe_wait = support::ReportWait::new(&root, "the end of the server's probe");
+    while !probe_done(probe_wait.lines()) {
+        probe_wait.again();
+    }
+    let lines = probe_wait.into_lines();
     let edits = replies(&lines, "workspace/applyEdit");
     assert_eq!(edits.len(), 2);
     assert_eq!(
@@ -91,22 +103,22 @@ fn server_requests_get_policy_replies_and_edits_change_nothing() {
             json_value!({ "error": { "code": -32601, "message": "Method not found: scripted/unknownMethod" } })
         ]
     );
-    let unanswered: Vec<&Value> = lines
-        .iter()
-        .filter(|line| return line["probe"]["response"]["unanswered"] == true)
-        .collect();
+    let mut unanswered: Vec<&Value> = Vec::new();
+    for line in lines.iter() {
+        if line["probe"]["response"]["unanswered"] == true {
+            unanswered.push(line);
+        }
+    }
     assert!(
         unanswered.is_empty(),
         "a server request was left unanswered: {unanswered:?}"
     );
     // The refresh request makes the client pull diagnostics a second time.
-    let pulls = support::report_until(&root, "a second diagnostics pull", |seen| {
-        return support::received(seen)
-            .iter()
-            .filter(|method| return method.as_str() == "textDocument/diagnostic")
-            .count()
-            >= 2;
-    });
+    let mut pull_wait = support::ReportWait::new(&root, "a second diagnostics pull");
+    while support::count_received(pull_wait.lines(), "textDocument/diagnostic") < 2 {
+        pull_wait.again();
+    }
+    let pulls = pull_wait.into_lines();
     assert!(!pulls.is_empty());
     // The session continues: requests still work and the registered watcher is notified of the reload.
     let number = probe.request(RequestKind::Hover, 2);
@@ -115,14 +127,12 @@ fn server_requests_get_policy_replies_and_edits_change_nothing() {
         RequestOutcome::Hover(_)
     ));
     probe.reload("reloaded by the test\n");
-    let watched = support::report_until(&root, "a watched-file notification", |seen| {
-        return support::received(seen)
-            .iter()
-            .any(|method| return method == "workspace/didChangeWatchedFiles");
-    });
-    let event = watched
-        .iter()
-        .find(|line| return line["received"] == "workspace/didChangeWatchedFiles")
+    let mut watched_wait = support::ReportWait::new(&root, "a watched-file notification");
+    while support::count_received(watched_wait.lines(), "workspace/didChangeWatchedFiles") == 0 {
+        watched_wait.again();
+    }
+    let watched = watched_wait.into_lines();
+    let event = support::first_received(&watched, "workspace/didChangeWatchedFiles")
         .expect("watched-file notification");
     assert_eq!(
         event["params"]["changes"][0]["uri"],

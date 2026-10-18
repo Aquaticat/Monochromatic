@@ -44,9 +44,10 @@ fn crash_fails_the_pending_request_and_the_next_open_restarts() {
     );
     probe.open(&root.join("first.scripted"), "alpha\n");
     probe.until_ready();
-    probe.until("diagnostics from the first process", |seen| {
-        return !seen.messages().is_empty();
-    });
+    probe.wait_for("diagnostics from the first process");
+    while !(!probe.messages().is_empty()) {
+        probe.step();
+    }
     let number = probe.request(RequestKind::Hover, 1);
     let answers = probe.answers(number);
     assert_eq!(
@@ -54,9 +55,10 @@ fn crash_fails_the_pending_request_and_the_next_open_restarts() {
         RequestOutcome::Failed(RequestFailure::StreamClosed),
         "the request pending at the crash did not fail"
     );
-    probe.until("the exited state", |seen| {
-        return seen.state(SERVER) == Some(&ServerState::Exited);
-    });
+    probe.wait_for("the exited state");
+    while !(probe.state(SERVER) == Some(&ServerState::Exited)) {
+        probe.step();
+    }
     assert!(
         probe.messages().is_empty(),
         "diagnostics of an exited server stayed on display"
@@ -88,9 +90,10 @@ fn crash_fails_the_pending_request_and_the_next_open_restarts() {
     // Crash again, then restart by displaying a file.
     let second_crash = probe.request(RequestKind::Hover, 1);
     probe.answers(second_crash);
-    probe.until("the second exit", |seen| {
-        return seen.state(SERVER) == Some(&ServerState::Exited);
-    });
+    probe.wait_for("the second exit");
+    while !(probe.state(SERVER) == Some(&ServerState::Exited)) {
+        probe.step();
+    }
     probe.open(&root.join("second.scripted"), "beta\n");
     probe.until_ready();
     assert_eq!(probe.status.servers[0].server.instance, 3);
@@ -114,26 +117,21 @@ fn file_switch_closes_the_first_file_and_reuses_the_server() {
     let second = root.join("second.scripted");
     probe.open(&first, "alpha\n");
     probe.until_ready();
-    probe.until("diagnostics for the first file", |seen| {
-        return seen.messages() == ["TEXT:alpha\n"];
-    });
+    probe.wait_for("diagnostics for the first file");
+    while !(probe.messages() == ["TEXT:alpha\n"]) {
+        probe.step();
+    }
     probe.open(&second, "beta\n");
     let stamp = probe.stamp();
-    probe.until("diagnostics for the second file", |seen| {
-        return seen.messages() == ["TEXT:beta\n"]
-            && seen
-                .diagnostics
-                .as_ref()
-                .is_some_and(|found| return found.stamp == stamp);
-    });
+    probe.wait_for("diagnostics for the second file");
+    while !(probe.messages() == ["TEXT:beta\n"] && probe.diagnostics_stamped(stamp)) {
+        probe.step();
+    }
     assert_eq!(probe.status.servers[0].server.instance, 1);
     let lines = support::report(&root);
     assert_eq!(started(&lines).len(), 1);
     let received = support::received(&lines);
-    let closed = lines
-        .iter()
-        .find(|line| return line["received"] == "textDocument/didClose")
-        .expect("didClose");
+    let closed = support::first_received(&lines, "textDocument/didClose").expect("didClose");
     assert_eq!(
         closed["params"]["textDocument"]["uri"],
         format!("file://{}", first.display()).as_str()
@@ -146,16 +144,15 @@ fn file_switch_closes_the_first_file_and_reuses_the_server() {
         2
     );
     probe.worker.close().expect("close");
-    probe.until("the closed state", |seen| {
-        return seen.status.document == DocumentState::Closed;
-    });
-    let after_close = support::report_until(&root, "the second didClose", |seen| {
-        return support::received(seen)
-            .iter()
-            .filter(|method| return method.as_str() == "textDocument/didClose")
-            .count()
-            == 2;
-    });
+    probe.wait_for("the closed state");
+    while !(probe.status.document == DocumentState::Closed) {
+        probe.step();
+    }
+    let mut close_wait = support::ReportWait::new(&root, "the second didClose");
+    while support::count_received(close_wait.lines(), "textDocument/didClose") != 2 {
+        close_wait.again();
+    }
+    let after_close = close_wait.into_lines();
     assert_eq!(started(&after_close).len(), 1);
     assert_eq!(
         support::children().len(),
@@ -178,9 +175,10 @@ fn file_outside_the_project_attaches_only_running_servers() {
     std::fs::write(&outside, "dependency text\n").expect("outside file");
     let mut probe = Probe::new(&root, support::scripted(&root, &[], PRODUCT_TIMEOUT));
     probe.display(&outside, "dependency text\n");
-    probe.until("the outside-project state", |seen| {
-        return seen.status.document == DocumentState::OutsideProject;
-    });
+    probe.wait_for("the outside-project state");
+    while !(probe.status.document == DocumentState::OutsideProject) {
+        probe.step();
+    }
     assert!(probe.status.servers.is_empty());
     std::thread::sleep(std::time::Duration::from_millis(200));
     assert!(
@@ -195,10 +193,12 @@ fn file_outside_the_project_attaches_only_running_servers() {
     probe.open(&root.join("inside.scripted"), "inside\n");
     probe.until_ready();
     probe.display(&outside, "dependency text\n");
-    probe.until("the running server to serve the outside file", |seen| {
-        return seen.status.document == DocumentState::OutsideProject
-            && seen.state(SERVER) == Some(&ServerState::Ready);
-    });
+    probe.wait_for("the running server to serve the outside file");
+    while !(probe.status.document == DocumentState::OutsideProject
+        && probe.state(SERVER) == Some(&ServerState::Ready))
+    {
+        probe.step();
+    }
     let number = probe.request(RequestKind::Hover, 1);
     let answers = probe.answers(number);
     let RequestOutcome::Hover(hover) = &answers[0].outcome else {
@@ -207,10 +207,7 @@ fn file_outside_the_project_attaches_only_running_servers() {
     assert_eq!(hover.text, "line=dependency text char=e");
     let lines = support::report(&root);
     assert_eq!(started(&lines).len(), 1);
-    let opened: Vec<&Value> = lines
-        .iter()
-        .filter(|line| return line["received"] == "textDocument/didOpen")
-        .collect();
+    let opened: Vec<&Value> = support::all_received(&lines, "textDocument/didOpen");
     assert_eq!(
         opened[1]["params"]["textDocument"]["uri"],
         format!("file://{}", outside.display()).as_str()
@@ -251,9 +248,10 @@ fn refused_launch_is_reported_and_nothing_is_spawned() {
     };
     let mut probe = Probe::with_setup(&root, refused);
     probe.open(&root.join("file.scripted"), "alpha\n");
-    probe.until("the refused state", |seen| {
-        return matches!(seen.state(SERVER), Some(ServerState::LaunchRefused { .. }));
-    });
+    probe.wait_for("the refused state");
+    while !(matches!(probe.state(SERVER), Some(ServerState::LaunchRefused { .. }))) {
+        probe.step();
+    }
     assert_eq!(
         probe.state(SERVER),
         Some(&ServerState::LaunchRefused {
@@ -270,9 +268,13 @@ fn refused_launch_is_reported_and_nothing_is_spawned() {
     };
     let mut second = Probe::with_setup(&root, unprepared);
     second.open(&root.join("file.scripted"), "alpha\n");
-    second.until("the refused state", |seen| {
-        return matches!(seen.state(SERVER), Some(ServerState::LaunchRefused { .. }));
-    });
+    second.wait_for("the refused state");
+    while !(matches!(
+        second.state(SERVER),
+        Some(ServerState::LaunchRefused { .. })
+    )) {
+        second.step();
+    }
     let Some(ServerState::LaunchRefused { reason }) = second.state(SERVER) else {
         panic!("unexpected state {:?}", second.state(SERVER));
     };
@@ -317,9 +319,10 @@ fn dropping_the_worker_leaves_no_child_process() {
     // keeps its handle inside the task that awaits `initialize` until the worker's runtime ends.
     let mut hanging = Probe::new(&root, support::scripted(&root, &[("INIT", "hang")], 30));
     hanging.open(&root.join("file.scripted"), "alpha\n");
-    hanging.until("the starting state", |seen| {
-        return seen.state(SERVER) == Some(&ServerState::Starting);
-    });
+    hanging.wait_for("the starting state");
+    while !(hanging.state(SERVER) == Some(&ServerState::Starting)) {
+        hanging.step();
+    }
     assert_eq!(support::children().len(), 1);
     drop(hanging);
     support::children_until_none();
