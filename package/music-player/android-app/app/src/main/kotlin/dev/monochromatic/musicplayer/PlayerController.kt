@@ -132,6 +132,7 @@ import dev.monochromatic.musicplayer.core.pageIdentity
 // import type { TrackMeasure } from "./core/TrackMeasure";
 // ```
 import dev.monochromatic.musicplayer.core.TrackMeasure
+import dev.monochromatic.musicplayer.core.UnplayableReport
 
 // What:     `class PlayerController(private val engine: AudioEngine) { ... }` declares a
 //           class with a PRIMARY CONSTRUCTOR. `private val engine: AudioEngine` is a
@@ -364,6 +365,12 @@ class PlayerController(private val engine: AudioEngine) {
 
     /** Called with the URI of each track that is loaded, so the service can read its tags off the main thread. */
     var onTrackLoaded: ((String) -> Unit)? = null
+
+    /**
+     * Called each time the player passes a track it was moving to by itself and could not open, with every file the
+     * current walk has passed so far; the service turns it into one system notification (D122, D123).
+     */
+    var onUnplayableFiles: ((UnplayableReport) -> Unit)? = null
 
     /**
      * Records the artist tag of [uri] and republishes the media session so its notification shows the artist line.
