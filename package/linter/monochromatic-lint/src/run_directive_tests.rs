@@ -173,7 +173,8 @@ fn processing_failures_survive_directives() {
 
 /// The semantic rule's findings pass through the same filter as every other rule's,
 ///  and an unrelated line directive does not cover them.
-/// This test loads a real Cargo workspace, like the other semantic controls.
+/// This test loads a real Cargo workspace,
+/// like the other semantic controls.
 #[test]
 fn semantic_findings_follow_the_same_directive_rules() {
     let fixture: Fixture = Fixture::new();

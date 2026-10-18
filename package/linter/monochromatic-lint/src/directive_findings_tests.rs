@@ -16,7 +16,8 @@ use crate::directive_parse::{DirectiveKind, RuleToken};
 use crate::directive_scan::{CommentSite, ScannedComments, scan_comments};
 use crate::run_paths::Language;
 
-/// The shared fixture: one Rust comment.
+/// The shared fixture:
+/// one Rust comment.
 const SOURCE: &str = "// monochromatic-lint-disable-next-line -- r\n";
 
 /// Run a check with a reporter over the fixture.

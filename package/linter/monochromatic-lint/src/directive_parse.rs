@@ -151,9 +151,17 @@ pub enum ParsedComment {
     NotDirective,
     /// Starts like a directive but cannot be read as one;
     ///  the reason names what is wrong.
-    Malformed(String),
+    Malformed(
+        /// What is wrong with the comment,
+        ///  phrased to follow "This comment cannot be read as a directive:".
+        String,
+    ),
     /// A readable directive.
-    Directive(ParsedDirective),
+    Directive(
+        /// The parsed keyword,
+        ///  identifiers and justification.
+        ParsedDirective,
+    ),
 }
 
 /// What:

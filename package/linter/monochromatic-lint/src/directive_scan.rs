@@ -1,7 +1,11 @@
 //! What:
-//!  Find the comments that may carry directives, from a real parse of the host file.
+//!  Find the comments that may carry directives,
+//! from a real parse of the host file.
 //! Why:
-//!  A directive looks like text, but text inside a string, a code fence, an inline code span or a doc comment
+//!  A directive looks like text,
+//! but text inside a string,
+//! a code fence,
+//! an inline code span or a doc comment
 //!  is not a comment the tool reads.
 //!  Rust comments are the parser's non-doc comment tokens;
 //!  Markdown comments are the parser's HTML nodes.
@@ -52,7 +56,8 @@ pub struct CommentSite {
 ///  The parse that gives a comment list its line and column conventions.
 /// Why:
 ///  Rust findings use LF lines and byte columns,
-///  Markdown findings use CR, LF or CRLF lines and UTF-16 columns,
+///  Markdown findings use CR,
+/// LF or CRLF lines and UTF-16 columns,
 ///  and a directive finding must use the host's own convention.
 ///
 /// In TS you'd write (pseudocode):
@@ -61,9 +66,16 @@ pub struct CommentSite {
 /// ```
 enum Locator {
     /// A Rust host.
-    Rust(RustSource),
+    Rust(
+        /// The Rust parse.
+        RustSource,
+    ),
     /// A Markdown host.
-    Markdown(Box<MarkdownSource>),
+    Markdown(
+        /// The Markdown parse,
+        ///  boxed because it is much larger than the Rust one.
+        Box<MarkdownSource>,
+    ),
 }
 
 /// What:
@@ -168,7 +180,8 @@ fn scan_rust(filename: &str, source: &str) -> ScannedComments {
 /// What:
 ///  Collect the HTML comments that begin an HTML node of a Markdown file.
 /// Why:
-///  Fenced code, indented code and code spans are not HTML nodes,
+///  Fenced code,
+/// indented code and code spans are not HTML nodes,
 ///  so a directive shown as an example is never read.
 ///  Only a comment that starts its node counts,
 ///  as in `@eslint/markdown`;

@@ -416,7 +416,8 @@ impl HostChecker<'_> {
     ///  Directives are read from the host only,
     ///  in the host's own comment syntax,
     ///  and filter findings in host coordinates:
-    ///  the rules, the semantic engine and the embedded-source processors are all covered by one filter,
+    ///  the rules,
+    ///  the semantic engine and the embedded-source processors are all covered by one filter,
     ///  and a suppressed finding never reaches the fix loop with its fix.
     ///
     /// In TS you'd write (pseudocode):

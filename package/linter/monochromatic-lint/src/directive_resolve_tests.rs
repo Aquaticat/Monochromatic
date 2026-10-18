@@ -1,7 +1,9 @@
 //! What:
 //!  Controls for resolving comments into active directives.
 //! Why:
-//!  Which line a line directive covers, and whether a list means "these rules", "every rule" or "nothing",
+//!  Which line a line directive covers,
+//! and whether a list means "these rules",
+//! "every rule" or "nothing",
 //!  decide what is suppressed.
 //!
 //! In TS you'd write (pseudocode):

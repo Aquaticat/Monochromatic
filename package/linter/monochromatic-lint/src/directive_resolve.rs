@@ -1,7 +1,9 @@
 //! What:
 //!  Turn the candidate comments of a host file into active directives and the findings about broken ones.
 //! Why:
-//!  Reading, justification, identifier checks and suppressibility are one pass over the comments,
+//!  Reading,
+//! justification,
+//! identifier checks and suppressibility are one pass over the comments,
 //!  so a directive is either active or reported,
 //!  and an active directive names only rules that may be suppressed.
 //!
@@ -10,7 +12,8 @@
 //! function resolveDirectives(reporter, source, problems): Directive[];
 //! ```
 
-/// Import the finding model, the comment reader and the reporter that builds the findings.
+/// Import the finding model,
+/// the comment reader and the reporter that builds the findings.
 use crate::{
     diagnostic::Diagnostic,
     directive_findings::Reporter,
@@ -56,7 +59,10 @@ pub enum Targets {
     All,
     /// Exactly these rules,
     ///  possibly none.
-    Listed(Vec<Target>),
+    Listed(
+        /// The accepted entries in written order.
+        Vec<Target>,
+    ),
 }
 
 /// What:

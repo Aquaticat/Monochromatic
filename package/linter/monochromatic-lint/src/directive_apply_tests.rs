@@ -21,7 +21,8 @@ use crate::run_paths::Language;
 
 /// A suppressible Rust rule.
 const SIDECARS: &str = "rust/tests-in-sidecars";
-/// A suppressible rule of the other language, reachable in a Rust file through rustdoc.
+/// A suppressible rule of the other language,
+/// reachable in a Rust file through rustdoc.
 const BARE_URLS: &str = "markdown/no-bare-urls";
 /// A Markdown rule used for Markdown fixtures.
 const SINGLE_H1: &str = "markdown/single-h1";
@@ -30,7 +31,8 @@ const MAX_LINES: &str = "rust/max-lines";
 /// The unsuppressible documentation requirement.
 const RUSTDOC: &str = "rust/require-rustdoc";
 
-/// A finding with a registry code at the first occurrence of a marker, in the host's units.
+/// A finding with a registry code at the first occurrence of a marker,
+/// in the host's units.
 fn finding(language: Language, source: &str, marker: &str, code: &str) -> Diagnostic {
     let offset: usize = source.find(marker).expect("the marker is in the fixture");
     return Diagnostic::new(
@@ -68,7 +70,8 @@ fn summary(found: &[Diagnostic]) -> Vec<String> {
     return lines;
 }
 
-/// Rust fixture findings: one suppressible finding at each marker.
+/// Rust fixture findings:
+/// one suppressible finding at each marker.
 fn sidecar_findings(source: &str, markers: &[&str]) -> Vec<Diagnostic> {
     let mut found: Vec<Diagnostic> = Vec::<Diagnostic>::new();
     for marker in markers {
@@ -555,7 +558,8 @@ fn rust_columns_are_bytes() {
     assert_eq!(span.column, 53);
 }
 
-/// Markdown directives: HTML comments suppress in the same ways,
+/// Markdown directives:
+/// HTML comments suppress in the same ways,
 ///  and the same text in code is inert.
 #[test]
 fn markdown_directives_and_inert_text() {

@@ -2,7 +2,8 @@
 //!  Apply inline disable directives to the findings of one host file.
 //! Why:
 //!  Rules know nothing about directives.
-//!  One filter runs after every rule, the semantic engine and the embedded-source processors
+//!  One filter runs after every rule,
+//! the semantic engine and the embedded-source processors
 //!  have produced host-position findings,
 //!  so a suppressed finding is gone before `--fix` ever sees its fix,
 //!  and the same semantics hold for every rule and language.
@@ -12,7 +13,8 @@
 //! function applyDirectives(context, findings): Diagnostic[];
 //! ```
 
-/// Import the finding model, the directive stages and the registry that declares suppressibility.
+/// Import the finding model,
+/// the directive stages and the registry that declares suppressibility.
 use crate::{
     diagnostic::{Diagnostic, Severity, Span},
     directive_findings::Reporter,
@@ -134,7 +136,8 @@ fn suppressing(
 /// What:
 ///  Whether a finding is a rule's finding that its rule lets directives suppress.
 /// Why:
-///  Processing failures, refused fixes and directive findings are not rules,
+///  Processing failures,
+/// refused fixes and directive findings are not rules,
 ///  and a rule that declares itself unsuppressible keeps its findings.
 ///
 /// In TS you'd write (pseudocode):

@@ -55,7 +55,8 @@ pub const NON_SUPPRESSIBLE: &str = "directive/non-suppressible";
 /// What:
 ///  The code of a comment that begins like a directive but cannot be read as one.
 /// Why:
-///  An unknown keyword, an empty list entry and a line directive spread over several lines all land here.
+///  An unknown keyword,
+/// an empty list entry and a line directive spread over several lines all land here.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -151,7 +152,8 @@ impl Reporter<'_> {
         );
     }
 
-    /// An identifier outside the registry, with a hint when a full identifier ends with the written text.
+    /// An identifier outside the registry,
+    /// with a hint when a full identifier ends with the written text.
     pub fn unknown_rule(&self, token: &RuleToken) -> Diagnostic {
         let mut help: String = String::from(
             "Use a full identifier as listed by \"monochromatic-lint --rules\", such as \"rust/tests-in-sidecars\", or remove the entry.",
