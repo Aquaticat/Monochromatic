@@ -7,9 +7,9 @@
   "publicPricingObservedAt": "2026-10-18T12:23:28.074Z",
   "sourceArchive": {
     "path": "doc/audit/depot-included-allowance-2026-10-18.sources.json.gz",
-    "bytes": 79843,
-    "sha256": "accf503086a4a8eb11413139dc038b50c7e700cbd6cc04d9e92757cc18b457eb",
-    "uncompressedBytes": 531253
+    "bytes": 79987,
+    "sha256": "2a1d025bb0c1d102c53832f4625ec5447a32858894264e0b3f0aebbf9ed83848",
+    "uncompressedBytes": 532347
   },
   "liveCapture": {
     "path": "doc/audit/depot-live-public-pricing-2026-10-18.evidence.json.gz",
@@ -26,15 +26,90 @@
     "computeTabCount": 3
   },
   "selectors": {
-    "feeCards": "currentPricing.plain: Developer $20/month and Startup $200/month",
-    "namedEntitlements": "liveCapture.featureRows[]: cells[0].text labels; cells[1].text Developer; cells[2].text Startup",
-    "planFaq": "liveCapture.faq[]: question == Which plan is right for me?; answer",
-    "native": "liveCapture.compute[]: name == Depot CI; text and html",
-    "github": "liveCapture.compute[]: name == GitHub Actions Runners; text and html",
-    "builder": "liveCapture.compute[]: name == Container Builds; text and html",
-    "storage": "liveCapture.faq[]: question == Am I charged for build usage and storage?; answer",
-    "tests": "liveCapture.faq[]: question == How are test results billed?; answer",
-    "caps": "liveCapture.faq[]: question == Can I cap my usage so my bill doesn't run over?; answer"
+    "feeCards": {
+      "artifactPath": "doc/audit/depot-included-allowance-2026-10-18.sources.json.gz",
+      "member": "currentPricing.plain",
+      "content": "Developer $20/month; Startup $200/month"
+    },
+    "namedEntitlements": {
+      "artifactPath": "doc/audit/depot-live-public-pricing-2026-10-18.evidence.json.gz",
+      "member": "featureRows",
+      "label": "cells[0].text",
+      "Developer": "cells[1].text",
+      "Startup": "cells[2].text",
+      "labels": [
+        "Docker build minutes included",
+        "GitHub Actions minutes included",
+        "Depot CI minutes included",
+        "Cache and registry storage included",
+        "Included passing test results"
+      ]
+    },
+    "planFaq": {
+      "artifactPath": "doc/audit/depot-live-public-pricing-2026-10-18.evidence.json.gz",
+      "member": "faq",
+      "match": {
+        "question": "Which plan is right for me?"
+      },
+      "value": "answer"
+    },
+    "native": {
+      "artifactPath": "doc/audit/depot-live-public-pricing-2026-10-18.evidence.json.gz",
+      "member": "compute",
+      "match": {
+        "name": "Depot CI"
+      },
+      "values": [
+        "text",
+        "html"
+      ]
+    },
+    "github": {
+      "artifactPath": "doc/audit/depot-live-public-pricing-2026-10-18.evidence.json.gz",
+      "member": "compute",
+      "match": {
+        "name": "GitHub Actions Runners"
+      },
+      "values": [
+        "text",
+        "html"
+      ]
+    },
+    "builder": {
+      "artifactPath": "doc/audit/depot-live-public-pricing-2026-10-18.evidence.json.gz",
+      "member": "compute",
+      "match": {
+        "name": "Container Builds"
+      },
+      "values": [
+        "text",
+        "html"
+      ]
+    },
+    "storage": {
+      "artifactPath": "doc/audit/depot-live-public-pricing-2026-10-18.evidence.json.gz",
+      "member": "faq",
+      "match": {
+        "question": "Am I charged for build usage and storage?"
+      },
+      "value": "answer"
+    },
+    "tests": {
+      "artifactPath": "doc/audit/depot-live-public-pricing-2026-10-18.evidence.json.gz",
+      "member": "faq",
+      "match": {
+        "question": "How are test results billed?"
+      },
+      "value": "answer"
+    },
+    "caps": {
+      "artifactPath": "doc/audit/depot-live-public-pricing-2026-10-18.evidence.json.gz",
+      "member": "faq",
+      "match": {
+        "question": "Can I cap my usage so my bill doesn't run over?"
+      },
+      "value": "answer"
+    }
   },
   "plans": {
     "Developer": {
