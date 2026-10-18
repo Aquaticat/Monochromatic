@@ -494,3 +494,81 @@ not real kernel cgroup placement or paid model execution.
 Completed compute proxy is USD 2.418.
 The active fuzz tails `w96195cl04` and linter fuzz `v17djp58z3` reserve USD 0.72,
 for a reservation-inclusive bound of USD 3.138.
+
+### Admitted remaining native and benchmark prerequisites
+
+The [truepeak owner](../../package/music-player/truepeak-core/mise.toml) is
+`cargo nextest run --release --all-features`.
+Its `service` graph enables Turso,
+Tokio and the `branches` standard-library workaround;
+`fingerprint` enables XXH3.
+`src/service_tests.rs` supplies fake decoded samples.
+`src/cache_tests.rs` uses `:memory:` databases and uniquely named disposable temporary files.
+Its crash tests own and kill their writer children after bounded progress,
+with four cycles for each batched synchronization setting and 12 row-write control cycles.
+The ignored `crash_writer_child` is invoked only by those parents.
+The ignored `bench_cold_write` is a distinct disk benchmark needing `CACHE_BENCH_DIR`;
+it is not selected by the ordinary all-features test owner.
+The admitted profile preserves default Nextest build and test concurrency.
+The previous no-default-features BuildKit producer does not exercise this feature graph.
+
+The [WG functional owner](../../package/cli/wg-quicker-exempt/mise.toml) selects 11 ignored tests.
+`src/pin_tests.rs` names their requirements explicitly:
+root and writable cgroup v2 for protocol/partial-attach and application-watcher cases,
+plus a distinct bpffs mount for persisted links,
+replacement,
+process-owner identity and transition recovery.
+`src/bpf.rs` uses `BPF_PROG_TYPE_CGROUP_SOCK_ADDR`,
+`BPF_PROG_LOAD` and `BPF_LINK_CREATE`,
+with IPv4/IPv6 connect and UDP sendmsg hooks.
+`src/pin.rs` requires bpffs magic `0xcafe4a11` at `/sys/fs/bpf`.
+The admitted harness first builds the normal debug CLI and test artifacts,
+then enters private mount,
+network,
+cgroup and PID namespaces under root in its owned ephemeral Depot sandbox.
+It mounts new cgroup2 and bpffs views,
+raises only loopback,
+records actual capabilities/mounts and runs the same ignored cases through Nextest.
+No user namespace or real account cgroup is used.
+Before/after cgroup inventories and exact owned cleanup remain required evidence.
+Namespace,
+mount or BPF admission failures will remain prerequisite failures.
+
+The [regex benchmark owner](../../package/rust-module/forbidden-regex.bench/mise.toml)
+keeps its release LTO and single-codegen-unit build.
+`src/main.rs` has eight ten-second throughput loops;
+`src/kernels.rs` has 33 four-second bucket loops,
+two four-second set loops and three four-second attribution loops.
+That totals at least 232 timed seconds per complete repetition,
+plus setup,
+parity and complete corpus passes.
+Whole-pass work can exceed a timer budget.
+The real ruleset builder raises both regex memory limits to `1 << 30`;
+the bounded container must report any OOM or time termination separately.
+The corpus walker reads non-ignored text lines up to 4,096 bytes,
+with no overall line-count cap.
+The admitted input is a baked exact frozen `git archive`,
+its frozen ignore policy and an empty `.git` root marker,
+with no local runtime caches or untracked files.
+Two unchanged repetitions keep every existing loop intact.
+Each receives a native 300-second container lifetime limit,
+2 CPUs,
+2 GiB,
+128 processes,
+no network and no host mounts.
+Only completed repetitions can establish observed spread.
+
+The [truepeak benchmark owner](../../package/music-player/truepeak-core.bench/mise.toml)
+reads tracks JSONL rather than decoded audio.
+The collector is a separate executable needing actual audio and `ffmpeg`.
+The search executable takes the complete track measurements,
+then applies its fixed exhaustive policy grids.
+The admitted repetitions use the exact release executable,
+unchanged default grids and 24 deterministic synthetic tracks,
+with output files confined to each fresh container.
+They establish fixture execution and repeated behavior,
+not production audio quality or real-library performance.
+The crate declares two executables and no `default-run`;
+its existing `cargo run --release --` selection is probed separately before explicit-binary execution.
+Its existing debug Nextest owner is also included.
+Both benchmark sidecars remain separate from the truepeak all-features library tests.
