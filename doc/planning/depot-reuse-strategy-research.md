@@ -21,6 +21,56 @@ no broad credential is created or copied into a new secret.
 
 ## Repository inventory
 
+### Installed tools, download stores and generated state have different owners
+
+Root `mise.toml:36` retains Bun `1.3.14` for actual Bun-specific consumers:
+`package/desktop-daemon/hall-monitor` builds a compiled bytecode executable,
+and `package/runtime-error/bun` exercises Bun error-output fixtures.
+These uses do not make Bun a pnpm package-download cache.
+The installed Bun binary and its compilation outputs need their own tool/source identities.
+The present prepared image's explicitly installed subset does not include Bun.
+
+Root `mise.toml:1090` owns the Playwright Podman image,
+whose frozen `playwright.Dockerfile` pins the browser/system-library base by version and digest.
+The Node Playwright package remains in the pnpm catalog.
+Therefore restoring `node_modules` alone does not prepare the browser executables or OS libraries.
+The Dockerfile additionally downloads Bun through a floating installer;
+an immutable resulting image digest would freeze its actual installed bytes,
+while merely retaining the Dockerfile's browser base digest would not identify that Bun installation.
+This campaign does not execute that installer.
+Actual browser/runtime probes belong to the parent campaign.
+
+`package/dev-script/task-util/src/tsc-filter.ts:54` owns TypeScript incremental-state cleanup.
+It removes `dist/**/*.tsbuildinfo` and `.cache/typescript/**/*.tsbuildinfo` before checks,
+with the stated reason that stale dependency state can produce false negatives.
+Restoring that state would conflict with the existing correctness owner;
+the present proposal does not override it or claim a TypeScript incremental-cache speedup.
+Built JavaScript,
+declarations and native binaries are separately consumed artifacts whose source/compiler/configuration identities matter.
+
+The terminal's existing `package/desktop-app/terminal/mise.toml:43` dispatcher chooses host Cargo
+only when Cargo,
+Zig and the required native libraries are available.
+Its container fallback retains Cargo registry and Ghostty Git state in the `terminal-cargo` volume,
+while the host fixes `ZIG_GLOBAL_CACHE_DIR` under `target/zig-global-cache` to match its physical source paths.
+Generated Ghostty libraries are staged beside the executable by a separate runtime-library owner.
+These are active Zig/C/native build stores,
+not evidence of a standalone Go workload.
+
+Android preparation is split between the Mise JDK/tool installers and root `prepare:android`.
+The latter requests platform `android-37.0`,
+build tools `37.0.0`,
+NDK `29.0.13846066`,
+platform tools and the two Android Rust targets.
+The Android native owner also derives NDK paths and heals its own generated native state.
+Gradle dependency/plugin downloads,
+task-output caching,
+SDK/NDK installation,
+Rust cross-target artifacts,
+APK artifacts and a newly started runtime/device remain different preparation boundaries.
+The separate Android cloud build and its JVM/APK evidence belong to the routing agent;
+this note does not claim SDK installation from the Node/Java/Rust image alone.
+
 ### Current execution checkpoint
 
 Harness `363bd501a0366dc4f74e35ad1b77f1a8ffad95b4` adds repeated cache-off Gradle consumers,
@@ -64,28 +114,33 @@ Controls allocation `r328mp420m` runs the owner and separate documented/undocume
 retaining native CLI help/version and exact JAR hashes.
 This does not substitute for the root `lint:detekt` task's repository-wide fanout.
 
-Thirteen completed allocations account for 2,027 request-to-terminal seconds,
-or USD 0.8108 at the declared eight-vCPU timestamp-price proxy.
+Fifteen completed allocations account for 2,587 request-to-terminal seconds,
+or USD 1.0348 at the declared eight-vCPU timestamp-price proxy.
 The approved job ceiling is now 18,
 with the same two-simultaneous,
 eight-vCPU,
 32-GB,
 15-minute and USD 5 limits.
-Five remaining slots,
-including the active native warm pair `tpqlt2h227` and `kfmq92jdm1`,
-reserve USD 1.80 at their full ceilings,
-giving a USD 2.6108 forecast.
+Three remaining slots,
+including active scanner producer `v7njncr47d` and diagnostic archive `7sm49f324d`,
+reserve USD 1.08 at their full ceilings,
+giving a USD 2.1148 forecast.
 This excludes storage,
 network,
 other agents and any account bill.
 
 The native warm pair uses pushed harness `ce27ef7d9d76615243e969e987ba2efd76195f49`.
-Both run the actual full native CLI/test cohort with failures propagated,
-then independently run the corrected Detekt host fixtures.
+Both ran the actual full native CLI/test cohort with failures propagated,
+then independently passed the corrected Detekt host fixture controls.
 The initial documented constant-returning fixture was rejected by Detekt's existing
 `FunctionOnlyReturningConstant` rule;
 the corrected fixtures depend on their argument.
 The real package Detekt owner and CLI help/version had already passed in `r328mp420m`.
+Each warm allocation accepted the documented argument-dependent Kotlin function
+and rejected the undocumented counterpart with `Missing KDoc on function 'undocumented'. [RequireKDoc]`.
+The loaded `kotlin-linter-0.1.0.jar` remained 6,445 bytes,
+SHA-256 `fb64ccda45fe0d9446fb084029246c59063ec9bf1c0c37b47a3fead5d1849707`,
+before and after each host invocation.
 
 Corrected-prerequisite seed `n2zlbh5gpb` executed 1,951 cases:
 1,949 passed and two failed,
@@ -100,11 +155,45 @@ No matched filesystem/provider control has established the cause.
 These are observed failures at a filesystem boundary,
 not established source defects or cache-caused regressions.
 
+The unchanged Rust warm pair each restored 131 Rust compiler entries with zero compiler misses,
+compilations or writes at the CLI-build checkpoint.
+The corresponding seed populated 131 misses/writes with no hits.
+Building and linking the real dev-profile CLI took 52.646 seconds in the seed,
+then 41.495 and 39.534 seconds in the warm allocations.
+The warm spread was 1.961 seconds.
+There is no repeated cache-off Rust baseline,
+so this comparison does not establish a cache-off benefit or full-job multiplier.
+Final linking and compiler requests that sccache cannot cache still execute.
+
+The warm allocations each ran 1,951 Nextest cases,
+with five skipped cases and 1,956 enumerated in total.
+Warm `tpqlt2h227` passed 1,948 and failed three;
+warm `kfmq92jdm1` passed 1,949 and failed two.
+Both observed `real_index_lock::tests::a_replaced_lock_is_never_released`
+and `real_index_lock::tests::releasing_after_a_landing_leaves_a_replaced_lock` fail.
+Only `tpqlt2h227` additionally failed
+`index_lock_evidence::tests::the_change_time_rounds_nanoseconds_down_to_milliseconds`,
+whose terminal assertion was `a change time with a millisecond part was observed`.
+The raw per-case logs and denominators are retained for a matched provider/filesystem control.
+This variability is not evidence that compiler-cache restoration caused the failures.
+
 Remaining allocation work is separately admitted:
 an existing forbidden-strings CLI producer and fresh target reader,
 with the CLI's own complete Nextest suite required to pass before its target archive is published.
 A distinct exact-source Nextest/Git diagnostic archive may retain failing native tests for matched provider controls.
 That diagnostic artifact is not a success-only target-cache publication or a passing gate.
+Both active profiles use pushed harness `360abf1382631750c3f26928c2342d0acd13eb6b`.
+The scanner uses a distinct target disk and compiler-cache prefix;
+its release CLI,
+entire owned Nextest task and source/dependency/compiler controls must pass before target publication.
+The diagnostic profile audits actual Nextest archive/run help,
+then packages exact-source test executables,
+Git 2.56 and the host tools with hashes for the parent to exercise independently.
+Nextest's documented `--workspace-remap` relocates runtime workspace paths,
+but does not rewrite embedded Rust `env!` strings.
+Frozen native Git-config tests contain such a string;
+therefore the filtered replacement-lock/metadata cohort is the transport control,
+and general relocation of the complete suite remains unproved.
 
 ### Repeated Gradle task-output comparison
 

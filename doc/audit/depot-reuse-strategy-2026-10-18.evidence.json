@@ -696,10 +696,9 @@
     "The earlier Rust seed ran provider Git2.55 instead of its owner-required2.56; it failed four executed tests and left1717 unrun.",
     "The first five run collectors called Depot AI-labelled diagnosis; public client source does not establish cached versus newly generated analysis or any charge. Further collection excludes that endpoint.",
     "Two samples per Gradle condition establish the recorded spread and command-boundary difference, not a provider or whole-job multiplier.",
-    "The corrected absolute-Git and published-linter prerequisites leave frozen lock-replacement test failures; native target publication is success-only and has not occurred.",
-    "The Detekt package owner ran successfully, but the initial documented fixture itself violated FunctionOnlyReturningConstant; the corrected custom-rule fixture pair is not yet verified."
+    "The corrected absolute-Git and published-linter prerequisites leave frozen lock-replacement test failures; native target publication is success-only and has not occurred."
   ],
-  "updatedAt": "2026-10-18T08:10:09.518Z",
+  "updatedAt": "2026-10-18T08:24:35.935Z",
   "runs": [
     {
       "prefix": "gradle-controls",
@@ -9169,6 +9168,2782 @@
       ]
     },
     {
+      "prefix": "rust-warm-a",
+      "dispatch": {
+        "state": "created",
+        "requestedAt": "2026-10-18T08:09:05.553Z",
+        "sourceSha": "ce27ef7d9d76615243e969e987ba2efd76195f49",
+        "baseSourceSha": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+        "workflow": ".depot/workflows/reuse-rust-warm.yml",
+        "workflowSha256": "1888c3cfeaeb22e6ce0664e7455e71b8feb11d27c8aaaad32222b6a3d8dfad2f",
+        "branch": "research/depot-reuse-20261018",
+        "resources": {
+          "jobs": 1,
+          "cpusPerJob": 8,
+          "memoryGbPerJob": 32,
+          "jobTimeoutMinutes": 15,
+          "maxComputeUsdProxy": 0.36
+        },
+        "accountingGuard": {
+          "basis": "Requested8CPU from each request creation to terminal timestamp, plus900seconds for each pending/future job; this is not an invoice or measured CPU allocation duration.",
+          "completed": [
+            {
+              "runId": "r328mp420m",
+              "status": "failed",
+              "requestToFinishSeconds": 215,
+              "requestedCpuWindowPriceProxyUsd": 0.08600000000000001
+            },
+            {
+              "runId": "x1psl3qf94",
+              "status": "finished",
+              "requestToFinishSeconds": 172,
+              "requestedCpuWindowPriceProxyUsd": 0.0688
+            },
+            {
+              "runId": "d3ks91rnnb",
+              "status": "finished",
+              "requestToFinishSeconds": 153,
+              "requestedCpuWindowPriceProxyUsd": 0.061200000000000004
+            },
+            {
+              "runId": "pq5pzj9mcg",
+              "status": "finished",
+              "requestToFinishSeconds": 146,
+              "requestedCpuWindowPriceProxyUsd": 0.0584
+            },
+            {
+              "runId": "6wt5gm6t75",
+              "status": "failed",
+              "requestToFinishSeconds": 13,
+              "requestedCpuWindowPriceProxyUsd": 0.005200000000000001
+            },
+            {
+              "runId": "wh76h0pjpx",
+              "status": "failed",
+              "requestToFinishSeconds": 54,
+              "requestedCpuWindowPriceProxyUsd": 0.0216
+            },
+            {
+              "runId": "s9w4jkv0hc",
+              "status": "finished",
+              "requestToFinishSeconds": 177,
+              "requestedCpuWindowPriceProxyUsd": 0.0708
+            },
+            {
+              "runId": "rrlzfmp2qv",
+              "status": "finished",
+              "requestToFinishSeconds": 162,
+              "requestedCpuWindowPriceProxyUsd": 0.0648
+            },
+            {
+              "runId": "xkmm08vpjs",
+              "status": "finished",
+              "requestToFinishSeconds": 94,
+              "requestedCpuWindowPriceProxyUsd": 0.0376
+            },
+            {
+              "runId": "n2zlbh5gpb",
+              "status": "failed",
+              "requestToFinishSeconds": 253,
+              "requestedCpuWindowPriceProxyUsd": 0.1012
+            },
+            {
+              "runId": "w16c45njf5",
+              "status": "failed",
+              "requestToFinishSeconds": 243,
+              "requestedCpuWindowPriceProxyUsd": 0.09720000000000001
+            },
+            {
+              "runId": "ldj6qhgjd5",
+              "status": "failed",
+              "requestToFinishSeconds": 208,
+              "requestedCpuWindowPriceProxyUsd": 0.08320000000000001
+            },
+            {
+              "runId": "3jg1fmkc69",
+              "status": "finished",
+              "requestToFinishSeconds": 137,
+              "requestedCpuWindowPriceProxyUsd": 0.0548
+            }
+          ],
+          "pendingBeforeDispatch": 0,
+          "completedProxyUsd": 0.8108000000000001,
+          "pendingWorstCaseUsd": 0,
+          "remainingJobSlotsIncludingThis": 3,
+          "remainingWorstCaseUsd": 1.08,
+          "forecastUsd": 1.8908,
+          "limitUsd": 5,
+          "maximumTotalJobs": 16
+        },
+        "runId": "tpqlt2h227",
+        "createdAt": "2026-10-18T08:09:06.532Z"
+      },
+      "run": {
+        "org_id": "l4zncjjbj5",
+        "run_id": "tpqlt2h227",
+        "repo": "Aquaticats/Monochromatic",
+        "ref": "ce27ef7d9d76615243e969e987ba2efd76195f49",
+        "sha": "ce27ef7d9d76615243e969e987ba2efd76195f49",
+        "head_sha": "ce27ef7d9d76615243e969e987ba2efd76195f49",
+        "trigger": "api",
+        "status": "failed",
+        "created_at": "2026-10-18T08:09:06Z",
+        "started_at": "2026-10-18T08:09:06Z",
+        "finished_at": "2026-10-18T08:13:50Z"
+      },
+      "requestToTerminalSeconds": 284,
+      "requestedCpuWindowPriceProxyUsd": 0.1136,
+      "artifacts": [
+        {
+          "metadata": {
+            "artifact_id": "01a14e12-fb25-7865-b932-7a0e16eec378",
+            "run_id": "tpqlt2h227",
+            "workflow_id": "bl0vzvjbjg",
+            "workflow_path": "",
+            "job_id": "cq7x1xclqv",
+            "job_key": "_inline_0.yaml:rust",
+            "attempt_id": "9v3xb3sp3w",
+            "attempt": 1,
+            "name": "reuse-rust-warm-and-detekt",
+            "size_bytes": 134136,
+            "created_at": "2026-10-18T08:13:49Z"
+          },
+          "integrity": {
+            "bytes": 134136,
+            "sha256": "9c0ce02d60e9d1857c541a7029f69ad776499612e3241338e34199770453bc71",
+            "uploadLogDigestMatched": true,
+            "unzipCrcVerified": true,
+            "members": [
+              {
+                "name": "commands.json",
+                "bytes": 32870,
+                "sha256": "91bad1b0edc486901677d55e8b48603fecb432ff43fc2433756739bf72a8aa2c"
+              },
+              {
+                "name": "dependency-layout.json",
+                "bytes": 4371,
+                "sha256": "d6408acb432e4dd7e4a59587fc783783db0e52e3634dc33785975a31bbb88060"
+              },
+              {
+                "name": "detekt-after-fixture-consumers-jars.json",
+                "bytes": 151,
+                "sha256": "28a31d9486f4ce451c875303f0dcfe25f8f01e78d4d56a392222fc9d29f8ded1"
+              },
+              {
+                "name": "detekt-after-owning-task-jars.json",
+                "bytes": 151,
+                "sha256": "28a31d9486f4ce451c875303f0dcfe25f8f01e78d4d56a392222fc9d29f8ded1"
+              },
+              {
+                "name": "detekt-before-host-jars.json",
+                "bytes": 151,
+                "sha256": "28a31d9486f4ce451c875303f0dcfe25f8f01e78d4d56a392222fc9d29f8ded1"
+              },
+              {
+                "name": "detekt-cli-help.log",
+                "bytes": 6642,
+                "sha256": "ec8a747a0b5e7d045556997cf664f6942ed045afbb4ee61e65343c9c27b7f5b0"
+              },
+              {
+                "name": "detekt-cli-version.log",
+                "bytes": 1841,
+                "sha256": "b06e4ef2fbb722f726087166038661c04e11773fb44a4d7b8117bc8fe8669948"
+              },
+              {
+                "name": "detekt-documented-consumer.log",
+                "bytes": 1826,
+                "sha256": "2b9e081cffed853ef0270e3dd66440eb384be696eaed5a394afb41ce5ef4fb19"
+              },
+              {
+                "name": "detekt-existing-package-owner.log",
+                "bytes": 1597,
+                "sha256": "dc9d65e4438a71ef0fc55edacb134969b730dfd8b7a201f72af9c4af2c84a4bc"
+              },
+              {
+                "name": "detekt-owning-task-help.log",
+                "bytes": 2202,
+                "sha256": "65e7deeba012a6e28e0dd8e82e21ec6b87b27ca42e7045705c2250073d0aa827"
+              },
+              {
+                "name": "detekt-undocumented-positive-control.log",
+                "bytes": 2456,
+                "sha256": "d779a667cbd269e97231e3c2aa1d6c4aea9d659643e350e271ee7833a4787ac2"
+              },
+              {
+                "name": "disposable-sandbox-required-git-install.log",
+                "bytes": 0,
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              {
+                "name": "failed-rustc-requests.json",
+                "bytes": 1021,
+                "sha256": "e61e588681940113a74afdfcb653015a34478a572194b00e73237a7281ffeb30"
+              },
+              {
+                "name": "frozen-kotlin-source-admission.log",
+                "bytes": 0,
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              {
+                "name": "frozen-rust-source-admission.log",
+                "bytes": 0,
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              {
+                "name": "gradle-cache-requests.jsonl",
+                "bytes": 4555,
+                "sha256": "eb34d7aca2deefbd6a9dc56d16f360fcfacbd4f0dca34d77194e75a0d6b0dae8"
+              },
+              {
+                "name": "host-git-version.log",
+                "bytes": 19,
+                "sha256": "c9e40977101870d17ec3a0ac1e444ceb5e268d1c0a37d6edd8a5ed477734a53c"
+              },
+              {
+                "name": "image-exclusion.json",
+                "bytes": 136,
+                "sha256": "a7d6b89e26ae373bcdd0a72018c6f5b65bc8119b8e74606e3a4b2bf1c26ac2b4"
+              },
+              {
+                "name": "installed-dependency-archive-extraction.log",
+                "bytes": 0,
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              {
+                "name": "lock-bound-published-linter-help.log",
+                "bytes": 2122,
+                "sha256": "8e6306859eba1e0b30a0e30019aa17af169156a87321214f94c2af94071f035c"
+              },
+              {
+                "name": "lock-bound-published-linter-install.log",
+                "bytes": 1549,
+                "sha256": "9e8c0b9f26f90c6e30e151f271042e5305eb128a3df3441cad7891670b03a670"
+              },
+              {
+                "name": "lock-bound-published-linter-path.log",
+                "bytes": 102,
+                "sha256": "4d8a5bff39749b27da0beb3a58049ac19ad11521852910aab05b387240c6bd79"
+              },
+              {
+                "name": "lock-bound-published-linter-version.log",
+                "bytes": 25,
+                "sha256": "faa87e647387ea41eec614ca2fe0afdea41ebb12f0e179cda05a7f9eaaf5c101"
+              },
+              {
+                "name": "locked-gradle-version.log",
+                "bytes": 1142,
+                "sha256": "d4f22a7c1299d6e4f5ba7a68d753e9f2c3a8f78b7555858eebe285915c55e6e3"
+              },
+              {
+                "name": "locked-rust-toolchain.log",
+                "bytes": 771,
+                "sha256": "856ea4f1a9afea1f7e8c588f9803559218a5e637a9f927deaf86db8a7f8941ee"
+              },
+              {
+                "name": "native-final-stats.json",
+                "bytes": 1338,
+                "sha256": "c682c97430551f7341c1f637d3ca3cf9b394e0d143cb440a192b394ea7dc2ab1"
+              },
+              {
+                "name": "native-final-stats.log",
+                "bytes": 962,
+                "sha256": "208b49b16851bd15e82e710cfcea0f595d7c8565bf5d43e2bb95a54ab115da2a"
+              },
+              {
+                "name": "native-warm-after-cli-build.json",
+                "bytes": 1338,
+                "sha256": "2ee144d62df315a35ca6e21c95d1e0b5e101fa735a0f467c1503b66420f79c0d"
+              },
+              {
+                "name": "native-warm-after-nextest.json",
+                "bytes": 1338,
+                "sha256": "31eb3628ff0bad27f1b07fc833724c19f4f4394316ecc63dee2f20297408bc23"
+              },
+              {
+                "name": "native-warm-after-cli-build.log",
+                "bytes": 962,
+                "sha256": "92c4f618cd42a3e37aba86120261e8cf113e06022024446057a7451a6dbd3f56"
+              },
+              {
+                "name": "native-warm-after-nextest.log",
+                "bytes": 962,
+                "sha256": "048e6b7079e39f6c71a49ae73bf2bba32c6bb68ac0657106ea44f901dd0d0851"
+              },
+              {
+                "name": "native-warm-build-cli.log",
+                "bytes": 4729,
+                "sha256": "65a5854bfe620480129713cea0a43454e9f4e0cafce3e9159c76b0dcff016686"
+              },
+              {
+                "name": "native-warm-nextest.log",
+                "bytes": 268244,
+                "sha256": "e64639d0c2ec333d9d86a7d79e79746bbc0ccab93e5ee5a83090274e83c4da1f"
+              },
+              {
+                "name": "nextest-command-help.log",
+                "bytes": 17410,
+                "sha256": "954997a24260580d65e0b9889dd820f4c0fe35061c9b999a193e398177567b09"
+              },
+              {
+                "name": "nextest-owned-version.log",
+                "bytes": 728,
+                "sha256": "0856919ff95673764d7209c8ac822262f5b710880ef4e34295874b21c2235b7a"
+              },
+              {
+                "name": "offline-empty-tool-positive-control.log",
+                "bytes": 520,
+                "sha256": "587fa4635594bdf70c46c9724fa440ec6a9fbc0284f38188d970b3b59f8daff4"
+              },
+              {
+                "name": "offline-installed-tool-availability.log",
+                "bytes": 1662,
+                "sha256": "7cb880409cc7257022c7b6d7a576434b1752604beb24595de79b8bd38bef3b3e"
+              },
+              {
+                "name": "online-empty-tool-recovery.log",
+                "bytes": 357,
+                "sha256": "265f530d7a2f067353ddb38714fddb0c7033957903d6e3606e6bc10969f217d2"
+              },
+              {
+                "name": "partial-installed-archive-control.log",
+                "bytes": 166782,
+                "sha256": "ea8a79f11d78baa3882f8750c38966ff26af1c37d3223d783066efc5e7c59ad8"
+              },
+              {
+                "name": "policy-invalidation.json",
+                "bytes": 163,
+                "sha256": "7e471bd63db83185b327f91b4928a37be860a00e7a06bf1c39865ddbd94fca25"
+              },
+              {
+                "name": "preinstalled-archil-hash.json",
+                "bytes": 112,
+                "sha256": "5ae807d44172b0eb4441b49fbda1145fe71d02c86d55711cc7d7448a2050a2ec"
+              },
+              {
+                "name": "preinstalled-archil-version.log",
+                "bytes": 213,
+                "sha256": "2574eb83fa95033178b9d23ee93cf5635248c70fba06629e06ea2eddbca20b12"
+              },
+              {
+                "name": "published-linter-prerequisite.json",
+                "bytes": 505,
+                "sha256": "97fc566c37d72dd44fad9d8e684c90fefba16ffc3d2081062d0b59dd76c50458"
+              },
+              {
+                "name": "required-git-version.log",
+                "bytes": 576,
+                "sha256": "367837f8fd3fccff806e2a7c52aaadf3297a3f17156de5183e9bc54d7fd9209d"
+              },
+              {
+                "name": "restored-tool-hashes.json",
+                "bytes": 1620,
+                "sha256": "0c519b4a7980e2525d44416cc2d584d2de3a8b1a2a26b84bfc167ab293981caf"
+              },
+              {
+                "name": "reuse-gradle-consumer-session.json",
+                "bytes": 178,
+                "sha256": "57b1da3407227089bd6dfd6fa4e396352c56874c31cace6f369cbfdede598b21"
+              },
+              {
+                "name": "reuse-registry-probe-session.json",
+                "bytes": 176,
+                "sha256": "3528d3115958cdc92e6f6327b7618b38151ba6faad9284068b2372cb40109003"
+              },
+              {
+                "name": "reuse-rust-consumer-session.json",
+                "bytes": 183,
+                "sha256": "3f6241a16e752cc6d4d47e3bf6b1c341022b40092bb2a438605d6cf8c634cd64"
+              },
+              {
+                "name": "reuse-tools-consumer-session.json",
+                "bytes": 178,
+                "sha256": "75de943d6d5fd486169125658cb2f8ea1a3cb27fb46d1c1148f36164d6ba89ff"
+              },
+              {
+                "name": "rustc-requests.jsonl",
+                "bytes": 430740,
+                "sha256": "4b5673c98bac20c56e20d070d2d228823131bfedfffa9137e518e87375214004"
+              },
+              {
+                "name": "sccache-help.log",
+                "bytes": 1318,
+                "sha256": "6166898853539c653e0f77fe30d0a9eccc89b6147e4371a95be9509c6f678e5d"
+              },
+              {
+                "name": "sccache-installation.json",
+                "bytes": 335,
+                "sha256": "c1e686bf76dfb425e9a9ba490decad8a7c7a2b0f572f95893aff1fb3dc463c63"
+              },
+              {
+                "name": "sccache-start.log",
+                "bytes": 78,
+                "sha256": "5451a5986fff8e78426e0a90acae300f117a10a189e48e6a3b84bef0c8d67bb9"
+              },
+              {
+                "name": "sccache-stop.log",
+                "bytes": 1368,
+                "sha256": "a974512b4ca0c85d67f76742340295a3bdeb093a7c0daced6c52823f73dc3482"
+              },
+              {
+                "name": "sccache-version.log",
+                "bytes": 15,
+                "sha256": "80804e07b8d1daa7eb6cc9e298e213e6ae85f428832f612b0e0bc429928ae2e5"
+              },
+              {
+                "name": "semantic-external-consumer.log",
+                "bytes": 268,
+                "sha256": "18b5f66014f6a8e9b211b5686ab7fa25f62ed3d94c3675818ac5edeabf2a69f9"
+              },
+              {
+                "name": "semantic-host-consumer.log",
+                "bytes": 1284,
+                "sha256": "6c3decb294cd312f3ab3ce6e79551f217e62e9416ee0a9abb162b822d2c4f599"
+              },
+              {
+                "name": "semantic-plugin-build.log",
+                "bytes": 328,
+                "sha256": "e5d1b98129996be999f03c4cc9c420f18fba555a26b3970fac89c5c0e9a3cede"
+              },
+              {
+                "name": "snapshot-dependency-admission.log",
+                "bytes": 0,
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              {
+                "name": "snapshot-registry-manifest.json",
+                "bytes": 3393,
+                "sha256": "6c91d1f0907683acae603d612736cd5411bc7fa7c7ec20e1d5459109d9fac25b"
+              },
+              {
+                "name": "snapshot-registry-manifest.jsonl",
+                "bytes": 5538,
+                "sha256": "d661cb9161a1c8f844ca76e2fcf7d7b529a869f4ee48ec84dbe9791ceef2d815"
+              },
+              {
+                "name": "target-cache-mount.json",
+                "bytes": 296,
+                "sha256": "8803323329e37d3c051374cf9e0013353337d8a1520797bd388abaeacc9285f0"
+              },
+              {
+                "name": "unshare-help.log",
+                "bytes": 2237,
+                "sha256": "901a061fdbbc40224bad1680a13a25ac4e7cdf9ced9135b0e3711a8bed20fe50"
+              }
+            ]
+          }
+        }
+      ],
+      "selected": [
+        {
+          "member": "commands.json",
+          "data": {
+            "baseSourceSha": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+            "imagePreparationSha": "e65f3ccf26781999717cfd9c17e1bd361f42183a",
+            "harnessSha": "ce27ef7d9d76615243e969e987ba2efd76195f49",
+            "imageManifestSha256": "b4e7c5752f2df847c14f70cf1211097f18516ee4232e3f834531653dc21bfabe",
+            "records": [
+              {
+                "name": "snapshot-dependency-admission",
+                "command": [
+                  "git",
+                  "diff",
+                  "--exit-code",
+                  "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+                  "--",
+                  "package.json",
+                  "pnpm-lock.yaml",
+                  "pnpm-workspace.yaml",
+                  ".pnpmfile.mjs",
+                  ".pnpmfile.policies.json",
+                  ":(glob)package/*/*/package.json"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:09:57.066Z",
+                "finishedAt": "2026-10-18T08:09:57.071Z",
+                "elapsedSeconds": 0.005202940000000001,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "unshare-help",
+                "command": [
+                  "unshare",
+                  "--help"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:10:06.734Z",
+                "finishedAt": "2026-10-18T08:10:06.737Z",
+                "elapsedSeconds": 0.0035302099999989876,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "offline-installed-tool-availability",
+                "command": [
+                  "sudo",
+                  "unshare",
+                  "--net",
+                  "--setuid",
+                  "1001",
+                  "--setgid",
+                  "117",
+                  "--",
+                  "/usr/bin/env",
+                  "MISE_DATA_DIR=/opt/depot-reuse-20261018-r1/mise-data",
+                  "MISE_CACHE_DIR=/opt/depot-reuse-20261018-r1/mise-cache",
+                  "RUSTUP_HOME=/opt/depot-reuse-20261018-r1/rustup",
+                  "CARGO_HOME=/opt/depot-reuse-20261018-r1/cargo",
+                  "MISE_AUTO_INSTALL=false",
+                  "MISE_LOCKED=1",
+                  "MISE_TRUSTED_CONFIG_PATHS=/home/runner/work/Monochromatic/Monochromatic",
+                  "PATH=/home/runner/work/Monochromatic/Monochromatic/.cache/cli-git-bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/auto-mode/bin:/home/runner/work/Monochromatic/Monochromatic/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/agent-harness-shared/search-fetch/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/agent-harness-shared/truncate/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/bash-output-filter/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/claude-spawn/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/correction-reminder/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/guardrail/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/prompt-time/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/session-start-housekeeping/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/stop-reminder/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/terminal-title/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/cli/unused-export/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/config/pnpr/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/desktop-app/electron-counter/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/desktop-app/electron-infra/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/desktop-app/file-manager-electron/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/dev-script/deps-update/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/dev-script/file-enforcer/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/kwin/key-helper/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/mcp/mvm/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/module/conf-fork.fuzz/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/module/conf-fork/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/module/css-edit.bench/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/module/pnpm-workspace-catalog/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/module/token-count/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/advisor/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/agent-settled-notification/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/ask-user-question/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/auto-mode/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/bash-poke/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/current-time-context/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/goal/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/guardrail/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/model-retirement/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/morph-compact/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/openai-fast/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/search-fetch/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/spawn/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/statusline/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/terminal-title/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/thinking-default/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-shared/model-review/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-shared/model-selection/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/ssg/aquati.cat/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/stub/throwing/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/typeface/aquaticat/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/webapp-productivity/done-postcss/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/webapp-productivity/wc/node_modules/.bin:/home/runner/.local/share/mise/bin:/snap/bin:/home/runner/.local/bin:/opt/pipx_bin:/home/runner/.cargo/bin:/home/runner/.config/composer/vendor/bin:/usr/local/.ghcup/bin:/home/runner/.dotnet/tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games",
+                  "HOME=/home/runner",
+                  "USER=runner",
+                  "LOGNAME=runner",
+                  "/home/runner/.local/share/mise/bin/mise",
+                  "install",
+                  "node",
+                  "pnpm",
+                  "java",
+                  "rust",
+                  "cargo-binstall",
+                  "cargo:cargo-nextest"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:10:06.740Z",
+                "finishedAt": "2026-10-18T08:10:07.642Z",
+                "elapsedSeconds": 0.902024730000001,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "offline-empty-tool-positive-control",
+                "command": [
+                  "sudo",
+                  "unshare",
+                  "--net",
+                  "--setuid",
+                  "1001",
+                  "--setgid",
+                  "117",
+                  "--",
+                  "/usr/bin/env",
+                  "MISE_DATA_DIR=/opt/depot-reuse-20261018-r1/mise-data",
+                  "MISE_CACHE_DIR=/opt/depot-reuse-20261018-r1/mise-cache",
+                  "RUSTUP_HOME=/opt/depot-reuse-20261018-r1/rustup",
+                  "CARGO_HOME=/opt/depot-reuse-20261018-r1/cargo",
+                  "MISE_AUTO_INSTALL=false",
+                  "MISE_LOCKED=1",
+                  "MISE_TRUSTED_CONFIG_PATHS=/home/runner/work/Monochromatic/Monochromatic",
+                  "PATH=/home/runner/work/Monochromatic/Monochromatic/.cache/cli-git-bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/auto-mode/bin:/home/runner/work/Monochromatic/Monochromatic/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/agent-harness-shared/search-fetch/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/agent-harness-shared/truncate/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/bash-output-filter/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/claude-spawn/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/correction-reminder/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/guardrail/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/prompt-time/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/session-start-housekeeping/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/stop-reminder/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/terminal-title/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/cli/unused-export/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/config/pnpr/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/desktop-app/electron-counter/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/desktop-app/electron-infra/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/desktop-app/file-manager-electron/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/dev-script/deps-update/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/dev-script/file-enforcer/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/kwin/key-helper/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/mcp/mvm/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/module/conf-fork.fuzz/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/module/conf-fork/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/module/css-edit.bench/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/module/pnpm-workspace-catalog/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/module/token-count/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/advisor/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/agent-settled-notification/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/ask-user-question/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/auto-mode/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/bash-poke/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/current-time-context/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/goal/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/guardrail/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/model-retirement/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/morph-compact/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/openai-fast/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/search-fetch/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/spawn/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/statusline/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/terminal-title/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/thinking-default/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-shared/model-review/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-shared/model-selection/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/ssg/aquati.cat/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/stub/throwing/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/typeface/aquaticat/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/webapp-productivity/done-postcss/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/webapp-productivity/wc/node_modules/.bin:/home/runner/.local/share/mise/bin:/snap/bin:/home/runner/.local/bin:/opt/pipx_bin:/home/runner/.cargo/bin:/home/runner/.config/composer/vendor/bin:/usr/local/.ghcup/bin:/home/runner/.dotnet/tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games",
+                  "HOME=/home/runner",
+                  "USER=runner",
+                  "LOGNAME=runner",
+                  "MISE_DATA_DIR=/home/runner/work/Monochromatic/Monochromatic/.research-reuse/empty-tools",
+                  "MISE_CACHE_DIR=/home/runner/work/Monochromatic/Monochromatic/.research-reuse/empty-tools-cache",
+                  "/home/runner/.local/share/mise/bin/mise",
+                  "install",
+                  "node"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:10:07.644Z",
+                "finishedAt": "2026-10-18T08:10:07.998Z",
+                "elapsedSeconds": 0.3537280900000005,
+                "exitStatus": 1,
+                "signal": null,
+                "expected": "failure"
+              },
+              {
+                "name": "online-empty-tool-recovery",
+                "command": [
+                  "mise",
+                  "install",
+                  "node"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:10:08.000Z",
+                "finishedAt": "2026-10-18T08:10:09.632Z",
+                "elapsedSeconds": 1.6318324589999993,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "partial-installed-archive-control",
+                "command": [
+                  "tar",
+                  "--list",
+                  "--zstd",
+                  "--file",
+                  "/home/runner/work/Monochromatic/Monochromatic/.research-reuse/partial-installed-dependencies.tar.zst"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:10:20.644Z",
+                "finishedAt": "2026-10-18T08:10:20.655Z",
+                "elapsedSeconds": 0.010347900000000663,
+                "exitStatus": 2,
+                "signal": null,
+                "expected": "failure"
+              },
+              {
+                "name": "installed-dependency-archive-extraction",
+                "command": [
+                  "tar",
+                  "--extract",
+                  "--zstd",
+                  "--file",
+                  "/opt/depot-reuse-20261018-r1/installed-dependencies.tar.zst",
+                  "--directory",
+                  "/home/runner/work/Monochromatic/Monochromatic"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:10:20.658Z",
+                "finishedAt": "2026-10-18T08:10:22.161Z",
+                "elapsedSeconds": 1.5027783400000008,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "semantic-plugin-build",
+                "command": [
+                  "mise",
+                  "run",
+                  "//package/oxlint-plugin/prefer-readonly-parameter-type:build:js:node"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:10:22.164Z",
+                "finishedAt": "2026-10-18T08:10:22.469Z",
+                "elapsedSeconds": 0.30520999999999915,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "semantic-host-consumer",
+                "command": [
+                  "mise",
+                  "run",
+                  "//package/oxlint-plugin/prefer-readonly-parameter-type:test:semantic-bridge-host"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:10:22.473Z",
+                "finishedAt": "2026-10-18T08:10:23.385Z",
+                "elapsedSeconds": 0.9124569090000004,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "semantic-external-consumer",
+                "command": [
+                  "mise",
+                  "run",
+                  "//package/oxlint-plugin/prefer-readonly-parameter-type:test:external-consumer-host"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:10:23.389Z",
+                "finishedAt": "2026-10-18T08:11:25.999Z",
+                "elapsedSeconds": 62.60959825299999,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "preinstalled-archil-version",
+                "command": [
+                  "/usr/bin/archil",
+                  "--version"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:32.442Z",
+                "finishedAt": "2026-10-18T08:11:32.538Z",
+                "elapsedSeconds": 0.09597268000000622,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "frozen-rust-source-admission",
+                "command": [
+                  "git",
+                  "diff",
+                  "--exit-code",
+                  "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+                  "--",
+                  "package/git-policy/cli",
+                  "package/cli/forbidden-strings",
+                  "package/rust-module/forbidden-regex",
+                  "package/rust-module/jsonc-edit"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:33.428Z",
+                "finishedAt": "2026-10-18T08:11:33.431Z",
+                "elapsedSeconds": 0.0036556100000000027,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "disposable-sandbox-required-git-install",
+                "command": [
+                  "sudo",
+                  "install",
+                  "--mode=0755",
+                  "--",
+                  "/opt/depot-reuse-20261018-r1/git-2.56.0/bin/git",
+                  "/usr/bin/git"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:35.196Z",
+                "finishedAt": "2026-10-18T08:11:35.206Z",
+                "elapsedSeconds": 0.01055907000000002,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "lock-bound-published-linter-install",
+                "command": [
+                  "mise",
+                  "install",
+                  "cargo:monochromatic-lint"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:35.231Z",
+                "finishedAt": "2026-10-18T08:11:45.055Z",
+                "elapsedSeconds": 9.824287107,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "lock-bound-published-linter-path",
+                "command": [
+                  "mise",
+                  "which",
+                  "monochromatic-lint"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:45.058Z",
+                "finishedAt": "2026-10-18T08:11:45.080Z",
+                "elapsedSeconds": 0.022183419999999388,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "lock-bound-published-linter-help",
+                "command": [
+                  "/opt/depot-reuse-20261018-r1/mise-data/installs/cargo-monochromatic-lint/0.1.3/bin/monochromatic-lint",
+                  "--help"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:45.094Z",
+                "finishedAt": "2026-10-18T08:11:45.096Z",
+                "elapsedSeconds": 0.0014317699999992328,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "lock-bound-published-linter-version",
+                "command": [
+                  "/opt/depot-reuse-20261018-r1/mise-data/installs/cargo-monochromatic-lint/0.1.3/bin/monochromatic-lint",
+                  "--version"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:45.098Z",
+                "finishedAt": "2026-10-18T08:11:45.099Z",
+                "elapsedSeconds": 0.001271869999998671,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "sccache-help",
+                "command": [
+                  "/opt/depot-reuse-20261018-r1/sccache/sccache",
+                  "--help"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:45.112Z",
+                "finishedAt": "2026-10-18T08:11:45.114Z",
+                "elapsedSeconds": 0.0011844999999993887,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "sccache-version",
+                "command": [
+                  "/opt/depot-reuse-20261018-r1/sccache/sccache",
+                  "--version"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:45.116Z",
+                "finishedAt": "2026-10-18T08:11:45.116Z",
+                "elapsedSeconds": 0.0009375499999987369,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "nextest-owned-version",
+                "command": [
+                  "mise",
+                  "exec",
+                  "rust",
+                  "cargo:cargo-nextest",
+                  "--",
+                  "cargo",
+                  "nextest",
+                  "--version"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:45.118Z",
+                "finishedAt": "2026-10-18T08:11:46.613Z",
+                "elapsedSeconds": 1.4943324400000002,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "nextest-command-help",
+                "command": [
+                  "mise",
+                  "exec",
+                  "rust",
+                  "cargo:cargo-nextest",
+                  "--",
+                  "cargo",
+                  "nextest",
+                  "run",
+                  "--help"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:46.615Z",
+                "finishedAt": "2026-10-18T08:11:46.651Z",
+                "elapsedSeconds": 0.03566084999999839,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "host-git-version",
+                "command": [
+                  "/usr/bin/git",
+                  "--version"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:46.653Z",
+                "finishedAt": "2026-10-18T08:11:46.654Z",
+                "elapsedSeconds": 0.000969520000000557,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "required-git-version",
+                "command": [
+                  "mise",
+                  "exec",
+                  "rust",
+                  "cargo:cargo-nextest",
+                  "--",
+                  "git",
+                  "--version"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:46.655Z",
+                "finishedAt": "2026-10-18T08:11:46.683Z",
+                "elapsedSeconds": 0.027349340000000666,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "locked-rust-toolchain",
+                "command": [
+                  "mise",
+                  "exec",
+                  "rust",
+                  "--",
+                  "rustc",
+                  "--version",
+                  "--verbose"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:46.685Z",
+                "finishedAt": "2026-10-18T08:11:46.717Z",
+                "elapsedSeconds": 0.03227765999999974,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "sccache-start",
+                "command": [
+                  "/opt/depot-reuse-20261018-r1/sccache/sccache",
+                  "--start-server"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:46.719Z",
+                "finishedAt": "2026-10-18T08:11:46.787Z",
+                "elapsedSeconds": 0.06826011999999901,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "native-warm-build-cli",
+                "command": [
+                  "mise",
+                  "exec",
+                  "rust",
+                  "--",
+                  "cargo",
+                  "build",
+                  "--locked",
+                  "--offline",
+                  "--bin",
+                  "cli-git-native"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/git-policy/cli",
+                "startedAt": "2026-10-18T08:11:46.789Z",
+                "finishedAt": "2026-10-18T08:12:28.285Z",
+                "elapsedSeconds": 41.495455658,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "native-warm-after-cli-build",
+                "command": [
+                  "/opt/depot-reuse-20261018-r1/sccache/sccache",
+                  "--show-stats",
+                  "--stats-format",
+                  "json"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:12:28.287Z",
+                "finishedAt": "2026-10-18T08:12:28.289Z",
+                "elapsedSeconds": 0.0012602699999988544,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "native-warm-nextest",
+                "command": [
+                  "mise",
+                  "exec",
+                  "rust",
+                  "cargo:cargo-nextest",
+                  "--",
+                  "cargo",
+                  "nextest",
+                  "run",
+                  "--locked",
+                  "--offline",
+                  "--no-fail-fast",
+                  "--lib",
+                  "--test",
+                  "native_binary",
+                  "--test",
+                  "native_candidates"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/git-policy/cli",
+                "startedAt": "2026-10-18T08:12:28.294Z",
+                "finishedAt": "2026-10-18T08:13:06.415Z",
+                "elapsedSeconds": 38.12081587000001,
+                "exitStatus": 100,
+                "signal": null,
+                "expected": "observe"
+              },
+              {
+                "name": "native-warm-after-nextest",
+                "command": [
+                  "/opt/depot-reuse-20261018-r1/sccache/sccache",
+                  "--show-stats",
+                  "--stats-format",
+                  "json"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:13:06.417Z",
+                "finishedAt": "2026-10-18T08:13:06.419Z",
+                "elapsedSeconds": 0.001295270000002347,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "native-final-stats",
+                "command": [
+                  "/opt/depot-reuse-20261018-r1/sccache/sccache",
+                  "--show-stats",
+                  "--stats-format",
+                  "json"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:13:06.422Z",
+                "finishedAt": "2026-10-18T08:13:06.423Z",
+                "elapsedSeconds": 0.0010912499999976718,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "sccache-stop",
+                "command": [
+                  "/opt/depot-reuse-20261018-r1/sccache/sccache",
+                  "--stop-server"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:13:06.425Z",
+                "finishedAt": "2026-10-18T08:13:06.426Z",
+                "elapsedSeconds": 0.0013748999999952502,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "observe"
+              },
+              {
+                "name": "frozen-kotlin-source-admission",
+                "command": [
+                  "git",
+                  "diff",
+                  "--exit-code",
+                  "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+                  "--",
+                  "package/linter/kotlin"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:13:06.651Z",
+                "finishedAt": "2026-10-18T08:13:06.654Z",
+                "elapsedSeconds": 0.002871929999999999,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "locked-gradle-version",
+                "command": [
+                  "mise",
+                  "exec",
+                  "java",
+                  "--",
+                  "./gradlew",
+                  "--version",
+                  "--no-daemon"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+                "startedAt": "2026-10-18T08:13:06.683Z",
+                "finishedAt": "2026-10-18T08:13:13.810Z",
+                "elapsedSeconds": 7.126657968000001,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "detekt-owning-task-help",
+                "command": [
+                  "mise",
+                  "exec",
+                  "java",
+                  "--",
+                  "./gradlew",
+                  "help",
+                  "--task",
+                  "detektCheck",
+                  "--build-cache",
+                  "--console=plain",
+                  "--no-daemon",
+                  "--max-workers=8",
+                  "--init-script",
+                  "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+                "startedAt": "2026-10-18T08:13:13.812Z",
+                "finishedAt": "2026-10-18T08:13:23.655Z",
+                "elapsedSeconds": 9.842795047,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "detekt-cli-help",
+                "command": [
+                  "mise",
+                  "exec",
+                  "java",
+                  "--",
+                  "./gradlew",
+                  "detektCheck",
+                  "--args=--help",
+                  "--build-cache",
+                  "--console=plain",
+                  "--no-daemon",
+                  "--max-workers=8",
+                  "--init-script",
+                  "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+                "startedAt": "2026-10-18T08:13:23.657Z",
+                "finishedAt": "2026-10-18T08:13:31.407Z",
+                "elapsedSeconds": 7.750155687999999,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "detekt-cli-version",
+                "command": [
+                  "mise",
+                  "exec",
+                  "java",
+                  "--",
+                  "./gradlew",
+                  "detektCheck",
+                  "--args=--version",
+                  "--build-cache",
+                  "--console=plain",
+                  "--no-daemon",
+                  "--max-workers=8",
+                  "--init-script",
+                  "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+                "startedAt": "2026-10-18T08:13:31.410Z",
+                "finishedAt": "2026-10-18T08:13:34.915Z",
+                "elapsedSeconds": 3.5051698790000008,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "detekt-existing-package-owner",
+                "command": [
+                  "mise",
+                  "run",
+                  "//package/linter/kotlin:lint:detekt",
+                  "--",
+                  "--build-cache",
+                  "--max-workers=8",
+                  "--init-script",
+                  "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:13:34.917Z",
+                "finishedAt": "2026-10-18T08:13:39.293Z",
+                "elapsedSeconds": 4.375370028999998,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "observe"
+              },
+              {
+                "name": "detekt-documented-consumer",
+                "command": [
+                  "mise",
+                  "exec",
+                  "java",
+                  "--",
+                  "./gradlew",
+                  "detektCheck",
+                  "-PdetektInput=/home/runner/work/Monochromatic/Monochromatic/.research-reuse/detekt-fixtures/Documented.kt",
+                  "--build-cache",
+                  "--console=plain",
+                  "--no-daemon",
+                  "--max-workers=8",
+                  "--init-script",
+                  "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+                "startedAt": "2026-10-18T08:13:39.295Z",
+                "finishedAt": "2026-10-18T08:13:43.510Z",
+                "elapsedSeconds": 4.214597677999998,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "detekt-undocumented-positive-control",
+                "command": [
+                  "mise",
+                  "exec",
+                  "java",
+                  "--",
+                  "./gradlew",
+                  "detektCheck",
+                  "-PdetektInput=/home/runner/work/Monochromatic/Monochromatic/.research-reuse/detekt-fixtures/Undocumented.kt",
+                  "--build-cache",
+                  "--console=plain",
+                  "--no-daemon",
+                  "--max-workers=8",
+                  "--init-script",
+                  "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+                "startedAt": "2026-10-18T08:13:43.512Z",
+                "finishedAt": "2026-10-18T08:13:47.736Z",
+                "elapsedSeconds": 4.224434188999999,
+                "exitStatus": 1,
+                "signal": null,
+                "expected": "failure"
+              }
+            ],
+            "allocation": {
+              "name": "Depot CI",
+              "hostname": "depot-worker-fh472z34bbqrxtpj9nkc",
+              "bootId": "8b91b45c-0fd4-4496-a62c-fac318d895b9",
+              "cpus": 8,
+              "memoryBytes": 33664888832,
+              "cpuModel": "AMD EPYC 9R45 96-Core Processor"
+            },
+            "phase": "warm",
+            "kind": "rust"
+          }
+        },
+        {
+          "member": "failed-rustc-requests.json",
+          "data": [
+            {
+              "startedAt": "2026-10-18T08:12:02.718Z",
+              "elapsedSeconds": 0.02061466,
+              "args": [
+                "/opt/depot-reuse-20261018-r1/rustup/toolchains/nightly-2026-10-17-x86_64-unknown-linux-gnu/bin/rustc",
+                "--edition=2018",
+                "--crate-name=probe",
+                "--crate-type=lib",
+                "--out-dir",
+                "/home/runner/work/Monochromatic/Monochromatic/.research-reuse/cargo-target/debug/build/heapless/66cb3ac8ce29353e/out",
+                "/home/runner/work/Monochromatic/Monochromatic/.research-reuse/cargo-target/debug/build/heapless/66cb3ac8ce29353e/out/probe.rs",
+                "--target",
+                "x86_64-unknown-linux-gnu"
+              ],
+              "exitStatus": 1,
+              "signal": null,
+              "stdoutBytes": 0,
+              "stderrBytes": 182,
+              "stderrSha256": "ce7dfe9bd7a9f71b2fb3992f2711c3338ac764a6c109aa7ae1a7dbcdf9508d4c",
+              "failedStderr": "error: invalid instruction mnemonic 'clrex'\n  |\nnote: instantiated into assembly here\n --> <inline asm>:2:2\n  |\n2 |     clrex\n  |     ^^^^^\n\nerror: aborting due to 1 previous error\n\n"
+            }
+          ]
+        },
+        {
+          "member": "image-exclusion.json",
+          "data": {
+            "sourceMarkerAbsent": true,
+            "syntheticSecretFileAbsent": true,
+            "maskedEnvironmentAbsent": true,
+            "unmaskedEnvironment": null
+          }
+        },
+        {
+          "member": "native-final-stats.json",
+          "data": {
+            "stats": {
+              "compile_requests": 167,
+              "requests_unsupported_compiler": 0,
+              "requests_not_compile": 1,
+              "requests_not_cacheable": 35,
+              "requests_executed": 131,
+              "cache_errors": {
+                "counts": {},
+                "adv_counts": {}
+              },
+              "cache_hits": {
+                "counts": {
+                  "Rust": 131
+                },
+                "adv_counts": {
+                  "rust": 131
+                }
+              },
+              "cache_misses": {
+                "counts": {},
+                "adv_counts": {}
+              },
+              "cache_timeouts": 0,
+              "cache_read_errors": 0,
+              "non_cacheable_compilations": 0,
+              "forced_recaches": 0,
+              "cache_write_errors": 0,
+              "cache_writes": 0,
+              "cache_write_duration": {
+                "secs": 0,
+                "nanos": 0
+              },
+              "cache_read_hit_duration": {
+                "secs": 11,
+                "nanos": 169746364
+              },
+              "compilations": 0,
+              "compiler_write_duration": {
+                "secs": 0,
+                "nanos": 0
+              },
+              "compile_fails": 0,
+              "not_cached": {
+                "missing input": 4,
+                "missing emit": 1,
+                "crate-type": 25,
+                "-o": 3,
+                "-": 2
+              },
+              "dist_compiles": {},
+              "dist_errors": 0,
+              "multi_level": null
+            },
+            "cache_location": "webdav, name: , prefix: /aquaticats-monochromatic-reuse-20261018-native-r3-absolute-git/",
+            "cache_size": null,
+            "max_cache_size": null,
+            "use_preprocessor_cache_mode": false,
+            "version": "0.18.0",
+            "basedirs": []
+          }
+        },
+        {
+          "member": "restored-tool-hashes.json",
+          "data": {
+            "node": {
+              "path": "/opt/depot-reuse-20261018-r1/mise-data/installs/node/26.12.0/bin/node",
+              "realpath": "/opt/depot-reuse-20261018-r1/mise-data/installs/node/26.12.0/bin/node",
+              "sha256": "caa24debe02770c92a70677e2a62ca98890150e7ac1c17bcfe31bcc98cc89943"
+            },
+            "pnpm": {
+              "path": "/opt/depot-reuse-20261018-r1/mise-data/installs/pnpm/12.14.0/pnpm",
+              "realpath": "/opt/depot-reuse-20261018-r1/mise-data/installs/pnpm/12.14.0/pnpm",
+              "sha256": "5e9119e6f4f18dace3795169e9b3672231ab3662505862dc3026571303a8ef32"
+            },
+            "java": {
+              "path": "/opt/depot-reuse-20261018-r1/mise-data/installs/java/temurin-21.0.12+8.0.LTS/bin/java",
+              "realpath": "/opt/depot-reuse-20261018-r1/mise-data/installs/java/temurin-21.0.12+8.0.LTS/bin/java",
+              "sha256": "11af352aa2c506c4123a4e4c19c187d59e06cd0dff317d54f5e6806e07c6715d"
+            },
+            "rustc": {
+              "path": "/opt/depot-reuse-20261018-r1/cargo/bin/rustc",
+              "realpath": "/opt/depot-reuse-20261018-r1/cargo/bin/rustup",
+              "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71"
+            },
+            "cargo": {
+              "path": "/opt/depot-reuse-20261018-r1/cargo/bin/cargo",
+              "realpath": "/opt/depot-reuse-20261018-r1/cargo/bin/rustup",
+              "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71"
+            },
+            "cargo-nextest": {
+              "path": "/opt/depot-reuse-20261018-r1/mise-data/installs/cargo-cargo-nextest/0.9.148/bin/cargo-nextest",
+              "realpath": "/opt/depot-reuse-20261018-r1/mise-data/installs/cargo-cargo-nextest/0.9.148/bin/cargo-nextest",
+              "sha256": "53470cfc9b5cbcd96780db2d348700d76af962467503791f1f8a8824d8967e5c"
+            }
+          }
+        },
+        {
+          "member": "sccache-installation.json",
+          "data": {
+            "startedAt": "2026-10-18T08:11:33.457Z",
+            "elapsedSeconds": 0.844228019,
+            "downloadedBytes": 0,
+            "archiveSha256": null,
+            "binarySha256": "973cb15f6a986d84ca334bbed3bbe2eb8f1ee8fd81bf9e115b8539a293bf8d59",
+            "version": "0.18.0",
+            "sourceCommit": "01c35e69b97f516c2ebfbdb418b5cd6277bde280",
+            "installedInPreparedImage": true
+          }
+        }
+      ]
+    },
+    {
+      "prefix": "rust-warm-b",
+      "dispatch": {
+        "state": "created",
+        "requestedAt": "2026-10-18T08:10:31.967Z",
+        "sourceSha": "ce27ef7d9d76615243e969e987ba2efd76195f49",
+        "baseSourceSha": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+        "workflow": ".depot/workflows/reuse-rust-warm.yml",
+        "workflowSha256": "1888c3cfeaeb22e6ce0664e7455e71b8feb11d27c8aaaad32222b6a3d8dfad2f",
+        "branch": "research/depot-reuse-20261018",
+        "resources": {
+          "jobs": 1,
+          "cpusPerJob": 8,
+          "memoryGbPerJob": 32,
+          "jobTimeoutMinutes": 15,
+          "maxComputeUsdProxy": 0.36
+        },
+        "accountingGuard": {
+          "basis": "Requested8CPU from each request creation to terminal timestamp, plus900seconds for each pending/future job; this is not an invoice or measured CPU allocation duration.",
+          "completed": [
+            {
+              "runId": "r328mp420m",
+              "status": "failed",
+              "requestToFinishSeconds": 215,
+              "requestedCpuWindowPriceProxyUsd": 0.08600000000000001
+            },
+            {
+              "runId": "x1psl3qf94",
+              "status": "finished",
+              "requestToFinishSeconds": 172,
+              "requestedCpuWindowPriceProxyUsd": 0.0688
+            },
+            {
+              "runId": "d3ks91rnnb",
+              "status": "finished",
+              "requestToFinishSeconds": 153,
+              "requestedCpuWindowPriceProxyUsd": 0.061200000000000004
+            },
+            {
+              "runId": "pq5pzj9mcg",
+              "status": "finished",
+              "requestToFinishSeconds": 146,
+              "requestedCpuWindowPriceProxyUsd": 0.0584
+            },
+            {
+              "runId": "6wt5gm6t75",
+              "status": "failed",
+              "requestToFinishSeconds": 13,
+              "requestedCpuWindowPriceProxyUsd": 0.005200000000000001
+            },
+            {
+              "runId": "wh76h0pjpx",
+              "status": "failed",
+              "requestToFinishSeconds": 54,
+              "requestedCpuWindowPriceProxyUsd": 0.0216
+            },
+            {
+              "runId": "s9w4jkv0hc",
+              "status": "finished",
+              "requestToFinishSeconds": 177,
+              "requestedCpuWindowPriceProxyUsd": 0.0708
+            },
+            {
+              "runId": "rrlzfmp2qv",
+              "status": "finished",
+              "requestToFinishSeconds": 162,
+              "requestedCpuWindowPriceProxyUsd": 0.0648
+            },
+            {
+              "runId": "xkmm08vpjs",
+              "status": "finished",
+              "requestToFinishSeconds": 94,
+              "requestedCpuWindowPriceProxyUsd": 0.0376
+            },
+            {
+              "runId": "n2zlbh5gpb",
+              "status": "failed",
+              "requestToFinishSeconds": 253,
+              "requestedCpuWindowPriceProxyUsd": 0.1012
+            },
+            {
+              "runId": "w16c45njf5",
+              "status": "failed",
+              "requestToFinishSeconds": 243,
+              "requestedCpuWindowPriceProxyUsd": 0.09720000000000001
+            },
+            {
+              "runId": "ldj6qhgjd5",
+              "status": "failed",
+              "requestToFinishSeconds": 208,
+              "requestedCpuWindowPriceProxyUsd": 0.08320000000000001
+            },
+            {
+              "runId": "3jg1fmkc69",
+              "status": "finished",
+              "requestToFinishSeconds": 137,
+              "requestedCpuWindowPriceProxyUsd": 0.0548
+            }
+          ],
+          "pendingBeforeDispatch": 1,
+          "completedProxyUsd": 0.8108000000000001,
+          "pendingWorstCaseUsd": 0.36000000000000004,
+          "remainingJobSlotsIncludingThis": 4,
+          "remainingWorstCaseUsd": 1.4400000000000002,
+          "forecastUsd": 2.6108000000000002,
+          "limitUsd": 5,
+          "maximumTotalJobs": 18
+        },
+        "runId": "kfmq92jdm1",
+        "createdAt": "2026-10-18T08:10:33.172Z"
+      },
+      "run": {
+        "org_id": "l4zncjjbj5",
+        "run_id": "kfmq92jdm1",
+        "repo": "Aquaticats/Monochromatic",
+        "ref": "ce27ef7d9d76615243e969e987ba2efd76195f49",
+        "sha": "ce27ef7d9d76615243e969e987ba2efd76195f49",
+        "head_sha": "ce27ef7d9d76615243e969e987ba2efd76195f49",
+        "trigger": "api",
+        "status": "failed",
+        "created_at": "2026-10-18T08:10:33Z",
+        "started_at": "2026-10-18T08:10:33Z",
+        "finished_at": "2026-10-18T08:15:09Z"
+      },
+      "requestToTerminalSeconds": 276,
+      "requestedCpuWindowPriceProxyUsd": 0.11040000000000001,
+      "artifacts": [
+        {
+          "metadata": {
+            "artifact_id": "01a14e14-2dd1-7704-ba2f-8ab1c950d52d",
+            "run_id": "kfmq92jdm1",
+            "workflow_id": "60g5bwl75h",
+            "workflow_path": "",
+            "job_id": "n412mjjnsn",
+            "job_key": "_inline_0.yaml:rust",
+            "attempt_id": "ps6zk4wq2f",
+            "attempt": 1,
+            "name": "reuse-rust-warm-and-detekt",
+            "size_bytes": 133177,
+            "created_at": "2026-10-18T08:15:07Z"
+          },
+          "integrity": {
+            "bytes": 133177,
+            "sha256": "a97672358c0bc282ab6d234a95fee6952d08fb27587131577c2660116540a20d",
+            "uploadLogDigestMatched": true,
+            "unzipCrcVerified": true,
+            "members": [
+              {
+                "name": "commands.json",
+                "bytes": 32858,
+                "sha256": "d5e7aa1fc144f32661d39d89752e95d29a1827be7801c447e55b18c62edca651"
+              },
+              {
+                "name": "dependency-layout.json",
+                "bytes": 4371,
+                "sha256": "d6408acb432e4dd7e4a59587fc783783db0e52e3634dc33785975a31bbb88060"
+              },
+              {
+                "name": "detekt-after-fixture-consumers-jars.json",
+                "bytes": 151,
+                "sha256": "28a31d9486f4ce451c875303f0dcfe25f8f01e78d4d56a392222fc9d29f8ded1"
+              },
+              {
+                "name": "detekt-after-owning-task-jars.json",
+                "bytes": 151,
+                "sha256": "28a31d9486f4ce451c875303f0dcfe25f8f01e78d4d56a392222fc9d29f8ded1"
+              },
+              {
+                "name": "detekt-before-host-jars.json",
+                "bytes": 151,
+                "sha256": "28a31d9486f4ce451c875303f0dcfe25f8f01e78d4d56a392222fc9d29f8ded1"
+              },
+              {
+                "name": "detekt-cli-help.log",
+                "bytes": 6642,
+                "sha256": "ec8a747a0b5e7d045556997cf664f6942ed045afbb4ee61e65343c9c27b7f5b0"
+              },
+              {
+                "name": "detekt-cli-version.log",
+                "bytes": 1841,
+                "sha256": "b06e4ef2fbb722f726087166038661c04e11773fb44a4d7b8117bc8fe8669948"
+              },
+              {
+                "name": "detekt-documented-consumer.log",
+                "bytes": 1826,
+                "sha256": "2b9e081cffed853ef0270e3dd66440eb384be696eaed5a394afb41ce5ef4fb19"
+              },
+              {
+                "name": "detekt-existing-package-owner.log",
+                "bytes": 1597,
+                "sha256": "dc9d65e4438a71ef0fc55edacb134969b730dfd8b7a201f72af9c4af2c84a4bc"
+              },
+              {
+                "name": "detekt-owning-task-help.log",
+                "bytes": 2202,
+                "sha256": "65e7deeba012a6e28e0dd8e82e21ec6b87b27ca42e7045705c2250073d0aa827"
+              },
+              {
+                "name": "detekt-undocumented-positive-control.log",
+                "bytes": 2456,
+                "sha256": "d779a667cbd269e97231e3c2aa1d6c4aea9d659643e350e271ee7833a4787ac2"
+              },
+              {
+                "name": "disposable-sandbox-required-git-install.log",
+                "bytes": 0,
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              {
+                "name": "failed-rustc-requests.json",
+                "bytes": 1031,
+                "sha256": "e9ca5b5c383e0af9626879439194960ba693934bdda67eb0d0912908bed9052c"
+              },
+              {
+                "name": "frozen-kotlin-source-admission.log",
+                "bytes": 0,
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              {
+                "name": "frozen-rust-source-admission.log",
+                "bytes": 0,
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              {
+                "name": "gradle-cache-requests.jsonl",
+                "bytes": 4554,
+                "sha256": "e0ad23406d29679625a9aee2aedb97f6768a5b5b158a79470bd89b65cea899e2"
+              },
+              {
+                "name": "host-git-version.log",
+                "bytes": 19,
+                "sha256": "c9e40977101870d17ec3a0ac1e444ceb5e268d1c0a37d6edd8a5ed477734a53c"
+              },
+              {
+                "name": "image-exclusion.json",
+                "bytes": 136,
+                "sha256": "a7d6b89e26ae373bcdd0a72018c6f5b65bc8119b8e74606e3a4b2bf1c26ac2b4"
+              },
+              {
+                "name": "installed-dependency-archive-extraction.log",
+                "bytes": 0,
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              {
+                "name": "lock-bound-published-linter-help.log",
+                "bytes": 2122,
+                "sha256": "8e6306859eba1e0b30a0e30019aa17af169156a87321214f94c2af94071f035c"
+              },
+              {
+                "name": "lock-bound-published-linter-install.log",
+                "bytes": 1389,
+                "sha256": "5205eb8520c3d875765aaf09355c87adf9019f8088f83b75735abf8f901a6840"
+              },
+              {
+                "name": "lock-bound-published-linter-version.log",
+                "bytes": 25,
+                "sha256": "faa87e647387ea41eec614ca2fe0afdea41ebb12f0e179cda05a7f9eaaf5c101"
+              },
+              {
+                "name": "lock-bound-published-linter-path.log",
+                "bytes": 102,
+                "sha256": "4d8a5bff39749b27da0beb3a58049ac19ad11521852910aab05b387240c6bd79"
+              },
+              {
+                "name": "locked-gradle-version.log",
+                "bytes": 1142,
+                "sha256": "d4f22a7c1299d6e4f5ba7a68d753e9f2c3a8f78b7555858eebe285915c55e6e3"
+              },
+              {
+                "name": "locked-rust-toolchain.log",
+                "bytes": 771,
+                "sha256": "856ea4f1a9afea1f7e8c588f9803559218a5e637a9f927deaf86db8a7f8941ee"
+              },
+              {
+                "name": "native-final-stats.json",
+                "bytes": 1337,
+                "sha256": "cf96f9cb80bd349157c6422377f1475e38ee11713f2c761fee2d3d189f1781fb"
+              },
+              {
+                "name": "native-final-stats.log",
+                "bytes": 961,
+                "sha256": "58e58356707c6fa2c36c308c0bd1fd2f1b6f9ec9d8c28bc983d47a5ca7c5b0a0"
+              },
+              {
+                "name": "native-warm-after-cli-build.json",
+                "bytes": 1337,
+                "sha256": "65afc29fddd349090bfb065fcd6094b9d3305759935218394b90dbb327c716aa"
+              },
+              {
+                "name": "native-warm-after-cli-build.log",
+                "bytes": 961,
+                "sha256": "9c8aea5a05ae0ee916827528bdf7c7e7e9a4de74297b14776e6ef2c7a705989c"
+              },
+              {
+                "name": "native-warm-after-nextest.json",
+                "bytes": 1337,
+                "sha256": "510e947931f989423edf440630f6b3631e348b70488ff4ef3b562abbb5a8ef9a"
+              },
+              {
+                "name": "native-warm-after-nextest.log",
+                "bytes": 961,
+                "sha256": "5f708c8daa78b9e086149611a251aefe80365411613a90f1999d685b7f4f95c1"
+              },
+              {
+                "name": "native-warm-build-cli.log",
+                "bytes": 4729,
+                "sha256": "609206936a7281957978d49e71a35523e592397bd64056af4a6cd1a18860397b"
+              },
+              {
+                "name": "native-warm-nextest.log",
+                "bytes": 267400,
+                "sha256": "2120e1a171e711ad26f579270907c9b813d59a923ae1cb4e39a17212f83dff2f"
+              },
+              {
+                "name": "nextest-command-help.log",
+                "bytes": 17410,
+                "sha256": "954997a24260580d65e0b9889dd820f4c0fe35061c9b999a193e398177567b09"
+              },
+              {
+                "name": "nextest-owned-version.log",
+                "bytes": 728,
+                "sha256": "0856919ff95673764d7209c8ac822262f5b710880ef4e34295874b21c2235b7a"
+              },
+              {
+                "name": "offline-empty-tool-positive-control.log",
+                "bytes": 520,
+                "sha256": "d0f43bd6b0401e71e45f26f57f96b342abc562179599f356cd874fe285b12b63"
+              },
+              {
+                "name": "offline-installed-tool-availability.log",
+                "bytes": 1662,
+                "sha256": "4ccba9d2516ea6e021d9a59413ae8da6bf8ee38c738992a5de8f30ce788fecee"
+              },
+              {
+                "name": "online-empty-tool-recovery.log",
+                "bytes": 357,
+                "sha256": "94495a31bf0c183d8a3615bc183016f2fd81b5b3dd8a0c5aa23490b9628bd636"
+              },
+              {
+                "name": "partial-installed-archive-control.log",
+                "bytes": 166782,
+                "sha256": "c611e506a5492b8f6799e83c65d7aec4a7bf5388fd9a76cb0913d6c2490cc27a"
+              },
+              {
+                "name": "policy-invalidation.json",
+                "bytes": 163,
+                "sha256": "7e471bd63db83185b327f91b4928a37be860a00e7a06bf1c39865ddbd94fca25"
+              },
+              {
+                "name": "preinstalled-archil-hash.json",
+                "bytes": 112,
+                "sha256": "5ae807d44172b0eb4441b49fbda1145fe71d02c86d55711cc7d7448a2050a2ec"
+              },
+              {
+                "name": "preinstalled-archil-version.log",
+                "bytes": 213,
+                "sha256": "2574eb83fa95033178b9d23ee93cf5635248c70fba06629e06ea2eddbca20b12"
+              },
+              {
+                "name": "published-linter-prerequisite.json",
+                "bytes": 505,
+                "sha256": "97fc566c37d72dd44fad9d8e684c90fefba16ffc3d2081062d0b59dd76c50458"
+              },
+              {
+                "name": "required-git-version.log",
+                "bytes": 576,
+                "sha256": "367837f8fd3fccff806e2a7c52aaadf3297a3f17156de5183e9bc54d7fd9209d"
+              },
+              {
+                "name": "restored-tool-hashes.json",
+                "bytes": 1620,
+                "sha256": "0c519b4a7980e2525d44416cc2d584d2de3a8b1a2a26b84bfc167ab293981caf"
+              },
+              {
+                "name": "reuse-gradle-consumer-session.json",
+                "bytes": 178,
+                "sha256": "aae01871c1c4f2e2714c3b483addbb8f7cca5769d9b7d8d096102342b0b1b71e"
+              },
+              {
+                "name": "reuse-registry-probe-session.json",
+                "bytes": 176,
+                "sha256": "0d1cc686cf95b7064f24c3c122376c2f5e6587c5518171a51168810194532942"
+              },
+              {
+                "name": "reuse-rust-consumer-session.json",
+                "bytes": 183,
+                "sha256": "37b9c02e3a2aa4bfbaf9d5fc7a54d8f945805d445eb823a15f3cd877408259ea"
+              },
+              {
+                "name": "reuse-tools-consumer-session.json",
+                "bytes": 178,
+                "sha256": "48be52327f79f311f20b5e7d5fd4ccfaa81d69f1a5be5dd75bfcf5519faf46c5"
+              },
+              {
+                "name": "rustc-requests.jsonl",
+                "bytes": 430714,
+                "sha256": "2ea197ea6ef4e9f49bf41de4d7d9f5b712242469d3d30abe9f7942a038de3714"
+              },
+              {
+                "name": "sccache-help.log",
+                "bytes": 1318,
+                "sha256": "6166898853539c653e0f77fe30d0a9eccc89b6147e4371a95be9509c6f678e5d"
+              },
+              {
+                "name": "sccache-installation.json",
+                "bytes": 334,
+                "sha256": "7b16c7c6d62654060f87d895254191829b5b89576092c99048adf5c853463c59"
+              },
+              {
+                "name": "sccache-start.log",
+                "bytes": 78,
+                "sha256": "5451a5986fff8e78426e0a90acae300f117a10a189e48e6a3b84bef0c8d67bb9"
+              },
+              {
+                "name": "sccache-stop.log",
+                "bytes": 1368,
+                "sha256": "fba8a05559171cbc1a602ef4737167f7fe8b8540ea052fc098f02820e162ce33"
+              },
+              {
+                "name": "sccache-version.log",
+                "bytes": 15,
+                "sha256": "80804e07b8d1daa7eb6cc9e298e213e6ae85f428832f612b0e0bc429928ae2e5"
+              },
+              {
+                "name": "semantic-external-consumer.log",
+                "bytes": 268,
+                "sha256": "da88ba8d8f2d33ae11286ff702ff02a716c8577ac21662c6985ee9202c694912"
+              },
+              {
+                "name": "semantic-host-consumer.log",
+                "bytes": 1284,
+                "sha256": "2256514d00a6fd6f3dbae8a5e45eb353602b53cc439114eb8c315b87e88d53e7"
+              },
+              {
+                "name": "semantic-plugin-build.log",
+                "bytes": 328,
+                "sha256": "6ce1120abf3af3877335b7a3fbd1afc24604d02766443e65e374ad72c6528f8f"
+              },
+              {
+                "name": "snapshot-dependency-admission.log",
+                "bytes": 0,
+                "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+              },
+              {
+                "name": "snapshot-registry-manifest.json",
+                "bytes": 3393,
+                "sha256": "20409ac1ab382b6e503d0f6c3875bca1ef5b292c8d6a7eb46a19ed404a4f2df6"
+              },
+              {
+                "name": "snapshot-registry-manifest.jsonl",
+                "bytes": 5538,
+                "sha256": "cc0bc4326f6da7110c697881cb7b345a9d0d1d16c8278631ed3654d0a72c9b43"
+              },
+              {
+                "name": "target-cache-mount.json",
+                "bytes": 296,
+                "sha256": "8803323329e37d3c051374cf9e0013353337d8a1520797bd388abaeacc9285f0"
+              },
+              {
+                "name": "unshare-help.log",
+                "bytes": 2237,
+                "sha256": "901a061fdbbc40224bad1680a13a25ac4e7cdf9ced9135b0e3711a8bed20fe50"
+              }
+            ]
+          }
+        }
+      ],
+      "selected": [
+        {
+          "member": "commands.json",
+          "data": {
+            "baseSourceSha": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+            "imagePreparationSha": "e65f3ccf26781999717cfd9c17e1bd361f42183a",
+            "harnessSha": "ce27ef7d9d76615243e969e987ba2efd76195f49",
+            "imageManifestSha256": "b4e7c5752f2df847c14f70cf1211097f18516ee4232e3f834531653dc21bfabe",
+            "records": [
+              {
+                "name": "snapshot-dependency-admission",
+                "command": [
+                  "git",
+                  "diff",
+                  "--exit-code",
+                  "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+                  "--",
+                  "package.json",
+                  "pnpm-lock.yaml",
+                  "pnpm-workspace.yaml",
+                  ".pnpmfile.mjs",
+                  ".pnpmfile.policies.json",
+                  ":(glob)package/*/*/package.json"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:23.145Z",
+                "finishedAt": "2026-10-18T08:11:23.151Z",
+                "elapsedSeconds": 0.005352360000000001,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "unshare-help",
+                "command": [
+                  "unshare",
+                  "--help"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:32.667Z",
+                "finishedAt": "2026-10-18T08:11:32.671Z",
+                "elapsedSeconds": 0.0035646299999989423,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "offline-installed-tool-availability",
+                "command": [
+                  "sudo",
+                  "unshare",
+                  "--net",
+                  "--setuid",
+                  "1001",
+                  "--setgid",
+                  "117",
+                  "--",
+                  "/usr/bin/env",
+                  "MISE_DATA_DIR=/opt/depot-reuse-20261018-r1/mise-data",
+                  "MISE_CACHE_DIR=/opt/depot-reuse-20261018-r1/mise-cache",
+                  "RUSTUP_HOME=/opt/depot-reuse-20261018-r1/rustup",
+                  "CARGO_HOME=/opt/depot-reuse-20261018-r1/cargo",
+                  "MISE_AUTO_INSTALL=false",
+                  "MISE_LOCKED=1",
+                  "MISE_TRUSTED_CONFIG_PATHS=/home/runner/work/Monochromatic/Monochromatic",
+                  "PATH=/home/runner/work/Monochromatic/Monochromatic/.cache/cli-git-bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/auto-mode/bin:/home/runner/work/Monochromatic/Monochromatic/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/agent-harness-shared/search-fetch/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/agent-harness-shared/truncate/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/bash-output-filter/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/claude-spawn/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/correction-reminder/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/guardrail/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/prompt-time/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/session-start-housekeeping/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/stop-reminder/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/terminal-title/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/cli/unused-export/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/config/pnpr/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/desktop-app/electron-counter/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/desktop-app/electron-infra/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/desktop-app/file-manager-electron/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/dev-script/deps-update/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/dev-script/file-enforcer/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/kwin/key-helper/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/mcp/mvm/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/module/conf-fork.fuzz/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/module/conf-fork/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/module/css-edit.bench/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/module/pnpm-workspace-catalog/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/module/token-count/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/advisor/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/agent-settled-notification/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/ask-user-question/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/auto-mode/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/bash-poke/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/current-time-context/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/goal/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/guardrail/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/model-retirement/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/morph-compact/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/openai-fast/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/search-fetch/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/spawn/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/statusline/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/terminal-title/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/thinking-default/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-shared/model-review/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-shared/model-selection/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/ssg/aquati.cat/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/stub/throwing/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/typeface/aquaticat/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/webapp-productivity/done-postcss/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/webapp-productivity/wc/node_modules/.bin:/home/runner/.local/share/mise/bin:/snap/bin:/home/runner/.local/bin:/opt/pipx_bin:/home/runner/.cargo/bin:/home/runner/.config/composer/vendor/bin:/usr/local/.ghcup/bin:/home/runner/.dotnet/tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games",
+                  "HOME=/home/runner",
+                  "USER=runner",
+                  "LOGNAME=runner",
+                  "/home/runner/.local/share/mise/bin/mise",
+                  "install",
+                  "node",
+                  "pnpm",
+                  "java",
+                  "rust",
+                  "cargo-binstall",
+                  "cargo:cargo-nextest"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:32.674Z",
+                "finishedAt": "2026-10-18T08:11:33.388Z",
+                "elapsedSeconds": 0.7142143489999998,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "offline-empty-tool-positive-control",
+                "command": [
+                  "sudo",
+                  "unshare",
+                  "--net",
+                  "--setuid",
+                  "1001",
+                  "--setgid",
+                  "117",
+                  "--",
+                  "/usr/bin/env",
+                  "MISE_DATA_DIR=/opt/depot-reuse-20261018-r1/mise-data",
+                  "MISE_CACHE_DIR=/opt/depot-reuse-20261018-r1/mise-cache",
+                  "RUSTUP_HOME=/opt/depot-reuse-20261018-r1/rustup",
+                  "CARGO_HOME=/opt/depot-reuse-20261018-r1/cargo",
+                  "MISE_AUTO_INSTALL=false",
+                  "MISE_LOCKED=1",
+                  "MISE_TRUSTED_CONFIG_PATHS=/home/runner/work/Monochromatic/Monochromatic",
+                  "PATH=/home/runner/work/Monochromatic/Monochromatic/.cache/cli-git-bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/auto-mode/bin:/home/runner/work/Monochromatic/Monochromatic/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/agent-harness-shared/search-fetch/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/agent-harness-shared/truncate/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/bash-output-filter/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/claude-spawn/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/correction-reminder/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/guardrail/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/prompt-time/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/session-start-housekeeping/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/stop-reminder/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/claude-code-plugin/terminal-title/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/cli/unused-export/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/config/pnpr/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/desktop-app/electron-counter/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/desktop-app/electron-infra/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/desktop-app/file-manager-electron/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/dev-script/deps-update/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/dev-script/file-enforcer/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/kwin/key-helper/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/mcp/mvm/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/module/conf-fork.fuzz/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/module/conf-fork/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/module/css-edit.bench/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/module/pnpm-workspace-catalog/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/module/token-count/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/advisor/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/agent-settled-notification/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/ask-user-question/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/auto-mode/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/bash-poke/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/current-time-context/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/goal/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/guardrail/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/model-retirement/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/morph-compact/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/openai-fast/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/search-fetch/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/spawn/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/statusline/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/terminal-title/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-plugin/thinking-default/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-shared/model-review/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/pi-shared/model-selection/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/ssg/aquati.cat/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/stub/throwing/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/typeface/aquaticat/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/webapp-productivity/done-postcss/node_modules/.bin:/home/runner/work/Monochromatic/Monochromatic/package/webapp-productivity/wc/node_modules/.bin:/home/runner/.local/share/mise/bin:/snap/bin:/home/runner/.local/bin:/opt/pipx_bin:/home/runner/.cargo/bin:/home/runner/.config/composer/vendor/bin:/usr/local/.ghcup/bin:/home/runner/.dotnet/tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games",
+                  "HOME=/home/runner",
+                  "USER=runner",
+                  "LOGNAME=runner",
+                  "MISE_DATA_DIR=/home/runner/work/Monochromatic/Monochromatic/.research-reuse/empty-tools",
+                  "MISE_CACHE_DIR=/home/runner/work/Monochromatic/Monochromatic/.research-reuse/empty-tools-cache",
+                  "/home/runner/.local/share/mise/bin/mise",
+                  "install",
+                  "node"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:33.390Z",
+                "finishedAt": "2026-10-18T08:11:33.663Z",
+                "elapsedSeconds": 0.2729054699999997,
+                "exitStatus": 1,
+                "signal": null,
+                "expected": "failure"
+              },
+              {
+                "name": "online-empty-tool-recovery",
+                "command": [
+                  "mise",
+                  "install",
+                  "node"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:33.665Z",
+                "finishedAt": "2026-10-18T08:11:35.521Z",
+                "elapsedSeconds": 1.85594974,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "partial-installed-archive-control",
+                "command": [
+                  "tar",
+                  "--list",
+                  "--zstd",
+                  "--file",
+                  "/home/runner/work/Monochromatic/Monochromatic/.research-reuse/partial-installed-dependencies.tar.zst"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:44.873Z",
+                "finishedAt": "2026-10-18T08:11:44.883Z",
+                "elapsedSeconds": 0.010278150000001915,
+                "exitStatus": 2,
+                "signal": null,
+                "expected": "failure"
+              },
+              {
+                "name": "installed-dependency-archive-extraction",
+                "command": [
+                  "tar",
+                  "--extract",
+                  "--zstd",
+                  "--file",
+                  "/opt/depot-reuse-20261018-r1/installed-dependencies.tar.zst",
+                  "--directory",
+                  "/home/runner/work/Monochromatic/Monochromatic"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:44.886Z",
+                "finishedAt": "2026-10-18T08:11:46.337Z",
+                "elapsedSeconds": 1.4506005799999984,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "semantic-plugin-build",
+                "command": [
+                  "mise",
+                  "run",
+                  "//package/oxlint-plugin/prefer-readonly-parameter-type:build:js:node"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:46.341Z",
+                "finishedAt": "2026-10-18T08:11:46.663Z",
+                "elapsedSeconds": 0.3225600999999988,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "semantic-host-consumer",
+                "command": [
+                  "mise",
+                  "run",
+                  "//package/oxlint-plugin/prefer-readonly-parameter-type:test:semantic-bridge-host"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:46.667Z",
+                "finishedAt": "2026-10-18T08:11:47.584Z",
+                "elapsedSeconds": 0.9169537990000026,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "semantic-external-consumer",
+                "command": [
+                  "mise",
+                  "run",
+                  "//package/oxlint-plugin/prefer-readonly-parameter-type:test:external-consumer-host"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:11:47.587Z",
+                "finishedAt": "2026-10-18T08:12:50.051Z",
+                "elapsedSeconds": 62.464243053,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "preinstalled-archil-version",
+                "command": [
+                  "/usr/bin/archil",
+                  "--version"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:12:55.448Z",
+                "finishedAt": "2026-10-18T08:12:55.533Z",
+                "elapsedSeconds": 0.08432253000000492,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "frozen-rust-source-admission",
+                "command": [
+                  "git",
+                  "diff",
+                  "--exit-code",
+                  "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+                  "--",
+                  "package/git-policy/cli",
+                  "package/cli/forbidden-strings",
+                  "package/rust-module/forbidden-regex",
+                  "package/rust-module/jsonc-edit"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:12:56.294Z",
+                "finishedAt": "2026-10-18T08:12:56.297Z",
+                "elapsedSeconds": 0.003581719999999997,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "disposable-sandbox-required-git-install",
+                "command": [
+                  "sudo",
+                  "install",
+                  "--mode=0755",
+                  "--",
+                  "/opt/depot-reuse-20261018-r1/git-2.56.0/bin/git",
+                  "/usr/bin/git"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:12:58.028Z",
+                "finishedAt": "2026-10-18T08:12:58.040Z",
+                "elapsedSeconds": 0.012248859999999922,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "lock-bound-published-linter-install",
+                "command": [
+                  "mise",
+                  "install",
+                  "cargo:monochromatic-lint"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:12:58.071Z",
+                "finishedAt": "2026-10-18T08:13:06.932Z",
+                "elapsedSeconds": 8.861088847,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "lock-bound-published-linter-path",
+                "command": [
+                  "mise",
+                  "which",
+                  "monochromatic-lint"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:13:06.935Z",
+                "finishedAt": "2026-10-18T08:13:06.957Z",
+                "elapsedSeconds": 0.022263649999998962,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "lock-bound-published-linter-help",
+                "command": [
+                  "/opt/depot-reuse-20261018-r1/mise-data/installs/cargo-monochromatic-lint/0.1.3/bin/monochromatic-lint",
+                  "--help"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:13:06.971Z",
+                "finishedAt": "2026-10-18T08:13:06.972Z",
+                "elapsedSeconds": 0.0014650500000007013,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "lock-bound-published-linter-version",
+                "command": [
+                  "/opt/depot-reuse-20261018-r1/mise-data/installs/cargo-monochromatic-lint/0.1.3/bin/monochromatic-lint",
+                  "--version"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:13:06.975Z",
+                "finishedAt": "2026-10-18T08:13:06.976Z",
+                "elapsedSeconds": 0.0012308800000009796,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "sccache-help",
+                "command": [
+                  "/opt/depot-reuse-20261018-r1/sccache/sccache",
+                  "--help"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:13:06.989Z",
+                "finishedAt": "2026-10-18T08:13:06.990Z",
+                "elapsedSeconds": 0.001206369999999879,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "sccache-version",
+                "command": [
+                  "/opt/depot-reuse-20261018-r1/sccache/sccache",
+                  "--version"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:13:06.992Z",
+                "finishedAt": "2026-10-18T08:13:06.993Z",
+                "elapsedSeconds": 0.0009329699999998411,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "nextest-owned-version",
+                "command": [
+                  "mise",
+                  "exec",
+                  "rust",
+                  "cargo:cargo-nextest",
+                  "--",
+                  "cargo",
+                  "nextest",
+                  "--version"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:13:06.995Z",
+                "finishedAt": "2026-10-18T08:13:08.348Z",
+                "elapsedSeconds": 1.3527163600000003,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "nextest-command-help",
+                "command": [
+                  "mise",
+                  "exec",
+                  "rust",
+                  "cargo:cargo-nextest",
+                  "--",
+                  "cargo",
+                  "nextest",
+                  "run",
+                  "--help"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:13:08.350Z",
+                "finishedAt": "2026-10-18T08:13:08.386Z",
+                "elapsedSeconds": 0.0358150999999998,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "host-git-version",
+                "command": [
+                  "/usr/bin/git",
+                  "--version"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:13:08.388Z",
+                "finishedAt": "2026-10-18T08:13:08.389Z",
+                "elapsedSeconds": 0.0009604899999994814,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "required-git-version",
+                "command": [
+                  "mise",
+                  "exec",
+                  "rust",
+                  "cargo:cargo-nextest",
+                  "--",
+                  "git",
+                  "--version"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:13:08.391Z",
+                "finishedAt": "2026-10-18T08:13:08.419Z",
+                "elapsedSeconds": 0.028090549999998986,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "locked-rust-toolchain",
+                "command": [
+                  "mise",
+                  "exec",
+                  "rust",
+                  "--",
+                  "rustc",
+                  "--version",
+                  "--verbose"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:13:08.421Z",
+                "finishedAt": "2026-10-18T08:13:08.453Z",
+                "elapsedSeconds": 0.03288830000000053,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "sccache-start",
+                "command": [
+                  "/opt/depot-reuse-20261018-r1/sccache/sccache",
+                  "--start-server"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:13:08.456Z",
+                "finishedAt": "2026-10-18T08:13:08.537Z",
+                "elapsedSeconds": 0.08093281999999999,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "native-warm-build-cli",
+                "command": [
+                  "mise",
+                  "exec",
+                  "rust",
+                  "--",
+                  "cargo",
+                  "build",
+                  "--locked",
+                  "--offline",
+                  "--bin",
+                  "cli-git-native"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/git-policy/cli",
+                "startedAt": "2026-10-18T08:13:08.539Z",
+                "finishedAt": "2026-10-18T08:13:48.073Z",
+                "elapsedSeconds": 39.534354339,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "native-warm-after-cli-build",
+                "command": [
+                  "/opt/depot-reuse-20261018-r1/sccache/sccache",
+                  "--show-stats",
+                  "--stats-format",
+                  "json"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:13:48.076Z",
+                "finishedAt": "2026-10-18T08:13:48.077Z",
+                "elapsedSeconds": 0.00131144000000495,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "native-warm-nextest",
+                "command": [
+                  "mise",
+                  "exec",
+                  "rust",
+                  "cargo:cargo-nextest",
+                  "--",
+                  "cargo",
+                  "nextest",
+                  "run",
+                  "--locked",
+                  "--offline",
+                  "--no-fail-fast",
+                  "--lib",
+                  "--test",
+                  "native_binary",
+                  "--test",
+                  "native_candidates"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/git-policy/cli",
+                "startedAt": "2026-10-18T08:13:48.079Z",
+                "finishedAt": "2026-10-18T08:14:26.370Z",
+                "elapsedSeconds": 38.290979768999996,
+                "exitStatus": 100,
+                "signal": null,
+                "expected": "observe"
+              },
+              {
+                "name": "native-warm-after-nextest",
+                "command": [
+                  "/opt/depot-reuse-20261018-r1/sccache/sccache",
+                  "--show-stats",
+                  "--stats-format",
+                  "json"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:14:26.373Z",
+                "finishedAt": "2026-10-18T08:14:26.374Z",
+                "elapsedSeconds": 0.0013207399999955668,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "native-final-stats",
+                "command": [
+                  "/opt/depot-reuse-20261018-r1/sccache/sccache",
+                  "--show-stats",
+                  "--stats-format",
+                  "json"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:14:26.377Z",
+                "finishedAt": "2026-10-18T08:14:26.378Z",
+                "elapsedSeconds": 0.0011408599999995204,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "sccache-stop",
+                "command": [
+                  "/opt/depot-reuse-20261018-r1/sccache/sccache",
+                  "--stop-server"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:14:26.380Z",
+                "finishedAt": "2026-10-18T08:14:26.381Z",
+                "elapsedSeconds": 0.0013452699999907053,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "observe"
+              },
+              {
+                "name": "frozen-kotlin-source-admission",
+                "command": [
+                  "git",
+                  "diff",
+                  "--exit-code",
+                  "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+                  "--",
+                  "package/linter/kotlin"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:14:26.623Z",
+                "finishedAt": "2026-10-18T08:14:26.626Z",
+                "elapsedSeconds": 0.0030283300000000005,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "locked-gradle-version",
+                "command": [
+                  "mise",
+                  "exec",
+                  "java",
+                  "--",
+                  "./gradlew",
+                  "--version",
+                  "--no-daemon"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+                "startedAt": "2026-10-18T08:14:26.656Z",
+                "finishedAt": "2026-10-18T08:14:32.671Z",
+                "elapsedSeconds": 6.015338187999999,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "detekt-owning-task-help",
+                "command": [
+                  "mise",
+                  "exec",
+                  "java",
+                  "--",
+                  "./gradlew",
+                  "help",
+                  "--task",
+                  "detektCheck",
+                  "--build-cache",
+                  "--console=plain",
+                  "--no-daemon",
+                  "--max-workers=8",
+                  "--init-script",
+                  "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+                "startedAt": "2026-10-18T08:14:32.674Z",
+                "finishedAt": "2026-10-18T08:14:42.179Z",
+                "elapsedSeconds": 9.504287828,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "detekt-cli-help",
+                "command": [
+                  "mise",
+                  "exec",
+                  "java",
+                  "--",
+                  "./gradlew",
+                  "detektCheck",
+                  "--args=--help",
+                  "--build-cache",
+                  "--console=plain",
+                  "--no-daemon",
+                  "--max-workers=8",
+                  "--init-script",
+                  "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+                "startedAt": "2026-10-18T08:14:42.181Z",
+                "finishedAt": "2026-10-18T08:14:49.817Z",
+                "elapsedSeconds": 7.636249728000001,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "detekt-cli-version",
+                "command": [
+                  "mise",
+                  "exec",
+                  "java",
+                  "--",
+                  "./gradlew",
+                  "detektCheck",
+                  "--args=--version",
+                  "--build-cache",
+                  "--console=plain",
+                  "--no-daemon",
+                  "--max-workers=8",
+                  "--init-script",
+                  "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+                "startedAt": "2026-10-18T08:14:49.820Z",
+                "finishedAt": "2026-10-18T08:14:53.293Z",
+                "elapsedSeconds": 3.4736179790000024,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "detekt-existing-package-owner",
+                "command": [
+                  "mise",
+                  "run",
+                  "//package/linter/kotlin:lint:detekt",
+                  "--",
+                  "--build-cache",
+                  "--max-workers=8",
+                  "--init-script",
+                  "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+                "startedAt": "2026-10-18T08:14:53.296Z",
+                "finishedAt": "2026-10-18T08:14:57.658Z",
+                "elapsedSeconds": 4.361777247999998,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "observe"
+              },
+              {
+                "name": "detekt-documented-consumer",
+                "command": [
+                  "mise",
+                  "exec",
+                  "java",
+                  "--",
+                  "./gradlew",
+                  "detektCheck",
+                  "-PdetektInput=/home/runner/work/Monochromatic/Monochromatic/.research-reuse/detekt-fixtures/Documented.kt",
+                  "--build-cache",
+                  "--console=plain",
+                  "--no-daemon",
+                  "--max-workers=8",
+                  "--init-script",
+                  "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+                "startedAt": "2026-10-18T08:14:57.660Z",
+                "finishedAt": "2026-10-18T08:15:01.860Z",
+                "elapsedSeconds": 4.200144239000001,
+                "exitStatus": 0,
+                "signal": null,
+                "expected": "success"
+              },
+              {
+                "name": "detekt-undocumented-positive-control",
+                "command": [
+                  "mise",
+                  "exec",
+                  "java",
+                  "--",
+                  "./gradlew",
+                  "detektCheck",
+                  "-PdetektInput=/home/runner/work/Monochromatic/Monochromatic/.research-reuse/detekt-fixtures/Undocumented.kt",
+                  "--build-cache",
+                  "--console=plain",
+                  "--no-daemon",
+                  "--max-workers=8",
+                  "--init-script",
+                  "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+                ],
+                "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+                "startedAt": "2026-10-18T08:15:01.863Z",
+                "finishedAt": "2026-10-18T08:15:06.083Z",
+                "elapsedSeconds": 4.220496878999999,
+                "exitStatus": 1,
+                "signal": null,
+                "expected": "failure"
+              }
+            ],
+            "allocation": {
+              "name": "Depot CI",
+              "hostname": "depot-worker-bskw5ww624lpwn7c08wn",
+              "bootId": "7c7cc0b3-6def-47e7-abb4-238e3a3fe023",
+              "cpus": 8,
+              "memoryBytes": 33664888832,
+              "cpuModel": "AMD EPYC 9R45 96-Core Processor"
+            },
+            "phase": "warm",
+            "kind": "rust"
+          }
+        },
+        {
+          "member": "failed-rustc-requests.json",
+          "data": [
+            {
+              "startedAt": "2026-10-18T08:13:22.386Z",
+              "elapsedSeconds": 0.023889210000000004,
+              "args": [
+                "/opt/depot-reuse-20261018-r1/rustup/toolchains/nightly-2026-10-17-x86_64-unknown-linux-gnu/bin/rustc",
+                "--edition=2018",
+                "--crate-name=probe",
+                "--crate-type=lib",
+                "--out-dir",
+                "/home/runner/work/Monochromatic/Monochromatic/.research-reuse/cargo-target/debug/build/heapless/66cb3ac8ce29353e/out",
+                "/home/runner/work/Monochromatic/Monochromatic/.research-reuse/cargo-target/debug/build/heapless/66cb3ac8ce29353e/out/probe.rs",
+                "--target",
+                "x86_64-unknown-linux-gnu"
+              ],
+              "exitStatus": 1,
+              "signal": null,
+              "stdoutBytes": 0,
+              "stderrBytes": 182,
+              "stderrSha256": "ce7dfe9bd7a9f71b2fb3992f2711c3338ac764a6c109aa7ae1a7dbcdf9508d4c",
+              "failedStderr": "error: invalid instruction mnemonic 'clrex'\n  |\nnote: instantiated into assembly here\n --> <inline asm>:2:2\n  |\n2 |     clrex\n  |     ^^^^^\n\nerror: aborting due to 1 previous error\n\n"
+            }
+          ]
+        },
+        {
+          "member": "image-exclusion.json",
+          "data": {
+            "sourceMarkerAbsent": true,
+            "syntheticSecretFileAbsent": true,
+            "maskedEnvironmentAbsent": true,
+            "unmaskedEnvironment": null
+          }
+        },
+        {
+          "member": "native-final-stats.json",
+          "data": {
+            "stats": {
+              "compile_requests": 167,
+              "requests_unsupported_compiler": 0,
+              "requests_not_compile": 1,
+              "requests_not_cacheable": 35,
+              "requests_executed": 131,
+              "cache_errors": {
+                "counts": {},
+                "adv_counts": {}
+              },
+              "cache_hits": {
+                "counts": {
+                  "Rust": 131
+                },
+                "adv_counts": {
+                  "rust": 131
+                }
+              },
+              "cache_misses": {
+                "counts": {},
+                "adv_counts": {}
+              },
+              "cache_timeouts": 0,
+              "cache_read_errors": 0,
+              "non_cacheable_compilations": 0,
+              "forced_recaches": 0,
+              "cache_write_errors": 0,
+              "cache_writes": 0,
+              "cache_write_duration": {
+                "secs": 0,
+                "nanos": 0
+              },
+              "cache_read_hit_duration": {
+                "secs": 10,
+                "nanos": 12664048
+              },
+              "compilations": 0,
+              "compiler_write_duration": {
+                "secs": 0,
+                "nanos": 0
+              },
+              "compile_fails": 0,
+              "not_cached": {
+                "crate-type": 25,
+                "missing input": 4,
+                "missing emit": 1,
+                "-": 2,
+                "-o": 3
+              },
+              "dist_compiles": {},
+              "dist_errors": 0,
+              "multi_level": null
+            },
+            "cache_location": "webdav, name: , prefix: /aquaticats-monochromatic-reuse-20261018-native-r3-absolute-git/",
+            "cache_size": null,
+            "max_cache_size": null,
+            "use_preprocessor_cache_mode": false,
+            "version": "0.18.0",
+            "basedirs": []
+          }
+        },
+        {
+          "member": "restored-tool-hashes.json",
+          "data": {
+            "node": {
+              "path": "/opt/depot-reuse-20261018-r1/mise-data/installs/node/26.12.0/bin/node",
+              "realpath": "/opt/depot-reuse-20261018-r1/mise-data/installs/node/26.12.0/bin/node",
+              "sha256": "caa24debe02770c92a70677e2a62ca98890150e7ac1c17bcfe31bcc98cc89943"
+            },
+            "pnpm": {
+              "path": "/opt/depot-reuse-20261018-r1/mise-data/installs/pnpm/12.14.0/pnpm",
+              "realpath": "/opt/depot-reuse-20261018-r1/mise-data/installs/pnpm/12.14.0/pnpm",
+              "sha256": "5e9119e6f4f18dace3795169e9b3672231ab3662505862dc3026571303a8ef32"
+            },
+            "java": {
+              "path": "/opt/depot-reuse-20261018-r1/mise-data/installs/java/temurin-21.0.12+8.0.LTS/bin/java",
+              "realpath": "/opt/depot-reuse-20261018-r1/mise-data/installs/java/temurin-21.0.12+8.0.LTS/bin/java",
+              "sha256": "11af352aa2c506c4123a4e4c19c187d59e06cd0dff317d54f5e6806e07c6715d"
+            },
+            "rustc": {
+              "path": "/opt/depot-reuse-20261018-r1/cargo/bin/rustc",
+              "realpath": "/opt/depot-reuse-20261018-r1/cargo/bin/rustup",
+              "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71"
+            },
+            "cargo": {
+              "path": "/opt/depot-reuse-20261018-r1/cargo/bin/cargo",
+              "realpath": "/opt/depot-reuse-20261018-r1/cargo/bin/rustup",
+              "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71"
+            },
+            "cargo-nextest": {
+              "path": "/opt/depot-reuse-20261018-r1/mise-data/installs/cargo-cargo-nextest/0.9.148/bin/cargo-nextest",
+              "realpath": "/opt/depot-reuse-20261018-r1/mise-data/installs/cargo-cargo-nextest/0.9.148/bin/cargo-nextest",
+              "sha256": "53470cfc9b5cbcd96780db2d348700d76af962467503791f1f8a8824d8967e5c"
+            }
+          }
+        },
+        {
+          "member": "sccache-installation.json",
+          "data": {
+            "startedAt": "2026-10-18T08:12:56.323Z",
+            "elapsedSeconds": 0.79352679,
+            "downloadedBytes": 0,
+            "archiveSha256": null,
+            "binarySha256": "973cb15f6a986d84ca334bbed3bbe2eb8f1ee8fd81bf9e115b8539a293bf8d59",
+            "version": "0.18.0",
+            "sourceCommit": "01c35e69b97f516c2ebfbdb418b5cd6277bde280",
+            "installedInPreparedImage": true
+          }
+        }
+      ]
+    },
+    {
       "prefix": "tool-update",
       "dispatch": {
         "state": "created",
@@ -13009,6 +15784,18 @@
       "serviceCachePoisoned": false,
       "realExistingDetektPackageOwnerExitStatus": 0,
       "fixtureFailure": "The synthetic documented constant-returning function triggered the existing default FunctionOnlyReturningConstant rule; corrected parameter-dependent fixtures are scheduled separately."
+    },
+    "realDetektHostRepeated": {
+      "runs": [
+        "tpqlt2h227",
+        "kfmq92jdm1"
+      ],
+      "jarSha256": "fb64ccda45fe0d9446fb084029246c59063ec9bf1c0c37b47a3fead5d1849707",
+      "jarBytes": 6445,
+      "version": "2.0.0-alpha.6",
+      "documentedAccepted": true,
+      "undocumentedRejectedByRequireKDoc": true,
+      "existingPackageOwnerPassed": true
     }
   },
   "toolImageUpdate": {
@@ -13325,11 +16112,11 @@
     "currentNativeTestSuitePassed": false
   },
   "accounting": {
-    "completedJobs": 13,
-    "requestToTerminalSeconds": 2027,
-    "requestedCpuWindowPriceProxyUsd": 0.8108000000000001,
+    "completedJobs": 15,
+    "requestToTerminalSeconds": 2587,
+    "requestedCpuWindowPriceProxyUsd": 1.0348000000000002,
     "rateUsdPerVcpuSecond": 0.00005,
-    "maximumTotalJobs": 16,
+    "maximumTotalJobs": 18,
     "maxConcurrentOwnedJobs": 2,
     "maxCpusPerJob": 8,
     "maxMemoryGbPerJob": 32,
@@ -13337,6 +16124,12 @@
     "forecastGuard": {
       "basis": "Requested8CPU from each request creation to terminal timestamp, plus900seconds for each pending/future job; this is not an invoice or measured CPU allocation duration.",
       "completed": [
+        {
+          "runId": "r328mp420m",
+          "status": "failed",
+          "requestToFinishSeconds": 215,
+          "requestedCpuWindowPriceProxyUsd": 0.08600000000000001
+        },
         {
           "runId": "x1psl3qf94",
           "status": "finished",
@@ -13386,6 +16179,12 @@
           "requestedCpuWindowPriceProxyUsd": 0.0376
         },
         {
+          "runId": "n2zlbh5gpb",
+          "status": "failed",
+          "requestToFinishSeconds": 253,
+          "requestedCpuWindowPriceProxyUsd": 0.1012
+        },
+        {
           "runId": "w16c45njf5",
           "status": "failed",
           "requestToFinishSeconds": 243,
@@ -13398,6 +16197,18 @@
           "requestedCpuWindowPriceProxyUsd": 0.08320000000000001
         },
         {
+          "runId": "tpqlt2h227",
+          "status": "failed",
+          "requestToFinishSeconds": 284,
+          "requestedCpuWindowPriceProxyUsd": 0.1136
+        },
+        {
+          "runId": "kfmq92jdm1",
+          "status": "failed",
+          "requestToFinishSeconds": 276,
+          "requestedCpuWindowPriceProxyUsd": 0.11040000000000001
+        },
+        {
           "runId": "3jg1fmkc69",
           "status": "finished",
           "requestToFinishSeconds": 137,
@@ -13405,13 +16216,13 @@
         }
       ],
       "pendingBeforeDispatch": 1,
-      "completedProxyUsd": 0.6236,
+      "completedProxyUsd": 1.0348000000000002,
       "pendingWorstCaseUsd": 0.36000000000000004,
-      "remainingJobSlotsIncludingThis": 4,
-      "remainingWorstCaseUsd": 1.4400000000000002,
-      "forecastUsd": 2.4236000000000004,
+      "remainingJobSlotsIncludingThis": 2,
+      "remainingWorstCaseUsd": 0.7200000000000001,
+      "forecastUsd": 2.1148000000000002,
       "limitUsd": 5,
-      "maximumTotalJobs": 16
+      "maximumTotalJobs": 18
     },
     "isInvoice": false,
     "excludes": [
@@ -13420,7 +16231,18 @@
       "network requests/egress",
       "account-wide usage",
       "other agents workloads"
-    ]
+    ],
+    "expandedAuthorization": {
+      "recordedAt": "2026-10-18T08:10:30.616Z",
+      "authorizedBy": "parent research coordinator",
+      "maximumTotalJobs": 18,
+      "maxConcurrentOwnedJobs": 2,
+      "cpusPerJob": 8,
+      "memoryGbPerJob": 32,
+      "minutesPerJob": 15,
+      "requestedTimestampProxyCeilingUsd": 5,
+      "reason": "Independent scanner producer/fresh reader admission and exact-source diagnostic archive without treating the red Git-policy aggregate as successful."
+    }
   },
   "additionalConsumerReceipts": [
     {
@@ -13805,6 +16627,212 @@
       }
     },
     {
+      "runId": "tpqlt2h227",
+      "prefix": "rust-warm-a",
+      "member": "detekt-after-fixture-consumers-jars.json",
+      "data": [
+        {
+          "name": "kotlin-linter-0.1.0.jar",
+          "bytes": 6445,
+          "sha256": "fb64ccda45fe0d9446fb084029246c59063ec9bf1c0c37b47a3fead5d1849707"
+        }
+      ]
+    },
+    {
+      "runId": "tpqlt2h227",
+      "prefix": "rust-warm-a",
+      "member": "detekt-after-owning-task-jars.json",
+      "data": [
+        {
+          "name": "kotlin-linter-0.1.0.jar",
+          "bytes": 6445,
+          "sha256": "fb64ccda45fe0d9446fb084029246c59063ec9bf1c0c37b47a3fead5d1849707"
+        }
+      ]
+    },
+    {
+      "runId": "tpqlt2h227",
+      "prefix": "rust-warm-a",
+      "member": "detekt-before-host-jars.json",
+      "data": [
+        {
+          "name": "kotlin-linter-0.1.0.jar",
+          "bytes": 6445,
+          "sha256": "fb64ccda45fe0d9446fb084029246c59063ec9bf1c0c37b47a3fead5d1849707"
+        }
+      ]
+    },
+    {
+      "runId": "tpqlt2h227",
+      "prefix": "rust-warm-a",
+      "member": "published-linter-prerequisite.json",
+      "data": {
+        "kind": "locked-published-tool-not-current-source-workload",
+        "version": "0.1.3",
+        "releaseTag": "monochromatic-lint-v0.1.3",
+        "releaseSource": "c954f74798ee47c027ee3d9a31811de6345ca328",
+        "archiveSha256": "9d9021526d5377d268d4c75ed9d42d9df53d9ed76969031edb6a7809863ec665",
+        "binarySha256": "6f82c73dadadd11506624a085d38e7e5ab98a26014416bfedd03c1928a85cc69",
+        "bytes": 16639640,
+        "path": "/opt/depot-reuse-20261018-r1/mise-data/installs/cargo-monochromatic-lint/0.1.3/bin/monochromatic-lint"
+      }
+    },
+    {
+      "runId": "tpqlt2h227",
+      "prefix": "rust-warm-a",
+      "member": "reuse-gradle-consumer-session.json",
+      "data": {
+        "startedAt": "2026-10-18T08:13:06.649Z",
+        "finishedAt": "2026-10-18T08:13:47.742Z",
+        "elapsedSeconds": 41.092739318,
+        "exitCode": 0,
+        "phase": "warm",
+        "kind": "rust"
+      }
+    },
+    {
+      "runId": "tpqlt2h227",
+      "prefix": "rust-warm-a",
+      "member": "reuse-registry-probe-session.json",
+      "data": {
+        "startedAt": "2026-10-18T08:13:47.967Z",
+        "finishedAt": "2026-10-18T08:13:48.355Z",
+        "elapsedSeconds": 0.38760532,
+        "exitCode": 0,
+        "phase": "warm",
+        "kind": "rust"
+      }
+    },
+    {
+      "runId": "tpqlt2h227",
+      "prefix": "rust-warm-a",
+      "member": "reuse-rust-consumer-session.json",
+      "data": {
+        "startedAt": "2026-10-18T08:11:33.426Z",
+        "finishedAt": "2026-10-18T08:13:06.428Z",
+        "elapsedSeconds": 93.00109180400001,
+        "exitCode": 1,
+        "phase": "warm",
+        "kind": "rust"
+      }
+    },
+    {
+      "runId": "tpqlt2h227",
+      "prefix": "rust-warm-a",
+      "member": "reuse-tools-consumer-session.json",
+      "data": {
+        "startedAt": "2026-10-18T08:09:57.064Z",
+        "finishedAt": "2026-10-18T08:11:32.702Z",
+        "elapsedSeconds": 95.637517863,
+        "exitCode": 0,
+        "phase": "warm",
+        "kind": "rust"
+      }
+    },
+    {
+      "runId": "kfmq92jdm1",
+      "prefix": "rust-warm-b",
+      "member": "detekt-after-fixture-consumers-jars.json",
+      "data": [
+        {
+          "name": "kotlin-linter-0.1.0.jar",
+          "bytes": 6445,
+          "sha256": "fb64ccda45fe0d9446fb084029246c59063ec9bf1c0c37b47a3fead5d1849707"
+        }
+      ]
+    },
+    {
+      "runId": "kfmq92jdm1",
+      "prefix": "rust-warm-b",
+      "member": "detekt-after-owning-task-jars.json",
+      "data": [
+        {
+          "name": "kotlin-linter-0.1.0.jar",
+          "bytes": 6445,
+          "sha256": "fb64ccda45fe0d9446fb084029246c59063ec9bf1c0c37b47a3fead5d1849707"
+        }
+      ]
+    },
+    {
+      "runId": "kfmq92jdm1",
+      "prefix": "rust-warm-b",
+      "member": "detekt-before-host-jars.json",
+      "data": [
+        {
+          "name": "kotlin-linter-0.1.0.jar",
+          "bytes": 6445,
+          "sha256": "fb64ccda45fe0d9446fb084029246c59063ec9bf1c0c37b47a3fead5d1849707"
+        }
+      ]
+    },
+    {
+      "runId": "kfmq92jdm1",
+      "prefix": "rust-warm-b",
+      "member": "published-linter-prerequisite.json",
+      "data": {
+        "kind": "locked-published-tool-not-current-source-workload",
+        "version": "0.1.3",
+        "releaseTag": "monochromatic-lint-v0.1.3",
+        "releaseSource": "c954f74798ee47c027ee3d9a31811de6345ca328",
+        "archiveSha256": "9d9021526d5377d268d4c75ed9d42d9df53d9ed76969031edb6a7809863ec665",
+        "binarySha256": "6f82c73dadadd11506624a085d38e7e5ab98a26014416bfedd03c1928a85cc69",
+        "bytes": 16639640,
+        "path": "/opt/depot-reuse-20261018-r1/mise-data/installs/cargo-monochromatic-lint/0.1.3/bin/monochromatic-lint"
+      }
+    },
+    {
+      "runId": "kfmq92jdm1",
+      "prefix": "rust-warm-b",
+      "member": "reuse-gradle-consumer-session.json",
+      "data": {
+        "startedAt": "2026-10-18T08:14:26.622Z",
+        "finishedAt": "2026-10-18T08:15:06.089Z",
+        "elapsedSeconds": 39.466736479,
+        "exitCode": 0,
+        "phase": "warm",
+        "kind": "rust"
+      }
+    },
+    {
+      "runId": "kfmq92jdm1",
+      "prefix": "rust-warm-b",
+      "member": "reuse-registry-probe-session.json",
+      "data": {
+        "startedAt": "2026-10-18T08:15:06.334Z",
+        "finishedAt": "2026-10-18T08:15:06.804Z",
+        "elapsedSeconds": 0.46933218,
+        "exitCode": 0,
+        "phase": "warm",
+        "kind": "rust"
+      }
+    },
+    {
+      "runId": "kfmq92jdm1",
+      "prefix": "rust-warm-b",
+      "member": "reuse-rust-consumer-session.json",
+      "data": {
+        "startedAt": "2026-10-18T08:12:56.292Z",
+        "finishedAt": "2026-10-18T08:14:26.383Z",
+        "elapsedSeconds": 90.09028809499999,
+        "exitCode": 1,
+        "phase": "warm",
+        "kind": "rust"
+      }
+    },
+    {
+      "runId": "kfmq92jdm1",
+      "prefix": "rust-warm-b",
+      "member": "reuse-tools-consumer-session.json",
+      "data": {
+        "startedAt": "2026-10-18T08:11:23.143Z",
+        "finishedAt": "2026-10-18T08:12:55.697Z",
+        "elapsedSeconds": 92.553619904,
+        "exitCode": 0,
+        "phase": "warm",
+        "kind": "rust"
+      }
+    },
+    {
       "runId": "3jg1fmkc69",
       "prefix": "tool-update",
       "member": "opt/depot-reuse-20261018-r1/receipts-r2/reuse-tool-update-session.json",
@@ -13986,6 +17014,1044 @@
         "monochromatic-lint-0.1.3-x86_64-unknown-linux-gnu/README.md"
       ]
     },
-    "currentSourceLinterWorkloadExercised": false
+    "currentSourceLinterWorkloadExercised": false,
+    "repeatedNativeConsumers": [
+      {
+        "prefix": "rust-absolute-seed",
+        "allocation": {
+          "name": "Depot CI",
+          "hostname": "depot-worker-mq81p5x84l9lbh4vllbn",
+          "bootId": "86eb506f-5aa9-46d1-af14-5a896d384eb9",
+          "cpus": 8,
+          "memoryBytes": 33664888832,
+          "cpuModel": "AMD EPYC 9R45 96-Core Processor"
+        },
+        "harnessSha": "c653cef3cdb9bbba2e8d5bbb46d653e09616610f",
+        "baseSourceSha": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+        "commands": [
+          {
+            "name": "native-seed-build-cli",
+            "command": [
+              "mise",
+              "exec",
+              "rust",
+              "--",
+              "cargo",
+              "build",
+              "--locked",
+              "--offline",
+              "--bin",
+              "cli-git-native"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/git-policy/cli",
+            "startedAt": "2026-10-18T08:03:55.484Z",
+            "finishedAt": "2026-10-18T08:04:48.130Z",
+            "elapsedSeconds": 52.645819495,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "success"
+          },
+          {
+            "name": "native-seed-after-cli-build",
+            "command": [
+              "/opt/depot-reuse-20261018-r1/sccache/sccache",
+              "--show-stats",
+              "--stats-format",
+              "json"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+            "startedAt": "2026-10-18T08:04:48.132Z",
+            "finishedAt": "2026-10-18T08:04:48.134Z",
+            "elapsedSeconds": 0.0012858689999993658,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "success"
+          },
+          {
+            "name": "native-seed-nextest",
+            "command": [
+              "mise",
+              "exec",
+              "rust",
+              "cargo:cargo-nextest",
+              "--",
+              "cargo",
+              "nextest",
+              "run",
+              "--locked",
+              "--offline",
+              "--no-fail-fast",
+              "--lib",
+              "--test",
+              "native_binary",
+              "--test",
+              "native_candidates"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/git-policy/cli",
+            "startedAt": "2026-10-18T08:04:48.135Z",
+            "finishedAt": "2026-10-18T08:05:26.483Z",
+            "elapsedSeconds": 38.347753776000005,
+            "exitStatus": 100,
+            "signal": null,
+            "expected": "observe"
+          },
+          {
+            "name": "native-seed-after-nextest",
+            "command": [
+              "/opt/depot-reuse-20261018-r1/sccache/sccache",
+              "--show-stats",
+              "--stats-format",
+              "json"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+            "startedAt": "2026-10-18T08:05:26.486Z",
+            "finishedAt": "2026-10-18T08:05:26.487Z",
+            "elapsedSeconds": 0.0012875889999995707,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "success"
+          },
+          {
+            "name": "native-final-stats",
+            "command": [
+              "/opt/depot-reuse-20261018-r1/sccache/sccache",
+              "--show-stats",
+              "--stats-format",
+              "json"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+            "startedAt": "2026-10-18T08:05:26.490Z",
+            "finishedAt": "2026-10-18T08:05:26.491Z",
+            "elapsedSeconds": 0.0011414789999980711,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "success"
+          }
+        ],
+        "afterCliBuild": {
+          "stats": {
+            "compile_requests": 163,
+            "requests_unsupported_compiler": 0,
+            "requests_not_compile": 1,
+            "requests_not_cacheable": 31,
+            "requests_executed": 131,
+            "cache_errors": {
+              "counts": {},
+              "adv_counts": {}
+            },
+            "cache_hits": {
+              "counts": {},
+              "adv_counts": {}
+            },
+            "cache_misses": {
+              "counts": {
+                "Rust": 131
+              },
+              "adv_counts": {
+                "rust": 131
+              }
+            },
+            "cache_timeouts": 0,
+            "cache_read_errors": 0,
+            "non_cacheable_compilations": 0,
+            "forced_recaches": 0,
+            "cache_write_errors": 0,
+            "cache_writes": 131,
+            "cache_write_duration": {
+              "secs": 8,
+              "nanos": 734182003
+            },
+            "cache_read_hit_duration": {
+              "secs": 0,
+              "nanos": 0
+            },
+            "compilations": 131,
+            "compiler_write_duration": {
+              "secs": 61,
+              "nanos": 302806776
+            },
+            "compile_fails": 0,
+            "not_cached": {
+              "missing input": 4,
+              "-o": 3,
+              "missing emit": 1,
+              "crate-type": 22,
+              "-": 1
+            },
+            "dist_compiles": {},
+            "dist_errors": 0,
+            "multi_level": null
+          },
+          "cache_location": "webdav, name: , prefix: /aquaticats-monochromatic-reuse-20261018-native-r3-absolute-git/",
+          "cache_size": null,
+          "max_cache_size": null,
+          "use_preprocessor_cache_mode": false,
+          "version": "0.18.0",
+          "basedirs": []
+        },
+        "counts": {
+          "testsRun": 1951,
+          "passed": 1949,
+          "failed": 2,
+          "skipped": 5,
+          "enumeratedTotal": 1956
+        },
+        "failedCases": [
+          "        FAIL [   0.005s] (1210/1951) monochromatic-git-policy-cli real_index_lock::tests::releasing_after_a_landing_leaves_a_replaced_lock",
+          "        FAIL [   0.007s] (1211/1951) monochromatic-git-policy-cli real_index_lock::tests::an_install_through_a_replaced_lock_is_refused",
+          "        FAIL [   0.005s] (1210/1951) monochromatic-git-policy-cli real_index_lock::tests::releasing_after_a_landing_leaves_a_replaced_lock",
+          "        FAIL [   0.007s] (1211/1951) monochromatic-git-policy-cli real_index_lock::tests::an_install_through_a_replaced_lock_is_refused"
+        ],
+        "host": null
+      },
+      {
+        "prefix": "rust-warm-a",
+        "allocation": {
+          "name": "Depot CI",
+          "hostname": "depot-worker-fh472z34bbqrxtpj9nkc",
+          "bootId": "8b91b45c-0fd4-4496-a62c-fac318d895b9",
+          "cpus": 8,
+          "memoryBytes": 33664888832,
+          "cpuModel": "AMD EPYC 9R45 96-Core Processor"
+        },
+        "harnessSha": "ce27ef7d9d76615243e969e987ba2efd76195f49",
+        "baseSourceSha": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+        "commands": [
+          {
+            "name": "native-warm-build-cli",
+            "command": [
+              "mise",
+              "exec",
+              "rust",
+              "--",
+              "cargo",
+              "build",
+              "--locked",
+              "--offline",
+              "--bin",
+              "cli-git-native"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/git-policy/cli",
+            "startedAt": "2026-10-18T08:11:46.789Z",
+            "finishedAt": "2026-10-18T08:12:28.285Z",
+            "elapsedSeconds": 41.495455658,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "success"
+          },
+          {
+            "name": "native-warm-after-cli-build",
+            "command": [
+              "/opt/depot-reuse-20261018-r1/sccache/sccache",
+              "--show-stats",
+              "--stats-format",
+              "json"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+            "startedAt": "2026-10-18T08:12:28.287Z",
+            "finishedAt": "2026-10-18T08:12:28.289Z",
+            "elapsedSeconds": 0.0012602699999988544,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "success"
+          },
+          {
+            "name": "native-warm-nextest",
+            "command": [
+              "mise",
+              "exec",
+              "rust",
+              "cargo:cargo-nextest",
+              "--",
+              "cargo",
+              "nextest",
+              "run",
+              "--locked",
+              "--offline",
+              "--no-fail-fast",
+              "--lib",
+              "--test",
+              "native_binary",
+              "--test",
+              "native_candidates"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/git-policy/cli",
+            "startedAt": "2026-10-18T08:12:28.294Z",
+            "finishedAt": "2026-10-18T08:13:06.415Z",
+            "elapsedSeconds": 38.12081587000001,
+            "exitStatus": 100,
+            "signal": null,
+            "expected": "observe"
+          },
+          {
+            "name": "native-warm-after-nextest",
+            "command": [
+              "/opt/depot-reuse-20261018-r1/sccache/sccache",
+              "--show-stats",
+              "--stats-format",
+              "json"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+            "startedAt": "2026-10-18T08:13:06.417Z",
+            "finishedAt": "2026-10-18T08:13:06.419Z",
+            "elapsedSeconds": 0.001295270000002347,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "success"
+          },
+          {
+            "name": "native-final-stats",
+            "command": [
+              "/opt/depot-reuse-20261018-r1/sccache/sccache",
+              "--show-stats",
+              "--stats-format",
+              "json"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+            "startedAt": "2026-10-18T08:13:06.422Z",
+            "finishedAt": "2026-10-18T08:13:06.423Z",
+            "elapsedSeconds": 0.0010912499999976718,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "success"
+          },
+          {
+            "name": "detekt-owning-task-help",
+            "command": [
+              "mise",
+              "exec",
+              "java",
+              "--",
+              "./gradlew",
+              "help",
+              "--task",
+              "detektCheck",
+              "--build-cache",
+              "--console=plain",
+              "--no-daemon",
+              "--max-workers=8",
+              "--init-script",
+              "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+            "startedAt": "2026-10-18T08:13:13.812Z",
+            "finishedAt": "2026-10-18T08:13:23.655Z",
+            "elapsedSeconds": 9.842795047,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "success"
+          },
+          {
+            "name": "detekt-cli-help",
+            "command": [
+              "mise",
+              "exec",
+              "java",
+              "--",
+              "./gradlew",
+              "detektCheck",
+              "--args=--help",
+              "--build-cache",
+              "--console=plain",
+              "--no-daemon",
+              "--max-workers=8",
+              "--init-script",
+              "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+            "startedAt": "2026-10-18T08:13:23.657Z",
+            "finishedAt": "2026-10-18T08:13:31.407Z",
+            "elapsedSeconds": 7.750155687999999,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "success"
+          },
+          {
+            "name": "detekt-cli-version",
+            "command": [
+              "mise",
+              "exec",
+              "java",
+              "--",
+              "./gradlew",
+              "detektCheck",
+              "--args=--version",
+              "--build-cache",
+              "--console=plain",
+              "--no-daemon",
+              "--max-workers=8",
+              "--init-script",
+              "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+            "startedAt": "2026-10-18T08:13:31.410Z",
+            "finishedAt": "2026-10-18T08:13:34.915Z",
+            "elapsedSeconds": 3.5051698790000008,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "success"
+          },
+          {
+            "name": "detekt-existing-package-owner",
+            "command": [
+              "mise",
+              "run",
+              "//package/linter/kotlin:lint:detekt",
+              "--",
+              "--build-cache",
+              "--max-workers=8",
+              "--init-script",
+              "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+            "startedAt": "2026-10-18T08:13:34.917Z",
+            "finishedAt": "2026-10-18T08:13:39.293Z",
+            "elapsedSeconds": 4.375370028999998,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "observe"
+          },
+          {
+            "name": "detekt-documented-consumer",
+            "command": [
+              "mise",
+              "exec",
+              "java",
+              "--",
+              "./gradlew",
+              "detektCheck",
+              "-PdetektInput=/home/runner/work/Monochromatic/Monochromatic/.research-reuse/detekt-fixtures/Documented.kt",
+              "--build-cache",
+              "--console=plain",
+              "--no-daemon",
+              "--max-workers=8",
+              "--init-script",
+              "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+            "startedAt": "2026-10-18T08:13:39.295Z",
+            "finishedAt": "2026-10-18T08:13:43.510Z",
+            "elapsedSeconds": 4.214597677999998,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "success"
+          },
+          {
+            "name": "detekt-undocumented-positive-control",
+            "command": [
+              "mise",
+              "exec",
+              "java",
+              "--",
+              "./gradlew",
+              "detektCheck",
+              "-PdetektInput=/home/runner/work/Monochromatic/Monochromatic/.research-reuse/detekt-fixtures/Undocumented.kt",
+              "--build-cache",
+              "--console=plain",
+              "--no-daemon",
+              "--max-workers=8",
+              "--init-script",
+              "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+            "startedAt": "2026-10-18T08:13:43.512Z",
+            "finishedAt": "2026-10-18T08:13:47.736Z",
+            "elapsedSeconds": 4.224434188999999,
+            "exitStatus": 1,
+            "signal": null,
+            "expected": "failure"
+          }
+        ],
+        "afterCliBuild": {
+          "stats": {
+            "compile_requests": 163,
+            "requests_unsupported_compiler": 0,
+            "requests_not_compile": 1,
+            "requests_not_cacheable": 31,
+            "requests_executed": 131,
+            "cache_errors": {
+              "counts": {},
+              "adv_counts": {}
+            },
+            "cache_hits": {
+              "counts": {
+                "Rust": 131
+              },
+              "adv_counts": {
+                "rust": 131
+              }
+            },
+            "cache_misses": {
+              "counts": {},
+              "adv_counts": {}
+            },
+            "cache_timeouts": 0,
+            "cache_read_errors": 0,
+            "non_cacheable_compilations": 0,
+            "forced_recaches": 0,
+            "cache_write_errors": 0,
+            "cache_writes": 0,
+            "cache_write_duration": {
+              "secs": 0,
+              "nanos": 0
+            },
+            "cache_read_hit_duration": {
+              "secs": 11,
+              "nanos": 169746364
+            },
+            "compilations": 0,
+            "compiler_write_duration": {
+              "secs": 0,
+              "nanos": 0
+            },
+            "compile_fails": 0,
+            "not_cached": {
+              "-o": 3,
+              "missing emit": 1,
+              "crate-type": 22,
+              "missing input": 4,
+              "-": 1
+            },
+            "dist_compiles": {},
+            "dist_errors": 0,
+            "multi_level": null
+          },
+          "cache_location": "webdav, name: , prefix: /aquaticats-monochromatic-reuse-20261018-native-r3-absolute-git/",
+          "cache_size": null,
+          "max_cache_size": null,
+          "use_preprocessor_cache_mode": false,
+          "version": "0.18.0",
+          "basedirs": []
+        },
+        "counts": {
+          "testsRun": 1951,
+          "passed": 1948,
+          "failed": 3,
+          "skipped": 5,
+          "enumeratedTotal": 1956
+        },
+        "failedCases": [
+          "        FAIL [   0.003s] ( 749/1951) monochromatic-git-policy-cli index_lock_evidence::tests::the_change_time_rounds_nanoseconds_down_to_milliseconds",
+          "        FAIL [   0.004s] (1207/1951) monochromatic-git-policy-cli real_index_lock::tests::a_replaced_lock_is_never_released",
+          "        FAIL [   0.006s] (1211/1951) monochromatic-git-policy-cli real_index_lock::tests::releasing_after_a_landing_leaves_a_replaced_lock",
+          "        FAIL [   0.003s] ( 749/1951) monochromatic-git-policy-cli index_lock_evidence::tests::the_change_time_rounds_nanoseconds_down_to_milliseconds",
+          "        FAIL [   0.004s] (1207/1951) monochromatic-git-policy-cli real_index_lock::tests::a_replaced_lock_is_never_released",
+          "        FAIL [   0.006s] (1211/1951) monochromatic-git-policy-cli real_index_lock::tests::releasing_after_a_landing_leaves_a_replaced_lock"
+        ],
+        "host": {
+          "versionOutput": "\u001b[33mmise\u001b[0m \u001b[33mWARN\u001b[0m  missing: \u001b[34mbun\u001b[0m@1.3.14 \u001b[34mcargo:fd-find\u001b[0m@10.5.0 \u001b[34mripgrep\u001b[0m@15.2.0 \u001b[34mcargo:fastmod\u001b[0m@0.4.…\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\nTo honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.8.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.\nDaemon will be stopped at the end of the build \n> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED\n> Task :compileKotlin UP-TO-DATE\n> Task :compileJava NO-SOURCE\n> Task :processResources UP-TO-DATE\n> Task :classes UP-TO-DATE\n> Task :jar UP-TO-DATE\n\n> Task :detektCheck\n2.0.0-alpha.6\n\n[Incubating] Problems report is available at: file:///home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin/build/reports/problems/problems-report.html\n\nDeprecated Gradle features were used in this build, making it incompatible with Gradle 10.\n\nYou can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.\n\nFor more on this, please refer to https://docs.gradle.org/9.8.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.\n\nBUILD SUCCESSFUL in 3s\n4 actionable tasks: 1 executed, 3 up-to-date\nConsider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.1/userguide/configuration_cache_enabling.html\n",
+          "beforeJars": [
+            {
+              "name": "kotlin-linter-0.1.0.jar",
+              "bytes": 6445,
+              "sha256": "fb64ccda45fe0d9446fb084029246c59063ec9bf1c0c37b47a3fead5d1849707"
+            }
+          ],
+          "afterJars": [
+            {
+              "name": "kotlin-linter-0.1.0.jar",
+              "bytes": 6445,
+              "sha256": "fb64ccda45fe0d9446fb084029246c59063ec9bf1c0c37b47a3fead5d1849707"
+            }
+          ],
+          "positiveControlFinding": [
+            "e: /home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin/../../../.research-reuse/detekt-fixtures/Undocumented.kt:1:5 Missing KDoc on function 'undocumented'. [RequireKDoc]"
+          ],
+          "documented": {
+            "name": "detekt-documented-consumer",
+            "command": [
+              "mise",
+              "exec",
+              "java",
+              "--",
+              "./gradlew",
+              "detektCheck",
+              "-PdetektInput=/home/runner/work/Monochromatic/Monochromatic/.research-reuse/detekt-fixtures/Documented.kt",
+              "--build-cache",
+              "--console=plain",
+              "--no-daemon",
+              "--max-workers=8",
+              "--init-script",
+              "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+            "startedAt": "2026-10-18T08:13:39.295Z",
+            "finishedAt": "2026-10-18T08:13:43.510Z",
+            "elapsedSeconds": 4.214597677999998,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "success"
+          },
+          "undocumented": {
+            "name": "detekt-undocumented-positive-control",
+            "command": [
+              "mise",
+              "exec",
+              "java",
+              "--",
+              "./gradlew",
+              "detektCheck",
+              "-PdetektInput=/home/runner/work/Monochromatic/Monochromatic/.research-reuse/detekt-fixtures/Undocumented.kt",
+              "--build-cache",
+              "--console=plain",
+              "--no-daemon",
+              "--max-workers=8",
+              "--init-script",
+              "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+            "startedAt": "2026-10-18T08:13:43.512Z",
+            "finishedAt": "2026-10-18T08:13:47.736Z",
+            "elapsedSeconds": 4.224434188999999,
+            "exitStatus": 1,
+            "signal": null,
+            "expected": "failure"
+          },
+          "existingPackageOwner": {
+            "name": "detekt-existing-package-owner",
+            "command": [
+              "mise",
+              "run",
+              "//package/linter/kotlin:lint:detekt",
+              "--",
+              "--build-cache",
+              "--max-workers=8",
+              "--init-script",
+              "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+            "startedAt": "2026-10-18T08:13:34.917Z",
+            "finishedAt": "2026-10-18T08:13:39.293Z",
+            "elapsedSeconds": 4.375370028999998,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "observe"
+          }
+        }
+      },
+      {
+        "prefix": "rust-warm-b",
+        "allocation": {
+          "name": "Depot CI",
+          "hostname": "depot-worker-bskw5ww624lpwn7c08wn",
+          "bootId": "7c7cc0b3-6def-47e7-abb4-238e3a3fe023",
+          "cpus": 8,
+          "memoryBytes": 33664888832,
+          "cpuModel": "AMD EPYC 9R45 96-Core Processor"
+        },
+        "harnessSha": "ce27ef7d9d76615243e969e987ba2efd76195f49",
+        "baseSourceSha": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+        "commands": [
+          {
+            "name": "native-warm-build-cli",
+            "command": [
+              "mise",
+              "exec",
+              "rust",
+              "--",
+              "cargo",
+              "build",
+              "--locked",
+              "--offline",
+              "--bin",
+              "cli-git-native"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/git-policy/cli",
+            "startedAt": "2026-10-18T08:13:08.539Z",
+            "finishedAt": "2026-10-18T08:13:48.073Z",
+            "elapsedSeconds": 39.534354339,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "success"
+          },
+          {
+            "name": "native-warm-after-cli-build",
+            "command": [
+              "/opt/depot-reuse-20261018-r1/sccache/sccache",
+              "--show-stats",
+              "--stats-format",
+              "json"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+            "startedAt": "2026-10-18T08:13:48.076Z",
+            "finishedAt": "2026-10-18T08:13:48.077Z",
+            "elapsedSeconds": 0.00131144000000495,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "success"
+          },
+          {
+            "name": "native-warm-nextest",
+            "command": [
+              "mise",
+              "exec",
+              "rust",
+              "cargo:cargo-nextest",
+              "--",
+              "cargo",
+              "nextest",
+              "run",
+              "--locked",
+              "--offline",
+              "--no-fail-fast",
+              "--lib",
+              "--test",
+              "native_binary",
+              "--test",
+              "native_candidates"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/git-policy/cli",
+            "startedAt": "2026-10-18T08:13:48.079Z",
+            "finishedAt": "2026-10-18T08:14:26.370Z",
+            "elapsedSeconds": 38.290979768999996,
+            "exitStatus": 100,
+            "signal": null,
+            "expected": "observe"
+          },
+          {
+            "name": "native-warm-after-nextest",
+            "command": [
+              "/opt/depot-reuse-20261018-r1/sccache/sccache",
+              "--show-stats",
+              "--stats-format",
+              "json"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+            "startedAt": "2026-10-18T08:14:26.373Z",
+            "finishedAt": "2026-10-18T08:14:26.374Z",
+            "elapsedSeconds": 0.0013207399999955668,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "success"
+          },
+          {
+            "name": "native-final-stats",
+            "command": [
+              "/opt/depot-reuse-20261018-r1/sccache/sccache",
+              "--show-stats",
+              "--stats-format",
+              "json"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+            "startedAt": "2026-10-18T08:14:26.377Z",
+            "finishedAt": "2026-10-18T08:14:26.378Z",
+            "elapsedSeconds": 0.0011408599999995204,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "success"
+          },
+          {
+            "name": "detekt-owning-task-help",
+            "command": [
+              "mise",
+              "exec",
+              "java",
+              "--",
+              "./gradlew",
+              "help",
+              "--task",
+              "detektCheck",
+              "--build-cache",
+              "--console=plain",
+              "--no-daemon",
+              "--max-workers=8",
+              "--init-script",
+              "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+            "startedAt": "2026-10-18T08:14:32.674Z",
+            "finishedAt": "2026-10-18T08:14:42.179Z",
+            "elapsedSeconds": 9.504287828,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "success"
+          },
+          {
+            "name": "detekt-cli-help",
+            "command": [
+              "mise",
+              "exec",
+              "java",
+              "--",
+              "./gradlew",
+              "detektCheck",
+              "--args=--help",
+              "--build-cache",
+              "--console=plain",
+              "--no-daemon",
+              "--max-workers=8",
+              "--init-script",
+              "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+            "startedAt": "2026-10-18T08:14:42.181Z",
+            "finishedAt": "2026-10-18T08:14:49.817Z",
+            "elapsedSeconds": 7.636249728000001,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "success"
+          },
+          {
+            "name": "detekt-cli-version",
+            "command": [
+              "mise",
+              "exec",
+              "java",
+              "--",
+              "./gradlew",
+              "detektCheck",
+              "--args=--version",
+              "--build-cache",
+              "--console=plain",
+              "--no-daemon",
+              "--max-workers=8",
+              "--init-script",
+              "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+            "startedAt": "2026-10-18T08:14:49.820Z",
+            "finishedAt": "2026-10-18T08:14:53.293Z",
+            "elapsedSeconds": 3.4736179790000024,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "success"
+          },
+          {
+            "name": "detekt-existing-package-owner",
+            "command": [
+              "mise",
+              "run",
+              "//package/linter/kotlin:lint:detekt",
+              "--",
+              "--build-cache",
+              "--max-workers=8",
+              "--init-script",
+              "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+            "startedAt": "2026-10-18T08:14:53.296Z",
+            "finishedAt": "2026-10-18T08:14:57.658Z",
+            "elapsedSeconds": 4.361777247999998,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "observe"
+          },
+          {
+            "name": "detekt-documented-consumer",
+            "command": [
+              "mise",
+              "exec",
+              "java",
+              "--",
+              "./gradlew",
+              "detektCheck",
+              "-PdetektInput=/home/runner/work/Monochromatic/Monochromatic/.research-reuse/detekt-fixtures/Documented.kt",
+              "--build-cache",
+              "--console=plain",
+              "--no-daemon",
+              "--max-workers=8",
+              "--init-script",
+              "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+            "startedAt": "2026-10-18T08:14:57.660Z",
+            "finishedAt": "2026-10-18T08:15:01.860Z",
+            "elapsedSeconds": 4.200144239000001,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "success"
+          },
+          {
+            "name": "detekt-undocumented-positive-control",
+            "command": [
+              "mise",
+              "exec",
+              "java",
+              "--",
+              "./gradlew",
+              "detektCheck",
+              "-PdetektInput=/home/runner/work/Monochromatic/Monochromatic/.research-reuse/detekt-fixtures/Undocumented.kt",
+              "--build-cache",
+              "--console=plain",
+              "--no-daemon",
+              "--max-workers=8",
+              "--init-script",
+              "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+            "startedAt": "2026-10-18T08:15:01.863Z",
+            "finishedAt": "2026-10-18T08:15:06.083Z",
+            "elapsedSeconds": 4.220496878999999,
+            "exitStatus": 1,
+            "signal": null,
+            "expected": "failure"
+          }
+        ],
+        "afterCliBuild": {
+          "stats": {
+            "compile_requests": 163,
+            "requests_unsupported_compiler": 0,
+            "requests_not_compile": 1,
+            "requests_not_cacheable": 31,
+            "requests_executed": 131,
+            "cache_errors": {
+              "counts": {},
+              "adv_counts": {}
+            },
+            "cache_hits": {
+              "counts": {
+                "Rust": 131
+              },
+              "adv_counts": {
+                "rust": 131
+              }
+            },
+            "cache_misses": {
+              "counts": {},
+              "adv_counts": {}
+            },
+            "cache_timeouts": 0,
+            "cache_read_errors": 0,
+            "non_cacheable_compilations": 0,
+            "forced_recaches": 0,
+            "cache_write_errors": 0,
+            "cache_writes": 0,
+            "cache_write_duration": {
+              "secs": 0,
+              "nanos": 0
+            },
+            "cache_read_hit_duration": {
+              "secs": 10,
+              "nanos": 12664048
+            },
+            "compilations": 0,
+            "compiler_write_duration": {
+              "secs": 0,
+              "nanos": 0
+            },
+            "compile_fails": 0,
+            "not_cached": {
+              "missing input": 4,
+              "-": 1,
+              "missing emit": 1,
+              "-o": 3,
+              "crate-type": 22
+            },
+            "dist_compiles": {},
+            "dist_errors": 0,
+            "multi_level": null
+          },
+          "cache_location": "webdav, name: , prefix: /aquaticats-monochromatic-reuse-20261018-native-r3-absolute-git/",
+          "cache_size": null,
+          "max_cache_size": null,
+          "use_preprocessor_cache_mode": false,
+          "version": "0.18.0",
+          "basedirs": []
+        },
+        "counts": {
+          "testsRun": 1951,
+          "passed": 1949,
+          "failed": 2,
+          "skipped": 5,
+          "enumeratedTotal": 1956
+        },
+        "failedCases": [
+          "        FAIL [   0.004s] (1207/1951) monochromatic-git-policy-cli real_index_lock::tests::a_replaced_lock_is_never_released",
+          "        FAIL [   0.005s] (1211/1951) monochromatic-git-policy-cli real_index_lock::tests::releasing_after_a_landing_leaves_a_replaced_lock",
+          "        FAIL [   0.004s] (1207/1951) monochromatic-git-policy-cli real_index_lock::tests::a_replaced_lock_is_never_released",
+          "        FAIL [   0.005s] (1211/1951) monochromatic-git-policy-cli real_index_lock::tests::releasing_after_a_landing_leaves_a_replaced_lock"
+        ],
+        "host": {
+          "versionOutput": "\u001b[33mmise\u001b[0m \u001b[33mWARN\u001b[0m  missing: \u001b[34mbun\u001b[0m@1.3.14 \u001b[34mcargo:fd-find\u001b[0m@10.5.0 \u001b[34mripgrep\u001b[0m@15.2.0 \u001b[34mcargo:fastmod\u001b[0m@0.4.…\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\u001b[34m\u001b[0m\nTo honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.8.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.\nDaemon will be stopped at the end of the build \n> Task :checkKotlinGradlePluginConfigurationErrors SKIPPED\n> Task :compileKotlin UP-TO-DATE\n> Task :compileJava NO-SOURCE\n> Task :processResources UP-TO-DATE\n> Task :classes UP-TO-DATE\n> Task :jar UP-TO-DATE\n\n> Task :detektCheck\n2.0.0-alpha.6\n\n[Incubating] Problems report is available at: file:///home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin/build/reports/problems/problems-report.html\n\nDeprecated Gradle features were used in this build, making it incompatible with Gradle 10.\n\nYou can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.\n\nFor more on this, please refer to https://docs.gradle.org/9.8.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.\n\nBUILD SUCCESSFUL in 3s\n4 actionable tasks: 1 executed, 3 up-to-date\nConsider enabling configuration cache to speed up this build: https://docs.gradle.org/9.8.1/userguide/configuration_cache_enabling.html\n",
+          "beforeJars": [
+            {
+              "name": "kotlin-linter-0.1.0.jar",
+              "bytes": 6445,
+              "sha256": "fb64ccda45fe0d9446fb084029246c59063ec9bf1c0c37b47a3fead5d1849707"
+            }
+          ],
+          "afterJars": [
+            {
+              "name": "kotlin-linter-0.1.0.jar",
+              "bytes": 6445,
+              "sha256": "fb64ccda45fe0d9446fb084029246c59063ec9bf1c0c37b47a3fead5d1849707"
+            }
+          ],
+          "positiveControlFinding": [
+            "e: /home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin/../../../.research-reuse/detekt-fixtures/Undocumented.kt:1:5 Missing KDoc on function 'undocumented'. [RequireKDoc]"
+          ],
+          "documented": {
+            "name": "detekt-documented-consumer",
+            "command": [
+              "mise",
+              "exec",
+              "java",
+              "--",
+              "./gradlew",
+              "detektCheck",
+              "-PdetektInput=/home/runner/work/Monochromatic/Monochromatic/.research-reuse/detekt-fixtures/Documented.kt",
+              "--build-cache",
+              "--console=plain",
+              "--no-daemon",
+              "--max-workers=8",
+              "--init-script",
+              "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+            "startedAt": "2026-10-18T08:14:57.660Z",
+            "finishedAt": "2026-10-18T08:15:01.860Z",
+            "elapsedSeconds": 4.200144239000001,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "success"
+          },
+          "undocumented": {
+            "name": "detekt-undocumented-positive-control",
+            "command": [
+              "mise",
+              "exec",
+              "java",
+              "--",
+              "./gradlew",
+              "detektCheck",
+              "-PdetektInput=/home/runner/work/Monochromatic/Monochromatic/.research-reuse/detekt-fixtures/Undocumented.kt",
+              "--build-cache",
+              "--console=plain",
+              "--no-daemon",
+              "--max-workers=8",
+              "--init-script",
+              "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic/package/linter/kotlin",
+            "startedAt": "2026-10-18T08:15:01.863Z",
+            "finishedAt": "2026-10-18T08:15:06.083Z",
+            "elapsedSeconds": 4.220496878999999,
+            "exitStatus": 1,
+            "signal": null,
+            "expected": "failure"
+          },
+          "existingPackageOwner": {
+            "name": "detekt-existing-package-owner",
+            "command": [
+              "mise",
+              "run",
+              "//package/linter/kotlin:lint:detekt",
+              "--",
+              "--build-cache",
+              "--max-workers=8",
+              "--init-script",
+              "/home/runner/work/Monochromatic/Monochromatic/.depot/reuse/cache.init.gradle"
+            ],
+            "cwd": "/home/runner/work/Monochromatic/Monochromatic",
+            "startedAt": "2026-10-18T08:14:53.296Z",
+            "finishedAt": "2026-10-18T08:14:57.658Z",
+            "elapsedSeconds": 4.361777247999998,
+            "exitStatus": 0,
+            "signal": null,
+            "expected": "observe"
+          }
+        }
+      }
+    ]
   }
 }
