@@ -40,9 +40,14 @@ export function reportLoggerFallback({
     : ((typeof console.error) === 'function' ? console.error : console.log);
   if ((typeof report) !== 'function')
     return;
-  /** Diagnostic paths and caught values remain readable without executing terminal control sequences. */
+  /**
+   Diagnostic paths and caught values remain readable without executing terminal control sequences.
+   */
   const message = `logger file sink: ${reason}; using fallback ${JSON.stringify(directory,)}`;
-  report.call(console, neutralizeControlCharacters(message,),);
+  report.call(
+    console,
+    neutralizeControlCharacters(message,),
+  );
 }
 
 /**
@@ -89,7 +94,12 @@ export function reportLoggerInternalError(
   if ((typeof report) !== 'function')
     return;
 
-  /** Internal failures cross the same terminal boundary as ordinary sink records. */
+  /**
+   Internal failures cross the same terminal boundary as ordinary sink records.
+   */
   const message = `logger internal error: ${context}: ${caughtValueText(error,)}`;
-  report.call(console, neutralizeControlCharacters(message,),);
+  report.call(
+    console,
+    neutralizeControlCharacters(message,),
+  );
 }
