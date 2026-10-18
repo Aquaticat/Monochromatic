@@ -121,7 +121,7 @@ these measurements establish callback sharing rather than complete-session capac
 
 ## Native cancellation controls
 
-`native/contract/collector/run-prompt-custody-v3/event-controls.ts`
+`native/contract/collector/run-prompt-custody-v3/event-input-projection.ts`
 owns the declared top-level `signal` field on input and after snapshots of
 `session_before_tree` and `session_before_compact`.
 The ordinary copier remains strict for messages,
@@ -161,6 +161,61 @@ Private source-copy rebuilds remove each scope,
 identity,
 field-preservation,
 proxy or opacity guard and make the maintained consumer fail.
+
+The factory was named `createNativeEventControlProjection` in `event-controls.ts`
+before its 2026-10-18 extension to declared compaction data.
+Its current name is `createNativeEventInputProjection` in `event-input-projection.ts`.
+The cancellation reference map remains scoped to one original emission.
+
+## Native compaction file collections
+
+The SDK's `CompactionPreparation.fileOps` contains native string sets for
+`read`,
+`written` and `edited`.
+`compaction-file-paths.ts` projects only those fields in input and after snapshots
+of `session_before_compact`.
+Each set becomes `{nativeCollection: 'file-path-set', values}`,
+preserving insertion order and every string path.
+The callback keeps its original event,
+preparation and mutable sets.
+The existing copier then owns independent snapshot validation and freezing.
+
+This representation retains collection contents rather than opaque handle identity.
+The marker grants no source or permission authority.
+The helper uses the captured native values method,
+checks native set storage and refuses extra own properties,
+proxies and non-string members.
+It does not invoke instance iterators or preparation accessors.
+Unrelated descriptors and ordinary field values remain with the existing copier.
+Sets in ordinary message/tool metadata,
+other event kinds and extension outputs keep their strict rejection.
+
+The actual RPC compaction on `native-release-hGuAfo` reaches this field profile
+and retains the unsupported-prototype capture failure.
+The committed `test:native:compaction-inputs` regression reproduces it with the SDK's actual `createFileOps`
+and an original native event runner after an ordinary-data positive control.
+It also covers callback mutation,
+independent before/after snapshots,
+wrong roles,
+extra properties,
+proxy traps and accessors.
+The repaired projection still needs its built consumer verification at this checkpoint.
+
+## Loaded and appended message content
+
+Loaded history and live manager appends share `assertManagerMessageContent`.
+Both preserve supported native text signatures,
+thinking and tool-call blocks locally.
+The provider boundary separately excludes thinking,
+signatures and raw structured shell commands.
+Applying the text-only custom-message validator to all loaded history rejects normal persisted assistants.
+
+`test:native:loaded-message-content` fails against that mismatch before the repair.
+After the rebuild,
+actual SDK persistence and reopen pass,
+and live/load source comparisons cover supported and rejected content catalogs.
+A private source-copy rebuild restoring only the text-only validator makes the maintained regression fail.
+Successful compaction or navigation alone cannot clear a retained capture error.
 
 ## Source-binding ownership
 

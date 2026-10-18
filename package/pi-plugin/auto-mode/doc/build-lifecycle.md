@@ -118,3 +118,20 @@ Its inode assertion failed before reuse was implemented,
 then passes with the full package units.
 
 Task names use `mise run //package/pi-plugin/auto-mode:<task>`.
+
+## Scoped lint argument boundaries
+
+The package's `lint:oxlint` and `format:oxlint` tasks accept a separate shell argument for each source path.
+The actual worker initially quotes both paths together;
+Mise and the repository's `parse_usage_args` helper correctly preserve one filename containing a space.
+Oxlint then reports `No files found to lint`,
+checks zero files and exits unsuccessfully.
+That result supplies no clean-lint evidence.
+
+The corrected worker invocation uses an explicit package cwd and separate absolute path arguments.
+Its first lint checks both actual files,
+and its formatter also reports two checked files.
+A private probe executes the repository's actual argument-parser source through Mise
+and confirms the single-argument and separate-argument cases.
+The correction changes the invocation;
+it does not change lint configuration or ignore patterns.

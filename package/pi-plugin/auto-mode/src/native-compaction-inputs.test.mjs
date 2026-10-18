@@ -4,6 +4,7 @@ import {join} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {env,fixture} from '../dist/native/contract/integration/native-batch/event-receipt-fixture.mjs';
 import {copyToolMetadata} from '../dist/native/contract/collector/run-prompt-custody/messages.mjs';
+import {projectNativeCompactionFilePaths} from '../dist/native/contract/collector/run-prompt-custody-v3/compaction-file-paths.ts';
 
 //region Original SDK file-operation sets cross only their declared event input boundary
 
@@ -67,6 +68,13 @@ const getter=fixture({kind:'session_before_compact',handlers:[function preserveA
 await getter.runner.emit(getterInput);
 assert.throws(function rejectPreparationAccessor(){getter.records();});
 assert.equal(reads.unexpected,0,'Capture must not invoke collection properties, proxy traps or preparation accessors');
+for(const preparation of [undefined,null,false,[],{note:'ordinary'},{fileOps:null},{fileOps:[]},{fileOps:{}},{fileOps:{read:null,written:'ordinary',edited:false}}]){
+ const ordinaryInput={type:'session_before_compact',preparation};
+ const retained=fixture({kind:ordinaryInput.type,handlers:[function preserveOrdinaryFields(){}]});
+ await retained.runner.emit(ordinaryInput);
+ assert.deepEqual(retained.records()[0][0].value.value,ordinaryInput);
+}
+for(const value of [undefined,null,false,'ordinary',[],new Set()])assert.equal(projectNativeCompactionFilePaths(value),value);
 console.log(JSON.stringify({complete:true,actualSdkFileOperations:true,callbackIdentityPreserved:true,phaseSnapshotsIndependent:true,ordinarySetRejection:true}));
 
 //endregion Original SDK file-operation sets cross only their declared event input boundary

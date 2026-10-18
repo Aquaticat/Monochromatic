@@ -223,6 +223,14 @@ extra set properties,
 proxies,
 prototype lookalikes and preparation accessors without invoking them.
 Do not broaden arbitrary message/tool metadata to accept platform containers.
+The source repair scopes collection projection to compaction input/after snapshots,
+preserves callback identity and unrelated fields,
+and encodes only native string path sets.
+The per-emission factory is renamed to `createNativeEventInputProjection`
+in `event-input-projection.ts`;
+the prior `event-controls.ts` path moved on 2026-10-18.
+Private control guard utilities and the remaining lint checkpoint must use that current path.
+The repair is not built or type-checked yet.
 At this checkpoint,
 Git shows no MiMo source edits yet;
 its first lint slice is still analysis.
