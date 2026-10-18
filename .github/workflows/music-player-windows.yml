@@ -1,4 +1,4 @@
-name: depot-complete-windows-test-recovery
+name: depot-native-runner-followup-windows
 
 # Builds, tests and smoke-runs the music player desktop app (package/music-player/desktop-app) on real
 # Windows runners, in three flavors that need three different toolchains. Decision and rationale:
@@ -90,7 +90,7 @@ jobs:
       matrix:
         include:
         - name: msvc-x64
-          runner: windows-2025
+          runner: depot-windows-2025-4
           target: x86_64-pc-windows-msvc
           flavor: msvc
           nextest-target: x86_64-pc-windows-msvc
@@ -105,7 +105,7 @@ jobs:
         # MINGW64 job was run alongside it for four runs and passed the same tests with an msvcrt.dll-only import table;
         # the measured imports of both are in doc/decision/music-player-windows-linkers.md.
         - name: gnu-x64-ucrt64
-          runner: windows-2025
+          runner: depot-windows-2025-4
           target: x86_64-pc-windows-gnu
           flavor: gnu
           msystem: UCRT64
@@ -121,6 +121,8 @@ jobs:
       FLAVOR: ${{ matrix.flavor }}
       JOB_NAME: ${{ matrix.name }}
     steps:
+    - name: Record actual runner hardware and provider identity
+      run: node --input-type=module -e 'const os = await import("node:os"); console.log(JSON.stringify({event:"depot-runner-hardware",platform:process.platform,architecture:process.arch,cpus:os.cpus().length,memoryBytes:os.totalmem(),runnerName:process.env.RUNNER_NAME,runnerOs:process.env.RUNNER_OS,runnerArchitecture:process.env.RUNNER_ARCH,githubSha:process.env.GITHUB_SHA}));'
     - name: Checkout
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       with:
