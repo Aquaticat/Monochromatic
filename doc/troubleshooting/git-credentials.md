@@ -259,6 +259,54 @@ This is a repository-owned wrapper finding,
 not evidence of an upstream Git or GitHub CLI defect.
 No upstream report or speculative configuration workaround is warranted by these observations.
 
+## Research-branch recovery with a scoped helper environment
+
+On 2026-10-18,
+the ordinary HTTPS push of research commit `3829831039cc43aa717c6c927f835b867e9313b6`
+reported a remote rejection with `(failed)`.
+That diagnostic differs from the missing-username incident;
+the observations do not establish an identical cause.
+A read-only SSH bridge using the existing agent and strict known-host checking separately returned
+`Permission denied (publickey)`.
+
+A credential-fill control returned a password with the inherited environment,
+while the cleared-environment control exited 128 with
+`fatal: unable to get password from user`.
+The executable resolved through `PATH` was not independently fixed in that contrast,
+so this is supporting evidence rather than an isolated environment-variable experiment.
+Credential values remained in mode-0600 private captures and were not published.
+
+The successful recovery kept the normal Git wrapper and its policy checks.
+For that command only,
+it cleared the generic and GitHub-specific helper lists,
+then selected the existing absolute-path `gh auth git-credential` helper prefixed with `/usr/bin/env`.
+The prefix restored caller-derived `HOME`,
+`PATH`,
+`DBUS_SESSION_BUS_ADDRESS` and `XDG_RUNTIME_DIR`,
+with each value encoded as a single shell argument.
+The existing `push-mvm-with-scoped-helper-environment` research task executed this construction
+and `git push origin research/depot-native-orchestration-20261018`.
+It exited zero and published `3829831039cc43aa717c6c927f835b867e9313b6`;
+the subsequent dispatch independently required the remote ref to equal that commit and passed.
+
+The relevant command-scoped configuration arguments were:
+
+```text
+# Arguments passed by the executed Node research task, with the private helper value described in prose
+-c credential.helper=
+-c credential.https://github.com.helper=
+-c credential.https://github.com.helper=<existing-helper-with-scoped-env-prefix>
+push origin research/depot-native-orchestration-20261018
+```
+
+No persistent credential configuration,
+token,
+Git policy or wrapper binary changed.
+Restoring these variables together proves this recovery,
+not which individual variable mattered or the cause of every remote rejection.
+This is a completed bridge for the research branch,
+not a verified wrapper-source repair or recovery of the separate migration incident.
+
 ## Token expiry note
 
 `gh auth status` may show a `gho_*` token (OAuth) rather than a

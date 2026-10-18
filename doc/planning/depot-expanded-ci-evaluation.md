@@ -139,6 +139,27 @@ stored result rows and committed guard-removal failure are retained
 ([Tests adapter receipt](../audit/depot-tests-identity-adapter-2026-10-18.evidence.json)).
 Physical sandbox identities are not a claim about distinct physical hosts or a speed ratio.
 
+The multi-architecture BuildKit campaign produced actual AMD64 and ARM64 image consumers,
+including locked Node 26 execution,
+and verified registry read-only access against a rejected write.
+SPDX and SLSA subjects matched the saved image identity;
+the separate OCI archive's empty subject retained its own disposition.
+The four-target Bake run exercised overlapping target work,
+secret delivery and keyless SSH listing,
+but did not perform an SSH signature or prove project-level autoscaling
+([BuildKit primary receipt](../audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json)).
+Truepeak's image build and cache checks reported zero tests;
+the separately executed 89-case owner supplies its test evidence.
+
+The SDK campaign created and stopped three isolated VMs.
+Its final consumer used the absolute required Git executable,
+read a bounded manifest and completed a nonce write/read/delete cycle.
+The earlier Node-path failure and operation with an unresolved read timeout remain separate failed probes.
+The command-log query's empty response does not prove complete absence of execution logs.
+Fresh terminal VM reads prove the observed stop state,
+without establishing a billing-release instant
+([SDK and platform evidence](depot-platform-capability-research.md)).
+
 ## Reliability and source failures
 
 The original same-name artifact rerun selected a stale archive alongside current producer outputs;
@@ -157,6 +178,21 @@ the isolated step-level continuation retained failure outcome,
 success conclusion and successful native job/workflow status
 ([policy/history receipt](../audit/depot-job-policy-history-2026-10-18.evidence.json)).
 Continuation semantics need the exercised granularity.
+
+The original job-container image selected checkout's REST fallback;
+the independent image control found no Git executable on its default AMD64 `PATH`.
+These facts do not identify the original REST download stall's cause.
+The Git-capable successor then exposed the locked Node 26 loader's missing `libatomic.so.1`;
+the final derived image passed all ten actual service consumers
+([prerequisite source and run controls](../audit/depot-container-prerequisites-2026-10-18.evidence.json),
+[retained executable image delta](../troubleshooting/github-actions-container-node-runtime-prerequisites.md)).
+
+The built-in Semgrep 1.34 scan missed the controlled missing-`USER` and non-JSON `CMD` cases.
+The same retained rule bytes executed by Semgrep 1.181 detected both,
+while the Hadolint root/non-root controls behaved as expected.
+This qualifies the replacement scan execution;
+it does not establish a repaired Depot built-in scanner
+([scanner and rule-source evidence](depot-platform-capability-research.md)).
 
 Every measured provider allowed the finite seventy-second writer past a sixty-second step deadline.
 Only native Depot's observation proves completion after the executor advanced to its next step;
