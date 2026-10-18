@@ -102,7 +102,10 @@ await describe({
         // Version 9 (2026-10-15, n166) re-keys every ballot cast before the
         // house tense rule said, in the sentence that puts the life in the past,
         // that quoted words keep the speaker's own tense.
-        expect(key,).toBe('7032283619d38ee8b69dd96d6c91f2b2cacc4ef1b09a4f165f96c053df0d1287',);
+        // Version 10 (2026-10-18) re-keys every ballot cast before the tense
+        // candidates listed the narration between marks of different
+        // single-quotation pairs.
+        expect(key,).toBe('c86d6c104c5b830e1c7c963a5cf62d5d88d91a94794760e5be30ede479ec6d9e',);
       },
     },),
     it({

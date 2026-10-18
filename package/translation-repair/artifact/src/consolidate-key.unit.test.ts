@@ -402,10 +402,12 @@ await describe({
         // guillemet, which moved this literal.
         // Version 24 (2026-10-15, n166) states in the house tense rule, in the
         // very sentence that puts the life in the past, that the person's quoted
-        // words keep the speaker's own tense, which moved this literal to the
-        // value this expectation names.
+        // words keep the speaker's own tense, which moved this literal.
+        // Version 25 (2026-10-18) lists the narration between marks of different
+        // single-quotation pairs among the tense candidates, which moved this
+        // literal to the value this expectation names.
         expect(consolidateSliceKey(SLICE,),).toBe(
-          'e1d187d68b30ab632f119ee93619de3cfecb77f9be17c46b017d2d8d3cfcbc0d',
+          'fdc9cf0a17ce4ba75872918e48ca94912f9d21e8f9d15b8fb4ebf1952cf50f68',
         );
       },
     },),

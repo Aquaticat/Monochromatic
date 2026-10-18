@@ -334,8 +334,18 @@ import type { LaneText, } from '@monochromatic-dev/translation-repair-translate-
  under the new one. Whether such a record exists is not measured here: the audit of n161 found none, but the launch started since at
  `5f6c8593d7` runs at 23 and no runs directory is read in this round, so the number moves, as the lane-contest, slice, refine,
  translate and page title versions move for the same sheets. No record has been written at 24, which this change sets first.
+
+ 25 covers the tense candidates (review of 2026-10-18): the candidates a judge is shown for an entry that records a death
+ left out the narration between an opening curly single mark that a straight mark closes and a straight mark that a curly one closes
+ (`maskQuotedSpeech`, `translate-stage/src/present-tense-text.ts`), because the mask joined marks of different pairs into one
+ quotation, and they list it now. The key hashes the version, the shape of the run and the texts and not the sheet, so a record
+ written under the old candidates would be served under the new ones. The cache account audit of 2026-10-18 (`cache-account-audit`
+ over the run directory of TianqiChen66626) read 74 slice-cache records, the newest written after every current version was set, so
+ the change cannot ride inside the number and the number moves, as the other two versions whose judges are shown these candidates
+ move with it. A search of those records found no opening curly single mark in a candidate text, so no stored record is known to
+ differ.
  */
-export const CONSOLIDATE_CACHE_VERSION = 24;
+export const CONSOLIDATE_CACHE_VERSION = 25;
 
 /**
  What a line-structured slice appends to its key material.

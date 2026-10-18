@@ -194,8 +194,18 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
  of n161 found none, but the launch started since at `5f6c8593d7` runs at 8 and no runs directory is read in this round, so the
  number moves, as the consolidate, repair slice, refine, translate and page title versions move for the same sheets. No record has
  been written at 9, which this change sets first.
+
+ 10 covers the tense candidates (review of 2026-10-18): the candidates a judge is shown for an entry that records a death
+ left out the narration between an opening curly single mark that a straight mark closes and a straight mark that a curly one closes
+ (`maskQuotedSpeech`, `translate-stage/src/present-tense-text.ts`), because the mask joined marks of different pairs into one
+ quotation, and they list it now. The key hashes the version, the shape of the run and the texts and not the sheet, so a record
+ written under the old candidates would be served under the new ones. The cache account audit of 2026-10-18 (`cache-account-audit`
+ over the run directory of TianqiChen66626) read 74 slice-cache records, the newest written after every current version was set, so
+ the change cannot ride inside the number and the number moves, as the other two versions whose judges are shown these candidates
+ move with it. A search of those records found no opening curly single mark in a candidate text, so no stored record is known to
+ differ.
  */
-export const LANE_CONTEST_CACHE_VERSION = 9;
+export const LANE_CONTEST_CACHE_VERSION = 10;
 
 /**
  Everything about this run that changes what the judges are ASKED, folded into
