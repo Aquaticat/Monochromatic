@@ -175,8 +175,9 @@ Evidence:
   and one that changed none left the record as the same code settled it.
 - The account of 2026-09-28 said no slice-cache file had been written since 04:26 UTC on 2026-09-27.
   That no longer holds:
-  `corpus-pass-TianqiChen66626` wrote three block pairings under 3 and the section marker between 16:58 and 17:00 UTC
-  on 2026-10-18.
+  `corpus-pass-TianqiChen66626` wrote three block pairings under 3 and the section marker between 20:58 and 21:00 UTC
+  on 2026-10-18
+  (the first account here printed the files' local times, 16:58 to 17:00 EDT, and labelled them UTC; B672).
   They resume only for the build that wrote them.
   A search of the slice-cache files under `~/temp/agent` (the throwaway checkouts left out,
   and three directories it could not list) found those and no other file newer than the bump;
@@ -235,3 +236,29 @@ and the unknown-shape path stays as it was (a warning and a budget treated as sp
 
 Open:
 the body of the refused reading is needed to say what the provider now returns.
+
+## B672: local file times written as UTC in the account of the pairing cache version
+
+Found on 2026-10-18 by the lead,
+who read the host's zone (`date` gave 17:36 EDT where `date --utc` gave 21:36 UTC)
+and the launch time of the pass (20:59 UTC) against the account.
+
+Outcome written on 2026-10-18.
+Fixed in the commit that carries this entry.
+
+The account of B670 gave the writes of `corpus-pass-TianqiChen66626` as 16:58 to 17:00 UTC.
+They were printed by `find -printf '%T…'`,
+which prints the local zone,
+and the label was added by hand.
+`stat --format=%y` on the same files prints `-0400` beside the same digits,
+and `TZ=UTC stat` prints the pairings at 20:59:08 and 21:00:15 and the generation markers at 20:58:54,
+so the span is 20:58 to 21:00 UTC.
+The TSDoc of `pairing-cache-version.ts` and B670 are corrected.
+The only other copies were in those two files (`rg '16:5|17:00'` over the package).
+
+The rule was already in `mistake-prevention-docs-and-references.md` (`find` and `stat` run under `TZ=UTC`),
+and the zone scan (`clock-time-zones.unit.test.ts`) read the wrong time as it was meant to read a right one:
+it passes any time followed by `UTC`.
+No guard can catch it,
+since the text does not say which tool printed the digits;
+the prevention doc says so and names the check on the source.
