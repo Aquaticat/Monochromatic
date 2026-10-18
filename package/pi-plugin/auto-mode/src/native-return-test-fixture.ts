@@ -230,11 +230,20 @@ export function nativeReturnFixture({
   };
   /**
    Fixed callbacks expose each original ownership boundary independently.
+
+   @param originalCall - preserved call identity proves the consumer forwards original call boundaries
+
+   @param originalOptions - preserved options identity proves the consumer forwards original call boundaries
+
+   @returns delegated native run result or the fixed fixture outcome
    */
-  function nativeRun(
-      originalCall: NativeReturnFixture['call'],
-      originalOptions: unknown
-    ): unknown {
+  function nativeRun({
+    originalCall,
+    originalOptions
+  }: {
+    readonly originalCall: NativeReturnFixture['call'];
+    readonly originalOptions: unknown;
+  }): unknown {
       state.invocations++;
       if ((originalCall !== call) || (originalOptions !== options)) throw new Error('Native invocation lost original argument identity');
       return runNative ? runNative(
@@ -242,6 +251,9 @@ export function nativeReturnFixture({
         originalOptions
       ) : outcome;
   }
+  /**
+   Recorded owner spies retain every original custody boundary for later assertions.
+   */
   const owner: NativeReturnOwner = {
     getSlot: function originalSlot(originalHandle): NativeReturnSlot {
       if (originalHandle !== handle) throw new Error('Foreign native slot handle');
@@ -256,18 +268,32 @@ export function nativeReturnFixture({
       if ((original !== member) || (!state.returned)) throw new Error('Original member has not returned');
     },
   };
+  /**
+   Consumer under test is created from the recorded owner at fixture construction.
+   */
   const consumer = nativeReturn.createNativeReturnConsumer(owner);
   /**
    Fixture orchestration is not a replacement SDK runner; host phase tests exercise the real producer.
+
+   @param input - fixture call and options identity forwarded to the recorded native boundary
+
+   @returns completed fixture outcome or the original thrown failure rethrown after recording
    */
   async function invoke(input: Parameters<NativeReturnFixture['invoke']>[0]): Promise<unknown> {
+    /**
+     Opened entry records this invocation's completion outcome or failure.
+     */
     const entry = consumer.open(input);
-    try { return entry.complete(await nativeRun(
-      input.call,
-      input.options
-    )); }
-    catch (error) { entry.fail(error);
-    throw error; }
+    try {
+      return entry.complete(await nativeRun({
+        originalCall: input.call,
+        originalOptions: input.options
+      }));
+    }
+    catch (error) {
+      entry.fail(error);
+      throw error;
+    }
   }
   return {
     consumer,
