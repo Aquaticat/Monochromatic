@@ -58,11 +58,26 @@ Public GitHub compute is modeled separately at zero nominal charge.
 The private controller retains the admission,
 source verification and dispatch response.
 
-The next parent action is retaining terminal graph job/attempt metadata and original evidence ZIPs,
+Retain terminal graph job/attempt metadata and original evidence ZIPs,
 measure unchanged-input spread and actual overlapping critical paths,
 join them into the Rust researcher's allocation ledger,
 finish remaining owner-specific factual queues and obtain an independent sufficiency review.
 Then reconcile the approved six report sections and start the decision interview.
+
+The coordinated native order is automatic BuildKit auth,
+remaining desktop sessions,
+then the repeated native graph;
+the GitHub graph matrix proceeds independently.
+The retained historical Mac/Windows owner evidence uses standard GitHub runners,
+not Depot operating-system runners.
+Equivalent current-source Depot Windows and Startup-trial Mac controls are now coverage-owned
+under a separate USD 2 maximum reservation,
+with Developer Windows eligibility and Startup Mac eligibility kept distinct.
+The latest packed-install run `39136177894` reached all five functional consumers,
+including the real mutation-test CLI's dry-run discovery.
+Its remaining namespace-import failure concerns a type-only package;
+the coverage owner is replacing that invalid runtime expectation with an actual compiler consumer.
+No runtime import or executed mutation credit follows from the type-only package or CLI dry run.
 
 ## Historical execution checkpoint on 2026-10-18 at 12:20 UTC
 
