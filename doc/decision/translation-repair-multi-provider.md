@@ -1,7 +1,7 @@
 # Translation repair: two providers, and the quota reader that was never wired
 
 Decided by the owner on 2026-08-24 across four rounds of questions.
-Supersedes the single-provider assumption throughout `package/module/translation-repair`.
+Supersedes the single-provider assumption throughout `package/translation-repair`.
 Reverses part of the GLM-4.7-Flash seat measurement,
 and changes the premise of two findings:
 that the checker-side self-certification discount is unreachable in production,

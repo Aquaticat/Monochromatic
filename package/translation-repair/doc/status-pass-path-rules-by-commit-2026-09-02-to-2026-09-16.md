@@ -71,7 +71,7 @@ where Mercury had still flattened its initial output under instructions alone.
 The deterministic floor remains a backstop,
 not proof that the model behavior is repaired.
 The bounded writer/selection comparison is recorded in
-[the verse-remedy review](../../../../doc/planning/translation-repair-verse-remedy-review-2026-09-10.md).
+[the verse-remedy review](../../../doc/planning/translation-repair-verse-remedy-review-2026-09-10.md).
 Since `7c0ce152f` (2026-09-10,
 the twenty-ninth class) a source-only passage must preserve a minimum count of explicit line breaks
 within each top-level block.

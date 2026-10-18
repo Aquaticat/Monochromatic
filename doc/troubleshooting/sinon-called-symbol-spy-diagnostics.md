@@ -117,7 +117,7 @@ not through diagnostic formatting.
 Compare the primitive count rather than asking the Sinon matcher to render a symbol-named spy:
 
 ```ts
-// package/module/translation-repair/src/preparation-attempt-order.unit.test.ts
+// package/module/translation-repair/src/preparation-attempt-order.unit.test.ts (removed before 2026-10-18)
 expect(disposal.callCount).toBe(0);
 ```
 

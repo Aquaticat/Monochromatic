@@ -19,36 +19,36 @@ Frozen originals remain retained unchanged.
 
 The repository excerpts in this section refer to pre-repair commit `081c05e14`.
 
-`package/module/translation-repair/src/preparation-root-registration-model.ts:93`
+`package/module/translation-repair/src/preparation-root-registration-model.ts:93` (removed before 2026-10-18)
 uses the in-memory question type in a supposedly serializable DTO:
 
 ```ts
-// package/module/translation-repair/src/preparation-root-registration-model.ts
+// package/module/translation-repair/src/preparation-root-registration-model.ts (removed before 2026-10-18)
 readonly freeOrder: BlockPairingQuestion['freeOrder'];
 ```
 
 The referenced `FreeOrderBlocks` at
-`package/module/translation-repair/src/pair-blocks-wire.ts:274` contains sets:
+`package/translation-repair/stage/src/pair-blocks-wire.ts:274` contains sets:
 
 ```ts
-// package/module/translation-repair/src/pair-blocks-wire.ts
+// package/translation-repair/stage/src/pair-blocks-wire.ts
 readonly source: ReadonlySet<number>;
 readonly target: ReadonlySet<number>;
 ```
 
-`definitionIndexes` in `package/module/translation-repair/src/pair-definition-order.ts:85`
+`definitionIndexes` in `package/translation-repair/stage/src/pair-definition-order.ts:85`
 constructs a set of local node positions.
 The registration constructor at
-`package/module/translation-repair/src/preparation-root-registration.ts:152`
+`package/module/translation-repair/src/preparation-root-registration.ts:152` (removed before 2026-10-18)
 retains those runtime objects directly:
 
 ```ts
-// package/module/translation-repair/src/preparation-root-registration.ts
+// package/module/translation-repair/src/preparation-root-registration.ts (removed before 2026-10-18)
 freeOrder: numbered.freeOrder,
 ```
 
 The application at
-`package/module/translation-repair/src/corpus-run/producer-prepare-app.ts:206`
+`package/module/translation-repair/src/corpus-run/producer-prepare-app.ts:206` (removed before 2026-10-18)
 passes `JSON.stringify(inputs)` to its output writer without a collection transformation.
 Node does not encode Set members through ordinary JSON object properties.
 

@@ -82,7 +82,7 @@ import { continuesLatinWordOrCompatibilityForm, } from '@monochromatic-dev/trans
 // WHAT THE CORPUS HOLDS (counted 2026-10-14 on the final build with `count-single.mjs`, a probe kept
 // in the scratch directory of the n144 round, over the 92 English pages of the pinned corpus, each read
 // as the pass reads it, with the stretches the page does not read as prose blanked, see
-// `package/module/translation-repair/doc/design-commitments.md`, the bullet "The
+// `package/translation-repair/doc/design-commitments.md`, the bullet "The
 // consistency pass carries words and leaves every mark where it was"): 1,190 marks `'` or `’`
 // (65 + 1,125; U+02BC stands in no page) are apostrophe-like marks the reading classifies: 1,148 attached to a
 // letter or a digit on both sides, 33 trailing, 1 leading, 4 joints (a mark after closing markup that joins

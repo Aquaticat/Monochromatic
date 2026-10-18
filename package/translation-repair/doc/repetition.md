@@ -1,6 +1,6 @@
 # Repetition and the site's grammar
 
-Part of [the package README](../README.md).
+Part of [the family README](../README.md).
 
 ## Repetition the pipeline introduced
 

@@ -1,19 +1,21 @@
 # Current roster changes
 
-Part of [the package README](../README.md).
+Part of [the family README](../README.md).
 
 Adding,
-removing or changing a model is one card in `src/model-cards.ts` since 2026-09-16:
+removing or changing a model is one card in `package/translation-repair/shared-contract/src/model-cards.ts` since
+2026-09-16:
 every provider catalog,
 the completion-cap table,
 the abandoned-spend ratios and every seat hold derive from the cards,
-the served-id lists in `src/roster-id.ts` type them,
+the served-id lists in `package/translation-repair/shared-contract/src/roster-id.ts` type them,
 `mise run roster-card -- <provider> <served id>` prints a card fragment off the provider's live listing,
-and the unit tests sit models by role-named seats from `src/roster-seats.test-fixture.ts`.
+and the unit tests sit models by role-named seats from
+`package/translation-repair/test-fixture/src/roster-seats.test-fixture.ts`.
 The steps are
-[the roster-change runbook](../../../../doc/runbook/translation-repair-roster-change.md)
+[the roster-change runbook](../../../doc/runbook/translation-repair-roster-change.md)
 and the reasons
-[the model-card decision](../../../../doc/decision/translation-repair-model-cards.md).
+[the model-card decision](../../../doc/decision/translation-repair-model-cards.md).
 
 DeepSeek V4 Pro 0813 and V4 Flash 0731 left the roster on 2026-09-16 at the owner's instruction
 ("DeepSeek V4.1 Flash is much better than both V4 Pro and V4 Flash");
@@ -74,7 +76,7 @@ It now joins judge and general text/preparation seats once under its shared iden
 Writer and image-reader holds remain until their separate measurements.
 Existing peer order,
 writer/reader arrays and the reader-only Gemma 4 31B seat are unchanged.
-The [admission record](../../../../doc/planning/translation-repair-deepseek-v41-flash-2026-09-11.md)
+The [admission record](../../../doc/planning/translation-repair-deepseek-v41-flash-2026-09-11.md)
 contains availability,
 prices,
 verification and remaining work.
@@ -161,7 +163,7 @@ so the blocklist is untouched
 The roster is eleven chat seats plus the decision-only seat.
 
 The checker seats were measured on 2026-09-27
-(`RUN_CHECKER_ORDER` in `src/corpus-run/run-config.ts` carries the numbers).
+(`RUN_CHECKER_ORDER` in `package/translation-repair/run/src/corpus-run/run-config.ts` carries the numbers).
 Each candidate answered the resolution sheet for 85 settled fixes
 and for the same 85 issues against the unchanged archive text,
 where not fixed is certain.

@@ -3,7 +3,7 @@ import type { WouldShipSource, } from './would-ship-text.ts';
 
 //region Publish defects
 // A SETTLED PAGE SHIPS WITH ITS DEFECTS REPORTED (the owner, 2026-09-27,
-// `doc/design-commitments.md`). The publish-time content checks used to
+// `package/translation-repair/doc/design-commitments.md`). The publish-time content checks used to
 // refuse the whole entry, discarding hours of settled work so the archive's
 // page shipped instead: seven real entries lost about 10.3 hours that way to a
 // single dropped link destination each (ledger E1). Each check still runs and

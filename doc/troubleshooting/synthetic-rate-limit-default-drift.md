@@ -30,13 +30,13 @@ This diagnosis therefore stops at documented service boundary rather than invent
 
 Consumer-side call chain is visible:
 
-1. `package/module/translation-repair/src/synthetic-catalog.ts:242` stores static denominator.
+1. `package/translation-repair/provider/src/synthetic-catalog.ts:242` stores static denominator.
 
    ```ts
    export const SYNTHETIC_BASELINE_PROMPT_DOLLARS_PER_TOKEN = 0.000003;
    ```
 
-2. `package/module/translation-repair/src/synthetic-catalog.ts:296` divides each model's current prompt price by that
+2. `package/translation-repair/provider/src/synthetic-catalog.ts:296` divides each model's current prompt price by that
    denominator.
 
    ```ts
@@ -61,7 +61,7 @@ so date and live response are version boundary available.
 Run current package catalog comparison:
 
 ```sh
-mise run //package/module/translation-repair:model-catalog
+mise run //package/translation-repair/bench:model-catalog
 ```
 
 Working catalog facts:
@@ -78,8 +78,8 @@ Stale statement names GLM-5.2 or uses `0.000001` denominator.
 Run package guard:
 
 ```sh
-mise run //package/module/translation-repair:build
-node package/module/translation-repair/src/synthetic-catalog.unit.test.ts
+mise run //package/translation-repair/<package>:build
+node package/translation-repair/provider/src/synthetic-catalog.unit.test.ts
 ```
 
 Working catalog passes `0.000003` baseline assertion and derives every model weight from it.

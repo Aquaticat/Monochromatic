@@ -104,7 +104,7 @@ Use the existing package-scoped formatter without extra arguments:
 
 ```bash
 # From the repository root.
-mise run --no-deps --skip-tools //package/module/translation-repair:format:oxlint
+mise run --no-deps --skip-tools //package/translation-repair/<package>:format:oxlint
 ```
 
 Tradeoff:
@@ -176,7 +176,7 @@ use the distinct flag:
 
 ```sh
 # From the development repository root, after normal and bootstrap builds.
-mise run --no-deps --skip-deps --skip-tools //package/module/translation-repair:test:unit -- \
+mise run --no-deps --skip-deps --skip-tools //package/translation-repair/<package>:test:unit -- \
   src/corpus-run/producer-prepare.unit.test.ts
 ```
 

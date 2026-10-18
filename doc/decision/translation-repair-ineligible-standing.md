@@ -195,7 +195,7 @@ and the decline named `slate-declined-standing`.
 Decided for quality under the owner's standing directive of 2026-09-28
 ("prefer quality of the end result"),
 by the whole-package audit
-(`package/module/translation-repair/doc/audit-ledger.md`,
+(`package/translation-repair/doc/audit-ledger.md`,
 L5).
 
 - Neutral is the severity that asserts no defect.
@@ -216,7 +216,7 @@ L5).
 Owner's answer of 2026-09-27 ("Keep archive,
 ship"),
 asked by the whole-package audit
-(`package/module/translation-repair/doc/audit-ledger.md`,
+(`package/translation-repair/doc/audit-ledger.md`,
 E4)
 after the ruling that a run always ships.
 It replaces the "else fail the slice at once" half of the rule of 2026-09-04;
@@ -276,7 +276,7 @@ so a valid proposal is still preferred wherever one exists.
 
 Owner's answer of 2026-09-27 ("Adjudicated"),
 asked by the whole-package audit
-(`package/module/translation-repair/doc/audit-ledger.md`,
+(`package/translation-repair/doc/audit-ledger.md`,
 L9)
 on the eleventh addendum's rule.
 

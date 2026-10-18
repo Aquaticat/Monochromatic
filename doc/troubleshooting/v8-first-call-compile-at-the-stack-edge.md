@@ -3,7 +3,7 @@
 Code that catches a stack exhaustion and turns it into its own error
 can still let the engine's `RangeError` escape,
 when the handler's code has never run in that process.
-Seen in Node v26.11.1 in `package/module/translation-repair` (2026-10-14).
+Seen in Node v26.11.1 in `package/translation-repair` (2026-10-14).
 
 ## Symptom
 
@@ -51,7 +51,7 @@ and whether an earlier test in the same process had already compiled the handler
 
 Run the refusal path once when the module loads,
 so its code is compiled before any parse reaches the stack edge:
-`readyRefusals()` in `package/module/translation-repair/src/parse-mdx.ts`
+`readyRefusals()` in `package/translation-repair/document-structure/src/parse-mdx.ts`
 builds both refusals (`MdxParseError` and `MarkdownParseError`)
 with a `RangeError` cause carrying the engine's message,
 which takes the same branch a real exhaustion takes.

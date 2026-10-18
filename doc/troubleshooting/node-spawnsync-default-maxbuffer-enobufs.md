@@ -310,7 +310,7 @@ node /tmp/spawnsync-maxbuffer-repro.mjs
 
 The original `spawnSync()` wrapper used its default buffer.
 The two truncated logs contained no intended Candidate G failure and did not persist `result.error`.
-A direct reproduction of the same `mise run //package/module/translation-repair:test:unit` child command
+A direct reproduction of the same `mise run //package/translation-repair/<package>:test:unit` child command
 recorded `error.code: ENOBUFS`,
 `status: 1`,
 `signal: null`,

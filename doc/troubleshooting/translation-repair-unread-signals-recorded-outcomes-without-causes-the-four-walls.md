@@ -365,7 +365,7 @@ at
  `repair-stages.ts:153`:
 
 ```ts
-// package/module/translation-repair/src/repair-stages.ts
+// package/translation-repair/repair/src/repair-stages.ts
 const reports = gather.voices
   .map(function toReport(voice,) {
   return voice.value;

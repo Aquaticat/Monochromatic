@@ -139,7 +139,7 @@ Rolldown's current `EmittedAsset` declaration supports a fixed `fileName` and bi
 the build and copied-artifact consumer exercise that path.
 
 The prototype helper lives only in the owned experiment worktree,
-`package/module/translation-repair/src/build-native-runtime-assets.ts`.
+`package/module/translation-repair/src/build-native-runtime-assets.ts` (removed before 2026-10-18).
 It also emits `runtime-imports.json` for later inspection.
 
 Tradeoffs:
@@ -529,12 +529,12 @@ write side yet
 ```
 
 The consumer correction in
-`package/module/translation-repair/src/corpus-run/producer-input-file.ts:129-142`
+`package/module/translation-repair/src/corpus-run/producer-input-file.ts:129-142` (removed before 2026-10-18)
 adds an initial `lstat` refusal for known nonregular inputs,
 then uses the descriptor flags and a fresh descriptor check:
 
 ```ts
-// package/module/translation-repair/src/corpus-run/producer-input-file.ts
+// package/module/translation-repair/src/corpus-run/producer-input-file.ts (removed before 2026-10-18)
 constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK
 ```
 
@@ -833,7 +833,7 @@ and generated bootstrap/application-manifest bytes match the same frozen identit
 This is not independent parser correctness,
 hostile-host immunity or exhaustive portable native CI coverage.
 Ownership and qualification limits are explicit in
-`package/module/translation-repair/producer-input-verification.md`.
+`package/module/translation-repair/producer-input-verification.md` (removed before 2026-10-18).
 
 Final private proof `input-runner-proof-kIIDf7` contains 9429 hash-verified copied files.
 Only 75 independently identified stopped task containers are removed afterward;

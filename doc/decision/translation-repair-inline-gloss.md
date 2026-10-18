@@ -35,7 +35,7 @@ XIEPT2 reading raised 大证 and WER.
 
 ## Where it lives
 
-- `package/module/translation-repair/src/house-policy.ts`,
+- `package/translation-repair/house-rule/src/house-policy.ts`,
   the vocabulary bullet.
 - `doc/planning/translation-repair-xiept2-reading-2026-09-03.md`,
   the glosses the reading raised.

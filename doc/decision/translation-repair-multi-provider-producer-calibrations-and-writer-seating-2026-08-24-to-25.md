@@ -350,7 +350,7 @@ and direct evidence it can be bought back.
 
 Charm Hyper is a prepaid balance priced per token,
 not a rate limit.
-`package/module/translation-repair/README.md` now says so.
+`package/translation-repair/README.md` now says so.
 
 WHAT THIS DOES TO THE DECISION:
 nothing,

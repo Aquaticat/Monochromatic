@@ -55,7 +55,7 @@ it is the wrong provider being asked a question it cannot answer.
 ## Why the run does not fail, and why that is the worse half
 
 Quorum is five voices of ten, and it is met on the nose.
-`package/module/translation-repair/src/stage-quorum.ts:167` sets
+`package/translation-repair/stage/src/stage-quorum.ts:167` sets
 `quorumNeeded = Math.ceil(modelIds.length / 2)`,
 and line 327 tests `voices.length >= quorumNeeded`.
 Ten models need five, and five is exactly what survives,
@@ -103,7 +103,7 @@ and this defect shows as a clean hundred percent on some seats and zero on the r
 
 ## The cause, located
 
-`createRunClient` in `package/module/translation-repair/src/corpus-run/run-config.ts`
+`createRunClient` in `package/translation-repair/run/src/corpus-run/run-config.ts`
 read the second provider's key and, when it was empty, warned once and returned the Synthetic client alone.
 That single-provider client then received every roster id, the five Charm Hyper labels included,
 and the Synthetic client had no check that it serves the id it is asked for.

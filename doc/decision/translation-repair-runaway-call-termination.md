@@ -126,7 +126,7 @@ and it is why no degenerate reply has ever been examined.
 
 ## What was built
 
-`watchForDegeneration` in `package/module/translation-repair/src/stream-degeneration.ts`.
+`watchForDegeneration` in `package/translation-repair/provider-stream/src/stream-degeneration.ts`.
 
 It measures the share of recent windows of generated text that are distinct.
 A model writing prose emits almost entirely fresh windows;
@@ -164,7 +164,7 @@ An empty string reads as a short reply,
 which is exactly the state the detector is built to stay silent about,
 so the worst failure would have produced the most reassuring reading.
 
-`scanStreamDeltas` in `package/module/translation-repair/src/stream-delta-scan.ts`
+`scanStreamDeltas` in `package/translation-repair/provider-stream/src/stream-delta-scan.ts`
 reads both fields this provider uses,
 `content` and `reasoning_content`,
 and tags each piece with the channel it came from

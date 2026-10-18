@@ -92,10 +92,13 @@ Any scan that tests a letter or weighs text applies this rule,
 not only one that names a script.
 
 What enforces it:
-`src/code-points.unit.test.ts` and `src/cased-letters.unit.test.ts` pin the readers themselves,
+`package/translation-repair/markup/src/code-points.unit.test.ts` and
+`package/translation-repair/typography/src/cased-letters.unit.test.ts` pin the readers themselves,
 lone halves included;
-`src/fixed-length-cuts.unit.test.ts` fails on any `.slice(0, LIMIT)` or `.slice(-LIMIT)` it does not list with a reason;
-`src/locale-orderings.unit.test.ts` fails on any locale-dependent ordering or casing in source or tests,
+`package/translation-repair/source-scan/src/fixed-length-cuts.unit.test.ts` fails on any `.slice(0, LIMIT)` or
+`.slice(-LIMIT)` it does not list with a reason;
+`package/translation-repair/source-scan/src/locale-orderings.unit.test.ts` fails on any locale-dependent ordering or
+casing in source or tests,
 on an argument-less sort in source outside its named exemptions,
 and on a relational operator inside a comparator handed straight to a sort;
 the Latin-twin cases in `corpus-run/canadian-forms.unit.test.ts`,

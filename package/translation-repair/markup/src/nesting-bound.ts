@@ -47,7 +47,7 @@ import {
 // definition labels), the indentation of a line, the open brackets of a
 // paragraph, the open tags and open braces of an MDX body, and the emphasis
 // delimiters of a block. Each is read against one bound. The deepest nesting of
-// any page of the pinned corpus is far below it (`doc/audit-ledger.md`, the entry
+// any page of the pinned corpus is far below it (`package/translation-repair/doc/audit-ledger.md`, the entry
 // that records the bound).
 //
 // THE MEASURE ERRS TOWARD REFUSING, never toward reading: it counts a bracket

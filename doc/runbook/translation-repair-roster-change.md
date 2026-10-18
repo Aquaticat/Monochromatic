@@ -1,13 +1,13 @@
 # Translation repair: adding, removing or changing a roster model
 
 The roster is one card per model in
-`package/module/translation-repair/src/model-cards.ts`,
+`package/translation-repair/shared-contract/src/model-cards.ts`,
 keyed by the lists in `src/roster-id.ts`;
 every catalog,
 cap table and seat hold derives from the cards
 (`doc/decision/translation-repair-model-cards.md`).
 Run everything from the package directory
-`package/module/translation-repair`.
+`package/translation-repair`.
 
 ## Add a model
 
@@ -116,7 +116,7 @@ gets a card with a `decisions` side instead of provider sides.
     A state past the seat's context is out of reach for that ballot too:
     the endpoint refuses it with HTTP 400 `max_tokens_exceeded`
     (probed 2026-09-28;
-    ledger P13 in `package/module/translation-repair/doc/audit-ledger.md`).
+    ledger P13 in `package/translation-repair/doc/audit-ledger.md`).
 6.  Measure it with `judge-fidelity-probe -- --candidates <id>`
     as for any judge;
     its ballots carry the reason prefix `typed decision`
@@ -174,7 +174,7 @@ A card that names a preferred endpoint carries that endpoint's listed price,
 not the model's cheapest listing that `roster-card` prints,
 since that endpoint is the one the seat buys
 (`GET /api/v1/models/<author>/<slug>/endpoints` lists each endpoint's price;
-ledger P13 in `package/module/translation-repair/doc/audit-ledger.md`).
+ledger P13 in `package/translation-repair/doc/audit-ledger.md`).
 
 ## While a pass is running
 

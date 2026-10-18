@@ -56,7 +56,7 @@ with the value `undefined`.
 An agent then ran a built command from its own shell,
 behind a strip of its own making that removed nothing,
 and bought six provider calls (ledger M120).
-A test starts a child only through `src/child-environment.test-fixture.ts`
+A test starts a child only through `package/translation-repair/adjudication/src/child-environment.test-fixture.ts`
 (`spawnKeyless`,
 `runKeyless`,
 `runBuiltCommand`),
@@ -259,35 +259,36 @@ and the pool and its readers require `repository`,
 which tests that require no commit pass as `UNASKED_REPOSITORY` (`corpus-run/pool-policy.test-fixture.ts`,
 ledger B393).
 A seam added to make a function testable never takes the production value as its default (M70).
-`src/temp-dirs-scratch.unit.test.ts` (ledger B117),
+`package/translation-repair/source-scan/src/temp-dirs-scratch.unit.test.ts` (ledger B117),
 among the source scans,
 fails on a direct `mkdtemp` or `tmpdir` call in a test or fixture outside the kept sites it names with why,
 and on a `scratchDir` call that is not the initializer of an `await using` declaration.
-`src/test-children-keyless.unit.test.ts` (ledger B291),
+`package/translation-repair/source-scan/src/test-children-keyless.unit.test.ts` (ledger B291),
 among the source scans,
 fails on a test file or fixture,
 other than the shared one,
 that imports a spawning module or calls a spawning function;
 the shared fixture's own test starts real children that print the names they see.
-`src/production-children-keyless.unit.test.ts`,
+`package/translation-repair/source-scan/src/production-children-keyless.unit.test.ts`,
 among the source scans,
 fails on a production start of a child that does not pass the environment `childEnvironment` builds
 (`child-process-environment.ts`,
 commit `4049d9eb2`,
 ledger B314 and B315,
 which close the item ledger B291 left open);
-`src/production-children-environment.unit.test.ts` starts each site's real child
+`package/translation-repair/corpus-pass/src/production-children-environment.unit.test.ts` starts each site's real child
 and reads from the child's own side that no key or setting arrived.
-`src/corpus-git-context.unit.test.ts` asserts the corpus environment whole
+`package/translation-repair/corpus-pass/src/corpus-git-context.unit.test.ts` asserts the corpus environment whole
 and reads real git's refusal in English under a German locale,
 beside a control that fails on a host whose git does not translate (ledger B347);
-`src/corpus-source.unit.test.ts` refuses a clone directory that links to a plain directory inside a repository,
+`package/translation-repair/adjudication/src/corpus-source.unit.test.ts` refuses a clone directory that links to a plain
+directory inside a repository,
 still reads through a link to a real clone,
 and refuses a clone whose parent's real path holds a colon (ledger B369,
 B370).
 `task-runner-guard.ts` refuses a built command started in a process that holds a key
 unless that process names the command (ledger B319),
-and `src/task-runner-guard-reach.unit.test.ts`,
+and `package/translation-repair/source-scan/src/task-runner-guard-reach.unit.test.ts`,
 among the source scans,
 fails a task that starts a built command without the marker,
 a built command no task starts,

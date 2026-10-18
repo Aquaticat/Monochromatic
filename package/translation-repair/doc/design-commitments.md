@@ -1,6 +1,6 @@
 # Design commitments
 
-Part of [the package README](../README.md).
+Part of [the family README](../README.md).
 
 - **No single model output is a decision point.**
   Every decision is either deterministic code
@@ -173,7 +173,8 @@ Part of [the package README](../README.md).
   `lanes`,
   `lane contest`,
   `consolidation`),
-  and the checker bench is the first three of `RUN_CHECKER_ORDER` (`src/corpus-run/run-config.ts`,
+  and the checker bench is the first three of `RUN_CHECKER_ORDER`
+  (`package/translation-repair/run/src/corpus-run/run-config.ts`,
   ranked by the checker benchmark of 2026-09-27)
   that a wet provider serves,
   padded with ranked seats no provider serves only while fewer than three are served,
@@ -356,7 +357,7 @@ Part of [the package README](../README.md).
   Its effect on votes is measured at the next run,
   TianqiChen666,
   as the share of panel ballots voting supported against TianqiChen66620's,
-  one run per arm (`doc/status.md`,
+  one run per arm (`package/translation-repair/doc/status.md`,
   the 2026-09-27 section).
 - **A winning patch sheds the edits a checker voted worse,
   and the rest is rechecked.**
@@ -452,7 +453,7 @@ Part of [the package README](../README.md).
   under the owner's standing directive that the quality of the end result decides (ledger P10):
   the recovery round told every unreadable seat its reply "did not match the required response shape",
   while 74 of the 75 cap-cut deepseek-v4.1-flash replies on Hyper had streamed no content at all.
-  Each cause now has its own wording (`src/recovery-nudge.ts`);
+  Each cause now has its own wording (`package/translation-repair/stage/src/recovery-nudge.ts`);
   the cut one names the length limit and asks for the answer within it,
   keeping any working brief,
   which is prose in the prompt and never a reasoning parameter on the wire.

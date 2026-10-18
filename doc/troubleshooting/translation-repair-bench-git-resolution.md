@@ -32,22 +32,22 @@ not established as the heap failure's cause.
 
 ## Root cause
 
-The batch in `package/module/translation-repair/src/corpus-run/bench-sample.ts:200`
+The batch in `package/translation-repair/bench/src/corpus-run/bench-sample.ts:200`
 launches entry reads concurrently:
 
 ```ts
-// package/module/translation-repair/src/corpus-run/bench-sample.ts
+// package/translation-repair/bench/src/corpus-run/bench-sample.ts
 const sliced = await Promise.all(
   entryIds.map(async function sliceOne(entryId,): Promise<readonly BenchSlice[]> {
 ```
 
 Each entry starts its source and English file reads together at that file's line 93.
 Without an explicit executable in the pin,
-`package/module/translation-repair/src/corpus-source.ts:359`
+`package/translation-repair/corpus-source/src/corpus-source.ts:359`
 resolves Git for each text read:
 
 ```ts
-// package/module/translation-repair/src/corpus-source.ts
+// package/translation-repair/corpus-source/src/corpus-source.ts
 const gitPath = pin.gitPath ?? await resolveGit();
 ```
 
@@ -86,7 +86,7 @@ then passes the same resolved pin to listing and every entry read.
 At `bench-sample.ts:184`:
 
 ```ts
-// package/module/translation-repair/src/corpus-run/bench-sample.ts
+// package/translation-repair/bench/src/corpus-run/bench-sample.ts
 const resolvedPin: CorpusPin = {
   ...pin,
   gitPath: pin.gitPath ?? await resolveGit(),

@@ -157,7 +157,8 @@ A string a case offers and then looks for is one named constant,
 so the two cannot drift apart (ledger B116).
 
 What enforces it:
-`src/duplicate-bodies.unit.test.ts` (ledger B19) fails on any function body of 80 or more characters,
+`package/translation-repair/source-scan/src/duplicate-bodies.unit.test.ts` (ledger B19) fails on any function body of 80
+or more characters,
 comments and the spacing of code aside,
 literals compared as written,
 kept in two places in the package's source,
@@ -173,17 +174,17 @@ The shared helpers (`code-points.ts`,
 `index-pair-list.ts`,
 `sse-data-line.ts`,
 `corpus-run/span-rewrites.ts`) say so in their headers.
-`src/directory-listing-scan.unit.test.ts` (ledger B65),
+`package/translation-repair/source-scan/src/directory-listing-scan.unit.test.ts` (ledger B65),
 among the source scans,
 fails on any directory-listing import outside `directory-listing.ts` and the walkers it names with why.
-`src/record-checks.unit.test.ts` (ledger B92),
+`package/translation-repair/source-scan/src/record-checks.unit.test.ts` (ledger B92),
 among the source scans,
 fails on any `typeof` compared with `object` in the package's source outside `isJsonRecord`
 and the checks it names with why.
-`src/own-unit-tests.unit.test.ts` (ledger B102),
+`package/translation-repair/source-scan/src/own-unit-tests.unit.test.ts` (ledger B102),
 among the source scans,
 fails on a production module with neither a unit test of its own nor a line in its allowlist.
-`src/unused-imports.unit.test.ts` (ledger B32),
+`package/translation-repair/source-scan/src/unused-imports.unit.test.ts` (ledger B32),
 among the source scans,
 fails on an import a move left unread.
 Habit holds the owner of each statement two briefs share,

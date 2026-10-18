@@ -20,12 +20,12 @@ It is not production ready.
 
 Since 2026-09-27 the work has been the owner's audit of the whole package
 ("audit the whole translation-repair pkg for all the mistakes we've made and fix all of them").
-The package's
-[audit ledger](../../package/module/translation-repair/doc/audit-ledger.md)
+The family's
+[audit ledger](../../package/translation-repair/doc/audit-ledger.md)
 holds every finding with its measurement,
 its fix and its guard,
 and every mistake made while fixing;
-[`mistake-prevention.md`](../../package/module/translation-repair/doc/mistake-prevention.md)
+[`mistake-prevention.md`](../../package/translation-repair/doc/mistake-prevention.md)
 holds the rule that prevents each family of mistakes.
 Open work is every ledger entry whose status reads open or recurring.
 The last pass,
@@ -47,8 +47,8 @@ It settled with every check clean and her last message in her own present tense;
 its consistency pass carried the refrain to three of four places and left the other repeat,
 and seven replies were refused for naming a shown label in another form;
 the causes and fixes are in the handover's checkpoint of 2026-10-15.
-The owner's answers it serves are in the package's
-[design commitments](../../package/module/translation-repair/doc/design-commitments.md)
+The owner's answers it serves are in the family's
+[design commitments](../../package/translation-repair/doc/design-commitments.md)
 under 2026-10-11.
 
 The finite redesign stopped after Candidate M failed on 2026-09-01.
@@ -63,11 +63,11 @@ Start with:
     its "Where the work stands" opens with dated checkpoints,
     newest first,
     and its "What to do next" carries the state each session left and the next launch;
-2.  the package's [audit ledger](../../package/module/translation-repair/doc/audit-ledger.md)
-    and [`mistake-prevention.md`](../../package/module/translation-repair/doc/mistake-prevention.md)
+2.  the family's [audit ledger](../../package/translation-repair/doc/audit-ledger.md)
+    and [`mistake-prevention.md`](../../package/translation-repair/doc/mistake-prevention.md)
     for the audit in progress,
-    and the [package README](../../package/module/translation-repair/README.md)'s "Where the rest lives"
-    for the package docs on configuration,
+    and the [family README](../../package/translation-repair/README.md)'s "Where the rest lives"
+    for the family docs on configuration,
     the roster,
     the providers and the seats;
 3.  [`translation-repair-readiness-signal.md`](../planning/translation-repair-readiness-signal.md)
@@ -286,7 +286,7 @@ keep that tracker's numbers under a note saying whose they are.
 ## Redaction timing
 
 The
-[package-local redaction policy](../../package/module/translation-repair/doc/redaction-timing.md)
+[family redaction policy](../../package/translation-repair/doc/redaction-timing.md)
 records the standing instruction:
 documentation redaction is deferred while the package remains unfinished and not production-ready.
 The split preserves historical corpus,

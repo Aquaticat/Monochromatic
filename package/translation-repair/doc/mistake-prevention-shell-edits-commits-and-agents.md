@@ -499,11 +499,11 @@ the linter's `max-lines` and every other rule,
 read in full before staging;
 the Markdown linter,
 which exits 0 only when no finding remains;
-`src/living-doc-links.unit.test.ts`,
+`package/translation-repair/source-scan/src/living-doc-links.unit.test.ts`,
 which fails on a relative link,
 image or link definition in the living docs,
 the package's docs or its README whose file or heading does not exist;
-`src/dead-code.unit.test.ts`,
+`package/translation-repair/source-scan/src/dead-code.unit.test.ts`,
 which fails on a private function or value its file never names
 and on a top-level function,
 class or value no production code reaches,
@@ -512,23 +512,23 @@ with a value named only in types counted as unreached
 and the spend meter's reset its one allowed seam,
 and on an allowed seam that production reaches or no file declares (ledger B30,
 B31);
-`src/unused-imports.unit.test.ts`,
+`package/translation-repair/source-scan/src/unused-imports.unit.test.ts`,
 which fails on an import binding its file never names outside its imports,
 type positions and export lists counted,
 unless a TSDoc link names it (ledger B32);
-`src/tsdoc-attachment.unit.test.ts`,
+`package/translation-repair/source-scan/src/tsdoc-attachment.unit.test.ts`,
 which fails on a TSDoc block followed by anything but the declaration,
 member or function it documents,
 a lint suppression among them,
 outside `@module` headers (ledger B96);
-`src/dead-test-declarations.unit.test.ts`,
+`package/translation-repair/source-scan/src/dead-test-declarations.unit.test.ts`,
 which fails on a top-level declaration in a test file or fixture whose name its file never reads,
 property and member names and other bindings not counted,
 on a fixture export no other file imports or re-exports,
 and on a default export,
 namespace import or dynamic relative import,
 which it cannot follow (ledger B118);
-`src/trailing-whitespace.unit.test.ts`,
+`package/translation-repair/source-scan/src/trailing-whitespace.unit.test.ts`,
 which fails on a line ending in whitespace outside a template literal's text (ledger B119;
 issue 585 asks for a repository-wide lint rule in its place).
 

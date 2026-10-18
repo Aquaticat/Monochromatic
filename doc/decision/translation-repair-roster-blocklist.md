@@ -76,7 +76,7 @@ newest member.
 `qwen3.8-max` was already culled from the whole roster on 2026-08-28
 at the owner's instruction
 (recorded at `HYPER_ORIGIN_ROSTER_IDS` in
-`package/module/translation-repair/src/roster-id.ts`),
+`package/translation-repair/shared-contract/src/roster-id.ts`),
 so this blocklist entry confirms an existing cull rather than unseating
 a currently seated model;
 an earlier revision of this document said "currently seated",
@@ -99,7 +99,7 @@ Non-conformance is a catalog fact,
 never an owner instruction,
 so neither joins the blocklist;
 the probe is recorded on the `HYPER_MODELS` entry comment in
-`package/module/translation-repair/src/hyper-catalog.ts`.
+`package/translation-repair/shared-contract/src/hyper-catalog.ts`.
 
 ## Advisory attached to the same answer
 

@@ -21,7 +21,7 @@ forbidden-strings: rules cjkrule.txt: rule 0: syntax error at byte 1: unsupporte
 Run length does not separate the populations.
 Corpus-bearing documents carry longest Chinese runs from 24 characters down to 2,
 while files with nothing to do with the corpus reach 15.
-Around 180 files under `package/module/translation-repair/src/` sit at 8 to 16,
+Around 180 files under `package/translation-repair/*/src/` sit at 8 to 16,
 and every one is invented: the fixtures are cat-themed by house rule.
 Any threshold that catches a memorial passage fires on most of the test suite.
 

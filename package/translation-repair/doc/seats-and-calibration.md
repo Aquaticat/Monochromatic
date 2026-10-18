@@ -1,6 +1,6 @@
 # Deciding who fills a seat
 
-Part of [the package README](../README.md).
+Part of [the family README](../README.md).
 
 `judge-fidelity-probe` uses the source-reviewed manifest in `fidelity-reference-manifest.ts`.
 It no longer calls the first long archive slice “clean” merely because it is unchanged.
@@ -37,23 +37,26 @@ not duplicate scores for equivalent direction bookkeeping.
 
 The historical `hakureico/7` and `noname/4` reference set contained unsupported facts and changed certainty.
 Those scores are not source-grounded admission proof.
-The [reviewed fixture record](../../../../doc/planning/translation-repair-reviewed-calibration-fixtures-2026-09-11.md)
+The [reviewed fixture record](../../../doc/planning/translation-repair-reviewed-calibration-fixtures-2026-09-11.md)
 records the replacement references and each verified delta.
 No existing role is retroactively removed solely on the old fixture diagnosis.
 
 ## Block pairing question and protocol
 
-`blockPairingQuestion` (`src/block-pairing-question.ts`) builds the question block pairing asks of one aligned parent:
+`blockPairingQuestion` (`package/translation-repair/slice-reading/src/block-pairing-question.ts`) builds the question
+block pairing asks of one aligned parent:
 the original and archive blocks under the local numbering,
 the definition-order exemptions,
 and the existing versioned cache key.
 It buys no calls.
-`blockPairingProtocol` (`src/block-pairing-protocol.ts`) builds the stage's actual messages
+`blockPairingProtocol` (`package/translation-repair/slice-reading/src/block-pairing-protocol.ts`) builds the stage's
+actual messages
 and an owned copy of its response schema without creating a provider;
 it carries no provider bodies,
 model caps or attempt identity,
 so it is not a complete record of a question asked.
-`prepareBlockPairing` (`src/prepare-block-pairing.ts`) prepares one aligned parent through the production path:
+`prepareBlockPairing` (`package/translation-repair/archive/src/prepare-block-pairing.ts`) prepares one aligned parent
+through the production path:
 singletons and empty sides take their zero-call paths,
 historical cache records stay historical,
 and only a queried result carries the seats' final outcomes.
@@ -94,9 +97,9 @@ the `test:unit` dependency
 and `producer-input-verification.md`.
 The block pairing functions in `Block pairing question and protocol` are what survived.
 What was built and verified is recorded in
-the [writer-input work record](../../../../doc/planning/translation-repair-writer-unit-scope-2026-09-11.md)
+the [writer-input work record](../../../doc/planning/translation-repair-writer-unit-scope-2026-09-11.md)
 and in the
-[comparison work record](../../../../doc/planning/translation-repair-preparation-plan-and-journal-2026-09-14.md);
+[comparison work record](../../../doc/planning/translation-repair-preparation-plan-and-journal-2026-09-14.md);
 `git show cbedea357` lists every removed file.
 
 ## Historical writer and editor runners
@@ -107,8 +110,8 @@ both write nothing to a corpus,
 and both take a slice count after `--`.
 
 ```sh
-mise run //package/module/translation-repair:producer-calibrate -- 10
-mise run //package/module/translation-repair:editor-calibrate -- 14
+mise run //package/translation-repair/bench:producer-calibrate -- 10
+mise run //package/translation-repair/bench:editor-calibrate -- 14
 ```
 
 `producer-calibrate` ranks **writers**.
@@ -129,7 +132,8 @@ read off four matched pass pairs
 (`doc/decision/translation-repair-pass-overlap.md`);
 `TRANSLATION_REPAIR_SLICE_OVERLAP=1` reproduces the sequential driver for one launch.
 `TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR` (`request-pace.ts`) sets how many Hyper requests may start
-in any rolling hour (a whole number of one or more, or the client refuses it),
+in any rolling hour (a whole number of one or more,
+or the client refuses it),
 retries and credit reads included;
 the rest queue in arrival order instead of being refused with HTTP 429.
 The default,
@@ -180,7 +184,7 @@ That is what a standing counts,
 so one can be read off work already paid for:
 
 ```sh
-mise run //package/module/translation-repair:editor-standing-read -- <run dir> [<run dir> ...]
+mise run //package/translation-repair/bench:editor-standing-read -- <run dir> [<run dir> ...]
 ```
 
 It spends nothing and touches no model.

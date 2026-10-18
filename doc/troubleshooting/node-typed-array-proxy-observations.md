@@ -21,11 +21,11 @@ not a finding that Node should suppress caller exceptions.
 ## Root cause
 
 At `e359a7d53`,
-`package/module/translation-repair/src/read-preparation-selection-evidence.ts:33`
+`package/module/translation-repair/src/read-preparation-selection-evidence.ts:33` (removed before 2026-10-18)
 uses prototype-sensitive admission before its copy exception boundary:
 
 ```ts
-// package/module/translation-repair/src/read-preparation-selection-evidence.ts at e359a7d53
+// package/module/translation-repair/src/read-preparation-selection-evidence.ts (removed before 2026-10-18) at e359a7d53
 if (!(content instanceof Uint8Array))
   throw new PreparationRootError({ kind: 'reference-content' });
 try {
@@ -115,7 +115,7 @@ Detached views pass the brand check but fail the subsequent copy,
 which remains a separate fixed content failure.
 
 The package regression file is
-`package/module/translation-repair/src/preparation-selection-evidence.unit.test.ts`.
+`package/module/translation-repair/src/preparation-selection-evidence.unit.test.ts` (removed before 2026-10-18).
 It imports the built artifact and includes successful `Buffer`,
 shared-view,
 subarray and ordinary-byte ownership controls.
@@ -141,7 +141,7 @@ The consumer remedy uses it instead of `instanceof`,
 then retains the ordinary native byte copy.
 It narrowly catches inventory/entry shape-observation failures through
 `preparationArtifactIsArray` in
-`package/module/translation-repair/src/preparation-artifact-property.ts`.
+`package/module/translation-repair/src/preparation-artifact-property.ts` (removed before 2026-10-18).
 Hashing and the whole reader are not placed under a generic catch.
 
 The tradeoff is explicit:

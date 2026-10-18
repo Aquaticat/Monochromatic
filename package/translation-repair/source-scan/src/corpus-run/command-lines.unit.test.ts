@@ -239,8 +239,8 @@ function taskDescriptions({ text, }: { readonly text: string; },): ReadonlyMap<s
 /**
  How a doc spells an invocation of a runner, up to what is typed after it:
  the package task, the same task named from the repository root (under the
- package the family was split out of, and under the family package that owns the runner),
- and the built file.
+ directory the family was split out of, which docs written before 2026-10-18 still name,
+ and under the family package that owns the runner), and the built file.
 
  @param runner - runner name
 
@@ -374,7 +374,7 @@ function undeclaredFlagsIn(
 
 /**
  The docs the invocation case reads, from the repository root: the living
- repository-level docs and the docs and READMEs of the package the family was split out of and of
+ repository-level docs and the family's own docs and README and those of
  every family package. The audit ledger is left out, since it records what was typed when it was typed.
 
  @returns Paths from the repository root
@@ -513,15 +513,17 @@ await describe({
           text: [
             'Run `mise run corpus-pass -- --olny Tabby_01 --plan` first.',
             'Or `mise run //package/module/translation-repair:coverage-probe -- --cap 2 --cpa=3`,',
+            'or `mise run //package/translation-repair/coverage-census:coverage-probe -- --cap 2 --cpa=4`,',
             'then `node dist/final/node/verify-published.mjs --nap`, and `mise run corpus-pass` bare.',
           ].join('\n',),
         },),).toEqual({
           undeclared: [
             'doc/cat.md:1 corpus-pass --olny',
             'doc/cat.md:2 coverage-probe --cpa',
-            'doc/cat.md:3 verify-published --nap',
+            'doc/cat.md:3 coverage-probe --cpa',
+            'doc/cat.md:4 verify-published --nap',
           ],
-          invocations: 3,
+          invocations: 4,
         },);
       },
     },),

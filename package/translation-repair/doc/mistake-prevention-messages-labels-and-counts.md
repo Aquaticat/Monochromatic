@@ -316,7 +316,7 @@ which no count can make wrong.
 A test asserts a count line at one as well as at many.
 
 What enforces it:
-`src/count-nouns.unit.test.ts`,
+`package/translation-repair/source-scan/src/count-nouns.unit.test.ts`,
 among the source scans,
 fails on a `String(...)` interpolation followed,
 directly or after one or two modifier words,

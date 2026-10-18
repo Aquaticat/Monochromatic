@@ -191,7 +191,7 @@ not a memory of having done it.
     M45).
 4.  Every cache version is accounted for (M25,
     M28):
-    `mise run //package/module/translation-repair:cache-account-audit` lists every constant the source declares,
+    `mise run //package/translation-repair/slice-cache:cache-account-audit` lists every constant the source declares,
     the commit that set each value,
     and every non-test source commit since the earliest of them that no version's account names;
     read each unnamed commit against the files its stage's sheets and floors import,

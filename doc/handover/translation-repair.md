@@ -36,8 +36,8 @@ the later classes being in the
 [OpenRouter pass log](../planning/translation-repair-openrouter-2026-09-03.md);
 and "What to do next" carries the state each session left and the next launch.
 Since 2026-09-27 the work has been the owner's audit of the whole package,
-recorded finding by finding in the package's
-[audit ledger](../../package/module/translation-repair/doc/audit-ledger.md).
+recorded finding by finding in the family's
+[audit ledger](../../package/translation-repair/doc/audit-ledger.md).
 The 2026-09-04 snapshot,
 [`translation-repair-handover-2026-09-04.md`](translation-repair-handover-2026-09-04.md),
 still carries the four earlier classes,
@@ -65,8 +65,8 @@ Never let a pass finish on a build a commit has superseded,
 and never read its page as readiness evidence.
 When the fix is known before the launch,
 land it first and launch once.
-The rule is written in the package's
-[`doc/configuration.md`](../../package/module/translation-repair/doc/configuration.md)
+The rule is written in the family's
+[`package/translation-repair/doc/configuration.md`](../../package/translation-repair/doc/configuration.md)
 ("A source change while a pass is in flight means kill and relaunch")
 and in the runbook's launch and restore steps;
 it is deliberately not a root `AGENTS.md` rule.
@@ -214,7 +214,7 @@ image bytes,
 and raw requests and responses private.
 Documentation wording redaction is deferred while the package remains unfinished and not production-ready.
 The
-[package-local redaction policy](../../package/module/translation-repair/doc/redaction-timing.md)
+[family redaction policy](../../package/translation-repair/doc/redaction-timing.md)
 makes redaction a required readiness gate before a finished or production-ready declaration.
 
 ### Spent-prompt boundary

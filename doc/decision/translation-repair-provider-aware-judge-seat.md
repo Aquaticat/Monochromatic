@@ -3,7 +3,7 @@
 Decided by the owner on 2026-09-03 ("Seat per provider reach"),
 in answer to the question the
 morning's drop of Qwen3.8-27B raised.
-Landed in `package/module/translation-repair/src/corpus-run/run-seats.ts`.
+Landed in `package/translation-repair/run/src/corpus-run/run-seats.ts`.
 
 ## The evidence
 

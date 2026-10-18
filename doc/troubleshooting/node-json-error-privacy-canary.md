@@ -121,7 +121,7 @@ It parses these control catalogs:
   retaining only `{name: error.name}` does not expose the short input in the rendered wrapper.
 
 The production test in
-`package/module/translation-repair/src/preparation-attempt.unit.test.ts`
+`package/module/translation-repair/src/preparation-attempt.unit.test.ts` (removed before 2026-10-18)
 now first proves native exposure of its short `canary` input,
 then checks that `createPreparationAttempt` omits it and allocates no directory.
 R8 build,
@@ -140,11 +140,11 @@ records are retained under `/var/home/user/temp/agent/namespace-guard-proof-2026
 ## Verified workarounds
 
 The existing consumer boundary in
-`package/module/translation-repair/src/create-preparation-attempt.ts`
+`package/module/translation-repair/src/create-preparation-attempt.ts` (removed before 2026-10-18)
 retains only the parser error's class name:
 
 ```ts
-// package/module/translation-repair/src/create-preparation-attempt.ts
+// package/module/translation-repair/src/create-preparation-attempt.ts (removed before 2026-10-18)
 cause: { name: error.name, },
 ```
 

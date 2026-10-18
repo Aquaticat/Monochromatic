@@ -10,7 +10,7 @@ recommended option.
 ## What was decided
 
 -   `editor-calibrate` keeps four slices in flight when `TRANSLATION_REPAIR_SLICE_OVERLAP` is unset
-    (`CALIBRATION_OVERLAP` in `package/module/translation-repair/src/corpus-run/slice-overlap.ts`).
+    (`CALIBRATION_OVERLAP` in `package/translation-repair/slice-cache/src/corpus-run/slice-overlap.ts`).
     The variable still overrides it in either direction;
     `1` reproduces the sequential driver.
 -   `editor-calibrate` runs its stage rounds under a 300000 ms straggler window when

@@ -59,7 +59,7 @@ A `413` would let a client drop or downscale attachments and continue.
 
 Measured on 2026-08-21 against the pinned corpus and the shipped reading stage.
 
-- `package/module/translation-repair/src/image-reading-stage.ts` sends ONE picture per request,
+- `package/translation-repair/slice-reading/src/image-reading-stage.ts` sends ONE picture per request,
   as a `text` part followed by a single `image_url` part carrying a base64 data URI.
   There is no accumulating history,
   so the growth mode the report describes does not apply here.
@@ -107,7 +107,7 @@ which is part of the constant.
 LANDED 2026-08-22,
 once the source freeze recorded in `doc/handover/translation-repair-run-continuity.md` lifted:
 
-- The constant lowered to 7340032 in `package/module/translation-repair/src/image-reading-stage.ts`,
+- The constant lowered to 7340032 in `package/translation-repair/slice-reading/src/image-reading-stage.ts`,
   with its documentation rewritten around the gateway rather than the model.
 - The refusal reason renamed from `too-large-for-model` to `too-large-for-transport`,
   in both unions that declare it
@@ -121,7 +121,7 @@ once the source freeze recorded in `doc/handover/translation-repair-run-continui
   and keep the old spelling deliberately.
 
 - The gateway's parse failure re-raised as a size refusal,
-  in `package/module/translation-repair/src/request-size-refusal.ts`.
+  in `package/translation-repair/provider/src/request-size-refusal.ts`.
   `failureForReply` builds `SyntheticRequestTooLargeError`,
   a subclass of `SyntheticHttpError` carrying the measured body size beside the passing size,
   and `synthetic-client.ts` routes its streaming-completions failure through it.

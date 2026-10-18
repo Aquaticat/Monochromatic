@@ -49,7 +49,7 @@ The pool of entries settled under the current pipeline was zero while the direct
 ## What makes the failure visible rather than silent
 
 Three pieces,
-all in `package/module/translation-repair/src/corpus-run/`:
+all in `package/translation-repair/*/src/corpus-run/`:
 
 -   `artifact-generation.ts` partitions settled artifacts by the `tip` each recorded.
     Nothing read that field before;

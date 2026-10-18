@@ -1,6 +1,6 @@
 # Configuration
 
-Part of [the package README](../README.md).
+Part of [the family README](../README.md).
 
 Every setting the package reads from the environment is listed here,
 beside the two command-line flags in `Choosing what a run attempts`;
@@ -8,7 +8,8 @@ none of them had been written down before 2026-08-24.
 Most values are read once per invocation;
 an entry says so where its value is read per entry or per round instead.
 Git's repository-routing variables are not settings:
-every corpus `git` call drops them rather than reading them (`src/corpus-git-context.ts`).
+every corpus `git` call drops them rather than reading them
+(`package/translation-repair/corpus-source/src/corpus-git-context.ts`).
 
 An exported-but-empty variable counts as unset,
 which is deliberate rather than incidental:
@@ -26,7 +27,7 @@ each uses an empty export as given.
     a run starts on whichever provider keys are present,
     and only a run with no provider key at all is refused,
     the stated refusal (exit 6) described under `TRANSLATION_REPAIR_CHARM_HYPER_API_KEY`
-    (`configureProviders` in `src/corpus-run/run-providers.ts`).
+    (`configureProviders` in `package/translation-repair/run/src/corpus-run/run-providers.ts`).
 
 -   `TRANSLATION_REPAIR_EXA_API_KEY`.
     Key for the Exa search endpoint,
@@ -82,11 +83,13 @@ each uses an empty export as given.
     2026-09-03 (`doc/decision/translation-repair-openrouter-fallback.md`).
     Optional and loud like the second.
     Every request carries `provider: { zdr: true, require_parameters: true, sort: 'price', ignore: [...] }`
-    (`OPENROUTER_PROVIDER_PREFERENCES` and `openRouterProviderPreferencesFor` in `src/openrouter-catalog.ts`),
+    (`OPENROUTER_PROVIDER_PREFERENCES` and `openRouterProviderPreferencesFor` in
+    `package/translation-repair/provider/src/openrouter-catalog.ts`),
     so only zero-data-retention endpoints that support `response_format` may serve a passage,
     and among those the cheapest serves (`sort: 'price'` since 2026-09-09,
     the owner's instruction to stop bleeding).
-    The card's `ignoredEndpoints` (`src/model-cards.ts`) keeps a measured-broken or measured-slow upstream off the wire:
+    The card's `ignoredEndpoints` (`package/translation-repair/shared-contract/src/model-cards.ts`) keeps a
+    measured-broken or measured-slow upstream off the wire:
     Parasail and ModelRun for `minimax-m3`
     (Parasail since 2026-09-03,
     when it answered into the reasoning channel and left content empty;
@@ -188,12 +191,12 @@ and since 2026-08-25 it fails at once with the refusal instead of running half-d
 
 Since 2026-10-06 a built command also refuses the opposite start:
 a process that holds provider keys and does not name the command as the one it means to start
-(`src/task-runner-guard.ts`;
+(`package/translation-repair/adjudication/src/task-runner-guard.ts`;
 exit 6,
 before the command line is read).
 A key here is any variable whose name ends in `_API_KEY` and whose value is not blank.
 The command's task names it by setting `TRANSLATION_REPAIR_STARTED_BY` to the command's name,
-so every `mise run //package/module/translation-repair:<command>` start is unchanged.
+so every `mise run //package/translation-repair/<package>:<command>` start is unchanged.
 A start that must not go through the task,
 because every task builds the package first and nothing may rebuild while a pass is running,
 sets the variable by hand for that one start:
@@ -258,7 +261,7 @@ Do not read a run with a dark seat as a comparison of the roster.
     so nothing caches,
     the attempt reports no progress,
     and the queue drops the entry as stalled after its first try
-    (`readAttemptOutcome` in `src/corpus-run/entry-reattempt.ts`).
+    (`readAttemptOutcome` in `package/translation-repair/slice-cache/src/corpus-run/entry-reattempt.ts`).
     A run in that state logs `CAP TOO TIGHT` naming both numbers.
     It is warned rather than refused,
     because cutting mid-exchange is exactly what a test of the stall path wants.
@@ -291,10 +294,12 @@ section `Historical writer and editor runners`.
 
 -   `TRANSLATION_REPAIR_SLICE_OVERLAP`.
     How many slices a driver keeps in flight at once.
-    The corpus pass defaults to 4 (`PASS_OVERLAP` in `src/corpus-run/pass-overlap.ts`,
+    The corpus pass defaults to 4 (`PASS_OVERLAP` in
+    `package/translation-repair/corpus-pass/src/corpus-run/pass-overlap.ts`,
     `doc/decision/translation-repair-pass-overlap.md`,
     2026-09-06),
-    and so does the editor calibration (`CALIBRATION_OVERLAP` in `src/corpus-run/slice-overlap.ts`);
+    and so does the editor calibration (`CALIBRATION_OVERLAP` in
+    `package/translation-repair/slice-cache/src/corpus-run/slice-overlap.ts`);
     `1` reproduces the sequential driver.
     The pass reads it once per entry and prints `OVERLAP <id> value=N source=...`,
     where the source is `fallback` or the variable's name.
@@ -303,9 +308,9 @@ section `Historical writer and editor runners`.
 -   `TRANSLATION_REPAIR_STRAGGLER_GRACE_MS`.
     How long a round keeps waiting on stragglers once quorum stands,
     in milliseconds.
-    Built in at 120000 (`STRAGGLER_GRACE_MS` in `src/stage-round.ts`);
+    Built in at 120000 (`STRAGGLER_GRACE_MS` in `package/translation-repair/stage/src/stage-round.ts`);
     the editor calibration adopts 300000 when the variable is unset
-    (`CALIBRATION_STRAGGLER_GRACE_MS` in `src/grace-override.ts`).
+    (`CALIBRATION_STRAGGLER_GRACE_MS` in `package/translation-repair/glossary/src/grace-override.ts`).
     Every round reads it when it gathers,
     and a pass whose window differs from the built-in prints `STRAGGLER GRACE OVERRIDDEN` at launch.
     Anything but a whole number of milliseconds from 1 to 2147483647,
@@ -318,7 +323,7 @@ section `Historical writer and editor runners`.
     refiner,
     translate and consolidation producers),
     since a cut writer voice is a whole candidate lost.
-    Built in at 180000 (`WRITER_GRACE_MS` in `src/writer-grace-override.ts`,
+    Built in at 180000 (`WRITER_GRACE_MS` in `package/translation-repair/glossary/src/writer-grace-override.ts`,
     the owner's decision of 2026-09-06 in `doc/decision/translation-repair-straggler-grace.md`);
     when it is unset and the round window is longer,
     the writers follow the round window instead.
@@ -332,7 +337,8 @@ section `Historical writer and editor runners`.
     retries and credit reads included;
     the rest queue in arrival order instead of being refused with HTTP 429.
     Defaults to 1,000,
-    the account's limit as the owner stated it (`HYPER_REQUESTS_PER_HOUR` in `src/request-pace.ts`).
+    the account's limit as the owner stated it (`HYPER_REQUESTS_PER_HOUR` in
+    `package/translation-repair/provider/src/request-pace.ts`).
     It is read once,
     when the Hyper client is built.
     A value that is not a whole number of one or more,
@@ -377,13 +383,13 @@ without the package prefix:
 
 -   `DAMAGE_SAMPLE_SEED`.
     Seed for the `damage-sample` draw of shipped regions,
-    `damage-round-one` when unset (`src/corpus-run/damage-sample.ts`);
+    `damage-round-one` when unset (`package/translation-repair/probe/src/corpus-run/damage-sample.ts`);
     set a new one to draw a fresh sample for a later round.
 
 -   `VERIFY_SHEET_BASENAME`.
     Which graded sheet `score-verify` joins to its manifest,
     read as `<basename>-sheet.md` under the runs directory;
-    `probe-verify` when unset (`src/corpus-run/score-verify.ts`).
+    `probe-verify` when unset (`package/translation-repair/probe/src/corpus-run/score-verify.ts`).
 
 ## A source change while a pass is in flight means kill and relaunch
 
@@ -392,7 +398,7 @@ so invoking one rewrites `dist/final/node` underneath any pass already running f
 The running process survives that
 (the bundle has no dynamic imports,
 verified rather than assumed:
-[`translation-repair-overlap-dial.md`](../../../../doc/handover/translation-repair-overlap-dial.md),
+[`translation-repair-overlap-dial.md`](../../../doc/handover/translation-repair-overlap-dial.md),
 "Do not land a driver into a live pass launch"),
 but the pass is now on a superseded build:
 it computed its pipeline digest once at startup and stamps that digest into every artifact it writes,
@@ -431,15 +437,17 @@ Record each pipeline digest and corpus commit separately.
 ## Which corpus a run reads
 
 Every corpus read resolves through one pin,
-a clone directory and a commit (`readRunCorpusPinSetting` in `src/corpus-run/run-config.ts`).
+a clone directory and a commit (`readRunCorpusPinSetting` in
+`package/translation-repair/run/src/corpus-run/run-config.ts`).
 Either half can be overridden without editing source,
 which is what a fixture run against an unmerged corpus pull request needs.
 Both are read once per command,
 at the start of its run and inside its refusal boundary,
 by `readRunCorpusPinSetting`,
-which reads the environment it is handed through `readCorpusPinSetting` in `src/corpus-run/corpus-pin-override.ts`,
+which reads the environment it is handed through `readCorpusPinSetting` in
+`package/translation-repair/run/src/corpus-run/corpus-pin-override.ts`,
 and the command hands the pin on as a value.
-Until 2026-10-10 both were read when `src/corpus-run/run-config.ts` loaded.
+Until 2026-10-10 both were read when `package/translation-repair/run/src/corpus-run/run-config.ts` loaded.
 Unset and blank both mean the built-in half;
 anything else that is not valid is refused as a stated refusal rather than replaced by the built-in,
 because a run against the wrong corpus would record its conclusions as the pinned corpus's.
@@ -459,12 +467,13 @@ because a run against the wrong corpus would record its conclusions as the pinne
 -   `TRANSLATION_REPAIR_CORPUS_COMMIT`.
     Commit every read resolves against,
     written as one full 40-character lowercase hexadecimal name.
-    Defaults to `CORPUS_COMMIT_SHA` in `src/corpus-source.ts`,
+    Defaults to `CORPUS_COMMIT_SHA` in `package/translation-repair/corpus-source/src/corpus-source.ts`,
     the milestone-one benchmark pin.
     An abbreviated name is refused,
     since clones can resolve an abbreviation differently.
 
-A settled artifact records the commit it read as `corpusSha` (`src/corpus-run/pass-entry-artifact.ts`),
+A settled artifact records the commit it read as `corpusSha`
+(`package/translation-repair/corpus-pass/src/corpus-run/pass-entry-artifact.ts`),
 so an overridden run's artifacts name the commit they came from.
 When either half comes from the environment,
 `corpus-pass` prints a `CORPUS PIN OVERRIDDEN` line at launch naming the clone,
@@ -509,8 +518,9 @@ and readers refuse to mix generations unless told to.
 
 The pass writes schema generation 14
 (`ARTIFACT_SCHEMA_VERSION_V14`,
-`src/corpus-run/artifact-two-lane-build.ts`),
-and refuses to resume into a directory holding another one (`src/corpus-run/pass-schema-guard.ts`).
+`package/translation-repair/artifact/src/corpus-run/artifact-two-lane-build.ts`),
+and refuses to resume into a directory holding another one
+(`package/translation-repair/slice-cache/src/corpus-run/pass-schema-guard.ts`).
 That refusal is separate from the build guard in `Pooling artifacts across builds`
 and is not waved past by `TRANSLATION_REPAIR_ALLOW_GENERATION_DRIFT`:
 drift is an opinion about which build filled a pool,
@@ -520,7 +530,8 @@ A file of another schema generation cannot answer them at all.
 Generation 1 recorded one lane at the top level.
 Generations 2 to 4 record the same two-lane shape and differ only in how four keys are spelled,
 and generations 5 to 14 keep generation 4's spelling while each changes what the file records
-(the version notes in `src/artifact-schema-version.ts` and `src/corpus-run/artifact-two-lane-contract.ts`).
+(the version notes in `package/translation-repair/artifact/src/artifact-schema-version.ts` and
+`package/translation-repair/artifact/src/corpus-run/artifact-two-lane-contract.ts`).
 Generations 4 to 14 spell all four keys the current way:
 
 -   `changedSliceIndices`,
@@ -535,11 +546,12 @@ Generations 4 to 14 spell all four keys the current way:
 Generation 3 is therefore a mixture:
 the change-set arrays already carry their current names there,
 and the index does not.
-That is why the reader holds a table rather than a flag (`src/artifact-key-vocabulary.ts`).
+That is why the reader holds a table rather than a flag
+(`package/translation-repair/artifact/src/artifact-key-vocabulary.ts`).
 A reader holding a flag would read every generation 3 artifact's index as absent.
 
 The schema reader knows every generation from 1 to 14
-(`KNOWN_ARTIFACT_SCHEMA_VERSIONS` in `src/artifact-schema-version.ts`),
+(`KNOWN_ARTIFACT_SCHEMA_VERSIONS` in `package/translation-repair/artifact/src/artifact-schema-version.ts`),
 and the key table has a spelling for each;
 a reader that needs a shape a generation lacks refuses that generation by name.
 The reader takes the spelling from the version the file records,

@@ -1,6 +1,6 @@
 # Provider availability, measured
 
-Part of [the package README](../README.md).
+Part of [the family README](../README.md).
 
 ## Eight-seat schema-9 latency diagnosis
 
@@ -73,7 +73,7 @@ in `PROVIDER_ORDER` (Synthetic,
 Bedrock,
 Hyper,
 OpenRouter;
-`src/provider-name.ts`).
+`package/translation-repair/shared-contract/src/provider-name.ts`).
 
 Charm Hyper is a **prepaid balance**,
 priced per token and per model.
@@ -140,7 +140,7 @@ when two providers were metered:
 Since Bedrock joined on 2026-09-07 the line carries four states,
 one per provider in `PROVIDER_ORDER`,
 then every number each meter reported,
-`bedrockUsd=` and `openrouterUsd=` among them (`src/provider-budget.ts`).
+`bedrockUsd=` and `openrouterUsd=` among them (`package/translation-repair/provider/src/provider-budget.ts`).
 
 Three states,
 not two.
@@ -174,7 +174,7 @@ passing one or more log paths after `--`.
 It spends no quota:
 
 ```sh
-mise run //package/module/translation-repair:meter-report -- run3.log run4.log
+mise run //package/translation-repair/run:meter-report -- run3.log run4.log
 ```
 
 It reports,
@@ -203,12 +203,13 @@ so nothing observes when the provider came back,
 and every outage that ended a run reads as open-ended forever.
 
 ```sh
-mise run //package/module/translation-repair:budget-sample > sample.log 2>&1
+mise run //package/translation-repair/run:budget-sample > sample.log 2>&1
 ```
 
 One reading of all four providers' meters;
 it refuses unless all four provider keys are set,
-since a sample missing a provider would read as that provider answering (`src/corpus-run/budget-sample.ts`).
+since a sample missing a provider would read as that provider answering
+(`package/translation-repair/run/src/corpus-run/budget-sample.ts`).
 No model is called and no token is produced;
 a live run took 2.4 seconds.
 Capture both streams:

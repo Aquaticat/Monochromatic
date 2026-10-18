@@ -36,7 +36,7 @@ while prose example is not versioned to one catalog snapshot.
 
 Repository adds another deliberately static layer.
 The 2026-08-30 source excerpt from
-`package/module/translation-repair/src/hyper-catalog.ts:155-202`
+`package/translation-repair/shared-contract/src/hyper-catalog.ts:155-202`
 records the then-current allowlist and capability facts.
 Its historical `HYPER_ONLY` identifier became `NO_SYNTHETIC_COUNTERPART` on 2026-09-11:
 it identifies absence of a Synthetic counterpart,
@@ -63,7 +63,8 @@ export const HYPER_MODELS: Readonly<Record<HyperServedId, HyperModelInfo>> = {
 
 This file is an owner-controlled active allowlist,
 not generated live mirror.
-`package/module/translation-repair/src/hyper-client.ts:271-279` refuses labels outside mapping before network dispatch:
+`package/translation-repair/provider/src/hyper-client.ts:271-279` refuses labels outside mapping before network
+dispatch:
 
 ```ts
 function servedIdFor(

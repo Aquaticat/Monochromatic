@@ -1,10 +1,116 @@
-# @monochromatic-dev/module-translation-repair
+# Translation repair
 
 Multi-model translation critique and conservative repair.
+The family lives in `package/translation-repair/`,
+one directory for each of its 36 packages.
 
 Takes an original text plus its translation,
 returns a structured issue list anchored to an immutable document model,
 and a repaired candidate translation.
+
+## The packages
+
+Until 2026-10-18 the pipeline was one package,
+`package/module/translation-repair`.
+It was split into the packages below because its lint took too long as one unit,
+and the owner asked for packages of a manageable size.
+The measurements and the map of every moved file are in
+[the split plan](../../doc/planning/translation-repair-package-split.md).
+Each package has its own `README.md` that names what it exports and what it depends on.
+`markup` is the lowest layer and every package with production code lists it.
+`source-scan` and `test-fixture` hold no production code and have no build.
+
+- [`adjudication`](adjudication/README.md):
+  the critic and panel prompts and ballot tallies and the screen for defects a repair introduced.
+- [`archive`](archive/README.md):
+  reviews and disputes and revision checks over the translation a page already carries.
+- [`artifact`](artifact/README.md):
+  the two-lane settled artifact built from a run and read back with strict checks.
+- [`artifact-pool`](artifact-pool/README.md):
+  the pool of settled artifacts and the comparison of the two lanes rows.
+- [`assembly`](assembly/README.md):
+  assembly integrity and repetition checks and the repair contract and record shapes.
+- [`bench`](bench/README.md):
+  calibration benches and probes that run from outside the pipeline.
+- [`consistency`](consistency/README.md):
+  the page-level pass that makes the same wording read the same across a page.
+- [`consolidate`](consolidate/README.md):
+  the step that decides whether a new rendering replaces the standing text of a contested slice.
+- [`corpus-pass`](corpus-pass/README.md):
+  the corpus pass that runs the whole pipeline over every complete pair and settles an artifact.
+- [`corpus-source`](corpus-source/README.md):
+  the pinned corpus reader and the preparation of an entry for the pipeline.
+- [`coverage-census`](coverage-census/README.md):
+  finds the package code no unit test ran by running the suite under V8 coverage.
+- [`document-structure`](document-structure/README.md):
+  the MDX and Markdown parse and the heading and block alignment of original and translation.
+- [`glossary`](glossary/README.md):
+  the community glossary and the rules that read a page against it.
+- [`house-rule`](house-rule/README.md):
+  the house policy text and the identity and name context of a page.
+- [`insertion`](insertion/README.md):
+  checks for carried insertions and container halves and the corpus-run bookkeeping beside them.
+- [`lane-contest`](lane-contest/README.md):
+  the contest between the lanes over a contested slice and the checks that follow it.
+- [`markup`](markup/README.md):
+  the lowest layer with the character classes and markup scanners every other package reads text through.
+- [`page-check`](page-check/README.md):
+  published-page checks and the page-assembly passes.
+- [`page-pass`](page-pass/README.md):
+  passes that restore or splice text around the model lanes.
+- [`probe`](probe/README.md):
+  probes and the reports that read graded sheets and artifacts.
+- [`provider`](provider/README.md):
+  routing of a call to the provider that serves its model and the provider clients.
+- [`provider-stream`](provider-stream/README.md):
+  the wire-level half of the model clients with credential masking and stream watching.
+- [`reference`](reference/README.md):
+  lookups of the cited pages and work titles that the critics use.
+- [`rendering-audit`](rendering-audit/README.md):
+  the audit that asks a roster whether a rendering says what its original says.
+- [`repair`](repair/README.md):
+  the repair lane and the refine lane with the editor ensemble they share.
+- [`run`](run/README.md):
+  run configuration and the reports that read a run back.
+- [`shared-contract`](shared-contract/README.md):
+  small shared shapes such as model cards and roster ids that many layers read.
+- [`slice-cache`](slice-cache/README.md):
+  the slice and consolidation caches that make a pass resumable and the audits over them.
+- [`slice-reading`](slice-reading/README.md):
+  reads a document into slices and pictures and holds the image reading path.
+- [`source-scan`](source-scan/README.md):
+  the package-wide source scans of the family,
+  with no production code.
+- [`stage`](stage/README.md):
+  the panel-stage machinery of rounds and quorum that every model-backed step runs on.
+- [`test-fixture`](test-fixture/README.md):
+  test fixtures that import no production code and serve every package.
+- [`translate-floor`](translate-floor/README.md):
+  the floors and pieces a translated slice answer is built from.
+- [`translate-lane`](translate-lane/README.md):
+  the translate lane that translates every prepared slice afresh and assembles the result.
+- [`translate-stage`](translate-stage/README.md):
+  the stage in which several models translate a slice independently and a judge roster chooses.
+- [`typography`](typography/README.md):
+  prose typography with quote normalization and semantic line wrapping through the pinned lint binary.
+
+## Where the docs live
+
+- This file carries the design:
+  the standing constraints,
+  the English variety rule,
+  how a corpus pass is operated,
+  and the contract of `repairTranslation`.
+- `doc/` beside this file holds the docs about the family as a whole,
+  listed under "Where the rest lives".
+- A doc about one package sits in that package's `doc/`:
+  [`slice-reading/doc/`](slice-reading/doc/pictures.md) and
+  [`typography/doc/`](typography/doc/semantic-wrap-sync-spawn.md) each hold one.
+- The runbooks,
+  decisions,
+  troubleshooting notes,
+  handovers and plans sit in `doc/` at the repository root;
+  [the document map](../../doc/handover/translation-repair-document-map.md) says which to read first.
 
 ## Standing redesign constraints
 
@@ -113,7 +219,8 @@ Replacement scheduler must dispatch dependency-independent nodes concurrently
 up to dated live-measured per-provider and per-model limits.
 Dependency edges still serialize work whose prompt consumes prior output.
 Concurrency and request-rate limits are separate constraints and must be measured separately.
-Production uses 5 Synthetic slots per active model (`SYNTHETIC_PER_MODEL_CONCURRENCY` in `src/synthetic-client.ts`,
+Production uses 5 Synthetic slots per active model (`SYNTHETIC_PER_MODEL_CONCURRENCY` in
+`package/translation-repair/provider/src/synthetic-client.ts`,
 measured on 2026-08-30 with four active models).
 A run now routes two roster models to Synthetic,
 `hf:Qwen/Qwen3.8-27B` and `hf:moonshotai/Kimi-K3`,
@@ -204,13 +311,15 @@ Dates are written month first (April 29,
 March 13,
 2024),
 never day first.
-The rule lives in `HOUSE_POLICY_BLOCK` (`src/house-policy.ts`),
+The rule lives in `HOUSE_POLICY_BLOCK` (`package/translation-repair/house-rule/src/house-policy.ts`),
 which every writing and judging sheet carries,
-and the rendering glossaries (`src/rendering-glossary*.ts`) seed Canadian forms only;
-`src/canadian-english-policy.unit.test.ts` and `src/canadian-forms-policy.unit.test.ts` guard both.
+and the rendering glossaries (`rendering-glossary*.ts` in the `rendering-audit` and `translate-floor` packages)
+seed Canadian forms only;
+`package/translation-repair/adjudication/src/canadian-english-policy.unit.test.ts` and
+`package/translation-repair/translate-floor/src/canadian-forms-policy.unit.test.ts` guard both.
 The sheets reach only slices a lane rewrites,
 so a page-assembly pass (`canadianizePage`,
-`src/corpus-run/canadian-forms.ts`)
+`package/translation-repair/page-check/src/corpus-run/canadian-forms.ts`)
 also reads every slice as the page will carry it,
 the untouched ones included,
 writes every date month first
@@ -231,7 +340,7 @@ enrolment,
 grey,
 licorice,
 judgment and program;
-`src/corpus-run/canadian-spelling-words.ts`),
+`package/translation-repair/page-check/src/corpus-run/canadian-spelling-words.ts`),
 outside front matter,
 tags,
 attributes,
@@ -270,17 +379,20 @@ not the repository's own prose
 
 This file describes the design.
 To run the pipeline over the corpus,
-follow [the corpus pass runbook](../../../doc/runbook/translation-repair-corpus-pass.md),
+follow [the corpus pass runbook](../../doc/runbook/translation-repair-corpus-pass.md),
 which carries the environment,
 the launch,
 what to watch while it runs,
 and how to read the output back once it has exited.
 
 The semantic wrap of shipped text runs in the repository's pinned Rust linter,
-`monochromatic-lint`, which `mise.toml` installs as a cargo tool.
+`monochromatic-lint`,
+which `mise.toml` installs as a cargo tool.
 A pass started under `mise run` or `mise exec --` finds it on the PATH;
-without it, or with another version, the first wrap stops the run with a message naming the install commands
-(`src/semantic-wrap-binary.ts`).
+without it,
+or with another version,
+the first wrap stops the run with a message naming the install commands
+(`package/translation-repair/typography/src/semantic-wrap-binary.ts`).
 
 Read-back tools,
 none of which spends quota or calls a model:
@@ -330,7 +442,7 @@ A dropped destination from a wording both deciders approved is a finding,
 not a late publish rewrite.
 
 A page that ships with a defect also prints `DEFECTS <id> checks=<a>,<b>` after its `DESTINATIONS` line.
-The page ships regardless (`doc/design-commitments.md`),
+The page ships regardless (`package/translation-repair/doc/design-commitments.md`),
 and each check names what it found:
 `archive-original`,
 `contributor-names`,
@@ -376,14 +488,15 @@ A passage admitted for translation when a provider outage leaves every translato
 the entry stops `INCOMPLETE` and keeps its slice cache for a later run.
 A stored prompt payload the run cannot read or write stops the entry `INCOMPLETE` too,
 its tally line naming what refused;
-`PromptPayloadStoreError` (`src/prompt-payload-store.ts`) says what to do about one.
+`PromptPayloadStoreError` (`package/translation-repair/stage/src/prompt-payload-store.ts`) says what to do about one.
 
 ## Contract
 
-The core export is the batch driver over pure stage functions:
+The core export is the batch driver over pure stage functions,
+declared in the `repair` package:
 
 ```ts
-import { repairTranslation, } from '@monochromatic-dev/module-translation-repair';
+import { repairTranslation, } from '@monochromatic-dev/translation-repair-repair';
 
 const result = await repairTranslation({
   client,
@@ -413,17 +526,18 @@ const result = await repairTranslation({
   editors,
   selection judges,
   and resolution checkers.
-  A stage that gathers voices (`gatherStageVoices` in `src/stage-quorum.ts`)
+  A stage that gathers voices (`gatherStageVoices` in `package/translation-repair/stage/src/stage-quorum.ts`)
   needs a quorum of at least half its roster,
   rounded up;
   when the router has refused seats for want of a wet provider and fewer than that remain,
   the quorum is half the reachable seats,
   rounded up,
-  and at least two (`src/stage-reachable-quorum.ts`).
+  and at least two (`package/translation-repair/stage/src/stage-reachable-quorum.ts`).
   Each round asks a window of what quorum still needs plus one spare seat,
-  from a bench rotated by the prompt (`src/stage-fanout-window.ts`),
+  from a bench rotated by the prompt (`package/translation-repair/stage/src/stage-fanout-window.ts`),
   and a window seat the router refuses for want of a wet provider
-  hands its place in that round to the next seat not yet asked (`runGatherRound` in `src/stage-round.ts`);
+  hands its place in that round to the next seat not yet asked (`runGatherRound` in
+  `package/translation-repair/stage/src/stage-round.ts`);
   up to three retry rounds (`STAGE_RETRY_ROUNDS`) ask the seats not yet asked before the ones lost,
   and never re-ask a seat the router refused,
   nor a seat whose answer arrived but could not be read,
@@ -434,11 +548,12 @@ const result = await repairTranslation({
   with a note naming what happened:
   a reply the length limit cut,
   or one off the shape asked for
-  (`src/recovery-nudge.ts`,
+  (`package/translation-repair/stage/src/recovery-nudge.ts`,
   ledger P10).
   A stage still short of quorum proceeds on what it heard and records the shortfall as findings.
   The six stages that record every seat's own outcome
-  take the same window and retry rounds through `runWindowedRounds` (`src/stage-windowed-rounds.ts`),
+  take the same window and retry rounds through `runWindowedRounds`
+  (`package/translation-repair/stage/src/stage-windowed-rounds.ts`),
   with no recovery round.
   An optional `editorRuleAddendum` splices one extra machine-enforced
   rule line into the editor prompt for calibration experiments.
@@ -453,7 +568,8 @@ const result = await repairTranslation({
   including one for another producer's candidate.
   A winner needs weight 2,
   so on these rosters no candidate is selected by its own authors alone.
-  `assertJudgeableEditorRoster` (`src/repair-contract.ts`) no longer requires judges outside the editor roster:
+  `assertJudgeableEditorRoster` (`package/translation-repair/assembly/src/repair-contract.ts`) no longer requires judges
+  outside the editor roster:
   the ruling of 2026-08-15 allows self-judging at reduced weight instead.
   It refuses a roster that repeats an editor or a judge,
   seats no editor,
@@ -503,10 +619,12 @@ const result = await repairTranslation({
 
 ## Where the rest lives
 
-The rest of this package's documentation sits beside the code in `doc/`,
-one file per subject:
+The docs about the family as a whole sit beside this file in `doc/`,
+one file per subject,
+except the first,
+which sits in the `slice-reading` package:
 
-- [Reading the pictures a document shows](doc/pictures.md):
+- [Reading the pictures a document shows](slice-reading/doc/pictures.md):
   the deterministic reader,
   the model readers (six when every provider is wet),
   what is sent and what is not.
@@ -516,7 +634,7 @@ one file per subject:
   what is folded out of candidate and archive text at intake.
 - [Repetition and the site's grammar](doc/repetition.md):
   the repetition the pipeline introduced and how it is caught,
-  and why the site's grammar is not this package's.
+  and why the site's grammar is not this family's.
 - [Design commitments](doc/design-commitments.md):
   what the pipeline promises and refuses,
   with the measurements behind each.
@@ -549,7 +667,9 @@ one file per subject:
   with its measurement,
   its fix and its guard,
   and every mistake made while fixing.
-- [Preventing this package's mistakes](doc/mistake-prevention.md):
+- [Preventing this family's mistakes](doc/mistake-prevention.md):
   the ledger's mistakes grouped by family,
   the rule that prevents each and what enforces it,
   and the checklist before a run launches.
+- [Why the semantic wrap starts its linter synchronously](typography/doc/semantic-wrap-sync-spawn.md):
+  the one synchronous process start in the family and the lint suppression that covers it.

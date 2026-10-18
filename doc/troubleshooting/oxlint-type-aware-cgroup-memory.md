@@ -833,7 +833,7 @@ The native task inside that prepared container is:
 ```bash
 # Owned verification container, not an unbounded host benchmark.
 MISE_AUTO_INSTALL=false MISE_TASK_RUN_AUTO_INSTALL=false MISE_NODE_VERSION=26.8.2 \
-  mise run --no-deps --skip-tools //package/module/translation-repair:lint:oxlint
+  mise run --no-deps --skip-tools //package/translation-repair/<package>:lint:oxlint
 ```
 
 ### Failing catalog
@@ -893,7 +893,7 @@ Assign this resource-specific environment only to the isolated lint phase:
 # Same bounded container and unchanged package-wide type-aware task.
 OXLINT_THREADS=1 GOMEMLIMIT=512MiB \
   MISE_AUTO_INSTALL=false MISE_TASK_RUN_AUTO_INSTALL=false MISE_NODE_VERSION=26.8.2 \
-  mise run --no-deps --skip-tools //package/module/translation-repair:lint:oxlint
+  mise run --no-deps --skip-tools //package/translation-repair/<package>:lint:oxlint
 ```
 
 The thread cap reduces native parallelism.

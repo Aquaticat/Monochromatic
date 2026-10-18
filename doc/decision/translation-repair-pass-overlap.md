@@ -2,7 +2,7 @@
 
 Taken 2026-09-06 on the four matched pairs the overlap-dial work asked for,
 all measured on 2026-08-27 and 2026-08-28 and recorded in
-`package/module/translation-repair/README.md` and
+`package/translation-repair/README.md` and
 `doc/planning/translation-repair-corpus-overlap-measurement.md`,
 and never acted on because the 2026-09-01 hold froze the legacy pipeline
 before the reading was turned into a default.
@@ -18,7 +18,7 @@ not for a preference,
 and the evidence has existed since 2026-08-28.
 It is flagged here for a cheap veto:
 `TRANSLATION_REPAIR_SLICE_OVERLAP=1` reproduces the sequential driver for any launch,
-and `PASS_OVERLAP` in `package/module/translation-repair/src/corpus-run/pass-overlap.ts` is one number.
+and `PASS_OVERLAP` in `package/translation-repair/corpus-pass/src/corpus-run/pass-overlap.ts` is one number.
 
 ## What was decided
 

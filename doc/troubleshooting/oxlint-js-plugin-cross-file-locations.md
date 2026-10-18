@@ -200,7 +200,7 @@ Keep the consumer as the primary range:
 ```text
 Parameter "entry" can be deeply readonly: property verdict is writable.
 Its inferred parameter type originates in callable "toJudged" at
-package/module/translation-repair/src/probe-telemetry.ts:398.
+package/translation-repair/lane-contest/src/probe-telemetry.ts:398.
 Likely edit: give that callable an explicit deeply readonly return type.
 No exact type syntax was proved for that producer; run type checking after the edit.
 ```

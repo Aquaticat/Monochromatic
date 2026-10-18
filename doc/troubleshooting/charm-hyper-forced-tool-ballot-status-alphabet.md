@@ -23,7 +23,7 @@ so the evidence does not reveal which status field or character differed.
 
 ### JSON shape and review semantics are separate boundaries
 
-`package/module/translation-repair/src/prototype-review-unit-schema.ts`
+`package/module/translation-repair/src/prototype-review-unit-schema.ts` (removed before 2026-10-18)
 constrains exact object keys,
 status-string lengths,
 array cardinality,
@@ -37,7 +37,7 @@ The substantive prompt requires:
   and relations;
 - `c` or `d` for language and global statuses.
 
-`package/module/translation-repair/src/prototype-review-unit-guard.ts`
+`package/module/translation-repair/src/prototype-review-unit-guard.ts` (removed before 2026-10-18)
 checks those alphabets after JSON parsing.
 It returns `status-alphabet` when any character falls outside the field-specific set.
 

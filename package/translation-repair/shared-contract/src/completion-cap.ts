@@ -23,7 +23,7 @@ import {
 //
 // MEASURED, NOT CHOSEN. Over every `SPEND` line in the pass logs as of
 // 2026-09-09 16:20 UTC (142,437 completed calls across the four providers;
-// `doc/status.md` records the figures, and ledger P10 re-reads them), each cap is the highest 99th percentile of `completion_tokens`
+// `package/translation-repair/doc/status.md` records the figures, and ledger P10 re-reads them), each cap is the highest 99th percentile of `completion_tokens`
 // that any provider with at least 100 calls of the model recorded, so a
 // model is never cut on one provider at a length another provider's
 // tokenizer counts higher; floored at the pooled 90th percentile (3,831) so a
@@ -89,7 +89,7 @@ export const MIN_PROVIDER_CALLS = 100;
 
 /**
  Existing pooled 99th percentile for a new model without its own completed-call distribution.
- Measured over 142437 completed samples as of 2026-09-09, p99 13082 (`doc/status.md` records the sample count, and ledger P10 re-reads the figure).
+ Measured over 142437 completed samples as of 2026-09-09, p99 13082 (`package/translation-repair/doc/status.md` records the sample count, and ledger P10 re-reads the figure).
  */
 const POOLED_P99 = 13_082;
 

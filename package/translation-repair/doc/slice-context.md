@@ -1,6 +1,6 @@
 # Evidence beside a slice
 
-Part of [the package README](../README.md).
+Part of [the family README](../README.md).
 
 ## What a slice is judged beside
 
@@ -57,7 +57,7 @@ and the editor deleted a true fact
 (class thirty-five,
 2026-09-16;
 the owner's decision is
-[the cited-references decision](../../../../doc/decision/translation-repair-cited-references-2026-09-16.md)).
+[the cited-references decision](../../../doc/decision/translation-repair-cited-references-2026-09-16.md)).
 
 So every `http` link the original writes is fetched once through the Exa contents endpoint,
 4,000 characters of page text each and at most eight per entry,
@@ -356,7 +356,7 @@ Since class fifty-two (2026-09-17) that agreement is looked for over every pair 
 not the first two:
 the vision bench seats more than two readers
 (six when every provider is wet,
-`RUN_READER_MODELS` in `src/corpus-run/run-config.ts`),
+`RUN_READER_MODELS` in `package/translation-repair/run/src/corpus-run/run-config.ts`),
 and on XingZ601 the two readings the old rule compared stood just under the line
 while a third agreed with both.
 A reading no other reading vouches for stays out of the corroborated set.
@@ -551,7 +551,7 @@ recorded as `insertion-container-deficit-admitted`
 with the slice,
 the container and the slices it spans,
 and both block counts
-(`src/corpus-run/insertion-container-deficit.ts`),
+(`package/translation-repair/insertion/src/corpus-run/insertion-container-deficit.ts`),
 in document order while the deficit lasts.
 This is what admits an interior omission on a page whose translated part runs long,
 where the whole-page budget has nothing to spend.

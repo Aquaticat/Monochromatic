@@ -1,6 +1,6 @@
 # Status
 
-Part of [the package README](../README.md).
+Part of [the family README](../README.md).
 
 ## Contents
 

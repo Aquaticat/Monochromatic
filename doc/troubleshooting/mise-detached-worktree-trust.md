@@ -110,7 +110,7 @@ The failing probe used a detached worktree at the Candidate M implementation com
 ```bash
 git -C /path/to/repository worktree add --detach /private/disposable/worktree HEAD
 cd /private/disposable/worktree
-mise run //package/module/translation-repair:build:js:node
+mise run //package/translation-repair/<package>:build:js:node
 ```
 
 It produced the quoted untrusted-config diagnostic and exited nonzero before build execution.
@@ -120,7 +120,7 @@ that exact root:
 
 ```bash
 MISE_TRUSTED_CONFIG_PATHS=/private/disposable/worktree \
-  mise run //package/module/translation-repair:build:js:node
+  mise run //package/translation-repair/<package>:build:js:node
 ```
 
 The build completed with exit code `0`.
@@ -263,8 +263,10 @@ not a general confidential or resource-limited sandbox.
 Use the repository's bounded container machinery for hazardous or resource-heavy mutations.
 
 A separate caller error used package task `format`,
-which does not exist in `package/module/translation-repair/mise.toml`.
-Mise emitted `no task //package/module/translation-repair:format found` before any formatter ran.
+which did not exist in the `mise.toml` of `package/module/translation-repair`
+(split on 2026-10-18 into the packages under `package/translation-repair`).
+Mise emitted `no task //package/module/translation-repair:format found` before any formatter ran;
+the same mistake now names `//package/translation-repair/<package>:format`.
 The declared task `format:oxlint` was then invoked successfully.
 That task-name error was not a trust or sandbox failure.
 

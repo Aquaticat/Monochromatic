@@ -325,4 +325,4 @@ which reads White_Space,
 default-ignorable code points and controls as nothing,
 so the reply guard refuses such a reply and the model is re-asked
 (package ledger B40,
-`package/module/translation-repair/doc/audit-ledger.md`).
+`package/translation-repair/doc/audit-ledger.md`).

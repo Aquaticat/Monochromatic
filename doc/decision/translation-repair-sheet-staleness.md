@@ -42,7 +42,7 @@ The 17 entries behind the 50 items settled at tips
  `9533b0ba8` and `351eb1a4d`,
 on 2026-08-06 and 2026-08-07.
 There have been 153
- commits to `package/module/translation-repair/src` since,
+ commits to `package/translation-repair/*/src` since,
 and among them are
  every change that alters what those items would now be:
 

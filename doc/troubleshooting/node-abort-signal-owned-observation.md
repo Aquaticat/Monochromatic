@@ -26,21 +26,21 @@ selected files were read with `git show HEAD:<path>` without changing the clone.
 
 At pre-fix commit `3707322f2`,
 the comparison reads live caller state in
-`package/module/translation-repair/src/corpus-run/producer-input-comparison.ts:137`:
+`package/module/translation-repair/src/corpus-run/producer-input-comparison.ts:137` (removed before 2026-10-18):
 
 ```ts
-// package/module/translation-repair/src/corpus-run/producer-input-comparison.ts
+// package/module/translation-repair/src/corpus-run/producer-input-comparison.ts (removed before 2026-10-18)
 if (request.signal
   .aborted)
   throw new ProducerInputComparisonError({ kind: 'interruption' });
 ```
 
 The outer catch at
-`package/module/translation-repair/src/corpus-run/producer-input-comparison.ts:338`
+`package/module/translation-repair/src/corpus-run/producer-input-comparison.ts:338` (removed before 2026-10-18)
 preserves a same-class Error's kind and directory:
 
 ```ts
-// package/module/translation-repair/src/corpus-run/producer-input-comparison.ts
+// package/module/translation-repair/src/corpus-run/producer-input-comparison.ts (removed before 2026-10-18)
 const failure = Error.isError(error) && (error instanceof ProducerInputComparisonError)
   ? error : new ProducerInputComparisonError({ kind: 'output' });
 throw new ProducerInputComparisonError({
@@ -52,12 +52,12 @@ throw new ProducerInputComparisonError({
 
 Class identity does not establish that those fields belong to this invocation.
 The initial request reader at
-`package/module/translation-repair/src/corpus-run/producer-input-comparison-contract.ts:134`
+`package/module/translation-repair/src/corpus-run/producer-input-comparison-contract.ts:134` (removed before 2026-10-18)
 already reconstructs getter failures as fresh contract refusals,
 but a later signal accessor runs outside that capture:
 
 ```ts
-// package/module/translation-repair/src/corpus-run/producer-input-comparison-contract.ts
+// package/module/translation-repair/src/corpus-run/producer-input-comparison-contract.ts (removed before 2026-10-18)
 void error;
 throw new ProducerInputComparisonError({ kind: 'contract', });
 ```
@@ -190,7 +190,7 @@ Failure catalog:
 ## Verified consumer boundary and its limits
 
 The R2 throwaway candidate informed the production owner
-`package/module/translation-repair/src/corpus-run/producer-input-comparison-signal.ts`.
+`package/module/translation-repair/src/corpus-run/producer-input-comparison-signal.ts` (removed before 2026-10-18).
 The comparison owns a new controller and passes only its signal onward.
 A private registration view delegates state and listener operations through captured native methods.
 It uses `addAbortListener` for propagation resistance,
@@ -204,20 +204,20 @@ not a thrown event-callback value or invented cancellation.
 The awaiting comparison owner checks that flag before reporting success
 and retains fixed contract-refusal metadata when observation fails without proven cancellation.
 The current predicate at
-`package/module/translation-repair/src/corpus-run/producer-input-comparison-signal.ts:162`
+`package/module/translation-repair/src/corpus-run/producer-input-comparison-signal.ts:162` (removed before 2026-10-18)
 preserves actual cancellation priority:
 
 ```ts
-// package/module/translation-repair/src/corpus-run/producer-input-comparison-signal.ts
+// package/module/translation-repair/src/corpus-run/producer-input-comparison-signal.ts (removed before 2026-10-18)
 if (state.unreadable && (!ownedSignal.aborted))
 ```
 
 The outer failure path at
-`package/module/translation-repair/src/corpus-run/producer-input-comparison.ts:351`
+`package/module/translation-repair/src/corpus-run/producer-input-comparison.ts:351` (removed before 2026-10-18)
 releases before its fixed warning and terminal snapshot:
 
 ```ts
-// package/module/translation-repair/src/corpus-run/producer-input-comparison.ts
+// package/module/translation-repair/src/corpus-run/producer-input-comparison.ts (removed before 2026-10-18)
 cancellation[Symbol.dispose]();
 if (cancellation.hasObservationFailure())
   pl.warn('cancellation observation failed; primary comparison failure remains retained');

@@ -22,7 +22,7 @@ which lists every file of this record.
 
     ```sh
     TRANSLATION_REPAIR_RUNS_DIR="${RUNDIR}" \
-      mise run //package/module/translation-repair:verify-published
+      mise run //package/translation-repair/run:verify-published
     ```
 
     This spends no quota and calls no model.
@@ -164,7 +164,7 @@ which lists every file of this record.
 3.  Read what the providers were doing while it ran.
 
     ```sh
-    mise run //package/module/translation-repair:meter-report -- "${RUNDIR}.log"
+    mise run //package/translation-repair/run:meter-report -- "${RUNDIR}.log"
     ```
 
     Expected:
@@ -189,7 +189,7 @@ and a run made from that checkout recorded none of what they read either.
 4.  Read where the wall clock went.
 
     ```sh
-    mise run //package/module/translation-repair:run-timing-report -- "${RUNDIR}.log"
+    mise run //package/translation-repair/run:run-timing-report -- "${RUNDIR}.log"
     ```
 
     This spends no quota and calls no model.
@@ -240,7 +240,7 @@ and a run made from that checkout recorded none of what they read either.
     Read per-slice phase cost separately:
 
     ```sh
-    mise run //package/module/translation-repair:slice-cost-report -- "${RUNDIR}.log"
+    mise run //package/translation-repair/slice-cache:slice-cost-report -- "${RUNDIR}.log"
     ```
 
     `SLICE-COST` covers repair,
@@ -256,7 +256,7 @@ and a run made from that checkout recorded none of what they read either.
 5.  Read what the run cost.
 
     ```sh
-    mise run //package/module/translation-repair:spend-report -- "${RUNDIR}.log"
+    mise run //package/translation-repair/run:spend-report -- "${RUNDIR}.log"
     ```
 
     This spends no quota and calls no model.
@@ -350,7 +350,7 @@ and a run made from that checkout recorded none of what they read either.
 
     ```sh
     TRANSLATION_REPAIR_RUNS_DIR="${RUNDIR}" \
-      mise run //package/module/translation-repair:ledger-report
+      mise run //package/translation-repair/run:ledger-report
     ```
 
     This spends no quota and calls no model.

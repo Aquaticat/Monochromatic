@@ -325,7 +325,7 @@ last updated 2026-09-18) say:
 Asked on 2026-09-24,
 the owner chose to leave DevPass out.
 The key stays in the sops file unused;
-nothing in `package/module/translation-repair` reads it.
+nothing in `package/translation-repair` reads it.
 The terms allow a self-service refund within 14 days of purchase while usage stays under 20 percent of the allowance.
 Rejected alternatives:
 wiring DevPass in anyway (terms,

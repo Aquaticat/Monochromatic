@@ -46,7 +46,7 @@ named for that subject and listed here.
 
 ## What was seated
 
-All in `package/module/translation-repair/src/corpus-run/run-config.ts`.
+All in `package/translation-repair/run/src/corpus-run/run-config.ts`.
 
 -   Editors:
     `hf:zai-org/GLM-5.3-Flash`,

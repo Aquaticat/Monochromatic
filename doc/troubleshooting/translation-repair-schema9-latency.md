@@ -39,9 +39,9 @@ Matched prior entries spent 1,987,611 and 2,628,052 milliseconds in grace.
 Grace growth therefore explains 82.2 percent of difference from 3,014,684-millisecond run and
 81.6 percent of difference from 3,774,160-millisecond run.
 
-`package/module/translation-repair/src/stage-round.ts:269` starts round clock.
-`package/module/translation-repair/src/stage-round.ts:366` waits for remaining seats after quorum.
-`package/module/translation-repair/src/stage-round.ts:419` emits total,
+`package/translation-repair/stage/src/stage-round.ts:269` starts round clock.
+`package/translation-repair/stage/src/stage-round.ts:366` waits for remaining seats after quorum.
+`package/translation-repair/stage/src/stage-round.ts:419` emits total,
 time-to-quorum,
 and grace wall time.
 
@@ -226,15 +226,15 @@ That made healthy but expensive quality work look like unbounded wait.
 
 Logging now closes consolidation and absolute-review gaps:
 
-- `package/module/translation-repair/src/slice-cost-log.ts:136` defines `SLICE-START`
-- `package/module/translation-repair/src/consolidate-driver.ts:299` brackets every consolidation slice
+- `package/translation-repair/translate-floor/src/slice-cost-log.ts:136` defines `SLICE-START`
+- `package/translation-repair/corpus-pass/src/consolidate-driver.ts:299` brackets every consolidation slice
 - consolidation exits distinguish `computed`,
   `resumed`,
   `reused`,
   `unsettled`,
   `failed`,
   and `aborted`
-- `package/module/translation-repair/src/absolute-naturalness-review-stage.ts:292` summarizes each seat's status,
+- `package/translation-repair/archive/src/absolute-naturalness-review-stage.ts:292` summarizes each seat's status,
   finding count,
   paragraph numbers,
   and finding digests
@@ -254,12 +254,12 @@ Lane contest retains existing round-level timing rather than per-slice cost brac
 Build before tests because tests import `dist/`:
 
 ```sh
-mise run //package/module/translation-repair:build
-node package/module/translation-repair/src/slice-cost-read.unit.test.ts
-node package/module/translation-repair/src/consolidate-driver.unit.test.ts
-node package/module/translation-repair/src/absolute-naturalness-review-stage.unit.test.ts
-node package/module/translation-repair/src/consolidation-polish.unit.test.ts
-node package/module/translation-repair/src/corpus-run/artifact-two-lane-read-naturalness-review.unit.test.ts
+mise run //package/translation-repair/<package>:build
+node package/translation-repair/translate-floor/src/slice-cost-read.unit.test.ts
+node package/translation-repair/corpus-pass/src/consolidate-driver.unit.test.ts
+node package/translation-repair/archive/src/absolute-naturalness-review-stage.unit.test.ts
+node package/translation-repair/page-check/src/consolidation-polish.unit.test.ts
+node package/translation-repair/artifact/src/corpus-run/artifact-two-lane-read-naturalness-review.unit.test.ts
 ```
 
 Tests prove:
@@ -282,7 +282,7 @@ Tests prove:
 Operator-boundary report verification:
 
 ```sh
-mise run //package/module/translation-repair:slice-cost-report -- \
+mise run //package/translation-repair/slice-cache:slice-cost-report -- \
   "$HOME/temp/agent/validation-Weideriche-schema9-eight-roster-20260829.log"
 ```
 

@@ -37,7 +37,7 @@ Hyper service source is not public,
 so the published compatibility documentation and observable endpoint are the upstream authority.
 
 The consumer applies its project-wide answer bound at
-`package/module/translation-repair/src/hyper-catalog.ts:214-243`:
+`package/translation-repair/shared-contract/src/hyper-catalog.ts:214-243`:
 
 ```ts
 const MEASURED_ANSWER_BOUND = 32_000;
@@ -54,7 +54,8 @@ export function answerCeilingFor(
 }
 ```
 
-`package/module/translation-repair/src/anthropic-request.ts:433-458` sends the lower of that bound and a caller override:
+`package/translation-repair/provider/src/anthropic-request.ts:433-458` sends the lower of that bound and a caller
+override:
 
 ```ts
 return {
@@ -88,7 +89,7 @@ not a bound over every textual tool-input stream.
 
 ### The stream preserves the stop reason
 
-`package/module/translation-repair/src/anthropic-completion.ts:280-324` records `message_delta.delta.stop_reason`.
+`package/translation-repair/provider/src/anthropic-completion.ts:280-324` records `message_delta.delta.stop_reason`.
 Lines 543-580 return the last reason as `finishReason`:
 
 ```ts
@@ -109,7 +110,7 @@ Its streaming documentation also states that `message_delta.usage.output_tokens`
 
 ### JSON admission consults the stop reason only after parse failure
 
-`package/module/translation-repair/src/chat-json-outcome.ts:93-102` can format the reason:
+`package/translation-repair/provider/src/chat-json-outcome.ts:93-102` can format the reason:
 
 ```ts
 const { finishReason, } = reply;
@@ -163,7 +164,7 @@ Reproduction command:
 ```bash
 cd /var/home/user/temp/agent/translation-repair-finite-prototypes
 node --experimental-strip-types --input-type=module -e '
-  import { readJsonOutcome } from "./package/module/translation-repair/src/chat-json-outcome.ts";
+  import { readJsonOutcome } from "./package/translation-repair/provider/src/chat-json-outcome.ts";
   const outcome = readJsonOutcome({
     modelId: "hf:Qwen/Qwen3.8-27B",
     reply: { text: "{\"x\":1}", finishReason: "max_tokens" },

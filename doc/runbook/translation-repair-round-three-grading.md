@@ -141,7 +141,7 @@ Two things worth knowing while you read:
 ## Step 3: get the numbers
 
 ```bash
-mise run //package/module/translation-repair:score-agreement -- \
+mise run //package/translation-repair/probe:score-agreement -- \
   --sheet /ABSOLUTE/path/to/grading-sheet-milestone-three-precision-round-three.md
 ```
 
@@ -204,7 +204,7 @@ it recorded verdicts and changed nothing about what shipped,
 because until your grades exist there is no way to know how often it is wrong.
 
 ```bash
-mise run //package/module/translation-repair:score-probe -- \
+mise run //package/translation-repair/probe:score-probe -- \
   --repair-sheet /ABSOLUTE/path/to/repair-sheet-milestone-three-precision-round-three.md \
   --manifest /ABSOLUTE/path/to/sample-manifest-milestone-three-precision-round-three.json
 ```

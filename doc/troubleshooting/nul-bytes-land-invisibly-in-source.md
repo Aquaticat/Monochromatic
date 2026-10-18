@@ -100,7 +100,7 @@ write it as an ESCAPE,
 and share the one constant:
 
 ```ts
-// package/module/translation-repair/src/corpus-run/rendering-audit-settled-row.ts
+// package/translation-repair/probe/src/corpus-run/rendering-audit-settled-row.ts
 export const SLOT_SEPARATOR = '\u0000';
 ```
 

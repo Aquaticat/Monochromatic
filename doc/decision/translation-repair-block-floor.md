@@ -6,7 +6,7 @@ asked after the Huasheng relaunch stopped at its poem slice.
 
 ## The question
 
-`compareBlocks` in `package/module/translation-repair/src/translate-validate.ts` requires a candidate to
+`compareBlocks` in `package/translation-repair/translate-floor/src/translate-validate.ts` requires a candidate to
 carry the archive page's block sequence in order,
 adding blocks only up to the larger of the page and the original.
 The rule was written on 68 settled slice records

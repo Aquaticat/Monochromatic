@@ -70,7 +70,7 @@ so it does not parse combined merge hunks as ordinary single-parent replacements
 
 The installed native binary reports Git 2.55.0.
 The repository PATH also contains a policy shim;
-`package/module/translation-repair/src/corpus-run/git-command.ts`
+`package/translation-repair/glossary/src/corpus-run/git-command.ts`
 already provides `resolveGit` for the native-binary preference.
 No alternative resolution policy is proposed.
 
@@ -224,9 +224,9 @@ The executed verification is:
 ```text
 # Run from the translation-repair worktree after its package build and type check.
 mise run test -- \
-  package/module/translation-repair/src/archive-naming.unit.test.ts \
-  package/module/translation-repair/src/archive-naming-provenance.unit.test.ts \
-  package/module/translation-repair/src/corpus-source.unit.test.ts
+  package/module/translation-repair/src/archive-naming.unit.test.ts (removed before 2026-10-18) \
+  package/module/translation-repair/src/archive-naming-provenance.unit.test.ts (removed before 2026-10-18) \
+  package/translation-repair/adjudication/src/corpus-source.unit.test.ts
 ```
 
 `~/temp/agent/archive-provenance-green-20260910.out`

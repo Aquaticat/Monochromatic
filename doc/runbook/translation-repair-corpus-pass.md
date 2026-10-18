@@ -8,7 +8,7 @@ It costs real money and real subscription allowance,
 and a long one runs for hours.
 
 This document is the procedure.
-`package/module/translation-repair/README.md` is the reference for what each knob means,
+`package/translation-repair/README.md` is the reference for what each knob means,
 and `doc/handover/translation-repair-run-continuity.md` is the record of how the supervisors
 and their guards came to be the way they are.
 Neither is ordered,
@@ -48,7 +48,7 @@ and fixture provenance for each pass.
 
 Production `corpus-pass` has no pull-request input flag.
 It reads corpus clone and commit from `TRANSLATION_REPAIR_CORPUS_CLONE_DIR` and `TRANSLATION_REPAIR_CORPUS_COMMIT`
-(package `doc/configuration.md`)
+(family doc `package/translation-repair/doc/configuration.md`)
 and prints `CORPUS PIN OVERRIDDEN` at launch when either is set.
 Pull-request validation points them at exact pull-request commit in isolated corpus clone or minimal Git fixture.
 Pull-request 386 procedure of 2026-08-29 predates both variables (`b0a79eb66`,
@@ -141,7 +141,7 @@ TODO | DONE
     (`doc/decision/translation-repair-openrouter-fallback.md`);
     a worktree whose store predates the OpenRouter name can still exercise it by launching the worktree's
     bundle with the main repository as the mise config root,
-    where the bundle is `package/module/translation-repair/dist/final/node/corpus-pass.mjs`:
+    where the bundle is `package/translation-repair/corpus-pass/dist/final/node/corpus-pass.mjs`:
 
     ```sh
     cd /var/home/user/Monochromatic
@@ -152,7 +152,7 @@ TODO | DONE
     The `TRANSLATION_REPAIR_STARTED_BY=corpus-pass` before `mise exec` is what the command's own task would set:
     since 2026-10-06 a built command refuses to run in a process that holds provider keys
     unless that variable names it
-    (`package/module/translation-repair/src/task-runner-guard.ts`),
+    (`package/translation-repair/adjudication/src/task-runner-guard.ts`),
     so a start that skips the task names the command by hand.
     Check which names a root injects before choosing,
     printing presence and never a value:
@@ -174,7 +174,7 @@ TODO | DONE
 4.  Check the setup for no quota at all.
 
     ```sh
-    mise run //package/module/translation-repair:corpus-pass -- --plan
+    mise run //package/translation-repair/corpus-pass:corpus-pass -- --plan
     ```
 
     Expected:
@@ -194,7 +194,7 @@ TODO | DONE
 5.  Read both meters before committing to a launch.
 
     ```sh
-    mise run //package/module/translation-repair:budget-sample > ~/temp/agent/pre-launch.log 2>&1
+    mise run //package/translation-repair/run:budget-sample > ~/temp/agent/pre-launch.log 2>&1
     cat ~/temp/agent/pre-launch.log
     ```
 
@@ -227,7 +227,7 @@ TODO | DONE
 6.  Re-read the completion caps against the runs since the last launch.
 
     ```sh
-    mise run //package/module/translation-repair:cap-census -- ~/temp/agent > ~/temp/agent/cap-census.log 2>&1
+    mise run //package/translation-repair/run:cap-census -- ~/temp/agent > ~/temp/agent/cap-census.log 2>&1
     rg '^cap-census:|^[a-z].*: card cap|^  [A-Z]{4}' ~/temp/agent/cap-census.log
     ```
 
@@ -278,7 +278,7 @@ TODO | DONE
     ```sh
     cd -- /var/home/user/worktrees/translation-repair
     TRANSLATION_REPAIR_RUNS_DIR="${RUNDIR}" nohup setsid \
-      mise run //package/module/translation-repair:corpus-pass \
+      mise run //package/translation-repair/corpus-pass:corpus-pass \
       > "${RUNDIR}.log" 2>&1 < /dev/null &
     ```
 
@@ -297,7 +297,7 @@ TODO | DONE
       --working-directory=/var/home/user/worktrees/translation-repair \
       --setenv=TRANSLATION_REPAIR_RUNS_DIR="${RUNDIR}" \
       --property=StandardOutput=truncate:"${RUNDIR}.log" \
-      "$(command -v mise)" run //package/module/translation-repair:corpus-pass
+      "$(command -v mise)" run //package/translation-repair/corpus-pass:corpus-pass
     ```
 
     Give the unit no `StandardError` property:
@@ -490,7 +490,7 @@ TODO | DONE
     and a probe run this way exercises the source rather than the artifact,
     so it verifies the change and not the packaging.
 
-    `mise run //package/module/translation-repair:lint:types` and `:lint:oxlint`
+    `mise run //package/translation-repair/<package>:lint:types` and `:lint:oxlint`
     carry no build dependency and are safe at any time.
 
 ## What to check

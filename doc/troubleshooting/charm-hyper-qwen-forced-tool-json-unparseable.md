@@ -68,7 +68,7 @@ not enough evidence to locate an internal provider cause.
 
 ### The consumer preserves provider fragments in arrival order
 
-At `package/module/translation-repair/src/anthropic-completion.ts:271-278`,
+At `package/translation-repair/provider/src/anthropic-completion.ts:271-278`,
 the consumer appends each tool fragment without rewriting it:
 
 ```ts
@@ -81,7 +81,7 @@ if (kind === 'input_json_delta')
   },),);
 ```
 
-At `package/module/translation-repair/src/anthropic-completion.ts:554-580`,
+At `package/translation-repair/provider/src/anthropic-completion.ts:554-580`,
 the consumer joins those fragments and returns joined tool input as answer:
 
 ```ts
@@ -97,7 +97,7 @@ return {
 ```
 
 The parser does not repair malformed generated JSON.
-`package/module/translation-repair/src/chat-json-outcome.ts:197-227` parses once and fails closed:
+`package/translation-repair/provider/src/chat-json-outcome.ts:197-227` parses once and fails closed:
 
 ```ts
 const attempt = parseModelJson({

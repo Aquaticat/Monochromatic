@@ -37,7 +37,7 @@ and deterministic restart made zero transport calls.
 ## Root cause
 
 Prototype commit `28d548d84fe1fcb51765b0e9a845c6361bf6359c` sets a six-minute default evaluation deadline in
-`package/module/translation-repair/src/prototype-hyper-expansion-client.ts:36-39`:
+`package/module/translation-repair/src/prototype-hyper-expansion-client.ts:36-39` (removed before 2026-10-18):
 
 ```ts
 /**
@@ -47,7 +47,7 @@ const EVALUATION_TIMEOUT_MS = 360_000;
 ```
 
 The same file arms that deadline for every request and allows an explicit request value to replace it at
-`package/module/translation-repair/src/prototype-hyper-expansion-client.ts:287-294`:
+`package/module/translation-repair/src/prototype-hyper-expansion-client.ts:287-294` (removed before 2026-10-18):
 
 ```ts
 /**
@@ -60,7 +60,7 @@ using deadline = armCallDeadline({
 },);
 ```
 
-`package/module/translation-repair/src/call-deadline.ts:112-130` arms the timer.
+`package/translation-repair/provider/src/call-deadline.ts:112-130` arms the timer.
 It aborts the call-owned controller with `CallTimeoutError` when it fires:
 
 ```ts
@@ -79,7 +79,7 @@ const deadline = setTimeout(
 ```
 
 The client passes that deadline-owned signal to the stream transport at
-`package/module/translation-repair/src/prototype-hyper-expansion-client.ts:298-311`:
+`package/module/translation-repair/src/prototype-hyper-expansion-client.ts:298-311` (removed before 2026-10-18):
 
 ```ts
 const reply = await transport({
@@ -95,7 +95,7 @@ const reply = await transport({
   wireFormat: 'anthropic',
 ```
 
-`package/module/translation-repair/src/stream-drain.ts:321-358` reports progress,
+`package/translation-repair/provider-stream/src/stream-drain.ts:321-358` reports progress,
 passes through only self-ended stream errors,
 and otherwise retains partial text in `StreamCutShortError`:
 

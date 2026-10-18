@@ -38,7 +38,7 @@ That statement covers request acceptance but does not establish server-side sche
 The page lists common fields without documenting `response_format` behavior.
 
 Repository transport investigation had already measured decisive gateway behavior.
-`package/module/translation-repair/src/hyper-catalog.ts:21-25` records:
+`package/translation-repair/shared-contract/src/hyper-catalog.ts:21-25` records:
 
 ```ts
 // SCHEMA'D OUTPUT ONLY WORKS OVER ANTHROPIC MESSAGES HERE. The OpenAI Chat
@@ -48,7 +48,7 @@ Repository transport investigation had already measured decisive gateway behavio
 // invented keys. Nothing in this file supports that endpoint.
 ```
 
-`package/module/translation-repair/src/hyper-catalog.ts:35-42` binds structured output to Anthropic route:
+`package/translation-repair/shared-contract/src/hyper-catalog.ts:35-42` binds structured output to Anthropic route:
 
 ```ts
 /**
@@ -110,7 +110,8 @@ do not replay spent prompt and model pairs.
 ### Clean patterns
 
 Hyper Anthropic Messages with forced tool choice is repository's supported structured-output route.
-`package/module/translation-repair/src/hyper-catalog.ts:138-148` records twenty schema-conformant forced-tool attempts for each
+`package/translation-repair/shared-contract/src/hyper-catalog.ts:138-148` records twenty schema-conformant forced-tool
+attempts for each
 then-current allowlisted model.
 Caller validation remains mandatory.
 

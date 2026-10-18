@@ -196,7 +196,7 @@ export async function runArchiveBlockReviewStage(
    rendering, the selectors' evidence and the page splice all read what was
    decided rather than each asking an empty-string comparison of the raw
    reply (ledger B40; "Two layers reading one refusal" in
-   `doc/mistake-prevention.md`). Asked that way, a revision of one zero-width
+   `package/translation-repair/doc/mistake-prevention.md`). Asked that way, a revision of one zero-width
    space passed the shape floor as a paragraph, reached the selectors as text
    and shipped, and a revision of spaces was withheld as one of no blocks.
    */

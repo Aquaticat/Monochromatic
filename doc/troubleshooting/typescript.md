@@ -1278,7 +1278,7 @@ The same command,
 between,
  reports them.
 
-Observed 2026-08-20 in `package/module/translation-repair`,
+Observed 2026-08-20 in `package/translation-repair`,
  adding two required fields to `ChunkRepairOutcome`:
  the type check named the source construction sites,
  stayed silent about five test files whose fixtures were missing the same
@@ -1291,7 +1291,7 @@ Test files in this package import the BUILT bundle,
  not the source:
 
 ```ts
-// package/module/translation-repair/src/repair-round-record.unit.test.ts
+// package/translation-repair/assembly/src/repair-round-record.unit.test.ts
 import { describeJudgedRound, } from '../dist/final/node/index.mjs';
 ```
 
@@ -1315,9 +1315,9 @@ A positive control,
 ```bash
 # One required field added to a widely constructed type, filled in at every
 # source construction site so the source half is clean.
-mise run //package/module/translation-repair:lint:types   # 0 errors
-mise run //package/module/translation-repair:build
-mise run //package/module/translation-repair:lint:types   # 7 errors, 5 test files
+mise run //package/translation-repair/<package>:lint:types   # 0 errors
+mise run //package/translation-repair/<package>:build
+mise run //package/translation-repair/<package>:lint:types   # 7 errors, 5 test files
 ```
 
 ### Workaround
@@ -1328,7 +1328,7 @@ Build before type-checking whenever a change could reach a test file:
 mise run //package/<path>:build && mise run //package/<path>:lint:types
 ```
 
-`mise run //package/module/translation-repair:buildAndTest` already does this
+`mise run //package/translation-repair/<package>:buildAndTest` already does this
 for the test half,
  and its description says so:
  "Build the node bundle,
@@ -1890,5 +1890,3 @@ Built and verified against a twelve-case disposal fixture: with this change the 
 
 - [VSCode](vscode.md):
    VSCode extension configuration for TypeScript tools.
-- [Toolchain](./TROUBLESHOOTING.toolchain.md):
-   build tools and toolchain management.

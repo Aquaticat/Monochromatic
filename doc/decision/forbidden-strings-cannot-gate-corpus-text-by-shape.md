@@ -32,7 +32,7 @@ Files with nothing to do with the corpus reach 15.
 The two populations overlap through almost their whole range,
 so no threshold divides them.
 
-Worse, about 180 files under `package/module/translation-repair/src/` carry runs of 8 to 16,
+Worse, about 180 files under `package/translation-repair/*/src/` carry runs of 8 to 16,
 and every one of them is INVENTED.
 The fixtures are cat-themed by house rule, sunbathing kittens and chased butterflies,
 so a threshold low enough to catch a memorial passage

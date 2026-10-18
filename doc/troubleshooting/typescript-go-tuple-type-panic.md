@@ -560,7 +560,8 @@ the next unchanged run is damaged again,
 and clearing user cache is not an acceptable operational fix.
 
 The earlier claim that every per-package task avoids the panic is superseded.
-`mise run //package/module/translation-repair:lint:oxlint` reproduces both the fresh omission and warm-cache failure when the extracted rules are enabled.
+`mise run //package/translation-repair/<package>:lint:oxlint` reproduces both the fresh omission and warm-cache failure
+when the extracted rules are enabled.
 
 ## What does not work
 

@@ -356,7 +356,8 @@ unit fixtures stay invented;
 and a session transcript is still neither searched nor quoted,
 since it holds more than the corpus.
 
-A scan's package-wide case compares what it found through a helper of `src/scan-findings.test-fixture.ts`
+A scan's package-wide case compares what it found through a helper of
+`package/translation-repair/test-fixture/src/scan-findings.test-fixture.ts`
 (`expectNoFindings` for a list that should be empty,
 `expectFindingsAsListed` for a list that should equal an inventory,
 `expectRecordAsListed` for a record),
@@ -387,7 +388,7 @@ the coverage census's placement refusal and baseline format check (`requirePlace
 `CENSUS_FORMAT`),
 and the census's refusal of a minified build (`requireUnminifiedBuild`),
 before the suite runs.
-`src/scan-direct-comparisons.unit.test.ts`,
+`package/translation-repair/source-scan/src/scan-direct-comparisons.unit.test.ts`,
 among the source scans,
 fails on `toEqual` or `toStrictEqual` called on `expect(...)` in a case of a scan the `source-scans` task names
 where the case reads the package's files,
@@ -566,7 +567,7 @@ names every stretch cold since the baseline,
 leaves unmapped code out of every status it reads (`coverage-census-report.unit.test.ts`),
 and asks git about every file of the work tree;
 `rendered-sheets.test-fixture.ts` renders every sheet so reading one is a call away.
-`src/silent-test-cases.unit.test.ts`,
+`package/translation-repair/source-scan/src/silent-test-cases.unit.test.ts`,
 among the source scans,
 fails on a case whose nearest suite has an empty name or none,
 so every passing case prints a line (ledger B277).
@@ -760,7 +761,7 @@ The rule:
 a new production module ships with `<stem>.unit.test.ts` beside it,
 unless it is a barrel,
 holds only types and literal constants,
-or is a runner entry `src/build-entries.ts` lists.
+or is a runner entry `package/translation-repair/coverage-census/src/build-entries.ts` lists.
 A module on the list leaves it when it gains a test.
 A new helper with branches of its own is exported from its module marked `@internal`,
 reaches its tests through `built-artifact-barrel.ts`

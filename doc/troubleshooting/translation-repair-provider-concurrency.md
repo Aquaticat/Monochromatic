@@ -40,15 +40,15 @@ The results do not authorize running dependency-bound pipeline nodes together.
 The applied production limits live at these source boundaries:
 
 - `SYNTHETIC_PER_MODEL_CONCURRENCY` in
-  `package/module/translation-repair/src/synthetic-client.ts` is 5.
-- `createRoutingClient` in `package/module/translation-repair/src/provider-router.ts`
+  `package/translation-repair/provider/src/synthetic-client.ts` is 5.
+- `createRoutingClient` in `package/translation-repair/provider/src/provider-router.ts`
   imports that same value rather than duplicating it.
-- `createRunClient` in `package/module/translation-repair/src/corpus-run/run-config.ts`
+- `createRunClient` in `package/translation-repair/run/src/corpus-run/run-config.ts`
   inherits client defaults.
 - `HYPER_PER_MODEL_CONCURRENCY` in
-  `package/module/translation-repair/src/hyper-client.ts` is positive infinity.
-- `package/module/translation-repair/src/corpus-run/pass-overlap.ts:9` keeps entry overlap at 1.
-- `package/module/translation-repair/src/corpus-run/entry-attempt-queue.ts:90` deliberately serializes entries.
+  `package/translation-repair/provider/src/hyper-client.ts` is positive infinity.
+- `package/translation-repair/corpus-pass/src/corpus-run/pass-overlap.ts:9` keeps entry overlap at 1.
+- `package/translation-repair/slice-cache/src/corpus-run/entry-attempt-queue.ts:90` deliberately serializes entries.
 
 The provider clients are reusable transport boundaries.
 The scheduler must separately model:

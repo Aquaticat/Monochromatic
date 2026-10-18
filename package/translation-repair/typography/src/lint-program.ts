@@ -14,7 +14,7 @@ import { LintBinaryRunError, } from './semantic-wrap-run-error.ts';
 // put to it shares: the version question and the wrap itself. Nothing here
 // knows what a passage is or which rule runs.
 
-/* oxlint-disable no-restricted-syntax/no-sync -- every caller of the wrap is synchronous and the rule has no option to allow one call; doc/semantic-wrap-sync-spawn.md */
+/* oxlint-disable no-restricted-syntax/no-sync -- every caller of the wrap is synchronous and the rule has no option to allow one call; package/translation-repair/typography/doc/semantic-wrap-sync-spawn.md */
 /**
  Starts the program once, with no key and no setting of the package in its
  environment, and reads its answer as text.
@@ -23,7 +23,7 @@ import { LintBinaryRunError, } from './semantic-wrap-run-error.ts';
  `wrapReplacementText` is a plain function that its callers use inside
  comparisons and map callbacks, and an asynchronous start would turn each of
  them, and each of their callers, into an asynchronous function. The reasons,
- the measured cost and the alternatives are in `doc/semantic-wrap-sync-spawn.md`.
+ the measured cost and the alternatives are in `package/translation-repair/typography/doc/semantic-wrap-sync-spawn.md`.
 
  @param binary - program to start, by name for the PATH lookup or by path
 

@@ -8,7 +8,7 @@ or published outright.
 The owner's
 answer was to the premise:
 "why are we caring about metadata being different vs Chinese source at all?"
-Landed as commit `34e5c7ecd` in `package/module/translation-repair/src/corpus-run/front-matter-completeness.ts`.
+Landed as commit `34e5c7ecd` in `package/translation-repair/page-check/src/corpus-run/front-matter-completeness.ts`.
 
 ## The rule
 
@@ -182,7 +182,7 @@ lxyddice,
 Weideriche_,
 XingZ60).
 
-Landed in `package/module/translation-repair/src/corpus-run/directory-id-name.ts`.
+Landed in `package/translation-repair/glossary/src/corpus-run/directory-id-name.ts`.
 The id-equal name
 stands when any of three holds,
 read on the original Chinese and the original English front matter:
@@ -249,7 +249,7 @@ ranked 1 over 2 over 3:
 2 over 3 because 3 keeps rewriting `desc` on most pages.
 
 THE RULE,
-landed in `package/module/translation-repair/src/corpus-run/archive-front-matter.ts` (`20e5135a6`):
+landed in `package/translation-repair/page-check/src/corpus-run/archive-front-matter.ts` (`20e5135a6`):
 the archive's front matter stands unless the archive shows the directory id as the visible name while the source names
 the person and none of the three clauses of 2026-09-07 makes the id stand,
 which is the directory-id shape as literally described.

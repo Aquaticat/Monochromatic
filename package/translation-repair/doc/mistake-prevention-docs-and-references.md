@@ -39,7 +39,7 @@ or a folder written since);
 after a session break,
 each agent's folder times are checked before the line is trusted.
 A change that adds a guard searches this doc for sentences calling the gap open
-(`rg --line-number 'Nothing yet|is open' doc/mistake-prevention.md`,
+(`rg --line-number 'Nothing yet|is open' package/translation-repair/doc/mistake-prevention.md`,
 and the guard's subject by name)
 and rewrites each in the same change.
 
@@ -114,19 +114,20 @@ checked against the transcript or the file the owner wrote in,
 and are listed in the guard.
 
 What enforces it:
-`src/task-list-numbers.unit.test.ts`,
+`package/translation-repair/source-scan/src/task-list-numbers.unit.test.ts`,
 which fails on a sign followed by one to four digits
 anywhere in the package's source,
 tests,
 docs,
 README or `mise.toml`,
-and in the living repository-level docs `src/living-docs.test-fixture.ts` locates,
+and in the living repository-level docs `package/translation-repair/source-scan/src/living-docs.test-fixture.ts`
+locates,
 unless it is a listed issue or sits inside a listed owner quotation,
 and on a listed issue or quotation that no longer occurs;
 it fails too on a number written after the word "task" (D31)
 outside the listed takeover-era stretches,
 which keep that tracker's numbers under their notes.
-`src/position-references.unit.test.ts` (D33) reads the same texts
+`package/translation-repair/source-scan/src/position-references.unit.test.ts` (D33) reads the same texts
 and fails on "above" or "below" after any word that marks no comparison,
 bound or placement,
 unless what follows compares or names,
@@ -178,7 +179,7 @@ after its second end;
 a time whose zone cannot be recovered says so in words.
 
 What enforces it:
-`src/clock-time-zones.unit.test.ts` for clock times,
+`package/translation-repair/source-scan/src/clock-time-zones.unit.test.ts` for clock times,
 over the package's comments,
 docs and README,
 the decision records and the current handover;

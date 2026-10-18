@@ -93,7 +93,7 @@ it is the mismatch test being about
 and the code says exactly which:
 
 ```ts
-// package/module/translation-repair/src/chunk-document.ts, the shape test as it stood;
+// package/translation-repair/slice-reading/src/chunk-document.ts, the shape test as it stood;
 // today it is `equalShape` and reads the same two things
 const mirrored = (sourceChunks.length === targetChunks.length)
   && sourceChunks.every(function leadingKindMatches(chunk, index,) {

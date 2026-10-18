@@ -19,25 +19,25 @@ The old collision refusal and its corpus input are recorded in
 
 The old application scanned the complete input instead of syntax-authorized regions.
 At `895843508`,
-`package/module/translation-repair/src/archive-footnote-relabel.ts:506`
+`package/translation-repair/corpus-source/src/archive-footnote-relabel.ts:506`
 passed the whole document to the literal scanner:
 
 ```ts
-// package/module/translation-repair/src/archive-footnote-relabel.ts at 895843508
+// package/translation-repair/corpus-source/src/archive-footnote-relabel.ts at 895843508
 const walked = scanGfmReferenceLiterals({ slice: text, },)
 ```
 
 Its lookup at line 515 compared raw strings:
 
 ```ts
-// package/module/translation-repair/src/archive-footnote-relabel.ts at 895843508
+// package/translation-repair/corpus-source/src/archive-footnote-relabel.ts at 895843508
 const to = lookup.get(hit.identifier,);
 ```
 
 Its cursor at line 527 derived an endpoint from the scanner's identifier rather than the positioned token:
 
 ```ts
-// package/module/translation-repair/src/archive-footnote-relabel.ts at 895843508
+// package/translation-repair/corpus-source/src/archive-footnote-relabel.ts at 895843508
 cursor: hit.localOffset + markerLength({ identifier: hit.identifier, },),
 ```
 
@@ -93,26 +93,26 @@ A literal left in a text node can therefore be an unresolved reference.
 It is not evidence that every matching substring elsewhere in the document is a reference.
 
 The consumer replacement uses strict parsing at
-`package/module/translation-repair/src/active-footnote-markers.ts:142`:
+`package/translation-repair/shared-contract/src/active-footnote-markers.ts:142`:
 
 ```ts
-// package/module/translation-repair/src/active-footnote-markers.ts:142
+// package/translation-repair/shared-contract/src/active-footnote-markers.ts:142
 const root = parseMdxBody({ body: parsedText, },);
 ```
 
 The text-node branch at line 165 confines unresolved-reference scanning to parser-authorized text:
 
 ```ts
-// package/module/translation-repair/src/active-footnote-markers.ts:165
+// package/translation-repair/shared-contract/src/active-footnote-markers.ts:165
 if (node.type === 'text') {
 ```
 
 The marker positions retain encoded label spelling separately from normalized identity.
-`package/module/translation-repair/src/apply-footnote-relabel.ts:99`
+`package/translation-repair/page-pass/src/apply-footnote-relabel.ts:99`
 reparses the candidate before returning it:
 
 ```ts
-// package/module/translation-repair/src/apply-footnote-relabel.ts:99
+// package/translation-repair/page-pass/src/apply-footnote-relabel.ts:99
 const after = activeFootnoteMarkers({ text: rewritten, },);
 ```
 
@@ -129,7 +129,7 @@ The owned boundary tests were run from built translation-repair artifacts:
 ```bash
 # Run from the translation-repair worktree after its package build.
 MISE_AUTO_INSTALL=false MISE_TASK_RUN_AUTO_INSTALL=false \
-  mise run --no-deps --skip-tools //package/module/translation-repair:test:unit
+  mise run --no-deps --skip-tools //package/translation-repair/<package>:test:unit
 ```
 
 The final full run at `086fd9f6e` passed build,

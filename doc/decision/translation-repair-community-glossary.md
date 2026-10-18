@@ -101,7 +101,7 @@ because it's the proper name of an org."
 
 ## Addendum 2026-09-28: what the glossary enters, and what it refuses
 
-The whole-package audit (ledger C6 in `package/module/translation-repair/doc/audit-ledger.md`)
+The whole-package audit (ledger C6 in `package/translation-repair/doc/audit-ledger.md`)
 found two statements here that later practice left behind.
 
 - "A term the archive got wrong is not entered" stopped holding once runs shipped words the archive had wrong too:

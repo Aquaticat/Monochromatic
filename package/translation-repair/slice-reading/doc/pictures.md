@@ -1,6 +1,6 @@
 # Reading the pictures a document shows
 
-Part of [the package README](../README.md).
+Part of [the `slice-reading` package README](../README.md).
 
 A document that shows a picture carrying text is a document whose translation cannot be judged from its text alone.
 The pipeline reads those pictures and puts the reading beside the source and the archive,
@@ -52,9 +52,11 @@ agrees with the first at the corroboration threshold.
 A single reading is refused rather than passed along with a caveat.
 
 The cross-provider vision sub-roster is six models when every provider is wet:
-`RUN_READER_MODELS` in `src/corpus-run/run-config.ts` takes every roster model some provider can show a picture,
+`RUN_READER_MODELS` in `package/translation-repair/run/src/corpus-run/run-config.ts` takes every roster model some
+provider can show a picture,
 less the ones held as unmeasured readers and the ones the owner culled.
-Each entry seats its readers off the meters (`src/corpus-run/pass-seated-pictures.ts`),
+Each entry seats its readers off the meters
+(`package/translation-repair/corpus-pass/src/corpus-run/pass-seated-pictures.ts`),
 so a model withheld on the provider that would serve it reads nothing that entry.
 Corroboration still requires independent agreement,
 and a declined reading is still asked again up to four times.

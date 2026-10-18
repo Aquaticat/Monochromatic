@@ -179,9 +179,11 @@ imported as `@monochromatic-dev/translation-repair-test-fixture/ts/<file>`.
 
 ## Family docs
 
-- [Pipeline overview](../../module/translation-repair/README.md):
-  the overview of the pipeline,
-  from before the split.
+- [Family README](../README.md):
+  the design,
+  the package list and where the shared docs live.
+- [Why the semantic wrap starts its linter synchronously](doc/semantic-wrap-sync-spawn.md):
+  the one synchronous process start and the lint suppression that covers it.
 - [Package split plan](../../../doc/planning/translation-repair-package-split.md):
   the split plan,
   with the package map and the rules the move keeps.

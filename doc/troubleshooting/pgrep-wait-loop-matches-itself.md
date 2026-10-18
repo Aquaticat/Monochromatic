@@ -11,7 +11,7 @@ Observed 2026-08-17 while waiting for a unit suite before rebuilding:
 ```bash
 # Never exits, even after every matching test process is gone.
 until ! pgrep --full 'translation-repair:test:unit' >/dev/null 2>&1; do sleep 5; done
-mise run //package/module/translation-repair:build
+mise run //package/translation-repair/<package>:build
 ```
 
 The failure is silent in the worst way.

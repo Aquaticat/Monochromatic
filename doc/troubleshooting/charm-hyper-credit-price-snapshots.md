@@ -45,11 +45,11 @@ This is a quoted-rate conversion,
 not a measurement of an individual account debit.
 
 The consumer's lookup intentionally distinguishes missing pricing from zero.
-`package/module/translation-repair/src/corpus-run/hyper-price.ts:322`
+`package/translation-repair/run/src/corpus-run/hyper-price.ts:322`
 returns named absence:
 
 ```ts
-// package/module/translation-repair/src/corpus-run/hyper-price.ts
+// package/translation-repair/run/src/corpus-run/hyper-price.ts
 if (found === undefined)
   return 'unpriced';
 ```
@@ -57,7 +57,7 @@ if (found === undefined)
 Its token estimator at line 371 uses the dated quote:
 
 ```ts
-// package/module/translation-repair/src/corpus-run/hyper-price.ts
+// package/translation-repair/run/src/corpus-run/hyper-price.ts
 inputCredits: (promptTokens * rates.input) / RATE_UNIT_TOKENS,
 outputCredits: (completionTokens * rates.output) / RATE_UNIT_TOKENS,
 ```
@@ -86,9 +86,9 @@ The consumer verification is reproducible after rebuilding:
 ```text
 # Run from the translation-repair worktree.
 mise run test -- \
-  package/module/translation-repair/src/deepseek-v41-admission.unit.test.ts \
-  package/module/translation-repair/src/corpus-run/hyper-price.unit.test.ts \
-  package/module/translation-repair/src/corpus-run/spend-cost.unit.test.ts
+  package/translation-repair/run/src/deepseek-v41-admission.unit.test.ts \
+  package/translation-repair/run/src/corpus-run/hyper-price.unit.test.ts \
+  package/translation-repair/run/src/corpus-run/spend-cost.unit.test.ts
 ```
 
 ### Cases required to pass
@@ -119,12 +119,12 @@ The actual V4.1 Flash calls through DeepInfra reported 0.0000824 USD and 0.00008
 Those are retained as wire-reported amounts;
 no cause of the difference from the aggregate catalog price is inferred.
 
-`package/module/translation-repair/src/openrouter-client.ts:448`
+`package/translation-repair/provider/src/openrouter-client.ts:448`
 reads the wire cost,
 and lines 475 to 477 keep it absent when unreported:
 
 ```ts
-// package/module/translation-repair/src/openrouter-client.ts
+// package/translation-repair/provider/src/openrouter-client.ts
 const cost = openRouterCostOf({ bodyText: reply.bodyText, },);
 // In reportSpend arguments:
 ...((cost === COST_UNREPORTED)
