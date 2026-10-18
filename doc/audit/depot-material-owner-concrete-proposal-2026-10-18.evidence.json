@@ -457,7 +457,16 @@
       "campaignMinutes": 27,
       "listRateUsdPerMinute": 0.048,
       "reservationEachUsd": 1.44,
-      "totalReservationUsd": 2.88
+      "totalReservationUsd": 2.88,
+      "containerResourceAdapter": {
+        "maximumCpu": 16,
+        "maximumMemoryGiB": 48,
+        "maximumPids": 4096,
+        "appliesOnlyToObservedResourceFailure": true,
+        "sourceContainerfileAndTestAssertionsUnchanged": true,
+        "defaultCargoAndNextestConcurrency": true,
+        "producerBounds": "Any increase from authored producer resource bounds is an explicit recorded research adapter, never silent."
+      }
     }
   ],
   "unpricedStorageLfsAndOtherContingencyUsd": 1.04,
@@ -501,5 +510,6 @@
   "noImageRegistryPushOrProductionPublication": true,
   "noModelCallsOrBroadNewCredentials": true,
   "preparedRustImagesRequired": false,
-  "allocationAdmissionRequiredFromParent": true
+  "allocationAdmissionRequiredFromParent": true,
+  "supersedesProposalSha256": "bb2cfebf5cdb7def3237b5a58dbaa5a851dad4618d843fd705b0feedb02dd3d5"
 }
