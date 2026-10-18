@@ -296,3 +296,113 @@ try {
 }
 if (primaryFailure || cleanupErrors.length || !consumer?.passed) throw new LifecycleProbeFailure('Current-source mvm lifecycle or owned cleanup did not pass; retained receipt identifies the boundary');
 '''
+
+[tasks.capability-access-repeats]
+dir = "{{config_root}}/../../.."
+shell = "node --input-type=module-typescript -e"
+run = '''
+const fs = await import('node:fs');
+const os = await import('node:os');
+const { join } = await import('node:path');
+const { execFileSync, spawnSync } = await import('node:child_process');
+const { setTimeout } = await import('node:timers/promises');
+class CapabilityDiagnosticFailure extends Error {}
+if (process.env.GITHUB_ACTIONS !== 'true' || process.env.RUNNER_OS !== 'Linux' || process.env.PROBE_PLATFORM_PROVIDER !== 'github-hosted-ubuntu-24.04') throw new CapabilityDiagnosticFailure('Diagnostic is restricted to the owned ephemeral GitHub Linux control');
+const source = process.cwd();
+const evidence = join(source, '.depot/research/mvm/access-evidence');
+fs.mkdirSync(evidence, { recursive: true, mode: 0o700 });
+const scratch = join(os.homedir(), 'temp/agent');
+fs.mkdirSync(scratch, { recursive: true, mode: 0o700 });
+fs.chmodSync(scratch, 0o700);
+const privateHome = fs.mkdtempSync(join(scratch, 'depot-kvm-capability-'));
+const runtimeRoot = '/run/user/' + process.getuid();
+const commands = [];
+const deadline = Date.now() + 6 * 60 * 1000;
+let environment = { ...process.env };
+const run = (id, command, args, options = {}) => {
+  const remaining = deadline - Date.now();
+  if (!options.cleanup && remaining < 30000) throw new CapabilityDiagnosticFailure('Capability diagnostic deadline reached with cleanup reserved');
+  const startedAt = new Date().toISOString();
+  const value = spawnSync(command, args, { env: options.environment ?? environment, cwd: source, detached: true, encoding: 'utf8', input: options.input, timeout: options.cleanup ? 15000 : Math.min(options.limit ?? 30000, remaining), maxBuffer: 16777216 });
+  if (value.error?.code === 'ETIMEDOUT' && value.pid) {
+    try { process.kill(-value.pid, 'SIGKILL'); } catch (error) { if (error.code === 'EPERM') { const killed = spawnSync('sudo', ['--non-interactive', 'kill', '--signal', 'KILL', '--', '-' + value.pid], { encoding: 'utf8', timeout: 5000 }); if (killed.status !== 0) throw new CapabilityDiagnosticFailure('Owned timed-out root QEMU group cleanup failed: ' + killed.stderr); } else if (error.code !== 'ESRCH') throw error; }
+  }
+  fs.writeFileSync(join(evidence, id + '.stdout.log'), value.stdout ?? '');
+  fs.writeFileSync(join(evidence, id + '.stderr.log'), value.stderr ?? '');
+  commands.push({ id, command: [command, ...args], startedAt, finishedAt: new Date().toISOString(), pid: value.pid, status: value.status, signal: value.signal, error: value.error?.message ?? null });
+  fs.writeFileSync(join(evidence, 'capability-commands.json'), JSON.stringify(commands, null, 2) + '\n');
+  console.log(JSON.stringify(commands.at(-1)));
+  return value;
+};
+const requireSuccess = value => { if (value.status !== 0) throw new CapabilityDiagnosticFailure('Capability prerequisite failed; retained command output identifies its boundary'); return value; };
+const access = path => { try { fs.accessSync(path, fs.constants.R_OK | fs.constants.W_OK); return { available: true }; } catch (error) { return { available: false, diagnostic: String(error) }; } };
+const identity = { uid: process.getuid(), gid: process.getgid(), groups: process.getgroups(), passwd: execFileSync('getent', ['passwd', String(process.getuid())], { encoding: 'utf8' }).trim(), architecture: process.arch, cpus: os.cpus().length, memoryBytes: os.totalmem(), kernel: os.release() };
+const before = access('/dev/kvm');
+requireSuccess(run('capability-apt-update', 'sudo', ['--non-interactive', 'apt-get', 'update'], { limit: 180000 }));
+const packages = ['acl', 'qemu-system-x86'];
+requireSuccess(run('capability-apt-install', 'sudo', ['--non-interactive', 'apt-get', 'install', '--yes', '--no-install-recommends', ...packages], { limit: 180000, environment: { ...environment, DEBIAN_FRONTEND: 'noninteractive' } }));
+requireSuccess(run('capability-package-versions', 'dpkg-query', ['--show', '--showformat=${Package}=${Version}\n', ...packages]));
+const after = access('/dev/kvm');
+requireSuccess(run('capability-qemu-help', '/usr/bin/qemu-system-x86_64', ['--help']));
+requireSuccess(run('capability-qemu-accelerators', '/usr/bin/qemu-system-x86_64', ['-accel', 'help']));
+const qmpInput = ['qmp_capabilities', 'query-kvm', 'query-status', 'quit'].map((execute, index) => JSON.stringify({ execute, id: ['caps', 'kvm', 'status', 'quit'][index] })).join('\n') + '\n';
+const snapshots = [];
+const probes = [];
+const optionalRead = path => { try { return { text: fs.readFileSync(path, 'utf8') }; } catch (error) { return { error: { code: error.code, message: error.message } }; } };
+const snapshot = label => {
+  let stat;
+  try { const value = fs.statSync('/dev/kvm', { bigint: true }); stat = Object.fromEntries(['dev', 'ino', 'mode', 'uid', 'gid', 'rdev', 'ctimeNs', 'mtimeNs'].map(key => [key, String(value[key])])); } catch (error) { stat = { error: String(error) }; }
+  const acl = run('access-' + label, 'getfacl', ['--absolute-names', '--numeric', '/dev/kvm']);
+  const value = { label, at: new Date().toISOString(), stat, access: access('/dev/kvm'), acl: { status: acl.status, stdout: acl.stdout, stderr: acl.stderr }, caller: { uid: process.getuid(), euid: process.geteuid(), gid: process.getgid(), groups: process.getgroups(), attr: optionalRead('/proc/self/attr/current'), cgroup: optionalRead('/proc/self/cgroup') } };
+  snapshots.push(value);
+  return value;
+};
+const save = () => fs.writeFileSync(join(evidence, 'access-repeat.json'), JSON.stringify({ schemaVersion: 1, probe: 'github-kvm-access-repeats', source: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), identity, initialAccess: before, snapshots, probes, commands, guestApplication: false, qemuMemoryMiB: 128, qemuVcpus: 1, at: new Date().toISOString() }, null, 2) + '\n');
+const probe = (label, machine, accelerator, privilege) => {
+  const beforeProbe = snapshot(label + '-before');
+  const args = ['-machine', machine + ',accel=' + accelerator, '-m', '128', '-smp', '1', '-nodefaults', '-display', 'none', '-S', '-qmp', 'stdio'];
+  const result = privilege === 'root' ? run(label, 'sudo', ['--non-interactive', '/usr/bin/qemu-system-x86_64', ...args], { input: qmpInput, limit: 8000 }) : run(label, '/usr/bin/qemu-system-x86_64', args, { input: qmpInput, limit: 8000 });
+  const messages = (result.stdout ?? '').trim().split('\n').filter(Boolean).map(line => JSON.parse(line));
+  const afterProbe = snapshot(label + '-after');
+  probes.push({ label, machine, accelerator, privilege, status: result.status, signal: result.signal, error: result.error?.message ?? null, stderr: result.stderr, qmpKvm: messages.find(value => value.id === 'kvm') ?? null, before: beforeProbe, after: afterProbe });
+  save();
+};
+const grant = label => { const beforeGrant = snapshot(label + '-before'); const result = requireSuccess(run(label, 'sudo', ['--non-interactive', 'setfacl', '--modify', 'u:' + process.getuid() + ':rw', '/dev/kvm'])); const afterGrant = snapshot(label + '-after'); save(); return { beforeGrant, afterGrant, status: result.status }; };
+try {
+  snapshot('initial-after-packages');
+  run('owned-pam-sudo-config', 'cat', ['/etc/pam.d/sudo', '/etc/pam.d/common-session-noninteractive']);
+  run('owned-device-udev-info', 'udevadm', ['info', '--query', 'property', '--name', '/dev/kvm']);
+  await setTimeout(1500);
+  snapshot('idle-before-any-grant');
+  probe('tcg-positive', 'q35', 'tcg', 'user');
+  probe('before-grant-q35-user', 'q35', 'kvm', 'user');
+  probe('before-grant-none-user', 'none', 'kvm', 'user');
+  grant('grant-original-order');
+  probe('granted-q35-user', 'q35', 'kvm', 'user');
+  probe('granted-none-user', 'none', 'kvm', 'user');
+  run('root-identity-control', 'sudo', ['--non-interactive', 'id']);
+  snapshot('after-root-identity-control');
+  probe('after-root-identity-none-user', 'none', 'kvm', 'user');
+  grant('grant-before-root-qemu');
+  probe('root-q35-control', 'q35', 'kvm', 'root');
+  probe('after-root-qemu-none-user', 'none', 'kvm', 'user');
+  for (const [index, machine] of ['none', 'q35', 'q35', 'none'].entries()) {
+    grant('regrant-' + index);
+    probe('regrant-' + index + '-' + machine + '-user', machine, 'kvm', 'user');
+  }
+  grant('grant-before-idle');
+  await setTimeout(1500);
+  snapshot('after-granted-idle');
+  probe('after-idle-none-user', 'none', 'kvm', 'user');
+  probe('root-none-final-control', 'none', 'kvm', 'root');
+} finally {
+  const processState = run('owned-qemu-process-state', 'ps', ['--user', String(process.getuid()), '--format', 'pid,ppid,comm,args'], { cleanup: true });
+  const rootProcessState = run('owned-root-qemu-process-state', 'sudo', ['--non-interactive', 'ps', '--user', 'root', '--format', 'pid,ppid,comm,args'], { cleanup: true });
+  const liveQemu = [processState.stdout, rootProcessState.stdout].flatMap(value => String(value).split('\n')).filter(line => /\bqemu-system-x86\b/u.test(line) && !/sudo.*ps|mise|node --input/u.test(line));
+  fs.writeFileSync(join(evidence, 'cleanup.json'), JSON.stringify({ liveQemu, qemuProcessesAbsent: liveQemu.length === 0, systemServicesStarted: false, privateLibvirtStarted: false, noGuestLaunched: true, at: new Date().toISOString() }, null, 2) + '\n');
+  save();
+  if (liveQemu.length) throw new CapabilityDiagnosticFailure('Owned raw QEMU remains after diagnostic; do not claim cleanup');
+}
+if (!probes.some(value => value.accelerator === 'tcg' && value.status === 0 && value.qmpKvm?.return?.enabled === false)) throw new CapabilityDiagnosticFailure('KVM access diagnostic lacks its working TCG positive control');
+console.log(JSON.stringify({ probes: probes.map(value => ({ label: value.label, status: value.status, kvm: value.qmpKvm?.return ?? null, accessBefore: value.before.access.available, accessAfter: value.after.access.available })), snapshotCount: snapshots.length, actualGuestExecuted: false }));
+'''

@@ -1,5 +1,5 @@
 {
-  "name": "research GitHub-hosted KVM capability diagnostic",
+  "name": "research GitHub KVM access-state repeated controls",
   "on": {
     "workflow_dispatch": {}
   },
@@ -13,7 +13,7 @@
   "jobs": {
     "capability": {
       "runs-on": "ubuntu-24.04",
-      "timeout-minutes": 10,
+      "timeout-minutes": 8,
       "env": {
         "PROBE_PLATFORM_PROVIDER": "github-hosted-ubuntu-24.04"
       },
@@ -36,15 +36,15 @@
           "run": "mise install node"
         },
         {
-          "run": "mise run //.depot/research/mvm:capability-diagnostic",
+          "run": "mise run //.depot/research/mvm:capability-access-repeats",
           "working-directory": ".depot/research/mvm"
         },
         {
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
           "if": "always()",
           "with": {
-            "name": "research-github-hosted-kvm-capability",
-            "path": ".depot/research/mvm/evidence/",
+            "name": "research-github-kvm-access-repeats",
+            "path": ".depot/research/mvm/access-evidence/",
             "if-no-files-found": "error",
             "retention-days": 7
           }
