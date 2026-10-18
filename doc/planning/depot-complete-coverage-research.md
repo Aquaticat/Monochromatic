@@ -604,6 +604,18 @@ Agent-host,
 transport,
 process,
 and native-prerequisite profiles remain separate pending work.
+The profile is dispatched as run `39112145763`,
+with the API-confirmed workflow head `588275a55c7efefef93dbbc529078d31fdcfafd8`.
+
+Auto Mode's `build:native` and `test:native:*` names describe a maintained Pi host built from JavaScript/TypeScript.
+They are not covered by the Cargo campaign.
+Its source owner checks installed Pi `1.2.0`
+and the external upstream revision `06a466935536f8c9bcacb2d5efc0fc021be1bdff`
+before emitting the host graph.
+This qualified external checkout is an additional build input,
+distinct from the frozen first-party tree.
+The build already rejects recursive invocation through `PI_AUTO_MODE_NATIVE_BUILD`.
+Its actual session/transport fixtures and capacity cases still require separate bounded profiles.
 
 The active queue remains independently verifiable:
 
