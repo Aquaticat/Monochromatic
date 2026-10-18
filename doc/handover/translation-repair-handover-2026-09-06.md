@@ -291,6 +291,21 @@ before the other queued work.
     the move's import rewrite left oxlint errors (20 in `provider`;
     a lint and type-check census of all 36 packages runs as unit `tr-split-lint-census`,
     output in `s245/split/lint/`);
+    `w169` landed (`a77972ac5c` and the twelve before it):
+    the census measures every family package and reads the union of the six runner packages'
+    entry lists;
+    the cache-account audit reads every package's `src`;
+    both source-set controls match (`w169-notes/control-output.txt`).
+    It left:
+    refusals and their tests still name `//package/module/translation-repair:coverage-census`
+    and `...:cache-account-audit`;
+    the audit's git log and pickaxe queries cover only the new paths,
+    so a cache version set before the split reports the move commit as its setter
+    (add the old `src` path to the pathspec);
+    the census README is not updated for the family reading;
+    `runBuiltCommand` and `runProbeOver` gained a `builtDirectory` option that `w168` may also add
+    in another shape;
+    oxlint errors in `bench`, `probe` and `run` from the scaffolding.
     `source-scan` and `test-fixture` export `./ts` to an `src/index.ts` neither has;
     the `source-scan` README describes its readers as mid-move.
     The README agent named role wording it inferred from module names without opening the modules
