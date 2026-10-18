@@ -1,6 +1,7 @@
 //! A tile the painter refuses never blanks the source:
 //!  the window thread keeps the picture last painted and names the failure,
-//!  and a job the worker failed is freed so the next placement asks for the tile again.
+//!  and a job the worker failed is freed so the next placement asks for the tile again;
+//!  and a worker tile the window discards still moves the window with the heights it measured.
 //! Nothing here waits on the window thread:
 //! every wait advances timers and lets the workers answer.
 
@@ -11,8 +12,9 @@
 use super::{
     AppWindow,
     overscan_tile_tests::scroll_to,
+    tall_window_tests::{hold_the_pass, mixed, resize_without_frame, settled_tile},
     theme_tests::switch,
-    tile_build::FAIL_NEXT_BUILD,
+    tile_build::{BUILD_GATE, FAIL_NEXT_BUILD},
     wrap_tests::{long_text, open, settled, shown},
 };
 /// Bounded waiting that advances native timers until a state the test checks holds.
@@ -115,5 +117,50 @@ fn a_failed_worker_tile_frees_its_job_and_the_next_placement_gets_its_tile() {
         }
     }
     assert!(has_ink(window), "the text is blank after the retry");
+    window.hide().expect("close wrap window");
+}
+
+/// A worker tile the window discards because the view moved on while it was built
+/// still carries the heights its lines measured:
+/// the map takes them and moves the view's offset to keep it still,
+/// and the window must take that offset too,
+/// or the next tile is built for a view the window is not at.
+#[test]
+fn a_discarded_worker_tile_still_moves_the_window_with_the_heights_it_measured() {
+    let (_project, opened) = open(&mixed(6000));
+    let release = hold_the_pass();
+    let window = &opened.window;
+    resize_without_frame(&opened, 1330.0, 3000.0);
+    settled_tile(&opened);
+    let (build_release, build_gate) = std::sync::mpsc::channel();
+    *BUILD_GATE.lock().expect("build gate") = Some(build_gate);
+    window.set_scroll_y(-30_000.0);
+    update_timers_and_animations();
+    {
+        let mut waiting = Waiting::slow();
+        while !(BUILD_GATE.lock().expect("build gate").is_none()) {
+            waiting.step("the worker did not start the held build");
+        }
+    }
+    // The view leaves the tile that is being built, so its result is discarded.
+    window.set_scroll_y(-60_000.0);
+    update_timers_and_animations();
+    build_release
+        .send(())
+        .expect("the held build is waiting for its release");
+    settled_tile(&opened);
+    let current = opened.source.borrow();
+    let offset = -window.get_scroll_y();
+    assert!(
+        (offset - current.offset).abs() < 1.0,
+        "the window is at {offset} and the state at {}",
+        current.offset
+    );
+    assert!(
+        current.tiles_discarded >= 1,
+        "no tile was discarded: the test did not reach the branch it guards"
+    );
+    drop(current);
+    drop(release);
     window.hide().expect("close wrap window");
 }

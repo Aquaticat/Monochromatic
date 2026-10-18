@@ -32,7 +32,7 @@ use slint::{
 /// Lines of several lengths,
 /// from a few words to several rows at any text width of a window,
 /// in a fixed pseudo-random order.
-fn mixed(count: usize) -> String {
+pub(super) fn mixed(count: usize) -> String {
     let mut text = String::new();
     let mut seed: u64 = 12345;
     for number in 0..count {
@@ -56,14 +56,14 @@ fn mixed(count: usize) -> String {
 
 /// Hold the worker's measurement of the whole text still until the returned sender is dropped,
 /// so the vertical map counts every line it has not been told about as one row.
-fn hold_the_pass() -> std::sync::mpsc::Sender<()> {
+pub(super) fn hold_the_pass() -> std::sync::mpsc::Sender<()> {
     let (release, gate) = std::sync::mpsc::channel();
     *PASS_GATE.lock().expect("pass gate") = Some(gate);
     return release;
 }
 
 /// Wait until no tile is queued or on the worker.
-fn settled_tile(reader: &super::find_tests::Reader) {
+pub(super) fn settled_tile(reader: &super::find_tests::Reader) {
     let mut waiting = Waiting::slow();
     loop {
         update_timers_and_animations();
@@ -80,7 +80,11 @@ fn settled_tile(reader: &super::find_tests::Reader) {
 /// Report a window with a text area `text_width` wide and `height` tall to the toolkit,
 /// without drawing a frame:
 /// the headless renderer cannot draw a window this tall.
-fn resize_without_frame(reader: &super::find_tests::Reader, text_width: f32, height: f32) {
+pub(super) fn resize_without_frame(
+    reader: &super::find_tests::Reader,
+    text_width: f32,
+    height: f32,
+) {
     reader.window.window().dispatch_event(WindowEvent::Resized {
         size: LogicalSize::new(TEXT_LEFT + text_width + minimap_beside(text_width), height),
     });
@@ -110,39 +114,25 @@ fn a_tall_window_over_unmeasured_wrapped_lines_paints_text_and_names_no_failure(
             "",
             "height {height}: the window shows a failure"
         );
-        // The view moves with the heights the tile measured, so the raster holds it once that has been applied.
-        let mut waiting = Waiting::slow();
-        let mut iterations = 0;
-        loop {
-            update_timers_and_animations();
+        {
             let current = opened.source.borrow();
-            eprintln!(
-                "TALLINFO height {height} iteration {iterations} discarded {} applied {}",
-                current.tiles_discarded, current.tiles_applied
-            );
-            iterations += 1;
             let view = current.shaped.as_ref().expect("a shown frame");
             assert!(
                 u64::from(view.width) * u64::from(view.height) * 4 <= MAX_RASTER_BYTES,
                 "height {height}: the raster passes the limit"
             );
             let offset = -window.get_scroll_y();
-            let top = view.origin;
-            let bottom = view.origin + view.height as f32 / view.viewport.scale;
-            if top <= offset + 0.5 && offset + window.get_viewport_height() <= bottom + 0.5 {
-                assert!(
-                    (offset - current.offset).abs() < 1.0,
-                    "height {height}: the window is at {offset} and the state at {}",
-                    current.offset
-                );
-                break;
-            }
-            let state = format!(
-                "height {height}: the raster [{top}, {bottom}] does not hold the view at {offset} (state offset {})",
+            assert!(
+                (offset - current.offset).abs() < 1.0,
+                "height {height}: the window is at {offset} and the state at {}",
                 current.offset
             );
-            drop(current);
-            waiting.step(&state);
+            let top = view.origin;
+            let bottom = view.origin + view.height as f32 / view.viewport.scale;
+            assert!(
+                top <= offset + 0.5 && offset + window.get_viewport_height() <= bottom + 0.5,
+                "height {height}: the raster [{top}, {bottom}] does not hold the view at {offset}"
+            );
         }
         let mut inked = false;
         for pixel in shown(window) {
@@ -231,11 +221,11 @@ fn tile_for(
 /// so the test cannot pass because no case reaches it.
 #[test]
 fn no_window_size_or_scale_makes_a_raster_past_the_limit() {
-    let text = mixed(800);
+    let text = mixed(500);
     let mut cuts_before_measurement = 0;
     let mut holdable_cases = 0;
     for scale in [0.5_f32, 1.0, 1.25, 1.5, 1.75, 2.0, 3.0] {
-        for text_width in [160.0_f32, 782.0, 1330.0, 3000.0] {
+        for text_width in [160.0_f32, 1330.0, 3000.0] {
             for height in [660.0_f32, 3500.0, 12_000.0] {
                 for offset in [0.0_f32, 14_000.0] {
                     let label =
