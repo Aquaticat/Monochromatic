@@ -358,7 +358,7 @@ No completion or interview-readiness conclusion is made.
 [sitemap]: https://depot.dev/sitemap.xml
 [bundle]: https://depot.dev/llms-all.txt
 [gha-troubleshooting]: https://depot.dev/docs/github-actions/troubleshooting
-[kvm-run]: https://github.com/monochromatic-dev/Monochromatic/actions/runs/39104064329
+[kvm-run]: https://github.com/Aquaticats/Monochromatic/actions/runs/39104064329
 [kvm-evidence]: ../audit/depot-github-kvm-documentation-contradiction-2026-10-18.evidence.json
 [metal-launch]: https://depot.dev/blog/announcing-depot-metal
 [metal-gha-rollout]: https://depot.dev/blog/how-we-load-tested-depot-metal-before-scaling-up

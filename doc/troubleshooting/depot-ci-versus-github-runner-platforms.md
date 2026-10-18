@@ -122,6 +122,6 @@ No upstream message was sent.
 The mismatch is documented locally while actual KVM initialization and guest verification proceed separately.
 
 [gha-kvm-doc]: https://depot.dev/docs/github-actions/troubleshooting
-[gha-kvm-run]: https://github.com/monochromatic-dev/Monochromatic/actions/runs/39104064329
+[gha-kvm-run]: https://github.com/Aquaticats/Monochromatic/actions/runs/39104064329
 [gha-kvm-evidence]: ../audit/depot-github-kvm-documentation-contradiction-2026-10-18.evidence.json
 [gha-metal-rollout]: https://depot.dev/blog/how-we-load-tested-depot-metal-before-scaling-up
