@@ -92,6 +92,32 @@ await describe({
             },);
           },
         },),
+        it({
+          name: 'FINDS A LABEL BY THE WHOLE NUMBER IT ENDS IN, not by its last digit: 12 names OCCURRENCE 12 beside OCCURRENCE 11 '
+            + 'and OCCURRENCE 2, and 2 names only OCCURRENCE 2',
+          fn: async () => {
+            const shown = ['OCCURRENCE 11', 'OCCURRENCE 12', 'OCCURRENCE 2',];
+            expect(shownLabelOf({ name: '12', shown, },),).toEqual(['OCCURRENCE 12',],);
+            expect(shownLabelOf({ name: '11', shown, },),).toEqual(['OCCURRENCE 11',],);
+            expect(shownLabelOf({ name: '2', shown, },),).toEqual(['OCCURRENCE 2',],);
+            expect(shownLabelOf({ name: '1', shown, },),).toEqual([],);
+          },
+        },),
+        it({
+          name: 'COUNTS ONE LABEL ONCE WHEN A NAME REACHES IT BY ITS FORM AND BY ITS NUMBER, as a shown label that is only a number '
+            + 'is the whole of its own form and the number it ends in',
+          fn: async () => {
+            expect(shownLabelOf({ name: '3', shown: ['3', 'OCCURRENCE 4',], },),).toEqual(['3',],);
+          },
+        },),
+        it({
+          name: 'COUNTS A LABEL THE SHEET SHOWED TWICE AS ONE LABEL, so a name for it is not ambiguous',
+          fn: async () => {
+            const shown = ['OCCURRENCE 3', 'OCCURRENCE 3', 'OCCURRENCE 4',];
+            expect(shownLabelOf({ name: 'occurrence 3', shown, },),).toEqual(['OCCURRENCE 3',],);
+            expect(shownLabelOf({ name: '3', shown, },),).toEqual(['OCCURRENCE 3',],);
+          },
+        },),
       ],
     },),
     describe({
