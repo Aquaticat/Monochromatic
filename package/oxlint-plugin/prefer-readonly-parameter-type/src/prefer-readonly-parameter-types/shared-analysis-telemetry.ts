@@ -70,6 +70,16 @@ const fallbackCounts = new Map<string, number>();
 const mismatchRecords: SharedMismatch[] = [];
 
 /**
+ Fallback examples kept per process so the counter file stays small.
+ */
+const MAX_FALLBACK_EXAMPLES = 60;
+
+/**
+ One line per early fallback naming the source and what caused it.
+ */
+const fallbackExamples: string[] = [];
+
+/**
  Tests whether verification is switched on for this process.
  
  @returns whether the verification environment variable is `1`.
@@ -118,6 +128,7 @@ function flush(): void {
         verified: state.verified,
         mismatches: state.mismatches,
         fallbacks: Object.fromEntries(fallbackCounts,),
+        fallbackExamples,
         mismatchRecords,
       },),
     );
@@ -149,6 +160,8 @@ export function recordSharedEligible(): void {
  
  @param reason - Why sharing was refused.
  
+ @param detail - The reference or option that caused the refusal.
+ 
  @example
  ```ts
  recordSharedFallback({ fileName, reason: 'script-source' });
@@ -157,9 +170,11 @@ export function recordSharedEligible(): void {
 export function recordSharedFallback({
   fileName,
   reason,
+  detail,
 }: {
   readonly fileName: string;
   readonly reason: string;
+  readonly detail?: string;
 },): void {
   if (!sharedVerificationEnabled())
     return;
@@ -167,6 +182,9 @@ export function recordSharedFallback({
     reason,
     (fallbackCounts.get(reason,) ?? 0) + 1,
   );
+  if (fallbackExamples.length < MAX_FALLBACK_EXAMPLES) {
+    fallbackExamples.push(`${reason}: ${fileName}${detail === undefined ? '' : ` (${detail})`}`,);
+  }
   l.debug(`${fileName} keeps its per-project entry: ${reason}`,);
   flush();
 }

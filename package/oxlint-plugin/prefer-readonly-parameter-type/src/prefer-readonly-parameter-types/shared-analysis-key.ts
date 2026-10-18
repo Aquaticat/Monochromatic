@@ -4,7 +4,11 @@
  @module
  */
 
-import type { SourceFile, } from 'typescript/unstable/ast';
+import type {
+  Node,
+  SourceFile,
+} from 'typescript/unstable/ast';
+import { isStringLiteral, } from 'typescript/unstable/ast/is';
 import type { Project, } from 'typescript/unstable/sync';
 
 import type { EffectProjectFingerprint, } from './effect-project-fingerprint.ts';
@@ -54,6 +58,7 @@ export type SharedKey =
   | {
     readonly eligible: false;
     readonly reason: string;
+    readonly detail?: string;
   };
 
 /**
@@ -75,7 +80,22 @@ type ModuleTargets =
   | {
     readonly complete: false;
     readonly reason: string;
+    readonly detail?: string;
   };
+
+/**
+ Renders one specifier node for a diagnostic.
+ 
+ @param specifier - Specifier node the parser listed.
+ 
+ @returns the quoted specifier text when the node carries it,
+ otherwise the node kind.
+ */
+function specifierText(specifier: Node,): string {
+  return isStringLiteral(specifier,)
+    ? JSON.stringify(specifier.text,)
+    : `a node of kind ${String(specifier.kind,)}`;
+}
 
 /**
  Resolves the module references one program file lists to program file paths.
@@ -128,7 +148,11 @@ function resolveModuleTargets({
    Resolved target paths.
    */
   const targets = new Set<string>();
-  for (const symbol of symbols) {
+  for (const [index, specifier,] of specifiers.entries()) {
+    /**
+     Module symbol resolved for the specifier at the same position.
+     */
+    const symbol = symbols[index];
     /**
      Declaration handle naming the module's file.
      */
@@ -143,6 +167,7 @@ function resolveModuleTargets({
       return {
         complete: false,
         reason: 'unresolved-specifier',
+        detail: `${sourceFile.fileName} names ${specifierText(specifier,)}`,
       };
     }
     targets.add(
@@ -168,6 +193,7 @@ type ClosureEntries =
   | {
     readonly complete: false;
     readonly reason: string;
+    readonly detail?: string;
   };
 
 /**
@@ -350,6 +376,7 @@ export function createSharedKeyResolver({
         return {
           complete: false,
           reason: resolved.reason,
+          ...(resolved.detail === undefined) ? {} : { detail: resolved.detail, },
         };
       }
       resolved.targets
@@ -405,6 +432,7 @@ export function createSharedKeyResolver({
       return {
         eligible: false,
         reason: closure.reason,
+        ...(closure.detail === undefined) ? {} : { detail: closure.detail, },
       };
     }
     return {
@@ -446,6 +474,7 @@ export function createSharedKeyResolver({
         recordSharedFallback({
           fileName: sourceFile.fileName,
           reason: key.reason,
+          ...(key.detail === undefined) ? {} : { detail: key.detail, },
         },);
       }
       return key;
