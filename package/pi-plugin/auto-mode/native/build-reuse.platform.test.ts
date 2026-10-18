@@ -1,6 +1,6 @@
 /** Verify immutable file reuse across actual mount boundaries. @module */
 import { strict as assert } from 'node:assert';
-import { cp, link, mkdir, mkdtemp, open, readFile, readdir, realpath, stat, symlink, writeFile } from 'node:fs/promises';
+import { chmod, cp, link, lstat, mkdir, mkdtemp, open, readFile, readdir, readlink, realpath, stat, symlink, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import spawn from 'nano-spawn';
 import { describe, it } from '@monochromatic-dev/module-test/ts';
@@ -70,7 +70,7 @@ await describe({
   name: 'native build reuse across actual mounts',
   children: [
     it({
-      name: 'publishes intact output across equal-device EXDEV and shares same-mount files',
+      name: 'publishes across EXDEV, shares same-mount files and leaves external directory symlinks unread',
       timeout: 120_000,
       fn: async function publishAcrossMounts() {
         /** Unchanged license bytes establish an eligible sharing candidate. */
@@ -96,6 +96,27 @@ await describe({
         assert.notEqual(second, first);
         assert.equal((await stat(join(second, 'PI-LICENSE.txt'))).ino, (await stat(join(first, 'PI-LICENSE.txt'))).ino);
         assert.deepEqual(await readFile(join(previous, 'PI-LICENSE.txt')), license);
+        /** Borrowed directory contents are not owned build inputs or sharing candidates. */
+        const external = await mkdtemp(join(previousMount, 'reuse-external-'));
+        await writeFile(join(external, 'private.txt'), 'External contents must remain unread');
+        /** The maintained command copies this opaque link alongside its ordinary contract files. */
+        const relativeLink = 'contract/reuse-external-symlink';
+        await symlink(external, join(packageRoot, 'native', relativeLink), 'dir');
+        /** Restore only this disposable directory's permissions even when the child rejects. */
+        await using permissionRestoration = {
+          async [Symbol.asyncDispose]() {
+            await chmod(external, 0o700);
+          },
+        };
+        await chmod(external, 0o000);
+        /** Positive control proves that following this link would fail instead of passing silently. */
+        await assert.rejects(readdir(external), { code: 'EACCES' });
+        await buildRelease(packageRoot);
+        /** Publication retains the opaque link while ordinary same-mount storage sharing still works. */
+        const third = await realpath(join(packageRoot, 'dist/native'));
+        assert.equal((await lstat(join(third, relativeLink))).isSymbolicLink(), true);
+        assert.equal(await readlink(join(third, relativeLink)), external);
+        assert.equal((await stat(join(third, 'PI-LICENSE.txt'))).ino, (await stat(join(second, 'PI-LICENSE.txt'))).ino);
       },
     }),
   ],
