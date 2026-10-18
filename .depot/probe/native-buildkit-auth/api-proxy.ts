@@ -3,7 +3,8 @@ import {createServer,connect} from 'node:http2';
 import {once} from 'node:events';import {strict as assert} from 'node:assert';
 // This loopback relay prevents CLI NotFound onboarding from listing account projects.
 // It preserves the actual CLI token resolution and forwards only this bounded build family.
-export async function createGuardedApi({projectId,expectedInitialAuthorization,rows,onUpdate,stubNotFound=false}){
+export async function createGuardedApi({projectId,expectedInitialAuthorization,rows,onUpdate,stubNotFound=false,localFixtureOrigin}){
+if(localFixtureOrigin)assert(/^http:\/\/127\.0\.0\.1:\d+$/u.test(localFixtureOrigin));
 const prefix='/depot.cli.v1.BuildService/';
 const allowed=new Set(['CreateBuild','GetBuildKitConnection','ReportBuildHealth','ReportStatusStream','FinishBuild']);
 const sessions=new Set();const stats={createRequests:0,forwardedRequests:0,deniedRequests:0,initialCredentialMatched:false,stubNotFound};
@@ -18,7 +19,7 @@ if(headers[':method']!=='POST'||!allowed.has(method)){deny('API method outside t
 if(rows.length>250){deny('Finite request count exceeded');return;}
 const forward=body=>{
 if(stubNotFound){row.status=404;row.stubbed=true;stream.respond({':status':404,'content-type':'application/json'});stream.end(JSON.stringify({code:'not_found',message:'Owned preflight missing-project control'}));onUpdate();return;}
-if(!upstream){upstream=connect('https://api.depot.dev');upstream.on('error',error=>{stats.upstreamErrorCode=error.code;onUpdate();});}
+if(!upstream){upstream=connect(localFixtureOrigin??'https://api.depot.dev');upstream.on('error',error=>{stats.upstreamErrorCode=error.code;onUpdate();});}
 const outgoing={};for(const [key,value]of Object.entries(headers))if(!key.startsWith(':')&&!['host','connection','transfer-encoding'].includes(key))outgoing[key]=value;
 Object.assign(outgoing,{':method':'POST',':path':path,':scheme':'https',':authority':'api.depot.dev'});
 const target=upstream.request(outgoing);row.forwarded=true;stats.forwardedRequests+=1;
