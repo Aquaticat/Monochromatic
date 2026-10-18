@@ -217,6 +217,19 @@ while the runtime still retains the actual latest full review for diagnostics.
 This is not applied to production and needs live consumer proof plus lifecycle/freshness regression coverage.
 The user was told that the fragmented replay still fails; readiness remains withdrawn.
 
+The committed native review-retirement regression `eeef4291d1` retains 96,805,456 bytes on the old output.
+Its private retirement probe retains 8,792,696 bytes while preserving the actual latest full diagnostic,
+terminal outcomes, source checks, and rejection of execution after closure.
+Maintained repair `8ad0d4725b` releases completed review references and rejects closed-group execution checks.
+The rebuilt output is `native-release-qEBKwW`.
+Fresh faithful and fragmented host replays plus the complete affected verification matrix are running.
+The earlier private full retirement counterfactual continues separately on its original artifact.
+
+An independent private probe measures the pool's immutable whole-array copy on every appended receipt.
+It compares genuine manager append CPU and memory against publication of cached frozen snapshots on read.
+It must preserve prior frozen snapshots, stable repeated reads, every occurrence, and distinct publications.
+No pool append implementation change is applied yet.
+
 Next, measure shared methods within each governing snapshot,
 using a private `WeakSet` to authenticate the original frozen plain binding records.
 Preserve every source occurrence, request identity, original ordering, and parent freshness check.
