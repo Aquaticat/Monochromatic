@@ -36,14 +36,6 @@ export type Paths = Readonly<{
    Directory of the daily sample CSV files.
    */
   sampleDir: string;
-  /**
-   File holding the CoolerControl bearer token.
-   */
-  tokenFile: string;
-  /**
-   CoolerControl status endpoint.
-   */
-  statusUrl: string;
 }>;
 
 /**
@@ -66,6 +58,10 @@ export type Sensors = Readonly<{
    The `gigabyte_wmi` directory.
    */
   boardDir: string;
+  /**
+   The `nct6687` directory, the motherboard fan headers and board temperatures.
+   */
+  superIoDir: string;
   /**
    The `acpitz` directory.
    */
@@ -183,8 +179,4 @@ export type WatchState = Readonly<{
    Local date of the last sample file, to prune once per day.
    */
   sampleDay: string;
-  /**
-   Whether the last CoolerControl read failed, to log only changes.
-   */
-  fanReadFailing: boolean;
 }>;
