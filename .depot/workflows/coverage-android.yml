@@ -230,9 +230,10 @@ jobs:
           Set(native.map(entry=>entry.split('/')[1]))].sort(),nativeEngine:[...new
           Set(native.filter(entry=>entry.endsWith('/libmusicplayer_native.so')).map(entry=>entry.split('/')[1\
           ]))].sort()}\\\\n   save()\\\\n  }\\\\n  try{\\\\n   const
-          logs=name=>readFileSync(join(evidence,name+'.log'),'utf8')\\\\n   const cert=kind=>/Signer #1
-          certificate SHA-256 digest: ([a-f0-9]+)/.exec(logs(kind+'-signature'))?.[1]\\\\n   const
-          packageName=kind=>/package: name='([^']+)'/.exec(logs(kind+'-manifest-badging'))?.[1]\\\\n   const
+          logs=name=>readFileSync(join(evidence,name+'.log'),'utf8')\\\\n   const cert=kind=>/^(?:V[0-9.]+
+          Signer:|Signer #[0-9]+) certificate SHA-256 digest:
+          ([a-f0-9]{64})$/m.exec(logs(kind+'-signature'))?.[1]\\\\n   const packageName=kind=>/package:
+          name='([^']+)'/.exec(logs(kind+'-manifest-badging'))?.[1]\\\\n   const
           target=/android:targetPackage[^=\\\\\\\\n]*=\\\\\\\"([^\\\\\\\"]+)\\\\\\\"/.exec(logs('androidTest-\
           manifest-tree'))?.[1]\\\\n   const
           runner=/android:name[^=\\\\\\\\n]*=\\\\\\\"(androidx\\\\\\\\.test\\\\\\\\.runner\\\\\\\\.AndroidJUn\
