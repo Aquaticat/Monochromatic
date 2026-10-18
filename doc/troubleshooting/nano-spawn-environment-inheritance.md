@@ -59,9 +59,25 @@ const instance = spawn(file, commandArguments, options);
 ```
 
 The type documentation in `source/index.d.ts:76` explicitly says other variables are inherited.
+Its relevant excerpt is:
+
+```text
+# nano-spawn/source/index.d.ts:76 at v2.1.0, prose excerpt
+Other environment variables are inherited from the current process
+```
+
 The nonempty parent value therefore reaches the child,
 the guard correctly accepts its setup path,
 and the forbidden probe throws.
+The owned guard's setup condition at
+`package/pi-plugin/auto-mode/native/contract/integration/native-host/process-network-guard.ts:32`
+in `6c1dc11ea3` distinguishes the genuinely absent and empty cases:
+
+```typescript
+// package/pi-plugin/auto-mode/native/contract/integration/native-host/process-network-guard.ts:32 at 6c1dc11ea3
+if ((receiptPath === undefined) || (receiptPath === ''))
+  throw new NativeCliFixtureNetworkError('Native CLI fixture requires its disposable request receipt path');
+```
 
 ## Verification catalogs
 

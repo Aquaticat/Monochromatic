@@ -31,7 +31,9 @@ The actual CLI and receipt contract consumers pass on `native-release-WXGCDx`.
 The corrected contract builds as `native-release-LytMAt`.
 Its network unit passes in a clean environment;
 a contaminated-parent control exposes another owned negative-fixture isolation defect.
-Full-unit success for the corrected snapshot remains pending.
+Complete units and the session-input aggregate pass for frozen source `68e7ce538a` against `LytMAt`.
+The contaminated-parent control still exposes the test-isolation defect;
+later lint edits need their own verification.
 Lint cleanup remains an unfinished measured task.
 
 The 2026-10-18 post-cleanup snapshot measures 22,933,936 regular-file bytes
