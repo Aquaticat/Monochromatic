@@ -3823,7 +3823,7 @@ The readings below are the implementer's, open to a veto.
 - The supporting line is each platform's own wording, not unified: "Third-party notices" on desktop and "Open-source
   libraries used by this app" on Android.
 - The row is a button for assistive technology and the last keyboard stop of the list, after the Playback switch;
-  Enter opens it on desktop, and Enter and Space on Android.
+  Enter and Space open it on both platforms.
   The focus ring follows the row's group rounding (D117).
 - The desktop page (`ui/licenses.slint`) covers the whole window in both the narrow and the wide form, drawn on the
   one canvas color with no band, card or divider.
