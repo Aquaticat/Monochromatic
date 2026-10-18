@@ -1,4 +1,6 @@
 import {isProxy} from 'node:util/types';
+import {tagged} from '@monochromatic-dev/module-logger/ts';
+import {caughtValueText} from '@monochromatic-dev/module-caught-value/ts';
 
 export class PolicyApprovalError extends Error {
  constructor(message){super(message);this.name=this.constructor
@@ -68,26 +70,33 @@ export function captureApprovalHostSource(input){
 
 /** One prepared operation shares its original presentation capture across automatic and manual review. */
 export function createApprovalHostOperation(captureSource){
+ const l=tagged({tag:createApprovalHostOperation.name,l:tagged({tag:'auto-mode-approval'})});
+ l.debug('opening original presentation capability scope');
  const state={closed:false,captured:false,host:undefined,failure:undefined};
  function captureHost(){
+  const cl=tagged({tag:captureHost.name,l});
+  cl.debug('reading original operation presentation capabilities');
   if(state.closed)throw new PolicyApprovalError('The original approval capability scope has ended');
-  if(state.failure)throw state.failure.error;
-  if(state.captured)return state.host;
+  if(state.failure){cl.debug('rethrowing the original capture failure');throw state.failure.error;}
+  if(state.captured){cl.debug('retaining the original captured presentation view');return state.host;}
   state.captured=true;
   try{
    state.host=captureSource();
    return state.host;
   }catch(error){
+   cl.debug(caughtValueText(error));
    state.failure={error};
    throw error;
   }
  }
+ function closeApprovalOperation(){
+  tagged({tag:closeApprovalOperation.name,l}).debug('retiring original presentation capability scope');
+  state.closed=true;
+  state.host=undefined;
+  state.failure=undefined;
+ }
  return Object.freeze({
   captureHost,
-  [Symbol.dispose](){
-   state.closed=true;
-   state.host=undefined;
-   state.failure=undefined;
-  }
+  [Symbol.dispose]:closeApprovalOperation
  });
 }
