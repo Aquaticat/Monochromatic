@@ -22,7 +22,7 @@ and exact-version Git source.
 
 ## Root cause
 
-The first-party write at `Containerfile:52` puts the token-bearing URL in the subsection name.
+The first-party write at `Containerfile:48` puts the token-bearing URL in the subsection name.
 Cleanup at `Containerfile:72` names a subsection without that token.
 The comments describe a credential helper and an extra header,
 but the actual command configures `url.<base>.insteadOf`.
@@ -30,15 +30,12 @@ The excerpt is frozen source,
 not a proposed implementation:
 
 ```dockerfile
-# package/dev-script/file-enforcer/generator/Containerfile:48
+# package/dev-script/file-enforcer/generator/Containerfile:45
+RUN --mount=type=secret,id=github_token \
+    if [ -f /run/secrets/github_token ] && [ -s /run/secrets/github_token ]; then \
+        TOKEN=$(cat /run/secrets/github_token) \
         && git config --global url."https://${TOKEN}@github.com/".insteadOf "https://github.com/" ; \
     fi
-
-# Build and install libversion + pg extension
-RUN git clone --depth 1 https://github.com/repology/libversion.git /tmp/libversion \
-    && cd /tmp/libversion \
-    && cmake -DCMAKE_INSTALL_PREFIX=/usr . \
-    && make -j"$(nproc)" \
     && make install \
 
 # package/dev-script/file-enforcer/generator/Containerfile:72
