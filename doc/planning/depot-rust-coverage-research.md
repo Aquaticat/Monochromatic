@@ -434,3 +434,41 @@ Truepeak all-features,
 the remaining fuzz/planted owners,
 transparent host capture,
 benchmark repetitions and privileged WG prerequisite probes remain the explicitly tracked queue.
+
+### Bounded fuzz checkpoint and sandbox prerequisite
+
+`jwg2cmvwd1` completed all four JSONC and five regex fuzz targets,
+plus four scanner targets before the 12-minute step limit terminated `fuzz_scan_format`.
+The completed targets report nonzero libFuzzer executed-unit counts,
+clean exit status and final statistics.
+The ASan stack-overflow positive control failed as expected inside the same resource isolation.
+JSONC generator Nextest passed 13 cases;
+scanner generator Nextest passed six.
+The regex sidecar enumerates zero generator tests and earns no such credit.
+
+`8rh0797pqx` passed 38 generator cases and completed 14 Git-policy fuzz targets.
+Its last target,
+`wrapper_controls`,
+was also interrupted by the 12-minute step limit.
+Neither interrupted run reaches the final source admission or complete runtime cleanup.
+Their initial frozen-source hashes,
+completed per-target container state,
+corpus copies,
+raw logs and provider-verified ZIP digests remain durable.
+The owned sandbox terminates after each job.
+The targeted `fuzz-tails` profile replays only these interrupted targets and retains final source admission.
+
+The [Codex sandbox prerequisite diagnosis](../troubleshooting/codex-standalone-bubblewrap-prerequisite.md)
+records why hook completions did not prove shell execution.
+`mwwmknc37b` captured 41 localhost provider requests;
+all 40 returned shell tool outputs have code `101` with a missing Bubblewrap launcher panic.
+The signed standalone binary and application sources remain unchanged.
+The owning fixture is being retried with distribution Bubblewrap installed only in the disposable job.
+
+The reconciled completed compute proxy is USD 2.3972.
+The host prerequisite rerun and combined tail replay reserve USD 0.54 together,
+keeping the declared bound at USD 2.9372 of USD 5.
+The remaining admitted queue is linter fuzz,
+Git-policy and linter planted controls,
+truepeak release all-features Nextest,
+privileged WG namespaces and the bounded repeated benchmark owners.
