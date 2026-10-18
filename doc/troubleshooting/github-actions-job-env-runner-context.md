@@ -80,6 +80,23 @@ and no final common manifest was published by this development workflow.
 Dispatch acceptance proves this parser repair;
 source prerequisites and authored checks require their own terminal receipts.
 
+## Service-container context recurrence
+
+The isolated service research profile at `6b3c75517e798161e79ddb7e496b78cf1ffc4240`
+also put `job.services` in a job environment declaration.
+GitHub run `39108872769` concluded `failure` with zero jobs.
+The retained run/check APIs did not recover its raw hosted parser diagnostic;
+do not substitute the older `runner.temp` error text for this incident.
+The [context availability reference][contexts] excludes `job` from `jobs.<job_id>.env`
+and includes it for step environments.
+Moving the service expression to a consuming step was accepted in the subsequent profile.
+The final service run `39113547458` has six successful GitHub jobs.
+The [context and positive-control receipt](../audit/depot-container-prerequisites-2026-10-18.evidence.json)
+retains both job-count API responses and the exact historical workflow path,
+`.github/workflows/readonly-semantic-bridge.yml`.
+The later Git initialization and Node-loader failures are separate incidents in the
+[container prerequisite note](github-actions-container-node-runtime-prerequisites.md).
+
 ## Upstream filing decision
 
 - Fault:
