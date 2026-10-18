@@ -269,7 +269,7 @@ They were printed by `find -printf '%T…'`,
 which prints the local zone,
 and the label was added by hand.
 `stat --format=%y` on the same files prints `-0400` beside the same digits,
-and `TZ=UTC stat` prints the pairings at 20:59:08 and 21:00:15 and the generation markers at 20:58:54,
+and `TZ=UTC stat` prints the pairings at 20:59:08 UTC and 21:00:15 UTC and the generation markers at 20:58:54 UTC,
 so the span is 20:58 to 21:00 UTC.
 The TSDoc of `pairing-cache-version.ts` and B670 are corrected.
 The only other copies were in those two files (`rg '16:5|17:00'` over the package).
@@ -330,7 +330,7 @@ and what it showed:
 
 What the search did not show:
 a random search of 1,799,159 pages and quotes found no located place that records definitions,
-and the hand-built page above found one at the first try.
+and the hand-built page for `Take *[*]a*’ now.` found one at the first try.
 The null was a sample that rarely held an opener, a reference and a closer in that order,
 and it is not evidence that the case cannot occur
 (mistake-prevention, searches and censuses that miss).
@@ -339,7 +339,7 @@ No difference between the pass and the reader exists today for the words:
 both read them alone,
 so a place whose words read differently with the page's definitions is not planned one way and read back another.
 The limit is the one that the head of `consistency-loose-marks.ts` names,
-and its reason there now includes the case above.
+and its reason there now includes the case of `Take *[*]a*’ now.`.
 
 Options for the lead,
 none taken:
@@ -359,7 +359,7 @@ none taken:
 - Make the markup test read the span with the definitions and by pairing, then record the definitions.
   Pros: `*a [b*] c*’` is located and read as the page reads it.
   Cons: the largest change,
-  it unlocates places that are carried today (the span `[*]a*’` above cuts the page's emphasis),
+  it unlocates places that are carried today (the span `[*]a*’` of `Take *[*]a*’ now.` cuts the page's emphasis),
   and it needs a generation.
 
 Ranking: leaving the words read alone,
