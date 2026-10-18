@@ -66,9 +66,12 @@ pub const PROCESS_FILE_SYSTEM: &str = "/proc";
 /// const replacedLocation = (path: string) => REPLACED_LOCATIONS.find(top => path === top || path.startsWith(top + '/'));
 /// ```
 pub fn replaced_location(path: &Path) -> Option<&'static str> {
-    return REPLACED_LOCATIONS
-        .into_iter()
-        .find(|location| return path.starts_with(location));
+    for location in REPLACED_LOCATIONS {
+        if path.starts_with(location) {
+            return Some(location);
+        }
+    }
+    return None;
 }
 
 /// What:
@@ -84,9 +87,10 @@ pub fn replaced_location(path: &Path) -> Option<&'static str> {
 /// function text(path: string, what: string): string // throws to refuse
 /// ```
 fn text<'a>(path: &'a Path, what: &str) -> Result<&'a str, String> {
-    return path.to_str().ok_or_else(|| {
-        return format!("{what} {} is not valid Unicode", path.display());
-    });
+    return match path.to_str() {
+        Some(found) => Ok(found),
+        None => Err(format!("{what} {} is not valid Unicode", path.display())),
+    };
 }
 
 /// What:

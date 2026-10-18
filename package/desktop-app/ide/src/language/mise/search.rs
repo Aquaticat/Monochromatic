@@ -59,14 +59,19 @@ pub struct Missed {
 /// const isShim = (path: string) => lstatSync(path).isSymbolicLink() && basename(realpathSync(path)) === 'mise';
 /// ```
 pub fn is_shim(path: &Path) -> bool {
-    let is_link = std::fs::symlink_metadata(path).is_ok_and(|found| return found.is_symlink());
+    let is_link = match std::fs::symlink_metadata(path) {
+        Ok(found) => found.is_symlink(),
+        Err(_) => false,
+    };
     if !is_link {
         return false;
     }
-    return std::fs::canonicalize(path)
-        .ok()
-        .and_then(|real| return real.file_name().map(|name| return name == "mise"))
-        .unwrap_or(false);
+    if let Ok(real) = std::fs::canonicalize(path)
+        && let Some(name) = real.file_name()
+    {
+        return name == "mise";
+    }
+    return false;
 }
 
 /// What:
@@ -117,11 +122,10 @@ pub fn find_program_in(
     }
     let mut missed = Missed::default();
     // A relative entry would depend on the working directory; only absolute ones are trusted.
-    let searched = directories
-        .iter()
-        .chain(inherited.iter())
-        .filter(|directory| return directory.is_absolute());
-    for directory in searched {
+    for directory in directories.iter().chain(inherited.iter()) {
+        if !directory.is_absolute() {
+            continue;
+        }
         let candidate = directory.join(command);
         if !is_executable(&candidate) {
             continue;
@@ -153,9 +157,10 @@ pub fn find_program_in(
 pub fn search_path(directories: &[PathBuf], inherited: Option<OsString>) -> Option<String> {
     let mut entries: Vec<PathBuf> = Vec::new();
     for directory in directories {
-        let usable = directory
-            .to_str()
-            .is_some_and(|text| return !text.contains(':'));
+        let usable = match directory.to_str() {
+            Some(text) => !text.contains(':'),
+            None => false,
+        };
         if usable {
             entries.push(directory.clone());
         } else {

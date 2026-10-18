@@ -1,13 +1,15 @@
 //! Which pushed and pulled diagnostic sets describe the displayed revision.
 
 /// Conversion and grouping live beside the public types.
-use super::{DiagnosticsSnapshot, Freshness, SourceGroup, add_to_group, convert};
+use super::{Diagnostic, DiagnosticsSnapshot, Freshness, SourceGroup, add_to_group, convert};
 /// Sets are keyed by server process and stamped with the text they were accepted for.
 use crate::language::identity::{DocumentStamp, ServerIdentity};
 /// Conversion happens against the rope of the displayed revision.
 use helix_core::Rope;
 /// The protocol's diagnostic record and each server's column unit.
 use helix_lsp::{OffsetEncoding, lsp};
+/// Dropping a server's pull result identifier is shared with the pull answers.
+use pulled::forget_result_id;
 
 /// What:
 ///  A closed set of names for what happened to one pushed set.
@@ -97,6 +99,53 @@ struct Kept {
     /// items: lsp.Diagnostic[];
     /// ```
     items: Vec<lsp::Diagnostic>,
+}
+
+/// What:
+///  Which holds `end_holds` ends:
+///  those of one server,
+///  or those started by one reload.
+/// Why:
+///  The two callers name their holds differently,
+///  and a named choice carries the value the test needs.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Ending = { kind: 'server'; server: ServerIdentity } | { kind: 'serial'; serial: number };
+/// ```
+enum Ending<'a> {
+    /// The holds on this server.
+    Server(
+        /// The server whose holds end.
+        &'a ServerIdentity,
+    ),
+    /// The holds started by the reload with this number.
+    Serial(
+        /// The number of the reload.
+        u64,
+    ),
+}
+
+/// Which holds a choice names.
+impl Ending<'_> {
+    /// Whether `hold` is one of the holds this choice names.
+    fn names(&self, hold: &Hold) -> bool {
+        return match self {
+            Ending::Server(server) => &hold.server == *server,
+            Ending::Serial(serial) => hold.serial == *serial,
+        };
+    }
+}
+
+/// Orders source groups by their source text.
+fn by_source(left: &SourceGroup, right: &SourceGroup) -> std::cmp::Ordering {
+    return left.source.cmp(&right.source);
+}
+
+/// Orders diagnostics by their start,
+///  then their end.
+fn by_range(left: &Diagnostic, right: &Diagnostic) -> std::cmp::Ordering {
+    return (left.start, left.end).cmp(&(right.start, right.end));
 }
 
 /// An open hold on one server's unversioned pushes.
@@ -228,7 +277,12 @@ impl DiagnosticStore {
         // ```ts
         // this.sets = this.sets.filter(set => set.pulled);
         // ```
-        self.sets.retain(|set| return set.pulled);
+        let held = std::mem::take(&mut self.sets);
+        for set in held {
+            if set.pulled {
+                self.sets.push(set);
+            }
+        }
         self.holds.clear();
         for server in servers {
             self.holds.push(Hold {
@@ -265,7 +319,7 @@ impl DiagnosticStore {
     ///   return ending.length;
     /// }
     /// ```
-    fn end_holds(&mut self, ends: impl Fn(&Hold) -> bool) -> usize {
+    fn end_holds(&mut self, ending: Ending<'_>) -> usize {
         let Some(tracked) = self.document.as_ref() else {
             self.holds.clear();
             return 0;
@@ -275,7 +329,7 @@ impl DiagnosticStore {
         // `Vec::new()` creates an empty list that collects the holds that stay open.
         let mut open: Vec<Hold> = Vec::new();
         for hold in self.holds.drain(..) {
-            if !ends(&hold) {
+            if !ending.names(&hold) {
                 open.push(hold);
                 continue;
             }
@@ -283,8 +337,12 @@ impl DiagnosticStore {
             // `if let Some(x) = ...` runs the block only when the hold kept a set.
             if let Some(kept) = hold.kept {
                 tracing::debug!(server = %hold.server.name, "showing the set pushed during the hold that just ended");
-                self.sets
-                    .retain(|set| return set.pulled || set.server != hold.server);
+                let held = std::mem::take(&mut self.sets);
+                for set in held {
+                    if set.pulled || set.server != hold.server {
+                        self.sets.push(set);
+                    }
+                }
                 self.sets.push(StoredSet {
                     server: hold.server,
                     pulled: false,
@@ -307,7 +365,12 @@ impl DiagnosticStore {
     #[cfg(test)]
     pub(crate) fn is_held(&self, server: &ServerIdentity) -> bool {
         // `iter().any(...)` is `Array.prototype.some`; `&self.holds` is only read.
-        return self.holds.iter().any(|hold| return &hold.server == server);
+        for hold in self.holds.iter() {
+            if &hold.server == server {
+                return true;
+            }
+        }
+        return false;
     }
 
     /// What:
@@ -331,21 +394,21 @@ impl DiagnosticStore {
         // ```ts
         // if (this.document?.stamp !== stamp) return false;
         // ```
-        if self
-            .document
-            .as_ref()
-            .is_none_or(|tracked| return tracked.stamp != stamp)
-        {
+        let outdated = match self.document.as_ref() {
+            Some(tracked) => tracked.stamp != stamp,
+            None => true,
+        };
+        if outdated {
             return false;
         }
-        // The closure judges each hold; `&hold.server == server` compares the borrowed identities.
-        return self.end_holds(|hold| return &hold.server == server) > 0;
+        // The holds of this server end; `&hold.server == server` compares the borrowed identities.
+        return self.end_holds(Ending::Server(server)) > 0;
     }
 
     /// The fixed delay after reload number `serial` passed;
     ///  returns true when a hold ended.
     pub(crate) fn hold_expired(&mut self, serial: u64) -> bool {
-        return self.end_holds(|hold| return hold.serial == serial) > 0;
+        return self.end_holds(Ending::Serial(serial)) > 0;
     }
 
     /// What:
@@ -391,8 +454,10 @@ impl DiagnosticStore {
                     // ```ts
                     // if (item.range.start.line >= lineCount) return 'lineOutOfRange';
                     // ```
-                    let exists = usize::try_from(item.range.start.line)
-                        .is_ok_and(|line| return line < line_count);
+                    let exists = match usize::try_from(item.range.start.line) {
+                        Ok(line) => line < line_count,
+                        Err(_) => false,
+                    };
                     if !exists {
                         return PushVerdict::LineOutOfRange;
                     }
@@ -407,12 +472,15 @@ impl DiagnosticStore {
                 // const hold = this.holds.find(hold => same(hold.server, server));
                 // if (hold) { hold.kept = { encoding, items }; return 'held'; }
                 // ```
-                if let Some(hold) = self
-                    .holds
-                    .iter_mut()
-                    .find(|hold| return &hold.server == server)
-                {
-                    hold.kept = Some(Kept { encoding, items });
+                let mut open_hold = None;
+                for (position, hold) in self.holds.iter().enumerate() {
+                    if &hold.server == server {
+                        open_hold = Some(position);
+                        break;
+                    }
+                }
+                if let Some(position) = open_hold {
+                    self.holds[position].kept = Some(Kept { encoding, items });
                     return PushVerdict::Held;
                 }
                 Freshness::Unversioned
@@ -425,8 +493,12 @@ impl DiagnosticStore {
             }
         }
         // Any later set from the same server replaces its earlier pushed set.
-        self.sets
-            .retain(|set| return set.pulled || &set.server != server);
+        let held = std::mem::take(&mut self.sets);
+        for set in held {
+            if set.pulled || &set.server != server {
+                self.sets.push(set);
+            }
+        }
         self.sets.push(StoredSet {
             server: server.clone(),
             pulled: false,
@@ -441,114 +513,24 @@ impl DiagnosticStore {
         return PushVerdict::AcceptedUnversioned;
     }
 
-    /// What:
-    ///  Store a full pull answer;
-    ///  false when it answers another revision or file.
-    ///       `Option<String>` is the result identifier the server may attach.
-    /// Why:
-    ///  A pull answer is fenced like every other reply:
-    ///  only the displayed text counts.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// pulledFull(server, encoding, stamp, resultId: string | undefined, items): boolean
-    /// ```
-    pub(crate) fn pulled_full(
-        &mut self,
-        server: &ServerIdentity,
-        encoding: OffsetEncoding,
-        stamp: DocumentStamp,
-        result_id: Option<String>,
-        items: Vec<lsp::Diagnostic>,
-    ) -> bool {
-        if self
-            .document
-            .as_ref()
-            .is_none_or(|tracked| return tracked.stamp != stamp)
-        {
-            return false;
-        }
-        self.sets
-            .retain(|set| return !set.pulled || &set.server != server);
-        self.result_ids.retain(|(known, _)| return known != server);
-        if let Some(identifier) = result_id {
-            self.result_ids.push((server.clone(), identifier));
-        }
-        self.sets.push(StoredSet {
-            server: server.clone(),
-            pulled: true,
-            stamp,
-            freshness: Freshness::Pulled,
-            encoding,
-            items,
-        });
-        return true;
-    }
-
-    /// The server said its previous pull answer still holds:
-    ///  re-stamp it for the displayed text.
-    pub(crate) fn pulled_unchanged(
-        &mut self,
-        server: &ServerIdentity,
-        stamp: DocumentStamp,
-        result_id: String,
-    ) -> bool {
-        if self
-            .document
-            .as_ref()
-            .is_none_or(|tracked| return tracked.stamp != stamp)
-        {
-            return false;
-        }
-        // `iter_mut` hands out modifiable borrows so the stored set can be re-stamped in place.
-        for set in self.sets.iter_mut() {
-            if set.pulled && &set.server == server {
-                set.stamp = stamp;
-                self.result_ids.retain(|(known, _)| return known != server);
-                self.result_ids.push((server.clone(), result_id));
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /// What:
-    ///  The identifier to send with the next pull request,
-    ///  or nothing.
-    /// Why:
-    ///  It is offered only while the set it refers to is still stored;
-    ///  otherwise an
-    ///      "unchanged" answer would leave nothing to show.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// previousResultId(server: ServerIdentity): string | undefined
-    /// ```
-    pub(crate) fn previous_result_id(&self, server: &ServerIdentity) -> Option<String> {
-        let stored = self
-            .sets
-            .iter()
-            .any(|set| return set.pulled && &set.server == server);
-        if !stored {
-            // `None` is the "nothing" variant of `Option`.
-            return None;
-        }
-        for (known, identifier) in &self.result_ids {
-            if known == server {
-                return Some(identifier.clone());
-            }
-        }
-        return None;
-    }
-
     /// A server process ended:
     ///  its sets,
     ///  hold,
     ///  and result identifier are removed.
     pub(crate) fn server_exited(&mut self, server: &ServerIdentity) {
-        self.sets.retain(|set| return &set.server != server);
-        self.holds.retain(|hold| return &hold.server != server);
-        self.result_ids.retain(|(known, _)| return known != server);
+        let sets = std::mem::take(&mut self.sets);
+        for set in sets {
+            if &set.server != server {
+                self.sets.push(set);
+            }
+        }
+        let holds = std::mem::take(&mut self.holds);
+        for hold in holds {
+            if &hold.server != server {
+                self.holds.push(hold);
+            }
+        }
+        forget_result_id(&mut self.result_ids, server);
     }
 
     /// What:
@@ -596,11 +578,9 @@ impl DiagnosticStore {
         // ```ts
         // groups.sort((left, right) => left.source.localeCompare(right.source));
         // ```
-        groups.sort_by(|left, right| return left.source.cmp(&right.source));
+        groups.sort_by(by_source);
         for group in groups.iter_mut() {
-            group.items.sort_by(|left, right| {
-                return (left.start, left.end).cmp(&(right.start, right.end));
-            });
+            group.items.sort_by(by_range);
         }
         return Some(DiagnosticsSnapshot {
             stamp: tracked.stamp,
@@ -608,3 +588,7 @@ impl DiagnosticStore {
         });
     }
 }
+
+/// What a pull answer does to the stored sets,
+///  and which result identifier the next pull request carries.
+mod pulled;

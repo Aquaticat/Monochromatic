@@ -110,10 +110,47 @@ pub struct MiseRequest {
 /// ```
 pub type MisePolicy = fn(&MiseRequest) -> MiseState;
 
-/// How one run is made,
-///  so a test can answer without a mise program.
-pub type Runner<'a> =
-    dyn Fn(&command::Invocation, Duration) -> Result<command::Completed, command::RunFailure> + 'a;
+/// What:
+///  How one run is made.
+///  A type that implements this trait makes the runs of the sandboxed mise program,
+///  or answers them in a test without a mise program.
+/// Why:
+///  The decision logic is the same for both,
+///  and a named type carries what each needs.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// interface Runner { run(invocation: Invocation, limit: number): Completed | RunFailure }
+/// ```
+pub trait Runner {
+    /// Make one run within `limit`.
+    fn run(
+        &self,
+        invocation: &command::Invocation,
+        limit: Duration,
+    ) -> Result<command::Completed, command::RunFailure>;
+}
+
+/// The runner of the production policy:
+///  the mise program run in the sandbox.
+struct ConfinedRunner<'a> {
+    /// The mise program found on the machine.
+    program: &'a Path,
+    /// The project whose mise tools are asked about.
+    request: &'a MiseRequest,
+}
+
+/// Each run is confined by bubblewrap.
+impl Runner for ConfinedRunner<'_> {
+    /// Run `invocation` in the sandbox.
+    fn run(
+        &self,
+        invocation: &command::Invocation,
+        limit: Duration,
+    ) -> Result<command::Completed, command::RunFailure> {
+        return command::run_confined(self.program, invocation, self.request, limit, BUBBLEWRAP);
+    }
+}
 
 /// What:
 ///  The policy of the unconfined setup:
@@ -149,8 +186,9 @@ pub fn resolve_confined(request: &MiseRequest) -> MiseState {
         );
         return MiseState::Unused("no mise program was found".to_string());
     };
-    let runner = |invocation: &command::Invocation, limit: Duration| {
-        return command::run_confined(&program, invocation, request, limit, BUBBLEWRAP);
+    let runner = ConfinedRunner {
+        program: &program,
+        request,
     };
     return resolve_with(request, &runner);
 }
@@ -180,9 +218,58 @@ fn failure(what: &str, completed: &command::Completed) -> Failed {
 }
 
 /// What:
+///  One mise run with the arguments `arguments` in `directory`,
+///  within what is left of `TIME_LIMIT` since `started`.
+///  A run that did not succeed becomes the state the whole resolution ends with.
+/// Why:
+///  All runs share one time limit,
+///  and each failure kind has its own state and log line.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function runListed(runner: Runner, started: number, args: string[], directory: string): Completed // throws MiseState
+/// ```
+fn run_listed(
+    runner: &dyn Runner,
+    started: Instant,
+    arguments: &[&str],
+    directory: &Path,
+) -> Result<command::Completed, MiseState> {
+    let mut texts: Vec<String> = Vec::new();
+    for argument in arguments.iter() {
+        texts.push(argument.to_string());
+    }
+    let invocation = command::Invocation {
+        arguments: texts,
+        directory: directory.to_path_buf(),
+    };
+    let remaining = TIME_LIMIT.saturating_sub(started.elapsed());
+    let what = arguments.join(" ");
+    return match runner.run(&invocation, remaining) {
+        Ok(done) if done.success => Ok(done),
+        Ok(done) => {
+            let failed = failure(&what, &done);
+            tracing::warn!(command = %what, status = %done.status, message = %failed.message, "mise could not serve the project");
+            Err(MiseState::Failed(failed))
+        }
+        Err(command::RunFailure::Refused(reason)) => {
+            tracing::warn!(%reason, "mise is not run: the sandbox is not available");
+            Err(MiseState::Unused(reason))
+        }
+        Err(command::RunFailure::Failed(reason)) => {
+            tracing::warn!(command = %what, %reason, "mise could not serve the project");
+            Err(MiseState::Failed(Failed {
+                message: format!("`mise {what}` {reason}"),
+                untrusted: None,
+            }))
+        }
+    };
+}
+
+/// What:
 ///  Ask mise about a project with `runner`,
 ///  within `TIME_LIMIT`.
-///  `&Runner` is a borrowed function that makes one run.
+///  `&dyn Runner` is a borrowed value that makes one run.
 /// Why:
 ///  The decision logic is the same for the sandboxed run and a test double:
 ///  the project's configuration is what the folder lists and `/` does not,
@@ -192,49 +279,24 @@ fn failure(what: &str, completed: &command::Completed) -> Failed {
 /// ```ts
 /// function resolveWith(request: MiseRequest, runner: Runner): MiseState
 /// ```
-pub fn resolve_with(request: &MiseRequest, runner: &Runner) -> MiseState {
+pub fn resolve_with(request: &MiseRequest, runner: &dyn Runner) -> MiseState {
     let started = Instant::now();
-    let run = |arguments: &[&str], directory: &Path| -> Result<command::Completed, MiseState> {
-        let invocation = command::Invocation {
-            arguments: arguments
-                .iter()
-                .map(|argument| return argument.to_string())
-                .collect(),
-            directory: directory.to_path_buf(),
-        };
-        let remaining = TIME_LIMIT.saturating_sub(started.elapsed());
-        let what = arguments.join(" ");
-        return match runner(&invocation, remaining) {
-            Ok(done) if done.success => Ok(done),
-            Ok(done) => {
-                let failed = failure(&what, &done);
-                tracing::warn!(command = %what, status = %done.status, message = %failed.message, "mise could not serve the project");
-                Err(MiseState::Failed(failed))
-            }
-            Err(command::RunFailure::Refused(reason)) => {
-                tracing::warn!(%reason, "mise is not run: the sandbox is not available");
-                Err(MiseState::Unused(reason))
-            }
-            Err(command::RunFailure::Failed(reason)) => {
-                tracing::warn!(command = %what, %reason, "mise could not serve the project");
-                Err(MiseState::Failed(Failed {
-                    message: format!("`mise {what}` {reason}"),
-                    untrusted: None,
-                }))
-            }
-        };
-    };
     let listing = ["config", "ls", "--json"];
-    let from_project = match run(&listing, &request.project_root) {
+    let from_project = match run_listed(runner, started, &listing, &request.project_root) {
         Ok(done) => done,
         Err(state) => return state,
     };
-    let from_everywhere = match run(&listing, Path::new("/")) {
+    let from_everywhere = match run_listed(runner, started, &listing, Path::new("/")) {
         Ok(done) => done,
         Err(state) => return state,
     };
-    let listed = parse::config_paths(&from_project.stdout)
-        .and_then(|project| return Ok((project, parse::config_paths(&from_everywhere.stdout)?)));
+    let listed = match parse::config_paths(&from_project.stdout) {
+        Ok(project) => match parse::config_paths(&from_everywhere.stdout) {
+            Ok(everywhere) => Ok((project, everywhere)),
+            Err(reason) => Err(reason),
+        },
+        Err(reason) => Err(reason),
+    };
     let (project, everywhere) = match listed {
         Ok(both) => both,
         Err(reason) => {
@@ -250,7 +312,7 @@ pub fn resolve_with(request: &MiseRequest, runner: &Runner) -> MiseState {
         tracing::debug!(root = %request.project_root.display(), "no mise configuration at or above the project; servers are looked up on PATH");
         return MiseState::Unused("the project has no mise configuration".to_string());
     }
-    let paths = match run(&["bin-paths"], &request.project_root) {
+    let paths = match run_listed(runner, started, &["bin-paths"], &request.project_root) {
         Ok(done) => done,
         Err(state) => return state,
     };

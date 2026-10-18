@@ -265,17 +265,15 @@ fn diagnostics_are_grouped_by_source_and_ordered_by_position() {
         vec![item(1, "rustc", "pulled")],
     );
     let snapshot = store.snapshot(&text).expect("snapshot");
-    let sources: Vec<&str> = snapshot
-        .groups
-        .iter()
-        .map(|group| return group.source.as_str())
-        .collect();
+    let mut sources: Vec<&str> = Vec::new();
+    for group in snapshot.groups.iter() {
+        sources.push(group.source.as_str());
+    }
     assert_eq!(sources, vec!["rust-analyzer", "rustc"]);
-    let rustc: Vec<&str> = snapshot.groups[1]
-        .items
-        .iter()
-        .map(|found| return found.message.as_str())
-        .collect();
+    let mut rustc: Vec<&str> = Vec::new();
+    for found in snapshot.groups[1].items.iter() {
+        rustc.push(found.message.as_str());
+    }
     assert_eq!(rustc, vec!["early", "pulled", "late"]);
     assert_eq!(snapshot.groups[1].items[1].freshness, Freshness::Pulled);
     assert_eq!(snapshot.groups[1].items[1].server, server("b"));

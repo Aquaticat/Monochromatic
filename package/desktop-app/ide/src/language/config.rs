@@ -215,21 +215,24 @@ fn build(
         let command = definition.command.clone();
         let located = locate(name, &command, root, document, mise);
         let resolved = located.as_ref().ok().cloned();
-        let outcome = located.and_then(|executable| {
-            let request = LaunchRequest {
-                server: name.clone(),
-                executable,
-                args: definition.args.clone(),
-                environment: toolchain::server_environment(&definition.environment, mise),
-                settings: definition.config.clone(),
-                project_root: root.to_path_buf(),
-                project_spellings: spellings.clone(),
-                read_only_binds: toolchain::read_only_binds(mise),
-                state_root: setup.state_root.clone(),
-            };
-            // Calling the function pointer held in `setup.launch`; a refusal becomes `Refused`.
-            return (setup.launch)(&request).map_err(Unavailable::Refused);
-        });
+        let outcome = match located {
+            Ok(executable) => {
+                let request = LaunchRequest {
+                    server: name.clone(),
+                    executable,
+                    args: definition.args.clone(),
+                    environment: toolchain::server_environment(&definition.environment, mise),
+                    settings: definition.config.clone(),
+                    project_root: root.to_path_buf(),
+                    project_spellings: spellings.clone(),
+                    read_only_binds: toolchain::read_only_binds(mise),
+                    state_root: setup.state_root.clone(),
+                };
+                // Calling the function pointer held in `setup.launch`; a refusal becomes `Refused`.
+                (setup.launch)(&request).map_err(Unavailable::Refused)
+            }
+            Err(reason) => Err(reason),
+        };
         let launch = match outcome {
             Ok(launch) => {
                 definition.command = launch.command.clone();
@@ -271,16 +274,19 @@ fn build(
             names.push(features.name.clone());
         }
         configured.insert(language.language_id.clone(), names);
-        // What: `retain` keeps only the entries for which the closure returns true.
+        // What: only the entries of servers that are available are kept, in their order.
         // Why: `Registry::get` starts every server a language lists; an unavailable one must not be listed.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // language.languageServers = language.languageServers.filter(server => !unavailable.has(server.name));
         // ```
-        language
-            .language_servers
-            .retain(|features| return !unavailable.contains_key(&features.name));
+        let listed = std::mem::take(&mut language.language_servers);
+        for features in listed {
+            if !unavailable.contains_key(&features.name) {
+                language.language_servers.push(features);
+            }
+        }
     }
     let loader = Loader::new(configuration).context("Cannot build the language registry")?;
     // What: `as_millis` gives whole milliseconds; `saturating_sub` cannot go below zero.
@@ -339,11 +345,11 @@ impl Languages {
     /// configured(language: string): readonly string[]
     /// ```
     pub(super) fn configured(&self, language: &str) -> &[String] {
-        // `map_or` yields an empty list for an unknown language.
-        return self
-            .configured
-            .get(language)
-            .map_or(&[], |names| return names.as_slice());
+        // An unknown language has an empty list.
+        return match self.configured.get(language) {
+            Some(names) => names.as_slice(),
+            None => &[],
+        };
     }
 
     /// Why a server cannot be started,
@@ -355,10 +361,10 @@ impl Languages {
     /// Seconds a request to the server may take;
     ///  Helix's default when the server is unknown.
     pub(super) fn timeout(&self, server: &str) -> u64 {
-        return self
-            .definitions
-            .get(server)
-            .map_or(20, |definition| return definition.timeout);
+        return match self.definitions.get(server) {
+            Some(definition) => definition.timeout,
+            None => 20,
+        };
     }
 
     /// Seconds a server may take to answer `initialize`:
@@ -371,10 +377,8 @@ impl Languages {
     ///  when it is available.
     pub(super) fn launch(&self, server: &str) -> Option<&ServerLaunch> {
         // `and_then` continues into the inner `Option`; `as_ref` borrows instead of moving.
-        return self
-            .definitions
-            .get(server)
-            .and_then(|definition| return definition.launch.as_ref());
+        let definition = self.definitions.get(server)?;
+        return definition.launch.as_ref();
     }
 
     /// The application's private state directory,
@@ -401,9 +405,13 @@ impl Languages {
     /// askMiseAgain(language: string): boolean
     /// ```
     fn ask_mise_again(&mut self, language: &str) -> bool {
-        let missing = self.configured(language).iter().any(|name| {
-            return matches!(self.unavailable.get(name), Some(Unavailable::Missing(_)));
-        });
+        let mut missing = false;
+        for name in self.configured(language).iter() {
+            if matches!(self.unavailable.get(name), Some(Unavailable::Missing(_))) {
+                missing = true;
+                break;
+            }
+        }
         if !mise::due(&self.mise.0, self.mise.1.elapsed(), missing) {
             return false;
         }

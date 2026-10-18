@@ -217,15 +217,21 @@ fn on_progress(worker: &mut Worker, server: LanguageServerId, progress: lsp::Pro
     let lsp::ProgressParamsValue::WorkDone(work) = progress.value;
     match work {
         lsp::WorkDoneProgress::Begin(begin) => {
-            record
-                .progress
-                .retain(|(token, _)| return token != &progress.token);
+            let running = std::mem::take(&mut record.progress);
+            for entry in running {
+                if entry.0 != progress.token {
+                    record.progress.push(entry);
+                }
+            }
             record.progress.push((progress.token, begin.title));
         }
         lsp::WorkDoneProgress::End(_) => {
-            record
-                .progress
-                .retain(|(token, _)| return token != &progress.token);
+            let running = std::mem::take(&mut record.progress);
+            for entry in running {
+                if entry.0 != progress.token {
+                    record.progress.push(entry);
+                }
+            }
         }
         lsp::WorkDoneProgress::Report(_) => {}
     }

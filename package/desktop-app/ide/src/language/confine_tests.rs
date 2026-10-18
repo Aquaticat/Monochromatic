@@ -28,7 +28,11 @@ fn request(server: &str, environment: &[(&str, &str)]) -> LaunchRequest {
 }
 
 fn strings(parts: &[&str]) -> Vec<String> {
-    return parts.iter().map(|part| return part.to_string()).collect();
+    let mut owned: Vec<String> = Vec::new();
+    for part in parts {
+        owned.push(part.to_string());
+    }
+    return owned;
 }
 
 #[test]
@@ -242,10 +246,8 @@ fn state_directory_is_per_project_and_per_server() {
         state_directory(root, Path::new("/a/project"), "rust-analyzer")
     );
     let parent = first.parent().expect("project component");
-    let name = parent
-        .file_name()
-        .and_then(|text| return text.to_str())
-        .expect("text");
+    let file_name = parent.file_name().expect("text");
+    let name = file_name.to_str().expect("text");
     assert!(
         name.starts_with("project-") && name.len() == "project-".len() + 16,
         "{name}"

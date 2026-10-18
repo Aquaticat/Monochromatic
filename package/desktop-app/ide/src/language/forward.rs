@@ -7,10 +7,17 @@
 use super::request;
 /// The spelling servers use for paths below the project root.
 use super::root::RootView;
+/// The records of the servers,
+///  and what asking them whether one still runs needs.
+use super::session::Session;
+/// What the registrations ask of the sender of a burst.
+use super::watched_files::WatchHost;
 /// The worker whose registrations and timers these steps use.
 use super::worker::{Internal, Worker};
 /// The changes the change watcher forwards.
 use crate::change_watch::ServerChange;
+/// The identifier helix-lsp gives each server.
+use helix_lsp::LanguageServerId;
 /// What:
 ///  `Path`/`PathBuf` are a borrowed and an owned path;
 ///  `Instant` is a monotonic time point.
@@ -78,6 +85,45 @@ pub(super) fn due(worker: &mut Worker) {
     send(worker);
 }
 
+/// What:
+///  The worker's answers for one send:
+///  how a path is spelled for the servers,
+///  and whether a server still has a running client.
+/// Why:
+///  The registrations ask these through the `WatchHost` trait,
+///  so the answers come from a named type instead of anonymous functions.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const host = { respell: (path) => view?.toHelix(path) ?? path, live: (server) => session.client(server) !== undefined };
+/// ```
+struct WorkerHost<'a> {
+    /// The spelling of the root,
+    ///  when one was found.
+    view: &'a Option<RootView>,
+    /// The servers' records.
+    session: &'a Session,
+}
+
+/// The worker's answers.
+impl WatchHost<LanguageServerId> for WorkerHost<'_> {
+    /// Respell with the view when there is one.
+    fn respell(&self, path: &Path) -> PathBuf {
+        return match self.view {
+            Some(spelling) => spelling.to_helix(path),
+            None => path.to_path_buf(),
+        };
+    }
+
+    /// A server is live while its record holds a client.
+    fn live(&self, server: LanguageServerId) -> bool {
+        if let Some(index) = self.session.index_of(server) {
+            return self.session.servers[index].client.is_some();
+        }
+        return false;
+    }
+}
+
 /// Send every server its share of the burst,
 ///  then pull the displayed file's diagnostics from each one
 /// that holds it open.
@@ -96,30 +142,15 @@ fn send(worker: &mut Worker) {
             None
         }
     };
-    // What: a closure that respells one path with the view when there is one.
-    // Why: `take` needs a function from resolved to spelled paths.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const respell = (path: string) => view?.toHelix(path) ?? path;
-    // ```
-    let respell = |path: &Path| -> PathBuf {
-        return match &view {
-            Some(spelling) => spelling.to_helix(path),
-            None => path.to_path_buf(),
-        };
+    let root = match view.as_ref() {
+        Some(spelling) => spelling.helix().to_path_buf(),
+        None => worker.root.clone(),
     };
-    let root = view.as_ref().map_or_else(
-        || return worker.root.clone(),
-        |spelling| return spelling.helix().to_path_buf(),
-    );
-    let session = &worker.session;
-    let live = |server| {
-        return session
-            .index_of(server)
-            .is_some_and(|index| return session.servers[index].client.is_some());
+    let host = WorkerHost {
+        view: &view,
+        session: &worker.session,
     };
-    let batches = worker.watched.take(&respell, &root, &live);
+    let batches = worker.watched.take(&host, &root);
     for (server, events) in batches {
         let Some(index) = worker.session.index_of(server) else {
             continue;

@@ -95,9 +95,12 @@ pub fn run_bounded(mut command: Command, limit: Duration) -> Result<Completed, S
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
-    let mut child = command
-        .spawn()
-        .map_err(|error| return format!("cannot start {:?}: {error}", command.get_program()))?;
+    let mut child = match command.spawn() {
+        Ok(started) => started,
+        Err(error) => {
+            return Err(format!("cannot start {:?}: {error}", command.get_program()));
+        }
+    };
     let (sender, receiver) = mpsc::channel::<(bool, Vec<u8>)>();
     if let Some(stream) = child.stdout.take() {
         collect(stream, false, sender.clone());

@@ -5,7 +5,7 @@
 //!  because the kept lines are shared by
 //! the whole test process.
 
-use super::{SETTLE, ended_unexpectedly, ended_unexpectedly_then, stopped_during_start};
+use super::{AfterEnd, SETTLE, ended_unexpectedly, ended_unexpectedly_then, stopped_during_start};
 use crate::logging::stderr_tail;
 use std::{
     io::{self, Write},
@@ -13,6 +13,15 @@ use std::{
     time::Duration,
 };
 use tracing_subscriber::fmt::MakeWriter;
+
+/// Stores the lines it is handed where the test can read them.
+struct Handover(Arc<Mutex<Option<Vec<String>>>>);
+
+impl AfterEnd for Handover {
+    fn after_end(self, lines: Vec<String>) {
+        *self.0.lock().expect("sink") = Some(lines);
+    }
+}
 
 #[derive(Clone, Default)]
 struct Capture(Arc<Mutex<Vec<u8>>>);
@@ -50,23 +59,27 @@ where
         .with_ansi(false)
         .with_writer(capture.clone())
         .finish();
-    tracing::subscriber::with_default(subscriber, || {
-        let runtime = tokio::runtime::Builder::new_current_thread()
-            .enable_time()
-            .build()
-            .expect("runtime");
-        runtime.block_on(body);
-        drop(runtime);
-    });
+    // The guard keeps the subscriber as this thread's default until it is dropped.
+    let default_guard = tracing::subscriber::set_default(subscriber);
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_time()
+        .build()
+        .expect("runtime");
+    runtime.block_on(body);
+    drop(runtime);
+    drop(default_guard);
     return String::from_utf8(capture.0.lock().expect("capture").clone()).expect("text");
 }
 
 /// The lines of `text` that hold `message`.
 fn records_with<'text>(text: &'text str, message: &str) -> Vec<&'text str> {
-    return text
-        .lines()
-        .filter(|line| return line.contains(message))
-        .collect();
+    let mut found: Vec<&'text str> = Vec::new();
+    for line in text.lines() {
+        if line.contains(message) {
+            found.push(line);
+        }
+    }
+    return found;
 }
 
 #[test]
@@ -100,9 +113,7 @@ fn the_lines_are_handed_over_complete_and_the_record_still_reports_them() {
     let handed: Arc<Mutex<Option<Vec<String>>>> = Arc::new(Mutex::new(None));
     let sink = handed.clone();
     let text = logged(async {
-        ended_unexpectedly_then(server.to_string(), false, move |lines| {
-            *sink.lock().expect("sink") = Some(lines);
-        });
+        ended_unexpectedly_then(server.to_string(), false, Handover(sink));
         tokio::time::sleep(Duration::from_millis(50)).await;
         stderr_tail::remember(server, "cannot read the configuration\n");
         stderr_tail::ended(server);

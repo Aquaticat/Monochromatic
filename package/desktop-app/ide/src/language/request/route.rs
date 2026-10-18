@@ -43,11 +43,10 @@ pub(in crate::language) async fn position(
     if attach::revive(worker).await {
         tracing::info!("started exited language servers again for an explicit request");
     }
-    let in_bounds = worker
-        .session
-        .document
-        .as_ref()
-        .is_some_and(|document| return request.position <= document.text.len_chars());
+    let in_bounds = match worker.session.document.as_ref() {
+        Some(document) => request.position <= document.text.len_chars(),
+        None => false,
+    };
     // `Vec::new()` creates an empty growable list for the replies that need no wire traffic.
     let mut immediate: Vec<(Option<ServerIdentity>, RequestOutcome)> = Vec::new();
     let mut spawned = 0;

@@ -104,14 +104,15 @@ impl ServerRecord {
     /// ```
     pub(super) fn id(&self) -> Option<LanguageServerId> {
         // `as_ref()` borrows the client inside the `Option`; `map` reads its key when present.
-        return self.client.as_ref().map(|client| return client.id());
+        let client = self.client.as_ref()?;
+        return Some(client.id());
     }
 
     /// The client,
     ///  only when it has finished `initialize`;
     ///  every helix-lsp call needs this gate.
     pub(super) fn ready(&self) -> Option<&Arc<Client>> {
-        // What: `filter` keeps the value only when the closure accepts it.
+        // What: `match` keeps the client only when it has initialized.
         // Why: helix-lsp's request and notification methods panic on a client whose capabilities
         //      are not yet known; this is the one gate every call path goes through.
         //
@@ -119,10 +120,10 @@ impl ServerRecord {
         // ```ts
         // return this.client?.isInitialized ? this.client : undefined;
         // ```
-        return self
-            .client
-            .as_ref()
-            .filter(|client| return client.is_initialized());
+        return match self.client.as_ref() {
+            Some(client) if client.is_initialized() => Some(client),
+            _ => None,
+        };
     }
 }
 
@@ -189,6 +190,25 @@ pub(super) struct Session {
     pub(super) pending: Vec<(u64, usize)>,
 }
 
+/// What:
+///  True when the server offers the feature and the language's configuration
+///  does not exclude it for this server.
+/// Why:
+///  A feature counts only when both agree.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const offers = (feature: Feature) => client.supportsFeature(feature) && allowed(config, name, feature);
+/// ```
+fn offers(
+    client: &Client,
+    config: Option<&Arc<LanguageConfiguration>>,
+    name: &str,
+    feature: LanguageServerFeature,
+) -> bool {
+    return client.supports_feature(feature) && allowed(config, name, feature);
+}
+
 /// True when the language's configuration lets this server be asked for the feature.
 pub(super) fn allowed(
     config: Option<&Arc<LanguageConfiguration>>,
@@ -236,24 +256,29 @@ impl Session {
     /// ```
     pub(super) fn index_of(&self, id: LanguageServerId) -> Option<usize> {
         // `position` is `Array.prototype.findIndex`, returning `None` instead of -1.
-        return self
-            .servers
-            .iter()
-            .position(|record| return record.id() == Some(id));
+        for (index, record) in self.servers.iter().enumerate() {
+            if record.id() == Some(id) {
+                return Some(index);
+            }
+        }
+        return None;
     }
 
     /// Index of the record with this identity.
     pub(super) fn index_of_identity(&self, identity: &ServerIdentity) -> Option<usize> {
-        return self
-            .servers
-            .iter()
-            .position(|record| return &record.identity == identity);
+        for (index, record) in self.servers.iter().enumerate() {
+            if &record.identity == identity {
+                return Some(index);
+            }
+        }
+        return None;
     }
 
     /// The displayed document's stamp,
     ///  or nothing.
     pub(super) fn stamp(&self) -> Option<DocumentStamp> {
-        return self.document.as_ref().map(|document| return document.stamp);
+        let document = self.document.as_ref()?;
+        return Some(document.stamp);
     }
 
     /// What:
@@ -268,8 +293,13 @@ impl Session {
     /// detach() { this.servers = this.servers.filter(record => record.client); /* reset flags */ }
     /// ```
     pub(super) fn detach(&mut self) {
-        // `retain` keeps only the records for which the closure returns true.
-        self.servers.retain(|record| return record.client.is_some());
+        // Only the records that still hold a client are kept, in their order.
+        let records = std::mem::take(&mut self.servers);
+        for record in records {
+            if record.client.is_some() {
+                self.servers.push(record);
+            }
+        }
         for record in self.servers.iter_mut() {
             record.attached = false;
             record.opened = false;
@@ -306,29 +336,18 @@ impl Session {
     fn features(&self, record: &ServerRecord) -> Option<Features> {
         // The trailing `?` returns `None` unless the client has initialized.
         let client = record.ready()?;
-        let config = self
-            .document
-            .as_ref()
-            .and_then(|document| return document.config.as_ref());
-        let name = record.identity.name.as_str();
-        // What: A closure capturing `client`, `config`, and `name`; `|feature|` is its parameter.
-        // Why: A feature counts only when the server offers it and the language's configuration
-        //      does not exclude it for this server.
-        //
-        // In TS you'd write (pseudocode):
-        // ```ts
-        // const offers = (feature: Feature) => client.supportsFeature(feature) && allowed(config, name, feature);
-        // ```
-        let offers = |feature: LanguageServerFeature| {
-            return client.supports_feature(feature) && allowed(config, name, feature);
+        let config = match self.document.as_ref() {
+            Some(document) => document.config.as_ref(),
+            None => None,
         };
+        let name = record.identity.name.as_str();
         // `Some(...)` is the "value present" variant of `Option`.
         return Some(Features {
-            definition: offers(LanguageServerFeature::GotoDefinition),
-            references: offers(LanguageServerFeature::GotoReference),
-            hover: offers(LanguageServerFeature::Hover),
-            inlay_hints: offers(LanguageServerFeature::InlayHints),
-            pull_diagnostics: offers(LanguageServerFeature::PullDiagnostics),
+            definition: offers(client, config, name, LanguageServerFeature::GotoDefinition),
+            references: offers(client, config, name, LanguageServerFeature::GotoReference),
+            hover: offers(client, config, name, LanguageServerFeature::Hover),
+            inlay_hints: offers(client, config, name, LanguageServerFeature::InlayHints),
+            pull_diagnostics: offers(client, config, name, LanguageServerFeature::PullDiagnostics),
         });
     }
 
@@ -342,24 +361,26 @@ impl Session {
             if !record.attached {
                 continue;
             }
+            let mut progress = None;
+            if let Some((_, title)) = record.progress.last() {
+                progress = Some(title.clone());
+            }
             servers.push(ServerStatus {
                 // `clone` copies the identity and state so the status owns its own values.
                 server: record.identity.clone(),
                 state: record.state.clone(),
                 features: self.features(record),
                 // `last()` borrows the most recently begun work; `map` copies its title.
-                progress: record
-                    .progress
-                    .last()
-                    .map(|(_, title)| return title.clone()),
+                progress,
             });
+        }
+        let mut language = None;
+        if let Some(config) = document.config.as_ref() {
+            language = Some(config.language_id.clone());
         }
         return LanguageStatus {
             file: Some(document.stamp.file),
-            language: document
-                .config
-                .as_ref()
-                .map(|config| return config.language_id.clone()),
+            language,
             document: document.state,
             servers,
         };
@@ -375,10 +396,13 @@ impl Session {
     /// answered(request: number): number
     /// ```
     pub(super) fn answered(&mut self, request: u64) -> usize {
-        let found = self
-            .pending
-            .iter()
-            .position(|(known, _)| return *known == request);
+        let mut found = None;
+        for (position, (known, _)) in self.pending.iter().enumerate() {
+            if *known == request {
+                found = Some(position);
+                break;
+            }
+        }
         let Some(index) = found else {
             return 0;
         };

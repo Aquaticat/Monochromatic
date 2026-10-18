@@ -580,6 +580,11 @@ pub(super) fn window(worker: &mut Worker, stamp: DocumentStamp, window: HintWind
     }
 }
 
+/// Orders inlay hints by the character offset they are drawn before.
+fn by_position(left: &InlayHint, right: &InlayHint) -> std::cmp::Ordering {
+    return left.position.cmp(&right.position);
+}
+
 /// What:
 ///  Merge the stored hints of every server into the latest-value snapshot,
 ///  or nothing when
@@ -602,8 +607,8 @@ pub(super) fn hints_snapshot(session: &Session) -> Option<HintsSnapshot> {
         // `extend` appends copies of one server's hints.
         merged.extend(hints.iter().cloned());
     }
-    // `sort_by_key` orders by the value the closure extracts; equal positions keep server order.
-    merged.sort_by_key(|hint| return hint.position);
+    // `sort_by` is stable: equal positions keep server order.
+    merged.sort_by(by_position);
     return Some(HintsSnapshot {
         stamp: document.stamp,
         first_line: session.hint_lines.0,

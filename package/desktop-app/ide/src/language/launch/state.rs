@@ -162,23 +162,23 @@ pub fn prepare(
         // ```ts
         // mkdirSync(directory, { recursive: true });
         // ```
-        std::fs::create_dir_all(directory).map_err(|error| {
-            return format!(
+        if let Err(error) = std::fs::create_dir_all(directory) {
+            return Err(format!(
                 "cannot create {}: {error}. The server is not started without its private state directory. Make that path creatable as a directory (free space, write permission, no file in its place), then restart the application",
                 directory.display()
-            );
-        })?;
+            ));
+        }
     }
     for directory in &launch.scratch {
         check_below_state(directory, state)?;
-        if directory.exists() {
-            std::fs::remove_dir_all(directory).map_err(|error| {
-                return format!("cannot empty {}: {error}", directory.display());
-            })?;
+        if directory.exists()
+            && let Err(error) = std::fs::remove_dir_all(directory)
+        {
+            return Err(format!("cannot empty {}: {error}", directory.display()));
         }
-        std::fs::create_dir_all(directory).map_err(|error| {
-            return format!("cannot create {}: {error}", directory.display());
-        })?;
+        if let Err(error) = std::fs::create_dir_all(directory) {
+            return Err(format!("cannot create {}: {error}", directory.display()));
+        }
     }
     return Ok(());
 }

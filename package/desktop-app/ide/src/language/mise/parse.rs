@@ -38,9 +38,14 @@ pub const MESSAGE_LIMIT: usize = 1000;
 /// function configPaths(json: string): string[] // throws when json is not a listing
 /// ```
 pub fn config_paths(json: &str) -> Result<Vec<PathBuf>, String> {
-    let parsed: Value = serde_json::from_str(json).map_err(|error| {
-        return format!("the listing of mise configuration files is not JSON: {error}");
-    })?;
+    let parsed: Value = match serde_json::from_str(json) {
+        Ok(value) => value,
+        Err(error) => {
+            return Err(format!(
+                "the listing of mise configuration files is not JSON: {error}"
+            ));
+        }
+    };
     let Some(entries) = parsed.as_array() else {
         return Err("the listing of mise configuration files is not a JSON array".to_string());
     };
@@ -69,11 +74,13 @@ pub fn config_paths(json: &str) -> Result<Vec<PathBuf>, String> {
 /// const projectConfigs = (project: string[], global: string[]) => project.filter(path => !global.includes(path));
 /// ```
 pub fn project_configs(project: &[PathBuf], global: &[PathBuf]) -> Vec<PathBuf> {
-    return project
-        .iter()
-        .filter(|path| return !global.contains(path))
-        .cloned()
-        .collect();
+    let mut own: Vec<PathBuf> = Vec::new();
+    for path in project.iter() {
+        if !global.contains(path) {
+            own.push(path.clone());
+        }
+    }
+    return own;
 }
 
 /// What:
@@ -185,11 +192,13 @@ pub fn message(stderr: &str) -> String {
             plain.push(character);
         }
     }
-    let kept: Vec<&str> = plain
-        .lines()
-        .map(str::trim_end)
-        .filter(|line| return !line.is_empty() && !is_noise(line))
-        .collect();
+    let mut kept: Vec<&str> = Vec::new();
+    for raw in plain.lines() {
+        let line = raw.trim_end();
+        if !line.is_empty() && !is_noise(line) {
+            kept.push(line);
+        }
+    }
     let joined = kept.join("\n");
     if joined.chars().count() <= MESSAGE_LIMIT {
         return joined;
@@ -212,7 +221,14 @@ pub fn merge(texts: &[&str]) -> String {
     let mut lines: Vec<String> = Vec::new();
     for text in texts {
         for line in message(text).lines() {
-            if !lines.iter().any(|known| return known == line) {
+            let mut known = false;
+            for held in lines.iter() {
+                if held == line {
+                    known = true;
+                    break;
+                }
+            }
+            if !known {
                 lines.push(line.to_string());
             }
         }

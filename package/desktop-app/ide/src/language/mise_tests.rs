@@ -3,7 +3,7 @@
 //!  and the retry rule.
 
 use super::{
-    Failed, MiseRequest, MiseState, RETRY_AFTER, TIME_LIMIT,
+    Failed, MiseRequest, MiseState, RETRY_AFTER, Runner, TIME_LIMIT,
     command::{Completed, Invocation, RunFailure},
     due, resolve_disabled, resolve_with,
 };
@@ -45,30 +45,46 @@ struct Answers {
     bin_paths: Result<Completed, RunFailure>,
 }
 
-/// Run resolution and return the state with every invocation and limit the double saw.
-fn resolve(root: &str, answers: Answers) -> (MiseState, Vec<(Invocation, Duration)>) {
-    let seen: RefCell<Vec<(Invocation, Duration)>> = RefCell::new(Vec::new());
-    let runner = |invocation: &Invocation, limit: Duration| {
-        seen.borrow_mut().push((invocation.clone(), limit));
+/// The double that answers like mise and records every run it was asked for.
+struct Double {
+    /// Every invocation with the limit it was given.
+    seen: RefCell<Vec<(Invocation, Duration)>>,
+    /// What it answers for each of the three commands.
+    answers: Answers,
+}
+
+impl Runner for Double {
+    fn run(&self, invocation: &Invocation, limit: Duration) -> Result<Completed, RunFailure> {
+        self.seen.borrow_mut().push((invocation.clone(), limit));
         let answer = match (
             invocation.arguments[0].as_str(),
             invocation.directory.as_path(),
         ) {
-            ("config", directory) if directory == std::path::Path::new("/") => &answers.from_root,
-            ("config", _) => &answers.from_project,
-            _ => &answers.bin_paths,
+            ("config", directory) if directory == std::path::Path::new("/") => {
+                &self.answers.from_root
+            }
+            ("config", _) => &self.answers.from_project,
+            _ => &self.answers.bin_paths,
         };
         return answer.clone();
+    }
+}
+
+/// Run resolution and return the state with every invocation and limit the double saw.
+fn resolve(root: &str, answers: Answers) -> (MiseState, Vec<(Invocation, Duration)>) {
+    let runner = Double {
+        seen: RefCell::new(Vec::new()),
+        answers,
     };
     let state = resolve_with(&request(root), &runner);
-    return (state, seen.into_inner());
+    return (state, runner.seen.into_inner());
 }
 
 fn listing(paths: &[&str]) -> String {
-    let entries: Vec<String> = paths
-        .iter()
-        .map(|path| return format!(r#"{{"path": "{path}", "tools": []}}"#))
-        .collect();
+    let mut entries: Vec<String> = Vec::new();
+    for path in paths {
+        entries.push(format!(r#"{{"path": "{path}", "tools": []}}"#));
+    }
     return format!("[{}]", entries.join(","));
 }
 
@@ -102,10 +118,10 @@ fn a_project_with_its_own_configuration_gets_the_directories_mise_prints() {
         provided.warnings,
         "mise WARN  unknown field: lockfile\nmise WARN  missing: taplo@0.9.0"
     );
-    let asked: Vec<(Vec<String>, PathBuf)> = seen
-        .iter()
-        .map(|(invocation, _)| return (invocation.arguments.clone(), invocation.directory.clone()))
-        .collect();
+    let mut asked: Vec<(Vec<String>, PathBuf)> = Vec::new();
+    for (invocation, _) in seen.iter() {
+        asked.push((invocation.arguments.clone(), invocation.directory.clone()));
+    }
     let listing_arguments = ["config", "ls", "--json"].map(str::to_string).to_vec();
     assert_eq!(
         asked,
@@ -284,7 +300,10 @@ fn all_runs_share_one_time_limit() {
         },
     );
     assert_eq!(seen.len(), 3);
-    let limits: Vec<Duration> = seen.iter().map(|(_, limit)| return *limit).collect();
+    let mut limits: Vec<Duration> = Vec::new();
+    for (_, limit) in seen.iter() {
+        limits.push(*limit);
+    }
     assert!(
         limits[0] <= TIME_LIMIT && limits[0] > TIME_LIMIT - Duration::from_secs(2),
         "{limits:?}"

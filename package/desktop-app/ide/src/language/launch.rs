@@ -158,13 +158,13 @@ pub fn launch_directly(request: &LaunchRequest) -> Result<ServerLaunch, String> 
     // ```ts
     // const command: string = request.executable;
     // ```
-    let command = request.executable.to_str().ok_or_else(|| {
-        return format!(
+    let Some(command) = request.executable.to_str() else {
+        return Err(format!(
             "the path of {} is not valid Unicode: {}",
             request.server,
             request.executable.display()
-        );
-    })?;
+        ));
+    };
     // `Ok(...)` is the success variant of `Result`; `clone` copies each borrowed part.
     return Ok(ServerLaunch {
         command: command.to_string(),
@@ -186,8 +186,10 @@ pub(crate) fn is_executable(path: &Path) -> bool {
     // ```ts
     // try { accessSync(path, constants.X_OK); return statSync(path).isFile(); } catch { return false; }
     // ```
-    return std::fs::metadata(path)
-        .is_ok_and(|found| return found.is_file() && found.permissions().mode() & 0o111 != 0);
+    return match std::fs::metadata(path) {
+        Ok(found) => found.is_file() && found.permissions().mode() & 0o111 != 0,
+        Err(_) => false,
+    };
 }
 
 /// What:

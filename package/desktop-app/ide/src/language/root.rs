@@ -151,8 +151,10 @@ impl RootView {
     /// True when the resolved location of `path` is the project root or below it.
     pub(super) fn contains(&self, path: &Path) -> bool {
         // `is_ok_and` is true only when resolution succeeded and the closure accepts the result.
-        return std::fs::canonicalize(path)
-            .is_ok_and(|resolved| return resolved.starts_with(&self.canonical));
+        return match std::fs::canonicalize(path) {
+            Ok(resolved) => resolved.starts_with(&self.canonical),
+            Err(_) => false,
+        };
     }
 
     /// What:
@@ -200,10 +202,12 @@ impl RootView {
         // ```ts
         // const directory = dirname(document) ?? '.';
         // ```
-        let directory = document
-            .parent()
-            .and_then(|parent| return parent.to_str())
-            .unwrap_or(".");
+        let mut directory = ".";
+        if let Some(parent) = document.parent()
+            && let Some(text) = parent.to_str()
+        {
+            directory = text;
+        }
         let own_roots = [self.helix.clone()];
         // `as_deref()` borrows the configured list; `unwrap_or` substitutes the project root.
         let root_directories = config.workspace_lsp_roots.as_deref().unwrap_or(&own_roots);

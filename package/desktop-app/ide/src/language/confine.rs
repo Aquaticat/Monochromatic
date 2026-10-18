@@ -77,7 +77,14 @@ fn component(text: &str) -> String {
             safe.push('_');
         }
     }
-    if safe.is_empty() || safe.chars().all(|character| return character == '.') {
+    let mut only_dots = true;
+    for character in safe.chars() {
+        if character != '.' {
+            only_dots = false;
+            break;
+        }
+    }
+    if safe.is_empty() || only_dots {
         return "_".to_string();
     }
     return safe;
@@ -96,11 +103,10 @@ fn component(text: &str) -> String {
 /// ```
 pub fn state_directory(state_root: &Path, project_root: &Path, server: &str) -> PathBuf {
     // `file_name` is the last path component; `to_string_lossy` renders it as text.
-    let name = project_root
-        .file_name()
-        .map_or("root".to_string(), |found| {
-            return found.to_string_lossy().into_owned();
-        });
+    let name = match project_root.file_name() {
+        Some(found) => found.to_string_lossy().into_owned(),
+        None => "root".to_string(),
+    };
     let shortened: String = component(&name).chars().take(40).collect();
     let hash = fnv1a(project_root.as_os_str().as_encoded_bytes());
     return state_root
@@ -123,9 +129,10 @@ pub fn state_directory(state_root: &Path, project_root: &Path, server: &str) -> 
 /// function defaultStateRoot(): string | undefined
 /// ```
 pub fn default_state_root() -> Option<PathBuf> {
-    // `application_cache()` is the shared `$XDG_CACHE_HOME/monochromatic-ide` rule; `map` joins
-    // `language` onto a present value and keeps `None` as it is.
-    return application_cache().map(|cache| return cache.join("language"));
+    // `application_cache()` is the shared `$XDG_CACHE_HOME/monochromatic-ide` rule; the trailing `?`
+    // keeps `None` as it is, and `language` is joined onto a present value.
+    let cache = application_cache()?;
+    return Some(cache.join("language"));
 }
 
 /// What:
@@ -178,8 +185,9 @@ pub fn private_state(request: &LaunchRequest) -> Result<PathBuf, String> {
         "{server} is not started. Point XDG_CACHE_HOME or HOME at a directory that does not contain the project and is outside /proc, then restart the application"
     );
     check_outside_proc(&resolved, "the private state directory", &remedy)?;
-    check_state_directory(&resolved, &request.project_root)
-        .map_err(|reason| return format!("{reason}, so {remedy}"))?;
+    if let Err(reason) = check_state_directory(&resolved, &request.project_root) {
+        return Err(format!("{reason}, so {remedy}"));
+    }
     return Ok(state_directory(&resolved, &request.project_root, server));
 }
 
@@ -199,11 +207,14 @@ fn probe(bubblewrap: &str, pid_namespace: bool) -> Result<(), String> {
     let mut arguments = recipe::isolation(pid_namespace);
     arguments.push("--".to_string());
     arguments.push(PROBE_PROGRAM.to_string());
-    let output = Command::new(bubblewrap)
+    let ran = Command::new(bubblewrap)
         .args(&arguments)
         .env_clear()
-        .output()
-        .map_err(|error| return format!("cannot run {bubblewrap}: {error}"))?;
+        .output();
+    let output = match ran {
+        Ok(finished) => finished,
+        Err(error) => return Err(format!("cannot run {bubblewrap}: {error}")),
+    };
     if output.status.success() {
         return Ok(());
     }
@@ -233,8 +244,10 @@ pub fn confine_with(request: &LaunchRequest, bubblewrap: &str) -> Result<ServerL
     for spelling in &request.project_spellings {
         check_outside_proc(spelling, "the project spelling", &reopen)?;
     }
-    let executable = std::fs::metadata(bubblewrap)
-        .is_ok_and(|found| return found.is_file() && found.permissions().mode() & 0o111 != 0);
+    let executable = match std::fs::metadata(bubblewrap) {
+        Ok(found) => found.is_file() && found.permissions().mode() & 0o111 != 0,
+        Err(_) => false,
+    };
     if !executable {
         return Err(format!(
             "{bubblewrap} is not installed, so {} cannot be confined and is not started. Install bubblewrap (the bubblewrap package) and restart the application",
@@ -248,9 +261,14 @@ pub fn confine_with(request: &LaunchRequest, bubblewrap: &str) -> Result<ServerL
     } else {
         &PROBE_WITHOUT_PID
     };
-    // `get_or_init` runs the probe on first use and returns the stored answer afterwards.
-    cell.get_or_init(|| return probe(bubblewrap, pid_namespace))
-        .clone()?;
+    // The probe runs on first use; the stored answer is read afterwards.
+    if cell.get().is_none() {
+        let _stored = cell.set(probe(bubblewrap, pid_namespace));
+    }
+    let Some(probed) = cell.get() else {
+        return Err("the sandbox probe did not store its answer".to_string());
+    };
+    probed.clone()?;
     let mut inherited: Vec<(String, String)> = Vec::new();
     for name in recipe::ALLOWED_ENVIRONMENT {
         // `var` fails for unset and non-Unicode values; both are left out.

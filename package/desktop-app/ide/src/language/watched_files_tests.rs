@@ -6,7 +6,7 @@
 //!  and servers that stopped.
 
 /// The registry and the merge rule under test.
-use super::{FORWARD_LIMIT, FORWARD_QUIET, WatchedFiles, merge};
+use super::{FORWARD_LIMIT, FORWARD_QUIET, WatchHost, WatchedFiles, merge};
 /// The changes the change watcher forwards.
 use crate::change_watch::{ServerChange, ServerChangeKind};
 /// Registrations are written as JSON;
@@ -43,33 +43,53 @@ fn change(path: &str, kind: ServerChangeKind) -> ServerChange {
     };
 }
 
-/// Paths are already in the servers' spelling in these tests.
-fn same(path: &Path) -> PathBuf {
-    return path.to_path_buf();
+/// What:
+///  The answers `take` asks for in these tests:
+///  paths are already in the servers' spelling,
+///  and either every server runs (`only` is `None`) or just the one named.
+struct Servers {
+    /// The one server that runs,
+    ///  or `None` when all of them do.
+    only: Option<u32>,
 }
 
-/// Every server is running.
-fn running(_server: u32) -> bool {
-    return true;
+impl WatchHost<u32> for Servers {
+    fn respell(&self, path: &Path) -> PathBuf {
+        return path.to_path_buf();
+    }
+
+    fn live(&self, server: u32) -> bool {
+        return match self.only {
+            Some(only) => server == only,
+            None => true,
+        };
+    }
+}
+
+/// Orders batches by the number of their server.
+fn by_server(
+    left: &(u32, Vec<lsp::FileEvent>),
+    right: &(u32, Vec<lsp::FileEvent>),
+) -> std::cmp::Ordering {
+    return left.0.cmp(&right.0);
 }
 
 /// The (address,
 ///  kind number) pairs of one batch,
 ///  for comparison.
 fn pairs(events: &[lsp::FileEvent]) -> Vec<(String, i32)> {
-    return events
-        .iter()
-        .map(|event| {
-            let number = if event.typ == lsp::FileChangeType::CREATED {
-                1
-            } else if event.typ == lsp::FileChangeType::CHANGED {
-                2
-            } else {
-                3
-            };
-            return (event.uri.as_str().to_string(), number);
-        })
-        .collect();
+    let mut found: Vec<(String, i32)> = Vec::new();
+    for event in events {
+        let number = if event.typ == lsp::FileChangeType::CREATED {
+            1
+        } else if event.typ == lsp::FileChangeType::CHANGED {
+            2
+        } else {
+            3
+        };
+        found.push((event.uri.as_str().to_string(), number));
+    }
+    return found;
 }
 
 /// The final state on disk decides:
@@ -121,8 +141,8 @@ fn glob_patterns_follow_the_protocol() {
     ] {
         watched.record(change(path, ServerChangeKind::Changed), now);
     }
-    let mut batches = watched.take(&same, Path::new("/p"), &running);
-    batches.sort_by_key(|(server, _)| return *server);
+    let mut batches = watched.take(&Servers { only: None }, Path::new("/p"));
+    batches.sort_by(by_server);
     assert_eq!(batches.len(), 2);
     assert_eq!(
         pairs(&batches[0].1),
@@ -156,7 +176,7 @@ fn kinds_limit_what_a_watcher_hears() {
     watched.record(change("/p/new.txt", ServerChangeKind::Created), now);
     watched.record(change("/p/old.txt", ServerChangeKind::Changed), now);
     watched.record(change("/p/gone.txt", ServerChangeKind::Deleted), now);
-    let batches = watched.take(&same, Path::new("/p"), &running);
+    let batches = watched.take(&Servers { only: None }, Path::new("/p"));
     assert_eq!(batches.len(), 1);
     assert_eq!(
         pairs(&batches[0].1),
@@ -193,7 +213,7 @@ fn a_burst_is_sent_once_with_each_path_once() {
         "a burst that never pauses was not due at the limit"
     );
     assert_eq!(watched.wait(now + FORWARD_QUIET), Some(Duration::ZERO));
-    let batches = watched.take(&same, Path::new("/p"), &running);
+    let batches = watched.take(&Servers { only: None }, Path::new("/p"));
     assert_eq!(
         pairs(&batches[0].1),
         vec![
@@ -231,8 +251,7 @@ fn only_running_servers_with_watchers_hear_anything() {
     );
     assert!(watched.wanted());
     watched.record(change("/p/a.rs", ServerChangeKind::Changed), now);
-    let stopped = |server: u32| return server == 1;
-    let batches = watched.take(&same, Path::new("/p"), &stopped);
+    let batches = watched.take(&Servers { only: Some(1) }, Path::new("/p"));
     assert_eq!(batches.len(), 1);
     assert_eq!(batches[0].0, 1);
     watched.unregister(1, "rust");

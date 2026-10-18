@@ -159,18 +159,18 @@ pub fn recipe(
     // ```ts
     // const executable: string = request.executable;
     // ```
-    let executable = request.executable.to_str().ok_or_else(|| {
-        return format!(
+    let Some(executable) = request.executable.to_str() else {
+        return Err(format!(
             "the path of {server} is not valid Unicode: {}",
             request.executable.display()
-        );
-    })?;
-    let state_text = state.to_str().ok_or_else(|| {
-        return format!(
+        ));
+    };
+    let Some(state_text) = state.to_str() else {
+        return Err(format!(
             "the private state directory {} is not valid Unicode",
             state.display()
-        );
-    })?;
+        ));
+    };
     let mut environment: BTreeMap<String, String> = BTreeMap::new();
     for (name, value) in inherited {
         environment.insert(name.clone(), value.clone());

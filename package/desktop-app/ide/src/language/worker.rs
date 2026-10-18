@@ -245,21 +245,18 @@ impl Worker {
     /// ```
     pub(super) fn publish(&self) {
         let status = self.session.status();
-        // What: `send_if_modified` runs the closure on the stored value; returning true marks it
-        //       changed. `**current` reads through the borrow and the shared pointer.
+        // What: `borrow` reads the stored value; `send_replace` stores a new one and wakes readers,
+        //       whether or not a reader exists. `**` reads through the borrow and the shared pointer.
         // Why: An equal status must not look like news to the interface thread.
         //
         // In TS you'd write (pseudocode):
         // ```ts
         // if (!deepEqual(slot.value, status)) slot.value = status;
         // ```
-        self.outputs.status.send_if_modified(|current| {
-            if **current == status {
-                return false;
-            }
-            *current = Arc::new(status.clone());
-            return true;
-        });
+        let status_unchanged = **self.outputs.status.borrow() == status;
+        if !status_unchanged {
+            self.outputs.status.send_replace(Arc::new(status.clone()));
+        }
         // `as_ref()` borrows the document inside the `Option`; `and_then` continues with it when present.
         // What: The servers' own diagnostics plus, when a feature is missing or failing, the one entry
         //       that says why (`notice`); `troubles` pairs each attached server with its kept failures.
@@ -269,42 +266,38 @@ impl Worker {
         // ```ts
         // const diagnostics = withNotice(store.snapshot(text), stamp, status, troubles);
         // ```
-        let troubles: Vec<_> = self
-            .session
-            .servers
-            .iter()
-            .filter(|record| return record.attached)
-            .map(|record| return (record.identity.clone(), record.trouble.clone()))
-            .collect();
+        let mut troubles = Vec::new();
+        for record in self.session.servers.iter() {
+            if record.attached {
+                troubles.push((record.identity.clone(), record.trouble.clone()));
+            }
+        }
         let advisory = self.languages.mise_advisory();
-        let diagnostics = self.session.document.as_ref().and_then(|document| {
-            let stored = self.session.diagnostics.snapshot(&document.text);
-            return notice::with_notice(stored, document.stamp, &status, &troubles, &advisory);
-        });
-        self.outputs.diagnostics.send_if_modified(|current| {
-            // `as_deref()` compares the stored snapshot by value instead of by pointer.
-            if current.as_deref() == diagnostics.as_ref() {
-                return false;
+        let diagnostics = match self.session.document.as_ref() {
+            Some(document) => {
+                let stored = self.session.diagnostics.snapshot(&document.text);
+                notice::with_notice(stored, document.stamp, &status, &troubles, &advisory)
             }
-            *current = diagnostics.map(Arc::new);
-            return true;
-        });
+            None => None,
+        };
+        // `as_deref()` compares the stored snapshot by value instead of by pointer.
+        let diagnostics_unchanged =
+            self.outputs.diagnostics.borrow().as_deref() == diagnostics.as_ref();
+        if !diagnostics_unchanged {
+            self.outputs
+                .diagnostics
+                .send_replace(diagnostics.map(Arc::new));
+        }
         let hints = request::hints_snapshot(&self.session);
-        self.outputs.hints.send_if_modified(|current| {
-            if current.as_deref() == hints.as_ref() {
-                return false;
-            }
-            *current = hints.map(Arc::new);
-            return true;
-        });
+        let hints_unchanged = self.outputs.hints.borrow().as_deref() == hints.as_ref();
+        if !hints_unchanged {
+            self.outputs.hints.send_replace(hints.map(Arc::new));
+        }
         let watching = self.watched.wanted();
-        self.outputs.watching.send_if_modified(|current| {
-            if *current == watching {
-                return false;
-            }
-            *current = watching;
-            return true;
-        });
+        let watching_unchanged = *self.outputs.watching.borrow() == watching;
+        if !watching_unchanged {
+            self.outputs.watching.send_replace(watching);
+        }
     }
 
     /// What:

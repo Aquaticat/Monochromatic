@@ -113,12 +113,21 @@ pub(in crate::language) fn locate(
         return typescript::locate(root, document).map_err(Unavailable::Missing);
     }
     if mise.serves_project() {
-        return find_program(command, root, mise.directories()).map_err(|missed| {
-            return Unavailable::Missing(missing_reason(server, command, mise, &missed));
-        });
+        return match find_program(command, root, mise.directories()) {
+            Ok(found) => Ok(found),
+            Err(missed) => Err(Unavailable::Missing(missing_reason(
+                server, command, mise, &missed,
+            ))),
+        };
     }
-    // `ok_or_else` turns "nothing" into the error built by the closure.
-    return resolve_executable(command, root).ok_or_else(|| {
-        return Unavailable::Missing(missing_reason(server, command, mise, &Missed::default()));
-    });
+    // Nothing found becomes a `Missing` reason built from an empty search record.
+    return match resolve_executable(command, root) {
+        Some(found) => Ok(found),
+        None => Err(Unavailable::Missing(missing_reason(
+            server,
+            command,
+            mise,
+            &Missed::default(),
+        ))),
+    };
 }

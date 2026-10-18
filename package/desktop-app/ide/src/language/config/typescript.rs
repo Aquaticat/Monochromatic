@@ -109,22 +109,21 @@ fn settings() -> Value {
 pub(super) fn apply(configuration: &mut Configuration, root: &Path, launcher: Option<&Path>) {
     // Variables an application-supplied definition of this server adds are kept, for example
     // probe markers in acceptance tests; command, arguments, and settings are always replaced.
-    let environment =
-        configuration
-            .language_server
-            .get(SERVER)
-            .map_or(HashMap::new(), |existing| {
-                return existing.environment.clone();
-            });
+    let environment = match configuration.language_server.get(SERVER) {
+        Some(existing) => existing.environment.clone(),
+        None => HashMap::new(),
+    };
     configuration.language_server.insert(
         // `to_string` copies the constant into an owned `String` the table keeps.
         SERVER.to_string(),
         LanguageServerConfiguration {
             // `to_string_lossy` renders the path as text; availability is checked on the real path.
-            command: launcher
-                .map_or_else(|| return root.join(LAUNCHER), Path::to_path_buf)
-                .to_string_lossy()
-                .into_owned(),
+            command: match launcher {
+                Some(found) => found.to_path_buf(),
+                None => root.join(LAUNCHER),
+            }
+            .to_string_lossy()
+            .into_owned(),
             args: vec!["--lsp".to_string(), "--stdio".to_string()],
             environment,
             // `Some(...)` is the "value present" variant of `Option`.
@@ -168,9 +167,12 @@ pub(super) fn apply(configuration: &mut Configuration, root: &Path, launcher: Op
 fn searched(root: &Path, document: Option<&Path>) -> Vec<PathBuf> {
     let mut folders = Vec::new();
     // `and_then` continues only when a document was given; `starts_with` keeps the walk inside the root.
-    let start = document
-        .and_then(Path::parent)
-        .filter(|folder| return folder.starts_with(root));
+    let mut start = None;
+    if let Some(folder) = document.and_then(Path::parent)
+        && folder.starts_with(root)
+    {
+        start = Some(folder);
+    }
     if let Some(first) = start {
         // `ancestors` yields the folder itself and then each parent in turn.
         for folder in first.ancestors() {
@@ -242,10 +244,10 @@ pub(super) fn locate(root: &Path, document: Option<&Path>) -> Result<PathBuf, St
         return check_version(folder, launcher);
     }
     // The nearest and the farthest searched folder name the whole range in the reason.
-    let nearest = folders
-        .first()
-        .cloned()
-        .unwrap_or_else(|| return root.to_path_buf());
+    let nearest = match folders.first() {
+        Some(folder) => folder.clone(),
+        None => root.to_path_buf(),
+    };
     let range = if nearest == root {
         format!(
             "{} does not exist in the project folder",
@@ -258,12 +260,13 @@ pub(super) fn locate(root: &Path, document: Option<&Path>) -> Result<PathBuf, St
             root.display()
         )
     };
-    let above = install_above(root).map_or(String::new(), |launcher| {
-        return format!(
+    let above = match install_above(root) {
+        Some(launcher) => format!(
             ". A TypeScript install exists outside the project folder, at {}; open the folder that holds it as the project to use it",
             launcher.display()
-        );
-    });
+        ),
+        None => String::new(),
+    };
     // `Err(...)` is the failure variant of `Result`.
     return Err(format!(
         "the project has no TypeScript language server: {range}{above}. Install the project's dependencies; TypeScript 7 or later is required"
@@ -290,18 +293,24 @@ fn check_version(folder: &Path, launcher: PathBuf) -> Result<PathBuf, String> {
     // ```ts
     // const encoded = readFileSync(manifest, 'utf8');
     // ```
-    let encoded = std::fs::read_to_string(&manifest).map_err(|error| {
-        return format!(
-            "cannot read the project's TypeScript version from {}: {error}",
-            manifest.display()
-        );
-    })?;
-    let decoded: Value = serde_json::from_str(&encoded).map_err(|error| {
-        return format!(
-            "cannot decode the project's TypeScript version from {}: {error}",
-            manifest.display()
-        );
-    })?;
+    let encoded = match std::fs::read_to_string(&manifest) {
+        Ok(text) => text,
+        Err(error) => {
+            return Err(format!(
+                "cannot read the project's TypeScript version from {}: {error}",
+                manifest.display()
+            ));
+        }
+    };
+    let decoded: Value = match serde_json::from_str(&encoded) {
+        Ok(value) => value,
+        Err(error) => {
+            return Err(format!(
+                "cannot decode the project's TypeScript version from {}: {error}",
+                manifest.display()
+            ));
+        }
+    };
     // `as_str` is `Some` for a JSON string; `unwrap_or("")` substitutes empty text otherwise.
     let version = decoded["version"].as_str().unwrap_or("");
     // What: `split('.').next()` takes the text before the first dot; `parse::<u64>()` converts it

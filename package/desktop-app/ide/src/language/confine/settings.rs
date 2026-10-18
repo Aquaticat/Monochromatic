@@ -52,14 +52,14 @@ pub fn confined_settings(server: &str, settings: Option<&Value>) -> Option<Value
     // `cloned()` copies the borrowed settings into an owned value, when there are any.
     let mut result = settings.cloned();
     if server == "typescript-native" {
-        // `get_or_insert_with` fills an absent value with an empty object first.
-        let table = result.get_or_insert_with(|| return json!({}));
+        // `get_or_insert` fills an absent value with an empty object first.
+        let table = result.get_or_insert(json!({}));
         let off = ["tsserver", "automaticTypeAcquisition", "enabled"];
         set_path(table, &["typescript", off[0], off[1], off[2]], json!(false));
         set_path(table, &["js/ts", off[0], off[1], off[2]], json!(false));
     }
     if server == "typescript-language-server" {
-        let table = result.get_or_insert_with(|| return json!({}));
+        let table = result.get_or_insert(json!({}));
         set_path(table, &["disableAutomaticTypingAcquisition"], json!(true));
     }
     return result;

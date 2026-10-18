@@ -44,11 +44,41 @@ fn arguments(root: &str, locations: &[(String, String)]) -> Vec<String> {
     .args;
 }
 
+/// The index of the first `--` argument,
+///  which ends the sandbox options.
+fn separator(args: &[String]) -> usize {
+    for (index, argument) in args.iter().enumerate() {
+        if argument == "--" {
+            return index;
+        }
+    }
+    panic!("separator");
+}
+
+/// The index where the arguments `wanted` first appear in a row.
+fn position(args: &[String], wanted: &[&str]) -> Option<usize> {
+    for (index, window) in args.windows(wanted.len()).enumerate() {
+        let mut same = true;
+        for (argument, expected) in window.iter().zip(wanted.iter()) {
+            if argument != expected {
+                same = false;
+                break;
+            }
+        }
+        if same {
+            return Some(index);
+        }
+    }
+    return None;
+}
+
 fn setenv(arguments: &[String], name: &str) -> Option<String> {
-    return arguments
-        .windows(3)
-        .find(|window| return window[0] == "--setenv" && window[1] == name)
-        .map(|window| return window[2].clone());
+    for window in arguments.windows(3) {
+        if window[0] == "--setenv" && window[1] == name {
+            return Some(window[2].clone());
+        }
+    }
+    return None;
 }
 
 #[test]
@@ -90,21 +120,21 @@ fn mise_runs_in_the_servers_sandbox_without_network_and_with_a_cleared_environme
             "{flag} is missing from {args:?}"
         );
     }
-    let position = |wanted: &[&str]| {
-        return args.windows(wanted.len()).position(|window| {
-            return window.iter().map(String::as_str).eq(wanted.iter().copied());
-        });
-    };
-    assert!(position(&["--ro-bind", "/", "/"]).is_some(), "{args:?}");
     assert!(
-        position(&["--ro-bind", "/work/project", "/work/project"]).is_some(),
+        position(&args, &["--ro-bind", "/", "/"]).is_some(),
+        "{args:?}"
+    );
+    assert!(
+        position(&args, &["--ro-bind", "/work/project", "/work/project"]).is_some(),
         "the project is not bound read-only in {args:?}"
     );
     // Nothing but the private state and the private /tmp is writable.
-    let writable: Vec<&[String]> = args
-        .windows(3)
-        .filter(|window| return window[0] == "--bind")
-        .collect();
+    let mut writable: Vec<&[String]> = Vec::new();
+    for window in args.windows(3) {
+        if window[0] == "--bind" {
+            writable.push(window);
+        }
+    }
     assert_eq!(writable.len(), 2, "{writable:?}");
     assert!(
         writable
@@ -112,10 +142,7 @@ fn mise_runs_in_the_servers_sandbox_without_network_and_with_a_cleared_environme
             .all(|window| return window[1].starts_with("/state/")),
         "{writable:?}"
     );
-    let after = args
-        .iter()
-        .position(|argument| return argument == "--")
-        .expect("separator");
+    let after = separator(&args);
     assert_eq!(
         args[after + 1..],
         ["/home/someone/.local/bin/mise", "config", "ls", "--json"].map(str::to_string)
@@ -131,10 +158,7 @@ fn the_project_is_never_an_argument_of_mise_so_a_dashed_name_cannot_become_an_op
         "/work/new\nline",
     ] {
         let args = arguments(root, &[]);
-        let after = args
-            .iter()
-            .position(|argument| return argument == "--")
-            .expect("separator");
+        let after = separator(&args);
         assert_eq!(
             args[after + 1..],
             ["/home/someone/.local/bin/mise", "config", "ls", "--json"].map(str::to_string),

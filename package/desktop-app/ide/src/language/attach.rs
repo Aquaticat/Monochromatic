@@ -75,11 +75,42 @@ fn retire(worker: &mut Worker, index: usize, state: ServerState, stop: bool) {
 /// Remove everything a server process contributed to the displayed document.
 fn forget_results(worker: &mut Worker, identity: &ServerIdentity) {
     worker.session.diagnostics.server_exited(identity);
-    // `retain` keeps only the entries for which the closure returns true.
-    worker
-        .session
-        .hints
-        .retain(|(server, _)| return server != identity);
+    // The entries of other servers are kept, in their order.
+    let held = std::mem::take(&mut worker.session.hints);
+    for entry in held {
+        if entry.0 != *identity {
+            worker.session.hints.push(entry);
+        }
+    }
+}
+
+/// What:
+///  The receiver that tells the worker why a server's start failed,
+///  with the server's last standard-error lines.
+///  It owns the channel to the worker and the identity of the server record.
+/// Why:
+///  The lines arrive after the record waited for the end of the server's standard error.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const afterEnd = (lines: string[]) => internal.send({ kind: 'endCause', identity, lines });
+/// ```
+struct SendEndCause {
+    /// The worker's own message channel.
+    internal: tokio::sync::mpsc::UnboundedSender<Internal>,
+    /// The record of the server whose start failed.
+    identity: ServerIdentity,
+}
+
+/// The lines go to the worker as an `EndCause` message.
+impl report::AfterEnd for SendEndCause {
+    /// Send the cause;
+    ///  a worker that stopped meanwhile needs none.
+    fn after_end(self, lines: Vec<String>) {
+        if let Err(error) = self.internal.send(Internal::EndCause(self.identity, lines)) {
+            tracing::debug!(%error, "language worker stopped before the cause of a failed start arrived");
+        }
+    }
 }
 
 /// What:
@@ -117,20 +148,18 @@ fn attach_running(worker: &mut Worker, names: &[String]) {
 /// async function attach(worker: Worker): Promise<void>
 /// ```
 pub(super) async fn attach(worker: &mut Worker) {
-    let Some(path) = worker
-        .session
-        .document
-        .as_ref()
-        .map(|document| return document.path.clone())
-    else {
+    let Some(shown) = worker.session.document.as_ref() else {
         return;
     };
+    let path = shown.path.clone();
     // The inner block ends the registry guard's borrow before the worker is changed again.
     let recognized = {
         let loader = worker.languages.loader.load();
-        loader
-            .language_for_filename(&path)
-            .map(|found| return loader.language(found).config().language_id.clone())
+        let mut language_id = None;
+        if let Some(found) = loader.language_for_filename(&path) {
+            language_id = Some(loader.language(found).config().language_id.clone());
+        }
+        language_id
     };
     let Some(language) = recognized else {
         return;
@@ -143,9 +172,11 @@ pub(super) async fn attach(worker: &mut Worker) {
     }
     let configured = {
         let loader = worker.languages.loader.load();
-        loader
-            .language_for_filename(&path)
-            .map(|found| return loader.language(found).config().clone())
+        let mut language_config = None;
+        if let Some(found) = loader.language_for_filename(&path) {
+            language_config = Some(loader.language(found).config().clone());
+        }
+        language_config
     };
     let Some(config) = configured else {
         return;
@@ -155,10 +186,10 @@ pub(super) async fn attach(worker: &mut Worker) {
     let outside = !path.starts_with(&worker.root);
     if let Some(document) = worker.session.document.as_mut() {
         // The server-facing identifier falls back to Helix's language name.
-        document.language_id = config
-            .language_server_language_id
-            .clone()
-            .unwrap_or_else(|| return config.language_id.clone());
+        document.language_id = match config.language_server_language_id.clone() {
+            Some(server_language) => server_language,
+            None => config.language_id.clone(),
+        };
         document.config = Some(config.clone());
         document.state = if names.is_empty() {
             DocumentState::NoServerConfigured
@@ -187,19 +218,23 @@ pub(super) async fn attach(worker: &mut Worker) {
 /// async function revive(worker: Worker): Promise<boolean>
 /// ```
 pub(super) async fn revive(worker: &mut Worker) -> bool {
-    let exited = worker
-        .session
-        .servers
-        .iter()
-        .any(|record| return record.attached && record.state == ServerState::Exited);
+    let mut exited = false;
+    for record in worker.session.servers.iter() {
+        if record.attached && record.state == ServerState::Exited {
+            exited = true;
+            break;
+        }
+    }
     if !exited {
         return false;
     }
     // Rows without a process are rebuilt by the attach step.
-    worker
-        .session
-        .servers
-        .retain(|record| return record.client.is_some());
+    let rows = std::mem::take(&mut worker.session.servers);
+    for record in rows {
+        if record.client.is_some() {
+            worker.session.servers.push(record);
+        }
+    }
     attach(worker).await;
     return true;
 }
@@ -267,11 +302,7 @@ pub(super) fn exited(worker: &mut Worker, server: LanguageServerId) {
     } else {
         let internal = worker.internal.clone();
         let name = identity.name.clone();
-        report::ended_unexpectedly_then(name, false, move |lines| {
-            if let Err(error) = internal.send(Internal::EndCause(identity, lines)) {
-                tracing::debug!(%error, "language worker stopped before the cause of a failed start arrived");
-            }
-        });
+        report::ended_unexpectedly_then(name, false, SendEndCause { internal, identity });
     }
     retire(worker, index, state, false);
     if !worker.session.servers[index].attached {

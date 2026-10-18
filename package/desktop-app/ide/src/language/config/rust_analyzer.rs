@@ -58,8 +58,8 @@ pub(super) fn watch_through_client(configuration: &mut Configuration) {
     let Some(definition) = configuration.language_server.get_mut(SERVER) else {
         return;
     };
-    // `get_or_insert_with` gives the existing settings, or an empty table first.
-    let settings = definition.config.get_or_insert_with(|| return json!({}));
+    // `get_or_insert` gives the existing settings, or stores an empty table first.
+    let settings = definition.config.get_or_insert(json!({}));
     // What: `is_object` checks the JSON shape; indexing a JSON object with `["files"]` inserts a missing key.
     // Why: Indexing a value of another shape would stop the program, so a malformed table is replaced.
     //

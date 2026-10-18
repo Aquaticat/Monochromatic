@@ -12,9 +12,10 @@ fn a_reason_without_lines_is_unchanged() {
 
 #[test]
 fn the_last_lines_follow_the_reason_oldest_first() {
-    let lines: Vec<String> = (1..=6)
-        .map(|number| return format!("line {number}"))
-        .collect();
+    let mut lines: Vec<String> = Vec::new();
+    for number in 1..=6 {
+        lines.push(format!("line {number}"));
+    }
     let reason = with_lines("it ended".to_string(), &lines);
     let kept: Vec<&str> = reason.lines().skip(1).collect();
     assert_eq!(kept.len(), CAUSE_LINES);

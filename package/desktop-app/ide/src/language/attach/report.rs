@@ -88,13 +88,37 @@ impl Drop for EndRecord {
 /// }
 /// ```
 pub(super) fn ended_unexpectedly(server: String, was_ready: bool) {
-    ended_unexpectedly_then(server, was_ready, |_| {});
+    ended_unexpectedly_then(server, was_ready, Nothing);
+}
+
+/// What:
+///  Whoever wants the server's last standard-error lines once they are complete.
+///  A type that implements this trait carries its own state into the waiting task,
+///  and the task consumes it by calling `after_end` once.
+/// Why:
+///  A named type carries what the receiver needs without an anonymous function.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// interface AfterEnd { afterEnd(lines: string[]): void }
+/// ```
+pub(super) trait AfterEnd: Send + 'static {
+    /// Take the complete lines.
+    fn after_end(self, lines: Vec<String>);
+}
+
+/// The receiver that does nothing with the lines.
+struct Nothing;
+
+/// Dropping the lines is the whole job of this receiver.
+impl AfterEnd for Nothing {
+    /// Ignore the lines.
+    fn after_end(self, _lines: Vec<String>) {}
 }
 
 /// What:
 ///  `ended_unexpectedly`,
 ///  and hand a copy of the lines to `then` before the record drains them.
-///  `FnOnce(Vec<String>)` is a function that is called at most once with the lines.
 /// Why:
 ///  The worker states why a start failed from the same lines the record reports,
 ///  once they are complete;
@@ -104,11 +128,7 @@ pub(super) fn ended_unexpectedly(server: String, was_ready: bool) {
 /// ```ts
 /// function endedUnexpectedlyThen(server: string, wasReady: boolean, then: (lines: string[]) => void): void
 /// ```
-pub(super) fn ended_unexpectedly_then(
-    server: String,
-    was_ready: bool,
-    then: impl FnOnce(Vec<String>) + Send + 'static,
-) {
+pub(super) fn ended_unexpectedly_then(server: String, was_ready: bool, then: impl AfterEnd) {
     let record = EndRecord { server, was_ready };
     tokio::spawn(async move {
         let started = Instant::now();
@@ -121,7 +141,7 @@ pub(super) fn ended_unexpectedly_then(
             let closed = stderr_tail::is_closed(&record.server);
             tracing::debug!(server = %record.server, waited_ms = started.elapsed().as_millis(), closed, "waited for the end of a server's standard error");
         }
-        then(stderr_tail::lines(&record.server));
+        then.after_end(stderr_tail::lines(&record.server));
         drop(record);
     });
 }

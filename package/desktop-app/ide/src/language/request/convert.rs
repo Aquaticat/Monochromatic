@@ -98,7 +98,10 @@ fn target(ticket: &Ticket, root: &Path, uri: &lsp::Url, range: lsp::Range) -> Ta
         read_target(&path)
     };
     // `and_then` continues into the conversion only when a text is available.
-    let converted = text.and_then(|found| return from_lsp_range(&found, range, ticket.encoding));
+    let converted = match text {
+        Some(found) => from_lsp_range(&found, range, ticket.encoding),
+        None => None,
+    };
     return Target::Open(OpenTarget {
         path,
         outside_project,
@@ -204,9 +207,10 @@ pub(super) fn hover_outcome(ticket: &Ticket, found: Option<lsp::Hover>) -> Reque
     if text.trim().is_empty() {
         return RequestOutcome::Empty;
     }
-    let range = hover
-        .range
-        .and_then(|found_range| return from_lsp_range(&ticket.text, found_range, ticket.encoding));
+    let range = match hover.range {
+        Some(found_range) => from_lsp_range(&ticket.text, found_range, ticket.encoding),
+        None => None,
+    };
     return RequestOutcome::Hover(HoverText {
         text,
         markdown,

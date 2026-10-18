@@ -28,6 +28,8 @@ use helix_lsp::lsp;
 /// const RETRY_DELAY_MS = 300;
 /// ```
 use std::time::Duration;
+/// Failures kept per request kind.
+use trouble::{Channel, keep_trouble};
 
 /// How often one request is sent again:
 ///  a superseded one before it is reported as superseded,
@@ -142,47 +144,6 @@ fn replied(
         remaining,
         outcome,
     });
-}
-
-/// Which of a server's request kinds a kept failure belongs to.
-#[derive(Clone, Copy)]
-enum Channel {
-    /// Inlay hint requests.
-    Hints,
-    /// Hover requests.
-    Hover,
-}
-
-/// What:
-///  Keep or clear the last failure of one request kind for the server that was asked.
-///  `Option<RequestFailure>` is the failure to keep,
-///  or nothing to clear it.
-/// Why:
-///  A server that is running but fails these requests looks like one without the feature;
-///  the entry the Language module publishes for the displayed file names the failure.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function keepTrouble(worker: Worker, ticket: Ticket, channel: Channel, failure?: RequestFailure): void
-/// ```
-fn keep_trouble(
-    worker: &mut Worker,
-    ticket: &Ticket,
-    channel: Channel,
-    failure: Option<RequestFailure>,
-) {
-    let Some(index) = worker.session.index_of_identity(&ticket.server) else {
-        return;
-    };
-    let trouble = &mut worker.session.servers[index].trouble;
-    let slot = match channel {
-        Channel::Hints => &mut trouble.hints,
-        Channel::Hover => &mut trouble.hover,
-    };
-    if *slot != failure {
-        tracing::debug!(server = %ticket.server.name, failure = ?failure, "the failure kept for a request kind changed");
-        *slot = failure;
-    }
 }
 
 /// What:
@@ -324,10 +285,16 @@ fn pulled(
         Err(error) => {
             let wants_retry = match &error {
                 // `clone` copies the error data so it can be decoded by value.
-                helix_lsp::Error::Rpc(rpc) => rpc.data.clone().is_some_and(|data| {
-                    return serde_json::from_value::<lsp::DiagnosticServerCancellationData>(data)
-                        .is_ok_and(|decoded| return decoded.retrigger_request);
-                }),
+                helix_lsp::Error::Rpc(rpc) => match rpc.data.clone() {
+                    Some(data) => {
+                        match serde_json::from_value::<lsp::DiagnosticServerCancellationData>(data)
+                        {
+                            Ok(decoded) => decoded.retrigger_request,
+                            Err(_) => false,
+                        }
+                    }
+                    None => false,
+                },
                 _ => false,
             };
             if worker.session.stamp() != Some(ticket.stamp) {
@@ -414,11 +381,13 @@ fn hinted(
                 ticket.encoding,
                 &ticket.server,
             );
-            // `retain` drops this server's earlier hints before the new ones are stored.
-            worker
-                .session
-                .hints
-                .retain(|(server, _)| return server != &ticket.server);
+            // This server's earlier hints are dropped before the new ones are stored.
+            let earlier = std::mem::take(&mut worker.session.hints);
+            for entry in earlier {
+                if entry.0 != ticket.server {
+                    worker.session.hints.push(entry);
+                }
+            }
             worker.session.hints.push((ticket.server, shaped));
             worker.session.hint_lines = (first_line, last_line);
         }
@@ -446,16 +415,6 @@ fn hinted(
 /// True when the server itself produced the result,
 ///  as opposed to a timeout or an ended process.
 fn is_server_answer(payload: &Payload) -> bool {
-    // What: A closure taking any request error by borrow; `matches!` tests the error's variant.
-    // Why: A protocol error is still an answer; silence and a closed stream are not.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // const answered = (error?: Error) => !error || error instanceof RpcError;
-    // ```
-    let answered = |error: Option<&helix_lsp::Error>| {
-        return error.is_none_or(|found| return matches!(found, helix_lsp::Error::Rpc(_)));
-    };
     return match payload {
         // `as_ref().err()` borrows the error of a failed result, or yields "nothing".
         Payload::Definition(result) => answered(result.as_ref().err()),
@@ -463,6 +422,26 @@ fn is_server_answer(payload: &Payload) -> bool {
         Payload::Hover(result) => answered(result.as_ref().err()),
         Payload::Hints(result) => answered(result.as_ref().err()),
         Payload::Pull(result) => answered(result.as_ref().err()),
+    };
+}
+
+/// What:
+///  Whether a request error,
+///  borrowed,
+///  counts as the server's own answer;
+///  `matches!` tests the error's variant.
+/// Why:
+///  A protocol error is still an answer;
+///  silence and a closed stream are not.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const answered = (error?: Error) => !error || error instanceof RpcError;
+/// ```
+fn answered(error: Option<&helix_lsp::Error>) -> bool {
+    return match error {
+        Some(found) => matches!(found, helix_lsp::Error::Rpc(_)),
+        None => true,
     };
 }
 
@@ -506,11 +485,17 @@ pub(in crate::language) fn finish(worker: &mut Worker, answer: Answer) {
     let root = worker.root.clone();
     match payload {
         Payload::Definition(result) => {
-            let outcome = result.map(|found| return definition_outcome(&ticket, &root, found));
+            let outcome = match result {
+                Ok(found) => Ok(definition_outcome(&ticket, &root, found)),
+                Err(error) => Err(error),
+            };
             replied(worker, ticket, RequestKind::Definition, outcome);
         }
         Payload::References(result) => {
-            let outcome = result.map(|found| return references_outcome(&ticket, &root, found));
+            let outcome = match result {
+                Ok(found) => Ok(references_outcome(&ticket, &root, found)),
+                Err(error) => Err(error),
+            };
             replied(worker, ticket, RequestKind::References, outcome);
         }
         Payload::Hover(result) => {
@@ -523,10 +508,16 @@ pub(in crate::language) fn finish(worker: &mut Worker, answer: Answer) {
                     }
                 }
             }
-            let outcome = result.map(|found| return hover_outcome(&ticket, found));
+            let outcome = match result {
+                Ok(found) => Ok(hover_outcome(&ticket, found)),
+                Err(error) => Err(error),
+            };
             replied(worker, ticket, RequestKind::Hover, outcome);
         }
         Payload::Hints(result) => hinted(worker, ticket, result),
         Payload::Pull(result) => pulled(worker, ticket, result),
     }
 }
+
+/// The failure kept per server and request kind.
+mod trouble;

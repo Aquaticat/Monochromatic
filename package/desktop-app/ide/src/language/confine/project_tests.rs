@@ -24,11 +24,24 @@ fn request(project: &str, spellings: &[&str]) -> LaunchRequest {
     };
 }
 
+/// Position of the first argument equal to `wanted`.
+fn position_of(args: &[String], wanted: &str) -> Option<usize> {
+    for (index, part) in args.iter().enumerate() {
+        if part == wanted {
+            return Some(index);
+        }
+    }
+    return None;
+}
+
 /// Position of the first argument triple `option source destination`.
 fn triple(args: &[String], option: &str, source: &str, destination: &str) -> Option<usize> {
-    return args.windows(3).position(|window| {
-        return window[0] == option && window[1] == source && window[2] == destination;
-    });
+    for (index, window) in args.windows(3).enumerate() {
+        if window[0] == option && window[1] == source && window[2] == destination {
+            return Some(index);
+        }
+    }
+    return None;
 }
 
 #[test]
@@ -45,9 +58,13 @@ fn project_below_tmp_and_run_is_bound_back_after_the_replacements() {
     )
     .expect("recipe");
     let args = &launch.args;
-    let run = args.windows(2).position(|window| {
-        return window[0] == "--tmpfs" && window[1] == "/run";
-    });
+    let mut run = None;
+    for (index, window) in args.windows(2).enumerate() {
+        if window[0] == "--tmpfs" && window[1] == "/run" {
+            run = Some(index);
+            break;
+        }
+    }
     let tmp = triple(args, "--bind", "/state/p/rust-analyzer/tmp", "/tmp");
     assert!(
         run.is_some() && tmp.is_some(),
@@ -78,7 +95,7 @@ fn project_below_tmp_and_run_is_bound_back_after_the_replacements() {
         None,
         "a spelling outside the replaced locations resolves through the root and needs no bind"
     );
-    let clear = args.iter().position(|part| return part == "--clearenv");
+    let clear = position_of(args, "--clearenv");
     assert!(media < clear, "project binds must precede the environment");
 }
 
@@ -144,7 +161,7 @@ fn state_inside_the_project_is_bound_writable_after_the_read_only_project() {
         project < writable,
         "the read-only project bind comes after the state bind and would cover it: {args:?}"
     );
-    let clear = args.iter().position(|part| return part == "--clearenv");
+    let clear = position_of(args, "--clearenv");
     assert!(writable < clear, "binds must precede the environment");
 }
 

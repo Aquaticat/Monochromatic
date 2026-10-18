@@ -164,9 +164,11 @@ pub fn find_mise_in(path: Option<&std::ffi::OsStr>, home: Option<&Path>) -> Opti
             return Some(candidate);
         }
     }
-    let installed = home
-        .filter(|found| return found.is_absolute())?
-        .join(".local/bin/mise");
+    let found = home?;
+    if !found.is_absolute() {
+        return None;
+    }
+    let installed = found.join(".local/bin/mise");
     return is_executable(&installed).then_some(installed);
 }
 

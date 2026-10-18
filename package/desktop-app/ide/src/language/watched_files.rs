@@ -223,6 +223,25 @@ fn protocol_kind(kind: ServerChangeKind) -> lsp::FileChangeType {
     };
 }
 
+/// What:
+///  What `take` asks of its caller:
+///  how servers spell a path,
+///  and whether a server still runs.
+///  A type that implements this trait carries the state those answers need.
+/// Why:
+///  A named type carries the answers without an anonymous function.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// interface WatchHost<Server> { respell(path: string): string; live(server: Server): boolean }
+/// ```
+pub(super) trait WatchHost<Server> {
+    /// The spelling of a resolved path that the servers use for the project root.
+    fn respell(&self, path: &Path) -> PathBuf;
+    /// Whether the server still runs.
+    fn live(&self, server: Server) -> bool;
+}
+
 /// True when `watcher` wants this change of `path`,
 ///  spelled as the server spells the project root.
 /// A string pattern that does not match the whole path is also tried against the path below `root`.
@@ -239,15 +258,19 @@ fn matches(watcher: &Watcher, path: &Path, root: &Path, kind: ServerChangeKind) 
     // ```
     match &watcher.base {
         Some(base) => {
-            return path
-                .strip_prefix(base)
-                .is_ok_and(|below| return watcher.glob.is_match(below));
+            return match path.strip_prefix(base) {
+                Ok(below) => watcher.glob.is_match(below),
+                Err(_) => false,
+            };
         }
         None => {
-            return watcher.glob.is_match(path)
-                || path
-                    .strip_prefix(root)
-                    .is_ok_and(|below| return watcher.glob.is_match(below));
+            if watcher.glob.is_match(path) {
+                return true;
+            }
+            return match path.strip_prefix(root) {
+                Ok(below) => watcher.glob.is_match(below),
+                Err(_) => false,
+            };
         }
     }
 }
@@ -356,10 +379,14 @@ impl<Server: Copy + Eq + Hash + Display> WatchedFiles<Server> {
     /// True while some server has a watcher,
     ///  so the project's folders are worth watching.
     pub(super) fn wanted(&self) -> bool {
-        return self
-            .registrations
-            .values()
-            .any(|server| return server.values().any(|watchers| return !watchers.is_empty()));
+        for server in self.registrations.values() {
+            for watchers in server.values() {
+                if !watchers.is_empty() {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /// Gather one change;
@@ -393,10 +420,10 @@ impl<Server: Copy + Eq + Hash + Display> WatchedFiles<Server> {
 
     /// What:
     ///  Take the pending changes as one list of protocol events per server that wants some of them.
-    ///       `respell` turns a resolved path into the spelling the servers use for the project root,
+    ///       `host.respell` turns a resolved path into the spelling the servers use for the project root,
     ///  which
     ///       is `root`;
-    ///  `live` says whether a server still runs,
+    ///  `host.live` says whether a server still runs,
     ///  and the registrations of one that does not
     ///       are forgotten.
     /// Why:
@@ -406,37 +433,43 @@ impl<Server: Copy + Eq + Hash + Display> WatchedFiles<Server> {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// take(respell: (path: string) => string, root: string, live: (server: ServerId) => boolean): [ServerId, FileEvent[]][]
+    /// take(host: WatchHost, root: string): [ServerId, FileEvent[]][]
     /// ```
     pub(super) fn take(
         &mut self,
-        respell: &dyn Fn(&Path) -> PathBuf,
+        host: &dyn WatchHost<Server>,
         root: &Path,
-        live: &dyn Fn(Server) -> bool,
     ) -> Vec<(Server, Vec<lsp::FileEvent>)> {
         let pending = std::mem::take(&mut self.pending);
         self.first = None;
         self.last = None;
-        self.registrations.retain(|server, _| {
-            let running = live(*server);
-            if !running {
+        // The servers that stopped are listed first, because the table cannot change while it is walked.
+        let mut stopped: Vec<Server> = Vec::new();
+        for server in self.registrations.keys() {
+            if !host.live(*server) {
                 tracing::debug!(%server, "forgot the file watchers of a language server that stopped");
+                stopped.push(*server);
             }
-            return running;
-        });
-        // `collect` gathers the respelled paths once, so each server does not respell them again.
-        let spelled: Vec<(PathBuf, ServerChangeKind)> = pending
-            .into_iter()
-            .map(|(path, kind)| return (respell(&path), kind))
-            .collect();
+        }
+        for server in stopped {
+            self.registrations.remove(&server);
+        }
+        // The respelled paths are gathered once, so each server does not respell them again.
+        let mut spelled: Vec<(PathBuf, ServerChangeKind)> = Vec::new();
+        for (path, kind) in pending {
+            spelled.push((host.respell(&path), kind));
+        }
         let mut batches = Vec::new();
         for (server, server_registrations) in &self.registrations {
             let mut events = Vec::new();
             for (path, kind) in &spelled {
-                let wanted = server_registrations
-                    .values()
-                    .flatten()
-                    .any(|watcher| return matches(watcher, path, root, *kind));
+                let mut wanted = false;
+                for watcher in server_registrations.values().flatten() {
+                    if matches(watcher, path, root, *kind) {
+                        wanted = true;
+                        break;
+                    }
+                }
                 if !wanted {
                     continue;
                 }

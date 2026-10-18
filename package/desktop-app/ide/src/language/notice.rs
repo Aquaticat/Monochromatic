@@ -107,6 +107,32 @@ fn retried_on_display(state: &ServerState) -> bool {
     );
 }
 
+/// True when some server in `ready` offers the feature that `wanted` tests for.
+fn offering(ready: &[&ServerStatus], wanted: fn(&ServerStatus) -> bool) -> bool {
+    for row in ready {
+        if wanted(row) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/// True when the server reported that it offers hover.
+fn offers_hover(row: &ServerStatus) -> bool {
+    return match row.features {
+        Some(found) => found.hover,
+        None => false,
+    };
+}
+
+/// True when the server reported that it offers inlay hints.
+fn offers_hints(row: &ServerStatus) -> bool {
+    return match row.features {
+        Some(found) => found.inlay_hints,
+        None => false,
+    };
+}
+
 /// What:
 ///  The lines of the entry for the displayed file,
 ///  or none when nothing is wrong or the servers are still starting.
@@ -126,15 +152,16 @@ pub(super) fn lines(
     if status.document != DocumentState::Attached || status.servers.is_empty() {
         return Vec::new();
     }
-    let ready: Vec<&ServerStatus> = status
-        .servers
-        .iter()
-        .filter(|row| return row.state == ServerState::Ready)
-        .collect();
-    let starting = status
-        .servers
-        .iter()
-        .any(|row| return row.state == ServerState::Starting);
+    let mut ready: Vec<&ServerStatus> = Vec::new();
+    let mut starting = false;
+    for row in &status.servers {
+        if row.state == ServerState::Ready {
+            ready.push(row);
+        }
+        if row.state == ServerState::Starting {
+            starting = true;
+        }
+    }
     let mut lines: Vec<String> = Vec::new();
     if ready.is_empty() {
         // A server that is still starting may yet provide everything; the entry waits for its outcome.
@@ -147,11 +174,14 @@ pub(super) fn lines(
         for row in &status.servers {
             lines.extend(problem(row));
         }
-        if status
-            .servers
-            .iter()
-            .any(|row| return retried_on_display(&row.state))
-        {
+        let mut retried = false;
+        for row in &status.servers {
+            if retried_on_display(&row.state) {
+                retried = true;
+                break;
+            }
+        }
+        if retried {
             lines.push(
                 "Servers are looked up again when a file is displayed, so open the file again after fixing this."
                     .to_string(),
@@ -160,33 +190,30 @@ pub(super) fn lines(
         return lines;
     }
     // Some server runs: only the features that no running server offers, and failures, are reported.
-    let offering = |wanted: fn(&ServerStatus) -> bool| {
-        return ready.iter().any(|row| return wanted(row));
-    };
-    let hover = |row: &ServerStatus| return row.features.is_some_and(|found| return found.hover);
-    let hints = |row: &ServerStatus| {
-        return row.features.is_some_and(|found| return found.inlay_hints);
-    };
-    let names = ready
-        .iter()
-        .map(|row| return row.server.name.as_str())
-        .collect::<Vec<&str>>()
-        .join(", ");
-    if !offering(hover) {
+    let mut name_list: Vec<&str> = Vec::new();
+    for row in &ready {
+        name_list.push(row.server.name.as_str());
+    }
+    let names = name_list.join(", ");
+    if !offering(&ready, offers_hover) {
         lines.push(format!(
             "Hover is not offered by {names}, so none is shown."
         ));
     }
-    if !offering(hints) {
+    if !offering(&ready, offers_hints) {
         lines.push(format!(
             "Inlay hints are not offered by {names}, so none are shown."
         ));
     }
     for row in &ready {
-        let Some((_, trouble)) = troubles
-            .iter()
-            .find(|(known, _)| return known == &row.server)
-        else {
+        let mut found_trouble = None;
+        for (known, trouble) in troubles {
+            if known == &row.server {
+                found_trouble = Some(trouble);
+                break;
+            }
+        }
+        let Some(trouble) = found_trouble else {
             continue;
         };
         if let Some(failure) = &trouble.hints {
@@ -251,15 +278,13 @@ pub(super) fn with_notice(
         stamp,
         groups: Vec::new(),
     });
-    let server = status.servers.first().map_or_else(
-        || {
-            return ServerIdentity {
-                name: SOURCE.to_string(),
-                instance: 0,
-            };
+    let server = match status.servers.first() {
+        Some(row) => row.server.clone(),
+        None => ServerIdentity {
+            name: SOURCE.to_string(),
+            instance: 0,
         },
-        |row| return row.server.clone(),
-    );
+    };
     result.groups.push(SourceGroup {
         source: SOURCE.to_string(),
         items: vec![Diagnostic {

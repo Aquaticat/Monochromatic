@@ -20,7 +20,7 @@ use super::{
 use crate::change_watch::ServerChange;
 /// Failures are reported as user-facing errors,
 ///  never as empty results.
-use anyhow::{Context, Result, anyhow};
+use anyhow::{Result, anyhow};
 /// What:
 ///  `Path` is a borrowed filesystem path;
 ///  `Arc` is a thread-safe shared pointer;
@@ -157,12 +157,15 @@ impl LanguageWorker {
         // ```ts
         // const root = realpathSync(projectRoot);
         // ```
-        let root = project_root.canonicalize().with_context(|| {
-            return format!(
-                "Cannot resolve project directory {}",
-                project_root.display()
-            );
-        })?;
+        let root = match project_root.canonicalize() {
+            Ok(found) => found,
+            Err(error) => {
+                return Err(anyhow::Error::new(error).context(format!(
+                    "Cannot resolve project directory {}",
+                    project_root.display()
+                )));
+            }
+        };
         let (command_sender, command_receiver) = mpsc::channel(COMMAND_CAPACITY);
         let (reply_sender, reply_receiver) = mpsc::channel(REPLY_CAPACITY);
         let (status_sender, status_receiver) = watch::channel(Arc::new(LanguageStatus::closed()));

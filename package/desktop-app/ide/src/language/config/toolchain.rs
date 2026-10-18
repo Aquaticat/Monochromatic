@@ -39,12 +39,15 @@ use std::{
 /// const spellings = [discoverRoot(root)?.helix].filter(spelling => spelling && spelling !== root);
 /// ```
 pub(super) fn spellings(root: &Path) -> Vec<PathBuf> {
-    return RootView::discover(root)
-        .ok()
-        .map(|view| return view.helix().to_path_buf())
-        .filter(|spelling| return spelling.as_path() != root)
-        .into_iter()
-        .collect();
+    let mut found: Vec<PathBuf> = Vec::new();
+    // Helix's spelling is listed only when it differs from the canonical root.
+    if let Ok(view) = RootView::discover(root) {
+        let spelling = view.helix().to_path_buf();
+        if spelling.as_path() != root {
+            found.push(spelling);
+        }
+    }
+    return found;
 }
 
 /// What:
@@ -89,10 +92,10 @@ pub(super) fn server_environment(
     if mise.directories().is_empty() {
         return environment;
     }
-    let inherited = own
-        .get("PATH")
-        .map(std::ffi::OsString::from)
-        .or_else(|| return std::env::var_os("PATH"));
+    let mut inherited = own.get("PATH").map(std::ffi::OsString::from);
+    if inherited.is_none() {
+        inherited = std::env::var_os("PATH");
+    }
     if let Some(path) = search_path(mise.directories(), inherited) {
         environment.insert("PATH".to_string(), path);
     }

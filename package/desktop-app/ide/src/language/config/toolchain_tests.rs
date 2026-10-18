@@ -48,25 +48,25 @@ thread_local! {
 }
 
 fn policy(_request: &MiseRequest) -> MiseState {
-    let asked = ASKED.with(|count| {
-        count.set(count.get() + 1);
-        return count.get();
-    });
-    return ANSWERS.with(|cell| {
-        let answers = cell.borrow();
-        return answers[(asked - 1).min(answers.len() - 1)].clone();
-    });
+    ASKED.set(ASKED.get() + 1);
+    let asked = ASKED.get();
+    let answers = ANSWERS.take();
+    let chosen = answers[(asked - 1).min(answers.len() - 1)].clone();
+    ANSWERS.set(answers);
+    return chosen;
 }
 
 fn recording(request: &LaunchRequest) -> Result<ServerLaunch, String> {
-    LAUNCHES.with(|launches| launches.borrow_mut().push(request.clone()));
+    let mut launches = LAUNCHES.take();
+    launches.push(request.clone());
+    LAUNCHES.set(launches);
     return launch_directly(request);
 }
 
 fn answers(states: Vec<MiseState>) {
-    ASKED.with(|count| count.set(0));
-    LAUNCHES.with(|launches| launches.borrow_mut().clear());
-    ANSWERS.with(|answers| *answers.borrow_mut() = states);
+    ASKED.set(0);
+    LAUNCHES.set(Vec::new());
+    ANSWERS.set(states);
 }
 
 fn setup() -> LanguageSetup {
@@ -91,11 +91,12 @@ fn tool(directory: &Path, name: &str) {
 }
 
 fn provided(directories: &[&Path], warnings: &str) -> MiseState {
+    let mut owned: Vec<PathBuf> = Vec::new();
+    for directory in directories {
+        owned.push(directory.to_path_buf());
+    }
     return MiseState::Provided(Provided {
-        directories: directories
-            .iter()
-            .map(|directory| return directory.to_path_buf())
-            .collect(),
+        directories: owned,
         configs: vec![PathBuf::from("/work/mise.toml")],
         warnings: warnings.to_string(),
     });
@@ -133,14 +134,16 @@ fn a_server_in_a_mise_directory_is_found_and_the_directory_leads_its_path_read_o
     );
     let path = launch.environment.get("PATH").expect("PATH for the server");
     assert!(path.starts_with(&format!("{}:", tools.display())), "{path}");
-    let request = LAUNCHES.with(|launches| {
-        return launches
-            .borrow()
-            .iter()
-            .find(|request| return request.server == "mise-only-ls")
-            .cloned()
-            .expect("launch request");
-    });
+    let launches = LAUNCHES.take();
+    let mut found_request = None;
+    for seen in launches.iter() {
+        if seen.server == "mise-only-ls" {
+            found_request = Some(seen.clone());
+            break;
+        }
+    }
+    LAUNCHES.set(launches);
+    let request = found_request.expect("launch request");
     assert_eq!(request.read_only_binds, [tools]);
     assert!(languages.mise_advisory().is_empty());
 }

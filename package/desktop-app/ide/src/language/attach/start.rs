@@ -115,10 +115,10 @@ async fn adopt(worker: &mut Worker, name: String, client: Arc<Client>, view: &Ro
     let folders = client.workspace_folders().await.clone();
     for folder in &folders {
         // `to_file_path` returns `Result`; an address that is not a local path counts as outside.
-        let inside = folder
-            .uri
-            .to_file_path()
-            .is_ok_and(|path| return view.contains(&path));
+        let inside = match folder.uri.to_file_path() {
+            Ok(path) => view.contains(&path),
+            Err(_) => false,
+        };
         if !inside {
             tracing::error!(server = client.name(), folder = %folder.uri, "server was rooted outside the project and is stopped");
             // The worker stops it itself: what it wrote to standard error is no report.
@@ -157,11 +157,13 @@ async fn adopt(worker: &mut Worker, name: String, client: Arc<Client>, view: &Ro
 fn prepare_launches(worker: &Worker, names: &[String]) -> Option<(String, String)> {
     for name in names {
         // A running server keeps its directories; emptying its scratch space would break it.
-        let running = worker
-            .session
-            .servers
-            .iter()
-            .any(|record| return record.client.is_some() && &record.identity.name == name);
+        let mut running = false;
+        for record in worker.session.servers.iter() {
+            if record.client.is_some() && &record.identity.name == name {
+                running = true;
+                break;
+            }
+        }
         if running {
             continue;
         }
@@ -215,14 +217,10 @@ pub(super) async fn start(
     if startable.is_empty() {
         return;
     }
-    let Some(path) = worker
-        .session
-        .document
-        .as_ref()
-        .map(|document| return document.path.clone())
-    else {
+    let Some(shown) = worker.session.document.as_ref() else {
         return;
     };
+    let path = shown.path.clone();
     let view = match RootView::discover(&worker.root) {
         Ok(view) => view,
         Err(refusal) => {
