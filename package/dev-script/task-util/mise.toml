@@ -222,3 +222,6 @@ run = "node bin/rust-fuzz-coverage.mjs"
 
 [tasks."research:rust:bounded-check"]
 run = ["node --check bin/rust-bounded-profile.mjs", "node --check bin/rust-codex-host.mjs", "node --check bin/rust-fuzz-runtime.mjs", "node --check bin/rust-fuzz-coverage.mjs"]
+
+[tasks."research:rust:planted"]
+run = "node bin/rust-planted-profile.mjs"
