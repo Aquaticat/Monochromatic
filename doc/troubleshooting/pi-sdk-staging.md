@@ -8762,3 +8762,190 @@ all existing unresolved-fact obligations remain.
 - The committed correction passes the actual omitted-property regression locally.
 
 There is nothing to file upstream for this owned callback mismatch.
+
+## Pi 1.2.0 MiMo inspection loses prompt evidence and masks Stop
+
+### Symptom and original evidence
+
+The 2026-10-17 MiMo lint session proposes parallel Bash calls
+`call_cec448f1353443bd88da096e` and `call_8cacc98bebf7433a9945f1d3`.
+Both return `Complete group preparation or assessment failed`.
+One command searches for disposal syntax;
+the other reads an existing lint log with a Python heredoc.
+Earlier Python heredocs in this same session succeed.
+
+Session `2026-10-17T15-47-34-073Z_01a14a8c-0a38-760f-aca3-aa17ebd2a725`
+and original logger file `2026-10-17T15-47-33.217Z.log.jsonl` establish the sequence.
+The original retained cause is `RangeError: Invalid string length` at prompt capture,
+followed by `RequestObservationStaleError: Observed request is no longer current`.
+The native selector opens at `2026-10-17T16:14:03.781Z`.
+It returns at `2026-10-17T17:18:03.286Z`,
+records the response,
+and takes the native Stop path.
+The dispatcher then reports `AbortError: This operation was aborted` and publishes the generic message.
+The interval is retained selector wait time;
+it does not establish a model service timeout.
+
+### Root cause and maintained boundaries
+
+Before commit `2f90217589`,
+`package/pi-plugin/auto-mode/native/contract/collector/run-prompt-custody-v3/owner.mjs:137`
+defines an unused run byte counter:
+
+```js
+// Historical owner.mjs, removed on 2026-10-18.
+function charge({scope,value}) {
+  scope.bytes += Buffer.byteLength(JSON.stringify(value));
+  return value;
+}
+```
+
+The counter's only references initialize or increment it;
+the run view and diagnostics never read it.
+Historical `context.mjs:55` passes every retained origin to this function together.
+Separate supported inputs therefore become one aggregate string solely for unused accounting.
+The original failure stack names this `JSON.stringify` call before command assessment.
+The maintained context keeps the original records directly:
+`package/pi-plugin/auto-mode/native/contract/collector/run-prompt-custody-v3/context.mjs:55`.
+
+```js
+// Maintained context.mjs.
+const retainedMessageOrigins = Object.freeze(origins);
+```
+
+The shared text store belongs to the existing manager pool,
+not to another source owner.
+`package/pi-plugin/auto-mode/native/contract/collector/run-prompt-custody-v3/loaded-pool.mjs:42`
+reuses immutable content and its digest:
+
+```js
+// Maintained loaded-pool.mjs.
+let data = sourceDataByContent.get(serialized);
+if (data === undefined) {
+  data = Object.freeze({content:serialized,sha256:createHash('sha256').update(serialized).digest('hex')});
+  sourceDataByContent.set(serialized,data);
+}
+```
+
+The same `retain()` call still creates a fresh source occurrence and publication for every receipt.
+It still charges each source separately to the manager's consumed usage counters.
+Equal text and hashes do not merge authority or capability identity.
+This addresses repeated serialized data retained during long native event sequences.
+
+Stop is a separate error-masking boundary.
+`package/pi-plugin/auto-mode/native/contract/lifecycle/incumbent-tui-group/approval-presentation.mjs:84`
+calls the original native abort capability:
+
+```js
+// Maintained approval-presentation.mjs.
+abort(){trace('tui-stop');return Reflect.apply(abort,ctx,[]);}
+```
+
+The dispatcher formerly checked cancellation before retaining the returned blocking decision.
+That replaced the user's Stop result with a preparation failure.
+The maintained dispatcher validates the decision first and checks execution eligibility only for release:
+`package/pi-plugin/auto-mode/native/contract/collector/program-rule-batch-sdk-copy-v2/input/prepared-dispatch.mjs:147`.
+
+```js
+// Maintained prepared-dispatch.mjs.
+if (!decision.block) active('assessment-returned');
+state.decision = Object.freeze(decision.block ? {block:true,reason:decision.reason} : {block:false});
+```
+
+No blocked member enters execution.
+Approval retains its asynchronous currentness check and the native execution guards.
+
+### Verification catalogs
+
+The original failing output is `native-release-qWSxFz`.
+Source fixes are `2f90217589`,
+`daf6b8e179`,
+and `77620b6c23`.
+The current shared-text output is `native-release-iQw5fd`.
+Private captured sessions,
+replays,
+and logs live in `${HOME}/temp/agent/pi-mimo-preparation-failure-20261018`.
+
+Failing controls:
+
+- The aggregate capacity test fails on the original build with the exact `RangeError` and `charge()` stack.
+- Native `stop` and `cancel` tests originally return the generic preparation error instead of the stopped message.
+- Configured-host replay `pi-mimo-failure-rpc-xWj1Z0` reproduces the generic result after original Stop.
+- Full character-fragmented replay still exhausts the 2 GiB container after removing only the dead counter.
+  It does not count as successful consumer verification.
+
+Passing measured boundaries:
+
+- `test:native:retained-context-capacity` keeps separate authenticated records larger than one engine string.
+  The revised ASCII JSON fixture accounts for 713,092,714 bytes,
+  retains distinct source occurrences and publications,
+  observes a later distinct input,
+  and rejects a changed native root.
+- Three unchanged baseline runs retain 688,995,568 to 689,029,488 heap bytes.
+  Three shared-text runs retain 3,609,280 to 3,610,472 heap bytes.
+  Both sets use the same fixture and per-occurrence receipt accounting.
+- Actual native `stop` and `cancel` modes retain
+  `The user stopped execution. Wait for their next instructions.`
+  in every withheld result and execute no member.
+- The counter/Stop build passes decision fallback,
+  prompt capacity,
+  run history,
+  run-message freshness,
+  native phases,
+  single-call catalogs,
+  and type checking with a disposable writable package cache.
+
+The configured full-conversation replay of `native-release-iQw5fd` remains in progress at this record.
+The lint handoff remains reopened until that replay and its negative controls complete.
+
+Reproduction tasks:
+
+```sh
+# Repository package tasks, each run in a disposable resource-bounded fixture during this investigation.
+mise run //package/pi-plugin/auto-mode:test:native:retained-context-capacity
+mise run //package/pi-plugin/auto-mode:test:native:decision-fallback:case stop
+mise run //package/pi-plugin/auto-mode:test:native:decision-fallback:case cancel
+```
+
+### Rejected alternatives and workaround limits
+
+Changing the Bash search or Python syntax cannot repair a failure that occurs before command assessment.
+An oversized individual message is not required:
+the regression uses individually supported records and fails only when the old counter combines them.
+No custom serializer is required.
+The source records and publication capabilities remain original immutable objects.
+
+Restoring only persisted history loses the original request-evidence construction sequence.
+That fixture falls back to manual review for a different reason,
+so it cannot establish the capture repair.
+The full replay rebuilds original proposals from a fresh configured host instead.
+Dropping history,
+disabling freshness,
+loosening approval thresholds,
+or granting a second generic Allow after an established stale decision are not repairs.
+
+The verified local corrections remove unused aggregate serialization,
+share stored primitive data within the existing pool,
+and preserve blocking decisions through native cancellation.
+The tradeoff is a pool-lifetime text index in addition to the original per-occurrence records.
+There is no source-capacity ceiling,
+receipt deletion,
+or shared publication capability.
+
+The first read-only type-check container fails with
+`EROFS: read-only file system, unlink '.cache/typescript/tsconfig.tsbuildinfo'`.
+The existing type-check task removes its own build-info cache before checking.
+Mounting a disposable writable package cache makes that same task pass.
+This harness filesystem error is distinct from the product's capture and Stop failures.
+
+### Upstream filing decision
+
+- Ownership: unused aggregate accounting and retained input storage belong to this repository.
+- Fixability: local owner and dispatcher changes repair the traced boundaries.
+- Supported use: this package promises configured native callbacks and repeated session turns.
+- Contribution policy: no external repository contribution is proposed.
+- Maintainer disposition: no external maintainer decision is inferred.
+- Prototype: original failing controls and genuine native regressions exist;
+  final full-consumer verification is still pending.
+
+There is nothing to file upstream for these owned implementation defects.
