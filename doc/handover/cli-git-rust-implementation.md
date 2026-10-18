@@ -1667,11 +1667,11 @@ that is verification, not a decision for the user.
   tip with the landed commit in a temporary private worktree, pushes with a plain push, retries a bounded number of
   times, never touches the active worktree, index or untracked files, and keeps an overlapping conflict unmerged with
   a diagnosis (`auto_push.rs` `PUSH_FAILED_NOTE` and `UPSTREAM_PUSH_ARGUMENTS`); it needs a disposable bare-remote
-  regression, a gate, mutation of the new code and a minor release. 1770 starts with a harness: three variants did not
-  reproduce it (host, Fedora 44 container with disposable HOME, real `.git/lfs` absent or without `tmp`); the
-  shadow's `lfs` entry is a link to the real `.git/lfs` (`shadow_links.rs`), so the harness removes or blocks that
-  target mid-commit and mounts `.git` partly read-only, with a deliberate-failure control; no fix without a
-  reproduction.
+  regression, a gate, mutation of the new code and a minor release. 1770 is closed as an environment defect: a
+  read-only `.git/lfs` without `tmp` reproduces the consumer's message with raw Git and the wrapper alike, and a
+  present writable `tmp` fixes it (`doc/troubleshooting/git-policy-wrapper-launcher-path.md`); whether the
+  consumer's `.git/lfs` was read-only is unconfirmed (`test -w .git/lfs` in its container), and no wrapper change
+  or release follows.
   Both wrappers shared `.git/cli-git*` state while sessions were mixed; the incumbent is no longer on any `PATH`.
   User decisions of 2026-10-13: install by publishing the crate (the `cargo:` mise tool route); the hk cleanup task is
   retired; the rollback window ends right after the installed wrapper is verified; the first native CI workflow covers
