@@ -321,3 +321,80 @@ No upstream filing or comment is warranted.
 
 [native-status-functions]: https://docs.github.com/en/actions/reference/workflows-and-actions/expressions#status-check-functions
 [native-common-prerequisite]: https://github.com/Aquaticats/Monochromatic/issues/1165
+
+## Nextest archive extraction requires an existing explicit destination
+
+### Symptom and deciding source
+
+The frozen-source diagnostic producer `7sm49f324d` successfully created a Nextest archive,
+then its attempted local replay exited `96` before test enumeration:
+
+```text
+# Diagnostic artifact member diagnostic-archive-local-lock-cohort.log
+error: error extracting archive `.../diagnostic-native-nextest.tar.zst`
+Caused by:
+  error canonicalizing destination directory `.../.research-reuse/diagnostic-extract`
+Caused by:
+  No such file or directory (os error 2)
+```
+
+Nextest `0.9.148`,
+source `cd1d6d5467322dbc0d39a80cb671d000ac302798`,
+canonicalizes an explicit `--extract-to` directory in
+`nextest-runner/src/reuse_build/unarchiver.rs:68`
+before extraction.
+The automatic temporary-directory branch creates its destination;
+the explicit destination branch does not.
+The research harness omitted creating that directory.
+This is a harness prerequisite failure,
+not a failing application assertion or a corrupt archive.
+
+### Verified recovery and transport limits
+
+The exact diagnostic ZIP and every member passed the provider-upload digest and ZIP CRC checks.
+The Nextest archive is 17,046,905 bytes,
+SHA-256 `d6b7edef092cad3c81a88deb293777665e4f38e5b9caf27221a5225c4965d596`.
+The recovery independently verified all 1,079 source-file hashes,
+the bundled Nextest executable and the separately bundled Git `2.56.0` executable.
+It used a fresh,
+existing extraction directory and remapped the workspace to `/work/package/git-policy/cli`.
+The actual archived lock/metadata cohort then reported:
+
+```text
+# diagnostic-local-as-owner.log, local read-only Podman transport control
+Summary [   0.173s] 34 tests run: 34 passed, 1922 skipped
+```
+
+This local control had no network,
+two CPUs,
+2 GiB memory,
+read-only source/tool mounts and tmpfs fixture/extraction paths.
+The existing native-test image declares `USER 1000:1000`;
+that user initially failed to traverse the host-owner-only `0700` fixture directory.
+Image inspection and file-mode inspection preceded the corrected rootless-container `--user 0:0` invocation.
+The verified archive and source bytes remained unchanged.
+The generic user-namespace boundary is documented separately in
+[the Podman identity note](depot-rootless-podman-group-identity.md).
+
+The [Nextest archiving documentation](https://nexte.st/docs/ci-features/archiving/)
+requires matching source and recommends matching Nextest versions.
+`--workspace-remap` changes runtime workspace paths,
+but cannot rewrite Rust `env!` values compiled into an executable.
+The frozen Git-config tests contain such a value;
+the filtered lock/metadata cohort is therefore the exercised portability boundary.
+This does not establish general relocation of every native test,
+a matched cloud-filesystem cause,
+or a successful native target-cache publication.
+
+### Upstream filing decision for extraction
+
+The source explains the observed prerequisite and the corrected consumer executes the archive.
+No upstream defect is established,
+and no upstream change or contribution acceptance is being assumed.
+Current open/closed issue searches for `"extract-to"` returned `#1036` and `#2463`,
+concerning coverage and a Cargo-related hang respectively.
+Their bodies do not establish this destination-directory incident.
+No upstream filing was sent.
+Exact artifact identities,
+source/tool hashes and both failed and successful consumer receipts are retained in
+[the reuse evidence](../audit/depot-reuse-strategy-2026-10-18.evidence.json).
