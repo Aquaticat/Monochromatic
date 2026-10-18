@@ -102,8 +102,14 @@ entry-guard removal,
 enumerability,
 freezing,
 each borrowed member and genuine forwarding failures.
-It is still running;
-accept its final receipt only when every expected named failure and the restored build/consumer pass.
+The mutation run stops after eight independently rebuilt mutations fail their named regressions.
+The ninth, borrowed `assertCurrent`, survives:
+the test supplies an invalid binding and accepts its unrelated binding error as receiver rejection.
+The maintained correction supplies the genuine current binding and sequences the shared-resource suite,
+whose harness otherwise runs children concurrently.
+The candidate source restores on failure;
+its built artifact still contains the last mutation and is not qualified.
+A new committed-test candidate must rerun every mutation and the restored build/consumer.
 The parent collector reads only exact named logs below a four-MiB bound.
 The native worker is read-only on
 `native-investigate-unused-system-profile-20261018-architecture-07`.
@@ -112,6 +118,10 @@ reflective and metadata use,
 required capabilities and decisions before proposing removal of the apparently unused system-placement profile.
 No retirement is implemented in the main worktree;
 the next architectural step requires a separate built deletion probe.
+The later profiled inspector-close smoke finishes normally with exit zero,
+records a closed inspector URL and retains its final sample.
+The previously pending close was not a demonstrated hang.
+No live worker has been signaled or snapshotted.
 The user keeps root `TCV`,
 `CPN` and `RXI` unchanged and puts the lessons in package documentation.
 The selected logger policy is project-first defaults with user-state fallback and strict explicit destinations.

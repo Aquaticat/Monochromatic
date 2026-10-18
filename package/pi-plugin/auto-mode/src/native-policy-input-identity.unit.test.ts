@@ -106,6 +106,7 @@ function member({ capability, name }: Readonly<{ capability: object; name: strin
 //region Positive native ownership and counterfeit rejection use the same shipped module.
 await describe({
   name: 'built policy-input identity',
+  concurrency: 1,
   children: [
     it({
       name: 'keeps capability operations out of implicit property enumeration',
@@ -202,9 +203,13 @@ await describe({
           /** Receiver identity remains uninspected until the built operation authenticates it. */
           const receivers: readonly unknown[] = [{}, { ...input }, Object.create(input), new Proxy(input, {})];
           await Array.fromAsync(receivers, async function rejectReceiver(receiver) {
+            /** Valid arguments isolate receiver ownership from unrelated binding validation. */
+            const arguments_: readonly unknown[] = name === 'assertCurrent'
+              ? [invoke({ namespace: policy, name: 'readPolicyInput', argument: input })]
+              : [];
             await assert.rejects(async function invokeBorrowedMember() {
-              /** A copied operation receives only the counterfeit receiver and an invalid binding. */
-              const result: unknown = Reflect.apply(operation, receiver, [{}]);
+              /** A copied operation must reject the receiver even when its arguments are valid. */
+              const result: unknown = Reflect.apply(operation, receiver, arguments_);
               if (result instanceof Promise) await result;
             }, function originalFailure(error: unknown): boolean {
               return Error.isError(error);
