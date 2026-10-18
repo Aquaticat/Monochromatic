@@ -25,7 +25,7 @@ no broad credential is created or copied into a new secret.
 
 Harness `363bd501a0366dc4f74e35ad1b77f1a8ffad95b4` adds repeated cache-off Gradle consumers,
 isolated response-fault/input controls and the existing real Detekt host owner.
-Cache-off allocations `d3ks91rnnb` and `pq5pzj9mcg` are active.
+Cache-off allocations `d3ks91rnnb` and `pq5pzj9mcg` both passed.
 Both use the same frozen application,
 prepared image,
 pnpm content-store preparation and timed `test --rerun jar` command as the warm pair.
@@ -44,12 +44,23 @@ Two real-linter cases require `GIT_POLICY_NATIVE_TEST_LINTER`;
 one lock-identity case also failed.
 Those failures remain separate evidence boundaries;
 the application source is not repaired for this experiment.
-The next Rust harness must provision the disposable sandbox's exact Git fixture path,
-preserve all test statuses and publish research cache receipts before propagating a failed suite status.
+Rust harness `c653cef3cdb9bbba2e8d5bbb46d653e09616610f`,
+allocation `n2zlbh5gpb`,
+provisions the disposable sandbox's exact Git fixture path and the lock-bound published linter prerequisite.
+The immutable `monochromatic-lint-v0.1.3` release names source `c954f74798ee47c027ee3d9a31811de6345ca328`.
+Its independently verified Linux GNU archive is 7,136,153 bytes,
+SHA-256 `9d9021526d5377d268d4c75ed9d42d9df53d9ed76969031edb6a7809863ec665`.
+The extracted executable is 16,639,640 bytes,
+SHA-256 `6f82c73dadadd11506624a085d38e7e5ab98a26014416bfedd03c1928a85cc69`.
+Mise's binstall-only setting prevents fallback to a current-source linter build.
+This is a published test prerequisite;
+it does not exercise the current linter's Rust-analyzer compilation workload.
+The target archive retains its success-only publication guard.
+Compiler-cache writes and diagnostic artifacts are retained even when application tests fail.
 
 The Detekt host is the existing `//package/linter/kotlin:lint:detekt` owner,
 which invokes Gradle `detektCheck` with the produced plugin JAR and `detekt-cli:2.0.0-alpha.6`.
-The pending controls job runs the owner and separate documented/undocumented Kotlin fixtures,
+Controls allocation `r328mp420m` runs the owner and separate documented/undocumented Kotlin fixtures,
 retaining native CLI help/version and exact JAR hashes.
 This does not substitute for the root `lint:detekt` task's repository-wide fanout.
 
@@ -60,6 +71,36 @@ giving USD 3.024 including the two active cache-off allocations' full reserved c
 This excludes storage,
 network,
 other agents and any account bill.
+
+### Repeated Gradle task-output comparison
+
+The unchanged warm command took 17.550 and 15.836 seconds;
+the cache-off command took 21.435 and 20.262 seconds.
+Within-condition spreads are 1.714 and 1.172 seconds respectively.
+Every allocation used eight visible AMD EPYC 9R45 CPUs and a distinct boot ID.
+Each executed all six JUnit cases with no failures,
+errors or skips,
+and generated the plugin JAR.
+The warm pair restored compilation outputs;
+the off pair made no HTTP cache requests and did not report compilation `FROM-CACHE`.
+Actual tests never came from the cache.
+
+The difference of observed means is 4.155 seconds,
+or 19.9 percent of the cache-off mean,
+for the `test --rerun jar` boundary.
+That boundary includes JVM startup,
+Gradle dependency/transform access,
+compilation or restoration,
+actual tests and JAR generation.
+It excludes image boot,
+checkout,
+tool verification and pnpm linking.
+The observed mean ratio is 1.249;
+two samples per condition do not establish a general multiplier.
+Whole-job warm durations were 162 and 177 seconds,
+while cache-off jobs were 146 and 153 seconds.
+The separate pnpm content-store import/link command varied from 57.243 to 75.891 seconds across these allocations.
+Consequently the measured Gradle benefit is not an established whole-job improvement.
 
 A tracked-file inventory at the frozen source contains 13,860 files.
 Active `package/` files include 1,894 Rust sources,
