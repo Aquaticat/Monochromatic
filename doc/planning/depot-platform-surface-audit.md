@@ -678,7 +678,76 @@ separate historical build-minute and GitHub-minute caps,
 and Datadog's transition to general availability.
 Their applicability and deciding-current-source reconciliation are active work.
 The secret/SSH and multi-target Bake controls are now exercised in the forwarding campaign.
-Immutable remote Git contexts remain pending runtime probes.
+Immutable remote Git contexts are exercised in the source-selection controls.
+
+## Actual immutable Git and local-overlay controls
+
+The same committed Bake source,
+`b0e3247a279507c759964162ec9eb816e3dcc402`,
+was used for a local context and a remote Git context pinned to that full commit and fixture subdirectory.
+The local filesystem contained an invented overlay marker during both requests.
+Build `4tlgnm8sgp` exported that local marker and its exact content hash.
+Build `m62041tlnr` exported the committed marker and committed content hash instead.
+The fixture was restored byte-for-byte after the controls.
+Both actual consumers passed.
+This qualifies source selection for the tested immutable Git build context;
+it does not qualify loading Bake's HCL graph itself from a remote repository.
+
+## Dockerfile lint qualification and current gaps
+
+The installed CLI's `--lint` integration injects the Dockerfile into scanner images.
+Its source configures Hadolint `2.12.0`
+and Semgrep `1.34.1`
+with the dynamically fetched `p/dockerfile` rulepack.
+It does not scan the repository's TypeScript or Rust sources.
+Build `h6vjhtznxb` rejected the explicit-root fixture with `DL3002`;
+build `5l1vftdxsk` accepted the non-root fixture and exported the exact bound file.
+
+The Semgrep-specific missing-user fixture did not qualify:
+build `pjlxhhkvxh` accepted `Dockerfile.semgrep`,
+and canonical-filename control `1ktx2jdfqg` also accepted the same JSON-form `CMD`
+without the expected finding.
+Both results remain failed positive controls in the receipt,
+rather than being counted as security coverage.
+The source-configured tags were independently resolved for local diagnosis;
+the native lint log does not report the runtime scanner digest.
+
+A mount-free local container using the resolved Semgrep image reproduced the canonical non-detection.
+Its positive single-pattern controls matched `FROM $BASE` and `CMD ...`,
+while the current rule's `CMD $...VARS` pattern did not match the same file.
+The scanned file's bytes were independently checked inside that container.
+The pinned engine's source represents JSON argv and shell commands differently;
+the complete integration diagnosis and replacement-tool qualification remain open.
+Separately,
+the suffix filename was excluded from Semgrep's scanned paths.
+The CLI's source also discards scanner process-wait errors and silently skips malformed JSON output.
+Those source error-handling boundaries are distinct from the reproduced pattern non-detection.
+
+All native cases and bounded local controls are retained in the
+[BuildKit evidence](../audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json)
+and its compressed source archive.
+The local scanner containers used two CPUs,
+two GiB of memory,
+and no host mounts;
+their terminal absence was checked.
+
+## Owned OCI retention before cleanup
+
+The independent native CI and GitHub image consumers are terminal;
+their [service and job-container evidence](../audit/depot-service-containers-2026-10-18.evidence.json)
+preserves the prerequisite failures and corrected consumers.
+The parent released the image/project hold after removing and checking its exact owned secrets.
+
+The original service,
+Git-capable derivative,
+and Node-26-qualified derivative were then copied into a private OCI layout with
+`skopeo copy --all --preserve-digests`.
+All three original index digests were retained.
+Every reachable descriptor size and SHA256 was checked:
+57 unique blobs totaling 260,363,228 bytes.
+The complete source and output graphs are preserved before deleting the solely owned registry tags and project.
+Deletion is still pending;
+no physical-erasure or unseen-storage-billing conclusion follows from this export.
 
 ## Actual Bake graph, mount lifetime and CNI controls
 
