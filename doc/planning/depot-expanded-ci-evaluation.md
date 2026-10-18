@@ -118,7 +118,15 @@ a 51-byte shared-directory CLI roundtrip and private-domain/daemon cleanup
 ([all eight original archives and outcomes](../audit/depot-mvm-kvm-2026-10-18.evidence.json)).
 That roundtrip did not separately assert guest payload visibility or a guest write.
 An independent source review identified this test gap;
-an explicit guest transformation consumer is now in the execution queue.
+the follow-up now proves that boundary on all three pools.
+Each guest verifies its own boot identity and exact 51-byte input,
+creates an initially absent distinct output,
+transforms it and returns the exact 57-byte result to the host.
+All three retain private-domain and daemon cleanup
+([new original archives and guest proofs](../audit/depot-mvm-guest-files-2026-10-18.evidence.json)).
+The first follow-up GitHub dispatch remained queued because of a corrupted generated runner expression;
+it is retained as a harness failure,
+separately from the three actual consumers.
 The earlier failed probes remain historical observations;
 the named-ACL mutation's writer is not identified.
 
