@@ -1,6 +1,6 @@
 # Depot trial interview
 
-## Execution checkpoint on 2026-10-18 at 10:24 UTC
+## Execution checkpoint on 2026-10-18 at 10:58 UTC
 
 The actual single-job retry of native run `xgq2429hqv` completed artifact download on attempt two.
 Its consumer then correctly rejected the old fixture's failed assertion.
@@ -11,8 +11,21 @@ The subsequent full workflow rerun regenerated passing producer receipts,
 but its downloader selected the first attempt's `allrun` archive alongside current state/default archives.
 The consumer rejected the current-output hash mismatch.
 All seven producer/consumer archives across both attempts are retained privately with CRC and SHA checks.
-The parent owns source diagnosis and qualification of unique content-bound artifact names;
-the backend cause is not established.
+The deciding published SDK selector sorts same-name artifacts by numeric ID,
+and the actual older `allrun` ID is larger than the rerun's ID.
+Both IDs are safe integers;
+precision loss does not explain this pair.
+The backend's ID-construction mechanism remains unknown.
+The source trace and controls are in
+[`depot-rerun-artifact-id-order.md`](../troubleshooting/depot-rerun-artifact-id-order.md).
+Content-bound names at `46fab80ef500e7d857cdb822085c03f899e266ff`
+passed their first fresh consumer in `w9jdpj5f1l`,
+with all current producer hashes and six source/hash rejection controls.
+Its full workflow rerun is admitted under the unchanged USD 1 semantics guard,
+with USD 0.822 cumulative conservative full-window reservations.
+Do not infer passing aggregate workflow status from that consumer:
+the same diagnostic workflow contains intentionally failed parallel jobs and a cancelled timeout job.
+An isolated ordinary job-level continuation comparison remains queued to separate these effects.
 
 The earlier [Depot Tests trial](../audit/depot-test-feature-2026-10-16.md)
 already qualifies physical binary-level sharding,
@@ -21,19 +34,38 @@ retry history and analytics on its own source.
 The new current-source profile extends that evidence to 34 individual test names,
 with unchanged-input seed repeats and separate physical shards.
 Its exact Nextest selector controls and local CLI `2.102.23` preflight passed.
-It is committed at `aec580b2ddbc62126eb9264d8d8cff36cd8f1c06`,
-not dispatched yet,
-with four bounded allocations and a USD 0.174 full-window compute reservation under a USD 1 campaign guard.
+The first run `b7zbgvws7h` failed before Nextest because the child command inherited a directory
+outside its explicitly discoverable Mise configuration.
+The source-backed correction at `e1b2f76f62fbb7fea99eef4fca88443d54308455`
+passed actual run `fm9d4wkbj9`.
+Three seed executions passed 34 cases each;
+two physical shards passed 17 cases each;
+their downstream consumer verified the exact disjoint 34-case union.
+Attempt-scoped result APIs independently returned all 136 passing events,
+with 34 unique case names and four distinct provider sandbox identities.
+Both shard commands found timings for zero candidates.
+Physical execution and ingestion passed;
+per-test historical lookup and any history-balancing benefit remain unqualified.
+The two full profile reservations total USD 0.348 under the USD 1 campaign guard.
+Original evidence ZIPs,
+stored result rows and positive/negative transport-secret cleanup are public in
+[`depot-physical-test-shards-2026-10-18.evidence.json`](../audit/depot-physical-test-shards-2026-10-18.evidence.json).
+The first failure and verified directory remedy are in
+[`mise-excluded-research-task-discovery.md`](../troubleshooting/mise-excluded-research-task-discovery.md).
 Do not repeat the prior failure/skip/duplicate trials as though those capabilities were untested.
 Issue `1046` remains open;
 the current public service protocol still says `duplicate_invocation` is always false.
 
 The broader Rust work executed 336 passing core cases with 13 skips among 349 enumerated cases.
 The current-source Rust linter executed 415 passing cases with one skip among 416 enumerated cases.
-Its standalone compiler-consumer recovery remains separate from those passing tests.
+Its standalone compiler consumer passed in `zxlt43t7g1`,
+using Cargo's JSON-emitted matching rlib/rmeta paths.
+That consumer remains separate from the 415 passing unit cases.
 The actual frozen-source `wg-quicker-exempt` producer was consumed by GitHub run `39118628603`:
 all 44 owning invocations passed,
-including the formerly missing companion boundary.
+including the formerly missing companion-presence boundary.
+Those tests verify the actual sibling ELF's presence and hash,
+not execution of the privileged BPF program.
 The exact transport secret was removed and HTTP 404 verified.
 The original missing-producer fixture remains retained.
 
@@ -45,6 +77,27 @@ Libvirt's KVM capability probe still failed.
 This disproves a GitHub-wide KVM-absence claim;
 the access change between probes is not yet explained.
 The parent owns its public receipt and deciding-source note.
+The installed Libvirt source launches its KVM capability probe with machine `none`;
+the changing ordinary-user access still needs per-probe state evidence before assigning a cause.
+
+The remaining parent queue includes the current artifact rerun,
+per-test history identity diagnosis,
+ordinary continuation isolation,
+VM/process public receipts,
+container Git/libatomic prerequisite notes,
+job-environment recurrence documentation,
+PR cleanup publication,
+the provider/cost/critical-path model and the six-section evaluation report.
+The routing researcher owns finite fuzz,
+coverage,
+conformance,
+mutation-container and three-engine browser waves.
+The Rust researcher owns GNU/ASan fuzz,
+actual deterministic Codex host completion,
+all-features Truepeak Nextest,
+and source-qualified benchmark/privileged-BPF applicability.
+The platform researcher owns command/doc inventory reconciliation and exact stopped-SDK log retrieval.
+Independent sufficiency review precedes the interview.
 
 Research remains open;
 do not resume the interview or declare readiness from the completed module sample.

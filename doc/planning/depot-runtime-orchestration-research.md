@@ -1,6 +1,6 @@
 # Depot runtime and orchestration research
 
-## Current execution boundary on 2026-10-18 at 10:24 UTC
+## Current execution boundary on 2026-10-18 at 10:58 UTC
 
 Native single-job retry now has actual transport evidence:
 attempt two of `xgq2429hqv` downloaded the producer archives,
@@ -12,8 +12,17 @@ Its full workflow rerun exposed a distinct boundary:
 the download Action returned the first attempt's `allrun` ZIP with current state/default ZIPs,
 and the hash guard rejected that mixed result.
 All seven archives across both attempts are retained and integrity checked.
-Exact content-bound names are the next consumer-side qualification;
-neither the private backend cause nor a general retry failure is established.
+The deciding SDK sorts same-name artifacts by descending numeric ID.
+The older observed artifact has the larger ID;
+both IDs are safe integers.
+The [source trace and controls](../troubleshooting/depot-rerun-artifact-id-order.md)
+explain the selector result without establishing the backend ID-construction mechanism.
+Content-bound names at `46fab80ef500e7d857cdb822085c03f899e266ff`
+passed the first fresh consumer in `w9jdpj5f1l`.
+Its real complete workflow rerun is admitted with cumulative conservative reservations of USD 0.822
+under the unchanged USD 1 guard.
+The raw aggregate status also includes intentionally failed parallel jobs and a cancelled timeout job.
+An isolated ordinary continued-failure comparison remains required before diagnosing job-level continuation.
 
 The [earlier Tests trial](../audit/depot-test-feature-2026-10-16.md)
 already proves actual physical binary-level splitting and report/history controls.
@@ -21,10 +30,23 @@ The current profile adds individual-test granularity on the frozen source:
 34 exact selectors,
 unchanged-input seed repeats,
 two physical shards and a downstream identity consumer.
-Local selector and CLI-version preflight passed at harness
-`aec580b2ddbc62126eb9264d8d8cff36cd8f1c06`.
-It remains undispatched;
-four job windows reserve USD 0.174 under a USD 1 campaign guard.
+The first run `b7zbgvws7h` failed before application execution:
+its child Mise command inherited the repository root,
+where explicit configuration roots exclude `.depot/research/test-shards`.
+The [verified directory remedy](../troubleshooting/mise-excluded-research-task-discovery.md)
+passed actual run `fm9d4wkbj9` at `e1b2f76f62fbb7fea99eef4fca88443d54308455`.
+Three 34-case seed runs and two 17-case physical shards passed,
+and the downstream consumer verified the exact disjoint 34-case union.
+Attempt-scoped APIs independently returned 136 passing case events,
+with four distinct provider sandbox IDs joined to the source-bound receipts.
+Both physical commands still reported zero timed candidates;
+history-balancing benefit is not qualified.
+The [public receipt](../audit/depot-physical-test-shards-2026-10-18.evidence.json)
+retains stored rows and five original evidence ZIPs,
+excluding the binary input wrapper and signed transport URL.
+The two full profile reservations total USD 0.348 under the USD 1 guard.
+The exact temporary secret variant was removed after positive lookup,
+with absence verified.
 The prior repeated-upload defect remains open in issue `1046`;
 current protocol source still documents the duplicate response flag as always false.
 
@@ -35,6 +57,9 @@ while the root control passed and libvirt still rejected KVM capability.
 This is a changing access boundary,
 not evidence that GitHub-hosted runners categorically lack KVM.
 Per-probe access-state diagnosis and publication remain open.
+The inspected Libvirt `qemu_process.c:9538` capability launcher selects machine `none`
+for its KVM probe,
+which matches the failing machine choice but does not identify the changing access cause.
 
 ## Scope and execution manifest
 
