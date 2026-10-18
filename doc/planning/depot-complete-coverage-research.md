@@ -404,6 +404,19 @@ The collector is being corrected with aligned,
 dedicated-LOAD,
 and writable-overlap controls.
 The next run must preserve both APKs before checking either APK's layout.
+The corrected classifier passed local aligned and dedicated-LOAD controls,
+the actual padded AndroidX LOAD case,
+and deliberately rejected shared writable data,
+subsequent writable overlap,
+and missing LOAD evidence.
+Its generated JavaScript and YAML/TOML task boundaries also passed syntax validation.
+The Google Play requirement in the cited guidance applies to 64-bit devices;
+32-bit library layouts are recorded without extending that acceptance rule to them.
+Both APK signatures,
+package identities,
+instrumentation target,
+runner,
+and certificate agreement are checked before the pair is handed to the device lane.
 
 The preserved debug APK is 164,612,534 bytes,
 with SHA-256 `bdf02a43b9bf235e8998362fff270c0a79060aaa9f9f923a5df01375e01e755f`.
