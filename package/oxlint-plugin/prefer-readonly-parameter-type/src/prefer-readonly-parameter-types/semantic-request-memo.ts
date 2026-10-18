@@ -66,8 +66,20 @@ export const MEMOIZED_SNAPSHOT_REQUESTS: ReadonlySet<string> = new Set<string>([
 
 /**
  Most responses kept for one snapshot before the oldest is dropped.
+
+ Chosen from a replay of the ordered request streams of the 36 `translation-repair` lint processes
+ through this memo's rules (allow-list, one store per snapshot, oldest first out, drop on release):
+ across the 2.69 million memoizable requests, the most answers any process held at once was 136,050
+ (`corpus-pass`). At 131,072 only that process evicts, 4,998 answers, and the hit rate stays at
+ 70.99 percent, the same as with no bound. At 65,536 the family evicts 160,893 answers and loses
+ 0.02 percentage points; at 8,192 it evicts 559,516 and loses 0.44. A power of two just under the
+ observed peak buys the whole hit rate and still caps the memory a package larger than any measured
+ one can make the memo hold.
+
+ The bound applies to each snapshot. The bridge keeps one live snapshot and, while it replaces it,
+ one more, so a lint process holds a small multiple of it at most.
  */
-export const MAXIMUM_MEMOIZED_RESPONSES_PER_SNAPSHOT = 262_144;
+export const MAXIMUM_MEMOIZED_RESPONSES_PER_SNAPSHOT = 131_072;
 
 /**
  Counters describing what a memo has served.
