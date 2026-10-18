@@ -1,6 +1,6 @@
 # Depot trial interview
 
-## Execution checkpoint on 2026-10-18 at 15:42 UTC
+## Execution checkpoint on 2026-10-18 at 15:52 UTC
 
 Research remains active;
 do not start the interview.
@@ -61,9 +61,12 @@ The failing dialog assertion is `Ctrl+Shift+O opens the system folder dialog`.
 The owner verified zero retained app/compositor processes,
 units or container,
 restored sinks and absent credential.
-The parent's native graph now waits only for the Rust owner's bounded cache campaign to finish;
-the corrected GitHub graph can overlap that single sequential cache job.
-No native graph has been dispatched.
+The Rust cache campaign is terminal and its slot released at `15:48:32 UTC`.
+Native graph `gb01kjx2qk` is dispatched on exact source `234ccc92dabb81e998e0a0bb5e838713924dd83f`,
+with two sequential samples and one native job maximum.
+Its finite terminal watcher is process session `84977`;
+the GitHub terminal watcher remains session `63906`.
+The parent now has at most two active research jobs across those graph products.
 
 Packed consumers are sealed at `898fd6ab03`:
 25 actual runtime imports,
@@ -99,6 +102,16 @@ the Rust researcher owns a bounded cross-branch cache control before closing tha
 Its six sequential two-minute jobs plus one correction reserve use a separate USD 0.084 uniform proxy
 under a USD 0.10 guard;
 the parent coordinated dispatch after the platform slot release.
+All six cache jobs completed without a retry:
+GitHub seed `39141719724`,
+same-branch `39141763438` and sibling `39141821223`;
+Depot seed `39141909098`,
+same-branch `39142023227` and sibling `39142130086`.
+GitHub's verified same-branch exact hit is followed by a sibling miss;
+Depot's sibling actually restores the exact 53-byte marker.
+This proves that benign sibling-read scope,
+not every fork/PR write-poisoning scenario.
+The Rust owner seals the source archive and branch cleanup before final report integration.
 No account setting or broad credential is needed.
 
 The original graph admission's USD 1.20 Depot nominal full-window reservation was incorrect.
@@ -122,9 +135,25 @@ The parent independently verified its arithmetic at `15:41:16 UTC`:
 all 411 original bodies,
 223 unique records,
 195 exact timestamp/rate/cost joins and separate exact BuildKit fractions pass.
-The parent must publish that receipt and append measured post-baseline attempts,
-including the failed graph and automatic-auth cohorts.
+The published independent receipt is
+`doc/audit/depot-owned-allocation-independent-arithmetic-2026-10-18.evidence.json`,
+committed with the cache interpretation as prepared `aa3427f187`,
+landed `7eb1f51231` and verified as an ancestor of the directly queried remote main tip.
+The Rust owner now appends a separate sourced follow-on ledger after sealing cache results,
+deduplicating the frozen baseline and all later coverage/platform/cache/root identities.
+The parent reviews that arithmetic when all graph/OS attempts are terminal.
 Admission maxima are not observed charges or invoices.
+The root report now integrates packed and desktop consumers,
+native automatic BuildKit/registry success,
+static/property/mutation dispositions and the baseline arithmetic,
+while retaining pending graph/OS/source-semantic closure.
+The private renderer crossed Node's default output buffer on the growing handover AST;
+following the existing bounded-buffer troubleshooting entry fixed the parent capture policy.
+All fourteen render targets now pass,
+including the 1,067,303-byte handover AST and 215,831-byte HTML.
+Actual cache,
+allocation and Git-recursion HTML have been read;
+the latest handover/report changes still need their final render/read.
 After factual queues close,
 obtain an independent sufficiency review,
 finish the approved report sections and only then start the decision interview.

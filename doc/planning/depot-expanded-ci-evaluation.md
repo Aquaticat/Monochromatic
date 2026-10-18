@@ -52,6 +52,16 @@ Counts of source files,
 owning task invocations,
 enumerated tests,
 executed bodies and result-upload events remain separate.
+The current-source inventory has 227 package roots,
+including 211 active and sixteen inactive roots,
+and 2,425 source-owned Mise tasks across 13,860 tracked paths.
+Its source-language inventory includes JavaScript/TypeScript,
+Kotlin,
+Rust,
+Slint and C/C++;
+the absence of Go or Python owners is a measured scope result,
+not a reason to install unrelated task systems
+([source inventory and applicability controls](depot-complete-coverage-research.md)).
 
 The evidence is principally first-party execution data and inspected implementation source.
 Primary receipts bind original ZIP/member hashes,
@@ -72,6 +82,14 @@ the remaining `none` case reached the preserved `unresolved` versus `unspecified
 The consumer did not rebuild the application or rerun the unit suite
 ([source and retained controls](depot-complete-coverage-research.md)).
 An artifact-membership pass alone cannot qualify that runtime boundary.
+
+The packed-install profile activates the actual package manager and imports 25 installed runtime packages.
+It separately compiles a positive and a rejecting TypeScript consumer for the type-only ownership-marker package.
+Its unexpected runtime import of that type-only package is retained as a harness expectation error.
+All five functional consumers pass,
+including the actual mutation CLI's dry-run discovery of two mutants and its tests.
+Discovery does not mean the mutants were executed
+([packed consumer source and original receipts](depot-complete-coverage-research.md)).
 
 The browser profile exercised all eight browser specs in each engine:
 Chromium passed 28 cases,
@@ -121,6 +139,19 @@ This functional device pass is separate from APK layout,
 signing,
 JNI and producer JVM checks.
 
+Desktop execution now covers the original wide session and all six remaining authored sessions,
+using the real application and nested compositor.
+The wide session reports 69 passing assertions and one authored modifier-repeat skip,
+then a separate track-loading harness error.
+The remaining structured session summaries report 41 passes and one dialog assertion failure,
+with no skips.
+The failing assertion is `Ctrl+Shift+O opens the system folder dialog`.
+Repeated assertions across layouts and duplicated raw log lines are not unique case identities.
+The continuation retains ninety PNG artifact identities,
+with cleanup verifying no app/compositor processes,
+units or container and restored audio state
+([desktop sessions and original artifacts](depot-complete-coverage-research.md)).
+
 ### Execution infrastructure
 
 Native Depot,
@@ -164,7 +195,8 @@ Physical sandbox identities are not a claim about distinct physical hosts or a s
 The multi-architecture BuildKit campaign produced actual AMD64 and ARM64 image consumers,
 including locked Node 26 execution,
 and verified registry read-only access against a rejected write.
-SPDX and SLSA subjects matched the saved image identity;
+SPDX and SLSA subjects matched their runtime-manifest digests,
+which are not necessarily the image-index digest;
 the separate OCI archive's empty subject retained its own disposition.
 The four-target Bake run exercised overlapping target work,
 secret delivery and keyless SSH listing,
@@ -172,6 +204,18 @@ but did not perform an SSH signature or prove project-level autoscaling
 ([BuildKit primary receipt](../audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json)).
 Truepeak's image build and cache checks reported zero tests;
 the separately executed 89-case owner supplies its test evidence.
+
+Native jobs also completed actual BuildKit and registry consumers using only their injected job token.
+The local-export correction `pxx75mxnw2` imports and executes the frozen queue source from its exported image.
+The separate registry run `38z4wlq9d3` rejects anonymous and invented-token access,
+then exchanges the injected token,
+reads and rehashes the OCI graph and executes the extracted frozen-source consumer.
+The original `dzsf27t0xx` run reached the builder but failed because the fixture mixed incompatible exporters.
+The temporary image and solely owned project were deleted;
+the exact manifest changed from HTTP 200 to 404 and the project query returned `not_found`.
+Those are logical cleanup observations,
+not physical-erasure or invoice claims
+([native authentication receipt and original ZIPs](../audit/depot-native-buildkit-job-auth-2026-10-18.evidence.json)).
 
 The custom-runtime SDK campaign created and stopped three isolated VMs.
 Its final consumer used the absolute required Git executable,
@@ -235,6 +279,35 @@ by successful setup or successful unrelated siblings
 ([coverage record](depot-complete-coverage-research.md),
 [Android receipt](../audit/depot-android-consumer-2026-10-18.evidence.json)).
 
+The Linux static campaign ran 465 owning commands,
+with 418 passing and 47 failing;
+these are task outcomes rather than assertion counts.
+The default Node owner campaign reports 126 passing commands and one failing unused-export owner.
+The bounded property profile reports 64 passing cases and five retained counterexamples.
+The separate mutation profile records eleven killed mutants,
+six surviving mutants and two compile-error outcomes.
+The complete semantic assertion manifest remains a separate reconciliation gate
+([command dispositions and retained counterexamples](depot-complete-coverage-research.md)).
+
+The first repeated-graph dispatch `39135886118` failed tool setup in all four jobs,
+before any of its planned 222 owner commands ran.
+It omitted the configured `cargo-binstall` prerequisite.
+The corrected driver also closes staged-source mutation and resistant descendant cleanup gaps found by
+independent preflight.
+Its twelve local controls pass on exact source `234ccc92dabb81e998e0a0bb5e838713924dd83f`;
+those stub controls earn no application execution credit
+([setup failure](../audit/depot-expanded-graph-setup-failure-2026-10-18.evidence.json),
+[independent source and cancellation controls](../audit/depot-expanded-graph-preflight-2026-10-18.evidence.json)).
+
+The native-CI documentation review covers parallel shared-filesystem semantics,
+retry state,
+identity,
+environments,
+secret selection and automatic log-based AI summaries.
+Not issuing an explicit paid model request does not mean the vendor performs no AI processing of job logs.
+These documented behaviors remain separate from executed repository consumers
+([substantive native capability review](depot-native-ci-capability-review.md)).
+
 ## Provider allocation, cost, and critical paths
 
 Developer includes 500 build minutes,
@@ -260,6 +333,18 @@ owns allocation-row normalization and the remaining whole-graph calculation.
 Standard GitHub public-repository compute remains a zero-compute-cost option;
 artifact/storage rules are separate
 ([GitHub billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions)).
+
+The frozen owned-allocation baseline contains 223 distinct records.
+Independent coordinator checks rehash all 411 retained source bodies and exactly recompute all 195 priced intervals:
+native CI USD 4.8546,
+Depot GitHub runners USD 1.3372 and SDK intervals USD 0.0081959,
+with public GitHub compute zero.
+Their known partial nominal subtotal is USD 6.1999959 before allowances.
+BuildKit's USD 0.538584 request-window proxy remains separate from unknown allocated-builder compute.
+Later research attempts require a deduplicated follow-on ledger;
+admission reservations are not added as observed charges
+([normalized baseline](depot-owned-allocation-ledger.md),
+[independent exact arithmetic](../audit/depot-owned-allocation-independent-arithmetic-2026-10-18.evidence.json)).
 
 Cache conclusions name the workload and mechanism.
 Both fresh pnpm profiles use pinned `actions/cache/restore` and `actions/cache/save`
@@ -309,18 +394,28 @@ invalidation and consumer evidence in the
 The finished allocation must choose these mechanisms per owner and retained consumer boundary.
 It cannot treat a cache hit,
 restored bytes or a shorter compile phase as a measured whole-CI speedup.
+The complete integration review also separates applicable Gradle/Rust mechanisms from unused Bazel,
+Go,
+Maven,
+Moon,
+Nx,
+Pants,
+Turbo and Xcode owners.
+Depot's Actions cache guide explicitly documents no branch isolation;
+actual trust-scope controls and their retained consumers belong beside the performance evidence
+([cache applicability and trust review](depot-cache-capability-review.md)).
 
 ## Adoption conditions and unresolved evidence
 
 Remaining factual work is explicitly owned in the
 [execution handover](../handover/depot-trial-grilling.md):
-remaining authored desktop sessions after the real compositor/PNG consumer,
-proper packed-install consumers,
 current-source macOS and Windows owner controls,
 semantic feature/assertion reconciliation,
-automatic native-job BuildKit authentication,
 source-ledger reconciliation,
 repeated coherent Linux graph measurement and combined allocation/cost normalization.
+The desktop,
+packed-install and native automatic BuildKit/registry consumer queues are complete with the qualifications in
+Gate and artifact-consumer results.
 Independent sufficiency review follows those results.
 These are ongoing research tasks,
 not deferred production acceptance tests.
