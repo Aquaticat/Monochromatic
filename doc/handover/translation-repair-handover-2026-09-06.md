@@ -481,8 +481,13 @@ before the other queued work.
     gates the carry reader's "no run-off read as written" tolerance to generation 17 and earlier,
     and corrects a refusal string, done (`f5dc1482dc`, `7410c9948f`, `6939a15e33`, ledger B665 to B667,
     still 5 of 5 stored artifacts accepted, `w184-notes/reader-check-2.txt`);
-    gate g103 runs on `6939a15e33` in `w185` (`s245/split/g103/`);
-    then landing in order (`w177`, `w180`, `w184`) and the relaunch;
+    gate g103 on `6939a15e33` is green (145 steps exit 0, suites 2513 pass and 0 fail, `s245/split/g103/`);
+    landed as `16ab4bf9c9` to `3eb276709b` (package tree identical to the gated head) and pushed;
+    the cache-account audit at `3eb276709b` cannot attribute commits since the split moved every version constant
+    (787 of 823 source commits named by none, `s245/split/audit-3eb2.txt`),
+    so the cache account since `29d606470` (n171's code, where seven versions were last set) is read from the code
+    in `w185` (`w185-notes/cache-account.md`), n173's fold change being the one with no recorded cache decision;
+    then the relaunch; the `w177` hardening lands separately, as it changes lint only;
     resuming into a generation-17 runs directory is refused, so the relaunch uses a fresh throwaway directory);
     the cache-account audit;
     the relaunch of TianqiChen666 through the runbook's keyed task.
