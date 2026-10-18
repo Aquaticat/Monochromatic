@@ -1,5 +1,77 @@
 # Auto-mode current frontier
 
+## Current verified state
+
+Work remains incomplete; no readiness handoff has been established.
+The user keeps root `TCV` and `CPN` unchanged and puts the lessons in package documentation.
+The selected logger policy is project-first defaults with user-state fallback and strict explicit destinations.
+Logger `0.4.4` is published and passes fresh installed-consumer checks,
+including read-only fallback and escaped terminal-control diagnostics.
+Private pnpr publication still returns `E401`; the Coolify/SSH/API access question remains pending.
+The deployed pnpr trust configuration has not been inspected.
+
+Default native release `kFkBoY` remains pinned while the live workers use it.
+A final coherent auto-mode rebuild embedding logger `0.4.4` is still required.
+MiMo native controller `42230`, fixture `pi-mimo-rpc-session-I79zzb`,
+reached 92 tools without source edits and was aborted to an actual settled boundary.
+Its new prompt `native-implement-error-class-only-20261018` narrows ownership to
+`system-slot-error.mjs` and a new `system-slot-error.ts` only.
+The supervisor retains the queued `system-slot` and `policy-loader` changes.
+MiMo source controller `53002`, fixture `pi-mimo-rpc-session-B7AghW`,
+still owns only `native-decision-fallback.test.mjs` and new siblings for that catalog.
+Its observed errors are ordinary command/path failures, not the reported preparation diagnostic.
+
+Native aborts produce three error tool results containing
+`Complete group preparation or assessment failed`.
+The fresh second abort is acknowledged and the worker settles.
+This cancellation incident needs its own retained-cause investigation;
+it is not evidence that the ordinary reported-inspection repair failed.
+Reusing a previous RPC command ID is ignored by the controller's deduplication.
+Every new supervisory command now needs its own ID.
+
+Supervisor commit `26b6aec284` completes constructor/group fixture declarations
+and names the receipt output callbacks.
+Frozen fresh-cache types and the constructor,
+program-owner and process-network receipt consumers pass.
+The three-file semantic lint still reports 54 warnings and one async-disposal error in the legacy `.mjs` catalog.
+That file is outside the TypeScript project's include list;
+the scoped result does not clear the old full-source backlog of 1,037 warnings and 47 errors.
+
+The reported-interaction checkpoint retains 52 successful tools,
+zero selectors,
+62 successful live Luna requests and positive-controlled payload inspection.
+Its setup remains insufficient for final completion.
+The corrected short startup probe serves the frozen public Synthetic catalog,
+uses private writable project settings,
+writes the private credential store rather than merely parsing it,
+preserves the absence of provider credential overrides,
+and supplies the configured Deepseek credential presence with a fixture value.
+Startup diagnostics pass,
+but a stronger catalog comparison finds 164 models versus 185 in the worker's initial response.
+All remaining differences are OpenAI Fast physical routing targets.
+Current source-worker catalog observation is being compared at the matching session phase
+before attributing that difference to the fixture.
+
+Remaining independently verified work areas:
+
+- Complete source and native lint repairs without weakening rules or changing worker inputs.
+- Investigate cancellation diagnostics and verify Allow,
+  Stop,
+  cancellation,
+  stale evidence and compaction through the configured host.
+- Rebuild the coherent final artifact and repeat the corrected reported-interaction replay,
+  real MiMo editing,
+  payload positive controls and complete raw-stderr checks.
+- Finish dependency/import measurements and review any artifact cleanup against actual live consumers.
+- Inspect deployed pnpr trust after the requested access route is available,
+  then verify the intended private shared-analyzer release.
+- Render the updated package documents and this handover after the new evidence is recorded.
+
+## Earlier checkpoint record
+
+This section preserves historical checkpoints and their then-pending work.
+`Current verified state` supersedes their status claims.
+
 ## Current checkpoints and supervision
 
 The work remains incomplete.

@@ -22,8 +22,14 @@ The shared logger owns the file sink and destination selection.
 Auto-mode's `mise.toml` sets `MONOCHROMATIC_LOG_DIRECTORY` to
 `${HOME}/temp/agent/pi-auto-mode-diagnostics` for package tasks.
 This preserves diagnostic records outside package source and release artifacts.
-Other consumers can select their own directory;
-an empty or unset setting preserves nearest-ancestor `node_modules/.monochromatic` discovery.
+Other consumers can select their own directory.
+Published logger `0.4.4` keeps nearest-ancestor `node_modules/.monochromatic` as its default,
+then falls back to per-user state when the project destination cannot be used.
+The fallback notice identifies the actual destination and escapes terminal control characters.
+Explicit directory arguments and nonempty `MONOCHROMATIC_LOG_DIRECTORY` stay strict.
+The logger's [file destination contract](../../../module/logger/doc/file-destinations.md)
+defines platform layouts and initialization probes.
+The active auto-mode artifact still needs its final coherent rebuild with this logger repair.
 Auto-mode does not own a parallel logging backend.
 The initial package directory contains 12,728 diagnostic files totaling 7,089,712,671 apparent bytes.
 The largest sampled files are historical logs from 2026-10-14.
