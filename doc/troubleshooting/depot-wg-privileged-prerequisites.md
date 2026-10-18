@@ -7,19 +7,25 @@ The complete receipts and failed attempts remain in
 [`depot-rust-coverage-2026-10-18.evidence.json`](../audit/depot-rust-coverage-2026-10-18.evidence.json)
 and its linked compressed raw archive.
 
-- `42h9g5sczp`: `ip --help` printed valid usage and returned `255`.
+- `42h9g5sczp`:
+  `ip --help` printed valid usage and returned `255`.
   The adapter required status `0` and stopped before application tests.
-- `8gts453b5g`: `mount` returned `32` with
+- `8gts453b5g`:
+  `mount` returned `32` with
   `mount: /sys/fs/cgroup: none already mounted or mount point busy.`
   No privileged tests ran.
-  Independently, root-created receipt permissions caused artifact upload `EACCES`.
-- `p81kntfxgs`: mounts succeeded and all privileged cases ran.
+  Independently,
+  root-created receipt permissions caused artifact upload `EACCES`.
+- `p81kntfxgs`:
+  mounts succeeded and all privileged cases ran.
   Five passed and six failed during teardown with messages such as
   `keeper PID 103 command does not match owned process`.
-- `4hddgrkrk2`: `/usr/bin/tini --help` returned `1` with
+- `4hddgrkrk2`:
+  `/usr/bin/tini --help` returned `1` with
   `/usr/bin/tini: invalid option -- '-'`.
   No privileged tests ran.
-- `506m7r84kk`: corrected prerequisites and a real namespace init passed all 11 privileged cases.
+- `506m7r84kk`:
+  corrected prerequisites and a real namespace init passed all 11 privileged cases.
   The 15 ordinary cases were filtered skips in this run.
 
 ## Root cause
@@ -88,6 +94,7 @@ frozen `package/cli/wg-quicker-exempt/src/keeper_process.rs:53` reads `/proc/<pi
 and `keeper_process.rs:82` rejects a command mismatch:
 
 ```rust
+//! Excerpt of the frozen process identity rejection.
 // package/cli/wg-quicker-exempt/src/keeper_process.rs:82, abridged.
 if observed_command != expected {
     return Err(io::Error::new(
