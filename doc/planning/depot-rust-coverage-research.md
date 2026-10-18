@@ -240,6 +240,35 @@ network-disabled containers with 2 CPU,
 Committed corpora remain source inputs;
 only owned copies receive generated units and crash artifacts.
 
+### First bounded fuzz and host attempts
+
+`bl31brxwpm` passed the official Rust AddressSanitizer stack-overflow positive control
+inside the bounded mount-free runtime.
+It then stopped before application compilation:
+the harness had merged Mise's `WARN missing:` stderr into `cargo fuzz list` stdout
+and rejected the warning as an unexpected target.
+That is a research admission failure,
+not a failed fuzz target.
+Harness `43977f1cca` preserves each stream independently and parses only target stdout.
+
+`c4p5g7lx48` exercised the existing ignored Codex host case with the signature-admitted `0.163.0` executable.
+Its local deterministic provider accepted all expected payload responses,
+and the host reported 40 completed hooks.
+The actual Nextest case nevertheless failed at `tests/native_host.rs:142`,
+the final membership-file PID assertion.
+No full installed-host pass is claimed.
+The next diagnostic consumer retains the unchanged fixture's wire messages and synthetic home;
+it does not change application source or substitute an external model.
+
+The two failed jobs add USD 0.05 and USD 0.0182 respectively.
+The cumulative proxy is USD 1.7246,
+leaving USD 3.2754.
+The corrected fuzz retry reserves USD 0.36,
+and the host diagnostic reserves USD 0.18,
+for a combined forecast of USD 2.2646.
+Separate Git-policy fuzz,
+linter fuzz and their existing planted controls remain required work.
+
 The tool-preparation run `jf0c9llb1v` finished with the same 415 passing Nextest cases,
 1 skipped and 416 enumerated,
 and retained a real executable transport artifact.
