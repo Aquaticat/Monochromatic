@@ -443,8 +443,14 @@ before the other queued work.
     The scratch configs in `w165` and `w175` are deleted and `w165`'s plugin edit is reverted.
 5.  The queue the split went ahead of,
     oldest first:
-    the delegated items (finalist extension,
-    guard demos);
+    the delegated items:
+    the finalist extension (not started before 2026-10-18;
+    the lead's veto-open rule that a lone leader without a majority is run off with the second-count labels,
+    fixing the 2-1-1 regression the `TianqiChen66625` replay showed in n171)
+    runs as a red/fix pair in `w180`,
+    and the guard-failure demonstrations
+    (missing for n171 and n168, unmapped for n173's `s244/guards/`)
+    run in `w181` (notes `w181-notes/report.md`);
     the docs batch's leftovers (the batch itself landed in `065353a34f` to `8194356f4d`;
     `1939670f87` brought `design-commitments.md` up to the B619 landing and the B641 carry run-off;
     gate g102 runs on `1939670f87` in `w179`, unit `gate-g102`, output `s245/split/gate-g102/`):
