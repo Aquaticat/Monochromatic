@@ -12,7 +12,7 @@ and only `probe` lists it in `dependencies`.
 ## What it provides
 
 `src/index.ts` re-exports each public name from the module that declares it.
-The groups below name the main ones.
+The groups that follow name the main ones.
 
 - The pass and its queue:
   select the pending entries,

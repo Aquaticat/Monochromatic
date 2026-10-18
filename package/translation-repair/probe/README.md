@@ -13,7 +13,7 @@ and only `bench` and `coverage-census` depend on it.
 ## What it provides
 
 `src/index.ts` re-exports each public name from the module that declares it.
-The groups below name the main ones.
+The groups that follow name the main ones.
 
 - Introduced-defect probe runs:
   probe the sensitivity of the defect probe,

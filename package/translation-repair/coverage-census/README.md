@@ -10,7 +10,7 @@ and no production package depends on it.
 ## What it provides
 
 `src/index.ts` re-exports each public name from the module that declares it.
-The groups below name the main ones.
+The groups that follow name the main ones.
 
 - Census run and report:
   run the suite under coverage,

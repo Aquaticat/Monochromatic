@@ -16,7 +16,7 @@ and it sits above `artifact`,
 ## What it provides
 
 `src/index.ts` re-exports each public name from the module that declares it.
-The groups below name the main ones.
+The groups that follow name the main ones.
 
 - Slice cache stores and namespaces:
   one disk-backed store for each kind of question,

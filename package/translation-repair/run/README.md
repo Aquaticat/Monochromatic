@@ -16,7 +16,7 @@ ledger and meter readers they use.
 ## What it provides
 
 `src/index.ts` re-exports each public name from the module that declares it.
-The groups below name the main ones.
+The groups that follow name the main ones.
 
 - Run configuration and seats:
   the roster,

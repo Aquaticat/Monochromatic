@@ -14,7 +14,7 @@ and no other family package depends on it.
 ## What it provides
 
 `src/index.ts` re-exports each public name from the module that declares it.
-The groups below name the main ones.
+The groups that follow name the main ones.
 
 - Roster and producer benches:
   run the same slices at every roster width and rank producers by the ballots their work drew.
