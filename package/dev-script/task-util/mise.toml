@@ -81,6 +81,8 @@ const result = {
   miseLockSha256: hash('mise.lock'),
   node: process.version,
   pnpm: execFileSync('pnpm', ['--version'], { encoding: 'utf8' }).trim(),
+  cacheEndpointOrigins: Object.fromEntries(['ACTIONS_CACHE_URL', 'ACTIONS_RESULTS_URL'].map(key => [key, process.env[key] ? new URL(process.env[key]).origin : null])),
+  cacheCredentialPresence: Object.fromEntries(['DEPOT_CACHE_TOKEN', 'DEPOT_JIT_TOKEN', 'SCCACHE_WEBDAV_TOKEN', 'SCCACHE_WEBDAV_USERNAME', 'SCCACHE_WEBDAV_PASSWORD'].map(key => [key, Boolean(process.env[key])])),
   runner: { name: process.env.RUNNER_NAME, os: process.env.RUNNER_OS, arch: process.env.RUNNER_ARCH, imageOS: process.env.ImageOS, imageVersion: process.env.ImageVersion, platform: platform(), architecture: arch(), cpus: cpus().length, cpuModel: cpus()[0]?.model, totalMemoryBytes: totalmem() },
   freshExperimentStoreEmpty: true
 };
