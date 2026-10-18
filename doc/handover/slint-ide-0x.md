@@ -917,7 +917,13 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     `6808166dfd`, after the coordinator reran 488 package tests, clippy, rustfmt and the fuzz sidecar tests on the
     merged tree and ran the built binary over a disposable project: a covered finding stayed quiet, a directive aimed
     at `rust/max-lines` was refused, one without a reason was reported). The owner decided D2 on 2026-07-25 and asked
-    for it to be built. `monochromatic-lint-disable`, `-enable`,
+    for it to be built. Released on 2026-10-18 as `monochromatic-lint` 0.2.0 at the owner's request (a minor bump,
+    because removing `rust/no-anonymous-functions` breaks a config that names it): the `cargo-publish` run on
+    `bc8ffc2c47` published the crate and the GitHub release `monochromatic-lint-v0.2.0` with eight platform archives,
+    crates.io lists 0.2.0, `mise upgrade cargo:monochromatic-lint` moved the installed tool and `mise.lock` (commit
+    `661af4261b`), and the installed 0.2.0 exits 0 over the IDE and the closure package. The owner also chose to keep
+    doc comments inert (the source quotes a directive in a `///` comment at `src/run_modes.rs:91`).
+    `monochromatic-lint-disable`, `-enable`,
     `-disable-line` and `-disable-next-line` are read from `//` and `/* */` comments of Rust files and from HTML
     comments of Markdown files (not MDX), each needing a ` -- reason`. `rust/max-lines` and `rust/require-rustdoc`
     declare themselves unsuppressible in `RULES` (`src/run_modes.rs`, shown by `--rules`); a directive aimed at either is
