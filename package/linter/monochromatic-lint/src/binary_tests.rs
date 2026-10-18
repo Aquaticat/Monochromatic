@@ -1188,3 +1188,90 @@ fn concurrency_and_closed_pipes_do_not_change_results() {
     assert_eq!(closed.status.code(), Some(1));
     assert_eq!(String::from_utf8(closed.stderr).expect("UTF-8"), "");
 }
+
+/// Inline directives through the real executable:
+///  suppression, the unused-directive options and their usage errors,
+///  standard-input linting and the rule listing's suppressibility.
+#[test]
+fn directives_through_the_executable() {
+    let fixture: Fixture = Fixture::new();
+    fixture.write(CONFIG, RULES);
+    fixture.write(
+        "a.md",
+        "# Title\n\n<!-- monochromatic-lint-disable-next-line markdown/single-h1 -- legacy title -->\n# Second\n",
+    );
+    fixture.write(
+        "lib.rs",
+        "//! Docs.\n// monochromatic-lint-disable-next-line rust/max-lines -- budget\n/// Item.\nfn item() {}\n",
+    );
+    // The Markdown directive suppresses its finding; the Rust directive names an unsuppressible rule.
+    let plain: Run = run(&fixture.path, &[], b"");
+    assert_eq!((plain.status, plain.stderr.as_str()), (1, ""));
+    assert_eq!(
+        located(plain.stdout.as_str()),
+        ["lib.rs directive/non-suppressible 2 41"]
+    );
+    // An unused directive is a warning on request, an error with the severity option.
+    fixture.write("lib.rs", "//! Docs.\n");
+    let warned: Run = run(&fixture.path, &["--report-unused-disable-directives"], b"");
+    assert_eq!((warned.status, warned.stderr.as_str()), (0, ""));
+    assert!(warned.stdout.is_empty(), "{}", warned.stdout);
+    fixture.write("a.md", "# Title\n\n<!-- monochromatic-lint-disable-next-line markdown/single-h1 -- stale -->\nplain\n");
+    let warning: Run = run(&fixture.path, &["--report-unused-disable-directives"], b"");
+    assert_eq!(warning.status, 0);
+    assert_eq!(records(warning.stdout.as_str())[0]["severity"], "warn");
+    let error: Run = run(
+        &fixture.path,
+        &["--report-unused-disable-directives-severity", "error"],
+        b"",
+    );
+    assert_eq!(error.status, 1);
+    assert_eq!(
+        records(error.stdout.as_str())[0]["code"],
+        "directive/unused"
+    );
+    // Giving both spellings, or an unknown severity, is a usage error.
+    for arguments in [
+        vec![
+            "--report-unused-disable-directives",
+            "--report-unused-disable-directives-severity=warn",
+        ],
+        vec!["--report-unused-disable-directives-severity=loud"],
+    ] {
+        let refused: Run = run(&fixture.path, &arguments, b"");
+        assert_eq!(
+            (refused.status, refused.stdout.as_str()),
+            (2, ""),
+            "{arguments:?}"
+        );
+        assert!(
+            refused
+                .stderr
+                .contains("--report-unused-disable-directives"),
+            "{}",
+            refused.stderr
+        );
+    }
+    // Standard input is linted with the same directives.
+    let piped: Run = run(
+        &fixture.path,
+        &[
+            "--stdin",
+            "--stdin-filename",
+            "n.md",
+            "--report-unused-disable-directives",
+        ],
+        b"# One\n\n<!-- monochromatic-lint-disable-next-line markdown/single-h1 -- r -->\nplain\n",
+    );
+    assert_eq!(
+        located(piped.stdout.as_str()),
+        ["n.md directive/unused 3 43"]
+    );
+    // The listing declares which rules refuse directives.
+    let rules: Run = run(&fixture.path, &["--rules"], b"");
+    let listed: Vec<serde_json::Value> = records(rules.stdout.as_str());
+    assert_eq!(listed[0]["id"], "rust/max-lines");
+    assert_eq!(listed[0]["suppressible"], false);
+    assert_eq!(listed[1]["suppressible"], false);
+    assert_eq!(listed[2]["suppressible"], true);
+}

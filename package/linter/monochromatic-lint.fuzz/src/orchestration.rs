@@ -24,10 +24,10 @@
 ///  planning and per-source pipeline.
 use monochromatic_lint::{
     config_lookup::ConfigurationSource,
-    directive_options::DirectiveOptions,
     config_match::{FileConfiguration, PreparedConfiguration, prepare_configuration},
     configuration::parse_configuration,
     diagnostic::{Diagnostic, Span},
+    directive_options::DirectiveOptions,
     edits::{Edit, Fix, apply_fixes},
     markdown_rule_settings::markdown_rule_settings,
     processors::{VirtualSource, extract},
@@ -157,6 +157,19 @@ pub const CASES: &[Case] = &[
         name: "clean.rs",
         source: "//! File.\n\n/// Item prose.\n///\n/// ```rust\n/// //! Example.\n/// /// Entry.\n/// fn main() {\n/// # let hidden: u32 = 1;\n/// }\n/// ```\nfn item() {}\n",
         codes: &[],
+    },
+    // A directive covers the first bare URL in a Markdown host; the second is reported and fixed.
+    // The clean fence gives the case a virtual file, which the edit-group controls require.
+    Case {
+        name: "suppressed.md",
+        source: "# Title\n\n<!-- monochromatic-lint-disable-next-line markdown/no-bare-urls -- reason -->\nSee https://example.com/a here\n\nSee https://example.com/b here\n\n```rust\n//! Example.\nlet value: u32 = 1;\n```\n",
+        codes: &["markdown/no-bare-urls"],
+    },
+    // A Rust directive covers a bare URL in rustdoc, and one aimed at the line budget is refused.
+    Case {
+        name: "directive.rs",
+        source: "//! File.\n\n// monochromatic-lint-disable-next-line markdown/no-bare-urls -- reason\n/// See https://example.com/a for details.\n// monochromatic-lint-disable-next-line rust/max-lines -- reason\nfn item() {}\n",
+        codes: &["directive/non-suppressible"],
     },
     // An authored main is not wrapped, so it is an item of the virtual file and needs its own doc.
     Case {
