@@ -11,6 +11,10 @@ import {
   anchoredExternal,
   packageExternals,
 } from './package-externals.ts';
+import {
+  familyDependencies,
+  familyEntrySpecifier,
+} from './package-family.ts';
 import { shebangExecutablePlugin, } from './shebang-executable.ts';
 
 /**
@@ -185,6 +189,69 @@ export function nodeConfig(
       ...baseOutput,
       dir: outputDir,
       cleanDir: true,
+      ...outputOverrides,
+    },
+  },);
+}
+
+/**
+ Build a library member of a package family: its family siblings stay
+ imports, emitted against each sibling's built entry, while everything else
+ follows {@link nodeConfig}.
+
+ Family members check classes by identity across package boundaries, so a
+ process must load each member from one file; see
+ `src/package-family.ts` for why inlining siblings breaks that.
+
+ @param familyPrefix - package-name prefix every member of the family shares
+ 
+ @param packageDir - directory holding the building package's package.json; defaults to the build cwd
+ 
+ @param input - source input paths; defaults to the package index
+ 
+ @param outputOverrides - shallow output-option overrides, as {@link nodeConfig} takes them
+
+ @returns Node flavor rolldown config for the library build
+
+ @example
+ ```ts
+ // rolldown.node.config.ts
+ export default await familyLibraryNodeConfig({ familyPrefix: '\@monochromatic-dev/translation-repair-', },);
+ ```
+ */
+export async function familyLibraryNodeConfig({
+  familyPrefix,
+  packageDir = process.cwd(),
+  input = ['./src/index.ts',],
+  outputOverrides = {},
+}: {
+  readonly familyPrefix: string;
+  readonly packageDir?: string;
+  readonly input?: readonly string[] | Readonly<Record<string, string>>;
+  readonly outputOverrides?: OutputOptions;
+},): Promise<RolldownOptions> {
+  /**
+   Family members the building package depends on.
+   */
+  const family = new Set(await familyDependencies({
+    packageDir,
+    familyPrefix,
+  },),);
+  return nodeConfig({
+    input,
+    external: [
+      ...await nodeExternal({ alwaysBundle: NODE_ALWAYS_BUNDLE, },),
+      ...[...family,].map(function toMatcher(name: string,): RegExp {
+        return anchoredExternal(name,);
+      },),
+    ],
+    outputOverrides: {
+      paths: function emittedSpecifier(id: string,): string {
+        return familyEntrySpecifier({
+          id,
+          family,
+        },);
+      },
       ...outputOverrides,
     },
   },);
