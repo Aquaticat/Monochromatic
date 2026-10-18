@@ -45,9 +45,15 @@ Setup on `m1` as of 2026-10-18:
   UTM Server (UTM 5.0.5 on `m1`) cannot help:
   [its docs][utm-server] say "Currently, only QEMU backend virtual machines are supported",
   and this VM uses the Apple backend.
-  Open gap: after an `m1` reboot nothing starts the VM;
-  a login LaunchAgent on `m1` running `utmctl start` in the GUI session would need
-  a one-time Automation permission grant at the console (untested).
+  The `utm://start` URL command was removed in UTM 4.5.1 ([remote control docs][utm-remote]).
+  `utmctl` does work from a LaunchAgent in the GUI session, with no permission prompt:
+  `~/Library/LaunchAgents/dev.monochromatic.utm-autostart.plist` on `m1` runs
+  `/Applications/UTM.app/Contents/MacOS/utmctl start macOS` at login (`RunAtLoad`, no `KeepAlive`).
+  Loading it while the VM ran returned `OSStatus error -2700` / `Operation not available`
+  (UTM declining to start a running VM, not a permission error),
+  and a probe agent running `utmctl list` printed the VMs (`macOS` `started`).
+  To run any `utmctl` command from SSH, wrap it in a one-shot agent the same way
+  (`launchctl bootstrap gui/$(id -u) <plist>`, read its log, then `launchctl bootout`).
 
 Guest settings that keep it rendering, applied with `sudo` in the guest:
 
@@ -207,3 +213,4 @@ use this when the VM is down.
 
 [caramel-61]: https://github.com/caramelizedev/caramel/issues/61
 [utm-server]: https://docs.getutm.app/remote/server/
+[utm-remote]: https://docs.getutm.app/advanced/remote-control/
