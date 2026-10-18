@@ -354,8 +354,10 @@ before the other queued work.
     identical through the move table;
     22 ledger parts carry one header note instead of per-mention notes.
     Two comment conflicts with `w169` were resolved to `w169`'s text.
-    It left:
-    the dead link target `...` at `doc/planning/translation-repair-toka-ls-reading-2026-09-02.md:207`;
+    It left
+    (its one reported dead link,
+    `doc/planning/translation-repair-toka-ls-reading-2026-09-02.md:207`,
+    is an escaped bracket in quoted output that renders as text, not a link):
     pre-existing `monochromatic-lint` findings in 12 repository docs it did not change in substance
     (`w171-notes/lintlist-out.txt`);
     it amended one of its own unpushed commits,
