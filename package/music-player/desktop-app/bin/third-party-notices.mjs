@@ -202,9 +202,13 @@ if (options.product === 'desktop') {
     '',
   );
 }
+// The Android Licenses row draws description as well; the desktop programs do not.
+const iconNames = options.product === 'android'
+  ? 'queue_music, play_circle, autoplay, description, check and close'
+  : 'queue_music, play_circle, autoplay, check and close';
 bundled.push(
   subheading('Material Symbols icons, Apache License 2.0'),
-  'The icons queue_music, play_circle, autoplay, check and close (Outlined style, weight 400, grade 0, optical size',
+  'The icons ' + iconNames + ' (Outlined style, weight 400, grade 0, optical size',
   '24) come from https://github.com/google/material-design-icons at commit',
   '49d4db35df873165d6bd6ba09b063c7dafbac2f4, published by Google under the Apache License, Version 2.0.',
   'The program embeds their outlines as vector path data, with each outline moved onto a 24 by 24 grid.',

@@ -86,8 +86,16 @@ or account billing access is authorized by this lane.
 
 ## First command-reviewed cloud wave
 
-The frozen manifest capture on 2026-10-18 reports 2,444 hidden-inclusive Mise tasks
+The source-filtered manifest capture on 2026-10-18 reports 2,425 repository Mise tasks
 and 13,860 tracked files.
+The raw worktree listing also inherited 19 unrelated tasks from its scratch-directory ancestor.
+That ancestor declares only tasks:
+no tools,
+environment,
+settings,
+or variables,
+and no direct root-task name collisions.
+The next cloud wave compares the hash of all source-filtered task names before execution.
 These are inventory measurements,
 not completed checks or proof of coverage.
 
@@ -164,6 +172,185 @@ browser,
 plugin,
 non-default,
 and remaining applicable Linux coverage are still active work.
+
+## First wave terminal evidence and experiment corrections
+
+Run `39104186007` completed with both setup sequences and artifact uploads successful.
+Both workers reported 8 CPUs,
+33,664,888,832 bytes of RAM,
+Node `v26.12.0`,
+pnpm `12.14.0`,
+and Mise `2026.10.0`.
+The GitHub API records job intervals of 45 seconds and 50 seconds.
+This is an execution observation,
+not a comparison against GitHub workers or evidence of a speed multiplier.
+
+All archive digests,
+task log hashes,
+distribution file hashes,
+source identities,
+and workflow identities were verified after download.
+Of 62 command invocations,
+54 succeeded.
+The remaining outcomes are deliberately separated:
+
+- Source lint failures:
+  `array-at` emitted denied `typescript/no-unsafe-assignment` warnings;
+  `const` and `numeric-format` emitted `test-import/require-eventual-artifact`
+  on their test aggregation imports;
+  `zip-writer` emitted the same artifact rule plus unused-disable warnings.
+  The source was not changed.
+- Experiment selector failures:
+  `const` and `numeric-format` have owning `test` tasks,
+  not `test:unit` tasks.
+  Their actual suites remain to be executed with the correct commands.
+- Experiment prerequisite failure:
+  `caught-value` deliberately delegates its consumers into `module-test`,
+  whose artifact was not built in the first pilot.
+- Experiment consumer provisioning failure:
+  copied `pnpm-workspace-catalog` distribution files need their declared external `yaml` dependency.
+  The missing dependency is not evidence that its built artifact is invalid.
+
+These outcomes do not establish a Depot provisioning or runner failure.
+Successful commands also do not prove that every case or branch was reached.
+
+## Expanded module wave and tracked follow-up
+
+Run [`39105587003`](https://github.com/Aquaticats/Monochromatic/actions/runs/39105587003)
+completed the reviewed wave covering all 58 active `package/module/*` roots,
+split into 29 roots per worker.
+Its explicit plans contain 125 and 129 owning invocations.
+Both plans first build the harness,
+logger,
+shared Oxlint configuration,
+and the module roots that declare standard build aggregates.
+They then execute exact registered type,
+lint,
+and default-test commands.
+Custom `test` tasks for `const`,
+`llm-type`,
+`matrix`,
+and `numeric-format` are retained.
+`caught-value` retains its actual delegated consumer command.
+
+The module wave uses the same source and resource bounds as the pilot.
+Every selected command was checked against the frozen source task definitions.
+Selected Node CLI smoke tests use `--help`,
+which their source documents and asserts as exiting before provider API calls.
+Fixture subprocess,
+disposable Git,
+and `unzip` prerequisites were inspected.
+
+Of 254 invocations,
+232 passed.
+Every module build and type command passed.
+The failures comprise 18 Oxlint invocations and four default-test invocations.
+The two source-filtered cloud inventories each contain 2,425 repository tasks,
+no outside tasks,
+and the expected task-name SHA-256:
+`149afd917a4fa10f4b5846fc2c02a4ed69f89401ab9230c4869ff34c3cd76e7c`.
+Both final receipts report no changed tracked files.
+Job intervals were 176 seconds and 213 seconds.
+These measurements are not a provider speed comparison.
+
+The failed default suites require separate investigation:
+
+- `conf-fork`:
+  its cache-watch case did not meet a condition within 25,000 milliseconds.
+- `logger`:
+  its file-batch suite reports shared-Promise identity and malformed JSON assertions
+  during reentrant writes.
+  A later sink verification timeout is a separate logged event,
+  not the identified failing suite boundary.
+- `p-map-fork.fuzz`:
+  its differential property reports a different error message for a null input.
+- `wg-allowedips`:
+  its input suite reports warning-count and exact error-message mismatches.
+
+The source is retained unchanged.
+These are observed test/fixture failures;
+they do not establish provider causation or a stable source defect without controls.
+
+## Durable source and execution evidence
+
+The [coverage manifest](depot-complete-coverage-manifest.json)
+indexes all 227 canonical active and inactive roots,
+their declared APIs,
+task families,
+Node/Cargo manifests,
+test candidates,
+descriptors,
+and source language counts.
+It explicitly marks semantic coverage review and execution incomplete.
+Its compressed JSON sidecars preserve all source-level import/export evidence,
+static test declarations,
+exact task bodies and root templates,
+frozen workflow definitions,
+and tracked tree identities.
+They retain development dependency cycles.
+Static declarations and task counts are not runtime case coverage.
+
+The manifest records compressed and uncompressed SHA-256 hashes and sizes.
+Every compressed JSON file was decompressed and compared byte for byte before publication.
+Source-bound receipts preserve actual runners,
+tools,
+command outcomes,
+log hashes,
+and distribution hashes.
+The original GitHub artifact ZIPs are also preserved in the repository,
+so their evidence does not depend on GitHub's artifact retention window.
+Their SHA-256 values match GitHub's artifact API digests.
+
+The local ancestor config contains only unrelated tasks.
+The user-global Mise config additionally supplies tools,
+an environment key named `GH_PATH`,
+and settings named `experimental`,
+`auto_update`,
+`pipx`,
+and `npm`.
+It declares no tasks,
+task templates,
+variables,
+or hooks.
+The frozen configuration and TypeScript/JavaScript/YAML sources contain no `GH_PATH` reference.
+The optional `.env.local.json` path appears in Mise's config listing,
+but the worktree file is absent.
+The cloud inventory comparison and observed tool versions provide execution evidence;
+broader local and cloud environment equivalence is not assumed.
+
+The active queue remains independently verifiable:
+
+- Finish the immutable package/feature/command manifest,
+  including active and inactive roots,
+  actual imported/generated influences,
+  and native/Kotlin/Slint/build-tool consumers.
+- Complete the matched provider repeat and filesystem-watch positive control
+  for the four failed default suites.
+- Execute remaining applicable Node quality,
+  product,
+  plugin,
+  browser,
+  and default-test commands after command and side-effect review.
+- Execute named bounded fuzz,
+  property,
+  conformance,
+  mutation,
+  and expensive profiles using each actual task's argument grammar.
+- Run proper isolated packed-install consumers,
+  using the existing `package/config/pnpr/src/publish-steps.ts` packing owner
+  and `publish-plan.ts` manifest transformation.
+  Retain the failed dependency-free import fixture as a positive control.
+- Coordinate native,
+  GUI,
+  VM,
+  and device evidence with the parent lane;
+  do not duplicate its PR or protected-branch experiments.
+- Publish scoped evidence,
+  lint and render the note,
+  and keep source failures distinct from harness,
+  setup,
+  discovery,
+  and unexecuted cases.
 
 ## Current next action
 

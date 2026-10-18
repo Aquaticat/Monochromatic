@@ -97,6 +97,53 @@ class PlayerHostRoutesTest {
         }
     }
 
+    // What:     `fun backFromLicensesReturnsToSettings()` checks Back from the Licenses page.
+    // Why:      The page is reached from Settings, so Back returns there and not to the player.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("back from licenses returns to settings", () => expect(backFrom("licenses")).toBe("settings"));
+    // ```
+    /** Back on the Licenses page returns to Settings. */
+    @Test
+    fun backFromLicensesReturnsToSettings() {
+        assertEquals(PlayerRoute.Settings, PlayerRouteRules.backFrom(PlayerRoute.Licenses))
+    }
+
+    // What:     `fun hostBackFromLicensesReturnsToSettingsOnEveryWidth()` checks the Back rule of the drawn screen.
+    // Why:      The wide Settings page sends Back straight to the player, and Licenses must not take that shortcut.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("host back from licenses", () => [false, true].forEach((w) => expect(backFromHost("licenses", w)).toBe("settings")));
+    // ```
+    /** On the cover and on the unfolded screen, Back on the Licenses page returns to Settings. */
+    @Test
+    fun hostBackFromLicensesReturnsToSettingsOnEveryWidth() {
+        assertEquals(PlayerRoute.Settings, PlayerRouteRules.backFromHost(PlayerRoute.Licenses, settingsIsWide = false))
+        assertEquals(PlayerRoute.Settings, PlayerRouteRules.backFromHost(PlayerRoute.Licenses, settingsIsWide = true))
+    }
+
+    // What:     `fun hostBackKeepsTheOlderRulesOnEveryWidth()` checks the Back rule for the other routes.
+    // Why:      Moving the wide-Settings shortcut into the rule must not change where Search, Settings and an editor go.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("host back", () => { /* wide: settings and editor go to player, search goes to player; narrow: backFrom */ });
+    // ```
+    /** The wide screen sends Settings and an editor to the player; Search and the narrow screen follow `backFrom`. */
+    @Test
+    fun hostBackKeepsTheOlderRulesOnEveryWidth() {
+        /** An editor route, which the wide screen treats like Settings. */
+        val editor = PlayerRoute.TemplateEditor(TemplateKind.TRACK_ROWS)
+        assertEquals(PlayerRoute.Player, PlayerRouteRules.backFromHost(PlayerRoute.Settings, settingsIsWide = true))
+        assertEquals(PlayerRoute.Player, PlayerRouteRules.backFromHost(editor, settingsIsWide = true))
+        assertEquals(PlayerRoute.Player, PlayerRouteRules.backFromHost(PlayerRoute.Search, settingsIsWide = true))
+        assertEquals(PlayerRoute.Player, PlayerRouteRules.backFromHost(PlayerRoute.Settings, settingsIsWide = false))
+        assertEquals(PlayerRoute.Settings, PlayerRouteRules.backFromHost(editor, settingsIsWide = false))
+        assertEquals(PlayerRoute.Player, PlayerRouteRules.backFromHost(PlayerRoute.Search, settingsIsWide = false))
+    }
+
     // What:     `fun encodeDecodeRoundTripsEveryRoute()` checks that each route survives a save and restore.
     // Why:      The host restores its destination after a configuration change, so every route must decode to itself.
     //
@@ -108,7 +155,7 @@ class PlayerHostRoutesTest {
     @Test
     fun encodeDecodeRoundTripsEveryRoute() {
         /** Every route the host can show, with an editor for each template kind. */
-        val routes: List<PlayerRoute> = listOf(PlayerRoute.Player, PlayerRoute.Search, PlayerRoute.Settings) +
+        val routes: List<PlayerRoute> = listOf(PlayerRoute.Player, PlayerRoute.Search, PlayerRoute.Settings, PlayerRoute.Licenses) +
             TemplateKind.entries.map { kind -> PlayerRoute.TemplateEditor(kind) }
         routes.forEach { route ->
             assertEquals(route, PlayerRouteRules.decode(PlayerRouteRules.encode(route)))

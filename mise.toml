@@ -1263,6 +1263,14 @@ execFileSync('pnpm', ['install'], { stdio: 'inherit' })
 
 #region Changesets -- versioning and npm publishing (doc/decision/npm-publishing.md)
 
+[tasks."npm:module:pack"]
+description = "Pack the selected module for the targeted npm trusted-publisher workflow"
+run = 'pnpm --filter "@monochromatic-dev/module-$NPM_MODULE" pack --pack-destination "$NPM_PACK_DIR"'
+
+[tasks."npm:module:publish"]
+description = "Publish the packed module release using npm trusted publishing"
+run = 'npm publish "$NPM_PACK_DIR"/*.tgz --access public --provenance --registry=https://registry.npmjs.org'
+
 [tasks."changeset:add"]
 description = "Add a changeset describing a user-visible change (interactive)"
 run = "changeset add"

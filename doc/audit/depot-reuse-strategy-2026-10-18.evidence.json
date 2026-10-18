@@ -1,0 +1,690 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-18T06:49:19.857Z",
+  "status": "campaign-active",
+  "dispatch": {
+    "state": "created",
+    "requestedAt": "2026-10-18T06:30:49.427Z",
+    "sourceSha": "e65f3ccf26781999717cfd9c17e1bd361f42183a",
+    "baseSourceSha": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+    "workflow": ".depot/workflows/reuse-prepare.yml",
+    "workflowSha256": "174527fd0da6e21d2105b72445f49e3d2137d6605fbff4b48584afb2554a336e",
+    "branch": "research/depot-reuse-20261018",
+    "resources": {
+      "jobs": 1,
+      "cpusPerJob": 8,
+      "memoryGbPerJob": 32,
+      "jobTimeoutMinutes": 15,
+      "maxComputeUsdProxy": 0.36
+    },
+    "image": "l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r1",
+    "runId": "xkmm08vpjs",
+    "createdAt": "2026-10-18T06:30:50.450Z"
+  },
+  "run": {
+    "org_id": "l4zncjjbj5",
+    "run_id": "xkmm08vpjs",
+    "repo": "Aquaticats/Monochromatic",
+    "ref": "e65f3ccf26781999717cfd9c17e1bd361f42183a",
+    "sha": "e65f3ccf26781999717cfd9c17e1bd361f42183a",
+    "head_sha": "e65f3ccf26781999717cfd9c17e1bd361f42183a",
+    "trigger": "api",
+    "status": "finished",
+    "created_at": "2026-10-18T06:30:50Z",
+    "started_at": "2026-10-18T06:30:50Z",
+    "finished_at": "2026-10-18T06:32:24Z"
+  },
+  "artifacts": {
+    "artifacts": [
+      {
+        "artifact_id": "01a14db5-ce92-7e29-a7ea-824852ab549b",
+        "run_id": "xkmm08vpjs",
+        "workflow_id": "mzpll2hdl6",
+        "workflow_path": "",
+        "job_id": "rf0jdmrzpx",
+        "job_key": "_inline_0.yaml:prepare",
+        "attempt_id": "czb5jp8jgr",
+        "attempt": 1,
+        "name": "reuse-preparation-receipts",
+        "size_bytes": 16821,
+        "created_at": "2026-10-18T06:32:02Z"
+      }
+    ]
+  },
+  "artifactIntegrity": {
+    "sha256": "b242606ab6697897733c6ac717beb72136cb701dd01b54a6860c5c10b7acbbaa",
+    "bytes": 16821,
+    "members": [
+      {
+        "name": "archive-installed-dependencies.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "gradle-cold-dependency-resolution.log",
+        "bytes": 30531,
+        "sha256": "fcebead3eac52ed1fe61daf4764c1c697fce4f0db3a4495a5cbf4e43d5903b4e"
+      },
+      {
+        "name": "cargo-cold-fetch.log",
+        "bytes": 5445,
+        "sha256": "34cad38294865d916d9bee9fde63d2323441d8880cec602ec9e14de7fc33348e"
+      },
+      {
+        "name": "image-manifest.json",
+        "bytes": 15557,
+        "sha256": "b4e7c5752f2df847c14f70cf1211097f18516ee4232e3f834531653dc21bfabe"
+      },
+      {
+        "name": "install-locked-core-tools.log",
+        "bytes": 5592,
+        "sha256": "a6a83328ef45532a8465a61f4e1452df15e8f24489d5479e6060dffecd0927ad"
+      },
+      {
+        "name": "install-locked-nextest.log",
+        "bytes": 1028,
+        "sha256": "a39b2b4f8130c3f646e7e4f51cc0b8875f19d0afb472ffba9e62251d14b71664"
+      },
+      {
+        "name": "pnpm-cold-install.log",
+        "bytes": 5843,
+        "sha256": "c4b418eaf64227db5187f8787f250e4eaacbc8cc85a8caa7828890983daf569a"
+      },
+      {
+        "name": "installed-tool-versions.log",
+        "bytes": 1158,
+        "sha256": "f72642026a17a1a5a59e25018b7fc3108ceeabb9d5425ab4c023cfbe9bc0be75"
+      },
+      {
+        "name": "preparation.json",
+        "bytes": 4598,
+        "sha256": "2296b2092eafe84e36ead49ca0411088adb5e3a415b3678290a382765b5f800b"
+      },
+      {
+        "name": "prepared-store-bytes.log",
+        "bytes": 357,
+        "sha256": "7c4733feece8b0344bd218dc1f96e781596c77d65f028293f2513f177234251c"
+      },
+      {
+        "name": "seal.json",
+        "bytes": 9780,
+        "sha256": "d199ec5cfe9e177d341c10cfc14a4409cdd103c4685f2c34166113ee0430a970"
+      }
+    ]
+  },
+  "manifest": {
+    "recordedAt": "2026-10-18T06:32:00.750Z",
+    "baseSourceSha": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+    "sourceSha": "e65f3ccf26781999717cfd9c17e1bd361f42183a",
+    "identities": {
+      "mise.lock": "80b1dda5ef694b0d19f9dd5a9d755057702833b82d56433250033b5e02a9ecc4",
+      "pnpm-lock.yaml": "bcf3a948a1d8cad0c7c22af26856af36779a963263a2d2d1b2755c3fa00e6049",
+      "pnpm-workspace.yaml": "71896d861ea5bd951077b4435a59c39350708703364d47ea2a7bb3cc704bec5c",
+      ".pnpmfile.mjs": "8f9c859bdeabe1e2ef98c6bf44863003f498b84a5f2389c96fd55b5157c38a51",
+      ".pnpmfile.policies.json": "fb838192b13f391deab7c988e9daae07a43d5db54bfbcc4753a65d9e3d2c74f2",
+      "package/git-policy/cli/Cargo.lock": "b28c0450a6ad5893a47bcaa53540b5cd3791d428a05ab6c1ce0349add940fa43",
+      "package/linter/kotlin/build.gradle.kts": "948e6342ea422f48ae9545ec60fa6a9d2c389c7d9129c8ad10640761f257ecde"
+    },
+    "tools": {
+      "node": {
+        "path": "/opt/depot-reuse-20261018-r1/mise-data/installs/node/26.12.0/bin/node",
+        "realpath": "/opt/depot-reuse-20261018-r1/mise-data/installs/node/26.12.0/bin/node",
+        "sha256": "caa24debe02770c92a70677e2a62ca98890150e7ac1c17bcfe31bcc98cc89943",
+        "bytes": 150275912
+      },
+      "pnpm": {
+        "path": "/opt/depot-reuse-20261018-r1/mise-data/installs/pnpm/12.14.0/pnpm",
+        "realpath": "/opt/depot-reuse-20261018-r1/mise-data/installs/pnpm/12.14.0/pnpm",
+        "sha256": "5e9119e6f4f18dace3795169e9b3672231ab3662505862dc3026571303a8ef32",
+        "bytes": 56326440
+      },
+      "java": {
+        "path": "/opt/depot-reuse-20261018-r1/mise-data/installs/java/temurin-21.0.12+8.0.LTS/bin/java",
+        "realpath": "/opt/depot-reuse-20261018-r1/mise-data/installs/java/temurin-21.0.12+8.0.LTS/bin/java",
+        "sha256": "11af352aa2c506c4123a4e4c19c187d59e06cd0dff317d54f5e6806e07c6715d",
+        "bytes": 12328
+      },
+      "rustc": {
+        "path": "/opt/depot-reuse-20261018-r1/cargo/bin/rustc",
+        "realpath": "/opt/depot-reuse-20261018-r1/cargo/bin/rustup",
+        "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71",
+        "bytes": 21113232
+      },
+      "cargo": {
+        "path": "/opt/depot-reuse-20261018-r1/cargo/bin/cargo",
+        "realpath": "/opt/depot-reuse-20261018-r1/cargo/bin/rustup",
+        "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71",
+        "bytes": 21113232
+      },
+      "cargo-nextest": {
+        "path": "/opt/depot-reuse-20261018-r1/mise-data/installs/cargo-cargo-nextest/0.9.148/bin/cargo-nextest",
+        "realpath": "/opt/depot-reuse-20261018-r1/mise-data/installs/cargo-cargo-nextest/0.9.148/bin/cargo-nextest",
+        "sha256": "53470cfc9b5cbcd96780db2d348700d76af962467503791f1f8a8824d8967e5c",
+        "bytes": 36377136
+      }
+    },
+    "dependencyDirectories": [
+      "node_modules",
+      "package/agent-harness-shared/current-time-context/node_modules",
+      "package/agent-harness-shared/search-fetch/node_modules",
+      "package/agent-harness-shared/session-discovery/node_modules",
+      "package/agent-harness-shared/shell-command-analyzer/node_modules",
+      "package/agent-harness-shared/terminal-title/node_modules",
+      "package/agent-harness-shared/text-scan/node_modules",
+      "package/agent-harness-shared/truncate/node_modules",
+      "package/agent-harness-shared/usage-projection/node_modules",
+      "package/build-tool/css/node_modules",
+      "package/claude-code-plugin/bash-output-filter/node_modules",
+      "package/claude-code-plugin/claude-spawn/node_modules",
+      "package/claude-code-plugin/correction-reminder/node_modules",
+      "package/claude-code-plugin/guardrail/node_modules",
+      "package/claude-code-plugin/prompt-time/node_modules",
+      "package/claude-code-plugin/session-start-housekeeping/node_modules",
+      "package/claude-code-plugin/source/node_modules",
+      "package/claude-code-plugin/statusline/node_modules",
+      "package/claude-code-plugin/stop-reminder/node_modules",
+      "package/claude-code-plugin/terminal-title/node_modules",
+      "package/cli/android-exempt-unused/node_modules",
+      "package/cli/fy/node_modules",
+      "package/cli/git-clone-size/node_modules",
+      "package/cli/mutation-test/node_modules",
+      "package/cli/mutation-test.fixture/node_modules",
+      "package/cli/mvm/node_modules",
+      "package/cli/open-code-review-issue/node_modules",
+      "package/cli/rgffplay/node_modules",
+      "package/cli/terminal-exec/node_modules",
+      "package/cli/unused-export/node_modules",
+      "package/cli/vmsync/node_modules",
+      "package/cli/wg-allowedips/node_modules",
+      "package/cli/wg-quicker/node_modules",
+      "package/cloudflare-worker/rand/node_modules",
+      "package/config/lfs-r2-worker/node_modules",
+      "package/config/oxlint/node_modules",
+      "package/config/pnpr/node_modules",
+      "package/config/rolldown/node_modules",
+      "package/config/tofu/node_modules",
+      "package/desktop-app/electron-counter/node_modules",
+      "package/desktop-app/electron-infra/node_modules",
+      "package/desktop-app/file-manager-electron/node_modules",
+      "package/desktop-daemon/hall-monitor/node_modules",
+      "package/dev-script/backup-path/node_modules",
+      "package/dev-script/catalog-tighten/node_modules",
+      "package/dev-script/catalog-tighten.matrix/node_modules",
+      "package/dev-script/claude-cpu-cap/node_modules",
+      "package/dev-script/deps-cube/node_modules",
+      "package/dev-script/deps-update/node_modules",
+      "package/dev-script/file-enforcer/node_modules",
+      "package/dev-script/page-weight/node_modules",
+      "package/dev-script/task-util/node_modules",
+      "package/dev-script/vm-builder/node_modules",
+      "package/dev-script/watch-restart/node_modules",
+      "package/figma/kiwi/node_modules",
+      "package/figma/to-penpot/node_modules",
+      "package/git/executable/node_modules",
+      "package/git-policy/cli/node_modules",
+      "package/intellij-plugin/islands-black/node_modules",
+      "package/kwin/key-helper/node_modules",
+      "package/mcp/mvm/node_modules",
+      "package/mcp/search-fetch/node_modules",
+      "package/mcp/stdio/node_modules",
+      "package/module/array-at/node_modules",
+      "package/module/async-iter/node_modules",
+      "package/module/async-time/node_modules",
+      "package/module/caught-value/node_modules",
+      "package/module/conf-fork/node_modules",
+      "package/module/conf-fork.fuzz/node_modules",
+      "package/module/const/node_modules",
+      "package/module/css-edit/node_modules",
+      "package/module/css-edit.bench/node_modules",
+      "package/module/css-edit.conformance/node_modules",
+      "package/module/css-edit.fuzz/node_modules",
+      "package/module/deepmerge-ts.fuzz/node_modules",
+      "package/module/dom/node_modules",
+      "package/module/fs-id/node_modules",
+      "package/module/fs-path/node_modules",
+      "package/module/function-arity/node_modules",
+      "package/module/hyperscript/node_modules",
+      "package/module/i18n-compose/node_modules",
+      "package/module/image-diff/node_modules",
+      "package/module/jsonc-edit/node_modules",
+      "package/module/jsonc-edit.bench/node_modules",
+      "package/module/jsonc-edit.conformance/node_modules",
+      "package/module/jsonc-edit.fuzz/node_modules",
+      "package/module/kv-store/node_modules",
+      "package/module/llm-type/node_modules",
+      "package/module/logger/node_modules",
+      "package/module/logger.fuzz/node_modules",
+      "package/module/make-asynchronous-fork/node_modules",
+      "package/module/make-asynchronous-fork.fuzz/node_modules",
+      "package/module/matcher-fork/node_modules",
+      "package/module/matcher-fork.fuzz/node_modules",
+      "package/module/matrix/node_modules",
+      "package/module/memoize/node_modules",
+      "package/module/numeric-format/node_modules",
+      "package/module/observable/node_modules",
+      "package/module/or-throw/node_modules",
+      "package/module/p-limit-fork/node_modules",
+      "package/module/p-limit-fork.fuzz/node_modules",
+      "package/module/p-map-fork/node_modules",
+      "package/module/p-map-fork.fuzz/node_modules",
+      "package/module/p-memoize-fork/node_modules",
+      "package/module/p-memoize-fork.fuzz/node_modules",
+      "package/module/pify-fork/node_modules",
+      "package/module/pify-fork.fuzz/node_modules",
+      "package/module/pipe/node_modules",
+      "package/module/pnpm-workspace-catalog/node_modules",
+      "package/module/quick-lru-fork/node_modules",
+      "package/module/quick-lru-fork.fuzz/node_modules",
+      "package/module/test/node_modules",
+      "package/module/test-diagnostic/node_modules",
+      "package/module/test-expect/node_modules",
+      "package/module/test-sandbox/node_modules",
+      "package/module/throws/node_modules",
+      "package/module/token-count/node_modules",
+      "package/module/toml-edit/node_modules",
+      "package/module/toml-edit.fuzz/node_modules",
+      "package/module/wg-allowedips/node_modules",
+      "package/module/zip-writer/node_modules",
+      "package/music-player/desktop-e2e/node_modules",
+      "package/oxlint-plugin/no-restricted-syntax/node_modules",
+      "package/oxlint-plugin/prefer-readonly-parameter-type/node_modules",
+      "package/oxlint-plugin/shared/node_modules",
+      "package/oxlint-plugin/stylistic/node_modules",
+      "package/oxlint-plugin/test-import/node_modules",
+      "package/oxlint-plugin/test-support/node_modules",
+      "package/oxlint-plugin/tsdoc/node_modules",
+      "package/pi-plugin/advisor/node_modules",
+      "package/pi-plugin/agent-settled-notification/node_modules",
+      "package/pi-plugin/ask-user-question/node_modules",
+      "package/pi-plugin/auto-mode/node_modules",
+      "package/pi-plugin/bash-poke/node_modules",
+      "package/pi-plugin/current-time-context/node_modules",
+      "package/pi-plugin/goal/node_modules",
+      "package/pi-plugin/guardrail/node_modules",
+      "package/pi-plugin/model-retirement/node_modules",
+      "package/pi-plugin/morph-compact/node_modules",
+      "package/pi-plugin/openai-fast/node_modules",
+      "package/pi-plugin/search-fetch/node_modules",
+      "package/pi-plugin/spawn/node_modules",
+      "package/pi-plugin/statusline/node_modules",
+      "package/pi-plugin/terminal-title/node_modules",
+      "package/pi-plugin/thinking-default/node_modules",
+      "package/pi-shared/model-review/node_modules",
+      "package/pi-shared/model-selection/node_modules",
+      "package/rolldown-plugin/import-attributes/node_modules",
+      "package/runtime-error/bun/node_modules",
+      "package/ssg/aquati.cat/node_modules",
+      "package/test-fixture/css-importing/node_modules",
+      "package/test-fixture/css-importing-filepath/node_modules",
+      "package/test-fixture/file-enforcer-perf/node_modules",
+      "package/test-fixture/oxlint-no-restricted-syntax/node_modules",
+      "package/typeface/aquaticat/node_modules",
+      "package/webapp-productivity/done/node_modules",
+      "package/webapp-productivity/done-postcss/node_modules",
+      "package/webapp-productivity/doodle-widget/node_modules",
+      "package/webapp-productivity/rss/node_modules",
+      "package/webapp-productivity/syllable-break-demo/node_modules",
+      "package/webapp-productivity/wc/node_modules"
+    ],
+    "dependencyArchive": {
+      "bytes": 296779994,
+      "sha256": "3fab86c5a2454c0cb9eef5a9e7c925605a08c96b0a138a36284c9eebf00d553c"
+    },
+    "syntheticFixtures": {
+      "sourcePath": "/home/runner/work/Monochromatic/Monochromatic/.reuse-synthetic-source-marker",
+      "secretPath": "/home/runner/.config/depot/reuse-synthetic-secret"
+    },
+    "preparationRecords": [
+      {
+        "name": "install-locked-core-tools",
+        "command": [
+          "mise",
+          "install",
+          "node",
+          "pnpm",
+          "java",
+          "rust",
+          "cargo-binstall"
+        ],
+        "startedAt": "2026-10-18T06:31:22.157Z",
+        "finishedAt": "2026-10-18T06:31:37.295Z",
+        "elapsedSeconds": 15.137329996,
+        "exitStatus": 0,
+        "signal": null
+      },
+      {
+        "name": "install-locked-nextest",
+        "command": [
+          "mise",
+          "install",
+          "cargo:cargo-nextest"
+        ],
+        "startedAt": "2026-10-18T06:31:37.299Z",
+        "finishedAt": "2026-10-18T06:31:38.874Z",
+        "elapsedSeconds": 1.575022719999999,
+        "exitStatus": 0,
+        "signal": null
+      },
+      {
+        "name": "installed-tool-versions",
+        "command": [
+          "mise",
+          "exec",
+          "node",
+          "pnpm",
+          "java",
+          "rust",
+          "cargo:cargo-nextest",
+          "--",
+          "node",
+          "--input-type=module-typescript",
+          "-e",
+          "const {execFileSync}=await import(\"node:child_process\");for(const [command,args] of [[\"node\",[\"--version\"]],[\"pnpm\",[\"--version\"]],[\"java\",[\"--version\"]],[\"rustc\",[\"--version\",\"--verbose\"]],[\"cargo\",[\"nextest\",\"--version\"]]])console.log(execFileSync(command,args,{encoding:\"utf8\"}));"
+        ],
+        "startedAt": "2026-10-18T06:31:38.877Z",
+        "finishedAt": "2026-10-18T06:31:38.991Z",
+        "elapsedSeconds": 0.11428675999999904,
+        "exitStatus": 0,
+        "signal": null
+      },
+      {
+        "name": "pnpm-cold-install",
+        "command": [
+          "mise",
+          "exec",
+          "node",
+          "pnpm",
+          "--",
+          "pnpm",
+          "install",
+          "--frozen-lockfile",
+          "--store-dir",
+          "/opt/depot-reuse-20261018-r1/pnpm-store"
+        ],
+        "startedAt": "2026-10-18T06:31:38.993Z",
+        "finishedAt": "2026-10-18T06:31:41.355Z",
+        "elapsedSeconds": 2.361496599000002,
+        "exitStatus": 0,
+        "signal": null
+      },
+      {
+        "name": "archive-installed-dependencies",
+        "command": [
+          "tar",
+          "--create",
+          "--zstd",
+          "--file",
+          "/opt/depot-reuse-20261018-r1/installed-dependencies.tar.zst",
+          "--directory",
+          "/home/runner/work/Monochromatic/Monochromatic",
+          "--null",
+          "--files-from",
+          "/opt/depot-reuse-20261018-r1/dependency-directories.nul"
+        ],
+        "startedAt": "2026-10-18T06:31:41.361Z",
+        "finishedAt": "2026-10-18T06:31:42.600Z",
+        "elapsedSeconds": 1.2384279700000007,
+        "exitStatus": 0,
+        "signal": null
+      },
+      {
+        "name": "gradle-cold-dependency-resolution",
+        "command": [
+          "mise",
+          "exec",
+          "java",
+          "--",
+          "./gradlew",
+          "dependencies",
+          "--no-daemon",
+          "--console=plain",
+          "--no-build-cache",
+          "--max-workers=8"
+        ],
+        "startedAt": "2026-10-18T06:31:42.603Z",
+        "finishedAt": "2026-10-18T06:31:59.483Z",
+        "elapsedSeconds": 16.880395025000002,
+        "exitStatus": 0,
+        "signal": null
+      },
+      {
+        "name": "cargo-cold-fetch",
+        "command": [
+          "mise",
+          "exec",
+          "rust",
+          "--",
+          "cargo",
+          "fetch",
+          "--locked",
+          "--manifest-path",
+          "/home/runner/work/Monochromatic/Monochromatic/package/git-policy/cli/Cargo.toml"
+        ],
+        "startedAt": "2026-10-18T06:31:59.486Z",
+        "finishedAt": "2026-10-18T06:32:00.211Z",
+        "elapsedSeconds": 0.7252177299999967,
+        "exitStatus": 0,
+        "signal": null
+      },
+      {
+        "name": "prepared-store-bytes",
+        "command": [
+          "du",
+          "--summarize",
+          "--bytes",
+          "/opt/depot-reuse-20261018-r1/mise-data",
+          "/opt/depot-reuse-20261018-r1/mise-cache",
+          "/opt/depot-reuse-20261018-r1/rustup",
+          "/opt/depot-reuse-20261018-r1/cargo",
+          "/opt/depot-reuse-20261018-r1/gradle",
+          "/opt/depot-reuse-20261018-r1/pnpm-store",
+          "/opt/depot-reuse-20261018-r1/installed-dependencies.tar.zst"
+        ],
+        "startedAt": "2026-10-18T06:32:00.542Z",
+        "finishedAt": "2026-10-18T06:32:00.744Z",
+        "elapsedSeconds": 0.2020062489999982,
+        "exitStatus": 0,
+        "signal": null
+      }
+    ]
+  },
+  "preparation": {
+    "sourceSha": "e65f3ccf26781999717cfd9c17e1bd361f42183a",
+    "baseSourceSha": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+    "prefix": "/opt/depot-reuse-20261018-r1",
+    "records": [
+      {
+        "name": "install-locked-core-tools",
+        "command": [
+          "mise",
+          "install",
+          "node",
+          "pnpm",
+          "java",
+          "rust",
+          "cargo-binstall"
+        ],
+        "startedAt": "2026-10-18T06:31:22.157Z",
+        "finishedAt": "2026-10-18T06:31:37.295Z",
+        "elapsedSeconds": 15.137329996,
+        "exitStatus": 0,
+        "signal": null
+      },
+      {
+        "name": "install-locked-nextest",
+        "command": [
+          "mise",
+          "install",
+          "cargo:cargo-nextest"
+        ],
+        "startedAt": "2026-10-18T06:31:37.299Z",
+        "finishedAt": "2026-10-18T06:31:38.874Z",
+        "elapsedSeconds": 1.575022719999999,
+        "exitStatus": 0,
+        "signal": null
+      },
+      {
+        "name": "installed-tool-versions",
+        "command": [
+          "mise",
+          "exec",
+          "node",
+          "pnpm",
+          "java",
+          "rust",
+          "cargo:cargo-nextest",
+          "--",
+          "node",
+          "--input-type=module-typescript",
+          "-e",
+          "const {execFileSync}=await import(\"node:child_process\");for(const [command,args] of [[\"node\",[\"--version\"]],[\"pnpm\",[\"--version\"]],[\"java\",[\"--version\"]],[\"rustc\",[\"--version\",\"--verbose\"]],[\"cargo\",[\"nextest\",\"--version\"]]])console.log(execFileSync(command,args,{encoding:\"utf8\"}));"
+        ],
+        "startedAt": "2026-10-18T06:31:38.877Z",
+        "finishedAt": "2026-10-18T06:31:38.991Z",
+        "elapsedSeconds": 0.11428675999999904,
+        "exitStatus": 0,
+        "signal": null
+      },
+      {
+        "name": "pnpm-cold-install",
+        "command": [
+          "mise",
+          "exec",
+          "node",
+          "pnpm",
+          "--",
+          "pnpm",
+          "install",
+          "--frozen-lockfile",
+          "--store-dir",
+          "/opt/depot-reuse-20261018-r1/pnpm-store"
+        ],
+        "startedAt": "2026-10-18T06:31:38.993Z",
+        "finishedAt": "2026-10-18T06:31:41.355Z",
+        "elapsedSeconds": 2.361496599000002,
+        "exitStatus": 0,
+        "signal": null
+      },
+      {
+        "name": "archive-installed-dependencies",
+        "command": [
+          "tar",
+          "--create",
+          "--zstd",
+          "--file",
+          "/opt/depot-reuse-20261018-r1/installed-dependencies.tar.zst",
+          "--directory",
+          "/home/runner/work/Monochromatic/Monochromatic",
+          "--null",
+          "--files-from",
+          "/opt/depot-reuse-20261018-r1/dependency-directories.nul"
+        ],
+        "startedAt": "2026-10-18T06:31:41.361Z",
+        "finishedAt": "2026-10-18T06:31:42.600Z",
+        "elapsedSeconds": 1.2384279700000007,
+        "exitStatus": 0,
+        "signal": null
+      },
+      {
+        "name": "gradle-cold-dependency-resolution",
+        "command": [
+          "mise",
+          "exec",
+          "java",
+          "--",
+          "./gradlew",
+          "dependencies",
+          "--no-daemon",
+          "--console=plain",
+          "--no-build-cache",
+          "--max-workers=8"
+        ],
+        "startedAt": "2026-10-18T06:31:42.603Z",
+        "finishedAt": "2026-10-18T06:31:59.483Z",
+        "elapsedSeconds": 16.880395025000002,
+        "exitStatus": 0,
+        "signal": null
+      },
+      {
+        "name": "cargo-cold-fetch",
+        "command": [
+          "mise",
+          "exec",
+          "rust",
+          "--",
+          "cargo",
+          "fetch",
+          "--locked",
+          "--manifest-path",
+          "/home/runner/work/Monochromatic/Monochromatic/package/git-policy/cli/Cargo.toml"
+        ],
+        "startedAt": "2026-10-18T06:31:59.486Z",
+        "finishedAt": "2026-10-18T06:32:00.211Z",
+        "elapsedSeconds": 0.7252177299999967,
+        "exitStatus": 0,
+        "signal": null
+      },
+      {
+        "name": "prepared-store-bytes",
+        "command": [
+          "du",
+          "--summarize",
+          "--bytes",
+          "/opt/depot-reuse-20261018-r1/mise-data",
+          "/opt/depot-reuse-20261018-r1/mise-cache",
+          "/opt/depot-reuse-20261018-r1/rustup",
+          "/opt/depot-reuse-20261018-r1/cargo",
+          "/opt/depot-reuse-20261018-r1/gradle",
+          "/opt/depot-reuse-20261018-r1/pnpm-store",
+          "/opt/depot-reuse-20261018-r1/installed-dependencies.tar.zst"
+        ],
+        "startedAt": "2026-10-18T06:32:00.542Z",
+        "finishedAt": "2026-10-18T06:32:00.744Z",
+        "elapsedSeconds": 0.2020062489999982,
+        "exitStatus": 0,
+        "signal": null
+      }
+    ],
+    "allocation": {
+      "name": "Depot CI",
+      "cpus": 8,
+      "memoryBytes": 33664888832
+    },
+    "credentialPresence": {
+      "cache": true,
+      "snapshot": true
+    }
+  },
+  "exclusion": {
+    "recordedAt": "2026-10-18T06:32:02.115Z",
+    "sourceDirectoryCleared": true,
+    "sourceMarkerAbsent": true,
+    "syntheticSecretFileAbsent": true,
+    "ignoredBeforeCleanup": "Would remove node_modules/\nWould remove package/agent-harness-shared/current-time-context/node_modules/\nWould remove package/agent-harness-shared/search-fetch/node_modules/\nWould remove package/agent-harness-shared/session-discovery/node_modules/\nWould remove package/agent-harness-shared/shell-command-analyzer/node_modules/\nWould remove package/agent-harness-shared/terminal-title/node_modules/\nWould remove package/agent-harness-shared/text-scan/node_modules/\nWould remove package/agent-harness-shared/truncate/node_modules/\nWould remove package/agent-harness-shared/usage-projection/node_modules/\nWould remove package/build-tool/css/node_modules/\nWould remove package/claude-code-plugin/bash-output-filter/node_modules/\nWould remove package/claude-code-plugin/claude-spawn/node_modules/\nWould remove package/claude-code-plugin/correction-reminder/node_modules/\nWould remove package/claude-code-plugin/guardrail/node_modules/\nWould remove package/claude-code-plugin/prompt-time/node_modules/\nWould remove package/claude-code-plugin/session-start-housekeeping/node_modules/\nWould remove package/claude-code-plugin/source/node_modules/\nWould remove package/claude-code-plugin/statusline/node_modules/\nWould remove package/claude-code-plugin/stop-reminder/node_modules/\nWould remove package/claude-code-plugin/terminal-title/node_modules/\nWould remove package/cli/android-exempt-unused/node_modules/\nWould remove package/cli/fy/node_modules/\nWould remove package/cli/git-clone-size/node_modules/\nWould remove package/cli/mutation-test.fixture/node_modules/\nWould remove package/cli/mutation-test/node_modules/\nWould remove package/cli/mvm/node_modules/\nWould remove package/cli/open-code-review-issue/node_modules/\nWould remove package/cli/rgffplay/node_modules/\nWould remove package/cli/terminal-exec/node_modules/\nWould remove package/cli/unused-export/node_modules/\nWould remove package/cli/vmsync/node_modules/\nWould remove package/cli/wg-allowedips/node_modules/\nWould remove package/cli/wg-quicker/node_modules/\nWould remove package/cloudflare-worker/rand/node_modules/\nWould remove package/config/lfs-r2-worker/node_modules/\nWould remove package/config/oxlint/node_modules/\nWould remove package/config/pnpr/node_modules/\nWould remove package/config/rolldown/node_modules/\nWould remove package/config/tofu/node_modules/\nWould remove package/desktop-app/electron-counter/node_modules/\nWould remove package/desktop-app/electron-infra/node_modules/\nWould remove package/desktop-app/file-manager-electron/node_modules/\nWould remove package/desktop-daemon/hall-monitor/node_modules/\nWould remove package/dev-script/backup-path/node_modules/\nWould remove package/dev-script/catalog-tighten.matrix/node_modules/\nWould remove package/dev-script/catalog-tighten/node_modules/\nWould remove package/dev-script/claude-cpu-cap/node_modules/\nWould remove package/dev-script/deps-cube/node_modules/\nWould remove package/dev-script/deps-update/node_modules/\nWould remove package/dev-script/file-enforcer/node_modules/\nWould remove package/dev-script/page-weight/node_modules/\nWould remove package/dev-script/task-util/node_modules/\nWould remove package/dev-script/vm-builder/node_modules/\nWould remove package/dev-script/watch-restart/node_modules/\nWould remove package/figma/kiwi/node_modules/\nWould remove package/figma/to-penpot/node_modules/\nWould remove package/git-policy/cli/node_modules/\nWould remove package/git/executable/node_modules/\nWould remove package/intellij-plugin/islands-black/node_modules/\nWould remove package/kwin/key-helper/node_modules/\nWould remove package/linter/kotlin/.gradle/\nWould remove package/linter/kotlin/build/\nWould remove package/mcp/mvm/node_modules/\nWould remove package/mcp/search-fetch/node_modules/\nWould remove package/mcp/stdio/node_modules/\nWould remove package/module/array-at/node_modules/\nWould remove package/module/async-iter/node_modules/\nWould remove package/module/async-time/node_modules/\nWould remove package/module/caught-value/node_modules/\nWould remove package/module/conf-fork.fuzz/node_modules/\nWould remove package/module/conf-fork/node_modules/\nWould remove package/module/const/node_modules/\nWould remove package/module/css-edit.bench/node_modules/\nWould remove package/module/css-edit.conformance/node_modules/\nWould remove package/module/css-edit.fuzz/node_modules/\nWould remove package/module/css-edit/node_modules/\nWould remove package/module/deepmerge-ts.fuzz/node_modules/\nWould remove package/module/dom/node_modules/\nWould remove package/module/fs-id/node_modules/\nWould remove package/module/fs-path/node_modules/\nWould remove package/module/function-arity/node_modules/\nWould remove package/module/hyperscript/node_modules/\nWould remove package/module/i18n-compose/node_modules/\nWould remove package/module/image-diff/node_modules/\nWould remove package/module/jsonc-edit.bench/node_modules/\nWould remove package/module/jsonc-edit.conformance/node_modules/\nWould remove package/module/jsonc-edit.fuzz/node_modules/\nWould remove package/module/jsonc-edit/node_modules/\nWould remove package/module/kv-store/node_modules/\nWould remove package/module/llm-type/node_modules/\nWould remove package/module/logger.fuzz/node_modules/\nWould remove package/module/logger/node_modules/\nWould remove package/module/make-asynchronous-fork.fuzz/node_modules/\nWould remove package/module/make-asynchronous-fork/node_modules/\nWould remove package/module/matcher-fork.fuzz/node_modules/\nWould remove package/module/matcher-fork/node_modules/\nWould remove package/module/matrix/node_modules/\nWould remove package/module/memoize/node_modules/\nWould remove package/module/numeric-format/node_modules/\nWould remove package/module/observable/node_modules/\nWould remove package/module/or-throw/node_modules/\nWould remove package/module/p-limit-fork.fuzz/node_modules/\nWould remove package/module/p-limit-fork/node_modules/\nWould remove package/module/p-map-fork.fuzz/node_modules/\nWould remove package/module/p-map-fork/node_modules/\nWould remove package/module/p-memoize-fork.fuzz/node_modules/\nWould remove package/module/p-memoize-fork/node_modules/\nWould remove package/module/pify-fork.fuzz/node_modules/\nWould remove package/module/pify-fork/node_modules/\nWould remove package/module/pipe/node_modules/\nWould remove package/module/pnpm-workspace-catalog/node_modules/\nWould remove package/module/quick-lru-fork.fuzz/node_modules/\nWould remove package/module/quick-lru-fork/node_modules/\nWould remove package/module/test-diagnostic/node_modules/\nWould remove package/module/test-expect/node_modules/\nWould remove package/module/test-sandbox/node_modules/\nWould remove package/module/test/node_modules/\nWould remove package/module/throws/node_modules/\nWould remove package/module/token-count/node_modules/\nWould remove package/module/toml-edit.fuzz/node_modules/\nWould remove package/module/toml-edit/node_modules/\nWould remove package/module/wg-allowedips/node_modules/\nWould remove package/module/zip-writer/node_modules/\nWould remove package/music-player/desktop-e2e/node_modules/\nWould remove package/oxlint-plugin/no-restricted-syntax/node_modules/\nWould remove package/oxlint-plugin/prefer-readonly-parameter-type/node_modules/\nWould remove package/oxlint-plugin/shared/node_modules/\nWould remove package/oxlint-plugin/stylistic/node_modules/\nWould remove package/oxlint-plugin/test-import/node_modules/\nWould remove package/oxlint-plugin/test-support/node_modules/\nWould remove package/oxlint-plugin/tsdoc/node_modules/\nWould remove package/pi-plugin/advisor/node_modules/\nWould remove package/pi-plugin/agent-settled-notification/node_modules/\nWould remove package/pi-plugin/ask-user-question/node_modules/\nWould remove package/pi-plugin/auto-mode/node_modules/\nWould remove package/pi-plugin/bash-poke/node_modules/\nWould remove package/pi-plugin/current-time-context/node_modules/\nWould remove package/pi-plugin/goal/node_modules/\nWould remove package/pi-plugin/guardrail/node_modules/\nWould remove package/pi-plugin/model-retirement/node_modules/\nWould remove package/pi-plugin/morph-compact/node_modules/\nWould remove package/pi-plugin/openai-fast/node_modules/\nWould remove package/pi-plugin/search-fetch/node_modules/\nWould remove package/pi-plugin/spawn/node_modules/\nWould remove package/pi-plugin/statusline/node_modules/\nWould remove package/pi-plugin/terminal-title/node_modules/\nWould remove package/pi-plugin/thinking-default/node_modules/\nWould remove package/pi-shared/model-review/node_modules/\nWould remove package/pi-shared/model-selection/node_modules/\nWould remove package/rolldown-plugin/import-attributes/node_modules/\nWould remove package/runtime-error/bun/node_modules/\nWould remove package/ssg/aquati.cat/node_modules/\nWould remove package/test-fixture/css-importing-filepath/node_modules/\nWould remove package/test-fixture/css-importing/node_modules/\nWould remove package/test-fixture/file-enforcer-perf/node_modules/\nWould remove package/test-fixture/oxlint-no-restricted-syntax/node_modules/\nWould remove package/typeface/aquaticat/node_modules/\nWould remove package/webapp-productivity/done-postcss/node_modules/\nWould remove package/webapp-productivity/done/node_modules/\nWould remove package/webapp-productivity/doodle-widget/node_modules/\nWould remove package/webapp-productivity/rss/node_modules/\nWould remove package/webapp-productivity/syllable-break-demo/node_modules/\nWould remove package/webapp-productivity/wc/node_modules/\n",
+    "strayGitEntries": []
+  },
+  "snapshot": {
+    "reference": "l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r1",
+    "digest": "sha256:9fb974fd32185c8afd5711370869d03e0f28e5b560c928eae324c20151ddeee8",
+    "diskMode": "block",
+    "parent": "sha256:11cb23692f9ee055325cfa536e6a52334344f2a28f9b15167fe2c2a1e12cf61e",
+    "uploadedBlockBytes": 5703139328,
+    "mappedBlocks": 87491,
+    "dedupedBlocks": 468,
+    "uploadedBlocks": 87023,
+    "captureUploadSeconds": 19.103515534,
+    "totalHelperSeconds": 20.038450404,
+    "helperResolverVersion": "1.2.30",
+    "helperReportedVersion": "snapshot 0.1.0 (119be55)",
+    "maxAgeInput": "6h",
+    "freshConsumptionVerified": false,
+    "registryDeletionVerified": false
+  },
+  "limitations": [
+    "Default image startup, checkout, action startup and task tool resolution are outside the individual preparation command durations.",
+    "Gradle dependencies graph resolution does not establish all project compile or test JARs are installed.",
+    "Block snapshot upload bytes are not a verified billable registry storage total.",
+    "max-age freshness input does not establish an automatic registry deletion deadline.",
+    "Synthetic marker absence in the producer is not yet fresh-consumer or general secret-exclusion proof."
+  ]
+}

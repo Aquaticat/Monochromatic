@@ -101,3 +101,55 @@ with at most two jobs concurrently and USD 1 nominal compute exposure for this P
 
 Research remains active.
 This manifest is not an execution result or a readiness finding.
+
+## Real PR gate controls
+
+PR `1766` targets only `research/depot-runtime-base-20261018`.
+Both required check names are bound to their observed GitHub App IDs:
+`research-github-gate` to `15368`,
+and `research native PR gate / research-native-gate` to `219785`.
+Administrator enforcement is enabled only for this disposable base.
+
+At head `0f45cf8730753a3e986d567c27314cb2632ad668`,
+both intentional failure controls completed with failure.
+The merge API rejected the attempt with HTTP `405`:
+`2 of 2 required status checks are failing.`
+At head `4fca286e107bc7cbe54bc004a322e3db748f21ce`,
+both checks succeeded and GitHub reported `mergeStateStatus=CLEAN`.
+These are gate controls,
+not application test-suite acceptance.
+
+The first supersession control did not establish cancellation:
+the replacement push was rejected with `remote rejected ... (failed)`,
+and both 90-second holder jobs completed before recovery.
+The cause of that push rejection is not established.
+A longer holder accepts only a declared 180-second delay within the existing five-minute job limit.
+The replacement is sent only after a native task start marker and an executing GitHub gate are retained.
+During cancellation handoff,
+old and replacement generations may overlap;
+the previous two-job statement describes one generation,
+not a proven allocation limit during handoff.
+This remains within the campaign's USD 1 nominal compute-proxy ceiling.
+Cancellation status will not be reported as evidence of VM termination or billing cessation.
+
+## Native step-semantics campaign manifest
+
+A separate isolated branch `research/depot-native-orchestration-20261018`
+retains the same application base and changes only research fixtures.
+It will exercise retry counts,
+filesystem and environment accumulation,
+per-attempt timeout renewal,
+job-timeout interruption of retry backoff,
+parallel branch environment isolation and shared filesystem behavior,
+default parallel cancellation,
+`fail-fast: false`,
+and downstream artifact consumption.
+
+Two dependency chains bound this initial campaign to two concurrent jobs.
+Jobs use two-vCPU/eight-GB Linux allocations,
+with five-minute limits except for the two-minute job-timeout control.
+The initial workflow contains five jobs and has a USD 1 nominal compute-proxy ceiling.
+Intentional failing and timed-out controls are identified separately from unexpected failures.
+No application source,
+production workflow,
+credential store or account setting changes.

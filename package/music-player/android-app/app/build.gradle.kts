@@ -252,10 +252,10 @@ dependencies {
 }
 
 // region Third-party license notices
-// The release APK carries assets/THIRD-PARTY-LICENSES.txt: the license notices of the app, its Android libraries and
-// its native Rust library. The android-app mise task `notices` writes the file into build/third-party-licenses/ (it
-// runs licenseeAndroidRelease and collectAndroidLibraryNotices below, then cargo-about over rust/); the release build
-// packages it. Decision and allow-list: doc/decision/music-player-third-party-licenses.md.
+// Every APK carries assets/THIRD-PARTY-LICENSES.txt, which the Licenses row of Settings shows: the license notices of
+// the app, its Android libraries and its native Rust library. The android-app mise task `notices` writes the file
+// into build/third-party-licenses/ (it runs licenseeAndroidRelease and collectAndroidLibraryNotices below, then
+// cargo-about over rust/); the build packages it. Decision and allow-list: doc/decision/music-player-third-party-licenses.md.
 
 // Only the Apache License 2.0 is allowed: every one of the 121 libraries in the release runtime classpath uses it
 // (licensee report, 2026-10-15), it is compatible with the app's LGPL-3.0-or-later, and the notices task carries its
@@ -319,7 +319,7 @@ val collectAndroidLibraryNotices = tasks.register("collectAndroidLibraryNotices"
 }
 
 /**
- * Puts the license notices into the release APK as assets/THIRD-PARTY-LICENSES.txt. With
+ * Puts the license notices into the APK as assets/THIRD-PARTY-LICENSES.txt, for every variant. With
  * MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES=true (the release workflow) a missing notice file fails the build;
  * otherwise a local build packages a short note saying how to write the notices.
  */
@@ -366,8 +366,11 @@ val thirdPartyLicensesAsset = tasks.register<ThirdPartyLicensesAssetTask>("third
     required.set(providers.environmentVariable("MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES").map { it == "true" }.orElse(false))
 }
 
+// Every variant carries the asset: the Licenses row of Settings opens it, so a debug build and the instrumented tests
+// need a file there too. Without the notices task's output it holds the short note, and only a build that sets
+// MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES=true (the release workflow) fails on a missing file.
 androidComponents {
-    onVariants(selector().withBuildType("release")) { variant ->
+    onVariants { variant ->
         variant.sources.assets?.addGeneratedSourceDirectory(thirdPartyLicensesAsset, ThirdPartyLicensesAssetTask::outputDirectory)
     }
 }
