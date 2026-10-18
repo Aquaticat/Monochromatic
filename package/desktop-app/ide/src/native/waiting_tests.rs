@@ -108,11 +108,13 @@ impl Waiting {
         return Waiting::begin(patience, FINE_PAUSE);
     }
 
-    /// Start the clock and run the native timers once.
+    /// Start the clock and then run the native timers once,
+    ///  so the first pass counts against the patience.
     fn begin(patience: Duration, pause: Duration) -> Waiting {
+        let started = Instant::now();
         update_timers_and_animations();
         return Waiting {
-            started: Instant::now(),
+            started,
             patience,
             pause,
         };
