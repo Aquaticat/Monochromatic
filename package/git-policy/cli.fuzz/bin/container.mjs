@@ -17,7 +17,10 @@ const targets = [
   { name: 'global_arguments', dictionary: 'arguments.dict' },
   { name: 'config_loading', dictionary: 'arguments.dict' },
   { name: 'config_schema', dictionary: 'config_schema.dict' },
-  { name: 'wrapper_controls', dictionary: 'controls.dict' },
+  // The frontier view forwards commits, and each one writes an event line on the process's standard error;
+  // closing that stream for the target (libFuzzer keeps its own copy for statistics) keeps a stalled pipe reader
+  // from stalling the target. A panic message is lost with it, so a crash is reproduced from its saved input.
+  { name: 'wrapper_controls', dictionary: 'controls.dict', extraOptions: ['-close_fd_mask=2'] },
   { name: 'batch_reply', dictionary: 'batch_reply.dict' },
   { name: 'stage_listing', dictionary: 'stage_listing.dict' },
   { name: 'rules_file', dictionary: 'rules_file.dict' },
@@ -196,12 +199,15 @@ async function main() {
     ].join('\n'));
     execute({ command: 'podman', args: ['build', '--network=none', '--http-proxy=false', '--pull=never', '--memory=2g', '--cpu-period=100000', '--cpu-quota=200000', '--tag', runImage, '--file', join(context, 'Run.Containerfile'), context] });
     console.log(`Fuzz evidence: ${evidence}`);
+    // A failed target is recorded and the campaign goes on, so one finding never hides the targets after it.
+    const failedTargets = [];
     for (const target of selectedTargets) {
       const container = execute({ command: 'podman', args: [
         'create', ...limits, runImage,
         `/fuzz/bin/${target.name}`, `/fuzz/corpus/${target.name}`, `-max_total_time=${secondsPerTarget}`,
         `-max_len=${maxInputBytes}`, '-rss_limit_mb=1536', '-timeout=5', '-print_final_stats=1',
         `-artifact_prefix=/fuzz/artifacts/${target.name}/`, `-dict=/fuzz/dictionary/${target.dictionary}`,
+        ...(target.extraOptions ?? []),
       ], capture: true }).stdout.trim();
       containers.push(container);
       await mkdir(join(evidence, target.name), { recursive: true });
@@ -225,10 +231,15 @@ async function main() {
       const executedUnits = statistics ? Number(statistics[1]) : 0;
       await writeFile(join(evidence, target.name, 'exit.json'), JSON.stringify({ status: result.status, signal: result.signal, executedUnits }) + '\n');
       // Exit 0 alone is not evidence: a dictionary or corpus setup failure also ends quickly.
-      if (result.status !== 0 || executedUnits < 1)
-        throw new FuzzVerificationError(`${target.name} exited ${result.status} after ${executedUnits} verified executions; retained inputs and logs are in ${evidence}.`);
+      if (result.status !== 0 || executedUnits < 1) {
+        failedTargets.push(`${target.name} exited ${result.status} after ${executedUnits} verified executions`);
+        console.log(`${target.name}: FAILED, exit ${result.status}, ${executedUnits} executions; evidence ${join(evidence, target.name)}`);
+        continue;
+      }
       console.log(`${target.name}: ${executedUnits} executions, exit 0; evidence ${join(evidence, target.name)}`);
     }
+    if (failedTargets.length > 0)
+      throw new FuzzVerificationError(`${failedTargets.join('; ')}; retained inputs and logs are in ${evidence}.`);
   } finally {
     for (const container of containers)
       execute({ command: 'podman', args: ['rm', '--force', container], capture: true });
