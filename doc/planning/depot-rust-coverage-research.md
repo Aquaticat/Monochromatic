@@ -872,17 +872,20 @@ The final executable adapter syntax check passed all admitted Rust research bins
 The YAML check rejected the committed malformed positive control
 and accepted every admitted Rust workflow.
 
-## Next delegated review
+## Independent evidence review
 
-The coordinator queued an independent read-only evidence review after this Rust publication.
-The review covers the job-policy/history,
-process-timeout and MVM/KVM audit bundles dated 2026-10-18,
+The coordinator's independent read-only evidence review is complete for the job-policy/history,
+process-timeout and original MVM/KVM audit bundles dated 2026-10-18,
 the combined-product pricing calculation and the root expanded-CI report outside this lane.
-It requires independent ZIP decoding,
+The additional service/container and disposable-PR cohorts and container prerequisite source reasoning
+are also reviewed.
+The published independent note retains original-byte,
 CRC/hash/outcome joins,
-credential inspection,
-current allowance sources and one committed review note.
-No new cloud allocation is admitted for that review.
+credential inspection and fresh allowance/source checks.
+It identified the accepted original MVM shared-directory qualification correction;
+no additional material correction was found in the service/PR cohorts.
+The newly allocated guest-transformation cohort remains a separate pending review after publication.
+No new cloud allocation is admitted for this reviewer.
 
 ## Reusable immutable Rust profile handoff
 
@@ -964,7 +967,7 @@ The adapter admits the frozen Truepeak crate and root `mise.toml`,
 It uses private `HOME` and `TMPDIR` under `.research-rust-truepeak-all`,
 a dedicated target directory,
 existing fake samples and disposable Turso databases.
-It needs no C/Chromaprint setup and calls no real paid provider.
+The adapter adds no SQLite/Chromaprint package setup and calls no real paid provider.
 
 The actual result is 89 passed and two intentional skips out of 91 enumerated.
 Locked fetch took 31.017 seconds;
