@@ -9,6 +9,7 @@ assert.equal(process.env.RESEARCH_RUST_PROFILE, 'truepeak-all');
 const finish = sourceAdmission(['package/music-player/truepeak-core']);
 environment.HOME = join(owned, 'home');
 mkdirSync(environment.HOME, { recursive: true, mode: 0o700 });
+delete environment.CARGO_BUILD_JOBS;
 try {
   const project = join(root, 'package/music-player/truepeak-core');
   rust('compiler-version', ['rustc', '--version', '--verbose']);

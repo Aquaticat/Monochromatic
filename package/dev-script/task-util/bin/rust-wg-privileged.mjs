@@ -9,6 +9,7 @@ assert.equal(process.env.RESEARCH_RUST_PROFILE, 'wg-privileged');
 const finish = sourceAdmission(['package/cli/wg-quicker-exempt']);
 environment.HOME = join(owned, 'home');
 mkdirSync(environment.HOME, { recursive: true, mode: 0o700 });
+delete environment.CARGO_BUILD_JOBS;
 try {
   run('kernel', 'uname', ['--all']);
   run('namespace-help', 'unshare', ['--help']);

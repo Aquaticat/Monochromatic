@@ -9,6 +9,7 @@ const projectPath = { 'planted-git': 'package/git-policy/cli.fuzz', 'planted-lin
 assert(projectPath);
 const paths = ['package/git-policy/cli', 'package/git-policy/cli.fuzz', 'package/cli/forbidden-strings', 'package/rust-module/forbidden-regex', 'package/rust-module/jsonc-edit', 'package/rust-module/jsonc-edit.fuzz', 'package/linter/monochromatic-lint', 'package/linter/monochromatic-lint.fuzz'];
 const finish = sourceAdmission(paths);
+delete environment.CARGO_BUILD_JOBS;
 try {
   const project = join(root, projectPath);
   rust('locked-dependency-preparation', ['cargo', 'fetch', '--locked'], { cwd: project });
