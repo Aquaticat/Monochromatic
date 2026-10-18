@@ -14,8 +14,10 @@
 
 - ~~`--editor-padding` CSS variable not defined~~ (fixed: defined as `0.5rem`)
 - ~~Errors from WS operations surface as uncaught promise rejections~~ (fixed: try/catch with tagged logging)
-- ~~`setText`/`getText` on `<editor-pane>` require runtime cast~~ (fixed: `EditorPane` class exported, typed cast in app.ts)
-- ~~File paths resolve relative to server cwd, which may differ from user expectation~~ (fixed: path containment via `assertWithinRoot` against `rootDir`)
+- ~~`setText`/`getText` on `<editor-pane>` require runtime cast~~
+  (fixed: `EditorPane` class exported, typed cast in app.ts)
+- ~~File paths resolve relative to server cwd, which may differ from user expectation~~
+  (fixed: path containment via `assertWithinRoot` against `rootDir`)
 - No visual feedback on save (logged via tagged logger, no UI indicator)
 - No favicon, no PWA manifest yet
 
@@ -151,11 +153,17 @@
 
 ## Phase 13; Save durability and watcher migration (done)
 
-- [x] `write-file-atomic.ts`: temp + fsync + rename helper, `O_NOFOLLOW`/`O_EXCL` on the temp open, `lstat`-and-refuse on symlinked targets (`ELOOP`), `fchmod` to preserve mode
+- [x] `write-file-atomic.ts`: temp + fsync + rename helper,
+  `O_NOFOLLOW`/`O_EXCL` on the temp open,
+  `lstat`-and-refuse on symlinked targets (`ELOOP`),
+  `fchmod` to preserve mode
 - [x] `save.ts`, `apply-workspace-edit.ts`, `new-entry.ts` migrated to `writeFileAtomic`
-- [x] `DirWatcher` (`watch-filesystem.ts`) reimplemented on chokidar 5 with `depth: 0`, `atomic: true`, `awaitWriteFinish`; public API (`watchDir`, `suppressPath`, `close`, `FsChangeEvent`) preserved
+- [x] `DirWatcher` (`watch-filesystem.ts`) reimplemented on chokidar 5
+  with `depth: 0`, `atomic: true`, `awaitWriteFinish`;
+  public API (`watchDir`, `suppressPath`, `close`, `FsChangeEvent`) preserved
 - [x] Orphan `.*.editord.*~` temp sweep on first `watchDir` of each directory
-- [x] `dirWatcher.suppressPath` added for the previously-missing fs-action paths (apply-workspace-edit, new-entry, move-entry source+dest, delete-entry, copy-entry)
+- [x] `dirWatcher.suppressPath` added for the previously-missing fs-action paths
+  (apply-workspace-edit, new-entry, move-entry source+dest, delete-entry, copy-entry)
 
 Verification procedure for end-to-end checks: `HANDOVER.chokidar-atomic-migration.md`.
 

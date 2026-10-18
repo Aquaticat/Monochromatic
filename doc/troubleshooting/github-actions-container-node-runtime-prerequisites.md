@@ -173,5 +173,57 @@ It does not satisfy the Git-policy fixture's exact Git `2.56` requirement.
   no upstream software fix is claimed.
 
 Nothing additive is ready to file upstream.
+
+## Design ImageMagick tool-image recurrence
+
+The separately owned material design run `39157446445`,
+harness `e270285361b526793ff1db3af9f8224630c28e70`,
+passes source/payload and ImageMagick prerequisites,
+then its actual copied Node `26.12.0` executable exits `127`:
+
+```text
+/research-node/node: error while loading shared libraries: libatomic.so.1: cannot open shared object file: No such file or directory
+```
+
+The [primary material receipt](../audit/depot-material-owner-primary-2026-10-18.evidence.json)
+retains the original failed-call hash and derived text.
+ImageMagick's version check passes in the same image;
+it does not qualify the copied Node executable.
+The thirteen authored design programs are enumerated,
+but none executes before this failure.
+
+The owned harness's `materialStage` prerequisite branch constructs the image recipe:
+
+```dockerfile
+# Generated Containerfile.design-tools, materialStage prerequisites branch at e270285361b526793ff1db3af9f8224630c28e70
+FROM registry.fedoraproject.org/fedora:41
+RUN dnf install --assumeyes ImageMagick libstdc++ && dnf clean all
+```
+
+The [correction admission](../audit/depot-design-libatomic-correction-admission-2026-10-18.evidence.json)
+binds source `73edb149b0a051e8047e32b447d93af335f537a8`.
+Its consumer-owned recipe adds Fedora `libatomic` to that same package list,
+preserving application source,
+Node version,
+owning program arguments,
+public runner profile and resource limits.
+Actual CommonJS bootstrap chunks reproduce the corrected tracked Mise/config bytes;
+reversing only the library addition restores the complete original workflow object.
+The correction ran as public GitHub job `117789377100`,
+run `39166144807`,
+from `21:03:55` to `21:06:37 UTC`.
+Its actual locked Node version check and all thirteen authored programs pass,
+including the actual ImageMagick consumers,
+with source assertions unchanged and the owned container absent afterward.
+The [terminal receipt](../audit/depot-gnu-design-terminal-2026-10-18.evidence.json)
+retains verified artifact members and actual program arguments/statuses.
+This verifies the Fedora prerequisite remedy for this image and binary.
+It is not a claim that the Debian package spelling works on Fedora,
+or that the local host's runtime libraries qualify the container.
+
+The upstream filing decision remains consumer-owned:
+the tool image recipe omitted a measured runtime prerequisite,
+no upstream defect has been established,
+and no external issue or patch is proposed.
 The unresolved REST behavior remains an observation,
 without a claimed transport cause or upstream defect.

@@ -326,7 +326,8 @@ The comparison uses these notes to compare file sets exactly.
 Every Markdown finding reports its column in UTF-16 code units.
 The Markdown incumbent reports node-anchored findings the same way,
 but counts code points for offset-anchored findings (`pointAt` in `package/cli/markdown-lint/src/source-position.ts`).
-On a line holding an astral character before the finding the two therefore print different column numbers for the same position.
+On a line holding an astral character before the finding the two therefore print different column numbers
+for the same position.
 The repository has 16 such findings;
 `Markdown findings` under `Differential comparison` has the measurement.
 
@@ -493,7 +494,8 @@ so that no virtual file has rules.
 The design's build order asks for the comparison with processors off;
 processors are always on,
 so `host-only` is how that is expressed.
-A probe fixture with a bare URL in rustdoc and a closure in a fence gave six findings under `draft` and none under `host-only`.
+A probe fixture with a bare URL in rustdoc and a closure in a fence gave six findings under `draft`
+and none under `host-only`.
 
 Every linter process ran inside `bwrap --ro-bind / /` without network,
 so the whole filesystem was read-only to it,
@@ -636,7 +638,8 @@ the new executable removes the complete escape and leaves `# Done`.
 Classification:
 an intended fix-quality difference in `markdown/no-trailing-punctuation`,
 stated in the crate's `README.md` before this work (punctuation edits consume complete escapes).
-In the same file the shipped incumbent also leaves a stray `[` where it deletes an unused definition after an astral character,
+In the same file the shipped incumbent also leaves a stray `[`
+where it deletes an unused definition after an astral character,
 which is issue #559 again.
 
 ### Processor findings under the draft configuration

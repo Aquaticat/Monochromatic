@@ -41,7 +41,8 @@ not a reason to disable parts of it.
   abort,
   or recovery.
   The design session chose a private ref under `refs/cli-git/`;
-  the implementation replaced it with a per-transaction shadow repository whose own object store holds the pending commit,
+  the implementation replaced it with a per-transaction shadow repository
+  whose own object store holds the pending commit,
   so no `refs/cli-git/` ref exists
   (see "Private `HEAD` shape:
    shadow repository with alternates").

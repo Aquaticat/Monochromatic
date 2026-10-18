@@ -1,10 +1,21 @@
 import {types} from "node:util";
 import {SourceCollectionError} from "../collector.mjs";
-import {copyMessageData,assertTextMessageContent} from "../run-prompt-custody/messages.mjs";
-import {dataField,messageMetadata} from './loaded-fields.mjs';
+import {
+  copyMessageData,
+  assertTextMessageContent
+} from "../run-prompt-custody/messages.mjs";
+import {
+  dataField,
+  messageMetadata
+} from './loaded-fields.mjs';
 //region Retain original queued, command, and transformed user-input occurrences.
 /** Retain original queued, command, and transformed user-input occurrences. */
-export function createLoadedUserInputs({poolState,InputCaptureError,reserve,retainConstructedInput}){
+export function createLoadedUserInputs({
+  poolState,
+  InputCaptureError,
+  reserve,
+  retainConstructedInput
+}){
 
 function captureQueuedInput({
     message,

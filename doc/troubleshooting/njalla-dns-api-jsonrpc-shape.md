@@ -1,4 +1,5 @@
-# Njalla's DNS JSON-RPC API answers a valid `list-records` call with `-32000 Invalid arguments` when the endpoint path lacks its trailing slash
+# Njalla's DNS JSON-RPC API answers a valid `list-records` call
+with `-32000 Invalid arguments` when the endpoint path lacks its trailing slash
 
 **Date**:
  2026-10-09.

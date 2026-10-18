@@ -91,7 +91,9 @@ This audit records the isolated bounded continuation and its controls.
 
 ## Bounded continuation route
 
-The pushed trial branch `trial/depot-toml-continuation-20261017` freezes harness `640a576ade81c4edfee6a603543a7fbd18faa46b` (current prepared route as of 2026-10-17:
+The pushed trial branch `trial/depot-toml-continuation-20261017`
+freezes harness `640a576ade81c4edfee6a603543a7fbd18faa46b`
+(current prepared route as of 2026-10-17:
 `0f1ef041a0de2ff6d2db6dd55210b1160c592648`).
 Its workflow is `.depot/workflows/depot-complete-toml-bounded.yml`,
 with required inputs
@@ -679,7 +681,8 @@ The final common cohort remains held.
 File-enforcer mutation ran and failed before enumeration with its original `ENOENT` (`#1068`);
 it receives no mutant assertion credit.
 The original completed file-enforcer container failure remains failed (`#1070`).
-The independent actual-source classifier defect is now [issue `#1142`](https://github.com/Aquaticats/Monochromatic/issues/1142),
+The independent actual-source classifier defect is now
+[issue `#1142`](https://github.com/Aquaticats/Monochromatic/issues/1142),
 verified open with `needs-triage`.
 No application source fix was made.
 The structured `historicalIndependentCoverage` retains each selected identity,

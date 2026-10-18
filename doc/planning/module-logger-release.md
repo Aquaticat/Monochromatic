@@ -63,9 +63,11 @@ Its post-release value (toml-edit verification bar,
    in-repo `/ts` imports are unaffected.
    `module-caught-value` moves to `devDependencies` (the dist bundles it) and is not published in this release.
 - `flush()` gets a deadline before 0.1.0,
-   exposed as one `createLogger` option `flushDeadlineMs` with a named default chosen after measuring local write latency.
+   exposed as one `createLogger` option `flushDeadlineMs`
+   with a named default chosen after measuring local write latency.
 - The 25 `require-eventual-artifact` findings gate the publish:
-   internals are exported from the entry with an underscore prefix (toml-edit precedent) and their tests import the built artifact.
+   internals are exported from the entry with an underscore prefix (toml-edit precedent)
+   and their tests import the built artifact.
 - The no-backend throw stays in 0.1.0:
    reachable only through `createLogger` with sinks that all fail verify,
    documented,
@@ -95,7 +97,8 @@ Its post-release value (toml-edit verification bar,
    No npm token is ever stored.
 - A `doc/decision/` entry supersedes the "bundle,
    do not publish" direction.
-- The legacy plan becomes a post-release track after a rewrite that fixes its inventory and removes the items decided against here;
+- The legacy plan becomes a post-release track after a rewrite
+   that fixes its inventory and removes the items decided against here;
    a GitHub issue tracks it.
 
 ## Measured state (2026-09-06)
@@ -153,7 +156,8 @@ Its post-release value (toml-edit verification bar,
    `package/git-policy/cli/package.json` lists `!src/**/*.unit.test.ts`,
    and `npm pack --dry-run` there shows 0 of its 44 unit-test files.
 - `tsconfig.tsbuildinfo` lands in `dist/final/types` because the shared
-   `package/config/typescript/tsconfig.options.json` sets `composite: true` with `outDir` there and no `tsBuildInfoFile`.
+   `package/config/typescript/tsconfig.options.json` sets `composite: true`
+   with `outDir` there and no `tsBuildInfoFile`.
    `package/dev-script/task-util/src/tsc-filter.ts` already deletes `dist/**/*.tsbuildinfo`,
    and the root tsconfig redirects its own build info to `.cache/typescript/`.
 - pnpm `publishConfig` can override `exports` (and `bin`,
@@ -197,7 +201,8 @@ Its post-release value (toml-edit verification bar,
    takes `publish-script` and `version-script` inputs,
    and pnpm's own guide publishes with `pnpm publish -r`.
    No `.changeset/` directory exists yet.
-- Prior direction in `doc/handover/cli-git-policies-platform.md` says to bundle logger into public artifacts rather than publish it.
+- Prior direction in `doc/handover/cli-git-policies-platform.md`
+   says to bundle logger into public artifacts rather than publish it.
 
 ## Execution plan
 
@@ -207,7 +212,8 @@ Order matters:
  tooling,
  then verification and the manual bootstrap.
 
-1.   Vet report `doc/audit/tech-npm-release-versioning-and-publishing-vet-2026-09-06.md` for changesets against release-please,
+1.   Vet report `doc/audit/tech-npm-release-versioning-and-publishing-vet-2026-09-06.md`
+     for changesets against release-please,
      semantic-release,
      and manual tags,
      per the `choosing-technology` skill.

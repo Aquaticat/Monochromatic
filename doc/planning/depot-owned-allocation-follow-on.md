@@ -2,6 +2,23 @@
 
 ## Purpose and queue
 
+The current terminal successor is the
+[49-row final ledger](../audit/depot-owned-allocation-final-2026-10-18.evidence.json).
+It preserves the historical snapshots recorded in this document.
+Its concrete source verification checks all 53 retained bodies and 49 timestamp-pointer joins,
+with no duplicate baseline identities and exact BigInt arithmetic
+([verification receipt](../audit/depot-owned-allocation-final-source-verification-2026-10-18.evidence.json)).
+The known provider-window proxy is USD 1.685366666667:
+Depot GitHub USD 1.233566666667,
+native CI USD 0.4518 and nominal public GitHub compute zero.
+The three BuildKit request windows retain their separate USD 0.015897333333 proxy;
+allocated-builder billing and invoices remain unmeasured.
+The final append adds the seven primary material jobs,
+public and Depot GNU controls,
+the design runtime-library correction and both terminal SSH attempts.
+Every appended row is terminal.
+Historical admissions and earlier snapshot totals are not added again.
+
 The frozen baseline remains
 `doc/audit/depot-owned-allocation-ledger-2026-10-18.evidence.json`,
 with `223` allocation rows.

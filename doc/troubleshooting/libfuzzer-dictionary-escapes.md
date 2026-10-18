@@ -1,4 +1,5 @@
-# libFuzzer (libfuzzer-sys 0.4.13) dictionaries reject `\n`, `\r` and `\t` escapes and the target exits before any execution
+# libFuzzer (libfuzzer-sys 0.4.13) dictionaries reject `\n`, `\r` and `\t` escapes
+and the target exits before any execution
 
 ## Symptom
 

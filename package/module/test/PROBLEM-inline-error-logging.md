@@ -4,7 +4,8 @@
 
 `@monochromatic-dev/module-test` is a self-hosted test harness.
  Tests are defined via `it({ name, fn })` and grouped via `describe({ name, children })`.
- The harness logs pass/fail status through a tagged logger and propagates failures via `throw new Error(name, { cause })`.
+ The harness logs pass/fail status through a tagged logger
+and propagates failures via `throw new Error(name, { cause })`.
 
 ### Current behavior (verified)
 
@@ -26,7 +27,8 @@ if (threw) {
 
 The `l.error(...)` call outputs only the test name and duration.
  The `Error` object thrown here carries the full cause chain,
- but that chain is only visible when the rejection propagates uncaught to the runtime and the runtime's unhandled-rejection printer dumps it.
+ but that chain is only visible when the rejection propagates uncaught to the runtime
+and the runtime's unhandled-rejection printer dumps it.
 
 Similarly,
  in `src/describe.ts:297-304`,
@@ -56,7 +58,8 @@ throw new Error(name, { cause, },);
 2. **Caught rejections show no diagnostics at all.
    **
 
-   Self-tests catch rejections to assert on error shape (`await expect(rejection).rejects.toHaveProperty('cause', original)`).
+   Self-tests catch rejections to assert on error shape
+   (`await expect(rejection).rejects.toHaveProperty('cause', original)`).
     Since the rejection never reaches the runtime,
     the full error content never appears anywhere in output.
     Self-test output shows `FAIL (0ms)` lines with adjacent silence.
@@ -117,7 +120,8 @@ The harness should still re-throw after logging,
 
 2. **Assertion-count failures** are also logged inline before throwing.
 
-3. The logger tag chain for inline error lines remains consistent with the `FAIL` summary line (same `[suite] [test]` prefix).
+3. The logger tag chain for inline error lines remains consistent
+   with the `FAIL` summary line (same `[suite] [test]` prefix).
 
 4. Existing behavior is preserved:
     the harness still throws the same errors with the same `.cause` chains,
@@ -175,7 +179,9 @@ The harness should still re-throw after logging,
 - Do not change the public API of `it`,
    `describe`,
    or `TestDescriptor`.
-- Do not modify `src/describe.ts` suite-level wrapping logic except to decide whether suite-level inline dumping is needed (see acceptance criteria:
+- Do not modify `src/describe.ts` suite-level wrapping logic
+  except to decide whether suite-level inline dumping is needed
+  (see acceptance criteria:
    leaf-level only required).
 - Do not remove the existing `throw` behavior or change the `Error(name, { cause })` shape.
 

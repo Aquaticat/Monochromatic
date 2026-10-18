@@ -33,7 +33,13 @@ export function compilation({
 }
 
 /** Preserve independent source and authority gaps after admitted original relationships. */
-export function resolveCompilationIssues({issues,adopted,headingUses,interpreted,sourceNeedsAuthority}){
+export function resolveCompilationIssues({
+  issues,
+  adopted,
+  headingUses,
+  interpreted,
+  sourceNeedsAuthority
+}){
  // Only consumed none relationships are tier-independent. This does not close the governing-source inventory.
  const requiredIssues=issues.filter(function retainUnresolvedAdoptionIssue(issue) {
   if(adopted.adopters

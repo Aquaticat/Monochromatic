@@ -2,11 +2,24 @@ import {PolicySlotBindingError} from './system-slot-error.mjs';
 import {collectRetainedRunInputs} from './run-history.mjs';
 import {linkRunInputCarriers} from './run-carriers.mjs';
 import {collectNativeMessageInputs} from '../../collector/run-prompt-custody-v3/message-inputs.mjs';
-import {assertCollectedManagerGrowth,assertManagerOriginsAppended} from './manager-source-growth.mjs';
+import {
+  assertCollectedManagerGrowth,
+  assertManagerOriginsAppended
+} from './manager-source-growth.mjs';
 import {captureDecisionContext} from './decision-context.mjs';
 
 //region Original snapshots and approval retention share one collector-owned map.
-export function retainPolicyInput({base,session,readSessionConstructedInputs,readSessionDomainEvents,readCurrent,assertCurrent,assertInputBudget,resourceInputs,hostPrompt}){
+export function retainPolicyInput({
+  base,
+  session,
+  readSessionConstructedInputs,
+  readSessionDomainEvents,
+  readCurrent,
+  assertCurrent,
+  assertInputBudget,
+  resourceInputs,
+  hostPrompt
+}){
   const snapshots=new WeakMap();
   function constructedInputs(run){return (run===undefined)&&session?readSessionConstructedInputs?.(session):undefined;}
   function domainEvents(){return session&&readSessionDomainEvents?readSessionDomainEvents(session):undefined;}
@@ -78,7 +91,8 @@ export function retainPolicyInput({base,session,readSessionConstructedInputs,rea
      resourceSystemInput:input.resourceSystemInput,
      appendPromptInputs:input.appendInputs,
      contextPromptInputs:input.contextInputs,
-     readablePolicySources:input.readablePolicies.sources,
+     readablePolicySources:input.readablePolicies
+       .sources,
      governingContextCarriers:input.contextCarriers,
      priorContextPublication:input.priorContext,
      forcedPromptInput,
@@ -92,8 +106,15 @@ export function retainPolicyInput({base,session,readSessionConstructedInputs,rea
      runInputCarriers,
      governingSources
    };
-   const decisionContext=captureDecisionContext({snapshot:captured,session,input});
-   const snapshot=Object.freeze({...captured,decisionContext});
+   const decisionContext=captureDecisionContext({
+     snapshot:captured,
+     session,
+     input
+   });
+   const snapshot=Object.freeze({
+     ...captured,
+     decisionContext
+   });
    if(constructedInputs(original.nativeRunComposition)!==nativeConstructedInputs)throw new PolicySlotBindingError('Original constructed inputs changed during source capture');
    if(resourceInputs()!==nativeResourceToolInputs)throw new PolicySlotBindingError('Resource tool inputs changed during source capture');
    assertInputBudget(session);
@@ -118,9 +139,17 @@ export function retainPolicyInput({base,session,readSessionConstructedInputs,rea
    const currentConstructed=constructedInputs(current.nativeRunComposition);
    const nativeDomain=domainEvents();
    if((JSON.stringify(nativeDomain?.kinds)!==JSON.stringify(snapshot.nativeDomainEventKinds))
-     ||(nativeDomain?.observation?.occurrence!==snapshot.nativeDomainEventObservation?.occurrence)
-     ||nativeDomain?.observation?.failed
-     ||((nativeDomain?.observation?.revision??0)<(snapshot.nativeDomainEventObservation?.revision??0)))throw new PolicySlotBindingError('Approved operation lost its original native event runner or complete receipt accounting');
+     ||(nativeDomain?.observation
+       ?.occurrence
+       !==snapshot.nativeDomainEventObservation
+       ?.occurrence)
+     ||nativeDomain?.observation
+     ?.failed
+     ||((nativeDomain?.observation
+       ?.revision
+       ??0)<(snapshot.nativeDomainEventObservation
+         ?.revision
+         ??0)))throw new PolicySlotBindingError('Approved operation lost its original native event runner or complete receipt accounting');
    assertCollectedManagerGrowth({
      before:saved.original,
      after:current
@@ -194,7 +223,10 @@ export function retainPolicyInput({base,session,readSessionConstructedInputs,rea
    };
    try{
     assertCurrent(saved.input);
-    if((saved.judgmentSources!==undefined)&&((!extend)||(domainEvents()?.observation===saved.judgmentSources.nativeDomainEventObservation))){
+    if((saved.judgmentSources!==undefined)&&((!extend)||(domainEvents()
+      ?.observation
+      ===saved.judgmentSources
+      .nativeDomainEventObservation))){
      assertObservedFresh(saved.judgmentSources);
      if(saved.failure)throw new PolicySlotBindingError(
        'Original governing snapshot lost eligibility',
@@ -206,7 +238,8 @@ export function retainPolicyInput({base,session,readSessionConstructedInputs,rea
     const previous=saved.judgmentSources===undefined?saved:snapshots.get(saved.judgmentSources);
     if(previous.failure)throw new PolicySlotBindingError(
       'Original prepared source collection lost eligibility',
-      {cause:previous.failure.cause}
+      {cause:previous.failure
+        .cause}
     );
     const previousSnapshot=saved.judgmentSources??original;
     const current=capture({signal});
@@ -214,7 +247,10 @@ export function retainPolicyInput({base,session,readSessionConstructedInputs,rea
     if(next.input!==saved.input)throw new PolicySlotBindingError('Judgment source handoff cannot replace its original policy binding');
     if(next.nativeResourceToolInputs!==saved.nativeResourceToolInputs)throw new PolicySlotBindingError('Manager-only judgment handoff cannot adopt new extension tool receipts');
     if((JSON.stringify(current.nativeDomainEventKinds)!==JSON.stringify(previousSnapshot.nativeDomainEventKinds))
-      ||(current.nativeDomainEventObservation?.occurrence!==previousSnapshot.nativeDomainEventObservation?.occurrence))
+      ||(current.nativeDomainEventObservation
+        ?.occurrence
+        !==previousSnapshot.nativeDomainEventObservation
+        ?.occurrence))
       throw new PolicySlotBindingError('Judgment source handoff cannot replace native event membership or its original runner');
     assertCollectedManagerGrowth({
       before:previous.original,

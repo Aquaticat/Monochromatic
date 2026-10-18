@@ -209,7 +209,8 @@ The global `expect` still works for tests that do not destructure the context.
 Returns `{ name }` on success.
 Throws `Error(name, { cause })` on failure or timeout.
 
-- **`skip`** (`boolean | string`, default `false`): skips execution entirely, logs a `[SKIP]` tag, and returns immediately;
+- **`skip`** (`boolean | string`, default `false`): skips execution entirely, logs a `[SKIP]` tag,
+  and returns immediately;
   a string is logged as the reason
 - **`repeats`** (default `0`): number of additional runs after the first execution;
   `repeats: 2` runs the test 3 times total, with labels like `[run 1/3]`
@@ -221,15 +222,18 @@ Throws `Error(name, { cause })` on failure or timeout.
 
 Jest-style matchers backed by chai:
 
-- **Equality**: `toBe` (strict `===`), `toEqual` (deep), `toStrictEqual` (deep, alias for `toEqual`: chai's deep equality is strict by default)
+- **Equality**: `toBe` (strict `===`), `toEqual` (deep), `toStrictEqual` (deep, alias for `toEqual`:
+  chai's deep equality is strict by default)
 - **Truthiness**: `toBeTruthy`, `toBeFalsy`, `toBeNull`, `toBeUndefined`, `toBeDefined`, `toBeNaN`
 - **Numeric**: `toBeGreaterThan`, `toBeGreaterThanOrEqual`, `toBeLessThan`, `toBeLessThanOrEqual`, `toBeCloseTo`
 - **Strings**: `toMatch` (regex or string)
-- **Collections**: `toContain` (reference equality), `toContainEqual` (deep equality), `toHaveLength`, `toHaveProperty`, `toMatchObject`
+- **Collections**: `toContain` (reference equality), `toContainEqual` (deep equality), `toHaveLength`, `toHaveProperty`,
+  `toMatchObject`
 - **Errors**: `toThrow` (bare, message, regex, or class)
 - **Types**: `toBeInstanceOf`, `toBeTypeOf` (native `typeof` check)
 - **Predicates**: `toSatisfy` (custom predicate function)
-- **All-equal collections**: `toAllBe` (every array element strictly equals the first, mirrors `toBe`), `toAllEqual` (deep, mirrors `toEqual`), `toSatisfyAll` (predicate holds for every element)
+- **All-equal collections**: `toAllBe` (every array element strictly equals the first, mirrors `toBe`),
+  `toAllEqual` (deep, mirrors `toEqual`), `toSatisfyAll` (predicate holds for every element)
 - **Negation**: `expect(x).not.toBe(y)`
 - **Async errors**: await first, then assert on the caught error (see "Async error assertions")
 - **Promise rejection** (legacy): `await expect(promise).rejects.toBeInstanceOf(Error)`
@@ -1811,7 +1815,8 @@ Conventions for adding property tests here:
 - **chai**:
    assertion engine
 - **chai-as-promised**:
-   registered as a chai plugin for users who prefer chai's `.eventually` syntax over the built-in `rejects`/`resolves` API
+   registered as a chai plugin for users who prefer chai's `.eventually` syntax
+   over the built-in `rejects`/`resolves` API
 - **expect-type**:
    compile-time type assertions,
    re-exported as `expectTypeOf`

@@ -17,7 +17,11 @@ function frozenRecord(value){
     value,
     key
   );
-  if(field&&isInputContentDescriptor({record:value,key,field}))continue;
+  if(field&&isInputContentDescriptor({
+    record:value,
+    key,
+    field
+  }))continue;
   if(((typeof key)!=='string')||(!field?.enumerable)
     ||(!Object.hasOwn(
     field,

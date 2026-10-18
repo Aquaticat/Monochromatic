@@ -1,4 +1,7 @@
-import {readPolicyInput,readHostPromptInput} from './system-slot.mjs';
+import {
+  readPolicyInput,
+  readHostPromptInput
+} from './system-slot.mjs';
 import {GoverningPolicyBindingError} from './governing-source.mjs';
 
 //region Retain original source occurrences and their owning publication checks.

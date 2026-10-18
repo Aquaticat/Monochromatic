@@ -3,11 +3,13 @@
 Ready to publish.
 
 Shared OpenAI-compatible LLM client types.
-The canonical home for the chat-completion shapes that recur across every package wrapping an OpenAI-compatible endpoint (openai,
+The canonical home for the chat-completion shapes that recur across every package
+wrapping an OpenAI-compatible endpoint (openai,
  openrouter,
  anthropic-compatible,
  local llama-server),
-so the `role` / `content` envelope and the response shape are defined once and composed per consumer.
+so the `role` / `content` envelope and the response shape are defined once
+and composed per consumer.
 
 ### Exports
 

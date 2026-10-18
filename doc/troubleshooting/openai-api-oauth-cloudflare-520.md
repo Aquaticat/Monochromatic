@@ -1,4 +1,6 @@
-# `api.openai.com` (ChatGPT OAuth, pi `openai` provider, codex-cli 0.162.1): every credentialed request returns Cloudflare `520`, while unauthenticated requests return clean `401` JSON
+# `api.openai.com` (ChatGPT OAuth, pi `openai` provider, codex-cli 0.162.1):
+every credentialed request returns Cloudflare `520`,
+while unauthenticated requests return clean `401` JSON
 
 Observed 2026-10-13 between 20:50 and 21:05 UTC from this workstation.
 OpenAI's own status page read "We're fully operational" for the whole window,

@@ -39,7 +39,8 @@ async function refreshGoverningRelevance({
     const completion=Promise.withResolvers();record.relevancePending
       .add(completion.promise);
     using relevanceActivity={ [Symbol.dispose](){
-      record.relevancePending.delete(completion.promise);completion.resolve();
+      record.relevancePending
+        .delete(completion.promise);completion.resolve();
     } };
     try{
       const view=await selection.refreshRelevance({signal});
@@ -61,5 +62,11 @@ function assertGoverningRelevanceCurrent({
     if((typeof selection?.assertRelevanceCurrent)!=='function')throw new SourceCollectionError('Governing policy relevance is unavailable');
     selection.assertRelevanceCurrent(view);
   }
-return {designateGoverningPolicy,captureGoverningPolicy,refreshGoverningRelevance,readGoverningRelevance,assertGoverningRelevanceCurrent};
+return {
+  designateGoverningPolicy,
+  captureGoverningPolicy,
+  refreshGoverningRelevance,
+  readGoverningRelevance,
+  assertGoverningRelevanceCurrent
+};
 }

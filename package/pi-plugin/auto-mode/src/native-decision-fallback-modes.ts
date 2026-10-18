@@ -113,7 +113,10 @@ export const TRANSIENT_ASSESSMENT_ATTEMPTS = 3;
 
  @returns whether the table contains the parsed mode
  */
-function modeListIncludes({ list, value }: Readonly<{
+function modeListIncludes({
+  list,
+  value
+}: Readonly<{
   list: readonly string[];
   value: string;
 }>): boolean {
@@ -125,10 +128,20 @@ function modeListIncludes({ list, value }: Readonly<{
 
  @param value - parsed mode text after prefix handling
 
+ @returns narrowed named mode for plan derivation
+
+ @example
+ ```ts
+ assertDecisionFallbackMode('approve');
+ ```
+
  @throws AssertionError when the mode is outside the named catalog
  */
 export function assertDecisionFallbackMode(value: string): asserts value is DecisionFallbackMode {
-  assert.ok(modeListIncludes({ list: DECISION_FALLBACK_MODES, value }));
+  assert.ok(modeListIncludes({
+    list: DECISION_FALLBACK_MODES,
+    value
+  }));
 }
 
 /**
@@ -139,9 +152,15 @@ export function assertDecisionFallbackMode(value: string): asserts value is Deci
  @returns authored operation decision choice
  */
 function operationDecisionFor({ mode }: Readonly<{ mode: DecisionFallbackMode }>): DecisionFallbackOperationDecision {
-  if (modeListIncludes({ list: AUTO_APPROVE_MODES, value: mode }))
+  if (modeListIncludes({
+    list: AUTO_APPROVE_MODES,
+    value: mode
+  }))
     return 'approve';
-  if (modeListIncludes({ list: AUTO_DENY_MODES, value: mode }))
+  if (modeListIncludes({
+    list: AUTO_DENY_MODES,
+    value: mode
+  }))
     return 'deny';
   return 'unknown';
 }
@@ -155,7 +174,10 @@ function operationDecisionFor({ mode }: Readonly<{ mode: DecisionFallbackMode }>
 
  @returns clause relation sent with the clause question
  */
-function relationFor({ mode, clauseDenial }: Readonly<{
+function relationFor({
+  mode,
+  clauseDenial
+}: Readonly<{
   mode: DecisionFallbackMode;
   clauseDenial: boolean;
 }>): DecisionFallbackRelation {
@@ -171,20 +193,38 @@ function relationFor({ mode, clauseDenial }: Readonly<{
 
  @returns complete mode plan with exact expected counts
 
+ @example
+ ```ts
+ const plan = readDecisionFallbackPlan({ requestedMode: 'transient' });
+ ```
+
  @throws AssertionError when the parsed mode is outside the named catalog
  */
-export function readDecisionFallbackPlan({ requestedMode }: Readonly<{
-  requestedMode: string;
-}>): DecisionFallbackPlan {
+export function readDecisionFallbackPlan({ requestedMode }: Readonly<{ requestedMode: string }>): DecisionFallbackPlan {
+  /**
+   Clause-deny prefix selects the prohibition relation branch.
+   */
   const clauseDenial = requestedMode.startsWith('clause-deny-');
+  /**
+   Startup-failure prefix selects the failed-classification branch.
+   */
   const startupFailure = requestedMode.startsWith('startup-failure-');
+  /**
+   Parsed mode text keeps the original slice order across both prefixes.
+   */
   const modeText = startupFailure
     ? requestedMode.slice('startup-failure-'.length)
     : clauseDenial
       ? requestedMode.slice('clause-deny-'.length)
       : requestedMode;
   assertDecisionFallbackMode(modeText);
+  /**
+   Named mode drives every remaining plan fact.
+   */
   const mode: DecisionFallbackMode = modeText;
+  /**
+   Transient modes consume one extra assessment round through retry.
+   */
   const transient = mode.startsWith('transient');
   return {
     requestedMode,
@@ -193,10 +233,19 @@ export function readDecisionFallbackPlan({ requestedMode }: Readonly<{
     startupFailure,
     transient,
     operationDecision: operationDecisionFor({ mode }),
-    relation: relationFor({ mode, clauseDenial }),
-    allowed: modeListIncludes({ list: ALLOWED_EXECUTION_MODES, value: mode }),
+    relation: relationFor({
+      mode,
+      clauseDenial
+    }),
+    allowed: modeListIncludes({
+      list: ALLOWED_EXECUTION_MODES,
+      value: mode
+    }),
     manualReview: (startupFailure && (mode !== 'headless'))
-      || modeListIncludes({ list: MANUAL_REVIEW_MODES, value: mode }),
+      || modeListIncludes({
+        list: MANUAL_REVIEW_MODES,
+        value: mode
+      }),
     expectedAttempts: startupFailure
       ? 0
       : transient

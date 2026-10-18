@@ -64,7 +64,8 @@ That explains "it always succeeded before":
  earlier runs happened when no non-excluded immature pick existed.
 
 The error does not say this.
-The package was identified by rerunning in a throwaway worktree with `minimumReleaseAgeStrict: false` and without `--no-save`,
+The package was identified by rerunning in a throwaway worktree
+with `minimumReleaseAgeStrict: false` and without `--no-save`,
  which makes pnpm persist and print the immature picks
  (see "Verification").
 
@@ -328,7 +329,8 @@ Dropping `--no-save` in a non-interactive session:
 In a TTY it prompts,
  and approving appends a pinned `name@version` entry,
  which accumulates per release
- (see `doc/troubleshooting/pnpm-minimum-release-age-exclude-first-match.md` for why accumulated per-version entries misbehave).
+ (see `doc/troubleshooting/pnpm-minimum-release-age-exclude-first-match.md`
+for why accumulated per-version entries misbehave).
 
 `minimumReleaseAgeStrict: false`:
  loose mode with `--no-save` returns early and installs immature picks silently,
@@ -505,14 +507,17 @@ reuse the list built by `failOnImmature`.
 +++ b/pnpm/crates/package-manager/src/minimum_release_age.rs
 @@ -17,15 +17,15 @@
      #[display(
--        "minimumReleaseAgeStrict cannot be combined with --no-save: approval would require writing to minimumReleaseAgeExclude in pnpm-workspace.yaml, which --no-save prevents."
-+        "minimumReleaseAgeStrict cannot be combined with --no-save: approval would require writing to minimumReleaseAgeExclude in pnpm-workspace.yaml, which --no-save prevents.\n{violations}"
+-        "minimumReleaseAgeStrict cannot be combined with --no-save: approval would require writing
+  to minimumReleaseAgeExclude in pnpm-workspace.yaml, which --no-save prevents."
++        "minimumReleaseAgeStrict cannot be combined with --no-save: approval would require writing
+  to minimumReleaseAgeExclude in pnpm-workspace.yaml, which --no-save prevents.\n{violations}"
      )]
      #[diagnostic(
          code(ERR_PNPM_STRICT_MIN_RELEASE_AGE_REQUIRES_SAVE),
          help(
 -            "Drop --no-save so the exclude list can be persisted, or set minimumReleaseAgeStrict: false."
-+            "Drop --no-save so the exclude list can be persisted, add these picks to minimumReleaseAgeExclude, or set minimumReleaseAgeStrict: false."
++            "Drop --no-save so the exclude list can be persisted, add these picks to minimumReleaseAgeExclude,
+  or set minimumReleaseAgeStrict: false."
          )
      )]
 -    StrictRequiresSave,

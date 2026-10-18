@@ -83,7 +83,8 @@ Host runs use Git 2.55.0 (`/usr/bin/git`); container runs use Git 2.56.0.
 
 - Unit, host: `real_index_lock` 18, `landing_index` 9, `transaction_phase` 11 (1 ignored child helper),
   `landing_findings` 6, `landing_attempt` 2.
-- Binary (`native_binary`, filter `landing`), host: 26 passed, 1 ignored (the child helper `landing_crash::child_lands`).
+- Binary (`native_binary`, filter `landing`), host:
+  26 passed, 1 ignored (the child helper `landing_crash::child_lands`).
   - `landing::*` (17): landed commit and journal bytes, second process's staged path survives, unborn and detached
     targets, conclusion cleanup, branch switch (to a branch and to detached `HEAD`) with the rendered
     `concurrent-commit/branch-switched` line, head-moved with `replayable` for an ordinary commit, amend, merge,
@@ -137,7 +138,8 @@ Counts are from the final run of each file.
   `acquire_bounded` fail after a bound, and `pause_waits_for_the_release_file` asserts the pause lasted.
   The second run caught all of them.
 - `landing_attempt.rs`: 20 mutants, 15 caught, 4 unviable, 1 missed, 0 timeouts.
-  Missed: `landing_attempt.rs:584:48` (`==` to `!=` in `detached: capture.layout.symbolic_head == SymbolicHead::Detached`).
+  Missed: `landing_attempt.rs:584:48`
+  (`==` to `!=` in `detached: capture.layout.symbolic_head == SymbolicHead::Detached`).
   It is equivalent: the flag only adds `--no-deref` to `update-ref`, which changes nothing for the two targets
   that can reach it, a branch ref (not symbolic) or `HEAD` while detached (not symbolic), because
   `land_locked` returns `BranchSwitched` before the swap unless the current `HEAD` equals the captured one,

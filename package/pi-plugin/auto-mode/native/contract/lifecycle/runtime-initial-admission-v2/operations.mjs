@@ -63,7 +63,9 @@ export function createRuntimeOperationOwner({
     
   const disposed=new WeakSet();
   function currentLease(){lifecycle.assertActive(runtimeState.lease);return runtimeState.lease;}
-  function preparing(){if((!runtimeState.pending)||(runtimeState.pending.state!=='preparing'))throw new RuntimeOperationError('No runtime operation is preparing');return runtimeState.pending;}
+  function preparing(){if((!runtimeState.pending)||(runtimeState.pending
+    .state
+    !=='preparing'))throw new RuntimeOperationError('No runtime operation is preparing');return runtimeState.pending;}
   function beforeEffects(){
     const operation=preparing();
     if(operation.dirty)return;
@@ -130,7 +132,8 @@ export function createRuntimeOperationOwner({
     if(runtimeState.unavailable&&(!terminal))throw new RuntimeOperationError('Runtime has no admitted active root; close it and construct another runtime');
     // A completed native disposal is a cleanup receipt, not merely a liveness flag.
     if(terminal&&runtimeState.unavailable
-      &&disposed.has(runtimeState.current.session)){runtimeState.closed=true;return;}
+      &&disposed.has(runtimeState.current
+        .session)){runtimeState.closed=true;return;}
     const transition=runtimeState.unavailable?undefined:lifecycle.begin(runtimeState.lease);
     const operation={
       transition,

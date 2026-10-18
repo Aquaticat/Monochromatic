@@ -416,7 +416,8 @@ measured across every test file,
 
 ## Shapes that satisfy the effect rule
 
-`prefer-readonly-parameter-type/prefer-readonly-parameter-types` rejects any parameter reaching a call whose implementation it cannot inspect,
+`prefer-readonly-parameter-type/prefer-readonly-parameter-types`
+rejects any parameter reaching a call whose implementation it cannot inspect,
 which covers `Object.keys`,
 `Object.entries`,
 `Array.prototype.filter`,
@@ -452,7 +453,9 @@ and the repo-wide report is unchanged at 697 sites across 357 files.
 Old and new shipping-target derivation were compared across all 165 package manifests in the repo with no mismatch,
 so the restructure is behavior-neutral.
 
-`package/oxlint-plugin/tsdoc` still carries 35 findings of the same rule and is not covered by the self-hosting override in `package/config/oxlint/src/overrides.ts`.
+`package/oxlint-plugin/tsdoc` still carries 35 findings of the same rule
+and is not covered by the self-hosting override
+in `package/config/oxlint/src/overrides.ts`.
 Measured breakdown:
  23 name the `context` parameter and reach only `context.*` methods,
  which is exactly the shape `ForeignHostCapability` cleared here;

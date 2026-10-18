@@ -5,7 +5,9 @@
 > `package/module/toml-edit.fuzz`,
 >  following the `logger.fuzz` layout;
 > `src/fuzz/` paths below now read as this package's `src/`,
-> and the `fuzz` and `fuzz:coverage` tasks run as `//package/module/toml-edit.fuzz:fuzz` and `//package/module/toml-edit.fuzz:fuzz:coverage`.
+> and the `fuzz` and `fuzz:coverage` tasks run as
+> `//package/module/toml-edit.fuzz:fuzz`
+> and `//package/module/toml-edit.fuzz:fuzz:coverage`.
 
 > Scratch-path note:
 > `/tmp/agent` paths in this document are historical.

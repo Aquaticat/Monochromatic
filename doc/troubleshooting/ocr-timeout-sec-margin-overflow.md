@@ -1,4 +1,5 @@
-# OpenCodeReview v1.13.1 accepts `timeout_sec` 9223372036, then overflows its own +30s margin and fails every HTTP/2 request instantly
+# OpenCodeReview v1.13.1 accepts `timeout_sec` 9223372036,
+then overflows its own +30s margin and fails every HTTP/2 request instantly
 
 Setting the `ocr` provider timeout to the maximum value the tool itself accepts
 (`9223372036` seconds) makes every LLM request fail within milliseconds.

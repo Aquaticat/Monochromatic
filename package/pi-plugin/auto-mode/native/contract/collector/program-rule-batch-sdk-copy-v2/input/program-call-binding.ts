@@ -12,7 +12,11 @@ import type {
 import type { ProgramOwnership } from './program-ownership.ts';
 import type { ProgramSlot } from './program-state-types.ts';
 import type { JudgmentPrograms } from './program-api.ts';
-import type { NativeReturnTool, NativeReturnCall, NativeCallSlot } from './native-return-types.ts';
+import type {
+  NativeReturnTool,
+  NativeReturnCall,
+  NativeCallSlot
+} from './native-return-types.ts';
 
 /**
  Capture original tool name before its structured-output choice, preserving native property-read order.
@@ -168,10 +172,16 @@ export function createProgramCallBinding({
           || (tool?.name !== site.name)
           || (JSON.stringify(call.arguments) !== site.argsJSON)) throw new JudgmentConstructionError('Native call binding differs from original reached member');
         ids.add(call.id);
-        /** Factory-owned slot methods retain the exact group and slot identity in their closure. */
+        /**
+         Factory-owned slot methods retain the exact group and slot identity in their closure.
+         */
         const nativeSlot = Object.freeze({ open(call: NativeReturnCall) {
           if (!group.consumer) throw new JudgmentConstructionError('Reached group has no fixed native consumer');
-          return group.consumer.open({ slot: nativeSlot, call });
+          return group.consumer
+            .open({
+              slot: nativeSlot,
+              call
+            });
         } });
         pending.push({
           handle: nativeSlot,

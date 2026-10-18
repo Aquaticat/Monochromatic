@@ -687,13 +687,15 @@ request-local,
 and payload markers.
 Own entries matched their persisted JSON values;
 this was not raw-object identity or byte-for-byte serialization equality.
-The existing collector's `assertObservedFresh()` passed on its observed surfaces even when later payload content differed.
+The existing collector's `assertObservedFresh()` passed on its observed surfaces
+even when later payload content differed.
 It correctly retained `run-producer-inventory`,
 `final-request-transformations`,
 and `provider-native-payload` as unqualified gaps.
 Its freshness check was never a claim of terminal-request completeness.
 
-A separate disposable guard-removal pair passed with the validator intact and failed when the mismatch check was removed.
+A separate disposable guard-removal pair passed with the validator intact
+and failed when the mismatch check was removed.
 Unexpected setup,
 SDK,
 retention,
@@ -957,7 +959,8 @@ and persisted-fork paths replaced both the `AgentSession` and manager.
 An in-memory fork replaced the `AgentSession` but reused its manager.
 Without explicit invalidation,
 that old receipt was rejected by the stale extension-context check rather than by manager identity.
-The SDK extension runner emitted its existing `This extension ctx is stale after session replacement or reload` diagnostic.
+The SDK extension runner emitted its existing
+`This extension ctx is stale after session replacement or reload` diagnostic.
 Manager identity alone did not explain that rejection.
 
 In the tested replacement paths,

@@ -1,6 +1,10 @@
 # @monochromatic-dev/module-es
 
-A comprehensive functional programming utility library for TypeScript, designed to provide every thinkable utility function with excellent type safety, performance, and developer experience.
+A comprehensive functional programming utility library for TypeScript,
+designed to provide every thinkable utility function
+with excellent type safety,
+performance,
+and developer experience.
 
 > Split-warning, 2026-05-28: `@monochromatic-dev/module-es` is planned to be
 > split into focused packages. Prefer existing focused packages for new imports,

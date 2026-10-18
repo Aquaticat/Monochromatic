@@ -42,44 +42,65 @@ export function createNativeEventInputProjection(): (
   /**
    Emission diagnostics inherit module ownership.
    */
-  const rl = tagged({ tag: createNativeEventInputProjection.name, l });
+  const rl = tagged({
+    tag: createNativeEventInputProjection.name,
+    l
+  });
   rl.debug('created original native event control projection');
 
   /**
    Preserve every original event descriptor while replacing only its declared cancellation handle.
 
    @param kind - original native dispatch selects the control-field contract
+   
    @param phase - extension outputs retain the ordinary-data profile
+   
    @param value - borrowed input remains untouched for the original callbacks
+   
    @returns original value or descriptor-preserving control projection for the strict copier
+   
    @throws SourceCollectionError when a native control field is unsupported
    */
-  function project({ kind, phase, value:borrowed }: Pick<NativeEventInput, 'kind' | 'phase' | 'value'>): unknown {
+  function project({
+    kind,
+    phase,
+    value:borrowed
+  }: Pick<NativeEventInput, 'kind' | 'phase' | 'value'>): unknown {
     /**
      Capture diagnostics retain the emission's logger tags.
      */
-    const pl = tagged({ tag: project.name, l: rl });
+    const pl = tagged({
+      tag: project.name,
+      l: rl
+    });
     pl.debug(`projecting original ${kind} event ${phase} value`);
-    if ((phase !== 'input' && phase !== 'after')
-      || (kind !== 'session_before_tree' && kind !== 'session_before_compact')) {
+    if (((phase !== 'input') && (phase !== 'after'))
+      || ((kind !== 'session_before_tree') && (kind !== 'session_before_compact'))) {
       pl.debug('native value retains the ordinary-data profile');
       return borrowed;
     }
     const value=kind==='session_before_compact'?projectNativeCompactionFilePaths(borrowed):borrowed;
-    if (value === null || typeof value !== 'object' || types.isProxy(value)
-      || Object.getPrototypeOf(value) !== Object.prototype) {
+    if ((value === null) || ((typeof value) !== 'object')
+      || types.isProxy(value)
+      || (Object.getPrototypeOf(value) !== Object.prototype)) {
       pl.debug('non-record input retains its existing data validation');
       return value;
     }
     /**
      Descriptor access never invokes an event's signal getter.
      */
-    const field = Object.getOwnPropertyDescriptor(value, 'signal');
+    const field = Object.getOwnPropertyDescriptor(
+      value,
+      'signal'
+    );
     if (!field) {
       pl.debug('original event has no cancellation control field');
       return value;
     }
-    if (!Object.hasOwn(field, 'value'))
+    if (!Object.hasOwn(
+      field,
+      'value'
+    ))
       throw new SourceCollectionError(`${kind} event signal requires an own data property`);
     /**
      The platform object remains opaque, including its reason, listeners, accessors and symbols.
@@ -87,8 +108,8 @@ export function createNativeEventInputProjection(): (
     const signal: unknown = field.value;
     if (types.isProxy(signal))
       throw new SourceCollectionError(`${kind} event signal requires a non-proxy platform-compatible control`);
-    if (signal === null || typeof signal !== 'object'
-      || Object.getPrototypeOf(signal) !== nativeSignalPrototype) {
+    if ((signal === null) || ((typeof signal) !== 'object')
+      || (Object.getPrototypeOf(signal) !== nativeSignalPrototype)) {
       pl.debug('non-control field retains its existing data validation');
       return value;
     }
@@ -101,7 +122,10 @@ export function createNativeEventInputProjection(): (
      */
     const reference = previous ?? state.next;
     if (previous === undefined) {
-      references.set(signal, reference);
+      references.set(
+        signal,
+        reference
+      );
       state.next++;
       pl.debug('retained a distinct original cancellation control reference');
     }
@@ -111,12 +135,18 @@ export function createNativeEventInputProjection(): (
     const descriptors = Object.getOwnPropertyDescriptors(value);
     descriptors.signal = {
       ...field,
-      value: Object.freeze({ nativeControl: 'cancellation-signal', reference })
+      value: Object.freeze({
+        nativeControl: 'cancellation-signal',
+        reference
+      })
     };
     /**
      The existing ordinary-data copier owns recursive validation and freezing after projection.
      */
-    const projected: unknown = Object.create(Object.prototype, descriptors);
+    const projected: unknown = Object.create(
+      Object.prototype,
+      descriptors
+    );
     return projected;
   }
   return project;

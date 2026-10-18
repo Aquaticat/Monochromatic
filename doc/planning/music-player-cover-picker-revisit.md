@@ -37,7 +37,8 @@ and `cover-round-cover-picker-p4-s200.png` (1080 by 2424 pixels at 390dpi):
 P5 keeps P4's calm title trigger and fixes its one acknowledged weakness, the weak affordance, in the open state only.
 While the picker is open the title sits in a tonal container and its caret points up.
 Closed, it is exactly P4.
-The state shows by container and by caret direction, and the accessibility state description already reads expanded and collapsed.
+The state shows by container and by caret direction, and the accessibility state description already reads expanded
+and collapsed.
 
 Larger changes were considered and not built:
 

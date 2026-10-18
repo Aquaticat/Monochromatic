@@ -307,7 +307,8 @@ with a diagnostic this record had not seen before:
 FATAL        | A snapshot operation for 'Pixel9ProFold_Fresh_5FXdOc' is pending and timeout has expired. Exiting...
 ```
 
-The visit's bootstrap did not notice that the emulator had gone and waited for the device for its whole bound of ten minutes.
+The visit's bootstrap did not notice that the emulator had gone
+and waited for the device for its whole bound of ten minutes.
 
 What was done,
 and what each step showed:

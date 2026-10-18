@@ -25,7 +25,8 @@ Semantic Node setup follows fs-id, so each applicable source command keeps its o
 The result helper records runner label, applicability, declared/setup versions and actual prerequisite runtime metadata.
 It requires success for applicable commands and guards, and skipped outcomes for inapplicable commands.
 Every other helper, including changed-Cargo formatting, is byte-identical to the parent base.
-The primary logger manifest is unchanged in this child patch; its correction and digest regeneration belong to the parent.
+The primary logger manifest is unchanged in this child patch; its correction and digest regeneration belong
+to the parent.
 
 Artifact follow-up `face4f61997c698f1ab1d2f77dfc09ed2f9a7abe` adds the original runner label to upload names.
 A same-architecture simulation produces three unique legacy names for four rows,

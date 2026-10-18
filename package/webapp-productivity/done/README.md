@@ -49,7 +49,8 @@ This package runs only within the Monochromatic monorepo.
 ## Decision: no ORM
 
 Drizzle ORM was evaluated as the strongest TypeScript ORM candidate for this project.
-It was rejected because the database layer relies heavily on SQLite-specific features that Drizzle cannot model natively:
+It was rejected because the database layer relies heavily
+on SQLite-specific features that Drizzle cannot model natively:
 
 - **FTS5 virtual tables** for full-text search
 - **Triggers** that keep the FTS index in sync with the tasks table

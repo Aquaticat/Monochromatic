@@ -2006,7 +2006,9 @@ SK3:
 
 #### SK1 to SK3 consumers (checked 2026-09-29)
 
-- The synced `setup-matt-pocock-skills` skill finds the block by its `## Agent skills` heading and writes `### Issue tracker`-style subheadings;
+- The synced `setup-matt-pocock-skills` skill finds the block
+  by its `## Agent skills` heading
+  and writes `### Issue tracker`-style subheadings;
    no skill matches the bold labels,
    so they are cosmetic.
 - Consumer skills (`code-review`,
@@ -2157,7 +2159,9 @@ no duplicate codes.
 ### Whole-file draft (assembled in scratch)
 
 Assembled from current headings plus approved text with every recorded move:
-`AGENTS.md` 17618 tokens and 42677 bytes (grown from the 17431-token baseline by concurrent additions) become 12927 tokens and 31216 bytes,
+`AGENTS.md` 17618 tokens and 42677 bytes
+(grown from the 17431-token baseline by concurrent additions)
+become 12927 tokens and 31216 bytes,
 a 27% cut;
 31216 bytes fits Codex's default 32768-byte `project_doc_max_bytes` with 1552 to spare.
 The audit's 43.8% estimate assumed dropping clause-per-line breaks (1913 tokens,
@@ -2299,7 +2303,8 @@ checked 2026-09-29):
    (`tsdoc/check-mutates` is syntax-only and cannot carry it).
 - Add "Prefer an index scan,
    parser,
-   or string API" to the `no-regex` `regexpConstructor` message (`package/oxlint-plugin/no-restricted-syntax/src/rule/no-regex.ts`),
+   or string API" to the `no-regex` `regexpConstructor` message
+   (`package/oxlint-plugin/no-restricted-syntax/src/rule/no-regex.ts`),
    approved with batch 15.
 
 ### Resume notes

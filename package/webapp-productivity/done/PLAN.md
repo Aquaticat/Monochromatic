@@ -1215,7 +1215,8 @@ When the autofill response includes a non-null `splitSuggestion`,
    reads page data,
    builds task card list with live timer display
 - (0.5h) Implement timer tick:
-   single `setInterval(1000)` updates all visible timer displays by computing `trackedTime + (Date.now() - Date.parse(timerStartedAt)) / 1000`
+   single `setInterval(1000)` updates all visible timer displays
+   by computing `trackedTime + (Date.now() - Date.parse(timerStartedAt)) / 1000`
 - (0.5h) Format timer display as `HH:MM:SS`,
    handle edge cases (no timerStartedAt,
    timer just started)

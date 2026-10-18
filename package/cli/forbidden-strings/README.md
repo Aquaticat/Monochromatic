@@ -917,14 +917,16 @@ commands,
 
 ## Architecture
 
-- **Two-form loader.** `src/rule/frx` owns the rule-file format and preserves whether each rule was written as a bare literal or an
-  explicit regex.
+- **Two-form loader.** `src/rule/frx` owns the rule-file format
+  and preserves whether each rule was written as a bare literal
+  or an explicit regex.
   Bare literals still escape into the verbose dialect for the public engine compiler;
   runtime scanning instead retains their exact bytes.
   `/PATTERN/FLAGS` lines and multiline tail sections remain restricted regex rules,
   validated under their original global rule ids.
-- **Hybrid runtime matcher.** `src/runtime_matcher.rs` de-duplicates exact literals into one overlapping Aho-Corasick matcher and compiles only
-  explicit regex rules into `RegexSet`.
+- **Hybrid runtime matcher.** `src/runtime_matcher.rs` de-duplicates exact literals
+  into one overlapping Aho-Corasick matcher
+  and compiles only explicit regex rules into `RegexSet`.
   Both subset-local outputs map back to original ids,
   sort,
   and de-duplicate before finding attribution.
@@ -934,13 +936,13 @@ commands,
   rebuilds the literal matcher from compact groups,
   and decodes optional regex-only engine bytes.
   Scan-time repair and `compile-rules` share the same atomic publisher.
-- **Line-based batch scan.** `src/frx_scan.rs` splits each file's bytes into lines once and hands the buffer plus line-start offsets through a
-  common matcher interface.
+- **Line-based batch scan.** `src/frx_scan.rs` splits each file's bytes into lines once
+  and hands the buffer plus line-start offsets through a common matcher interface.
   Runtime sets merge Aho-Corasick and regex-subset ids;
   the built-in baseline retains `RegexSet::line_matches`.
   Each set runs under a `catch_unwind` boundary so a matcher fault fails closed as a synthetic finding.
-- **Build-time baseline precompilation.** `build.rs` compiles `data/builtin-rules.txt` through the engine once at build time and serializes it
-  (`to_bytes`);
+- **Build-time baseline precompilation.** `build.rs` compiles `data/builtin-rules.txt`
+  through the engine once at build time and serializes it (`to_bytes`);
   `lib.rs` embeds the blob with `include_bytes!` and the loader rebuilds it via the validating
   `from_bytes`,
   never recompiling.

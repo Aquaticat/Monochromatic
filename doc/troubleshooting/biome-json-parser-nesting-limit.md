@@ -111,7 +111,8 @@ The syntax-error check runs **before** the token walk,
  This gate runs after Biome has allocated the parsed syntax tree.
  It establishes the editor's accepted/rejected boundary at the tested depths,
  but is not an early resource limit for arbitrary adversarial nesting.
- A separately validated lexical preflight or an input-size policy would be needed if early resource rejection is required.
+ A separately validated lexical preflight or an input-size policy would be needed
+if early resource rejection is required.
  It also does not implement attached comments,
  exact numeric values,
  or immutable edits.

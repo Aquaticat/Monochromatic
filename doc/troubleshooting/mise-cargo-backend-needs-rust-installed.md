@@ -1,4 +1,6 @@
-# mise 2026.10.9 refuses to install `cargo:cargo-ndk` until `rust@nightly` is installed through mise, failing a CI job that has Rust only from rustup
+# mise 2026.10.9 refuses to install `cargo:cargo-ndk`
+until `rust@nightly` is installed through mise,
+failing a CI job that has Rust only from rustup
 
 ## Symptom
 

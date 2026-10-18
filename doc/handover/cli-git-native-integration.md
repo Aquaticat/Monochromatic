@@ -2,7 +2,8 @@
 
 Note,
  2026-10-14:
- the retirement of the TypeScript wrapper deleted the tasks `native:differential:commit` and `native:config:differential`
+ the retirement of the TypeScript wrapper deleted the tasks `native:differential:commit`
+  and `native:config:differential`
  that this record names.
 The record is `doc/handover/cli-git-native-retire.md`;
 the incumbent that this record compares against is the commit `f4fc1fa213ece65672e4314983a75266837892f9`.
@@ -67,7 +68,8 @@ New modules (each with its `*_tests.rs` where it has pure logic; the transaction
   `candidate_store.rs` gained `StagedAtBase` (candidates against the recorded base, never the moved `HEAD`);
   `capture_order.rs` reaches the `capture-locked` marker; `owner_lock.rs` gained a view of an ancestor's lock.
 - Wiring: `wrapped_command.rs` runs the transaction for a real commit; a valid preparation lease lets a hook's nested
-  Git command through and skips recovery (the worktree-copy lease is honored by the forwarding, `src/native/worktree_copy_forward.rs`).
+  Git command through and skips recovery (the worktree-copy lease is honored by the forwarding,
+   `src/native/worktree_copy_forward.rs`).
 
 ### Decisions with reasons
 
@@ -94,7 +96,8 @@ New modules (each with its `*_tests.rs` where it has pure logic; the transaction
   `--allow-empty`, a concurrent replay with the phase marker, and a commit blocked by commit-only are equal in exit
   code, events, resulting commit, index and worktree. With `--native /usr/bin/git` the same run reports the expected
   differences, so the comparison can fail.
-- End-to-end, Git 2.55.0, image tag `integration`, whole catalog (38 runs: 10 baseline pass, 26 concurrency pass, 2 skip):
+- End-to-end, Git 2.55.0, image tag `integration`, whole catalog (38 runs: 10 baseline pass, 26 concurrency pass,
+ 2 skip):
   seeds 1, 2, 3 (after the shadow-parent fix), 4, 5, 6, 8 and 9 pass completely. Seed 3 first failed
   `hooks-config-concurrent` with `creating .../cli-git/shadow/<id> failed: File exists`: two commits raced to create the
   shared parent; fixed in `shadow_create.rs` (`ensure_private_directory`) with a thread-race control. Seed 7 failed
@@ -126,14 +129,19 @@ New modules (each with its `*_tests.rs` where it has pure logic; the transaction
   incompressible files make the repack outlast the wrapper's last steps) failed 20 of 20 runs without the config line
   and passed 20 of 20 with it (host). After the fix the test passed 150 of 150 runs in the container and the control
   20 of 20.
-- Git 2.55.0 probe (host Git 2.55.0, `native:test:host` and `native:test:binary:host`, on an earlier head, before the last test-only commits): the library
+- Git 2.55.0 probe (host Git 2.55.0, `native:test:host` and `native:test:binary:host`, on an earlier head,
+ before the last test-only commits): the library
   tests fail only the 2.56.0 comparisons (`command_options::git_tests` four tests, `command_branch_create::git_tests`
   three, `command_add` table, `git_metadata`, `global_arguments`) and the test that needs the built linter (11 failed,
-  1597 passed at that head); the binary tests fail only `forwarding::version_is_identical_to_native_git`, the three `resolution::`
-  tests (all compare the `git version` text with 2.56.0) and the real-linter test (5 failed, 92 passed at that head). Every
+  1597 passed at that head); the binary tests fail only `forwarding::version_is_identical_to_native_git`,
+   the three `resolution::`
+  tests (all compare the `git version` text with 2.56.0) and the real-linter test (5 failed, 92 passed at that head).
+   Every
   `commit::` and `coordination::` test passes, and the end-to-end suite above runs on Git 2.55.0.
-- Fuzz smoke (`mise run //package/git-policy/cli.fuzz:smoke`) on an earlier head: success, 15 targets exit 0. The generator
-  control `generated_arguments_reach_every_frontier_ending` needed two changes: a real commit prints its own text, so its
+- Fuzz smoke (`mise run //package/git-policy/cli.fuzz:smoke`) on an earlier head: success, 15 targets exit 0.
+ The generator
+  control `generated_arguments_reach_every_frontier_ending` needed two changes: a real commit prints its own text,
+   so its
   ending carries none, and a commit region that Git's option table refuses is forwarded so Git reports the refusal.
   No source under `src/native` changed after that run (only tests).
 - Planted controls (unmodified `bin/native-planted-controls.mjs`, run as phase 1 of the last scoped campaign on the
@@ -156,7 +164,8 @@ New modules (each with its `*_tests.rs` where it has pure logic; the transaction
   was applied by hand to the host source and failed its control, then restored. The two open mutants of the earlier
   campaign are closed the same way: `stages_worktree` with `||` replaced by `&&` fails
   `a_capture_lists_worktree_changes_for_all_or_include`, and `retry_while_active` with its guard replaced by `true`
-  fails `the_guard_wait_retries_only_while_another_holder_is_active` at once (its closures panic past their call cap, so the
+  fails `the_guard_wait_retries_only_while_another_holder_is_active` at once (its closures panic past their call cap,
+   so the
   mutant no longer loops).
 - Mutation of `src/native/commit_convergence.rs` (12 mutants, `bin/mutate-native-container-noplanted.mjs`, report
   `target/verification/native-mutation-6BnlGO`): 7 caught, 5 unviable, 0 missed, 0 timeouts. The one survivor of the

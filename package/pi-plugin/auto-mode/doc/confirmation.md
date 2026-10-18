@@ -6,6 +6,27 @@
 The policy compiler returns its outcome and currentness checks;
 uncertainty and assessment failure reach the same group-owned selector.
 `native/contract/integration/action-policy/approval.mjs` captures the current native presentation capabilities.
+One operation-scoped capture is shared by automatic review and its manual fallback.
+An actual native fixture previously observed two bootstrap calls for one prepared group:
+the decision gate and the fallback independently queried the presentation source.
+The retained call trace identifies both callers,
+and the unchanged unformatted baseline reproduces the same failed single-capture assertion.
+The gate now creates one operation review with a shared lazy capture.
+Its bootstrap source receives no request,
+judgment or policy facts.
+Absent and failed captures retain their original result or thrown identity;
+fallback cannot silently substitute another view.
+Scope disposal releases its stored host and failure and rejects later reads.
+The next operation obtains a fresh capture,
+including after native context reload.
+
+`test:native:approval-capture` exercises the built scope's host identity,
+absence,
+falsy thrown values,
+fresh operation and closure branches.
+`test:native:source-freshness-work` exercises the actual host routing and single-capture assertion.
+Its repaired private build passes with 4,627 governing-file opens,
+within the existing asserted work bound.
 `native/contract/lifecycle/incumbent-tui-group/approval-presentation.mjs`
 verifies the actual selection and recorded verdict.
 `src/ask-user.ts` owns the displayed Allow and Stop choice,

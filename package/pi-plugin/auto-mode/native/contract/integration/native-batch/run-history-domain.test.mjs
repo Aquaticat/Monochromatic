@@ -4,7 +4,11 @@ import {createRootSessionFactory} from './session-root.ts';
 import {bindPolicySessionCollector} from '../policy-source/system-slot.mjs';
 
 const original='Original instruction from an earlier run within this same native root.';
-const history={originalSource:undefined,requests:0,runs:0};
+const history={
+  originalSource:undefined,
+  requests:0,
+  runs:0
+};
 const env=await createEnvironment({extensionFactories:[function registerHistoricalPromptHandler(pi) {
  pi.on(
    'before_agent_start',
@@ -92,7 +96,8 @@ session.agent
 await using sessionScope={
  async [Symbol.asyncDispose](){
   session.dispose();
-  await session.agent.waitForIdle();
+  await session.agent
+    .waitForIdle();
   await env.drain();
  }
 };

@@ -109,7 +109,8 @@ The following built-artifact fixture witnesses the mismatch:
 
 - An incumbent-confirmation requirement goes from ask to approve after fixture Allow.
 - An established prohibition remains denied and opens no dialog.
-- An applicable, unsatisfied prerequisite with an unsupported channel goes from unresolved to approve after fixture Allow.
+- An applicable, unsatisfied prerequisite with an unsupported channel
+  goes from unresolved to approve after fixture Allow.
 
 The third case records one dialog and one verdict entry despite having no approval-satisfiable requirement.
 The reproducer uses the built policy resolver and built original-group approval binder,
@@ -311,7 +312,8 @@ No reliable implementation-duration estimate follows from the current evidence.
 
 Ranking: B > A > C.
 B precedes A because it assigns the decision contract to one owner rather than repairing disconnected projections.
-A precedes C because it retains independently useful execution guarantees without rewriting their whole host integration.
+A precedes C because it retains independently useful execution guarantees
+without rewriting their whole host integration.
 
 ## Verification before replacement activation
 
@@ -319,7 +321,8 @@ A precedes C because it retains independently useful execution guarantees withou
 - Assert exact latest-user-span and five-message-floor selection in the outgoing assessment,
   including a marked old prefix that must be absent and long selected content that must remain complete.
 - Assert complete current governing policy, current operation, and trusted state separately.
-- Complete initial and follow-up turns, resume, reload, and cancellation without source-history amplification in model input.
+- Complete initial and follow-up turns, resume, reload, and cancellation
+  without source-history amplification in model input.
 - Verify unsatisfied unrelated prerequisites remain unsatisfied after generic Allow,
   while a valid fresh-confirmation requirement and prohibition controls retain their distinct outcomes.
 - Verify approval remains tied to the exact prepared group and becomes invalid when its required dependencies change.

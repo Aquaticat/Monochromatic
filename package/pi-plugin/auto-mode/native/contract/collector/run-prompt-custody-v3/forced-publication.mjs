@@ -37,7 +37,8 @@ export function createForcedPublication(source){
  }
  function live(){if(publication.failure)throw new SourceCollectionError(
    'Original forced-message publication lost eligibility',
-   {cause:publication.failure.cause}
+   {cause:publication.failure
+     .cause}
  );}
  function capture(message){
   live();

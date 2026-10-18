@@ -922,7 +922,8 @@ Reopen the stack decision if any of these happen:
 - Slint cannot support native file-list drag and drop through a maintainable adapter or upstream patch.
 - Row context menus cannot be made reliable for the main file list.
 - Accessibility requirements require platform hooks Slint cannot expose.
-- Native default-manager integration dominates the project enough that Qt's mature platform layer outweighs Slint's smaller stack.
+- Native default-manager integration dominates the project enough
+  that Qt's mature platform layer outweighs Slint's smaller stack.
 - `fff` churn under the v1 search feature becomes unsustainable;
   the fallback there is pinning plus vendoring,
   not a stack change.

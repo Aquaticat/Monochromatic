@@ -1,4 +1,6 @@
-# IPinfo Lite 2026-10-06 generation carries no networks for OpenAI `AS401864` or Anthropic `AS400243` and `AS401551`, so those `AS` entries in `wg-allowedips` inputs subtract nothing
+# IPinfo Lite 2026-10-06 generation carries no networks
+for OpenAI `AS401864` or Anthropic `AS400243` and `AS401551`,
+so those `AS` entries in `wg-allowedips` inputs subtract nothing
 
 ## Symptom
 

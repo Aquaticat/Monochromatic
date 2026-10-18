@@ -31,7 +31,8 @@ The same omission hid three more settings from the post-commit stage:
 
 ## Change
 
-Commit `b9fab0f843`, `fix(git-policy-cli): give the post-commit stage the invocation environment and configured options`.
+Commit `b9fab0f843`,
+`fix(git-policy-cli): give the post-commit stage the invocation environment and configured options`.
 
 - `PostCommitRequest` has a new field `environment`, the invocation's whole environment.
   `commit_command.rs` passes `command.environment`.

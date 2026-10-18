@@ -41,7 +41,8 @@ This tells TypeScript to resolve non-relative paths from the project root,
 ### Note
 
 Setting `baseUrl` may or may not completely resolve the warnings,
- but it helps TypeScript understand that non-relative paths in the `paths` mapping should be resolved from the project root.
+ but it helps TypeScript understand that non-relative paths
+in the `paths` mapping should be resolved from the project root.
 
 ### Verification
 
@@ -84,7 +85,8 @@ correct response.
 ### Problem
 
 You encounter TypeScript error TS2677:
- "A type predicate's type must be assignable to its parameter's type" when using complex conditional types in type predicates:
+ "A type predicate's type must be assignable to its parameter's type"
+when using complex conditional types in type predicates:
 
 ```ts
 export function maybeAsyncSchemaIsSchemaAsync<
@@ -125,7 +127,8 @@ export function maybeAsyncSchemaIsSchemaAsync<const Input = unknown,
 
 ### Why This Works
 
-- The intersection type `SchemaAsync<Input, Output> & MyMaybeAsyncSchema` is always assignable to `MyMaybeAsyncSchema` (since it includes it)
+- The intersection type `SchemaAsync<Input, Output> & MyMaybeAsyncSchema`
+  is always assignable to `MyMaybeAsyncSchema` (since it includes it)
 - It preserves the specific type information of the input parameter
 - It avoids the conditional type complexity that TypeScript cannot verify
 - The type guard remains useful for narrowing types in calling code

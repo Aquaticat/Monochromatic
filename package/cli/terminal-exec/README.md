@@ -2,8 +2,10 @@
 
 Cross-platform terminal emulator launcher.
 On Linux/FreeBSD,
- implements the proposed [Default Terminal Execution Specification](https://gitlab.freedesktop.org/terminal-wg/specifications/-/merge_requests/3)
+ implements the proposed [Default Terminal Execution Specification][term-spec]
 with a KDE `kdeglobals` fallback.
+
+[term-spec]: https://gitlab.freedesktop.org/terminal-wg/specifications/-/merge_requests/3
 On Windows,
  detects Windows Terminal or falls back to `cmd.exe`.
 

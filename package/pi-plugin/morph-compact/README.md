@@ -44,7 +44,9 @@ pi -e ./packages/pi-plugin/morph-compact/src/index.ts
 ## How it works
 
 When pi's context window fills up and compaction triggers,
- this extension intercepts the `session_before_compact` event and calls the Morph Compact API instead of pi's default LLM summarization.
+ this extension intercepts the `session_before_compact` event
+ and calls the Morph Compact API
+ instead of pi's default LLM summarization.
 
 **Key differences from default compaction:
 **

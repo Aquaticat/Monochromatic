@@ -1,6 +1,12 @@
 import {SourceCollectionError} from '../collector.mjs';
-import {ordinary,dense} from './message-publication-shape.mjs';
-import {createMessageSignature,sameSignature} from './message-publication-signature.mjs';
+import {
+  ordinary,
+  dense
+} from './message-publication-shape.mjs';
+import {
+  createMessageSignature,
+  sameSignature
+} from './message-publication-signature.mjs';
 
 //region Original capture ownership controls registration and retirement in the caller-owned alias index.
 /** Input-only views retain membership without retaining a message-projection owner or issuing payload eligibility. */
@@ -13,8 +19,14 @@ export function createMessagePublication({
   input,
   initialKind
 }){
- const {partCount,signature}=createMessageSignature(input);
- const publicationState={captured:false,failure:undefined};
+ const {
+   partCount,
+   signature
+ }=createMessageSignature(input);
+ const publicationState={
+   captured:false,
+   failure:undefined
+ };
  function retire(message){publicationState.failure??=new SourceCollectionError(message);return false;}
  function current(value){
   const known=aliases.get(value);

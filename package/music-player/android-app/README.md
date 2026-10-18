@@ -308,7 +308,8 @@ editor field) draws the same two rings just inside its own edge instead (D120): 
 and the 2 dp `primary` ring inside it, with the same corner radii as the outside pair.
 Such a list reserves no padding around its entries, and the text keeps its place by starting 8 dp beyond the inner edge
 of the ring at least.
-The folder names are not flush in a clipping list (the wrapped lines have room around them), so their rings stay outside,
+The folder names are not flush in a clipping list
+(the wrapped lines have room around them), so their rings stay outside,
 and the track menu rows keep their reserved room.
 Focus adds no fill, tint, state layer, bold or size change; hover and press keep their own state layers.
 The drawing is [`FocusRing.kt`](app/src/main/kotlin/dev/monochromatic/musicplayer/FocusRing.kt) and the geometry, a spec
@@ -412,7 +413,8 @@ While a scan runs an empty answer reads "Still looking through your library" and
 
 ### Search field caret
 
-The host keeps the query across a fold change (`rememberSaveable` next to the route), and D66 empties it for a new visit.
+The host keeps the query across a fold change
+(`rememberSaveable` next to the route), and D66 empties it for a new visit.
 The field in `searchHeader` is a `TextFieldState`, whose edits apply at once,
 and it is the source of the query while the page is open
 (the host's query only seeds it, and edits are mirrored to the host):

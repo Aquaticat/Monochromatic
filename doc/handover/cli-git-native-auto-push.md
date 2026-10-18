@@ -24,7 +24,8 @@ Phase 2: manual-push listings for the content policies with the push lifecycle.
 - `8c7ab5a150` manual-push candidate listing and the push lifecycle, natively.
 - `954f6a2805` planted guard removals for the new gates, and the control test update.
 - `63625b0802` empty duplicate of `954f6a2805`, created by the commit hook; no content.
-- `1ad7cc9617` refuses a remote ref deleted after negotiation; repoints two planted controls at the tests that kill them.
+- `1ad7cc9617` refuses a remote ref deleted after negotiation;
+repoints two planted controls at the tests that kill them.
 - `6648ae7512` merge of `feat/cli-git-native-transactions` (one import conflict, resolved to the transactions side).
 - `e2bf4ba277` pins the final-tree scope of a pushed tip with no published base (closes a surviving mutant).
 
@@ -40,7 +41,8 @@ Phase 1 (`package/git-policy/cli/src/native/`):
   rule, dead-owner takeover, failed push output, uncovered tip, coalescing across threads.
 - `auto_push.rs` (+ `_tests.rs`, 11 tests; `_concurrency_tests.rs`, 7 tests): upstream and origin probes, detached note,
   push argument selection, output filter, failure reporting that never changes the commit's status.
-- `post_commit.rs` (+ `_tests.rs`, 9 tests): the gate over a landed delta, the `commit-landed` event, exit `2` when blocked,
+- `post_commit.rs` (+ `_tests.rs`, 9 tests): the gate over a landed delta, the `commit-landed` event,
+exit `2` when blocked,
   and the backup only for clean or warning-only gates. `run_post_commit` is the integrator entry point.
 
 Phase 2:
@@ -49,7 +51,8 @@ Phase 2:
   --dry-run --verify`) whose generated `pre-push` shell hook writes each update record, then `git ls-remote --refs` per
   destination. A value that changed after negotiation stops the probe.
 - `manual_push_range.rs` (+ `_tests.rs`, 8 tests): peeled prior values, remote-tracking refs matched literally per
-  remote, published tips, `rev-list --not` scopes, final-tree scope when no base is known, fail-closed non-commit targets.
+  remote, published tips, `rev-list --not` scopes, final-tree scope when no base is known,
+  fail-closed non-commit targets.
 - `manual_push_lifecycle.rs` (+ `_tests.rs`, 3 tests): the scope of one push, from probe to candidate request.
 - `wrapped_command.rs` (shared): `prepare_manual_push` runs before the manual-push stage. The probe working directory is
   the worktree root from the repository location, falling back to the process directory.
@@ -59,7 +62,8 @@ Phase 2:
 - `candidate_prediction.rs`: `CandidateRequest::Landed(ObjectId)` and `CandidateRequest::Pushed(PushedScope)`.
   Both return before the staged prediction; no private-index work is needed for them, but the private index is still
   created for uniform cleanup.
-- `candidate_store.rs`: `committed_records`, `tree_records` and the `added_raw_from_ls_tree` converter. Tree listing skips
+- `candidate_store.rs`: `committed_records`, `tree_records` and the `added_raw_from_ls_tree` converter.
+Tree listing skips
   submodule entries, whose content is a commit name that no content policy reads.
 - `policy_events.rs`: `PolicyEvent::CommitLanded { oid }`, rendered as the incumbent's `commit-landed` line.
 - `policy_trigger.rs`: `trigger_is_ported` is true for every trigger, including `PostCommit` and `ManualPush`.
@@ -93,7 +97,8 @@ Commits after `e2bf4ba277` change only the mutation script's option parsing (`7b
 Host Git 2.55.0 fails these 2.56-expecting tests (none touches this lane's code paths):
 `command_add::tests::table_and_bulk_spellings_match_git` (`--no-verbose` family and `--intent-to-add`, `--resolved`,
 `--auto-advance` option tables),
-`command_branch_create::git_tests::tables_match_git`, `paired_branch_options_match_git`, `single_branch_options_match_git`
+`command_branch_create::git_tests::tables_match_git`, `paired_branch_options_match_git`,
+`single_branch_options_match_git`
 (branch option tables, e.g. `--edit-description`, `--delete-merged=`, `--forked=`),
 `command_options::git_tests::curated_sequences_match_git_parse_options`, `default_mode_matches_...`,
 `stop_at_non_option_mode_...`, `keep_dashdash_mode_...` (help request parsing: `-h` is a help request in 2.55 and not in
@@ -133,29 +138,36 @@ Results so far (scoped runs with `--timeout 300`, one file at a time through `ga
   The missed mutant (`replace trigger_is_ported -> bool with true`) is equivalent: the exhaustive match over the five
   `Trigger` variants already answers true for each, so no test can kill it. The doc comment that still said manual
   push was unported was corrected in `15cc6dfd70`.
-- `post_commit.rs`: 6 mutants; 2 caught, 4 unviable, 0 missed, 0 timeouts. The 90-second timeout is caught at 300 seconds.
+- `post_commit.rs`: 6 mutants; 2 caught, 4 unviable, 0 missed, 0 timeouts.
+The 90-second timeout is caught at 300 seconds.
 - Not yet rerun at 300 seconds. Their 90-second timeouts are unverified, not kills:
   - `manual_push_probe.rs`: 26 timeouts (the rerun was stopped by the user decision; nothing recorded).
   - `manual_push_range.rs`: 26 timeouts.
   - `manual_push_lifecycle.rs`: 1 timeout.
   - `policy_events.rs` (shared): 11 timeouts.
-  Of the 66 timeouts recorded before the reruns, 2 are resolved (`policy_trigger.rs`, `post_commit.rs`) and 64 are unresolved.
+  Of the 66 timeouts recorded before the reruns, 2 are resolved (`policy_trigger.rs`,
+  `post_commit.rs`) and 64 are unresolved.
 
 Exact rerun commands, one at a time (run from the worktree root, after the previous unit has stopped):
 
     cd package/git-policy/cli
-    systemd-run --user --unit=autopush-timeout-<name> --collect --property=MemoryMax=12G --working-directory=$PWD --setenv=GIT_POLICY_NATIVE_IMAGE_TAG=autopush node "$HOME/temp/agent/gate-slot.ts" mise run //package/git-policy/cli:native:mutation:scoped -- --timeout 300 --file src/native/<file>
+    systemd-run --user --unit=autopush-timeout-<name> --collect --property=MemoryMax=12G --working-directory=$PWD
+    --setenv=GIT_POLICY_NATIVE_IMAGE_TAG=autopush node "$HOME/temp/agent/gate-slot.ts" mise run
+    //package/git-policy/cli:native:mutation:scoped -- --timeout 300 --file src/native/<file>
 
-With `<name>` and `<file>` set to `manual-push-probe` and `manual_push_probe.rs`, `manual-push-range` and `manual_push_range.rs`,
+With `<name>` and `<file>` set to `manual-push-probe` and `manual_push_probe.rs`,
+`manual-push-range` and `manual_push_range.rs`,
 `manual-push-lifecycle` and `manual_push_lifecycle.rs`, `policy-events` and `policy_events.rs`.
 
 Auto-push-only modules (not run): mutation over `auto_push.rs`, `auto_push_branch_key.rs`, `auto_push_record.rs` and
-`auto_push_single_flight.rs`; fuzz (none names auto-push or manual-push); the interop matrix beyond one-direction fixtures;
+`auto_push_single_flight.rs`; fuzz (none names auto-push or manual-push);
+the interop matrix beyond one-direction fixtures;
 Windows checks (the probe and auto-push code is unix-only).
 
 ## Open facts and choices to veto
 
-- The manual-push probe records updates with a runtime-generated shell `pre-push` hook. The incumbent generates a Node hook,
+- The manual-push probe records updates with a runtime-generated shell `pre-push` hook.
+The incumbent generates a Node hook,
   and the ledger lists the native form as undetermined. Choice to veto: a shell hook under the private probe directory.
 - The hook is capped at 16 MiB plus one byte; a larger input fails the probe as the incumbent does.
 - Non-commit pushed objects (annotated tags, trees, blobs) fail closed with a content-unavailable failure. The incumbent
@@ -174,6 +186,7 @@ Windows checks (the probe and auto-push code is unix-only).
 ## Status
 
 Gated commit: `15cc6dfd70` (container gate passed there: lib 939, binary 44, doc 1, Clippy).
-Planted controls: 18 of 18 noticed in the lane run. The one surviving lane mutant from the first run is closed in `e2bf4ba277`.
+Planted controls: 18 of 18 noticed in the lane run. The one surviving lane mutant from the first run is closed in
+`e2bf4ba277`.
 Mutation: the trailing rerun results are above; 64 of 66 timeouts are unverified.
 Host Git 2.55 check: 929 passed, 10 documented Git 2.56-specific failures.

@@ -155,7 +155,8 @@ Long options make that distinction explicit.
 ## Upstream filing decision
 
 No `.out-of-scope/` entry matched mise watch task parsing.
-Open and closed mise issue and pull-request searches for `watch arbitrary command task not found` returned no matching report.
+Open and closed mise issue and pull-request searches
+for `watch arbitrary command task not found` returned no matching report.
 
 1.  **Upstream fault**
     No.

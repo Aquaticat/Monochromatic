@@ -614,7 +614,8 @@ Divergences from the incumbent, recorded for review:
 
 Corrections found by probing:
 
-- The plan's premise that a commit waiting in its editor holds `index.lock` is false on Git 2.55.0 and 2.56.0 (probe run in both).
+- The plan's premise that a commit waiting in its editor holds `index.lock` is false on Git 2.55.0 and 2.56.0 (probe
+- run in both).
   The wait controls use a live holder that keeps the lock file open.
 - `git rebase --exec 'git add'` resolves `git` to real Git, not the wrapper, because rebase puts its libexec
   directory first on PATH.
@@ -633,8 +634,10 @@ the failures being the recorded 2.56.0-output comparisons (see the 2.55.0 eviden
 Trailing gates (owner decision, 2026-10-10; these trail the cutover and are not spent on now):
 
 - Mixed incumbent and native interoperability matrix for locks, the landing lock and the real index lock.
-  One-direction fixtures where the incumbent writes and the native wrapper reads are kept only where a control already exists.
-- Long fuzz campaigns; the `index_lock_records` target and the existing targets keep a 30-second smoke run and planted controls.
+  One-direction fixtures where the incumbent writes and the native wrapper reads are kept only where a control already
+  exists.
+- Long fuzz campaigns; the `index_lock_records` target and the existing targets keep a 30-second smoke run and planted
+- controls.
 - The non-UTF-8 path field.
 - Windows checks beyond the Clippy type-check of the `#[cfg(not(unix))]` branches.
 - Release performance gates.
@@ -645,41 +648,52 @@ Trailing gates (owner decision, 2026-10-10; these trail the cutover and are not 
 Merged into this branch: auto-push (`55c57757d8`), worktree-copy (`ec597deb26`), and the signal relay flake fix
 (`5451745557`, which replaces the earlier open item: the test child was a shell that absorbed SIGINT while it waited
 in the foreground; the fix runs the relayed child directly).
-Native Clippy and the container gate passed on `ec597deb26`; the host library tests pass except the ten recorded Git 2.55
+Native Clippy and the container gate passed on `ec597deb26`; the host library tests pass except the ten recorded Git
+2.55
 option-table comparisons.
 
 Built, with controls (`src/native/`):
 
-- `policy_patch_validate.rs`, `policy_patch.rs`: the incumbent's `validatePolicyPatch` grammar and `git apply --cached --3way`
+- `policy_patch_validate.rs`, `policy_patch.rs`: the incumbent's `validatePolicyPatch` grammar and
+- `git apply --cached --3way`
   on the private index. Not on the convergence path: the Rust content layer proposes byte corrections, not patch text,
   so this module has no caller in the pipeline yet.
-- `candidate_prediction.rs`: `CandidateRequest::Staged` reads the index as it stands. `Direct` runs `git add --all` first,
+- `candidate_prediction.rs`: `CandidateRequest::Staged` reads the index as it stands. `Direct` runs `git add --all`
+- first,
   which would overwrite corrections already written to the private index.
-- `policy_checks.rs`, `policy_final_newline.rs`: `ShippedChecks::can_apply_patches` lets a pass propose the final-newline
+- `policy_checks.rs`, `policy_final_newline.rs`: `ShippedChecks::can_apply_patches` lets a pass propose the
+- final-newline
   correction outside `DirectFix`; the commit path's convergence sets it.
 - `private_index_stage.rs`: writes a correction's bytes as a blob and an index entry in the private index.
 - `commit_convergence.rs`: the bounded convergence over the private index (the shared `converge` loop). Snapshots are
-  compared in memory as exact states; the incumbent also streams them to `candidate-N.state` files, which only serve that
+  compared in memory as exact states; the incumbent also streams them to `candidate-N.state` files, which only serve
+  that
   comparison.
-- `commit_policy_preparation.rs`: converge, then either prepare the commit in the shadow (`prepare_native_commit`), report
+- `commit_policy_preparation.rs`: converge, then either prepare the commit in the shadow (`prepare_native_commit`),
+- report
   a `commit-normalization/no-change` core finding with exit 1 when the corrected tree equals `HEAD`, or stop as blocked.
   The no-change path installs the worktree copies (the direct-fix installer, which leaves the real index alone) and then
   points each real-index entry at its corrected blob, only when the entry still names the uncorrected blob.
 
 Acceptance cases:
 
-- Final-newline correction lands in the prepared tree: passes (`commit_preparation::tests::the_final_newline_correction_reaches_the_prepared_commit`).
+- Final-newline correction lands in the prepared tree: passes
+- (`commit_preparation::tests::the_final_newline_correction_reaches_the_prepared_commit`).
 - Pre-commit hook re-stages a selected file and the change is kept: passes
   (`commit_preparation::tests::a_pre_commit_hook_restaging_a_selected_file_is_kept_in_the_prepared_commit`); the hooks
   directory is passed explicitly through `core.hooksPath`, which is the setting Git 2.55.0 needs.
-- No-change normalization: passes (`commit_preparation::tests::a_correction_that_restores_head_is_a_no_change_normalization`).
+- No-change normalization: passes
+- (`commit_preparation::tests::a_correction_that_restores_head_is_a_no_change_normalization`).
 - Added path failing admission ends in `patch-conflict`: accepted as not reachable in slice 6. The proof is the
   shipped policy set: the content layer's `Correction` covers candidate paths only, and no shipped policy proposes a
   path outside the candidate set (`rg` finds no added-path proposal in `policy_content.rs`, `policy_checks.rs` or the
   policy modules). `assertAddablePath` and `installAddedWorktreeFiles` are not ported. The case returns when a policy
-  first proposes an added path; that change must port the admission rule with it. A `patch-conflict` control exists for a
-  correction whose blob cannot be written (`commit_convergence::tests::a_correction_the_index_cannot_take_is_a_patch_conflict`).
-- Differential JSONL against the incumbent and binary-level acceptance: moved to slice 9, where the native binary can commit.
+  first proposes an added path; that change must port the admission rule with it. A `patch-conflict` control exists for
+  a
+  correction whose blob cannot be written
+  (`commit_convergence::tests::a_correction_the_index_cannot_take_is_a_patch_conflict`).
+- Differential JSONL against the incumbent and binary-level acceptance: moved to slice 9, where the native binary can
+- commit.
   The commit path is refused by the wrapper until then, and the incumbent is not installed under `/opt/cli-git` here.
 
 Slice 6 is accepted as library-level done with the admission case recorded above.
@@ -701,7 +715,8 @@ Built in this branch (commit `2ce0f83d0b`, corrected in the next commit):
 
 - `commit_transaction.rs`: recovery on start, then the transaction directory and shadow repository, the seeded private
   index, and the policy preparation. It does not take the landing lock. The incumbent takes the landing lock inside the
-  landing attempt, held until the attempt returns (`src/policy-engine/commit-landing.ts`, `landTransaction`, `await using
+  landing attempt, held until the attempt returns (`src/policy-engine/commit-landing.ts`, `landTransaction`, `await usin
+  g
   _landingLock`); holding it through preparation would serialize concurrent commits and break the bystander and
   concurrent-paths scenarios. Recovery takes what it needs itself, as the incumbent's recovery scan does
   (`src/policy-engine/commit-transaction-recovery-scan.ts`). `transaction_paths` gives the caller the commit index and
@@ -714,30 +729,36 @@ Built in this branch (commit `2ce0f83d0b`, corrected in the next commit):
 
 Not reachable yet: nothing calls either module, and the wrapper still refuses `git commit`.
 
-Gates at head `7b6ebfe46c` (committed code, run through `gate-slot.ts`): native Clippy exit 0; container gate (`native:test:container`, Git 2.56.0) exit 0 with 1331 library tests passing. The host library run passes except the ten recorded Git 2.55 option-table comparisons.
+Gates at head `7b6ebfe46c` (committed code, run through `gate-slot.ts`): native Clippy exit 0; container gate
+(`native:test:container`, Git 2.56.0) exit 0 with 1331 library tests passing. The host library run passes except the
+ten recorded Git 2.55 option-table comparisons.
 
 Slice 6 mutation, scoped runs through `gate-slot.ts`, one per file. The five sources below are unchanged since
 `44abe6639a`, the head the runs started from, so the results apply to the current code. A mutant is killed when a
 control fails under it; a timeout is recorded separately and is not a kill.
 
 - `commit_convergence.rs`: 12 tested, 2 caught, 5 unviable, 5 timeouts. The timeouts (`snapshots_equal`, `record_path`
-  and the `!` in `record_path`) hit the 300 second bound and are unverified. They need a multi-pass control before they count.
+  and the `!` in `record_path`) hit the 300 second bound and are unverified. They need a multi-pass control before they
+  count.
 - `commit_policy_preparation.rs`: 18 tested, 15 caught, 1 unviable, 2 missed. Both are killed by
   `commit_preparation::tests::a_correction_that_changes_the_tree_prepares_the_commit` (`85b146e469`), which fails under
   each mutant when applied on the host.
 - `private_index_stage.rs`: 8 tested, 7 caught, 1 unviable, 0 missed.
 - `candidate_prediction.rs`: 16 tested, 8 caught, 8 unviable, 0 missed.
 - `policy_patch_validate.rs`: 57 tested, 50 caught, 7 missed. All seven are killed: the six header-count and directive
-  mutants by `header_and_directive_violations_are_rejected` with duplicated, missing and extra-file headers (`a2db4d71af`),
+  mutants by `header_and_directive_violations_are_rejected` with duplicated, missing and extra-file headers
+  (`a2db4d71af`),
   and the delimiter-offset mutant by a short new revision, which panics under the mutant (`a20665fc44`). Each was
   applied on the host and restored.
-- `policy_patch.rs`: 2 tested, 1 caught, 1 missed. The missed mutant replaces the `Display` body with `Ok`; it is killed by
+- `policy_patch.rs`: 2 tested, 1 caught, 1 missed. The missed mutant replaces the `Display` body with `Ok`; it is
+- killed by
   `policy_patch::tests::each_failure_displays_exactly_its_message` (`529950eceb`), applied on the host and restored.
 
 Stop of feature work in this branch. The remaining slice 8 work and the slice 9 wiring (command path to
 `run_commit_transaction`, landing, the post-landing lane's API, the command frontier change) move to a separate
 integrator on `feat/cli-git-native-integration`, which merges this branch. The post-landing order is on
-`feat/cli-git-native-post-landing` (`post_landing.rs`, `landed_disposal.rs`, `post_commit_hook.rs`) and is not merged here.
+`feat/cli-git-native-post-landing` (`post_landing.rs`, `landed_disposal.rs`, `post_commit_hook.rs`) and is not merged
+here.
 
 Still open for the integrator:
 
@@ -747,9 +768,12 @@ Still open for the integrator:
 End-to-end inventory (incumbent, under `package/git-policy/cli/e2e`):
 
 - The catalog is `scenario-catalog-fixture.ts`. It concatenates fifteen fixture files, which together define about 70
-  scenarios (per-file `name:` counts, measured with `rg -c`). The largest groups are baseline commit (6), baseline amend (4),
-  baseline hook (8), hooked (6), reservation (6), shared file (5), lock GC (5), replay degradation (8), concurrent paths (4),
-  subsumption (4), foreign unproven (4), amend switch (4), index writer (3), sigkill (2) and phase kill (3 names, see below).
+  scenarios (per-file `name:` counts, measured with `rg -c`). The largest groups are baseline commit (6), baseline
+  amend (4),
+  baseline hook (8), hooked (6), reservation (6), shared file (5), lock GC (5), replay degradation (8), concurrent
+  paths (4),
+  subsumption (4), foreign unproven (4), amend switch (4), index writer (3), sigkill (2) and phase kill (3 names, see
+  below).
 - Commit path: all 15 scenario-defining fixtures mention `commit` (measured with `rg -c`), so most scenarios need the
   native commit path once it is enabled.
 - Phase kill: `scenario-phase-kill-fixture.ts` runs five landing phases (`preparation-done`, `landing-locked`,
@@ -768,11 +792,13 @@ Running the suite against the native executable (design, not yet built):
 - The native executable refuses Git below 2.55.0 (the settled floor), so it does not degrade on Git 2.39.5 the way the
   incumbent does; the native run uses `--git 2.55.0` only, and the two `replay-unavailable-*` scenarios, which prove
   that degradation, never run natively.
-- Every scenario runs in the container with the same seeds as the incumbent, and the invariant checker judges the native run.
+- Every scenario runs in the container with the same seeds as the incumbent, and the invariant checker judges the
+- native run.
   A differential compares the JSONL events of each scenario against the incumbent's on the same seed.
 
 Gates: container suite on the native executable for each Git version, the differential on the same seeds, and the
-binary-level acceptance for the three slice 6 cases (final newline in the prepared tree, pre-commit restage kept, and the
+binary-level acceptance for the three slice 6 cases (final newline in the prepared tree, pre-commit restage kept, and
+the
 added-path case, which returns only if a policy proposes an added path). Mutation for slice 9 stays gated.
 
 ### Slice 3 mutation results and trailing gates (2026-10-11)
@@ -835,9 +861,13 @@ Owner decision 2026-10-11: mutation for slices 6, 7 and 9 and the lane campaigns
 the user may widen this set later.
 The rerun commands, run from the worktree root, are:
 
-- `node ${HOME}/temp/agent/gate-slot.ts env MISE_AUTO_INSTALL=0 MISE_EXEC_AUTO_INSTALL=0 GIT_POLICY_NATIVE_IMAGE_TAG=transactions mise run //package/git-policy/cli:native:test:container`
+- `node ${HOME}/temp/agent/gate-slot.ts env MISE_AUTO_INSTALL=0 MISE_EXEC_AUTO_INSTALL=0 GIT_POLICY_NATIVE_IMAGE_TAG=tra
+- nsactions mise run //package/git-policy/cli:native:test:container`
   rebuilds the snapshot that the mutation campaign reads, and must run before any campaign.
-- `node ${HOME}/temp/agent/gate-slot.ts env MISE_AUTO_INSTALL=0 MISE_EXEC_AUTO_INSTALL=0 GIT_POLICY_NATIVE_IMAGE_TAG=transactions mise run //package/git-policy/cli:native:mutation:scoped -- --file 'src/native/git_version.rs' --file 'src/native/index_lock_evidence.rs' --file 'src/native/index_lock_holders.rs' --file 'src/native/index_lock_wait_host.rs' --file 'src/native/index_writer_coordination.rs' --file 'src/native/real_index_lock.rs'`
+- `node ${HOME}/temp/agent/gate-slot.ts env MISE_AUTO_INSTALL=0 MISE_EXEC_AUTO_INSTALL=0 GIT_POLICY_NATIVE_IMAGE_TAG=tra
+- nsactions mise run //package/git-policy/cli:native:mutation:scoped -- --file 'src/native/git_version.rs' --file 'src/n
+- ative/index_lock_evidence.rs' --file 'src/native/index_lock_holders.rs' --file 'src/native/index_lock_wait_host.rs' --
+- file 'src/native/index_writer_coordination.rs' --file 'src/native/real_index_lock.rs'`
   reruns the six files that gained controls; expect the macOS and Windows survivors above and the timeouts.
 
 ### Drain record (2026-10-10, before the scratch move)
@@ -853,7 +883,8 @@ Finished and recorded:
   including the nested-lease hand-off (noticed by `coordination::a_nested_git_add_inside_rebase_does_not_deadlock`).
 - Scoped mutation campaign over the core slice 3 files at `240fb9f1d7`: failed before any mutant ran.
   The unmutated baseline reported two binary tests over the 5-second command bound
-  (`policy::forbidden_strings_scan_candidates_from_each_rules_source` and `policy::direct_fix_corrects_only_worktree_files`).
+  (`policy::forbidden_strings_scan_candidates_from_each_rules_source` and
+  `policy::direct_fix_corrects_only_worktree_files`).
   The same image then ran `policy::` five times in 0.6 to 1.2 seconds, all passing,
   so the baseline failure was transient load in the mutation container, not a behaviour change.
   The campaign has not been rerun.
@@ -868,9 +899,14 @@ Exact commands to rerun, from the worktree root, through the slot script
 (the slot script and the planted driver live under the scratch directory, which is being moved;
 adjust the path to the new location of `gate-slot.ts` and `run-native-planted.mjs`):
 
-    node <scratch>/gate-slot.ts env MISE_AUTO_INSTALL=0 MISE_EXEC_AUTO_INSTALL=0 GIT_POLICY_NATIVE_IMAGE_TAG=transactions mise run //package/git-policy/cli:native:test:container
+    node <scratch>/gate-slot.ts env MISE_AUTO_INSTALL=0 MISE_EXEC_AUTO_INSTALL=0
+    GIT_POLICY_NATIVE_IMAGE_TAG=transactions mise run //package/git-policy/cli:native:test:container
     node <scratch>/gate-slot.ts node <scratch>/run-native-planted.mjs "$PWD/package/git-policy/cli" transactions
-    node <scratch>/gate-slot.ts env MISE_AUTO_INSTALL=0 MISE_EXEC_AUTO_INSTALL=0 GIT_POLICY_NATIVE_IMAGE_TAG=transactions mise run //package/git-policy/cli:native:mutation:scoped -- --file 'src/native/index_lock_*.rs' --file 'src/native/index_writer_*.rs' --file 'src/native/real_index_lock*.rs' --file 'src/native/landing_location*.rs' --file 'src/native/process_start*.rs' --file 'src/native/git_version*.rs' --file 'src/native/forwarded_command*.rs'
+    node <scratch>/gate-slot.ts env MISE_AUTO_INSTALL=0 MISE_EXEC_AUTO_INSTALL=0
+    GIT_POLICY_NATIVE_IMAGE_TAG=transactions mise run //package/git-policy/cli:native:mutation:scoped -- --file
+    'src/native/index_lock_*.rs' --file 'src/native/index_writer_*.rs' --file 'src/native/real_index_lock*.rs' --file
+    'src/native/landing_location*.rs' --file 'src/native/process_start*.rs' --file 'src/native/git_version*.rs' --file
+    'src/native/forwarded_command*.rs'
 
 Commits made while draining or just before: `240fb9f1d7` holder fix.
 Two commits in this run were made in ways the repository's own guards would prefer otherwise:

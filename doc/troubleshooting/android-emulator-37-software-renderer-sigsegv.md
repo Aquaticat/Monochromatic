@@ -458,7 +458,8 @@ on the same 10 000-track library, during the cold start of the second trial of a
 (`__strlen_evex` under `TextureResize::TextureResize` under `EmulationGl::createColorBuffer`), the core 1.2 GB, and the
 trial that was running was lost (its child hit the 20 minute timeout).
 The two later launches from fresh copies ran 70 and 28 minutes without a crash.
-A fifth came on 2026-10-14 at 08:30:17 (local time), 10 minutes after the launch and 2 minutes into the first run on that
+A fifth came on 2026-10-14 at 08:30:17 (local time), 10 minutes after the launch
+and 2 minutes into the first run on that
 copy (the `pm clear`, install and cold start of a second variant); the stack was again `__strlen_evex` under
 `TextureResize::TextureResize` under `EmulationGl::createColorBuffer`, the core 1.3 GB, and the journal showed
 `glGenTextures ... error null ctx` lines from the backend two minutes earlier.

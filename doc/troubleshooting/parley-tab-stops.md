@@ -106,7 +106,8 @@ from `package/desktop-app/ide/Cargo.lock`.
 
 The probe that produced the symptom lines is listed in full,
 with its manifest and run command,
-under "Standalone probe" in [`parley-cursor-from-point-inside-grapheme.md`](parley-cursor-from-point-inside-grapheme.md);
+under "Standalone probe" in
+[`parley-cursor-from-point-inside-grapheme.md`](parley-cursor-from-point-inside-grapheme.md);
 its last loop measures the tabs.
 Output:
 `~/temp/agent/upstream-prototype.m2ruMmIk/parley-probe.log` (2026-10-05).

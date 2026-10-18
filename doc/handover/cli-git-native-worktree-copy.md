@@ -57,7 +57,8 @@ Clippy: the worktree-copy files have zero findings. The four container findings 
 
 ## Mutation evidence
 
-Container scoped run, `mise run //package/git-policy/cli:native:mutation:scoped -- --file 'src/native/worktree_copy*.rs'`
+Container scoped run,
+`mise run //package/git-policy/cli:native:mutation:scoped -- --file 'src/native/worktree_copy*.rs'`
 (log `wc-mutation-2.log`), started after the planted-control fix:
 
 - 454 mutants: 302 caught, 45 unviable, 45 missed, 62 timed out.
@@ -65,7 +66,8 @@ Container scoped run, `mise run //package/git-policy/cli:native:mutation:scoped 
   nine controls from other lanes.
 - The campaign exited 1 because cargo-mutants exits non-zero on any missed or timed-out mutant.
 
-Host filtered run, `cargo mutants --no-config --in-place --baseline run --timeout 120 --file 'src/native/worktree_copy*.rs'`
+Host filtered run,
+`cargo mutants --no-config --in-place --baseline run --timeout 120 --file 'src/native/worktree_copy*.rs'`
 with the same two excluded kinds and the test filter `-- worktree_copy` (output `mut-host-all`):
 
 - 176 mutants listed: 121 caught, 18 unviable, 35 missed, 2 timed out.

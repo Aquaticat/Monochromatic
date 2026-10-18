@@ -99,7 +99,14 @@ the owning researcher checks that ledger and records finite resources and cleanu
 The [frozen allocation baseline](depot-owned-allocation-ledger.md)
 and [deduplicated follow-on ledger](depot-owned-allocation-follow-on.md)
 retain separate source snapshots.
-Pending host recovery and matched Depot OS attempts must join the follow-on ledger before its final coordinator check.
+The terminal host,
+material,
+GNU and debug controls now join the
+[49-row final snapshot](../audit/depot-owned-allocation-final-2026-10-18.evidence.json).
+All 53 source bodies and 49 timestamp-pointer joins pass exact-integer verification.
+Its known provider-window proxy is USD 1.685366666667 before allowances,
+with USD 0.015897333333 of separate BuildKit request-window proxy.
+The frozen 223-row baseline remains separate and unchanged.
 Known nominal intervals,
 run-envelope fallbacks and BuildKit request-window proxies retain their different boundaries;
 their sum is not a provider invoice.

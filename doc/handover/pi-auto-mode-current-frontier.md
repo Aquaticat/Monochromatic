@@ -10,6 +10,90 @@ including read-only fallback and escaped terminal-control diagnostics.
 Private pnpr publication still returns `E401`; the Coolify/SSH/API access question remains pending.
 The deployed pnpr trust configuration has not been inspected.
 
+The current source worker is `pi-mimo-rpc-session-QGwl5f`,
+resumed from the heap-failed worker's full saved history at unchanged bounds.
+Its supervisor checkpoint is `6df4b5a423718c97f833aee743ff78c49e7e1c0d`:
+the explicit thirteen changed catalog paths match the actual committed paths.
+It is diagnosing the transient consumer's `2 !== 3` attempt count without weakening expectations.
+The old native worker closes normally before its full-history resume as `pi-mimo-rpc-session-9Tl0ts`.
+That native worker owns only `native/build-reuse.ts` and `native/build-reuse.platform.test.ts` for lint repair.
+Both current workers use the immutable `IFS6IL` correction with the measured resource bounds retained.
+
+Actual native publication passes across the disposable equal-device mount boundary:
+the first real build reports zero reused files and retains complete old and new license bytes;
+the next real build on one mount shares the license inode.
+The maintained platform regression now invokes `native/build.ts`,
+instead of importing the source-only reuse helper rejected by `test-import/require-eventual-artifact`.
+This actual-command test passes for the frozen checkpoint containing `57c1ae4c03`.
+Its scoped lint and updated types remain assigned to the native worker.
+
+The screened formatter composition at frozen `6df4b5a423` passes fifteen of sixteen qualification tasks,
+including fresh types,
+complete units,
+real build-activation rollback and host isolation.
+Its only failure,
+`Each review captures its current native capabilities once` with `2 !== 1`,
+also reproduces in an independently built identical unformatted revision.
+The classifier's 126 runtime-AST-identical changes are adopted as `cbf101fc9f`,
+with exact committed-path verification.
+The twenty rejected formatter outputs remain excluded.
+Full frozen native lint still reports 10,541 warnings and 54 errors across 496 files and 486 rules.
+That count predates the current worker's repairs and is not package completion.
+
+The retained capability trace proves separate captures in automatic review and manual fallback.
+The maintained implementation now shares one lazy capture over an original prepared-group operation,
+retains absent and failed captures,
+releases it at closure and starts fresh next operation.
+The first frozen fix passes the real source-freshness consumer and complete host-isolation task.
+The approval matrix reaches a later denied-operation assertion requiring the old handler exception.
+A private real-host trace instead establishes one original `program` tool result,
+`isError: true`,
+with exactly `The user stopped execution. Wait for their next instructions.` and zero executions.
+The obsolete exception assertion needs replacement with that observable result contract,
+followed by the complete matrix.
+The newly committed built capability unit suite,
+its lint and types,
+and rebuilt mutation guards remain unverified.
+Do not rebuild the live workers' immutable release while advancing this fix.
+
+The user identifies divergent auto-push with concurrent dirty edits as another wrapper defect,
+authorizes another issue and directs recovery without waiting for the concurrent owner.
+[Issue 1769](https://github.com/Aquaticats/Monochromatic/issues/1769) is filed after duplicate searches.
+The isolated recovery's fetched upstream already contains the captured local history.
+Ancestry checks establish publication and hashes establish both originally blocking dirty files unchanged.
+The original checkout remains untouched and still requires its own reconciliation when its owner permits it.
+Later commits require a new reachability check.
+The private bridge and receipt are retained;
+see `doc/troubleshooting/git-policy-auto-push-reconciliation.md`.
+No wrapper implementation fix is claimed.
+
+The remaining independently verifiable areas are:
+
+- Approval operation scope: updated observable denial fixture,
+  built units,
+  scoped lint,
+  types,
+  complete host matrix and rebuilt mutants.
+- Source catalog: actual MiMo's original-versus-port parity,
+  complete mode and variant matrix,
+  scoped lint and types,
+  complete child stderr and explicit-path checkpoint.
+- Native build reuse: actual MiMo's two-file lint repair,
+  real two-mount build regression,
+  same-mount positive control and rebuilt regression mutant.
+- Architecture and footprint: finish the native lint backlog and typed boundary simplification,
+  justify major responsibilities and measure a runnable dependency closure.
+  Neither 13k code lines nor 100 MB is an accepted target.
+- Long-session failures: retain the heap-limit incident separately from generic supervisor-abort diagnostics
+  and the unresolved Git packet error.
+  Diagnose retention without treating a higher heap ceiling as a fix.
+- Final configured consumer: coherent logger `0.4.4` build,
+  original interaction replay,
+  long requests and required/excluded provider controls,
+  complete shutdown stderr,
+  refreshed documentation rendering and publication receipts.
+- Private publishing: inspect deployed pnpr trust once the requested existing access route is available.
+
 Default native release `kFkBoY` remains pinned.
 The resumed source worker uses a separate immutable corrected runtime.
 A final coherent auto-mode rebuild embedding logger `0.4.4` is still required.
@@ -48,6 +132,24 @@ The live source worker owns only the same fourteen catalog paths.
 It repairs its type errors and moves to the scoped lint backlog:
 229 findings are reported at the 33-tool checkpoint.
 No package-wide lint or catalog parity completion is claimed.
+The process later exits 139 at 100 tool results and eight tool errors.
+Its retained stderr reports V8's
+`FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory`
+under the existing 1,536 MiB heap ceiling.
+Its source session file is 2,255,703 bytes.
+This evidence establishes a heap-limit failure;
+it does not establish which retention path consumes that heap.
+The old native worker remains alive and settled.
+No killed in-flight source write is replayed:
+the only unfinished tool is a read of `src/assessment-sender.ts`.
+The source worker's final scoped lint passes,
+but its transient consumer fails `2 !== 3` assessment attempts.
+Preserve the original expected counts and diagnose parity before changing runtime or assertions.
+The supervisor checkpoints only its changed catalog paths,
+retaining that failure in the commit subject,
+and prepares a full-history resume at unchanged bounds on the same immutable corrected runtime.
+Fresh types for the independently frozen mount repair still encounter the preceding catalog checkpoint's type errors;
+these are not mount-repair type failures.
 
 Native aborts produce three error tool results containing
 `Complete group preparation or assessment failed`.
@@ -196,6 +298,23 @@ All twenty excluded outputs are restored in the private candidate.
 No formatter output has been adopted into the root worktree.
 Private build and consumer qualification of the remaining changes are pending;
 AST equality does not establish source-qualification or complete runtime equivalence.
+Its first private build fails at `native/build-reuse.ts` with an actual hard-link `EXDEV`:
+the copied active symlink still names the live candidate through a separate read-only mount.
+Only the private copied pointer is localized;
+the root and live worker artifact remain unchanged.
+The localized private build passes as `native-release-BNfypR`,
+reusing 886 files and 6,956,014 bytes.
+
+Committed mount regression `532c20e618` separately proves equal `st_dev` values,
+matching eligible metadata and an actual direct-link `EXDEV` across distinct disposable bind mounts.
+Its maintained reuse assertion fails with that error before the repair.
+Commit `7a70bcecae` retains verified independently allocated output only for `EXDEV`;
+all other link failures propagate.
+The bounded frozen corrected test passes all three named cases,
+including the same-mount inode-sharing positive control and intact file/directory checks.
+The Linux `link(2)` manual explicitly documents this distinct-mount behavior.
+Package `doc/build-lifecycle.md` retains the defect and verification contract.
+Fresh corrected types and scoped lint remain required.
 
 The supervisor incorrectly stops native diagnostic call `call_3295f42211d7470d867d0a18`
 after misreading JSON display escaping as actual source escapes.

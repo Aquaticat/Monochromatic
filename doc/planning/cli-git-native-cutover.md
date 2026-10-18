@@ -533,7 +533,9 @@ The main checkout's `.claude/settings.json` has no hit;
    `PNPR_EXCLUDED_PACKAGES` (`file-enforcer.config.ts:1884`) names no git-policy
   package,
    so no exclusion edit is needed.
-- (Removed on 2026-10-15 in `91bdc9a9f9`.) `slopo.ignore.txt:45,50,69,200,309,324,373` carry duplicate-code dismissals whose subjects are deleted TypeScript or
+- (Removed on 2026-10-15 in `91bdc9a9f9`.)
+  `slopo.ignore.txt:45,50,69,200,309,324,373` carry duplicate-code dismissals
+  whose subjects are deleted TypeScript or
   `perf/` files;
    `:298` names `src/native/policy_registry.rs` and stays.
   The file's own header (`slopo.ignore.txt:40`) already counts "10 dead pending a decision",
@@ -591,7 +593,9 @@ The main checkout's `.claude/settings.json` has no hit;
 - `.github/workflows/cli-git-performance.yml` is deleted (install branch),
    with the performance harness;
    `perf/*.json` stays.
-- (Removed on 2026-10-14 at the owner's request, together with `package/git-policy/cli/bin/final-newline-workflow.mjs`: the check rebuilt the wrapper on every pull request.)
+- (Removed on 2026-10-14 at the owner's request,
+  together with `package/git-policy/cli/bin/final-newline-workflow.mjs`:
+  the check rebuilt the wrapper on every pull request.)
 - `.github/workflows/final-newline.yml` builds the crate from the checkout (`cargo build --release --locked`) and runs
   `package/git-policy/cli/bin/final-newline-workflow.mjs <executable>`,
   which clones the checkout,
@@ -1469,7 +1473,8 @@ there).
     Read,
      per process of the same user,
      only the PATH value from `/proc/<pid>/environ` (never print other variables;
-    one environment contains tokens) and count those whose PATH names `node_modules/.bin` before the worktree's `.cache/cli-git-bin` directory.
+    one environment contains tokens) and count those whose PATH names `node_modules/.bin`
+    before the worktree's `.cache/cli-git-bin` directory.
     Both wrappers share `.git/cli-git*` state (adopted:
      locks and journals interoperate both ways),
     so a mixed fleet is the designed state,
@@ -1477,7 +1482,9 @@ there).
     native-reads direction has a recorded test (`doc/handover/cli-git-native-transactions.md:629-631`,
      trailing gate).
 5.  The incumbent's runtime closure (see `The installed incumbent`) lives in install state:
-    do not run `pnpm install` in the main checkout with the cli manifest reduced until the verification has passed and the hazard 4 count of sessions that still start the shim is zero.
+    do not run `pnpm install` in the main checkout with the cli manifest reduced
+    until the verification has passed and the hazard 4 count of sessions
+    that still start the shim is zero.
 6.  The incumbent without `cli-git.config.ts` runs only core policies:
     optional policies "remain disabled until trusted config registers them"
     (the former `package/git-policy/cli/README.md:210-212`,
@@ -1627,7 +1634,9 @@ Both checks use the installed `git` on the resolved PATH,
 
 1.  Identity.
      `command -v git` prints `<root>/.cache/cli-git-bin/git`,
-     where `<root>` is the checkout whose `mise.toml` set the session's `PATH` (a session started from the main checkout uses the main checkout's link in every worktree it enters;
+     where `<root>` is the checkout whose `mise.toml` set the session's `PATH`
+     (a session started from the main checkout uses the main checkout's link
+     in every worktree it enters;
      `mise exec -- sh -c 'command -v git'` shows a worktree's own environment);
     `readlink --canonicalize "$(command -v git)"` ends in `cli-git-native`;
     `git --version` prints `git version 2.55.0`;
@@ -1693,7 +1702,9 @@ Both checks use the installed `git` on the resolved PATH,
      signing is checked by item 3 instead.
 
 3.  A doc-only commit in this repository,
-     from a linked worktree that has merged `main` and has run `mise run sync:files` and `mise install` (so `cli-git.config.jsonc`,
+     from a linked worktree that has merged `main`
+     and has run `mise run sync:files` and `mise install`
+     (so `cli-git.config.jsonc`,
      `.cache/forbidden-strings.rules.txt` and `monochromatic-lint` on
     PATH all exist):
      edit one Markdown file under `doc/`,

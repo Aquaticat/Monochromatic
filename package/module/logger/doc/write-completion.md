@@ -28,7 +28,8 @@ Console and synchronous storage sinks reuse a fulfilled completion owned by thei
 The no-op sink creates its shared completion lazily,
 preserving imports that perform no runtime discovery or asynchronous work.
 The public sink contract remains `Promise<void>`.
-Adding a second synchronous return type would enlarge the caller's contract without solving file-write observation costs.
+Adding a second synchronous return type would enlarge the caller's contract
+without solving file-write observation costs.
 
 ## File append ownership
 

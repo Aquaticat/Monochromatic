@@ -1,78 +1,95 @@
 /** Verify immutable file reuse across actual mount boundaries. @module */
 import { strict as assert } from 'node:assert';
-import { link, mkdir, mkdtemp, readFile, readdir, stat, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { cp, link, mkdir, mkdtemp, readFile, readdir, realpath, stat, symlink, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import spawn from 'nano-spawn';
 import { describe, it } from '@monochromatic-dev/module-test/ts';
-import { reuseNativeBuildFiles } from './build-reuse.ts';
 
-//region The caller supplies disposable directories on distinct mounts of the same filesystem.
+//region The shipped build command receives disposable installations on distinct mounts.
+/**
+ Invoke the actual command and retain complete output beside the fixture.
+
+ @param packageRoot - disposable installation owning generated release paths
+
+ @returns complete build report
+
+ @example
+ ```ts
+ const report = await buildRelease(packageRoot);
+ ```
+ */
+async function buildRelease(packageRoot: string): Promise<string> {
+  /** Generation and CLI loading share the package task's bounded heap. */
+  const result = await spawn(process.execPath, [join(packageRoot, 'native/build.ts'), '--owned'], {
+    cwd: packageRoot,
+    env: { ...process.env, NODE_OPTIONS: '--max-old-space-size=512' },
+  });
+  await writeFile(join(packageRoot, 'last-build.stdout'), result.stdout);
+  await writeFile(join(packageRoot, 'last-build.stderr'), result.stderr);
+  return result.stdout;
+}
+
+/**
+ Require the outer platform fixture's exact mount argument before touching the filesystem.
+
+ @param value - original process argument candidate
+ */
+function assertMountArgument(value: unknown): asserts value is string {
+  assert.equal(typeof value, 'string');
+  assert.notEqual(value, undefined);
+}
+
+/** Process invocation keeps node and script identity out of the mount arguments. */
+const [, ...invocation] = process.argv;
 /** Previous-file mount owned exclusively by the outer platform fixture. */
-const previousMount = process.argv[2];
-/** New-file mount owned exclusively by the outer platform fixture. */
-const outputMount = process.argv[3];
-assert.equal(typeof previousMount, 'string');
-assert.equal(typeof outputMount, 'string');
-assert.ok(previousMount);
-assert.ok(outputMount);
+const [, previousMount, outputMount] = invocation;
+assertMountArgument(previousMount);
+assertMountArgument(outputMount);
 /** Previous fixture remains outside the output mount even when device identifiers agree. */
 const previous = await mkdtemp(join(previousMount, 'reuse-prior-'));
 /** New fixture never replaces a real installation or another session's files. */
-const output = await mkdtemp(join(outputMount, 'reuse-output-'));
-/** Exact contents establish that storage sharing is an eligible optimization. */
-const content = 'verified immutable release bytes\n';
-/** Filename is passed directly to filesystem APIs, including its shell delimiters. */
-const filename = 'release "quote" ; $.txt';
-await writeFile(join(previous, filename), content);
-await writeFile(join(output, filename), content);
+const packageRoot = await mkdtemp(join(outputMount, 'reuse-package-'));
+/** Maintained command and emitted graph supply the real build inputs. */
+const original = dirname(import.meta.dirname);
+await cp(join(original, 'native'), join(packageRoot, 'native'), { recursive: true });
+await cp(join(original, 'package.json'), join(packageRoot, 'package.json'));
+await mkdir(join(packageRoot, 'dist'), { recursive: true });
+await cp(join(original, 'dist/final'), join(packageRoot, 'dist/final'), { recursive: true });
+await cp(await realpath(join(original, 'dist/native')), previous, { recursive: true });
+await symlink(join(original, 'node_modules'), join(packageRoot, 'node_modules'), 'dir');
+await symlink(join(original, '../../../node_modules'), join(outputMount, 'node_modules'), 'dir');
+await symlink(previous, join(packageRoot, 'dist/native'), 'dir');
 
 await describe({
-  name: 'immutable native release reuse on separate mounts',
+  name: 'native build reuse across actual mounts',
   children: [
     it({
-      name: 'proves equal device identifiers do not establish hard-link availability',
-      fn: async function verifyMountBoundary() {
-        /** Identical device identifiers pass the production metadata eligibility check. */
-        const prior = await stat(join(previous, filename));
-        /** Newly verified target has independent storage before reuse. */
-        const target = await stat(join(output, filename));
-        assert.equal(prior.dev, target.dev);
-        assert.notEqual(prior.ino, target.ino);
-        assert.equal(prior.mode, target.mode);
-        assert.equal(prior.size, target.size);
-        await assert.rejects(link(join(previous, filename), join(output, 'cross-mount-control')), { code: 'EXDEV' });
-      },
-    }),
-    it({
-      name: 'retains complete verified output when immutable sharing returns EXDEV',
-      fn: async function retainIndependentFile() {
-        /** Refusal to share bytes leaves valid independently built output publishable. */
-        const reused = await reuseNativeBuildFiles({ output, active: previous });
-        assert.deepEqual(reused, { files: 0, bytes: 0 });
-        assert.equal(await readFile(join(output, filename), 'utf8'), content);
-        assert.equal(await readFile(join(previous, filename), 'utf8'), content);
-        assert.deepEqual(await readdir(output), [filename]);
-        assert.deepEqual(await readdir(previous), [filename]);
-      },
-    }),
-    it({
-      name: 'still shares identical files within one mount',
-      fn: async function shareWithinMount() {
-        /** Matching entries on one mount provide the successful-reuse positive control. */
-        const sameMount = await mkdtemp(join(outputMount, 'reuse-same-mount-'));
-        /** Prior directory belongs to this disposable positive control. */
-        const original = join(sameMount, 'prior');
-        /** Output directory shares the same mount as its prior file. */
-        const target = join(sameMount, 'output');
-        await mkdir(original);
-        await mkdir(target);
-        await writeFile(join(original, filename), content);
-        await writeFile(join(target, filename), content);
-        assert.deepEqual(await reuseNativeBuildFiles({ output: target, active: original }), {
-          files: 1,
-          bytes: Buffer.byteLength(content),
-        });
-        assert.equal((await stat(join(original, filename))).ino, (await stat(join(target, filename))).ino);
-        assert.equal(await readFile(join(target, filename), 'utf8'), content);
+      name: 'publishes intact output across equal-device EXDEV and shares same-mount files',
+      timeout: 120_000,
+      fn: async function publishAcrossMounts() {
+        /** Unchanged license bytes establish an eligible sharing candidate. */
+        const license = await readFile(join(previous, 'PI-LICENSE.txt'));
+        /** Direct control proves this fixture reaches the refused-link boundary. */
+        const control = join(packageRoot, 'cross-mount-control');
+        await writeFile(control, license);
+        assert.equal((await stat(control)).dev, (await stat(join(previous, 'PI-LICENSE.txt'))).dev);
+        await assert.rejects(link(join(previous, 'PI-LICENSE.txt'), join(packageRoot, 'refused-link')), { code: 'EXDEV' });
+        /** Actual CLI verification must finish despite unavailable storage sharing. */
+        const firstReport = await buildRelease(packageRoot);
+        assert.ok(firstReport.includes('"reused":{"files":0,"bytes":0}'));
+        /** Publication owns a new graph instead of mutating the previous mounted release. */
+        const first = await realpath(join(packageRoot, 'dist/native'));
+        assert.notEqual(first, previous);
+        assert.deepEqual(await readFile(join(first, 'PI-LICENSE.txt')), license);
+        assert.deepEqual(await readFile(join(previous, 'PI-LICENSE.txt')), license);
+        assert.notEqual((await stat(join(first, 'PI-LICENSE.txt'))).ino, (await stat(join(previous, 'PI-LICENSE.txt'))).ino);
+        assert.equal((await readdir(first, { recursive: true })).some(path => path.endsWith('.shared')), false);
+        await buildRelease(packageRoot);
+        /** Successive releases on one mount must still share eligible immutable storage. */
+        const second = await realpath(join(packageRoot, 'dist/native'));
+        assert.notEqual(second, first);
+        assert.equal((await stat(join(second, 'PI-LICENSE.txt'))).ino, (await stat(join(first, 'PI-LICENSE.txt'))).ino);
+        assert.deepEqual(await readFile(join(previous, 'PI-LICENSE.txt')), license);
       },
     }),
   ],

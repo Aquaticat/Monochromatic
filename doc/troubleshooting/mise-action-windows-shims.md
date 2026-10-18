@@ -16,15 +16,15 @@ Linux and macOS jobs using the same workflow passed.
 
 The workflow pinned `jdx/mise-action` commit `1648a7812b9aeae629881980618f079932869151`,
 which is release `4.0.1` from 2026-03-22.
-Its `src/index.ts` Windows extraction branch moved only `mise/bin/mise.exe` from the release archive into the action's bin
-path.
+Its `src/index.ts` Windows extraction branch moved only `mise/bin/mise.exe`
+from the release archive into the action's bin path.
 The action then added mise's shims directory to `PATH`,
 but `mise-shim.exe` was absent.
 
-Upstream issue [jdx/mise-action#475](https://github.com/jdx/mise-action/issues/475) reports the same warning and identifies
-the same single-file extraction line.
-Upstream PR [jdx/mise-action#476](https://github.com/jdx/mise-action/pull/476) added fresh-install and cache-repair logic
-for `mise-shim.exe`,
+Upstream issue [jdx/mise-action#475](https://github.com/jdx/mise-action/issues/475)
+reports the same warning and identifies the same single-file extraction line.
+Upstream PR [jdx/mise-action#476](https://github.com/jdx/mise-action/pull/476)
+added fresh-install and cache-repair logic for `mise-shim.exe`,
 a Windows assertion,
 and eighteen passing checks.
 The fix was released in `mise-action` `4.1.0`.

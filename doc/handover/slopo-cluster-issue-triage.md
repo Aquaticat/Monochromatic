@@ -393,56 +393,102 @@ GitHub issue.
 
 Issue map, ordered by cluster count, generated from the ledger and the live issue titles:
 
-- #611 refactor(music-player-design): emit one support.js instead of two byte-identical copies (159 duplicate clusters): 159 clusters
-- #612 refactor(git-policy-cli): decide the fate of the generated src/optional mirror tree (99 duplicate clusters): 99 clusters
+- #611 refactor(music-player-design): emit one support.js instead of two byte-identical copies (159 duplicate
+- clusters): 159 clusters
+- #612 refactor(git-policy-cli): decide the fate of the generated src/optional mirror tree (99 duplicate clusters): 99
+- clusters
 - #614 build(*): transpiled .js is emitted beside .ts sources in src/, producing 71 duplicate clusters: 71 clusters
-- #657 chore(slopo): dismiss 50 intentional-variant duplicate clusters and refresh 17 superseded ignore hashes: 50 clusters (retitled 2026-10-09 to `chore(slopo): dismiss 47 variant clusters, hold 3 uncertain ones visible, and replace 15 dead ignore keys`)
-- #658 chore(slopo): dismiss 45 structural-idiom duplicate clusters (per-locale grammars, coverage probes, per-kind branches): 45 clusters (retitled 2026-10-09 to `chore(slopo): dismiss 45 clusters (44 structural-idiom, 1 intentional-variant) and replace 2 dead ignore keys`)
+- #657 chore(slopo): dismiss 50 intentional-variant duplicate clusters and refresh 17 superseded ignore hashes: 50
+- clusters (retitled 2026-10-09 to
+- `chore(slopo): dismiss 47 variant clusters, hold 3 uncertain ones visible, and replace 15 dead ignore keys`)
+- #658 chore(slopo): dismiss 45 structural-idiom duplicate clusters (per-locale grammars, coverage probes, per-kind
+- branches): 45 clusters (retitled 2026-10-09 to
+- `chore(slopo): dismiss 45 clusters (44 structural-idiom, 1 intentional-variant) and replace 2 dead ignore keys`)
 - #613 refactor(*): extract one shared fuzz coverage harness from 13 sidecar copies (44 duplicate clusters): 44 clusters
-- #622 refactor(file-manager): share the GTK shell with the sticky prototype or settle its fate (40 clusters, 6 behaviour drifts): 40 clusters
-- #656 chore(slopo): dismiss 33 boilerplate-trivial duplicate clusters and refresh 8 superseded ignore hashes: 33 clusters (retitled 2026-10-09 to `chore(slopo): dismiss 33 clusters (32 boilerplate-trivial, 1 test-or-generated) and replace 6 dead ignore keys`)
-- #646 refactor(*): internal duplication inside the fuzz sidecars, including two names for one enumerability test (26 clusters): 29 clusters
-- #623 refactor(music-player): extract the duplicated Rust decode, opus and truepeak core into a shared crate (22 clusters): 22 clusters
-- #659 chore(slopo): dismiss 22 coincidental-shape duplicate clusters: 22 clusters (retitled 2026-10-09 to `chore(slopo): dismiss 22 clusters (20 coincidental-shape, 1 structural-idiom, 1 boilerplate-trivial)`)
-- #644 refactor(dev-script): shared steps in vm-builder, watch-restart, file-enforcer, deps-cube and tofu (20 clusters): 20 clusters
-- #627 refactor(git-policy-cli): shared patch, ordering, path-safety, liveness and git-invocation helpers (17 clusters, 4 defects): 17 clusters
-- #647 refactor(rust-module-forbidden-regex): share the bench port helpers, codec mappings and bench harness (17 clusters): 17 clusters
+- #622 refactor(file-manager): share the GTK shell with the sticky prototype or settle its fate (40 clusters, 6
+- behaviour drifts): 40 clusters
+- #656 chore(slopo): dismiss 33 boilerplate-trivial duplicate clusters and refresh 8 superseded ignore hashes: 33
+- clusters (retitled 2026-10-09 to
+- `chore(slopo): dismiss 33 clusters (32 boilerplate-trivial, 1 test-or-generated) and replace 6 dead ignore keys`)
+- #646 refactor(*): internal duplication inside the fuzz sidecars, including two names for one enumerability test (26
+- clusters): 29 clusters
+- #623 refactor(music-player): extract the duplicated Rust decode, opus and truepeak core into a shared crate (22
+- clusters): 22 clusters
+- #659 chore(slopo): dismiss 22 coincidental-shape duplicate clusters: 22 clusters (retitled 2026-10-09 to
+- `chore(slopo): dismiss 22 clusters (20 coincidental-shape, 1 structural-idiom, 1 boilerplate-trivial)`)
+- #644 refactor(dev-script): shared steps in vm-builder, watch-restart, file-enforcer, deps-cube and tofu (20
+- clusters): 20 clusters
+- #627 refactor(git-policy-cli): shared patch, ordering, path-safety, liveness and git-invocation helpers (17 clusters,
+- 4 defects): 17 clusters
+- #647 refactor(rust-module-forbidden-regex): share the bench port helpers, codec mappings and bench harness (17
+- clusters): 17 clusters
 - #617 refactor(*): one shared ASCII character-class and text-scan module (16 clusters, 70 call sites): 16 clusters
-- #626 refactor(git-policy-cli): one copy of the trust registry admission logic and one explicit-trust flow (16 clusters): 16 clusters
-- #630 refactor(git-policy-cli): decide how much of the e2e scenario fixtures should be shared (15 clusters): 15 clusters
-- #621 refactor(pi-plugin): one shared fake Pi extension host and verify-built-extension runner (14 clusters, 12 packages): 14 clusters
-- #624 refactor(pi-plugin): import the pi host config, model-selection and message helpers instead of re-deriving them (14 clusters): 14 clusters
-- #619 refactor(module-fs-path): consolidate error-code guards, fs probes and path relations; four probes are wrong today (14 clusters): 13 clusters
-- #629 refactor(git-policy-cli): one fixture support module per language for the trust, e2e and perf fixtures (12 clusters): 12 clusters
-- #640 fix(oxlint-plugin-prefer-readonly-parameter-type): three copied analysis helpers have diverged and can report differently (12 clusters): 12 clusters
-- #616 chore(slopo): recognise vendored, generated, archived and test-only trees in the duplicate-code review (11 clusters): 11 clusters
-- #634 fix(monochromatic-lint): consume rust-linter-core instead of re-implementing spans and rules; end_line() returns the start line (10 clusters): 11 clusters
-- #639 refactor(i18n-compose): move the locale-independent render helpers out of the per-locale trees (11 clusters): 11 clusters
-- #643 refactor(wg-quicker): shared runtime paths, JSON parsing and Rust helpers; two duplications are already wrong (11 clusters): 11 clusters
-- #649 refactor(ssg-aquati-cat): share the question components, page shell, colour tokens and CSS base styles (9 clusters): 11 clusters
-- #652 refactor(*): shared domain helpers for LFS oids, JSONL, git worktrees and cache directories (9 clusters): 11 clusters
-- #653 refactor(module-logger): share the buffered-sink batching, the conf watcher close and the morph-compact IPC transport (11 clusters): 11 clusters
-- #615 refactor(music-player-design): the vendored _ds_bundle.js is loaded by nothing (10 duplicate clusters): 10 clusters
-- #637 refactor(electron-infra): share the Electron main-process lifecycle and staging between the two Electron apps (10 clusters): 10 clusters
-- #642 refactor(module-toml-edit): consolidate the comment scans, block matchers and trivia scanners (9 clusters): 10 clusters
-- #648 refactor(webapp-productivity): shared api-action, payload and projection helpers in done, doodle-widget and rss (8 clusters): 10 clusters
-- #650 refactor(*): shared text, escape and number formatting helpers; two copies are already wrong (10 clusters): 10 clusters
+- #626 refactor(git-policy-cli): one copy of the trust registry admission logic and one explicit-trust flow (16
+- clusters): 16 clusters
+- #630 refactor(git-policy-cli): decide how much of the e2e scenario fixtures should be shared (15 clusters): 15
+- clusters
+- #621 refactor(pi-plugin): one shared fake Pi extension host and verify-built-extension runner (14 clusters, 12
+- packages): 14 clusters
+- #624 refactor(pi-plugin): import the pi host config, model-selection and message helpers instead of re-deriving them
+- (14 clusters): 14 clusters
+- #619 refactor(module-fs-path): consolidate error-code guards, fs probes and path relations; four probes are wrong
+- today (14 clusters): 13 clusters
+- #629 refactor(git-policy-cli): one fixture support module per language for the trust, e2e and perf fixtures (12
+- clusters): 12 clusters
+- #640 fix(oxlint-plugin-prefer-readonly-parameter-type): three copied analysis helpers have diverged and can report
+- differently (12 clusters): 12 clusters
+- #616 chore(slopo): recognise vendored, generated, archived and test-only trees in the duplicate-code review (11
+- clusters): 11 clusters
+- #634 fix(monochromatic-lint): consume rust-linter-core instead of re-implementing spans and rules; end_line() returns
+- the start line (10 clusters): 11 clusters
+- #639 refactor(i18n-compose): move the locale-independent render helpers out of the per-locale trees (11 clusters): 11
+- clusters
+- #643 refactor(wg-quicker): shared runtime paths, JSON parsing and Rust helpers; two duplications are already wrong
+- (11 clusters): 11 clusters
+- #649 refactor(ssg-aquati-cat): share the question components, page shell, colour tokens and CSS base styles (9
+- clusters): 11 clusters
+- #652 refactor(*): shared domain helpers for LFS oids, JSONL, git worktrees and cache directories (9 clusters): 11
+- clusters
+- #653 refactor(module-logger): share the buffered-sink batching, the conf watcher close and the morph-compact IPC
+- transport (11 clusters): 11 clusters
+- #615 refactor(music-player-design): the vendored _ds_bundle.js is loaded by nothing (10 duplicate clusters): 10
+- clusters
+- #637 refactor(electron-infra): share the Electron main-process lifecycle and staging between the two Electron apps
+- (10 clusters): 10 clusters
+- #642 refactor(module-toml-edit): consolidate the comment scans, block matchers and trivia scanners (9 clusters): 10
+- clusters
+- #648 refactor(webapp-productivity): shared api-action, payload and projection helpers in done, doodle-widget and rss
+- (8 clusters): 10 clusters
+- #650 refactor(*): shared text, escape and number formatting helpers; two copies are already wrong (10 clusters): 10
+- clusters
 - #641 refactor(oxlint-plugin): move the duplicated rule helpers into the shared plugin modules (9 clusters): 9 clusters
-- #645 refactor(mvm): shared name validation, backend command skeleton and transfer helpers across mvm, vmsync and the MCP server (9 clusters): 9 clusters
-- #655 refactor(pi-plugin-auto-mode): merge the two parallel trusted-temp-path modules that decide a write boundary (9 clusters): 9 clusters
-- #654 refactor(desktop-app): share the Slint backend install, Wayland helpers and IDE crate internals (8 clusters): 8 clusters
-- #625 refactor(claude-code-plugin): share the spawn state and launch flow with pi-plugin/spawn; two silent catches (7 clusters): 7 clusters
+- #645 refactor(mvm): shared name validation, backend command skeleton and transfer helpers across mvm, vmsync and the
+- MCP server (9 clusters): 9 clusters
+- #655 refactor(pi-plugin-auto-mode): merge the two parallel trusted-temp-path modules that decide a write boundary (9
+- clusters): 9 clusters
+- #654 refactor(desktop-app): share the Slint backend install, Wayland helpers and IDE crate internals (8 clusters): 8
+- clusters
+- #625 refactor(claude-code-plugin): share the spawn state and launch flow with pi-plugin/spawn; two silent catches (7
+- clusters): 7 clusters
 - #651 refactor(*): shared subprocess, worker, PATH-lookup and shutdown helpers (7 clusters): 7 clusters
 - #660 refactor(*): seven duplications where consolidate-or-dismiss is a judgement call (7 clusters): 7 clusters
-- #618 refactor(*): one shared record and value type-guard family; two isRecord copies accept arrays (6 clusters, 90 sites): 6 clusters
-- #632 refactor(git-policy-cli): shared paired-measurement and statistics helpers for the latency benchmarks (6 clusters): 6 clusters
+- #618 refactor(*): one shared record and value type-guard family; two isRecord copies accept arrays (6 clusters, 90
+- sites): 6 clusters
+- #632 refactor(git-policy-cli): shared paired-measurement and statistics helpers for the latency benchmarks (6
+- clusters): 6 clusters
 - #636 refactor(search-fetch): one JSON HTTP transport for the Linkup and Exa clients (6 clusters): 6 clusters
-- #620 refactor(*): shared disposables for temp directories and process-global overrides; two restores are wrong (5 clusters, 45 sites): 5 clusters
-- #628 fix(git-policy-cli): one lock candidate directory can be created without its private mode (5 clusters): 5 clusters
-- #633 refactor(file-enforcer): root file-enforcer.config.ts re-implements helpers its own packages own (5 clusters): 5 clusters
-- #638 refactor(music-player-android): intra-Android duplication in the player controller, service and Compose UI (5 clusters): 5 clusters
-- #631 refactor(git-policy-cli): one module for the Node engine version contract shared by the build config and host evidence (4 clusters): 4 clusters
-- #635 refactor(linter-rust): share the rule loop, LSP framing and document sync between the CLI and the language server (3 clusters): 3 clusters
+- #620 refactor(*): shared disposables for temp directories and process-global overrides; two restores are wrong (5
+- clusters, 45 sites): 5 clusters
+- #628 fix(git-policy-cli): one lock candidate directory can be created without its private mode (5 clusters): 5
+- clusters
+- #633 refactor(file-enforcer): root file-enforcer.config.ts re-implements helpers its own packages own (5 clusters): 5
+- clusters
+- #638 refactor(music-player-android): intra-Android duplication in the player controller, service and Compose UI (5
+- clusters): 5 clusters
+- #631 refactor(git-policy-cli): one module for the Node engine version contract shared by the build config and host
+- evidence (4 clusters): 4 clusters
+- #635 refactor(linter-rust): share the rule loop, LSP framing and document sync between the CLI and the language
+- server (3 clusters): 3 clusters
 
 Defects found while reviewing, filed inside the issue that owns the surrounding duplication:
 

@@ -6,7 +6,8 @@ Campaign in progress.
 The Node orchestration layer,
  the Node sink boundary layer,
  the coverage-reachability gate,
- and the CI workflow landed on 2026-09-06 in the sidecar package `package/module/logger.fuzz` and `.github/workflows/logger-fuzz.yml`.
+ and the CI workflow landed on 2026-09-06 in the sidecar package `package/module/logger.fuzz`
+ and `.github/workflows/logger-fuzz.yml`.
 The toml-edit campaign moved into `package/module/toml-edit.fuzz` on 2026-09-06 (`doc/decision/toml-edit-fuzzing.md`,
  "Sidecar package").
 The Playwright browser layer landed the same day,
@@ -101,7 +102,8 @@ Every sink carries a stable index,
  so a shrunk counterexample reads as
 `sink 2: verify [resolve-true*] write [reject, resolve*] flush absent`.
 Every scripted rejection gets its own rejection handler at creation,
-because the scheduler holds rejected promises until released and an unhandled rejection would otherwise kill the test-file process.
+because the scheduler holds rejected promises until released and an unhandled rejection would otherwise kill the
+test-file process.
 A trace records every hook call and settlement with its call index,
  so the model can fold the observed order.
 
@@ -183,7 +185,8 @@ the campaign's value so far is that the contract is now executable.
 
 ## Landed: sink boundary properties under Node
 
-`src/sink-boundary.property.unit.test.ts` feeds adversarial records through each Node-reachable sink built from the artifact and inspects what came out.
+`src/sink-boundary.property.unit.test.ts` feeds adversarial records through each Node-reachable sink built from the
+artifact and inspects what came out.
 The corpus (`src/boundary-corpus.ts`) holds JSON delimiters and record-forging text,
  terminal escape sequences (well-formed,
  unterminated,
@@ -191,13 +194,15 @@ The corpus (`src/boundary-corpus.ts`) holds JSON delimiters and record-forging t
  and 8-bit C1),
  lone and paired surrogates,
  and astral text;
-the arbitrary (`src/adversarial-message.ts`) interleaves those tokens with binary text and with control characters drawn uniformly across C0,
+the arbitrary (`src/adversarial-message.ts`) interleaves those tokens with binary text
+and with control characters drawn uniformly across C0,
  DEL,
  and C1,
 because the default binary string arbitrary reaches DEL and C1 about once per million code units.
 Four properties:
 
-- The console neutralizer agrees with an independent code-unit-indexed reference and leaves no forbidden control in its output.
+- The console neutralizer agrees with an independent code-unit-indexed reference
+and leaves no forbidden control in its output.
 - The console sink emits exactly the reference prediction of its grouped output:
   one text per contiguous same-level run,
    every message neutralized,
@@ -235,7 +240,8 @@ The campaign measures its own reach with the deterministic V8 line-coverage gate
  `src/coverage-aggregate.ts`,
  and `src/coverage-report.ts`
 and pointed at the runtime package's `src` through the `/ts` subpath it resolves.
-The driver (`src/coverage-driver.ts` and the `src/coverage-*.ts` scenario modules) imports the runtime source the same way
+The driver (`src/coverage-driver.ts` and the `src/coverage-*.ts` scenario modules) imports the runtime source the same
+way
 and replays fixed inputs through every orchestration branch (scripted fake sinks with the identity gate)
 and every Node-reachable sink branch:
 the console sink under silent,
@@ -254,7 +260,8 @@ the record buffer's every trigger including page-lifecycle events fired through 
 the key,
  quota,
  and quota-error helpers under staged Deno and Bun markers.
-The `fuzz:coverage` task runs the driver under `--localstorage-file` so the localStorage sink elects instead of taking the flagless short-circuit;
+The `fuzz:coverage` task runs the driver under `--localstorage-file`
+so the localStorage sink elects instead of taking the flagless short-circuit;
 `--write` refreezes `coverage-baseline.json`.
 
 First baseline,
@@ -273,7 +280,8 @@ The browser-only IndexedDB,
 The driver's adequacy was checked against the uncovered-line list,
  not assumed:
 each scenario added after the first freeze targeted a named uncovered line,
-and one apparent gap (the store's oldest-first sort) turned out to need two prior-run entries before the comparator runs at all.
+and one apparent gap (the store's oldest-first sort) turned out to need two prior-run entries before the comparator
+runs at all.
 
 ## Landed: CI workflow
 
@@ -331,10 +339,13 @@ restored and rebuilt,
 The task is named `bundle:browser-properties`,
  not `build`:
 the sidecar ships nothing,
- and the `require-eventual-artifact` lint treats a package with a build task as one whose tests must import built output,
+ and the `require-eventual-artifact` lint treats a package with a build task as one whose tests must import built
+ output,
 which would reject every relative helper import in the sidecar's test files.
 No workflow runs the browser suite today;
-the layer is a local podman run (`mise run test:browser -- package/module/logger.fuzz/src/browser/properties.browser.test.ts`) until a browser CI job exists.
+the layer is a local podman run
+(`mise run test:browser -- package/module/logger.fuzz/src/browser/properties.browser.test.ts`) until a browser CI job
+exists.
 
 ## Superseded decisions
 

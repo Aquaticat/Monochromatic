@@ -341,7 +341,8 @@ The session drove these entries from a scratch Node script that did exactly this
    saves under `logger` and locks `@monochromatic-dev/module-logger@mirror:0.4.0`.
 - `pnpm add 'num@npm:is-number@^7.0.0'`
    (an `npm:` alias control).
-- `pnpm install` with a hand-written `"@monochromatic-dev/module-logger": "mirror:@monochromatic-dev/module-logger@^0.4.0"`,
+- `pnpm install` with a hand-written
+  `"@monochromatic-dev/module-logger": "mirror:@monochromatic-dev/module-logger@^0.4.0"`,
    `"logger": "mirror:@monochromatic-dev/module-logger@^0.4.0"`,
    or `"is-number": "npmjs:is-number@^7.0.0"`.
 - `pnpm install` with the short form `"@monochromatic-dev/module-logger": "mirror:^0.4.0"`
@@ -431,7 +432,8 @@ What it changes,
  all in `pnpm/crates/package-manager/src/add`:
 
 - New `named_registry.rs`:
-   `NamedRegistrySelector::parse` merges the configured `registries_by_prefix` over the built-ins with `merge_named_registries`
+   `NamedRegistrySelector::parse` merges the configured `registries_by_prefix` over the built-ins
+with `merge_named_registries`
    (the validation the install uses)
    and runs `parse_named_registry_specifier_to_registry_package_spec`.
    `save_specifier` picks the version from the prefix's registry
@@ -450,7 +452,8 @@ What it changes,
    preferred versions,
    and range style.
    The metadata cache key already includes the registry URL
-   (`metadata_cache_key(&scope, opts.registry, &spec.name, ..)` in `pnpm/crates/resolving-npm-resolver/src/pick_package.rs`),
+   (`metadata_cache_key(&scope, opts.registry, &spec.name, ..)`
+   in `pnpm/crates/resolving-npm-resolver/src/pick_package.rs`),
    so the two registries do not share cache entries.
 - `add.rs`:
    `ParseNamedRegistrySpecifier` and `InvalidNamedRegistry` error variants,
@@ -472,7 +475,8 @@ Build and test bounds:
  `RUSTUP_TOOLCHAIN=1.97.1` (the image's toolchain;
  upstream pins `1.97.0`),
  and `CARGO_PROFILE_DEV_DEBUG=0`.
-The clone's `.cargo/config.toml` block that replaces crates.io with the pnpm-managed `.pnpm/crates` vendor directory was deleted locally,
+The clone's `.cargo/config.toml` block that replaces crates.io
+with the pnpm-managed `.pnpm/crates` vendor directory was deleted locally,
  because that directory is populated by a `pnpm install` the container did not run;
  the patch does not include that edit.
 
@@ -555,7 +559,9 @@ The cause is not the patch.
  with nothing in that function waiting for in-flight handlers.
 The reproduction is consistent with a later test drawing the still-busy server and stalling;
  the mockito server loop itself was not traced.
-Running only that test plus `add::tests::reporting::` fails the concurrency test in every run on unpatched `main` (2 of 2) and on the patched tree (2 of 2),
+Running only
+that test plus `add::tests::reporting::` fails the concurrency test in every run on unpatched `main` (2 of 2)
+and on the patched tree (2 of 2),
  while whole-module runs that skip the new test pass on both (4 of 4 each);
  adding any test that draws pool servers changes which test receives the busy one.
 

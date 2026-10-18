@@ -1,4 +1,6 @@
-# `mise upgrade` in the home directory moves the global tool version but leaves this repo on its `mise.lock` pin, so `pnpm` is 12.3.4 at `~` and 11.21.0 in the workspace
+# `mise upgrade` in the home directory moves the global tool version
+but leaves this repo on its `mise.lock` pin,
+so `pnpm` is 12.3.4 at `~` and 11.21.0 in the workspace
 
 mise 2026.7.0,
  `pnpm = "latest"` in both `~/.config/mise/config.toml` and this repo's `mise.toml`,

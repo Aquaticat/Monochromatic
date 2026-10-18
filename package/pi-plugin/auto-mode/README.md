@@ -81,7 +81,8 @@ Original source,
 operation,
 authorization,
 and cancellation checks remain active.
-Recoverable clause-assessment failures try the decision model within the original cancellation lifetime and transport allowance.
+Recoverable clause-assessment failures try the decision model
+within the original cancellation lifetime and transport allowance.
 Missing observation evidence, exhausted automatic review, and unresolved final decisions
 fall back to manual approval of the complete prepared operation.
 This fallback retains native operation identity, tool and argument checks, and cancellation.

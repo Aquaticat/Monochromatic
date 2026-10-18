@@ -20,33 +20,42 @@ and where the live state is kept.
 This section is newer than every section below it.
 
 The human closed the design rounds (D102 keyboard map accepted, D103 Search closed, D104 cover picker, D105 trash)
-and then said to go to production on Android first and desktop second, with finished products on both by the end of the session.
+and then said to go to production on Android first and desktop second,
+with finished products on both by the end of the session.
 The live record is `doc/planning/music-player-production-implementation.md`:
 its Log lists what landed, what was verified how, and the known gaps.
-Work happens in the worktree branch `feat/music-player-production` and each verified package is fast-forwarded into `main`.
+Work happens in the worktree branch `feat/music-player-production`
+and each verified package is fast-forwarded into `main`.
 
 What is verified and what is not, as of 2026-10-11 (everything is on `main`):
 
 Android, on the owned Fold emulator with the real `MainActivity`, the native library and a generated 13-track library
 (a scripted run, 31 of 32 steps passing, the one remaining step explained below):
 the library loads, rows show real length and true peak (`0:20 −21.1 dBTP`), tapping a row plays it and the deck follows,
-Ctrl+F opens Search and typing finds results, the long-press menu opens under its row, Move to trash through Android's own
-system dialog removes the row and Undo restores it (both panels), Settings opens, and the declined first-run state shows on the
+Ctrl+F opens Search and typing finds results, the long-press menu opens under its row,
+Move to trash through Android's own
+system dialog removes the row and Undo restores it (both panels), Settings opens,
+and the declined first-run state shows on the
 inner screen.
 On the folded cover the declined launch shows Android's own permission prompt first, which is the designed auto-request.
 Unit tests (about 600) and detekt pass.
-Not exercised: the trash flow for a folder opened through the picker (the copy-back route), Show in file manager, the clipboard,
+Not exercised: the trash flow for a folder opened through the picker (the copy-back route), Show in file manager,
+the clipboard,
 TalkBack, a physical device, and the release build.
 The debug APK built by Gradle alone has no native library: run the package's `build:native` task first.
 
 Desktop, running the real binary (577 tests, clippy clean on the host):
-the real window was driven through the Slint MCP server headless and nested in the `cage` compositor, with the same test library,
+the real window was driven through the Slint MCP server headless and nested in the `cage` compositor,
+with the same test library,
 in the cover and two-pane layouts, light and dark:
-rows with length and peak, the deck, the folder picker, Search with emphasis, Settings, the template editor, the track menu,
+rows with length and peak, the deck, the folder picker, Search with emphasis, Settings, the template editor,
+the track menu,
 the scan indicator with real sweep progress, and the empty-folder state.
-Not exercised: Re-analyse end to end in the window, the new first-run copy states in the window, key repeat (Slint 1.17 has no
+Not exercised: Re-analyse end to end in the window, the new first-run copy states in the window,
+key repeat (Slint 1.17 has no
 repeat flag), a session on the user's live desktop, and the macOS and Windows branches, which were never compiled.
-The container clippy and test tasks fail on the existing `truepeak-core` path dependency, which the container does not mount.
+The container clippy and test tasks fail on the existing `truepeak-core` path dependency,
+which the container does not mount.
 
 ## Handoff: Settings withdrawn, template editor round open (2026-10-05)
 
@@ -205,12 +214,14 @@ so long runs now go in their own user unit:
 `systemd-run --user --unit=<name> --collect --wait --property=MemoryMax=2G <command>`,
 with `wait-for-unit.ts <unit> <pattern>` to wait for it.
 
-The human approved the declined state as built (D101) and added the rule on long runs to the `CLAUDE.md` preamble in `file-enforcer.config.ts`.
+The human approved the declined state as built (D101) and added the rule on long runs to the `CLAUDE.md` preamble in
+`file-enforcer.config.ts`.
 The first-run page shows the declined state as approved.
 The human then accepted the whole keyboard map as built (D102) and closed the Search catch-all as a design item (D103).
 The D46 cover-picker revisit is built: `questions/cover-picker-revisit.html` shows P4 beside the agent's P5
 (`doc/planning/music-player-cover-picker-revisit.md`).
-The human approved P5 without its container (D104), declined another round, and deferred further improvement to another major version.
+The human approved P5 without its container (D104), declined another round,
+and deferred further improvement to another major version.
 Nothing in the design queue waits on the human now.
 
 Next:
@@ -220,7 +231,8 @@ nothing from this round waits on the human.
 
 To capture again,
 from `~/temp/agent`:
-`run-template-editor-until-complete.ts <prefix> <letter>` repeats bounded visits until the current build's cohort is complete,
+`run-template-editor-until-complete.ts <prefix> <letter>` repeats bounded visits until the current build's cohort is
+complete,
 then `prepare-template-editor-crops.ts`,
 `make-template-editor-inspection.ts`,
 a look at every sheet,
@@ -5680,7 +5692,8 @@ regenerated file,
  and reopened a 200% inner Search result at the top
 after scrolling an earlier preview.
  The corrected `questions/current.html` was
-launched with `gtk-launch helium file:///var/home/user/Monochromatic/package/music-player/design/questions/current.html`.
+launched with
+`gtk-launch helium file:///var/home/user/Monochromatic/package/music-player/design/questions/current.html`.
  No KWin automation was used;
  the launcher exit alone does not prove the
 user has inspected the tab.

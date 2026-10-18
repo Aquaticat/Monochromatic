@@ -1,4 +1,5 @@
-# nested-wayland-session headless: Mesa 26.2 picks llvmpipe silently, and three environment variables move the GPU under the session
+# nested-wayland-session headless: Mesa 26.2 picks llvmpipe silently,
+and three environment variables move the GPU under the session
 
 ## Symptom
 

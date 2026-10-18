@@ -109,7 +109,8 @@ The details and the full candidate list are in "Yikes candidates".
   - pnpm 12's lockfile is covered by the `e2e/pnpm_lockfiles/v120` case on `main`
      (verified: `e2e/pnpm_lockfiles/v120/pnpm-lock.yaml`),
      but that case is absent at tag v3.4.1
-     (verified: `gh api repos/aspect-build/rules_js/contents/e2e/pnpm_lockfiles?ref=v3.4.1` lists only `v101`, `v110`, `v90`).
+     (verified: `gh api repos/aspect-build/rules_js/contents/e2e/pnpm_lockfiles?ref=v3.4.1` lists only `v101`, `v110`,
+     `v90`).
 - Catalogs:
    no special handling exists or is needed,
    because importer entries already carry the resolved `version`
@@ -147,7 +148,8 @@ The details and the full candidate list are in "Yikes candidates".
    rules_js maps `os` and `cpu` to constraints
    (verified: `pnpm.bzl:55-98`)
    and has no libc handling
-   (verified: `rg --ignore-case 'libc|musl' npm/private --glob '*.bzl'` matched only pnpm binary checksums in `versions.bzl`),
+   (verified: `rg --ignore-case 'libc|musl' npm/private --glob '*.bzl'` matched only pnpm binary checksums in
+   `versions.bzl`),
    so glibc and musl variants of native bindings both link on Linux.
   Unverified whether any binding misloads because of that.
 - Native pnpm 12 executables for `bazel run @pnpm` exist on `main`
@@ -233,7 +235,8 @@ The details and the full candidate list are in "Yikes candidates".
 
 ### How Bazel would do it
 
-- Each linked package gets `js_library(name = "pkg", srcs = ["package.json"], types = glob(["src/**/*.ts"]), deps = [":node_modules/..."])`.
+- Each linked package gets
+`js_library(name = "pkg", srcs = ["package.json"], types = glob(["src/**/*.ts"]), deps = [":node_modules/..."])`.
   `js_library` copies sources to the output tree
    (verified: `js/private/js_library.bzl:43-45`, `:156-158`).
   `.ts` files in `srcs` are classified as sources, not types;
@@ -241,7 +244,8 @@ The details and the full candidate list are in "Yikes candidates".
    (verified: `js_library.bzl:160-179`);
    the `types` attribute forces any file to be a type
    (verified: `js_library.bzl:79-91`, `:204-213`).
-- A first-party package store backed by `JsInfo` is a directory symlink to the target's package directory in `bazel-bin`,
+- A first-party package store backed by `JsInfo` is a directory symlink to the target's package directory in
+`bazel-bin`,
    and carries the target's transitive sources and types
    (verified: `npm/private/npm_package_store.bzl:320-340`);
    the store also links the package's own dependencies
@@ -526,7 +530,8 @@ The details and the full candidate list are in "Yikes candidates".
 
 ### How Bazel would do it
 
-- `js_run_binary(tool = ":rolldown", srcs = [...], out_dirs = ["dist/final/node"], chdir = package_name(), args = ["--configLoader", "native", "--config", "rolldown.node.config.ts"])`
+-
+`js_run_binary(tool = ":rolldown", srcs = [...], out_dirs = ["dist/final/node"], chdir = package_name(), args = ["--configLoader", "native", "--config", "rolldown.node.config.ts"])`
    (verified attributes: `js/private/js_run_binary.bzl:19-45`, `chdir` guidance at `:95-123`).
 - `srcs` must include `package.json`,
    the config file,
@@ -564,7 +569,8 @@ The details and the full candidate list are in "Yikes candidates".
    `@monochromatic-dev/module-test` is a self-executing `describe` and `it` API over chai and sinon;
    failures throw and set a non-zero exit
    (`package/module/test/README.md`, "API").
-  Its logger's file sink writes `node_modules/.monochromatic/<timestamp>.log.jsonl` under the nearest ancestor `node_modules`
+  Its logger's file sink writes `node_modules/.monochromatic/<timestamp>.log.jsonl` under the nearest ancestor
+  `node_modules`
    and degrades to unavailable on any error
    (`package/module/logger/src/sink/file.ts:168-238`).
 - The `test-import` oxlint rule requires tests to import the shipped artifact
@@ -576,10 +582,12 @@ The details and the full candidate list are in "Yikes candidates".
    62 files in 30 packages spawn children.
 - Environment-bound tests (targeted `rg`, heuristic):
   - network:
-     `oxlint-plugin/prefer-readonly-parameter-type/src/external-consumer.unit.test.ts` runs `pnpm pack` and `pnpm install --ignore-workspace` (lines 77-110);
+     `oxlint-plugin/prefer-readonly-parameter-type/src/external-consumer.unit.test.ts` runs `pnpm pack`
+     and `pnpm install --ignore-workspace` (lines 77-110);
      `config/pnpr/src/publish-plan.unit.test.ts` matched the network pattern;
   - containers or other runtimes:
-     `module/matrix` (`container.unit.test.ts`, `runtime.unit.test.ts`, `self.unit.test.ts`, podman plus bun and deno per its README),
+     `module/matrix` (`container.unit.test.ts`, `runtime.unit.test.ts`, `self.unit.test.ts`,
+     podman plus bun and deno per its README),
      `cli/vmsync/src/lifecycle.expensive.unit.test.ts`,
      `cli/mvm/src/cli.unit.test.ts`;
   - real home:
@@ -596,7 +604,8 @@ The details and the full candidate list are in "Yikes candidates".
 
 ### How Bazel would do it
 
-- `js_test(name = "<file>", entry_point = "src/<file>.unit.test.ts", chdir = package_name(), data = [":pkg", ":dist", ":node_modules/..."])`,
+-
+`js_test(name = "<file>", entry_point = "src/<file>.unit.test.ts", chdir = package_name(), data = [":pkg", ":dist", ":node_modules/..."])`,
    one per file to keep today's process isolation (694 targets),
    or a per-package runner (109 targets).
 - Built-artifact imports make each test depend on its package's rolldown action,
@@ -605,7 +614,8 @@ The details and the full candidate list are in "Yikes candidates".
    plus data dependencies for root markers and env such as a `PATH` entry for `oxlint`.
 - Node toolchain:
    rules_nodejs mirrors Node up to 24.21.0 and no 25 or 26 release
-   (verified: `gh api repos/bazel-contrib/rules_nodejs/contents/nodejs/private/node_versions.bzl` searched for `"25.` and `"26.` with no match);
+   (verified: `gh api repos/bazel-contrib/rules_nodejs/contents/nodejs/private/node_versions.bzl` searched for `"25.`
+   and `"26.` with no match);
    the toolchain tag accepts `node_repositories` and `node_urls` for unmirrored versions
    (verified: `rules_nodejs nodejs/extensions.bzl:108-136`),
    so Node 26.8.2 needs hand-maintained checksums.

@@ -266,7 +266,8 @@ The single asymmetry is the return statement.
 
 Both record the identical `returnedParameterIndexes`.
 The member path additionally keeps the receiver-opacity report,
-because `resultEscapesCallable` counts a return as an escape and `receiverClaimAnswerable` therefore refuses to discharge.
+because `resultEscapesCallable` counts a return as an escape and `receiverClaimAnswerable` therefore refuses
+to discharge.
 
 ## What the caller-side gap costs
 

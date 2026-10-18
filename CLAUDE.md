@@ -6,7 +6,8 @@ General-purpose subagents are allowed.
 Caveat:
 you cannot enumerate how many subagents are running,
 and SendMessage steering is unreliable,
-so fan out general-purpose subagents only in interactive sessions where the user watches and steers them in the Claude Code UI.
+so fan out general-purpose subagents only in interactive sessions
+where the user watches and steers them in the Claude Code UI.
 Rationale:
 `doc/decision/general-purpose-subagent-ban.md`.
 
@@ -24,7 +25,9 @@ Do not pass `--cwd`:
 the child then will not read the repo `CLAUDE.md`,
 and Claude Code's cwd handling is unreliable.
 
-Use `timeout 3600 pi --model openai-codex/gpt-5.6-sol --print --no-tools --no-skills --no-themes --thinking xhigh "<question>"` alongside advisor,
+Use
+`timeout 3600 pi --model openai-codex/gpt-5.6-sol --print --no-tools --no-skills --no-themes --thinking xhigh "<question>"`
+alongside advisor,
 never instead:
 advisor reads the transcript,
 sol reads only what you paste.

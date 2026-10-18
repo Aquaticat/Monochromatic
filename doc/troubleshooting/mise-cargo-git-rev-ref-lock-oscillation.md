@@ -512,7 +512,8 @@ Title: `mise lock` alternates cargo-git `rev:` and `ref:` entries for the same l
 I have a project lockfile with a cargo-git tool configured as:
 
 ```toml
-"cargo:https://github.com/slint-ui/slint" = { version = "rev:85e3eb76819762cdcaa732fa87533ff896546bac", crate = "slint-lsp", bin = "slint-lsp" }
+"cargo:https://github.com/slint-ui/slint" = { version = "rev:85e3eb76819762cdcaa732fa87533ff896546bac",
+crate = "slint-lsp", bin = "slint-lsp" }
 ```
 
 With mise 2026.6.13, different lockfile update paths alternate between one entry and two entries for

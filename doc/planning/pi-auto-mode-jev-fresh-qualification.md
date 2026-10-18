@@ -367,7 +367,8 @@ The frozen manifest adds no claim about complete host-runtime reproducibility.
 ## Frozen protocol requirements
 
 The source questions and serializer remain unchanged from the earlier native-Jev study.
-Each selected request or eligible-prose source supplies independent positive-relation and explicit-prohibition questions.
+Each selected request or eligible-prose source supplies independent positive-relation
+and explicit-prohibition questions.
 Code supplies operation identity and operands.
 No model reconstructs Bash quotation,
 decides overall permission,

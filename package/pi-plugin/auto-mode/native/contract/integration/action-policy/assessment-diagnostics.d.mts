@@ -9,4 +9,8 @@ export declare function captureAssessmentDiagnostics(input: Readonly<{
   request: QuestionRequest & Readonly<{ model: string }>;
   state: unknown;
   questions: unknown;
-}>): (response: Readonly<{ parsed?: unknown; error?: unknown; raw?: unknown }>) => void;
+}>): (response: Readonly<{
+  parsed?: unknown;
+  error?: unknown;
+  raw?: unknown
+}>) => void;

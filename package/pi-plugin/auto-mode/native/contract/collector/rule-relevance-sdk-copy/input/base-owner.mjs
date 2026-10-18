@@ -14,7 +14,10 @@ export class BaseCompositionError extends AggregateError{
 }
 /** Each native session privately owns one instance; there is no global session map. */
 export function createBaseCompositionOwner(){
-  const history=[];const compositionState={active:undefined,current:undefined};
+  const history=[];const compositionState={
+    active:undefined,
+    current:undefined
+  };
   
   function failure({
     scope,
@@ -38,7 +41,8 @@ export function createBaseCompositionOwner(){
       scope:compositionState.active,
       error:new SourceCollectionError('Native base composition cannot reenter'),
       at:'entry'
-    });throw new BaseCompositionError(compositionState.active.failures);}
+    });throw new BaseCompositionError(compositionState.active
+      .failures);}
     const scope={
       binding,
       loader,
@@ -185,7 +189,8 @@ export function createBaseCompositionOwner(){
   function inspect(){return Object.freeze({
     retainedOnly:true,
     pending:compositionState.active!==undefined,
-    currentOrdinal:compositionState.current?.ordinal,
+    currentOrdinal:compositionState.current
+      ?.ordinal,
     history:Object.freeze(history.map(function inspectComposition(scope){return Object.freeze({
       ordinal:scope.ordinal,
       status:scope.status,

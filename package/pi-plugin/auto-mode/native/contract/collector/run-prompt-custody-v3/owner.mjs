@@ -2,6 +2,7 @@ import {SourceCollectionError} from '../collector.mjs';
 import {freezePromptOptions} from '../base-prompt-custody-v2/copy.mjs';
 import {snapshotRunMessages} from '../run-prompt-custody/messages.mjs';
 import {RunPromptCustodyError} from './failures.mjs';
+
 export {RunPromptCustodyError} from './failures.mjs';
 import {createRunEmission} from './emission.mjs';
 import {createRunRendering} from './rendering.mjs';
@@ -33,7 +34,15 @@ export function createRunPromptOwner({
   const scopes=new WeakMap();
     const issuedErrors=new WeakMap();
     const history=[];
-  const state={absent:true,active:undefined,current:undefined,operating:false,selectedPathInputs:undefined,handlerInputView:Object.freeze([]),combinedInputView:undefined};
+  const state={
+    absent:true,
+    active:undefined,
+    current:undefined,
+    operating:false,
+    selectedPathInputs:undefined,
+    handlerInputView:Object.freeze([]),
+    combinedInputView:undefined
+  };
 
   function guard(scope){const error=new RunPromptCustodyError(scope.failures);issuedErrors.set(
     error,
@@ -163,12 +172,101 @@ export function createRunPromptOwner({
     return value;
   }
 
-  const {start,enterNative,invokeHandler,leaveNative}=createRunEmission({state,reserve,phase,check,base,fail,known,dense,capture,record,issuedErrors});
-const {render,captureSystemMessage}=createRunRendering({state,check,issuedErrors,record,guard});
-const {readHandlerOptionOrigins,readInputOrigins,readInputUsage,originalMessageInput,assertRetainedInput,retainAppendedInput,retainSelectedPath}=createRunRetainedInputs({state,scopes,history,assertLive,readRoot,readSessionInput});
-const {retainContextInputs,captureContextClone,captureExpandedPromptMessage,captureHandlerMessage,captureForcedMessage}=createRunContext({state,phase,check,known,assertLive,assertSessionInputs,readRoot,readConstructedInputs,readHandlerOptionOrigins,originalMessageInput,assertRetainedInput,retainAppendedInput,retainSelectedPath});
-const {publishScope}=createRunPublication({state,check,base,requireRenderCapture});
-const {publish,refresh,reset,read,readOrAbsent,inspect}=createRunLifecycle({state,history,known,phase,check,publishScope,reserve,base,fail,reject,assertLive,readConstructedInputs,retainContextInputs,assertSessionInputs,readRoot});
+  const {
+    start,
+    enterNative,
+    invokeHandler,
+    leaveNative
+  }=createRunEmission({
+    state,
+    reserve,
+    phase,
+    check,
+    base,
+    fail,
+    known,
+    dense,
+    capture,
+    record,
+    issuedErrors
+  });
+const {
+  render,
+  captureSystemMessage
+}=createRunRendering({
+  state,
+  check,
+  issuedErrors,
+  record,
+  guard
+});
+const {
+  readHandlerOptionOrigins,
+  readInputOrigins,
+  readInputUsage,
+  originalMessageInput,
+  assertRetainedInput,
+  retainAppendedInput,
+  retainSelectedPath
+}=createRunRetainedInputs({
+  state,
+  scopes,
+  history,
+  assertLive,
+  readRoot,
+  readSessionInput
+});
+const {
+  retainContextInputs,
+  captureContextClone,
+  captureExpandedPromptMessage,
+  captureHandlerMessage,
+  captureForcedMessage
+}=createRunContext({
+  state,
+  phase,
+  check,
+  known,
+  assertLive,
+  assertSessionInputs,
+  readRoot,
+  readConstructedInputs,
+  readHandlerOptionOrigins,
+  originalMessageInput,
+  assertRetainedInput,
+  retainAppendedInput,
+  retainSelectedPath
+});
+const {publishScope}=createRunPublication({
+  state,
+  check,
+  base,
+  requireRenderCapture
+});
+const {
+  publish,
+  refresh,
+  reset,
+  read,
+  readOrAbsent,
+  inspect
+}=createRunLifecycle({
+  state,
+  history,
+  known,
+  phase,
+  check,
+  publishScope,
+  reserve,
+  base,
+  fail,
+  reject,
+  assertLive,
+  readConstructedInputs,
+  retainContextInputs,
+  assertSessionInputs,
+  readRoot
+});
 return Object.freeze({
     start,
     enterNative,

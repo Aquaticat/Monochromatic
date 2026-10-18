@@ -844,7 +844,8 @@ both inform the report.
 ````md
 ## Title
 
-resolver: `node:` subpath imports fail under `platform: 'neutral' | 'browser'` because `builtin_modules` is gated on `Platform::Node`
+resolver: `node:` subpath imports fail under `platform: 'neutral' | 'browser'`
+because `builtin_modules` is gated on `Platform::Node`
 
 ## Description
 

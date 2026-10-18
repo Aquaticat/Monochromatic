@@ -1,7 +1,10 @@
 import {createHash} from 'node:crypto';
 import {PolicySlotBindingError} from './system-slot-error.mjs';
 import {retainPolicyInput} from './policy-input-collector.mjs';
-import {createResourceReceiptInputs,retainResourceReceiptInputs} from './resource-receipts.mjs';
+import {
+  createResourceReceiptInputs,
+  retainResourceReceiptInputs
+} from './resource-receipts.mjs';
 import {copyAuthorityRegistration} from './registration.mjs';
 import {assertOriginalInputBudget} from './input-budget.mjs';
 import {copyOptions} from '../../collector/resource-input-custody/values.ts';
@@ -32,15 +35,15 @@ export function createPolicyLoaderState({
   readSessionDomainEvents
 }){
  if((readSessionConstructedInputs!==undefined)&&((typeof readSessionConstructedInputs)!=='function'))throw new PolicySlotBindingError('Constructed inputs require a fixed native session reader');
- if(((readResourceToolInputs===undefined)!==(readResourceToolOrigin===undefined))||(readResourceToolInputs!==undefined)
-   &&((typeof readResourceToolInputs)!=='function'||(typeof readResourceToolOrigin)!=='function'))throw new PolicySlotBindingError('Resource tool inputs require paired fixed native readers');
- if(((readResourceToolInputs!==undefined)&&(typeof readResourceToolUsage)!=='function')||((readSessionInputUsage!==undefined)&&(typeof readSessionInputUsage)!=='function'))throw new PolicySlotBindingError('Input budgets require fixed native usage readers');
+ if(((readResourceToolInputs===undefined)!==(readResourceToolOrigin===undefined))||((readResourceToolInputs!==undefined)
+   &&(((typeof readResourceToolInputs)!=='function')||((typeof readResourceToolOrigin)!=='function'))))throw new PolicySlotBindingError('Resource tool inputs require paired fixed native readers');
+ if(((readResourceToolInputs!==undefined)&&((typeof readResourceToolUsage)!=='function'))||((readSessionInputUsage!==undefined)&&((typeof readSessionInputUsage)!=='function')))throw new PolicySlotBindingError('Input budgets require fixed native usage readers');
  const options=copyOptions(inputOptions);
  const registration=copyAuthorityRegistration(authority);
  const hostRegistration=copyAuthorityRegistration(customPromptAuthority);
- if(hostRegistration&&(systemSlot||(typeof options.systemPrompt)!=='string'
+ if(hostRegistration&&(systemSlot||((typeof options.systemPrompt)!=='string')
    ||(options.systemPromptOverride!==undefined)))throw new PolicySlotBindingError('Host prompt authority requires explicit systemPrompt text without a replacement callback');
- const hostPrompt=(!systemSlot)&&(typeof options.systemPrompt)==='string'
+ const hostPrompt=(!systemSlot)&&((typeof options.systemPrompt)==='string')
    &&(options.systemPromptOverride===undefined)?Object.freeze({
    kind:'bootstrap-host-custom-prompt',
    content:options.systemPrompt,
@@ -85,18 +88,27 @@ export function createPolicyLoaderState({
   if((value!==inputState.binding)||(!inputState.binding))throw new PolicySlotBindingError('Policy input link is not this loader original binding');
   if(inputState.failure)throw new PolicySlotBindingError(
     'Original policy input link lost eligibility',
-    {cause:inputState.failure.cause}
+    {cause:inputState.failure
+      .cause}
   );
   try{
    if(readBoundResourceFrame({
      binding:nativeBinding,
      loader:inputState.loader
-   })!==inputState.binding.frame)throw new PolicySlotBindingError('Original resource input frame changed');
-   if(owner.captureGoverningPolicy(inputState.loader)!==inputState.binding.source)throw new PolicySlotBindingError('Original selected policy capture changed');
-   inputState.contextPublication?.assertCurrent();
-   inputState.binding.readablePolicies.assertCurrent();
+   })
+     !==inputState.binding
+     .frame)throw new PolicySlotBindingError('Original resource input frame changed');
+   if(owner.captureGoverningPolicy(inputState.loader)
+     !==inputState.binding
+     .source)throw new PolicySlotBindingError('Original selected policy capture changed');
+   inputState.contextPublication
+     ?.assertCurrent();
+   inputState.binding
+     .readablePolicies
+     .assertCurrent();
    if(hostPrompt){
-    const system=inputState.binding.frame
+    const system=inputState.binding
+      .frame
       .stages
       .find(function isCapturedSystemStage(stage) { return (stage.kind==='system'); });
     if((system?.before!==hostPrompt.content)||(system?.after!==hostPrompt.content))throw new PolicySlotBindingError('Native custom prompt does not retain the explicitly registered host text');
@@ -106,28 +118,37 @@ export function createPolicyLoaderState({
  async function reload(options){
   inputState.binding=undefined;inputState.emission=undefined;inputState.failure=undefined;inputState.contextPublication=undefined;
   contextEmitter?.reset();
-  await inputState.loader.reload(options);
+  await inputState.loader
+    .reload(options);
   const frame=readBoundResourceFrame({
     binding:nativeBinding,
     loader:inputState.loader
   });
   if(systemSlot){
-   if((!inputState.emission)||(owner.captureGoverningPolicy(inputState.loader)!==inputState.emission.source))throw new PolicySlotBindingError('System input did not retain its selected policy capture');
+   if((!inputState.emission)||(owner.captureGoverningPolicy(inputState.loader)
+     !==inputState.emission
+     .source))throw new PolicySlotBindingError('System input did not retain its selected policy capture');
    const system=frame.stages
      .find(function isReloadedSystemStage(value) { return (value.kind==='system'); });
    if(system?.after
-     !==inputState.emission.source
+     !==inputState.emission
+     .source
      .content)throw new PolicySlotBindingError('Published system input differs from the owner-captured policy');
   }
-  const source=systemSlot?inputState.emission.source:owner.captureGoverningPolicy(inputState.loader);
+  const source=systemSlot?inputState.emission
+    .source:owner.captureGoverningPolicy(inputState.loader);
   let relevance;
   let relevanceFailure;
   if(policy.relevance){
    try{
-    relevance=await owner.refreshGoverningRelevance({loader:inputState.loader,signal:new AbortController().signal});
+    relevance=await owner.refreshGoverningRelevance({
+      loader:inputState.loader,
+      signal:new AbortController().signal
+    });
    }catch(error){
     relevanceFailure={cause:error};
-    tagged({tag:'reload-policy-relevance'}).error(error);
+    tagged({tag:'reload-policy-relevance'})
+      .error(error);
    }
   }
   const system=frame.stages
@@ -149,7 +170,9 @@ export function createPolicyLoaderState({
     frame,
     source
   });
-  const contextCarriers=inputState.contextPublication?.carriers??Object.freeze([]);
+  const contextCarriers=inputState.contextPublication
+    ?.carriers
+    ??Object.freeze([]);
   const carrierByOrdinal=new Map(contextCarriers.map(function indexContextCarrier(carrier) { return ([
     carrier.ordinal,
     carrier
@@ -157,8 +180,13 @@ export function createPolicyLoaderState({
   const context=frame.stages
     .find(function isResourceContextStage(value) { return (value.kind==='context'); }); const append=frame.stages
       .find(function isResourceAppendStage(value) { return (value.kind==='append'); });
-  const singleCarrier=systemSlot&&(context?.after.agentsFiles.length===0)
-    &&(append?.after.length===0);
+  const singleCarrier=systemSlot&&(context?.after
+    .agentsFiles
+    .length
+    ===0)
+    &&(append?.after
+      .length
+      ===0);
   const appendInputs=Object.freeze(append.after
     .map(function captureResourceAppendInput(
       content,
@@ -167,7 +195,9 @@ export function createPolicyLoaderState({
       kind:'native-resource-append-input',
       content,
       ordinal,
-      sha256:createHash('sha256').update(content).digest('hex'),
+      sha256:createHash('sha256')
+        .update(content)
+        .digest('hex'),
       occurrence:Object.freeze({}),
       registration:undefined,
       pathToRawFileIdentity:'not-established'
@@ -184,7 +214,9 @@ export function createPolicyLoaderState({
       ordinal,
       entry,
       carrier:carrierByOrdinal.get(ordinal),
-      sha256:createHash('sha256').update(entry.content).digest('hex'),
+      sha256:createHash('sha256')
+        .update(entry.content)
+        .digest('hex'),
       occurrence:Object.freeze({}),
       registration:undefined,
       pathToRawFileIdentity:'not-established'
@@ -193,13 +225,22 @@ export function createPolicyLoaderState({
     previous:inputState.retainedResourceReceipts,
     current:createResourceReceiptInputs({
       frame,
-      priorContext:inputState.contextPublication?.prior
+      priorContext:inputState.contextPublication
+        ?.prior
     })
   });
   const readablePolicies=bindReadablePolicyFiles(contextInputs);
   const decisionSelection=policy.relevance?captureDecisionMaterial({
-   sources:Object.freeze([source,...readablePolicies.sources]),
-   input:{parsePolicy:policy.relevance.parse,relevance,relevanceFailure}
+   sources:Object.freeze([
+     source,
+     ...readablePolicies.sources
+   ]),
+   input:{
+     parsePolicy:policy.relevance
+       .parse,
+     relevance,
+     relevanceFailure
+   }
   }):undefined;
   inputState.binding=Object.freeze({
     readablePolicies,
@@ -213,7 +254,8 @@ export function createPolicyLoaderState({
     appendInputs,
     contextInputs,
     contextCarriers,
-    priorContext:inputState.contextPublication?.prior,
+    priorContext:inputState.contextPublication
+      ?.prior,
     slot:systemSlot?'customPrompt':'governing-policy',
     singleCarrier,
     sourceOccurrenceLinked:systemSlot,
@@ -224,7 +266,15 @@ export function createPolicyLoaderState({
  }
  function readCurrent(){assertCurrent(inputState.binding);return inputState.binding;}
  function bindCollector(context){
-  return retainPolicyInput({readSessionConstructedInputs,readSessionDomainEvents,readCurrent,assertCurrent,assertInputBudget,resourceInputs,hostPrompt,base:owner.bindCollector({
+  return retainPolicyInput({
+    readSessionConstructedInputs,
+    readSessionDomainEvents,
+    readCurrent,
+    assertCurrent,
+    assertInputBudget,
+    resourceInputs,
+    hostPrompt,
+    base:owner.bindCollector({
     loader:inputState.loader,
     context,
     readPolicy(){
@@ -233,9 +283,17 @@ export function createPolicyLoaderState({
      content:source.content
    };
   }
-  })});
+  })
+  });
  }
- function bindSessionCollector(session){return retainPolicyInput({readSessionConstructedInputs,readSessionDomainEvents,readCurrent,assertCurrent,assertInputBudget,resourceInputs,hostPrompt,
+ function bindSessionCollector(session){return retainPolicyInput({
+   readSessionConstructedInputs,
+   readSessionDomainEvents,
+   readCurrent,
+   assertCurrent,
+   assertInputBudget,
+   resourceInputs,
+   hostPrompt,
    base:owner.bindSessionCollector({session}),
    session
  });}
@@ -247,7 +305,8 @@ export function createPolicyLoaderState({
     count:0,
     bytes:0
   };
-  const receiptBytes=inputState.retainedResourceReceipts.reduce(
+  const receiptBytes=inputState.retainedResourceReceipts
+    .reduce(
     function sumReceiptInputBytes(
       bytes,
       source
@@ -256,7 +315,9 @@ export function createPolicyLoaderState({
   );
   assertOriginalInputBudget({
     resource:{
-      count:resource.count+inputState.retainedResourceReceipts.length,
+      count:resource.count
+        +inputState.retainedResourceReceipts
+        .length,
       bytes:resource.bytes+receiptBytes
     },
     session:currentSession
@@ -272,7 +333,10 @@ export function createPolicyLoaderState({
      publication,
      resourceInputOccurrence
    }=origin;
-   if((readResourceToolOrigin({loader:inputState.loader,publication})!==origin)||(resourceInputOccurrence===undefined)
+   if((readResourceToolOrigin({
+     loader:inputState.loader,
+     publication
+   })!==origin)||(resourceInputOccurrence===undefined)
      ||(source.resourceInputOccurrence!==resourceInputOccurrence)
      ||(publication.sourceOccurrence!==source.occurrence)
      ||(source.kind!=='native-resource-tool-input')

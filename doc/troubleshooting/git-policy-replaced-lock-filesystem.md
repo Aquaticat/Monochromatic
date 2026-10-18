@@ -180,7 +180,8 @@ recovery and the existing concurrent-owner cases.
 ## What does not establish a fix
 
 Installing the exact Git `2.56.0`,
-restoring the original tool hashes and switching between these providers does not eliminate the ordinary-directory failures.
+restoring the original tool hashes
+and switching between these providers does not eliminate the ordinary-directory failures.
 The failure is present with the same externally admitted compiled archive,
 so a successful compilation or compiler-cache hit cannot establish a passing runtime test gate.
 Changing only the reported filesystem label would not be a control;

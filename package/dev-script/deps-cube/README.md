@@ -28,7 +28,8 @@ Output:
  `<package>/dist/deps-cube-<YYYY-MM-DDTHH-MM-SSZ>.html` (filename carries ISO 8601 UTC down to seconds,
  with `:` rewritten as `-` for filesystem safety;
  each run produces a distinct artifact).
- The package directory is located by walking up from `import.meta.dirname` until this package's own `package.json` is found,
+ The package directory is located by walking up from `import.meta.dirname`
+ until this package's own `package.json` is found,
  so the path is the same in source mode (`node src/cli.ts`) and built mode (`node dist/final/node/cli.mjs`).
  The package's `dist/` is gitignored.
  Stdout prints exactly `Saved to <abs-path>`.
@@ -152,7 +153,8 @@ Packages without a parseable GitHub `repository.url` (gitlab-hosted,
     visibility counter updates.
 6. Type in the search box;
     confirm only matching glyphs are full-opacity.
-7. Set the three-state toggles to identify the audit-target pattern (TS-majority must-not / Leaf must / Recent must-not);
+7. Set the three-state toggles to identify the audit-target pattern
+    (TS-majority must-not / Leaf must / Recent must-not);
     confirm visibility counter shrinks to the audit target list.
 8. Hover a glyph;
     confirm tooltip shows pkg name + every dim value.

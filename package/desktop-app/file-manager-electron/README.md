@@ -53,7 +53,8 @@ The full derivation and the behavioral differences against the original are reco
 - `mise run //package/desktop-app/file-manager-electron:test:unit` runs the model,
    band-geometry,
    and sort unit tests against the built artifacts.
-- `mise run //package/desktop-app/file-manager-electron:test:wayland` drives the app inside `package/cli/nested-wayland-session` and asserts spawn,
+- `mise run //package/desktop-app/file-manager-electron:test:wayland`
+   drives the app inside `package/cli/nested-wayland-session` and asserts spawn,
    dedup,
    close,
    zero pane overlaps,

@@ -91,7 +91,8 @@ the clean control still exited 0,
 and the artifact retained mode `0600`.
 
 This is the accepted issue #456 result.
-It moves exact literals out of per-rule regex engines while retaining explicit regex rules in the precompiled engine path.
+It moves exact literals out of per-rule regex engines
+while retaining explicit regex rules in the precompiled engine path.
 
 ## Headline numbers
 

@@ -341,7 +341,8 @@ Invocation:
 `mise run //package/git-policy/cli:perf:policy-boundary` in the detached worktree.
 The initial attempt failed before JavaScript because the copied Node 26 binary lacked `libatomic.so.1`.
 A Node 26 base image resolved that fixture packaging error;
-the next attempt reached a separate configuration error because disabled option-bearing policies still need option values.
+the next attempt reached a separate configuration error
+because disabled option-bearing policies still need option values.
 The corrected fixture supplied severity-plus-options tuples.
 
 Managed process:

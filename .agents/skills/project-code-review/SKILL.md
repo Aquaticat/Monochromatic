@@ -341,7 +341,8 @@ function logMessages({ messages }: { messages: readonly string[] }): void { ... 
 - `const` over `let`;
    no unnecessary mutation
 - **Justify or refactor**:
-   any deviation from the preferred pattern must have a comment explaining why refactoring to the preferred approach is not feasible;
+   any deviation from the preferred pattern must have a comment explaining why refactoring
+to the preferred approach is not feasible;
    if no justification is given,
    flag it as WARNING
 - Functional patterns (`map`/`filter`/`reduce`) over imperative loops

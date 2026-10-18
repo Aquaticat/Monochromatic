@@ -1,11 +1,25 @@
 import {types} from "node:util";
 import {SourceCollectionError} from "../collector.mjs";
-import {copyMessageData,assertTextMessageContent} from "../run-prompt-custody/messages.mjs";
+import {
+  copyMessageData,
+  assertTextMessageContent
+} from "../run-prompt-custody/messages.mjs";
 import {snapshotToolMetadata} from "./tool-metadata.mjs";
-import {dataField,agentMessageFields,systemInputFields,assertSystemInput,agentPromptArray} from './loaded-fields.mjs';
+import {
+  dataField,
+  agentMessageFields,
+  systemInputFields,
+  assertSystemInput,
+  agentPromptArray
+} from './loaded-fields.mjs';
 //region Select supported native Agent inputs without copying opaque provider records.
 /** Select supported native Agent inputs without copying opaque provider records. */
-export function createLoadedAgentInputs({poolState,InputCaptureError,reserve,retainConstructedInput}){
+export function createLoadedAgentInputs({
+  poolState,
+  InputCaptureError,
+  reserve,
+  retainConstructedInput
+}){
 
 function captureAgentInput({
     frame,

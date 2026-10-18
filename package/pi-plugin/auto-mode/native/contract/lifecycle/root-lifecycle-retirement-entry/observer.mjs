@@ -59,8 +59,8 @@ export function createRequestObservationOwner({
                 .judgmentBinding=undefined;observationState.currentScope
                   .receipt=undefined;observationState.currentScope
                     .root=undefined;observationState.currentScope
-                    .response=undefined;observationState.currentScope
-                    .signal=undefined;observationState.currentScope=undefined;}
+                      .response=undefined;observationState.currentScope
+                        .signal=undefined;observationState.currentScope=undefined;}
     observationState.generation+=1;if(!Number.isSafeInteger(observationState.generation))throw new RequestObservationProfileError('Observation generation overflow');return observationState.generation;
   }
   function invalidate(){advance();}

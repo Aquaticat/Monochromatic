@@ -14,7 +14,10 @@ import {
 } from 'node:path';
 import spawn from 'nano-spawn';
 import { buildPiSource, } from './build-source.ts';
-import { NativeSourceBuildError, qualifiedRelease, } from './build-contract.ts';
+import {
+  NativeSourceBuildError,
+  qualifiedRelease,
+} from './build-contract.ts';
 import { activateNativeBuild } from './build-activation.ts';
 import { reuseNativeBuildFiles } from './build-reuse.ts';
 
@@ -47,16 +50,62 @@ await mkdir(
   dirname(active),
   { recursive: true, },
 );
-/** Each release keeps stable module URLs, including while another release is activated. */
-const output=await mkdtemp(join(dirname(active),'native-release-'));
-if (arguments_[0] !== '--owned') await buildPiSource({packageRoot,output});
+/**
+ Each release keeps stable module URLs, including while another release is activated.
+ */
+const output=await mkdtemp(join(
+  dirname(active),
+  'native-release-'
+));
+if (arguments_[0] !== '--owned') await buildPiSource({
+  packageRoot,
+  output
+});
 else {
-  await cp(join(active,'pi'),join(output,'pi'),{recursive:true});
-  await cp(join(active,'source-manifest.json'),join(output,'source-manifest.json'));
-  await cp(join(active,'PI-LICENSE.txt'),join(output,'PI-LICENSE.txt'));
+  await cp(
+    join(
+      active,
+      'pi'
+    ),
+    join(
+      output,
+      'pi'
+    ),
+    {recursive:true}
+  );
+  await cp(
+    join(
+      active,
+      'source-manifest.json'
+    ),
+    join(
+      output,
+      'source-manifest.json'
+    )
+  );
+  await cp(
+    join(
+      active,
+      'PI-LICENSE.txt'
+    ),
+    join(
+      output,
+      'PI-LICENSE.txt'
+    )
+  );
 }
 // Bind this release to the same maintained policy build instead of a future mutable output.
-await cp(join(packageRoot,'dist/final/node'),join(output,'policy'),{recursive:true});
+await cp(
+  join(
+    packageRoot,
+    'dist/final/node'
+  ),
+  join(
+    output,
+    'policy'
+  ),
+  {recursive:true}
+);
 await cp(
   join(
     import.meta.dirname,
@@ -128,16 +177,38 @@ await spawn(
     },
   },
 );
-/** Loading the actual CLI validates the generated module graph before publication. */
-const checked=await spawn(process.execPath,[join(output,'cli.mjs'),'--version'],{
+/**
+ Loading the actual CLI validates the generated module graph before publication.
+ */
+const checked=await spawn(
+  process.execPath,
+  [
+    join(
+      output,
+      'cli.mjs'
+    ),
+    '--version'
+  ],
+  {
   cwd:packageRoot,
   stderr:'inherit',
-});
-if(checked.stdout.trim()!==qualifiedRelease.version)
+}
+);
+if(checked.stdout
+  .trim()
+  !==qualifiedRelease.version)
   throw new NativeSourceBuildError('Generated native command did not report the qualified version');
-/** Identical files share storage only after generation and loading have succeeded. */
-const reused = await reuseNativeBuildFiles({ output, active });
-await activateNativeBuild({output,active});
+/**
+ Identical files share storage only after generation and loading have succeeded.
+ */
+const reused = await reuseNativeBuildFiles({
+  output,
+  active
+});
+await activateNativeBuild({
+  output,
+  active
+});
 console.log(JSON.stringify({
   complete: true,
   output,

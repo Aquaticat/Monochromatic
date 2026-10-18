@@ -42,7 +42,8 @@ Path-based routing (`done.app/u/<user-id>/`) instead of subdomains:
     stripping the `/u/<user-id>` prefix
 6. Unauthenticated requests get redirected to the login page;
     wrong-user requests get 403
-7. The orchestrator **suspends idle instances** (kill + respawn on next request) and **wakes them on URL access** (cold-start pattern)
+7. The orchestrator **suspends idle instances** (kill + respawn on next request)
+   and **wakes them on URL access** (cold-start pattern)
 
 The Done app never sees unauthenticated requests.
 User IDs are opaque (ULIDs),
@@ -146,7 +147,8 @@ Full task list,
 ### In progress
 
 Live dashboard of tasks the user has started tracking.
-All active timers increment in real time on the client using `setInterval(1s)` math against the server-provided `timerStartedAt` timestamp:
+All active timers increment in real time on the client using `setInterval(1s)` math
+against the server-provided `timerStartedAt` timestamp:
  no polling or SSE needed for display.
 Tasks blocked by other tasks are **not shown in Suggestions or All**;
  they appear only nested/indented under the tasks blocking them (in any view where the blocker is visible).
@@ -391,7 +393,8 @@ The server is the authority for start/stop events;
    purely local math,
    no network per tick
 - Cross-device consistency:
-   any device that opens In Progress gets the authoritative `timerStartedAt` from the server and ticks locally from there
+   any device that opens In Progress gets the authoritative `timerStartedAt`
+   from the server and ticks locally from there
 - No SSE or polling needed for timer display;
    server is only contacted on user actions (start/stop/complete)
 

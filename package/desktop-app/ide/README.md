@@ -3207,7 +3207,8 @@ and `render/MainMinimap.kt`.
 - The picture is built on its own thread (`ide-minimap`,
   `src/native/minimap_build.rs`),
   never on the window thread.
-  The window thread takes a finished picture with one comparison and one image setter (`apply` in `src/native/minimap/picture.rs`).
+  The window thread takes a finished picture with one comparison and one image setter
+  (`apply` in `src/native/minimap/picture.rs`).
   The window's side is split by what each part answers for in `src/native/minimap/`:
   `state.rs` holds the state and the drag,
   `pace.rs` decides when a request is posted,

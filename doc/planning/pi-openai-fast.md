@@ -278,7 +278,8 @@ Local renderer tests passed for those documents and confirmed that the embedded 
 match the executed scratch programs.
 The routing and native-adapter fixture tests passed without live inference.
 
-Independent reviews were used to check selection-consent boundaries and the proposed native virtual routing architecture.
+Independent reviews were used to check selection-consent boundaries
+and the proposed native virtual routing architecture.
 At the design-stage checkpoint,
  no extension source,
  global settings,
@@ -596,7 +597,8 @@ The additional fixture exercises native request construction,
  and ordinary/priority separation without external HTTP.
 The first full test run passed the new native dispatch and direct-stream checks,
  plus the existing legacy scenarios.
-The configured-catalog test failed because its exact-equality assertion did not account for native optional-property normalization.
+The configured-catalog test failed because its exact-equality assertion
+did not account for native optional-property normalization.
 It now compares the configured model's declared metadata after resolving its identity.
 The first lint run reported declaration,
  foreign-boundary,
@@ -635,7 +637,8 @@ The corrected package-scoped build,
  and source lint passed.
 The real CLI startup check now discovers both companion namespaces without stderr diagnostics.
 Scoped Markdown lint and local rendered-document checks passed.
-A read-only global settings probe confirmed that the installed relative declaration still resolves to this local package.
+A read-only global settings probe confirmed that the installed relative declaration
+still resolves to this local package.
 No reinstall,
  real authentication change,
  or personal settings edit was needed.

@@ -288,7 +288,9 @@ The fixes are the same four:
  throw via `nonNullishOrThrow` (`@monochromatic-dev/module-or-throw`);
  or a real sentinel (a unique `Symbol`,
  or a distinct non-empty domain value).
-A genuine external-boundary mirror uses a scoped `oxlint-disable-next-line no-restricted-syntax/no-optional-escape` with a justification.
+A genuine external-boundary mirror uses a scoped
+`oxlint-disable-next-line no-restricted-syntax/no-optional-escape`
+with a justification.
 
 ### Banned (each its own diagnostic)
 
@@ -448,7 +450,9 @@ If the rule reports a borderline-style description in real source,
  rewrite that Symbol description to carry more context rather than weakening the classifier.
 
 The calibration data lives in `package/test-fixture/oxlint-no-restricted-syntax/data/`.
-A browser benchmark there (`no-low-information-symbol-description.benchmark.html`) compares this production classifier against threshold-only baselines (minimum length,
+A browser benchmark there (`no-low-information-symbol-description.benchmark.html`)
+compares this production classifier against threshold-only baselines
+(minimum length,
  distinct words,
  type-token ratio) over the labeled pass and fail rows.
 The classifier reaches zero misclassifications where the threshold baselines do not.

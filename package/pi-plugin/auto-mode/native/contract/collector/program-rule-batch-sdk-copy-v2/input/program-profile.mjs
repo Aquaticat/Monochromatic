@@ -10,12 +10,16 @@ const declarations=new WeakSet();
 
 /** Scan the original ASCII callable profile once with constant stack usage. */
 function isCallableIdentifier(name){
-  if((typeof name)!=='string'||name.length===0||name.startsWith('__owned_flow_'))return false;
+  if(((typeof name)!=='string')||(name.length===0)
+    ||name.startsWith('__owned_flow_'))return false;
   for(let index=0;index<name.length;index++){
     const code=name.charCodeAt(index);
-    const letter=(code>=65&&code<=90)||(code>=97&&code<=122)||code===95||code===36;
-    const digit=index>0&&code>=48&&code<=57;
-    if(!letter&&!digit)return false;
+    const letter=((code>=65)&&(code<=90))||((code>=97)&&(code<=122))
+      ||(code===95)
+      ||(code===36);
+    const digit=(index>0)&&(code>=48)
+      &&(code<=57);
+    if((!letter)&&(!digit))return false;
   }
   return true;
 }
@@ -25,15 +29,19 @@ export function declareResultProgram({
   toolNames
 }){
   requireProfile(
-    {condition:((typeof source)==='string')&&source.isWellFormed()
-      &&(Buffer.byteLength(source)<=65_536),
-    message:'source byte/encoding bound'}
+    {
+      condition:((typeof source)==='string')&&source.isWellFormed()
+        &&(Buffer.byteLength(source)<=65_536),
+      message:'source byte/encoding bound'
+    }
   );
   requireProfile(
-    {condition:Array.isArray(toolNames)&&(toolNames.length<=64)
-      &&(new Set(toolNames).size===toolNames.length)
-      &&toolNames.every(isCallableIdentifier),
-    message:'unique exact callable identifiers required'}
+    {
+      condition:Array.isArray(toolNames)&&(toolNames.length<=64)
+        &&(new Set(toolNames).size===toolNames.length)
+        &&toolNames.every(isCallableIdentifier),
+      message:'unique exact callable identifiers required'
+    }
   );
   const prefix='async function __owned_parent(){';
     const wrapped=`${prefix+source}\n}`;
@@ -46,10 +54,12 @@ export function declareResultProgram({
       semanticErrors:true
     }
   );requireProfile(
-    {condition:parsed.diagnostics
-      .length
-      ===0,
-    message:'parser diagnostic'}
+    {
+      condition:parsed.diagnostics
+        .length
+        ===0,
+      message:'parser diagnostic'
+    }
   );assertSourceCoverage({
     source:wrapped,
     statements:parsed.program
@@ -57,34 +67,38 @@ export function declareResultProgram({
     comments:parsed.comments
   });
   requireProfile(
-    {condition:parsed.program
-      .body
-      .length
-      ===1,
-    message:'source escaped parent'}
+    {
+      condition:parsed.program
+        .body
+        .length
+        ===1,
+      message:'source escaped parent'
+    }
   );const fn=parsed.program
     .body[0];requireProfile(
-    {condition:(fn.type==='FunctionDeclaration')&&(fn.id
-      ?.name
-      ==='__owned_parent')
-      &&fn.async
-      &&(!fn.generator)
-      &&(fn.params
-        .length
-        ===0)
-      &&(fn.start===0)
-      &&(fn.end===wrapped.length)
-      &&(fn.body
-        .start
-        ===(prefix.length
+    {
+      condition:(fn.type==='FunctionDeclaration')&&(fn.id
+        ?.name
+        ==='__owned_parent')
+        &&fn.async
+        &&(!fn.generator)
+        &&(fn.params
+          .length
+          ===0)
+        &&(fn.start===0)
+        &&(fn.end===wrapped.length)
+        &&(fn.body
+          .start
+          ===(prefix.length
         -1))
-      &&[
+        &&[
       1,
       2
     ].includes(fn.body
       .body
       .length),
-    message:'exact parent boundary and one or two inspected statements required; use a returned awaited literal call or an immutable result binding'}
+      message:'exact parent boundary and one or two inspected statements required; use a returned awaited literal call or an immutable result binding'
+    }
   );
   const inspected=inspectBody({
     body:fn.body
@@ -95,10 +109,12 @@ export function declareResultProgram({
   });
   const sites=Object.freeze(inspected.sites);
   const pieces=[];let cursor=0;for(const site of sites){requireProfile(
-    {condition:site.callee
-      .start
-      >=cursor,
-    message:'overlapping callsites'}
+    {
+      condition:site.callee
+        .start
+        >=cursor,
+      message:'overlapping callsites'
+    }
   );pieces.push(
     source.slice(
       cursor,
@@ -108,8 +124,10 @@ export function declareResultProgram({
     `tools.${site.alias}`
   );cursor=site.callee
     .end;}pieces.push(source.slice(cursor));const compiledSource=pieces.join('');requireProfile(
-    {condition:Buffer.byteLength(compiledSource)<=65_536,
-    message:'compiled source byte bound'}
+    {
+      condition:Buffer.byteLength(compiledSource)<=65_536,
+      message:'compiled source byte bound'
+    }
   );
   const groups=Object.freeze(inspected.groups
     .map(function freezeDeclaredGroup(group) { return (Object.freeze({
@@ -135,7 +153,9 @@ export function declareResultProgram({
 }
 /** Membership of a declaration object is data provenance, not a safety verdict. */
 export function assertDeclaredProgram(declaration){requireProfile(
-  {condition:declarations.has(declaration),
-  message:'declaration is not owned by this source decoder'}
+  {
+    condition:declarations.has(declaration),
+    message:'declaration is not owned by this source decoder'
+  }
 );}
 //endregion

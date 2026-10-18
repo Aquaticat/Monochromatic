@@ -12,7 +12,8 @@ The published `monochromatic-git-policy-cli` 0.1.1 auto-pushed a real commit and
 `fatal: could not read Username for https://github.com: No such device or address`, then
 `commit saved locally, but auto-push to origin failed`.
 A manual `git push origin main` through the native wrapper ended with exit 2 and an engine-failure
-`content-unavailable` ("Git could not determine push updates: fatal: could not read Username ...", trigger `manual-push`).
+`content-unavailable` ("Git could not determine push updates:
+fatal: could not read Username ...", trigger `manual-push`).
 A plain `/usr/bin/git push` from the same shell worked because the global Git configuration names a credential helper
 that needs `HOME` and `PATH`.
 
@@ -125,7 +126,8 @@ On code head `116615ad41`:
 
 ## Rerun commands
 
-Run from `.claude/worktrees/cli-git-lane-push-env`, each through the slot limiter (`gate-slot.ts` in `${HOME}/temp/agent`):
+Run from `.claude/worktrees/cli-git-lane-push-env`,
+each through the slot limiter (`gate-slot.ts` in `${HOME}/temp/agent`):
 
 ```sh
 # doc/handover/cli-git-native-push-env.md
@@ -145,5 +147,6 @@ unless they go through `gate-slot.ts`.
 ## Facts for the orchestrator
 
 - 0.1.2 is released (crates.io and GitHub release `monochromatic-git-policy-cli-v0.1.2`, 2026-10-13); the mise pin
-  is still 0.1.1 and is re-pinned by the orchestrator, see the resume steps in `doc/handover/cli-git-rust-implementation.md`.
+  is still 0.1.1 and is re-pinned by the orchestrator,
+  see the resume steps in `doc/handover/cli-git-rust-implementation.md`.
 - Git 2.55.0 (host) ran both new binary controls green; no difference from the 2.56.0 container run.

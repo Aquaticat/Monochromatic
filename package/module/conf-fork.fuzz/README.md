@@ -38,7 +38,8 @@ through the fork:
 
 #### Upstream differential oracle
 
-The same generated operation sequences drive the vendored upstream `conf` snapshot (`upstream-conf/`, commit `83e267178f`)
+The same generated operation sequences drive the vendored upstream `conf` snapshot
+(`upstream-conf/`, commit `83e267178f`)
  (the
 implementation this fork replaces) and the fork,
  each against its own disposable

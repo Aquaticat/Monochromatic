@@ -1,4 +1,8 @@
-import {bindConstructionOwner,createCollector,SourceCollectionError} from '../../collector.mjs';
+import {
+  bindConstructionOwner,
+  createCollector,
+  SourceCollectionError
+} from '../../collector.mjs';
 // Opaque loader bindings are resource indexes, never a session or authority registry.
 const nativeInputBindings=new WeakMap();
 function boundResource({
@@ -30,7 +34,14 @@ export function assertBoundResourceInputs({
     ||(appendSystemPrompt!==scope.returns[2]))throw new SourceCollectionError('Native base inputs differ from their original resource occurrence');
 }
 /** Bind original resource, base, and session observations without issuing new authority. */
-export function createResourceBindings({known,current,readSessionLoader,readSessionPrompt,readSessionBase,readSessionRun}){
+export function createResourceBindings({
+  known,
+  current,
+  readSessionLoader,
+  readSessionPrompt,
+  readSessionBase,
+  readSessionRun
+}){
 /** Issued only for this factory's actual loader; serialized copies cannot bind native composition. */
   function bindNativeLoader(loader){
     const record=known(loader);
@@ -154,5 +165,9 @@ export function createResourceBindings({known,current,readSessionLoader,readSess
       }
     });
   }
-return {bindNativeLoader,bindCollector,bindSessionCollector};
+return {
+  bindNativeLoader,
+  bindCollector,
+  bindSessionCollector
+};
 }

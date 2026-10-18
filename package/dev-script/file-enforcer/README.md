@@ -115,7 +115,8 @@ Pass `manifestPath` only for throwaway fixtures or benchmarks that should not sh
    runs a command and captures stdout
 - `exec(platformCommands)`:
    platform-aware exec;
-   evaluates `[predicate, command]` tuples top-to-bottom and runs the first match (see [Platform-aware exec](#platform-aware-exec) below)
+   evaluates `[predicate, command]` tuples top-to-bottom and runs the first match
+   (see [Platform-aware exec](#platform-aware-exec) below)
 - `evaluatePredicate(predicate)`:
    runs a predicate and returns whether it succeeded (exit 0);
    results cached per-session

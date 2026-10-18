@@ -112,7 +112,8 @@ nominal USD0 model. Actual CPU, memory and disk are probed before the owner.
 
 - Same minimal nightly-2026-10-17 and Nextest0.9.148.
 - Install
-  build-essential,pkg-config,cmake,clang,libclang-dev,qt6-base-dev,qt6-declarative-dev,qt6-tools-dev,qt6-tools-dev-tools.
+  build-essential, pkg-config, cmake, clang, libclang-dev,
+  qt6-base-dev, qt6-declarative-dev, qt6-tools-dev, qt6-tools-dev-tools.
 - Probe qmake6 and Qt6Core/Gui/Qml/Network, preserve build.rs real QML/cxx-qt producer. The authored
   default-state QString assertion requires no QGuiApplication launch.
 

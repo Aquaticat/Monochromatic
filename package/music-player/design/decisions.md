@@ -1334,7 +1334,8 @@ the seams.
  and L2 pure ramp without hairlines.
 
 ### D46. Cover picker opened state = P4, temporary pre-1.x decision (2026-09-23)
-D104 (2026-10-10) later adds the upward caret while open, drops the pre-1.x revisit and defers further improvement to another major version.
+D104 (2026-10-10) later adds the upward caret while open, drops the pre-1.x revisit and defers further improvement to
+another major version.
 
 Use P4 as the current design baseline for the folded cover screen:
  the app-bar folder title
@@ -2384,7 +2385,8 @@ No production implementation is authorized by this record.
 ### D85. The Settings pane has no closing sentence (2026-10-05)
 
 The human dropped settings-a's closing paragraph,
-`That's everything. There is no library to configure, no tags to read, and no audio processing beyond normalisation — so this pane stays short until the app grows.`
+`That's everything. There is no library to configure, no tags to read, and no audio processing beyond normalisation — so
+this pane stays short until the app grows.`
 D11's wording about the pane saying out loud that it is short is withdrawn
 with it.
 The sentence was mock copy that no decision chose,
@@ -2878,7 +2880,8 @@ No production implementation is authorized by this record.
 The human approved the agent's version of the declined state as built:
 
 - Title `The device music library can't be read`.
-- Body `It is open as your library, but access to music on this device was not granted. Allow access, or open a folder instead.`
+- Body `It is open as your library, but access to music on this device was not granted. Allow access, or open a folder i
+- nstead.`
 - Buttons in this order:
   `Allow access` filled,
   then `Open a folder` and Settings outlined.
@@ -3035,7 +3038,8 @@ resulting state, which is the second reason for this decision.
 The human said the analysis banner should never block anything, changed their mind about the bar, and asked for a
 system notification with a progress bar, noting that both Android and KDE can show one.
 This supersedes D26's 56dp bottom bar and D13's appearance and disappearance of that bar on both platforms:
-the player screen draws no analysis indicator and reserves no space for one, so nothing it shows can cover or move content.
+the player screen draws no analysis indicator and reserves no space for one, so nothing it shows can cover or move
+content.
 
 The orchestrator decided the details on the human's standing instruction to decide remaining questions:
 
@@ -3044,7 +3048,8 @@ The orchestrator decided the details on the human's standing instruction to deci
   It is silent, low priority and ongoing while analysis runs, and it is removed when analysis finishes.
 - D26's Pause and Resume control stays as the action button on the notification, with the same temporary-pause reading
   that D84 records.
-- Android posts it on its own low-importance channel. Android 13 and later need the notification permission: the app asks
+- Android posts it on its own low-importance channel. Android 13 and later need the notification permission: the app
+- asks
   for it once, when the first analysis starts, and if it is declined the analysis runs without any indicator.
 - Linux desktop on KDE Plasma reports it as a Plasma job through `org.kde.kuiserver` (the job view that Dolphin's
   compress action uses and that the human's own `compress-to-sqfs` service menu script drives): the notifications applet
@@ -3060,19 +3065,24 @@ The orchestrator decided the details on the human's standing instruction to deci
 The human confirmed that the desktop has to follow the OS accent as A3 says (it did not: `ui/theme.slint` used fixed
 primaries), and stated that every color manipulation after a root color is obtained must be done in OKLCH.
 Obtaining the root color is not a manipulation, and it is the only thing taken from the platform on either system:
-the desktop root is the portal, Windows or macOS accent that Slint 1.18 exposes, and the Android root is the system accent
+the desktop root is the portal, Windows or macOS accent that Slint 1.18 exposes, and the Android root is the system
+accent
 (on API 31 and later the middle tone of the system accent palette, `android.R.color.system_accent1_500`; the human
 corrected an earlier reading of this record that kept the platform's own `dynamicLightColorScheme` and
 `dynamicDarkColorScheme` roles, so Android's HCT-derived roles are not used).
-From the root, on both platforms, everything the app derives (tonal steps, container and on-container roles, hover and pressed layers,
+From the root, on both platforms, everything the app derives (tonal steps, container and on-container roles, hover and
+pressed layers,
 mixes with neutral, match highlights as in D59, gradients and any lightening or darkening) is computed by moving
 lightness, chroma and hue in OKLCH and converting back to sRGB with gamut handling.
-It is never computed by sRGB mixing or by HSV or HSL operations, such as `Color.brighter`, `Color.darker` or `Color.mix` in
+It is never computed by sRGB mixing or by HSV or HSL operations, such as `Color.brighter`, `Color.darker` or
+`Color.mix` in
 Slint, or `lerp` and `copy(alpha)` on sRGB values in Compose.
 When no accent is available the fixed baseline from the Fold captures is the root and the same derivation applies.
-Alpha-only layering (state layers over a surface) is allowed because it does not change a color's lightness, chroma or hue.
+Alpha-only layering (state layers over a surface) is allowed because it does not change a color's lightness, chroma or
+hue.
 
-Retune of 2026-10-12 under B4 (the orchestrator's decision, open to the human's veto): counting the 8 and 12 percent state
+Retune of 2026-10-12 under B4 (the orchestrator's decision, open to the human's veto): counting the 8 and 12 percent
+state
 layers, four drawn light-scheme text pairs of the old fixed baseline were below 4.5. The fixed light baseline moved by
 lightness only in OKLCH: primary `#4E5E8B` to `#455481` (delta-E 3.46), on-surface-variant `#5C5E6A` to `#585A65` (1.48)
 and the search match fill `#CFD9F0` to `#C9D2E9` (2.08). Dark is unchanged. Primary is not fitted on the hovered and
@@ -3091,7 +3101,8 @@ and at 1101, 1280 and 1506 dp on a Pixel Tablet.
 The first conclusion drawn from that, that two-pane stock Settings does not exist, was wrong and is withdrawn:
 a later round with the human's instruction to set the large-screen option found that the split is gated by the system
 properties `persist.settings.large_screen_opt.enabled` and `persist.settings.large_screen_opt_for_dp.enabled` (either
-one; read once per Settings process in `ActivityEmbeddingUtils`), which a production build such as the Play-store image does not let
+one; read once per Settings process in `ActivityEmbeddingUtils`), which a production build such as the Play-store image
+does not let
 a shell set; on a rootable image (`google_apis_ps16k`, API 37.1, `userdebug`) setting one gives two panes at 720 dp
 current width and above.
 Measurements of that stock two-pane form are in `/home/user/temp/agent/agent-settings-ref3/round4/` (list pane 0.3632 of
@@ -3112,7 +3123,8 @@ player, pure white in light (D34) and pure black in dark (D41), with no separate
 Groups and rows are therefore separated by the spacing above and by their text and icons alone, with no fill, border or
 divider line (the divider lines were already removed on 2026-10-11), and the group corner rounding survives only as the
 shape of the pressed, hovered and selected states.
-Fills that carry state or an icon are not backgrounds in this sense and stay: the 40 dp icon circle and the selection fill
+Fills that carry state or an icon are not backgrounds in this sense and stay: the 40 dp icon circle and the selection
+fill
 of D110, each a role derived from the accent under D108.
 The music player's template rows (D87 and D99) had no icon; the human asked that an icon be picked for each from
 Material Symbols and embedded, so every row has the stock leading icon and keeps the 72 dp two-line height.
@@ -3131,13 +3143,15 @@ This replaces D109's "one form on every width" for the wide case; D109's measure
 the list.
 
 - Wide means the same condition under which the player shows two panes (the unfolded Fold inner display on Android, a
-  window of 600 px or more on desktop). Below that, Settings stays the single full-width page of D109, where a tap on a row
+  window of 600 px or more on desktop). Below that, Settings stays the single full-width page of D109, where a tap on a
+  row
   opens that template's editor page and Back returns.
 - Wide: the left pane is the Settings list of D109 (heading, rows with icons, 72 dp rows, group rounding) and the right
   pane is the editor of the selected row (D89 to D99), shown in place so selecting a row never navigates.
   On a device with a crease the panes are exactly half of the window each. The human then added that a device without a
   crease does not need that: whether the device has a crease is detected through the platform API (on Android the
-  Jetpack WindowManager `FoldingFeature` of a vertical fold or hinge, from `WindowInfoTracker`; the desktop has none), and
+  Jetpack WindowManager `FoldingFeature` of a vertical fold or hinge, from `WindowInfoTracker`; the desktop has none),
+  and
   without one the split follows the platform default ratio, which the orchestrator reads as the stock Settings value
   `config_activity_embed_split_ratio` = 0.3636 for the list pane that the stock Settings APK ships. The human
   confirmed on 2026-10-12 that 0.3636 is the ratio on a device without a crease; the setting is closed.
@@ -3145,9 +3159,11 @@ the list.
   The selected row is shown with a filled selection shape in the secondary container role plus a bold title (two
   channels, not color alone), and the first row, Track rows, is selected when Settings opens so the right pane is never
   empty.
-- Crease: only on a device where the API reports a crease. E2 governs there. Text, labels and other informative marks in either pane keep a
+- Crease: only on a device where the API reports a crease. E2 governs there. Text, labels and other informative marks
+- in either pane keep a
   clearance of `max(7.5 mm, crease width)` in total across the center, shared half to each pane, measured in physical
-  units and never stored as a fixed dp value; backgrounds, row and card containers, hit regions and the selection fill may
+  units and never stored as a fixed dp value; backgrounds, row and card containers, hit regions and the selection fill
+  may
   span the center. Where a row's title would reach the band, it ends before the band (ellipsis) and the right pane's
   content starts after it.
   Desktop windows have no crease, so there the split follows the default ratio and the clearance is the pane's ordinary
@@ -3156,53 +3172,64 @@ the list.
 
 ### D111. Search works while scanning is still running (hard requirement, 2026-10-12)
 
-The human stated it as a hard requirement on Search: it must still be functional while the library is still being scanned.
+The human stated it as a hard requirement on Search: it must still be functional while the library is still being
+scanned.
 It binds both platforms and whatever engine D47 to D74 end up on:
 
 - Search is available from the moment any track is known. It is never disabled, hidden or replaced by a scanning state,
   and the analysis sweep (D84) never gates it either.
 - Each keystroke searches every track known at that moment. While the scan keeps adding tracks, the open Search page
-  refreshes its results in place, keeping the query, the caret and the scroll position, and without moving a row the user
+  refreshes its results in place, keeping the query, the caret and the scroll position, and without moving a row the
+  user
   is about to tap.
-- Neither the scan nor the sweep blocks a keystroke: the index takes track additions incrementally in small batches, no lock
-  or transaction is held across a scan batch, and the per-keystroke latency target holds while scanning, as it does at rest.
+- Neither the scan nor the sweep blocks a keystroke: the index takes track additions incrementally in small batches, no
+- lock
+  or transaction is held across a scan batch, and the per-keystroke latency target holds while scanning, as it does at
+  rest.
 - The requirement is tested with a scan that is deliberately slow, on both platforms, by typing while tracks arrive and
   checking that results appear for the tracks already known and later for the new ones.
 
 ### D112. Search runs on an in-memory index, not on Turso search (2026-10-12)
 
 The human suggested replacing the app's own search algorithm with Turso's built-in search. Both Turso mechanisms were
-measured against D47 to D74, D111 and the 1,000,000-track bar (scratch record in `/home/user/temp/agent/agent-tursofts/`):
+measured against D47 to D74, D111 and the 1,000,000-track bar (scratch record in
+`/home/user/temp/agent/agent-tursofts/`):
 
-- Turso's two ways to search are full-text search (Tantivy, `USING fts`) and vector search. Neither is exact for the rules
+- Turso's two ways to search are full-text search (Tantivy, `USING fts`) and vector search. Neither is exact for the
+- rules
   without Rust re-applying them: FTS has no custom ranking or rerank hook (only `fts_score` ordering is pushed into the
   index; any other `ORDER BY` makes SQLite sort every candidate, which measured seven to ten times slower than Rust at
   1,000,000), and `fts_highlight` highlights whole tokens only and returns tagged text, not ranges.
   Vector search is similarity, not containment: no query had an exact result at the 500 cap, and exact results needed k
   at or above the match count at 250 to 390 ms per query; the only vector index (`toy_vector_sparse_ivf`) built 200,000
   rows in 209 s.
-- Turso FTS with word-start grams does satisfy the rules (parity 44 of 44) and stays usable while a scan adds tracks, but
+- Turso FTS with word-start grams does satisfy the rules (parity 44 of 44) and stays usable while a scan adds tracks,
+- but
   it still needs the same in-memory table of normalized names, adds a 186 MiB index file, a 26 to 33 s rebuild and
   multi-second write transactions at 10,000-row batches, needs the `turso_core` source patched to compile on the newest
-  nightly, makes the Android library 26 percent larger, and is experimental. In 0.8.2 a plain `ORDER BY ... LIMIT n` over
+  nightly, makes the Android library 26 percent larger, and is experimental. In 0.8.2 a plain `ORDER BY ... LIMIT n`
+  over
   an FTS-matched table returns wrong rows unless written `LIMIT n OFFSET 0`.
 
 Decision (the orchestrator's, on the human's standing instruction to decide, open to the human's veto): Search uses an
 in-memory index of normalized names in each app, with first and second character buckets, a best-500 list per first
-character, off-thread batch normalization with an append-only write lock, search on a worker thread, and a refresh signal
+character, off-thread batch normalization with an append-only write lock, search on a worker thread, and a refresh
+signal
 after every batch so open results update in place (D111). Turso stays the store of the peak cache only.
 
 ### D113. Refresh and re-analysis are automatic and never exposed to the user (2026-10-12)
 
 The human said that refreshing the library and re-analyzing true peaks must always be handled perfectly by the app and
-not be exposed as user actions. This supersedes D12's menu entry "Re-analyse true peak" (the last manual entry point) and
+not be exposed as user actions. This supersedes D12's menu entry "Re-analyse true peak" (the last manual entry point)
+and
 the D106 rows `F5` (rescan) and `Ctrl+Shift+F5` (re-analyse).
 
 - No rescan or re-analyze command exists anywhere in the user interface, keyboard map, menus, tooltips or settings, on
   both platforms. Trash and Undo keep reloading the library internally.
 - The library follows the disk by itself: changes are detected and applied without a user action (desktop: the live
   watcher with its catch-up rescan; Android: observers of the source plus a reload when the app returns to the front).
-- Analysis follows the files by itself: a new, replaced or edited file (its fingerprint changed) is measured again, a file
+- Analysis follows the files by itself: a new, replaced or edited file (its fingerprint changed) is measured again, a
+- file
   that failed to decode is retried when the library next changes or the app next starts, and a failure is reported once
   per file in plain words (D83) instead of offering a retry button.
   Current state (note added 2026-10-14): on Android the report is a system notification, not a D83 message (D123).
@@ -3210,13 +3237,15 @@ the D106 rows `F5` (rescan) and `Ctrl+Shift+F5` (re-analyse).
 
 ### D114. The track menu opens with Menu or Alt+Enter, and every menu row has an access key (2026-10-12)
 
-The human noticed that `Shift+F10` is Run in JetBrains' keymap, which D106 uses as its tie-breaker. Decided by the human:
+The human noticed that `Shift+F10` is Run in JetBrains' keymap, which D106 uses as its tie-breaker. Decided by the
+human:
 
 - The track row's menu opens with the `Menu` key or `Alt+Enter` (JetBrains' key for the actions on the item under the
   cursor). `Shift+F10` is not bound.
 - File details has no dedicated key; the menu reaches it.
 - Every menu row has an access key, as JetBrains and desktop menus do: one letter per row, drawn underlined in the row
-  label (a second channel besides the letter itself is the underline), and pressing the letter while the menu is open runs
+  label (a second channel besides the letter itself is the underline), and pressing the letter while the menu is open
+  runs
   that row and closes the menu. Letters are unique within the menu, chosen from the row's own words (for example Play,
   Shuffle from here, Details, Copy filename, Show in file manager, Move to trash), and the rows' `Up`, `Down`, `Enter`,
   `Escape` keys stay. On Android the access keys work with an attached keyboard.
@@ -3227,11 +3256,13 @@ The orchestrator's readings of earlier decisions, adopted from the desktop lists
 
 - D22 and C1: the scrollbar's grab zone is 12 px across the scroll axis (D22), and the thumb is never shorter than 48 px
   along it (C1). The thumb widens from 4 to 8 px on hover or drag, so state is shown by color and width.
-- D31: names take the width they need, up to the pane. A longer name ends in an ellipsis, with the full name as a tooltip
+- D31: names take the width they need, up to the pane. A longer name ends in an ellipsis, with the full name as a
+- tooltip
   (only while it is cut) and as the accessible label. A highlighted Search match is never the part that is cut.
 - D1 and D18: the Shuffle segment keeps the width of "Shuffle Camellia" for every folder name, so the deck never
   re-lays itself out while the user browses; a longer name gets the middle ellipsis on the name only.
-- D28: each writing system after the first starts with a 1 px hairline in the rail, which also separates look-alike Latin,
+- D28: each writing system after the first starts with a 1 px hairline in the rail, which also separates look-alike
+- Latin,
   Cyrillic and Greek letters.
 - D36: the playing row carries a 4 px bar in the primary role on its left edge besides bold and the soft fill, so the
   emphasis does not depend on the script of the title.
@@ -3240,7 +3271,8 @@ The orchestrator's readings of earlier decisions, adopted from the desktop lists
 
 ### D116. No bundled Hangul font, and no optimized test profile (2026-10-12)
 
-Two questions left open by earlier work, decided by the orchestrator on the human's standing instruction to decide, open to the human's veto:
+Two questions left open by earlier work, decided by the orchestrator on the human's standing instruction to decide,
+open to the human's veto:
 
 - No Hangul font is bundled. The app already depends on system fonts for every CJK script (Inter has none), so bundling
   one script would be inconsistent and a full CJK bundle costs tens of megabytes. A session whose fontconfig picks a
@@ -3269,16 +3301,20 @@ default outlines are broken lines, that the app follow whatever the latest Firef
 - The ring is drawn outside the element, is never clipped by a parent and never moves content.
 - It appears for keyboard focus only (CSS `:focus-visible`).
 - Focus adds no fill, tint, state layer, bold or size change. Hover and pressed keep their own state layers.
-- The human chose Firefox over Chromium on 2026-10-12. Chromium draws the same two solid rings (2 px next to the element,
-  1 px outside, flush) in a neutral focus color with a white or #101010 outer ring; it was rejected because it carries no
+- The human chose Firefox over Chromium on 2026-10-12. Chromium draws the same two solid rings (2 px next to the
+- element,
+  1 px outside, flush) in a neutral focus color with a white or #101010 outer ring; it was rejected because it carries
+  no
   accent and its neutral pair conflicts with D118.
 
 ### D118. Grays are always accented unless the root color is completely neutral (2026-10-12)
 
-The human decided that every gray the app draws carries the accent's hue, unless the root color itself has no hue at all.
+The human decided that every gray the app draws carries the accent's hue, unless the root color itself has no hue at
+all.
 This narrows D108's near-gray rule and D41's stable neutrals.
 
-- A root is completely neutral only when it has no chroma at all (its three 8-bit channels are equal). Then every gray is
+- A root is completely neutral only when it has no chroma at all (its three 8-bit channels are equal). Then every gray
+- is
   a true gray. A root with any chroma, however small, gives every gray the root's hue; a nearly gray root is not
   treated as gray.
 - The tint of a gray is the role's own tint (it does not shrink when the root is weakly chromatic and does not grow when
@@ -3584,7 +3620,8 @@ Desktop-specific choices and facts:
   and the page shows no badge over its rows), so no slot was added. A future badge belongs inside the shape's 8 px end
   padding.
 - The crease sentence does not apply on desktop as built: `ui/app_window.slint` never sets `content-start-x` on the
-  Search page, so both layouts use the default 16 and the inner panel's page already starts at the pane's left edge (half
+  Search page, so both layouts use the default 16 and the inner panel's page already starts at the pane's left edge
+  (half
   the window width), after the crease.
 - The sentence that the kind label stays on the glyph for assistive technology (D77) has nothing to keep on desktop:
   the desktop result rows and their glyphs expose no accessible role or label today (the only accessible elements of

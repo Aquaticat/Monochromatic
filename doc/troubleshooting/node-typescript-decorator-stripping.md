@@ -1,4 +1,6 @@
-# Node 26.10.0 type stripping rejects TypeScript decorator syntax with `SyntaxError: Invalid or unexpected token` at the `@` token, so test files cannot apply decorators syntactically
+# Node 26.10.0 type stripping rejects TypeScript decorator syntax
+with `SyntaxError: Invalid or unexpected token` at the `@` token,
+so test files cannot apply decorators syntactically
 
 ## Symptom
 

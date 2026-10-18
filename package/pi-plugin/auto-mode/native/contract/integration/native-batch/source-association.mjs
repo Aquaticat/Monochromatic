@@ -1,11 +1,23 @@
 import {isDeepStrictEqual} from 'node:util';
-import {readOriginalToolPublication,readOriginalSystemPublication} from '../../collector/run-prompt-custody-v3/handler-publication.mjs';
+import {
+  readOriginalToolPublication,
+  readOriginalSystemPublication
+} from '../../collector/run-prompt-custody-v3/handler-publication.mjs';
 import {copyMessageData} from '../../collector/run-prompt-custody/messages.mjs';
 import {prepareNativeToolAssociation} from './tool-source-association.ts';
 import {captureNativeSystemDerivation} from './system-source-derivation.ts';
-import {streamSimple,readNativeSerializedPayload,readNativeSystemPayload,readNativeToolPayload} from './generated/openai-stream.mjs';
+import {
+  streamSimple,
+  readNativeSerializedPayload,
+  readNativeSystemPayload,
+  readNativeToolPayload
+} from './generated/openai-stream.mjs';
 import {NativeSourceAssociationError} from './source-association-error.mjs';
-import {dataRecord,denseArray,envelopeReason} from './source-association-shape.mjs';
+import {
+  dataRecord,
+  denseArray,
+  envelopeReason
+} from './source-association-shape.mjs';
 import {messageOrigin} from './source-message-origin.mjs';
 import {originalContributions} from './source-original-contributions.mjs';
 import {createAssociationSealer} from './source-association-seal.mjs';
@@ -62,7 +74,13 @@ export function prepareNativeSourceAssociation({
    
    
    
- const state={owned:[],unresolvedHandlers:[],called:false,sealed:false,payloadOriginFailure:undefined};
+ const state={
+   owned:[],
+   unresolvedHandlers:[],
+   called:false,
+   sealed:false,
+   payloadOriginFailure:undefined
+ };
  function createPayloadCallback() {
   return async function onPayload(
    payload,
@@ -170,7 +188,8 @@ export function prepareNativeSourceAssociation({
        candidate.content
      ));
    if(!unchanged){
-    if(!candidate.system)state.unresolvedHandlers.push(Object.freeze({
+    if(!candidate.system)state.unresolvedHandlers
+      .push(Object.freeze({
      location:Object.freeze(positions.length===1?{
        field:'messages',
        ordinal:positions[0],
@@ -210,7 +229,11 @@ export function prepareNativeSourceAssociation({
  };
  }
  const onPayload=createPayloadCallback();
- const seal=createAssociationSealer({state,reason,toolAssociation});
+ const seal=createAssociationSealer({
+   state,
+   reason,
+   toolAssociation
+ });
  return Object.freeze({
    onPayload,
    seal

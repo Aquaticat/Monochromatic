@@ -11,7 +11,8 @@ Implement the oxlint `unicorn/no-immediate-mutation` replacement work:
 - Document the upstream oxlint behavior under `doc/troubleshooting/` using the troubleshooting-doc process.
 - Auto-prototype Rust-side upstream behavior in a fresh clone under `~/temp/agent`.
 - Disable oxlint's built-in `unicorn/no-immediate-mutation` rule in repo config.
-- Add a custom `no-restricted-syntax/no-immediate-mutation` rule that preserves the efficient Set/Map clone-plus-mutate pattern.
+- Add a custom `no-restricted-syntax/no-immediate-mutation` rule
+  that preserves the efficient Set/Map clone-plus-mutate pattern.
 - Keep this handover updated for auto-compaction recovery.
 
 ## Required skills
@@ -50,7 +51,9 @@ Implement the oxlint `unicorn/no-immediate-mutation` replacement work:
 - A scratch local invocation showed `oxlint --fix --allow all --warn unicorn/no-immediate-mutation` reports
   `const nextSeen = new Set(seen); nextSeen.add(variable);` and leaves the file unchanged.
 - Upstream `eslint-plugin-unicorn` docs state its version of the rule is fixable.
-- Upstream oxlint source was cloned under `/tmp/agent/oxc-no-immediate-mutation-prototype.ufNRqZu4` for the Rust prototype.
+- Upstream oxlint source was cloned under
+  `/tmp/agent/oxc-no-immediate-mutation-prototype.ufNRqZu4`
+  for the Rust prototype.
 - Fresh clone origin and commit were verified:
   - origin:
      `https://github.com/oxc-project/oxc.git`

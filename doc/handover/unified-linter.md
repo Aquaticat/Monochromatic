@@ -3,7 +3,8 @@
 ## Status
 
 Design interview (grilling) complete:
-the user confirmed [`doc/planning/unified-linter.md`](../planning/unified-linter.md) as the shared understanding on 2026-09-23.
+the user confirmed [`doc/planning/unified-linter.md`](../planning/unified-linter.md)
+as the shared understanding on 2026-09-23.
 On 2026-10-04,
 the user assigned the cli-git rewrite agent ownership of this implementation too,
 changed configuration to JSONC,
@@ -191,7 +192,8 @@ Round 3 answers (user,
    and a fragment without `fn main` is wrapped in a synthetic one
    that is never reported or counted.
   Precedent:
-   `package/rust-module/rust-linter-pattern/src/fragment.rs:70-72` already wraps statements in a function body to parse them.
+   `package/rust-module/rust-linter-pattern/src/fragment.rs:70-72` already wraps statements in a function body
+to parse them.
 - Every snippet needs a `//!` opening line (A),
    the same file-level `require-rustdoc` requirement as real files.
 

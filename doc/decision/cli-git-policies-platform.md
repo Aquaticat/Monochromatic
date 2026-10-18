@@ -595,7 +595,8 @@ and a patch naming one outside the candidate set adds it.
 The path must be unchanged in the real index,
 the private commit index,
 and the worktree,
-so the commit can take the fix and cli-git can write the landed bytes to the worktree afterwards without discarding local work.
+so the commit can take the fix and cli-git can write the landed bytes
+to the worktree afterwards without discarding local work.
 Otherwise the commit blocks with `patch-conflict` and names the remedies.
 The worktree write happens after the index install and is completed by startup recovery;
 a copy edited during the commit is kept with a warning.

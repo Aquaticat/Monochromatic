@@ -190,7 +190,9 @@ The round-1 stub shape was built to validate the `imports`-field mechanism befor
    no warnings,
    0 `import(` in each.
 - End-user check on the node artifact:
-   one `logger.info` plus `flush()` created `node_modules/.monochromatic/2026-09-06T18-35-55.672Z.log.jsonl` with the record.
+   one `logger.info` plus `flush()` created
+   `node_modules/.monochromatic/2026-09-06T18-35-55.672Z.log.jsonl`
+   with the record.
 - Survey:
    no workspace package both depends on the logger,
    builds with the neutral config,
@@ -213,7 +215,8 @@ The round-1 stub shape was built to validate the `imports`-field mechanism befor
    Only the inlined copy inside the library is affected;
    each dependent's own logger import still resolves the node artifact.
 - Resolution facts read from rolldown's own type declarations:
-   default `conditionNames` are `["import","node","default"]` for `platform: node` and `["import","default"]` for neutral.
+   default `conditionNames` are `["import","node","default"]` for `platform: node`
+   and `["import","default"]` for neutral.
 
 ### Prototype 2 measurements (decided shape, worktree `logger-platform-subpaths-20260906`, 2026-09-06)
 
@@ -265,8 +268,10 @@ The round-2 shape,
    `createFileSink` from `./node`,
    and `createIndexedDbSink` from `./browser` type-checks;
    `sinks.createFileSink()` fails with `TS2339: Property 'createFileSink' does not exist`.
-- `require-eventual-artifact` classifies subpath imports as unchecked (`package/oxlint-plugin/test-import/src/import-classification.ts`),
-   so tests importing `@monochromatic-dev/module-logger/node` pass the rule without suppression.
+- `require-eventual-artifact` classifies subpath imports as unchecked
+   (`package/oxlint-plugin/test-import/src/import-classification.ts`),
+   so tests importing `@monochromatic-dev/module-logger/node`
+   pass the rule without suppression.
 - Survey matches prototype 1:
    no directly affected package;
    the five neutral-only libraries (`css-edit`,
@@ -343,7 +348,8 @@ The round-2 shape,
    and type-checks;
    Node resolves each self-reference to `dist/final/node`;
    the node builds inline the file sink and the neutral builds do not.
-   Pre-existing `require-eventual-artifact` findings in fs-path (3) and toml-edit (99) test files are untouched by these commits.
+   Pre-existing `require-eventual-artifact` findings in fs-path (3)
+   and toml-edit (99) test files are untouched by these commits.
 - The TSDoc reformat step was unnecessary:
    `3d6c20c9f` (another session) had already swept the repository.
 - Both prototype worktrees removed.

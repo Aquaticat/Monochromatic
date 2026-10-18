@@ -2,7 +2,8 @@
 
 ## What you are picking up
 
-The package `package/dev-script/deps-cube/` is being built per the approved plan at `/home/user/.claude/plans/make-a-new-workspace-serialized-puppy.md`.
+The package `package/dev-script/deps-cube/` is being built per the approved plan at
+`/home/user/.claude/plans/make-a-new-workspace-serialized-puppy.md`.
  Read that plan first;
  it has the full design,
  the dimension mapping,
@@ -15,7 +16,8 @@ gl approved at 72.7% TS as an explicit user-confirmed exception),
  and the verification checklist.
 
 Tool premise:
- scatter-plot every catalog entry in the `pnpm-workspace.yaml` in 3D feature space (6 dims = 3 spatial + color + shape + size),
+ scatter-plot every catalog entry in the `pnpm-workspace.yaml` in 3D feature space (6 dims = 3 spatial + color + shape
+ + size),
  with deck.
 gl WebGL rendering and a custom HTML control panel for dim swapping,
  3-state boolean filtering,
@@ -37,7 +39,8 @@ gl WebGL rendering and a custom HTML control panel for dim swapping,
  task 13 still partial (headless verification done;
  manual Firefox interaction checks pending).
  The eighth handover described three Task-13 bugs that were fixed.
- THIS handover covers a second round of visual fixes (Tasks 14 to 22) addressing six visual issues found when actually opening the HTML in Firefox:
+ THIS handover covers a second round of visual fixes (Tasks 14 to 22) addressing six visual issues found when actually
+ opening the HTML in Firefox:
  stretched ellipses (flat 2D `ScatterplotLayer` glyphs foreshortened at 30° camera tilt),
  invisible wireframe,
  fragmented overlapping axis labels,
@@ -45,7 +48,8 @@ gl WebGL rendering and a custom HTML control panel for dim swapping,
  double scrollbar,
  single-handle range sliders.
  The user also pivoted the backdrop visual:
- scene should resemble a classic 3D coordinate-system diagram (three green coordinate planes + arrowed axes with tick marks + `X`/`Y`/`Z` capital labels + origin `O`),
+ scene should resemble a classic 3D coordinate-system diagram (three green coordinate planes + arrowed axes with tick
+ marks + `X`/`Y`/`Z` capital labels + origin `O`),
  not a wireframe box with threshold planes.
  Implemented:
 
@@ -55,16 +59,20 @@ gl WebGL rendering and a custom HTML control panel for dim swapping,
    `octahedronGeometry` (flat-shaded with 24 duplicated vertices),
    `coneGeometryX`/`Y`/`Z` (pre-rotated per axis via luma.
   gl's `verticalAxis` prop).
-- Rewrote `src/deck-scatter.ts` to use `SimpleMeshLayer` with the sphere/octahedron geometries instead of `ScatterplotLayer`.
+- Rewrote `src/deck-scatter.ts` to use `SimpleMeshLayer` with the sphere/octahedron geometries instead of
+- `ScatterplotLayer`.
    Glyphs are now true 3D solids (spheres for leaf,
    octahedra for non-leaf) round/diamond-silhouetted from every camera angle.
-- New `probeRadiusWorld({probe, state, bounds})` accessor in `src/deck-accessors.ts` returning world-space radius scaled to 0.5 to 3% of the bounds diagonal (`Math.hypot(dx, dy, dz)`).
+- New `probeRadiusWorld({probe, state, bounds})` accessor in `src/deck-accessors.ts` returning world-space radius
+- scaled to 0.5 to 3% of the bounds diagonal (`Math.hypot(dx, dy, dz)`).
 - Rewrote `src/deck-layers.ts`:
-   replaced wireframe-box + threshold-planes with `buildAxisShaftLayer` (3 thick PathLayer segments from min-corner to tip),
+   replaced wireframe-box + threshold-planes with `buildAxisShaftLayer` (3 thick PathLayer segments from min-corner to
+   tip),
    `buildAxisArrowheadLayers` (3 cone `SimpleMeshLayer`s at tips),
    `buildAxisTickLayer` (5 ticks per axis).
 - New `src/deck-planes.ts`:
-   `buildCoordinatePlaneLayers` (3 pale-green `PolygonLayer`s at floor/back/side walls intersecting at the data box's min corner) + `buildThresholdLineLayer` (thin guide lines on the planes at the threshold values;
+   `buildCoordinatePlaneLayers` (3 pale-green `PolygonLayer`s at floor/back/side walls intersecting at the data box's
+   min corner) + `buildThresholdLineLayer` (thin guide lines on the planes at the threshold values;
    replaces the previous opaque threshold-plane fills while preserving the heuristic meaning).
 - Rewrote `src/deck-labels.ts`:
    split into four layer factories:
@@ -77,7 +85,8 @@ gl WebGL rendering and a custom HTML control panel for dim swapping,
 - Rewired `src/deck-config.ts` `buildLayers` to call the new factories in the right back-to-front order;
    the `showWireframe` display toggle now controls the coordinate planes (the wireframe-box layer is gone).
 - `src/styles.css`:
-   `html, body { block-size: 100vh; overflow: hidden }` and `#canvas-host { block-size: 100vh; overflow: hidden }` to remove the page-level scrollbar (now only the controls panel scrolls).
+   `html, body { block-size: 100vh; overflow: hidden }` and `#canvas-host { block-size: 100vh; overflow: hidden }` to
+   remove the page-level scrollbar (now only the controls panel scrolls).
    Added `.range-track` rules:
    two `<input type="range">` stacked on a single track via `position: absolute`;
    only the `::-webkit-slider-thumb` / `::-moz-range-thumb` accept pointer events so both can be dragged independently.
@@ -126,7 +135,9 @@ gl source:
    The brown threshold guide lines were confusing default-on chrome;
    they're an opt-in heuristic overlay now.
 - New `src/script/scheme.ts`:
-   exports `ChromeColors` type and `detectScheme()` that branches on `globalThis.matchMedia('(prefers-color-scheme: dark)').matches` to return either a light-on-dark or dark-on-light palette for the chrome (axes / ticks / capitals / origin / name labels).
+   exports `ChromeColors` type and `detectScheme()` that branches on
+   `globalThis.matchMedia('(prefers-color-scheme: dark)').matches` to return either a light-on-dark or dark-on-light
+   palette for the chrome (axes / ticks / capitals / origin / name labels).
 - `src/script/controller.ts`:
    `createSession` calls `detectScheme()` once and stores the palette on the session;
    passed through to every `buildLayers` call via the existing render path.
@@ -148,12 +159,14 @@ gl source:
    `SUBTITLE_LABEL_SIZE_PX` 12 → 10,
    `TIP_LABEL_OFFSET_FRACTION` 0.18 → 0.22,
    `ORIGIN_OFFSET_FRACTION` 0.04 → 0.08.
-   Deleted the now-unused `LABEL_BACKGROUND_COLOR` / `AXIS_LABEL_COLOR` / `ORIGIN_LABEL_COLOR` / `NAME_LABEL_COLOR` constants.
+   Deleted the now-unused `LABEL_BACKGROUND_COLOR` / `AXIS_LABEL_COLOR` / `ORIGIN_LABEL_COLOR` / `NAME_LABEL_COLOR`
+   constants.
 - `src/deck-layers.ts`:
    accepts `chrome` and reads `axis` and `axisTick` colours from it;
    deleted the `AXIS_SHAFT_COLOR` / `AXIS_TICK_COLOR` constants.
 - Test fix:
-   `test/state.unit.test.ts` updated the `defaultState` display-toggle assertion to expect `showThresholdPlanes: false` (it was the only test referencing the flipped default).
+   `test/state.unit.test.ts` updated the `defaultState` display-toggle assertion to expect `showThresholdPlanes: false`
+   (it was the only test referencing the flipped default).
 
 Lint,
  types,
@@ -182,7 +195,8 @@ Pending:
 
 - `src/deck-accessors.ts`:
    `RADIUS_MIN_WORLD_FRACTION` 0.005 → 0.0025 and `RADIUS_MAX_WORLD_FRACTION` 0.03 → 0.015;
-   halved diagonal fractions used by `probeRadiusWorld` so every mesh-layer glyph renders at half its previous world-space size.
+   halved diagonal fractions used by `probeRadiusWorld` so every mesh-layer glyph renders at half its previous
+   world-space size.
 - `src/script/state.ts`:
    `DEFAULT_DISPLAY_TOGGLES.nameLabels` flipped from `'none'` to `'all'`.
    The radio control still offers `none` / `topN` / `all`;
@@ -190,12 +204,14 @@ Pending:
 - `src/deck-labels.ts`:
    `buildNameLabelsLayer` no longer filters out probes with `unknownReason !== null` or null `probePosition`.
    For those,
-   the per-glyph label position is sourced from `unknownClusterPosition` (the same accessor `buildUnknownClusterLayer` uses),
+   the per-glyph label position is sourced from `unknownClusterPosition` (the same accessor `buildUnknownClusterLayer`
+   uses),
    so the upper-right unknown bucket also gets its names painted alongside the spheres.
    New import:
    `unknownClusterPosition` from `./deck-accessors.ts`.
 - Test fix:
-   `test/state.unit.test.ts` assertion updated to expect `nameLabels: 'all'` and the test name extended to mention name labels.
+   `test/state.unit.test.ts` assertion updated to expect `nameLabels: 'all'` and the test name extended to mention name
+   labels.
 
 Lint,
  types,
@@ -213,7 +229,8 @@ gl would upload with `flipY: false`.
  luma.
 gl's source does default to `flipY: false`,
  but the empirical result on the sphere was still inverted text;
- likely because the equirectangular UV mapping combines with the orientation of the canvas in a way the single flip didn't undo.
+ likely because the equirectangular UV mapping combines with the orientation of the canvas in a way the single flip
+ didn't undo.
  Instead of chasing the math,
  the user proposed a guaranteed-correct workaround:
  print BOTH an upright and a rotated-180° copy on the same texture,
@@ -227,8 +244,10 @@ gl's source does default to `flipY: false`,
 - Octahedron textures get two stripes inside the UV face triangle at `v = 1/4` (upright) and `v = 1/2` (rotated 180°).
    Each of the 8 faces shows both orientations,
    so a glance at any face yields a readable name.
-- `paintFlippedName` (the previous `scale(1, -1)` helper) replaced by paired `paintUpright` (no transform) and `paintRotated180` (`translate / rotate(PI)`);
-   the rotation keeps the glyph centred under its anchor point without the Y-mirror artefacts that `scale(1, -1)` introduces on some glyph features.
+- `paintFlippedName` (the previous `scale(1, -1)` helper) replaced by paired `paintUpright` (no transform) and
+- `paintRotated180` (`translate / rotate(PI)`);
+   the rotation keeps the glyph centred under its anchor point without the Y-mirror artefacts that `scale(1, -1)`
+   introduces on some glyph features.
 - Constants renamed:
    `SPHERE_EQUATOR_V` → `SPHERE_UPRIGHT_V` + `SPHERE_FLIPPED_V`;
    `OCTAHEDRON_CENTROID_V` → `OCTAHEDRON_UPRIGHT_V` + `OCTAHEDRON_FLIPPED_V`.
@@ -248,7 +267,8 @@ gl would upload with `flipY: false`.
  luma.
 gl's source does default to `flipY: false`,
  but the empirical result on the sphere was still inverted text;
- likely because the equirectangular UV mapping combines with the orientation of the canvas in a way the single flip didn't undo.
+ likely because the equirectangular UV mapping combines with the orientation of the canvas in a way the single flip
+ didn't undo.
  The previous attempt's contents follow.
 
 **Status (2026-05-12,
@@ -277,9 +297,11 @@ gl's source does default to `flipY: false`,
    slot width 256 px,
    room for a wider type.
 - Auto-shrink:
-   a `pickFontSize` helper calls `ctx.measureText` once at the max font size and rescales proportionally to fit `slot * 0.85`,
+   a `pickFontSize` helper calls `ctx.measureText` once at the max font size and rescales proportionally to fit
+   `slot * 0.85`,
    clamped to `[MIN_FONT_SIZE_PX, FONT_SIZE_PX] = [22, 56]`.
-   The line width of the outline is scaled to match (`OUTLINE_WIDTH_PX * fontSize / FONT_SIZE_PX`) so the rim stays visually consistent.
+   The line width of the outline is scaled to match (`OUTLINE_WIDTH_PX * fontSize / FONT_SIZE_PX`) so the rim stays
+   visually consistent.
 - Cache key already includes the name so the auto-shrink result is captured automatically;
    nothing to change there.
 
@@ -294,14 +316,16 @@ Lint,
  thirteenth handover;
  names baked into the mesh textures)**:
  iteration-4's painted labels still used a billboard `TextLayer` with `depthCompare: 'always'`,
- so back-glyph labels rendered on top of nearer glyphs (clearly visible in a Firefox screenshot where a back-octahedron's name appeared larger than the front octahedron occluding it).
+ so back-glyph labels rendered on top of nearer glyphs (clearly visible in a Firefox screenshot where a
+ back-octahedron's name appeared larger than the front octahedron occluding it).
  The user identified the fix:
  "If you made the text part of mesh this would not happen.
  Are you able to bake text into mesh?
 " Yes;
  and that is now the implementation.
  The floating `TextLayer` is gone;
- each probe gets its own `SimpleMeshLayer` with a per-probe canvas texture that has the colour and the npm name baked in.
+ each probe gets its own `SimpleMeshLayer` with a per-probe canvas texture that has the colour and the npm name baked
+ in.
  Depth testing then handles occlusion the same way it does for any other mesh surface;
  a sphere behind a sphere shows only the parts not occluded.
 
@@ -313,30 +337,37 @@ Lint,
   - `'sphere'`:
      name repeated 4× along the equator (`v = 0.5`) so the equirectangular wrap shows the label from any longitude.
   - `'octahedron'`:
-     name once at the face triangle's centroid (`v = 1/3` under the UV layout `(0,0),(1,0),(0.5,1)` that every face shares).
+     name once at the face triangle's centroid (`v = 1/3` under the UV layout `(0,0),(1,0),(0.5,1)` that every face
+     shares).
 
-  Textures cached by `(catalogKey, rgba, shape, withName)` so repeated renders reuse the same canvas (and the same GPU upload).
+  Textures cached by `(catalogKey, rgba, shape, withName)` so repeated renders reuse the same canvas (and the same GPU
+  upload).
 - `src/deck-geometries.ts`:
    octahedron now writes a UV triangle `(0,0),(1,0),(0.5,1)` per face (was all-zero `TEXCOORD_0`).
    The same UV patch on every face means the baked-name texture appears identically on each octahedron facet.
 - `src/deck-scatter.ts` rewritten;
-   each factory now returns `readonly Layer[]` with one `SimpleMeshLayer` per probe rather than a single layer holding the whole bucket.
+   each factory now returns `readonly Layer[]` with one `SimpleMeshLayer` per probe rather than a single layer holding
+   the whole bucket.
    Per-layer `opacity` (0.05 vs 1) supplies the filter-fade effect (since `texture` overrides `getColor` in deck.
   gl's SimpleMeshLayer,
    per-instance alpha is no longer available).
    Lighting stays on by default so the meshes keep their 3D shading.
 - New `src/deck-scatter-helpers.ts`:
-   `partitionProbes` (leaf / non-leaf / unknown bucketing) and `computeNameBakeSet` (which `originalIndex` values get a baked name under the current `nameLabels` toggle) extracted so the main scatter file stays under the 300-line cap.
+   `partitionProbes` (leaf / non-leaf / unknown bucketing) and `computeNameBakeSet` (which `originalIndex` values get a
+   baked name under the current `nameLabels` toggle) extracted so the main scatter file stays under the 300-line cap.
 - `src/deck-labels.ts`:
    `buildNameLabelsLayer` removed entirely (the corresponding visual is now baked into the textures);
    module docstring updated;
-   unused `nameLabel` / `probePosition` / `unknownClusterPosition` / `PackageProbe` / `AppState` imports + the `TOP_N_NAMES` / `NAME_LABEL_SIZE_PX` / `NAME_LABEL_OFFSET_FRACTION` constants + the painted-label fill / outline constants are all gone.
+   unused `nameLabel` / `probePosition` / `unknownClusterPosition` / `PackageProbe` / `AppState` imports + the
+   `TOP_N_NAMES` / `NAME_LABEL_SIZE_PX` / `NAME_LABEL_OFFSET_FRACTION` constants + the painted-label fill / outline
+   constants are all gone.
 - `src/deck-config.ts` `buildLayers`:
    drops the `nameLabels === 'none'` branch (no separate name-label layer to gate);
    flattens the three scatter factories' `readonly Layer[]` returns directly into the layer groups.
 
 Per-probe layers (≈ 117 at the current catalog size) trade extra draw calls for correct depth-of-text rendering.
- A texture-atlas + per-instance UV transform extension would consolidate back to three draw calls but is not worth the complexity at this scale.
+ A texture-atlas + per-instance UV transform extension would consolidate back to three draw calls but is not worth the
+ complexity at this scale.
 
 Lint,
  types,
@@ -373,9 +404,11 @@ Lint,
     gl-relative units;
      produces a ~10 to 15 % rim around the white fill at 11 px).
   - Depth override:
-     `parameters: { depthCompare: 'always' }` so the billboard text sits on top of the opaque sphere/octahedron rather than being half-occluded by the mesh's front face.
+     `parameters: { depthCompare: 'always' }` so the billboard text sits on top of the opaque sphere/octahedron rather
+     than being half-occluded by the mesh's front face.
      Verified via cloned deck.
-    gl source at `modules/extensions/src/terrain/terrain-pass.ts:90` and `modules/core/src/passes/screen-pass.ts:36` that `depthCompare: 'always'` is the WebGPU-style key deck.
+    gl source at `modules/extensions/src/terrain/terrain-pass.ts:90` and `modules/core/src/passes/screen-pass.ts:36`
+    that `depthCompare: 'always'` is the WebGPU-style key deck.
     gl 9 / luma.
     gl v9 layers accept on `parameters`.
 
@@ -399,12 +432,14 @@ Lint,
 - `62d80159 feat(dev-script/deps-cube): bake names into per-probe mesh textures` (iteration 5)
 - `059201f2 feat(dev-script/deps-cube): paint name labels onto each ball/octahedron` (iteration 4)
 - `217ffab5 feat(dev-script/deps-cube): halve glyph size and label every glyph by default` (iteration 3)
-- `21b62437 feat(dev-script/deps-cube): all 3 coordinate planes via SolidPolygonLayer + scheme-aware chrome` (iteration 2)
+- `21b62437 feat(dev-script/deps-cube): all 3 coordinate planes via SolidPolygonLayer + scheme-aware chrome` (iteration
+- 2)
 - `220818cb feat(dev-script/deps-cube): 3D mesh glyphs + coordinate-system backdrop + dual-thumb sliders` (iteration 1)
 - `5d552cdf fix(dev-script/deps-cube): use ISO 8601 UTC down to seconds in output filename`
 - `dbd34c10 feat(dev-script/deps-cube): tsdown build with bin pointing to dist/final/node/cli.mjs`
 - `594ce226 fix(dev-script/deps-cube): walk up to package.json instead of hardcoded`..`for dist resolution`
-- `b0364026 fix(dev-script/deps-cube): deep-clone defaults in defaultState to prevent shared-reference corruption` (task 13 fix 3)
+- `b0364026 fix(dev-script/deps-cube): deep-clone defaults in defaultState to prevent shared-reference corruption`
+- (task 13 fix 3)
 - `775efcf1 fix(dev-script/deps-cube): pass partial-unknowns through range filter by default` (task 13 fix 2)
 - `9376aff8 fix(dev-script/deps-cube): anchor output to <package>/dist/ via import.meta.dirname` (task 13 fix 1)
 - `77656a03 test(dev-script/deps-cube): add eight unit-test files for task 12` (task 12)
@@ -451,7 +486,8 @@ Done:
    per-field `{ value, fetchedAt }`;
    atomic tmp+rename writes.
 - ~~Task 5 (probe)~~:
-   `src/probe.ts` (orchestrator) + `src/probe-fields.ts` (per-field probes + helpers) + `src/probe-transitive.ts` (depth-bounded dep walk).
+   `src/probe.ts` (orchestrator) + `src/probe-fields.ts` (per-field probes + helpers) + `src/probe-transitive.ts`
+   (depth-bounded dep walk).
    Failed entries return a stub via `failedProbe` with `unknownReason: 'private-or-404'`.
 - ~~Task 6 (filter + state)~~:
    `src/script/filter.ts` exports `computeVisibleIndices`,
@@ -474,7 +510,8 @@ Done:
    no DOM,
    browser-bundle-safe.
 - ~~Task 8 (HTML control panel)~~:
-   `src/render-controls.ts` exports `renderControls({ probes, state })` returning the full `<aside id="controls">` fragment:
+   `src/render-controls.ts` exports `renderControls({ probes, state })` returning the full `<aside id="controls">`
+   fragment:
    6 dim `<select>` dropdowns (with channel-incompatible options rendered `disabled`),
    7 three-state radio `<fieldset>`s,
    6 range-slider pairs (`min`/`max` from full data extent;
@@ -506,7 +543,8 @@ Done:
      entry point.
      Reads `globalThis.__PROBES__`,
      runs `defaultState` overlaid with URL-hash state,
-     instantiates `new Deck<OrbitView>({ views: orbitView, initialViewState, controller: true, layers, getTooltip, onClick })`,
+     instantiates
+     `new Deck<OrbitView>({ views: orbitView, initialViewState, controller: true, layers, getTooltip, onClick })`,
      then wires `onViewStateChange` via `setProps` (deferred to avoid the `session` forward reference).
      Owns the `Session` type,
      `recomputeVisibility` / `rerenderLayers` / `syncHash` render-path helpers,
@@ -530,7 +568,8 @@ Done:
      `el` / `elInput` / `elSelect` typed accessors using `instanceof` (no `as HTMLInputElement` casts at call sites),
      plus `syncDomFromState` which writes every state value back into the DOM after a reset / URL-hash overwrite.
   - `src/script/controller-tooltip.ts`:
-     `formatTooltipHtml` (10-row tooltip table with HTML-escaped probe fields) + lazy-initialised `<aside id="pinned-tooltip">` with a close button,
+     `formatTooltipHtml` (10-row tooltip table with HTML-escaped probe fields) + lazy-initialised
+     `<aside id="pinned-tooltip">` with a close button,
      exposed as `pinTooltip` / `unpinTooltip`.
      Used by the deck.
     gl `getTooltip` hover callback (transient) and the `onClick` handler (pinned).
@@ -589,14 +628,17 @@ Done:
      Helpers:
      `bundleController` (throws when `result.success === false`,
      joining `result.logs.map(log => log.message)`),
-     `escapeForScriptTag` (replaces `</script` → `<\/script` and `<!--` → `<\!--` so the inline JS can't escape the script tag).
+     `escapeForScriptTag` (replaces `</script` → `<\/script` and `<!--` → `<\!--` so the inline JS can't escape the
+     script tag).
      Empty-probes smoke test:
      770KB output,
      513 modules,
      document terminates cleanly with `</html>`.
   - `src/cli.ts`:
      `#!/usr/bin/env node` entry;
-     top-level `await readCatalog()` → `createCache()` → `await probeAll({ entries, cache })` → `await renderHtml({ probes })` → `mkdir(distDir, { recursive: true })` → `writeFile(absPath, html, 'utf8')` → ``console.log(`Saved to ${absPath}`)``.
+     top-level `await readCatalog()` → `createCache()` → `await probeAll({ entries, cache })` →
+     `await renderHtml({ probes })` → `mkdir(distDir, { recursive: true })` → `writeFile(absPath, html, 'utf8')` →
+     ``console.log(`Saved to ${absPath}`)``.
      `currentRunOutputFilename()` returns `deps-cube-<YYYY-MM-DDTHH-MM-SSZ>.html`:
      ISO 8601 UTC down to seconds,
      with `:` rewritten as `-` for filesystem safety;
@@ -636,15 +678,19 @@ Done:
      `padding-inline`) or single-concept (`border-radius`) shorthands;
      sided borders use longhand `border-block-start-width` / `-style` / `-color`.
   - `src/css.d.ts`:
-     ambient `declare module '*.css'` shim so TypeScript types the text import as `string` (mirrors the existing `svg.d.ts` shim in `inference-canary-viewer`).
+     ambient `declare module '*.css'` shim so TypeScript types the text import as `string` (mirrors the existing
+     `svg.d.ts` shim in `inference-canary-viewer`).
   - **Layout**:
-     HTML body is `display: flex` with `<main id="canvas-host">` (`flex-grow: 1; position: relative; min-block-size: 100vh`) and `<aside id="controls">` (`inline-size: 22rem`) side-by-side.
+     HTML body is `display: flex` with `<main id="canvas-host">`
+     (`flex-grow: 1; position: relative; min-block-size: 100vh`) and `<aside id="controls">` (`inline-size: 22rem`)
+     side-by-side.
      The deck.
     gl canvas is supplied as `<canvas id="deck-canvas">` inside the main element;
      the controller passes `canvas: 'deck-canvas'` to `new Deck<OrbitView>({...})` so deck.
     gl uses the pre-existing canvas instead of creating its own attached to `document.body`.
      **Controller change**:
-     `src/script/controller.ts` `createSession` now passes `canvas: 'deck-canvas'` to the `Deck` constructor (no other changes).
+     `src/script/controller.ts` `createSession` now passes `canvas: 'deck-canvas'` to the `Deck` constructor (no other
+     changes).
 
 Done (continued):
 
@@ -669,7 +715,8 @@ Done (continued):
    top-N name-bake TODO,
    monorepo-housed packages routed to Unknown cluster).
    Numbers in the doc come from `gh api repos/visgl/deck.gl/{languages,contributors}` (TS 72.56%,
-   contributors 277+) and `https://api.npmjs.org/downloads/point/last-week/` (~630K/week for `@deck.gl/core` and `@deck.gl/layers`),
+   contributors 277+) and `https://api.npmjs.org/downloads/point/last-week/` (~630K/week for `@deck.gl/core` and
+   `@deck.gl/layers`),
    measured 2026-05-12.
    No em-dashes,
    no en-dashes,
@@ -724,7 +771,8 @@ Done (continued):
      `readCatalog` for default + named blocks;
      `npm:` decoding inside catalog entries;
      throw paths for missing yaml and empty catalog blocks.
-     Uses an upward search constrained to a temp dir so the test doesn't accidentally pick up the real `pnpm-workspace.yaml` higher in the tree.
+     Uses an upward search constrained to a temp dir so the test doesn't accidentally pick up the real
+     `pnpm-workspace.yaml` higher in the tree.
   - **filter**:
      `extractDim` log scaling + null pass-through;
      binary/categorical numeric mapping;
@@ -740,7 +788,8 @@ Done (continued):
   - **state**:
      `defaultState` produces the plan dim mapping,
      "any" toggles,
-     and ranges matching `Math.min/max(...extractDim values)` per channel (this indirectly covers the same extent logic `computeSceneBounds` runs at render time);
+     and ranges matching `Math.min/max(...extractDim values)` per channel (this indirectly covers the same extent logic
+     `computeSceneBounds` runs at render time);
      `encodeState`/`decodeState` round-trip;
      malformed-JSON / missing-keys fallback paths;
      `readStateFromHash` empty / corrupt / round-trip.
@@ -773,7 +822,8 @@ Done (continued):
      the bundler stub is process-global,
      so concurrent stubs can trip sinon's "already wrapped" guard.
   - **probe**:
-     pure helpers (`parseRepository` for plain URL / `git+https` / `github:` shorthand / object with `directory` / non-GH / undefined / empty;
+     pure helpers (`parseRepository` for plain URL / `git+https` / `github:` shorthand / object with `directory` /
+     non-GH / undefined / empty;
      `classifyLicense` for every class;
      `resolveVersion` for pinned vs range);
      `probeAll` exercised against a pre-populated file cache covering every `UnknownReason` branch (`null` known,
@@ -781,7 +831,8 @@ Done (continued):
      `non-github`,
      `monorepo`,
      `private-or-404`).
-     The `private-or-404` case uses `sinon.stub(globalThis, 'fetch').rejects(...)` so the field probe's manifest fetch fails and the orchestrator emits a `failedProbe` stub via the catch in `probeAll`.
+     The `private-or-404` case uses `sinon.stub(globalThis, 'fetch').rejects(...)` so the field probe's manifest fetch
+     fails and the orchestrator emits a `failedProbe` stub via the catch in `probeAll`.
   - **deck-config (accessors)**:
      covers the importable `src/deck-accessors.ts` helpers:
      `probePosition` (known + null spatial);
@@ -803,22 +854,29 @@ Done (continued):
      and out-of-gamut clamping.
 
   **Layer-count snapshot from the plan is blocked upstream**:
-   importing `src/deck-config.ts` at test runtime fails because `@loaders.gl/schema-utils@4.4.1` statically imports `@math.gl/types` without declaring it as a dependency,
+   importing `src/deck-config.ts` at test runtime fails because `@loaders.gl/schema-utils@4.4.1` statically imports
+   `@math.gl/types` without declaring it as a dependency,
    so Node's module-load resolver can't find the latter.
    The rolldown bundle path tree-shakes the unreachable path,
    so the produced HTML still works.
-   The `deck-config.unit.test.ts` file has a single `it({ skip: '<reason>' })` placeholder so the limitation surfaces in test output.
+   The `deck-config.unit.test.ts` file has a single `it({ skip: '<reason>' })` placeholder so the limitation surfaces
+   in test output.
    Upstream fix path:
-   add `@math.gl/types` to `@loaders.gl/schema-utils`'s `package.json` dependencies (track via `visgl/loaders.gl` repo when revisiting).
+   add `@math.gl/types` to `@loaders.gl/schema-utils`'s `package.json` dependencies (track via `visgl/loaders.gl` repo
+   when revisiting).
 
-  Sinon stubbing of global namespace methods (`globalThis.fetch` and bundler seams) requires `oxlint-disable typescript-eslint/no-unsafe-call` and `no-unsafe-member-access` because sinon's overload set doesn't unify with the fetch global and bundler seam types.
-   The disables are wrapped tightly around the `sinon.stub(...).resolves/rejects(...)` lines per the `AGENTS.md` disable-comment rule.
+  Sinon stubbing of global namespace methods (`globalThis.fetch` and bundler seams) requires
+  `oxlint-disable typescript-eslint/no-unsafe-call` and `no-unsafe-member-access` because sinon's overload set doesn't
+  unify with the fetch global and bundler seam types.
+   The disables are wrapped tightly around the `sinon.stub(...).resolves/rejects(...)` lines per the `AGENTS.md`
+   disable-comment rule.
 
 Partial:
 
 - **Task 13** (in progress):
    end-to-end smoke run.
-   Headless verification complete via `agent-browser` against the most recently written `file://.../dist/deps-cube-<YYYY-MM-DDTHH-MM-SSZ>.html`:
+   Headless verification complete via `agent-browser` against the most recently written
+   `file://.../dist/deps-cube-<YYYY-MM-DDTHH-MM-SSZ>.html`:
   - CLI exits with one line of stdout:
      `Saved to <abs-path>` ✓
   - HTML is self-contained (no `<link rel="stylesheet">`,
@@ -830,7 +888,8 @@ Partial:
   - Search filtering works (`react` → 2 of 115;
      `etag` → 0 of 115,
      no etag-style packages in this catalog) ✓
-  - 3-state toggle composition for the audit-target pattern (`tsMajority=no` + `isLeaf=yes` + `recent=no`) narrows to 1 probe:
+  - 3-state toggle composition for the audit-target pattern (`tsMajority=no` + `isLeaf=yes` + `recent=no`) narrows to 1
+  - probe:
      `mitata` ✓
   - Display toggles flip state (`#display-planes` checked → unchecked without error) ✓
   - Reset button restores defaults across all radios + ranges + search ✓ (was broken before the defaultState clone fix)
@@ -840,7 +899,8 @@ Partial:
      matching the 22 probes with non-null `unknownReason`) ✓
   - Re-run from cache completes in <2s ✓
 
-  Manual Firefox verification still needed for the interactive 3D pieces that headless tools cannot exercise meaningfully:
+  Manual Firefox verification still needed for the interactive 3D pieces that headless tools cannot exercise
+  meaningfully:
    drag-rotate,
    shift-drag pan,
    scroll-zoom,
@@ -907,10 +967,12 @@ package/dev-script/deps-cube/
     └── state.unit.test.ts        ← defaultState ranges + encode/decode round-trip + hash helpers
 ```
 
-The split (`probe.ts` / `probe-fields.ts` / `probe-transitive.ts` and `deck-config.ts` / `deck-accessors.ts` / `deck-layers.ts` / `deck-scatter.ts` / `deck-labels.ts`) is enforced by the `eslint/max-lines: 300` rule.
+The split (`probe.ts` / `probe-fields.ts` / `probe-transitive.ts` and `deck-config.ts` / `deck-accessors.ts` /
+`deck-layers.ts` / `deck-scatter.ts` / `deck-labels.ts`) is enforced by the `eslint/max-lines: 300` rule.
  Keep new files under that;
  the rule is configured with `skipBlankLines: true, skipComments: true`,
- so raw line counts can exceed 300 as long as code-only lines stay under (verified `render-controls.ts` at 402 raw lines passes cleanly).
+ so raw line counts can exceed 300 as long as code-only lines stay under (verified `render-controls.ts` at 402 raw
+ lines passes cleanly).
 
 ## Verification before declaring each task complete
 
@@ -930,7 +992,8 @@ mise run //package/dev-script/deps-cube:run
  `oxlint`,
  etc.) directly;
  use the corresponding mise task" applies here.
- The `test:unit` task extends the root `task_templates."test:unit"` which runs `node <file>` per `*.unit.test.ts` in parallel;
+ The `test:unit` task extends the root `task_templates."test:unit"` which runs `node <file>` per `*.unit.test.ts` in
+ parallel;
  the harness (`@monochromatic-dev/module-test`) uses top-level `await describe(...)`,
  so each file is its own test process.
  Bun's built-in `bun test` runner has a separate result accumulator that doesn't track these harness-driven results;
@@ -944,7 +1007,8 @@ The first two pass cleanly now.
  ignore those unless tidying for release.
  The blocking errors caught across sessions were:
 
-- `eslint/prefer-template` (two pre-existing in `catalog.ts` (string concat in error messages)) fixed by switching to template literals.
+- `eslint/prefer-template` (two pre-existing in `catalog.ts` (string concat in error messages)) fixed by switching to
+- template literals.
 - `tsdoc/check-tag-names`:
    TSDoc reads bare `@anthropic-ai` inside `@example` block as an unknown tag;
    escape with `\@`.
@@ -969,7 +1033,8 @@ The first two pass cleanly now.
    they don't trigger the rule since the lets aren't at the function root.
 - **No arrow functions**:
    every callback is a named `function` expression.
-   Array-prototype callbacks (`(value, index)`) are exempt from the destructured-object-param rule but still must be named functions.
+   Array-prototype callbacks (`(value, index)`) are exempt from the destructured-object-param rule but still must be
+   named functions.
 - **No try-finally**:
    `fetchJson` uses `AbortSignal.timeout(30000)`.
    `decodeState` uses try-catch (allowed).
@@ -1003,10 +1068,12 @@ The first two pass cleanly now.
 - **Rolldown log type**:
    `result.logs` is `Array<BuildMessage | ResolveMessage>`.
    Both classes carry a `message: string` field;
-   use `log.message` rather than `String(log,)` (the latter triggers `typescript-eslint/no-base-to-string` because the type does not declare a custom `toString`).
+   use `log.message` rather than `String(log,)` (the latter triggers `typescript-eslint/no-base-to-string` because the
+   type does not declare a custom `toString`).
 - **`canvas: string` not `parent`**:
    deck.
-  gl's `Deck` accepts either `parent?: HTMLDivElement | null` (creates its own canvas inside the supplied div) or `canvas?: HTMLCanvasElement | string | null` (uses the supplied element).
+  gl's `Deck` accepts either `parent?: HTMLDivElement | null` (creates its own canvas inside the supplied div) or
+  `canvas?: HTMLCanvasElement | string | null` (uses the supplied element).
    The `string` form is the id of an existing `<canvas>`:
    simpler than typing through `HTMLDivElement`,
    no `as` cast needed.
@@ -1024,7 +1091,8 @@ The first two pass cleanly now.
    `margin-inline-end`) and single-concept (`border-radius`,
    `inset`,
    `gap`) shorthands are fine;
-   sided borders use longhand `border-block-start-width` / `-style` / `-color` (and the equivalent for `border-inline-*`).
+   sided borders use longhand `border-block-start-width` / `-style` / `-color` (and the equivalent for
+   `border-inline-*`).
    `outline` is similar;
    write `outline-width: 2px; outline-style: solid; outline-color: var(...); outline-offset: 2px;`.
 - **Plan deviation worth recording in `doc/decision/deps-cube.md`**:
@@ -1055,9 +1123,11 @@ The first two pass cleanly now.
    Combined with `Math.max(value, 1)` in `extractDim`,
    these render at `log10(1) = 0` on every spatial axis.
    They'll cluster at the origin if the unknown-cluster routing fails to catch them;
-   cross-check by setting `unknownReason: 'private-or-404'` on all failed probes (already done) and ensure `partitionProbes` routes them to the unknown bucket via the `probe.unknownReason !== null` check.
+   cross-check by setting `unknownReason: 'private-or-404'` on all failed probes (already done) and ensure
+   `partitionProbes` routes them to the unknown bucket via the `probe.unknownReason !== null` check.
 - **Linguist `bytes(TypeScript) / sum(bytes)` is whole-repo**:
-   monorepo-housed packages (`repository.directory` set) intentionally return `null` for `tsRatioOrNull` and `sourceBytesOrNull`:
+   monorepo-housed packages (`repository.directory` set) intentionally return `null` for `tsRatioOrNull` and
+   `sourceBytesOrNull`:
    the viz must place these in the Unknown cluster region,
    not silently coerce to 0.
    This is already the case.

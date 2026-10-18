@@ -700,7 +700,9 @@ Everything imports `/ts`,
    ADDED `cli.unit.test.ts` spawning `cli.mjs --help` (bin
   execution — `dts` can't verify `cli.mjs` since `cli.ts` has no exports);
    network test renamed to
-  `client.expensive.unit.test.ts` (excluded from default `test:unit`) — `build(module-image-diff): produce dist (lib + bin, node)`.
+  `client.expensive.unit.test.ts`
+  (excluded from default `test:unit`) —
+  `build(module-image-diff): produce dist (lib + bin, node)`.
 - `cli-rgffplay` (NODE pure-CLI,
    commit `86e55896`) — bin -> `dist/final/node/index.mjs`.
    ADDED `index.unit.test.ts`

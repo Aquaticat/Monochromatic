@@ -442,7 +442,9 @@ The issue operation is not partially executed after this exact `BaseRepo` error.
 ### Treating every `gh api` call as Git-free
 
 An explicit `repos/OWNER/REPO/...` endpoint is Git-free for repository selection.
-An endpoint using `{owner}` or `{repo}` placeholders can ask GitHub CLI to infer those values from the current repository and therefore re-enter Git discovery.
+An endpoint using `{owner}` or `{repo}` placeholders can ask GitHub CLI
+to infer those values from the current repository
+and therefore re-enter Git discovery.
 
 ### Passing a release page URL to `gh release view`
 
@@ -473,7 +475,8 @@ found no matching report.
 2. **Can upstream fix it?
    ** Not as this incident is framed.
    Upstream could redesign repository inference,
-   but that is unnecessary for this failure because the existing repository override already avoids the broken local executable.
+   but that is unnecessary for this failure
+   because the existing repository override already avoids the broken local executable.
 3. **Are they supporting this use case?
    ** Yes.
    `--repo`,

@@ -469,7 +469,8 @@ selection reason,
 and expected artifact names.
 The final gate requires the entire selected set.
 Use the existing task and workspace owners;
-the real Mise cycle and global-input gaps must be resolved or conservatively bypassed before affected scope is authoritative.
+the real Mise cycle and global-input gaps must be resolved
+or conservatively bypassed before affected scope is authoritative.
 Do not expose arbitrary `runs-on` expressions to untrusted inputs.
 
 GitHub permits at most 256 matrix jobs per workflow run;

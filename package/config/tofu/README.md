@@ -1,6 +1,7 @@
 # tofu - Hetzner Cloud firewall manager
 
-OpenTofu configuration for managing Hetzner Cloud firewalls with dynamic IP range aggregation from multiple CDNs and services.
+OpenTofu configuration for managing Hetzner Cloud firewalls
+with dynamic IP range aggregation from multiple CDNs and services.
 
 ## Overview
 

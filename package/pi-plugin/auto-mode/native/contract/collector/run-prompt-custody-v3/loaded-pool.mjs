@@ -7,7 +7,10 @@ import {createLoadedEventInputs} from './loaded-event-inputs.mjs';
 import {createLoadedToolInputs} from './loaded-tool-inputs.mjs';
 import {createLoadedAgentInputs} from './loaded-agent-inputs.mjs';
 import {createLoadedUserInputs} from './loaded-user-inputs.mjs';
-import {createInputContentStore,freezeInputContentSource} from './input-content.ts';
+import {
+  createInputContentStore,
+  freezeInputContentSource
+} from './input-content.ts';
 //region Original session and resource inputs share their pool state.
 /**
  Capture owned native loaded values before migration changes their representation.
@@ -22,7 +25,13 @@ export function createInputPool({
  const retainContent=createInputContentStore();
  const metadataTexts=new Map();
  const constructedInputs=[];
- const poolState={bytes:0,pendingEventBytes:0,count:0,failure:undefined,constructedSnapshot:Object.freeze([])};
+ const poolState={
+   bytes:0,
+   pendingEventBytes:0,
+   count:0,
+   failure:undefined,
+   constructedSnapshot:Object.freeze([])
+ };
 
  function reserve(){
   poolState.count++;
@@ -40,11 +49,22 @@ export function createInputPool({
  }){
   const contentFormat=(typeof value)==='string'?'text':'native-content-json';
   const serialized=contentFormat==='text'?value:JSON.stringify(value??[]);
-  const data=retainContent({text:serialized,json:contentFormat==='native-content-json'});
-  const serializedMetadata=JSON.stringify({...metadata,contentFormat});
+  const data=retainContent({
+    text:serialized,
+    json:contentFormat==='native-content-json'
+  });
+  const serializedMetadata=JSON.stringify({
+    ...metadata,
+    contentFormat
+  });
   const metadataJSON=metadataTexts.get(serializedMetadata)??serializedMetadata;
-  if(!metadataTexts.has(serializedMetadata))metadataTexts.set(serializedMetadata,metadataJSON);
-  const source=freezeInputContentSource({content:data,fields:{
+  if(!metadataTexts.has(serializedMetadata))metadataTexts.set(
+    serializedMetadata,
+    metadataJSON
+  );
+  const source=freezeInputContentSource({
+    content:data,
+    fields:{
     kind,
     contentFormat,
     inputOrigin,
@@ -59,9 +79,13 @@ export function createInputPool({
     registration:undefined,
     historicalIssuer:'not-established',
     permission:false
-  }});
+  }
+  });
   poolState.bytes+=Buffer.byteLength(JSON.stringify(source));
-  const publisher=createInputOnlyPublication({source,systemInput});publisher.capture(carrier);
+  const publisher=createInputOnlyPublication({
+    source,
+    systemInput
+  });publisher.capture(carrier);
   const origin=Object.freeze({
     source,
     publication:publisher.view,
@@ -81,13 +105,69 @@ export function createInputPool({
   poolState.constructedSnapshot=undefined;
  }
 
- const {captureSummary,captureEdit,captureLoadedEntries}=createLoadedHistory({occurrence,reserve,retain,poolState,InputCaptureError});
+ const {
+   captureSummary,
+   captureEdit,
+   captureLoadedEntries
+ }=createLoadedHistory({
+   occurrence,
+   reserve,
+   retain,
+   poolState,
+   InputCaptureError
+ });
 captureLoadedEntries(entries);
-const {captureInitialManagerInput,captureManagerInput}=createLoadedManagerInputs({poolState,InputCaptureError,reserve,retainConstructedInput});
-const {createEventHandlerCapture,captureContextHandler,captureHandlerResultOutput}=createLoadedEventInputs({poolState,InputCaptureError,reserve,retainConstructedInput});
-const {captureToolLoadoutQuery,captureToolLoadoutInput,captureToolLoadoutOutput,captureExtensionToolInput,captureCustomToolDescriptions}=createLoadedToolInputs({poolState,InputCaptureError,reserve,retainConstructedInput});
-const {captureAgentInput}=createLoadedAgentInputs({poolState,InputCaptureError,reserve,retainConstructedInput});
-const {captureQueuedInput,captureUninterceptedInput,captureCallInput,captureCommandInput,captureTransformedInput,captureInputEvent,captureCustomMessageInput}=createLoadedUserInputs({poolState,InputCaptureError,reserve,retainConstructedInput});
+const {
+  captureInitialManagerInput,
+  captureManagerInput
+}=createLoadedManagerInputs({
+  poolState,
+  InputCaptureError,
+  reserve,
+  retainConstructedInput
+});
+const {
+  createEventHandlerCapture,
+  captureContextHandler,
+  captureHandlerResultOutput
+}=createLoadedEventInputs({
+  poolState,
+  InputCaptureError,
+  reserve,
+  retainConstructedInput
+});
+const {
+  captureToolLoadoutQuery,
+  captureToolLoadoutInput,
+  captureToolLoadoutOutput,
+  captureExtensionToolInput,
+  captureCustomToolDescriptions
+}=createLoadedToolInputs({
+  poolState,
+  InputCaptureError,
+  reserve,
+  retainConstructedInput
+});
+const {captureAgentInput}=createLoadedAgentInputs({
+  poolState,
+  InputCaptureError,
+  reserve,
+  retainConstructedInput
+});
+const {
+  captureQueuedInput,
+  captureUninterceptedInput,
+  captureCallInput,
+  captureCommandInput,
+  captureTransformedInput,
+  captureInputEvent,
+  captureCustomMessageInput
+}=createLoadedUserInputs({
+  poolState,
+  InputCaptureError,
+  reserve,
+  retainConstructedInput
+});
  return Object.freeze({
   captureQueuedInput,
   captureUninterceptedInput,

@@ -312,7 +312,8 @@ A future change that adds a mandatory configure or setup call reopens that probl
 Resolved on 2026-09-06 by the section "Platform-specific sinks live behind `./node` and `./browser`";
  kept as the record of how the problem was understood and measured.
 
-Users of this logger have complained that using it effectively introduces dynamic imports into an otherwise clean application.
+Users of this logger have complained that using it effectively introduces dynamic imports
+ into an otherwise clean application.
 The mechanism is the flip side of zero-config:
  importing the module runs sink auto-discovery (five verifies,
  a filesystem probe,
@@ -322,7 +323,8 @@ The repository has one such consumer of its own:
  `package/ssg/aquati.cat/src/build/compress.ts` imports the logger with `await import(...)` on the main thread only,
  "so worker threads never pay its import-time sink auto-discovery".
 
-Corrected on 2026-09-06 after the maintainer pointed out that users object to the mere existence of `import()` in their bundles,
+Corrected on 2026-09-06 after the maintainer pointed out that users object to the mere existence of `import()`
+ in their bundles,
  not to when discovery runs.
 Measured on the 0.2.0 artifacts:
  both `dist/final/node/index.mjs` and `dist/final/neutral/index.mjs` contain two dynamic imports,
@@ -443,7 +445,8 @@ Acceptance:
    the discussion is unanswered,
    and Vite's troubleshooting page tells users to report such warnings to the library.
 
-Nothing in this sample keeps a runtime-guarded dynamic import of a Node module in an artifact that browsers also receive.
+Nothing in this sample keeps a runtime-guarded dynamic import of a Node module in an artifact
+ that browsers also receive.
 Every package selects the platform at resolution time (export conditions,
  `imports` conditions,
  or the `browser` field) and,
@@ -482,7 +485,8 @@ and a neutral file under `default`,
 - Vite resolves `#` subpath imports since 4.2 (vitejs/vite pull request 7770,
    through the `resolve.exports` library)
    and documents `node` in its default server conditions and `browser` in its default client conditions,
-   so an Astro or Vite consumer of the `/ts` subpath gets the node branch on the server and the neutral branch on the client.
+   so an Astro or Vite consumer of the `/ts` subpath gets the node branch on the server and the neutral branch
+    on the client.
 
 ## Sinks verify concurrently under a time limit (2026-09-06)
 
@@ -511,7 +515,8 @@ are disjoint regardless of which verify settles first;
 
 ## Startup buffer is bounded and overflow is reported (2026-09-06)
 
-Records logged before every sink has answered its verify wait in a startup buffer and replay once a sink becomes available.
+Records logged before every sink has answered its verify wait in a startup buffer
+ and replay once a sink becomes available.
 That buffer had no cap,
  so a burst during the verify window claimed memory without limit;
  verify liveness bounded the window (`verifyTimeoutMs`) but not the volume.
@@ -519,7 +524,8 @@ The buffer now holds at most `STARTUP_BUFFER_CAP` records (10000,
  exported as a constant).
 On overflow the oldest buffered record is dropped,
  because the newest records carry the context closest to whatever is being diagnosed,
- and once initialization completes one synthetic `warn` record naming the dropped count is written to every available sink,
+ and once initialization completes one synthetic `warn` record naming the dropped count is written
+  to every available sink,
  so the loss appears in the log stream itself instead of being silent.
 
 The cap is a constant rather than a `createLogger` option.

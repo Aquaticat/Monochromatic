@@ -18,5 +18,6 @@ Remaining work to validate and harden the implementation.
 
 - `Rename-Computer` requires a reboot to take effect;
    hostname shows the template name until then
-- The `exec` subcommand arg parser treats `-`-prefixed PowerShell arguments (e.g. `-Path`) as CLI options when passed through `mise run`;
+- The `exec` subcommand arg parser treats `-`-prefixed PowerShell arguments
+   (e.g. `-Path`) as CLI options when passed through `mise run`;
    direct `mvm exec` works correctly

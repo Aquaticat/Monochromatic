@@ -57,7 +57,8 @@ they release the full derived review and automatic-review references.
 Original source receipts and native member results remain with their existing owners.
 This prevents retained execution callbacks from preserving every past collection of derived source views.
 
-`test:native:review-retirement` uses original native membership and execution owners with visible fixture review storage.
+`test:native:review-retirement` uses original native membership
+and execution owners with visible fixture review storage.
 It keeps completed contexts and the actual latest full review alive.
 The old output retains 96,805,456 bytes across twelve groups and fails its 32 MiB budget.
 A private retirement probe retains 8,792,696 bytes,
@@ -80,7 +81,8 @@ or its existing Bash fallback;
 the projection describes Bash syntax and does not establish runtime effects or evaluated expansion values.
 
 Execution retains the original input object and source command.
-A parser failure withholds automatic review while leaving the exact original operation available for scoped confirmation.
+A parser failure withholds automatic review
+while leaving the exact original operation available for scoped confirmation.
 The shared shell analyzer owns parsing;
 the package no longer carries a pass-through command-analysis wrapper.
 

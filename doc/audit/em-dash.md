@@ -167,7 +167,8 @@ Replace with paired commas,
 ### AUDIT.md
 
 - Line 120:
-   Unbounded recursion in namespace normalization is a theoretical DoS vector on deeply nested XML — mitigate with a response size limit on fetch.
+   Unbounded recursion in namespace normalization is a theoretical DoS vector on deeply nested XML — mitigate with a
+   response size limit on fetch.
 - Line 159:
    runtime dependencies.
    The only two flagged patterns — an eval('') for CSP feature detection and a new Function() for function
@@ -331,7 +332,8 @@ Replace with paired commas,
 - Line 10:
    // Re-export from the registry so consumers import from `mixin.ts` only —
 - Line 100:
-   `@apply ${mixinName} is missing its source location — parsed nodes should always have one, so PostCSS may have received a programmatically constructed node instead of a parsed one`
+   `@apply ${mixinName} is missing its source location — parsed nodes should always have one, so PostCSS may have receiv
+   ed a programmatically constructed node instead of a parsed one`
 
 ### package/build-tool/css/src/package-resolver.ts
 
@@ -868,7 +870,8 @@ Replace with paired commas,
 - Line 46:
    explanation:
    <>A link is for sending the user to a new URL.
-   Turning shuffle on doesn't change the URL and doesn't reload the page — it just flips an on/off switch inside the player
+   Turning shuffle on doesn't change the URL and doesn't reload the page — it just flips an on/off switch inside the
+   player
 - Line 51:
    explanation:
    <>A <code>{`<button>`}</code> works for a toggle,
@@ -877,7 +880,8 @@ Replace with paired commas,
 - Line 55:
    explanation:
    <>Only one control toggles shuffle.
-   Showing two would confuse users and assistive tech — they wouldn't know which one to click or how two controls are supposed to work
+   Showing two would confuse users and assistive tech — they wouldn't know which one to click or how two controls are
+   supposed to work
 - Line 60:
    explanation:
    <>Another good fit is <code>{`<input type="checkbox">`}</code>.
@@ -916,7 +920,8 @@ Replace with paired commas,
 - Line 137:
    explanation:
    <>One submit button per form step.
-   Two buttons that both submit the same form would let the user click both by accident — and a double submit on a checkout can mean be
+   Two buttons that both submit the same form would let the user click both by accident — and a double submit on a
+   checkout can mean be
 - Line 159:
    explanation:
    <>A button alone can't navigate to <code>/product/42</code> — buttons have no <code>href</code>.
@@ -963,7 +968,8 @@ Replace with paired commas,
 ### package/webapp-edu/paper2vn/README.md
 
 - Line 58:
-   The live-LLM tier inside the same file uses `test.skip(!env, reason)` so those tests skip silently here — no API key is threaded into the container.
+   The live-LLM tier inside the same file uses `test.skip(!env, reason)` so those tests skip silently here — no API key
+   is threaded into the container.
 - Line 80:
    The Bun smoke validates the prompt-to-parsed-chapters pipeline without the cost of spinning up a headless browser,
    which makes it a good pre-commit check while developing prompts.
@@ -971,7 +977,8 @@ Replace with paired commas,
 ### package/webapp-forge/server/TROUBLESHOOTING.isomorphic-git.md
 
 - Line 48:
-   \| Sideband multiplex (pack/progress/error onto channels 1/2/3) \| **missing — `GitSideBand.mux` is commented out** at `src/models/GitSideBand.js:82` \| must vendor
+   \| Sideband multiplex (pack/progress/error onto channels 1/2/3) \| **missing — `GitSideBand.mux` is commented out**
+   at `src/models/GitSideBand.js:82` \| must vendor
 
 ### package/webapp-forge/server/src/server/routes/git.unit.test.ts
 
@@ -981,12 +988,14 @@ Replace with paired commas,
 ### package/webapp-productivity/done-h-css-test/README.md
 
 - Line 43:
-   Adopting Drizzle would mean writing some queries with the query builder and others as raw `sql` template escape hatches — two query styles in one codebase.
+   Adopting Drizzle would mean writing some queries with the query builder and others as raw `sql` template escape
+   hatches — two query styles in one codebase.
 
 ### package/webapp-productivity/done/README.md
 
 - Line 44:
-   Adopting Drizzle would mean writing some queries with the query builder and others as raw `sql` template escape hatches — two query styles in one codebase.
+   Adopting Drizzle would mean writing some queries with the query builder and others as raw `sql` template escape
+   hatches — two query styles in one codebase.
 
 ## B. En-dash (`–`) violations
 
@@ -1162,7 +1171,8 @@ Replace with proper punctuation or restructure sentence.
 - Line 210:
    The actual default behavior already externalizes production deps --
 - Line 263:
-   `DepsPlugin` (`src/features/deps.ts`) is registered whenever a `package.json` exists (`src/features/rolldown.ts:115-117`).
+   `DepsPlugin` (`src/features/deps.ts`) is registered whenever a `package.json` exists
+   (`src/features/rolldown.ts:115-117`).
    On initialization,
    `getProductionDeps()` (`src/features/d
 - Line 269:
@@ -1299,13 +1309,15 @@ Replace with proper punctuation or restructure sentence.
    `bun test` runs -- imports `manager-defs.ts` at runtime (read-only)
 - Line 43:
    1.
-   Check if Claude Code's Edit tool source is accessible (it ships with the CLI -- look in the npm package or GitHub repo)
+   Check if Claude Code's Edit tool source is accessible (it ships with the CLI -- look in the npm package or GitHub
+   repo)
 
 ### TODO.figma-alternative.md
 
 - Line 133:
    Since rendering is DOM,
-   using the browser's own layout engine is the simplest path -- but Figma's auto-layout has behaviors that do not map 1:1 to CSS flexbox.
+   using the browser's own layout engine is the simplest path -- but Figma's auto-layout has behaviors that do not map
+   1:1 to CSS flexbox.
 
 ### TODO.forbidden-strings.md
 
@@ -1413,13 +1425,15 @@ Replace with proper punctuation or restructure sentence.
 
 - Line 41:
    Project conventions ban `!important`.
-   Source-order ordering achieves the same outcome with the natural cascade and stays maintainable -- a future contributor reading the stylesheet
+   Source-order ordering achieves the same outcome with the natural cascade and stays maintainable -- a future
+   contributor reading the stylesheet
 
 ### TROUBLESHOOTING.css-tooling.md
 
 - Line 352:
    This is correct behavior,
-   but it means testing both strategies requires two separate imported fixture packages -- one with `exports` and one without.
+   but it means testing both strategies requires two separate imported fixture packages -- one with `exports` and one
+   without.
 
 ### TROUBLESHOOTING.dependencies.md
 
@@ -1668,7 +1682,8 @@ Replace with proper punctuation or restructure sentence.
    not `node_modules` or `package.json` `exports`
 - Line 10:
    2.
-   **Custom `@mixin`/`@apply` processing** -- no standard PostCSS plugin provides the mixin semantics this monorepo needs
+   **Custom `@mixin`/`@apply` processing** -- no standard PostCSS plugin provides the mixin semantics this monorepo
+   needs
 - Line 11:
    3.
    **Browser-compatible** -- the entire pipeline runs in both Node.
@@ -1678,7 +1693,8 @@ Replace with proper punctuation or restructure sentence.
    `@mixin` collection,
    and `@apply` expansion.
 - Line 90:
-   For consumers that already have CSS text in memory -- such as web components with Shadow DOM styles defined as JavaScript strings -- use `applyMixins()`:
+   For consumers that already have CSS text in memory -- such as web components with Shadow DOM styles defined as
+   JavaScript strings -- use `applyMixins()`:
 - Line 117:
    1.
    **Resolve and bundle** -- a custom PostCSS plugin walks `@import` statements,
@@ -2384,7 +2400,8 @@ Replace with proper punctuation or restructure sentence.
 - Line 21:
    No graceful shutdown on SIGINT/SIGTERM -- open file watchers and AbortControllers are never cleaned up.
 - Line 36:
-   The current direct execution model was chosen explicitly to avoid this complexity -- add only if there is a real use case.
+   The current direct execution model was chosen explicitly to avoid this complexity -- add only if there is a real use
+   case.
 
 ### package/dev-script/file-enforcer/src/cli.ts
 
@@ -3400,7 +3417,8 @@ Replace with proper punctuation or restructure sentence.
 - Line 781:
    // @ts-expect-error -- AsyncUserSchema is not assignable to RealSchemaAsync (demonstrates compile-time safety)
 - Line 813:
-   // @ts-expect-error -- UserTransformSchema is not assignable to RealMaybeAsyncSchema (demonstrates compile-time safety)
+   // @ts-expect-error -- UserTransformSchema is not assignable to RealMaybeAsyncSchema (demonstrates compile-time
+   safety)
 - Line 855:
    // @ts-expect-error -- Unknown loses additional properties from unknown input
 - Line 860:
@@ -3830,7 +3848,8 @@ The recorded lines retain their historical positions.
 - Line 1:
    /* v8 ignore file -- @preserve */
 - Line 5:
-   //region Generator Test Fixtures -- Provides generator functions that yield numbers from 0 to 999 for testing synchronous generators,
+   //region Generator Test Fixtures -- Provides generator functions that yield numbers from 0 to 999 for testing
+   synchronous generators,
    asynchronous generators,
    error handling,
    and p
@@ -3840,14 +3859,16 @@ The recorded lines retain their historical positions.
 - Line 1:
    /* v8 ignore file -- @preserve */
 - Line 5:
-   //region Promise Test Fixtures -- Provides an array of 1000 promises with progressive timing delays for testing asynchronous operations,
+   //region Promise Test Fixtures -- Provides an array of 1000 promises with progressive timing delays for testing
+   asynchronous operations,
    concurrent processing,
    and performance char
 
 ### package/test-fixture/data-sequence/src/script.ts
 
 - Line 3:
-   //region Fixture Data Generation Utility -- Provides manual generation logic for creating fixture data arrays and promises used in testing scenarios
+   //region Fixture Data Generation Utility -- Provides manual generation logic for creating fixture data arrays and
+   promises used in testing scenarios
 
 ### package/test-fixture/file-enforcer-perf/src/bench-in-container.ts
 
@@ -4039,7 +4060,8 @@ The recorded lines retain their historical positions.
    then hash the CSS itself
 - Line 180:
    3.
-   **Reference rewriting** -- replace original basenames with hashed basenames in all HTML files and `manifest.webmanifest`
+   **Reference rewriting** -- replace original basenames with hashed basenames in all HTML files and
+   `manifest.webmanifest`
 
 ### package/ssg/aquati.cat/TODO.generalize-ssg.md
 
@@ -4437,7 +4459,8 @@ The recorded lines retain their historical positions.
 - Line 1253:
    These patterns are confirmed working -- no surprises expected during implementation.
 - Line 1267:
-   \| Static imports for DB + route handlers \| **validated** \| Dynamic imports unnecessary -- top-level await ensures build completes first \|
+   \| Static imports for DB + route handlers \| **validated** \| Dynamic imports unnecessary -- top-level await ensures
+   build completes first \|
 - Line 1279:
    \| Orchestrator multi-process spawning \| high \| Most complex untested piece -- budget extra time on day 5 \|
 - Line 1342:
@@ -4508,7 +4531,8 @@ The recorded lines retain their historical positions.
 - Line 22:
    5.
    On every request to `/u/<user-id>/*`,
-   orchestrator validates the session cookie and checks that the session's user-id matches the path -- then reverse-proxies to `localhost:
+   orchestrator validates the session cookie and checks that the session's user-id matches the path -- then reverse-prox
+   ies to `localhost:
   $POR
 - Line 27:
    User IDs are opaque (ULIDs),
@@ -4516,9 +4540,11 @@ The recorded lines retain their historical positions.
 - Line 39:
    It does not just organize tasks -- it actively surfaces the right task at the right time and place.
 - Line 69:
-   All active timers increment in real time on the client using `setInterval(1s)` math against the server-provided `timerStartedAt` timestamp -- no polling or SSE needed for display.
+   All active timers increment in real time on the client using `setInterval(1s)` math against the server-provided
+   `timerStartedAt` timestamp -- no polling or SSE needed for display.
 - Line 70:
-   Tasks blocked by other tasks are **not shown in Suggestions or All** -- they appear only nested/indented under the tasks blocking them (in any view where the blocker is visible).
+   Tasks blocked by other tasks are **not shown in Suggestions or All** -- they appear only nested/indented under the
+   tasks blocking them (in any view where the blocker is visible).
    T
 - Line 107:
    System-level notification display (not implemented in app -- defers to OS/browser push notifications via PWA).
@@ -4535,7 +4561,8 @@ The recorded lines retain their historical positions.
    This is a caution-first data safety measure -- if the instance dies,
    the user has a recent export.
 - Line 207:
-   Outbound writes (modifying source files) are deferred post-competition -- too risky to auto-edit a user's codebase in week 1.
+   Outbound writes (modifying source files) are deferred post-competition -- too risky to auto-edit a user's codebase
+   in week 1.
 - Line 246:
    No separate API layer,
    no CORS,
@@ -4575,7 +4602,8 @@ The recorded lines retain their historical positions.
    with description text below
 - Line 131:
    - In create mode,
-   the header says "New task" and the save button says "Create" -- this matches Figma's "Task details" heading but the Figma design always shows "Task details" regar
+   the header says "New task" and the save button says "Create" -- this matches Figma's "Task details" heading but the
+   Figma design always shows "Task details" regar
 - Line 155:
    1.
    **Missing icons throughout** -- nav links,
@@ -4776,7 +4804,8 @@ The recorded lines retain their historical positions.
 - Line 1253:
    These patterns are confirmed working -- no surprises expected during implementation.
 - Line 1267:
-   \| Static imports for DB + route handlers \| **validated** \| Dynamic imports unnecessary -- top-level await ensures build completes first \|
+   \| Static imports for DB + route handlers \| **validated** \| Dynamic imports unnecessary -- top-level await ensures
+   build completes first \|
 - Line 1279:
    \| Orchestrator multi-process spawning \| high \| Most complex untested piece -- budget extra time on day 5 \|
 - Line 1342:
@@ -4847,7 +4876,8 @@ The recorded lines retain their historical positions.
 - Line 22:
    5.
    On every request to `/u/<user-id>/*`,
-   orchestrator validates the session cookie and checks that the session's user-id matches the path -- then reverse-proxies to `localhost:
+   orchestrator validates the session cookie and checks that the session's user-id matches the path -- then reverse-prox
+   ies to `localhost:
   $POR
 - Line 27:
    User IDs are opaque (ULIDs),
@@ -4855,9 +4885,11 @@ The recorded lines retain their historical positions.
 - Line 39:
    It does not just organize tasks -- it actively surfaces the right task at the right time and place.
 - Line 69:
-   All active timers increment in real time on the client using `setInterval(1s)` math against the server-provided `timerStartedAt` timestamp -- no polling or SSE needed for display.
+   All active timers increment in real time on the client using `setInterval(1s)` math against the server-provided
+   `timerStartedAt` timestamp -- no polling or SSE needed for display.
 - Line 70:
-   Tasks blocked by other tasks are **not shown in Suggestions or All** -- they appear only nested/indented under the tasks blocking them (in any view where the blocker is visible).
+   Tasks blocked by other tasks are **not shown in Suggestions or All** -- they appear only nested/indented under the
+   tasks blocking them (in any view where the blocker is visible).
    T
 - Line 107:
    System-level notification display (not implemented in app -- defers to OS/browser push notifications via PWA).
@@ -4874,7 +4906,8 @@ The recorded lines retain their historical positions.
    This is a caution-first data safety measure -- if the instance dies,
    the user has a recent export.
 - Line 207:
-   Outbound writes (modifying source files) are deferred post-competition -- too risky to auto-edit a user's codebase in week 1.
+   Outbound writes (modifying source files) are deferred post-competition -- too risky to auto-edit a user's codebase
+   in week 1.
 - Line 246:
    No separate API layer,
    no CORS,
@@ -4914,7 +4947,8 @@ The recorded lines retain their historical positions.
    with description text below
 - Line 131:
    - In create mode,
-   the header says "New task" and the save button says "Create" -- this matches Figma's "Task details" heading but the Figma design always shows "Task details" regar
+   the header says "New task" and the save button says "Create" -- this matches Figma's "Task details" heading but the
+   Figma design always shows "Task details" regar
 - Line 155:
    1.
    **Missing icons throughout** -- nav links,
@@ -5096,7 +5130,8 @@ Replace with proper punctuation or restructure sentence.
    interoperability,
    and detachable solutions
 - Line 10:
-   - **[Build and Execution](../philosophy/build-execution.md)** - Technical decisions about build systems and script execution
+   - **[Build and Execution](../philosophy/build-execution.md)** - Technical decisions about build systems and script
+   - execution
 - Line 11:
    - **[Tool Choices](../philosophy/tool-choices.md)** - Rationale for HTTP framework,
    editor,
@@ -5262,7 +5297,8 @@ Replace with proper punctuation or restructure sentence.
 ### TODO.cli-tools.md
 
 - Line 5:
-   - [**Build System Integration**](../todo/build-system.md#package-management-improvements) - Package management tooling integration
+   - [**Build System Integration**](../todo/build-system.md#package-management-improvements) - Package management
+   - tooling integration
 - Line 6:
    - [**Automation Tools**](../todo/automation.md#development-automation) - Development workflow automation
 - Line 7:
@@ -5459,7 +5495,8 @@ Replace with proper punctuation or restructure sentence.
 - Line 8:
    - [**Automation Documentation**](../todo/automation.md#documentation-automation) - Automated documentation generation
 - Line 9:
-   - [**Build System Documentation**](../todo/build-system.md#mise-configuration-enhancements) - Build system and tooling documentation
+   - [**Build System Documentation**](../todo/build-system.md#mise-configuration-enhancements) - Build system and
+   - tooling documentation
 - Line 17:
    **Status**:
    Normal Priority - Content creation enhancement
@@ -5533,7 +5570,8 @@ Replace with proper punctuation or restructure sentence.
    development automation,
    release management
 - Line 14:
-   - [**VM Dev Environment**](../todo/vm-dev-environment.md) - Portable immutable VM image ([rationale](../philosophy/vm-dev-environment.md))
+   - [**VM Dev Environment**](../todo/vm-dev-environment.md) - Portable immutable VM image
+   - ([rationale](../philosophy/vm-dev-environment.md))
 - Line 15:
    - **Completed Tasks** - Reference for finished work
 
@@ -6115,11 +6153,13 @@ Replace with proper punctuation or restructure sentence.
 ### package/module/es/TODO.code-review.md
 
 - Line 13:
-   - `t object/t logger/f/t never/r s/p p/index.ts:100` - Uses `.catch()` callback pattern which is banned by project rules ("No `.then()`,
+   - `t object/t logger/f/t never/r s/p p/index.ts:100` - Uses `.catch()` callback pattern which is banned by project
+   - rules ("No `.then()`,
    `.catch()`,
    `.finally()`").
 - Line 30:
-   - `t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/customParsers.ts` (331 lines) - has a comment about mutual recursion but not an explicit justification for exceeding th
+   - `t object/t jsonc/f/t string hasQuotedSyntax jsonc/r s/p n/customParsers.ts` (331 lines) - has a comment about
+   - mutual recursion but not an explicit justification for exceeding th
 - Line 31:
    - `path/index.ts` (241 lines) - no justification comment
 - Line 32:
@@ -6130,14 +6170,17 @@ Replace with proper punctuation or restructure sentence.
    "Never silently discard unexpected states.
   "
 - Line 54:
-   - `t object/t promise/f/t number/wait/r a/p p/index.ts:43` - TSDoc `@example` block uses `.then()` pattern which contradicts project rules.
+   - `t object/t promise/f/t number/wait/r a/p p/index.ts:43` - TSDoc `@example` block uses `.then()` pattern which
+   - contradicts project rules.
 - Line 66:
-   - `t object/t logger/t sink/t file/p p/index.ts` - Writes log files to `node_modules/.monochromatic/` which is unconventional and will be wiped on `npm install`.
+   - `t object/t logger/t sink/t file/p p/index.ts` - Writes log files to `node_modules/.monochromatic/` which is
+   - unconventional and will be wiped on `npm install`.
 - Line 69:
    resolved in `package/module/throws`;
    the old module-es expression-position helper TODO was removed.
 - Line 73:
-   - `t object/t logger/t sink/t sessionStorage/r s/p p/index.ts:43` - `lineCounter++` uses postfix increment which is a mutation without justification.
+   - `t object/t logger/t sink/t sessionStorage/r s/p p/index.ts:43` - `lineCounter++` uses postfix increment which is
+   - a mutation without justification.
 - Line 76:
    - `customParsers.ts:101` - `['-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].some(...)` could be simplified.
 - Line 79:
@@ -6626,15 +6669,18 @@ Replace with proper punctuation or restructure sentence.
 - Line 57:
    - [ ] **[`string.capitalize.ts`](src/string.capitalize.ts:87)** - [`capitalizeString()`](src/string.capitalize.ts:87)
 - Line 63:
-   - [ ] **[`function.deConcurrency.ts`](src/function.deConcurrency.ts:1)** - [`deConcurrency()`](src/function.deConcurrency.ts:1)
+   - [ ] **[`function.deConcurrency.ts`](src/function.deConcurrency.ts:1)** -
+   - [`deConcurrency()`](src/function.deConcurrency.ts:1)
 - Line 68:
-   - [ ] **[`function.ignoreExtraArgs.ts`](src/function.ignoreExtraArgs.ts:40)** - [`ignoreExtraArgs()`](src/function.ignoreExtraArgs.ts:40)
+   - [ ] **[`function.ignoreExtraArgs.ts`](src/function.ignoreExtraArgs.ts:40)** -
+   - [`ignoreExtraArgs()`](src/function.ignoreExtraArgs.ts:40)
 - Line 74:
    - [ ] **[`fs.emptyPath.ts`](src/fs.emptyPath.ts:20)** - Multiple functions need docs:
 - Line 80:
    - [ ] **[`fs.pathJoin.shared.ts`](src/fs.pathJoin.shared.ts:1)** - Utility functions:
 - Line 88:
-   - [ ] **[`boolean.equal.ts`](src/boolean.equal.ts:174)** - [`equal()`](src/boolean.equal.ts:174) and [`equalAsync()`](src/boolean.equal.ts:543)
+   - [ ] **[`boolean.equal.ts`](src/boolean.equal.ts:174)** - [`equal()`](src/boolean.equal.ts:174) and
+   - [`equalAsync()`](src/boolean.equal.ts:543)
 - Line 94:
    - [ ] **[`any.toExport.ts`](src/any.toExport.ts:45)** - [`toExport()`](src/any.toExport.ts:45)
 - Line 99:
@@ -6766,7 +6812,8 @@ Replace with proper punctuation or restructure sentence.
 - Line 1254:
    - ✅ **Developer guidelines** - Comprehensive instructions for adding utilities
 - Line 1255:
-   - 🔄 **Migration ongoing** - Functions being moved from legacy [`src/type/`](../../../../../bak/20251014/type) structure
+   - 🔄 **Migration ongoing** - Functions being moved from legacy [`src/type/`](../../../../../bak/20251014/type)
+   - structure
 - Line 1256:
    - ⏳ **Full coverage** - Complete migration of all 500+ utilities planned
 
@@ -6795,7 +6842,8 @@ Replace with proper punctuation or restructure sentence.
 ### package/ssg/aquati.cat/src/content/en/web-resources.mdx
 
 - Line 10:
-   [Web Typography - A handbook for designing beautiful and effective responsive typography](https://book.webtypography.net/)
+   [Web Typography - A handbook for designing beautiful and effective responsive typography](https://book.webtypography.
+   net/)
 - Line 36:
    [Every Layout - Relearn CSS layout by example](https://every-layout.dev/)
 - Line 56:

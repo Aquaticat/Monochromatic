@@ -448,7 +448,9 @@ and extended-glob expansion syntax fails closed.
 Quoted patterns used by `find` predicates and ripgrep arguments remain literal.
 
 Both private roots remain trusted for existing non-secret helper paths.
-Running an inspected helper script from either root does not trigger a location-only prompt when existing credential-handoff policy applies.
+Running an inspected helper script from either root
+does not trigger a location-only prompt
+when existing credential-handoff policy applies.
 Bash calls still flag destructive commands,
 secret-looking paths inside either root,
 and paths outside trusted roots.

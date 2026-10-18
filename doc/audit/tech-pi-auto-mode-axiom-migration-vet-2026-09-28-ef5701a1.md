@@ -1059,7 +1059,8 @@ No semantic feature call or semantic-head fit had run at the consumer checkpoint
 
 `72abba2` authored the new source-language banks,
 and `proc_76ce` constructed the original unqueried corpus.
-Independent pre-query review identified two cache-positive templates using files where entries matched the projected scope.
+Independent pre-query review identified two cache-positive templates using files
+where entries matched the projected scope.
 `7c5cf10` preserved the complete original source/data/control revision in `corpus-before-scope-review/`,
 then clarified that wording without using provider outputs.
 No evidence was deleted or retained only in git history.

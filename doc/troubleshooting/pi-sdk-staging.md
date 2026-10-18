@@ -504,7 +504,8 @@ The existing Synthetic troubleshooting record remains a separate incident.
 ### Symptom
 
 On Node 26.11.1,
-the first `native-tool-publication.unit.test.ts` entry imported the generated manager before the maintained policy entry.
+the first `native-tool-publication.unit.test.ts` entry imported the generated manager
+before the maintained policy entry.
 Node reported `ReferenceError: Cannot access 'SessionManager' before initialization`
 at the owned `native-host/host.ts:160`,
 called from `native-host/bootstrap.ts:236`.

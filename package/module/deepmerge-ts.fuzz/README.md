@@ -119,7 +119,8 @@ and open items:
    and Bun and Deno runs;
    method and results in `doc/audit/deepmerge-ts-surface-2026-09-24.md`.
 
-Machine-local files matching `*.local.*` (gitignored) hold embargoed security findings until upstream publishes an advisory.
+Machine-local files matching `*.local.*` (gitignored)
+hold embargoed security findings until upstream publishes an advisory.
 
 ## Running
 
@@ -170,7 +171,8 @@ mise run //package/module/deepmerge-ts.fuzz:mutation:differential --control 34 2
 Historical recall
 (inputs live under `~/temp/agent`, outside this repo;
 the runtime and packaging runs use the mutation image,
-and every run except setup and report is capped at 2 GiB / 2 CPUs with this repo read-only and only its `dist/recall/<area>/` writable):
+and every run except setup and report is capped at 2 GiB / 2 CPUs
+with this repo read-only and only its `dist/recall/<area>/` writable):
 
 ```bash
 # Every npm release and the upstream trees the ledger names (host; downloads and git archive only)

@@ -145,7 +145,8 @@ A journal left behind after the index install checks each added path:
    not the policy,
    checks that an added path is unchanged,
    because policies cannot see the real index or the worktree.
-- A worktree copy edited while the commit runs is kept with a warning instead of blocking every later Git command through recovery.
+- A worktree copy edited while the commit runs is kept
+  with a warning instead of blocking every later Git command through recovery.
 - A dependent whose worktree manifest differs from `HEAD` and is not staged blocks the commit.
    This follows from the rejected option in the decision
    (adding paths without updating the worktree leaves reverted versions in `git status`).

@@ -262,9 +262,13 @@ or unpatched primitive-wrapper `Symbol.toStringTag`.
 
 - Reproducible from the repo (user decision recorded in `doc/handover/deepmerge-ts-hardening.md`):
    the image, Stryker config, sweep driver, and differential harness are now
-   `package/module/deepmerge-ts.fuzz/container/` plus `src/mutation-{score,sweep,sidecar,canon,differential,differential-case}.ts`,
+   `package/module/deepmerge-ts.fuzz/container/`
+   plus `src/mutation-{score,sweep,sidecar,canon,differential,differential-case}.ts`,
    run by the `mutation`, `mutation:sweep`, and `mutation:differential` tasks (commands in the package `README.md`).
-   Rerun from a `v8.0.2` checkout: 800 of 1098 detected (782 killed and 18 timed out, against 783 and 17 in the original run, a timing difference),
+   Rerun from a `v8.0.2` checkout:
+    800 of 1098 detected (782 killed and 18 timed out,
+    against 783 and 17 in the original run,
+    a timing difference),
    238 survived, 60 without coverage, with mutant ids matching this report.
    The sweep's baseline control passes all 36 sidecar files on this machine,
    and a sweep of mutants 34, 226, 283, and 511 reproduces their verdicts here
@@ -282,7 +286,10 @@ or unpatched primitive-wrapper `Symbol.toStringTag`.
    a probe of the still-unexercised into slot writes found another
    (`actions.defaultMerge` written into the slot is ignored by the array, Set, and Map functions).
    Both are pinned in `known-defect-options.unit.test.ts`.
-- Combined issue draft: all four findings in `Findings`, plus both intent questions, added after independent reproduction on 8.0.2.
+- Combined issue draft:
+   all four findings in `Findings`,
+   plus both intent questions,
+   added after independent reproduction on 8.0.2.
 
 ## Not exercised
 

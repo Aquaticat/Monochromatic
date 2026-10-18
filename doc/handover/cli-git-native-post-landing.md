@@ -3,7 +3,8 @@
 ## Purpose and scope
 
 This lane ports the post-landing completion half of slice 7 in `doc/handover/cli-git-native-transactions.md`
-(the module entry starting `post-landing completion:`) from the incumbent TypeScript wrapper into the native Rust wrapper.
+(the module entry starting `post-landing completion:`)
+from the incumbent TypeScript wrapper into the native Rust wrapper.
 Branch `feat/cli-git-native-post-landing`, worktree `.claude/worktrees/cli-git-lane-post-landing`,
 based on `feat/cli-git-native-transactions` at `c2f4219acb`.
 

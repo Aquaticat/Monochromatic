@@ -635,8 +635,8 @@ and
 `package/dev-script/file-enforcer/src/package/mise.generate-index.ts`.
 
 Proposed owner:
- file-enforcer is the canonical TypeScript configuration compiler and toolchain-convergence orchestrator for the replacement
-architecture.
+ file-enforcer is the canonical TypeScript configuration compiler
+and toolchain-convergence orchestrator for the replacement architecture.
 It should generate the selected provisioning,
 workspace-task,
 manifest,
@@ -712,7 +712,9 @@ Proposed owner:
 Unused upstream capabilities require no replacement.
 
 Parity gate:
- repeat the search across the final tracked tree and inspect user-global configuration separately before claiming machine-wide removal.
+ repeat the search across the final tracked tree
+and inspect user-global configuration separately
+before claiming machine-wide removal.
 
 Intentionally retired behavior:
  these unconsumed project capabilities may remain absent.
@@ -781,7 +783,9 @@ runtime,
 shim,
 and pipeline breadth as one workspace boundary,
 or treat it as the same scope-concentration problem motivating Mise removal.
-- Prefer one focused cross-language tool manager or several ecosystem-native installers for capabilities pnpm does not cover.
+- Prefer one focused cross-language tool manager
+  or several ecosystem-native installers
+  for capabilities pnpm does not cover.
 - Accept generated TOML,
   YAML,
   JSON,

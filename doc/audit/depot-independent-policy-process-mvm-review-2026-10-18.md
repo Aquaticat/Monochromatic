@@ -549,7 +549,8 @@ not VM billing-release measurements or application unit-test cases.
 The separate cancelled GitHub run `39132577785` has corrupt `$ + value +` runner labels,
 no assigned runner and no actual step execution.
 Its queued `started_at` timestamp does not establish allocated compute.
-The source records the failed generator separately from the successful guest consumers and retains guard removal/restoration.
+The source records the failed generator separately from the successful guest consumers
+and retains guard removal/restoration.
 
 All decoded members were inspected as UTF8,
 including dense lifecycle/command records and daemon logs.

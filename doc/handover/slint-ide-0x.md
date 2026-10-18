@@ -647,7 +647,8 @@ the items after it are the record of 2026-10-05 and older.
     not determined. The window-thread step took a median 3 to 7 ms and at most 15 ms at low load; on the earlier CPU
     it reached 91 ms once, so the allowance bounds counted work and not wall time.
     Determined 2026-10-13 (branch `feat/ide-resize-frame`,
-    `doc/troubleshooting/nested-wayland-recording-previous-resize-step.md`): the one-step delay is the recorder's capture model plus winit's redraw gate, not the application. The compositor
+    `doc/troubleshooting/nested-wayland-recording-previous-resize-step.md`):
+the one-step delay is the recorder's capture model plus winit's redraw gate, not the application. The compositor
     changes the recorded frame size when the `resize` command arrives, captures before it sends frame callbacks, and
     sends them only from the recorder tick; winit holds the redraw until that callback. 76 to 77 of 81 to 82 captures
     held a buffer of another width than the output, every frame that did not fit was among them, and no frame whose

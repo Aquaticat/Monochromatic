@@ -399,7 +399,8 @@ it does not measure GitHub API latency.
 Two concurrent fixture evaluations both admitted when prior analysis jobs were not visible.
 The gate creates no reservation in that modeled interval.
 This is not evidence that a live budget violation occurred.
-Moving the gate unchanged would preserve its history-query cost and make its GitHub accounting inappropriate for Depot runs.
+Moving the gate unchanged would preserve its history-query cost
+and make its GitHub accounting inappropriate for Depot runs.
 A rolling-budget admission mechanism remains separate from unlimited execution concurrency.
 No native Depot rolling-window configuration was verified,
 and no production controller was deployed.

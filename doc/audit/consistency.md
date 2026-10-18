@@ -81,7 +81,8 @@ README `# heading` lines use at least four different conventions for the same ki
  `# clauce-code-plugins-terminal-title` (typo:
  "clauce")
 
-The typo `clauce` in `claude-code-plugin/terminal-title/README.md` heading is worth fixing regardless of which convention is chosen.
+The typo `clauce` in `claude-code-plugin/terminal-title/README.md` heading is worth fixing regardless of
+which convention is chosen.
 
 Packages with **blank/empty** README first lines:
  `config/stylelint`,

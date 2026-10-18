@@ -1,4 +1,5 @@
-# mise-action 4.0.1 installs the version `mise.jdx.dev/VERSION` advertises and fails every job while that version has no GitHub release
+# mise-action 4.0.1 installs the version `mise.jdx.dev/VERSION` advertises
+and fails every job while that version has no GitHub release
 
 ## Symptom
 

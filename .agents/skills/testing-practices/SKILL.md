@@ -208,7 +208,9 @@ if (untestableCondition) {
 
 - Use descriptive test names that explain expected behavior
 - Group related tests using nested `describe` blocks as children
-- Keep `describe` names unique at the same scope within a file -- duplicate names cause misattributed results (see [testing troubleshooting](../../../doc/troubleshooting/testing.md))
+- Keep `describe` names unique at the same scope within a file;
+  duplicate names cause misattributed results
+  (see [testing troubleshooting](../../../doc/troubleshooting/testing.md))
 - Use `.map()` to generate parameterized `it` entries in the `children` array
 - Test both happy path and error scenarios
 

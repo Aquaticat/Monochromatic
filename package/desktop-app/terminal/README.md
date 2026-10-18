@@ -165,8 +165,8 @@ The `build`,
  `build:debug`,
  and `run` mise tasks copy `libghostty-vt.so*` from Cargo's build output into
 `target/lib/monochromatic-terminal` so `target/release/monochromatic-terminal` can run from the package directory.
-The `run` task also copies those shared libraries to `~/.local/lib/monochromatic-terminal` before installing the binary in
-`~/.local/bin`.
+The `run` task also copies those shared libraries to `~/.local/lib/monochromatic-terminal`
+before installing the binary in `~/.local/bin`.
 
 ## Layout
 

@@ -1,5 +1,52 @@
 # Complete repository coverage and executable CI research
 
+## Current source-contract continuation on 2026-10-18
+
+The seven primary material jobs and the admitted design correction are terminal.
+The sealed primary case sets contain 1137 execution observations and 821 unique owner/binary/case identities;
+the IDE lifecycle subset overlaps the full owner.
+The corrected design prerequisite allows all 13 authored Node programs to pass.
+The matched Depot GNU control executes the same 1494 identities as public GitHub,
+with 1493 passing and one retained session-path source failure
+([primary identities](../audit/depot-material-owner-primary-2026-10-18.evidence.json),
+[GNU and design correction](../audit/depot-gnu-design-terminal-2026-10-18.evidence.json)).
+
+Root's [source/runtime join](../audit/depot-source-contract-runtime-join-2026-10-18.evidence.json)
+revalidates 5878 script files,
+30611062 script bytes and 219 frozen README blob identities.
+It preserves static assertion,
+branch and generator candidates separately from actual executed bodies.
+The initial task classifier omitted generic `test` and unlisted `test:*` task names.
+The correction affects 41 owners and passes actual Rust/TypeScript positive controls and the DOM negative control.
+There are 55 active roots without a named package test task,
+including fixtures,
+configuration,
+assets and source-only helpers.
+That is not evidence of 55 untested products.
+
+The existing 1818-command semantic projection records builds or lints for
+`package/desktop-daemon/hall-monitor`,
+`package/dev-script/page-weight`,
+`package/figma/kiwi`,
+`package/figma/to-penpot`,
+`package/module/hyperscript` and
+`package/rolldown-plugin/import-attributes`.
+These roots contain 11 authored unit files;
+no owning test execution is joined for them in that projection.
+The import-attributes packed namespace import remains qualified separately from its transformation assertions.
+This narrow missing-join finding is checked against retained execution evidence before any new allocation.
+
+The authored Figma converter tests also read three personal export fixtures through `homedir()`.
+Their exact local paths are present and privately byte/hash checked.
+The next verification is their actual local consumer in a disposable 2-CPU/2-GiB container,
+with network disabled during fixture consumption.
+Fixture payloads remain local.
+No assertion edits,
+host model calls,
+emulator or desktop relaunch are included.
+Per-product feature promises and every source branch remain unvalidated;
+the canonical manifest continues to report `coverageReviewComplete: false`.
+
 ## Correction and objective
 
 The earlier routing research demonstrated routing fixtures,
@@ -1677,7 +1724,9 @@ No application source or assertion changed.
 The evidence-handoff failures expose an instruction gap.
 The proposed concrete edit tightens `QIV` in `AGENTS.md` to:
 
-> Before trusting a null or count, validate scope, cache, harness, evidence transport, and generator reach with controls; list unexercised surfaces.
+> Before trusting a null or count,
+> validate scope, cache, harness, evidence transport, and generator reach with controls;
+> list unexercised surfaces.
 
 This is a planning proposal, not an applied instruction-file edit.
 The completed local logger and deployed-uploader controls implement that boundary for this profile.

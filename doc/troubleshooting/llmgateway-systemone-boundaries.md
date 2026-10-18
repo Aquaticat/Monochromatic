@@ -706,7 +706,7 @@ A separate model-language probe,
 not the mocked route or client-failure harness,
 queried `typesafe/jev-1.13.0` through the native gateway endpoint.
 Process `proc_061a` completed 23 development states with two semantic predicates per state.
-The [broader qualification record](../planning/pi-auto-mode-jev-qualification.md#broader-source-isolated-semantic-controls)
+The [broader qualification record][broader-semantic-controls]
 retains every source boundary and evidence limit.
 
 For cache-content removal,
@@ -911,3 +911,5 @@ An upstream-filing workflow would require the applicable exclusion checks,
 contribution policy,
 duplicate search,
 and a compatible tested fix before a draft.
+
+[broader-semantic-controls]: ../planning/pi-auto-mode-jev-qualification.md#broader-source-isolated-semantic-controls

@@ -1,12 +1,33 @@
 import {SourceCollectionError} from '../collector.mjs';
 import {isDeepStrictEqual} from 'node:util';
-import {copyPromptOptions,freezePromptOptions} from '../base-prompt-custody-v2/copy.mjs';
-import {captureExpandedPromptInput,captureMessageInputs} from './message-inputs.mjs';
-import {createExpandedPromptPublication,createHandlerPublication} from './handler-publication.mjs';
+import {
+  copyPromptOptions,
+  freezePromptOptions
+} from '../base-prompt-custody-v2/copy.mjs';
+import {
+  captureExpandedPromptInput,
+  captureMessageInputs
+} from './message-inputs.mjs';
+import {
+  createExpandedPromptPublication,
+  createHandlerPublication
+} from './handler-publication.mjs';
 
 //region Observe the original native emitter and ordered handler completion.
 /** Observe the original native emitter and ordered handler completion. */
-export function createRunEmission({state,reserve,phase,check,base,fail,known,dense,capture,record,issuedErrors}){
+export function createRunEmission({
+  state,
+  reserve,
+  phase,
+  check,
+  base,
+  fail,
+  known,
+  dense,
+  capture,
+  record,
+  issuedErrors
+}){
 function start({
     runner,
     expandedPrompt
@@ -241,6 +262,11 @@ function leaveNative({
     }
     });
   }
-return {start,enterNative,invokeHandler,leaveNative};
+return {
+  start,
+  enterNative,
+  invokeHandler,
+  leaveNative
+};
 }
 //endregion

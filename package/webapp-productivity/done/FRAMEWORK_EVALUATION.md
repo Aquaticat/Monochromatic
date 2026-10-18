@@ -120,7 +120,8 @@ Checked Done's spec against what frameworks provide:
 </tr>
 <tr>
 <td>**Client-side state**</td>
-<td>All state lives in server SQLite. Client state is: one timer tick number, "is section collapsed" booleans, "is overlay open" boolean.</td>
+<td>All state lives in server SQLite. Client state is: one timer tick number,
+"is section collapsed" booleans, "is overlay open" boolean.</td>
 </tr>
 <tr>
 <td>**Component model**</td>
@@ -286,7 +287,9 @@ This prompted a harder question:
  No dependency graph,
  no cascading recalculations.
  A `switch` statement in `onmessage` covers it.
- Discord and Slack use React with 500+ engineers and regularly rebuild their rendering pipeline because React's reconciliation is the performance problem at their scale.
+ Discord and Slack use React with 500+ engineers
+ and regularly rebuild their rendering pipeline
+ because React's reconciliation is the performance problem at their scale.
 
 **Gmail/Slack-scale SPAs:
 ** Dozens of views,

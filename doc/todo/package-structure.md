@@ -95,7 +95,8 @@ The convention `@monochromatic-dev/<category>-<name>` is used for most packages,
    an AI tool (`ai-tree`),
    and a build-tool test harness (`bun-test`).
 - **`fixture/`** contains only test fixtures but uses a non-descriptive name.
-- **`style/`** is adequate for now but undersells the category if it grows to include multiple stylesheet packages (resets,
+- **`style/`** is adequate for now but undersells the category if it grows
+  to include multiple stylesheet packages (resets,
    utility sheets,
    theme packages).
 

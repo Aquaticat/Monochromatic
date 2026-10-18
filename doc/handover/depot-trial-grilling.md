@@ -1,5 +1,46 @@
 # Depot trial interview
 
+## Terminal allocation closure on 2026-10-18
+
+Every newly admitted job is terminal.
+The final follow-on has 49 rows and 53 retained source bodies,
+with 49 timestamp-pointer joins and exact BigInt arithmetic passing
+(`doc/audit/depot-owned-allocation-final-source-verification-2026-10-18.evidence.json`).
+Its nominal provider-window proxy is USD 1.685366666667 before allowances;
+the separate BuildKit request-window proxy is USD 0.015897333333.
+The frozen 223-row baseline and historical reservations remain separate.
+Both SSH attempts are consumed;
+paused-session attachment and final workflow readback remain unqualified.
+Verified installation and source-inspected status behavior are recorded in
+`doc/troubleshooting/depot-native-ssh-paused-session.md`.
+No new independent whole-report review has run after the agent service limit.
+Concrete Root source/hash/pointer/arithmetic checks do not substitute for that review.
+The source/runtime join is now sealed in
+`doc/audit/depot-source-contract-runtime-join-2026-10-18.evidence.json`.
+It revalidates all 5878 frozen script paths and 219 README blob identities.
+The corrected task classifier includes generic `test` and additional `test:*` names for 41 owners.
+Of 208 active roots,
+55 have no such named task;
+this includes fixtures and configuration and is not a count of untested products.
+Six roots contain 11 authored unit files without owning test execution in the existing 1818-command projection:
+`desktop-daemon/hall-monitor`,
+`dev-script/page-weight`,
+`figma/kiwi`,
+`figma/to-penpot`,
+`module/hyperscript` and `rolldown-plugin/import-attributes`,
+all under `package/`.
+The next action is the local frozen Figma consumer before other new execution.
+All three personal exports required by the authored converter tests exist at their exact source paths;
+their private byte/hash probe is `personal-figma-fixture-path-probes.json` in Root's controller.
+Use a disposable 2-CPU/2-GiB container with network disabled during fixture consumption.
+Keep personal payloads local and preserve authored assertions unchanged.
+The exact Node 26.12.0 image is cached;
+the old coverage worktree has no `node_modules`.
+Prepare isolated frozen dependencies and a source-bound admission before running the existing files.
+The JavaScript/TypeScript source candidate parser does not establish every product feature contract.
+Publication must use an isolated merge worktree because unrelated concurrent IDE changes block merging
+`origin/main` in the shared checkout.
+
 ## Current execution checkpoint on 2026-10-18
 
 Research remains active and the interview has not started.
@@ -29,6 +70,87 @@ Its scan covers 188 tracked audit files and 251 decoded containers,
 finds zero original desktop ZIP/captured-PNG payloads and 836 hash references,
 and detects both actual private ZIPs and all 110 PNG occurrences in the positive control.
 No image inspection/masking/publication or new desktop launch is claimed.
+The matched GNU and design continuations are now both terminal,
+their watcher session `30378` is reaped at zero,
+and no newly dispatched cloud job remains active.
+GNU run `39165688015`,
+job `117788040975`,
+runs 469 seconds and executes the same 1494 identities as the public baseline:
+1493 pass,
+the unreadable-session-path/logging case fails,
+and the watch case changes from public FAIL to Depot PASS.
+One repeated final-failure status line is deduplicated;
+one summary-only skip remains separate.
+No provider cause or failure rate follows from this pair.
+Design correction `39166144807`,
+job `117789377100`,
+runs 162 seconds on the same public shape,
+passes all thirteen authored programs and verifies 997 selected inputs totaling 269996175 materialized bytes.
+Both artifacts pass SHA-256,
+CRC and member/receipt joins.
+Their 42 text bodies and source-bound outcomes are sealed in
+`doc/audit/depot-gnu-design-terminal-2026-10-18.evidence.json` and its source archive.
+The primary archive remains unchanged.
+Native CLI status omits timing fields;
+source inspection identifies `CIService/GetWorkflow` as the actual attempt-timestamp consumer.
+Exact owned workflow queries return first SSH attempt `18:37:37` to `18:39:53 UTC` (136 seconds)
+and correction `20:58:40` to `21:00:58 UTC` (138 seconds).
+At USD 0.006/minute their combined nominal attempt-window proxy is USD 0.0274,
+separate from the historical USD 0.036 reservation and any invoice.
+Raw bodies remain private pending the final selected-field/hash ledger projection.
+The primary material outcome is now sealed in
+`doc/audit/depot-material-owner-primary-2026-10-18.evidence.json`
+with 126 original-artifact-derived text bodies in its hash-bound source archive.
+Actual compiled inventories match executed identities:
+IDE full 783 passes plus one ignored,
+IDE library subset 316 passes plus the same ignored case,
+terminal 16 passes,
+GTK 13 passes,
+sticky eight passes plus one ignored,
+Qt one pass.
+The 1137 observations contain 821 unique binary/case identities;
+the separate IDE subset overlaps full and is not additive coverage.
+IDE's real runtime producer records 2500 staged files.
+The actual owner assertions remain unchanged.
+Design's 13 programs were enumerated,
+but zero executed before the locked Node loader failure.
+The single-library correction is source `73edb149b0a051e8047e32b447d93af335f537a8`,
+branch `research/depot-design-libatomic-20261018`.
+Its actual ten bootstrap chunks reproduce the tracked Mise/config bytes;
+reversing the `libatomic` package addition restores the complete original workflow object.
+The original public profile and source assertions stay unchanged.
+The initial preflight incorrectly ran the final receipt assertion against an absent fixture,
+then omitted append chunks;
+both preflight defects were corrected before dispatch.
+The source branch is directly published,
+and its separate correction admission is
+`doc/audit/depot-design-libatomic-correction-admission-2026-10-18.evidence.json`.
+Matched GNU run `39165688015` on exact source
+`28f3167d8f0e731d13378d072dd5f23a7e392554` is active.
+The actual branch is `research/depot-complete-coverage-20261018`,
+not the descriptive unpushed branch label in the original proposal.
+Parent admission independently compares the complete decoded job and serialized function,
+retaining inherited inactive Android/desktop/material harness paths without dispatching them.
+Native SSH correction `sn950h8xcj`,
+job `lxkdfrx3dh`,
+attempt `bv33fqpvnp`,
+source `553bd7a8d2e79c1b907ac4181a28300a98285f9f`,
+is terminal cancelled and its controller is reaped at exit one.
+Its bounded tmate preinstall succeeds with the admitted archive/ELF hashes and version 2.4.0.
+Direct SSH and CLI RPC again return matching proofs with client exits 255 and zero;
+all recorded owned client identities are absent.
+No paused transport or final readback is qualified.
+Both admitted attempts are consumed;
+no third attempt is authorized by this campaign.
+The root main publisher has a real non-fast-forward rejection,
+not a wait-notice timeout.
+A normal merge refuses to overwrite concurrent edits in
+`doc/handover/slint-ide-0x.md` and `package/desktop-app/ide/README.md`.
+Those edits remain untouched.
+Publish the local scoped docs through an isolated merge worktree,
+preserving both histories and verifying direct remote ancestry;
+do not stash,
+reset or force-push the shared main worktree.
 All parent graph cloud jobs are terminal,
 all parent graph watchers and collectors are reaped,
 and no parent cloud allocation remains active.

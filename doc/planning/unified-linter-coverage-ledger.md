@@ -391,7 +391,8 @@ core.
 - Owner:
    one server for both languages;
    framework open
-   (`doc/audit/tech-meow-language-server-framework-vet-2026-09-17.md` recommends `lsp-server` 0.10.0 with `gen-lsp-types` 0.11.0).
+   (`doc/audit/tech-meow-language-server-framework-vet-2026-09-17.md`
+   recommends `lsp-server` 0.10.0 with `gen-lsp-types` 0.11.0).
 
 ### Introspection and library surface
 
@@ -605,7 +606,8 @@ registered as `markdown/autofix` in `cli-git.config.ts:22-43`.
    `package/cli/forbidden-strings.fuzz`
    and `package/rust-module/forbidden-regex.fuzz`,
    whose path escapes the `**/fuzz/**` default.
-- Root `lint:markdown` and `format:markdown` run `node package/cli/markdown-lint/src/cli.ts --lfs-image-exclude=package/ssg/`,
+- Root `lint:markdown` and `format:markdown`
+   run `node package/cli/markdown-lint/src/cli.ts --lfs-image-exclude=package/ssg/`,
    inside the `lint` and `format` aggregates.
 - `file-enforcer.config.ts`:
    `CARGO_PROFILE_LINTER` (`1570`,

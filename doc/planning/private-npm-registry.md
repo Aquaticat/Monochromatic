@@ -333,7 +333,8 @@ Scope widened by the owner on 2026-09-14:
     `package/git-policy/cli/src/policy-engine/final-newline-policy.ts`).
 - Dependents bump by patch and the ripple is transitive,
    matching `updateInternalDependencies: patch` in `.changeset/config.json`.
-- The changesets `version` job in `npm-release.yml` runs the same ripple before committing the Version Packages pull request,
+- The changesets `version` job in `npm-release.yml`
+   runs the same ripple before committing the Version Packages pull request,
    because that commit is authored in CI where no local hook runs,
    and changesets does not version the ignored dependents of `module-logger` or `module-fs-path`.
 - Consumer note for later wiring:
@@ -464,7 +465,9 @@ Settled gates:
    ) {
    ```
 
-   and `check_workload_request` (lines 147 to 167) allows only `PUT` to `{base}/~{registry}/{package}` after percent-decoding the path.
+   and `check_workload_request` (lines 147 to 167)
+   allows only `PUT` to `{base}/~{registry}/{package}`
+   after percent-decoding the path.
    So the OIDC trust config must list all publishable package names,
    and publishes target the named-registry path `/~<registry>/`.
 

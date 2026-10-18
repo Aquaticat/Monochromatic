@@ -98,7 +98,8 @@ A candidate creates all links before the parent writes transition state and send
 The child records a commit marker,
  the parent validates and stops the prior holder,
  then finalizes active state.
-Recovery retains the prior holder if an uncommitted candidate died and adopts a live committed candidate after interruption.
+Recovery retains the prior holder if an uncommitted candidate died
+and adopts a live committed candidate after interruption.
 Detach checks PID,
  process start time,
  full command,

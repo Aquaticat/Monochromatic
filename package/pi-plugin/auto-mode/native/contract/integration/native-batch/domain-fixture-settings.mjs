@@ -100,6 +100,31 @@ assert.ok(
   (!providerMetadata)||sdkStream,
   'Provider metadata contrasts require original SDK serialization'
 );
- return {relation,requireResolution,text,unobservedContext,observedContext,observedProgress,nextDecision,approvedChange,changeControl,nextInput,nextResult,throwingContext,httpTransport,operatingPolicy,unconfiguredPolicies,singleCall,expectedExecutions,extensionManifestArgument,configuredExtensions,lowConfidenceClause,unresolvedClause,sdkStream,receiptControl,providerMetadata};
+ return {
+   relation,
+   requireResolution,
+   text,
+   unobservedContext,
+   observedContext,
+   observedProgress,
+   nextDecision,
+   approvedChange,
+   changeControl,
+   nextInput,
+   nextResult,
+   throwingContext,
+   httpTransport,
+   operatingPolicy,
+   unconfiguredPolicies,
+   singleCall,
+   expectedExecutions,
+   extensionManifestArgument,
+   configuredExtensions,
+   lowConfidenceClause,
+   unresolvedClause,
+   sdkStream,
+   receiptControl,
+   providerMetadata
+ };
 }
 //endregion

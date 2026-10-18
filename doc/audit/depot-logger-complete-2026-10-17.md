@@ -416,7 +416,8 @@ Its real stdin Markdown rewrite produces the expected LFS URL and leaves already
 Both original Markdown host assertions now pass.
 The unchanged binary suite reports 137 passed, zero failed and one ignored;
 the unchanged library suite reports 1,806 passed, six failed and four ignored.
-Those six names exactly match [the independently searched incident mapping](depot-git-host-failure-mapping-2026-10-17.md).
+Those six names exactly match
+[the independently searched incident mapping](depot-git-host-failure-mapping-2026-10-17.md).
 Their causes remain unproved; the related lock ownership cases remain separate incidents.
 The emitted boundaries are filed separately as
 [#1135](https://github.com/Aquaticats/Monochromatic/issues/1135),
@@ -609,8 +610,10 @@ The original failure, correction commit and later consumer proof are unchanged.
 A narrow process-rule proposal is retained in
 [CI incident source-boundary evidence](../planning/ci-incident-source-boundary-evidence.md).
 
-Related source classifier incident `#1142` shows why a native `killed` classification alone is not literal assertion credit.
-The deciding `test-run.ts` and `mutant-loop.ts` files are byte-identical between logger `ef014` and its `525d2e` control.
+Related source classifier incident `#1142` shows why a native `killed` classification
+alone is not literal assertion credit.
+The deciding `test-run.ts` and `mutant-loop.ts` files are byte-identical
+between logger `ef014` and its `525d2e` control.
 Their source hashes are retained in the companion evidence.
 No caught-spawn occurrence is inferred for the logger campaign, and its CLI totals remain source-native classifications.
 

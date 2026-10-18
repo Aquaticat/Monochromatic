@@ -17,7 +17,8 @@ Expected absent candidates no longer emit one diagnostic each.
 
 Auto-mode deleted its duplicate resolver but keeps `git worktree list` and `rev-parse` metadata queries fresh for every
 read event.
-A same-process test creates another linked worktree after initial discovery and verifies that the next discovery includes
+A same-process test creates another linked worktree after initial discovery and verifies
+that the next discovery includes
 it.
 
 The post-change verbose unit harness recorded one `/usr/bin/git` resolver success across seven linked-worktree metadata

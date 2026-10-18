@@ -177,7 +177,8 @@ The user subsequently authorized a simple handwritten merge module for now.
 Implement the agreed JSONC merge semantics inside the linter;
 do not build the separate deepmerge port or wait for the fork.
 
-Keep the already accepted linter CLI integration rather than introducing a new public library interface or `--rule` flag.
+Keep the already accepted linter CLI integration rather than introducing a new public library interface
+or `--rule` flag.
 Cli-git's built-in Markdown policy selects the coordinated installation's owned native linter,
 creates a one-rule temporary JSONC configuration,
 and uses `--config`,

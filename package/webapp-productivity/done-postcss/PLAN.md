@@ -55,7 +55,8 @@ See `FRAMEWORK_EVALUATION.md` for why this approach was chosen over SvelteKit,
 
 ### 1.1 Project setup (~1.5h) **done**
 
-- (0.25h) Initialize project at `package/webapp-productivity/done-postcss/` with `package.json` (`workspace:*` references to monorepo packages)
+- (0.25h) Initialize project at `package/webapp-productivity/done-postcss/`
+   with `package.json` (`workspace:*` references to monorepo packages)
 - (0.25h) Add `mise.toml` with `dev`,
    `build`,
    and `start` tasks
@@ -1220,7 +1221,8 @@ When the autofill response includes a non-null `splitSuggestion`,
    reads page data,
    builds task card list with live timer display
 - (0.5h) Implement timer tick:
-   single `setInterval(1000)` updates all visible timer displays by computing `trackedTime + (Date.now() - Date.parse(timerStartedAt)) / 1000`
+   single `setInterval(1000)` updates all visible timer displays
+    by computing `trackedTime + (Date.now() - Date.parse(timerStartedAt)) / 1000`
 - (0.5h) Format timer display as `HH:MM:SS`,
    handle edge cases (no timerStartedAt,
    timer just started)

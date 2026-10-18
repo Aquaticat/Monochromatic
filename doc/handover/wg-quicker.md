@@ -292,7 +292,8 @@ then calls `rmdir` so unrelated entries block removal.
 
 ### Linux SELinux pin regression
 
-Kernel `7.1.3-ogc5.1.fc44.x86_64` returns `EINVAL` from `BPF_OBJ_PIN` because SELinux initializes inode security state before
+Kernel `7.1.3-ogc5.1.fc44.x86_64` returns `EINVAL` from `BPF_OBJ_PIN`
+because SELinux initializes inode security state before
 checking `SBLABEL_MNT` on bpffs.
 The package detects typed `BPF_OBJ_PIN EINVAL` without diagnostic-string matching.
 

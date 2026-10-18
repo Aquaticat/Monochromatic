@@ -349,7 +349,8 @@ and 8,381 output tokens.
 These are provider-reported usage values,
 not independently reconciled billing.
 
-The local error is `QuestionSelectionError: Choice answer is not a complete distribution with a highest-probability selected option`.
+The local error is
+`QuestionSelectionError: Choice answer is not a complete distribution with a highest-probability selected option`.
 The returned distributions include 38 sums outside the consumer's `0.000001` tolerance;
 the largest observed deviation is `0.0002`.
 The [troubleshooting analysis](../troubleshooting/drex-model-route-label.md#complete-native-choice-distributions-and-latency)

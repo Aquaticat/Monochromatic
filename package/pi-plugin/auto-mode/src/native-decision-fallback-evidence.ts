@@ -6,12 +6,10 @@
  */
 import { logger } from '@monochromatic-dev/module-logger/ts';
 import {
+  type AssessmentEvidenceRecord,
+  type DecisionEvidenceRecord,
   assertAssessmentEvidenceRecord,
   assertDecisionEvidenceRecord
-} from './native-decision-fallback-evidence-types.ts';
-import type {
-  AssessmentEvidenceRecord,
-  DecisionEvidenceRecord
 } from './native-decision-fallback-evidence-types.ts';
 
 /**
@@ -40,7 +38,12 @@ export type DecisionFallbackEvidenceCapture = Readonly<{
  @throws DecisionFallbackEvidenceShapeError when the envelope fields are absent
  */
 function parseDecisionEvidence(message: string): DecisionEvidenceRecord {
-  const parsed: unknown = JSON.parse(message.slice(message.indexOf('{')));
+  /**
+   JSON object text starts at the first brace of the tagged message.
+   */
+  const parsed: unknown = JSON.parse(
+    message.slice(message.indexOf('{'))
+  );
   assertDecisionEvidenceRecord(parsed);
   return parsed;
 }
@@ -55,7 +58,12 @@ function parseDecisionEvidence(message: string): DecisionEvidenceRecord {
  @throws DecisionFallbackEvidenceShapeError when the envelope fields are absent
  */
 function parseAssessmentEvidence(message: string): AssessmentEvidenceRecord {
-  const parsed: unknown = JSON.parse(message.slice(message.indexOf('{')));
+  /**
+   JSON object text starts at the first brace of the tagged message.
+   */
+  const parsed: unknown = JSON.parse(
+    message.slice(message.indexOf('{'))
+  );
   assertAssessmentEvidenceRecord(parsed);
   return parsed;
 }
@@ -68,11 +76,28 @@ function parseAssessmentEvidence(message: string): AssessmentEvidenceRecord {
  Install decision evidence capture on the shared tagged logger.
 
  @returns capture records and the original debug restoration
+
+ @example
+ ```ts
+ const capture = captureDecisionFallbackEvidence();
+ ```
  */
 export function captureDecisionFallbackEvidence(): DecisionFallbackEvidenceCapture {
+  /**
+   Decision records retain the review identifier for one judgment.
+   */
   const decisionRecords: DecisionEvidenceRecord[] = [];
+  /**
+   Assessment records retain transport inputs and invalid replies.
+   */
   const assessmentRecords: AssessmentEvidenceRecord[] = [];
+  /**
+   Mutable debug slot view restores the original implementation exactly.
+   */
   const mutableLogger: DebugSlot = logger;
+  /**
+   Original debug keeps receiving every captured message unchanged.
+   */
   const originalDebug = logger.debug;
   mutableLogger.debug = function captureDiagnostic(message: string): void {
     if (message.includes('[auto-mode-decision-evidence]'))

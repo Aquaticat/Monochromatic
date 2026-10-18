@@ -50,7 +50,8 @@ Evaluate open-source Pi extensions and a minimal custom design for subagent orch
 - A read-write probe succeeded:
    `/tmp/agent/hello.txt` contains `Hello`.
 - All six registered names accepted read-only diagnostic probes.
-- A broad delegated source-audit attempt timed out for every shard at 180 seconds without producing usable final reports;
+- A broad delegated source-audit attempt timed out for every shard
+   at 180 seconds without producing usable final reports;
    continue with narrower bounded probes and direct source reads.
 
 ## Investigation state
@@ -269,7 +270,8 @@ All containerized validation runs used a 2 GB memory cap and 2 CPU cap.
    architecture shape,
    security-code concentration,
    and rendering or generated-code surface.
-- Keep the final ranking and rejection reasons in this handover until a decision document is created after user selection.
+- Keep the final ranking and rejection reasons in this handover
+  until a decision document is created after user selection.
 
 ## Maintenance signals
 
@@ -492,7 +494,8 @@ shown to fit strict JSONL event capture and interactive lifecycle control.
 ## Synthesis
 
 No existing candidate is a clean pass on all hard requirements.
- The most important unresolved integration gap is a real interactive Pi `0.80.6` run proving complete live event visibility,
+ The most important unresolved integration gap is a real interactive Pi `0.80.6` run
+ proving complete live event visibility,
  selected-child interruption,
  independent per-child deadlines,
  descendant cleanup,
@@ -544,7 +547,8 @@ Personal ranking by fit for the stated requirements and auditability:
 9. The official Pi subagent example and `cmf/pi-subagent` remain reference or low-signal implementations,
     not viable hard-filter finalists.
 
-Do not create a decision document until the user selects whether to patch an existing extension or implement the custom design.
+Do not create a decision document until the user selects whether to patch
+an existing extension or implement the custom design.
  If the user selects one,
  write the rejected alternatives and exact pinned source version under `doc/decision/`.
 

@@ -214,7 +214,8 @@ if (log.status === 'cached') {
 }
 ```
 
-An earlier concern that `verified 4d ago` meant newly introduced tarballs escaped current lockfile identity checking was wrong.
+An earlier concern
+that `verified 4d ago` meant newly introduced tarballs escaped current lockfile identity checking was wrong.
 The source proves cache reuse requires same parsed lockfile content and acceptable cached policy.
 
 ## Verification
@@ -372,7 +373,8 @@ then added the visible cached-verdict message reproduced here.
     No prototype is appropriate because constraint one fails and the installed behavior matches upstream design.
 
 There is nothing additive to post on issue 12324.
-The maintainer comment and merged pull request already contain the source-backed explanation and user-visible resolution.
+The maintainer comment and merged pull request already contain the source-backed explanation
+and user-visible resolution.
 No new issue or comment should be filed.
 
 ## pnpm 12.3.4: verification fetches `@jsr/*` metadata from `registry.npmjs.org` and fails with 404
