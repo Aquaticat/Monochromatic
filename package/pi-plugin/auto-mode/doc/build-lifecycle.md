@@ -63,7 +63,31 @@ with previous-file and output-directory arguments supplied by a disposable bound
 Frozen `532c20e618` first reproduces the defect through the helper;
 the maintained consumer regression invokes the actual build command.
 Changed files retain independent inodes.
-It does not follow dependency symlinks or rewrite an old release.
+The first recursive enumeration incorrectly assumed that Node would ignore directory symlinks.
+On Node `26.12.0`,
+recursive `readdir` follows them even with `withFileTypes: true`.
+A committed real-build regression first proves `EACCES` for a disposable unreadable target,
+then reproduces the build's attempt to scan that target through a copied contract symlink.
+The replacement reads nonrecursive directory entries,
+extends a sequential queue only for actual directories and compares only regular files.
+The initial fixed consumer publishes successfully,
+retains the opaque link and shares both root and nested files on one mount.
+The source and bounded probe are retained in the
+[Node directory traversal diagnosis](../../../../doc/troubleshooting/node-recursive-directory-symlinks.md).
+It does not rewrite an old release.
+
+Each actual build sends stdout and stderr directly to distinct per-invocation files before starting.
+Failed children retain their complete output and final newline bytes.
+Mutation verification proves both the `EXDEV` fallback and successful same-mount sharing:
+removing either behavior fails the actual-command regression,
+and restoring the implementation passes.
+The new borrowed-directory guard still requires its own post-restructuring mutation check.
+
+The supervisor's original log collector repeats the same traversal assumption outside the bounded child.
+Its recovery reads the completed child receipt first,
+restores the private mutation and follows only known fixture/log directories.
+The user explicitly keeps root `RXI` unchanged.
+The concrete lesson is that bounds and ownership must also cover diagnostic traversal and log collection.
 The 2026-10-17 checkpoint `native-release-qWSxFz` shares 1,000 files totaling 7,518,255 bytes.
 It contains 1,030 regular files totaling 8,211,396 bytes.
 The emitted graph records five computed import sites and finds no missing static targets.
