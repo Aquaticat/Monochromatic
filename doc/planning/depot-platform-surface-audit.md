@@ -562,7 +562,8 @@ shard count,
 and identity choices.
 This public client source does not decide the private backend's cross-upload history lookup scope.
 
-The current Nextest cohort reports test-specific `testName` values
+The [current physical Nextest cohort](../audit/depot-physical-test-shards-2026-10-18.evidence.json)
+reports test-specific `testName` values
 but the same `className`,
 `monochromatic-git-policy-cli`.
 Submitting the test names as `classname` candidates does not satisfy the documented JUnit mapping.

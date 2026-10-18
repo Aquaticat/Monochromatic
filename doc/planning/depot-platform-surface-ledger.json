@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-10-18T10:55:46.489Z",
+  "updatedAt": "2026-10-18T11:12:23.385Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research reopened; no readiness claim",
   "sourceArchive": {
@@ -10015,9 +10015,11 @@
   "openGaps": [
     "Each indexed page and command needs claim-level repository applicability and evidence reconciliation; retrieved is not reviewed",
     "Additional official backend/integration repositories need deciding-source review",
-    "Advanced BuildKit consumer campaign is being prepared on frozen-source worktree with explicit resource configuration",
     "Current native CI orchestration, test splitting and device/guest consumers are coordinated by parent; no readiness claim",
-    "Security, terms, support, operational incident chronology and exact plan eligibility still need full reconciliation"
+    "Security, terms, support, operational incident chronology and exact plan eligibility still need full reconciliation",
+    "Source inventory is complete for captured indexes/help but page/command semantic reconciliation is incomplete; source capture does not establish feature qualification",
+    "BuildKit current-scanner comparison and empty image-list JSON source diagnosis remain active",
+    "SDK custom thin-image success must remain separate from unexercised named/ordinary-OCI runtimes, snapshot persistence, secrets and detached log contracts"
   ],
   "apiInventory": {
     "collectedAt": "2026-10-18T06:27:53.629Z",
@@ -14578,10 +14580,256 @@
   "runtimeCampaigns": {
     "advancedBuildkit": {
       "receipt": "doc/audit/depot-buildkit-platform-campaign-2026-10-18.evidence.json",
-      "source": "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
+      "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "immutableFixtureSources": [
+        "eb915fccbefd9601f038c8a851a7861d2c7b3ea4",
+        "d9cf7458443c5c4b7d169ba18cdb80a7fcf34cbf",
+        "b00f8c834b51bed8ba619dddb15b24274f4350ad",
+        "898e2fdd6aac05471cf340231a50042ba6e43bc7",
+        "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
+        "aa89e372f09c82286695d80cddf7f86b602051c9",
+        "0b471538cd549cb2181088803c1e0a6d542d791e",
+        "b0e3247a279507c759964162ec9eb816e3dcc402",
+        "86a3a389e48ecc427c0bb735269d0613a4aead8b",
+        "004e1b1b0cb2e4a0fd68db4de367508663762393",
+        "7f22f25adbb05e0c1add22211b12f1d275a29c17",
+        "7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f"
+      ],
       "projectId": "27m5m3vjlv",
-      "buildId": "fxzj58r8m2",
-      "status": "Native local and single-architecture OCI exports, multiarch registry-to-OCI bridge, derived job image and cross-build/read-only token controls exercised; remaining cases active"
+      "status": "Native exporters, multiarch registry consumers, immutable Git contexts, real Cargo build cache mounts, reviewed Bake graph, synthetic secret/keyless SSH and CNI controls executed; owned tags/project deleted and registry absence checked",
+      "limits": [
+        "No full Rust test-suite claim from the truepeak-core release producer",
+        "No external registry push, autoscaling execution or measured lazy-pull startup advantage",
+        "OCI empty attestation subjects and Docker/Podman healthcheck divergence retained",
+        "Dockerfile Semgrep positive control remains under diagnosis"
+      ],
+      "cleanup": [
+        {
+          "receipt": "owned-project-cleanup.json",
+          "startedAt": "2026-10-18T10:04:26.600Z",
+          "projectId": "27m5m3vjlv",
+          "ownershipReceipt": "project-create.json",
+          "parentHoldReleased": true,
+          "parentOwnedSecretCleanupVerified": true,
+          "completeGraphHashValidation": true,
+          "operations": [],
+          "manifestControls": [
+            {
+              "phase": "before",
+              "digest": "sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+              "status": 401,
+              "bytes": 73,
+              "bodySha256": "89a052af62c612d0e05d2596f03edba77d7d904c4478b387a5dc6305821fe0a1",
+              "dockerContentDigest": null
+            }
+          ],
+          "physicalErasureAsserted": false,
+          "accountOrInvoiceInspection": false,
+          "fixtureRecovery": "Initial local precondition used id instead of recorded projectId and failed before any cleanup request"
+        },
+        {
+          "receipt": "owned-project-cleanup-v2.json",
+          "startedAt": "2026-10-18T10:05:27.958Z",
+          "projectId": "27m5m3vjlv",
+          "ownershipReceipt": "project-create.json",
+          "parentHoldReleased": true,
+          "parentOwnedSecretCleanupVerified": true,
+          "completeGraphHashValidation": true,
+          "operations": [
+            {
+              "label": "before-image-list",
+              "args": [
+                "image",
+                "list",
+                "--project",
+                "27m5m3vjlv",
+                "--output",
+                "json"
+              ],
+              "exitCode": 0,
+              "stdout": "[\n  {\n    \"tag\": \"registry.depot.dev/27m5m3vjlv:1ng4qs1pmq-ci-node26\",\n    \"digest\": \"sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31\",\n    \"size_bytes\": 119894530,\n    \"pushed_at\": \"2026-10-18T08:51:29.93Z\"\n  },\n  {\n    \"tag\": \"registry.depot.dev/27m5m3vjlv:monochromatic-platform-ci-node26-20261018-v1-ci-node26\",\n    \"digest\": \"sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31\",\n    \"size_bytes\": 119894530,\n    \"pushed_at\": \"2026-10-18T08:51:29.93Z\"\n  },\n  {\n    \"tag\": \"registry.depot.dev/27m5m3vjlv:6hb1g0j21b-ci\",\n    \"digest\": \"sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346\",\n    \"size_bytes\": 119789508,\n    \"pushed_at\": \"2026-10-18T08:20:22.955Z\"\n  },\n  {\n    \"tag\": \"registry.depot.dev/27m5m3vjlv:monochromatic-platform-ci-20261018-v1-ci\",\n    \"digest\": \"sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346\",\n    \"size_bytes\": 119789508,\n    \"pushed_at\": \"2026-10-18T08:20:22.955Z\"\n  },\n  {\n    \"tag\": \"registry.depot.dev/27m5m3vjlv:fxzj58r8m2-service\",\n    \"digest\": \"sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7\",\n    \"size_bytes\": 81019905,\n    \"pushed_at\": \"2026-10-18T07:26:11.813Z\"\n  },\n  {\n    \"tag\": \"registry.depot.dev/27m5m3vjlv:monochromatic-platform-buildkit-20261018-v1-service\",\n    \"digest\": \"sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7\",\n    \"size_bytes\": 81019905,\n    \"pushed_at\": \"2026-10-18T07:26:11.813Z\"\n  }\n]\n",
+              "stderr": "",
+              "elapsedMilliseconds": 592
+            },
+            {
+              "label": "delete-owned-tags",
+              "args": [
+                "image",
+                "rm",
+                "--project",
+                "27m5m3vjlv",
+                "1ng4qs1pmq-ci-node26",
+                "monochromatic-platform-ci-node26-20261018-v1-ci-node26",
+                "6hb1g0j21b-ci",
+                "monochromatic-platform-ci-20261018-v1-ci",
+                "fxzj58r8m2-service",
+                "monochromatic-platform-buildkit-20261018-v1-service"
+              ],
+              "exitCode": 0,
+              "stdout": "Successfully deleted 6 images\n",
+              "stderr": "",
+              "elapsedMilliseconds": 1106
+            },
+            {
+              "label": "after-tag-image-list",
+              "args": [
+                "image",
+                "list",
+                "--project",
+                "27m5m3vjlv",
+                "--output",
+                "json"
+              ],
+              "exitCode": 0,
+              "stdout": "No images found\n",
+              "stderr": "",
+              "elapsedMilliseconds": 588
+            }
+          ],
+          "manifestControls": [
+            {
+              "phase": "before",
+              "digest": "sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+              "status": 200,
+              "bytes": 1609,
+              "bodySha256": "4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+              "dockerContentDigest": "sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7"
+            },
+            {
+              "phase": "before",
+              "digest": "sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346",
+              "status": 200,
+              "bytes": 1609,
+              "bodySha256": "aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346",
+              "dockerContentDigest": "sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346"
+            },
+            {
+              "phase": "before",
+              "digest": "sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31",
+              "status": 200,
+              "bytes": 1609,
+              "bodySha256": "853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31",
+              "dockerContentDigest": "sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31"
+            }
+          ],
+          "physicalErasureAsserted": false,
+          "accountOrInvoiceInspection": false,
+          "fixtureRecovery": "Initial local precondition used id instead of recorded projectId; first network preflight used raw pull-token Bearer instead of the already captured Basic x-token challenge, and got401 before any cleanup request",
+          "retainedFailedPreflight": "owned-project-cleanup.json",
+          "ownedTags": [
+            "1ng4qs1pmq-ci-node26",
+            "monochromatic-platform-ci-node26-20261018-v1-ci-node26",
+            "6hb1g0j21b-ci",
+            "monochromatic-platform-ci-20261018-v1-ci",
+            "fxzj58r8m2-service",
+            "monochromatic-platform-buildkit-20261018-v1-service"
+          ]
+        },
+        {
+          "receipt": "owned-project-cleanup-terminal.json",
+          "startedAt": "2026-10-18T10:08:07.034Z",
+          "projectId": "27m5m3vjlv",
+          "priorTagDeletionReceipt": "owned-project-cleanup-v2.json",
+          "tagDeletionRepeated": false,
+          "ownedTagsAbsent": true,
+          "emptyListOutputContract": {
+            "exitCode": 0,
+            "stdout": "No images found\n",
+            "despiteOutputJson": true,
+            "source": "pkg/cmd/image/list.go:66"
+          },
+          "operations": [
+            {
+              "label": "delete-owned-project",
+              "args": [
+                "projects",
+                "delete",
+                "--project-id",
+                "27m5m3vjlv",
+                "--yes"
+              ],
+              "exitCode": 0,
+              "stdout": "Successfully deleted project 27m5m3vjlv\n",
+              "stderr": ""
+            },
+            {
+              "label": "after-project-image-list",
+              "exitCode": 1,
+              "stdout": "",
+              "stderr": "failed to list images: not_found: Project not found\n"
+            }
+          ],
+          "manifestControls": [
+            {
+              "phase": "after-tags",
+              "digest": "sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+              "status": 404,
+              "bytes": 179,
+              "bodySha256": "1bb933f2581f52e730bb36085b41cb476e514596f0c08cb5ed76c98ec6753f88",
+              "dockerContentDigest": null
+            },
+            {
+              "phase": "after-tags",
+              "digest": "sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346",
+              "status": 404,
+              "bytes": 179,
+              "bodySha256": "480d85e27bde9647a38afe9755d7946ceda62df228f0f8e9288aa93d93fd705b",
+              "dockerContentDigest": null
+            },
+            {
+              "phase": "after-tags",
+              "digest": "sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31",
+              "status": 404,
+              "bytes": 179,
+              "bodySha256": "787d1b6d56341299905a495c8387e3ed7c3f9f12b8781701903c329ba85fbb1c",
+              "dockerContentDigest": null
+            },
+            {
+              "phase": "after-project",
+              "digest": "sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+              "status": 404,
+              "bytes": 179,
+              "bodySha256": "1bb933f2581f52e730bb36085b41cb476e514596f0c08cb5ed76c98ec6753f88",
+              "dockerContentDigest": null
+            },
+            {
+              "phase": "after-project",
+              "digest": "sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346",
+              "status": 404,
+              "bytes": 179,
+              "bodySha256": "480d85e27bde9647a38afe9755d7946ceda62df228f0f8e9288aa93d93fd705b",
+              "dockerContentDigest": null
+            },
+            {
+              "phase": "after-project",
+              "digest": "sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31",
+              "status": 404,
+              "bytes": 179,
+              "bodySha256": "787d1b6d56341299905a495c8387e3ed7c3f9f12b8781701903c329ba85fbb1c",
+              "dockerContentDigest": null
+            }
+          ],
+          "physicalErasureAsserted": false,
+          "accountOrInvoiceInspection": false,
+          "projectDeletionRequestAccepted": true,
+          "finishedAt": "2026-10-18T10:08:10.023Z"
+        }
+      ]
+    },
+    "sdkCustomRuntime": {
+      "receipt": "doc/audit/depot-sdk-custom-runtime-2026-10-18.evidence.json",
+      "sdk": "@depot/sandbox@0.1.0-beta.7",
+      "runtime": "l4zncjjbj5.registry.depot.dev/research-reuse-20261018:tools-r2-git256",
+      "manifest": "sha256:fb197837831d438592d9455b3a31d808a20ad8bdc2ae76b05d8b36f6656419cd",
+      "status": "Owned amd64 thin snapshot admitted; absolute Git execution, small-file read/write/unlink and synthetic exclusions passed; all three owned sandboxes stopped and fresh Get confirmed terminal",
+      "limits": [
+        "Plain node depended on missing PATH entry; this did not establish absent binary",
+        "Second collector omitted syscall/path and cannot identify whether stat or full binary read timed out",
+        "No arbitrary OCI runtime, named-runtime, runtime full Git binary hash, persistent snapshot or detached-log replay qualification",
+        "No fourth create, restart or extension was performed"
+      ],
+      "scopedCumulativeReservationUsd": 0.574584,
+      "invoiceOrAggregateCapProven": false
     }
   },
   "publicDocumentationReconciliation": {
