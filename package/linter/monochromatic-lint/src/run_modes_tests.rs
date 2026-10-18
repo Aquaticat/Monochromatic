@@ -13,7 +13,7 @@
 
 /// Import the modes under test and the registries they must agree with.
 use super::{
-    RULES, STARTER_CONFIGURATION, SetupError, init_configuration, print_configuration,
+    RULES, STARTER_CONFIGURATION, SetupError, init_configuration, print_configuration, rule_info,
     rules_listing,
 };
 use crate::config_lookup::CONFIG_NAME;
@@ -43,11 +43,13 @@ fn the_listing_describes_every_registered_rule_in_order() {
     // The first and last lines, byte for byte.
     assert_eq!(
         listing.lines().next(),
-        Some(r#"{"id":"rust/max-lines","fixable":false,"options":["max"]}"#)
+        Some(r#"{"id":"rust/max-lines","fixable":false,"options":["max"],"suppressible":false}"#)
     );
     assert_eq!(
         listing.lines().last(),
-        Some(r#"{"id":"markdown/lfs-image-url","fixable":true,"options":["exclude"]}"#)
+        Some(
+            r#"{"id":"markdown/lfs-image-url","fixable":true,"options":["exclude"],"suppressible":true}"#
+        )
     );
     let mut fixable: Vec<&str> = Vec::<&str>::new();
     for rule in RULES {
@@ -70,6 +72,30 @@ fn the_listing_describes_every_registered_rule_in_order() {
         ]
     );
     assert!(listing.ends_with('\n'));
+}
+
+/// Exactly the line budget and the documentation requirement refuse inline directives,
+///  and the lookup answers by the identifier a finding carries.
+#[test]
+fn only_the_line_budget_and_rustdoc_rules_declare_themselves_unsuppressible() {
+    let mut unsuppressible: Vec<&str> = Vec::<&str>::new();
+    for rule in RULES {
+        if !rule.suppressible {
+            unsuppressible.push(rule.id);
+        }
+    }
+    assert_eq!(unsuppressible, ["rust/max-lines", "rust/require-rustdoc"]);
+    assert_eq!(
+        rule_info("markdown/no-bare-urls").map(|rule| return rule.suppressible),
+        Some(true)
+    );
+    assert_eq!(
+        rule_info("rust/max-lines").map(|rule| return rule.suppressible),
+        Some(false)
+    );
+    // Core and directive findings are not rules, so they are outside the registry and never suppressible.
+    assert!(rule_info("core/processing-failure").is_none());
+    assert!(rule_info("directive/unused").is_none());
 }
 
 /// The starter is valid configuration that selects every rule except the Cargo-backed one.
