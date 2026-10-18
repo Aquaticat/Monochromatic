@@ -318,6 +318,70 @@ but the worktree file is absent.
 The cloud inventory comparison and observed tool versions provide execution evidence;
 broader local and cloud environment equivalence is not assumed.
 
+## Reviewed Android cloud profile
+
+The Android application is a Gradle/Kotlin Compose island with a native Rust JNI engine.
+`package/music-player/android-app/mise.toml` owns the selected consumer commands:
+`test:instrumented:build` builds debug and AndroidTest APKs after the two native ABIs;
+`test:unit` invokes the actual host-JVM suite.
+The native crate includes shared `truepeak-core` service and fingerprint features,
+Turso,
+Tokio,
+JNI,
+AAudio,
+and the bundled Opus C build.
+`app/build.gradle.kts` specifies minimum API 26,
+target API 36,
+and compile API 37.
+The native build selects `arm64-v8a` and `x86_64` with an API 26 linker floor.
+These declarations still require artifact and device verification.
+
+The bounded profile has one native Depot CI worker of class `8x32`,
+a 30-minute job limit,
+and a 27-minute campaign deadline that leaves time for evidence upload.
+It checks out exactly `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+It starts with the cache lane's already exercised `tools-r1` snapshot,
+but verifies the current registry digest,
+binary hashes,
+and frozen dependency identities before use.
+Its expected snapshot digest is
+`sha256:9fb974fd32185c8afd5711370869d03e0f28e5b560c928eae324c20151ddeee8`.
+Java/Rust preparation is shared;
+Android dependency warmth is not assumed.
+
+The profile selectively installs lock-bound Android command-line tools `23.0`
+and `cargo-ndk` `4.1.2`.
+It invokes the existing narrow `prepare:android` task,
+not the `prepare` umbrella.
+That task installs SDK platform `android-37.0`,
+build tools `37.0.0`,
+NDK `29.0.13846066`,
+platform tools,
+and the two Android Rust targets.
+It accepts the SDK licenses through the existing owning implementation.
+It installs and launches no emulator.
+
+The profile preserves APK hashes and certificate/badging output,
+checks packaged native bytes against the generated JNI libraries,
+and records every packaged shared object's ABI,
+JNI exports,
+ELF load alignment,
+RELRO alignment,
+and APK ZIP alignment.
+The [current Android page-size guidance][android-page-sizes] requires
+16 KB load alignment and describes the RELRO-end and ZIP checks.
+The installed SDK's `zipalign` usage was read,
+and its exact check invocation was exercised on a disposable archive as a protocol control.
+That archive control is not an APK native-layout result.
+Actual APK and JVM results remain pending.
+Fresh JUnit XML,
+declared/discovered case counts,
+failure/skip counts,
+source identities,
+and command logs accompany the APKs for the parent's headful device consumer.
+
+[android-page-sizes]: https://developer.android.com/guide/practices/page-sizes
+
 The active queue remains independently verifiable:
 
 - Review and execute the frozen Android product's SDK/NDK setup,
