@@ -236,9 +236,28 @@ The decoded bootstrap and duplicate-versus-single-argument controls pass before 
 Coverage sequences the material campaign after this GNU attempt is terminal.
 Platform's pending SSH source includes a third native CLI PTY-RPC consumer,
 separate from direct OpenSSH and pinned tmate.
-Its reseal must retain bounded child escalation/reaping,
-the same three-minute job and USD 0.036 total guard,
-and no runtime credit before actual execution.
+The replacement seal is `3adb2516b1`,
+fixture `b6a60493c16087043a7043f50cd31d8aebf4bdee`.
+Parent source admission is recorded in
+`doc/audit/depot-native-ssh-parent-admission-2026-10-18.evidence.json`.
+It independently joins current and retained source bodies,
+fixture Git blobs,
+the direct remote branch and controller/helper/bridge/manifest hashes.
+The private gate is written but dispatch waits for the parent's explicit ready message after publication.
+Reserve one global cloud-job slot for this experiment until its terminal/reaped release;
+Coverage may use the other slot and dispatches at most one material owner at a time.
+The three-minute server job and USD 0.036 two-attempt guard remain unchanged.
+The 210-second local point starts cleanup;
+there is no independent whole-controller hard backstop.
+Runtime outcomes use a successor receipt so the admitted proposal/source seal stays immutable.
+No runtime credit exists before execution.
+Coverage committed and pushed the seven-owner material harness at
+`015ee75186e697a05160913dbd8006eceb90b2e5` before its actual bootstrap/Mise/Node preflight.
+It preserves the admitted profile/prerequisite/argv boundaries and adds actual OS/CPU/memory probes.
+No material allocation has begun at this checkpoint.
+Rust is checking the actual locked Mise 2026.10.9 affected-task selector,
+separately from the installed 2026.10.0 failure.
+This source/runtime check must close before prescribing a replacement selector from the older failure.
 
 Kotlin's claimed unexecuted six JVM methods are retracted and positively resolved.
 The missing semantic projection alone did not prove missing execution.
