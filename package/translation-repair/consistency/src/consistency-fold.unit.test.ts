@@ -422,6 +422,20 @@ await describe({
           },
         },),
         it({
+          name: 'FINDS NONE for the half of a word that inline code padded by line endings shows without them, since CommonMark turns each '
+            + 'line ending into a space before it strips one space from each side, and finds the word once where only one side holds a '
+            + 'line ending or the content is line endings alone',
+          fn: async () => {
+            expect([
+              locateWords({ haystack: 'The kit`\ntens\n` ate.', words: 'kit', },).kind,
+              locateWords({ haystack: 'The kit`\r\ntens\r\n` ate.', words: 'kit', },).kind,
+              locateWords({ haystack: 'The kit`\ntens ` ate.', words: 'kit', },).kind,
+              locateWords({ haystack: 'The kit`\ntens` ate.', words: 'kit', },).kind,
+              locateWords({ haystack: 'The kit`\n` ate.', words: 'kit', },).kind,
+            ],).toEqual(['none', 'none', 'none', 'once', 'once',],);
+          },
+        },),
+        it({
           name: 'FINDS THE WORD ONCE beside the tags of a raw element, since the parser reads them to their closing tag and they end a word '
             + '(n166, Z7)',
           fn: async () => {
