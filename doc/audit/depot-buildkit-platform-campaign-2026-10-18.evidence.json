@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "collectedAt": "2026-10-18T09:12:32.166Z",
+  "collectedAt": "2026-10-18T09:19:26.137Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "status": "Research ongoing: native exports, registry bridge and Node26-qualified OCI derivative exercised; forwarding, immutable Git and remaining Cargo mount cases active",
   "sourceArchive": {
     "path": "doc/audit/depot-buildkit-platform-campaign-2026-10-18.sources.json.gz",
-    "bytes": 2977023,
-    "sha256": "00460cc5c738a0dae5d4e36887795ce42237a506ab1fc584c39a42dfd037adcf"
+    "bytes": 2978716,
+    "sha256": "b70943cce7b7ed81383ba1c7dee5bd90a77e2513e997c68b69fe2045ffbeb28f"
   },
   "service": {
     "source": "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
@@ -302,6 +302,19 @@
       "elapsedMilliseconds": 16755,
       "guardFired": false,
       "phase": "cargo-target-reset",
+      "projectId": "27m5m3vjlv"
+    },
+    {
+      "receipt": "cargo-cache-flags.json",
+      "buildId": "71x7kn2wqr",
+      "source": "7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-10-18T09:14:41.900Z",
+      "finishedAt": "2026-10-18T09:15:00.093Z",
+      "elapsedMilliseconds": 18193,
+      "guardFired": false,
+      "phase": "cargo-flags",
       "projectId": "27m5m3vjlv"
     }
   ],
@@ -2496,6 +2509,215 @@
         "unitTestsExecuted": false
       },
       "rawCompilerOutputPreservedInCompressedArchive": true
+    },
+    {
+      "receipt": "cargo-cache-flags.json",
+      "source": "7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f",
+      "exitCode": 0,
+      "consumerVerified": true,
+      "elapsedMilliseconds": 18193,
+      "consumer": {
+        "phase": "flags",
+        "nonce": "flags-b082ad8b-f312-43c6-a554-5007705cc55f",
+        "harnessCommit": "7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f",
+        "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+        "architecture": "x64",
+        "nodeVersion": "v24.22.0",
+        "cpuCount": 16,
+        "memoryBytes": 32997220352,
+        "rustc": "rustc 1.97.1 (8bab26f4f 2026-07-14)\nbinary: rustc\ncommit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452\ncommit-date: 2026-07-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.97.1\nLLVM version: 22.1.6\n",
+        "cargo": "cargo 1.97.1 (c980f4866 2026-06-30)\n",
+        "registryCacheId": "monochromatic-platform-buildkit-20261018-v1-cargo-r1-registry-amd64",
+        "targetCacheId": "monochromatic-platform-buildkit-20261018-v1-cargo-r1-target-amd64",
+        "markerBefore": {
+          "registry": "target-reset-826f9508-985c-4227-8f05-541c8ecb44b1",
+          "target": "warm-56916315-5970-43b1-8bed-e34ab1e766a9"
+        },
+        "markerAfter": "flags-b082ad8b-f312-43c6-a554-5007705cc55f",
+        "registryTopLevel": [
+          ".mono-cache-probe-marker",
+          "CACHEDIR.TAG",
+          "cache",
+          "index",
+          "src"
+        ],
+        "startedAt": "2026-10-18T09:14:55.315Z",
+        "finishedAt": "2026-10-18T09:14:58.420Z",
+        "cargoElapsedMilliseconds": 3096,
+        "args": [
+          "build",
+          "--manifest-path",
+          "/src/crate/Cargo.toml",
+          "--release",
+          "--no-default-features",
+          "--locked",
+          "--jobs",
+          "2",
+          "--message-format=json",
+          "--offline"
+        ],
+        "rustflags": "--cfg=depot_buildkit_flags_control",
+        "exitCode": 0,
+        "signal": null,
+        "expectedFailure": false,
+        "compilerArtifacts": [
+          {
+            "packageId": "registry+https://github.com/rust-lang/crates.io-index#unicode-ident@1.0.26",
+            "target": "unicode_ident",
+            "kind": [
+              "lib"
+            ],
+            "fresh": false,
+            "filenames": [
+              "/targetcache/release/deps/libunicode_ident-472958800221e3c9.rlib",
+              "/targetcache/release/deps/libunicode_ident-472958800221e3c9.rmeta"
+            ]
+          },
+          {
+            "packageId": "registry+https://github.com/rust-lang/crates.io-index#quote@1.0.47",
+            "target": "build-script-build",
+            "kind": [
+              "custom-build"
+            ],
+            "fresh": false,
+            "filenames": [
+              "/targetcache/release/build/quote-559ac7e896380f25/build-script-build"
+            ]
+          },
+          {
+            "packageId": "registry+https://github.com/rust-lang/crates.io-index#proc-macro2@1.0.107",
+            "target": "build-script-build",
+            "kind": [
+              "custom-build"
+            ],
+            "fresh": false,
+            "filenames": [
+              "/targetcache/release/build/proc-macro2-b5f31a019785350e/build-script-build"
+            ]
+          },
+          {
+            "packageId": "registry+https://github.com/rust-lang/crates.io-index#once_cell@1.21.4",
+            "target": "once_cell",
+            "kind": [
+              "lib"
+            ],
+            "fresh": false,
+            "filenames": [
+              "/targetcache/release/deps/libonce_cell-08ebb211f55ca3c4.rlib",
+              "/targetcache/release/deps/libonce_cell-08ebb211f55ca3c4.rmeta"
+            ]
+          },
+          {
+            "packageId": "registry+https://github.com/rust-lang/crates.io-index#proc-macro2@1.0.107",
+            "target": "proc_macro2",
+            "kind": [
+              "lib"
+            ],
+            "fresh": false,
+            "filenames": [
+              "/targetcache/release/deps/libproc_macro2-b96bce82deca7659.rlib",
+              "/targetcache/release/deps/libproc_macro2-b96bce82deca7659.rmeta"
+            ]
+          },
+          {
+            "packageId": "registry+https://github.com/rust-lang/crates.io-index#quote@1.0.47",
+            "target": "quote",
+            "kind": [
+              "lib"
+            ],
+            "fresh": false,
+            "filenames": [
+              "/targetcache/release/deps/libquote-8c3faa284d50363e.rlib",
+              "/targetcache/release/deps/libquote-8c3faa284d50363e.rmeta"
+            ]
+          },
+          {
+            "packageId": "registry+https://github.com/rust-lang/crates.io-index#tracing-core@0.1.36",
+            "target": "tracing_core",
+            "kind": [
+              "lib"
+            ],
+            "fresh": false,
+            "filenames": [
+              "/targetcache/release/deps/libtracing_core-0428f476e8697f6e.rlib",
+              "/targetcache/release/deps/libtracing_core-0428f476e8697f6e.rmeta"
+            ]
+          },
+          {
+            "packageId": "registry+https://github.com/rust-lang/crates.io-index#pin-project-lite@0.2.17",
+            "target": "pin_project_lite",
+            "kind": [
+              "lib"
+            ],
+            "fresh": false,
+            "filenames": [
+              "/targetcache/release/deps/libpin_project_lite-2b51936b74310fdd.rlib",
+              "/targetcache/release/deps/libpin_project_lite-2b51936b74310fdd.rmeta"
+            ]
+          },
+          {
+            "packageId": "registry+https://github.com/rust-lang/crates.io-index#syn@2.0.119",
+            "target": "syn",
+            "kind": [
+              "lib"
+            ],
+            "fresh": false,
+            "filenames": [
+              "/targetcache/release/deps/libsyn-6d793c185eb2a7fd.rlib",
+              "/targetcache/release/deps/libsyn-6d793c185eb2a7fd.rmeta"
+            ]
+          },
+          {
+            "packageId": "registry+https://github.com/rust-lang/crates.io-index#tracing-attributes@0.1.31",
+            "target": "tracing_attributes",
+            "kind": [
+              "proc-macro"
+            ],
+            "fresh": false,
+            "filenames": [
+              "/targetcache/release/deps/libtracing_attributes-c67cb38d9a53ece2.so"
+            ]
+          },
+          {
+            "packageId": "registry+https://github.com/rust-lang/crates.io-index#tracing@0.1.44",
+            "target": "tracing",
+            "kind": [
+              "lib"
+            ],
+            "fresh": false,
+            "filenames": [
+              "/targetcache/release/deps/libtracing-1c95c19463e1d2ad.rlib",
+              "/targetcache/release/deps/libtracing-1c95c19463e1d2ad.rmeta"
+            ]
+          },
+          {
+            "packageId": "path+file:///src/crate#truepeak-core@0.1.0",
+            "target": "truepeak_core",
+            "kind": [
+              "lib"
+            ],
+            "fresh": false,
+            "filenames": [
+              "/targetcache/release/libtruepeak_core.rlib",
+              "/targetcache/release/deps/libtruepeak_core-66021c3934e6ee44.rmeta"
+            ]
+          }
+        ],
+        "artifactFiles": [
+          {
+            "path": "/targetcache/release/libtruepeak_core.rlib",
+            "sha256": "9bec1bfff7c3046951553937bf0489dac41868fcbb665bb46d24722f2b9a2c95"
+          },
+          {
+            "path": "/targetcache/release/deps/libtruepeak_core-66021c3934e6ee44.rmeta",
+            "sha256": "9161266610b0087947d5ac331be06952e823d522fbd0a7584a2033254ca219f4"
+          }
+        ],
+        "lockBefore": "9bf611d703ba946c5d359753d93d827d5b0992c07e23d5504f9c328f0d01db3e",
+        "lockAfter": "9bf611d703ba946c5d359753d93d827d5b0992c07e23d5504f9c328f0d01db3e",
+        "unitTestsExecuted": false
+      },
+      "rawCompilerOutputPreservedInCompressedArchive": true
     }
   ],
   "localCargoWrapper": {
@@ -2823,12 +3045,12 @@
     "hostBindMounts": 0
   },
   "timestampComputeModel": {
-    "observedNativeRequestMilliseconds": 237985,
+    "observedNativeRequestMilliseconds": 256178,
     "maximumArchitectureBuilders": 2,
     "cpusPerBuilder": 16,
     "memoryGiBPerBuilder": 32,
     "publicRateUsdPerBuilderMinute": 0.04,
-    "nominalWindowEstimateUsd": 0.31731333333333334,
+    "nominalWindowEstimateUsd": 0.34157066666666663,
     "ceilingUsd": 2,
     "invoiceOrAccountCapProven": false,
     "initialExpiredWallClockRetained": true
@@ -2842,7 +3064,6 @@
     "Native OCI empty statement subjects versus registry subjects: deciding source and consumer consequences",
     "Synthetic secret and keyless SSH forwarding consumers",
     "Remote Git immutable context and local overlay control",
-    "Real firstparty BuildKit cache-mount consumer",
     "Cross-project pull-token isolation",
     "Independent parent nativeCI and GitHub consumers",
     "Image/project deletion after shared consumers"
