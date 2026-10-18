@@ -449,6 +449,30 @@ and storage retention in the model.
 In-job directory sizes do not measure account-wide billable occupancy.
 No invoice or complete monthly cost is inferred here.
 
+## Persistent disk execution ledger
+
+The bounded standalone Depot CI probe was dispatched as
+[run `vpp27ld5rx`](https://depot.dev/orgs/l4zncjjbj5/workflows/vpp27ld5rx)
+from pushed harness `1b311a76458c77b5f38cd0029e0573c4a6a92768`,
+branch `trial/depot-cache-disk-20261018T0503`.
+Its workflow hash is `d1b86d0e5b8df5657f7c85762087644fcfd8522213415edf2c7062674c9e7d95`.
+The uniquely named disk is `monochromatic-disk-20261018T0503-trusted-v1`.
+The workflow has a seed job and two fan-out consumers,
+each requesting the documented two-CPU/eight-GB sandbox label
+and a five-minute job timeout.
+The payload is limited to 1 MiB plus consumer manifests and partitioned writer fixtures.
+The workflow refuses the floating Archil installer path when the executable is absent.
+Actual mount,
+persistence,
+consumer,
+and post-cleanup outcomes remain pending until terminal artifact reconciliation.
+
+The next action is to collect the terminal metadata,
+per-job evidence artifacts,
+and unmount/token-release logs;
+recover a missing preinstalled Archil only with an inspected and pinned payload.
+No cache benefit or successful persistence is inferred from dispatch acceptance.
+
 ## Sources and limits
 
 Official docs and open source establish supported interfaces and documented boundaries.
