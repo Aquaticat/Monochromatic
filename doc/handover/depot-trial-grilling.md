@@ -174,10 +174,16 @@ two sequential 20-minute caps with 17-minute inner bounds,
 USD 1.92 reserved under USD 2.
 Coverage owns its finite watcher and cleanup.
 
-Kotlin's claimed unexecuted six JVM methods are retracted pending actual JUnit identity comparison.
+Kotlin's claimed unexecuted six JVM methods are retracted and positively resolved.
 The missing semantic projection alone did not prove missing execution.
-Coverage and Rust compare the exact Gradle project,
-immutable source and six classname/name tuples from the existing repeated cache cohort before any new allocation.
+Coverage and Rust match the exact frozen Kotlin subtree `fa0167ad3af17896374a22b40ede76e9e9f51250`
+and all six `dev.monochromatic.detekt.RequireKDocTest` method tuples in four original warm/off JUnit reports.
+All six pass in each sample.
+The experiment executes the authored Gradle `test` task via Mise with cache-specific flags,
+not the literal package Mise wrapper.
+The separate `r328mp420m` emitted-JAR consumer is not the six-case basis.
+No new Kotlin run is needed;
+Rust seals the source/task/JUnit projection and Coverage joins it semantically.
 Coverage also checks actual OS Nextest binary/package identities and older receipts for the other proposed owners.
 The new owner campaign remains unallocated until its concrete proposal and existing-evidence scope checks close.
 Platform's Bash diagnosis is complete at `3cddf3617a`:
