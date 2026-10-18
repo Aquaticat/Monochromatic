@@ -12,7 +12,8 @@ use std::time::Duration;
 ///  Quiet time after the last change of what the picture is valid for before a new request is posted.
 /// Why:
 ///  The measurement of the whole text changes the vertical mapping every few milliseconds while a file opens,
-///  and a resize drag changes the size at every step; one request after the changes stop is all the picture needs.
+///  and a resize drag changes the size at every step;
+/// one request after the changes stop is all the picture needs.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -24,8 +25,11 @@ pub(in crate::native) const DEBOUNCE: Duration = Duration::from_millis(120);
 ///  Longest time the picture may fall behind while only the vertical mapping changes.
 /// Why:
 ///  The measurement of a long text changes the mapping for as long as it runs (a second or two for fifty thousand
-///  lines); a picture that waited for it to end would stay as it was drawn before the first measurement.
-///  One request each period, with the newest wins rule of the worker, keeps the picture following it at a bounded cost.
+///  lines);
+/// a picture that waited for it to end would stay as it was drawn before the first measurement.
+///  One request each period,
+/// with the newest wins rule of the worker,
+/// keeps the picture following it at a bounded cost.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -36,7 +40,8 @@ pub(in crate::native) const THROTTLE: Duration = Duration::from_millis(250);
 /// What:
 ///  What the window does about a key that is not the one last posted.
 /// Why:
-///  The decision is a pure function of the two keys and the clock, so a test can hold it against every kind of change.
+///  The decision is a pure function of the two keys and the clock,
+/// so a test can hold it against every kind of change.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -46,25 +51,45 @@ pub(in crate::native) const THROTTLE: Duration = Duration::from_millis(250);
 pub(in crate::native) enum Plan {
     /// Post a request now.
     Post,
-    /// Post after this long, unless a later change moves the time.
+    /// Post after this long,
+    /// unless a later change moves the time.
     Wait(
         /// How long to wait.
         Duration,
     ),
-    /// A wait that is due soon enough is already running: do nothing.
+    /// A wait that is due soon enough is already running:
+    /// do nothing.
     Keep,
 }
 
 /// What:
-///  Decide when the picture for `key` is requested, from what the newest request was for, what the previous look at the
-///  window was for, how long ago the newest request was posted, and whether a wait is already running.
-///  Nothing posted yet, another file, a new palette, or a new scale: now.
-///  Since the previous look only the vertical mapping changed: at the throttle's pace, and never while a wait is running.
-///  Anything else, such as a new size, a new wrap width, new text, or new syntax classes: after the quiet time.
+///  Decide when the picture for `key` is requested,
+/// from what the newest request was for,
+/// what the previous look at the
+///  window was for,
+/// how long ago the newest request was posted,
+/// and whether a wait is already running.
+///  Nothing posted yet,
+/// another file,
+/// a new palette,
+/// or a new scale:
+/// now.
+///  Since the previous look only the vertical mapping changed:
+/// at the throttle's pace,
+/// and never while a wait is running.
+///  Anything else,
+/// such as a new size,
+/// a new wrap width,
+/// new text,
+/// or new syntax classes:
+/// after the quiet time.
 /// Why:
-///  The first picture and a picture of the wrong file or colors must not wait; the measurement of a long text changes
-///  the mapping for a second or two and the picture follows it steadily; a resize drag changes the size at every step
-///  and the mapping with it, so the wait it starts is kept and one request after the drag ends is all the picture needs.
+///  The first picture and a picture of the wrong file or colors must not wait;
+/// the measurement of a long text changes
+///  the mapping for a second or two and the picture follows it steadily;
+/// a resize drag changes the size at every step
+///  and the mapping with it,
+/// so the wait it starts is kept and one request after the drag ends is all the picture needs.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

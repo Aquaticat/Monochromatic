@@ -283,6 +283,7 @@ fun settingsPageContent(
     onToggleAutoPlay: () -> Unit,
     onBack: () -> Unit,
     onOpenTemplate: (TemplateKind) -> Unit,
+    onOpenLicenses: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     settingsListPane(
@@ -291,6 +292,7 @@ fun settingsPageContent(
         onChoose = onOpenTemplate,
         autoPlayOnSelect = autoPlayOnSelect,
         onToggleAutoPlay = onToggleAutoPlay,
+        onOpenLicenses = onOpenLicenses,
         onBack = onBack,
         textEndExtra = 0.dp,
         modifier = modifier.fillMaxSize().background(canvasColor(dark = isSystemInDarkTheme())),
@@ -320,6 +322,7 @@ fun settingsWidePage(
     onSelect: (TemplateKind) -> Unit,
     autoPlayOnSelect: Boolean,
     onToggleAutoPlay: () -> Unit,
+    onOpenLicenses: () -> Unit,
     onBack: () -> Unit,
     creaseWidthPx: Float?,
     editor: @Composable (kind: TemplateKind, startInset: Dp) -> Unit,
@@ -362,6 +365,7 @@ fun settingsWidePage(
                     onChoose = onSelect,
                     autoPlayOnSelect = autoPlayOnSelect,
                     onToggleAutoPlay = onToggleAutoPlay,
+                    onOpenLicenses = onOpenLicenses,
                     onBack = onBack,
                     textEndExtra = split.listTextEndExtraDp.dp,
                     modifier = Modifier.fillMaxSize(),
@@ -429,7 +433,7 @@ private fun settingsPaneRow(listWidthPx: Int, list: @Composable () -> Unit, edit
 //   onBack(): void; textEndExtra: number; modifier?: Modifier }): UIElement;
 // ```
 /**
- * Draws the status bar spacer, the header and the scrolling Templates and Playback groups.
+ * Draws the status bar spacer, the header and the scrolling Templates, Playback and About groups.
  * [selected] is the chosen row in the wide form and null in the single form;
  * [autoPlayOnSelect] and [onToggleAutoPlay] drive the Playback group's switch row, which toggles in place and never
  * changes [selected] (D129);
@@ -442,6 +446,7 @@ private fun settingsListPane(
     onChoose: (TemplateKind) -> Unit,
     autoPlayOnSelect: Boolean,
     onToggleAutoPlay: () -> Unit,
+    onOpenLicenses: () -> Unit,
     onBack: () -> Unit,
     textEndExtra: Dp,
     modifier: Modifier = Modifier,
@@ -521,6 +526,87 @@ private fun settingsListPane(
                     )
                 }
             }
+            // What:     `Column` with a heading and one `settingsLinkRow` is the About group.
+            // Why:      The Licenses row opens a page of its own, so it is not a template and not a switch; it gets its
+            //           own group 16 dp below Playback, with the same row size and corner rounding.
+            //
+            // In TS you'd write (pseudocode):
+            // ```ts
+            // <section><h2>About</h2><LinkRow title="Licenses" onClick={openLicenses}/></section>
+            // ```
+            Column {
+                settingsSectionHeading(text = "About")
+                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = SETTINGS_PAGE_MARGIN_DP.dp)) {
+                    settingsLinkRow(
+                        icon = SETTINGS_LICENSES_ICON,
+                        title = LICENSES_TITLE,
+                        supportingText = LICENSES_ROW_SUPPORTING_TEXT,
+                        radii = settingsRowRadii(index = 0, count = 1),
+                        textEndExtra = textEndExtra,
+                        onClick = onOpenLicenses,
+                    )
+                }
+            }
+        }
+    }
+}
+
+// What:     `@Composable private fun settingsLinkRow(...)` draws one row that opens a page of its own.
+// Why:      The row has the 72 dp size, the 40 dp icon circle, the title and one supporting line of the other rows; the
+//           whole row is the button target (role Button), so a tap, Enter and Space open the page.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function LinkRow(props: { icon; title; supportingText; radii; textEndExtra; onClick(): void }): UIElement;
+// ```
+/** Draws one row: a 40 dp icon circle, the title and the supporting line; activating it calls [onClick]. */
+@Composable
+private fun settingsLinkRow(
+    icon: ImageVector,
+    title: String,
+    supportingText: String,
+    radii: SettingsRowRadii,
+    textEndExtra: Dp,
+    onClick: () -> Unit,
+) {
+    /** Corner shape of this row, with the group radius at each of its four corners. */
+    val shape: RoundedCornerShape = RoundedCornerShape(
+        topStart = radii.topDp.dp,
+        topEnd = radii.topDp.dp,
+        bottomStart = radii.bottomDp.dp,
+        bottomEnd = radii.bottomDp.dp,
+    )
+    Row(
+        modifier = Modifier.fillMaxWidth()
+            .defaultMinSize(minHeight = SETTINGS_ROW_HEIGHT_DP.dp)
+            .focusRing(shape)
+            .clip(shape)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(
+                start = SETTINGS_ROW_INNER_PADDING_DP.dp,
+                end = SETTINGS_ROW_INNER_PADDING_DP.dp + textEndExtra,
+                top = SETTINGS_ROW_VERTICAL_INSET,
+                bottom = SETTINGS_ROW_VERTICAL_INSET,
+            ),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        settingsIconCircle(icon = icon, onChosenRow = false)
+        Spacer(modifier = Modifier.width(SETTINGS_ICON_TITLE_GAP_DP.dp))
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
+            Text(
+                text = title,
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.bodyLarge,
+                maxLines = SETTINGS_SWITCH_TITLE_LINES,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = supportingText,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = SETTINGS_SWITCH_SUPPORTING_LINES,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }
@@ -661,7 +747,7 @@ private fun settingsSwitchColors(): SwitchColors = SwitchDefaults.colors(
 // ```
 /** Draws the static top bar on the canvas: a 56 dp round Back target followed by the page title. */
 @Composable
-private fun settingsHeader(title: String, backDescription: String, onBack: () -> Unit) {
+internal fun settingsHeader(title: String, backDescription: String, onBack: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().height(SETTINGS_HEADER_HEIGHT)
             .padding(start = SETTINGS_PAGE_MARGIN_DP.dp),

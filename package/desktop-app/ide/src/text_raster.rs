@@ -40,7 +40,8 @@ pub use palette::{CodeColors, ink};
 ///  64 MiB of premultiplied RGBA.
 /// Why:
 ///  The tile is one image the toolkit uploads whole;
-///  the window clips a tile that would pass this, so the check here only guards a caller that did not.
+///  the window clips a tile that would pass this,
+/// so the check here only guards a caller that did not.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -206,9 +207,14 @@ impl TextRaster {
     }
 
     /// What:
-    ///  Paint one layout alone, at the physical `origin`, in one `ink`, into a new tile of `size` physical pixels.
+    ///  Paint one layout alone,
+    /// at the physical `origin`,
+    /// in one `ink`,
+    /// into a new tile of `size` physical pixels.
     /// Why:
-    ///  Small images, such as the gutter's wrap indicator, are set by the same glyph path as source text.
+    ///  Small images,
+    /// such as the gutter's wrap indicator,
+    /// are set by the same glyph path as source text.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts

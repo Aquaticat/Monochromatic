@@ -1,18 +1,23 @@
 //! The wrap indicator the gutter shows on a row that starts after a soft wrap.
 //!
 //! IntelliJ marks such a row with the first usable pair of symbols in
-//! `CompositeSoftWrapPainter` (U+2926 and U+2925, U+21B2 and U+21B3, U+2936 and U+2937, U+21A9 and U+21AA),
+//! `CompositeSoftWrapPainter` (U+2926 and U+2925,
+//! U+21B2 and U+21B3,
+//! U+2936 and U+2937,
+//! U+21A9 and U+21AA),
 //!  and draws an arrow itself (`ArrowSoftWrapPainter`) when no pair can be displayed.
 //! A pair is usable only when its font can display both symbols (`TextBasedSoftWrapPainter`);
 //!  the symbol of the row after the wrap is the second of the pair.
-//! The mark is painted in `EditorColors.SOFT_WRAP_SIGN_COLOR`, `c0c0c0` in the Default scheme,
+//! The mark is painted in `EditorColors.SOFT_WRAP_SIGN_COLOR`,
+//! `c0c0c0` in the Default scheme,
 //!  which the Darcula scheme inherits.
 //! Here the mark is set in the same shaper and the same fallback fonts as the source text,
 //!  so what the coverage check says is what the gutter shows.
 
 /// One code row is the height of the mark's cell.
 use crate::row_map::CODE_ROW;
-/// The shaper decides which symbols its fonts display, and sets the one that is chosen.
+/// The shaper decides which symbols its fonts display,
+/// and sets the one that is chosen.
 use crate::shaped_text::TextShaper;
 /// The raster paints the symbol with one given ink.
 use crate::text_raster::{SourcePixels, TextRaster};
@@ -21,13 +26,15 @@ use anyhow::Result;
 /// Glyph ids tell a displayable symbol from the font's missing-glyph box.
 use parley::PositionedLayoutItem;
 
-/// IntelliJ's `SOFT_WRAP_SIGN_COLOR` in the Default scheme, which the Darcula scheme inherits:
+/// IntelliJ's `SOFT_WRAP_SIGN_COLOR` in the Default scheme,
+/// which the Darcula scheme inherits:
 ///  the same straight RGBA ink in the light and the dark scheme.
 pub const SIGN_INK: [u8; 4] = [0xC0, 0xC0, 0xC0, 0xFF];
 
 /// What:
 ///  IntelliJ's candidate pairs in its order:
-///  the symbol before a soft wrap, and the symbol after it that marks the continuation row.
+///  the symbol before a soft wrap,
+/// and the symbol after it that marks the continuation row.
 /// Why:
 ///  `CompositeSoftWrapPainter.SYMBOLS` lists these four before its private-use pair.
 ///
@@ -61,7 +68,8 @@ pub enum Sign {
         /// The symbol that marks the row after the wrap.
         char,
     ),
-    /// No pair is displayable, so an arrow is drawn.
+    /// No pair is displayable,
+    /// so an arrow is drawn.
     Arrow,
 }
 
@@ -117,7 +125,8 @@ impl TextShaper {
         return glyphs > 0;
     }
 
-    /// The sign this shaper's fonts can show, chosen from IntelliJ's pairs.
+    /// The sign this shaper's fonts can show,
+    /// chosen from IntelliJ's pairs.
     pub fn choose_sign(&mut self, scale: f32) -> Sign {
         return choose_sign(|character| return self.can_display(character, scale));
     }
@@ -125,9 +134,11 @@ impl TextShaper {
     /// What:
     ///  Paint `sign` into a cell `width` logical pixels wide and one code row tall at `scale`,
     ///  in [`SIGN_INK`].
-    ///  A symbol is set like source text and ends at the cell's right edge, as line numbers do.
+    ///  A symbol is set like source text and ends at the cell's right edge,
+    /// as line numbers do.
     /// Why:
-    ///  The gutter shows this image, so the symbol is the one the coverage check shaped.
+    ///  The gutter shows this image,
+    /// so the symbol is the one the coverage check shaped.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts

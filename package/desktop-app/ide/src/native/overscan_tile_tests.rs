@@ -1,8 +1,14 @@
-//! Scrolling inside the overscan tile enters no render, paints no tile, shapes no row, and sets no image;
-//!  leaving the tile re-centers it on the tile worker, the window thread only swaps the finished tile in,
+//! Scrolling inside the overscan tile enters no render,
+//! paints no tile,
+//! shapes no row,
+//! and sets no image;
+//!  leaving the tile re-centers it on the tile worker,
+//! the window thread only swaps the finished tile in,
 //!  and the visible pixels equal a fresh render at that offset.
 
-/// Reuse production viewport callbacks, appearance callbacks, and the raster presentation.
+/// Reuse production viewport callbacks,
+/// appearance callbacks,
+/// and the raster presentation.
 use super::{AppWindow, State, bind_appearance, bind_viewport, render};
 /// Toolkit windows and component ownership stay on the test's event-loop thread.
 use slint::{ComponentHandle, Model, platform::update_timers_and_animations};
@@ -13,21 +19,26 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// Lines of the disposable document; the scrolls in these tests stay far from its end.
+/// Lines of the disposable document;
+/// the scrolls in these tests stay far from its end.
 const LINES: usize = 5000;
-/// Offset the reader starts from, well away from both ends of the document.
+/// Offset the reader starts from,
+/// well away from both ends of the document.
 const START: f32 = 40_000.0;
 /// Logical pixels of one small wheel step.
 const STEP: f32 = 3.0;
-/// Longest wait for the tile worker to answer one re-center; the host can be under heavy load.
+/// Longest wait for the tile worker to answer one re-center;
+/// the host can be under heavy load.
 const PATIENCE: Duration = Duration::from_secs(10);
 
-/// Five thousand numbered lines, each ending with a line feed.
+/// Five thousand numbered lines,
+/// each ending with a line feed.
 fn document() -> String {
     return (0..LINES).map(|line| format!("line {line}\n")).collect();
 }
 
-/// Open a shown window on `text`, with production callbacks and one completed render.
+/// Open a shown window on `text`,
+/// with production callbacks and one completed render.
 fn open(text: &str) -> (AppWindow, Rc<RefCell<State>>) {
     let window = AppWindow::new().expect("headless native source window");
     let state = Rc::new(RefCell::new(State::new(text, None)));
@@ -40,8 +51,10 @@ fn open(text: &str) -> (AppWindow, Rc<RefCell<State>>) {
     return (window, state);
 }
 
-/// Advance timers until the tile worker has started and reported ready, failing after `PATIENCE`.
-/// The first shown tile starts the worker, so every scroll in these tests finds it warm.
+/// Advance timers until the tile worker has started and reported ready,
+/// failing after `PATIENCE`.
+/// The first shown tile starts the worker,
+/// so every scroll in these tests finds it warm.
 fn await_worker_ready(state: &Rc<RefCell<State>>) {
     let start = Instant::now();
     loop {
@@ -68,8 +81,10 @@ pub(super) fn scroll_to(window: &AppWindow, offset: f32) {
     update_timers_and_animations();
 }
 
-/// Advance timers until no re-center is queued or shown, failing after `PATIENCE`.
-/// The displayed tile stays on screen while this waits, so the wait is never a blank frame.
+/// Advance timers until no re-center is queued or shown,
+/// failing after `PATIENCE`.
+/// The displayed tile stays on screen while this waits,
+/// so the wait is never a blank frame.
 pub(super) fn settle_tile(state: &Rc<RefCell<State>>) {
     let start = Instant::now();
     loop {
@@ -88,7 +103,8 @@ pub(super) fn settle_tile(state: &Rc<RefCell<State>>) {
     }
 }
 
-/// Advance timers until the worker has answered one more request than `before`, failing after `PATIENCE`.
+/// Advance timers until the worker has answered one more request than `before`,
+/// failing after `PATIENCE`.
 fn until_worker_reply(state: &Rc<RefCell<State>>, before: u64) {
     let start = Instant::now();
     loop {
@@ -117,7 +133,11 @@ pub(super) fn reset(state: &Rc<RefCell<State>>) {
     current.tiles_discarded = 0;
 }
 
-/// Renders, painted tiles, shaped rows, and images set on the window thread since the last reset, in that order.
+/// Renders,
+/// painted tiles,
+/// shaped rows,
+/// and images set on the window thread since the last reset,
+/// in that order.
 pub(super) fn counts(state: &Rc<RefCell<State>>) -> [u64; 4] {
     let current = state.borrow();
     return [
@@ -128,7 +148,11 @@ pub(super) fn counts(state: &Rc<RefCell<State>>) -> [u64; 4] {
     ];
 }
 
-/// Tiles the worker answered, rows it shaped, tiles swapped in, and tiles discarded, since the last reset.
+/// Tiles the worker answered,
+/// rows it shaped,
+/// tiles swapped in,
+/// and tiles discarded,
+/// since the last reset.
 pub(super) fn worker_counts(state: &Rc<RefCell<State>>) -> [u64; 4] {
     let current = state.borrow();
     return [
@@ -139,7 +163,8 @@ pub(super) fn worker_counts(state: &Rc<RefCell<State>>) -> [u64; 4] {
     ];
 }
 
-/// The rows of the window's visible viewport as RGBA pixels, read from the source image.
+/// The rows of the window's visible viewport as RGBA pixels,
+/// read from the source image.
 fn shown(window: &AppWindow) -> Vec<[u8; 4]> {
     let scale = window.window().scale_factor();
     let image = window
@@ -162,7 +187,10 @@ fn shown(window: &AppWindow) -> Vec<[u8; 4]> {
     return rows;
 }
 
-/// Small wheel steps inside the tile enter no render, paint no tile, shape no row, and set no image.
+/// Small wheel steps inside the tile enter no render,
+/// paint no tile,
+/// shape no row,
+/// and set no image.
 #[test]
 fn scrolling_inside_the_overscan_tile_does_no_source_work() {
     let (window, state) = open(&document());
@@ -198,8 +226,15 @@ fn scrolling_inside_the_overscan_tile_does_no_source_work() {
     window.hide().expect("close headless source window");
 }
 
-/// Leaving the tile queues one re-center for the worker: the window thread shapes, paints, and builds no image
-/// during the scroll, the worker does the work, and the swapped-in image, its offset, and its gutter belong to one tile.
+/// Leaving the tile queues one re-center for the worker:
+/// the window thread shapes,
+/// paints,
+/// and builds no image
+/// during the scroll,
+/// the worker does the work,
+/// and the swapped-in image,
+/// its offset,
+/// and its gutter belong to one tile.
 #[test]
 fn leaving_the_overscan_tile_re_centers_on_the_worker_thread() {
     let (window, state) = open(&document());
@@ -328,7 +363,9 @@ fn an_edit_during_a_re_center_discards_the_worker_result() {
         .expect("close fresh headless source window");
 }
 
-/// A tile worker that stops is reported once, the poll timer goes quiet, and the next scroll re-center starts a fresh worker.
+/// A tile worker that stops is reported once,
+/// the poll timer goes quiet,
+/// and the next scroll re-center starts a fresh worker.
 #[test]
 fn a_stopped_tile_worker_is_reported_once_and_replaced_on_the_next_re_center() {
     let (window, state) = open(&document());
@@ -387,8 +424,10 @@ fn a_stopped_tile_worker_is_reported_once_and_replaced_on_the_next_re_center() {
     window.hide().expect("close headless source window");
 }
 
-/// Measures what a cold tile worker costs, printing one line per process for the measurement log.
-/// Each run is a new process, so the first worker and its first font discovery are cold.
+/// Measures what a cold tile worker costs,
+/// printing one line per process for the measurement log.
+/// Each run is a new process,
+/// so the first worker and its first font discovery are cold.
 #[test]
 fn measure_worker_cold_start() {
     let shaper_start = Instant::now();
@@ -417,7 +456,8 @@ fn measure_worker_cold_start() {
     window.hide().expect("close headless source window");
 }
 
-/// Dropping a worker whose build is in flight returns at once; the build is held on a channel the test controls,
+/// Dropping a worker whose build is in flight returns at once;
+/// the build is held on a channel the test controls,
 /// so the bound measures the drop alone and not the build.
 #[test]
 fn dropping_a_worker_with_a_build_in_flight_does_not_wait_for_it() {

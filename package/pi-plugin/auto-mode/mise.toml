@@ -968,6 +968,14 @@ run = "node --max-old-space-size=512 --import ./dist/native/loader.mjs src/nativ
 description = "Bound allocation of complete original source bindings and reject foreign receivers"
 run = "node --max-old-space-size=512 --expose-gc --import ./dist/native/loader.mjs src/native-source-binding-capacity.test.mjs"
 
+[tasks."test:native:review-retirement"]
+description = "Release completed group review storage while preserving terminal outcomes and the latest diagnostic"
+run = "node --max-old-space-size=512 --expose-gc --import ./dist/native/loader.mjs src/native-review-retirement.test.mjs"
+
+[tasks."test:native:pool-append-capacity"]
+description = "Keep manager append within a process CPU budget while publishing immutable original snapshots"
+run = "node --max-old-space-size=512 --expose-gc --import ./dist/native/loader.mjs src/native-pool-append-capacity.test.mjs"
+
 [tasks."test:native:phases"]
 description = "Verify real native phases and complete lifecycle stderr"
 run = "node --max-old-space-size=512 src/native-phase.unit.test.ts"

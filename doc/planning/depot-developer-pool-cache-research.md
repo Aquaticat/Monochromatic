@@ -485,8 +485,10 @@ no installer recovery was needed.
 
 The seed's consumer operation took 126 ms.
 The fan-out consumer operations took 30,261 ms and 139 ms.
-Their writer manifests were published 764 ms apart,
-so both allocated clients were participating in the shared filesystem.
+Their consumer intervals overlap.
+Their manifest `publishedAt` fields differ by 764 ms,
+but the harness records those fields before each manifest's atomic write completes.
+They are not publication-completion timestamps.
 The slower consumer's delay has not been isolated causally.
 Archil's [consistency documentation][archil-consistency]
 explicitly says client caches can delay visibility after another client writes;
@@ -538,11 +540,11 @@ the Actions runtime token,
 and project OIDC exchange were excluded from this request.
 
 The inspected CLI release `v2.102.23`,
-`pkg/cmd/cargo/cargo.go`,
+`pkg/cmd/cargo/cargo.go:55`,
 calls `helpers.ResolveOrgAuth`.
-In that release's `pkg/helpers/token.go`,
+In that release's `pkg/helpers/token.go:13`,
 `ResolveOrgAuth` uses `ResolveStaticOrgAuth`,
-whose final fallback is `resolveJITToken`:
+whose final fallback is `resolveJITToken` at `pkg/helpers/token.go:129`:
 
 ```go
 // depot/cli/pkg/helpers/token.go, release v2.102.23
@@ -580,19 +582,176 @@ The proven result is automatic Cache authorization in this standalone CI job.
 It does not establish direct OIDC exchange on ordinary GitHub-hosted compute,
 the credential's exact lifetime,
 fork-job write isolation,
-cross-job entry reuse,
 or full compiler/task-cache compatibility.
+The compiler-cache follow-up separately establishes cross-job Rust compiler-entry reuse.
 Depot GitHub Actions runners have a separately documented automatic Cache credential;
 ordinary GitHub compute still needs a valid documented credential route for this remote-cache design.
+
+## Compiler-cache execution ledger
+
+The bounded compiler-cache follow-up was dispatched as
+[run `gmrm0ff71h`](https://depot.dev/orgs/l4zncjjbj5/workflows/gmrm0ff71h)
+from pushed harness `298860fd9db1b894bba0f4531f2307df6881e0b0`.
+Its workflow hash is `6b8056b6b6990e426b4cffa87f9bfb30a595a8e4d5f3b85591a05c3c4a09a00f`.
+It permits at most three fresh allocations,
+each requesting two CPUs/eight GB and a five-minute timeout.
+It builds the existing `truepeak-core` default-feature library with its lockfile,
+using fresh isolated Cargo target and package-download paths.
+An independent executable calls the compiled library's public gain and meter functions.
+Existing Rust tests run through Nextest only when that command is available.
+
+The upstream `sccache` release `v0.18.0` was inspected before dispatch.
+The 9,730,540-byte x86_64-musl archive matched both GitHub release metadata
+and its published SHA256 file:
+`45f1447fbe231e3037bde351ef70677dd212216c8d62ae7ca409fecc4d6acc89`.
+The extracted executable hash is
+`973cb15f6a986d84ca334bbed3bbe2eb8f1ee8fd81bf9e115b8539a293bf8d59`.
+Its actual `--help` reports WebDAV support and JSON statistics.
+The checked-out release source is `01c35e69b97f516c2ebfbdb418b5cd6277bde280`.
+
+The probe's unique WebDAV prefix isolates its writes from existing cache entries.
+The seed and unchanged consumer use the same source,
+compiler,
+paths,
+and flags;
+the third allocation adds a compiler flag as a cache-miss positive control.
+The task uses only the supplied Cache credential,
+records cache statistics and consumer behavior,
+and preserves failures and server shutdown evidence.
+All jobs completed successfully.
+The [validated compiler-cache receipt](../audit/depot-sccache-fresh-jobs-2026-10-18.evidence.json)
+binds the different sandbox IDs,
+all source hashes,
+compiler executable and version identity,
+Cargo identity,
+identical paths,
+and artifact upload/download digests.
+Each target directory and Cargo home was absent at job start.
+The reported backend is WebDAV.
+
+The seed recorded no Rust cache hits,
+11 Rust misses,
+and 11 successful cache writes.
+The unchanged fresh allocation recorded 11 Rust hits,
+no misses,
+and no writes.
+The changed-flag allocation recorded no Rust hits,
+11 misses,
+and 11 successful writes.
+All reported read/write error counters were zero.
+The task built the real library,
+then compiled and executed an independent consumer in every allocation.
+Both the public gain and one-sample meter assertions passed.
+Server shutdown returned success in every job.
+
+`cargo nextest --version` reported that the subcommand was unavailable.
+No unit-test pass is claimed,
+and no `cargo test` fallback was used.
+The optional service/fingerprint features and shipped applications were not built by this probe.
+The changed compiler flag is a positive invalidation control;
+changed source,
+dependency versions,
+and compiler versions remain separate unexercised cases.
+
+Precise allocation intervals were 26.897 seconds for the seed,
+23.718 seconds for the unchanged consumer,
+and 30.955 seconds for the changed flags.
+Their total is 81.570 seconds,
+giving a gross timestamp-based compute estimate of USD $0.008157 at the published rate.
+The request-to-terminal interval was 72.764 seconds.
+There is only one allocation per condition,
+so these elapsed intervals do not establish unchanged-input spread or a speed multiplier.
+The demonstrated benefit is 11 Rust compiler-cache hits in a fresh allocation with no Rust cache misses.
+No target directory,
+package archive,
+or broad new credential supplied that reuse.
+
+Each allocation reported 20 compiler requests,
+eight non-cacheable requests,
+and `compile_fails=1`,
+while the outer Cargo build and independent consumer returned success.
+The exact failed subprocess was not separately traced.
+In release source `src/server.rs:1563` and `src/server.rs:1600`,
+that counter increments for a failed compile result or a compiler-process error.
+No specific probe command or application failure is inferred from the counter.
+The receipt preserves it rather than treating cache-hit success as proof that every compiler request succeeded.
+The [compiler-request diagnostic](../troubleshooting/sccache-cargo-request-failure-counter.md)
+records that boundary and the unassigned subprocess identity.
+The library archive hashes match between the seed and unchanged consumer;
+the changed flags alter that archive's hash.
+All independent consumer executable hashes match.
+
+The local terminal collector initially combined the waiter's stderr progress with stdout JSON.
+The retained final JSON was recovered from that combined capture without repeating any cloud job.
+This was a collector stream-separation error,
+not a failed CI job or a malformed stdout JSON response.
+
+## Independent review of the pnpm archive comparison
+
+The separate [pnpm experiment](depot-pnpm-store-fresh-job-research.md)
+now has a completed fresh-job comparison.
+Independent review checked its [retained evidence](../audit/depot-pnpm-fresh-jobs-2026-10-18.evidence.json)
+against frozen Git source,
+original job API receipts,
+downloaded ZIP bytes and current GitHub artifact metadata.
+All phases bind to source `2a155eec4935e5df225cb7a90af573357c3a94dc`.
+The checks covered five source-file hashes,
+16 ZIP digests,
+67 member hashes,
+224 step intervals and conclusions,
+and every reported summary calculation.
+Read-only artifact API requests at `2026-10-18T05:54:02Z` independently confirmed
+the 16 provider digests and their source/run bindings.
+Every install-bearing job passed its build and both existing consumer tasks.
+The separate branch jobs checked archive access and manifests without installing or exercising application consumers.
+
+For the measured workspace install,
+GitHub restore plus install takes 11 to 12 seconds warm versus 9 to 10 seconds with the cache action disabled.
+Depot takes 4 to 5 seconds warm versus 3 seconds disabled.
+The pnpm subprocess saves time and every warm log records 582 reused packages with zero downloads;
+archive restoration consumes that saving at the measured preparation boundary.
+Leaving this exact pnpm archive disabled by default is supported by the observed samples.
+The shorter Depot warm whole-job intervals also contain faster checkout before restoration,
+so they do not isolate a pnpm-cache benefit.
+Only two repetitions per comparative phase were collected,
+with varying GitHub CPU models and unmatched provider images.
+No provider-wide speed multiplier follows.
+
+The review recomputed the timestamp-price proxy for all 13 retained Depot jobs,
+including failed and cancelled harness attempts:
+1,121 seconds and USD $0.2242 at the recorded label rate.
+Allowance consumption,
+allocation billing boundaries and storage-inclusive cost remain unverified.
+Changed dependency/toolchain archive controls and untrusted-writer authorization remain separate unexercised cases.
+The missing experimental GitHub entry establishes neither a deletion nor its disappearance's cause.
+No additional cloud jobs or settings changes were needed for this review.
+
+## Verification and retained fixtures
+
+Scoped Markdown lint,
+CommonMark rendering,
+JSON parsing,
+source and artifact digest checks,
+and credential-pattern scans passed for the completed evidence.
+The private experiment worktree was removed after a clean tracked-state check,
+an ignored-file dry run,
+and inspection for stray ignored Git-directory entries.
+Only its generated forbidden-string cache was ignored;
+no stray Git-directory entries existed.
+The pushed branch and source bytes in the receipts preserve every harness.
+The unique provider fixture disk,
+small HTTP Cache entry,
+and isolated compiler-cache prefix remain subject to provider retention.
+No existing shared cache or account retention setting was changed.
 
 ## Sources and limits
 
 Official docs and open source establish supported interfaces and documented boundaries.
 Historical linked reports establish only their measured workloads.
 The persistent-disk and automatic-authorization ledgers establish their specific exercised boundaries.
-New archive comparisons,
-snapshot designs,
-and full remote compiler-cache designs require their corresponding consumer runs before adoption.
+The independently reviewed archive comparison establishes only its frozen Linux workspace-install workload.
+Snapshot designs
+and broader remote compiler-cache designs require their corresponding consumer runs before adoption.
 No overall cached speedup,
 cross-provider shared archive,
 safe untrusted-writer boundary,

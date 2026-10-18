@@ -63,9 +63,12 @@ pub struct Measured {
 }
 
 /// What:
-///  Work charged for each line a budgeted measurement brings in, besides the characters it shapes.
+///  Work charged for each line a budgeted measurement brings in,
+/// besides the characters it shapes.
 /// Why:
-///  A short line still costs a layout, a break, and a cache entry;
+///  A short line still costs a layout,
+/// a break,
+/// and a cache entry;
 ///  charging it as if it were this many more characters keeps a count of tiny lines honest.
 ///
 /// In TS you'd write (pseudocode):
@@ -75,9 +78,12 @@ pub struct Measured {
 pub const LINE_WORK: usize = 32;
 
 /// What:
-///  Longest line, in characters, that `line_work` reads to look for tabs.
+///  Longest line,
+/// in characters,
+/// that `line_work` reads to look for tabs.
 /// Why:
-///  A longer line costs more than any budget the window thread spends, so reading it all would only add to the cost.
+///  A longer line costs more than any budget the window thread spends,
+/// so reading it all would only add to the cost.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -86,9 +92,13 @@ pub const LINE_WORK: usize = 32;
 pub const WORK_SCAN_LIMIT: usize = 65_536;
 
 /// What:
-///  The most work, in characters shaped or broken, that bringing `line` into the cache at one wrap width can cost:
-///  [`LINE_WORK`] plus its length, times the corrective passes of its tabs when it has any.
-///  A line past [`WORK_SCAN_LIMIT`] costs `usize::MAX`, and a line the text does not have costs nothing.
+///  The most work,
+/// in characters shaped or broken,
+/// that bringing `line` into the cache at one wrap width can cost:
+///  [`LINE_WORK`] plus its length,
+/// times the corrective passes of its tabs when it has any.
+///  A line past [`WORK_SCAN_LIMIT`] costs `usize::MAX`,
+/// and a line the text does not have costs nothing.
 /// Why:
 ///  A tabbed line that cannot be broken again is shaped once and then once more for each corrective pass,
 ///  so its length alone would understate the cost.
@@ -116,10 +126,13 @@ pub fn line_work(document: &Document, line: usize) -> usize {
 }
 
 /// What:
-///  What a budgeted measurement may still spend: lines brought in, and work in the units of [`line_work`].
+///  What a budgeted measurement may still spend:
+/// lines brought in,
+/// and work in the units of [`line_work`].
 /// Why:
 ///  The window thread measures the lines near the view when the width changes;
-///  the budget is what keeps that step bounded, whatever the lines are.
+///  the budget is what keeps that step bounded,
+/// whatever the lines are.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -135,7 +148,8 @@ pub struct Budget {
 
 /// Spending.
 impl Budget {
-    /// Take one line of `work` from the budget, or answer `false` and take nothing when it does not fit.
+    /// Take one line of `work` from the budget,
+    /// or answer `false` and take nothing when it does not fit.
     pub fn spend(&mut self, work: usize) -> bool {
         if self.lines == 0 || work > self.work {
             return false;
@@ -159,7 +173,8 @@ impl TextShaper {
         self.tab_passes += 1;
     }
 
-    /// Kept rows broken again at a new wrap width instead of being shaped again, since this shaper was made.
+    /// Kept rows broken again at a new wrap width instead of being shaped again,
+    /// since this shaper was made.
     pub fn rebroken_rows(&self) -> u64 {
         return self.rebroken_rows;
     }
@@ -169,14 +184,18 @@ impl TextShaper {
         self.rows.trim(centre);
     }
 
-    /// Lines the cache holds, at any wrap width.
+    /// Lines the cache holds,
+    /// at any wrap width.
     pub fn kept_rows(&self) -> usize {
         return self.rows.len();
     }
 
     /// What:
-    ///  Break a kept row again at `width` logical pixels, and answer whether that was possible.
-    ///  A row whose tabs are not all on the first visual row, before or after, is left for the caller to shape again.
+    ///  Break a kept row again at `width` logical pixels,
+    /// and answer whether that was possible.
+    ///  A row whose tabs are not all on the first visual row,
+    /// before or after,
+    /// is left for the caller to shape again.
     /// Why:
     ///  Breaking a laid-out line again takes about a microsecond,
     ///  shaping it about fifteen;
@@ -278,7 +297,9 @@ impl TextShaper {
     ///  and the answer is nothing when a line does not fit what is left.
     /// Why:
     ///  The window thread uses it when the width changes.
-    ///  Lines brought in before the budget ran out stay in the cache, each tagged with its width, so they are not lost.
+    ///  Lines brought in before the budget ran out stay in the cache,
+    /// each tagged with its width,
+    /// so they are not lost.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -297,7 +318,10 @@ impl TextShaper {
         return self.measure_within(document, lines, scale, wrap, styles, Some(budget));
     }
 
-    /// The loop of both measurements; a budget, when given, is charged for each line the cache does not hold yet.
+    /// The loop of both measurements;
+    /// a budget,
+    /// when given,
+    /// is charged for each line the cache does not hold yet.
     fn measure_within(
         &mut self,
         document: &Document,

@@ -3,6 +3,9 @@ import {ordinary,dense} from './message-publication-shape.mjs';
 import {createMessageSignature,sameSignature} from './message-publication-signature.mjs';
 
 //region Original capture ownership controls registration and retirement in the caller-owned alias index.
+/** Input-only views retain membership without retaining a message-projection owner or issuing payload eligibility. */
+function inputOnlyCannotMatchPayload(){return false;}
+
 /** Publish one existing emitter input; only the original run owner holds the construction method. */
 export function createMessagePublication({
   aliases,
@@ -72,7 +75,7 @@ export function createMessagePublication({
    sourceOccurrence:source.occurrence,
    ...(source.runOccurrence?{runOccurrence:source.runOccurrence}:{}),
    ...(source.sessionInputOccurrence?{sessionInputOccurrence:source.sessionInputOccurrence}:{}),
-   matchesPayload(value){return (aliases.get(value)
+   matchesPayload:initialKind==='input-only'?inputOnlyCannotMatchPayload:function matchesPayload(value){return (aliases.get(value)
      ?.kind
      ==='payload')&&current(value);}
  });

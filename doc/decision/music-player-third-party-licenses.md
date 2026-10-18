@@ -10,7 +10,7 @@ Two choices were made by default and stayed open to the owner's veto:
 the Slint license this project uses (GPL-3.0-only,
 see [Slint](#slint)),
 and the source offer for the desktop programs (see [Open decisions](#open-decisions)).
-The in-app surface waited for a design decision (see [In-app surface](#in-app-surface)).
+The in-app surface was decided on 2026-10-18 (see [In-app surface](#in-app-surface)).
 
 Amended 2026-10-18 by the owner:
 the desktop programs use Slint under its Royalty-free license instead of GPL-3.0-only,
@@ -302,7 +302,7 @@ which Maven metadata does not carry).
   The release workflow's check runs `--licenses` under bash.
 - The APK holds the Android file as `assets/THIRD-PARTY-LICENSES.txt`
   (`ThirdPartyLicensesAssetTask` in `app/build.gradle.kts`,
-  release variant only),
+  every variant since 2026-10-18, a short note when the file is absent and the release gate is off),
   and it is the release file `music-player-<version>-android-third-party-licenses.txt`.
 - Both release files are attested and listed in `SHA256SUMS` like every other file.
 
@@ -351,13 +351,14 @@ D99 and the "Auto-play on select" record define the three rows it has now)
 and has no About screen,
 no menu entry and no splash screen.
 Adding a Licenses row or an About screen would be new UI that no decision accepted,
-so this change adds none.
-The notices are reachable through `--licenses`,
+so this change added none.
+The notices were reachable through `--licenses`,
 the release files,
 the archives and the APK asset.
-An in-app surface (a Licenses or About row in Settings that shows the embedded text) needs a design decision;
+An in-app surface (a Licenses or About row in Settings that shows the embedded text) needed a design decision;
 it is
 also what Slint's royalty-free option (a) would need.
+The human made that decision on 2026-10-18 (see [Licenses row in Settings](#licenses-row-in-settings-2026-10-18)).
 
 ## Amendment of 2026-10-18
 
@@ -597,6 +598,69 @@ Re-run on 2026-10-18 at the branch head after merging `main` (each number from a
 - The desktop release path depends on one more job,
   which runs before the build jobs.
 
+## Licenses row in Settings (2026-10-18)
+
+The human decided through the question tool on 2026-10-18:
+add a Licenses row to Settings in both apps,
+"doesn't need mockups, just do it, this one is pretty simple and low-impact in terms of design".
+No design record (`package/music-player/design/decisions.md`) was written for it,
+and no mockup was made; this section is the record.
+
+The Android app (branch `feat/music-player-android-licenses-row`) does this:
+
+- Settings ends with a third group under an About heading,
+  after Templates and Playback.
+  Its one row is Licenses,
+  with the supporting line "Open-source libraries used by this app",
+  the 72 dp row form, the 40 dp icon circle and the same group rounding as the other rows,
+  and the Material Symbols `description` icon (same pinned commit as the other Settings icons).
+  The row is a button (role Button), a Tab stop after the Playback switch, and Enter and Space open it.
+- The row opens a page of its own on every window width,
+  also on the unfolded screen where Settings has two panes:
+  a Settings row there shows its content in the right pane (D110),
+  but the 1.7 MB notice text is a document, not a setting,
+  so it takes the window (the right half on a creased screen, so no text crosses the fold).
+  Back (the button or the system gesture) returns to Settings,
+  and on the unfolded screen Escape does too.
+  Putting the page into the right pane instead is an open choice for the human.
+- The page has the Settings header (Back button labelled "Back to Settings", title Licenses) and a lazy list.
+  The text is the APK asset `THIRD-PARTY-LICENSES.txt`,
+  read on the IO dispatcher and cut into blocks on the default dispatcher
+  (`core/LicenseNoticeBlocks.kt`: section titles, subsection titles,
+  wrapped prose joined into paragraphs, other lines kept in a monospace face; at most 40 source lines per block).
+  The real file becomes 6,649 blocks.
+  Titles carry the heading role and differ by size, weight and color;
+  a spinner with the words "Loading licenses" shows while it loads, and a message shows if the asset cannot be read.
+  The list is one keyboard stop with a ring inside its edge;
+  Up, Down, Page Up, Page Down, Home and End scroll it.
+- Every build variant now carries the asset,
+  not only release.
+  A build without the `notices` task's output packs the short note,
+  so `build` and the instrumented tests need no cargo-about;
+  a build with `MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES=true` (the release workflow) still fails on a missing file.
+  Checked on 2026-10-18: `:app:thirdPartyLicensesAsset` with the variable and no file failed,
+  and `assembleDebug` without the variable and without the file packed the 258 byte note.
+- `desktop-app/bin/third-party-notices.mjs` names the `description` icon in the Android notice.
+
+Measurements on 2026-10-18 (debug APK, Pixel 9 Pro Fold emulator on the host GPU, the real 1,748,364 character file,
+5 repeats each, run from logcat and `dumpsys gfxinfo`):
+
+- Open, process cold (force-stop, start, Settings, tap the row), route change to the first frame with the list:
+  267, 264, 276, 272 and 265 ms (median 267 ms, 264 to 276).
+  Of that, reading the asset took 8 to 9 ms and splitting 181 to 188 ms.
+- Open, process warm (Back, tap the row again): 199, 147, 140, 131 and 122 ms (median 140 ms, 122 to 199;
+  the splitting falls from 124 to 60 ms as the code warms).
+- Scroll, eight swipes down and eight up (250 ms each) per window, five windows:
+  901 to 907 frames, 29, 29, 29, 29 and 30 janky frames (3.2 to 3.3 percent),
+  50th to 99th percentile of the frame time 16 ms in every window.
+  This is a debuggable build on an emulator;
+  the 2026-10-15 track list windows (1,000 tracks, top) had 4 to 16 janky frames of 724 to 838
+  (`doc/audit/music-player-release-build-measurements-2026-10-15.md`), so the two are not the same build.
+- An earlier set on the same code before the indentation fix (one more emulator session):
+  cold 267 to 295 ms, warm 133 to 176 ms, janky 13 to 24 of 928 to 938 frames.
+
+The desktop row and the Slint license switch are recorded by the desktop branch.
+
 ## Open decisions
 
 As of 2026-10-15; the first and the third were decided on 2026-10-18, and the second no longer applies to the
@@ -610,8 +674,8 @@ desktop programs (see [Amendment of 2026-10-18](#amendment-of-2026-10-18)).
   or attach a `cargo vendor` archive of the exact
   crate sources to every release.
 - In-app surface:
-  whether Settings (both apps) gets a Licenses or About row;
-  needs a design decision.
+  decided on 2026-10-18, a Licenses row in Settings of both apps
+  (see [Licenses row in Settings](#licenses-row-in-settings-2026-10-18)).
 
 ## Alternatives rejected
 

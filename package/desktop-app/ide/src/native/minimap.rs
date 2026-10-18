@@ -1,9 +1,16 @@
-//! The window's side of the minimap, the scroll control beside the source text.
+//! The window's side of the minimap,
+//! the scroll control beside the source text.
 //!
-//! The picture of the whole text is built on the minimap worker thread (`minimap_build.rs`); this module posts a
-//!  request when what the picture is valid for changes, takes in the finished pixels with one image setter,
-//!  and turns a press, a drag, and a page step into scroll offsets with `ide_app::minimap::Geometry`.
-//! The viewport box is not touched here: the markup places it from the scroll offset alone, so a scroll step costs
+//! The picture of the whole text is built on the minimap worker thread (`minimap_build.rs`);
+//! this module posts a
+//!  request when what the picture is valid for changes,
+//! takes in the finished pixels with one image setter,
+//!  and turns a press,
+//! a drag,
+//! and a page step into scroll offsets with `ide_app::minimap::Geometry`.
+//! The viewport box is not touched here:
+//! the markup places it from the scroll offset alone,
+//! so a scroll step costs
 //!  this module nothing.
 //!
 //! The parts are split by what they answer for:
@@ -11,7 +18,9 @@
 //!  `pace.rs` decides when a request is posted,
 //!  `request.rs` makes the key and posts the request,
 //!  `picture.rs` takes in the finished pictures,
-//!  and `pointer.rs` turns a press, a drag, and a page step into scroll offsets.
+//!  and `pointer.rs` turns a press,
+//! a drag,
+//! and a page step into scroll offsets.
 
 /// What the window keeps for the minimap besides the picture,
 ///  and the drag of the viewport box.

@@ -373,7 +373,10 @@ Each file carries build provenance that binds its bytes to this workflow run and
 
 ```bash
 # Verify one downloaded file; fails if the bytes were changed after the workflow built them.
-gh attestation verify music-player-<version>-linux-x64.tar.gz --repo Aquaticat/Monochromatic
+gh attestation verify music-player-<version>-linux-x64.tar.gz --repo Aquaticats/Monochromatic
+
+# Releases up to 0.1.4 were attested under the earlier owner name: use --owner Aquaticat for those
+# (checked on 2026-10-18: 0.1.4 verifies with --owner Aquaticat only, 0.1.5 with --repo Aquaticats/Monochromatic).
 
 # Compare the whole set with the checksum file (verify SHA256SUMS itself the same way).
 sha256sum --check --ignore-missing SHA256SUMS

@@ -359,7 +359,8 @@ impl RowMap {
 
     /// What:
     ///  Height of the visual row `row` of `line` with what stands above it:
-    ///  one code row, and the line's block when the row is its first.
+    ///  one code row,
+    /// and the line's block when the row is its first.
     ///  A line the text does not have counts as one plain row.
     /// Why:
     ///  A page step is measured in whole visual rows,

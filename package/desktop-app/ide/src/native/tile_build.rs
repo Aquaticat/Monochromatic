@@ -1,7 +1,10 @@
-//! Source tile construction, shared by the UI thread and the tile worker,
+//! Source tile construction,
+//! shared by the UI thread and the tile worker,
 //!  and the named worker thread that builds scroll re-centers off the UI thread.
 
-/// The background measurement of the whole text, its slots, and its walk.
+/// The background measurement of the whole text,
+/// its slots,
+/// and its walk.
 use super::tile_pass::{PassControl, PassJob, PassOutbox, PassOutput};
 /// Worker-start and build failures stay visible diagnostics.
 use anyhow::{Context, Result, bail};
@@ -32,8 +35,11 @@ pub(super) use job::{TileBuilt, TileJob, build_tile, same_typography};
 #[cfg(test)]
 pub(super) use worker_thread::{BUILD_GATE, PASS_GATE};
 
-/// What a worker sends back: once its shaper is ready, then one result per job.
-/// Why: The window thread can tell a warm worker from a cold one without waiting for a job.
+/// What a worker sends back:
+/// once its shaper is ready,
+/// then one result per job.
+/// Why:
+/// The window thread can tell a warm worker from a cold one without waiting for a job.
 enum WorkerReply {
     /// The worker's shaper and raster are ready to build.
     Ready,
@@ -46,7 +52,9 @@ enum WorkerReply {
 }
 
 /// What the window sends the worker.
-/// Why: A tile job carries its inputs; a wake only tells an idle worker to look at the pass slot.
+/// Why:
+/// A tile job carries its inputs;
+/// a wake only tells an idle worker to look at the pass slot.
 enum Command {
     /// Build this tile.
     Tile(
@@ -61,7 +69,8 @@ enum Command {
 /// What:
 ///  The slots and flags the worker shares with the window thread besides its two channels.
 /// Why:
-///  The pass is not a stream of messages: the newest wanted pass sits in one slot,
+///  The pass is not a stream of messages:
+/// the newest wanted pass sits in one slot,
 ///  and what the worker measured coalesces in another.
 ///
 /// In TS you'd write (pseudocode):
@@ -79,10 +88,12 @@ struct Shared {
 }
 
 /// What:
-///  A worker that builds at most one tile at a time, keeps only the newest waiting job,
+///  A worker that builds at most one tile at a time,
+/// keeps only the newest waiting job,
 ///  and measures the whole text between jobs.
 /// Why:
-///  Scrolling can ask for many tiles; only the newest one still matches the view.
+///  Scrolling can ask for many tiles;
+/// only the newest one still matches the view.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -102,15 +113,19 @@ pub(super) struct TileWorker {
     busy: bool,
     /// A pass was posted and its last output has not been taken.
     pass_open: bool,
-    /// Newest job not yet sent; an older waiting job is dropped unbuilt.
+    /// Newest job not yet sent;
+    /// an older waiting job is dropped unbuilt.
     waiting: Option<TileJob>,
-    /// Joined on shutdown, never detached.
+    /// Joined on shutdown,
+    /// never detached.
     thread: Option<JoinHandle<()>>,
 }
 
-/// Requests replace each other; polling returns each finished tile in turn.
+/// Requests replace each other;
+/// polling returns each finished tile in turn.
 impl TileWorker {
-    /// Start a named worker with a short command queue and one reply slot, building with `shaper`.
+    /// Start a named worker with a short command queue and one reply slot,
+    /// building with `shaper`.
     pub(super) fn new(shaper: TextShaper) -> Result<Self> {
         // A tile job and a wake can wait together; the window never queues more of either.
         let (request_sender, request_receiver) = sync_channel(4);
@@ -145,16 +160,19 @@ impl TileWorker {
         });
     }
 
-    /// Make `job` the only waiting request; a job already running finishes first.
+    /// Make `job` the only waiting request;
+    /// a job already running finishes first.
     pub(super) fn request(&mut self, job: TileJob) -> Result<()> {
         self.waiting = Some(job);
         return self.dispatch();
     }
 
     /// What:
-    ///  Make `job` the pass the worker carries on between tiles, and wake an idle worker.
+    ///  Make `job` the pass the worker carries on between tiles,
+    /// and wake an idle worker.
     /// Why:
-    ///  A newer pass replaces an older one, so the slot holds only the newest.
+    ///  A newer pass replaces an older one,
+    /// so the slot holds only the newest.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -179,7 +197,8 @@ impl TileWorker {
         };
     }
 
-    /// Take what the pass measured since the last take, at most `limit` lines;
+    /// Take what the pass measured since the last take,
+    /// at most `limit` lines;
     ///  the pass is no longer open once its last output is taken.
     pub(super) fn take_pass(&mut self, limit: usize) -> Option<PassOutput> {
         let output = self.shared.outbox.take(limit)?;
@@ -189,7 +208,8 @@ impl TileWorker {
         return Some(output);
     }
 
-    /// Measured lines the window has not taken yet; test-only.
+    /// Measured lines the window has not taken yet;
+    /// test-only.
     #[cfg(test)]
     pub(super) fn pending_pass_lines(&self) -> usize {
         return self.shared.outbox.waiting_lines();
@@ -201,19 +221,25 @@ impl TileWorker {
         return self.ready;
     }
 
-    /// True while a job is running, its reply is unread, a job waits, or the pass is not finished;
+    /// True while a job is running,
+    /// its reply is unread,
+    /// a job waits,
+    /// or the pass is not finished;
     ///  the poll must continue while this holds.
     pub(super) fn is_busy(&self) -> bool {
         return self.busy || self.waiting.is_some() || self.pass_open;
     }
 
-    /// Close the request channel so the idle worker thread ends, as a crashed worker would; test-only.
+    /// Close the request channel so the idle worker thread ends,
+    /// as a crashed worker would;
+    /// test-only.
     #[cfg(test)]
     pub(super) fn close_for_test(&mut self) {
         self.requests.take();
     }
 
-    /// Drop the waiting job; a running job finishes and its reply is left for the caller to discard.
+    /// Drop the waiting job;
+    /// a running job finishes and its reply is left for the caller to discard.
     pub(super) fn cancel(&mut self) {
         self.waiting = None;
     }
@@ -238,7 +264,8 @@ impl TileWorker {
         return Ok(());
     }
 
-    /// Poll without blocking; the inner result is the build's own success or failure.
+    /// Poll without blocking;
+    /// the inner result is the build's own success or failure.
     pub(super) fn poll(&mut self) -> Result<Option<Result<TileBuilt>>> {
         loop {
             match self.replies.try_recv() {
@@ -272,8 +299,10 @@ impl TileWorker {
 
 /// Close input before joining so the last bounded reply can complete.
 impl Drop for TileWorker {
-    /// Close the request channel and detach the thread, so closing the window never waits for a build in flight.
-    /// The detached thread ends after its current build, when the closed channel ends its loop.
+    /// Close the request channel and detach the thread,
+    /// so closing the window never waits for a build in flight.
+    /// The detached thread ends after its current build,
+    /// when the closed channel ends its loop.
     fn drop(&mut self) {
         self.requests.take();
         // Dropping the join handle detaches the thread; there is no cancellation point inside a build to stop it earlier.

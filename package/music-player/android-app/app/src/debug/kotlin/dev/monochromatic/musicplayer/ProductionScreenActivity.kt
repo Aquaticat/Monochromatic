@@ -631,6 +631,7 @@ private fun ProductionScreenHost(startWithPicker: Boolean, scene: String) {
                 onToggleAutoPlay = {},
                 onBack = {},
                 onOpenTemplate = {},
+                onOpenLicenses = {},
             )
             SCENE_TEMPLATE_EDITOR -> templateEditor(
                 state = TemplateEditorState.initial(emptyList()).open(TemplateKind.TRACK_ROWS),

@@ -1,14 +1,18 @@
 //! The work the tab correction of a wrapped line may do:
-//!  the passes a line gets fall with its length, so the characters shaped stay near a fixed budget,
+//!  the passes a line gets fall with its length,
+//! so the characters shaped stay near a fixed budget,
 //!  and the count of passes a long line really shaped is checked against that bound.
-//! Work is counted in passes, never timed, so the checks do not depend on the host's load.
+//! Work is counted in passes,
+//! never timed,
+//! so the checks do not depend on the host's load.
 
 /// The bound under test.
 use super::{TAB_BUDGET, TAB_MIN_PASSES, TAB_PASSES, passes_for};
 /// Canonical source and the shaper whose passes are counted.
 use crate::{document::Document, shaped_text::TextShaper};
 
-/// A line of about `length` characters with a tab every few characters, which keeps correcting for many passes.
+/// A line of about `length` characters with a tab every few characters,
+/// which keeps correcting for many passes.
 fn tabbed(length: usize) -> String {
     let mut text = String::new();
     let mut number = 0;
@@ -20,7 +24,9 @@ fn tabbed(length: usize) -> String {
     return text;
 }
 
-/// A short line gets every pass, a long one the budget's share, and no line fewer than the minimum.
+/// A short line gets every pass,
+/// a long one the budget's share,
+/// and no line fewer than the minimum.
 #[test]
 fn passes_fall_with_the_length_of_the_line() {
     assert_eq!(passes_for(0), TAB_PASSES);
@@ -39,8 +45,11 @@ fn passes_fall_with_the_length_of_the_line() {
     }
 }
 
-/// A long line with tabs inside shapes no more corrective passes than its length allows, and a short one is not
-///  held back: the count of shaped passes is the bound's, in the same units.
+/// A long line with tabs inside shapes no more corrective passes than its length allows,
+/// and a short one is not
+///  held back:
+/// the count of shaped passes is the bound's,
+/// in the same units.
 #[test]
 fn a_long_tabbed_line_shapes_no_more_passes_than_its_length_allows() {
     let mut shaper = TextShaper::new();

@@ -38,6 +38,23 @@ class PlayerControllerPlaybackEndTest {
     }
 
     @Test
+    fun theStopAtTheEndOfTheFolderReportsTheReadiedFirstTrackAsLoaded() {
+        val engine = FakeAudioEngine()
+        val controller = playing(2, PlaybackMode.IN_ORDER, engine)
+        /** URIs the controller reported as loaded, in report order. */
+        val reported: MutableList<String> = mutableListOf()
+        controller.onTrackLoaded = { uri -> reported += uri }
+        controller.handleNaturalEnd()
+        assertEquals("the natural advance reports the next track", listOf("u1"), reported)
+        controller.handleNaturalEnd()
+        assertEquals(
+            "the stop reports the readied first track, so its artist tag is read",
+            listOf("u1", "u0"),
+            reported,
+        )
+    }
+
+    @Test
     fun playAfterTheStopStartsTheFolderAgainFromItsFirstTrack() {
         val engine = FakeAudioEngine()
         val controller = playing(1, PlaybackMode.IN_ORDER, engine)

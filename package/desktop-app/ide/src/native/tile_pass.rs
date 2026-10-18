@@ -1,11 +1,14 @@
 //! The background pass that measures every line of the displayed text at the wrap width,
-//!  from the viewport outward, in chunks, on the tile worker.
+//!  from the viewport outward,
+//! in chunks,
+//! on the tile worker.
 //!
 //! The window thread never waits for it:
 //!  a line that is not yet measured counts as one row (or its last known height),
 //!  and each finished chunk corrects the vertical mapping through the keep-view-still machinery in `rows`.
 
-/// Canonical source, snapshotted as a rope clone.
+/// Canonical source,
+/// snapshotted as a rope clone.
 use ide_app::document::Document;
 /// The shaper whose cache the pass fills.
 use ide_app::shaped_text::TextShaper;
@@ -17,7 +20,8 @@ use ide_app::source_typography::SourceTypography;
 use std::sync::Mutex;
 
 /// What:
-///  Lines measured by one chunk, in each direction.
+///  Lines measured by one chunk,
+/// in each direction.
 /// Why:
 ///  A chunk is about two milliseconds of shaping on an idle host,
 ///  short enough that a waiting tile job is served promptly,
@@ -69,7 +73,8 @@ pub(super) struct PassKey {
 /// What:
 ///  An owned request to measure the whole text from line `focus` outward.
 /// Why:
-///  The worker must not borrow native state, which lives on the window thread.
+///  The worker must not borrow native state,
+/// which lives on the window thread.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -80,7 +85,8 @@ pub(super) struct PassJob {
     pub(super) key: PassKey,
     /// Rope snapshot at the revision the key names.
     pub(super) document: Document,
-    /// Syntax classifications, shared by identity.
+    /// Syntax classifications,
+    /// shared by identity.
     pub(super) styles: SourceStyles,
     /// Shaping choices the worker shaper must match.
     pub(super) typography: SourceTypography,
@@ -94,7 +100,9 @@ pub(super) struct PassJob {
 
 /// What:
 ///  Measured lines on their way to the window:
-///  each `(line, visual rows)` pair, whether the walk is complete, and what it cost.
+///  each `(line, visual rows)` pair,
+/// whether the walk is complete,
+/// and what it cost.
 /// Why:
 ///  The window applies these to its table of visual rows.
 ///
@@ -109,9 +117,11 @@ pub(super) struct PassOutput {
     pub(super) lines: Vec<(usize, usize)>,
     /// The walk has reached both ends of the text.
     pub(super) done: bool,
-    /// Lines shaped for this output, counted for the structural tests.
+    /// Lines shaped for this output,
+    /// counted for the structural tests.
     pub(super) shaped: u64,
-    /// Kept rows broken again for this output, counted for the structural tests.
+    /// Kept rows broken again for this output,
+    /// counted for the structural tests.
     pub(super) rebroken: u64,
 }
 
@@ -119,7 +129,8 @@ pub(super) struct PassOutput {
 ///  The slot the window writes the wanted pass into,
 ///  with a counter that tells the worker a newer one is there.
 /// Why:
-///  Only the newest wanted pass matters, so a slot replaces a queue.
+///  Only the newest wanted pass matters,
+/// so a slot replaces a queue.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -141,7 +152,8 @@ impl PassControl {
         }
     }
 
-    /// The wanted pass when it is newer than `seen`, which is then brought up to date.
+    /// The wanted pass when it is newer than `seen`,
+    /// which is then brought up to date.
     pub(super) fn take_newer(&self, seen: &mut u64) -> Option<PassJob> {
         let mut slot = self.slot.lock().ok()?;
         if slot.0 == *seen {
@@ -187,7 +199,8 @@ impl PassOutbox {
         }
     }
 
-    /// Lines waiting to be taken; test-only.
+    /// Lines waiting to be taken;
+    /// test-only.
     #[cfg(test)]
     pub(super) fn waiting_lines(&self) -> usize {
         return self
@@ -198,7 +211,8 @@ impl PassOutbox {
             .unwrap_or(0);
     }
 
-    /// Take at most `limit` measured lines; the rest stays for the next take.
+    /// Take at most `limit` measured lines;
+    /// the rest stays for the next take.
     pub(super) fn take(&self, limit: usize) -> Option<PassOutput> {
         let mut waiting = self.output.lock().ok()?;
         let held = waiting.as_mut()?;
@@ -221,7 +235,8 @@ impl PassOutbox {
 ///  A walk that has started:
 ///  the lines still to visit lie below `down` and above `up`.
 /// Why:
-///  The walk spreads from the viewport in both directions, so the lines the reader needs come first.
+///  The walk spreads from the viewport in both directions,
+/// so the lines the reader needs come first.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -236,7 +251,8 @@ pub(super) struct PassRun {
     up: usize,
     /// Lines in the text.
     lines: usize,
-    /// Where the walk started, the centre the cache evicts around.
+    /// Where the walk started,
+    /// the centre the cache evicts around.
     focus: usize,
 }
 
@@ -281,7 +297,8 @@ impl PassRun {
         self.focus = bounded;
     }
 
-    /// Measure one chunk below and one above the visited band, and report what was measured.
+    /// Measure one chunk below and one above the visited band,
+    /// and report what was measured.
     pub(super) fn step(&mut self, shaper: &mut TextShaper) -> PassOutput {
         let mut lines = Vec::new();
         let (mut shaped, mut rebroken) = (0, 0);

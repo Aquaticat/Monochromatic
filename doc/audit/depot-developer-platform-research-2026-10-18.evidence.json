@@ -438,6 +438,235 @@
     {
       "name": "inspect-pricing-matrix-and-budget-envelopes",
       "miseToml": "[tasks.inspect-pricing-matrix-and-budget-envelopes]\nquiet = true\nshell = \"node --input-type=module-typescript -e\"\nrun = '''\nconst {readFileSync,writeFileSync}=await import('node:fs');const html=readFileSync('pricing.html','utf8');for(const label of ['Windows Runners','macOS M2 Runners','Egress Filtering','Usage caps','API Access','Agent Sandboxes']){const re=new RegExp('<tr[^>]*>(?:(?!<tr)[\\\\s\\\\S])*?'+label.replace(/[.*+?^${}()|[\\]\\\\]/gu,'\\\\$&')+'(?:(?!<tr)[\\\\s\\\\S])*?</tr>','u');const row=html.match(re)?.[0];console.log(JSON.stringify({label,row:row??null}));}const ceiling=200,base=20,available=ceiling-base;const envelope={assumptions:'USD, only this product incurs overage; zero other providers, taxes and extra products; no active job or storage overshoot',ceiling,base,available,ciBaseMinutes:2000+available/0.006,defaultBuilderMinutes:500+available/0.04,linuxBaseRunnerMinutes:2000+available/0.006,windows4CpuWallMinutes:2000/4+available/0.016,agentMinutes:available/0.01,averageSharedStorageGb:25+available/0.2,passingResults:1000000+available/0.000001,fastRegistryEgressGb:available/0.1};writeFileSync('public-one-product-budget-envelopes.json',JSON.stringify(envelope,null,2)+'\\n');console.log(JSON.stringify(envelope));\n'''\n"
+    },
+    {
+      "name": "verify-published-capability-documents",
+      "miseToml": "[tasks.verify-published-capability-documents]\nquiet = true\nshell = \"node --input-type=module-typescript -e\"\nrun = '''\nconst {readFileSync,writeFileSync,existsSync,realpathSync}=await import('node:fs');const {homedir}=await import('node:os');const {join,dirname,resolve}=await import('node:path');const {execFileSync}=await import('node:child_process');const {strict:assert}=await import('node:assert');const root=realpathSync(join(homedir(),'Monochromatic'));const docs=['doc/planning/depot-developer-pool-capabilities-research.md','doc/troubleshooting/depot-documentation-source-drift.md','doc/troubleshooting/depot-sandbox-runtime-registry-boundary.md'];const rows=[];for(const path of docs){const source=readFileSync(join(root,path),'utf8');const name=path.slice(path.lastIndexOf('/')+1,-3);const html=execFileSync('pandoc',['--from=commonmark','--to=html5',join(root,path)],{encoding:'utf8'});writeFileSync(name+'.rendered.html',html);const headings=[...html.matchAll(/<h[1-4][^>]*>(.*?)<[/]h[1-4]>/gsu)].map(match=>match[1]);assert(headings.length>=7);assert(!html.includes('<table'));assert(!html.includes('<em>'));assert(!source.includes(String.fromCharCode(0x2013)));assert(!source.includes(String.fromCharCode(0x2014)));const links=[...html.matchAll(/href=\"([^\"]+)\"/gu)].map(match=>match[1]);for(const href of links.filter(href=>!/^https?:/u.test(href)))assert(existsSync(resolve(dirname(join(root,path)),href.split('#')[0])),'Broken local link: '+href);assert(!html.includes('[sdk-evidence]'));rows.push({path,headings,renderedBytes:Buffer.byteLength(html),localLinksChecked:links.filter(href=>!/^https?:/u.test(href)).length});}const jsons=['doc/audit/depot-developer-sandbox-sdk-2026-10-18.evidence.json','doc/audit/depot-developer-platform-research-2026-10-18.evidence.json'];for(const path of jsons){const content=readFileSync(join(root,path),'utf8');JSON.parse(content);assert(!content.includes(homedir()));assert(!/eyJ[a-zA-Z0-9_-]{20,}[.]/u.test(content));}execFileSync('dprint',['check','--config',join(root,'package/config/dprint/index.json'),'--',...jsons.map(path=>join(root,path))],{cwd:root,stdio:'inherit'});const receipt={checkedAt:new Date().toISOString(),markdown:rows,jsonFiles:jsons};writeFileSync('published-capability-documents-verification.json',JSON.stringify(receipt,null,2)+'\\n');console.log(JSON.stringify(receipt));\n'''\n"
+    },
+    {
+      "name": "verify-retained-ci-kvm-consumer",
+      "miseToml": "[tasks.verify-retained-ci-kvm-consumer]\nquiet = true\nshell = \"node --input-type=module-typescript -e\"\nrun = '''\nconst {readFileSync,writeFileSync,realpathSync}=await import('node:fs');const {join}=await import('node:path');const {homedir}=await import('node:os');const {createHash}=await import('node:crypto');const {execFileSync}=await import('node:child_process');const {strict:assert}=await import('node:assert');const root=realpathSync(join(homedir(),'Monochromatic'));const source=JSON.parse(readFileSync(join(root,'doc/audit/depot-vm-recovery-2026-10-17.evidence.json'),'utf8'));const zip=join(homedir(),'temp/agent/depot-complete-accounting-20261016',source.diagnosticRoute.artifact.file);const bytes=readFileSync(zip);const sha=buffer=>createHash('sha256').update(buffer).digest('hex');assert.equal(bytes.length,source.diagnosticRoute.artifact.artifact.size_bytes);assert.equal(sha(bytes),source.diagnosticRoute.artifact.sha256);const members=['lifecycle.json','results.json','prepare-ubuntu.stdout.log','prepare-ubuntu.stderr.log','destroy-preparation-ubuntu.stdout.log','destroy-preparation-ubuntu.stderr.log','daemon-mvm-depot-preparation-ubuntu-fs0-virtiofsd.log','private-domain-list-before.stdout.log','private-domain-list-after.stdout.log','private-domain-list-cleanup.stdout.log'];const extracted=Object.fromEntries(members.map(name=>[name,execFileSync('unzip',['-p',zip,name],{encoding:'utf8',maxBuffer:1024*1024})]));const parsed={lifecycle:JSON.parse(extracted['lifecycle.json']),results:JSON.parse(extracted['results.json'])};for(const input of source.sourceInputs){const body=execFileSync('git',['show',source.sourceRevision+':'+input.path],{cwd:root});assert.equal(sha(body),input.sha256);}const files=execFileSync('git',['ls-tree','-r','--name-only',source.sourceRevision,'--','package/cli/mvm/src'],{cwd:root,encoding:'utf8'}).trim().split('\\n');const xmlSources=[];for(const path of files.filter(path=>/domain|xml/u.test(path))){const body=execFileSync('git',['show',source.sourceRevision+':'+path],{cwd:root,encoding:'utf8'});if(body.includes('kvm'))xmlSources.push({path,sha256:sha(Buffer.from(body)),matches:body.split('\\n').flatMap((line,index)=>line.includes('kvm')?[{line:index+1,text:line}]:[])});}const result={checkedAt:new Date().toISOString(),sourceRevision:source.sourceRevision,harnessRevision:source.diagnosticRoute.harnessRevision,runId:source.diagnosticRoute.runId,artifact:{...source.diagnosticRoute.artifact.artifact,sha256:sha(bytes),bytes:bytes.length},sourceInputsVerified:source.sourceInputs,xmlSources,parsed,members:Object.entries(extracted).map(([name,content])=>({name,sha256:sha(Buffer.from(content)),bytes:Buffer.byteLength(content),content}))};writeFileSync('retained-ci-kvm-consumer-verified.json',JSON.stringify(result,null,2)+'\\n');console.log(JSON.stringify({checkedAt:result.checkedAt,runId:result.runId,artifact:result.artifact,sourceInputsVerified:result.sourceInputsVerified,xmlSources,parsed}));\n'''\n"
+    },
+    {
+      "name": "inspect-retained-ci-kvm-logs",
+      "miseToml": "[tasks.inspect-retained-ci-kvm-logs]\nquiet = true\nshell = \"node --input-type=module-typescript -e\"\nrun = '''\nconst {readFileSync,writeFileSync}=await import('node:fs');const {join}=await import('node:path');const {homedir}=await import('node:os');const {execFileSync}=await import('node:child_process');const {strict:assert}=await import('node:assert');const {createHash}=await import('node:crypto');const proof=JSON.parse(readFileSync('retained-ci-kvm-consumer-verified.json','utf8'));const zip=join(homedir(),'temp/agent/depot-complete-accounting-20261016/collected-vq299blkbw/logger-vm-evidence.zip');const daemon=execFileSync('unzip',['-p',zip,'daemon-mvm-depot-preparation-ubuntu.log'],{encoding:'utf8',maxBuffer:1024*1024});const accelLines=daemon.split('\\n').filter(line=>line.includes('-accel')||line.includes('KVM'));const otherLogs=Object.fromEntries(proof.members.filter(row=>/prepare-ubuntu|destroy-preparation|virtiofsd/u.test(row.name)).map(row=>[row.name,row.content]));assert.deepEqual(proof.parsed.lifecycle.cleanupErrors,[]);assert.equal(proof.parsed.lifecycle.finalIdentity.head,proof.sourceRevision);assert.equal(proof.parsed.lifecycle.finalIdentity.trackedStatus,'');for(const name of ['private-domain-list-before.stdout.log','private-domain-list-after.stdout.log','private-domain-list-cleanup.stdout.log'])assert.equal(proof.members.find(row=>row.name===name).content.trim(),'');assert(proof.xmlSources.some(row=>row.matches.some(match=>match.text.includes(\"type: 'kvm'\"))));const result={...proof,qemuDaemon:{member:'daemon-mvm-depot-preparation-ubuntu.log',bytes:Buffer.byteLength(daemon),sha256:createHash('sha256').update(daemon).digest('hex'),accelLines},retainedDomainListsEmpty:true,retainedCleanupErrorsEmpty:true};writeFileSync('retained-ci-kvm-consumer-verified.json',JSON.stringify(result,null,2)+'\\n');console.log(JSON.stringify({accelLines,otherLogs}));\n'''\n"
     }
-  ]
+  ],
+  "documentationVerification": {
+    "checkedAt": "2026-10-18T05:29:55.588Z",
+    "markdown": [
+      {
+        "path": "doc/planning/depot-developer-pool-capabilities-research.md",
+        "headings": [
+          "Depot Developer platform capabilities research",
+          "Plan and independent usage pools",
+          "Depot CI orchestration and coverage expansion",
+          "GitHub Actions runners and network controls",
+          "Cache mechanisms and their different trust boundaries",
+          "Remote builds, registries, and artifact consumers",
+          "Test reporting, history, and timing-based splitting",
+          "Generic Sandbox SDK and remote agents",
+          "Debugging, APIs, credentials, and source hosting",
+          "Budget enforcement and trial transition limits",
+          "Evidence limits and remaining research decisions"
+        ],
+        "renderedBytes": 31016,
+        "localLinksChecked": 8
+      },
+      {
+        "path": "doc/troubleshooting/depot-documentation-source-drift.md",
+        "headings": [
+          "Depot docs e40bfe1: source mirror yields obsolete capability\nexclusions",
+          "Symptom",
+          "Root cause and evidence",
+          "Verification",
+          "Verified workaround",
+          "What does not work",
+          "Upstream filing decision"
+        ],
+        "renderedBytes": 7947,
+        "localLinksChecked": 9
+      },
+      {
+        "path": "doc/troubleshooting/depot-sandbox-runtime-registry-boundary.md",
+        "headings": [
+          "Depot Sandbox SDK 0.1.0-beta.7: public OCI runtime rejected at\ncreate",
+          "Symptom",
+          "Root cause and source trace",
+          "Verification",
+          "Verified workaround",
+          "Separate listing and device observations",
+          "What does not work",
+          "Upstream filing decision"
+        ],
+        "renderedBytes": 13459,
+        "localLinksChecked": 28
+      }
+    ],
+    "jsonFiles": [
+      "doc/audit/depot-developer-sandbox-sdk-2026-10-18.evidence.json",
+      "doc/audit/depot-developer-platform-research-2026-10-18.evidence.json"
+    ],
+    "monochromaticLint": {
+      "argv": [
+        "mise",
+        "run",
+        "lint:monochromatic-lint",
+        "--",
+        "doc/planning/depot-developer-pool-capabilities-research.md",
+        "doc/troubleshooting/depot-documentation-source-drift.md",
+        "doc/troubleshooting/depot-sandbox-runtime-registry-boundary.md"
+      ],
+      "exitCode": 0
+    },
+    "renderedOutputInspected": true
+  },
+  "retainedCiKvmConsumer": {
+    "checkedAt": "2026-10-18T05:24:56.454Z",
+    "noAdditionalCloudAllocation": true,
+    "sourceRevision": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+    "harnessRevision": "a683cd54f98b11add860c1bab48b33d14883a370",
+    "originalEvidencePath": "doc/audit/depot-vm-recovery-2026-10-17.evidence.json",
+    "artifact": {
+      "artifact_id": "01a14835-9090-7ae6-9802-21e1bc74a1ee",
+      "run_id": "vq299blkbw",
+      "workflow_id": "kn1wz06pnt",
+      "workflow_path": "",
+      "job_id": "knx7fkp81f",
+      "job_key": "_inline_0.yaml:vm",
+      "attempt_id": "0nfgv4zjz8",
+      "attempt": 1,
+      "name": "logger-vm-evidence",
+      "size_bytes": 21474,
+      "created_at": "2026-10-17T04:53:52Z",
+      "sha256": "606cb2a627cc1dcf9bc99d4bb310e9e9ae00c05fcd4ef90b4dc951c0559663e1",
+      "bytes": 21474
+    },
+    "resources": {
+      "vcpus": 16,
+      "memoryGiB": 64,
+      "image": "monochromatic-trial-desktop-ready:20261016-v1"
+    },
+    "sourceInputsVerified": [
+      {
+        "path": "mise.lock",
+        "sha256": "95704fad9023cea1b8b530d5de696cfbd839f912aba7c0dc2c1c46519ebef733"
+      },
+      {
+        "path": "pnpm-lock.yaml",
+        "sha256": "bcf3a948a1d8cad0c7c22af26856af36779a963263a2d2d1b2755c3fa00e6049"
+      },
+      {
+        "path": "package/cli/vmsync/src/lifecycle.expensive.unit.test.ts",
+        "sha256": "e1ab543bd6d494983f7bf04dbf151030dab7ba0c3a84225e58c361c7d7061471"
+      }
+    ],
+    "domainSource": [
+      {
+        "path": "package/cli/mvm/src/domain-xml.ts",
+        "sha256": "254a29dd5b2dccd45017fb9b122c8a79e32886b377221cc1535b9ae27764e02b",
+        "matches": [
+          {
+            "line": 262,
+            "text": "    attrs: { type: 'kvm', },"
+          }
+        ]
+      }
+    ],
+    "qemuDaemon": {
+      "member": "daemon-mvm-depot-preparation-ubuntu.log",
+      "bytes": 15071,
+      "sha256": "9f83cd068f5fd0253445c70adfb3989bfecd06de92f0430df167b35e5d6174cf",
+      "accelLines": [
+        "-accel kvm \\"
+      ]
+    },
+    "commands": [
+      {
+        "id": "prepare-ubuntu",
+        "startedAt": "2026-10-17T04:39:18.462Z",
+        "finishedAt": "2026-10-17T04:39:59.774Z",
+        "exitCode": 0,
+        "signal": null
+      },
+      {
+        "id": "destroy-preparation-ubuntu",
+        "startedAt": "2026-10-17T04:39:59.774Z",
+        "finishedAt": "2026-10-17T04:40:00.167Z",
+        "exitCode": 0,
+        "signal": null
+      },
+      {
+        "id": "prepare-windows",
+        "startedAt": "2026-10-17T04:40:00.167Z",
+        "finishedAt": "2026-10-17T04:53:51.603Z",
+        "exitCode": 1,
+        "signal": null
+      }
+    ],
+    "sourceFinalIdentity": {
+      "head": "ef01490f5e960f8ca0b424c12242caeb3c5a2b5e",
+      "trackedStatus": "",
+      "inputs": [
+        {
+          "path": "mise.lock",
+          "sha256": "95704fad9023cea1b8b530d5de696cfbd839f912aba7c0dc2c1c46519ebef733"
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "bcf3a948a1d8cad0c7c22af26856af36779a963263a2d2d1b2755c3fa00e6049"
+        },
+        {
+          "path": "package/cli/vmsync/src/lifecycle.expensive.unit.test.ts",
+          "sha256": "e1ab543bd6d494983f7bf04dbf151030dab7ba0c3a84225e58c361c7d7061471"
+        }
+      ]
+    },
+    "privateDomainListsEmpty": true,
+    "cleanupErrorsEmpty": true,
+    "logEvidence": [
+      {
+        "name": "prepare-ubuntu.stdout.log",
+        "sha256": "7a7f19cbca92cb2a0db24a2e58506219ba290167f77b15e4546b6178e9be5fbc",
+        "bytes": 2311,
+        "excerpts": [
+          "[info] [2026-10-17T04:39:59.768Z] [mvm] [waitForGuestAgent] guest agent on depot-preparation-ubuntu is ready"
+        ]
+      },
+      {
+        "name": "destroy-preparation-ubuntu.stdout.log",
+        "sha256": "8b749ebe9a631221643ad112afea0d0a2a4775f43f43192d7577bad4df828d1b",
+        "bytes": 177,
+        "excerpts": [
+          "[info] [2026-10-17T04:40:00.161Z] [mvm] [destroy] VM depot-preparation-ubuntu destroyed"
+        ]
+      },
+      {
+        "name": "daemon-mvm-depot-preparation-ubuntu-fs0-virtiofsd.log",
+        "sha256": "1c8cd8a17a226dbfe2874186c8d00b586c380412f34cf9a4eadf2b543f508d26",
+        "bytes": 483,
+        "excerpts": [
+          "[2026-10-17T04:39:48Z INFO  virtiofsd] Client connected, servicing requests",
+          "[2026-10-17T04:39:59Z INFO  virtiofsd] Client disconnected, shutting down"
+        ]
+      }
+    ],
+    "limits": [
+      "Historical authored vmsync lifecycle test bodies did not execute",
+      "Later Windows guest-agent prerequisite failed",
+      "Daemon termination requests lack retained PID-exit checks",
+      "Existing coherent Android APK consumer ran on a local emulator, not on Depot compute",
+      "Generic SDK default-image /dev/kvm observations are a different execution product"
+    ]
+  },
+  "metalInfrastructureSource": {
+    "url": "https://depot.dev/blog/announcing-depot-metal",
+    "fetchedAt": "2026-10-18T05:29:28.377Z",
+    "status": 200,
+    "sha256": "5ca6f02981e2e48aa37cf1f34ec88ae00caac165df7da4b2c9a29acca822c918",
+    "automaticForCiAndSandboxesDocumented": true,
+    "separatePoolOrOptInDocumented": false,
+    "performanceClaimsMeasuredOnRepository": false,
+    "githubRunnerAndBuilderMigrationCompletionProven": false
+  }
 }

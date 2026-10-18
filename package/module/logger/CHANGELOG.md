@@ -1,5 +1,20 @@
 # @monochromatic-dev/module-logger
 
+## 0.4.2
+
+### Patch changes
+
+- Observe shared sink completions once per active operation,
+  and reuse fulfilled completions for synchronous sinks.
+  Synchronous logging bursts still deliver every record without retaining continuations per record.
+- Batch complete file records into serial appends with shared completions.
+  Finish serialization before admission so reentrant serializers cannot overlap file writes.
+- Give each file sink an independently owned filename,
+  create it exclusively,
+  and publish its append queue after successful verification.
+  Separate sinks initialized in the same millisecond cannot corrupt a shared JSONL file.
+- Reject serializers that produce no JSON value without inserting invalid JSONL or disabling later writes.
+
 ## 0.4.1
 
 ### Patch changes

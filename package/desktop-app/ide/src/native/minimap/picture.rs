@@ -16,15 +16,19 @@ use slint::{ComponentHandle, Image, TimerMode};
 ///  and the poll period.
 use std::{cell::RefCell, rc::Rc, time::Duration};
 
-/// Poll period of the worker's replies, the same as the other background pollers.
+/// Poll period of the worker's replies,
+/// the same as the other background pollers.
 const POLL: Duration = Duration::from_millis(20);
 
 /// What:
 ///  Set a finished picture on the window when it is for the displayed text and not older than the one on screen;
 ///  otherwise count it as dropped.
-///  This is the window thread's whole cost of a picture: one comparison and one image setter.
+///  This is the window thread's whole cost of a picture:
+/// one comparison and one image setter.
 /// Why:
-///  A picture of an older text, or of an older request, must never replace a newer one.
+///  A picture of an older text,
+/// or of an older request,
+/// must never replace a newer one.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -61,7 +65,8 @@ pub(in crate::native) fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, r
     );
 }
 
-/// Take in the finished pictures: each one that is still valid for the displayed text is set on the window.
+/// Take in the finished pictures:
+/// each one that is still valid for the displayed text is set on the window.
 fn poll(window: &AppWindow, state: &Rc<RefCell<State>>) {
     let replies = {
         let mut current = state.borrow_mut();

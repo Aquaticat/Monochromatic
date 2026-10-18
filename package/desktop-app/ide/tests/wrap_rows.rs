@@ -1,11 +1,19 @@
-//! Wrapped lines in the vertical map, the row cache, the passes over it, and the frame's geometry:
-//!  per-line visual rows, re-breaking without shaping, rows placed by what was shaped,
-//!  hits and selection ink on continuation rows, and the wrap indicator.
+//! Wrapped lines in the vertical map,
+//! the row cache,
+//! the passes over it,
+//! and the frame's geometry:
+//!  per-line visual rows,
+//! re-breaking without shaping,
+//! rows placed by what was shaped,
+//!  hits and selection ink on continuation rows,
+//! and the wrap indicator.
 //! No window is opened.
 
-/// The marks that become underlines, laid out against the frame's rows.
+/// The marks that become underlines,
+/// laid out against the frame's rows.
 use ide_app::annotation::{Mark, Visible};
-/// Underline runs, with their inks.
+/// Underline runs,
+/// with their inks.
 use ide_app::annotation_layout::{AnnotationColors, lay_out};
 /// Canonical source of the lines under test and the position that selects a range.
 use ide_app::document::{Document, ReadingAffinity, ReadingPosition};
@@ -15,9 +23,13 @@ use ide_app::language::diagnostics::Severity;
 use ide_app::line_rows::LineRows;
 /// The vertical mapping under test.
 use ide_app::row_map::{CODE_ROW, Place, RowMap};
-/// Shaper, viewport, the clip of a very tall line, and the rasterizer whose ink is read back.
+/// Shaper,
+/// viewport,
+/// the clip of a very tall line,
+/// and the rasterizer whose ink is read back.
 use ide_app::shaped_text::{Clip, TextShaper, Viewport};
-/// Palette of the raster tests, and the limit of one raster.
+/// Palette of the raster tests,
+/// and the limit of one raster.
 use ide_app::text_raster::{CodeColors, MAX_RASTER_BYTES, TextRaster};
 /// The wrap indicator chain.
 use ide_app::wrap_sign::{SIGN_INK, SIGN_PAIRS, Sign, choose_sign};
@@ -25,14 +37,19 @@ use ide_app::wrap_sign::{SIGN_INK, SIGN_PAIRS, Sign, choose_sign};
 /// A long line of ordinary code that wraps at the widths used here.
 const CODE: &str = "let value = compute_total(first_item, second_item); // a long comment that keeps going and going";
 
-/// A map of ten lines where lines 2, 3, and 7 are wrapped to 3, 2, and 5 rows and line 3 owns a 26 px block.
+/// A map of ten lines where lines 2,
+/// 3,
+/// and 7 are wrapped to 3,
+/// 2,
+/// and 5 rows and line 3 owns a 26 px block.
 fn wrapped_map() -> RowMap {
     let mut rows = LineRows::plain(10);
     rows.apply([(2, 3), (3, 2), (7, 5)]);
     return RowMap::new(10, &[(3, 26.0)]).with_rows(&rows);
 }
 
-/// Every line counts one row until it is measured, and a changed count reads back.
+/// Every line counts one row until it is measured,
+/// and a changed count reads back.
 #[test]
 fn rows_start_at_one_and_read_back_what_was_set() {
     let mut rows = LineRows::plain(1000);
@@ -50,7 +67,8 @@ fn rows_start_at_one_and_read_back_what_was_set() {
     assert_eq!(rows.total_extra(), 0);
 }
 
-/// A copy shares its chunks, and changing the copy leaves the original alone.
+/// A copy shares its chunks,
+/// and changing the copy leaves the original alone.
 #[test]
 fn a_copy_changes_without_touching_the_original() {
     let mut original = LineRows::plain(2000);
@@ -68,7 +86,8 @@ fn a_copy_changes_without_touching_the_original() {
     assert_eq!(copy.total_extra(), 4 + 2 + 1);
 }
 
-/// Wrapped lines push everything beneath them down by their extra rows, and nothing above.
+/// Wrapped lines push everything beneath them down by their extra rows,
+/// and nothing above.
 #[test]
 fn wrapped_lines_push_later_lines_down() {
     let map = wrapped_map();
@@ -90,7 +109,8 @@ fn wrapped_lines_push_later_lines_down() {
     assert_eq!(map.rows_of(99), 1);
 }
 
-/// Every pixel belongs to exactly one line, whatever the line's height.
+/// Every pixel belongs to exactly one line,
+/// whatever the line's height.
 #[test]
 fn every_pixel_belongs_to_one_line_with_wrapped_lines() {
     let map = wrapped_map();
@@ -126,7 +146,8 @@ fn every_pixel_belongs_to_one_line_with_wrapped_lines() {
     assert_eq!(map.visual_row_at(2, -5.0), 0);
 }
 
-/// A page step counts visual rows, and a block counts with the first row of its line.
+/// A page step counts visual rows,
+/// and a block counts with the first row of its line.
 #[test]
 fn a_page_step_counts_visual_rows_with_the_blocks_above_their_first_rows() {
     let map = wrapped_map();
@@ -158,7 +179,8 @@ fn a_million_lines_stay_cheap() {
     assert_eq!(map.rows_of(777_000), 3);
 }
 
-/// A viewport of `count` lines from `first`, wrapped at `wrap` logical pixels.
+/// A viewport of `count` lines from `first`,
+/// wrapped at `wrap` logical pixels.
 fn viewport(first: usize, count: usize, wrap: f32) -> Viewport {
     return Viewport {
         first,
@@ -170,7 +192,8 @@ fn viewport(first: usize, count: usize, wrap: f32) -> Viewport {
     };
 }
 
-/// A frame that wraps places its rows by what it shaped, even when the map counts every line as one row.
+/// A frame that wraps places its rows by what it shaped,
+/// even when the map counts every line as one row.
 #[test]
 fn a_frame_places_wrapped_rows_by_their_own_heights() {
     let text = format!("short\n{CODE}\nshort\n{CODE}\nend\n");
@@ -197,7 +220,8 @@ fn a_frame_places_wrapped_rows_by_their_own_heights() {
     );
 }
 
-/// Bringing lines in shapes them once, and asking again at the same width shapes nothing.
+/// Bringing lines in shapes them once,
+/// and asking again at the same width shapes nothing.
 #[test]
 fn measuring_twice_shapes_once() {
     let text = format!("{CODE}\n").repeat(40);
@@ -213,7 +237,9 @@ fn measuring_twice_shapes_once() {
     assert_eq!(again.lines, first.lines);
 }
 
-/// A new width breaks the kept rows again, shapes none, and ends with the rows a fresh shape gives.
+/// A new width breaks the kept rows again,
+/// shapes none,
+/// and ends with the rows a fresh shape gives.
 #[test]
 fn a_new_width_breaks_kept_rows_again_without_shaping() {
     let spaced = "        let value = compute_total(first_item, second_item); // trailing words keep it going on";
@@ -306,7 +332,8 @@ fn a_new_width_breaks_kept_rows_like_a_fresh_shaping_at_scale_two() {
     }
 }
 
-/// A click inside a continuation row resolves in that row, and the caret there is drawn on that row.
+/// A click inside a continuation row resolves in that row,
+/// and the caret there is drawn on that row.
 #[test]
 fn hits_and_carets_on_continuation_rows_resolve_in_their_row() {
     let document = Document::new(CODE);
@@ -397,7 +424,8 @@ fn selected_ink_reaches_continuation_rows() {
     }
 }
 
-/// Tabs end on their stops at every width and scale, on every row they end on.
+/// Tabs end on their stops at every width and scale,
+/// on every row they end on.
 #[test]
 fn tab_correction_settles_at_every_width() {
     let text = "a\tb\tc\td\te\tf\tg\th\ti\tj\tk\tl\tm\tn\to\tp\tq\tr\ts\tt\tu\tv\tw\tx\ty\tz\t\t\tlong_identifier_after_tabs\t\tx";
@@ -450,7 +478,8 @@ fn tab_correction_settles_at_every_width() {
     );
 }
 
-/// The wrap indicator is the first pair both of whose symbols the fonts display, else an arrow.
+/// The wrap indicator is the first pair both of whose symbols the fonts display,
+/// else an arrow.
 #[test]
 fn the_sign_is_the_first_displayable_pair_or_an_arrow() {
     let all = |_: char| return true;
@@ -482,7 +511,9 @@ fn coverage_is_read_from_the_shaped_glyphs() {
     );
 }
 
-/// The sign image carries ink in the sign color, for a symbol and for the drawn arrow, at both scales.
+/// The sign image carries ink in the sign color,
+/// for a symbol and for the drawn arrow,
+/// at both scales.
 #[test]
 fn the_sign_image_is_painted_in_the_sign_color() {
     let mut shaper = TextShaper::new();
@@ -515,7 +546,8 @@ fn the_sign_image_is_painted_in_the_sign_color() {
     }
 }
 
-/// An underline across a wrap break is laid out once for each visual row it crosses, each on its own row.
+/// An underline across a wrap break is laid out once for each visual row it crosses,
+/// each on its own row.
 #[test]
 fn underlines_across_a_wrap_break_stand_on_their_own_rows() {
     let document = Document::new(CODE);
@@ -598,9 +630,12 @@ fn underlines_across_a_wrap_break_stand_on_their_own_rows() {
     );
 }
 
-/// The raster itself refuses a tile past its limit with a diagnostic, never a panic;
-///  the window never asks for one, because it clips a tile of a very tall line (`Viewport::clip`).
-///  The limit is 64 MiB of pixels: at a text width of 782 px that is about 894 rows at scale 1 (about 75,000
+/// The raster itself refuses a tile past its limit with a diagnostic,
+/// never a panic;
+///  the window never asks for one,
+/// because it clips a tile of a very tall line (`Viewport::clip`).
+///  The limit is 64 MiB of pixels:
+/// at a text width of 782 px that is about 894 rows at scale 1 (about 75,000
 ///  characters in one line) and about 223 rows at scale 2 (about 18,700).
 #[test]
 fn a_tile_past_the_raster_limit_is_refused_not_painted() {
@@ -637,7 +672,8 @@ fn a_tile_past_the_raster_limit_is_refused_not_painted() {
     );
 }
 
-/// Words of the shape `word12 ` until the text holds `length` characters, in one line without a terminator.
+/// Words of the shape `word12 ` until the text holds `length` characters,
+/// in one line without a terminator.
 fn words(length: usize) -> String {
     let mut text = String::new();
     let mut number = 0;
@@ -657,7 +693,8 @@ const PALETTE: CodeColors = CodeColors {
 };
 
 /// A clipped tile's raster holds exactly the pixels its band has in the unclipped raster of the same lines,
-///  its origin and height follow the clip, and a clip changes nothing about the rows' places.
+///  its origin and height follow the clip,
+/// and a clip changes nothing about the rows' places.
 #[test]
 fn a_clipped_tile_holds_the_pixels_of_its_band() {
     let document = Document::new(&format!("short\n{}", words(9000)));
@@ -718,8 +755,10 @@ fn a_clipped_tile_holds_the_pixels_of_its_band() {
     assert_eq!(moved.origin, 26.0 + CODE_ROW + band.top);
 }
 
-/// At the real limit a line that no raster can hold is refused whole and painted in a clip, at both display scales:
-///  the band's raster is within the limit, and every code row of it has ink.
+/// At the real limit a line that no raster can hold is refused whole and painted in a clip,
+/// at both display scales:
+///  the band's raster is within the limit,
+/// and every code row of it has ink.
 #[test]
 fn a_line_past_the_real_limit_paints_inside_a_clip() {
     let document = Document::new(&words(100_000));

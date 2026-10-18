@@ -94,7 +94,8 @@ fn missing_reason(server: &str, command: &str, mise: &MiseState, missed: &Missed
 ///  never a wrapper placed in front of it.
 ///  The TypeScript server is the project's own copy,
 ///  looked up from the document's folder upward.
-///  When a mise configuration applies, the lookup also uses mise's directories and refuses shims.
+///  When a mise configuration applies,
+/// the lookup also uses mise's directories and refuses shims.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

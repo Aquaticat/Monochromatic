@@ -1,7 +1,8 @@
 //! The settings a confined server gets:
 //!  overrides merged into the server's JSON settings table.
 
-/// `Value` is any JSON value; `json!` builds one from literal syntax.
+/// `Value` is any JSON value;
+/// `json!` builds one from literal syntax.
 use serde_json::{Value, json};
 
 /// What:

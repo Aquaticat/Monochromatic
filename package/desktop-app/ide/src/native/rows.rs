@@ -59,7 +59,10 @@ pub(super) use window::{mark_model, present, top_model};
 ///  and whether a line near the view still holds blocks made for another wrap width;
 ///  `type` names the tuple once.
 /// Why:
-///  Blocks are assembled again only when the stamp, the version, the scale, or the staleness changed:
+///  Blocks are assembled again only when the stamp,
+/// the version,
+/// the scale,
+/// or the staleness changed:
 ///  a hint stands where its character is drawn and a message breaks to the text area,
 ///  so a new width matters exactly when a line near the view holds blocks made for another one;
 ///  the map is rebuilt when any of the five did.
@@ -112,7 +115,9 @@ fn ensure_wrap_rows(current: &mut State) {
 ///  Record the exact visual rows of the given `(line, rows)` pairs in the table of measured rows,
 ///  and answer whether any count changed.
 /// Why:
-///  A tile that shaped its lines, a frame built on the window thread, and the background pass all learn
+///  A tile that shaped its lines,
+/// a frame built on the window thread,
+/// and the background pass all learn
 ///  heights the vertical mapping must follow;
 ///  the next `settle` installs them and keeps the view still.
 ///
@@ -132,17 +137,21 @@ pub(super) fn absorb(
     return changed;
 }
 
-/// The width of the text area blocks are made for, or nothing while the view has none.
+/// The width of the text area blocks are made for,
+/// or nothing while the view has none.
 fn wrap_of(current: &State) -> Option<f32> {
     return has_wrap_width(current.width).then_some(current.width);
 }
 
 /// What:
-///  The lines whose blocks are made exact for the wrap width: the requested tile and one tile's worth of lines
+///  The lines whose blocks are made exact for the wrap width:
+/// the requested tile and one tile's worth of lines
 ///  on each side.
 /// Why:
-///  A new width packs the lines that have hints again, which shapes them on the window thread;
-///  only the lines near the view need it at once, and the rest wait until the view comes near.
+///  A new width packs the lines that have hints again,
+/// which shapes them on the window thread;
+///  only the lines near the view need it at once,
+/// and the rest wait until the view comes near.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -430,7 +439,8 @@ pub(super) fn anchored(previous: &RowMap, next: &RowMap, offset: f32) -> f32 {
 ///  changed by the smallest amount;
 ///  the answer is unrounded and not clamped to the text.
 /// Why:
-///  Caret keys and drags keep the caret in view, on the visual row it is drawn on.
+///  Caret keys and drags keep the caret in view,
+/// on the visual row it is drawn on.
 ///  A caret above the view on a line's first row makes that line the top line
 ///      together with its virtual rows,
 ///  so what is said about the caret's line is in view with it;
@@ -487,7 +497,8 @@ pub(super) struct Placement {
     tops: Vec<f32>,
     /// The persistent row-top model.
     top_model: Rc<VecModel<f32>>,
-    /// Line number (one-based) on the first visual row of a line, zero on a continuation row.
+    /// Line number (one-based) on the first visual row of a line,
+    /// zero on a continuation row.
     numbers: Vec<i32>,
     /// The persistent line-number model.
     number_model: Rc<VecModel<i32>>,

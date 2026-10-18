@@ -1,16 +1,32 @@
 //! Servers that mise provides.
 //!
-//! When the opened folder has a mise configuration at or above it, the tools that configuration
-//! lists are where the language servers are looked up (before the application's `PATH`), and their
-//! directories are on the `PATH` the confined server gets, so a Node launcher finds its `node`.
+//! When the opened folder has a mise configuration at or above it,
+//! the tools that configuration
+//! lists are where the language servers are looked up (before the application's `PATH`),
+//! and their
+//! directories are on the `PATH` the confined server gets,
+//! so a Node launcher finds its `node`.
 //! A folder without one keeps the plain `PATH` lookup.
 //!
-//! Mise is asked once per registry build, never per server, and only for what it resolves:
-//! `config ls --json` (twice: from the folder and from `/`, whose difference is the folder's own
-//! configuration, whatever the file names) and `bin-paths`. It runs in the servers' sandbox
-//! (`command.rs`), with auto install, lockfile writes and the network switched off, with a time
-//! limit, on the language thread. It never runs `mise exec` (which would hand the project's whole
-//! `[env]`, decrypted secrets included, to every server) and never `mise trust`.
+//! Mise is asked once per registry build,
+//! never per server,
+//! and only for what it resolves:
+//! `config ls --json` (twice:
+//! from the folder and from `/`,
+//! whose difference is the folder's own
+//! configuration,
+//! whatever the file names) and `bin-paths`.
+//! It runs in the servers' sandbox
+//! (`command.rs`),
+//! with auto install,
+//! lockfile writes and the network switched off,
+//! with a time
+//! limit,
+//! on the language thread.
+//! It never runs `mise exec` (which would hand the project's whole
+//! `[env]`,
+//! decrypted secrets included,
+//! to every server) and never `mise trust`.
 
 /// The mise command line,
 ///  the sandbox,
@@ -115,7 +131,9 @@ pub fn resolve_disabled(_request: &MiseRequest) -> MiseState {
 
 /// What:
 ///  The production policy:
-///  find mise, run it in the sandbox, and read what it says.
+///  find mise,
+/// run it in the sandbox,
+/// and read what it says.
 /// Why:
 ///  A missing mise program is not a failure:
 ///  the folder is then not a mise project as far as the application can tell.

@@ -24,17 +24,21 @@ pub mod text_projection;
 /// Pixel tab stops at multiples of two space advances,
 ///  independent of the preceding script.
 pub mod tab_stop;
-/// Soft-wrap break rules from IntelliJ, as Parley line-break overrides,
+/// Soft-wrap break rules from IntelliJ,
+/// as Parley line-break overrides,
 ///  and the continuation indent of a wrapped line.
 pub mod wrap;
 /// The wrap indicator of the gutter:
-///  IntelliJ's symbol chain checked against the fonts, its color, and the arrow drawn when no symbol fits.
+///  IntelliJ's symbol chain checked against the fonts,
+/// its color,
+/// and the arrow drawn when no symbol fits.
 pub mod wrap_sign;
 
 /// Two-pass shaping that widens each tab's stand-in space to its stop.
 mod tab_layout;
 
-/// How many visual rows each source line takes, in chunks that copies share.
+/// How many visual rows each source line takes,
+/// in chunks that copies share.
 pub mod line_rows;
 /// The minimap that scrolls the source view:
 ///  its geometry and the picture of the whole text it shows.
@@ -47,7 +51,8 @@ pub mod row_map;
 ///  hit-test,
 ///  and range geometry.
 pub mod shaped_row;
-/// Shaped source rows kept by line, so a re-centered tile shapes only lines it has not shaped.
+/// Shaped source rows kept by line,
+/// so a re-centered tile shapes only lines it has not shaped.
 pub mod shaped_row_cache;
 
 /// Shared shaping for mixed-script source rows,
@@ -143,7 +148,9 @@ mod selection_paint;
 ///  not the color scheme.
 pub mod selection_ink;
 
-/// Sibling names in the file tree sort mixed, case folded, with numbers compared by value.
+/// Sibling names in the file tree sort mixed,
+/// case folded,
+/// with numbers compared by value.
 pub mod name_order;
 
 /// One local project boundary exposes directory snapshots without mutation operations.

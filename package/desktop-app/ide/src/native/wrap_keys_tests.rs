@@ -1,7 +1,11 @@
 //! Keys and pointer on wrapped lines in the real window:
-//!  Home and End by visual row, Up and Down with a remembered x, paging by visual rows,
-//!  word motion across a wrap offset, the view following the caret's visual row,
-//!  drags across rows, and double and triple clicks on rows of one line.
+//!  Home and End by visual row,
+//! Up and Down with a remembered x,
+//! paging by visual rows,
+//!  word motion across a wrap offset,
+//! the view following the caret's visual row,
+//!  drags across rows,
+//! and double and triple clicks on rows of one line.
 //! Each behavior is checked at several window widths (so at several wrap widths) and at display scales 1 and 2.
 
 /// Caret positions and the in-view check shared with the plain caret tests.
@@ -12,7 +16,8 @@ use super::find_tests::{Reader, chord, key};
 use super::sidebar_tests::{HEADER, TEXT_LEFT, resize};
 /// Fixture builders and the waits that let the worker measure.
 use super::wrap_tests::{long_line, long_text, open, settled, until};
-/// Geometry-free word motion, the expected value of Ctrl+Left and Ctrl+Right.
+/// Geometry-free word motion,
+/// the expected value of Ctrl+Left and Ctrl+Right.
 use ide_app::caret_motion::{Motion, moved};
 /// The side of a wrap offset a caret stands on.
 use ide_app::document::ReadingAffinity;
@@ -23,12 +28,17 @@ use slint::{
     ComponentHandle, LogicalPosition, Model,
     platform::{Key, PointerEventButton, WindowEvent, update_timers_and_animations},
 };
-/// Pauses longer than the multi-click interval, and half-open ranges.
+/// Pauses longer than the multi-click interval,
+/// and half-open ranges.
 use std::{ops::Range, thread::sleep, time::Duration};
 
-/// The logical window widths, sidebar included, whose wrap widths the tests walk through at display scale `factor`.
-/// The headless window's buffer holds 1100 by 660 physical pixels, so a window at scale 2 is at most 550 logical
-/// pixels wide, which still leaves the source column its minimum.
+/// The logical window widths,
+/// sidebar included,
+/// whose wrap widths the tests walk through at display scale `factor`.
+/// The headless window's buffer holds 1100 by 660 physical pixels,
+/// so a window at scale 2 is at most 550 logical
+/// pixels wide,
+/// which still leaves the source column its minimum.
 fn widths(factor: f32) -> [f32; 3] {
     if factor > 1.5 {
         return [500.0, 525.0, 550.0];
@@ -51,7 +61,8 @@ fn arrange(reader: &Reader, factor: f32, width: f32) {
     settled(reader);
 }
 
-/// The ranges of the visual rows of `line`, from the materialized rows.
+/// The ranges of the visual rows of `line`,
+/// from the materialized rows.
 fn rows_of(reader: &Reader, line: usize) -> Vec<Range<usize>> {
     let current = reader.source.borrow();
     let view = current.shaped.as_ref().expect("shaped view");
@@ -68,12 +79,15 @@ fn affinity(reader: &Reader) -> ReadingAffinity {
     return reader.source.borrow().document.position().affinity;
 }
 
-/// The caret's visual row counted from the top of the text, read from where the window draws it.
+/// The caret's visual row counted from the top of the text,
+/// read from where the window draws it.
 fn drawn_row(reader: &Reader) -> usize {
     return ((reader.window.get_caret_y() - 2.0) / 24.0).round() as usize;
 }
 
-/// Home and End on a line of several rows, as the window shows them, at several widths and scales.
+/// Home and End on a line of several rows,
+/// as the window shows them,
+/// at several widths and scales.
 #[test]
 fn home_and_end_follow_the_visual_rows() {
     for factor in [1.0, 2.0] {
@@ -233,7 +247,9 @@ fn home_reaches_the_indent_of_a_wrapped_line() {
     window.hide().expect("close wrap window");
 }
 
-/// Up and Down move one visual row at a time, keep the pixel x through short rows, and Left clears it.
+/// Up and Down move one visual row at a time,
+/// keep the pixel x through short rows,
+/// and Left clears it.
 #[test]
 fn up_and_down_move_by_visual_rows_and_keep_their_x() {
     for factor in [1.0, 2.0] {
@@ -360,7 +376,8 @@ fn a_move_to_a_shorter_upper_row_keeps_the_caret_on_it() {
     window.hide().expect("close wrap window");
 }
 
-/// PageDown and PageUp move the caret by the visual rows a page holds, scroll the view by those rows,
+/// PageDown and PageUp move the caret by the visual rows a page holds,
+/// scroll the view by those rows,
 ///  and keep the caret's visual row in view.
 #[test]
 fn page_keys_move_by_visual_rows_and_keep_the_caret_in_view() {
@@ -412,7 +429,8 @@ fn page_keys_move_by_visual_rows_and_keep_the_caret_in_view() {
     }
 }
 
-/// Moving through every visual row of a text keeps the caret's row in the view, upwards and downwards.
+/// Moving through every visual row of a text keeps the caret's row in the view,
+/// upwards and downwards.
 #[test]
 fn the_view_follows_the_caret_through_every_visual_row() {
     for width in widths(1.0) {
@@ -442,7 +460,9 @@ fn the_view_follows_the_caret_through_every_visual_row() {
     }
 }
 
-/// Ctrl+Left and Ctrl+Right move by word in the document, whatever the rows are, also across a wrap offset.
+/// Ctrl+Left and Ctrl+Right move by word in the document,
+/// whatever the rows are,
+/// also across a wrap offset.
 #[test]
 fn word_motion_crosses_a_wrap_offset_by_document_offset() {
     for width in widths(1.0) {
@@ -497,7 +517,8 @@ fn word_motion_crosses_a_wrap_offset_by_document_offset() {
     }
 }
 
-/// The window point over global visual row `row`, `x` logical pixels into the text.
+/// The window point over global visual row `row`,
+/// `x` logical pixels into the text.
 fn over(reader: &Reader, row: usize, x: f32) -> LogicalPosition {
     return LogicalPosition::new(
         TEXT_LEFT + x,
@@ -536,7 +557,8 @@ fn release(reader: &Reader, position: LogicalPosition) {
         });
 }
 
-/// A drag from one visual row to another selects across the rows between, also over a line boundary,
+/// A drag from one visual row to another selects across the rows between,
+/// also over a line boundary,
 ///  and a release ends the drag.
 #[test]
 fn a_drag_selects_across_visual_rows() {
@@ -592,7 +614,8 @@ fn a_drag_selects_across_visual_rows() {
 }
 
 /// A double click selects the word under the pointer even when the word spans rows,
-///  and a triple click selects the whole logical line, all its rows.
+///  and a triple click selects the whole logical line,
+/// all its rows.
 #[test]
 fn double_and_triple_clicks_work_on_wrapped_lines() {
     for width in widths(1.0) {

@@ -1,17 +1,24 @@
-//! The minimap's picture: the whole text in visual rows, one pixel for each source column,
-//!  built from the vertical mapping and the syntax classes, within a work budget.
+//! The minimap's picture:
+//! the whole text in visual rows,
+//! one pixel for each source column,
+//!  built from the vertical mapping and the syntax classes,
+//! within a work budget.
 
 /// Where the picture's rows come from and how tall it is.
 use super::geometry::Geometry;
-/// Canonical text as a rope, read by line and by character range.
+/// Canonical text as a rope,
+/// read by line and by character range.
 use crate::document::Document;
-/// The one vertical mapping: which line and visual row each pixel of the picture shows.
+/// The one vertical mapping:
+/// which line and visual row each pixel of the picture shows.
 use crate::row_map::{CODE_ROW, RowMap};
-/// Shaping finds where a wrapped line breaks; its work estimate bounds the budget.
+/// Shaping finds where a wrapped line breaks;
+/// its work estimate bounds the budget.
 use crate::shaped_text::{TextShaper, line_work};
 /// Syntax classes by character offset.
 use crate::source_style::StyleSpan;
-/// The palette the source glyphs are painted with, in both schemes.
+/// The palette the source glyphs are painted with,
+/// in both schemes.
 use crate::text_raster::{CodeColors, ink};
 /// A visual row is a range of characters of its line.
 use std::ops::Range;
@@ -40,10 +47,15 @@ pub const IMAGE_ALPHA: f32 = 0.8;
 pub const TAB_COLUMNS: usize = 4;
 
 /// What:
-///  Work, in the units of `line_work`, the first picture of a text may spend on shaping wrapped lines.
+///  Work,
+/// in the units of `line_work`,
+/// the first picture of a text may spend on shaping wrapped lines.
 /// Why:
-///  The first picture stands on screen quickly: a line it cannot afford is cut into rows of equal width
-///  instead of shaped, and a second, full build follows when that happened.
+///  The first picture stands on screen quickly:
+/// a line it cannot afford is cut into rows of equal width
+///  instead of shaped,
+/// and a second,
+/// full build follows when that happened.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -52,10 +64,14 @@ pub const TAB_COLUMNS: usize = 4;
 pub const QUICK_WORK: usize = 250_000;
 
 /// What:
-///  Work, in the units of `line_work`, a full picture may spend on shaping wrapped lines.
+///  Work,
+/// in the units of `line_work`,
+/// a full picture may spend on shaping wrapped lines.
 /// Why:
-///  The picture samples at most one line for each pixel row, so ordinary text costs a small part of this;
-///  the bound is for lines that cost a great deal each, such as lines with many tabs.
+///  The picture samples at most one line for each pixel row,
+/// so ordinary text costs a small part of this;
+///  the bound is for lines that cost a great deal each,
+/// such as lines with many tabs.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -75,10 +91,13 @@ pub const FULL_WORK: usize = 5_000_000;
 const CANCEL_EVERY: usize = 16;
 
 /// What:
-///  How much of a glyph's weight each pixel row of a source row gets, by how many pixel rows the row has.
+///  How much of a glyph's weight each pixel row of a source row gets,
+/// by how many pixel rows the row has.
 /// Why:
-///  CodeGlance Pro's "clean" renderer (`BaseMinimap.renderClean`): the first pixel row of four stays empty so
-///  rows of text are told apart, and the others carry 0.6 of the glyph's weight.
+///  CodeGlance Pro's "clean" renderer (`BaseMinimap.renderClean`):
+/// the first pixel row of four stays empty so
+///  rows of text are told apart,
+/// and the others carry 0.6 of the glyph's weight.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -98,9 +117,15 @@ const ASCII_WEIGHT: f32 = 0.8;
 const OTHER_WEIGHT: f32 = 0.4;
 
 /// What:
-///  What a build reads: the text, its syntax classes, the vertical mapping, the palette, and the sizes.
+///  What a build reads:
+/// the text,
+/// its syntax classes,
+/// the vertical mapping,
+/// the palette,
+/// and the sizes.
 /// Why:
-///  Every field is borrowed from a snapshot the worker owns, so a build never touches window state.
+///  Every field is borrowed from a snapshot the worker owns,
+/// so a build never touches window state.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -108,21 +133,31 @@ const OTHER_WEIGHT: f32 = 0.4;
 ///   scale: number; view: number; width: number };
 /// ```
 pub struct Input<'a> {
-    /// The text, as the snapshot the job was taken from.
+    /// The text,
+    /// as the snapshot the job was taken from.
     pub document: &'a Document,
-    /// Syntax classes by character offset, ascending.
+    /// Syntax classes by character offset,
+    /// ascending.
     pub styles: &'a [StyleSpan],
-    /// Where every visual row is; the picture is this map squeezed or not.
+    /// Where every visual row is;
+    /// the picture is this map squeezed or not.
     pub map: &'a RowMap,
-    /// The palette of the source glyphs, with the scheme it belongs to.
+    /// The palette of the source glyphs,
+    /// with the scheme it belongs to.
     pub colors: CodeColors,
-    /// The width wrapped lines are broken at, in logical pixels; nothing while the view has no width.
+    /// The width wrapped lines are broken at,
+    /// in logical pixels;
+    /// nothing while the view has no width.
     pub wrap: Option<f32>,
     /// Physical pixels per logical pixel.
     pub scale: f32,
-    /// Height of the view, in logical pixels, which is the most the picture can be.
+    /// Height of the view,
+    /// in logical pixels,
+    /// which is the most the picture can be.
     pub view: f32,
-    /// Width of the picture, in logical pixels; one pixel is one source column.
+    /// Width of the picture,
+    /// in logical pixels;
+    /// one pixel is one source column.
     pub width: f32,
 }
 
@@ -150,7 +185,10 @@ pub struct Stats {
 }
 
 /// What:
-///  A finished picture: premultiplied RGBA bytes, row by row, and what it cost.
+///  A finished picture:
+/// premultiplied RGBA bytes,
+/// row by row,
+/// and what it cost.
 /// Why:
 ///  The window thread turns the bytes into an image and nothing else.
 ///
@@ -170,20 +208,27 @@ pub struct Built {
     pub stats: Stats,
 }
 
-/// One drawn glyph of a row: its column, its ink, and its weight class.
+/// One drawn glyph of a row:
+/// its column,
+/// its ink,
+/// and its weight class.
 struct Cell {
     /// Column from the start of the picture row.
     column: usize,
     /// Syntax ink of the glyph.
     rgb: [u8; 3],
-    /// Printable ASCII, which weighs twice what any other glyph does.
+    /// Printable ASCII,
+    /// which weighs twice what any other glyph does.
     ascii: bool,
 }
 
 /// What:
-///  The visual rows of one source line, as character ranges of the text, and its indent.
+///  The visual rows of one source line,
+/// as character ranges of the text,
+/// and its indent.
 /// Why:
-///  Consecutive pixel rows mostly fall on the same line, so the last one is kept.
+///  Consecutive pixel rows mostly fall on the same line,
+/// so the last one is kept.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -192,16 +237,20 @@ struct Cell {
 struct LineRows {
     /// Zero-based source line.
     line: usize,
-    /// Character range of each visual row, in the text.
+    /// Character range of each visual row,
+    /// in the text.
     rows: Vec<Range<usize>>,
-    /// Columns of blanks the line starts with; a continuation row starts one column past them.
+    /// Columns of blanks the line starts with;
+    /// a continuation row starts one column past them.
     indent: usize,
 }
 
 /// What:
-///  What the build has left to spend on shaping, and what it spent.
+///  What the build has left to spend on shaping,
+/// and what it spent.
 /// Why:
-///  A wrapped line is charged before it is shaped, so a line that does not fit stops short of its cost.
+///  A wrapped line is charged before it is shaped,
+/// so a line that does not fit stops short of its cost.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -216,7 +265,8 @@ struct Spending {
 
 /// Charge for shaping.
 impl Spending {
-    /// Charge `work` when it fits what is left; answer whether it was charged.
+    /// Charge `work` when it fits what is left;
+    /// answer whether it was charged.
     fn charge(&mut self, work: usize) -> bool {
         if work > self.left {
             return false;
@@ -228,9 +278,11 @@ impl Spending {
 }
 
 /// What:
-///  Logical width of one source column, which is one space of the source font.
+///  Logical width of one source column,
+/// which is one space of the source font.
 /// Why:
-///  A click on the minimap names a column by its pixel; the text position it stands for is that many advances in.
+///  A click on the minimap names a column by its pixel;
+/// the text position it stands for is that many advances in.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -250,7 +302,8 @@ fn visible_length(document: &Document, line: usize) -> usize {
     return length;
 }
 
-/// Columns of blanks `line` starts with, a tab counting [`TAB_COLUMNS`].
+/// Columns of blanks `line` starts with,
+/// a tab counting [`TAB_COLUMNS`].
 fn indent_columns(document: &Document, line: usize) -> usize {
     let mut columns = 0;
     for character in document.text().line(line).chars() {
@@ -264,11 +317,17 @@ fn indent_columns(document: &Document, line: usize) -> usize {
 }
 
 /// What:
-///  The visual rows of `line`: one range for a line the map holds as one row, the shaped breaks for a wrapped line
-///  the budget can pay for, and rows of equal width for the rest.
+///  The visual rows of `line`:
+/// one range for a line the map holds as one row,
+/// the shaped breaks for a wrapped line
+///  the budget can pay for,
+/// and rows of equal width for the rest.
 /// Why:
-///  The map's row count is what the editor shows, so it decides how many rows the line has; shaping only places
-///  the breaks, which the picture needs at the width of a pixel.
+///  The map's row count is what the editor shows,
+/// so it decides how many rows the line has;
+/// shaping only places
+///  the breaks,
+/// which the picture needs at the width of a pixel.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -323,12 +382,18 @@ fn describe(
 }
 
 /// What:
-///  The glyphs of the characters `range` of the text, from column `first` on, up to `columns` columns:
-///  a tab moves [`TAB_COLUMNS`], a blank or control character one column without a glyph, every other
+///  The glyphs of the characters `range` of the text,
+/// from column `first` on,
+/// up to `columns` columns:
+///  a tab moves [`TAB_COLUMNS`],
+/// a blank or control character one column without a glyph,
+/// every other
 ///  character one column with its syntax ink.
 /// Why:
-///  The picture draws one pixel for each column and stops at its width, whatever the line's length;
-///  CodeGlance Pro walks every character, a 200,000 character line would cost the build that much here.
+///  The picture draws one pixel for each column and stops at its width,
+/// whatever the line's length;
+///  CodeGlance Pro walks every character,
+/// a 200,000 character line would cost the build that much here.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -378,7 +443,8 @@ fn cells(input: &Input, range: Range<usize>, first: usize, columns: usize) -> Ve
 
 /// Write one drawn pixel row of `cells` into row `row` of `bytes`:
 ///  each glyph fills the physical pixels of its column with its ink,
-///  weighed by `weight` and by the glyph's class, premultiplied.
+///  weighed by `weight` and by the glyph's class,
+/// premultiplied.
 fn paint_row(bytes: &mut [u8], width: usize, row: usize, cells: &[Cell], weight: f32, scale: f32) {
     if weight <= 0.0 {
         return;
@@ -406,13 +472,20 @@ fn paint_row(bytes: &mut [u8], width: usize, row: usize, cells: &[Cell], weight:
 }
 
 /// What:
-///  Build the picture of `input`'s text: for each physical pixel row of the track, the visual row of the text at
-///  its center, drawn as syntax colored pixels, one for each source column.
-///  `work` is the most it may spend shaping wrapped lines, and `cancelled` is asked every few rows;
+///  Build the picture of `input`'s text:
+/// for each physical pixel row of the track,
+/// the visual row of the text at
+///  its center,
+/// drawn as syntax colored pixels,
+/// one for each source column.
+///  `work` is the most it may spend shaping wrapped lines,
+/// and `cancelled` is asked every few rows;
 ///  the answer is nothing when it said so.
 /// Why:
-///  The picture is the whole text at a fixed size, so a text with more rows than the track has pixels is sampled:
-///  the work is bounded by the track's height, never by the text's length.
+///  The picture is the whole text at a fixed size,
+/// so a text with more rows than the track has pixels is sampled:
+///  the work is bounded by the track's height,
+/// never by the text's length.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

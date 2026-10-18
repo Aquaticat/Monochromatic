@@ -1,8 +1,12 @@
 //! Always-on soft wrap in the real window:
-//!  the wrap width, the gutter's indicator, the worker that measures every line,
-//!  the vertical extent that settles as chunks arrive, resizes that only break rows again,
+//!  the wrap width,
+//! the gutter's indicator,
+//! the worker that measures every line,
+//!  the vertical extent that settles as chunks arrive,
+//! resizes that only break rows again,
 //!  and pointer placement on continuation rows.
-//! Nothing here waits on the window thread: every wait advances timers and lets the workers answer.
+//! Nothing here waits on the window thread:
+//! every wait advances timers and lets the workers answer.
 
 /// The complete reader fixture and its disposable project.
 use super::find_tests::{Reader, memory_project, reader};
@@ -26,7 +30,9 @@ use slint::{
     ComponentHandle, LogicalPosition, Model,
     platform::{Key, PointerEventButton, WindowEvent, update_timers_and_animations},
 };
-/// Shared state, files, and clocks.
+/// Shared state,
+/// files,
+/// and clocks.
 use std::{
     cell::RefCell,
     fs,
@@ -34,7 +40,8 @@ use std::{
     time::{Duration, Instant},
 };
 
-/// Longest wait for a worker answer; the host can be under heavy load.
+/// Longest wait for a worker answer;
+/// the host can be under heavy load.
 const PATIENCE: Duration = Duration::from_secs(90);
 
 /// A line that wraps to several rows at the width of the test window (about 700 px of text).
@@ -55,8 +62,10 @@ pub(super) fn long_text(count: usize) -> String {
     return text;
 }
 
-/// Lines that start with a tab and wrap to several rows: a tile of them is more work than the window thread's allowance
-///  covers, so every new width goes to the worker.
+/// Lines that start with a tab and wrap to several rows:
+/// a tile of them is more work than the window thread's allowance
+///  covers,
+/// so every new width goes to the worker.
 pub(super) fn tabbed_text(count: usize) -> String {
     let mut text = String::new();
     for number in 0..count {
@@ -67,7 +76,8 @@ pub(super) fn tabbed_text(count: usize) -> String {
     return text;
 }
 
-/// Advance timers until `ready` holds, failing with `message` after `PATIENCE`.
+/// Advance timers until `ready` holds,
+/// failing with `message` after `PATIENCE`.
 pub(super) fn until(message: &str, mut ready: impl FnMut() -> bool) {
     let start = Instant::now();
     loop {
@@ -114,7 +124,8 @@ pub(super) fn open(text: &str) -> (tempfile::TempDir, Reader) {
     return (project, opened);
 }
 
-/// The rows of the window's visible viewport as RGBA pixels, read from the source image.
+/// The rows of the window's visible viewport as RGBA pixels,
+/// read from the source image.
 pub(super) fn shown(window: &AppWindow) -> Vec<[u8; 4]> {
     let scale = window.window().scale_factor();
     let image = window
@@ -148,7 +159,8 @@ fn expected_extent(state: &Rc<RefCell<State>>, scale: f32) -> f32 {
     return RowMap::plain(lines).with_rows(&rows).height();
 }
 
-/// The wrap width is the text area's width without the caret room, and a width of zero keeps the last one.
+/// The wrap width is the text area's width without the caret room,
+/// and a width of zero keeps the last one.
 #[test]
 fn the_wrap_width_is_the_text_area_minus_the_caret_room_and_zero_keeps_the_last() {
     let (_project, opened) = open(&long_text(5));
@@ -171,7 +183,8 @@ fn the_wrap_width_is_the_text_area_minus_the_caret_room_and_zero_keeps_the_last(
     window.hide().expect("close wrap window");
 }
 
-/// The gutter has one entry per visual row, the number on the first row of a line only,
+/// The gutter has one entry per visual row,
+/// the number on the first row of a line only,
 ///  and the indicator image is set in the sign color.
 #[test]
 fn the_gutter_numbers_first_rows_and_marks_continuation_rows() {
@@ -342,8 +355,11 @@ fn the_extent_settles_as_chunks_arrive() {
     window.hide().expect("close wrap window");
 }
 
-/// Opening a very long file never blocks the window thread: the pass runs on the worker, the window takes a bounded
-/// amount from it per callback, and shapes no line beyond its first tile.
+/// Opening a very long file never blocks the window thread:
+/// the pass runs on the worker,
+/// the window takes a bounded
+/// amount from it per callback,
+/// and shapes no line beyond its first tile.
 #[test]
 fn opening_fifty_thousand_lines_never_blocks_the_window_thread() {
     let mut text = String::new();
@@ -410,8 +426,11 @@ fn opening_fifty_thousand_lines_never_blocks_the_window_thread() {
     window.hide().expect("close wrap window");
 }
 
-/// A new width breaks the kept rows again on the worker without shaping them, and the window thread brings in only the
-///  lines of its tile, within its allowance; the extent follows.
+/// A new width breaks the kept rows again on the worker without shaping them,
+/// and the window thread brings in only the
+///  lines of its tile,
+/// within its allowance;
+/// the extent follows.
 #[test]
 fn a_resize_breaks_kept_rows_again_without_shaping() {
     let (_project, opened) = open(&long_text(1500));
@@ -454,7 +473,8 @@ fn a_resize_breaks_kept_rows_again_without_shaping() {
     window.hide().expect("close wrap window");
 }
 
-/// A scroll re-center during the pass is still built on the worker: the window thread shapes and paints nothing,
+/// A scroll re-center during the pass is still built on the worker:
+/// the window thread shapes and paints nothing,
 ///  the finished tile is accepted although the map was corrected by the tile's own lines.
 #[test]
 fn a_recenter_while_the_pass_runs_is_built_on_the_worker() {
@@ -510,7 +530,8 @@ fn a_recenter_while_the_pass_runs_is_built_on_the_worker() {
     window.hide().expect("close wrap window");
 }
 
-/// The caret bar is as wide as the room the wrap width keeps for it, so a caret after a full row is not cut off.
+/// The caret bar is as wide as the room the wrap width keeps for it,
+/// so a caret after a full row is not cut off.
 #[test]
 fn the_caret_after_a_full_row_stays_inside_the_view() {
     // A token without break opportunities fills every row to the width; each glyph is 9 px wide.
@@ -540,7 +561,8 @@ fn the_caret_after_a_full_row_stays_inside_the_view() {
     window.hide().expect("close wrap window");
 }
 
-/// The window point over visual row `visual` of the first line, `x` logical pixels into the text.
+/// The window point over visual row `visual` of the first line,
+/// `x` logical pixels into the text.
 fn point(window: &AppWindow, visual: usize, x: f32) -> LogicalPosition {
     return LogicalPosition::new(
         TEXT_LEFT + x,
@@ -548,7 +570,8 @@ fn point(window: &AppWindow, visual: usize, x: f32) -> LogicalPosition {
     );
 }
 
-/// A click on a continuation row places the caret in that row, and a click right of a row's end keeps its side.
+/// A click on a continuation row places the caret in that row,
+/// and a click right of a row's end keeps its side.
 #[test]
 fn a_click_on_a_continuation_row_places_the_caret_in_that_row() {
     let (_project, opened) = open(&long_text(10));
@@ -590,8 +613,10 @@ fn a_click_on_a_continuation_row_places_the_caret_in_that_row() {
     window.hide().expect("close wrap window");
 }
 
-/// A click on either side of a wrap offset keeps the side that was clicked: left of the first glyph of the lower row
-///  the caret stands on the lower row, right of the last glyph of the upper row it stands on the upper row.
+/// A click on either side of a wrap offset keeps the side that was clicked:
+/// left of the first glyph of the lower row
+///  the caret stands on the lower row,
+/// right of the last glyph of the upper row it stands on the upper row.
 #[test]
 fn a_click_at_a_wrap_offset_keeps_the_side_that_was_clicked() {
     // A token without break opportunities breaks at the width, so no space hangs at the end of a row.
@@ -644,7 +669,9 @@ fn a_click_at_a_wrap_offset_keeps_the_side_that_was_clicked() {
     window.hide().expect("close wrap window");
 }
 
-/// The view cannot move horizontally: a Shift+wheel turn scrolls nothing, and a plain wheel turn still scrolls.
+/// The view cannot move horizontally:
+/// a Shift+wheel turn scrolls nothing,
+/// and a plain wheel turn still scrolls.
 #[test]
 fn shift_wheel_does_not_scroll_and_there_is_no_horizontal_motion() {
     let (_project, opened) = open(&long_text(400));
@@ -682,7 +709,9 @@ fn shift_wheel_does_not_scroll_and_there_is_no_horizontal_motion() {
     window.hide().expect("close wrap window");
 }
 
-/// Two resizes in a row, with the view moved between them, leave no line at a width it is no longer wrapped to.
+/// Two resizes in a row,
+/// with the view moved between them,
+/// leave no line at a width it is no longer wrapped to.
 #[test]
 fn a_drag_resize_leaves_no_stale_heights() {
     let (release, gate) = std::sync::mpsc::channel();

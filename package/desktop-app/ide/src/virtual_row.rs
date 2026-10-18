@@ -131,7 +131,8 @@ pub struct MessageRow {
     ///  or nothing when it starts a line of the message.
     /// Why:
     ///  The rows made by the break at 80 columns are one line of prose;
-    ///  a row wider than the text area is broken again from the whole line, not from each row alone,
+    ///  a row wider than the text area is broken again from the whole line,
+    /// not from each row alone,
     ///  which would leave a short tail on every row.
     ///  The joiner is a blank where the break was at a blank and nothing where a word was cut.
     ///
@@ -275,7 +276,9 @@ pub fn wrap(line: &str, limit: usize) -> Vec<String> {
 }
 
 /// What:
-///  [`wrap`] with, for each row, how its text follows the row before it:
+///  [`wrap`] with,
+/// for each row,
+/// how its text follows the row before it:
 ///  nothing for the first row,
 ///  a blank where the break was at a blank,
 ///  and an empty joiner where a word was cut.

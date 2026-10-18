@@ -21,7 +21,8 @@ export function createInputPool({
  const origins=new WeakMap();
  const sourceDataByContent=new Map();
  const metadataTexts=new Map();
- const poolState={bytes:0,pendingEventBytes:0,count:0,failure:undefined,constructedInputs:Object.freeze([])};
+ const constructedInputs=[];
+ const poolState={bytes:0,pendingEventBytes:0,count:0,failure:undefined,constructedSnapshot:Object.freeze([])};
 
  function reserve(){
   poolState.count++;
@@ -81,10 +82,8 @@ export function createInputPool({
     ...input,
     inputOccurrence:Object.freeze({})
   });
-  poolState.constructedInputs=Object.freeze([
-    ...poolState.constructedInputs,
-    origin
-  ]);
+  constructedInputs.push(origin);
+  poolState.constructedSnapshot=undefined;
  }
 
  const {captureSummary,captureEdit,captureLoadedEntries}=createLoadedHistory({occurrence,reserve,retain,poolState,InputCaptureError});
@@ -113,7 +112,10 @@ const {captureQueuedInput,captureUninterceptedInput,captureCallInput,captureComm
   captureTransformedInput,
   captureInputEvent,
   captureCustomMessageInput,
-  readConstructedInputs(){return poolState.constructedInputs;},
+  readConstructedInputs(){
+    poolState.constructedSnapshot??=Object.freeze([...constructedInputs]);
+    return poolState.constructedSnapshot;
+  },
   inputUsage(){if(poolState.failure)throw poolState.failure;return Object.freeze({
     count:poolState.count,
     bytes:poolState.bytes+poolState.pendingEventBytes

@@ -229,7 +229,9 @@ fn rank(outcome: &RequestOutcome) -> u8 {
 ///  or no running server for a file that has servers configured.
 ///  `&[(Option<ServerIdentity>, RequestOutcome)]` lends the answers received.
 /// Why:
-///  An empty answer, a request set aside, and a server still starting are properties of one position or of the
+///  An empty answer,
+/// a request set aside,
+/// and a server still starting are properties of one position or of the
 ///  moment and are not worth interrupting a resting pointer for;
 ///  the others hold for every position of the file until something is installed or fixed.
 ///

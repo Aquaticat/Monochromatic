@@ -1,19 +1,29 @@
-//! Soft-wrap shaping and geometry: break opportunities, grapheme safety, tiling, indent, and visual-row geometry.
-//! No window is opened; every test shapes lines with the same Parley setup the source view uses.
+//! Soft-wrap shaping and geometry:
+//! break opportunities,
+//! grapheme safety,
+//! tiling,
+//! indent,
+//! and visual-row geometry.
+//! No window is opened;
+//! every test shapes lines with the same Parley setup the source view uses.
 
-/// Rope and grapheme boundaries from the editor's own text model, so grapheme checks match editing.
+/// Rope and grapheme boundaries from the editor's own text model,
+/// so grapheme checks match editing.
 use helix_core::{Rope, graphemes::next_grapheme_boundary};
 /// Canonical source of the lines under test.
 use ide_app::document::{Document, ReadingAffinity};
-/// The row map's code row height, the step between visual rows.
+/// The row map's code row height,
+/// the step between visual rows.
 use ide_app::row_map::CODE_ROW;
 use ide_app::shaped_row::ShapedRow;
 /// Shaper and shaped row under test.
 use ide_app::shaped_text::TextShaper;
-/// The break predicate under test, and the continuation indent it is measured against.
+/// The break predicate under test,
+/// and the continuation indent it is measured against.
 use ide_app::wrap::{continuation_indent, intellij_break};
 
-/// Text used for the long-line table: words and punctuation with ordinary break opportunities.
+/// Text used for the long-line table:
+/// words and punctuation with ordinary break opportunities.
 const LONG_LINE: &str = "let value = compute_total(first_item, second_item); // a long comment that keeps going, \
      and going, and going past every width in the table";
 
@@ -24,14 +34,16 @@ fn wrapped(text: &str, width: f32, scale: f32) -> ShapedRow {
     return shaper.wrapped_row(&document, 0, scale, width);
 }
 
-/// Advance of one space in logical pixels at `scale`, measured on an unwrapped space.
+/// Advance of one space in logical pixels at `scale`,
+/// measured on an unwrapped space.
 fn space_advance(scale: f32) -> f32 {
     let document = Document::new(" ");
     let mut shaper = TextShaper::new();
     return shaper.row(&document, 0, scale).caret_x(1, scale);
 }
 
-/// Char indices where a grapheme cluster starts in `text`, including the end of the text.
+/// Char indices where a grapheme cluster starts in `text`,
+/// including the end of the text.
 fn grapheme_starts(text: &str) -> Vec<usize> {
     let rope = Rope::from(text);
     let slice = rope.slice(..);
@@ -62,7 +74,8 @@ fn rows_start_on_graphemes(row: &ShapedRow) -> bool {
     return true;
 }
 
-/// Whether the display byte ranges of all visual rows tile the whole display text, in order.
+/// Whether the display byte ranges of all visual rows tile the whole display text,
+/// in order.
 fn rows_tile_the_text(row: &ShapedRow) -> bool {
     let mut next = 0;
     for index in 0..row.visual_rows() {
@@ -75,7 +88,8 @@ fn rows_tile_the_text(row: &ShapedRow) -> bool {
     return next == row.projection.text.len();
 }
 
-/// Whether each visual row's visible advance fits the width, which is the rule `OverflowWrap::Anywhere` keeps
+/// Whether each visual row's visible advance fits the width,
+/// which is the rule `OverflowWrap::Anywhere` keeps
 ///  only for a row that holds a single cluster.
 fn rows_fit_width(row: &ShapedRow, width: f32, scale: f32) -> bool {
     for line in row.layout.lines() {
@@ -102,7 +116,10 @@ fn boundaries_are_break_opportunities(row: &ShapedRow) -> bool {
     return true;
 }
 
-/// Long ASCII line at several widths: each row fits, every break is a rule opportunity, and no grapheme splits.
+/// Long ASCII line at several widths:
+/// each row fits,
+/// every break is a rule opportunity,
+/// and no grapheme splits.
 #[test]
 fn long_ascii_line_wraps_at_several_widths() {
     // Widths below the longest token would break inside it, which the rule check does not describe.
@@ -131,7 +148,8 @@ fn long_ascii_line_wraps_at_several_widths() {
     );
 }
 
-/// A line that fits the width keeps one visual row, and a line exactly the width keeps one too.
+/// A line that fits the width keeps one visual row,
+/// and a line exactly the width keeps one too.
 #[test]
 fn a_line_that_fits_keeps_one_row() {
     let text = "let value = 1;";
@@ -158,7 +176,8 @@ fn a_token_without_break_opportunities_breaks_at_the_width() {
     assert!(rows_start_on_graphemes(&row));
 }
 
-/// CJK ideographs break between each other, and every break is an opportunity under the rules.
+/// CJK ideographs break between each other,
+/// and every break is an opportunity under the rules.
 #[test]
 fn cjk_text_breaks_between_ideographs() {
     let text = "中文字符测试".repeat(12);
@@ -172,7 +191,10 @@ fn cjk_text_breaks_between_ideographs() {
     assert!(rows_start_on_graphemes(&row));
 }
 
-/// Emoji with zero width joiners, skin tones, flags, and combining marks never split.
+/// Emoji with zero width joiners,
+/// skin tones,
+/// flags,
+/// and combining marks never split.
 #[test]
 fn emoji_sequences_and_combining_marks_never_split() {
     let unit = "👩\u{200D}💻 e\u{301} 🇫🇷 👍🏽 x\u{FE0F}🙂 ";
@@ -184,7 +206,8 @@ fn emoji_sequences_and_combining_marks_never_split() {
     }
 }
 
-/// Leading indentation and tabs: the continuation row starts at the first non-blank column plus one mark.
+/// Leading indentation and tabs:
+/// the continuation row starts at the first non-blank column plus one mark.
 #[test]
 fn continuation_row_starts_at_the_indent() {
     let text = "    let total = first_value + second_value + third_value + fourth_value + fifth;";
@@ -205,7 +228,8 @@ fn continuation_row_starts_at_the_indent() {
     }
 }
 
-/// Tab-bearing lines wrap, and the tiling holds with tabs in the rows.
+/// Tab-bearing lines wrap,
+/// and the tiling holds with tabs in the rows.
 #[test]
 fn tab_bearing_lines_wrap_and_tile() {
     let text = "\tfn compute(\tvalue: u32) -> u32 {\t\tlet total = value * 2 + value * 3 + value * 5;\t\treturn total;";
@@ -217,7 +241,8 @@ fn tab_bearing_lines_wrap_and_tile() {
     }
 }
 
-/// Tab stops on a wrapped row end on stops of the layout's own grid, measured from its origin.
+/// Tab stops on a wrapped row end on stops of the layout's own grid,
+/// measured from its origin.
 #[test]
 fn tabs_on_a_wrapped_row_end_on_their_stops() {
     let text = "a\tb\tc\td\te\tf\tg\th\ti\tj\tk\tl\tm\tn\to\tp\tq\tr\ts\tt\tu\tv\tw\tx\ty\tz";
@@ -261,7 +286,10 @@ fn an_empty_line_has_one_row() {
     assert_eq!(terminated.projection.text, "abc");
 }
 
-/// Width zero, a negative width, and a non-finite width mean no wrapping, and a tiny width wraps per cluster.
+/// Width zero,
+/// a negative width,
+/// and a non-finite width mean no wrapping,
+/// and a tiny width wraps per cluster.
 #[test]
 fn width_zero_means_no_wrapping_and_tiny_width_wraps_per_cluster() {
     for width in [0.0, -4.0, f32::NAN, f32::INFINITY] {
@@ -281,7 +309,8 @@ fn width_zero_means_no_wrapping_and_tiny_width_wraps_per_cluster() {
     assert!(rows_tile_the_text(&tiny));
 }
 
-/// Visual rows and geometry at both scales: the row step is one code row in logical pixels.
+/// Visual rows and geometry at both scales:
+/// the row step is one code row in logical pixels.
 #[test]
 fn row_steps_are_one_code_row_at_both_scales() {
     for scale in [1.0, 2.0] {
@@ -298,7 +327,8 @@ fn row_steps_are_one_code_row_at_both_scales() {
     }
 }
 
-/// A caret at a soft-wrap offset is drawn at the end of the upper row upstream, and at the start of the lower row downstream.
+/// A caret at a soft-wrap offset is drawn at the end of the upper row upstream,
+/// and at the start of the lower row downstream.
 #[test]
 fn caret_at_a_wrap_offset_follows_its_affinity() {
     for scale in [1.0, 2.0] {
@@ -327,7 +357,8 @@ fn caret_at_a_wrap_offset_follows_its_affinity() {
     }
 }
 
-/// A point on the lower row hits a source character on that row, and a point on the upper row hits one before the break.
+/// A point on the lower row hits a source character on that row,
+/// and a point on the upper row hits one before the break.
 #[test]
 fn hit_probes_the_visual_row_under_the_point() {
     for scale in [1.0, 2.0] {
@@ -347,7 +378,8 @@ fn hit_probes_the_visual_row_under_the_point() {
     }
 }
 
-/// `hit` without a row offset probes the first visual row, and an unwrapped row keeps its probe.
+/// `hit` without a row offset probes the first visual row,
+/// and an unwrapped row keeps its probe.
 #[test]
 fn hit_without_a_row_offset_probes_the_first_row() {
     let scale = 1.0;
@@ -356,7 +388,8 @@ fn hit_without_a_row_offset_probes_the_first_row() {
     assert_eq!(row.hit(x, scale), row.hit_at(x, CODE_ROW * 0.5, scale));
 }
 
-/// A range that crosses rows yields one rectangle per visual row, each on that row's y and one code row tall.
+/// A range that crosses rows yields one rectangle per visual row,
+/// each on that row's y and one code row tall.
 #[test]
 fn range_yields_one_rectangle_per_visual_row() {
     for scale in [1.0, 2.0] {
@@ -387,7 +420,8 @@ fn range_yields_one_rectangle_per_visual_row() {
     }
 }
 
-/// The first row's rectangle keeps the row's own top exactly, as unwrapped rows always did.
+/// The first row's rectangle keeps the row's own top exactly,
+/// as unwrapped rows always did.
 #[test]
 fn range_on_the_first_row_keeps_the_top_exactly() {
     let row = wrapped(LONG_LINE, 160.0, 1.0);
@@ -396,7 +430,8 @@ fn range_on_the_first_row_keeps_the_top_exactly() {
     assert_eq!(rectangles[0].y, row.top);
 }
 
-/// Visual row that holds display byte `byte`, found from the row byte ranges.
+/// Visual row that holds display byte `byte`,
+/// found from the row byte ranges.
 fn row_of_byte(row: &ShapedRow, byte: usize) -> usize {
     for index in 0..row.visual_rows() {
         let bytes = row.visual_row_bytes(index).expect("row exists");
@@ -407,7 +442,11 @@ fn row_of_byte(row: &ShapedRow, byte: usize) -> usize {
     return row.visual_rows().saturating_sub(1);
 }
 
-/// Lines of the crate's own Rust source: real code with ordinary identifiers, comments, strings, and long lines.
+/// Lines of the crate's own Rust source:
+/// real code with ordinary identifiers,
+/// comments,
+/// strings,
+/// and long lines.
 fn source_lines() -> Vec<String> {
     let mut lines = Vec::new();
     let mut files: Vec<_> = std::fs::read_dir(concat!(env!("CARGO_MANIFEST_DIR"), "/src"))
@@ -435,7 +474,8 @@ fn source_lines() -> Vec<String> {
     return lines;
 }
 
-/// Logical width of the unbroken token around `byte`: the stretch between the nearest rule opportunities on each side.
+/// Logical width of the unbroken token around `byte`:
+/// the stretch between the nearest rule opportunities on each side.
 fn token_width_around(text: &str, byte: usize, scale: f32) -> f32 {
     let characters: Vec<(usize, char)> = text.char_indices().collect();
     let mut start = 0;
@@ -461,7 +501,8 @@ fn token_width_around(text: &str, byte: usize, scale: f32) -> f32 {
 
 /// Row boundaries that are neither a rule opportunity nor inside a token wider than the width a row has.
 ///
-/// A token with no opportunity breaks where the width is exceeded, so a boundary inside one is expected.
+/// A token with no opportunity breaks where the width is exceeded,
+/// so a boundary inside one is expected.
 fn unexcused_breaks(row: &ShapedRow, width: f32, scale: f32) -> Vec<(char, char)> {
     let text = row.projection.text.as_str();
     let indent = continuation_indent(text, space_advance(scale));
@@ -478,10 +519,16 @@ fn unexcused_breaks(row: &ShapedRow, width: f32, scale: f32) -> Vec<(char, char)
     return unexcused;
 }
 
-/// Real source at the widths and scales the window uses: every row's visible advance fits the width, every row tiles
-/// the text, every boundary is a rule opportunity or inside a token wider than a row, and no row starts inside a
-/// grapheme. An earlier measurement counted rows whose raw advance passed the width (966 of 57,938 at width 600);
-/// the advance includes a hanging space, so this test measures the visible advance.
+/// Real source at the widths and scales the window uses:
+/// every row's visible advance fits the width,
+/// every row tiles
+/// the text,
+/// every boundary is a rule opportunity or inside a token wider than a row,
+/// and no row starts inside a
+/// grapheme.
+/// An earlier measurement counted rows whose raw advance passed the width (966 of 57,938 at width 600);
+/// the advance includes a hanging space,
+/// so this test measures the visible advance.
 #[test]
 fn every_row_of_real_source_fits_its_width() {
     let lines = source_lines();

@@ -86,7 +86,8 @@ impl PartialEq for FrameStamp {
     }
 }
 
-/// Whether two shared values are the same allocation or equal, which skips the comparison for the same one.
+/// Whether two shared values are the same allocation or equal,
+/// which skips the comparison for the same one.
 fn shared_or_equal<T: PartialEq + ?Sized>(left: &Arc<T>, right: &Arc<T>) -> bool {
     return Arc::ptr_eq(left, right) || left == right;
 }
@@ -96,8 +97,10 @@ impl FrameStamp {
     /// What:
     ///  Whether every paint input but the visible annotations is the same in both stamps.
     /// Why:
-    ///  Hints and messages follow the wrap width at once, but a displayed tile keeps the ones it was painted with
-    ///  until the tile for the new width arrives, so only the annotations are expected to differ meanwhile.
+    ///  Hints and messages follow the wrap width at once,
+    /// but a displayed tile keeps the ones it was painted with
+    ///  until the tile for the new width arrives,
+    /// so only the annotations are expected to differ meanwhile.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts

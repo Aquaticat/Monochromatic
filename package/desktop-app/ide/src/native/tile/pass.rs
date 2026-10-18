@@ -50,10 +50,14 @@ pub(in crate::native) fn current_key(current: &State, scale: f32) -> PassKey {
 
 /// What:
 ///  Ask the worker to measure the whole text at the current wrap width when it has not been asked yet for this
-///  text, scale, width, and syntax snapshot.
+///  text,
+/// scale,
+/// width,
+/// and syntax snapshot.
 /// Why:
 ///  The pass is what makes the scroll extent exact without any frame waiting for it;
-///  a resize or a new text starts it again, and lines the worker kept are only broken again.
+///  a resize or a new text starts it again,
+/// and lines the worker kept are only broken again.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -105,12 +109,15 @@ pub(in crate::native) fn sync_pass(
 }
 
 /// What:
-///  Apply what the pass measured: the visual rows of lines outside the displayed tile go into the window's table,
+///  Apply what the pass measured:
+/// the visual rows of lines outside the displayed tile go into the window's table,
 ///  and the window renders when any count changed.
 /// Why:
 ///  The lines of the displayed tile keep the heights they were painted with;
 ///  a pass result must never move the rows of the frame on screen.
-///  A result for another text, scale, or width is dropped.
+///  A result for another text,
+/// scale,
+/// or width is dropped.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

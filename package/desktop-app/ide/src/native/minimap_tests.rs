@@ -1,15 +1,27 @@
 //! The minimap beside the source text in the real window:
-//!  the viewport box against the geometry, a press that jumps, a drag of the box, the wheel,
-//!  the keyboard after a press, and the worker that builds the picture off the window thread.
-//! Nothing here waits on the window thread: every wait advances timers and lets the workers answer.
+//!  the viewport box against the geometry,
+//! a press that jumps,
+//! a drag of the box,
+//! the wheel,
+//!  the keyboard after a press,
+//! and the worker that builds the picture off the window thread.
+//! Nothing here waits on the window thread:
+//! every wait advances timers and lets the workers answer.
 
-/// The source reader fixture, its disposable project, and the bounded waits.
+/// The source reader fixture,
+/// its disposable project,
+/// and the bounded waits.
 use super::find_tests::{Reader, eventually, key, memory_project, reader};
 /// Window metrics shared with the layout tests.
 use super::sidebar_tests::{HEADER, TEXT_LEFT};
-/// The long wrapped text, the waits, and the window's measured state.
+/// The long wrapped text,
+/// the waits,
+/// and the window's measured state.
 use super::wrap_tests::{long_text, open, settled, until};
-/// The worker's counters, its gate, its reply type, and the accept rule.
+/// The worker's counters,
+/// its gate,
+/// its reply type,
+/// and the accept rule.
 use super::{
     minimap::{DEBOUNCE, Plan, THROTTLE, apply, plan},
     minimap_build::{Key as PictureKey, MINIMAP_GATE, OFF_WORKER_BUILDS, Reply},
@@ -18,13 +30,17 @@ use super::{
 };
 /// Library types that give the expected values.
 use ide_app::minimap::{FULL_WORK, Geometry};
-/// Toolkit events, models, and images.
+/// Toolkit events,
+/// models,
+/// and images.
 use slint::{
     ComponentHandle, LogicalPosition, SharedPixelBuffer,
     platform::{Key, PointerEventButton, WindowEvent, update_timers_and_animations},
     private_unstable_api::re_exports::ColorScheme,
 };
-/// Counters, clocks, and files.
+/// Counters,
+/// clocks,
+/// and files.
 use std::{
     fs,
     sync::atomic::Ordering,
@@ -32,10 +48,12 @@ use std::{
 };
 
 /// What:
-///  A window position over the minimap, `y` logical pixels from the top of the view and `x` from the minimap's left
+///  A window position over the minimap,
+/// `y` logical pixels from the top of the view and `x` from the minimap's left
 ///  edge.
 /// Why:
-///  The minimap stays still on screen while the content scrolls under it, so its place is fixed by the layout:
+///  The minimap stays still on screen while the content scrolls under it,
+/// so its place is fixed by the layout:
 ///  right of the gutter and the text area.
 ///
 /// In TS you'd write (pseudocode):
@@ -46,7 +64,8 @@ fn over(window: &super::AppWindow, x: f32, y: f32) -> LogicalPosition {
     return LogicalPosition::new(TEXT_LEFT + window.get_viewport_width() + x, HEADER + y);
 }
 
-/// The geometry of the text the reader shows now, from the vertical mapping and the view's height.
+/// The geometry of the text the reader shows now,
+/// from the vertical mapping and the view's height.
 fn geometry(reader: &Reader) -> Geometry {
     return Geometry::new(
         reader.source.borrow().row_map.height(),
@@ -54,7 +73,8 @@ fn geometry(reader: &Reader) -> Geometry {
     );
 }
 
-/// The anchor and the head of the selection, without the scroll position the reading position also holds.
+/// The anchor and the head of the selection,
+/// without the scroll position the reading position also holds.
 fn reading(reader: &Reader) -> (usize, usize) {
     let position = reader.source.borrow().document.position();
     return (position.anchor, position.head);
@@ -95,7 +115,9 @@ fn lift(reader: &Reader, at: LogicalPosition) {
         });
 }
 
-/// Let every pending render, timer, and worker answer that is already due run.
+/// Let every pending render,
+/// timer,
+/// and worker answer that is already due run.
 fn calm(reader: &Reader) {
     settle_tile(&reader.source);
     update_timers_and_animations();
@@ -111,8 +133,11 @@ fn picture_shown(reader: &Reader) {
     });
 }
 
-/// The box matches `ide_app::minimap::Geometry` at every scroll offset, and tracks the scroll live: the first offset puts
-///  it at the top, the last at the bottom of the track.
+/// The box matches `ide_app::minimap::Geometry` at every scroll offset,
+/// and tracks the scroll live:
+/// the first offset puts
+///  it at the top,
+/// the last at the bottom of the track.
 #[test]
 fn the_box_matches_the_geometry_at_every_offset() {
     let (_project, opened) = open(&long_text(400));
@@ -163,7 +188,9 @@ fn the_box_matches_the_geometry_at_every_offset() {
     window.hide().expect("close minimap window");
 }
 
-/// A text shorter than the view has a box as tall as the track, no room to move it, and a press that scrolls nothing.
+/// A text shorter than the view has a box as tall as the track,
+/// no room to move it,
+/// and a press that scrolls nothing.
 #[test]
 fn a_short_text_has_a_box_as_tall_as_its_track_and_a_press_scrolls_nothing() {
     let (_project, opened) = open("fn main() {\n    println!(\"hi\");\n}\n");
@@ -185,7 +212,8 @@ fn a_short_text_has_a_box_as_tall_as_its_track_and_a_press_scrolls_nothing() {
 }
 
 /// A press outside the box moves the caret to the row under the pointer and scrolls that row to the middle of the view;
-///  a Shift press extends the selection from the old caret; the keyboard still scrolls afterwards.
+///  a Shift press extends the selection from the old caret;
+/// the keyboard still scrolls afterwards.
 #[test]
 fn a_press_outside_the_box_jumps_to_the_row_and_the_keyboard_still_works() {
     let (_project, opened) = open(&long_text(400));
@@ -249,8 +277,12 @@ fn a_press_outside_the_box_jumps_to_the_row_and_the_keyboard_still_works() {
     window.hide().expect("close minimap window");
 }
 
-/// A press on the box starts a drag without a jump; the box follows the pointer one to one, the view scrolls at every
-///  step, both ends clamp, and after the button is released the pointer moves nothing.
+/// A press on the box starts a drag without a jump;
+/// the box follows the pointer one to one,
+/// the view scrolls at every
+///  step,
+/// both ends clamp,
+/// and after the button is released the pointer moves nothing.
 #[test]
 fn dragging_the_box_scrolls_continuously_and_release_ends_it() {
     let (_project, opened) = open(&long_text(400));
@@ -313,7 +345,8 @@ fn dragging_the_box_scrolls_continuously_and_release_ends_it() {
     window.hide().expect("close minimap window");
 }
 
-/// The box shows two changes besides the cursor when the pointer is on it, and none while the pointer is beside it:
+/// The box shows two changes besides the cursor when the pointer is on it,
+/// and none while the pointer is beside it:
 ///  its fill and its border.
 #[test]
 fn the_box_changes_fill_and_border_under_the_pointer() {
@@ -441,7 +474,9 @@ fn the_wheel_over_the_minimap_scrolls_like_the_wheel_over_the_text() {
     window.hide().expect("close minimap window");
 }
 
-/// The picture is built on the worker thread, its size is the minimap's, and what it cost stays inside its bounds.
+/// The picture is built on the worker thread,
+/// its size is the minimap's,
+/// and what it cost stays inside its bounds.
 #[test]
 fn the_picture_is_built_on_the_worker_and_stays_inside_its_bounds() {
     let (_project, opened) = open(&long_text(2000));
@@ -481,7 +516,8 @@ fn the_picture_is_built_on_the_worker_and_stays_inside_its_bounds() {
     window.hide().expect("close minimap window");
 }
 
-/// Scrolling posts no request and sets no picture: only the box moves.
+/// Scrolling posts no request and sets no picture:
+/// only the box moves.
 #[test]
 fn scrolling_posts_no_request_and_sets_no_picture() {
     let (_project, opened) = open(&long_text(2000));
@@ -514,8 +550,12 @@ fn scrolling_posts_no_request_and_sets_no_picture() {
     window.hide().expect("close minimap window");
 }
 
-/// A worker held at its gate never blocks the view: the window opens, scrolls, and takes a press while no picture
-///  exists, and the picture appears once the worker is released.
+/// A worker held at its gate never blocks the view:
+/// the window opens,
+/// scrolls,
+/// and takes a press while no picture
+///  exists,
+/// and the picture appears once the worker is released.
 #[test]
 fn a_held_worker_never_blocks_the_view() {
     let (release, gate) = std::sync::mpsc::channel();
@@ -549,7 +589,8 @@ fn a_held_worker_never_blocks_the_view() {
     window.hide().expect("close minimap window");
 }
 
-/// A new wrap width rebuilds the picture without blocking the view, and the picture then has the new track.
+/// A new wrap width rebuilds the picture without blocking the view,
+/// and the picture then has the new track.
 #[test]
 fn a_new_wrap_width_rebuilds_the_picture() {
     let (_project, opened) = open(&long_text(400));
@@ -588,7 +629,10 @@ fn a_new_wrap_width_rebuilds_the_picture() {
     window.hide().expect("close minimap window");
 }
 
-/// A picture of an older text, of an older request, or of another file is dropped, and a newer one is shown.
+/// A picture of an older text,
+/// of an older request,
+/// or of another file is dropped,
+/// and a newer one is shown.
 #[test]
 fn a_stale_picture_is_dropped_and_a_current_one_is_shown() {
     let (_project, opened) = open(&long_text(400));
@@ -634,7 +678,9 @@ fn a_stale_picture_is_dropped_and_a_current_one_is_shown() {
     window.hide().expect("close minimap window");
 }
 
-/// Syntax classes arriving rebuild the picture with the new colors, and the picture follows the scheme: light ink is
+/// Syntax classes arriving rebuild the picture with the new colors,
+/// and the picture follows the scheme:
+/// light ink is
 ///  darker than dark ink.
 #[test]
 fn highlights_and_the_scheme_rebuild_the_picture_in_the_palette_inks() {
@@ -703,8 +749,10 @@ fn highlights_and_the_scheme_rebuild_the_picture_in_the_palette_inks() {
     opened.window.hide().expect("close minimap window");
 }
 
-/// Opening fifty thousand long lines builds a bounded picture off the window thread: no window-thread callback is slow,
-///  and the picture's cost follows its height, not the length of the text.
+/// Opening fifty thousand long lines builds a bounded picture off the window thread:
+/// no window-thread callback is slow,
+///  and the picture's cost follows its height,
+/// not the length of the text.
 #[test]
 fn fifty_thousand_lines_give_a_bounded_picture_without_blocking_the_window() {
     let mut text = String::new();

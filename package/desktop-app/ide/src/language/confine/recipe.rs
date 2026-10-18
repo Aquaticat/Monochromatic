@@ -44,7 +44,9 @@ use std::{
 /// Servers that watch the client's process id and exit inside a process-id namespace,
 /// because helix-lsp always sends its own `processId` in `initialize` (measured in the confinement plan).
 /// The Node servers built on `vscode-languageserver` 9.0.1 check `process.kill(processId, 0)` every 3 s
-/// (`lib/node/main.js`) and exit with status 1 when the client's id is not visible; measured: all nine ended
+/// (`lib/node/main.js`) and exit with status 1 when the client's id is not visible;
+/// measured:
+/// all nine ended
 /// about 3 s after start with a pid namespace and stayed alive without one.
 pub const NO_PID_NAMESPACE: &[&str] = &[
     "typescript-native",
