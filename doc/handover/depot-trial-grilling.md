@@ -21,9 +21,19 @@ No new provider allocation or production source fix occurred.
 The first capture invocation was rejected before runtime because its admission commit had not completed.
 The still-prepared admission ran only after `b8c2dc9dcc` completed;
 there was no duplicate container allocation.
-Scoped JSON hashes and Markdown checks passed before this final capture update.
-The remaining action is the scoped final check/render and exact-tip isolated publication,
-then the first interview frontier.
+The final capture archive,
+its admission and prior evidence pass their byte/hash joins.
+Scoped JSON formatting and Markdown checks pass with no remaining diagnostic.
+The six approved report sections render with no missing local links or italic spans.
+The completed local source-test worktree is removed normally after its ignored-output dry run
+and root Git-dir entry checks.
+All 162 generated output roots are retained privately;
+the compiled harness identity and all three original/copy private fixture identities still match.
+Canonical worktree absence is checked with the registered main worktree as a positive control
+(`doc/audit/depot-local-source-worktree-retirement-2026-10-18.evidence.json`).
+The remaining action is exact-tip isolated publication,
+then the first interview frontier on failure enforcement,
+workflow cadence and the order of Linux orchestration adoption.
 The service quota still prevents a fresh independent whole-report sufficiency review.
 
 ## Local source-consumer checkpoint on 2026-10-18
