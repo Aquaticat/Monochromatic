@@ -1,6 +1,6 @@
 # @monochromatic-dev/module-logger
 
-## Unreleased
+## 0.4.2
 
 ### Patch changes
 

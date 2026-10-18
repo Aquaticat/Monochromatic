@@ -18,7 +18,7 @@ Inspect actual Pi, Node, Linux, dependencies, and the configured consumer wherev
 The user clarified that their concern is platform behavior exposing defects in our code,
 not suspected defects in Pi, Node, or Linux themselves.
 The user authorizes shared logger repairs and requires a version bump to trigger auto-publish if it changes.
-The measured logger version is `0.4.1`; source repairs are under verification and the publishing bump remains pending.
+The logger version is bumped to `0.4.2` after its build, full units, types, lint and guard-mutation checks pass.
 The user authorizes invoking and monitoring MiMo directly through Pi RPC.
 After readiness verification, run that agent and monitor the lint work rather than returning a manual handoff.
 The direct RPC connectivity pilot passed on 2026-10-18:
@@ -41,8 +41,11 @@ The same-millisecond, separate-sink regression first fails with malformed JSONL 
 a serializer returning `undefined` separately produces invalid JSONL.
 Both committed regressions pass after unique, exclusively created files and serialization validation.
 The final suite also covers admission during an issued append and recovery after a real filesystem error.
-Private source-copy guard mutations are rebuilding and must produce their expected failures before the publishing bump.
-Their task is `logger-guard-mutations` in the current scratch.
+Private source-copy guard mutations pass:
+completion deduplication, missing JSON validation, filename identity and issued-batch admission each rebuild,
+then produce the expected regression failure when weakened.
+Production source and emitted entry hashes remain unchanged.
+The receipt is `logger-guard-mutations-receipt.json` in the current scratch.
 Root `TCV` stays unchanged; missed-boundary guidance belongs in package-local docs.
 There is no adopted 13k line target.
 
@@ -82,11 +85,10 @@ reuse synchronous sink completions,
 and batch captured complete file records under a 64 KiB aggregation bound.
 The logger's package-local explanation is `package/module/logger/doc/write-completion.md`.
 The source directory test now uses built artifacts and captures actual child stderr through clean shutdown.
-The logger remains version `0.4.1` until the guard mutations finish;
-the required `0.4.2` publishing bump is next.
+The required publishing bump is `0.4.2`.
 The remaining independently verifiable work is:
 
-- Finish private logger guard mutations, bump to `0.4.2`, and verify the publishing commit reaches the remote.
+- Verify the logger `0.4.2` publishing commit reaches the remote.
 - Rebuild auto-mode JavaScript, then its owned native output against the repaired logger.
 - Run both complete configured-host replay variants with corrected terminal validators.
 - Audit actual Luna payloads and exercise prohibition, Stop, cancellation and cleanup boundaries.
