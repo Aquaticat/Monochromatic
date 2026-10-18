@@ -10,11 +10,14 @@ await using cleanup={async [Symbol.asyncDispose](){await env.drain();}};
 const count=1600;
 const step=127;
 const maximumRetainedBytes=32*1024*1024;
-const state={callbacks:0};
-const text=Array.from({length:4000},function nonRepeatingText(_,index){return createHash('sha256').update(String(index)).digest('hex');}).join('');
+const state={callbacks:0,expected:undefined};
+const boundaryText='"\\\n';
+const text=Array.from({length:4000},function nonRepeatingText(_,index){return createHash('sha256').update(String(index)).digest('hex')+boundaryText;}).join('');
 const message={role:'assistant',content:[{type:'thinking',thinking:''}]};
 const observed=fixture({kind:'message_update',handlers:[function observeOriginalUpdate(event){
- assert.equal(event.message,message);
+ assert.equal(event.message,state.expected);
+ assert.notEqual(event.message,message);
+ assert.equal(event.message.content,message.content);
  assert.equal(event.assistantMessageEvent.partial,message);
  state.callbacks++;
 }]});
@@ -23,7 +26,9 @@ const initial=process.memoryUsage().heapUsed;
 for(let index=1;index<=count;index++){
  message.content[0].thinking=text.slice(0,index*step);
  const update={type:'thinking_delta',contentIndex:0,delta:text.slice((index-1)*step,index*step),partial:message};
- await observed.runner.emit({type:'message_update',assistantMessageEvent:update,message});
+ const emittedMessage={...message};
+ state.expected=emittedMessage;
+ await observed.runner.emit({type:'message_update',assistantMessageEvent:update,message:emittedMessage});
 }
 message.content[0].thinking='Original mutable message changes after capture';
 const origins=readNativeConstructedInputOrigins(observed.manager);
