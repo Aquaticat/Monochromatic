@@ -1615,11 +1615,25 @@ that is verification, not a decision for the user.
   (`doc/handover/cli-git-native-replay-core.md`, unit `cli-git-replay-campaign`); measured the release archive's glibc
   floor (2.39) and the Windows compile failure (README); pinned the wrapper's x86_64 build to `ubuntu-24.04`; pruned
   `slopo.ignore.txt`. Windows: user decision, port later, branches marked `UNTESTED ON WINDOWS`. The dead
-  `policy_patch.rs` and `policy_patch_validate.rs` are deleted on branch `chore/cli-git-drop-policy-patch` (host Clippy
-  clean; container gate tag `droppp` running 2026-10-15); the crate release (0.1.5) is bundled with the replay-core
-  landing. Next after the replay campaign: long fuzz campaigns (not run while the mutation lanes load the
-  CPU cap), release-artifact performance gates (the harness is gone, a new one is needed), and the scanner Windows
-  pathname mutation rerun (task 23, needs a Windows VM).
+  `policy_patch.rs` and `policy_patch_validate.rs` are deleted on `main`, and the replay-core campaign is closed
+  (`doc/handover/cli-git-native-replay-core.md`). State on 2026-10-18:
+  the 0.1.5 crate version is on `main` but NOT published: the `gpc-publish-crate` job of run 38779754310 fails with
+  "No Trusted Publishing config found for repository Aquaticats/Monochromatic" because the GitHub repository moved
+  from `Aquaticat` to `Aquaticats` and the crates.io trusted-publisher configs still name the old owner. The token in
+  `~/.cargo/credentials.toml` is revoked (`/api/v1/me` answers 403), as the runbook intends. Needs a token with the
+  trusted-publishing scope stored by the user with `cargo login`; then create or replace the GitHub config of each
+  published crate through `/api/v1/trusted_publishing/github_configs` (fields `crate`, `repository_owner`,
+  `repository_name`, `workflow_filename`), rerun the failed job, verify crates.io and the GitHub release, run
+  `mise upgrade cargo:monochromatic-git-policy-cli`, then `git checkout -- mise.lock`. Fuzz: 3 of 15 targets passed
+  900 s each; the fourth failed on an output-buffer limit that is fixed (target output now streams to files, option
+  `--targets=`); the other 12 run as the unit `cli-git-fuzz-campaign` (log `~/temp/agent/fuzz-campaign-20261017.log`).
+  Issue 1757: host tasks, the gate image, planted controls and mutation of `git-policy/cli` run through
+  `cargo nextest` (static musl 0.9.148 pinned by checksum, `bin/native-nextest-snapshot.mjs`); the container gate
+  passed 1950 tests on the branch `chore/cli-git-nextest-gate`; the scoped mutation and planted-control run is the
+  last check. Still on `cargo test`: the `monochromatic-lint` container test and mutation flows (`mise.toml:166`,
+  `bin/test-container.mjs`, `bin/mutate-container.mjs` with `--cargo-test-arg` filters); `wg-quicker-exempt` and
+  `ide` belong to other owners. Next: release-artifact performance gates (the harness is gone, a new one is
+  needed) and the scanner Windows pathname mutation rerun (task 23, needs a Windows VM).
   Both wrappers shared `.git/cli-git*` state while sessions were mixed; the incumbent is no longer on any `PATH`.
   User decisions of 2026-10-13: install by publishing the crate (the `cargo:` mise tool route); the hk cleanup task is
   retired; the rollback window ends right after the installed wrapper is verified; the first native CI workflow covers
