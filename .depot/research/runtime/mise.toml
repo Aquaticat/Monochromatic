@@ -35,7 +35,7 @@ const cgroupPath = fs.readFileSync('/proc/self/cgroup', 'utf8').trim().split(':'
 const cgroupObservations = ['/sys/fs/cgroup' + cgroupPath, '/sys/fs/cgroup'].map(path => ({ path, values: Object.fromEntries(['memory.max', 'memory.current', 'cpu.max', 'pids.max'].map(name => [name, read(join(path, name))])) }));
 const sdk = process.env.ANDROID_HOME ?? process.env.ANDROID_SDK_ROOT ?? join(os.homedir(), 'Android/Sdk');
 const emulator = join(sdk, 'emulator/emulator');
-const commands = [capture('systemctl', ['--user', 'is-system-running']), capture('systemctl', ['--user', 'show', '--property=Version']), capture('docker', ['version', '--format', '{{json .Server.Version}}']), capture('podman', ['--version']), capture('qemu-system-x86_64', ['--version']), capture('qemu-system-aarch64', ['--version'])];
+const commands = [capture('systemctl', ['--user', 'is-system-running']), capture('systemctl', ['--user', 'show', '--property=Version']), capture('docker', ['version']), capture('podman', ['--version']), capture('qemu-system-x86_64', ['--version']), capture('qemu-system-aarch64', ['--version'])];
 if (fs.existsSync(emulator)) commands.push(capture(emulator, ['-version']));
 const git = capture('git', ['rev-parse', 'HEAD']);
 if (git.status !== 0 || !/^[a-f0-9]{40}$/u.test(git.stdout.trim())) throw new Error('Cannot bind observation to checkout');
