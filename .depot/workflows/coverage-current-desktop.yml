@@ -168,9 +168,9 @@ jobs:
           information})+String.fromCharCode(10));const
           result=spawnSync(compositor,actual,{stdio:'inherit'});if(result.error\
           )throw result.error;process.exitCode=result.status??1}\\\\nconst
-          forwarder=join(root,'.research-desktop/compositor-headless'),forwarde\
-          dLog=join(root,'.research-desktop/compositor-forwarded-argv.jsonl'),f\
-          orwarderSource=['#!/usr/bin/env
+          forwarder=join(root,'.research-desktop/compositor-headless.cjs'),forw\
+          ardedLog=join(root,'.research-desktop/compositor-forwarded-argv.jsonl\
+          '),forwarderSource=['#!/usr/bin/env
           node','('+forwarderMain.toString()+')('+JSON.stringify({compositor,lo\
           g:forwardedLog})+');',''].join(String.fromCharCode(10));writeFileSync\
           (forwarder,forwarderSource);chmodSync(forwarder,493);receipt.headless\
