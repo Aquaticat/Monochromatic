@@ -1443,3 +1443,18 @@ The remaining independent queue is:
 - Semantic manifest: complete feature/assertion ownership, actual versus import-only/compile-only consumers,
   generator reach, cross-OS source/task/dependency matching, and explicit material gaps.
 - Durable notes: finish source-backed corrections, Markdown rendering, link checks, and sealed desktop evidence.
+
+## desktop-remaining-sessions finite admission
+
+The immutable research harness is `1aab4fb2eb81e8288cea56e800a0ae15fb179dfb`;
+the application remains `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+The retained finite plan is `desktop-remaining-sessions-plan.json`.
+The deduplicated ledger contains 42 completed owned job rows,
+USD1.4880 completed GitHub rounded-minute compute,
+USD2.88 completed native conservative maxima,
+and USD0.36 reserved for this finite profile.
+The committed and reserved guard is USD4.7280 of USD5.
+These are list-rate planning proxies and conservative reservations,
+not invoices.
+Public GitHub standard compute is recorded separately from storage and artifact uncertainty.
+No account-wide usage or invoice endpoint is queried.
