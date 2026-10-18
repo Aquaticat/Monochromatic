@@ -53,3 +53,43 @@ not `target/debug/runtime`.
 which the root `clippy.toml` bans (`disallowed-methods`).
 An `allow` attribute on the macro call is ignored (`unused_attributes`),
 so the macro is placed alone in a module with `#![allow(clippy::disallowed_methods)]`.
+
+## Changing the component list of the floating nightly moves the locked nightly
+
+Evidence from stage 2a on 2026-10-18 with Mise 2026.10.0.
+`mise.lock` stores the `components` and `targets` of the `rust` entry under `[tools.rust.options]`.
+After `rustc-dev` was added to the `components` of `mise.no-env.toml`,
+the locked entry no longer matched,
+`mise install --dry-run rust` reported `rust@nightly-2026-10-18 would install`,
+and `mise lock rust` pruned the entry for `nightly-2026-10-17` and wrote the one for `nightly-2026-10-18`.
+The lock edit through Mise is therefore also a nightly bump.
+`mise lock cargo:cargo-dylint cargo:dylint-link` adds only the two tools and leaves the `rust` entry alone,
+but the stale options remain,
+so every session would try to install the newer nightly until the `rust` entry is refreshed.
+
+## Nightly cargo cannot reach crates.io on this host, stable cargo can
+
+On the stage-2a host,
+`cargo +nightly-2026-10-18 fetch` failed with
+`[7] Could not connect to server (Failed to connect to index.crates.io:443 after 15 ms)`,
+while `curl` and `cargo +stable` reached the same host.
+The same failure appeared for `nightly-2026-10-13` and `nightly-2026-10-17`,
+so it is not tied to the newest nightly.
+`strace` showed every TCP `connect` of the nightly cargo ending in `SO_ERROR = ECONNABORTED` right after `EINPROGRESS`;
+the cause was not found.
+Workaround used:
+fill the default registry cache with the stable cargo (`cargo +stable fetch --locked` in the package,
+and in a scratch crate that depends on `dylint_driver = "=6.2.0"`,
+`anyhow` and `env_logger`,
+which are the dependencies of the driver that Dylint builds),
+then run with `CARGO_NET_OFFLINE=true`.
+Without the driver prefetch the first `ui_tests::ui` run fails with `no matching package named dylint_driver found`.
+
+## A Dylint run over the IDE needs two files in the build directory
+
+The IDE's `build.rs` reads `debug/build/runtime/manifest.json` and `debug/crate-licenses.json` from the cargo build directory.
+With `CARGO_BUILD_BUILD_DIR=target`,
+relative to the working directory of the `run` task,
+that directory is the lint package's `target`,
+not the IDE's.
+Copy both from the IDE's own `target` before the run.

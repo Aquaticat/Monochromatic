@@ -354,3 +354,16 @@ with `cargo dylint` and the release library:
 median 3.12 s (n = 10,
 standard deviation 0.22 s);
 load average stayed below 8.
+
+## Stage-2a re-run on the shared nightly
+
+On 2026-10-18 the tests,
+Clippy,
+`cargo fmt --check` and the IDE run were repeated on `nightly-2026-10-18`,
+the nightly that `mise.lock` resolved after `rustc-dev` joined the shared toolchain,
+with no source change.
+All 13 tests passed.
+The IDE run reported the same 84 warnings at the same locations as stage 1:
+62 of the 67 listed sites pass and the same five are reported.
+Dylint's driver cache in `~/.dylint_drivers` held 42 MB after the first run.
+The notes on offline fetching and on the IDE build directory are in `doc/troubleshooting/dylint-library-tests-and-shared-build-dir.md`.
