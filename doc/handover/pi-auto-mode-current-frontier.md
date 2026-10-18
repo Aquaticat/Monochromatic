@@ -58,6 +58,36 @@ Their receipt is `logger-destination-mutants-receipt.json`.
 Logger `0.4.3` is bumped for publishing; registry delivery verification remains queued next.
 The package-local logger contract is `package/module/logger/doc/file-destinations.md`.
 
+Public npm workflow `39142362598` succeeds on `8c2743ee33` and publishes logger `0.4.3`.
+Fresh installed consumer `logger043-registry-MfVZDg` passes public exports,
+large/reentrant JSONL records,
+packaged documentation and real read-only fallback controls.
+The first fresh install returns `ETARGET`; a later direct metadata request and fresh install succeed.
+Retain that failed log rather than claiming every attempt succeeded.
+The README update preserves its concurrent paragraph reflow explicitly in commit `af65103f95`.
+Markdown rendering covers 35 files with no broken local links.
+
+Additional adversarial filename tests in `aa81cca003` fail on built `0.4.3`:
+both fallback and strict-destination diagnostics pass raw terminal control bytes to the host console.
+The next fix reuses the console sink's existing neutralizer in both internal reporters.
+Build, fresh types, lint, full tests, guard removal proof and a version bump to `0.4.4` remain required.
+
+Private pnpr run `39142278997` again returns npm `E401 Unauthorized` for logger `0.4.3`
+and blocks shared analyzer `0.0.2` through that dependency.
+Repository source trust IDs match the actual GitHub repository and owner IDs.
+Deployed server trust is not inspected yet.
+CLI environment discovery finds no pnpr/Coolify credential route.
+Browser bootstrap discovery fails and its documented recovery lists no connected browsers.
+An asynchronous question requests an existing Coolify browser connection or SSH/API entry point;
+never request that the human paste a secret.
+Continue independent work while that access question is pending.
+
+Original-interaction replay with a Node module-load census runs in command session `65218`,
+fixture `pi-mimo-failure-rpc-OsQwRd` and log `census-reported-replay.log`.
+The delivered artifact stays pinned at `kFkBoY` throughout live workers and replay.
+The source worker's second inconclusive read-only group is inspected and allowed through
+selector `8e8690e5-8dcd-4cc4-b0cc-0378ee3c5bcf`.
+
 The current package-directory measurement is 23,899,438 bytes from
 `du --bytes --max-depth=2 package/pi-plugin/auto-mode`.
 It counts shared hard links once within that traversal and excludes symlinked dependency contents.
