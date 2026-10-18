@@ -27,6 +27,21 @@ fresh operation and closure branches.
 `test:native:source-freshness-work` exercises the actual host routing and single-capture assertion.
 Its repaired private build passes with 4,627 governing-file opens,
 within the existing asserted work bound.
+The five built cases also fail under independently rebuilt mutations removing memoization,
+losing falsy capture failures,
+allowing closed reads,
+capturing eagerly or freezing the borrowed host.
+Restoring the original implementation and rebuilding passes the complete scope suite.
+Native host freshness,
+isolation and session actions pass at that checkpoint.
+
+The ordinary approval matrix checks an observable original-tool error reply after Stop,
+rather than requiring an exception from the superseded confirmation flow.
+Denied,
+stopped and cancelled native-context traces each retain the original `program` identifier,
+exact Stop text and zero executions.
+The cancelled assertion is updated from its separate trace;
+its broader manual matrix still requires verification after that change.
 `native/contract/lifecycle/incumbent-tui-group/approval-presentation.mjs`
 verifies the actual selection and recorded verdict.
 `src/ask-user.ts` owns the displayed Allow and Stop choice,

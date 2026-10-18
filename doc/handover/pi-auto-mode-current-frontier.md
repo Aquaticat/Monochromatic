@@ -16,7 +16,14 @@ Its supervisor checkpoint is `6df4b5a423718c97f833aee743ff78c49e7e1c0d`:
 the explicit thirteen changed catalog paths match the actual committed paths.
 It is diagnosing the transient consumer's `2 !== 3` attempt count without weakening expectations.
 The old native worker closes normally before its full-history resume as `pi-mimo-rpc-session-9Tl0ts`.
-That native worker owns only `native/build-reuse.ts` and `native/build-reuse.platform.test.ts` for lint repair.
+That worker delivers the two build-reuse paths;
+the supervisor's qualified host commit succeeds as `9363d8998b`.
+Its frozen real two-mount CLI test,
+fresh package types and two-file lint all pass.
+Its next narrow scope is `policy-source/system-slot.mjs` plus typed implementation siblings,
+with `policy-loader.mjs` explicitly deferred to its following checkpoint.
+Neither worker may retry Git writes;
+the supervisor owns delivery after their distinct commit failures.
 Both current workers use the immutable `IFS6IL` correction with the measured resource bounds retained.
 
 Actual native publication passes across the disposable equal-device mount boundary:
@@ -24,8 +31,11 @@ the first real build reports zero reused files and retains complete old and new 
 the next real build on one mount shares the license inode.
 The maintained platform regression now invokes `native/build.ts`,
 instead of importing the source-only reuse helper rejected by `test-import/require-eventual-artifact`.
-This actual-command test passes for the frozen checkpoint containing `57c1ae4c03`.
-Its scoped lint and updated types remain assigned to the native worker.
+This actual-command test passes for the frozen checkpoint containing `57c1ae4c03`
+and again after the actual MiMo lint repair.
+A later test-only refinement writes stdout and stderr directly to unique per-invocation files,
+preserving failed children and final newline bytes;
+its fresh check and actual-command mutation guards remain pending.
 
 The screened formatter composition at frozen `6df4b5a423` passes fifteen of sixteen qualification tasks,
 including fresh types,
@@ -44,17 +54,33 @@ The retained capability trace proves separate captures in automatic review and m
 The maintained implementation now shares one lazy capture over an original prepared-group operation,
 retains absent and failed captures,
 releases it at closure and starts fresh next operation.
-The first frozen fix passes the real source-freshness consumer and complete host-isolation task.
-The approval matrix reaches a later denied-operation assertion requiring the old handler exception.
-A private real-host trace instead establishes one original `program` tool result,
+The frozen fix passes the real source-freshness consumer,
+complete host isolation and native session actions.
+Five built scope cases pass,
+and each corresponding rebuilt mutation fails its named guard before restored code passes again.
+The maintained scope unit file reports zero lint warnings and errors across 486 rules.
+The approval matrix previously required an exception from the superseded flow.
+Private real-host traces establish one original `program` tool result for denied,
+stopped and cancelled operations,
 `isError: true`,
 with exactly `The user stopped execution. Wait for their next instructions.` and zero executions.
-The obsolete exception assertion needs replacement with that observable result contract,
-followed by the complete matrix.
-The newly committed built capability unit suite,
-its lint and types,
-and rebuilt mutation guards remain unverified.
+The complete ordinary approval matrix passes its updated observable result assertions.
+The broader manual matrix exposes the same exception assertion for cancellation;
+that case is now updated from its own retained native-context trace and awaits a fresh build/check.
+The remaining decision-context,
+approved-dependency and review-retirement tasks remain queued after that matrix.
+Fresh types pass in the separately frozen post-MiMo native repair.
 Do not rebuild the live workers' immutable release while advancing this fix.
+
+The source worker's original transient summary and port summary agree,
+and its complete fallback/startup matrices and fourteen-file lint pass before delivery review.
+Review rejects its remaining unsound type assertion:
+the guard checks only the first material entry and fragment object shape,
+while the type promises every material entry and every fragment's string text.
+The worker is correcting uninspected members to `unknown`
+and validating text only inside the actual short-circuit predicate,
+then repeating its scoped validation and original parity checks.
+Do not accept the pre-review port or weaken its original expectations.
 
 The user identifies divergent auto-push with concurrent dirty edits as another wrapper defect,
 authorizes another issue and directs recovery without waiting for the concurrent owner.
@@ -66,6 +92,12 @@ Later commits require a new reachability check.
 The private bridge and receipt are retained;
 see `doc/troubleshooting/git-policy-auto-push-reconciliation.md`.
 No wrapper implementation fix is claimed.
+
+[Issue 1770](https://github.com/Aquaticats/Monochromatic/issues/1770)
+retains the native worker's separate scoped shadow/LFS failure.
+See `doc/troubleshooting/git-policy-shadow-lfs.md`.
+Its relationship to the source worker's index-write failure
+or historical packet failure is unproven.
 
 The remaining independently verifiable areas are:
 
