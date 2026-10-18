@@ -61,8 +61,8 @@
           }
         },
         {
-          "name": "Install only locked Node pnpm Rust and Nextest",
-          "run": "mise install --locked node pnpm rust cargo:cargo-nextest",
+          "name": "Install locked tools after configured Cargo prerequisites",
+          "run": "mise install --locked node pnpm rust cargo-binstall\nmise install --locked cargo:cargo-nextest",
           "timeout-minutes": 8
         },
         {
