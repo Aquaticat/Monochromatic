@@ -13,7 +13,7 @@ The initial admission permits at most one concurrent parent VM,
 an eight-CPU ceiling,
 a 15-minute finite job window,
 and a USD 1 nominal campaign guard.
-The current catalog's `depot-ubuntu-24.04-arm-8` label denotes 8 CPUs and 32 GiB.
+The current catalog's `depot-ubuntu-24.04-arm-8` label denotes 8 CPUs and 32 GB.
 At the published native CI rate of USD 0.0004 per second,
 the full job window reserves USD 0.36 before separate storage and passing-result meters.
 This is a timestamp-compute reservation,
@@ -66,7 +66,41 @@ pnpm `12.14.0`,
 frozen installation with lifecycle scripts disabled,
 the shared build prerequisites,
 and the owner build.
-The exact minimal prerequisite graph is the remaining harness-design input.
+The isolated profile selects the previously executed shared harness,
+logger,
+async-time,
+and owner builds in their established order.
+This selected preparation was not separately executed on AMD64;
+its ARM execution remains part of the functional qualification.
+
+## Local preflight
+
+The isolated workflow is committed at `cf2450e05fdbf904382d461c80eb02e216cc9a6e`.
+It contains one ARM job with the admitted server lifetime,
+filtered locked tool installation,
+and no prepared AMD64 snapshot reuse.
+Its owner harness enforces observed CPU and memory limits before dependency preparation.
+The application diff against the frozen source is empty.
+
+Actual generated helper invocations separated valid standard output from standard error,
+retained a deliberate exit status of 7,
+and wrote parseable JSON with a real final linefeed.
+The timeout control proved a descendant could write its marker without interruption,
+then prevented that write by killing the timed-out owned process group.
+Removing the committed group-kill statement allowed the late descendant write,
+so the negative guard assertion would fail.
+The committed source was restored byte for byte.
+
+Local preparation failures occurred before cloud admission:
+Mise interpreted an embedded GitHub expression as its own template,
+and an unsupported Git `--branch` flag prevented worktree creation.
+The verified expression-boundary workaround and Git's supported `-b` option resolved those fixture defects.
+The unquiet missing-ref check's exit status was also corrected after a real quiet lookup.
+Node's `module-typescript` standard-input syntax-check mode rejected imports;
+the JavaScript-compatible generated program passed the `module` syntax-check mode.
+The hypothesis that its linefeed escapes were doubled was rejected by an actual byte inspection
+with a deliberately doubled positive control;
+no linefeed rewrite was applied.
 
 ## Next action
 
