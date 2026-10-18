@@ -367,7 +367,7 @@ fn main() -> Result<()> {
             window_seconds: 56.0 / 28.0,
             probe_margin_db: 0.0,
         };
-        let split = provenance_margin(&tracks, candidate, &safe);
+        let split = provenance_margin(&truepeak_core::default_policy(), &tracks, candidate, &safe);
         println!(
             "\nprovenance-dependent margin at count=28 thr=56s ({} safe-provenance tracks):",
             safe.len()
