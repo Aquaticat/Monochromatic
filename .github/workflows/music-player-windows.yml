@@ -1,5 +1,5 @@
 {
-  "name": "research GitHub descriptor permissions and actual MVM group consumer",
+  "name": "research actual guest payload consumer",
   "on": {
     "workflow_dispatch": {}
   },
@@ -11,12 +11,12 @@
     "MISE_LOCKED": "1"
   },
   "jobs": {
-    "capability": {
-      "runs-on": "ubuntu-24.04",
-      "timeout-minutes": 25,
+    "guestFiles": {
+      "runs-on": "$ + value + ",
+      "timeout-minutes": 20,
       "env": {
-        "PROBE_PLATFORM_PROVIDER": "github-hosted-ubuntu-24.04",
-        "MVM_RESEARCH_KVM_GROUP": "device"
+        "PROBE_PLATFORM_PROVIDER": "$ + value + ",
+        "MVM_RESEARCH_KVM_GROUP": "$ + value + "
       },
       "steps": [
         {
@@ -40,14 +40,7 @@
           "run": "mise run prepare:pnpm:install -- --frozen-lockfile"
         },
         {
-          "name": "Isolate descriptor-close permission behavior",
-          "run": "mise run //.depot/research/mvm:permission-close-controls",
-          "working-directory": ".depot/research/mvm",
-          "timeout-minutes": 4,
-          "continue-on-error": true
-        },
-        {
-          "name": "Actual frozen MVM lifecycle with supplemental device group",
+          "name": "Guest read, distinct output, transformation and pull",
           "run": "mise run //.depot/research/mvm:lifecycle",
           "working-directory": ".depot/research/mvm",
           "timeout-minutes": 18
@@ -56,13 +49,33 @@
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
           "if": "always()",
           "with": {
-            "name": "research-github-kvm-group-lifecycle",
-            "path": ".depot/research/mvm/evidence/\n.depot/research/mvm/permission-evidence/",
+            "name": "research-mvm-guest-files-$ + value + -$ + value + -$ + value + ",
+            "path": ".depot/research/mvm/evidence/",
             "if-no-files-found": "error",
             "retention-days": 7
           }
         }
-      ]
+      ],
+      "strategy": {
+        "fail-fast": false,
+        "max-parallel": 1,
+        "matrix": {
+          "include": [
+            {
+              "key": "github",
+              "runner": "ubuntu-24.04",
+              "provider": "github-hosted-ubuntu-24.04",
+              "group": "device"
+            },
+            {
+              "key": "depot",
+              "runner": "depot-ubuntu-24.04-4",
+              "provider": "github-depot-ubuntu-24.04-4",
+              "group": ""
+            }
+          ]
+        }
+      }
     }
   }
 }
