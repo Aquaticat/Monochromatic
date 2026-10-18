@@ -100,7 +100,9 @@ cache implementation,
 input state and timed boundary.
 Policy extrapolation to a similar job stays distinct from a measurement of that job.
 
-The existing cache evidence demonstrates reuse but does not establish a fresh-job warm comparison between providers.
+Before this research,
+the existing cache evidence demonstrated reuse without a fresh-job warm comparison between providers.
+The completed pnpm cohort now supplies that comparison for its named workload.
 The native follow-up demonstrated execution,
 not a controlled native provider speedup.
 These are experiment inputs,

@@ -34,7 +34,7 @@ These are not new interview questions.
 ## Readiness finding
 
 The broad platform and repository research is sufficient to interview about operating preferences
-once the parent's current pnpm comparison reaches a terminal,
+after the parent's pnpm comparison reached a terminal,
 reconciled result.
 No supported conclusion requires building the complete future production CI graph before that interview.
 The distinction is between selecting a plan with known limits
@@ -101,8 +101,9 @@ BuildKit state,
 and snapshots have separate interfaces and trust boundaries.
 Standalone CI automatic Cache authentication and cross-job sccache reuse are exercised.
 Prepared desktop consumers supply earlier filesystem and runtime-service evidence.
-The pending pnpm experiment is the remaining active comparative measurement,
-not evidence that caching as a whole remains unexplored.
+The completed pnpm experiment supplies a distinct archive-restoration comparison:
+no net dependency-preparation benefit is demonstrated for its named workload.
+It does not negate the compiler-cache or prepared-filesystem evidence.
 
 ### Pool routing and orchestration
 
@@ -153,18 +154,19 @@ trust,
 and current-source checks remain acceptance work for each adopted increment.
 Full future CI completeness is not an interview-entry condition.
 
-## Remaining research prerequisites
+## Final research reconciliation
 
-- Finish and reconcile the parent's coherent pnpm comparison before making a provider-specific cache recommendation.
-  Preserve initial tool/bootstrap and archive-guard failures as harness outcomes.
-  Successful cold controls alone do not establish a warm benefit.
+- The coherent pnpm comparison and cleanup are complete.
+  Its verified receipt retains 16 final-cohort jobs,
+  original artifact hashes and the excluded failed or cancelled harness attempts.
+  Restoration works but does not establish a net preparation benefit.
 - The master note now reconciles the completed routing,
   disk,
   compiler-cache,
   SDK,
   and retained KVM results.
   Its source update `130f397902` closes the initial evidence-integration finding.
-- State the financial-control incompatibility plainly before presenting spend authority options.
+- The financial-control incompatibility is stated explicitly before presenting spend-authority options.
   No extra account probe is needed to establish the missing information.
 
 No other universal factual prerequisite was identified for the current preference frontier.
@@ -241,7 +243,7 @@ Mutable storage and overlapping allocations cannot silently be treated as free.
 
 ## Settled-prerequisite frontier draft
 
-These independent decisions can be presented together after the pending cache result is reconciled.
+These independent decisions can now be presented together after the completed cache-result reconciliation.
 The wording is planning material,
 not user-facing questions already sent.
 

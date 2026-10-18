@@ -90,7 +90,10 @@ The research plan retains a concrete proposed `QNB` tightening outside the Depot
 The user asked how caching changes the performance assessment.
 The approximately `3.26` GitHub/Depot elapsed-time ratio described cold compilation,
 not the repeat-workload cache benefit.
-No complete-graph cached speedup or fresh-job warm GitHub/Depot comparison has been established.
+No complete-graph cached speedup has been established.
+The [fresh-job pnpm comparison](../planning/depot-pnpm-store-fresh-job-research.md)
+has now completed for its named workload;
+its restore overhead consumes the observed pnpm-command saving on both pools.
 
 The corrected [default container builder trial](../audit/depot-runner-sizing-2026-10-15.md)
 records two cold samples of `268.558` and `265.417` seconds,
