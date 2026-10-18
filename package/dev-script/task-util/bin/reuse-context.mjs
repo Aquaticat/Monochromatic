@@ -2,17 +2,20 @@ import { spawnSync, execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync, openSync, closeSync, existsSync } from 'node:fs';
 import { cpus, totalmem, hostname } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { strict as assert } from 'node:assert';
 
 export const root = process.env.GITHUB_WORKSPACE;
 assert(root && process.env.RESEARCH_REUSE_ROLE === 'consume');
+const sessionStartedAt = new Date().toISOString();
+const sessionStarted = performance.now();
 export const prefix = '/opt/depot-reuse-20261018-r1';
 export const evidence = join(root, '.research-reuse/receipts');
 mkdirSync(evidence, { recursive: true, mode: 0o700 });
 export const manifest = JSON.parse(readFileSync(join(prefix, 'image-manifest.json'), 'utf8'));
 export const env = { ...process.env, MISE_DATA_DIR: join(prefix, 'mise-data'), MISE_CACHE_DIR: join(prefix, 'mise-cache'), RUSTUP_HOME: join(prefix, 'rustup'), CARGO_HOME: join(prefix, 'cargo'), GRADLE_USER_HOME: join(prefix, 'gradle'), MISE_AUTO_INSTALL: 'false', MISE_LOCKED: '1', CARGO_BUILD_JOBS: '8' };
 const records = existsSync(join(evidence, 'commands.json')) ? JSON.parse(readFileSync(join(evidence, 'commands.json'), 'utf8')).records : [];
+process.once('exit', exitCode => writeFileSync(join(evidence, basename(process.argv[1], '.mjs') + '-session.json'), JSON.stringify({ startedAt: sessionStartedAt, finishedAt: new Date().toISOString(), elapsedSeconds: (performance.now() - sessionStarted) / 1000, exitCode, phase: process.env.REUSE_PHASE, kind: process.env.REUSE_KIND }, null, 2) + '\n'));
 
 /** Fingerprint bytes admitted from the immutable preparation image. */
 export function sha(value) {
