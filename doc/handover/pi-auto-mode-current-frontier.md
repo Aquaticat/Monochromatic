@@ -65,8 +65,8 @@ the retired extension pipeline and whole-call adapters remain removed.
 
 ## Active MiMo checkpoint
 
-The live controller uses `llmgateway-devpass/mimo-v2.6-pro` and pins `native-release-q83LlN`.
-Its current fixture is `${HOME}/temp/agent/pi-mimo-rpc-session-eZNsLl`,
+The most recent controller uses `llmgateway-devpass/mimo-v2.6-pro` and pins `native-release-q83LlN`.
+Its preserved fixture is `${HOME}/temp/agent/pi-mimo-rpc-session-eZNsLl`,
 controller command session `74937`.
 Actual resume and RPC compaction pass;
 subsequent real tool groups execute with captured Luna requests.
@@ -75,6 +75,8 @@ its process consumer and `src/native-process-network.unit.test.ts`.
 No completed semantic repair commit exists yet.
 The two changed CLI files contain the earlier formatter's edits.
 The original cancellation/compaction projection files and their tests remain supervisor-owned.
+This controller closes with exit zero before its measured RSS reaches the configured limit again.
+Restart MiMo on `native-release-EWv4wy` after the new content-storage safety checks.
 
 ### Original worker and completed progress repair
 
@@ -303,7 +305,20 @@ and returns exact content through producer-owned pure accessors.
 The strict manager-growth guard recognizes only the exact registered source/accessor pair;
 other source fields and foreign getters keep their existing rejection.
 New storage tests include surrogate hash collisions and borrowed-accessor rejection.
-The repair is not built or type-checked yet.
+Repair commit `0666bd3dcb` builds as `native-release-EWv4wy` from an archived contract snapshot.
+The exact committed-source type check passes in `native-content-types.log`.
+The strengthened non-repeating-text regression fails on the prior artifact with 328,037,592 retained bytes;
+the new artifact passes with 10,508,712 bytes and 327,177,600 serialized receipt bytes.
+`native-streaming-context-stronger-red.log` and `native-streaming-context-green.log` retain that pair.
+`native-input-content-green.log` passes exact-code-unit,
+escaped-boundary,
+surrogate digest and original-accessor checks with zero foreign-getter reads.
+`native-content-retention-safety.log` and `native-content-progress-safety.log` contain running safety suites;
+check their terminal results before recording completion.
+Private rebuilt storage guard mutations are running in `input-content-mutants-controller.log`.
+The prior `eZNsLl` worker closes with exit zero after its RSS reaches 1,543,204 KiB;
+the new artifact has not yet been exercised by an actual resumed MiMo worker.
+These results still do not prove the earlier worker's heap-failure cause.
 At this checkpoint,
 Git shows no MiMo source edits yet;
 its first lint slice is still analysis.

@@ -36,7 +36,12 @@ with a 32-MiB retained-storage ceiling.
 `test:native:input-content` checks exact code units,
 JSON boundaries,
 the surrogate digest control and rejection of borrowed or foreign accessors.
-The source repair still needs rebuilding and consumer verification.
+Source commit `0666bd3dcb` builds as `native-release-EWv4wy` and passes the package type check.
+The strengthened streaming consumer retains 10,508,712 heap bytes,
+against 328,037,592 bytes on the prior artifact,
+while preserving the checked original snapshots and identities.
+The exact-content and accessor-rejection consumer passes.
+Guard removal and complete configured-host verification remain separate completion checks.
 
 ## Purpose and callers
 
