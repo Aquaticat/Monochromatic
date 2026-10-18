@@ -50,7 +50,10 @@ async function completeGroup(index){
           state:'resolved',
           verdict:'approve'
         }),
-        inputs:Array.from({length:REVIEW_ITEMS},function fixtureReviewItem(){return index;}),
+        inputs:Array.from(
+          {length:REVIEW_ITEMS},
+          function fixtureReviewItem(){return index;}
+        ),
         assertCurrent:assertSourceCurrent
       });
     },
@@ -103,7 +106,8 @@ assert.equal(
   GROUP_COUNT
 );
 assert.equal(
-  diagnostic.latest.inputs
+  diagnostic.latest
+    .inputs
     .length,
   REVIEW_ITEMS
 );
@@ -130,9 +134,11 @@ for(const group of groups){
   );
   group.close();
 }
-diagnostic.latest.assertCurrent();
+diagnostic.latest
+  .assertCurrent();
 sourceState.current=false;
-assert.throws(function changedLatestSource(){diagnostic.latest.assertCurrent();});
+assert.throws(function changedLatestSource(){diagnostic.latest
+  .assertCurrent();});
 console.log(JSON.stringify({
   complete:true,
   groups:groups.length,
