@@ -127,8 +127,6 @@ today's workflows are a measured incumbent,
 not the limit of the design.
 No interview question is pending.
 
-## Reporting-rule clarification
-
 ## Runtime research ownership
 
 The [fresh-job pnpm-store experiment](depot-pnpm-store-fresh-job-research.md)
