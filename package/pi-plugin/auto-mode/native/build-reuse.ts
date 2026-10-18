@@ -97,48 +97,76 @@ async function previousMetadata(original: string): Promise<Stats | typeof NO_PRE
 
  @throws original filesystem error when an owned directory cannot be read
  */
-async function* ownedBuildFiles({
+async function ownedBuildFiles({
   output,
   l: parentLog,
 }: Readonly<{
   output: string;
   l: Logger;
-}>): AsyncGenerator<string> {
-  /** Traversal diagnostics retain the original build's logger and this boundary. */
+}>): Promise<readonly string[]> {
+  /**
+   Traversal diagnostics retain the original build's logger and this boundary.
+   */
   const l = tagged({
     tag: ownedBuildFiles.name,
     l: parentLog,
   });
   l.debug(`enumerating owned build files in ${output}`);
-  /** Only actual child directories extend this work queue. */
+  /**
+   Only actual child directories extend this work queue.
+   */
   const directories = [''];
-  for (const directory of directories) {
-    /** Nonrecursive enumeration reveals links before deciding which children belong to the build. */
-    const entries = await readdir(
-      join(
-        output,
-        directory,
-      ),
-      { withFileTypes: true },
-    );
-    for (const entry of entries) {
-      /** Relative identities remain rooted in the caller's unpublished release. */
-      const relative = join(
-        directory,
-        entry.name,
+  /**
+   Sequential queue consumption bounds directory reads before storage comparison starts.
+   */
+  const groups = await Array.fromAsync(
+    directories,
+    async function readOwnedDirectory(directory: string): Promise<readonly string[]> {
+      /**
+       Child-directory diagnostics retain their original traversal owner.
+       */
+      const dl = tagged({
+        tag: readOwnedDirectory.name,
+        l,
+      });
+      dl.debug(`reading owned directory ${directory}`);
+      /**
+       Nonrecursive enumeration reveals links before deciding which children belong to the build.
+       */
+      const entries = await readdir(
+        join(
+          output,
+          directory,
+        ),
+        { withFileTypes: true },
       );
-      if (entry.isDirectory()) {
-        l.debug(`retaining owned directory ${relative}`);
-        directories.push(relative);
-        continue;
+      /**
+       Only this owned directory contributes regular-file candidates.
+       */
+      const files: string[] = [];
+      for (const entry of entries) {
+        /**
+         Relative identities remain rooted in the caller's unpublished release.
+         */
+        const relative = join(
+          directory,
+          entry.name,
+        );
+        if (entry.isDirectory()) {
+          dl.debug(`retaining owned directory ${relative}`);
+          directories.push(relative);
+          continue;
+        }
+        if (entry.isFile()) {
+          files.push(relative);
+          continue;
+        }
+        dl.debug(`leaving non-file build entry untouched: ${relative}`);
       }
-      if (entry.isFile()) {
-        yield relative;
-        continue;
-      }
-      l.debug(`leaving non-file build entry untouched: ${relative}`);
-    }
-  }
+      return files;
+    },
+  );
+  return groups.flat();
 }
 //endregion Owned directories extend traversal; borrowed entries remain untouched
 
@@ -193,7 +221,7 @@ export async function reuseNativeBuildFiles({
   /**
    Enumeration stays inside the unpublished release and does not follow dependency links.
    */
-  const paths = ownedBuildFiles({
+  const paths = await ownedBuildFiles({
     output,
     l,
   });

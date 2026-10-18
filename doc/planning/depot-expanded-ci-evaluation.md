@@ -379,8 +379,32 @@ The default Node owner campaign reports 126 passing commands and one failing unu
 The bounded property profile reports 64 passing cases and five retained counterexamples.
 The separate mutation profile records eleven killed mutants,
 six surviving mutants and two compile-error outcomes.
-The complete semantic assertion manifest remains a separate reconciliation gate
-([command dispositions and retained counterexamples][depot-source-5]).
+The published semantic map now covers all 223 directory owners and 1818 exact command receipts,
+with every original command log rehashed;
+121 failed command outcomes remain failures.
+Its source-export,
+assertion-import and generator projections distinguish static candidates from executed bodies
+([semantic publication](../audit/depot-semantic-package-publication-2026-10-18.evidence.json)).
+
+The source audit found eleven authored unit files across six owners that had no owning test execution
+in that original command projection.
+Their local consumers now produce 24 Figma passes,
+including the three actual private exports,
+and 151 other source-unit passes.
+Four import-attributes integration cases fail because they request `src/fixtures`
+while the frozen source contains `src/fixture`.
+With logging held constant,
+an untracked alias alone makes those same four cases pass.
+The named no-with case still uses an attributed import and only checks nonempty output;
+its negative behavior remains unqualified.
+These are source-import assertions,
+not compiled product-package acceptance
+([source consumers and exact qualifications][depot-source-5],
+[fixture controls](../audit/depot-local-node-counterfactual-2026-10-18.evidence.json)).
+The separately rebuilt Node harness passes its existing nine-case built-export self-test.
+Successful-child stderr was discarded by the local wrapper;
+empty fields are placeholders,
+while successful case labels remain backed by captured stdout.
 
 The first repeated-graph dispatch `39135886118` failed tool setup in all four jobs,
 before any of its planned 222 owner commands ran.
@@ -921,11 +945,9 @@ as do absent-owner cache/language recipes and external observability sinks
 
 ### Remaining research and interview boundary
 
-Remaining factual work is explicitly owned in the
-[execution handover][depot-source-1]:
-semantic feature/assertion reconciliation,
-remaining existing-evidence joins,
-and final combined allocation/cost normalization.
+The semantic owner projection,
+remaining authored source consumers and final allocation/cost normalization are now sealed.
+The [execution handover][depot-source-1] retains the remaining publication checks and explicit limits.
 The capability-allocation source review and concrete rollout profiles are written;
 the primary IDE/file-manager/terminal case identities and real producer joins are sealed.
 The two-attempt native debug campaign is complete with partial transport qualification:
@@ -942,9 +964,11 @@ their failed full-graph outcomes remain qualified rather than converted into an 
 The desktop,
 packed-install and native automatic BuildKit/registry consumer queues are complete with the qualifications in
 Gate and artifact-consumer results.
-Independent sufficiency review follows those results.
-These are ongoing research tasks,
-not deferred production acceptance tests.
+A fresh independent whole-report sufficiency review has not run because the agent service quota is exhausted.
+Source/hash/pointer/arithmetic checks are concrete verification,
+not a substitute for that review.
+Every source branch,
+every promised product feature and the retained failures remain outside any complete-coverage claim.
 
 After the evidence closes,
 the interview can settle the desired required/advisory boundaries,

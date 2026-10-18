@@ -617,7 +617,8 @@ The logger's environment switch is verified against
 `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
 The isolated verbosity-only control retains ten debug lifecycle lines from a failing child;
 see `doc/audit/depot-local-node-counterfactual-2026-10-18.evidence.json`.
-Its successful-child stderr was not captured, so that probe does not qualify successful per-test debug output.
+Its successful-child stderr was not captured,
+so that probe does not qualify successful per-test debug output.
 
 When a failure surfaces,
  read the rightmost (deepest) tag plus the `FAIL` line
