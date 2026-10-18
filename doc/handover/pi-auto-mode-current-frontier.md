@@ -92,7 +92,11 @@ package types,
 complete fallback/startup matrices and original transient parity successfully.
 The supervisor accepts only that corrected delivery as `ad1be29e0d`.
 Its next read-only assignment measures and ranks the remaining complete `src` lint backlog.
-Newly compiled final-runtime validation of the accepted port remains required.
+The freshly compiled frozen `0e988eb5fc` build now passes JavaScript emission,
+owned native generation,
+fresh package types and the complete fallback/startup catalogs.
+The corresponding configured original-interaction replay is running against that frozen artifact,
+with the actual Luna service and captured request auditing still required.
 
 The source-freshness,
 host-isolation and complete session-action tasks pass for the shared approval fix.
@@ -163,6 +167,14 @@ The remaining independently verifiable areas are:
 - Long-session failures: retain the heap-limit incident separately from generic supervisor-abort diagnostics
   and the unresolved Git packet error.
   Diagnose retention without treating a higher heap ceiling as a fix.
+  After the source worker finishes its read-only inventory,
+  close it normally and resume its complete saved history with the prepared allocation-sampling preload.
+  Keep immutable `IFS6IL`,
+  2 GiB memory,
+  two CPUs and the 1,536 MiB V8 ceiling unchanged.
+  `smoke-worker-allocation-profile` proves the retained allocation control appears
+  and normal shutdown leaves stdout/stderr empty.
+  The preload uses an in-process inspector session without opening a TCP inspector.
 - Final configured consumer: coherent logger `0.4.4` build,
   original interaction replay,
   long requests and required/excluded provider controls,
