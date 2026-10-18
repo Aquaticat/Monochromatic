@@ -207,7 +207,7 @@ Depot's actual OS build and CPU model were not captured;
 the catalog's Apple M2 is not an observed chip identity.
 These measurements do not establish why the requested and observed Mac resources differ,
 or a fair native-platform performance ratio
-([original environment observations](../audit/depot-current-host-case-comparator-controls-2026-10-18.evidence.json)).
+([retained environment observations](../audit/depot-current-host-case-comparator-controls-2026-10-18.evidence.json)).
 
 ### Execution infrastructure
 
@@ -838,7 +838,7 @@ as do absent-owner cache/language recipes and external observability sinks
 
 Remaining factual work is explicitly owned in the
 [execution handover](../handover/depot-trial-grilling.md):
-the terminal GNU correction's actual outcomes,
+the terminal public GNU correction and proposed matched Depot-Windows GNU consumer,
 semantic feature/assertion reconciliation,
 existing-evidence joins and admitted execution of remaining IDE/file-manager/terminal/design owners,
 the finite native debug consumer,

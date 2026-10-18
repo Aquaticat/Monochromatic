@@ -1,6 +1,6 @@
 # Depot trial interview
 
-## Current execution checkpoint on 2026-10-18
+## Current execution checkpoint on 2026-10-18 at 18:23 UTC
 
 Research remains active and the interview has not started.
 All parent graph cloud jobs are terminal,
@@ -218,6 +218,19 @@ Its single standard public Windows job has a 30-minute cap and 27-minute inner b
 with zero nominal public compute and finite watcher `11329` owning its 40-minute campaign guard.
 Job `117747819418` ran from 18:00:26 to 18:10:52 UTC (626 seconds).
 Coverage is collecting the actual bodies before assigning execution credit.
+The collected GNU outcomes report 1494 distinct binary/case identities:
+1492 pass and two fail,
+with one summary-only skip.
+The unreadable-session-path/logging failure overlaps MSVC;
+`watch::tests::a_burst_of_changes_requests_one_rescan` is an additional GNU assertion failure.
+Its cause and repeat failure rate remain unmeasured.
+Coverage seals the original calls and diagnostics before final report integration.
+The parent also requests a concrete matched Depot-Windows GNU proposal,
+preserving owner source/argv/tool setup and adding actual OS/CPU/memory metadata probes.
+Its proposed scope is one four-CPU job with a 20-minute cap (USD 0.32 nominal),
+plus at most one same-profile harness-only correction (USD 0.64 maximum).
+Exact-source parent admission is still required before allocation.
+This additional target comparison does not replace the admitted seven-owner material campaign.
 No coverage cloud job remains active.
 The decoded bootstrap and duplicate-versus-single-argument controls pass before dispatch.
 Coverage sequences the material campaign after this GNU attempt is terminal.
@@ -272,7 +285,7 @@ the 41-body archive SHA-256 is `872651779e81a7ae6627c10c7392151fbe435cb97be456a8
 Host comparison controls at `21f3133491` establish equality for 1495 Mac and 1494 Windows recorded cases,
 with changed identity,
 missing identity and changed status detected by the same comparator.
-The original host seal remains at its `d29c7887...` identity;
+The initial host seal retains its derived normalized views at `d29c7887...`;
 the derived-view comparison successor is
 `doc/audit/depot-current-host-owner-comparison-2026-10-18.evidence.json.gz`,
 SHA-256 `c11ce61387c8675f99c303cad6093d444a13bc7c42adf24eb77f2bdd1f1677b7`.
