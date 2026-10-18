@@ -56,7 +56,7 @@ try {
       }
       const built = rust(key + '-asan-gnu-build', ['cargo', 'fuzz', 'build', '--fuzz-dir', '.', '--sanitizer', 'address', '--target', 'x86_64-unknown-linux-gnu', '--target-dir', output], { cwd: project, allowFailure: true });
       if (built.status !== 0) { failed = true; outcomes.push({ path, boundary: 'instrumented-build', status: built.status }); continue; }
-      const binaries = list.filter(name => profile === 'fuzz-linter-tail' ? ['rust_explicit_types', 'typescript'].includes(name) : profile === 'fuzz-tails' ? name === (path.includes('git-policy') ? 'wrapper_controls' : 'fuzz_scan_format') : profile !== 'fuzz-scanner-tail' || name === 'fuzz_scan_format').map(name => ({ name, path: join(output, 'x86_64-unknown-linux-gnu/release', name) }));
+      const binaries = list.filter(name => profile === 'fuzz-linter-tail' ? ['rust_explicit_types', 'rust_style'].includes(name) : profile === 'fuzz-tails' ? name === (path.includes('git-policy') ? 'wrapper_controls' : 'fuzz_scan_format') : profile !== 'fuzz-scanner-tail' || name === 'fuzz_scan_format').map(name => ({ name, path: join(output, 'x86_64-unknown-linux-gnu/release', name) }));
       if (profile === 'fuzz-linter-tail') assert.equal(binaries.length, 2);
       const corpora = Object.fromEntries(list.map(target => [target, seedPaths.filter(seed => seed.startsWith(path + '/') && seed.split('/').at(-2) === target).map(seed => join(root, seed))]));
       const runtimeDirectory = join(owned, 'runtime-' + index);
