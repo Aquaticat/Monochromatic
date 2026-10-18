@@ -29,6 +29,59 @@ Its scan covers 188 tracked audit files and 251 decoded containers,
 finds zero original desktop ZIP/captured-PNG payloads and 836 hash references,
 and detects both actual private ZIPs and all 110 PNG occurrences in the positive control.
 No image inspection/masking/publication or new desktop launch is claimed.
+The primary material outcome is now sealed in
+`doc/audit/depot-material-owner-primary-2026-10-18.evidence.json`
+with 126 original-artifact-derived text bodies in its hash-bound source archive.
+Actual compiled inventories match executed identities:
+IDE full 783 passes plus one ignored,
+IDE library subset 316 passes plus the same ignored case,
+terminal 16 passes,
+GTK 13 passes,
+sticky eight passes plus one ignored,
+Qt one pass.
+The 1137 observations contain 821 unique binary/case identities;
+the separate IDE subset overlaps full and is not additive coverage.
+IDE's real runtime producer records 2500 staged files.
+The actual owner assertions remain unchanged.
+Design's 13 programs were enumerated,
+but zero executed before the locked Node loader failure.
+The single-library correction is source `73edb149b0a051e8047e32b447d93af335f537a8`,
+branch `research/depot-design-libatomic-20261018`.
+Its actual ten bootstrap chunks reproduce the tracked Mise/config bytes;
+reversing the `libatomic` package addition restores the complete original workflow object.
+The original public profile and source assertions stay unchanged.
+The initial preflight incorrectly ran the final receipt assertion against an absent fixture,
+then omitted append chunks;
+both preflight defects were corrected before dispatch.
+The source branch is directly published,
+and its separate correction admission is
+`doc/audit/depot-design-libatomic-correction-admission-2026-10-18.evidence.json`.
+Matched GNU run `39165688015` on exact source
+`28f3167d8f0e731d13378d072dd5f23a7e392554` is active.
+The actual branch is `research/depot-complete-coverage-20261018`,
+not the descriptive unpushed branch label in the original proposal.
+Parent admission independently compares the complete decoded job and serialized function,
+retaining inherited inactive Android/desktop/material harness paths without dispatching them.
+Native SSH correction `sn950h8xcj`,
+job `lxkdfrx3dh`,
+attempt `bv33fqpvnp`,
+source `553bd7a8d2e79c1b907ac4181a28300a98285f9f`,
+is terminal cancelled and its controller is reaped at exit one.
+Its bounded tmate preinstall succeeds with the admitted archive/ELF hashes and version 2.4.0.
+Direct SSH and CLI RPC again return matching proofs with client exits 255 and zero;
+all recorded owned client identities are absent.
+No paused transport or final readback is qualified.
+Both admitted attempts are consumed;
+no third attempt is authorized by this campaign.
+The root main publisher has a real non-fast-forward rejection,
+not a wait-notice timeout.
+A normal merge refuses to overwrite concurrent edits in
+`doc/handover/slint-ide-0x.md` and `package/desktop-app/ide/README.md`.
+Those edits remain untouched.
+Publish the local scoped docs through an isolated merge worktree,
+preserving both histories and verifying direct remote ancestry;
+do not stash,
+reset or force-push the shared main worktree.
 All parent graph cloud jobs are terminal,
 all parent graph watchers and collectors are reaped,
 and no parent cloud allocation remains active.
