@@ -56,9 +56,10 @@
           "bytes": 380169,
           "sha256": "571d161956593508cf4ade732ae93753f00484bb526667a8676571cca14dec7d",
           "format": "WebAssembly",
-          "machine": "wasm32-or-declared-module-memory",
+          "machine": null,
           "presenceAndHeaderOnly": true,
-          "actualModuleLoadNotProven": true
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
         },
         {
           "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/darwin/prebuilds/darwin-arm64/darwin-platform.node",
@@ -119,72 +120,80 @@
           "bytes": 1881634,
           "sha256": "10468181565c56004c867f3a4af96f89a0ef5a63a72f2b5fb12c1f1992a3615c",
           "format": "WebAssembly",
-          "machine": "wasm32-or-declared-module-memory",
+          "machine": null,
           "presenceAndHeaderOnly": true,
-          "actualModuleLoadNotProven": true
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
         },
         {
           "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/quickjs-wasi/extensions/crypto/crypto.so",
           "bytes": 120228,
           "sha256": "fa26b6fafda251c3b1442dcc4c876b3ac73689639519f4ddfc2c410ebdb5b7c2",
           "format": "WebAssembly",
-          "machine": "wasm32-or-declared-module-memory",
+          "machine": null,
           "presenceAndHeaderOnly": true,
-          "actualModuleLoadNotProven": true
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
         },
         {
           "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/quickjs-wasi/extensions/encoding/encoding.so",
           "bytes": 7715,
           "sha256": "d501aa2a8410ee07c196103f0d169b226ec61c922883713510fd723fe14036c3",
           "format": "WebAssembly",
-          "machine": "wasm32-or-declared-module-memory",
+          "machine": null,
           "presenceAndHeaderOnly": true,
-          "actualModuleLoadNotProven": true
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
         },
         {
           "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/quickjs-wasi/extensions/headers/headers.so",
           "bytes": 8896,
           "sha256": "42c847104d6aa8d4666fa41bb74d324c2ee9a4d15c2492fca013b1631232b011",
           "format": "WebAssembly",
-          "machine": "wasm32-or-declared-module-memory",
+          "machine": null,
           "presenceAndHeaderOnly": true,
-          "actualModuleLoadNotProven": true
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
         },
         {
           "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/quickjs-wasi/extensions/structured-clone/structured-clone.so",
           "bytes": 6007,
           "sha256": "0ac5a36c0545c659ba6f9f8de5af11862df84546d151d0f15ec5184c95fd6cb3",
           "format": "WebAssembly",
-          "machine": "wasm32-or-declared-module-memory",
+          "machine": null,
           "presenceAndHeaderOnly": true,
-          "actualModuleLoadNotProven": true
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
         },
         {
           "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/quickjs-wasi/extensions/url/url.so",
           "bytes": 397332,
           "sha256": "af780a79f1fb131b5e6fa1d6fedc481e265420cf2f254fe966255230f4c1bc62",
           "format": "WebAssembly",
-          "machine": "wasm32-or-declared-module-memory",
+          "machine": null,
           "presenceAndHeaderOnly": true,
-          "actualModuleLoadNotProven": true
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
         },
         {
           "path": "artifacts/package/pi-plugin/auto-mode/dist/native/pi/coding-agent/node_modules/quickjs-wasi/quickjs.wasm",
           "bytes": 637405,
           "sha256": "d4c9375f2b1ca4dc95f72c8aa2982a7a9951ac8011490d79c6582df732b4bbd9",
           "format": "WebAssembly",
-          "machine": "wasm32-or-declared-module-memory",
+          "machine": null,
           "presenceAndHeaderOnly": true,
-          "actualModuleLoadNotProven": true
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
         },
         {
           "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/@earendil-works/pi-coding-agent/examples/extensions/doom-overlay/doom/build/doom.wasm",
           "bytes": 380169,
           "sha256": "571d161956593508cf4ade732ae93753f00484bb526667a8676571cca14dec7d",
           "format": "WebAssembly",
-          "machine": "wasm32-or-declared-module-memory",
+          "machine": null,
           "presenceAndHeaderOnly": true,
-          "actualModuleLoadNotProven": true
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
         },
         {
           "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/@earendil-works/pi-tui/native/darwin/prebuilds/darwin-arm64/darwin-platform.node",
@@ -245,63 +254,70 @@
           "bytes": 1881634,
           "sha256": "10468181565c56004c867f3a4af96f89a0ef5a63a72f2b5fb12c1f1992a3615c",
           "format": "WebAssembly",
-          "machine": "wasm32-or-declared-module-memory",
+          "machine": null,
           "presenceAndHeaderOnly": true,
-          "actualModuleLoadNotProven": true
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
         },
         {
           "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/quickjs-wasi/extensions/crypto/crypto.so",
           "bytes": 120228,
           "sha256": "fa26b6fafda251c3b1442dcc4c876b3ac73689639519f4ddfc2c410ebdb5b7c2",
           "format": "WebAssembly",
-          "machine": "wasm32-or-declared-module-memory",
+          "machine": null,
           "presenceAndHeaderOnly": true,
-          "actualModuleLoadNotProven": true
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
         },
         {
           "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/quickjs-wasi/extensions/encoding/encoding.so",
           "bytes": 7715,
           "sha256": "d501aa2a8410ee07c196103f0d169b226ec61c922883713510fd723fe14036c3",
           "format": "WebAssembly",
-          "machine": "wasm32-or-declared-module-memory",
+          "machine": null,
           "presenceAndHeaderOnly": true,
-          "actualModuleLoadNotProven": true
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
         },
         {
           "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/quickjs-wasi/extensions/headers/headers.so",
           "bytes": 8896,
           "sha256": "42c847104d6aa8d4666fa41bb74d324c2ee9a4d15c2492fca013b1631232b011",
           "format": "WebAssembly",
-          "machine": "wasm32-or-declared-module-memory",
+          "machine": null,
           "presenceAndHeaderOnly": true,
-          "actualModuleLoadNotProven": true
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
         },
         {
           "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/quickjs-wasi/extensions/structured-clone/structured-clone.so",
           "bytes": 6007,
           "sha256": "0ac5a36c0545c659ba6f9f8de5af11862df84546d151d0f15ec5184c95fd6cb3",
           "format": "WebAssembly",
-          "machine": "wasm32-or-declared-module-memory",
+          "machine": null,
           "presenceAndHeaderOnly": true,
-          "actualModuleLoadNotProven": true
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
         },
         {
           "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/quickjs-wasi/extensions/url/url.so",
           "bytes": 397332,
           "sha256": "af780a79f1fb131b5e6fa1d6fedc481e265420cf2f254fe966255230f4c1bc62",
           "format": "WebAssembly",
-          "machine": "wasm32-or-declared-module-memory",
+          "machine": null,
           "presenceAndHeaderOnly": true,
-          "actualModuleLoadNotProven": true
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
         },
         {
           "path": "artifacts/package/pi-plugin/auto-mode/dist/native-release-E6DmsJ/pi/coding-agent/node_modules/quickjs-wasi/quickjs.wasm",
           "bytes": 637405,
           "sha256": "d4c9375f2b1ca4dc95f72c8aa2982a7a9951ac8011490d79c6582df732b4bbd9",
           "format": "WebAssembly",
-          "machine": "wasm32-or-declared-module-memory",
+          "machine": null,
           "presenceAndHeaderOnly": true,
-          "actualModuleLoadNotProven": true
+          "actualModuleLoadNotProven": true,
+          "memoryModelUnmeasured": true
         }
       ],
       "scope": "Actual shipped-header inventory, not architecture runtime qualification; no first-party WASM source is not an exclusion of this transitive capability"
@@ -595,10 +611,10 @@
     {
       "path": "depot-complete-coverage-node-host-receipts.json.gz",
       "encoding": "gzip JSON",
-      "bytes": 2318869,
-      "sha256": "a52a41f08ed194718ca8659f4d63fbd86ac0db24acfaa951c016f5d0d82fc513",
-      "rawBytes": 17717680,
-      "rawSha256": "b1a607a1bba6fe0a43a5811ef008f18527b55e455a8dfd6d8caa0148dc7ae548"
+      "bytes": 2320902,
+      "sha256": "cb941774b973a6faae6ec9f3f78ee0f65ab7a85a377d2f58e19cacb7046cf412",
+      "rawBytes": 17723526,
+      "rawSha256": "f26a7d5454ec851a4bfccfbd300320b6a9ffc0bdfb116747080d1555e20f5f07"
     },
     {
       "path": "depot-complete-coverage-node-host-12133191644.zip",
@@ -43485,5 +43501,5 @@
       "fullEvidence": "depot-complete-coverage-packages.json.gz"
     }
   ],
-  "latestEvidenceAt": "2026-10-18T11:12:09.343Z"
+  "latestEvidenceAt": "2026-10-18T11:14:47.019Z"
 }

@@ -817,12 +817,12 @@ Expanded CI must preserve that limit when qualifying this existing image consume
 
 ## Guarded host terminal results and artifact boundary
 
-Run `39118106788` invoked all 108 sharda commands: 105 passed and 3 default owners failed.
+Run `39118106788` invoked all 108 commands in shard `a`: 105 passed and 3 default owners failed.
 Those failures are spread-rule assertions in `no-restricted-syntax`,
 retirement-table characterization (`570` actual versus `551` expected),
 and OpenAI Fast nested-option identity.
 Its 34 default owners discovered and hash-matched 262 files.
-Shardb invoked no commands because my admission helper searched only direct dependency links.
+Shard `b` invoked no commands because my admission helper searched only direct dependency links.
 An intermediate ordering hypothesis was wrong:
 the actual pnpm dependency install had already completed.
 The incumbent coding-agent realpath/sibling lookup resolves the transitive SDK packages.
