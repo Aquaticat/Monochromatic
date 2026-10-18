@@ -3,12 +3,25 @@ import {
   codePointBefore,
   isSpacedScriptWordCharacter,
 } from '@monochromatic-dev/translation-repair-markup/ts';
+import { cutsWord, } from './consistency-word-joints.ts';
 
 //region Consistency contains words
 // WHETHER ONE QUOTE, READ IN THE FOLD, STANDS INSIDE ANOTHER AT THE EDGES OF WORDS. Two readings of the judges' quotes ask it: the
 // spans a strict majority of the ballots' quotes contain (`consistency-span-agreement.ts`) and the slot words given beside any quote
 // that contains the located words (`consistency-majority.ts`), so both read one test and a place is located and its slot agreed by
-// the same notion of containment.
+// the same notion of containment. A match is no containment when an edge of it is a joint of a longer word, which the locator
+// refuses too (`consistency-word-joints.ts`: an apostrophe or a hyphen between letters or digits, a full stop, comma, colon or
+// slash between digits), so `cat` is not contained in `cat's bowl` or `cat-nap` and `5` is not contained in `0.5`.
+
+/**
+ No offsets: a quote in the fold holds no markup, so no closing joint and no emphasis delimiter is read in it.
+ */
+const NO_JOINTS: ReadonlySet<number> = new Set();
+
+/**
+ No delimiters of emphasis, for the same reason.
+ */
+const NO_EMPHASIS: ReadonlySet<number> = new Set();
 
 /**
  Whether the words stand in the text at the edges of words, not inside a longer word.
@@ -17,8 +30,8 @@ import {
 
  @param inner - folded words that may be contained
 
- @returns Whether `inner` stands in `outer` with no letter, digit or combining mark of a spaced script beside it on either side;
- an empty `inner` stands only in an empty `outer`
+ @returns Whether `inner` stands in `outer` with no letter, digit or combining mark of a spaced script beside it on either side
+ and no joint of a longer word at either edge, read as the locator reads one; an empty `inner` stands only in an empty `outer`
 
  @example
  ```ts
@@ -58,7 +71,18 @@ export function containsWords(
     },);
     // A word runs on through a letter, a digit or a combining mark of a spaced script, as it does for the locator
     // (`consistency-shown-edge.ts`): a decomposed accent after the match makes it part of a longer word.
-    if ((!isSpacedScriptWordCharacter({ character: before, },)) && (!isSpacedScriptWordCharacter({ character: after, },)))
+    if (isSpacedScriptWordCharacter({ character: before, },) || isSpacedScriptWordCharacter({ character: after, },))
+      continue;
+    // A JOINT OF A LONGER WORD IS READ AS THE LOCATOR READS IT: the quote is plain text in the fold, so no emphasis, link or
+    // closing joint is read, and the characters the fold wrote are the characters the quote holds.
+    if (!cutsWord({
+      folded: outer,
+      originals: outer.split('',),
+      joints: NO_JOINTS,
+      emphasis: NO_EMPHASIS,
+      at: from,
+      end: from + inner.length,
+    },))
       return true;
   }
   return false;
