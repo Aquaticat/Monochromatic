@@ -205,9 +205,10 @@ Do not ask the user to rediscover repository facts or repeat settled preferences
 
 ## Current work
 
-The factual research phase is complete for the planning interview.
+The factual research phase is active again.
 The cited [platform inventory](depot-developer-pool-capabilities-research.md)
-and [repository routing study](depot-developer-pool-routing-research.md) are complete.
+and [repository routing study](depot-developer-pool-routing-research.md) cover selected surfaces;
+they do not establish complete platform discovery or full repository coverage.
 The [cache study](depot-developer-pool-cache-research.md)
 now includes real fresh-job Cargo compiler-cache hits,
 changed-flag invalidation,
@@ -215,8 +216,9 @@ automatically supplied short-lived credentials and concurrent persistent-disk co
 The parent-owned pnpm experiment completed its repeated cache-disabled,
 explicit-miss and warm comparisons,
 with verified artifact consumers and a separate branch-access probe.
-The [independent review](depot-developer-interview-frontier-review.md)
-finds no additional universal factual prerequisite to the current operating-policy frontier.
+The sufficiency finding in the [independent review](depot-developer-interview-frontier-review.md)
+has been withdrawn after the user's correction.
+The reopened campaigns investigate missing factual and runtime evidence before another interview.
 The user correction broadens every area's applicability to a substantially expanded CI graph;
 today's workflows are a measured incumbent,
 not the limit of the design.
