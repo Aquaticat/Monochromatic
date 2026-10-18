@@ -272,46 +272,32 @@ function maskSingleCurlyQuotations({ text, }: { readonly text: string; },): stri
     ),
   },);
   /**
-   Spans of the outermost quotations, each from its opening mark to its closing mark, found in the order the marks stand.
+   Spans of the paired quotations whose opening mark is `‘` and whose closing mark is `’`, each from its opening mark to its closing
+   mark, found in the order the marks stand. Where such pairs nest the spans nest, so blanking their offsets blanks the outermost.
    */
   const spans: SentenceSpan[] = [];
   /**
-   Where the outermost quotation now open began and how deep the quotations nest, mutated only inside this function.
+   Offsets of the paired opening marks still waiting for their closing mark, innermost last, mutated only inside this function.
+   The pairing reader pairs a closing mark with the innermost opening mark that waits, so the mark that closes at an offset is
+   the opening mark most recently pushed.
    */
-  const open = {
-    start: -1,
-    depth: 0,
-  };
+  const waiting: number[] = [];
   for (let index = 0; index < text.length; index += 1) {
-    /**
-     The unit at the offset, a mark only where the pairing reader paired it.
-     */
-    const character = text.charAt(index,);
-    /**
-     Whether the pairing reader took the unit as an opening mark.
-     */
-    const pairedOpening = openings.has(index,);
-    /**
-     Whether the pairing reader took the unit as a closing mark.
-     */
-    const pairedClosing = closings.has(index,);
-    /**
-     Whether the unit is a curly closing mark the pairing reader paired.
-     */
-    const closesPairedQuote = pairedClosing && (character === '’');
-    if (pairedOpening && (character === '‘')) {
-      if (open.depth === 0)
-        open.start = index;
-      open.depth += 1;
+    if (openings.has(index,)) {
+      waiting.push(index,);
+      continue;
     }
-    else if (closesPairedQuote && (open.depth > 0)) {
-      open.depth -= 1;
-      if (open.depth === 0) {
-        spans.push({
-          start: open.start,
-          end: index + 1,
-        },);
-      }
+    if (!closings.has(index,))
+      continue;
+    /**
+     The opening mark of the pair this closing mark ends, none where no paired mark waits.
+     */
+    const opening = waiting.pop();
+    if ((opening !== undefined) && (text.charAt(opening,) === '‘') && (text.charAt(index,) === '’')) {
+      spans.push({
+        start: opening,
+        end: index + 1,
+      },);
     }
   }
   /**
