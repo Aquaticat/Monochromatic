@@ -44339,7 +44339,7 @@
       "fullEvidence": "depot-complete-coverage-packages.json.gz"
     }
   ],
-  "latestEvidenceAt": "2026-10-18T22:19:52.051Z",
+  "latestEvidenceAt": "2026-10-18T22:29:08.708Z",
   "packedConsumerQualification": {
     "source": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
     "producerRun": 39130630504,
@@ -44807,5 +44807,12 @@
     "originalCommandReceipts": 1818,
     "originalCommandLogsRehashed": 1818,
     "allBranchesOrFeaturesCovered": false
+  },
+  "correctedLocalBothStreamCapture": {
+    "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+    "ordinarySourceLeafLabels": 179,
+    "builtHarnessOuterLeafLabels": 9,
+    "derivedFixtureAliasRetained": true,
+    "originalFourIntegrationFailuresPreserved": true
   }
 }

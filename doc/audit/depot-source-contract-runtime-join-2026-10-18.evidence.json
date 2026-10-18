@@ -5690,6 +5690,24 @@
           "passedSourceLeafLabels": 14,
           "failedSourceLeafLabels": 0,
           "compiledHarnessSelfTest": false
+        },
+        {
+          "profile": "corrected-both-stream-local-capture",
+          "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+          "file": "package/desktop-daemon/hall-monitor/src/analyze.unit.test.ts",
+          "passedNamedSourceLeafLabels": 20,
+          "bothStreamsCaptured": true,
+          "derivedFixtureTopology": false,
+          "builtHarnessControl": false
+        },
+        {
+          "profile": "corrected-both-stream-local-capture",
+          "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+          "file": "package/desktop-daemon/hall-monitor/src/infra/lock.unit.test.ts",
+          "passedNamedSourceLeafLabels": 14,
+          "bothStreamsCaptured": true,
+          "derivedFixtureTopology": false,
+          "builtHarnessControl": false
         }
       ],
       "exactNamedTestTasks": [],
@@ -6380,6 +6398,24 @@
           "passedSourceLeafLabels": 16,
           "failedSourceLeafLabels": 0,
           "compiledHarnessSelfTest": false
+        },
+        {
+          "profile": "corrected-both-stream-local-capture",
+          "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+          "file": "package/dev-script/page-weight/src/html.unit.test.ts",
+          "passedNamedSourceLeafLabels": 15,
+          "bothStreamsCaptured": true,
+          "derivedFixtureTopology": false,
+          "builtHarnessControl": false
+        },
+        {
+          "profile": "corrected-both-stream-local-capture",
+          "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+          "file": "package/dev-script/page-weight/src/url-detect.unit.test.ts",
+          "passedNamedSourceLeafLabels": 16,
+          "bothStreamsCaptured": true,
+          "derivedFixtureTopology": false,
+          "builtHarnessControl": false
         }
       ],
       "exactNamedTestTasks": [],
@@ -6784,6 +6820,15 @@
           "sourceLeafLabelsJoinedToPassingOutput": 6,
           "actualPersonalExports": 0,
           "compiledArtifactConsumer": false
+        },
+        {
+          "profile": "corrected-both-stream-local-capture",
+          "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+          "file": "package/figma/kiwi/src/index.unit.test.ts",
+          "passedNamedSourceLeafLabels": 6,
+          "bothStreamsCaptured": true,
+          "derivedFixtureTopology": false,
+          "builtHarnessControl": false
         }
       ],
       "exactNamedTestTasks": [],
@@ -6863,6 +6908,15 @@
           "sourceLeafLabelsJoinedToPassingOutput": 18,
           "actualPersonalExports": 3,
           "compiledArtifactConsumer": false
+        },
+        {
+          "profile": "corrected-both-stream-local-capture",
+          "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+          "file": "package/figma/to-penpot/src/index.unit.test.ts",
+          "passedNamedSourceLeafLabels": 18,
+          "bothStreamsCaptured": true,
+          "derivedFixtureTopology": false,
+          "builtHarnessControl": false
         }
       ],
       "exactNamedTestTasks": [],
@@ -9114,6 +9168,33 @@
           "passedSourceLeafLabels": 19,
           "failedSourceLeafLabels": 0,
           "compiledHarnessSelfTest": false
+        },
+        {
+          "profile": "corrected-both-stream-local-capture",
+          "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+          "file": "package/module/hyperscript/src/css/index.unit.test.ts",
+          "passedNamedSourceLeafLabels": 43,
+          "bothStreamsCaptured": true,
+          "derivedFixtureTopology": false,
+          "builtHarnessControl": false
+        },
+        {
+          "profile": "corrected-both-stream-local-capture",
+          "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+          "file": "package/module/hyperscript/src/html/index.unit.test.ts",
+          "passedNamedSourceLeafLabels": 9,
+          "bothStreamsCaptured": true,
+          "derivedFixtureTopology": false,
+          "builtHarnessControl": false
+        },
+        {
+          "profile": "corrected-both-stream-local-capture",
+          "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+          "file": "package/module/hyperscript/src/xml/index.unit.test.ts",
+          "passedNamedSourceLeafLabels": 19,
+          "bothStreamsCaptured": true,
+          "derivedFixtureTopology": false,
+          "builtHarnessControl": false
         }
       ],
       "exactNamedTestTasks": [],
@@ -11901,6 +11982,15 @@
           "passedSourceLeafLabels": 9,
           "failedSourceLeafLabels": 0,
           "compiledHarnessSelfTest": true
+        },
+        {
+          "profile": "corrected-both-stream-local-capture",
+          "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+          "file": "package/module/test/src/it.unit.test.ts",
+          "passedNamedSourceLeafLabels": 9,
+          "bothStreamsCaptured": true,
+          "derivedFixtureTopology": false,
+          "builtHarnessControl": true
         }
       ],
       "exactNamedTestTasks": [
@@ -15879,6 +15969,24 @@
           "passedSourceLeafLabels": 4,
           "originalSourceTopologyQualified": false,
           "negativePlainImportBehaviorQualified": false
+        },
+        {
+          "profile": "corrected-both-stream-local-capture",
+          "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+          "file": "package/rolldown-plugin/import-attributes/src/import-attributes.unit.test.ts",
+          "passedNamedSourceLeafLabels": 4,
+          "bothStreamsCaptured": true,
+          "derivedFixtureTopology": true,
+          "builtHarnessControl": false
+        },
+        {
+          "profile": "corrected-both-stream-local-capture",
+          "evidence": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json",
+          "file": "package/rolldown-plugin/import-attributes/src/transform-helpers.unit.test.ts",
+          "passedNamedSourceLeafLabels": 15,
+          "bothStreamsCaptured": true,
+          "derivedFixtureTopology": true,
+          "builtHarnessControl": false
         }
       ],
       "exactNamedTestTasks": [],
@@ -18115,5 +18223,6 @@
   },
   "localFigmaSourceConsumerEvidence": "doc/audit/depot-local-figma-authored-consumer-2026-10-18.evidence.json",
   "remainingLocalUnitEvidence": "doc/audit/depot-remaining-local-unit-2026-10-18.evidence.json",
-  "localCaptureCorrection": "doc/audit/depot-local-node-counterfactual-2026-10-18.evidence.json"
+  "localCaptureCorrection": "doc/audit/depot-local-node-counterfactual-2026-10-18.evidence.json",
+  "correctedBothStreamCapture": "doc/audit/depot-local-node-capture-correction-2026-10-18.evidence.json"
 }
