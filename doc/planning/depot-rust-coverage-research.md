@@ -1058,3 +1058,23 @@ It will deduplicate post-baseline owned terminal controls against the frozen `22
 without editing the baseline or allocating cloud resources.
 Root and coverage owners retain their active watcher ownership;
 their final graph and OS rows join only after terminal receipts are available.
+
+## Sealed package-result projection
+
+The coverage lane's requested read-only join is now
+[the package-result projection](../audit/depot-rust-package-result-projection-2026-10-18.evidence.json).
+It preserves `23` frozen Cargo package roots,
+their owning Mise task pointers,
+actual recorded commands,
+immutable provider run/job/attempt identities,
+retained JUnit or original Nextest-summary count bases,
+failures,
+skips,
+and source pointers.
+The `61` execution contexts across `15` roots include repeated suites,
+bounded fuzz targets,
+benchmarks,
+and functional consumers;
+they are not a summed unit-test denominator.
+An empty Rust-lane execution list does not classify a separately owned GUI or Android package as unexecuted.
+The derivation records no new test execution or cloud allocation.

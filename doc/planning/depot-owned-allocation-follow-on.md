@@ -80,14 +80,48 @@ The source archive retains original bodies and immutable workflow sources.
 Full-window maxima remain historical reservations,
 separate from observed provider interval proxies.
 
-## Independent Rust projection queue
+## Independent Rust projection
 
 The coverage researcher requested a read-only package-result projection from the sealed Rust receipts.
-The projection will join package root,
+The [published projection](../audit/depot-rust-package-result-projection-2026-10-18.evidence.json)
+joins package root,
 owning task and arguments,
 immutable run/attempt,
 case identity or count basis,
 source failures and skips,
 and evidence pointers for frozen application source
 `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
-It will not run additional workloads or turn Cargo source inventory into executed test credit.
+Its `23` package roots contain `61` separately qualified execution contexts across `15` roots.
+That context count includes repeated suites,
+fuzz targets,
+benchmarks,
+and functional consumers;
+it is not a unit-test total.
+The derivation runs no workloads and does not turn Cargo source inventory into executed test credit.
+
+## Native graph wrapper review
+
+Root reported terminal native graph `gb01kjx2qk`
+and committed the browser prerequisite correction at `72af18d5b1`.
+Independent local controls inspected the actual generated Podman wrapper.
+The deciding boundaries are native-only `sudo --non-interactive`,
+the preserved original absolute Podman command,
+unchanged direct invocation for other providers,
+and retained `2` CPU,
+`2` GiB,
+and `256` PID runtime caps.
+The [sealed local receipt](../audit/depot-expanded-graph-podman-preflight-2026-10-18.evidence.json)
+passes `24` provider/command controls and a missing-sudo failure control.
+It verifies routing and arguments with fake executables,
+not actual native rootful execution.
+This local inspection allocated no cloud resources.
+
+The initial allocation normalization passes `21` source-body joins,
+`17` timestamp/arithmetic joins,
+and `4` original ZIP member CRC checks.
+The frozen baseline remains unchanged.
+The wrapper archive separately passes its `6` source-body joins.
+The Podman troubleshooting note's `34` existing semantic-line-break findings reproduced on its baseline.
+Only those reported spaces were replaced with newlines,
+with identical non-whitespace content;
+targeted lint then passed.
