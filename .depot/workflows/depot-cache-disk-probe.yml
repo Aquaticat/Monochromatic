@@ -26,7 +26,7 @@ jobs:
       - name: Verify fresh sandbox and inspect preinstalled Archil
         id: preflight
         working-directory: .depot/probe/cache-disk
-        run: mise run preflight
+        run: mise run //.depot/probe/cache-disk:preflight
       - uses: depot/cache-mount@38d61fd25163e9ef3a3eff8a61676994d306e549
         with:
           path: ${{ steps.preflight.outputs.mount-path }}
@@ -34,7 +34,7 @@ jobs:
           debug: 'true'
       - name: Publish bounded persistent fixture
         working-directory: .depot/probe/cache-disk
-        run: mise run exercise
+        run: mise run //.depot/probe/cache-disk:exercise
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
@@ -67,7 +67,7 @@ jobs:
       - name: Verify fresh sandbox and inspect preinstalled Archil
         id: preflight
         working-directory: .depot/probe/cache-disk
-        run: mise run preflight
+        run: mise run //.depot/probe/cache-disk:preflight
       - uses: depot/cache-mount@38d61fd25163e9ef3a3eff8a61676994d306e549
         with:
           path: ${{ steps.preflight.outputs.mount-path }}
@@ -75,7 +75,7 @@ jobs:
           debug: 'true'
       - name: Read seed and verify disjoint concurrent writers
         working-directory: .depot/probe/cache-disk
-        run: mise run exercise
+        run: mise run //.depot/probe/cache-disk:exercise
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
