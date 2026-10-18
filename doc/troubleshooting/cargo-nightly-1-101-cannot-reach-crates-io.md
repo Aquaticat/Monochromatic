@@ -64,7 +64,7 @@ is a socket destroyed from outside the process.
 ### Which component destroys the socket
 
 Linux sets `ECONNABORTED` when a socket is destroyed through the `SOCK_DESTROY` command of the `inet_diag` netlink API
-(`net/ipv4/tcp_diag.c:653` in `torvalds/linux`, read on 2026-10-18):
+(`net/ipv4/tcp_diag.c:653` in `torvalds/linux` master, read on 2026-10-18; the host runs kernel 7.2.9, not compared line by line):
 
 ```c
 err = sock_diag_destroy(sk, ECONNABORTED);
@@ -113,7 +113,7 @@ The daemon log `/var/log/opensnitchd.log` records the creation of the three rece
 
 The log is in UTC, hence four hours ahead of the file times above.
 The rule matches `/var/home/user/...`, the resolved path,
-not the `/home/user/...` spelling (`/home/user` is a link to it).
+not the `/home/user/...` spelling (`/home` is a symlink to `var/home`, and `strace` shows cargo launched as `/home/user/.rustup/...`).
 
 ### Why a reject rule exists for each new toolchain
 
@@ -214,9 +214,12 @@ the files as `root`:
 /etc/opensnitchd/rules/reject-always-simple-var-home-user-rustup-toolchains-nightly-2026-10-18-x86-64-unknown-linux-gnu-bin-cargo.json
 ```
 
-Without the removal, a new allow rule alone is not enough: the OpenSnitch wiki (`Rules.md`, "Rule precedence") says the
+Removal alone is enough to restore access.
+It is only hygiene once the allow rule below exists.
+The OpenSnitch wiki (`Rules.md`, "Rule precedence") says the
 daemon walks rules in name order and selects the first matching `reject` or `deny` rule, or a matching rule with
-`precedence` set, and otherwise the last matching `allow`.
+`precedence` set, and otherwise the last matching `allow`;
+so a `000-` rule with `precedence` is selected before the later `reject-*` files.
 
 Then add one rule so that future toolchains stop repeating this.
 A draft of `/etc/opensnitchd/rules/000-allow-rustup-toolchain-cargo.json` (rule syntax from the wiki's `Rules.md` and
@@ -281,7 +284,7 @@ files should be inspected as `root` before deleting anything.
 
 ## Upstream filing decision
 
-The `.out-of-scope/` directory has no entry for OpenSnitch, cargo networking, or rustup (checked by listing it).
+No file in `.out-of-scope/` mentions OpenSnitch, crates.io, networking, or rustup (checked with `rg --ignore-case`).
 Constraint 1 (really upstream's fault) fails for cargo, rustup, and the Linux kernel: they behave correctly.
 For OpenSnitch the daemon and user interface act as configured (a reject rule destroys the socket; an unanswered
 pop-up applies the configured default).
