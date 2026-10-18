@@ -10,17 +10,17 @@
 //!  A branch whose published history was rewritten (an amend or a rebase) is never merged:
 //!  the merge would bring the replaced commits back, so its rejection stays visible as it always was.
 
-/// The deadline-bound runner of network commands and the limits it applies.
-use super::bounded_push::{STOP_GRACE, apply_low_speed_defaults, push_deadline, run_bounded_push};
-/// The diagnostic log of the wrapper.
-use super::diagnostic_log::debug;
 /// The per-branch record of the last push this wrapper made.
 use super::auto_push_record::{LastPushedOutcome, LastPushedRead, read_last_pushed_record};
 /// The coordinator's Git, its command builder, queries and error type.
 use super::auto_push_single_flight::{
-    PushAttempt, PushGit, SingleFlightError, git_command, git_output, resolve_push_coordination_paths,
-    run_query,
+    PushAttempt, PushGit, SingleFlightError, git_command, git_output,
+    resolve_push_coordination_paths, run_query,
 };
+/// The deadline-bound runner of network commands and the limits it applies.
+use super::bounded_push::{STOP_GRACE, apply_low_speed_defaults, push_deadline, run_bounded_push};
+/// The diagnostic log of the wrapper.
+use super::diagnostic_log::debug;
 /// Owned OS strings for Git arguments.
 use std::ffi::OsString;
 
@@ -105,7 +105,10 @@ fn is_ancestor(
     ancestor: &str,
     descendant: &str,
 ) -> Result<Option<bool>, SingleFlightError> {
-    let output = run_query(git, &argv(&["merge-base", "--is-ancestor", ancestor, descendant]))?;
+    let output = run_query(
+        git,
+        &argv(&["merge-base", "--is-ancestor", ancestor, descendant]),
+    )?;
     return Ok(match output.code {
         Some(0) => Some(true),
         Some(1) => Some(false),
@@ -123,17 +126,32 @@ fn is_ancestor(
 /// ```ts
 /// async function readDestination({ branch }): Promise<Destination | undefined>;
 /// ```
-fn read_destination(git: &PushGit, branch_ref: &str) -> Result<Option<Destination>, SingleFlightError> {
+fn read_destination(
+    git: &PushGit,
+    branch_ref: &str,
+) -> Result<Option<Destination>, SingleFlightError> {
     let Some(name) = branch_ref.strip_prefix("refs/heads/") else {
         return Ok(None);
     };
-    let upstream = run_query(git, &argv(&["rev-parse", "--symbolic-full-name", "@{upstream}"]))?;
-    let pushed = run_query(git, &argv(&["rev-parse", "--symbolic-full-name", "@{push}"]))?;
+    let upstream = run_query(
+        git,
+        &argv(&["rev-parse", "--symbolic-full-name", "@{upstream}"]),
+    )?;
+    let pushed = run_query(
+        git,
+        &argv(&["rev-parse", "--symbolic-full-name", "@{push}"]),
+    )?;
     if upstream.code != Some(0) || pushed.code != Some(0) || upstream.stdout != pushed.stdout {
         return Ok(None);
     }
-    let remote = run_query(git, &argv(&["config", "--get", &format!("branch.{name}.remote")]))?;
-    let merge = run_query(git, &argv(&["config", "--get", &format!("branch.{name}.merge")]))?;
+    let remote = run_query(
+        git,
+        &argv(&["config", "--get", &format!("branch.{name}.remote")]),
+    )?;
+    let merge = run_query(
+        git,
+        &argv(&["config", "--get", &format!("branch.{name}.merge")]),
+    )?;
     if remote.code != Some(0) || merge.code != Some(0) {
         return Ok(None);
     }
@@ -165,7 +183,10 @@ fn published_base(git: &PushGit, branch_ref: &str) -> Result<String, SingleFligh
     {
         return Ok(record.tip);
     }
-    return git_output(git, &argv(&["rev-parse", "--verify", "@{upstream}^{commit}"]));
+    return git_output(
+        git,
+        &argv(&["rev-parse", "--verify", "@{upstream}^{commit}"]),
+    );
 }
 
 /// What:
@@ -178,17 +199,33 @@ fn published_base(git: &PushGit, branch_ref: &str) -> Result<String, SingleFligh
 /// ```ts
 /// async function fetchRemoteTip({ destination }): Promise<string | PushAttempt>;
 /// ```
-fn fetch_remote_tip(git: &PushGit, destination: &Destination) -> Result<Result<String, PushAttempt>, SingleFlightError> {
+fn fetch_remote_tip(
+    git: &PushGit,
+    destination: &Destination,
+) -> Result<Result<String, PushAttempt>, SingleFlightError> {
     let private_ref = format!("refs/cli-git/auto-push/fetch-{}", std::process::id());
     let refspec = format!("+{}:{private_ref}", destination.merge_ref);
-    let arguments = argv(&["fetch", "--no-tags", "--quiet", &destination.remote, &refspec]);
+    let arguments = argv(&[
+        "fetch",
+        "--no-tags",
+        "--quiet",
+        &destination.remote,
+        &refspec,
+    ]);
     let mut command = git_command(git, &arguments);
     apply_low_speed_defaults(&mut command, &git.environment);
     let fetched = run_bounded_push(command, push_deadline(&git.environment), STOP_GRACE)?;
     if fetched.exit_code != 0 {
         return Ok(Err(fetched));
     }
-    let tip = git_output(git, &argv(&["rev-parse", "--verify", &format!("{private_ref}^{{commit}}")]));
+    let tip = git_output(
+        git,
+        &argv(&[
+            "rev-parse",
+            "--verify",
+            &format!("{private_ref}^{{commit}}"),
+        ]),
+    );
     // The private ref is scaffolding; a failed deletion leaves one small ref that the next run overwrites.
     let _deleted = run_query(git, &argv(&["update-ref", "-d", &private_ref]));
     return Ok(Ok(tip?));
@@ -211,7 +248,14 @@ fn commit_merge(
 ) -> Result<Result<String, Vec<String>>, SingleFlightError> {
     let merged = run_query(
         git,
-        &argv(&["merge-tree", "--write-tree", "--no-messages", "--name-only", local, remote]),
+        &argv(&[
+            "merge-tree",
+            "--write-tree",
+            "--no-messages",
+            "--name-only",
+            local,
+            remote,
+        ]),
     )?;
     let text = String::from_utf8_lossy(&merged.stdout).into_owned();
     let mut lines = text.lines();
@@ -235,7 +279,16 @@ fn commit_merge(
     }
     let oid = git_output(
         git,
-        &argv(&["commit-tree", &tree, "-p", local, "-p", remote, "-m", message]),
+        &argv(&[
+            "commit-tree",
+            &tree,
+            "-p",
+            local,
+            "-p",
+            remote,
+            "-m",
+            message,
+        ]),
     )?;
     return Ok(Ok(oid));
 }
@@ -263,13 +316,24 @@ pub fn reconcile_divergent_push(
         return Ok(rejected);
     }
     let Some(destination) = read_destination(git, branch_ref)? else {
-        debug(TAG, "the push destination is not the upstream; no reconcile");
+        debug(
+            TAG,
+            "the push destination is not the upstream; no reconcile",
+        );
         return Ok(rejected);
     };
-    let local = git_output(git, &argv(&["rev-parse", "--verify", &format!("{branch_ref}^{{commit}}")]))?;
+    let local = git_output(
+        git,
+        &argv(&["rev-parse", "--verify", &format!("{branch_ref}^{{commit}}")]),
+    )?;
     let base = published_base(git, branch_ref)?;
     if is_ancestor(git, &base, &local)? != Some(true) {
-        debug(TAG, &format!("{local} does not contain the published {base}; history was rewritten, no reconcile"));
+        debug(
+            TAG,
+            &format!(
+                "{local} does not contain the published {base}; history was rewritten, no reconcile"
+            ),
+        );
         return Ok(rejected);
     }
     let short = destination
@@ -301,7 +365,10 @@ pub fn reconcile_divergent_push(
             is_ancestor(git, &local, &remote_tip)?,
         ) {
             (Some(true), _) => {
-                debug(TAG, "the remote tip is behind the branch; the rejection was not a divergence");
+                debug(
+                    TAG,
+                    "the remote tip is behind the branch; the rejection was not a divergence",
+                );
                 return Ok(rejected);
             }
             (_, Some(true)) => {
@@ -338,8 +405,17 @@ pub fn reconcile_divergent_push(
                 ));
             }
         };
-        debug(TAG, &format!("attempt {attempt}: pushing the merge {merge_oid} of {local} and {remote_tip}"));
-        let arguments = argv(&["push", &destination.remote, &format!("{merge_oid}:{}", destination.merge_ref)]);
+        debug(
+            TAG,
+            &format!(
+                "attempt {attempt}: pushing the merge {merge_oid} of {local} and {remote_tip}"
+            ),
+        );
+        let arguments = argv(&[
+            "push",
+            &destination.remote,
+            &format!("{merge_oid}:{}", destination.merge_ref),
+        ]);
         let mut command = git_command(git, &arguments);
         apply_low_speed_defaults(&mut command, &git.environment);
         let pushed = run_bounded_push(command, push_deadline(&git.environment), STOP_GRACE)?;

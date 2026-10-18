@@ -14,7 +14,9 @@
 //! ```
 
 /// The reconcile of a push that a moved remote branch rejected, and the lines it adds to the output.
-use super::auto_push_reconcile::{RECONCILE_FAILED_PREFIX, RECONCILE_LINE_PREFIX, reconcile_divergent_push};
+use super::auto_push_reconcile::{
+    RECONCILE_FAILED_PREFIX, RECONCILE_LINE_PREFIX, reconcile_divergent_push,
+};
 /// The single-flight coordinator, its Git command builder and its error type.
 use super::auto_push_single_flight::{
     PushAttempt, PushGit, SingleFlightError, SingleFlightKind, SingleFlightOutcome, git_command,

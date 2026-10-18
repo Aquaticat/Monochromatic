@@ -59,16 +59,37 @@ fn scenario(name: &str) -> Scenario {
     let root = fixture(name);
     let remote = root.join("remote.git");
     let seed = root.join("seed");
-    git(&root, &["init", "--bare", "--quiet", "--initial-branch=main", "remote.git"]);
+    git(
+        &root,
+        &[
+            "init",
+            "--bare",
+            "--quiet",
+            "--initial-branch=main",
+            "remote.git",
+        ],
+    );
     git(&root, &["init", "--quiet", "--initial-branch=main", "seed"]);
     std::fs::write(seed.join("a.txt"), "base\n").expect("a.txt");
     std::fs::write(seed.join("b.txt"), "base\n").expect("b.txt");
     git(&seed, &["add", "a.txt", "b.txt"]);
     git(&seed, &["commit", "--quiet", "-m", "seed"]);
-    git(&seed, &["remote", "add", "origin", remote.to_str().expect("utf-8")]);
-    git(&seed, &["push", "--quiet", "--set-upstream", "origin", "main"]);
-    git(&root, &["clone", "--quiet", remote.to_str().expect("utf-8"), "local"]);
-    git(&root, &["clone", "--quiet", remote.to_str().expect("utf-8"), "other"]);
+    git(
+        &seed,
+        &["remote", "add", "origin", remote.to_str().expect("utf-8")],
+    );
+    git(
+        &seed,
+        &["push", "--quiet", "--set-upstream", "origin", "main"],
+    );
+    git(
+        &root,
+        &["clone", "--quiet", remote.to_str().expect("utf-8"), "local"],
+    );
+    git(
+        &root,
+        &["clone", "--quiet", remote.to_str().expect("utf-8"), "other"],
+    );
     return Scenario {
         local: root.join("local"),
         other: root.join("other"),
@@ -80,17 +101,33 @@ fn scenario(name: &str) -> Scenario {
 /// Change one file in the other clone, commit it and publish it.
 fn advance_remote(scenario: &Scenario, file: &str, text: &str) {
     git(&scenario.other, &["fetch", "--quiet", "origin"]);
-    git(&scenario.other, &["merge", "--quiet", "--ff-only", "origin/main"]);
+    git(
+        &scenario.other,
+        &["merge", "--quiet", "--ff-only", "origin/main"],
+    );
     std::fs::write(scenario.other.join(file), text).expect("remote change");
     git(&scenario.other, &["add", file]);
-    git(&scenario.other, &["commit", "--quiet", "-m", &format!("remote {file}")]);
+    git(
+        &scenario.other,
+        &["commit", "--quiet", "-m", &format!("remote {file}")],
+    );
     git(&scenario.other, &["push", "--quiet", "origin", "main"]);
 }
 
 /// Change one file in the repository under test and commit only that file.
 fn commit_local(scenario: &Scenario, file: &str, text: &str) -> String {
     std::fs::write(scenario.local.join(file), text).expect("local change");
-    git(&scenario.local, &["commit", "--quiet", "-m", &format!("local {file}"), "--", file]);
+    git(
+        &scenario.local,
+        &[
+            "commit",
+            "--quiet",
+            "-m",
+            &format!("local {file}"),
+            "--",
+            file,
+        ],
+    );
     return text_of(&scenario.local, &["rev-parse", "HEAD"]);
 }
 
@@ -162,17 +199,36 @@ fn a_divergent_branch_is_published_as_a_merge_and_the_worktree_is_not_touched() 
     let landed = commit_local(&s, "b.txt", "local\n");
     let before = worktree_snapshot(&s.local);
     let (result, err) = run(&s, &landed);
-    assert_eq!((result.outcome, result.exit_code), (AutoPushOutcome::Pushed, 0), "{err}");
+    assert_eq!(
+        (result.outcome, result.exit_code),
+        (AutoPushOutcome::Pushed, 0),
+        "{err}"
+    );
     let published = text_of(&s.remote, &["rev-parse", "main"]);
     assert_eq!(
-        text_of(&s.remote, &["rev-list", "--parents", "--max-count=1", "main"]),
+        text_of(
+            &s.remote,
+            &["rev-list", "--parents", "--max-count=1", "main"]
+        ),
         format!("{published} {landed} {remote_before}")
     );
     assert_eq!(text_of(&s.remote, &["show", "main:a.txt"]), "remote");
     assert_eq!(text_of(&s.remote, &["show", "main:b.txt"]), "local");
-    assert_eq!(text_of(&s.local, &["rev-parse", "HEAD"]), landed, "the local branch moved");
-    assert_eq!(worktree_snapshot(&s.local), before, "the worktree, the index or an untracked file changed");
-    assert_eq!(text_of(&s.local, &["for-each-ref", "refs/cli-git"]), "", "the private fetch ref remains");
+    assert_eq!(
+        text_of(&s.local, &["rev-parse", "HEAD"]),
+        landed,
+        "the local branch moved"
+    );
+    assert_eq!(
+        worktree_snapshot(&s.local),
+        before,
+        "the worktree, the index or an untracked file changed"
+    );
+    assert_eq!(
+        text_of(&s.local, &["for-each-ref", "refs/cli-git"]),
+        "",
+        "the private fetch ref remains"
+    );
     assert!(err.contains(RECONCILE_LINE_PREFIX), "{err}");
     assert!(err.contains(&published), "{err}");
     assert!(!err.contains(PUSH_FAILED_NOTE), "{err}");
@@ -206,7 +262,10 @@ fn an_amended_published_commit_keeps_its_rejection() {
     assert_eq!(published.outcome, AutoPushOutcome::Pushed);
     advance_remote(&s, "a.txt", "remote\n");
     let remote_before = text_of(&s.remote, &["rev-parse", "main"]);
-    git(&s.local, &["commit", "--quiet", "--amend", "-m", "amended", "b.txt"]);
+    git(
+        &s.local,
+        &["commit", "--quiet", "--amend", "-m", "amended", "b.txt"],
+    );
     let amended = text_of(&s.local, &["rev-parse", "HEAD"]);
     let (result, err) = run(&s, &amended);
     assert_eq!(result.outcome, AutoPushOutcome::Failed, "{err}");
@@ -225,7 +284,11 @@ fn a_remote_that_moves_again_is_merged_again() {
     let counter = advancing_hook(&s, 2);
     let landed = commit_local(&s, "b.txt", "local\n");
     let (result, err) = run(&s, &landed);
-    assert_eq!((result.outcome, result.exit_code), (AutoPushOutcome::Pushed, 0), "{err}");
+    assert_eq!(
+        (result.outcome, result.exit_code),
+        (AutoPushOutcome::Pushed, 0),
+        "{err}"
+    );
     // The remote moved after each of the first two fetches; the merge made after the third fetch was accepted.
     assert_eq!(hook_runs(&counter), 3);
     assert_eq!(text_of(&s.remote, &["show", "main:advance-1.txt"]), "1");
@@ -251,7 +314,10 @@ fn a_remote_that_never_settles_is_reported_after_the_bound() {
     // One fetch per attempt, and the remote moved after each.
     assert_eq!(hook_runs(&counter), MAX_RECONCILE_ATTEMPTS);
     assert!(err.contains(RECONCILE_FAILED_PREFIX), "{err}");
-    assert!(err.contains(&format!("during each of {MAX_RECONCILE_ATTEMPTS} attempts")), "{err}");
+    assert!(
+        err.contains(&format!("during each of {MAX_RECONCILE_ATTEMPTS} attempts")),
+        "{err}"
+    );
     assert!(!err.contains(PUSH_FAILED_NOTE), "{err}");
     assert_eq!(text_of(&s.local, &["for-each-ref", "refs/cli-git"]), "");
     remove(&s.root);
@@ -266,7 +332,11 @@ fn a_commit_the_remote_already_contains_is_reported_as_delivered() {
     advance_remote(&s, "a.txt", "remote\n");
     let remote_before = text_of(&s.remote, &["rev-parse", "main"]);
     let (result, err) = run(&s, &landed);
-    assert_eq!((result.outcome, result.exit_code), (AutoPushOutcome::Pushed, 0), "{err}");
+    assert_eq!(
+        (result.outcome, result.exit_code),
+        (AutoPushOutcome::Pushed, 0),
+        "{err}"
+    );
     assert_eq!(text_of(&s.remote, &["rev-parse", "main"]), remote_before);
     assert!(err.contains("already contains"), "{err}");
     remove(&s.root);
@@ -276,7 +346,10 @@ fn a_commit_the_remote_already_contains_is_reported_as_delivered() {
 #[test]
 fn a_push_remote_other_than_the_upstream_is_not_reconciled() {
     let s = scenario("ar-push-remote");
-    git(&s.local, &["remote", "add", "mirror", s.remote.to_str().expect("utf-8")]);
+    git(
+        &s.local,
+        &["remote", "add", "mirror", s.remote.to_str().expect("utf-8")],
+    );
     git(&s.local, &["config", "branch.main.pushRemote", "mirror"]);
     advance_remote(&s, "a.txt", "remote\n");
     let remote_before = text_of(&s.remote, &["rev-parse", "main"]);
@@ -295,11 +368,19 @@ fn a_remote_that_cannot_be_fetched_is_reported_without_a_push() {
     let s = scenario("ar-fetch-fails");
     git(
         &s.local,
-        &["config", "remote.origin.pushurl", s.remote.to_str().expect("utf-8")],
+        &[
+            "config",
+            "remote.origin.pushurl",
+            s.remote.to_str().expect("utf-8"),
+        ],
     );
     git(
         &s.local,
-        &["config", "remote.origin.url", s.root.join("missing.git").to_str().expect("utf-8")],
+        &[
+            "config",
+            "remote.origin.url",
+            s.root.join("missing.git").to_str().expect("utf-8"),
+        ],
     );
     advance_remote(&s, "a.txt", "remote\n");
     let remote_before = text_of(&s.remote, &["rev-parse", "main"]);
@@ -322,9 +403,12 @@ fn a_failure_that_is_not_a_stale_update_is_returned_unchanged() {
         output: "remote: error: hook declined".to_owned(),
     };
     assert!(!was_rejected_as_stale(&refused.output));
-    assert!(was_rejected_as_stale(" ! [rejected]        main -> main (non-fast-forward)"));
+    assert!(was_rejected_as_stale(
+        " ! [rejected]        main -> main (non-fast-forward)"
+    ));
     assert_eq!(
-        reconcile_divergent_push(&push_git(&s.local), "refs/heads/main", refused.clone()).expect("reconcile"),
+        reconcile_divergent_push(&push_git(&s.local), "refs/heads/main", refused.clone())
+            .expect("reconcile"),
         refused
     );
     let stale = PushAttempt {
@@ -332,7 +416,8 @@ fn a_failure_that_is_not_a_stale_update_is_returned_unchanged() {
         output: " ! [rejected] v1 -> v1".to_owned(),
     };
     assert_eq!(
-        reconcile_divergent_push(&push_git(&s.local), "refs/tags/v1", stale.clone()).expect("reconcile"),
+        reconcile_divergent_push(&push_git(&s.local), "refs/tags/v1", stale.clone())
+            .expect("reconcile"),
         stale,
         "a ref that is not a branch has no upstream to merge"
     );

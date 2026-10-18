@@ -135,6 +135,18 @@ fn a_clean_push_without_remote_lines_surfaces_nothing() {
     );
 }
 
+/// The lines a reconciled push adds stay visible beside the `remote:` lines of a clean push.
+#[test]
+fn a_clean_push_keeps_the_reconcile_lines() {
+    assert_eq!(
+        filter_push_output(
+            "To origin\nremote: hello\ncli-git: auto-push: published a merge\nbranch set up",
+            0
+        ),
+        "remote: hello\ncli-git: auto-push: published a merge"
+    );
+}
+
 /// A failed push surfaces its complete output.
 #[test]
 fn a_failed_push_surfaces_the_full_output() {
