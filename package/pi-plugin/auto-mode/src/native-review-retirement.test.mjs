@@ -39,8 +39,8 @@ async function completeGroup(index){
       context()
         .bindSourceCheck(assertSourceCurrent);
       return Object.freeze({
-        prepare(){},
-        checkpoint(){},
+        prepare(){return undefined;},
+        checkpoint(){return undefined;},
         assertDependenciesCurrent:assertSourceCurrent
       });
     },
@@ -50,12 +50,12 @@ async function completeGroup(index){
           state:'resolved',
           verdict:'approve'
         }),
-        inputs:new Array(REVIEW_ITEMS).fill(index),
+        inputs:Array.from({length:REVIEW_ITEMS},function fixtureReviewItem(){return index;}),
         assertCurrent:assertSourceCurrent
       });
     },
-    preparePrograms(){},
-    retainSources(){},
+    preparePrograms(){return undefined;},
+    retainSources(){return undefined;},
     readBypass(){return false;}
   });
   const members=Object.freeze([Object.freeze({
@@ -88,11 +88,11 @@ globalThis.gc();
 const initial=process.memoryUsage()
   .heapUsed;
 const groups=[];
-let latest;
+const diagnostic={latest:undefined};
 for(let index=0;index<GROUP_COUNT;index++){
   const completed=await completeGroup(index);
   groups.push(completed.group);
-  latest=completed.review;
+  diagnostic.latest=completed.review;
 }
 globalThis.gc();
 const retained=process.memoryUsage()
@@ -103,7 +103,7 @@ assert.equal(
   GROUP_COUNT
 );
 assert.equal(
-  latest.inputs
+  diagnostic.latest.inputs
     .length,
   REVIEW_ITEMS
 );
@@ -130,9 +130,9 @@ for(const group of groups){
   );
   group.close();
 }
-latest.assertCurrent();
+diagnostic.latest.assertCurrent();
 sourceState.current=false;
-assert.throws(function changedLatestSource(){latest.assertCurrent();});
+assert.throws(function changedLatestSource(){diagnostic.latest.assertCurrent();});
 console.log(JSON.stringify({
   complete:true,
   groups:groups.length,
