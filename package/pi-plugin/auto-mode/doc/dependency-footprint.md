@@ -40,6 +40,53 @@ The earlier 22,933,936-byte cleanup snapshot predates subsequent builds.
 
 ## Platform variants and optional peers
 
+## Executed module-load checkpoint
+
+The original reported MiMo interaction replays on `native-release-kFkBoY` with the configured extensions,
+skills and tool catalogs.
+It produces 52 successful tool results,
+zero approval dialogs and 62 HTTP 200 Luna responses.
+The request audit parses every saved request,
+checks 1,025 questions,
+passes required-data and excluded-data positive controls,
+and finds no excluded structured thinking or raw command fields.
+This is a replay checkpoint before the subsequent logger diagnostic repair and MiMo source changes,
+not the final post-repair consumer pass.
+
+Node load hooks observe 2,509 unique regular files totaling 14,229,802 bytes.
+The collector records 2,691 load events in the actual Pi process;
+module aliases and repeated events do not multiply regular-file bytes.
+The collector's separate positive controls cover ESM,
+CommonJS,
+JSON and exclusion of an unimported file.
+The measurement excludes loader bootstrap before registration,
+native addon binaries not reported by the hooks,
+non-module assets,
+unexercised interaction paths and system runtime libraries.
+It is an executed module set rather than a runnable deployment closure or a package-directory total.
+
+The largest observed source owners are:
+
+- Auto-mode: 332 files and 2,219,293 bytes.
+- Pi coding agent: 224 files and 1,983,231 bytes.
+- Jiti: three files and 1,717,397 bytes.
+- Pi AI: 206 files and 1,409,467 bytes.
+- TypeBox: 1,039 files and 1,364,953 bytes.
+- Undici: 108 files and 1,187,480 bytes.
+- OpenAI: 199 files and 982,350 bytes.
+- Pi TUI: 45 files and 653,011 bytes.
+
+These owners belong to the complete configured host,
+including its user extensions.
+The load set does not establish that each import is necessary or that an unexercised dependency can be deleted.
+The first analysis failed because four fixture-home npm paths actually name read-only mounts of the real agent tree.
+Resolving those explicit mount aliases accounts for every observed file URL;
+the corrected report has no unresolved paths.
+Anonymous nested `package.json` files do not replace their nearest named package owner.
+The retained receipt is `reported-replay-module-loads.json` under the session's private verification directory.
+
+## Platform variants and optional peers
+
 `valibot` declares TypeScript as an optional peer.
 Following every installed peer therefore reaches TypeScript `7.0.2`
 and its installed Darwin/Linux,
