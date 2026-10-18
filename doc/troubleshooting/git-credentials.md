@@ -320,34 +320,10 @@ re-authenticate via `gh auth login`.
 
 ## Why we do not file this upstream
 
-1. **Is it really upstream's fault?
-   ** Borderline.
-    gh's
-   absolute-path discipline is correct for Homebrew.
-    The mise
-   shim layout breaks the symlink-walk heuristic;
-    that is a
-   compatibility gap,
-    not a defect.
-2. **Can upstream fix it?
-   ** Yes;
-    extend `executable()` to
-   recognise mise shims (e.g. follow the shim,
-    run `gh --version`
-   on the resolved target,
-    compare versions).
-    Non-trivial.
-3. **Are they supporting this use case?
-   ** mise is not explicitly
-   supported;
-    the `GH_PATH` escape hatch is the documented
-   override.
-4. **Will they likely fix it?
-   ** Probably not without a PR.
-5. **Have we prototyped a minimal fix?
-   ** No.
-
-Decision:
- no upstream report at this time.
- The
-shim-path-plus-`GH_PATH` workaround is small and stable.
+The cited factory source explains the historical path-selection boundary,
+and the recorded shim-path/`GH_PATH` workaround addresses that incident.
+This investigation has not prototyped an upstream patch,
+established maintainer intent or verified contribution acceptance.
+The separate native-wrapper environment finding belongs to this repository;
+the scoped helper recovery does not establish an upstream GitHub CLI defect.
+No upstream report is ready from these observations.
