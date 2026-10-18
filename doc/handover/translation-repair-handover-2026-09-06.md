@@ -195,14 +195,15 @@ Filed in:
 - [Translation repair handover 2026-09-06: the Mio12 wording follow-up of 2026-09-10](translation-repair-handover-2026-09-06-checkpoint-2026-09-10-mio12-wording-follow-up.md)
 - [Translation repair handover 2026-09-06: the Mio passes of 2026-09-09 and 2026-09-10 and the state before them](translation-repair-handover-2026-09-06-passes-mio8-to-mio12-and-handoff-state-2026-09-07-to-09-10.md)
 
-### 2026-10-18: the package split is planned and piloted, nothing has moved yet
+### 2026-10-18: the package split moved, its path readers are being fixed
 
 The owner asked on 2026-10-18 why lint is slow and to split the package into `package/translation-repair/<name>` first,
 before the other queued work.
 
 #### State
 
-- Branch head `8a6b27f976`,
+- At the split's planning,
+  branch head `8a6b27f976`,
   pushed.
   n171 (`0199690299`) and n173 (`ff6be38eef`,
   `43428948cb`,
@@ -243,37 +244,51 @@ before the other queued work.
   `scaffold.ts` (package files),
   `literal-paths.ts` (file names held as text),
   `full/full-run.ts` (a whole dry run in a keyless worktree).
+- Landed since,
+  pushed:
+  the semantic-wrap config travels with the build (`3d844e0315`,
+  `76eb00d8fc`; gate g100 at `76eb00d8fc` green,
+  suite 2484 passing,
+  the suite baseline for the split);
+  `familyLibraryNodeConfig` takes `extraPlugins` (`2083d7bec1`);
+  the move (`4bd1aea8d5`, 36 packages);
+  the lockfile and file-enforcer outputs (`bbd121d7c1`).
+- At `4bd1aea8d5` every package with production code builds;
+  tests fail in 9 packages,
+  all in readers that find a file by path
+  (94 test files, `s245/split/full/failing-files.txt`).
+- The old package's `node_modules/.monochromatic` (21 GB of logger files and the kept evidence
+  the ledger cites) and its probe and candidate directories stay in place;
+  only its `node_modules/.bin` was removed.
+  Run state is unaffected:
+  runs live under the worktree root's `node_modules/.monochromatic/translation-repair-runs*`.
 
 #### Next
 
-1.  Land the semantic-wrap config change before the move:
-    the build copies `semantic-wrap.config.jsonc` into `dist/final/node`
-    and the built module reads it there
-    (delegated to a Sonnet agent in `w166`;
-    merge its diff,
-    then commit).
-2.  Read the whole dry run (`s245/split/full/summary.txt`,
-    unit `tr-split-full-1`) and fix what it finds
-    in `own.ts` and `scaffold.ts`.
-3.  The move commit:
-    every module moved per the map and every import rewritten by `own.ts`,
-    with the scaffolding,
-    in a fresh keyless worktree;
-    its message names what does not build or pass yet.
-    Install and commit the lockfile in the branch worktree.
-4.  The readers that find a file by path,
-    per the plan,
-    delegated in slices:
-    scans and their allowlists,
-    the census reading every package's entries,
-    the cache-account audit,
-    the child-process fixtures and tests;
-    then package READMEs,
-    the docs move,
-    the file-enforcer and pnpr entries.
-5.  The controls in a fresh keyless worktree,
+1.  Three Sonnet agents fix the path readers,
+    each in its own keyless worktree at `bbd121d7c1`,
+    committing on a detached HEAD:
+    `w167` the source scans and `typography-prose-mask`;
+    `w168` the tests and fixtures that start a child over built files
+    (adjudication,
+    bench,
+    corpus-pass,
+    probe,
+    run,
+    two slice-cache tests);
+    `w169` the coverage census and the cache-account audit,
+    each with a before-and-after source-set control.
+    Cherry-pick their commits onto the branch,
+    then gate the merged head.
+2.  Package READMEs (the scaffold wrote one-line stubs),
+    then the docs move per the plan's "Docs" section.
+3.  The controls in a fresh keyless worktree
+    (suite names and counts against g100,
+    scans,
+    the decisions replay,
+    census and audit source sets),
     then the measured lint times into the plan.
-6.  The queue the split went ahead of,
+4.  The queue the split went ahead of,
     oldest first:
     the delegated items (finalist extension,
     guard demos);
@@ -281,7 +296,7 @@ before the other queued work.
     a `pi` sol review;
     the cache-account audit;
     the relaunch of TianqiChen666 through the runbook's keyed task.
-7.  Tell the owner that the classifier refused the issue comments on 527 and 541,
+5.  Tell the owner that the classifier refused the issue comments on 527 and 541,
     that 527 and 541 no longer hold on the branch (`cbedea3574` removed the code),
     and that 542 is fixed by ledger X15.
 
