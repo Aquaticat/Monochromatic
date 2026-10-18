@@ -11,6 +11,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import type { Plugin, } from 'rolldown';
 
 import { familyLibraryNodeConfig, } from './index.node.ts';
 import {
@@ -211,6 +212,30 @@ await describe({
         const output = config.output as { readonly paths: (id: string,) => string; };
         expect(output.paths('@x/family-markup/ts',),).toBe('@x/family-markup',);
         expect(output.paths('node:fs',),).toBe('node:fs',);
+      },
+    },),
+    it({
+      name: 'appends the plugins it is handed after the shared ones, so a member can carry a data file into its output',
+      fn: async function extraPlugins(): Promise<void> {
+        using fixture = createManifestFixture(JSON.stringify({ name: '@x/family-markup', },),);
+        /**
+         Plugin the member hands the build.
+         */
+        const copier: Plugin = { name: 'copy-config', };
+        /**
+         Config built with the extra plugin.
+         */
+        const config = await familyLibraryNodeConfig({
+          familyPrefix: PREFIX,
+          packageDir: fixture.path,
+          extraPlugins: [copier,],
+        },);
+        /**
+         Plugins the config hands rolldown, in order.
+         */
+        const plugins = config.plugins as readonly Plugin[];
+        expect(plugins.at(-1,),).toBe(copier,);
+        expect(plugins.length > 1,).toBe(true,);
       },
     },),
   ],
