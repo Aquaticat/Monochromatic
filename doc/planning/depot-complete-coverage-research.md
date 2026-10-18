@@ -86,8 +86,16 @@ or account billing access is authorized by this lane.
 
 ## First command-reviewed cloud wave
 
-The frozen manifest capture on 2026-10-18 reports 2,444 hidden-inclusive Mise tasks
+The source-filtered manifest capture on 2026-10-18 reports 2,425 repository Mise tasks
 and 13,860 tracked files.
+The raw worktree listing also inherited 19 unrelated tasks from its scratch-directory ancestor.
+That ancestor declares only tasks:
+no tools,
+environment,
+settings,
+or variables,
+and no direct root-task name collisions.
+The next cloud wave compares the hash of all source-filtered task names before execution.
 These are inventory measurements,
 not completed checks or proof of coverage.
 
@@ -164,6 +172,106 @@ browser,
 plugin,
 non-default,
 and remaining applicable Linux coverage are still active work.
+
+## First wave terminal evidence and experiment corrections
+
+Run `39104186007` completed with both setup sequences and artifact uploads successful.
+Both workers reported 8 CPUs,
+33,664,888,832 bytes of RAM,
+Node `v26.12.0`,
+pnpm `12.14.0`,
+and Mise `2026.10.0`.
+The GitHub API records job intervals of 45 seconds and 50 seconds.
+This is an execution observation,
+not a comparison against GitHub workers or evidence of a speed multiplier.
+
+All archive digests,
+task log hashes,
+distribution file hashes,
+source identities,
+and workflow identities were verified after download.
+Of 62 command invocations,
+54 succeeded.
+The remaining outcomes are deliberately separated:
+
+- Source lint failures:
+  `array-at` emitted denied `typescript/no-unsafe-assignment` warnings;
+  `const` and `numeric-format` emitted `test-import/require-eventual-artifact`
+  on their test aggregation imports;
+  `zip-writer` emitted the same artifact rule plus unused-disable warnings.
+  The source was not changed.
+- Experiment selector failures:
+  `const` and `numeric-format` have owning `test` tasks,
+  not `test:unit` tasks.
+  Their actual suites remain to be executed with the correct commands.
+- Experiment prerequisite failure:
+  `caught-value` deliberately delegates its consumers into `module-test`,
+  whose artifact was not built in the first pilot.
+- Experiment consumer provisioning failure:
+  copied `pnpm-workspace-catalog` distribution files need their declared external `yaml` dependency.
+  The missing dependency is not evidence that its built artifact is invalid.
+
+These outcomes do not establish a Depot provisioning or runner failure.
+Successful commands also do not prove that every case or branch was reached.
+
+## Expanded module wave and tracked follow-up
+
+The next reviewed wave covers all 58 active `package/module/*` roots,
+split into 29 roots per worker.
+Its explicit plans contain 125 and 129 owning invocations.
+Both plans first build the harness,
+logger,
+shared Oxlint configuration,
+and the module roots that declare standard build aggregates.
+They then execute exact registered type,
+lint,
+and default-test commands.
+Custom `test` tasks for `const`,
+`llm-type`,
+`matrix`,
+and `numeric-format` are retained.
+`caught-value` retains its actual delegated consumer command.
+
+The module wave uses the same source and resource bounds as the pilot.
+Every selected command was checked against the frozen source task definitions.
+Selected Node CLI smoke tests use `--help`,
+which their source documents and asserts as exiting before provider API calls.
+Fixture subprocess,
+disposable Git,
+and `unzip` prerequisites were inspected.
+
+The active queue remains independently verifiable:
+
+- Finish the immutable package/feature/command manifest,
+  including active and inactive roots,
+  actual imported/generated influences,
+  and native/Kotlin/Slint/build-tool consumers.
+- Execute the expanded module wave and classify its terminal evidence.
+- Execute remaining applicable Node quality,
+  product,
+  plugin,
+  browser,
+  and default-test commands after command and side-effect review.
+- Execute named bounded fuzz,
+  property,
+  conformance,
+  mutation,
+  and expensive profiles using each actual task's argument grammar.
+- Run proper isolated packed-install consumers,
+  using the existing `package/config/pnpr/src/publish-steps.ts` packing owner
+  and `publish-plan.ts` manifest transformation.
+  Retain the failed dependency-free import fixture as a positive control.
+- Coordinate native,
+  GUI,
+  VM,
+  and device evidence with the parent lane;
+  do not duplicate its PR or protected-branch experiments.
+- Publish scoped evidence,
+  lint and render the note,
+  and keep source failures distinct from harness,
+  setup,
+  discovery,
+  and unexecuted cases.
 
 ## Current next action
 
