@@ -131,7 +131,8 @@ await describe({name:'built request observation size',children:[
  }}),
  it({name:'rejects invalid explicit byte limits before provider transport',fn:async function invalidConfiguration(){
   const transports:unknown[]=[];
-  for(const maxBodyBytes of [0,-1,1.5,Number.NaN,Number.POSITIVE_INFINITY,Number.MAX_SAFE_INTEGER+1,'1024',null,1n,Symbol('limit')]){
+  const invalidLimits=[0,-1,1.5,Number.NaN,Number.POSITIVE_INFINITY,Number.MAX_SAFE_INTEGER+1,'1024',null,1n,Symbol('invalid request observation byte limit')];
+  await Promise.all(invalidLimits.map(async function rejectInvalidLimit(maxBodyBytes){
    await assert.rejects(async function invalidLimit(){
     await observe({body:'{"messages":[]}',maxBodyBytes,onRequest:function unexpectedTransport(){
      transports.push(maxBodyBytes);
@@ -142,7 +143,7 @@ await describe({name:'built request observation size',children:[
     expect(error.message.includes('positive safe integer')).toBe(true);
     return true;
    });
-  }
+  }));
   expect(transports).toEqual([]);
  }}),
 ]});
