@@ -196,7 +196,7 @@ When several split rules are enabled in one Oxlint worker,
 the first rule computes callable and parameter evidence,
 and sibling reporters reuse the completed immutable result.
 Failed or partial computations are never cached.
-Schema-8 persistent entries validate exact source,
+Schema-9 persistent entries validate exact source,
 module,
 semantic call,
 compiler-option,
@@ -217,6 +217,99 @@ so smaller bounds made each package's lint evict the others' entries and run col
 The bounds sit at about twice that measured need.
 
 CLI diagnostics are authoritative because Oxlint's language server does not execute JavaScript plugins.
+
+## Cross-project sharing
+
+Each TypeScript project analyses every source it reaches,
+including the sources of the workspace packages it imports,
+so one source is analysed once for every project that reaches it.
+Direct summaries of a source are therefore shared across projects whenever every input to its analysis agrees.
+A shared entry lives at `shared/<hash of the file name>/<key digest>.json` under the cache root,
+and a read tries the shared entry first and the project's own entry second.
+
+### The key
+
+The key digests everything that can change one source's direct summaries:
+
+- the analyzer digest, which covers the cache schema, the TypeScript version, and the implementation bytes;
+- the file name and the digest of the source text;
+- the closure,
+  which holds every file reached through a module reference,
+  with its content digest,
+  whether the analysis indexes it,
+  its default-library flag,
+  and its module format.
+  The walk follows static imports,
+  `export ... from`,
+  `import x = require(...)`,
+  literal dynamic imports,
+  and literal `import()` types through declaration and external files;
+- the ambient surface,
+  which holds every program file that applies without an import:
+  scripts (the default libraries included),
+  files with module or global augmentations or ambient module names,
+  and declaration files with `export as namespace`.
+  A `/// <reference types>` directive is not walked,
+  because the file it adds applies to every source only through this surface;
+- the augmentation surface and the lockfile digest;
+- the compiler options by value,
+  from the explicit list of keyed options in `shared-analysis-options.ts`;
+- the external analysis root.
+
+The key leaves out the project's file list,
+its declaration files that no source reaches,
+and the options that only steer module resolution
+(`paths`, `baseUrl`, `rootDirs`, `rootDir`, `outDir`, `declarationDir`, `tsBuildInfoFile`, `typeRoots`,
+`mapRoot`, `sourceRoot`, `project`, `configFilePath`, `pathsBasePath`).
+A change in what a reference resolves to changes the closure, so two projects whose `paths` differ share an entry
+exactly when the files their references reach agree.
+
+### Fallbacks
+
+A source that cannot be keyed completely keeps its per-project entry,
+and the reason is counted while verification is on:
+
+- `unknown-option:<name>`:
+  the project sets a compiler option on neither list,
+  so a TypeScript option added later cannot be shared by accident,
+  and every source of the project falls back;
+- `script-source`:
+  the source is a global script rather than a module;
+- `implicit-import-file`:
+  the closure reaches a `.tsx`, `.jsx`, `.astro`, `.mdx`, `.vue`, or `.svelte` file,
+  whose runtime import from `jsxImportSource` the parser does not list;
+- `unresolved-specifier`:
+  a module reference resolves to no program file;
+- `no-source-digest`:
+  a closure file has no content digest or program metadata in the snapshot;
+- `file-not-in-program`:
+  a closure file is absent from the program that was asked to list its references.
+
+A shared entry is also written only when the dependency closure the persistent cache records is resolved.
+An `import()` type whose argument is not a string literal fails that closure,
+so a source reaching one is never written as a shared entry.
+
+### Verification
+
+`PRPT_VERIFY_SHARED=1` analyses every shared hit afresh and compares callable summaries,
+omitted callables,
+and omission reasons with the entry that was read.
+Each difference is logged as an error and counted as a mismatch.
+`PRPT_VERIFY_SHARED_DIR=<directory>` makes each process write a counter file named `<pid>-<thread>.json`
+(eligible keys, shared writes, invalid entries, misses, hits, cross-project hits, verified hits, mismatches,
+fallbacks by reason, and the mismatch records),
+and a `<pid>-<thread>-keys.jsonl` trace of each key's components.
+`PRPT_VERIFY_SHARED_CLOSURES=1` adds a `-closures.jsonl` trace of the closure behind each key.
+
+Verification is a probe, not a gate setting.
+The fresh analysis repeats the work that sharing saves,
+so it is several times slower:
+the 36 packages under `package/translation-repair/` lint cold in about 131 s without it,
+and a cold run with it took 410 s and more.
+It compares hits only,
+so it cannot see a source that should have shared and did not.
+A shared entry whose payload was changed by hand is reported as a mismatch naming the summary,
+which is the positive control for the mode.
 
 ## Ownership marker
 
@@ -400,7 +493,8 @@ Package acceptance includes:
   split-rule ownership,
   suggestion,
   bridge lifecycle,
-  and cache-sharing tests;
+  and cache-sharing tests,
+  including the cases that name each sharing fallback and the cases where two projects must not share;
 - conditional exports,
   runtime re-exports,
   declaration and runtime sibling mismatch,
