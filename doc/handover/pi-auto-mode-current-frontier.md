@@ -40,7 +40,13 @@ The worker must inspect consumers for object-layout dependencies and preserve au
 No lint suppression or new injectable builder is authorized.
 The supervisor's committed built identity consumer passes against the original class artifact;
 its first lint/type failures are test declarations and opaque receiver inference,
-with corrections committed and follow-up verification pending.
+with corrections committed and follow-up types,
+scoped lint and the complete named consumer passing.
+Two separate private rebuilt variants replace the brand with a string-property check
+or remove the entry guard;
+both fail the maintained consumer,
+and restored source rebuilds and passes.
+The replacement factory remains subject to independent ownership and real-host verification.
 New paths are `src/native-policy-input-identity.unit.test.ts`
 and its package task `test:native:policy-input-identity`.
 Neither worker may retry Git writes;
