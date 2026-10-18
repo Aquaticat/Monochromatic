@@ -1,5 +1,47 @@
 # Depot trial interview
 
+## Measured performance clarification on 2026-10-18
+
+The user asked whether the measured benefit was a fourfold speedup.
+No fourfold overall CI or complete-graph waiting improvement has been established.
+The prior response's statement that measured benefit did not justify Startup was too definite:
+the aggregate waiting-time saving needed for that return-on-cost conclusion remains unmeasured.
+Developer remains the budget and CI-only pricing baseline,
+not a conclusion that paid Mac capacity cannot repay its cost.
+
+The [historical compilation observations](../audit/depot-trial-2026-10-15.md)
+record GitHub's cold build at `869.508` seconds
+and Depot's four-CPU runner at `757.394` seconds:
+an observed ratio of approximately `1.15`,
+with `112.114` seconds saved in those individual observations.
+Each route has one successful cold observation;
+they do not establish a repeated provider effect.
+
+The [default-builder concurrency trial](../audit/depot-runner-sizing-2026-10-15.md)
+records cold samples of `268.558` and `265.417` seconds,
+averaging `266.987` seconds.
+Comparing that mean to the earlier GitHub observation gives approximately `3.26` times the throughput
+for that single build operation,
+or about 14 minutes 30 seconds versus 4 minutes 27 seconds.
+Hardware,
+compilation parallelism,
+harness revision and artifact export paths differ.
+This is an observational elapsed-time ratio,
+not an isolated provider effect or a complete-graph speedup.
+
+Within the repeated Depot sizing experiment,
+four CPUs/four Cargo jobs average `526.7` seconds
+and sixteen CPUs/sixteen jobs average `246.6` seconds:
+approximately `2.14` times as fast,
+saving `280.1` seconds per measured cold build.
+Both allocation and concurrency change;
+each configuration's repetitions occur on one allocated runner.
+
+The native Mac and Windows follow-up established capability and consumer outcomes.
+It did not establish a controlled GitHub-versus-Depot speedup or monthly waiting-time reduction.
+The private `recorded-provider-speed-comparison.json` retains the arithmetic inspection.
+The prior final verification receipt remains a timestamped record of its original document bytes.
+
 ## Native follow-up terminal result on 2026-10-18
 
 The authorized Depot native runner follow-up is complete at the consumer boundary.
