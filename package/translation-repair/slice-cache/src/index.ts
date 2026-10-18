@@ -29,6 +29,14 @@ export {
 } from './corpus-run/cache-account-read.ts';
 export { auditCacheAccounts, } from './corpus-run/cache-account-run.ts';
 export { cacheVersionSetting, } from './corpus-run/cache-account-setting.ts';
+export {
+  type AuditedSources,
+  auditedSourcesOf,
+  repositoryTopOf,
+  sourcesOfPrefix,
+  sourcesPathspecOf,
+  withoutTestsPathspecOf,
+} from './corpus-run/cache-account-sources.ts';
 export { reportSliceCaches, } from './corpus-run/cache-account-slice-report.ts';
 export {
   type NewestSliceRecord,

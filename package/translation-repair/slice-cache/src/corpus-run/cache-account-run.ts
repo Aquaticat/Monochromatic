@@ -21,6 +21,12 @@ import {
   cacheVersionsIn,
 } from './cache-account-read.ts';
 import { cacheVersionSetting, } from './cache-account-setting.ts';
+import {
+  auditedSourcesOf,
+  repositoryTopOf,
+  sourcesPathspecOf,
+  withoutTestsPathspecOf,
+} from './cache-account-sources.ts';
 import type { VersionSetting, } from './cache-account-commits.ts';
 import { reportSliceCaches, } from './cache-account-slice-report.ts';
 import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/ts';
@@ -46,8 +52,11 @@ import type { CommandLineOf, } from '@monochromatic-dev/translation-repair-run/t
 // from where it is run.
 //
 // RUN FROM THE PACKAGE DIRECTORY, which the mise task does:
-// `mise run //package/module/translation-repair:cache-account-audit`.
-// Prints hashes, times and commit subjects, which are this package's own.
+// `mise run //package/translation-repair/slice-cache:cache-account-audit`.
+// A package in the family's directory reads the `src` of every package of the
+// family (`cache-account-sources.ts`), since a cache version lives in
+// whichever package declares it. Prints hashes, times and commit subjects,
+// which are this repository's own.
 
 
 /**
@@ -111,7 +120,8 @@ async function sourceTextAt(
  search for runs directories beside the worktree's own
 
  @param packageDirectory - directory the command runs from, which the mise task
- makes the package's own
+ makes the package's own; the audit reads that package's `src`, or the `src` of
+ every package of the family where the package stands in the family's directory
 
  @param runsDir - the runs directory a pass would use now, which
  `TRANSLATION_REPAIR_RUNS_DIR` may set anywhere
@@ -139,50 +149,23 @@ export async function auditCacheAccounts(
   /**
    Repository's top directory.
    */
-  const root = (await cacheAccountGitOutput({
-    args: [
-      '-C',
-      packageDirectory,
-      'rev-parse',
-      '--show-toplevel',
-    ],
-  },)).trim();
+  const root = await repositoryTopOf({ packageDirectory, },);
   /**
-   Package's directory from the repository's top.
+   Pathspec of the source directories, and the tracked files other than tests
+   in them.
    */
-  const prefix = (await cacheAccountGitOutput({
-    args: [
-      '-C',
-      packageDirectory,
-      'rev-parse',
-      '--show-prefix',
-    ],
-  },)).trim();
+  const {
+    sources,
+    files,
+  } = await auditedSourcesOf({ packageDirectory, },);
   /**
-   Pathspec of the package's source.
+   Pathspec matching every file under the source directories.
    */
-  const sources = `${prefix}src`;
+  const sourcesPathspec = sourcesPathspecOf({ sources, },);
   /**
    Pathspec leaving the source's tests out.
    */
-  const withoutTests = `:(exclude,glob)${sources}/**/*.test.ts`;
-  /**
-   Tracked source files other than tests.
-   */
-  const files = (await cacheAccountGitOutput({
-    args: [
-      '-C',
-      root,
-      'ls-files',
-      '--',
-      sources,
-      withoutTests,
-    ],
-  },))
-    .split('\n',)
-    .filter(function listed(path,): boolean {
-      return path !== '';
-    },);
+  const withoutTests = withoutTestsPathspecOf({ sources, },);
   /**
    Each file's text, by path.
    */
@@ -247,7 +230,7 @@ export async function auditCacheAccounts(
         version,
         commit: await cacheVersionSetting({
           root,
-          sources,
+          sources: sourcesPathspec,
           version,
         },),
         account: nonNullishOrThrow(texts.get(version.path,),),
@@ -280,7 +263,7 @@ export async function auditCacheAccounts(
         CACHE_ACCOUNT_COMMIT_FORMAT,
         `${earliestCommit.hash}..HEAD`,
         '--',
-        sources,
+        sourcesPathspec,
         withoutTests,
       ],
     },),
