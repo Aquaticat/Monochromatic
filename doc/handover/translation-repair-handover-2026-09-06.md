@@ -195,6 +195,60 @@ Filed in:
 - [Translation repair handover 2026-09-06: the Mio12 wording follow-up of 2026-09-10](translation-repair-handover-2026-09-06-checkpoint-2026-09-10-mio12-wording-follow-up.md)
 - [Translation repair handover 2026-09-06: the Mio passes of 2026-09-09 and 2026-09-10 and the state before them](translation-repair-handover-2026-09-06-passes-mio8-to-mio12-and-handoff-state-2026-09-07-to-09-10.md)
 
+### 2026-10-18: the package split is planned, nothing has moved yet
+
+The owner asked on 2026-10-18 why lint is slow and to split the package into `package/translation-repair/<name>` first,
+before the other queued work.
+
+#### State
+
+- Branch head `8a6b27f976`,
+  pushed.
+  n171 (`0199690299`) and n173 (`ff6be38eef`,
+  `43428948cb`,
+  `f9169093e6`) landed;
+  `94ebefa1e3` listed the three blankness tests they added.
+- The pre-split controls were taken at `94ebefa1e3` in `w165`
+  (`s245/control/summary.txt`):
+  build and blankness scan green,
+  the TianqiChen66625 decisions replay byte-identical to the n171 build's apart from its label
+  (`s245/control/replay-presplit.json`).
+- The lint answer and the module map are in `doc/planning/translation-repair-package-split.md`
+  (`fb3c55b0de`,
+  amended in `8a6b27f976`),
+  with the map in `doc/audit/translation-repair-package-split-map-2026-10-18.json`:
+  warm whole-package oxlint 24 s,
+  a 31 to 120 file run 3.0 to 3.7 s,
+  34 packages of 4,055 to 23,968 lines,
+  acyclic.
+- The first auto-push of `fb3c55b0de` and of `8a6b27f976` was refused with
+  `GH006: Protected branch update failed` and `protected branch hook declined`;
+  a plain `git push` straight after went through both times.
+  The branch's rules are a Copilot review ruleset and classic protection with no required checks,
+  so the cause is not known.
+
+#### Next
+
+1.  The move commit:
+    `git mv` of every module per the map and every import rewritten,
+    by a scratch script;
+    then scaffolding,
+    tests,
+    scans,
+    fixtures and docs per the plan,
+    then the controls in a fresh keyless worktree.
+2.  The queue the split went ahead of,
+    oldest first:
+    the delegated items (finalist extension,
+    guard demos);
+    the docs batch (ledger entries for n166 to n173 and the n173 merge mistake);
+    a `pi` sol review;
+    the cache-account audit;
+    the relaunch of TianqiChen666 through the runbook's keyed task.
+3.  Tell the owner that the classifier refused the issue comments on 527 and 541,
+    that 527 and 541 no longer hold on the branch (`cbedea3574` removed the code),
+    and that 542 is fixed by ledger X15.
+
 ### 2026-10-15: the consistency pass and the quoted-tense round landed, TianqiChen66625 launched
 
 This checkpoint is the lead's account of the state at the launch of `TianqiChen66625`,
@@ -839,14 +893,11 @@ each read off the pass log and the shipped page:
 
 ## What to do next
 
-As of 2026-10-15,
-the next action is the "Next" list of the checkpoint of 2026-10-15
+As of 2026-10-18,
+the next action is the "Next" list of the checkpoint of 2026-10-18
 under "Where the work stands":
-the rounds n159 and n161 landed and passed gate `g98`,
-and `TianqiChen66625` is running;
-read it when it settles,
-rule on the review n162,
-and land the docs round n163.
+the package split,
+then the queue it went ahead of.
 The numbered items keep the queue as the sessions of 2026-09-08 to 2026-09-26 left it;
 read each against its date.
 
