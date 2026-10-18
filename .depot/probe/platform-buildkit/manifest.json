@@ -49,5 +49,30 @@
     "External cache restoration into a fresh independent project",
     "SOCI startup performance",
     "Account invoice or aggregate hard-cap enforcement"
-  ]
+  ],
+  "ciDerivedImageCampaign": {
+    "baseIndex": "sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+    "parentConsumerSource": "1438ecde4b643a606e0a75f85067e3d0153e9bb5",
+    "packages": [
+      "ca-certificates",
+      "curl",
+      "git",
+      "gzip",
+      "tar",
+      "xz-utils",
+      "zstd"
+    ],
+    "miseVersion": "2026.10.9",
+    "miseAction": {
+      "commit": "c2a87611a18de5b3828c5652fe268e992400cb5c",
+      "install": false,
+      "cache": false,
+      "implementationSha256": "66c87029ddac32e3f33d4b0f3110a9f049bd821c309ef9249b845d1662db6686"
+    },
+    "maximumRequestMilliseconds": 300000,
+    "originalImageUnchanged": true,
+    "originalServiceHealthcheckRetained": true,
+    "derivedJobHealthcheck": "NONE",
+    "scope": "Checkout and Mise setup prerequisites, not the complete repository toolchain"
+  }
 }

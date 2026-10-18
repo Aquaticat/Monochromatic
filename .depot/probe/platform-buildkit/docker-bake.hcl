@@ -33,3 +33,13 @@ target "evidence" {
   ssh = ["fixture=${SSH_SOCKET}"]
   output = ["type=local,dest=${OUTPUT_DIRECTORY}/proof"]
 }
+
+target "ci" {
+  context = "ci-context"
+  dockerfile = "Dockerfile"
+  platforms = ["linux/amd64", "linux/arm64"]
+  args = { BUILD_HARNESS_SHA = HARNESS_SHA }
+  project_id = PROJECT
+  output = ["type=image"]
+  attest = ["type=provenance,mode=max", "type=sbom,generator=docker.io/docker/buildkit-syft-scanner@sha256:ae4f3b554449e7e25548e7d8ccc029d17357348e30c6e3df01b92bc93654d6a9"]
+}
