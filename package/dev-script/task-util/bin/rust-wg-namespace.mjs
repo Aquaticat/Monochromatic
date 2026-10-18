@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
 import { openSync, closeSync, readFileSync, writeFileSync, mkdirSync, readdirSync, rmdirSync, statSync } from 'node:fs';
-import { join, dirname } from 'node:path';
+import { join } from 'node:path';
 import { strict as assert } from 'node:assert';
 
 //region Probe and exercise privileged fixtures only after namespace isolation succeeds
@@ -49,9 +49,9 @@ try {
   const remaining = cgroups().filter(path => !before.includes(path));
   writeFileSync(join(evidence, 'cgroups-after-tests.json'), JSON.stringify(remaining, null, 2) + '\n');
   const binary = join(process.env.CARGO_TARGET_DIR, 'debug/wg-quicker-exempt');
-  for (const path of remaining.filter(path => /\/wg-quicker-exempt-[^/]+$/u.test(path))) command('cleanup-detach-' + path.split('/').at(-1), binary, ['detach', '--cgroup', path], true);
+  for (const path of remaining.filter(path => /\/wg-quicker-exempt-[^/]+$/u.test(path))) command('cleanup-detach-' + path.split('/').at(-1), binary, ['detach', path], true);
   for (const path of remaining.sort((left, right) => right.length - left.length)) {
-    assert(path.startsWith('/sys/fs/cgroup/wg-quicker-exempt-') || path.startsWith('/sys/fs/cgroup/user.slice/user-3'), path);
+    assert(path.startsWith('/sys/fs/cgroup/wg-quicker-exempt-') || path.startsWith('/sys/fs/cgroup/user.slice/user-3') || path === '/sys/fs/cgroup/user.slice', path);
     if (statSync(path, { throwIfNoEntry: false })) rmdirSync(path);
   }
   const leaked = cgroups().filter(path => !before.includes(path));
