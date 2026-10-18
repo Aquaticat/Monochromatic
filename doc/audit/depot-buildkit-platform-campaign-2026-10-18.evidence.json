@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "collectedAt": "2026-10-18T09:29:12.007Z",
+  "collectedAt": "2026-10-18T09:57:40.334Z",
   "repositorySource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
-  "status": "Research ongoing: native exports, registry bridge, Node26-qualified OCI derivative, coherent firstparty Cargo mounts and actual forwarding/Bake/CNI controls exercised; immutable Git and lifecycle follow-through active",
+  "status": "Research ongoing: immutable Git/local-overlay controls exercised; native Dockerfile-lint positive/clean cases and Semgrep non-detection retained; all owned OCI graphs hash-verified before lifecycle cleanup",
   "sourceArchive": {
     "path": "doc/audit/depot-buildkit-platform-campaign-2026-10-18.sources.json.gz",
-    "bytes": 3121417,
-    "sha256": "43c5b8c3a348249827b52b68a13a5ace7a4d82b07cc5753fa1f3fe4be9744dfd"
+    "bytes": 3417145,
+    "sha256": "682cf0c7d47f8cfac818ef9c1409ccaacb172d14e2643338b85f0e84b5ff1da9"
   },
   "service": {
     "source": "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
@@ -150,6 +150,8 @@
     "aa89e372f09c82286695d80cddf7f86b602051c9",
     "0b471538cd549cb2181088803c1e0a6d542d791e",
     "b0e3247a279507c759964162ec9eb816e3dcc402",
+    "86a3a389e48ecc427c0bb735269d0613a4aead8b",
+    "004e1b1b0cb2e4a0fd68db4de367508663762393",
     "7f22f25adbb05e0c1add22211b12f1d275a29c17",
     "7590bcde15e5ceef4dc36f4e2c3d975e1c1b833f"
   ],
@@ -277,6 +279,84 @@
       "elapsedMilliseconds": 6566,
       "guardFired": false,
       "phase": "forwarding-missing-ssh",
+      "projectId": "27m5m3vjlv"
+    },
+    {
+      "receipt": "git-context-local-overlay.json",
+      "buildId": "4tlgnm8sgp",
+      "source": "b0e3247a279507c759964162ec9eb816e3dcc402",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-10-18T09:32:06.892Z",
+      "finishedAt": "2026-10-18T09:32:19.701Z",
+      "elapsedMilliseconds": 12793,
+      "guardFired": false,
+      "phase": "git-local-overlay",
+      "projectId": "27m5m3vjlv"
+    },
+    {
+      "receipt": "git-context-immutable-remote.json",
+      "buildId": "m62041tlnr",
+      "source": "b0e3247a279507c759964162ec9eb816e3dcc402",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-10-18T09:34:33.478Z",
+      "finishedAt": "2026-10-18T09:35:00.953Z",
+      "elapsedMilliseconds": 27460,
+      "guardFired": false,
+      "phase": "git-immutable-remote",
+      "projectId": "27m5m3vjlv"
+    },
+    {
+      "receipt": "builtin-lint-warn.json",
+      "buildId": "h6vjhtznxb",
+      "source": "86a3a389e48ecc427c0bb735269d0613a4aead8b",
+      "exitCode": 1,
+      "signal": null,
+      "startedAt": "2026-10-18T09:44:20.551Z",
+      "finishedAt": "2026-10-18T09:44:44.554Z",
+      "elapsedMilliseconds": 23987,
+      "guardFired": false,
+      "phase": "builtin-lint-warn",
+      "projectId": "27m5m3vjlv"
+    },
+    {
+      "receipt": "builtin-lint-clean.json",
+      "buildId": "5l1vftdxsk",
+      "source": "86a3a389e48ecc427c0bb735269d0613a4aead8b",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-10-18T09:45:45.284Z",
+      "finishedAt": "2026-10-18T09:45:55.007Z",
+      "elapsedMilliseconds": 9706,
+      "guardFired": false,
+      "phase": "builtin-lint-clean",
+      "projectId": "27m5m3vjlv"
+    },
+    {
+      "receipt": "builtin-lint-semgrep.json",
+      "buildId": "pjlxhhkvxh",
+      "source": "86a3a389e48ecc427c0bb735269d0613a4aead8b",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-10-18T09:46:35.907Z",
+      "finishedAt": "2026-10-18T09:46:45.537Z",
+      "elapsedMilliseconds": 9615,
+      "guardFired": false,
+      "phase": "builtin-lint-semgrep",
+      "projectId": "27m5m3vjlv"
+    },
+    {
+      "receipt": "builtin-lint-canonical.json",
+      "buildId": "1ktx2jdfqg",
+      "source": "004e1b1b0cb2e4a0fd68db4de367508663762393",
+      "exitCode": 0,
+      "signal": null,
+      "startedAt": "2026-10-18T09:50:52.004Z",
+      "finishedAt": "2026-10-18T09:51:08.879Z",
+      "elapsedMilliseconds": 16861,
+      "guardFired": false,
+      "phase": "builtin-lint-canonical",
       "projectId": "27m5m3vjlv"
     },
     {
@@ -3616,6 +3696,992 @@
       "rawMetadataPreservedInCompressedArchive": false
     }
   ],
+  "gitContextControls": [
+    {
+      "receipt": "git-context-local-overlay.json",
+      "kind": "native-build",
+      "phase": "git-local-overlay",
+      "source": "b0e3247a279507c759964162ec9eb816e3dcc402",
+      "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "projectId": "27m5m3vjlv",
+      "args": [
+        "bake",
+        "--file",
+        "docker-bake.hcl",
+        "--project",
+        "27m5m3vjlv",
+        "--set",
+        "source.platform=linux/amd64",
+        "--set",
+        "source.no-cache-filter=base",
+        "--metadata-file",
+        "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/git-context-local-overlay/metadata.json",
+        "--progress",
+        "plain",
+        "source"
+      ],
+      "startedAt": "2026-10-18T09:32:06.892Z",
+      "maximumMilliseconds": 120000,
+      "maximumArchitectureBuilders": 2,
+      "cpuPerBuilder": 16,
+      "memoryGiBPerBuilder": 32,
+      "budget": {
+        "priorObservedMilliseconds": 303516,
+        "reservedUsd": 0.5646880000000001,
+        "ceilingUsd": 2,
+        "invoiceCapProven": false
+      },
+      "printed": {
+        "group": {
+          "default": {
+            "targets": [
+              "source"
+            ]
+          }
+        },
+        "target": {
+          "source": {
+            "context": "context",
+            "dockerfile": "Dockerfile",
+            "args": {
+              "BUILD_HARNESS_SHA": "b0e3247a279507c759964162ec9eb816e3dcc402"
+            },
+            "target": "source-evidence",
+            "platforms": [
+              "linux/amd64"
+            ],
+            "output": [
+              {
+                "dest": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/git-context-local-overlay/builder-proof",
+                "type": "local"
+              }
+            ],
+            "pull": false,
+            "no-cache": false,
+            "no-cache-filter": [
+              "base"
+            ],
+            "project_id": "27m5m3vjlv"
+          }
+        }
+      },
+      "remoteCommitConfirmed": "b0e3247a279507c759964162ec9eb816e3dcc402",
+      "publicRepositorySizeKiB": 438463,
+      "localOverlayMarker": "local-overlay-930e41c2-42cc-44bb-bd01-dfeee817ab54",
+      "committedProbeSha256": "6ef88dee065b2da260a5674b0ff38aba3efb99640455b41764dc1b979c9caf48",
+      "overlayProbeSha256": "962410d335921a79ef4456c4e4c282633e30dcd203d9018212b059760050a8d4",
+      "gitContext": "https://github.com/Aquaticats/Monochromatic.git#b0e3247a279507c759964162ec9eb816e3dcc402:.depot/probe/platform-buildkit/context",
+      "privateGitAuthentication": false,
+      "finishedAt": "2026-10-18T09:32:19.701Z",
+      "elapsedMilliseconds": 12793,
+      "exitCode": 0,
+      "signal": null,
+      "guardFired": false,
+      "logPath": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/git-context-local-overlay/build.log",
+      "consumer": {
+        "payload": {
+          "cohort": "monochromatic-platform-buildkit-20261018-v1",
+          "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+          "sourceMarker": "local-overlay-930e41c2-42cc-44bb-bd01-dfeee817ab54"
+        },
+        "builder": {
+          "architecture": "x64",
+          "targetArchitecture": "amd64",
+          "targetOs": "linux",
+          "cpuCount": 16,
+          "memoryBytes": 32997220352,
+          "cpuModels": [
+            "AMD EPYC 9R45"
+          ],
+          "nodeVersion": "v24.22.0",
+          "harnessCommit": "b0e3247a279507c759964162ec9eb816e3dcc402"
+        },
+        "probeSha256": "962410d335921a79ef4456c4e4c282633e30dcd203d9018212b059760050a8d4"
+      },
+      "consumerVerified": true,
+      "localOverlayRestored": true,
+      "rawMetadataPreservedInCompressedArchive": true
+    },
+    {
+      "receipt": "git-context-immutable-remote.json",
+      "kind": "native-build",
+      "phase": "git-immutable-remote",
+      "source": "b0e3247a279507c759964162ec9eb816e3dcc402",
+      "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "projectId": "27m5m3vjlv",
+      "args": [
+        "bake",
+        "--file",
+        "docker-bake.hcl",
+        "--project",
+        "27m5m3vjlv",
+        "--set",
+        "source.platform=linux/amd64",
+        "--set",
+        "source.no-cache-filter=base",
+        "--set",
+        "source.context=https://github.com/Aquaticats/Monochromatic.git#b0e3247a279507c759964162ec9eb816e3dcc402:.depot/probe/platform-buildkit/context",
+        "--metadata-file",
+        "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/git-context-immutable-remote/metadata.json",
+        "--progress",
+        "plain",
+        "source"
+      ],
+      "startedAt": "2026-10-18T09:34:33.478Z",
+      "maximumMilliseconds": 120000,
+      "maximumArchitectureBuilders": 2,
+      "cpuPerBuilder": 16,
+      "memoryGiBPerBuilder": 32,
+      "budget": {
+        "priorObservedMilliseconds": 316309,
+        "reservedUsd": 0.5817453333333333,
+        "ceilingUsd": 2,
+        "invoiceCapProven": false
+      },
+      "printed": {
+        "group": {
+          "default": {
+            "targets": [
+              "source"
+            ]
+          }
+        },
+        "target": {
+          "source": {
+            "context": "https://github.com/Aquaticats/Monochromatic.git#b0e3247a279507c759964162ec9eb816e3dcc402:.depot/probe/platform-buildkit/context",
+            "dockerfile": "Dockerfile",
+            "args": {
+              "BUILD_HARNESS_SHA": "b0e3247a279507c759964162ec9eb816e3dcc402"
+            },
+            "target": "source-evidence",
+            "platforms": [
+              "linux/amd64"
+            ],
+            "output": [
+              {
+                "dest": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/git-context-immutable-remote/builder-proof",
+                "type": "local"
+              }
+            ],
+            "pull": false,
+            "no-cache": false,
+            "no-cache-filter": [
+              "base"
+            ],
+            "project_id": "27m5m3vjlv"
+          }
+        }
+      },
+      "remoteCommitConfirmed": "b0e3247a279507c759964162ec9eb816e3dcc402",
+      "publicRepositorySizeKiB": 438463,
+      "localOverlayMarker": "local-overlay-01532d34-9b6b-4603-ad08-6bbeadeca826",
+      "committedProbeSha256": "6ef88dee065b2da260a5674b0ff38aba3efb99640455b41764dc1b979c9caf48",
+      "overlayProbeSha256": "61c684fd101d6c7d1e956d46eaf4934cf31f1b33825829616c3370dd30cf4eb2",
+      "gitContext": "https://github.com/Aquaticats/Monochromatic.git#b0e3247a279507c759964162ec9eb816e3dcc402:.depot/probe/platform-buildkit/context",
+      "privateGitAuthentication": false,
+      "finishedAt": "2026-10-18T09:35:00.953Z",
+      "elapsedMilliseconds": 27460,
+      "exitCode": 0,
+      "signal": null,
+      "guardFired": false,
+      "logPath": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/git-context-immutable-remote/build.log",
+      "consumer": {
+        "payload": {
+          "cohort": "monochromatic-platform-buildkit-20261018-v1",
+          "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+          "sourceMarker": "committed-source"
+        },
+        "builder": {
+          "architecture": "x64",
+          "targetArchitecture": "amd64",
+          "targetOs": "linux",
+          "cpuCount": 16,
+          "memoryBytes": 32997220352,
+          "cpuModels": [
+            "AMD EPYC 9R45"
+          ],
+          "nodeVersion": "v24.22.0",
+          "harnessCommit": "b0e3247a279507c759964162ec9eb816e3dcc402"
+        },
+        "probeSha256": "6ef88dee065b2da260a5674b0ff38aba3efb99640455b41764dc1b979c9caf48"
+      },
+      "consumerVerified": true,
+      "localOverlayRestored": true,
+      "rawMetadataPreservedInCompressedArchive": true
+    }
+  ],
+  "builtinDockerfileLint": [
+    {
+      "receipt": "builtin-lint-warn.json",
+      "kind": "native-build",
+      "phase": "builtin-lint-warn",
+      "source": "86a3a389e48ecc427c0bb735269d0613a4aead8b",
+      "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "projectId": "27m5m3vjlv",
+      "args": [
+        "build",
+        "--project",
+        "27m5m3vjlv",
+        "--platform",
+        "linux/amd64",
+        "--file",
+        "lint-context/Dockerfile.warn",
+        "--output",
+        "type=local,dest=[home]/temp/agent/depot-platform-buildkit-evidence-20261018/builtin-lint-warn/files",
+        "--metadata-file",
+        "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/builtin-lint-warn/metadata.json",
+        "--progress",
+        "plain",
+        "--lint",
+        "--lint-fail-on",
+        "warn",
+        "lint-context"
+      ],
+      "startedAt": "2026-10-18T09:44:20.551Z",
+      "maximumMilliseconds": 120000,
+      "maximumArchitectureBuilders": 2,
+      "cpuPerBuilder": 16,
+      "memoryGiBPerBuilder": 32,
+      "budget": {
+        "priorObservedMilliseconds": 343769,
+        "reservedUsd": 0.6183586666666667,
+        "ceilingUsd": 2,
+        "invoiceCapProven": false
+      },
+      "dockerfile": "FROM scratch\nUSER root\nCOPY probe.json /probe.json\nCMD [\"fixture-not-executed\"]\n",
+      "fixtureCommandNeverExecuted": true,
+      "productionPolicyChanged": false,
+      "buildId": "h6vjhtznxb",
+      "finishedAt": "2026-10-18T09:44:44.554Z",
+      "elapsedMilliseconds": 23987,
+      "exitCode": 1,
+      "signal": null,
+      "guardFired": false,
+      "logPath": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/builtin-lint-warn/build.log",
+      "findings": {
+        "hadolintDL3002": true,
+        "semgrepMissingUser": false,
+        "lintFailed": true
+      },
+      "expectedFindingObserved": true,
+      "consumerVerified": true,
+      "rawMetadataPreservedInCompressedArchive": false
+    },
+    {
+      "receipt": "builtin-lint-clean.json",
+      "kind": "native-build",
+      "phase": "builtin-lint-clean",
+      "source": "86a3a389e48ecc427c0bb735269d0613a4aead8b",
+      "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "projectId": "27m5m3vjlv",
+      "args": [
+        "build",
+        "--project",
+        "27m5m3vjlv",
+        "--platform",
+        "linux/amd64",
+        "--file",
+        "lint-context/Dockerfile.clean",
+        "--output",
+        "type=local,dest=[home]/temp/agent/depot-platform-buildkit-evidence-20261018/builtin-lint-clean/files",
+        "--metadata-file",
+        "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/builtin-lint-clean/metadata.json",
+        "--progress",
+        "plain",
+        "--lint",
+        "--lint-fail-on",
+        "warn",
+        "lint-context"
+      ],
+      "startedAt": "2026-10-18T09:45:45.284Z",
+      "maximumMilliseconds": 120000,
+      "maximumArchitectureBuilders": 2,
+      "cpuPerBuilder": 16,
+      "memoryGiBPerBuilder": 32,
+      "budget": {
+        "priorObservedMilliseconds": 367756,
+        "reservedUsd": 0.6503413333333333,
+        "ceilingUsd": 2,
+        "invoiceCapProven": false
+      },
+      "dockerfile": "FROM scratch\nUSER 65532\nCOPY probe.json /probe.json\nCMD [\"fixture-not-executed\"]\n",
+      "fixtureCommandNeverExecuted": true,
+      "productionPolicyChanged": false,
+      "buildId": "5l1vftdxsk",
+      "finishedAt": "2026-10-18T09:45:55.007Z",
+      "elapsedMilliseconds": 9706,
+      "exitCode": 0,
+      "signal": null,
+      "guardFired": false,
+      "logPath": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/builtin-lint-clean/build.log",
+      "findings": {
+        "hadolintDL3002": false,
+        "semgrepMissingUser": false,
+        "lintFailed": false
+      },
+      "consumerVerified": true,
+      "rawMetadataPreservedInCompressedArchive": true
+    },
+    {
+      "receipt": "builtin-lint-semgrep.json",
+      "kind": "native-build",
+      "phase": "builtin-lint-semgrep",
+      "source": "86a3a389e48ecc427c0bb735269d0613a4aead8b",
+      "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "projectId": "27m5m3vjlv",
+      "args": [
+        "build",
+        "--project",
+        "27m5m3vjlv",
+        "--platform",
+        "linux/amd64",
+        "--file",
+        "lint-context/Dockerfile.semgrep",
+        "--output",
+        "type=local,dest=[home]/temp/agent/depot-platform-buildkit-evidence-20261018/builtin-lint-semgrep/files",
+        "--metadata-file",
+        "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/builtin-lint-semgrep/metadata.json",
+        "--progress",
+        "plain",
+        "--lint",
+        "--lint-fail-on",
+        "warn",
+        "lint-context"
+      ],
+      "startedAt": "2026-10-18T09:46:35.907Z",
+      "maximumMilliseconds": 120000,
+      "maximumArchitectureBuilders": 2,
+      "cpuPerBuilder": 16,
+      "memoryGiBPerBuilder": 32,
+      "budget": {
+        "priorObservedMilliseconds": 377462,
+        "reservedUsd": 0.6632826666666667,
+        "ceilingUsd": 2,
+        "invoiceCapProven": false
+      },
+      "dockerfile": "FROM scratch\nCOPY probe.json /probe.json\nCMD [\"fixture-not-executed\"]\n",
+      "fixtureCommandNeverExecuted": true,
+      "productionPolicyChanged": false,
+      "buildId": "pjlxhhkvxh",
+      "finishedAt": "2026-10-18T09:46:45.537Z",
+      "elapsedMilliseconds": 9615,
+      "exitCode": 0,
+      "signal": null,
+      "guardFired": false,
+      "logPath": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/builtin-lint-semgrep/build.log",
+      "findings": {
+        "hadolintDL3002": false,
+        "semgrepMissingUser": false,
+        "lintFailed": false
+      },
+      "expectedFindingObserved": false,
+      "consumerVerified": false,
+      "rawMetadataPreservedInCompressedArchive": true
+    },
+    {
+      "receipt": "builtin-lint-canonical.json",
+      "kind": "native-build",
+      "phase": "builtin-lint-canonical",
+      "source": "004e1b1b0cb2e4a0fd68db4de367508663762393",
+      "repositoryBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "projectId": "27m5m3vjlv",
+      "args": [
+        "build",
+        "--project",
+        "27m5m3vjlv",
+        "--platform",
+        "linux/amd64",
+        "--file",
+        "lint-canonical-context/Dockerfile",
+        "--output",
+        "type=local,dest=[home]/temp/agent/depot-platform-buildkit-evidence-20261018/builtin-lint-canonical/files",
+        "--metadata-file",
+        "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/builtin-lint-canonical/metadata.json",
+        "--progress",
+        "plain",
+        "--lint",
+        "--lint-fail-on",
+        "warn",
+        "lint-canonical-context"
+      ],
+      "startedAt": "2026-10-18T09:50:52.004Z",
+      "maximumMilliseconds": 120000,
+      "maximumArchitectureBuilders": 2,
+      "cpuPerBuilder": 16,
+      "memoryGiBPerBuilder": 32,
+      "budget": {
+        "priorObservedMilliseconds": 387077,
+        "reservedUsd": 0.6761026666666666,
+        "ceilingUsd": 2,
+        "invoiceCapProven": false
+      },
+      "dockerfile": "FROM scratch\nCOPY probe.json /probe.json\nCMD [\"fixture-not-executed\"]\n",
+      "fixtureCommandNeverExecuted": true,
+      "productionPolicyChanged": false,
+      "buildId": "1ktx2jdfqg",
+      "finishedAt": "2026-10-18T09:51:08.879Z",
+      "elapsedMilliseconds": 16861,
+      "exitCode": 0,
+      "signal": null,
+      "guardFired": false,
+      "logPath": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/builtin-lint-canonical/build.log",
+      "findings": {
+        "hadolintDL3002": false,
+        "semgrepMissingUser": false,
+        "lintFailed": false
+      },
+      "expectedFindingObserved": false,
+      "consumerVerified": false,
+      "rawMetadataPreservedInCompressedArchive": true
+    }
+  ],
+  "semgrepPinnedLocalControls": [
+    {
+      "receipt": "builtin-lint-local-semgrep.json",
+      "source": "004e1b1b0cb2e4a0fd68db4de367508663762393",
+      "image": "localhost/depot-semgrep-control-004e1b1b0cb2:research",
+      "cloudAllocation": false,
+      "resources": {
+        "cpus": 2,
+        "memoryGiB": 2,
+        "pids": 128,
+        "hostMounts": 0
+      },
+      "cases": [
+        {
+          "phase": "version",
+          "exitCode": 0,
+          "elapsedMilliseconds": 999,
+          "ownedContainerAbsent": true,
+          "stderr": "\nA new version of Semgrep is available. See https://semgrep.dev/docs/upgrading\n\nVersions prior to 1.76.0 are no longer supported by Semgrep.dev, please upgrade.\n"
+        },
+        {
+          "phase": "help",
+          "exitCode": 0,
+          "elapsedMilliseconds": 590,
+          "ownedContainerAbsent": true,
+          "stderr": ""
+        },
+        {
+          "phase": "suffix-remote",
+          "exitCode": 0,
+          "elapsedMilliseconds": 2428,
+          "ownedContainerAbsent": true,
+          "scanned": [],
+          "findings": 0,
+          "errors": [],
+          "stderr": ""
+        },
+        {
+          "phase": "canonical-remote",
+          "exitCode": 0,
+          "elapsedMilliseconds": 2036,
+          "ownedContainerAbsent": true,
+          "scanned": [
+            "Dockerfile"
+          ],
+          "findings": 0,
+          "errors": [],
+          "stderr": ""
+        },
+        {
+          "phase": "suffix-fixed",
+          "exitCode": 0,
+          "elapsedMilliseconds": 636,
+          "ownedContainerAbsent": true,
+          "scanned": [],
+          "findings": 0,
+          "errors": [],
+          "stderr": ""
+        },
+        {
+          "phase": "canonical-fixed",
+          "exitCode": 0,
+          "elapsedMilliseconds": 669,
+          "ownedContainerAbsent": true,
+          "scanned": [
+            "Dockerfile"
+          ],
+          "findings": 0,
+          "errors": [],
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "receipt": "builtin-lint-local-semgrep-patterns.json",
+      "source": "004e1b1b0cb2e4a0fd68db4de367508663762393",
+      "image": "localhost/depot-semgrep-control-004e1b1b0cb2:research",
+      "cloudAllocation": false,
+      "resources": {
+        "cpus": 2,
+        "memoryGiB": 2,
+        "pids": 128,
+        "hostMounts": 0
+      },
+      "cases": [
+        {
+          "phase": "actual-input",
+          "exitCode": 0,
+          "elapsedMilliseconds": 166,
+          "ownedContainerAbsent": true,
+          "stderr": ""
+        },
+        {
+          "phase": "from-metavariable",
+          "exitCode": 0,
+          "elapsedMilliseconds": 734,
+          "ownedContainerAbsent": true,
+          "scanned": [
+            "Dockerfile"
+          ],
+          "findings": 1,
+          "errors": [],
+          "stderr": ""
+        },
+        {
+          "phase": "cmd-ellipsis",
+          "exitCode": 0,
+          "elapsedMilliseconds": 682,
+          "ownedContainerAbsent": true,
+          "scanned": [
+            "Dockerfile"
+          ],
+          "findings": 1,
+          "errors": [],
+          "stderr": ""
+        },
+        {
+          "phase": "cmd-metavariadic",
+          "exitCode": 0,
+          "elapsedMilliseconds": 587,
+          "ownedContainerAbsent": true,
+          "scanned": [
+            "Dockerfile"
+          ],
+          "findings": 0,
+          "errors": [],
+          "stderr": ""
+        },
+        {
+          "phase": "user-metavariable",
+          "exitCode": 0,
+          "elapsedMilliseconds": 587,
+          "ownedContainerAbsent": true,
+          "scanned": [
+            "Dockerfile"
+          ],
+          "findings": 0,
+          "errors": [],
+          "stderr": ""
+        },
+        {
+          "phase": "copy-ellipsis",
+          "exitCode": 0,
+          "elapsedMilliseconds": 592,
+          "ownedContainerAbsent": true,
+          "scanned": [
+            "Dockerfile"
+          ],
+          "findings": 0,
+          "errors": [],
+          "stderr": ""
+        }
+      ]
+    }
+  ],
+  "retainedOwnedOciGraphs": {
+    "startedAt": "2026-10-18T09:54:51.947Z",
+    "projectId": "27m5m3vjlv",
+    "layout": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/retained-registry-layout",
+    "cloudAllocation": false,
+    "accountInspection": false,
+    "copies": [
+      {
+        "tag": "service",
+        "digest": "sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+        "args": [
+          "--command-timeout",
+          "2m",
+          "copy",
+          "--all",
+          "--preserve-digests",
+          "--image-parallel-copies",
+          "2",
+          "--src-authfile",
+          "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/service-podman-auth.private.json",
+          "docker://registry.depot.dev/27m5m3vjlv@sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+          "oci:[home]/temp/agent/depot-platform-buildkit-evidence-20261018/retained-registry-layout:service"
+        ],
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMilliseconds": 14007,
+        "logPath": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/registry-retain-service.log"
+      },
+      {
+        "tag": "ci",
+        "digest": "sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346",
+        "args": [
+          "--command-timeout",
+          "2m",
+          "copy",
+          "--all",
+          "--preserve-digests",
+          "--image-parallel-copies",
+          "2",
+          "--src-authfile",
+          "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/service-podman-auth.private.json",
+          "docker://registry.depot.dev/27m5m3vjlv@sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346",
+          "oci:[home]/temp/agent/depot-platform-buildkit-evidence-20261018/retained-registry-layout:ci"
+        ],
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMilliseconds": 12110,
+        "logPath": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/registry-retain-ci.log"
+      },
+      {
+        "tag": "ci-node26",
+        "digest": "sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31",
+        "args": [
+          "--command-timeout",
+          "2m",
+          "copy",
+          "--all",
+          "--preserve-digests",
+          "--image-parallel-copies",
+          "2",
+          "--src-authfile",
+          "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/service-podman-auth.private.json",
+          "docker://registry.depot.dev/27m5m3vjlv@sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31",
+          "oci:[home]/temp/agent/depot-platform-buildkit-evidence-20261018/retained-registry-layout:ci-node26"
+        ],
+        "exitCode": 0,
+        "signal": null,
+        "elapsedMilliseconds": 7409,
+        "logPath": "[home]/temp/agent/depot-platform-buildkit-evidence-20261018/registry-retain-ci-node26.log"
+      }
+    ],
+    "verifiedBlobs": [
+      {
+        "digest": "sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+        "bytes": 1609,
+        "mediaType": "application/vnd.oci.image.index.v1+json"
+      },
+      {
+        "digest": "sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346",
+        "bytes": 1609,
+        "mediaType": "application/vnd.oci.image.index.v1+json"
+      },
+      {
+        "digest": "sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31",
+        "bytes": 1609,
+        "mediaType": "application/vnd.oci.image.index.v1+json"
+      },
+      {
+        "digest": "sha256:6132df16f6e66c0d2a08179fd7c9fefb377d2fc72e90fef79d6b83d2b88f9ff7",
+        "bytes": 1808,
+        "mediaType": "application/vnd.oci.image.manifest.v1+json"
+      },
+      {
+        "digest": "sha256:65efde5ef9f94f651035ebc31eff58721eb0552ef368e5e15ebf727a1d708bd3",
+        "bytes": 841,
+        "mediaType": "application/vnd.oci.image.manifest.v1+json"
+      },
+      {
+        "digest": "sha256:25187dc7165a7775344baa96241a7b86f40af77bad0ca6ea4ae6b9df2c634f9b",
+        "bytes": 1808,
+        "mediaType": "application/vnd.oci.image.manifest.v1+json"
+      },
+      {
+        "digest": "sha256:466ce9b519d46d0c199b658f9c522260265e632d67502596e0fbc5aed8f2d6d1",
+        "bytes": 841,
+        "mediaType": "application/vnd.oci.image.manifest.v1+json"
+      },
+      {
+        "digest": "sha256:f78b650a9f83b2b38b51ddef742b8a3816cb11f4d18dd0d0f0181b121e0b152e",
+        "bytes": 2001,
+        "mediaType": "application/vnd.oci.image.manifest.v1+json"
+      },
+      {
+        "digest": "sha256:6e4aa37c9d81d52aa460d458258b743dd9fba1f5eb1c1bea8943ab7c6434f2a0",
+        "bytes": 841,
+        "mediaType": "application/vnd.oci.image.manifest.v1+json"
+      },
+      {
+        "digest": "sha256:fdd2ae05aa1edc23b43e72d1d3b6252249a186596d33c754e6f2bbbddeba810b",
+        "bytes": 2001,
+        "mediaType": "application/vnd.oci.image.manifest.v1+json"
+      },
+      {
+        "digest": "sha256:4a723622cac113f2b109b50683a08d766bcde185d393f685b7d6ea1916f6c8d7",
+        "bytes": 841,
+        "mediaType": "application/vnd.oci.image.manifest.v1+json"
+      },
+      {
+        "digest": "sha256:658645c48353be0debbfc8c6f551cb10b961a312ce15bad1cf2ea266cb555548",
+        "bytes": 2192,
+        "mediaType": "application/vnd.oci.image.manifest.v1+json"
+      },
+      {
+        "digest": "sha256:8e0e6e147b0e467ba97793d9f359a61ed4cbfa7fc6ec2cb418836c38c0cd03fd",
+        "bytes": 841,
+        "mediaType": "application/vnd.oci.image.manifest.v1+json"
+      },
+      {
+        "digest": "sha256:a336d2ae848f416d3cce997b7a558b22a69394b7de5b693bf2402cb7f539d419",
+        "bytes": 2192,
+        "mediaType": "application/vnd.oci.image.manifest.v1+json"
+      },
+      {
+        "digest": "sha256:09564ea91d4655909a184176c87518eeb0705587d8656ad9fdbbd184213e63c1",
+        "bytes": 841,
+        "mediaType": "application/vnd.oci.image.manifest.v1+json"
+      },
+      {
+        "digest": "sha256:aedf411bcd17538e70d87272ba16677ed7ec62f2211cf4f30a3f38ec8ce6b55a",
+        "bytes": 12067,
+        "mediaType": "application/vnd.oci.image.config.v1+json"
+      },
+      {
+        "digest": "sha256:7fd1ebe418b5079d4aa36f416af9b143d127bc75b0155d71cb5fd559b5e04d39",
+        "bytes": 28249323,
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip"
+      },
+      {
+        "digest": "sha256:fb7da8a11632ec8a1daa7a740e634c10c151eccee31d49ba459b25877c5780e4",
+        "bytes": 3314,
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip"
+      },
+      {
+        "digest": "sha256:b9a701dba9fbaed52af5239f5eeaeec384346d232313fe2278e50f9259b8e3bc",
+        "bytes": 51041014,
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip"
+      },
+      {
+        "digest": "sha256:182ecac4702d154abbcf12044dcb36915e067902b76ad52919b967c71be97f53",
+        "bytes": 1713055,
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip"
+      },
+      {
+        "digest": "sha256:4cec569cef036288a370045819d1a4fed7630cc6eb5e0c8051745f2b7d37c5f2",
+        "bytes": 446,
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip"
+      },
+      {
+        "digest": "sha256:6bf6469ab11c5533f6da6a53c7bdf90b444178091f198b22412477bcd0c3411c",
+        "bytes": 99,
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip"
+      },
+      {
+        "digest": "sha256:499b4cf736404b0fa8a90d1c24f2a3e6cb0bd5d90c906bcae639860eb59b8612",
+        "bytes": 273,
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip"
+      },
+      {
+        "digest": "sha256:36375cfa8f3c2b1fa65f723c41f73d7856c1ff39c20abf93e25843cd205d3f22",
+        "bytes": 314,
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip"
+      },
+      {
+        "digest": "sha256:ce197b696f9d533f63bf63914170a324f6bb1388a41ed4fac71c44e32f40db0f",
+        "bytes": 241,
+        "mediaType": "application/vnd.oci.image.config.v1+json"
+      },
+      {
+        "digest": "sha256:c61883fd65656c7d8c206496129975aad03ba702e79d03d3005b2fad6a39a23c",
+        "bytes": 2545086,
+        "mediaType": "application/vnd.in-toto+json"
+      },
+      {
+        "digest": "sha256:1fa0c322c504ff68efae3d9bc404a852cc7dc6522321d2635593721c1f1b54b5",
+        "bytes": 15787,
+        "mediaType": "application/vnd.in-toto+json"
+      },
+      {
+        "digest": "sha256:2c23ac87b73f3de90bbfbf4e71b052919759111932d92f0ffba288861b3f94f6",
+        "bytes": 12073,
+        "mediaType": "application/vnd.oci.image.config.v1+json"
+      },
+      {
+        "digest": "sha256:c75f989a229d12b2d2613a5997de9ff3546f664c22da9248720033a2410220f6",
+        "bytes": 28137179,
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip"
+      },
+      {
+        "digest": "sha256:f3b7fa076fe63b12118c87ec7c84133db790c4942081273fd6f71f91598d297d",
+        "bytes": 3314,
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip"
+      },
+      {
+        "digest": "sha256:0c847615531065f69ea6ddc554bb40067455e42aa9274e29bf1245dc03140888",
+        "bytes": 51021488,
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip"
+      },
+      {
+        "digest": "sha256:f8951e871b2569bbd90a0461aadc9526beb7da501769f25e02a0c921ed819c80",
+        "bytes": 1712994,
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip"
+      },
+      {
+        "digest": "sha256:66095d3064d1b18399d076b3b93108d12a0f352ade634c55c11fc1770d14dd5d",
+        "bytes": 448,
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip"
+      },
+      {
+        "digest": "sha256:965a7ac3622ae34644035cc13f77183b075f12b7718029176c285487c0333694",
+        "bytes": 306,
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip"
+      },
+      {
+        "digest": "sha256:96409a48378834370c786f7ff72d441ec95d235e3d4820b6417ba6065d1156ae",
+        "bytes": 241,
+        "mediaType": "application/vnd.oci.image.config.v1+json"
+      },
+      {
+        "digest": "sha256:e10b693cd6cdbc5ddcc63b0e2035faecf32610c21b15b1ed944b064043974447",
+        "bytes": 2545113,
+        "mediaType": "application/vnd.in-toto+json"
+      },
+      {
+        "digest": "sha256:6af5991ee540b16c0d84bcfb691b635547ed07f1ceb8e2a19d4a0bc268278d5f",
+        "bytes": 15787,
+        "mediaType": "application/vnd.in-toto+json"
+      },
+      {
+        "digest": "sha256:87cf71d4e9dc385e62bf7e54e57ac04ae2a1ea8b20179f65b5681331cb38a625",
+        "bytes": 13156,
+        "mediaType": "application/vnd.oci.image.config.v1+json"
+      },
+      {
+        "digest": "sha256:7eb3865777b69a8cc4b5196916f664c4b47d8d6f7230539e6cc369ccde73428f",
+        "bytes": 38768514,
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip"
+      },
+      {
+        "digest": "sha256:1546a9b4a05bbacaf6f348f6989272d8b7288b23eae704515bf669767863c687",
+        "bytes": 241,
+        "mediaType": "application/vnd.oci.image.config.v1+json"
+      },
+      {
+        "digest": "sha256:f0b84ac9da27c140534029276ead42fa0c62ab2e7ea6fa7e89f93e32a2a49682",
+        "bytes": 3961187,
+        "mediaType": "application/vnd.in-toto+json"
+      },
+      {
+        "digest": "sha256:3e684ff307907424286bcabc080ec8a6ee44e8610b3965be4f764cd6208b1d6e",
+        "bytes": 10320,
+        "mediaType": "application/vnd.in-toto+json"
+      },
+      {
+        "digest": "sha256:2614e8510c18c63f03c7f8803497ff5087e2bde836cb8535fe20064127fd445a",
+        "bytes": 13161,
+        "mediaType": "application/vnd.oci.image.config.v1+json"
+      },
+      {
+        "digest": "sha256:111a0faca818842e0c5429dd69f9982fbc093276ac2fd61113c2c573464f6a26",
+        "bytes": 38366497,
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip"
+      },
+      {
+        "digest": "sha256:77292ef6d312ac61efdbfb9aa0f9b5ef210082b5405b755c7ed7ee521419ec92",
+        "bytes": 241,
+        "mediaType": "application/vnd.oci.image.config.v1+json"
+      },
+      {
+        "digest": "sha256:1342a66cc8f83a85159f03ba3a268f2f361a6c332584ea5406841cd24e37123f",
+        "bytes": 3965410,
+        "mediaType": "application/vnd.in-toto+json"
+      },
+      {
+        "digest": "sha256:ddce5e9fd12122683e5402947cc38614eda89141abd55f233327c84f6b20b604",
+        "bytes": 10320,
+        "mediaType": "application/vnd.in-toto+json"
+      },
+      {
+        "digest": "sha256:4a26267c4990f3f6d85c727afd41fecd3346edc8ca61e85518d5dc67752004e6",
+        "bytes": 17568,
+        "mediaType": "application/vnd.oci.image.config.v1+json"
+      },
+      {
+        "digest": "sha256:a53a92f3a6a35aa2671fdf12f5e895513d14bc8c2be83194d76d91cdf48d1daa",
+        "bytes": 100610,
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip"
+      },
+      {
+        "digest": "sha256:0ff89129df7a9b48c90ac99fb252d07912c24beaafef0b38d1ba321ea1148652",
+        "bytes": 241,
+        "mediaType": "application/vnd.oci.image.config.v1+json"
+      },
+      {
+        "digest": "sha256:13c56830a4889a5d761dc737f5ef0311f773be2ee4c36c889a00bff7e5528c20",
+        "bytes": 3964607,
+        "mediaType": "application/vnd.in-toto+json"
+      },
+      {
+        "digest": "sha256:f289c29cec202055078db39895def05c6795b80a594813755da15accb441fc71",
+        "bytes": 15422,
+        "mediaType": "application/vnd.in-toto+json"
+      },
+      {
+        "digest": "sha256:44f1291213e1aa7f31e62786042d275058fc11c7d2be2f5e5795887215f96a86",
+        "bytes": 17573,
+        "mediaType": "application/vnd.oci.image.config.v1+json"
+      },
+      {
+        "digest": "sha256:d7a95b20ae77034a0c98a5069e71719261ced6fddb5d4e8684272017387466bc",
+        "bytes": 101827,
+        "mediaType": "application/vnd.oci.image.layer.v1.tar+gzip"
+      },
+      {
+        "digest": "sha256:1e82edae1265393cfd7371bc255e30bd83058f4bb82da663fe5de3192413fc55",
+        "bytes": 241,
+        "mediaType": "application/vnd.oci.image.config.v1+json"
+      },
+      {
+        "digest": "sha256:a227bff9dbbe13d872d536b4ba9ecc4e36a64c860bd3ebf3dbb3d73d6d0b7281",
+        "bytes": 3968833,
+        "mediaType": "application/vnd.in-toto+json"
+      },
+      {
+        "digest": "sha256:1497d4330a309c47a929371e5517d7dca07a1690a9180932fd34d7f40248942f",
+        "bytes": 15422,
+        "mediaType": "application/vnd.in-toto+json"
+      }
+    ],
+    "finishedAt": "2026-10-18T09:55:25.611Z",
+    "totalUniqueBlobBytes": 260363228,
+    "rootIndex": {
+      "schemaVersion": 2,
+      "mediaType": "application/vnd.oci.image.index.v1+json",
+      "manifests": [
+        {
+          "mediaType": "application/vnd.oci.image.index.v1+json",
+          "digest": "sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
+          "size": 1609,
+          "annotations": {
+            "org.opencontainers.image.ref.name": "service"
+          }
+        },
+        {
+          "mediaType": "application/vnd.oci.image.index.v1+json",
+          "digest": "sha256:aab45816f04afec0aed6ccd0daea92e6288a4a35c65368438678bad30b57f346",
+          "size": 1609,
+          "annotations": {
+            "org.opencontainers.image.ref.name": "ci"
+          }
+        },
+        {
+          "mediaType": "application/vnd.oci.image.index.v1+json",
+          "digest": "sha256:853b99050d5420698a02d7cb10978be8824dc0999c9ace08ec453706da54ec31",
+          "size": 1609,
+          "annotations": {
+            "org.opencontainers.image.ref.name": "ci-node26"
+          }
+        }
+      ]
+    },
+    "completeGraphHashValidation": true
+  },
   "registry": {
     "complete": true,
     "anonymousStatus": 401,
@@ -3807,12 +4873,12 @@
     "hostBindMounts": 0
   },
   "timestampComputeModel": {
-    "observedNativeRequestMilliseconds": 303516,
+    "observedNativeRequestMilliseconds": 403938,
     "maximumArchitectureBuilders": 2,
     "cpusPerBuilder": 16,
     "memoryGiBPerBuilder": 32,
     "publicRateUsdPerBuilderMinute": 0.04,
-    "nominalWindowEstimateUsd": 0.40468800000000005,
+    "nominalWindowEstimateUsd": 0.5385840000000001,
     "ceilingUsd": 2,
     "invoiceOrAccountCapProven": false,
     "initialExpiredWallClockRetained": true
@@ -3820,13 +4886,13 @@
   "heldResources": {
     "projectId": "27m5m3vjlv",
     "imageDigest": "sha256:4f2c182b14f816dfe9ab08f531a8d49378b5f76767b8f56f7c9154f05d0ff3e7",
-    "deletionDeferredUntilSharedConsumersFinish": true
+    "parentConsumerHoldReleased": true,
+    "deletionPendingOwnedGraphPreservationAndCleanup": true
   },
   "unresolved": [
     "Native OCI empty statement subjects versus registry subjects: deciding source and consumer consequences",
-    "Remote Git immutable context and local overlay control",
     "Cross-project pull-token isolation",
-    "Independent parent nativeCI and GitHub consumers",
-    "Image/project deletion after shared consumers"
+    "Canonical Dockerfile current Semgrep-rule non-detection, custom filename filtering and scanner error handling",
+    "Image/project deletion after preserved owned graphs"
   ]
 }
