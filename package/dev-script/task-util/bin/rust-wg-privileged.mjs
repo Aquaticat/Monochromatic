@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { writeFileSync, mkdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { strict as assert } from 'node:assert';
 import { root, owned, evidence, environment, run, rust, sourceAdmission, nextestConfig } from './rust-bounded-profile.mjs';
 
@@ -20,7 +20,9 @@ try {
   rust('owning-debug-cli-build', ['cargo', 'build', '--offline', '--locked'], { cwd: project });
   rust('privileged-nextest-build-only', ['cargo', 'nextest', 'run', '--offline', '--locked', '--no-run'], { cwd: project });
   const cargo = run('installed-cargo-path', 'mise', ['which', 'cargo']).stdout.trim();
+  const nextest = run('installed-nextest-path', 'mise', ['which', 'cargo-nextest']).stdout.trim();
   const node = run('installed-node-path', 'mise', ['which', 'node']).stdout.trim();
+  environment.PATH = [dirname(cargo), dirname(nextest), environment.PATH].join(':');
   const config = nextestConfig('wg-privileged');
   const variables = Object.entries(environment).filter(([key]) => ['PATH', 'HOME', 'TMPDIR', 'CARGO_HOME', 'CARGO_TARGET_DIR', 'CARGO_BUILD_JOBS', 'CARGO_INCREMENTAL', 'CARGO_PROFILE_DEV_DEBUG', 'RUSTUP_HOME'].includes(key)).map(([key, value]) => key + '=' + value);
   const result = run('owned-root-network-mount-cgroup-pid-namespaces', 'sudo', ['--non-interactive', 'unshare', '--mount', '--net', '--cgroup', '--pid', '--fork', '--kill-child', '--mount-proc', '--propagation', 'private', '--', '/usr/bin/env', ...variables, node, join(root, 'package/dev-script/task-util/bin/rust-wg-namespace.mjs'), project, evidence, cargo, config], { allowFailure: true });
