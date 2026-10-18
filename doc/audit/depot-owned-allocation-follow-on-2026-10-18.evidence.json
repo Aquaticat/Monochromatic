@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "status": "all_current_terminal_root_and_first_host_handoff_rows_normalized_recovery_pending",
-  "recordedAt": "2026-10-18T17:13:13.074Z",
+  "status": "terminal_known_root_and_host_rows_normalized_later_owner_receipts_pending",
+  "recordedAt": "2026-10-18T18:06:32.326Z",
   "baseline": {
     "path": "doc/audit/depot-owned-allocation-ledger-2026-10-18.evidence.json",
     "record": "inputs/doc/audit/depot-owned-allocation-ledger-2026-10-18.evidence.json@d265c963dbb0c95c",
@@ -2223,12 +2223,572 @@
       ],
       "actualInvoiceObserved": false,
       "billableVmLifetimeObserved": false
+    },
+    {
+      "key": "github:standard-public-github-actions:run:39144499822:job:117725488825:attempt:1",
+      "provider": "github",
+      "product": "standard-public-github-actions",
+      "kind": "job-attempt",
+      "identifiers": {
+        "runId": "39144499822",
+        "jobId": "117725488825",
+        "attemptNumber": 1
+      },
+      "status": "completed",
+      "conclusion": "failure",
+      "apiHeadSha": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19",
+      "executionSha": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "requestedResources": {
+        "labels": [
+          "windows-2025"
+        ],
+        "vcpu": 4,
+        "memoryGB": 16,
+        "shapeScope": "documented requested catalog shape; not measured RAM"
+      },
+      "observedResources": {
+        "vcpu": null,
+        "memoryBytes": null,
+        "qualification": "This allocation join does not derive measured hardware from catalog values"
+      },
+      "configurationSource": {
+        "record": "git/aa501f4a5c0e74a0a993b668c98b00fe3be2da19/.github/workflows/readonly-semantic-bridge.yml@ad58659406d0df8a",
+        "sha256": "ad58659406d0df8a25a7476f9b979ac2e9a004ee03be6a39c242176366d8933d",
+        "path": ".github/workflows/readonly-semantic-bridge.yml",
+        "commit": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19"
+      },
+      "runnerAssignment": {
+        "name": "GitHub Actions 1000002892",
+        "id": 1000002892,
+        "actualStepObserved": true
+      },
+      "interval": {
+        "startedAt": "2026-10-18T16:59:02Z",
+        "finishedAt": "2026-10-18T17:01:23Z",
+        "milliseconds": 141000,
+        "seconds": "141",
+        "scope": "assigned GitHub job interval; no VM invoice boundary",
+        "source": {
+          "record": "metadata/public-recovery-jobs-selected@bb790bf47eb29b8f",
+          "pointer": "/jobs/0"
+        },
+        "nominalListCompute": {
+          "usd": "0",
+          "numerator": "0",
+          "denominator": "60000000000",
+          "rateUsdPerMinute": "0",
+          "actualInvoiceObserved": false,
+          "billableVmLifetimeObserved": false
+        }
+      },
+      "maximumFullTimeoutReservation": {
+        "minutes": 30,
+        "usd": "0",
+        "active": false,
+        "scope": "standard public GitHub nominal compute only; artifact/storage unmeasured"
+      },
+      "sourceReferences": [
+        {
+          "record": "inputs/public-recovery-owner-selected@6446c272f0d66d8f",
+          "pointer": "/allocatedRows/0"
+        },
+        {
+          "record": "metadata/public-recovery-run-selected@bdee30115d9dde1a"
+        }
+      ],
+      "workloadExecutionCredit": false,
+      "workloadCreditQualification": "Allocation normalization alone gives no additional application case credit",
+      "actualInvoiceObserved": false,
+      "billableVmLifetimeObserved": false
+    },
+    {
+      "key": "github:standard-public-github-actions:run:39144499822:job:117725488995:attempt:1",
+      "provider": "github",
+      "product": "standard-public-github-actions",
+      "kind": "job-attempt",
+      "identifiers": {
+        "runId": "39144499822",
+        "jobId": "117725488995",
+        "attemptNumber": 1
+      },
+      "status": "completed",
+      "conclusion": "failure",
+      "apiHeadSha": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19",
+      "executionSha": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "requestedResources": {
+        "labels": [
+          "windows-11-arm"
+        ],
+        "vcpu": 4,
+        "memoryGB": 16,
+        "shapeScope": "documented requested catalog shape; not measured RAM"
+      },
+      "observedResources": {
+        "vcpu": null,
+        "memoryBytes": null,
+        "qualification": "This allocation join does not derive measured hardware from catalog values"
+      },
+      "configurationSource": {
+        "record": "git/aa501f4a5c0e74a0a993b668c98b00fe3be2da19/.github/workflows/readonly-semantic-bridge.yml@ad58659406d0df8a",
+        "sha256": "ad58659406d0df8a25a7476f9b979ac2e9a004ee03be6a39c242176366d8933d",
+        "path": ".github/workflows/readonly-semantic-bridge.yml",
+        "commit": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19"
+      },
+      "runnerAssignment": {
+        "name": "GitHub Actions 1000002875",
+        "id": 1000002875,
+        "actualStepObserved": true
+      },
+      "interval": {
+        "startedAt": "2026-10-18T16:49:59Z",
+        "finishedAt": "2026-10-18T16:59:01Z",
+        "milliseconds": 542000,
+        "seconds": "542",
+        "scope": "assigned GitHub job interval; no VM invoice boundary",
+        "source": {
+          "record": "metadata/public-recovery-jobs-selected@bb790bf47eb29b8f",
+          "pointer": "/jobs/1"
+        },
+        "nominalListCompute": {
+          "usd": "0",
+          "numerator": "0",
+          "denominator": "60000000000",
+          "rateUsdPerMinute": "0",
+          "actualInvoiceObserved": false,
+          "billableVmLifetimeObserved": false
+        }
+      },
+      "maximumFullTimeoutReservation": {
+        "minutes": 30,
+        "usd": "0",
+        "active": false,
+        "scope": "standard public GitHub nominal compute only; artifact/storage unmeasured"
+      },
+      "sourceReferences": [
+        {
+          "record": "inputs/public-recovery-owner-selected@6446c272f0d66d8f",
+          "pointer": "/allocatedRows/1"
+        },
+        {
+          "record": "metadata/public-recovery-run-selected@bdee30115d9dde1a"
+        }
+      ],
+      "workloadExecutionCredit": false,
+      "workloadCreditQualification": "Allocation normalization alone gives no additional application case credit",
+      "actualInvoiceObserved": false,
+      "billableVmLifetimeObserved": false
+    },
+    {
+      "key": "github:standard-public-github-actions:run:39144499822:job:117725489035:attempt:1",
+      "provider": "github",
+      "product": "standard-public-github-actions",
+      "kind": "job-attempt",
+      "identifiers": {
+        "runId": "39144499822",
+        "jobId": "117725489035",
+        "attemptNumber": 1
+      },
+      "status": "completed",
+      "conclusion": "failure",
+      "apiHeadSha": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19",
+      "executionSha": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "requestedResources": {
+        "labels": [
+          "macos-15"
+        ],
+        "vcpu": 3,
+        "memoryGB": 7,
+        "shapeScope": "documented requested catalog shape; not measured RAM"
+      },
+      "observedResources": {
+        "vcpu": null,
+        "memoryBytes": null,
+        "qualification": "This allocation join does not derive measured hardware from catalog values"
+      },
+      "configurationSource": {
+        "record": "git/aa501f4a5c0e74a0a993b668c98b00fe3be2da19/.github/workflows/readonly-semantic-bridge.yml@ad58659406d0df8a",
+        "sha256": "ad58659406d0df8a25a7476f9b979ac2e9a004ee03be6a39c242176366d8933d",
+        "path": ".github/workflows/readonly-semantic-bridge.yml",
+        "commit": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19"
+      },
+      "runnerAssignment": {
+        "name": "GitHub Actions 1000002823",
+        "id": 1000002823,
+        "actualStepObserved": true
+      },
+      "interval": {
+        "startedAt": "2026-10-18T16:20:02Z",
+        "finishedAt": "2026-10-18T16:29:26Z",
+        "milliseconds": 564000,
+        "seconds": "564",
+        "scope": "assigned GitHub job interval; no VM invoice boundary",
+        "source": {
+          "record": "metadata/public-recovery-jobs-selected@bb790bf47eb29b8f",
+          "pointer": "/jobs/2"
+        },
+        "nominalListCompute": {
+          "usd": "0",
+          "numerator": "0",
+          "denominator": "60000000000",
+          "rateUsdPerMinute": "0",
+          "actualInvoiceObserved": false,
+          "billableVmLifetimeObserved": false
+        }
+      },
+      "maximumFullTimeoutReservation": {
+        "minutes": 30,
+        "usd": "0",
+        "active": false,
+        "scope": "standard public GitHub nominal compute only; artifact/storage unmeasured"
+      },
+      "sourceReferences": [
+        {
+          "record": "inputs/public-recovery-owner-selected@6446c272f0d66d8f",
+          "pointer": "/allocatedRows/2"
+        },
+        {
+          "record": "metadata/public-recovery-run-selected@bdee30115d9dde1a"
+        }
+      ],
+      "workloadExecutionCredit": false,
+      "workloadCreditQualification": "Allocation normalization alone gives no additional application case credit",
+      "actualInvoiceObserved": false,
+      "billableVmLifetimeObserved": false
+    },
+    {
+      "key": "github:standard-public-github-actions:run:39144499822:job:117725489078:attempt:1",
+      "provider": "github",
+      "product": "standard-public-github-actions",
+      "kind": "job-attempt",
+      "identifiers": {
+        "runId": "39144499822",
+        "jobId": "117725489078",
+        "attemptNumber": 1
+      },
+      "status": "completed",
+      "conclusion": "success",
+      "apiHeadSha": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19",
+      "executionSha": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "requestedResources": {
+        "labels": [
+          "macos-latest"
+        ],
+        "vcpu": 3,
+        "memoryGB": 7,
+        "shapeScope": "documented requested catalog shape; not measured RAM"
+      },
+      "observedResources": {
+        "vcpu": null,
+        "memoryBytes": null,
+        "qualification": "This allocation join does not derive measured hardware from catalog values"
+      },
+      "configurationSource": {
+        "record": "git/aa501f4a5c0e74a0a993b668c98b00fe3be2da19/.github/workflows/readonly-semantic-bridge.yml@ad58659406d0df8a",
+        "sha256": "ad58659406d0df8a25a7476f9b979ac2e9a004ee03be6a39c242176366d8933d",
+        "path": ".github/workflows/readonly-semantic-bridge.yml",
+        "commit": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19"
+      },
+      "runnerAssignment": {
+        "name": "GitHub Actions 1000002872",
+        "id": 1000002872,
+        "actualStepObserved": true
+      },
+      "interval": {
+        "startedAt": "2026-10-18T16:48:48Z",
+        "finishedAt": "2026-10-18T16:49:57Z",
+        "milliseconds": 69000,
+        "seconds": "69",
+        "scope": "assigned GitHub job interval; no VM invoice boundary",
+        "source": {
+          "record": "metadata/public-recovery-jobs-selected@bb790bf47eb29b8f",
+          "pointer": "/jobs/3"
+        },
+        "nominalListCompute": {
+          "usd": "0",
+          "numerator": "0",
+          "denominator": "60000000000",
+          "rateUsdPerMinute": "0",
+          "actualInvoiceObserved": false,
+          "billableVmLifetimeObserved": false
+        }
+      },
+      "maximumFullTimeoutReservation": {
+        "minutes": 30,
+        "usd": "0",
+        "active": false,
+        "scope": "standard public GitHub nominal compute only; artifact/storage unmeasured"
+      },
+      "sourceReferences": [
+        {
+          "record": "inputs/public-recovery-owner-selected@6446c272f0d66d8f",
+          "pointer": "/allocatedRows/3"
+        },
+        {
+          "record": "metadata/public-recovery-run-selected@bdee30115d9dde1a"
+        }
+      ],
+      "workloadExecutionCredit": false,
+      "workloadCreditQualification": "Allocation normalization alone gives no additional application case credit",
+      "actualInvoiceObserved": false,
+      "billableVmLifetimeObserved": false
+    },
+    {
+      "key": "github:standard-public-github-actions:run:39144499822:job:117725489146:attempt:1",
+      "provider": "github",
+      "product": "standard-public-github-actions",
+      "kind": "job-attempt",
+      "identifiers": {
+        "runId": "39144499822",
+        "jobId": "117725489146",
+        "attemptNumber": 1
+      },
+      "status": "completed",
+      "conclusion": "failure",
+      "apiHeadSha": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19",
+      "executionSha": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "requestedResources": {
+        "labels": [
+          "windows-2025"
+        ],
+        "vcpu": 4,
+        "memoryGB": 16,
+        "shapeScope": "documented requested catalog shape; not measured RAM"
+      },
+      "observedResources": {
+        "vcpu": null,
+        "memoryBytes": null,
+        "qualification": "This allocation join does not derive measured hardware from catalog values"
+      },
+      "configurationSource": {
+        "record": "git/aa501f4a5c0e74a0a993b668c98b00fe3be2da19/.github/workflows/readonly-semantic-bridge.yml@ad58659406d0df8a",
+        "sha256": "ad58659406d0df8a25a7476f9b979ac2e9a004ee03be6a39c242176366d8933d",
+        "path": ".github/workflows/readonly-semantic-bridge.yml",
+        "commit": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19"
+      },
+      "runnerAssignment": {
+        "name": "GitHub Actions 1000002844",
+        "id": 1000002844,
+        "actualStepObserved": true
+      },
+      "interval": {
+        "startedAt": "2026-10-18T16:29:27Z",
+        "finishedAt": "2026-10-18T16:48:42Z",
+        "milliseconds": 1155000,
+        "seconds": "1155",
+        "scope": "assigned GitHub job interval; no VM invoice boundary",
+        "source": {
+          "record": "metadata/public-recovery-jobs-selected@bb790bf47eb29b8f",
+          "pointer": "/jobs/4"
+        },
+        "nominalListCompute": {
+          "usd": "0",
+          "numerator": "0",
+          "denominator": "60000000000",
+          "rateUsdPerMinute": "0",
+          "actualInvoiceObserved": false,
+          "billableVmLifetimeObserved": false
+        }
+      },
+      "maximumFullTimeoutReservation": {
+        "minutes": 30,
+        "usd": "0",
+        "active": false,
+        "scope": "standard public GitHub nominal compute only; artifact/storage unmeasured"
+      },
+      "sourceReferences": [
+        {
+          "record": "inputs/public-recovery-owner-selected@6446c272f0d66d8f",
+          "pointer": "/allocatedRows/4"
+        },
+        {
+          "record": "metadata/public-recovery-run-selected@bdee30115d9dde1a"
+        }
+      ],
+      "workloadExecutionCredit": false,
+      "workloadCreditQualification": "Allocation normalization alone gives no additional application case credit",
+      "actualInvoiceObserved": false,
+      "billableVmLifetimeObserved": false
+    },
+    {
+      "key": "depot:github-actions-runners:run:39148580870:job:117737397295:attempt:1",
+      "provider": "depot",
+      "product": "github-actions-runners",
+      "kind": "job-attempt",
+      "identifiers": {
+        "runId": "39148580870",
+        "jobId": "117737397295",
+        "attemptNumber": 1
+      },
+      "status": "completed",
+      "conclusion": "failure",
+      "apiHeadSha": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19",
+      "executionSha": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "requestedResources": {
+        "label": "depot-windows-2025-4",
+        "vcpu": 4,
+        "memoryGB": 16,
+        "diskGB": 130,
+        "ownerProcessMaximumMinutes": 17,
+        "shapeScope": "documented requested catalog shape; not measured hardware",
+        "labels": [
+          "depot-windows-2025-4"
+        ],
+        "timeoutMinutes": 20
+      },
+      "observedResources": {
+        "vcpu": null,
+        "memoryBytes": null,
+        "qualification": "No hardware measurement inferred from assigned-runner API metadata or catalog values"
+      },
+      "configurationSource": {
+        "record": "git/aa501f4a5c0e74a0a993b668c98b00fe3be2da19/.github/workflows/readonly-semantic-bridge.yml@ad58659406d0df8a",
+        "sha256": "ad58659406d0df8a25a7476f9b979ac2e9a004ee03be6a39c242176366d8933d",
+        "path": ".github/workflows/readonly-semantic-bridge.yml",
+        "commit": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19"
+      },
+      "runnerAssignment": {
+        "name": "depot-n40gsg4tcb",
+        "id": 130,
+        "actualStepObserved": true
+      },
+      "pricingSource": {
+        "record": "pricing/github-runners",
+        "sourceLine": 84,
+        "label": "depot-windows-2025-4",
+        "rateUsdPerMinute": "0.016"
+      },
+      "interval": {
+        "startedAt": "2026-10-18T17:19:37Z",
+        "finishedAt": "2026-10-18T17:30:51Z",
+        "milliseconds": 674000,
+        "seconds": "674",
+        "scope": "assigned GitHub job interval; no VM invoice boundary",
+        "source": {
+          "record": "metadata/terminal-depot-os-jobs-selected@b6bc39bf29a4c055",
+          "pointer": "/jobs/0"
+        },
+        "nominalListCompute": {
+          "usd": "0.179733333333",
+          "numerator": "10784000000",
+          "denominator": "60000000000",
+          "rateUsdPerMinute": "0.016",
+          "actualInvoiceObserved": false,
+          "billableVmLifetimeObserved": false
+        }
+      },
+      "maximumFullTimeoutReservation": {
+        "minutes": 20,
+        "usd": "0.32",
+        "active": false,
+        "scope": "released historical full job timeout reservation; distinct from actual interval proxy"
+      },
+      "sourceReferences": [
+        {
+          "record": "inputs/terminal-depot-os-owner-selected@c97f47141b8bcdd2",
+          "pointer": "/allocationRows/depot/rows/0"
+        }
+      ],
+      "workloadExecutionCredit": false,
+      "workloadCreditQualification": "Allocation normalization supplies no additional authored case credit",
+      "actualInvoiceObserved": false,
+      "billableVmLifetimeObserved": false
+    },
+    {
+      "key": "depot:github-actions-runners:run:39148580870:job:117737397487:attempt:1",
+      "provider": "depot",
+      "product": "github-actions-runners",
+      "kind": "job-attempt",
+      "identifiers": {
+        "runId": "39148580870",
+        "jobId": "117737397487",
+        "attemptNumber": 1
+      },
+      "status": "completed",
+      "conclusion": "failure",
+      "apiHeadSha": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19",
+      "executionSha": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19",
+      "applicationSource": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "requestedResources": {
+        "label": "depot-macos-15",
+        "vcpu": 8,
+        "memoryGB": 24,
+        "diskGB": 400,
+        "ownerProcessMaximumMinutes": 17,
+        "shapeScope": "documented requested catalog shape; not measured hardware",
+        "labels": [
+          "depot-macos-15"
+        ],
+        "timeoutMinutes": 20
+      },
+      "observedResources": {
+        "vcpu": null,
+        "memoryBytes": null,
+        "qualification": "No hardware measurement inferred from assigned-runner API metadata or catalog values"
+      },
+      "configurationSource": {
+        "record": "git/aa501f4a5c0e74a0a993b668c98b00fe3be2da19/.github/workflows/readonly-semantic-bridge.yml@ad58659406d0df8a",
+        "sha256": "ad58659406d0df8a25a7476f9b979ac2e9a004ee03be6a39c242176366d8933d",
+        "path": ".github/workflows/readonly-semantic-bridge.yml",
+        "commit": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19"
+      },
+      "runnerAssignment": {
+        "name": "depot-2dsj7bp6rj",
+        "id": 257,
+        "actualStepObserved": true
+      },
+      "pricingSource": {
+        "record": "pricing/github-runners",
+        "sourceLine": 114,
+        "label": "depot-macos-15",
+        "rateUsdPerMinute": "0.08"
+      },
+      "interval": {
+        "startedAt": "2026-10-18T17:13:37Z",
+        "finishedAt": "2026-10-18T17:19:36Z",
+        "milliseconds": 359000,
+        "seconds": "359",
+        "scope": "assigned GitHub job interval; no VM invoice boundary",
+        "source": {
+          "record": "metadata/terminal-depot-os-jobs-selected@b6bc39bf29a4c055",
+          "pointer": "/jobs/1"
+        },
+        "nominalListCompute": {
+          "usd": "0.478666666666",
+          "numerator": "28720000000",
+          "denominator": "60000000000",
+          "rateUsdPerMinute": "0.08",
+          "actualInvoiceObserved": false,
+          "billableVmLifetimeObserved": false
+        }
+      },
+      "maximumFullTimeoutReservation": {
+        "minutes": 20,
+        "usd": "1.6",
+        "active": false,
+        "scope": "released historical full job timeout reservation; distinct from actual interval proxy"
+      },
+      "sourceReferences": [
+        {
+          "record": "inputs/terminal-depot-os-owner-selected@c97f47141b8bcdd2",
+          "pointer": "/allocationRows/depot/rows/1"
+        }
+      ],
+      "workloadExecutionCredit": false,
+      "workloadCreditQualification": "Allocation normalization supplies no additional authored case credit",
+      "actualInvoiceObserved": false,
+      "billableVmLifetimeObserved": false
     }
   ],
   "totalsByProduct": {
     "standard-public-github-actions": {
-      "rows": 12,
-      "pricedProviderIntervals": 12,
+      "rows": 17,
+      "pricedProviderIntervals": 17,
       "unpricedProviderIntervals": 0,
       "runOnlyFallbacks": 0,
       "nominalObservedProviderWindowListProxy": {
@@ -2243,13 +2803,13 @@
       }
     },
     "github-actions-runners": {
-      "rows": 7,
-      "pricedProviderIntervals": 7,
+      "rows": 9,
+      "pricedProviderIntervals": 9,
       "unpricedProviderIntervals": 0,
       "runOnlyFallbacks": 0,
       "nominalObservedProviderWindowListProxy": {
-        "usd": "0.1797",
-        "numerator": "10782000000",
+        "usd": "0.8381",
+        "numerator": "50286000000",
         "denominator": "60000000000"
       },
       "buildRequestWindowProxy": {
@@ -2341,15 +2901,23 @@
   "pendingOwnerReceipts": [
     {
       "provider": "github",
-      "runId": "39144499822",
+      "runId": "39152147229",
       "owner": "coverage",
-      "reason": "Owner-watched recovery not yet collected at this snapshot"
+      "executionSha": "b76aab1964bfe9ac21aec3e9c5d24de443ec4992",
+      "reason": "Owner-watched GNU-only public Windows job; wait for terminal retained metadata before normalization"
     },
     {
-      "provider": "depot-github-actions",
+      "provider": "depot-native-ci",
+      "runId": null,
+      "owner": "platform",
+      "reason": "Parent reports SSH probe resealing; no allocation identity supplied, no row inferred"
+    },
+    {
+      "provider": "depot-native-ci",
       "runId": null,
       "owner": "coverage",
-      "reason": "Separate Depot OS admission remains unallocated; no row invented"
+      "admissionCommit": "c297a446bc",
+      "reason": "Seven primary material-owner profiles and at most two named corrections admitted under separate USD5; no allocation identity supplied, no row inferred"
     }
   ],
   "linkedOwnerReservations": [
@@ -2371,14 +2939,14 @@
   "actualVmBillingIntervalsObserved": false,
   "sourceArchive": {
     "path": "doc/audit/depot-owned-allocation-follow-on-2026-10-18.sources.json.gz",
-    "bytes": 387034,
-    "sha256": "a7a144cce9c0798f5e9a578e23d153f0375772b59fd21dde61edce2beacb8ae2",
-    "uncompressedBytes": 3121960,
-    "records": 35
+    "bytes": 392421,
+    "sha256": "872651779e81a7ae6627c10c7392151fbe435cb97be456a8e409428ee6ca1b6d",
+    "uncompressedBytes": 3179766,
+    "records": 41
   },
   "nominalKnownProviderWindowListProxyTotal": {
-    "usd": "0.6041",
-    "numerator": "36246000000",
+    "usd": "1.2625",
+    "numerator": "75750000000",
     "denominator": "60000000000"
   },
   "rootGraphNominalKnownProviderWindowSubtotal": {
@@ -2419,6 +2987,54 @@
       "runner_name": null,
       "runner_group_id": null,
       "runner_group_name": null
+    },
+    {
+      "id": 117725490037,
+      "run_id": 39144499822,
+      "run_attempt": 1,
+      "head_sha": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19",
+      "name": "Current e02 host (${{ matrix.id }})",
+      "status": "completed",
+      "conclusion": "skipped",
+      "created_at": "2026-10-18T16:19:54Z",
+      "started_at": "2026-10-18T16:19:54Z",
+      "completed_at": "2026-10-18T16:19:53Z",
+      "labels": [],
+      "runner_id": null,
+      "runner_name": null,
+      "runner_group_id": null,
+      "runner_group_name": null,
+      "steps": [],
+      "allocationCredit": false,
+      "source": {
+        "record": "metadata/public-recovery-jobs-selected@bb790bf47eb29b8f",
+        "pointer": "/jobs/5"
+      },
+      "qualification": "No assigned runner or started step; negative provider interval is not compute"
+    },
+    {
+      "id": 117737398481,
+      "run_id": 39148580870,
+      "run_attempt": 1,
+      "head_sha": "aa501f4a5c0e74a0a993b668c98b00fe3be2da19",
+      "name": "Current e02 host (${{ matrix.id }})",
+      "status": "completed",
+      "conclusion": "skipped",
+      "created_at": "2026-10-18T17:13:31Z",
+      "started_at": "2026-10-18T17:13:31Z",
+      "completed_at": "2026-10-18T17:13:31Z",
+      "labels": [],
+      "runner_id": null,
+      "runner_name": null,
+      "runner_group_id": null,
+      "runner_group_name": null,
+      "steps": [],
+      "allocationCredit": false,
+      "source": {
+        "record": "metadata/terminal-depot-os-jobs-selected@b6bc39bf29a4c055",
+        "pointer": "/jobs/2"
+      },
+      "qualification": "No assigned runner or started step; no allocated compute credit"
     }
   ],
   "appendedTerminalSources": [
@@ -2443,6 +3059,21 @@
       "sha256": "a1de16e0c42806ad07175e04d0e248aea82dea8fea2896441ade00f452f0f9dc",
       "sha256Scope": "Private original bytes before selected projection",
       "selectedArchiveRecord": "terminal/expanded-graph-native-podman-workflow.json-selected@66617b6a504d6d3d"
+    },
+    {
+      "source": "doc/audit/depot-current-host-matched-admission-2026-10-18.evidence.json",
+      "sha256": "a2f5bff513dc8cff4fdacbcb59159ad6d9635b3ad94b37d1688b4db04e680b32",
+      "scope": "selected publicPredecessor recovery rows only",
+      "rowsAdded": 5,
+      "selectedArchiveRecord": "inputs/public-recovery-owner-selected@6446c272f0d66d8f"
+    },
+    {
+      "path": "doc/audit/depot-current-host-owner-complete-2026-10-18.evidence.json.gz",
+      "bytes": 14201235,
+      "sha256": "d29c7887cf4df674346d850db3f2186345a55cbc53bbacd98ef33c7977221a35",
+      "scope": "selected terminal Depot OS allocation rows only",
+      "rowsAdded": 2,
+      "selectedArchiveRecord": "inputs/terminal-depot-os-owner-selected@c97f47141b8bcdd2"
     }
   ],
   "desktopBoundaryHydration": {
@@ -2715,6 +3346,238 @@
         "connectionMaterialFound": false,
         "publicEmailControl": null,
         "gitHistoryRemoved": false
+      },
+      {
+        "originalRecord": "private-unpublished/public-recovery/600082c516e03c9dd95db2ab32e79635fca6b2bc1924b216788cabce030cfdff",
+        "selectedRecord": "metadata/public-recovery-run-selected@bdee30115d9dde1a",
+        "derivedProjection": true,
+        "privateOriginalSha256": "600082c516e03c9dd95db2ab32e79635fca6b2bc1924b216788cabce030cfdff",
+        "privateOriginalBytes": 13251,
+        "privateOriginalRetained": "home-relative:temp/agent/depot-allocation-follow-on-20261018/privacy-originals/600082c516e03c9dd95db2ab32e79635fca6b2bc1924b216788cabce030cfdff.json",
+        "retainedFields": "Only exact required run/job/source/status/time/runner/step/label fields",
+        "fieldsActuallyPresent": [
+          "/url",
+          "/html_url",
+          "/actor",
+          "/triggering_actor",
+          "/jobs_url",
+          "/logs_url",
+          "/check_suite_url",
+          "/artifacts_url",
+          "/cancel_url",
+          "/rerun_url",
+          "/previous_attempt_url",
+          "/workflow_url",
+          "/head_repository/html_url",
+          "/head_repository/url",
+          "/head_repository/forks_url",
+          "/head_repository/keys_url",
+          "/head_repository/collaborators_url",
+          "/head_repository/teams_url",
+          "/head_repository/hooks_url",
+          "/head_repository/issue_events_url",
+          "/head_repository/events_url",
+          "/head_repository/assignees_url",
+          "/head_repository/branches_url",
+          "/head_repository/tags_url",
+          "/head_repository/blobs_url",
+          "/head_repository/git_tags_url",
+          "/head_repository/git_refs_url",
+          "/head_repository/trees_url",
+          "/head_repository/statuses_url",
+          "/head_repository/languages_url",
+          "/head_repository/stargazers_url",
+          "/head_repository/contributors_url",
+          "/head_repository/subscribers_url",
+          "/head_repository/subscription_url",
+          "/head_repository/commits_url",
+          "/head_repository/git_commits_url",
+          "/head_repository/comments_url",
+          "/head_repository/issue_comment_url",
+          "/head_repository/contents_url",
+          "/head_repository/compare_url",
+          "/head_repository/merges_url",
+          "/head_repository/archive_url",
+          "/head_repository/downloads_url",
+          "/head_repository/issues_url",
+          "/head_repository/pulls_url",
+          "/head_repository/milestones_url",
+          "/head_repository/notifications_url",
+          "/head_repository/labels_url",
+          "/head_repository/releases_url",
+          "/head_repository/deployments_url",
+          "/head_repository/owner/avatar_url",
+          "/head_repository/owner/url",
+          "/head_repository/owner/html_url",
+          "/head_repository/owner/followers_url",
+          "/head_repository/owner/following_url",
+          "/head_repository/owner/gists_url",
+          "/head_repository/owner/starred_url",
+          "/head_repository/owner/subscriptions_url",
+          "/head_repository/owner/organizations_url",
+          "/head_repository/owner/repos_url",
+          "/head_repository/owner/events_url",
+          "/head_repository/owner/received_events_url",
+          "/repository/html_url",
+          "/repository/url",
+          "/repository/forks_url",
+          "/repository/keys_url",
+          "/repository/collaborators_url",
+          "/repository/teams_url",
+          "/repository/hooks_url",
+          "/repository/issue_events_url",
+          "/repository/events_url",
+          "/repository/assignees_url",
+          "/repository/branches_url",
+          "/repository/tags_url",
+          "/repository/blobs_url",
+          "/repository/git_tags_url",
+          "/repository/git_refs_url",
+          "/repository/trees_url",
+          "/repository/statuses_url",
+          "/repository/languages_url",
+          "/repository/stargazers_url",
+          "/repository/contributors_url",
+          "/repository/subscribers_url",
+          "/repository/subscription_url",
+          "/repository/commits_url",
+          "/repository/git_commits_url",
+          "/repository/comments_url",
+          "/repository/issue_comment_url",
+          "/repository/contents_url",
+          "/repository/compare_url",
+          "/repository/merges_url",
+          "/repository/archive_url",
+          "/repository/downloads_url",
+          "/repository/issues_url",
+          "/repository/pulls_url",
+          "/repository/milestones_url",
+          "/repository/notifications_url",
+          "/repository/labels_url",
+          "/repository/releases_url",
+          "/repository/deployments_url",
+          "/repository/owner/avatar_url",
+          "/repository/owner/url",
+          "/repository/owner/html_url",
+          "/repository/owner/followers_url",
+          "/repository/owner/following_url",
+          "/repository/owner/gists_url",
+          "/repository/owner/starred_url",
+          "/repository/owner/subscriptions_url",
+          "/repository/owner/organizations_url",
+          "/repository/owner/repos_url",
+          "/repository/owner/events_url",
+          "/repository/owner/received_events_url",
+          "/head_commit/author",
+          "/head_commit/committer",
+          "/head_commit/committer/email",
+          "/head_commit/author/email",
+          "/triggering_actor/avatar_url",
+          "/triggering_actor/url",
+          "/triggering_actor/html_url",
+          "/triggering_actor/followers_url",
+          "/triggering_actor/following_url",
+          "/triggering_actor/gists_url",
+          "/triggering_actor/starred_url",
+          "/triggering_actor/subscriptions_url",
+          "/triggering_actor/organizations_url",
+          "/triggering_actor/repos_url",
+          "/triggering_actor/events_url",
+          "/triggering_actor/received_events_url",
+          "/actor/avatar_url",
+          "/actor/url",
+          "/actor/html_url",
+          "/actor/followers_url",
+          "/actor/following_url",
+          "/actor/gists_url",
+          "/actor/starred_url",
+          "/actor/subscriptions_url",
+          "/actor/organizations_url",
+          "/actor/repos_url",
+          "/actor/events_url",
+          "/actor/received_events_url"
+        ],
+        "unnecessaryFieldsKeptPrivate": true,
+        "privateOriginalNeverPublishedByThisAppend": true,
+        "credentialMaterialFound": false,
+        "signedUrlOrUrlCredentialsFound": false,
+        "nonpublicActorEmailObserved": null,
+        "connectionMaterialFound": false,
+        "publicEmailControl": null,
+        "gitHistoryRemoved": false
+      },
+      {
+        "originalRecord": "private-unpublished/public-recovery/4656b7a766fe1cf3f0126df379ee49e0decb27b221c1c9c811270e27ac29de6f",
+        "selectedRecord": "metadata/public-recovery-jobs-selected@bb790bf47eb29b8f",
+        "derivedProjection": true,
+        "privateOriginalSha256": "4656b7a766fe1cf3f0126df379ee49e0decb27b221c1c9c811270e27ac29de6f",
+        "privateOriginalBytes": 21500,
+        "privateOriginalRetained": "home-relative:temp/agent/depot-allocation-follow-on-20261018/privacy-originals/4656b7a766fe1cf3f0126df379ee49e0decb27b221c1c9c811270e27ac29de6f.json",
+        "retainedFields": "Only exact required run/job/source/status/time/runner/step/label fields",
+        "fieldsActuallyPresent": [
+          "/jobs/5/run_url",
+          "/jobs/5/url",
+          "/jobs/5/html_url",
+          "/jobs/5/check_run_url",
+          "/jobs/4/run_url",
+          "/jobs/4/url",
+          "/jobs/4/html_url",
+          "/jobs/4/check_run_url",
+          "/jobs/3/run_url",
+          "/jobs/3/url",
+          "/jobs/3/html_url",
+          "/jobs/3/check_run_url",
+          "/jobs/2/run_url",
+          "/jobs/2/url",
+          "/jobs/2/html_url",
+          "/jobs/2/check_run_url",
+          "/jobs/1/run_url",
+          "/jobs/1/url",
+          "/jobs/1/html_url",
+          "/jobs/1/check_run_url",
+          "/jobs/0/run_url",
+          "/jobs/0/url",
+          "/jobs/0/html_url",
+          "/jobs/0/check_run_url"
+        ],
+        "unnecessaryFieldsKeptPrivate": true,
+        "privateOriginalNeverPublishedByThisAppend": true,
+        "credentialMaterialFound": false,
+        "signedUrlOrUrlCredentialsFound": false,
+        "nonpublicActorEmailObserved": null,
+        "connectionMaterialFound": false,
+        "publicEmailControl": null,
+        "gitHistoryRemoved": false
+      },
+      {
+        "originalRecord": "private-unpublished/terminal-depot-os/ad869f05370f2ceed2e68ef8f3460fab92809743e188af8ff0b243ecd3ed8e36",
+        "selectedRecord": "metadata/terminal-depot-os-jobs-selected@b6bc39bf29a4c055",
+        "derivedProjection": true,
+        "privateOriginalSha256": "ad869f05370f2ceed2e68ef8f3460fab92809743e188af8ff0b243ecd3ed8e36",
+        "privateOriginalBytes": 9166,
+        "privateOriginalRetained": "home-relative:temp/agent/depot-allocation-follow-on-20261018/privacy-originals/ad869f05370f2ceed2e68ef8f3460fab92809743e188af8ff0b243ecd3ed8e36.json",
+        "retainedFields": "Only required job/source/status/time/runner/step/label fields",
+        "unnecessaryFieldsKeptPrivate": true,
+        "privateOriginalNeverPublishedByThisAppend": true,
+        "nonpublicActorEmailObserved": null,
+        "gitHistoryRemoved": false,
+        "fieldsActuallyPresent": [
+          "/jobs/2/run_url",
+          "/jobs/2/url",
+          "/jobs/2/html_url",
+          "/jobs/2/check_run_url",
+          "/jobs/1/run_url",
+          "/jobs/1/url",
+          "/jobs/1/html_url",
+          "/jobs/1/check_run_url",
+          "/jobs/0/run_url",
+          "/jobs/0/url",
+          "/jobs/0/html_url",
+          "/jobs/0/check_run_url"
+        ],
+        "credentialMaterialFound": false,
+        "signedUrlOrUrlCredentialsFound": false,
+        "connectionMaterialFound": false
       }
     ],
     "fullPrivateOriginalsRetained": true,
@@ -2741,5 +3604,71 @@
       "credentialSignedUrlOrConnectionMaterialFound": false,
       "historyRewritePerformed": false
     }
+  },
+  "publicRecoveryAppend": {
+    "recordedAt": "2026-10-18T17:51:04.239Z",
+    "runId": "39144499822",
+    "addedKeys": [
+      "github:standard-public-github-actions:run:39144499822:job:117725488825:attempt:1",
+      "github:standard-public-github-actions:run:39144499822:job:117725488995:attempt:1",
+      "github:standard-public-github-actions:run:39144499822:job:117725489035:attempt:1",
+      "github:standard-public-github-actions:run:39144499822:job:117725489078:attempt:1",
+      "github:standard-public-github-actions:run:39144499822:job:117725489146:attempt:1"
+    ],
+    "source": {
+      "record": "inputs/public-recovery-owner-selected@6446c272f0d66d8f"
+    },
+    "privateProviderOriginalsRetained": true,
+    "providerBodiesExplicitlySelected": true,
+    "nominalComputeChangeUsd": "0",
+    "excludedSchedulerJobId": "117725490037"
+  },
+  "terminalOsAppend": {
+    "recordedAt": "2026-10-18T18:06:32.326Z",
+    "runId": "39148580870",
+    "source": {
+      "record": "inputs/terminal-depot-os-owner-selected@c97f47141b8bcdd2"
+    },
+    "addedKeys": [
+      "depot:github-actions-runners:run:39148580870:job:117737397295:attempt:1",
+      "depot:github-actions-runners:run:39148580870:job:117737397487:attempt:1"
+    ],
+    "nominalProviderIntervalAddition": {
+      "usd": "0.6584",
+      "numerator": "39504000000",
+      "denominator": "60000000000"
+    },
+    "releasedReservationUsd": "1.92",
+    "separateCampaignGuardUsd": "2",
+    "sourceQualifiedOwnerSeal": {
+      "path": "doc/audit/depot-current-host-owner-complete-2026-10-18.evidence.json.gz",
+      "bytes": 14201235,
+      "sha256": "d29c7887cf4df674346d850db3f2186345a55cbc53bbacd98ef33c7977221a35"
+    }
+  },
+  "terminalOsPrivacyInspection": {
+    "recordedAt": "2026-10-18T18:08:38.647Z",
+    "privateOriginalSha256": "ad869f05370f2ceed2e68ef8f3460fab92809743e188af8ff0b243ecd3ed8e36",
+    "privateOriginalBytes": 9166,
+    "valuesInspected": 329,
+    "stringValuesInspected": 228,
+    "standardPublicGithubUrlsKeptPrivate": 12,
+    "unnecessaryFieldsActuallyPresent": [
+      "/jobs/2/run_url",
+      "/jobs/2/url",
+      "/jobs/2/html_url",
+      "/jobs/2/check_run_url",
+      "/jobs/1/run_url",
+      "/jobs/1/url",
+      "/jobs/1/html_url",
+      "/jobs/1/check_run_url",
+      "/jobs/0/run_url",
+      "/jobs/0/url",
+      "/jobs/0/html_url",
+      "/jobs/0/check_run_url"
+    ],
+    "actorEmailFieldsPresent": false,
+    "credentialSignedUrlOrConnectionMaterialFound": false,
+    "fullRawOriginalPublished": false
   }
 }

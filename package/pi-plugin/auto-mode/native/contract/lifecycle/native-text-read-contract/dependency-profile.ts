@@ -42,7 +42,7 @@ export function createDependencyProfile(files: readonly Omit<FileObservationInpu
   rl.debug('validating original dependency file profile');
   return Object.freeze(files.map(function validateDeclaredFileInput(file) {
     /**
-     Original omitted byte bound uses the same value as the native observer.
+     Original omitted file-read bound retains this dependency reader's own limit.
      */
     const maxBytes = file.maxBytes ?? maximumBytes;
     if (((typeof file.relativePath) !== 'string') || (!Number.isInteger(file.requiredMode))

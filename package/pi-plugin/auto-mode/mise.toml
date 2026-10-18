@@ -93,6 +93,19 @@ runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', ['--fix', ...
 [tasks."test:unit"]
 extends = "test:unit"
 
+[tasks."test:native:policy-slot-error"]
+description = "Verify built policy-slot errors, inherited setters, and stable facade identity"
+run = "node src/native-policy-slot-error.unit.test.ts"
+
+[tasks."test:native:request-observation-size"]
+description = "Verify complete provider request observation and explicit UTF-8 byte limits"
+run = "node --max-old-space-size=512 src/native-observation-size.unit.test.ts"
+
+[tasks."test:native:build-reuse:mount"]
+description = "Verify reuse with disposable directories on separate mounts of the same filesystem"
+usage = 'arg "<previous>" help="Disposable previous-file mount"; arg "<output>" help="Disposable output mount"'
+run = 'node native/build-reuse.platform.test.ts "$usage_previous" "$usage_output"'
+
 [tasks."test:confirmation"]
 description = "Verify built approval decisions and unified stop behavior"
 run = [

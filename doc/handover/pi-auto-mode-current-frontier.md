@@ -10,16 +10,44 @@ including read-only fallback and escaped terminal-control diagnostics.
 Private pnpr publication still returns `E401`; the Coolify/SSH/API access question remains pending.
 The deployed pnpr trust configuration has not been inspected.
 
-Default native release `kFkBoY` remains pinned while the live workers use it.
+Default native release `kFkBoY` remains pinned.
+The resumed source worker uses a separate immutable corrected runtime.
 A final coherent auto-mode rebuild embedding logger `0.4.4` is still required.
 MiMo native controller `42230`, fixture `pi-mimo-rpc-session-I79zzb`,
-reached 92 tools without source edits and was aborted to an actual settled boundary.
-Its new prompt `native-implement-error-class-only-20261018` narrows ownership to
-`system-slot-error.mjs` and a new `system-slot-error.ts` only.
+delivered `system-slot-error.mjs` and new `system-slot-error.ts` after the narrowed prompt.
+The supervisor rejects its first proposal's added runtime `name` field:
+a real subclass setter runs once with the original class and zero times with that proposal.
+The corrected class preserves the original assignment without another member declaration.
+Its worker commit fails with exit 128 and Git's
+`fatal: protocol error: bad line length character: Not ` diagnostic.
+Host delivery through the qualified wrapper succeeds as `98add8596e` without bypassing guards.
+The worker's separate read-only diagnostic assignments end at 111 tools and nine errors.
+The final single-call `git-lfs env` probe succeeds:
+its working directory and Git directory are the actual mounted repository,
+with the local media directory under `.git/lfs/objects`.
+Normal-root recognition does not establish behavior inside the failed commit's filter environment.
 The supervisor retains the queued `system-slot` and `policy-loader` changes.
 MiMo source controller `53002`, fixture `pi-mimo-rpc-session-B7AghW`,
-still owns only `native-decision-fallback.test.mjs` and new siblings for that catalog.
+delivers only `native-decision-fallback.test.mjs` and thirteen new siblings for that catalog.
 Its observed errors are ordinary command/path failures, not the reported preparation diagnostic.
+Its typed catalog helpers and JavaScript task entry are written.
+The old worker settles at 114 tools and three ordinary command errors,
+then closes normally with its complete stderr retained.
+Its 113-byte shutdown tail contains only the ask-user helper's informational cleanup message.
+Supervisor commit `d8a1d3cec624c1f12b065ae7df2486f02de895c5` checkpoints the unvalidated port.
+The supervisor captures the explicit fourteen-path list before staging,
+reuses that list for commit,
+and verifies the actual committed paths match exactly.
+The full mode/variant checks remain pending.
+
+Resumed source controller `2323`, fixture `pi-mimo-rpc-session-bkvsvW`,
+continues the complete old session history with `llmgateway-devpass/mimo-v2.6-pro` and high thinking.
+It mounts frozen `ebe81e3364` private runtime `native-release-IFS6IL` read-only,
+with a private home and writable project state under the existing 2 GiB and two-CPU bounds.
+The live source worker owns only the same fourteen catalog paths.
+It repairs its type errors and moves to the scoped lint backlog:
+229 findings are reported at the 33-tool checkpoint.
+No package-wide lint or catalog parity completion is claimed.
 
 Native aborts produce three error tool results containing
 `Complete group preparation or assessment failed`.
@@ -33,9 +61,83 @@ Supervisor commit `26b6aec284` completes constructor/group fixture declarations
 and names the receipt output callbacks.
 Frozen fresh-cache types and the constructor,
 program-owner and process-network receipt consumers pass.
-The three-file semantic lint still reports 54 warnings and one async-disposal error in the legacy `.mjs` catalog.
-That file is outside the TypeScript project's include list;
-the scoped result does not clear the old full-source backlog of 1,037 warnings and 47 errors.
+That initial three-file semantic lint reports 54 warnings and one async-disposal error in legacy `.mjs`.
+Commits `4c772c38e4` and `6200e15e9d` move the receipt consumer into TypeScript,
+separate subprocess transport and original child programs,
+and keep the old task entry.
+All embedded request programs are preserved;
+the formatter's five-file runtime AST comparison passes seven positive controls.
+The subsequent void-listener correction has its own real child consumer verification.
+Frozen `98add8596e` builds JavaScript and private native `Z9zLOF`.
+Fresh-cache types,
+complete units and the real receipt catalog pass,
+including complete empty child stderr.
+The new built error regression covers arity,
+message/cause,
+inherited name accessors and facade identity.
+That frozen checkpoint reports 20 warnings and zero errors across nine files.
+Subsequent typed-error and receipt-entry fixes supersede this scoped lint checkpoint.
+This does not clear the old full-source backlog of 1,037 warnings and 47 errors.
+
+Commit `5984de85c8` preserves dynamic inherited error naming with a declaration-scoped,
+documented `unicorn/custom-error-definition` exception.
+Actual configuration probes reject options;
+a literal-name positive control clears the warning but changes the consumer setter argument.
+Its frozen build,
+fresh-cache types,
+named built-error consumer and receipt catalog pass.
+Its nine-file lint reports zero warnings and one `import/unambiguous` error in the receipt entry.
+Commit `0df4fbcaa9` replaces that dynamic import with a static side-effect import;
+the follow-up instead reports `import/no-unassigned-import`.
+Commit `3c12d88f7f` exposes an explicit catalog runner called by the stable JavaScript entry.
+The next five-file check reports six warnings:
+five statement-layout findings in the new size regression and a missing import separator in that entry.
+Commit `ebe81e3364` includes those layout corrections.
+The later five-file scoped check at `9d3dae29d8` has zero warnings and zero errors.
+Both built field and literal-name mutants fail the maintained setter regression after successful builds,
+then pass after private source restoration and rebuilding.
+The root source and active native publication remain unchanged throughout those mutants.
+
+The live source worker's recent missing-evidence fallback has an independently reproduced cause:
+`RequestObservationProfileError: Serialized request exceeds observation byte bound`.
+The observer's default and constructor ceiling are both 1,048,576 bytes.
+Frozen `9fd552782b` reproduces the default observation failure and rejects a deliberately larger configured limit;
+its exact UTF-8 boundary and explicitly smaller-limit controls pass.
+The provider still receives the original body and returns its original response.
+Commit `ebe81e3364` removes the implicit ceiling and retains validated explicit caller limits.
+Its fresh private JavaScript/native build and all five named size cases pass.
+Fresh types,
+scoped lint,
+host-isolation,
+receipt and complete-unit checks are running against that immutable candidate.
+Those types,
+host-isolation,
+receipt and complete-unit checks finish successfully.
+The scoped lint reports two test-only warnings:
+`eslint/no-await-in-loop` and `no-restricted-syntax/no-low-information-symbol-description`.
+Commit `9d3dae29d8` maps independent invalid-limit checks through `Promise.all`
+and gives the invalid Symbol a descriptive label;
+its fresh types and five-file scoped lint pass.
+Four request-observation mutants build successfully and fail their named maintained guards:
+restored default ceiling,
+missing explicit threshold,
+missing constructor validation and equality rejected at the UTF-8 boundary.
+Each restored private source rebuilds and passes its guard.
+The root source and both active native publications remain unchanged.
+
+The resumed configured consumer now demonstrates the correction with its actual long history.
+The retained audit checkpoint has 24 completed tool results,
+including ordinary command failures,
+zero approval dialogs and 24 completed Luna HTTP 200 requests.
+Its 493 questions pass required-data and excluded-data controls;
+no excluded thinking or raw structured command fields are observed.
+Byte-count-only metadata records thirteen non-Luna serialized requests above the old ceiling,
+from 1,146,627 to 1,279,294 bytes.
+This capture does not record endpoint URLs or primary request bodies.
+The fresh process reports no observation-ceiling or missing-evidence failure at that checkpoint.
+The restarted source catalog again starts at 185 names and later returns 164;
+the cause of that checkpoint difference remains unproven.
+Continue its full mode/variant matrix and lint delivery before final frozen verification.
 
 The reported-interaction checkpoint retains 52 successful tools,
 zero selectors,
@@ -46,21 +148,81 @@ uses private writable project settings,
 writes the private credential store rather than merely parsing it,
 preserves the absence of provider credential overrides,
 and supplies the configured Deepseek credential presence with a fixture value.
-Startup diagnostics pass,
-but a stronger catalog comparison finds 164 models versus 185 in the worker's initial response.
-All remaining differences are OpenAI Fast physical routing targets.
-Current source-worker catalog observation is being compared at the matching session phase
-before attributing that difference to the fixture.
+Startup diagnostics pass.
+A fresh source-worker catalog observation returns 164 names,
+matching the corrected probe with no missing or extra names and a positive difference control.
+The initial 185-name response is a different checkpoint;
+the remaining 21 physical routing targets are not a current fixture mismatch.
+No exact cause of the initial/current catalog difference is established.
+
+The separate Git/LFS fixture compares raw/wrapped top-level Git with raw/wrapped Git on the helper PATH.
+All four empty-global-config cases pass and commit only the owned file.
+Wrapper-on-PATH alone is excluded as the cause of the live worker's protocol error.
+Private-home configuration and real-repository differences remain untested.
+
+Node release source `26e72d85a611e222e3f06025de8a3c496923bacd` confirms that type stripping retains class fields,
+and V8 defines those fields as own properties.
+The source-level corrected/error-field controls and runnable pass/fail reproduction are retained.
+The durable diagnosis is `doc/troubleshooting/node-typescript-error-class-fields.md`.
+Oxlint `1.88.0` source is checked out as `6941b4ed45ead21c45bc2164cb80a180eed85b43`.
+Its custom-error-name rule requires a literal class name and declares no configuration options.
+Configuration probes are complete.
+The first driver fails before spawning because an unopened WriteStream has `fd: null`.
+The corrected driver awaits an opened numeric file descriptor.
+
+The corrected probe completes all three cases.
+Its initial assertion wrongly expects unsupported options to be ignored;
+the actual parser rejects them with `This rule does not accept configuration options.`
+The retained-output validator checks that rejection,
+the one-warning dynamic case and zero-warning literal positive control.
+The native typed source and private built copy at `98add8596e` are byte-identical.
+Package-local `doc/error-name-contract.md` records the lint conflict and consumer behavior.
+The renderer checks 37 documents with no broken local links,
+including the new Node class-field diagnosis and package error contract.
+The subsequent entry/doc correction still needs its rendered follow-up.
+
+A fresh `du --bytes --max-depth=2` package snapshot records 23,977,499 apparent bytes,
+including 16,854,136 in retained build output.
+It excludes shared dependency symlink targets and is not a deployment-closure total.
+The cleanup dry run lists `.cache`, `dist` and `node_modules`;
+no cleanup has been performed from that listing.
+
+Private native formatting of frozen `d8a1d3cec6` reports 10,067 warnings and 55 errors across 495 files.
+Its syntax classification passes eight positive difference controls and a parenthesis control.
+It finds 349 unchanged files,
+126 changed files with matching runtime ASTs,
+nineteen runtime-AST changes and one newly invalid file.
+All twenty excluded outputs are restored in the private candidate.
+No formatter output has been adopted into the root worktree.
+Private build and consumer qualification of the remaining changes are pending;
+AST equality does not establish source-qualification or complete runtime equivalence.
+
+The supervisor incorrectly stops native diagnostic call `call_3295f42211d7470d867d0a18`
+after misreading JSON display escaping as actual source escapes.
+Parsing the captured Node source reports zero syntax errors.
+The supervisor retracts that claim in the new worker prompt and supplies a parsed,
+single-call local-path metadata probe.
+Native worker state reaches 110 tools and nine errors after that Stop;
+the corrected metadata probe then succeeds as tool 111.
+Its earlier diagnostic error is `ls: unrecognized option '--long'`,
+not a Node syntax failure.
+Source MiMo reaches 111 tools and continues typing its completed catalog decomposition;
+automatic review currently falls back on missing usable request evidence for some writes.
+Those supervisory Allows are not automatic-review success evidence.
 
 Remaining independently verified work areas:
 
-- Complete source and native lint repairs without weakening rules or changing worker inputs.
+- Complete the source fallback catalog,
+  its full mode/variant matrix and complete source lint without changing live worker inputs.
+- Complete native runtime typing and the remaining native lint backlog,
+  retaining behavior through original consumer boundaries.
 - Investigate cancellation diagnostics and verify Allow,
   Stop,
   cancellation,
   stale evidence and compaction through the configured host.
 - Rebuild the coherent final artifact and repeat the corrected reported-interaction replay,
   real MiMo editing,
+  a valid primary request exceeding the former observation ceiling,
   payload positive controls and complete raw-stderr checks.
 - Finish dependency/import measurements and review any artifact cleanup against actual live consumers.
 - Inspect deployed pnpr trust after the requested access route is available,

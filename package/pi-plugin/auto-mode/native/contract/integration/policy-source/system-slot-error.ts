@@ -4,6 +4,7 @@
 
 //region Capability failures stay distinct from native resource collection failures
 
+/* oxlint-disable unicorn/custom-error-definition -- Preserve inherited setters; see doc/error-name-contract.md. */
 /**
  Unauthenticated policy input and lost binding eligibility share one stable capability category.
  */
@@ -15,10 +16,19 @@ export class PolicySlotBindingError extends Error {
 
    @param options - original optional cause retained in the standard error chain
    */
-  constructor(message: string, options?: Readonly<ErrorOptions>) {
-    super(message, options);
-    this.name = this.constructor.name;
+  constructor(
+    message: string,
+    options?: Readonly<ErrorOptions>,
+  ) {
+    super(
+      message,
+      options,
+    );
+    this.name = this
+      .constructor
+      .name;
   }
 }
+/* oxlint-enable unicorn/custom-error-definition */
 
 //endregion Capability failures stay distinct from native resource collection failures

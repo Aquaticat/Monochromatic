@@ -47,6 +47,20 @@ mode,
 size,
 and complete SHA-256 contents,
 then atomically replaces only the new release's matching file with a hard link.
+Matching device identifiers do not guarantee that Linux permits a hard link:
+distinct mounts of the same filesystem can still return `EXDEV`.
+The build retains the complete independently verified new file in that case,
+records the skipped optimization and continues publication.
+Other link errors still propagate.
+
+`native/build-reuse.platform.test.ts` exercises actual distinct mounts with equal device identifiers.
+Its direct-link control first proves that the fixture returns `EXDEV`;
+the maintained reuse assertion then checks intact old and new bytes,
+zero reused files and no temporary link entries.
+A same-mount control checks successful inode sharing.
+The named task is `test:native:build-reuse:mount`,
+with previous-file and output-directory arguments supplied by a disposable bounded mount fixture.
+Frozen `532c20e618` fails the intact-output assertion with the real `EXDEV` error.
 Changed files retain independent inodes.
 It does not follow dependency symlinks or rewrite an old release.
 The 2026-10-17 checkpoint `native-release-qWSxFz` shares 1,000 files totaling 7,518,255 bytes.

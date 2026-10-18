@@ -119,6 +119,55 @@ The ledger retains provider catalog GB separately from actual memory bytes,
 original owner unit spellings,
 and container binary memory limits.
 
+## Terminal public recovery append
+
+The current snapshot has `35` unique allocation rows,
+including the five terminal public GitHub jobs from `39144499822`.
+Its product counts are `17` standard public GitHub jobs,
+`7` Depot GitHub jobs,
+`8` native CI jobs,
+and `3` separate BuildKit requests.
+The source archive has `39` retained records.
+The known provider-window nominal list proxy remains `USD 0.6041`,
+and the root graph subtotal remains `USD 0.487`.
+Standard public compute adds `USD 0`;
+artifact/storage costs remain unmeasured.
+
+Each new row joins the immutable workflow source `aa501f4a5c0e74a0a993b668c98b00fe3be2da19`,
+frozen application source `e02`,
+the exact assigned runner,
+started steps,
+and provider job timestamps to the owning receipt.
+The unassigned skipped row `117725490037` is excluded,
+including its invalid negative timestamp interval.
+Provider run/job bodies use explicit selected projections.
+Their complete private originals remain retained with byte counts and SHA-256 values.
+Catalog memory is labelled GB;
+this allocation projection does not convert catalog values into measured RAM.
+
+The [current verification receipt](../audit/depot-owned-allocation-follow-on-verification-2026-10-18.evidence.json)
+rejoins `39` source bodies,
+`35` allocation intervals and identities,
+`1,350` selected provider values,
+`74` source pointers,
+and seven private-original hashes.
+The frozen baseline remains unchanged.
+It separately verifies the snapshot absence and legacy-search source bundles.
+The legacy search's complete input inventory is joined to retained Git blobs.
+
+## Mise preflight source lookup
+
+The fresh selected-tool preflight used official Mise `2026.10.9`,
+binary SHA-256 `6ab6646b52b83f6bbd51c9d0d3ae54264ffa90efd1ac6d7c0ec5a86bbc6a0030`.
+The [preflight receipt](../audit/depot-expanded-graph-preflight-2026-10-18.evidence.json)
+retains the exact isolated installation sequence and release record.
+The retained Cargo-backend source clone is `temp/agent/depot-mise-2026.10.9-source-20261018`
+relative to the user home,
+at revision `ac91d06fa6100935b7a07b08bebf03dd6dd9a0dd`.
+The deciding paths are `src/backend/cargo.rs` and `src/backend/mod.rs`.
+The preflight did not compile its binary from this clone.
+Newly observed selector and task-output-cache behavior needs its own deciding version/source check.
+
 ## Independent Rust projection
 
 The coverage researcher requested a read-only package-result projection from the sealed Rust receipts.
@@ -202,10 +251,14 @@ and skipped totals remain part of that comparison.
 Coverage's first public host handoff `39141147245` is terminal with five allocated jobs.
 Its skipped unassigned scheduler row `117715669048` must not become a compute allocation.
 Recovery `39144499822` is terminal with five allocated public GitHub jobs.
-The follow-on queue is to append its exact owned rows after selected provider-metadata verification.
+Its exact owned rows are appended with selected provider-metadata joins.
 Its unassigned skipped scheduler row `117725490037` is excluded.
-Separate Depot OS run `39148580870` is owner-watched under its own USD 2 guard;
-its USD 1.92 admission reservation is not a measured allocation cost.
+Separate Depot OS run `39148580870` is terminal under its own USD 2 guard.
+Its exact Mac/Windows rows await the owner's retained artifact/API seal before final normalization.
+Its USD 1.92 admission reservation is not a measured allocation cost.
+Root also reported prospective coverage GNU recovery and platform SSH-debug follow-ons.
+Their owners must supply exact admitted identities and retained terminal receipts before an allocation append.
+No allocation row is inferred from those prospective profiles.
 The documented host memory unit is GB,
 with actual CPU and RAM measurements missing from that handoff.
 
@@ -243,8 +296,20 @@ and no refresh-token request or persistent credential creation.
 The first exact `tools-r1` tag read then returned HTTP `404`,
 code `MANIFEST_UNKNOWN`.
 No deletion ran.
-The queue is to verify the exchanged token's selected repository authorization
-and independently read all exact tags and immutable digests before drawing an absence conclusion.
+The [sealed absence receipt](../audit/depot-native-snapshot-absence-2026-10-18.evidence.json)
+joins all three creators to the exact host,
+repository,
+tags,
+and immutable digests.
+All six valid scoped reads returned `MANIFEST_UNKNOWN` with HTTP `404`.
+The identical path returned HTTP `401` with a deliberately invalid noncredential bearer.
+Selected JWT audience and repository/pull authorization match exactly.
+No deletion request,
+persistent credential,
+or cloud job ran.
+Expiry cause and storage reclamation remain unmeasured.
+The [authentication troubleshooting note](../troubleshooting/depot-native-snapshot-registry-authentication.md)
+retains the exercised bridge and its limits.
 
 ## Kotlin and legacy owner joins
 
@@ -263,8 +328,15 @@ Coverage also requested a source-qualified search of retained Rust and legacy re
 for actual IDE,
 file-manager,
 and terminal package/binary/case identities before any new owner allocation.
-This read-only evidence join is queued after the compact Kotlin seal.
-An empty entry in the current Rust projection is not proof that historical cohorts never executed that owner.
+The [sealed legacy search](../audit/depot-rust-legacy-owner-search-2026-10-18.evidence.json)
+inventories `169` retained evidence files and searches `168`,
+with the static assertion catalog excluded.
+It validates `94` unique ZIPs,
+`3,558` member CRCs,
+and `72` synthetic parser controls.
+No matching outcome/binary candidate for these owners was found in that corpus.
+The explicit source-tree comparisons and four marker-file parse issues remain retained.
+An empty entry in the Rust projection was not used as sole absence evidence.
 
 ## Provider metadata publication correction
 
@@ -294,3 +366,89 @@ The retained verification control joins `711` selected scalar values,
 and all five private-original hashes.
 Its unauthenticated public run request also matches the actor and triggering-actor identities.
 The current archive includes that compact control as its `35th` source record.
+## Terminal managed Mac and Windows allocation follow-on
+
+The owner seal `depot-current-host-owner-complete-2026-10-18.evidence.json.gz`
+has compressed SHA-256 `d29c7887cf4df674346d850db3f2186345a55cbc53bbacd98ef33c7977221a35`.
+Its selected allocation rows match a fresh scoped jobs response for run `39148580870`:
+
+- Mac job `117737397487` ran from `17:13:37Z` to `17:19:36Z`,
+  measuring `359` seconds at the documented `USD 0.08/minute` list rate.
+- Windows job `117737397295` ran from `17:19:37Z` to `17:30:51Z`,
+  measuring `674` seconds at the documented `USD 0.016/minute` list rate.
+
+Both intervals are on `2026-10-18`.
+Both jobs concluded with failure.
+This allocation join grants no additional application test credit.
+The primary runner-types body retained in the follow-on source archive gives these rates at lines `114` and `84`.
+Requested memory and disk use the documented `GB` units;
+the API assignment is not a hardware measurement.
+The owning process cap is `17` minutes inside the `20` minute job timeout.
+The released full-timeout reservation was `USD 1.92` under the separate `USD 2` guard.
+Skipped scheduler job `117737398481` has no assigned runner or started step and receives no allocation row.
+
+The current follow-on has `37` unique allocations and `41` retained source bodies:
+`17` standard public GitHub jobs,
+`9` Depot-managed GitHub jobs,
+`8` native CI jobs,
+and `3` BuildKit requests.
+The managed host addition is exactly `USD 0.6584` in elapsed-job list-compute proxies.
+The current total is `USD 1.2625`,
+comprising `USD 0.8381` for Depot-managed GitHub jobs and `USD 0.4244` for native CI.
+Standard public GitHub compute remains `USD 0`.
+The root graph subtotal remains `USD 0.487`.
+The separate BuildKit request-window proxy remains `USD 0.015897333333`;
+it is not an observed builder billing interval and is not added to that total.
+No invoice,
+included-minute debit,
+VM billing lifetime,
+or artifact/storage charge was observed.
+
+The existing `depot-owned-allocation-follow-on-verification-2026-10-18.evidence.json`
+remains the immutable `35` row snapshot verification.
+The host successor has a
+[separate verification receipt](../audit/depot-owned-allocation-follow-on-hosts-verification-2026-10-18.evidence.json).
+Only a selected provider jobs projection is published;
+the full original remains private with its byte count and hash.
+The five public recovery rows in the new owner seal match existing rows and are not added again.
+The frozen `223` row baseline is unchanged.
+
+The GNU-only public Windows run `39152147229` is pending its owner's terminal receipt.
+The parent admission `c297a446bc` covers seven material-owner primary jobs and at most two named corrections
+under a separate `USD 5` guard,
+but supplies no completed allocation identity here.
+The platform SSH probe is being resealed without a supplied allocation identity.
+None of those pending items contributes a cost row at this snapshot.
+## Selector check and subsequent owner queue
+
+The [locked Mise selector receipt](../audit/depot-mise-locked-affected-2026-10-18.evidence.json)
+records a local offline metadata-only check of actual `2026.10.9`.
+The real frozen `e02` Node workspace cycle remains a selector blocker after positive acyclic controls.
+It adds no cloud allocation or owning-task credit.
+The sealed `37` row ledger and its host verification remain unchanged by that check.
+
+Subsequent owner states are recorded without inventing terminal cost rows:
+
+- Coverage reports public GNU run `39152147229`,
+  attempt `1`,
+  job `117747819418`,
+  source `b76aab1964bfe9ac21aec3e9c5d24de443ec4992`,
+  terminal with failure at `18:10:52Z` after a reported `18:00:26Z` start on `2026-10-18`.
+  Its retained artifact/API owner seal is still being collected.
+- Platform reports native SSH run `sqrz4sml30`,
+  job `q74vcmxkk1`,
+  attempt `fhxx4s51rf`,
+  sandbox `g64shw2rl3jzrxsmq92x`,
+  source `b6a60493c16087043a7043f50cd31d8aebf4bdee`,
+  live under parent admission `dc62a35802`.
+  Its `2` CPU and `8` GiB profile has a `3` minute job bound and a `150` second cancellation bound.
+  The at-most-two-job `USD 0.036` admission is a reservation,
+  not a measured charge.
+  Await the terminal exact-source successor before adding a row.
+- Coverage's material-owner campaign remains a separate admission with implementation pending;
+  no additional allocation identity has been supplied.
+- The separately retained host comparison successor
+  `depot-current-host-owner-comparison-2026-10-18.evidence.json.gz`
+  has owner-reported SHA-256 `c11ce61387c8675f99c303cad6093d444a13bc7c42adf24eb77f2bdd1f1677b7`.
+  Its measured resource context requires a separate source join;
+  it does not replace the preserved original `d29c7887` owner seal or create another allocation.

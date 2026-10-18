@@ -1,6 +1,6 @@
 # Depot trial interview
 
-## Execution checkpoint on 2026-10-18 at 17:24 UTC
+## Current execution checkpoint on 2026-10-18
 
 Research remains active and the interview has not started.
 All parent graph cloud jobs are terminal,
@@ -36,8 +36,10 @@ Shared builds followed by a Node branch form all six observed longest paths;
 Rust is not on those paths.
 The cost note replaces its stale claim that no aggregate ledger exists.
 The frozen 223-row baseline stays unchanged;
-the current 30-row follow-on separately records a USD 0.6105 known-provider-window proxy,
-including the qualified USD 0.1116 desktop run-envelope fallback.
+the independently frozen 30-row follow-on snapshot records a USD 0.6041 known-provider-window proxy,
+including desktop's exact 263-second attempt at USD 0.1052.
+The previous 279-second run envelope and USD 0.1116 estimate are superseded,
+with their history retained in the allocation ledger.
 The parent's exact nominal Depot graph subtotal is USD 0.487.
 These figures are not invoices or evidence of VM/builder deallocation.
 
@@ -46,7 +48,7 @@ then the admitted matched Depot Mac/Windows controls,
 semantic assertion/generator reconciliation and the metadata-only screenshot-publication receipt.
 Rust owns exact desktop attempt boundaries,
 the final follow-on ledger and deletion/absence checks for the three owned prepared native images.
-Platform owns a narrow report capability-allocation completeness pass;
+Platform completed the narrow report capability-allocation completeness pass;
 the final whole-report independent sufficiency review follows factual closure.
 The parent owns its graph source-archive checks,
 rendered report/handover checks,
@@ -82,23 +84,52 @@ Tests/report identities,
 snapshots/OCI/Disk/SDK format separation,
 BuildKit/registry lifecycle,
 cache/PR/network/Dependabot trust and optional-product dispositions.
-Its scoped commit publisher is session `65826`;
-reap it and verify its actual landed identity before final ancestry checks.
+Its scoped publisher is reaped at zero and the landed commit is `cce76fb02e`.
 
-Coverage's semantic join identifies material authored owners with no retained execution:
+Coverage's semantic join identifies material authored owners needing wider existing-evidence joins
+before any new execution:
 IDE,
 file-manager variants,
-terminal,
-Kotlin and design.
+terminal and design.
 Static test attributes are not executed-case counts.
 Coverage is preparing exact finite profiles for actual owner tests and real prerequisites,
 including the IDE's pinned grammar producer and terminal font/Zig dependencies.
-No allocation is authorized until that concrete proposal is reviewed.
-The parent can admit a separate maximum USD 5 campaign,
+The concrete proposal is now reviewed and admitted through
+`doc/audit/depot-material-owner-parent-admission-2026-10-18.evidence.json`.
+The admission publisher is reaped at zero at `c297a446bc`.
+Its bound proposal SHA-256 is `8ebd2766f5e64f13d180ea6027853a97efa969748ba4ec04e9f0d6795becb82e`.
+The parent independently joins 24 frozen blob/hash/byte/object inputs across 18 distinct paths.
+Seven primary jobs reserve USD 1.08 nominal compute;
+two named conditional corrections reserve USD 2.88 and unpriced contingency is USD 1.04.
+This totals a USD 5 nominal guard,
+not an invoice guarantee.
+The parent completed concrete rollout profiles for static checks,
+Node/Rust tests,
+browsers,
+packaged artifacts,
+OS/ARM and VM/desktop/Android consumers.
+Each profile must name actual owner commands,
+producer prerequisites,
+retained evidence and source-failure disposition.
+Their scoped publisher is reaped at zero at `884f42a9af`;
+the new profiles were read as rendered HTML and targeted Markdown passes.
+The admitted material-owner campaign retains
 at most two concurrent cloud jobs,
 with default Cargo/Nextest concurrency and existing no emulator/desktop relaunch boundary.
 The raw-Git graph does not prove materialized font/media payload equivalence.
 Coverage must name materialized LFS source hashes wherever those consumers need them.
+Commit and preflight each executable harness before allocation,
+including native argv/task checks and all cloud payload readers.
+Coordinate the two slots across GNU,
+material and Platform SSH jobs rather than treating a per-workflow matrix cap as a global reservation.
+The widened legacy search covers 169 inventoried files,
+168 searched files,
+94 CRC-qualified ZIPs and 3558 members,
+with 72 exact-alias controls and real music-player/Truepeak positives.
+It finds no qualifying selected IDE/terminal/file-manager outcome in that retained corpus.
+Design's authored owners are Node/ImageMagick fixtures,
+not an authored Playwright suite;
+only the real owners are admitted.
 This research is not deferred to production acceptance.
 
 Platform additionally source-checks a finite native debug-access consumer,
@@ -168,11 +199,150 @@ These are per-binary runtime outcomes,
 not unique authored-assertion totals.
 The GNU adapter duplicates the owner's `--no-fail-fast` and reaches zero test bodies;
 Coverage retains that harness error and owns one GNU-only correction after the matched OS run.
-Matched Depot OS `39148580870` runs on `aa501f4a5c0e74a0a993b668c98b00fe3be2da19`
+Matched Depot OS `39148580870` is terminal on `aa501f4a5c0e74a0a993b668c98b00fe3be2da19`
 under `doc/audit/depot-current-host-matched-admission-2026-10-18.evidence.json`,
 two sequential 20-minute caps with 17-minute inner bounds,
 USD 1.92 reserved under USD 2.
-Coverage owns its finite watcher and cleanup.
+Mac job `117737397487` runs from `17:13:37` to `17:19:36 UTC`,
+359 seconds;
+Windows job `117737397295` runs from `17:19:37` to `17:30:51 UTC`,
+674 seconds.
+The combined nominal job-window proxy is USD 0.6584,
+separate from its USD 1.92 reservation and invoice cost.
+Its observed case counts match the public count boundaries;
+Coverage seals exact original artifact/case/host evidence and actual OS/machine differences before final integration.
+GNU-only correction `39152147229` is terminal failed,
+on harness `b76aab1964bfe9ac21aec3e9c5d24de443ec4992`
+and dedicated branch `research/depot-gnu-owner-correction-20261018`.
+Its single standard public Windows job has a 30-minute cap and 27-minute inner bound,
+with zero nominal public compute and finite watcher `11329` owning its 40-minute campaign guard.
+Job `117747819418` ran from 18:00:26 to 18:10:52 UTC (626 seconds).
+Coverage has sealed the actual GNU bodies in
+`doc/audit/depot-current-host-gnu-owner-2026-10-18.evidence.json.gz`:
+2046665 bytes,
+SHA-256 `19e672e8a099c63b4a070e4619f7c6bea8b844629d80a91cb5f8f88b4c7c2372`.
+Its 17 derived normalized text members retain original hashes;
+original ZIP,
+binary and media payloads remain private.
+The collected GNU outcomes report 1494 distinct binary/case identities:
+1492 pass and two fail,
+with one summary-only skip.
+The unreadable-session-path/logging failure overlaps MSVC;
+`watch::tests::a_burst_of_changes_requests_one_rescan` is an additional GNU assertion failure.
+Its cause and repeat failure rate remain unmeasured.
+The original calls and diagnostics retain their separate source identities.
+The parent also requests a concrete matched Depot-Windows GNU proposal,
+preserving owner source/argv/tool setup and adding actual OS/CPU/memory metadata probes.
+Its proposed scope is one four-CPU job with a 20-minute cap (USD 0.32 nominal),
+plus at most one same-profile harness-only correction (USD 0.64 maximum).
+Exact-source parent admission is still required before allocation.
+This additional target comparison does not replace the admitted seven-owner material campaign.
+No coverage cloud job remains active.
+The decoded bootstrap and duplicate-versus-single-argument controls pass before dispatch.
+Coverage sequences the material campaign after this GNU attempt is terminal.
+Platform's pending SSH source includes a third native CLI PTY-RPC consumer,
+separate from direct OpenSSH and pinned tmate.
+The replacement seal is `3adb2516b1`,
+fixture `b6a60493c16087043a7043f50cd31d8aebf4bdee`.
+Parent source admission is recorded in
+`doc/audit/depot-native-ssh-parent-admission-2026-10-18.evidence.json`.
+It independently joins current and retained source bodies,
+fixture Git blobs,
+the direct remote branch and controller/helper/bridge/manifest hashes.
+The parent admission publisher is reaped at zero at `dc62a35802`,
+and the explicit ready message was sent after its JSON/Markdown checks passed.
+Native SSH run `sqrz4sml30` used job `q74vcmxkk1`,
+attempt `fhxx4s51rf` and sandbox `g64shw2rl3jzrxsmq92x`.
+Dispatch started at `18:37:23.441 UTC`;
+the 150-second watchdog cancelled the run.
+Fresh terminal status is cancelled,
+and controller `68688` is reaped at exit one at `18:40:00.760 UTC`.
+Direct OpenSSH and native CLI RPC both emitted VM challenge proofs;
+their client exits were 255 and zero respectively.
+Both recorded owned client trees are reaped and absent.
+No paused-tmate leg was selected and no final workflow resume/file consumer appeared.
+This is partial transport execution,
+not completed pause/resume qualification.
+Read-only collection matches both source/boot/challenge responses.
+Direct OpenSSH runs as UID 0/GID 0 in `/root`;
+native CLI RPC runs as UID 1001/GID 117 in `/home/runner`.
+Neither inherits the synthetic workflow environment.
+All recorded owned identities and the askpass socket are freshly absent.
+The final 276 log events show the paused action entering `apt-get update`
+and emitting only the 237-byte `/etc/apt/apt-mirrors.txt` Mirrorlist line before cancellation.
+No tmate target was logged.
+Dependency installation is the last recorded phase;
+the last APT line does not identify the blocking instruction or cause.
+It is not evidence that tmate transport fails or is unsupported.
+Pinned action source `src/index.js:82` through `src/index.js:110`
+shows `install-dependencies: false` skips both package installation and static-binary download,
+then uses `tmate` from `PATH`.
+Platform prepares a source-bound same-binary correction without unconditional apt update;
+Root must review changed identities before the remaining attempt.
+No second dispatch is admitted automatically.
+The single reserved slot is released,
+so Coverage may use both global slots for admitted work.
+The three-minute server job and USD 0.036 two-attempt guard remain unchanged.
+The 210-second local point starts cleanup;
+there is no independent whole-controller hard backstop.
+Runtime outcomes use a successor receipt so the admitted proposal/source seal stays immutable.
+Platform durably queues the read-only GitHub check-runs/commit-status consumer comparison in
+`doc/planning/depot-native-ssh-runtime-research.md` at `0567953a15`.
+The positive control is the owned GitHub graph source/run;
+the native probe uses an exact owned source with actor/output bodies kept private.
+Its exact `b6a60493c16087043a7043f50cd31d8aebf4bdee` SHA has GitHub check `117756320157`,
+`native-ssh-acceptance / ssh-proof`,
+completed/cancelled under app `219785`,
+`depot-code-access` (Depot Code Access).
+The known GitHub graph source has six checks:
+four GitHub Actions checks for run `39140975786` and two Depot Code Access native-graph checks.
+Both exact SHAs have zero legacy commit statuses.
+The check details identify exact owned job `q74vcmxkk1`,
+and fresh native status binds it to run `sqrz4sml30` and attempt `fhxx4s51rf`.
+Selected URL/external-ID hashes and match booleans are sealed in
+`doc/audit/depot-native-ssh-runtime-2026-10-18.evidence.json`;
+the installed app name alone does not mean the optional Depot Code product was enabled.
+No app/account settings were inspected or changed.
+Coverage committed and pushed the seven-owner material harness at
+`015ee75186e697a05160913dbd8006eceb90b2e5` before its actual bootstrap/Mise/Node preflight.
+It preserves the admitted profile/prerequisite/argv boundaries and adds actual OS/CPU/memory probes.
+The final executable admission is
+`doc/audit/depot-material-owner-executable-admission-2026-10-18.evidence.json`.
+It binds pushed harness `e270285361b526793ff1db3af9f8224630c28e70`
+and frozen application `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`,
+after actual owner-variable,
+Cargo-selection,
+altered-PNG/LFS-pointer rejection and publication controls pass.
+Finite controller session `55444` has started.
+IDE full run `39156168838` uses `depot-ubuntu-24.04-4`,
+four requested CPUs/documented 16 GB and a 30-minute/USD 0.36 maximum.
+GTK release run `39156185253` uses public `ubuntu-24.04`,
+30 minutes and nominal compute USD 0.
+Those jobs own both global slots.
+The private journal is
+`/var/home/user/temp/agent/depot-complete-coverage-20261018/material-owner-campaign-controller.json`.
+Its initial reservation is USD 1.08 primary,
+USD 2.88 conditional and USD 1.04 unpriced headroom,
+with fresh terminal predecessor rows required before subsequent dispatches.
+Platform prepares the SSH correction read-only;
+allocation requires Root coordination of a released/reserved slot.
+Rust checked the actual locked Mise 2026.10.9 affected-task selector,
+separately from the installed 2026.10.0 failure.
+Its actual locked-version metadata probe now confirms the identical workspace cycle,
+after changed-producer/development-consumer,
+unchanged-revision empty-selection and synthetic-cycle controls.
+All 419 frozen metadata hashes stay unchanged in an offline two-CPU,
+two-GiB,
+256-PID container.
+No owner task,
+credential,
+installation or upgrade is involved.
+Rust sealed exact binary/source/arguments and the existing troubleshooting update at `a9541b020c`:
+`doc/audit/depot-mise-locked-affected-2026-10-18.evidence.json`,
+SHA-256 `37bd8779e0046a9eab9c25d22f6c4f293f0c059083a3c5d502bef486fa4b5841`.
+Its 16 source-body,
+seven outcome and four deciding source-line joins pass,
+with targeted Markdown and actual rendered-section checks.
 
 Kotlin's claimed unexecuted six JVM methods are retracted and positively resolved.
 The missing semantic projection alone did not prove missing execution.
@@ -182,19 +352,70 @@ All six pass in each sample.
 The experiment executes the authored Gradle `test` task via Mise with cache-specific flags,
 not the literal package Mise wrapper.
 The separate `r328mp420m` emitted-JAR consumer is not the six-case basis.
-No new Kotlin run is needed;
-Rust seals the source/task/JUnit projection and Coverage joins it semantically.
+No new Kotlin run is needed.
+Rust sealed the source/task/JUnit projection at `c75fc4790b`:
+`doc/audit/depot-kotlin-gradle-owner-join-2026-10-18.evidence.json`,
+SHA-256 `a497e3f495e1818af77eb9a2cba8ab45cbab71b5b59476364fe9cb1993b36614`.
+Four original ZIP CRCs and 102 member hashes pass;
+Coverage joins that projection semantically.
 Coverage also checks actual OS Nextest binary/package identities and older receipts for the other proposed owners.
-The new owner campaign remains unallocated until its concrete proposal and existing-evidence scope checks close.
+The new owner campaign is admitted but not yet allocated;
+its exact executable harness and payload preflight remain required before dispatch.
 Platform's Bash diagnosis is complete at `3cddf3617a`:
 `doc/troubleshooting/bash-builtin-kill-signal-option.md`,
 exact patchlevel-nine source and safe signal-zero controls.
 Its pending real-debug proposal remains separate.
-Rust may use one two-CPU three-minute owned cleanup job,
-maximum USD 0.018 within its existing guard,
-only if deciding source establishes injected-token namespace access and exact digest checks.
-No broader token or account enumeration is authorized;
-coordinate at most two active cloud jobs across owners.
+Rust's documented short-lived OCI challenge exchange now authenticates exact prepared-image reads.
+All three owned tags and their immutable digests return `404 MANIFEST_UNKNOWN`.
+No deletion,
+persistent credential or cloud allocation occurred.
+Rust seals creator/host/repository/digest joins,
+selected pull scope and an invalid-Bearer response control before final absence acceptance.
+These reads do not establish expiration as the cause or physical storage reclamation.
+The cloud cleanup fallback is unnecessary.
+Rust sealed current absence in `49e5c84d1b`:
+`doc/audit/depot-native-snapshot-absence-2026-10-18.evidence.json`,
+SHA-256 `967abe64d26450f9754b00c387c742b1ea744f6ac8e58d7be605b240c1499956`.
+The same-host/path invalid-Bearer control returns 401 while the valid selected pull token returns 404.
+Its 20-body source archive retains exact creator/host/repository/tag/digest joins.
+The follow-on now has 37 rows and 41 retained bodies after the public recovery and managed-host joins.
+Its known nominal provider-window proxy is USD 1.2625,
+with Depot GitHub USD 0.8381 and native CI USD 0.4244;
+the parent graph subtotal remains USD 0.487.
+Rust's successor verification is sealed at `92839f0386`:
+`doc/audit/depot-owned-allocation-follow-on-hosts-verification-2026-10-18.evidence.json`.
+The ledger SHA-256 is `9b536e96fabfe522fa0921dddfa7b7da3c14730c5c9625c99b7286850425cb17`;
+the 41-body archive SHA-256 is `872651779e81a7ae6627c10c7392151fbe435cb97be456a8e409428ee6ca1b6d`.
+Host comparison controls at `21f3133491` establish equality for 1495 Mac and 1494 Windows recorded cases,
+with changed identity,
+missing identity and changed status detected by the same comparator.
+The initial host seal retains its derived normalized views at `d29c7887...`;
+the derived-view comparison successor is
+`doc/audit/depot-current-host-owner-comparison-2026-10-18.evidence.json.gz`,
+SHA-256 `c11ce61387c8675f99c303cad6093d444a13bc7c42adf24eb77f2bdd1f1677b7`.
+Depot Mac requested/catalog eight CPUs and 24 GB differs from observed available CPUs seven and 17 GiB.
+Its actual OS build and CPU model remain unmeasured;
+do not substitute a fresh VM or catalog M2 as the missing original observation.
+The independent frozen 30-row review remains a distinct immutable snapshot;
+the final larger ledger still needs the parent's new independent review.
+The refreshed Cargo bootstrap troubleshooting section renders and passes its targeted check.
+Its nine embedded-upstream-Rust warnings exactly match the pre-edit baseline;
+an injected Rust-closure control raises the count to twelve.
+The first stdout-only collector missed stderr diagnostics and is rejected,
+as is the nonmoving heading control.
+No broader token or account enumeration is authorized.
+Coordinate at most two active cloud jobs across owners.
+Root removed its completed graph and MVM worktrees after clean tracked/untracked status,
+ignored-output dry runs,
+root Git-name/ignore checks and confirmation that neither active owner needs their paths.
+The three ignored-output directories were moved into the private Root controller's
+`retained-completed-worktree-outputs` directory before ordinary non-forced removal.
+No retained evidence or shared Git/LFS objects were deleted.
+The physical roots resolve through `/var/mnt/encrypted/temp/agent`;
+the first literal-path assertion was rejected and the corrected realpath comparison passes.
+The rejected parent invocation `mise run --file ...` emitted `no task //:--file found`.
+Running the existing task from its owning controller directory passes five receipt hashes,
+44 source-body joins and targeted Markdown lint.
 
 ## Recorded setup and recovery history on 2026-10-18 at 16:33 UTC
 

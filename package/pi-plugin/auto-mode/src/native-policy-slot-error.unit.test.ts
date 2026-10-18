@@ -29,7 +29,7 @@ await describe({
       fn: async function nativeErrorValues(): Promise<void> {
         /** The actual built export must be constructable by its existing JavaScript consumers. */
         const constructor = await loadConstructor();
-        assert.ok(typeof constructor === 'function');
+        assert.ok((typeof constructor) === 'function');
         /** Cause identity must survive without copying or string conversion. */
         const cause = new Error('original policy cause');
         /** Reflect.construct invokes the actual built class with its original argument convention. */
@@ -52,7 +52,7 @@ await describe({
       fn: async function inheritedNameSetter(): Promise<void> {
         /** No constructor or global prototype is replaced for this test. */
         const constructor = await loadConstructor();
-        assert.ok(typeof constructor === 'function');
+        assert.ok((typeof constructor) === 'function');
         /** Only the owned consumer subclass links to the original built prototype. */
         const prototype: unknown = Reflect.get(constructor, 'prototype');
         assert.ok((prototype !== null) && ((typeof prototype) === 'object'));

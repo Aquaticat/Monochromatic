@@ -109,7 +109,8 @@ export function createObservationStream({
        ||((typeof init.body)!=='string')
        ||(!init.body
          .isWellFormed()))throw new RequestObservationProfileError('Tool evidence requires a canonical HTTP URL and serialized JSON POST');
-     if(Buffer.byteLength(init.body)>maxBodyBytes)throw new RequestObservationProfileError('Serialized request exceeds observation byte bound');
+     const bytes=Buffer.byteLength(init.body);
+     if((maxBodyBytes!==undefined)&&(bytes>maxBodyBytes))throw new RequestObservationProfileError('Serialized request exceeds configured observation byte limit');
      if(scope.request){
       if((scope.request
         .url
@@ -125,7 +126,7 @@ export function createObservationStream({
         method:'POST',
         body:init.body,
         bodySHA256:hash(init.body),
-        bytes:Buffer.byteLength(init.body)
+        bytes
       });
       scope.sourceContributions=Object.freeze((payload.association
         ?.seal(parsed)

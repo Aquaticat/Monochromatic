@@ -1645,8 +1645,8 @@ The original sealed handoff is preserved; the corrected row projection is in the
 
 The remaining finite factual queue is independently owned:
 
-- Complete the active corrected public Mac/Windows matrix and preserve actual owner bodies and failures.
-- Execute the matched admitted Depot Mac/Windows matrix under its separate USD2 guard.
+- Complete the corrected GNU-only continuation; the initial GNU context stopped at argument parsing.
+- Seal the terminal matched Depot Mac/Windows owner receipts and resource ledger.
 - Seal the per-package source feature/assertion and observed execution manifest,
   retaining counts, missing reach, cross-lane contexts and historical hash boundaries separately.
 - Finish source-backed troubleshooting notes and rendered Markdown checks.
@@ -1705,7 +1705,8 @@ Current host controls remain a separate finite queue item.
 ## Material owner completion queue after the current host controls
 
 The source audit found authored existing owners without an execution receipt in the current semantic join.
-These are execution gaps, not a claim that authored assertions are absent.
+Missing joins do not establish an unexecuted owner or absent authored assertions.
+The retained provider and legacy binary/package/case inventories are checked before new allocations.
 The finite preparation queue is now explicit:
 
 - `package/desktop-app/ide`: full owning test with its real pinned Helix grammar producer,
@@ -1716,7 +1717,7 @@ The finite preparation queue is now explicit:
 - `package/desktop-app/file-manager-qt`: actual release Nextest owner.
 - `package/desktop-app/terminal`: actual Nextest owner with the real Zig/font/native prerequisites
   or its authored Containerfile.
-- `package/linter/kotlin`: actual JVM Gradle test owner, with no Android or publication task.
+- `package/linter/kotlin`: closed by the existing exact-source Gradle/JUnit join; no repeat allocation.
 - `package/music-player/design`: the actual authored Node and browser owners,
   with PNG/HTML/font materialization qualified and screenshot bytes excluded from publication.
 
@@ -1749,3 +1750,103 @@ Windows is Developer-supported.
 No subscription, deployment, provider/model call or source assertion changes are included.
 The [concrete immutable admission](../audit/depot-current-host-matched-admission-2026-10-18.evidence.json)
 retains all finite commands, corrected hashes, actual bootstrap and source/ledger boundaries.
+
+## Corrected Kotlin execution boundary
+
+The initial claim that the Kotlin JVM methods were unexecuted is retracted.
+The [independently sealed owner join](../audit/depot-kotlin-gradle-owner-join-2026-10-18.evidence.json)
+verifies the exact frozen package subtree and all six `RequireKDocTest` method identities
+in each of four original passing cache samples.
+The authored Gradle `test` task executed with the recorded experiment flags.
+The literal package Mise owner wrapper was not invoked.
+The separate `r328mp420m` emitted-JAR host consumer is not the six-case basis.
+No new Kotlin allocation is needed.
+
+The [independent package-directory review](../audit/depot-package-directory-census-independent-2026-10-18.evidence.json)
+also confirms the exact 223-directory set and the four excluded documentation blobs.
+The original 227-candidate archive remains unchanged.
+
+The material-owner input audit admitted 1,582 exact working asset/HTML files,
+including 1,428 LFS materializations, with 350,992,617 actual bytes and no rejected payload.
+Each LFS payload matches its frozen pointer OID and size;
+each remaining payload matches its frozen Git blob identity.
+This qualifies the local source inputs, not execution of a consumer.
+No asset, screenshot or embedded image bytes are added to this note.
+
+## Terminal matched Depot host owners
+
+Depot-managed GitHub run `39148580870` is terminal.
+Mac job `117737397487` ran for 359 seconds;
+Windows job `117737397295` ran for 674 seconds.
+The nominal elapsed-interval list-rate proxy is USD0.6584.
+The USD1.92 reservation under the separate USD2 guard is released after terminal status.
+No invoice or included-minute debit was queried or established.
+
+Mac executed 1,495 Nextest binary/case identities, 1,468 passed and 27 failed,
+plus one skipped summary entry.
+Windows executed 1,494, with 1,493 passed and one failed, plus one skipped entry.
+Logger retains separate child failures and aggregate emissions, not an assertion total.
+The matched GNU context is still a finite continuation because its public adapter duplicated
+an authored scheduler argument; the [troubleshooting note](../troubleshooting/nextest-owning-task-scheduler-arguments.md)
+retains that pre-body boundary and the qualified parser controls.
+
+## Executable material-owner campaign and GNU continuation
+
+The [Parent admission][material-parent-admission] authorizes the unchanged seven-profile proposal.
+The proposal SHA-256 remains `8ebd2766f5e64f13d180ea6027853a97efa969748ba4ec04e9f0d6795becb82e`.
+The [executable admission][material-executable-admission] binds harness `e270285361b526793ff1db3af9f8224630c28e70`
+and the actual bootstrap, Mise activation, Node syntax, owning-argv and payload controls.
+The actual production payload validator rejects changed PNG bytes and LFS pointer text,
+then accepts restored admitted bytes.
+The actual publication predicate withholds synthetic PNG, data-image, SVG, wrapped-base64
+and binary-control fixtures while retaining an ordinary Nextest status line.
+Images, media, HTML and tool images stay private; public evidence carries metadata and sanitized text.
+
+The independently verifiable execution queue is:
+
+- `ide-full`, with the real pinned grammar producer and the full authored library/integration selection.
+- `ide-reader-lifecycle`, a separately labelled library subset without grammar-runtime credit.
+- `terminal-release`, with the real frozen Zig/font/tool image and compiled binary enumeration.
+- `file-manager-gtk-release`, with real GTK prerequisites and release Nextest bodies.
+- `file-manager-sticky-release`, with the authored Wayland ignore preserved and no compositor launch.
+- `file-manager-qt-release`, with its real QML/C++ producer and authored release test.
+- `design-authored-node-imagemagick`, with its actual thirteen Node programs and ImageMagick7 readers.
+
+The primary reservation is USD1.08; two conditional correction caps reserve USD2.88.
+Unpriced storage, LFS and other contingency is USD1.04 under the separate USD5 nominal guard.
+Every dispatch owns one job, with a thirty-minute job cap and twenty-seven-minute inner deadline.
+At most two globally coordinated cloud jobs may overlap.
+No material allocation existed at this admission checkpoint.
+
+The [public GNU terminal evidence][gnu-terminal-owner] closes the corrected parser activation boundary:
+1,494 unique binary/case identities ran, with 1,492 passed, two failed and one summary-only skip.
+The failures are the unreadable-session-path/logging case and
+`watch::tests::a_burst_of_changes_requests_one_rescan`.
+No cause, provider attribution or flake rate is established.
+The original source assertions remain unchanged.
+Job `117747819418` ran from `18:00:26Z` to `18:10:52Z`, a 626-second provider interval,
+with nominal standard-public compute USD0 and unmeasured artifact/storage charges.
+
+A separate matched Depot-Windows GNU proposal remains queued for Parent source review.
+It may request one four-CPU/sixteen-GB job for twenty minutes, nominal USD0.32,
+and at most one conditional harness-only correction with the same cap.
+That proposed job will record its own OS version/release, CPU models, available CPUs and total memory.
+Its observations cannot backfill uncaptured original Mac/MSVC environment fields.
+No matched Depot GNU allocation is admitted by this executable material-owner receipt.
+
+[material-parent-admission]: ../audit/depot-material-owner-parent-admission-2026-10-18.evidence.json
+[material-executable-admission]: ../audit/depot-material-owner-executable-admission-2026-10-18.evidence.json
+[gnu-terminal-owner]: ../audit/depot-current-host-gnu-owner-2026-10-18.evidence.json.gz
+
+## Material-owner dispatch checkpoint and matched GNU queue
+
+The material campaign uses immutable harness `e270285361b526793ff1db3af9f8224630c28e70`.
+Its owned controller retains exact per-dispatch admission and terminal metadata.
+The completed primary reservation plus corrections and unpriced reserve remains within the separate `USD 5` guard.
+Workflow success alone is not a parsed assertion or case count; artifact/body joins remain pending.
+
+The matched Depot GNU control is separately reviewable in
+[`depot-matched-windows-gnu-control.md`](depot-matched-windows-gnu-control.md).
+Its harness is `28f3167d8f0e731d13378d072dd5f23a7e392554`, with a separate `USD 0.64` nominal compute guard.
+No GNU allocation is authorized or dispatched by preparing this proposal.
+After exact-source admission, dispatch only with a coordinated slot and preserve the seven-owner queue.
