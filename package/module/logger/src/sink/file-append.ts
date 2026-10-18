@@ -30,6 +30,7 @@ type FileAppendQueue = {
  Batch synchronous producer frames without dropping records or overlapping complete append operations.
 
  @param filePath - verified destination owned by one sink
+
  @returns Queue preserving captured record order until append completion
 
  @example
@@ -54,6 +55,7 @@ export function createFileAppendQueue({ filePath, }: { readonly filePath: string
    Append completion includes every filesystem chunk, preserving the existing write-error reporting behavior.
 
    @param batch - captured records detached from further producer admission
+
    @returns Completed batch whose callers may now be released
    */
   async function appendBatch(batch: AppendBatch,): Promise<AppendBatch> {
