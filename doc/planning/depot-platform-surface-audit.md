@@ -1340,9 +1340,10 @@ No completion or interview-readiness conclusion is made.
 ## Native SSH acceptance proposal
 
 A local reseal was interrupted when its read-only lookup adapter treated a JSON `null` as an array.
-The source archive was written before that validation failed;
-its public metadata requires the pending scoped repair.
-No SSH job was dispatched by this preflight failure.
+The adapter now accepts the CLI's observed no-match `null`,
+and actual exact-source/repository positive and negative lookup controls pass.
+The source archive and public metadata are reconciled.
+No SSH job was dispatched by this preflight failure or its repair.
 
 The [SSH proposal receipt](../audit/depot-native-ssh-acceptance-2026-10-18.evidence.json)
 and [source archive](../audit/depot-native-ssh-acceptance-2026-10-18.sources.json.gz)
@@ -1367,7 +1368,15 @@ One correction after terminal cleanup would reserve `USD 0.036` across both jobs
 This reservation is scoped arithmetic,
 not an invoice or aggregate account cap.
 Root final source/admission review remains pending.
-The admission also pins the exact controller and owned-process helper hashes.
+The admission pins the exact controller,
+owned-process helper,
+askpass and remote-consumer hashes,
+plus the manifest fields that select paths,
+source and resource limits.
+The remote program is read once and reused from its admitted bytes.
+The `210` second timer starts cleanup;
+there is no independent hard timer over the whole controller and its cleanup.
+Each controlled command retains its own bounded termination and reaping.
 
 Local controls validate synthetic askpass delivery and prompt rejection,
 source/challenge file consumers,

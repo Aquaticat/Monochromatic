@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sealedAt": "2026-10-18T18:21:57.941Z",
+  "sealedAt": "2026-10-18T18:30:20.599Z",
   "status": "Three transports source/local qualified; Root final admission pending; no native SSH allocation",
   "applicationBase": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
   "fixture": {
@@ -42,6 +42,9 @@
       "Tmate upstream source permits none auth only when session authorized_keys policy permits it; actual cloud gateway remains to qualify",
       "Native CLI RPC leg receives a real local PTY, separate from direct OpenSSH and paused tmate",
       "util-linux command joins shell operands and child creates its own session; use quoted exec and exact owned-child supervision",
+      "CLI ListRuns source/proto forwards repository/full-SHA filters; local workflow_content submission does not guarantee a runtime file path",
+      "Native CLI RPC leg receives a real local PTY, separate from direct OpenSSH and paused tmate",
+      "util-linux command joins shell operands and child creates its own session; use quoted exec and exact owned-child supervision",
       "CLI ListRuns source/proto forwards repository/full-SHA filters; local workflow_content submission does not guarantee a runtime file path"
     ],
     "locallyQualified": [
@@ -50,6 +53,8 @@
       "Remote file consumers: direct/paused positives and source/workflow-env rejections",
       "Privileged UID0 writer restores UID1000/GID1000 before0600 workflow-reader access; root-owned0600 negative returnsEACCES",
       "OpenSSH direct and tmate shell-option syntax; actual local credential scalar shape admitted without displaying credential",
+      "Real PTY challenge/TTY controls, exit0/7 propagation and bounded TERM-ignoring direct/script child escalation, reaping and owned PID absence",
+      "Final fixture source has direct/CLI/paused positives plus source/env rejections",
       "Real PTY challenge/TTY controls, exit0/7 propagation and bounded TERM-ignoring direct/script child escalation, reaping and owned PID absence",
       "Final fixture source has direct/CLI/paused positives plus source/env rejections"
     ],
@@ -233,12 +238,44 @@
       "Terminal prior attempt before a correction",
       "Existing local credential shape admitted"
     ],
-    "inlineTaskSha256": "bdf3bbbe455f1c0692aebb2cf6926ca19c6b6890bb89bab4491932edbd25975f",
+    "inlineTaskSha256": "59b7d8fe0c3249c002ff18491c08f8379cf915c0f8237a185b7d90bbed5c82e3",
     "helperSha256": "28cad73e5b02cb1062539741407446a373be17fbc099ec094dd68ae8f0f86626",
     "terminationGraceMs": 1500,
     "cleanupCliCommandMs": 10000,
-    "maximumLocalLifetimeMs": 260000,
-    "lostDispatch": "Issued request records possible allocation before response; exact repo/full-SHA/time/workflow/job recovery required before correction"
+    "lostDispatch": "Issued request records possible allocation before response; exact repo/full-SHA/time/workflow/job recovery required before correction",
+    "wholeControllerHardDeadlineEnforced": false,
+    "lifecycleQualification": "210 seconds starts cleanup; bounded individual clients/cleanup commands, with no independent whole-controller hard backstop",
+    "askpassSha256": "6da0664744dba0a8a296c78e31c8967f0b5a61c031bccec568c2dafa29617db2",
+    "remoteConsumerSha256": "ec72cfe8840a7b171a574be6caafbac15fb4b3fd5fcb6e27af9939cee0029f2a",
+    "manifestProjection": {
+      "base": "e02be6c8b8fe9efb41a7f8f1a0b311c17796588a",
+      "branch": "research/depot-native-ssh-20261018",
+      "tree": "/home/user/temp/agent/depot-native-ssh-5U4m6T/worktree",
+      "area": "/home/user/temp/agent/depot-native-ssh-5U4m6T",
+      "profile": {
+        "label": "depot-ubuntu-24.04",
+        "cpu": 2,
+        "memoryGiB": 8,
+        "jobTimeoutMinutes": 3,
+        "tmateStepTimeoutMinutes": 2,
+        "maximumJobsIncludingCorrection": 2,
+        "perMinuteUsd": 0.006,
+        "maximumNominalReservationUsd": 0.036
+      },
+      "pausedAction": {
+        "commit": "35b54afac29c97fb54faba5b513f8fbd1882f113",
+        "relation": "Pinned equivalent of source-reviewed CLI@v3 injection; no CLI-injection execution credit"
+      },
+      "localBridges": {
+        "askpass": "/home/user/temp/agent/depot-native-ssh-5U4m6T/ssh-askpass.mjs",
+        "remoteConsumer": "/home/user/temp/agent/depot-native-ssh-5U4m6T/remote-consumer.mjs",
+        "credentialTransport": "Existing local CLI token stays in controller memory and one owned0700-directory Unix socket; never token argv/env/file",
+        "hostKeyPolicy": "Private known_hosts with accept-new; retain observed fingerprints without claiming independent vendor key attestation",
+        "directAuthentication": "password only, pubkey/agent disabled; reject unexpected askpass prompts",
+        "tmateAuthentication": "Session target is a bearer capability; private only, BatchMode=yes, no user token forwarded"
+      }
+    },
+    "manifestProjectionSha256": "af74218a9bd47caa760642a62f3671f55a337e82407ea3978022643030f942d5"
   },
   "proofContract": [
     "Exact owned run/job/attempt/sandbox match from fresh status plus CLI info",
@@ -601,7 +638,131 @@
       ],
       "cloudOperations": 0
     },
-    "scriptVersion": "script from util-linux 2.42.2"
+    "scriptVersion": "script from util-linux 2.42.2",
+    "scopedRunLookup": {
+      "checkedAt": "2026-10-18T18:28:52.097Z",
+      "scope": "Actual source/repository-filtered read-only native ListRuns control; no account-wide lookup and no dispatch",
+      "controls": [
+        {
+          "name": "owned-known-run-positive",
+          "fullSha": "f0865228da0123433face17054ca7f7f62538c9b",
+          "expectedKnownRun": "38z4wlq9d3",
+          "returnedRunIds": [
+            "38z4wlq9d3",
+            "ps_74fk75btpf"
+          ],
+          "result": {
+            "file": "depot",
+            "args": [
+              "ci",
+              "run",
+              "list",
+              "--org",
+              "l4zncjjbj5",
+              "--repo",
+              "Aquaticats/Monochromatic",
+              "--sha",
+              "f0865228da0123433face17054ca7f7f62538c9b",
+              "--n",
+              "10",
+              "--output",
+              "json",
+              "--status",
+              "queued",
+              "--status",
+              "running",
+              "--status",
+              "finished",
+              "--status",
+              "failed",
+              "--status",
+              "cancelled"
+            ],
+            "status": 0,
+            "signal": null,
+            "stdout": "[\n  {\n    \"run_id\": \"38z4wlq9d3\",\n    \"repo\": \"Aquaticats/Monochromatic\",\n    \"trigger\": \"api\",\n    \"sha\": \"f0865228da0123433face17054ca7f7f62538c9b\",\n    \"status\": \"finished\",\n    \"created_at\": \"2026-10-18T15:32:42Z\",\n    \"ref\": \"f0865228da0123433face17054ca7f7f62538c9b\",\n    \"head_sha\": \"f0865228da0123433face17054ca7f7f62538c9b\"\n  },\n  {\n    \"run_id\": \"ps_74fk75btpf\",\n    \"repo\": \"Aquaticats/Monochromatic\",\n    \"trigger\": \"push\",\n    \"sha\": \"f0865228da0123433face17054ca7f7f62538c9b\",\n    \"status\": \"finished\",\n    \"created_at\": \"2026-10-18T15:27:37Z\",\n    \"ref\": \"f0865228da0123433face17054ca7f7f62538c9b\",\n    \"head_sha\": \"f0865228da0123433face17054ca7f7f62538c9b\"\n  }\n]\n",
+            "stderr": "",
+            "cleanup": {
+              "rootPid": 3656726,
+              "rootStartTime": "5385295",
+              "rootReaped": true,
+              "deadlineReached": false,
+              "signals": [],
+              "owned": [
+                {
+                  "pid": 3656726,
+                  "state": "R",
+                  "parentPid": 3656622,
+                  "group": 3656726,
+                  "session": 3656726,
+                  "startTime": "5385295",
+                  "remaining": false
+                }
+              ],
+              "allOwnedAbsent": true
+            }
+          }
+        },
+        {
+          "name": "new-ssh-source-negative",
+          "fullSha": "b6a60493c16087043a7043f50cd31d8aebf4bdee",
+          "expectedKnownRun": null,
+          "returnedRunIds": [],
+          "result": {
+            "file": "depot",
+            "args": [
+              "ci",
+              "run",
+              "list",
+              "--org",
+              "l4zncjjbj5",
+              "--repo",
+              "Aquaticats/Monochromatic",
+              "--sha",
+              "b6a60493c16087043a7043f50cd31d8aebf4bdee",
+              "--n",
+              "10",
+              "--output",
+              "json",
+              "--status",
+              "queued",
+              "--status",
+              "running",
+              "--status",
+              "finished",
+              "--status",
+              "failed",
+              "--status",
+              "cancelled"
+            ],
+            "status": 0,
+            "signal": null,
+            "stdout": "null\n",
+            "stderr": "",
+            "cleanup": {
+              "rootPid": 3657915,
+              "rootStartTime": "5385368",
+              "rootReaped": true,
+              "deadlineReached": false,
+              "signals": [],
+              "owned": [
+                {
+                  "pid": 3657915,
+                  "state": "R",
+                  "parentPid": 3656622,
+                  "group": 3657915,
+                  "session": 3657915,
+                  "startTime": "5385368",
+                  "remaining": false
+                }
+              ],
+              "allOwnedAbsent": true
+            }
+          }
+        }
+      ],
+      "cloudAllocations": 0
+    }
   },
   "preflightDefects": [
     "Controller TOML nested literal fence fixed before execution; no worktree/cloud resource created by parse failure",
@@ -615,10 +776,10 @@
   ],
   "sourceArchive": {
     "path": "doc/audit/depot-native-ssh-acceptance-2026-10-18.sources.json.gz",
-    "gzipBytes": 1146712,
-    "gzipSha256": "d62e1e1cb9cec85525c0649fc81df79cdf4842f42b7ab91cae59fdcc046d81aa",
-    "uncompressedBytes": 4970095,
-    "uncompressedSha256": "e5a93e73b3400d939f52b9de1b5fd41ca26fd744ac1fd4b20aeeee51c1f21ddf",
+    "gzipBytes": 2342905,
+    "gzipSha256": "8c503d374116bb787f8eb2dd395db70654a822e887631cda94f859e471968923",
+    "uncompressedBytes": 10152113,
+    "uncompressedSha256": "cd7ec34aea5547fc764686901bb694bf6f514d2e6f904a42b5666e666e670a58",
     "sourceCount": 26,
     "previousSourceBodiesRetained": true
   },
@@ -753,8 +914,8 @@
       "id": "controller/mise.toml",
       "repository": "Owned isolated research controller",
       "revision": "proposal-2026-10-18",
-      "bytes": 824960,
-      "sha256": "94984d07314a7c7163a7fe0b5a8a2093029e06888ddbe4198130fb274ab2851e"
+      "bytes": 837401,
+      "sha256": "22814ec0ca258a9df6d6ff78f0fc9434344131055efb2c9b49d951f2d5e71c43"
     },
     {
       "id": "installed-openssh/ssh.1",
@@ -808,9 +969,9 @@
   ],
   "cloudAllocations": [],
   "previousProposal": {
-    "sealedAt": "2026-10-18T17:54:16.403Z",
+    "sealedAt": "2026-10-18T18:21:57.941Z",
     "fixture": {
-      "source": "c3c694593e6a3a3cdd622aaeff00c4329305ec74",
+      "source": "b6a60493c16087043a7043f50cd31d8aebf4bdee",
       "branch": "research/depot-native-ssh-20261018",
       "paths": [
         ".depot/workflows/native-ssh-acceptance.yml",
@@ -820,7 +981,7 @@
       "cpu": 2,
       "memoryGiB": 8,
       "jobMinutes": 3,
-      "tmateStepMinutes": 1,
+      "tmateStepMinutes": 2,
       "pinnedAction": {
         "commit": "35b54afac29c97fb54faba5b513f8fbd1882f113",
         "relation": "Pinned equivalent of source-reviewed CLI@v3 injection; no CLI-injection execution credit"
@@ -829,13 +990,13 @@
     "controller": {
       "task": "run-native-ssh-acceptance",
       "defaultMode": "plan-only; zero cloud calls",
-      "executeGate": "NATIVE_SSH_EXECUTE=1 plus exact-source Root-reviewed private admission file",
+      "executeGate": "NATIVE_SSH_EXECUTE=1 plus Root-reviewed source/controller/helper hashes in private admission",
       "watchdogCancelMsFromAdmissionDispatch": 150000,
       "eachSshLegLimitMs": 15000,
       "serverJobMinutes": 3,
-      "pausedStepMinutes": 1,
+      "pausedStepMinutes": 2,
       "localCleanupBeginsAtMs": 210000,
-      "finally": "Terminate owned SSH child, close askpass socket, cancel exact owned run if terminal not verified, fresh exact-run status; retain incomplete cleanup as failure instead of claiming absence",
+      "finally": "Bounded exact owned TERM/KILL escalation and reaping, including separate-session script child; scoped lost-dispatch recovery, cancellation and fresh terminal status",
       "preDispatchGates": [
         "Clean exact source",
         "Exactly fixture paths changed from e02",
@@ -843,15 +1004,21 @@
         "Terminal prior attempt before a correction",
         "Existing local credential shape admitted"
       ],
-      "inlineTaskSha256": "0bdf479e54e3ee06934fdbd8f3379b406bf4e54f5a1992c7f0cf222463c2ebf6"
+      "inlineTaskSha256": "bdf3bbbe455f1c0692aebb2cf6926ca19c6b6890bb89bab4491932edbd25975f",
+      "helperSha256": "28cad73e5b02cb1062539741407446a373be17fbc099ec094dd68ae8f0f86626",
+      "terminationGraceMs": 1500,
+      "cleanupCliCommandMs": 10000,
+      "maximumLocalLifetimeMs": 260000,
+      "lostDispatch": "Issued request records possible allocation before response; exact repo/full-SHA/time/workflow/job recovery required before correction"
     },
     "sourceArchive": {
       "path": "doc/audit/depot-native-ssh-acceptance-2026-10-18.sources.json.gz",
-      "gzipBytes": 550478,
-      "gzipSha256": "4d49e64e6ae657a2327b021fd4452efc0a36c44039b4a3e50692be7380f5b0a9",
-      "uncompressedBytes": 2390794,
-      "uncompressedSha256": "206da4925137997fad99b2a13ce7eb9859b0fe7fb8c749649249207cdfce0bb9",
-      "sourceCount": 20
+      "gzipBytes": 1146712,
+      "gzipSha256": "d62e1e1cb9cec85525c0649fc81df79cdf4842f42b7ab91cae59fdcc046d81aa",
+      "uncompressedBytes": 4970095,
+      "uncompressedSha256": "e5a93e73b3400d939f52b9de1b5fd41ca26fd744ac1fd4b20aeeee51c1f21ddf",
+      "sourceCount": 26,
+      "previousSourceBodiesRetained": true
     }
   }
 }
