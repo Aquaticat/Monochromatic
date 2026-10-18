@@ -3758,6 +3758,46 @@ It states the rule that D58, D110 and D120 already imply for flush rows, and cor
   Tests: `TrackRowGeometryTest`, `RowAlignmentWiringTest` (bounds and pixels of the real pane) and
   `TemplateEditorAlignmentWiringTest`.
 
+### D131. On Android a track the player moved to by itself and cannot open is walked past and reported by notification (2026-10-18)
+
+D128 settled it for the desktop (playback-driven moves keep walking past unreadable files and report them), D122 and
+D123 put those reports in the system notification area with no in-app fallback, and the tap-time message stays in the
+app.
+Android had none of the walk: every failed load, however it started, set the one in-app "Could not play" message and
+stopped.
+The human's rulings are applied here; the readings below are the implementer's, open to a veto.
+
+- The origin of a load decides.
+  A tap, Enter, a Search result, a menu Play and the Play button on a current row are taps: the in-app message, the
+  row stays selected, nothing moves on.
+  The natural end of a track, Next, Previous, a Play with nothing selected, the restore of the last session and the
+  readied first track at the end of a folder are moves: the player passes the file and loads the next one the move
+  would have reached, with the same play or paused intent, and the in-app message is never shown.
+- Direction follows the move: Previous walks backward, the natural end walks the way a natural end goes (an In order
+  folder still ends and readies its first track paused, Repeat steps on to the next track), the others walk forward
+  and wrap like Next.
+  The walk gives up after one try per track of the queue, paused.
+- A timeout of the descriptor open ends the walk at once instead of trying the next file, because a music library that
+  does not answer would make each next file wait the 8 s limit; the report then says the library did not answer in
+  time.
+- The report is one system notification on the existing `analysis-failure` channel ("Analysis problems") under its own
+  id (4203), so it does not replace an analysis-failure notification (4202) and vice versa; a later report replaces an
+  earlier one of its own kind.
+  The text is the tap message's words as a title and a text:
+  `Could not play <file>.` with `Its file could not be opened.`,
+  and for several files `Could not play 3 files, including <first>.` with `They could not be opened.`
+  The report names every file of the walk and grows with it; the service posts it 400 ms after the last failure, so a
+  walk past many files is one notification and the system's limit on notification updates cannot drop the last one.
+- No fallback, as D123: with the permission denied, notifications off or the channel off, one warning without file
+  names goes to the log under the tag `UnplayableFiles` and nothing is shown in the app.
+- Not decided here: the channel is still named "Analysis problems" in the system settings, which no longer describes
+  the unplayable report; renaming it is a separate choice for the human.
+  A file already reported is reported again when a later walk meets it (D122's once-per-run reading is not applied).
+- Code: `PlayerController` (`loadTrack`, `walkPastUnplayable`), `core/UnplayableWalk.kt` (`LoadOrigin`,
+  `UnplayableReport`, the attempt cap), `core/AnalysisFailureNotice.kt` (`unplayableFilesNotice`),
+  `AnalysisFailureNotification.kt` (`postUnplayableFilesNotification`) and the wiring in `PlaybackService`.
+  Tests: `PlayerControllerUnplayableWalkTest`, `AnalysisFailureNoticeTest`, `AnalysisFailureNotificationTest`.
+
 ## Pending after the theme picks (2026-09-04)
 
 - **Order of remaining work** — my recommendation:

@@ -27,7 +27,7 @@ use music_player::template_model::DEFAULT_PLAYING_TEMPLATE;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Route = "player" | "search" | "settings" | "templateEditor";
+/// type Route = "player" | "search" | "settings" | "templateEditor" | "licenses";
 /// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum Route {
@@ -40,18 +40,21 @@ pub enum Route {
     Settings,
     /// The template editor drawn over the settings page.
     TemplateEditor,
+    /// The licenses page, opened by the Licenses row of Settings.
+    Licenses,
 }
 
 /// Methods of `Route`.
 impl Route {
     /// What: `to_int` gives the integer the window's `route` property uses.
-    /// Why: Slint has no enum binding in this crate, so routes cross as 0 to 3.
+    /// Why: Slint has no enum binding in this crate, so routes cross as 0 to 4.
     pub fn to_int(self) -> i32 {
         return match self {
             Route::Player => 0,
             Route::Search => 1,
             Route::Settings => 2,
             Route::TemplateEditor => 3,
+            Route::Licenses => 4,
         };
     }
 }

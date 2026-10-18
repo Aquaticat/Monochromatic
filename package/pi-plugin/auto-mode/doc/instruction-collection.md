@@ -147,6 +147,19 @@ Complete configured-host replays remain required after the maintained source reb
 
 ## Verification
 
+EVQ:
+Native event tests read retained manager receipts and assert capture succeeds;
+successful host actions alone do not prove complete evidence.
+
+The additional session-action catalog exposes a native `AbortSignal` in `session_before_tree`.
+The SDK also supplies that control field to `session_before_compact`.
+The ordinary message/tool copier rejects its prototype,
+while the passive event observer deliberately preserves original callback execution.
+That combination allows navigation to succeed even though assessment later cannot read complete evidence.
+`test:native:event-controls` reads the original manager source after invoking the actual runner;
+its committed failing run reproduces that distinction.
+The root `TCV` wording remains unchanged.
+
 `test:native:resource-input`,
 `test:native:resource-reload`,
 `test:native:context-receipts`,

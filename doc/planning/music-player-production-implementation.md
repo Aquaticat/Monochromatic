@@ -235,6 +235,51 @@ in the worktree, rerun that platform's verification as a systemd unit, forced fr
 files, `git -C /var/home/user/Monochromatic merge --ff-only <branch>`, push, update this file; run the real behavior
 before saying it matches, QAB):
 
+- 2026-10-18, READY TO MERGE, NOT merged, not released: branch `fix/music-player-android-load-failure-routing`,
+  worktree `music-player-loadfail`, `main` merged in (at `df76fca699`). Two follow-ups of #1438. (1) The ledger edge:
+  load N queued and failed, N+1 requested before the next poll and its descriptor open failed, so the poll reported N
+  after N+1's message; `QueuedLoadLedger.requested()` (called from `RustEngine.load`) now drops the failure while the
+  newest request has not been queued (red `QueuedLoadLedgerTest` case first, 1 of 8 failed, then 8 of 8 passed).
+  (2) Non-tap failures (D131): before, every failed load, tap or not, set the in-app "Could not play" message and
+  stopped (`engine.setOnLoadFailed` in `PlayerController`, shown by `PlayerHost`); now a natural end, Next, Previous, a
+  Play with nothing selected, the restore and the readied first track walk past the file and report it as one system
+  notification on the `analysis-failure` channel under id 4203, and a tap keeps the in-app message. Red first:
+  `PlayerControllerUnplayableWalkTest` 13 of 14 failed before the change, 14 of 14 pass; notice and notification tests
+  10 of 38 failed before. Verification fresh on the merged head: detekt, `lintDebug` clean, 1,361 unit tests, 0
+  failures, 132 result files. Device pass on the headful emulator (invented library, private AVD copy, since deleted):
+  natural end onto a corrupt `.flac` walked to the next track with one notification and no message, two corrupt files in
+  a row gave one notification naming 2 files, the restore of a corrupt saved track readied the next track paused with
+  one notification, a tap on the corrupt row showed the in-app message. Not done: the descriptor-open failure path and
+  `TIMED_OUT` on a device, `nativeEngineLoad` returning non-zero, the walk on API levels other than 37, an instrumented
+  test of the ledger edge, Android native clippy (no Rust touched). Open for the human: the channel is still named
+  "Analysis problems"; the separate id 4203 and the stop on a timeout are implementer readings (D131).
+
+- 2026-10-18, desktop part of the owner's license decision, READY TO MERGE, NOT merged, NOT released, no version bump
+  (a Sonnet agent was told not to merge, release or bump): branch `feat/music-player-desktop-licenses-row`, worktree
+  `music-player-licrow`, code head `b953e60e63`, `main` merged in at `5994c324b9`. The owner decided on 2026-10-18
+  (question tool): the desktop releases use Slint under its Royalty-free license 2.0 instead of GPL-3.0-only, and
+  Settings gets a Licenses row on both platforms without mockups. This branch is the desktop half; the Android row is
+  another agent's. It builds on the notice tooling of `feat/music-player-license-notices`, which is already an
+  ancestor of `main`. Done: `about.toml` accepts `LicenseRef-Slint-Royalty-free-2.0` and no longer `GPL-3.0-only`;
+  cargo-about 0.9.2 drops the text of a `LicenseRef-*` license
+  (`doc/troubleshooting/cargo-about-licenseref-text-is-dropped.md`), so `bin/third-party-notices.mjs` adds a Slint
+  section from `notices/slint-royalty-free-2.0.md` after a SHA-256 check of each Slint crate's own file; the Settings
+  page has an About heading and a Licenses row that opens `ui/licenses.slint` (the `AboutSlint` widget, then the
+  notice text in a ListView fed by `NoticeLines`, built on open and released on close); Escape and the Back arrow
+  return to Settings; release notes, README, runbook and the decision's dated amendment follow. Fresh on this head:
+  `lint:slint` clean, clippy clean, nextest 1,546 tests run, 1,546 passed, 1 skipped (1,466 on the notices branch;
+  this branch adds the Licenses tests and main's), end to end `settings/` 6 of 6 and `auto-play` 4 of 4 on the release
+  binary in the nested compositor, actionlint clean. Release binary 55,816,872 bytes against 55,544,040 on `main` (a
+  first build was 57,790,760 because `NOTICES` was a `const` copied into the window crate; now a `static`, with a
+  test). Startup: no measurable change (the two batches of the same build differ by about 20 ms, more than any
+  difference between builds); opening the page builds the 40,039-line model in 833 to 1,098 microseconds. Release dry
+  run `39105064383` on that head: all 13 jobs green (notices, Android, six desktop, two Alpine, checksums, release),
+  every `--licenses` equal to the notices job's 1,973,826 byte file, the Android notices step passed, the release
+  notes carry the new Slint sentence. Not done: the Windows and macOS binaries were not run; nothing was verified on a
+  real keyboard or screen reader. Open for the owner: whether the Licenses page counts as the "About screen accessible
+  from the top level menu" of the license's section 2(a) (the app has no menu bar), or whether the Slint badge should
+  also go into the release notes; the page title and row naming; the Android row must use the same icon (`license`,
+  Material Symbols, the same commit) and the same notices-script sentence that names the icons.
 - 2026-10-18, READY TO MERGE, NOT merged and NOT released (the agent that finished it was told not to merge, release
   or bump versions): branch `feat/music-player-license-notices`, worktree `music-player-licenses`, `main` merged in at
   `60ba6d71bf`, code head `29ccfb516b` (the commits after it only change docs). Run fresh on that head: notices tasks
@@ -297,6 +342,18 @@ before saying it matches, QAB):
   the AboutSlint widget, branch `feat/music-player-desktop-licenses-row`) and `a8d200663bbc131bb` (Android Settings
   row, branch `feat/music-player-android-licenses-row`) are running; (f) `a24e53faf2449563e` (andlarge) is still
   running.
+- 2026-10-18, Android Licenses row (Sonnet agent `a8d200663bbc131bb`, branch `feat/music-player-android-licenses-row`,
+  worktree `/home/user/temp/agent/music-player-andlicrow`), NOT merged to `main`, no version bump, no release:
+  Settings ends with an About group whose Licenses row opens a page of its own (full window; the right half on a
+  creased screen) with the APK's `THIRD-PARTY-LICENSES.txt`, read off the main thread, cut into 6,649 blocks and listed
+  lazily; Back returns to Settings, Escape too on the unfolded screen; the list is a keyboard stop. Every build
+  variant now packs the asset (a short note without the `notices` output;
+  `MUSIC_PLAYER_REQUIRE_THIRD_PARTY_LICENSES=true` still fails on a missing file, proven). Opened on the emulator in 267 ms (process cold, median of 5, 264 to 276) and
+  140 ms (warm, 122 to 199); scroll windows had 29 to 30 janky frames of 901 to 907 (debug build). The decision, the
+  numbers and the open choice (full page versus the right pane on the unfolded screen) are in
+  `doc/decision/music-player-third-party-licenses.md`, section "Licenses row in Settings (2026-10-18)". The desktop row
+  (agent `ad19cbb1a5dabeac0`, branch `feat/music-player-desktop-licenses-row`) picks its own icon; the Android app
+  uses the Material Symbols `description` icon, so the two branches may need one icon agreed when both are merged.
 - In flight on 2026-10-15 after the 0.1.4 release (cap five agents):
   (c) agent `a861ba9cb4849c4bd`, branch `feat/music-player-license-notices`, worktree `music-player-licenses`: third-party
   license notices (Rust crates, Android libraries, fonts) in every release asset, an allow-list gate, a
@@ -489,6 +546,17 @@ before saying it matches, QAB):
   and none import `vcruntime*`, `msvcp*`, `libgcc_s*`, `libwinpthread*` or `libstdc++*`. Not run by me: the window
   itself (nobody looked at a Windows desktop), any Windows or macOS binary, arm64 binaries, a real device. The
   0.1.4 notes keep the PowerShell redirection sentence (`| Out-File`).
+  RELEASED `music-player-v0.1.5` on 2026-10-18 (bump commit `216ea6dedc`, run `39101350150`, all jobs green, after a
+  green dry run on main, `39098277889`): the Windows normal-close abort fix, startup message box, ANSI gating, batched
+  cache commits, the ten desktop review fixes and third-party license notices (two extra assets,
+  `-desktop-third-party-licenses.txt` and `-android-third-party-licenses.txt`, and `THIRD-PARTY-LICENSES.txt` in the
+  Linux archives). Eleven files. I downloaded them: `sha256sum --check` passed for all eleven, attestation exit 0
+  for all eleven, APK certificate `9de6e9a4...6926`, Linux x64 prints `music-player 0.1.5` and `--licenses` prints the
+  notices, the musl x64 binary prints it in `alpine:3.24`, `pefile` shows Subsystem 2 on the three Windows exes
+  (MSVC 14.51, GNU 2.47) with no C-runtime DLL imports. Attestation lookup changed with the repository owner name:
+  0.1.4 and older verify with `--owner Aquaticat`, 0.1.5 with `--repo Aquaticats/Monochromatic` (README and runbook
+  corrected). Not run by me: any Windows or macOS binary (so the normal-close fix is proven by CI only on forced
+  paths, not by closing a window on Windows), arm64 binaries, anything on a real device.
 
 - 2026-10-17, review issues 1451 to 1458, 1460 and 1463 (assigned to (g) in the GitHub issues item), branch
   `fix/music-player-desktop-review-issues`, worktree `music-player-deskissues`; not merged to `main`, no version bump.
@@ -508,10 +576,49 @@ before saying it matches, QAB):
 
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
 
+- Android large library (written 2026-10-18, branch `fix/music-player-android-large-library`, not merged): the media
+  store was asked for the document column `last_modified` once per fingerprint (sweep, page measure pass, track
+  load) and the provider logged a stack each time; the audit's "idle" count was the page pass that follows every
+  start. Fixed in `cfd1d882c2`: 0 exceptions in every cold run and idle window on the fixed build against 27,137 in
+  a cold run of `main` at 10,000 tracks; 25 of 25 media store fingerprints identical, so no cache version bump. Root
+  cause, counts and spread: `doc/troubleshooting/music-player-android-mediastore-last-modified-column.md`. Scroll
+  jank at 10,000 tracks (audit finding 3) re-measured in two sessions without an emulator crash: 4 of 20 windows
+  slow against 2 of 40 at 1,000 tracks (p = 0.089), 2 of 10 before and 2 of 10 after the fix, time lost in
+  render-thread draw commands, tracking host CPU pressure. Not profiled: two later sessions crashed after 4 and 2
+  minutes (gRPC `SIGABRT`, gfxstream `SIGSEGV`) and the relaunch limit was used. Owed: a `perfetto` trace of slow
+  and normal windows on a quiet host with a Settings-app control window (the driver for it was written in the agent
+  scratch, not committed). The page measure pass still reads the size of every row at each start (9.2 to 21.9 s at
+  10,000 tracks); not changed.
+- Android issues fixed on the same branch, each with a test that failed before: #1438 (a file that opens but does
+  not decode now reaches `onLoadFailed` through a worker failure number and `QueuedLoadLedger`; instrumented
+  `RustEngineLoadFailureTest` failed on a build of `main` and passes), #1439 (the notice kind sits between Undo and
+  error in the feedback order, chosen from the issue's suggestion; today's behavior put it above Undo), #1440 (the
+  readied first track at the end of a folder is reported as loaded). Open choice for the human: #1438 reports
+  through the in-app "Could not play" message of D123 (the tap-time path), not a system notification, because that
+  message stays in the app by D123; D122 covers the desktop launch and sweep report. Superseded on 2026-10-18 by D131:
+  an auto-advance, Next, Previous or restore onto an undecodable file is now walked past and reported by notification,
+  only a tap keeps the in-app message.
 - The workflows of tasks 95 and 96 were told to cache properly and prove it; `doc/decision/ci-caching.md` binds them
   to save only on main and dispatch, under 650 MB per entry, and to delete feature-branch entries after merge.
 - Gallery retake owed from task 93 (the four Settings images, in progress inside that branch); task 94's retakes are done.
 - Forward the Alpine and Windows artifact specifications to task 92 when those agents report.
+- 2026-10-18 MERGED (agent `a24e53faf2449563e`, head `303ef695f0`, 1,302 Android unit tests, detekt, lintDebug and
+  clippy clean): the `last_modified` fix (root cause: the document column asked of the media store, 27,137 exceptions
+  in a cold 10,000-track run before, 0 after; fingerprints identical on device for 25 of 25 media store tracks) and
+  issues 1438, 1439, 1440. Jank at 10,000 tracks is not caused by the exceptions and not changed by the fix (4 of 20
+  windows slow against 2 of 40 at 1,000 tracks, p = 0.089); a quiet-host perfetto trace is owed and not started.
+  Follow-up agent `af5649edcdf4f7d71` (branch `fix/music-player-android-load-failure-routing`): the ledger stale
+  second message edge and non-tap load failures (auto-advance, restore) following D122 and D123 with a system
+  notification instead of an in-app message. Agent (g)'s scratch of 94 GB was cut to 11 GB (emulator copies and
+  invented libraries removed; `emu-90` belongs to someone else and stays).
+- 2026-10-18 done from that triage and merged to main: 1612 and 1610 (workflow fixes, release and cache-prune dry
+  runs green), 1639 (the four design runtime JS files tracked, negations recorded in
+  `doc/decision/gitignore-negations.md`; closed by the commit), the music player share of 1758 (fedora:41 index digest
+  pins in `Containerfile`, `.sign` and `.icons`; `Containerfile` and `.sign` were built from the pin; other packages'
+  Containerfiles stay floating, so 1758 stays open), the desktop share of 1756 (root `clippy.toml` mounted at
+  `/clippy.toml` in the container lint; probe: a crate with `Result::unwrap` passes without the mount and fails with it;
+  `ide`, `terminal` and `nested-wayland-session` stay open), the `musicplayer-native` README (1763 reopened for the
+  test-fixture packages). Still mine and not started: re-check 1079, 1080, 1081, 1069 against current main.
 - GitHub issues from the 2026-10-17 repository review that touch the music player (open, triaged 2026-10-17, 500+
   open in total, most are doc style findings): assigned to agents (f) 1438, 1439, 1440 and (g) 1451 to 1458, 1460,
   1463. Mine, not started: 1612 (`cache-prune.yml` FAMILIES omits `msys2-pkg-v1`), 1610 (`music-player-release.yml`

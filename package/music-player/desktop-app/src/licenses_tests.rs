@@ -67,3 +67,19 @@ fn write_notices_returns_other_errors() {
     let error = write_notices(&mut sink).expect_err("a denied write is an error");
     assert_eq!(error.kind(), ErrorKind::PermissionDenied);
 }
+
+// What:     When the build embedded the release notices, they carry the Slint license text and name every Slint crate.
+// Why:      The desktop programs use Slint under its Royalty-free license, which is met by the AboutSlint widget in the
+//           Licenses page and by shipping the license text with the program; GPL-3.0-only is no longer the license in use.
+#[test]
+fn release_notices_carry_the_slint_royalty_free_license() {
+    if !NOTICES.contains("Rust crates under") {
+        return;
+    }
+    assert!(NOTICES.contains("Slint Royalty-free Desktop, Mobile, and Web Applications License"), "the Slint license title");
+    assert!(NOTICES.contains("Display the [`AboutSlint`]"), "the attribution condition of section 2");
+    for name in ["\nslint 1.", "\nslint-macros 1.", "\ni-slint-core 1.", "\ni-slint-backend-winit 1."] {
+        assert!(NOTICES.contains(name), "the Slint section does not name{name}");
+    }
+    assert!(!NOTICES.contains("(GPL-3.0-only)"), "the notices no longer say the program is used under GPL-3.0-only");
+}

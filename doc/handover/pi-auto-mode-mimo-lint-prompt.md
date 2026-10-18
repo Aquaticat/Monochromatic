@@ -4,20 +4,23 @@
 
 MiMo's task is to clear the complete maintained lint scope for `package/pi-plugin/auto-mode`
 while preserving the verified native execution and review behavior.
-The earlier replay corpus passes behavioral verification; lint completion is still pending.
-The handoff is reopened after later real MiMo calls return
-`Complete group preparation or assessment failed`.
+MiMo runs through a supervised Pi RPC host rather than requiring a manual handoff.
+Read-only diagnosis is active; lint editing is not assigned until the native-control regression is fixed.
+The complete replay corpus passes behavioral verification on `native-release-mmaT8k`;
+the additional native session-action catalog exposes a separate cancellation-signal capture defect.
 See the [current frontier](pi-auto-mode-current-frontier.md) for the active incident and evidence location.
 
-The 2026-10-17 full Oxlint run reports **83 errors and 13,686 warnings**
-across **813 files and 486 rules**, using one thread.
+The 2026-10-18 full Oxlint run reports **83 errors and 13,834 warnings**
+across **818 files and 486 rules**, using one thread.
+This is the measured pre-control-regression snapshot,
+so run full lint again after the native repair before selecting edits.
 The previous intermediate snapshot reported 30 errors and 13,163 warnings.
 Phase extraction and its genuine host fixtures add findings while removing retired protocols;
 this is an explicit increase in diagnostic debt, not a clean-lint claim.
 
 The exact diagnostics and per-file error index are private:
 
-- `${HOME}/temp/agent/pi-mimo-lint-approval-20261017/final-full-oxlint.log`.
+- `${HOME}/temp/agent/pi-mimo-preparation-failure-20261018/lint-logger042-mmaT8k.log`.
 - `${HOME}/temp/agent/pi-mimo-lint-approval-20261017/final-lint-errors.json`.
 - `${HOME}/temp/agent/pi-mimo-lint-approval-20261017/final-lint-summary.json`.
 
@@ -27,8 +30,9 @@ The exact diagnostics and per-file error index are private:
     and the [implemented compact design](../../package/pi-plugin/auto-mode/doc/compact-review-design.md).
     Each major responsibility links to its callers, invariants, alternatives, and verification.
 2.  Select a coherent error cluster from the measured error index.
-    Native phase fixtures contain 25 errors;
-    the shared dispatcher and phase callbacks are separate clusters.
+    Regenerate the private index from the fresh full diagnostic log rather than treating a historical index as current.
+    Native phase fixtures,
+    the shared dispatcher and phase callbacks are separate candidate clusters.
     The linter rule source and actual borrowed API determine a valid restructuring.
 3.  After a coherent change, the package type check and affected consumer tests establish preservation.
     Execution changes also need a native build before their consumer tests.
@@ -57,7 +61,9 @@ Rule severity and coverage remain unchanged.
 
 ## Verified behavior to preserve
 
-The native build is `native-release-qWSxFz`.
+The verified complete replay build is `native-release-mmaT8k`.
+The eventual lint host must start against the repaired native-control build,
+not reuse a diagnosis host pinned to the earlier release.
 Both direct and child groups use Pi's actual preparation, execution, and finalization bodies.
 The same prepared group owns automatic review, manual confirmation, membership, and execution maps.
 Native slots expose phase retention; the retired `invokeProgramNative` API and whole-call adapters are absent.
@@ -69,14 +75,28 @@ including actual child preparation, hidden-property rejection, hook blocking, an
 The 24 fallback cases and native execution catalogs pass.
 Logger destination tests and the full logger unit suite also pass.
 
-The final configured replay `pi-hyper-rpc-allow-nTpk0q` completes all 16 original calls,
-including both reported groups and intermediate process output,
-with zero selectors and 17 actual live-Luna requests.
+The faithful configured replay `pi-mimo-failure-rpc-7vxnGu` completes all 52 original calls,
+including both reported groups,
+their preceding conversation and intermediate process output,
+with zero selectors and 62 actual live-Luna requests.
+The separate fragmented-thinking stress replay `pi-mimo-failure-rpc-LD83ST` passes the same call and request counts.
+Its synthetic character fragments are not claimed to reproduce unknown original network chunk boundaries.
 The actual transmitted requests pass positive-controlled payload inspection:
 raw structured commands, thinking, and signatures are absent.
-The prohibition replay `pi-hyper-rpc-allow-gSMsqH` withholds both process/Bash members
+The prohibition replay `pi-hyper-rpc-allow-cU2EQs` withholds both process/Bash members
 with zero selectors and three actual Luna responses.
 The private replay retains configured extensions, skills, tool catalogs, and preceding turns.
+Configured Stop,
+cancel and abort controls each show one selector,
+withhold both members and finish normally.
+
+The broader affected native matrix passes,
+but the additional session-action catalog fails at the tree event's real `AbortSignal` field.
+`native-event-controls.test.mjs` reproduces `SessionInputCaptureError` after the original callbacks succeed.
+Repair must preserve the original signal and callback identity,
+ordered immutable control observations,
+and strict ordinary message/tool data validation.
+Navigation completion with a retained capture-error diagnostic does not pass this boundary.
 
 The process-local denial mutation removes both independent disposition barriers.
 The real native test then executes three harmless fixture commands and fails with `3 !== 0`.
@@ -97,16 +117,26 @@ records actual provider-payload verification.
 
 ## Storage and adjacent change
 
-The package measures about 22.9 MB including the active 8.21 MB native output and a verified rollback.
+The post-cleanup snapshot measures 22,933,936 regular-file bytes,
+including the active 8,214,937-byte native output and a verified rollback.
 The measurement excludes shared dependency symlink targets.
-The source inventory still contains 65,692 parser-counted code lines including 28,596 verification lines.
+The pre-control-regression source inventory contains 66,392 parser-counted code lines,
+including 29,291 verification lines.
 The user explicitly did not adopt 13k as a line target.
 
 Historical logs are losslessly archived outside the package.
-Maintenance removes 43 inactive release copies after consumer checks.
+Earlier maintenance removes 43 inactive release copies after consumer checks;
+the later reviewed cleanup removes eight more inactive releases.
 New package tasks route logs through the existing shared logger using `MONOCHROMATIC_LOG_DIRECTORY`.
-The logger's optional directory API and its destination fixtures are the adjacent change in
-`package/module/logger`; they have passing build, unit, and type checks.
+The shared logger repair is released as `0.4.2`.
+Its build,
+unit suite,
+type check and zero-diagnostic Oxlint run pass.
+The published registry consumer verifies tagged,
+large and reentrant JSONL records and independent file ownership.
+The version bump triggers automatic publishing;
+the known automatic pnpm HTTP 404 requires the existing targeted npm trusted-publisher recovery,
+which succeeds with registry provenance.
 Automatic release eviction and log retention are not implemented.
 
 The [current frontier](pi-auto-mode-current-frontier.md) retains incident evidence,

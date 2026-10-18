@@ -18,6 +18,7 @@ import {
   chordKeys,
   focusIs,
   QUICK_DOUBLE_SHIFT,
+  routeIs,
   sequenceOf,
   tapKey,
 } from './actions.ts';
@@ -158,6 +159,39 @@ export async function checkSettings(
         what: 'double Shift in Settings',
         settleMs: DOUBLE_SHIFT_SETTLE_MS,
       },);
+    },
+  },);
+  await recorder.check({
+    id: 'settings/licenses-row',
+    title: 'End and Enter on the Licenses row open the Licenses page, and Escape returns to Settings with the list focused',
+    body: async function licensesRowOpensAndEscapeReturns(): Promise<string> {
+      await press({
+        session,
+        act: tapKey('end',),
+        until: isSettingsPage,
+        what: 'the keyboard on the last row of Settings',
+      },);
+      /**
+       The state with the Licenses page open.
+       */
+      const opened = await press({
+        session,
+        act: tapKey('enter',),
+        until: routeIs('Licenses',),
+        what: 'the Licenses page',
+      },);
+      /**
+       The state after Escape on the Licenses page.
+       */
+      const returned = await press({
+        session,
+        act: tapKey('escape',),
+        until: function settingsListHasTheKeyboard(state: UiState,): boolean {
+          return isSettingsPage(state,) && (state.zone === 'settings-list');
+        },
+        what: 'Settings with the list focused after Escape on the Licenses page',
+      },);
+      return `focus ${opened.focus} (${opened.zone}) on the page, then ${returned.focus} on ${returned.route}`;
     },
   },);
   await recorder.check({

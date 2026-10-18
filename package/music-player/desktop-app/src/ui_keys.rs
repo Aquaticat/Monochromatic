@@ -113,6 +113,7 @@ pub fn key_route(route: Route) -> KeyRoute {
         Route::Search => KeyRoute::Search,
         Route::Settings => KeyRoute::Settings,
         Route::TemplateEditor => KeyRoute::EditorPage,
+        Route::Licenses => KeyRoute::Licenses,
     };
 }
 

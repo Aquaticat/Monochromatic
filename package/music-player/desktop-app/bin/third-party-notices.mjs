@@ -13,12 +13,16 @@
 //   1. `cargo fetch --locked` (network), so every crate of every listed target has its source on disk.
 //   2. `cargo-about generate --format json --frozen --fail`: one license per crate, chosen from the accepted list in
 //      about.toml in its order of preference, with the crate's own license file when it ships one. A crate whose
-//      license is not accepted or cannot be determined stops it.
+//      license is not accepted or cannot be determined stops it. cargo-about 0.9.2 drops the text of a LicenseRef-*
+//      license from its output (doc/troubleshooting/cargo-about-licenseref-text-is-dropped.md), so the desktop
+//      Slint crates, which are accepted under LicenseRef-Slint-Royalty-free-2.0, are found by their manifest license
+//      and their text is added from notices/slint-royalty-free-2.0.md once every crate's own file matches it.
 //   3. For every target in about.toml, `cargo tree --edges normal,no-proc-macro`: every registry crate that target
 //      links into the binary must be among the crates cargo-about covered; the counts are printed.
 //   4. The file: the program's own license texts, the bundled assets, the Rust standard library, the Android libraries
 //      when given, and every Rust crate, grouped by license text.
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
@@ -90,7 +94,46 @@ const about = JSON.parse(readFileSync(aboutJson, 'utf8'));
 rmSync(aboutJson, { force: true });
 if (!Array.isArray(about.licenses) || about.licenses.length === 0) throw new Error('cargo-about wrote no license text');
 const crateKey = item => item.name + ' ' + item.version;
-const covered = new Set(about.licenses.flatMap(license => license.used_by.map(used => crateKey(used.crate))));
+const coveredByAbout = new Set(about.licenses.flatMap(license => license.used_by.map(used => crateKey(used.crate))));
+//endregion
+
+//region Slint crates (desktop only)
+// The accepted license of the Slint crates, which cargo-about accepts but gives no text for. A crate is a Slint crate
+// when its manifest offers this license and cargo-about listed no text for it; any other crate without a text, or a
+// Slint crate whose own license file differs from the vendored one, stops the task.
+const slintLicenseId = 'LicenseRef-Slint-Royalty-free-2.0';
+const slintLicensePath = join(musicPlayer, 'desktop-app', 'notices', 'slint-royalty-free-2.0.md');
+// SHA-256 of the license file in every Slint crate 1.18.1 (LICENSES/LicenseRef-Slint-Royalty-free-2.0.md), identical to
+// the file on slint-ui/slint master on 2026-10-18. A changed file stops the task until it is reviewed.
+const slintLicenseChecksum = '5167f5056e850419106ab6265efbdca7cba4d99c849d1445ca0bbf6a1e2315fe';
+const slintCrates = new Map();
+for (const item of about.crates) {
+  const key = crateKey(item.package);
+  if (coveredByAbout.has(key)) continue;
+  const offered = String(item.license ?? '').split(/\s+(?:OR|AND)\s+/).map(part => part.replace(/[()]/g, '').trim());
+  if (options.product !== 'desktop' || !offered.includes(slintLicenseId)) {
+    throw new Error(
+      'cargo-about gave no license text for ' + key + ' (license ' + JSON.stringify(item.license) + '), and it is '
+        + 'not a desktop Slint crate; check about.toml',
+    );
+  }
+  slintCrates.set(key, join(dirname(item.package.manifest_path ?? ''), 'LICENSES', slintLicenseId + '.md'));
+}
+if (options.product === 'desktop' && slintCrates.size === 0) {
+  throw new Error('No Slint crate found: the desktop program must carry ' + slintLicenseId + ' and its text');
+}
+const slintLicenseText = options.product === 'desktop' ? readFileSync(slintLicensePath, 'utf8') : '';
+if (options.product === 'desktop') {
+  if (createHash('sha256').update(slintLicenseText).digest('hex') !== slintLicenseChecksum) {
+    throw new Error(slintLicensePath + ' does not match the checksum recorded in this script; review it first');
+  }
+  for (const [key, file] of slintCrates) {
+    if (!existsSync(file) || createHash('sha256').update(readFileSync(file)).digest('hex') !== slintLicenseChecksum) {
+      throw new Error(key + ' does not ship ' + file + ' with the vendored license text; review the new Slint license first');
+    }
+  }
+}
+const covered = new Set([...coveredByAbout, ...slintCrates.keys()]);
 //endregion
 
 //region Coverage check against cargo tree
@@ -158,10 +201,11 @@ const intro = options.product === 'desktop'
     'crate (library) compiled into it. `music-player --licenses` prints the same text.',
     '',
     'Music Player is licensed under the GNU Lesser General Public License, version 3 or later. The program is built',
-    'with the Slint user interface toolkit, which this project uses under the GNU General Public License, version 3',
-    '(GPL-3.0-only), one of the three licenses Slint offers. Each released program is therefore a combined work that',
-    'you may use, copy and change under the GNU General Public License, version 3. The complete source code of each',
-    'release is the repository tree at its tag (https://github.com/Aquaticats/Monochromatic, tag',
+    'with the Slint user interface toolkit, which this project uses under the Slint Royalty-free Desktop, Mobile,',
+    'and Web Applications License, version 2.0, one of the three licenses Slint offers. Its text, and the crates it',
+    'covers, are in the Slint section below; the Licenses page in Settings shows the "Made with Slint" widget that',
+    'license asks for. The complete source code of each release is the repository tree at its tag',
+    '(https://github.com/Aquaticats/Monochromatic, tag',
     'music-player-v' + productVersion + '), and the source of every crate below is published on crates.io under the',
     'name and version given.',
     '',
@@ -202,9 +246,13 @@ if (options.product === 'desktop') {
     '',
   );
 }
+// The Android Licenses row draws description and the desktop one draws license.
+const iconNames = options.product === 'android'
+  ? 'queue_music, play_circle, autoplay, description, check and close'
+  : 'queue_music, play_circle, autoplay, check, close and license';
 bundled.push(
   subheading('Material Symbols icons, Apache License 2.0'),
-  'The icons queue_music, play_circle, autoplay, check and close (Outlined style, weight 400, grade 0, optical size',
+  'The icons ' + iconNames + ' (Outlined style, weight 400, grade 0, optical size',
   '24) come from https://github.com/google/material-design-icons at commit',
   '49d4db35df873165d6bd6ba09b063c7dafbac2f4, published by Google under the Apache License, Version 2.0.',
   'The program embeds their outlines as vector path data, with each outline moved onto a 24 by 24 grid.',
@@ -213,6 +261,23 @@ bundled.push(
   '',
 );
 sections.push(bundled.join(newline));
+
+if (options.product === 'desktop') {
+  // Slint: the toolkit the desktop programs draw their window with. The text is the one every Slint crate ships.
+  sections.push([
+    heading('Slint (' + slintCrates.size + ' crates): Slint Royalty-free Desktop, Mobile, and Web Applications License 2.0'),
+    'The desktop programs use Slint under the license below (SPDX identifier ' + slintLicenseId + '), one of the',
+    'three licenses its crates offer. Section 2 asks the Application to display the AboutSlint widget in an About',
+    'screen or dialog; the Licenses page of Settings does that. The crates it covers, each of which ships this',
+    'exact text as LICENSES/' + slintLicenseId + '.md:',
+    '',
+    ...[...slintCrates.keys()].sort(),
+    '',
+    subheading('Text of ' + slintLicenseId),
+    slintLicenseText.replace(/\r\n/g, newline).trimEnd(),
+    '',
+  ].join(newline));
+}
 
 const sysroot = run('rustc', ['--print', 'sysroot'], { stdio: ['ignore', 'pipe', 'inherit'] }).trim();
 const stdNotice = join(sysroot, 'share', 'doc', 'rust', 'COPYRIGHT-library.html');
@@ -287,11 +352,16 @@ if (options.product === 'android') {
 //endregion
 
 //region Rust crates
-const crateSection = [heading('Rust crates (' + covered.size + ' crates, ' + about.licenses.length + ' license texts)')];
+const crateSection = [heading(
+  'Rust crates (' + covered.size + ' crates, ' + (about.licenses.length + (slintCrates.size > 0 ? 1 : 0)) + ' license texts)',
+)];
 crateSection.push(
   'Each entry below is one license text and the crates it covers. When a crate offers several licenses, the first of',
   'these is the one listed: ' + [...aboutConfig.matchAll(/^ {2}"([^"]+)",$/gm)].map(match => match[1]).join(', ') + '.',
   '',
+  ...(slintCrates.size > 0
+    ? ['The ' + slintCrates.size + ' Slint crates are covered by the Slint section above, with the text of their license.', '']
+    : []),
 );
 const sortedLicenses = [...about.licenses].sort((left, right) =>
   left.id.localeCompare(right.id) || crateKey(left.used_by[0].crate).localeCompare(crateKey(right.used_by[0].crate))

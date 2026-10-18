@@ -132,6 +132,17 @@ this investigation has not established an upstream defect.
 
 ## Local task-template collision
 
+The runtime prerequisite campaign reproduced this boundary on `2026-10-18`.
+Harness `763b2861d6` embedded Docker's `{{json .Server.Version}}` in its inline Mise task.
+Mise rejected the undefined `json` template variable before any cloud allocation.
+Harness `15ee06968996212b97111accc2013c2780ed1944` captures plain `docker version` output instead.
+The local observation and fresh GitHub,
+Depot GitHub Actions and native Depot CI consumers then completed.
+Their receipts are recorded in
+[the runtime research note](../planning/depot-runtime-orchestration-research.md).
+This recurrence has the same nested-template boundary;
+it is separate from the platform capabilities those jobs later observed.
+
 An earlier adapter revision passed Docker's `{{json .RepoDigests}}` format string inside a `mise` task.
 Local `mise 2026.10.0` failed before Docker ran:
 

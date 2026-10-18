@@ -1,4 +1,5 @@
 import { reportLoggerInternalError, } from './error-format.ts';
+import { createPendingWrites, } from './pending-writes.ts';
 import { withHostTimeout, } from './with-host-timeout.ts';
 
 import type {
@@ -52,28 +53,6 @@ type SinkEntry = {
   available: boolean;
   readonly sink: Sink;
 };
-
-/**
- Awaits one sink write so `flush()` can observe its settling. A rejected
- write is swallowed here via {@link reportLoggerInternalError} (the sink
- owns its own write-error handling) and does not disable the sink: one
- transient failure must not retire a backend for the rest of the run.
- 
- @param writePromise - Promise returned by the sink write call.
- */
-async function trackWrite(
-  { writePromise, }: { readonly writePromise: Promise<void>; },
-): Promise<void> {
-  try {
-    await writePromise;
-  }
-  catch (error: unknown) {
-    reportLoggerInternalError({
-      context: 'sink write promise rejected while being tracked',
-      error,
-    },);
-  }
-}
 
 /**
  Builds a multi-sink logger over the supplied sink adapters. All
@@ -167,7 +146,7 @@ export function createLogger(
    sinks without their own flush hook, such as file writes, still settle
    before the flush resolves.
    */
-  const pendingWrites = new Set<Promise<void>>();
+  const pendingWrites = createPendingWrites();
 
   /**
    Instance-local aggregate flags. `initialized` flips true once the eager
@@ -247,18 +226,6 @@ export function createLogger(
   }
 
   /**
-   Removes a tracked sink write from {@link pendingWrites} once it settles.
-   
-   @param trackedWrite - Promise returned by {@link trackWrite}.
-   */
-  async function removePendingWriteWhenSettled(
-    { trackedWrite, }: { readonly trackedWrite: Promise<void>; },
-  ): Promise<void> {
-    await trackedWrite;
-    pendingWrites.delete(trackedWrite,);
-  }
-
-  /**
    Sends a record to one sink, recording the write so `flush()` can await it.
    
    @param entryIndex - Available sink entry index to receive the record.
@@ -279,15 +246,8 @@ export function createLogger(
        Sink entry receiving the record.
        */
       const entry = getSinkEntry({ entryIndex, },);
-      /**
-       Monitored sink write; resolves even when the underlying write rejects, because {@link trackWrite} swallows rejection.
-       */
-      const trackedWrite = trackWrite({
-        writePromise: entry.sink
-          .write(record,),
-      },);
-      pendingWrites.add(trackedWrite,);
-      void removePendingWriteWhenSettled({ trackedWrite, },);
+      pendingWrites.add(entry.sink
+        .write(record,),);
     }
     catch (error: unknown) {
       reportLoggerInternalError({
@@ -442,17 +402,6 @@ export function createLogger(
   const initPromise: Promise<void> = initialize();
 
   /**
-   Drains every currently tracked sink write.
-   */
-  async function drainPendingWrites(): Promise<void> {
-    /**
-     Snapshot of tracked writes at flush time.
-     */
-    const writes = [...pendingWrites,];
-    await Promise.all(writes,);
-  }
-
-  /**
    Creates a logging method for the specified severity level.
    
    @param level - Log severity level for messages from this method.
@@ -533,15 +482,14 @@ export function createLogger(
   }
 
   /**
-   Drains startup verification, in-flight sink writes (via
-   {@link drainPendingWrites}), and every sink flush hook (via
+   Drains startup verification, observed sink completions, and every sink flush hook (via
    {@link runSinkFlushHooks}) in order. Never rejects on its own: every
    inner failure is already reported and swallowed, so the only way this
    stays pending is a verify, write, or hook that never settles.
    */
   async function drainEverything(): Promise<void> {
     await initPromise;
-    await drainPendingWrites();
+    await pendingWrites.drain();
     await runSinkFlushHooks();
   }
 

@@ -91,6 +91,21 @@ private fun errorMessage(id: String): FeedbackMessage =
 private fun undoMessage(id: String): FeedbackMessage =
     FeedbackMessage(id = id, text = "Moved $id to trash", kind = FeedbackKind.UNDO, actionLabel = "Undo")
 
+/** Builds a notice message with the given id and no action. */
+private fun noticeMessage(id: String): FeedbackMessage =
+    FeedbackMessage(id = id, text = "Notice $id", kind = FeedbackKind.NOTICE, actionLabel = null)
+
+/** Every order in which the three invented messages (one per kind) can be shown. */
+private fun showOrdersOfThree(): List<List<FeedbackMessage>> {
+    /** One message of each declared kind, in declaration order. */
+    val messages: List<FeedbackMessage> = listOf(errorMessage("e"), undoMessage("u"), noticeMessage("n"))
+    return messages.flatMap { first ->
+        messages.filter { second -> second != first }.map { second ->
+            listOf(first, second, messages.first { third -> third != first && third != second })
+        }
+    }
+}
+
 // What:     `class FeedbackQueueTest` groups the queue transition tests.
 // Why:      Replacement, dismissal, expiry, ordering and validation are each checked on the host JVM.
 //
@@ -488,4 +503,39 @@ class FeedbackQueueTest {
         assertEquals(listOf(errorMessage("e")), before.visible())
     }
 
+    // What:     `visibleOrdersEveryKindWhateverTheShowOrder` checks the display order of one message of each kind.
+    // Why:      The order table once left out the notice kind, so a notice sat above the Undo message by accident;
+    //           the documented order is Undo, then notice, then error, whichever message was shown first.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("every kind has one display order", () => { ... });
+    // ```
+    /** Confirms the three kinds are listed Undo, notice, error for each of the six orders they can be shown in. */
+    @Test
+    fun visibleOrdersEveryKindWhateverTheShowOrder() {
+        for (shown in showOrdersOfThree()) {
+            /** Queue holding the three messages, shown in the order under test. */
+            val queue: FeedbackQueue = shown.fold(FeedbackQueue.EMPTY) { acc, message -> acc.show(message, nowMs = START_MS) }
+            assertEquals(
+                "shown as ${shown.map { message -> message.id }}",
+                listOf("u", "n", "e"),
+                queue.visible().map { message -> message.id },
+            )
+        }
+    }
+
+    // What:     `displayOrderNamesEveryDeclaredKindOnce` checks that the order table and the enum agree.
+    // Why:      A kind added to the enum without a place in the table would get an accidental position again.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // test("display order lists every kind once", () => { ... });
+    // ```
+    /** Confirms the display order holds each declared feedback kind exactly once. */
+    @Test
+    fun displayOrderNamesEveryDeclaredKindOnce() {
+        assertEquals(FeedbackKind.entries.toSet(), FEEDBACK_DISPLAY_ORDER.toSet())
+        assertEquals(FeedbackKind.entries.size, FEEDBACK_DISPLAY_ORDER.size)
+    }
 }

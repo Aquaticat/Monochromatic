@@ -1679,6 +1679,63 @@ pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEng
 // ```
 #[unsafe(no_mangle)]
 /// What:
+///      JNI entry declaration taking the engine `handle: jlong` and returning a `jlong`:
+///           the sequence number of the most recent queued load the worker could not open for playback,
+///           or 0 when none failed.
+/// Why:
+///       `nativeEngineLoad` returns once the load is queued,
+///  so a file that opens but does not decode fails later;
+///  Kotlin
+///           polls this to report that failure.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function nativeEngineFailedLoad(_env: EnvUnowned, _class: JClass, handle: number): number { ... }
+/// ```
+pub extern "system" fn Java_dev_monochromatic_musicplayer_NativeBridge_nativeEngineFailedLoad<'local>(
+    _env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    handle: jlong,
+) -> jlong {
+    // What:     `if handle == 0 { return 0; }`. Guard: with no engine, report that no load failed.
+    // Why:      A released engine has no worker to ask.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // if (handle === 0) return 0;
+    // ```
+    if handle == 0 {
+        return 0;
+    }
+    // What:     `let engine_ref = unsafe { &mut *(handle as *mut engine::Engine) };`.
+    //           Same handle-to-mutable-reference reconstruction inside `unsafe`.
+    // Why:      We need a usable engine reference to read `failed_load()`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const engineRef = handleTable.get(handle);
+    // ```
+    let engine_ref = unsafe { &mut *(handle as *mut engine::Engine) };
+    // What:     `engine_ref.failed_load() as jlong`. The `u64` sequence number cast to the signed `jlong`;
+    //           it counts loads, so it never nears the sign bit.
+    // Why:      Report the worker's last load failure.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // return engineRef.failedLoad();
+    // ```
+    return engine_ref.failed_load() as jlong
+}
+
+// What:     `#[unsafe(no_mangle)]`: keep the symbol name for JVM lookup.
+// Why:      Same as the other JNI entry points.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // no annotation needed
+// ```
+#[unsafe(no_mangle)]
+/// What:
 ///      JNI entry declaration taking the engine `handle: jlong` and returning a
 ///           `jboolean` (a Rust `bool` since jni 0.22).
 /// Why:

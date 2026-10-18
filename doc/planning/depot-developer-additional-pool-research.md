@@ -1,5 +1,91 @@
 # Expanded CI using Depot and GitHub: research plan
 
+## Research reopened after the user rejected readiness
+
+On 2026-10-18,
+the user rejected the claim that research was sufficient:
+"Not enough research.
+You're missing so much that it's hard to name them all."
+They will return in the morning to inspect the work.
+The readiness claim and pending interview are withdrawn.
+Do not ask the user to enumerate omissions or answer the three premature operating questions.
+Retain measured results as narrow evidence;
+they do not establish adequate research breadth or a completed expanded CI evaluation.
+
+The new immutable repository inspection and experiment base is
+`e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+Concurrent uncommitted work is excluded without changing it.
+The current research must expose gaps from the full deployed vendor surface,
+the actual repository's consumer and task graph,
+and real execution rather than repeatedly validating a selected microbenchmark.
+Calling missing applicable research an implementation acceptance task does not close the gap.
+
+The earlier claim that no universal factual prerequisite remained is superseded.
+The operating options remain historical drafts,
+not a ready or active interview frontier.
+
+### Independently verifiable reopened work
+
+- Platform surface:
+  enumerate deployed documentation,
+  CLI commands,
+  API schemas and official integrations;
+  reconcile every applicable feature to repository use and source or runtime evidence.
+- Repository coverage:
+  map products,
+  packages,
+  features,
+  supported targets and actual consumers;
+  execute the applicable immutable Linux quality,
+  build and test graph in bounded shards.
+- Reuse:
+  compare installed tool/dependency environments,
+  download archives,
+  compiler caches,
+  persistent disks and BuildKit state across actual language workloads and invalidation cases.
+- Orchestration:
+  exercise actual event and PR check association,
+  service containers,
+  parallelism,
+  retry,
+  timeout,
+  supersession,
+  failure and artifact semantics in isolated branches.
+- Runtime breadth:
+  investigate and exercise current-source browser,
+  native,
+  GUI,
+  VM and Android consumers where prerequisites and existing authorization permit.
+  The Android headful host-GPU rule remains binding.
+- Test visibility:
+  verify real reporter inputs,
+  physical sharding,
+  retries,
+  duplicates,
+  skips and discovery across applicable frameworks.
+- Economics and reliability:
+  combine measured expanded profiles,
+  source-change history,
+  critical paths,
+  setup and cache lifecycle,
+  separate product allowances,
+  retention and operational failure evidence.
+- Operations and trust:
+  verify source and credential boundaries,
+  supply chain,
+  network and resource isolation,
+  deletion,
+  cleanup,
+  export and recovery paths without excluded account-wide access.
+
+The platform,
+reuse and full-coverage researchers have resumed with separate notes and executable campaigns.
+The parent owns integration,
+runtime feasibility,
+actual orchestration probes and remaining evidence reconciliation.
+The research remains active;
+no new completion claim or interview is authorized by this plan.
+
 ## Authorization and sequencing
 
 On 2026-10-18,
@@ -119,9 +205,10 @@ Do not ask the user to rediscover repository facts or repeat settled preferences
 
 ## Current work
 
-The factual research phase is complete for the planning interview.
+The factual research phase is active again.
 The cited [platform inventory](depot-developer-pool-capabilities-research.md)
-and [repository routing study](depot-developer-pool-routing-research.md) are complete.
+and [repository routing study](depot-developer-pool-routing-research.md) cover selected surfaces;
+they do not establish complete platform discovery or full repository coverage.
 The [cache study](depot-developer-pool-cache-research.md)
 now includes real fresh-job Cargo compiler-cache hits,
 changed-flag invalidation,
@@ -129,8 +216,9 @@ automatically supplied short-lived credentials and concurrent persistent-disk co
 The parent-owned pnpm experiment completed its repeated cache-disabled,
 explicit-miss and warm comparisons,
 with verified artifact consumers and a separate branch-access probe.
-The [independent review](depot-developer-interview-frontier-review.md)
-finds no additional universal factual prerequisite to the current operating-policy frontier.
+The sufficiency finding in the [independent review](depot-developer-interview-frontier-review.md)
+has been withdrawn after the user's correction.
+The reopened campaigns investigate missing factual and runtime evidence before another interview.
 The user correction broadens every area's applicability to a substantially expanded CI graph;
 today's workflows are a measured incumbent,
 not the limit of the design.

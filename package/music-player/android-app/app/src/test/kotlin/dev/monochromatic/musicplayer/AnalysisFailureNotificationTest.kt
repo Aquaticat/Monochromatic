@@ -8,6 +8,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.util.Log
 import androidx.test.core.app.ApplicationProvider
+import dev.monochromatic.musicplayer.core.UnplayableReport
 import dev.monochromatic.musicplayer.core.analysisNotificationContent
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -145,5 +146,58 @@ class AnalysisFailureNotificationTest {
         assertTrue(posted().isEmpty())
         assertEquals(1, warnings().size)
         assertTrue(warnings().single().contains("CHANNEL_DISABLED"))
+    }
+
+    /** The report of files the player passed is one notification on the same channel, apart from the analysis one. */
+    @Test(timeout = 60_000)
+    fun anUnplayableReportIsOneNotificationOnTheSameChannelWithItsOwnId() {
+        postUnplayableFilesNotification(context, UnplayableReport(listOf("a.mp3", "b.mp3"), timedOut = false))
+        val notification: Notification = posted().single()
+        assertEquals("Could not play 2 files, including a.mp3.", extra(notification, Notification.EXTRA_TITLE))
+        assertEquals("They could not be opened.", extra(notification, Notification.EXTRA_TEXT))
+        assertEquals(ANALYSIS_FAILURE_CHANNEL_ID, notification.channelId)
+        assertTrue(notification.flags and Notification.FLAG_AUTO_CANCEL != 0)
+        assertNotNull(notification.contentIntent)
+        assertNotNull(shadowOf(manager).getNotification(UNPLAYABLE_FILES_NOTIFICATION_ID))
+        assertFalse(UNPLAYABLE_FILES_NOTIFICATION_ID == ANALYSIS_FAILURE_NOTIFICATION_ID)
+        assertFalse(UNPLAYABLE_FILES_NOTIFICATION_ID == ANALYSIS_NOTIFICATION_ID)
+    }
+
+    /** A growing report replaces the earlier one under the same id, so one notification stays. */
+    @Test(timeout = 60_000)
+    fun aLaterUnplayableReportReplacesTheEarlierOne() {
+        postUnplayableFilesNotification(context, UnplayableReport(listOf("a.mp3"), timedOut = false))
+        postUnplayableFilesNotification(context, UnplayableReport(listOf("a.mp3", "b.mp3"), timedOut = false))
+        assertEquals(
+            "Could not play 2 files, including a.mp3.",
+            extra(posted().single(), Notification.EXTRA_TITLE),
+        )
+    }
+
+    /** An unplayable report and an analysis failure are two notifications, neither replacing the other. */
+    @Test(timeout = 60_000)
+    fun anUnplayableReportAndAnAnalysisFailureCoexist() {
+        AnalysisFailures.report(context, listOf("x.mp3"))
+        postUnplayableFilesNotification(context, UnplayableReport(listOf("a.mp3"), timedOut = false))
+        assertEquals(
+            setOf(ANALYSIS_FAILURE_NOTIFICATION_ID, UNPLAYABLE_FILES_NOTIFICATION_ID),
+            shadowOf(manager).activeNotifications.map { active -> active.id }.toSet(),
+        )
+    }
+
+    /** With the permission denied, nothing is posted and nothing is shown in the app: one warning, no file name. */
+    @Test(timeout = 60_000)
+    fun anUnplayableReportThatCannotBePostedLogsOneWarningWithoutTheFileName() {
+        shadowOf(context as Application).denyPermissions(Manifest.permission.POST_NOTIFICATIONS)
+        ShadowLog.clear()
+        postUnplayableFilesNotification(context, UnplayableReport(listOf("secret-name.mp3"), timedOut = false))
+        assertTrue(posted().isEmpty())
+        /** Warning lines the app logged under the unplayable-files tag. */
+        val lines: List<String> = ShadowLog.getLogs()
+            .filter { entry -> entry.type == Log.WARN && entry.tag == "UnplayableFiles" }
+            .map { entry -> entry.msg }
+        assertEquals(1, lines.size)
+        assertTrue(lines.single().contains("PERMISSION_DENIED"))
+        assertFalse(lines.single().contains("secret-name"))
     }
 }

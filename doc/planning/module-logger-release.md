@@ -358,3 +358,49 @@ The `/ts` entry remained unavailable to registry consumers as intended.
 
 Next action:
 none for `0.4.1`.
+
+## Shared completion and file ownership release, 2026-10-18
+
+The owner authorizes the auto-mode investigation's shared logger fix
+and requests a version bump so publication runs.
+Version `0.4.2` deduplicates observation of shared pending sink completions,
+retains every sink invocation,
+and serializes complete file batches without reentrant serialization or same-millisecond filename collisions.
+The package-local rationale and runtime limits are in
+[`write-completion.md`](../../package/module/logger/doc/write-completion.md).
+
+The built-package unit suite and the type check pass.
+Oxlint reports zero warnings and errors across 63 files.
+The capacity regression delivers 100,000 records while retaining 48,304 bytes before continuation drainage,
+compared with the regression's 93,863,816-byte failing baseline.
+Private rebuilt guard mutations fail the completion-identity,
+missing-JSON-value,
+filename-identity and issued-batch-admission regressions without changing the checked-in source.
+
+Version commit `3befa69c148c609f864fdb200c75cbbb6d9e0cce` triggers
+[automatic run 39104844467](https://github.com/Aquaticats/Monochromatic/actions/runs/39104844467).
+Its pnpm publish step reports `ERR_PNPM_FAILED_TO_PUBLISH` with HTTP 404,
+which does not establish the authentication cause.
+The first targeted recovery fails before packing because the generated root Mise configuration has lost
+tasks that were never added to its authoritative source.
+The [targeted-workflow troubleshooting record](../troubleshooting/npm-targeted-workflow-tasks.md)
+records that separate cause and its source-owned repair.
+
+Commit `d6d1d67b069de6dd6cff8dc7543f06bd6fd94caa` is the source named by
+[successful targeted run 39106517976](https://github.com/Aquaticats/Monochromatic/actions/runs/39106517976).
+The registry serves `0.4.2`,
+identifies GitHub Actions and trusted publisher `80363e5d-aede-4258-81ca-d4ee414a90a5`,
+and supplies an SLSA statement naming that commit,
+`.github/workflows/npm-publish.yml`,
+and the successful workflow invocation.
+
+A fresh registry installation in a disposable consumer confirms version and repository metadata,
+imports `createLogger`,
+`tagged` and `createFileSink` through the published exports,
+and confirms the workspace-only `/ts` export remains unavailable.
+Independent verified file sinks retain separate files.
+Five tagged, large and reentrant records parse as complete JSONL,
+with the inner serialized record preceding its outer record.
+
+The release is published and consumer-verified.
+The automatic pnpm workflow's HTTP 404 remains a separate unresolved publishing path.

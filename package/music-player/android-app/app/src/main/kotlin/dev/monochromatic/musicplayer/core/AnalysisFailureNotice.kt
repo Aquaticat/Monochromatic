@@ -115,6 +115,41 @@ fun notificationPostVerdict(
     else -> NotificationPostVerdict.POST
 }
 
+// What:     `fun unplayableFilesNotice(fileNames, timedOut)` words the report of files the player passed (D122, D123).
+// Why:      A track the player moved to by itself and could not open is reported as a system notification, never as
+//           the in-app message of a tap. The words are those of the tap-time message (`trackLoadFailureMessage`), split
+//           into a title and a text; several files collapse to a count that names the first, and a timeout says the
+//           music library was slow, because no file was shown to be broken.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// function unplayableFilesNotice(names: string[], timedOut: boolean): AnalysisFailureNotice { /* count or name */ }
+// ```
+/**
+ * Returns the notification texts for one or more files the player passed because it could not open them.
+ *
+ * @param fileNames bare file names in the order met, at least one
+ * @param timedOut whether the music library did not answer in time, which replaces the reason in the text
+ * @return the title and the text of the notification
+ */
+fun unplayableFilesNotice(fileNames: List<String>, timedOut: Boolean): AnalysisFailureNotice {
+    require(fileNames.isNotEmpty()) { "an unplayable-files report names at least one file" }
+    /** The first file named in the notice. */
+    val first: String = shortName(fileNames.first())
+    return AnalysisFailureNotice(
+        title = if (fileNames.size == 1) {
+            "Could not play $first."
+        } else {
+            "Could not play ${fileNames.size} files, including $first."
+        },
+        text = when {
+            timedOut -> "The music library did not answer in time. Try again in a moment."
+            fileNames.size == 1 -> "Its file could not be opened."
+            else -> "They could not be opened."
+        },
+    )
+}
+
 // What:     `fun deliverAnalysisFailureNotice(...)` posts the notice when it can be posted and otherwise only logs.
 // Why:      D123: the notification is the only place the failure is shown. When it cannot be posted, the sweep gets
 //           one warning in the log and nothing in the app; a failure while deciding or posting is a refused post too,
@@ -138,6 +173,8 @@ fun notificationPostVerdict(
  * @param verdict reads the platform state and decides whether the post can be made
  * @param post posts the notice as one system notification
  * @param warn writes one warning line, with the failure that caused it when there is one
+ * @param noticeFor words the notice from the file names; the analysis failure wording unless the caller passes its own
+ * @param subject what the warnings call the notification, so a log line says which report was not posted
  * @return true only when the notice was handed to [post] and [post] returned
  */
 fun deliverAnalysisFailureNotice(
@@ -145,6 +182,8 @@ fun deliverAnalysisFailureNotice(
     verdict: () -> NotificationPostVerdict,
     post: (AnalysisFailureNotice) -> Unit,
     warn: (message: String, cause: Throwable?) -> Unit,
+    noticeFor: (List<String>) -> AnalysisFailureNotice = ::analysisFailureNotice,
+    subject: String = "analysis failure",
 ): Boolean {
     if (fileNames.isEmpty()) {
         return false
@@ -153,20 +192,20 @@ fun deliverAnalysisFailureNotice(
     val decided: NotificationPostVerdict? = try {
         verdict()
     } catch (expectedFailure: RuntimeException) {
-        warn("analysis failure notification not posted: the notification state could not be read", expectedFailure)
+        warn("$subject notification not posted: the notification state could not be read", expectedFailure)
         null
     }
     if (decided == null) {
         return false
     }
     if (decided != NotificationPostVerdict.POST) {
-        warn("analysis failure notification not posted for ${fileNames.size} files: ${decided.name}", null)
+        warn("$subject notification not posted for ${fileNames.size} files: ${decided.name}", null)
         return false
     }
     try {
-        post(analysisFailureNotice(fileNames))
+        post(noticeFor(fileNames))
     } catch (expectedFailure: RuntimeException) {
-        warn("analysis failure notification for ${fileNames.size} files could not be posted", expectedFailure)
+        warn("$subject notification for ${fileNames.size} files could not be posted", expectedFailure)
         return false
     }
     return true

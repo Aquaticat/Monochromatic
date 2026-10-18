@@ -81,6 +81,8 @@ mod ui_screen_throttle;
 
 mod ui_screen_view;
 
+mod ui_licenses;
+
 mod ui_search;
 
 mod ui_settings;
@@ -128,6 +130,10 @@ mod ui_keys_window_tests;
 /// Window tests of Auto-play on select (D129): the Settings switch row and what a click, Enter and a Search result do.
 #[cfg(test)]
 mod ui_auto_play_window_tests;
+
+/// Window tests of the Licenses row of Settings and the Licenses page: the row, the AboutSlint widget, the keys and the ring.
+#[cfg(test)]
+mod ui_licenses_window_tests;
 
 /// Window tests of the empty, reading and failure states.
 #[cfg(test)]

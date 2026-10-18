@@ -5,6 +5,7 @@ import {env,source,createRuntime,nativeHost,fixtureState} from '../dist/native/c
 import {fixtureResponse} from '../dist/native/contract/integration/native-batch/fixture-response.mjs';
 import {nativeOpenAIStream} from '../dist/native/contract/integration/native-batch/source-association.mjs';
 import {createOperationCurrentness} from '../dist/native/contract/integration/native-batch/operation-currentness.mjs';
+import {assertNativeSessionInputCapture} from '../dist/native/contract/integration/native-batch/generated/session-manager.mjs';
 
 //region Original host actions must leave the next prompt usable.
 const mode=process.argv[2];
@@ -39,6 +40,7 @@ await using cleanup={async [Symbol.asyncDispose](){await runtime.dispose();await
 const pending=session.prompt('Reply briefly without using tools.');
 if(['inflight','combined'].includes(mode)){await entered.promise;await session.abort();}
 await pending;
+assertNativeSessionInputCapture(manager);
 const first=manager.getBranch().find(function firstUser(entry){return entry.type==='message'&&entry.message.role==='user';});
 assert.ok(first);
 const root={session,manager};
@@ -75,9 +77,11 @@ if(mode==='resume'){
  assert.equal((await runtime.switchSession(persisted.getSessionFile())).cancelled,false);
  assert.throws(function rejectReplacedOperation(){currentness.assertActive(initial);});
 }
+assertNativeSessionInputCapture(runtime.session.sessionManager);
 runtime.session.agent.getApiKey=function currentCredential(){return process.env.FIXTURE_API_KEY;};
 await runtime.session.prompt('Edited follow-up without tools.');
 const last=runtime.session.messages.at(-1);
+assertNativeSessionInputCapture(runtime.session.sessionManager);
 assert.equal(last?.stopReason,'stop',last?.errorMessage);
 assert.equal(requests.length,['automatic-retry','provider-retry','tree-summary'].includes(mode)?3:2);
 assert.equal(requests.at(-1),['switch','combined'].includes(mode)?'https://second.invalid/v1/chat/completions':'https://fixture.invalid/v1/chat/completions');

@@ -13,18 +13,21 @@ group ownership,
 confirmation,
 and terminal result retention across direct and child execution.
 The former extension pipeline and duplicated execution protocols are removed.
-Full units,
-type checking,
-native lifecycle and fallback catalogs,
-and configured MiMo replay pass.
-Lint cleanup remains a separate measured task.
+The complete units,
+type check,
+affected native matrix and configured replay pass on `native-release-mmaT8k`.
+Additional real session-action verification exposes a separate native cancellation-signal capture defect.
+That regression must pass before the directly supervised MiMo lint worker receives editing scope.
+Lint cleanup remains an unfinished measured task.
 
-The final package measurement is 22,895,931 regular-file bytes,
-including the active 8,211,396-byte native release and a verified rollback.
+The 2026-10-18 post-cleanup snapshot measures 22,933,936 regular-file bytes
+and 20,180,992 unique allocated inode bytes,
+including the active 8,214,937-byte native release and a verified rollback.
 Shared dependency symlink targets are excluded.
-The parser inventory counts 65,692 nonblank code lines across 813 tracked source files,
-including 28,596 verification lines.
-Full lint reports 83 errors and 13,686 warnings across 813 files and 486 rules.
+The parser inventory at that verification frontier counts 66,392 nonblank code lines across 818 tracked code files,
+including 29,291 verification lines.
+Full lint reports 83 errors and 13,834 warnings across 818 files and 486 rules.
+These named snapshots precede the new native-control regression and are not final post-lint measurements.
 Warnings are diagnostics rather than a code-line count or an accepted size target.
 
 The user authorized consolidation and package-local justification on 2026-10-17.
@@ -132,6 +135,13 @@ two-CPU,
 2 GiB `test:unit` run passes,
 including release publication and native lifecycle regressions.
 `lint:types` passes.
+Both complete configured replays exercise 52 original calls and 62 actual Luna requests with zero selectors.
+Actual transmitted requests pass positive-controlled required and excluded payload checks.
+The logger dependency's completion and file ownership repair is published and registry-consumer-verified as `0.4.2`.
+The additional `session_before_tree` and `session_before_compact` control boundary remains under repair:
+their valid `AbortSignal` fields are not ordinary message or tool data.
+Successful native navigation alone does not prove complete captured evidence;
+the regression also reads the manager's retained original event source.
 Current maintained lint scope and remaining debt are recorded in `compact-review-design.md`.
 Historical lint totals in investigation records describe their named source snapshots.
 

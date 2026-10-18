@@ -17,6 +17,7 @@ import { FeedbackOverlay, FeedbackItem } from "overlays.slint";
 import { FirstRunPane } from "first_run.slint";
 import { TrackMenu, TrackMenuItem } from "menu.slint";
 import { SettingsPage, SettingsTemplateRow } from "settings.slint";
+import { LicensesPage } from "licenses.slint";
 import { TemplateEditor, EditorFieldRow, EditorPreviewRow } from "template_editor.slint";
 
 // Root window. Properties named after engine messages (track-name, position, duration, playing, volume,
@@ -81,7 +82,7 @@ export component AppWindow inherits Window {
     in property <int> playback-mode: 1;
     in property <int> current-index: -1;
 
-    // Route: 0 player, 1 search, 2 Settings, 3 the narrow template editor page.
+    // Route: 0 player, 1 search, 2 Settings, 3 the narrow template editor page, 4 the Licenses page.
     in property <int> route: 0;
 
     // Keyboard focus model (D106). The Rust key classifier moves the rings and asks for focus through these.
@@ -176,6 +177,11 @@ export component AppWindow inherits Window {
     // Whether Auto-play on select is on, and the line under its Settings row; the Rust side keeps both current (D129).
     in property <bool> auto-play-on-select: false;
     in property <string> auto-play-on-select-text: "";
+    // True while the Settings page should open with the keyboard on its Licenses row, as when Licenses was just closed.
+    in-out property <bool> settings-start-on-licenses: false;
+    // The notice text of the Licenses page, one source line per entry; empty while the page is closed, so the text is
+    // built when the page opens and released when it closes.
+    in property <[string]> licenses-lines: [];
     // Opacity of the right pane, 1 at rest. A new selection drops it to 0 at once and animates it back to 1 over 150 ms,
     // linear. The drop is made with a zero-length animation, because an `animate` block would otherwise also animate the
     // drop. Slint 1.18 exposes no reduced-motion setting, so the fade is always this short.
@@ -267,6 +273,10 @@ export component AppWindow inherits Window {
     callback settings-back();
     // The Auto-play on select switch row was toggled by a click, Space or Enter; the Rust side flips and saves the setting.
     callback settings-toggle-auto-play();
+    // The Licenses row was activated by a click, Space or Enter; the Rust side opens the Licenses page.
+    callback settings-open-licenses();
+    // Back on the Licenses page, by its arrow or Escape; the Rust side returns to Settings.
+    callback licenses-back();
     callback editor-text-edited(string, int, int);
     callback editor-focus-changed(bool);
     callback editor-insert-field(int);
@@ -595,10 +605,23 @@ export component AppWindow inherits Window {
         selected-index: root.settings-selected;
         auto-play-enabled: root.auto-play-on-select;
         auto-play-text: root.auto-play-on-select-text;
+        start-on-licenses <=> root.settings-start-on-licenses;
         toggle-auto-play => { root.settings-toggle-auto-play(); }
+        open-licenses => { root.settings-open-licenses(); }
         open-template(i) => { root.settings-open-template(i); }
         select-template(i) => { root.settings-select-template(i); }
         back => { root.settings-back(); }
+    }
+
+    // Licenses route: the notice text and Slint's attribution, over the whole window in both forms.
+    if root.route == 4 : LicensesPage {
+        opacity: root.page-enter;
+        x: 0px;
+        y: 0px;
+        width: root.width;
+        height: root.height;
+        lines: root.licenses-lines;
+        back => { root.licenses-back(); }
     }
 
     // Right pane of the wide Settings: the editor of the selected row, shown in place. It has no header band or Back of
