@@ -552,13 +552,13 @@ await describe({
       },
     },),
     it({
-      name: 'ORDERS CANDIDATES OF ONE LENGTH BY CODE POINTS, NOT UTF-16 UNITS: a letter beyond the first plane follows a letter of '
-        + 'the first plane that has the greater code unit, though its first code unit is the lesser',
+      name: 'ORDERS CANDIDATES OF ONE LENGTH BY CODE POINTS, NOT UTF-16 UNITS: a character beyond the first plane follows one of the '
+        + 'first plane above the surrogates, though its first code unit is the lesser',
       fn: async () => {
         /**
-         A letter of the first plane whose single code unit is greater than the first code unit of any character beyond it.
+         A character of the first plane whose single code unit is greater than the first code unit of any character beyond it.
          */
-        const plain = 'a\u{A730}';
+        const plain = 'a\u{E000}';
         /**
          A character beyond the first plane after the same letter.
          */
