@@ -14389,7 +14389,7 @@
       "source": "5cfc1d90f92154cf62fa95789fad9bd7deeda208",
       "projectId": "27m5m3vjlv",
       "buildId": "fxzj58r8m2",
-      "status": "Save, registry and HTTP consumers exercised; embedded Podman healthcheck failed; other cases active"
+      "status": "Native local and single-architecture OCI exports, multiarch registry-to-OCI bridge, derived job image and cross-build/read-only token controls exercised; remaining cases active"
     }
   }
 }
