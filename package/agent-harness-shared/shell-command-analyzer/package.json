@@ -3,7 +3,7 @@
   "name": "@monochromatic-dev/agent-harness-shared-shell-command-analyzer",
   "description": "Shared unbash-backed shell command analyzer for agent harness guardrails.",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": false,
   "module": "dist/final/node/index.mjs",
   "exports": {
