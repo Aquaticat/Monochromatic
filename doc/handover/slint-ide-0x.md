@@ -761,7 +761,16 @@ the items after it are the record of 2026-10-05 and older.
     directives plus a build-generated load. Two agents run on 2026-10-18: one researches precedent (directive
     syntax in oxlint, ESLint, Biome, Ruff and Clippy; closure bans elsewhere; a Dylint or rustc-driver route), one
     closes the measured gaps (test sidecars under `cfg(test)`, the IDE dependency graph and generated code, the
-    5.9 s breakdown, wrapper cases). Their reports decide the next question to the user.
+    5.9 s breakdown, wrapper cases). Their reports decide the next question to the user. The user also asked to
+    look at their oxlint setup; findings: shared config `package/config/oxlint/src/config-base.ts` sets
+    `reportUnusedDisableDirectives: 'warn'` with `denyWarnings: true`; the repository holds 861
+    `oxlint-disable-next-line`, 401 `oxlint-disable` and 332 `oxlint-enable` directives, 698 of 734 next-line ones with
+    a ` -- reason`; an audit (`doc/audit/oxlint-unused-disable-directives.md`) found and removed 301 unused ones; the
+    plugin `no-restricted-syntax` bans disabling chosen rules (`no-disable-*`, built by `_ban-disable-factory.ts`),
+    including `no-arrow-function`, whose replacement is a named function expression (impossible for Rust closures);
+    tests are exempted from the TypeScript arrow ban by an override in `package/config/oxlint/src/overrides.ts`
+    (line 201). A Rust equivalent of that test override would clear the 11 test closures without any new rule
+    machinery.
     Until then the 67 stay reported as warnings, listed in `~/temp/agent/ide-closures/final-unconverted.txt`. Landing of this branch: the agent's gates ran on the tree
     before `main` was merged in; the coordinating session reran them on the merged tree (lint, tests, bundle and
     guards) before the fast-forward.
