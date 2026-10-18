@@ -10,13 +10,8 @@ The operating frontier is an inactive historical draft;
 its questions require no user response while research continues.
 Use the [reopened research plan][master] for current work.
 
-## Withdrawn readiness finding
-
-On 2026-10-18,
-the user rejected the completeness of this research.
-The readiness conclusion and proposed question frontier in this historical draft are withdrawn.
 The [reopened platform surface audit](depot-platform-surface-audit.md)
-supersedes them.
+supersedes this draft's sufficiency conclusion and proposed question frontier.
 Missing research must be investigated rather than assigned wholesale to later acceptance work.
 The retained draft records the incomplete reasoning;
 it does not authorize an interview or implementation.
@@ -52,11 +47,11 @@ stopping superseded intermediate validation,
 and engineering responsibility for cadence recommendations.
 These are not new interview questions.
 
-## Readiness finding
+## Historical readiness rationale, withdrawn
 
-The broad platform and repository research is sufficient to interview about operating preferences
-after the parent's pnpm comparison reached a terminal,
-reconciled result.
+This historical draft treated the selected platform and repository research as sufficient for an interview
+after the parent's pnpm comparison.
+That sufficiency judgment was rejected and is withdrawn.
 No supported conclusion requires building the complete future production CI graph before that interview.
 The distinction is between selecting a plan with known limits
 and declaring its implementation accepted.
@@ -350,8 +345,11 @@ The following are outside the current frontier:
   runner labels,
   and cache formats are engineering choices constrained by the selected profiles and budget authority.
   Their correct behavior is measured rather than delegated to the user as a fact question.
-- The unapplied general `AGENTS.md` reporting-rule proposal is not a Depot operating prerequisite.
-  It should not expand this interview into agent working habits.
+- The current `AGENTS.md` usage/migration rule already requires inspecting desired capabilities,
+  target workload,
+  parallel implementations,
+  workarounds and policies.
+  No general reporting-rule edit is queued or required for this Depot interview.
 - Final shared-understanding confirmation follows the resolved design tree.
   It is not evidence that production routing or subscription changes have already been authorized.
 

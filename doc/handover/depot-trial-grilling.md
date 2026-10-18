@@ -1,6 +1,6 @@
 # Depot trial interview
 
-## Execution checkpoint on 2026-10-18 at 09:14 UTC
+## Execution checkpoint on 2026-10-18 at 09:47 UTC
 
 Research remains open;
 do not resume the interview or declare readiness from the completed module sample.
@@ -33,8 +33,16 @@ The job image digest is
 The actual consumer checks the locked Node 26 binary hash and its loaded `libatomic` mapping,
 separately from the image's base Node 24.
 Earlier Git-absent and `libatomic.so.1`-absent fixtures stay retained as failed prerequisite controls.
-The parent is consolidating original artifact ZIPs and must remove only its exact owned
-GitHub/native pull-secret variants before releasing its image hold to the builder researcher.
+The public receipt and all ten original ZIPs are retained in
+[`depot-service-containers-2026-10-18.evidence.json`](../audit/depot-service-containers-2026-10-18.evidence.json)
+and its linked compressed archive.
+Commit `0a8a2979e0` retains them;
+scoped dprint passed.
+The exact GitHub secret and both owned native variants were removed,
+with absence verified after positive lookup controls.
+The builder researcher has been told the consumer hold is released.
+This is secret-binding cleanup,
+not proof of token revocation.
 
 The matched lock/evidence campaign is complete on native Depot,
 GitHub-hosted Ubuntu and Depot GitHub runners.
@@ -75,16 +83,59 @@ some already implement container bounds and planted controls,
 and some dual-corpus commands can mutate committed seed inputs.
 The cache researcher owns their source preservation and explicit ASan/GNU target evidence.
 
-The KVM follow-up is a fifth allocation after four terminal guest jobs.
+The KVM follow-up completed as a fifth allocation after four terminal guest jobs.
 The retained admission measures 358 preceding request-to-terminal seconds,
 models them at USD 0.0716,
 and reserves USD 0.12 for one ten-minute GitHub-hosted diagnostic.
 The USD 0.1916 forecast stays under the unchanged USD 1 campaign guard.
 Harness `0a2fd7678b` calls the source-bound raw QEMU/libvirt capability task;
 it does not execute an application guest.
-The parent must dispatch it,
-retain its TCG positives and KVM outcomes,
-and check explicit daemon cleanup.
+GitHub run `39115506319` completed at full harness
+`0a2fd7678b719d9039df318003a43bbc4713cd7c`.
+Both raw q35 KVM probes passed,
+including the unprivileged process after the scoped ACL grant;
+QMP reported KVM present and enabled.
+Later unprivileged `machine=none` failed opening KVM with `Permission denied`,
+while its root control passed and private libvirt rejected KVM capability.
+The diagnostic retained TCG positives and observed both owned daemon PIDs gone.
+This disproves a platform-wide absence-of-KVM conclusion.
+Per-probe device permission snapshots were not captured,
+so the changing access boundary and libvirt failure still need qualification.
+The first dispatch's immediate run lookup failed after successful creation;
+recovery adopted the existing run rather than dispatching another.
+
+Native consumer retry was actually submitted for `xgq2429hqv` job `nw4mdr6b68`.
+The API returned attempt 2 queued.
+The original failed attempt and three original producer artifacts were retained first.
+One additional two-CPU/eight-GB/five-minute job reserves USD 0.03
+within the existing USD 1 semantics campaign guard.
+Do not expect a passing aggregate from this unchanged source:
+its default-parallel assertion assumes sibling absence,
+which the stronger observation did not establish.
+The retry qualifies lineage and the separate unexplained download-action boundary.
+
+For physical Depot Tests,
+the parent is preparing actual Nextest per-test JUnit from the source-bound 34-case lock diagnostic cohort,
+using the retained executable/archive producer and explicitly owned tmpfs environment.
+This will not disguise an owning-task wrapper row as an inner test case,
+claim a filesystem source repair,
+or qualify the whole Git policy suite.
+Candidate selection,
+report freshness,
+history,
+fail/skip/duplicate controls,
+physical job identities and the artifact consumer remain required execution work.
+
+The current-source Rust linter run `j50kf2jlqx` actually ran 415 passing tests,
+with one ignored case among 416 enumerated cases across three binaries.
+Its real CLI help/rule controls passed.
+The aggregate remains red because the separate direct-rustc consumer encountered an rlib metadata-stub diagnostic;
+that is not a linter test failure or a completed binary handoff.
+The standalone Rust run `lwp0vbb2vq` is active,
+including the frozen `wg-quicker-exempt` release producer needed by the routing researcher's actual default test.
+The process/transport wave `39114552347` completed all 131 invocations:
+128 passed and three default tasks failed.
+Real compositor lookup/ImageMagick prerequisites and the CPU-cap watcher assertion are being qualified separately.
 
 The capability researcher's additional admission is USD 2 cumulative timestamp compute,
 with its existing two-builder/sixteen-CPU/thirty-two-GB bounds unchanged.
@@ -100,6 +151,13 @@ authentication precedence and environment-forwarding boundaries.
 The substantive chronology pass also covers Dockerfile lint,
 Cache Explorer/export,
 builder networking and Datadog's current availability.
+Current project source defines `max_concurrent_builds` per builder instance,
+not as a total-builder cap;
+autoscaling stays off under the campaign's hard allocation bound.
+Cache-policy `keep_gb` is per architecture,
+so its configured value must not be described as whole-project storage usage or a shared-allowance guarantee.
+The current Dockerfile-lint campaign has a working Hadolint positive and clean control,
+but its missing Semgrep positive remains unqualified.
 
 ## Research reopened and interview withdrawn on 2026-10-18
 
