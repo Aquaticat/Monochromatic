@@ -2,6 +2,19 @@
 
 ## Latest verified boundary and user steering
 
+The private compaction projection cluster now passes scoped formatting with zero warnings and zero errors,
+private native build `jj5kwZ`,
+post-build fresh-cache types and the maintained `test:native:compaction-inputs` consumer.
+That consumer uses actual SDK file operations and confirms original callback identity,
+independent phase snapshots and continued ordinary-set rejection.
+Only `compaction-file-paths.ts` is adopted from the private candidate.
+The native iterator retains an explicit receiver contract and is called with the qualified native set.
+This is a declaration and normalization cleanup,
+not a code-size reduction claim.
+Committed-source checks and retargeted private guard mutations remain queued.
+The historical guard-mutation driver still pins `ae5358be05` and old source needles;
+do not rerun it unchanged.
+
 Correction to the attempted RPC guidance timing:
 an empty set of active tool events does not establish a settled agent boundary.
 The model request can still be in flight.

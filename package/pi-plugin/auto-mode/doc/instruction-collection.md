@@ -219,6 +219,17 @@ The cancellation reference map remains scoped to one original emission.
 
 ## Native compaction file collections
 
+The native iterator is captured from `Set.prototype` through `Reflect.get`
+with an explicit `this: ReadonlySet<unknown>` function contract.
+The qualified set is supplied through `.call(value)`.
+This makes the receiver requirement visible while bypassing instance-provided iterator properties.
+The scoped cleanup preserves the existing prototype,
+native-storage,
+own-property and string-member checks.
+Its private build,
+fresh-cache type check and actual SDK compaction consumer pass;
+the source file reports zero warnings and zero errors.
+
 The SDK's `CompactionPreparation.fileOps` contains native string sets for
 `read`,
 `written` and `edited`.
