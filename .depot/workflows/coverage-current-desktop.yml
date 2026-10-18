@@ -212,9 +212,33 @@ jobs:
           ckage/module/toml-edit\\\",\\\"kind\\\":\\\"shared_module_build\\\"},{\\\"task\\\":\\\"//package/mo\
           dule/wg-allowedips:build\\\",\\\"packagePath\\\":\\\"package/module/wg-allowedips\\\",\\\"kind\\\":\
           \\\"shared_module_build\\\"},{\\\"task\\\":\\\"//package/module/zip-writer:build\\\",\\\"packagePath\
-          \\\":\\\"package/module/zip-writer\\\",\\\"kind\\\":\\\"shared_module_build\\\"}]}\");"
+          \\\":\\\"package/module/zip-writer\\\",\\\"kind\\\":\\\"shared_module_build\\\"}]}\");require(\"nod\
+          e:fs\").appendFileSync(require(\"node:path\").join(process.env.GITHUB_WORKSPACE,\"package/dev-scrip\
+          t/coverage-research/mise.toml\"),\"\\n[tasks.\\\"desktop:cleanup\\\"]\\nquiet = true\\nshell =
+          \\\"node --input-type=module-typescript -e\\\"\\nrun = \\\"const {spawnSync}=await
+          import(\\\\\\\"node:child_process\\\\\\\"),{writeFileSync,mkdirSync}=await
+          import(\\\\\\\"node:fs\\\\\\\"),{join}=await import(\\\\\\\"node:path\\\\\\\");const
+          base=[\\\\\\\"--non-interactive\\\\\\\",\\\\\\\"podman\\\\\\\",\\\\\\\"--cgroup-manager=cgroupfs\\\\\
+          \\\"],call=args=>spawnSync(\\\\\\\"sudo\\\\\\\",[...base,...args],{encoding:\\\\\\\"utf8\\\\\\\",ti\
+          meout:45000});const
+          before=call([\\\\\\\"ps\\\\\\\",\\\\\\\"--all\\\\\\\",\\\\\\\"--filter\\\\\\\",\\\\\\\"label=resear\
+          ch-coverage=current-e02-desktop\\\\\\\",\\\\\\\"--format\\\\\\\",\\\\\\\"{\\\\\\\"+\\\\\\\"{.ID}\\\\\
+          \\\"+\\\\\\\"}\\\\\\\"]);if(before.status!==0)throw new Error(before.stderr);const
+          ids=before.stdout.trim().split(\\\\\\\"\\\\\\\\n\\\\\\\").filter(Boolean);const
+          removed=ids.map(id=>({id,...call([\\\\\\\"rm\\\\\\\",\\\\\\\"--force\\\\\\\",id])}));const
+          after=call([\\\\\\\"ps\\\\\\\",\\\\\\\"--all\\\\\\\",\\\\\\\"--filter\\\\\\\",\\\\\\\"label=researc\
+          h-coverage=current-e02-desktop\\\\\\\",\\\\\\\"--format\\\\\\\",\\\\\\\"{\\\\\\\"+\\\\\\\"{.ID}\\\\\
+          \\\"+\\\\\\\"}\\\\\\\"]);const
+          directory=join(process.env.GITHUB_WORKSPACE,\\\\\\\".research-desktop/receipts\\\\\\\");mkdirSync(d\
+          irectory,{recursive:true});writeFileSync(join(directory,\\\\\\\"owned-container-cleanup.json\\\\\\\
+          \"),JSON.stringify({before:ids,removed,after:after.stdout,status:after.status},null,2));if(after.st\
+          atus!==0||after.stdout.trim())throw new Error(\\\\\\\"Owned desktop runtime cleanup
+          failed\\\\\\\")\\\"\\n\");"
       - name: Build frozen producers and execute real unit and graphical consumers
         run: mise run //package/dev-script/coverage-research:desktop:campaign
+      - name: Stop and remove only owned runtime containers
+        if: always()
+        run: mise run //package/dev-script/coverage-research:desktop:cleanup
       - name: Retain source and runtime receipts
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
