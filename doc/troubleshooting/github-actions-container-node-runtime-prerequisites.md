@@ -47,11 +47,11 @@ this.gitPath = await io.which('git', true)
 ```
 
 The same file declares minimum Git `2.18` at line 15 and checks the discovered version at line 688.
-`src/git-source-provider.ts:356` calls the manager constructor;
+`src/git-source-provider.ts:361` calls the manager constructor;
 its catch returns `undefined` when LFS was not requested:
 
 ```typescript
-// actions/checkout/src/git-source-provider.ts:369
+// actions/checkout/src/git-source-provider.ts:366
 } catch (err) {
   // Git is required for LFS
   if (settings.lfs) {
