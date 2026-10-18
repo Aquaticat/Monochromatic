@@ -577,6 +577,36 @@ await describe({
           },
         },),
         it({
+          name: 'ANSWERS FOR A WORD BEFORE A LINK WHOSE LABEL IS A STRAIGHT QUOTATION MARK AND AN APOSTROPHE as for the text a reader sees: '
+            + 'the mark closes after the word, so the apostrophe after it makes the word part of a longer one',
+          fn: async () => {
+            /**
+             Each text, the text a reader sees of it, and the word asked for.
+             */
+            const rows: readonly (readonly [string, string, string])[] = [
+              ['kit["](u)\'s', 'kit"\'s', 'kit',],
+            ];
+            const { kinds, twins, } = twinKindsOf({ rows, },);
+            expect(kinds,).toEqual(twins,);
+            expect(twins,).toEqual(['none',],);
+          },
+        },),
+        it({
+          name: 'ANSWERS FOR A WORD AFTER A LINK WHOSE LABEL ENDS IN WHITE SPACE AND AN APOSTROPHE as for the text a reader sees: the '
+            + 'apostrophe has white space before it, so it joins no word and the word after it is a stand',
+          fn: async () => {
+            /**
+             Each text, the text a reader sees of it, and the word asked for.
+             */
+            const rows: readonly (readonly [string, string, string])[] = [
+              ['[cat ](u)\'kit', 'cat \'kit', 'kit',],
+            ];
+            const { kinds, twins, } = twinKindsOf({ rows, },);
+            expect(kinds,).toEqual(twins,);
+            expect(twins,).toEqual(['once',],);
+          },
+        },),
+        it({
           name: 'ANSWERS FOR A WORD BEFORE AN EMPTY LINK AND AN APOSTROPHE as for the text a reader sees: the forward reading steps over the '
             + 'link, an image with no alt text shows nothing, a destination with a line break is part of the link, and a label of closing '
             + 'marks closes as those marks do (n169)',
