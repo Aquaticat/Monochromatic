@@ -373,7 +373,64 @@ The [current Android page-size guidance][android-page-sizes] requires
 The installed SDK's `zipalign` usage was read,
 and its exact check invocation was exercised on a disposable archive as a protocol control.
 That archive control is not an APK native-layout result.
-Actual APK and JVM results remain pending.
+The first actual Android run is `qvsjm5hmdp`,
+using experimental workflow commit `941caae67e` and the frozen application source.
+The owning APK build command passed in 218,903 ms;
+the host-JVM command passed in 63,086 ms.
+Those are single-run observations,
+not comparative speed measurements.
+The fresh JVM output contains 127 JUnit XML reports and 1,289 cases,
+with zero skipped cases,
+failures,
+or errors.
+Every captured XML,
+command log,
+and APK hash was checked after downloading the artifact.
+The tracked source remained unchanged.
+
+The first collector failed its RELRO-end assertion on
+`lib/arm64-v8a/libandroidx.graphics.path.so`.
+That assertion was too broad:
+the same Android guidance explicitly permits an unaligned RELRO end in a dedicated LOAD
+with no subsequent writable data on the protected page.
+Actual `readelf --program-headers --wide` output shows RELRO
+`0x5c40 + 0x3c0 = 0x6000`,
+covering the complete writable LOAD at `0x5c40 + 0x390`;
+the next writable LOAD starts at `0x9fd0`,
+beyond the protected page ending at `0x8000`.
+The observed failure is therefore a research-collector false positive,
+not evidence of an Android library defect.
+The collector is being corrected with aligned,
+dedicated-LOAD,
+and writable-overlap controls.
+The next run must preserve both APKs before checking either APK's layout.
+
+The preserved debug APK is 164,612,534 bytes,
+with SHA-256 `bdf02a43b9bf235e8998362fff270c0a79060aaa9f9f923a5df01375e01e755f`.
+Its actual signature and ZIP-alignment checks passed.
+Badging identifies `dev.monochromatic.musicplayer`,
+version `0.1.5`,
+code `105`,
+and the declared API levels.
+Its badging advertises `arm64-v8a`,
+`armeabi-v7a`,
+`x86`,
+and `x86_64`,
+so every packaged native library still needs inspection against the two engine build targets.
+The first collector stopped before retaining the AndroidTest APK;
+the successful assembly task alone does not close that artifact-consumer gap.
+
+The registry manifest digest matched the prepared snapshot.
+The helper's separate config-blob inspection exceeded its arbitrary 1 MiB limit:
+the actual descriptor is 6,502,729 bytes with media type
+`application/vnd.depot.thin.snapshot.config.v2+json`.
+This is a thin block-map configuration,
+not an ordinary OCI `config.Env` array.
+Absence of an OCI field cannot establish environment or secret exclusion.
+The corrected helper must check the descriptor size and digest,
+retain the actual schema distinction,
+and keep runtime synthetic-marker observations separate.
+
 Fresh JUnit XML,
 declared/discovered case counts,
 failure/skip counts,
