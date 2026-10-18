@@ -97,7 +97,9 @@ method never appears in the expansion.
   one suppression with this reason string instead of one per call site,
   and a hand-written `unwrap` beside a `json_value!` call is still reported.
   Observed with the root `clippy.toml` mounted in the container lint:
-  the library tests, the integration tests, and both binaries pass `cargo clippy --all-targets -- --deny warnings`,
+  the library tests,
+  the integration tests,
+  and both binaries pass `cargo clippy --all-targets -- --deny warnings`,
   and a planted `Result::unwrap()` in the same files still fails it.
   The allowance covers a statement and not an item,
   so unlike the `zbus::interface` case no `const _: () = { ... }` wrapper is needed.
