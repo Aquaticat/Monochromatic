@@ -1,6 +1,70 @@
 # Depot trial interview
 
-## Execution checkpoint on 2026-10-18 at 12:20 UTC
+## Execution checkpoint on 2026-10-18 at 14:26 UTC
+
+The factual research queue remains active;
+do not start the interview yet.
+The parent owns the final report and repeated coherent Linux graph campaign.
+The Rust researcher now owns the combined exact-allocation ledger and independent review of new parent evidence.
+The coverage researcher owns remaining desktop sessions,
+proper packed-install activation,
+current-source standard GitHub macOS/Windows controls and the semantic assertion manifest.
+The platform researcher owns substantive source-ledger completion and a new automatic native-job BuildKit auth probe.
+That probe uses only the injected short-lived job token,
+one owned temporary project and separate build/registry assertions under its USD 1 guard.
+The parent holds its native graph allocation until that probe is terminal.
+
+The stronger [guest-file receipt](../audit/depot-mvm-guest-files-2026-10-18.evidence.json)
+is committed at `c65e3b8eeb`.
+Native `25jpltfpkq` and both jobs in GitHub `39134227406` use harness
+`1373e624739fbc93502b0c8ca502820c6ff99b45`.
+Each actual guest has a distinct boot identity,
+reads the exact 51-byte input,
+creates an initially absent distinct output and returns the exact transformed 57 bytes.
+All three original ZIPs and 198 file identities are retained;
+the original host-shared-directory-only check remains separately qualified.
+The corrupt-expression dispatch `39132577785` is a retained queued harness failure,
+not a timed execution inferred from the API's populated `startedAt`.
+No invoice or VM billing-release claim follows from workflow completion.
+
+The repeated Linux graph uses clean pushed harness
+`815591bf307b1237d31b1c4e644463d7c13654fa`
+on `research/depot-expanded-graph-20261018`,
+with unchanged application cohort `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
+GitHub dispatch is `39135886118`.
+It contains sequential GitHub and Depot-GitHub repetitions;
+the native workflow adds sequential native repetitions after its slot is released.
+The graph invokes 222 actual owning commands:
+a shared Node prerequisite phase,
+parallel module/browser branches and an independent Rust branch.
+This is one four-CPU Linux job per sample,
+not a distributed cross-job artifact DAG or complete repository CI.
+It preserves source failures and measures setup plus complete-report latency.
+It restores no explicit repository/package/compiler cache or prepared snapshot;
+provider image/tool/registry state is not assumed empty.
+The runtime source comparison uses 54 frozen top-level Git object identities,
+excluding declared research configuration directories,
+and tracked working-tree changes without requiring a shallow checkout to fetch the application parent commit.
+Local source controls observed unchanged success,
+changed-object rejection,
+a removed guard missing the difference and restored success.
+The six planned jobs each have four CPUs,
+16 GB and a thirty-minute limit,
+with at most two parent-owned concurrent jobs.
+The USD 3 gross proxy guard includes USD 2.16 full-window all-provider equivalents
+and USD 0.72 for two bounded corrections;
+the initial nominal Depot compute reservation is USD 1.20 before allowances.
+Public GitHub compute is modeled separately at zero nominal charge.
+The private controller retains the admission,
+source verification and dispatch response.
+
+Next: retain terminal graph job/attempt metadata and original evidence ZIPs,
+measure unchanged-input spread and actual overlapping critical paths,
+join them into the Rust researcher's allocation ledger,
+finish remaining owner-specific factual queues and obtain an independent sufficiency review.
+Then reconcile the approved six report sections and start the decision interview.
+
+## Historical execution checkpoint on 2026-10-18 at 12:20 UTC
 
 The expanded evaluation remains research work;
 the interview has not started.
