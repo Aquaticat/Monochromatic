@@ -297,7 +297,7 @@ export function isPartOfAWord(
 
  @example
  ```ts
- const { joined, } = readProofView({ english: 'The *cats*’s bowl', },); // holds 10
+ const { joined, } = readProofView({ english: 'The *cats*’s bowl', definitions: '', },); // holds 10
  ```
  */
 function readProofView(
