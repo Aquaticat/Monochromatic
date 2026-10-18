@@ -497,7 +497,60 @@ The two additional archive bundles and prerequisite source bundle still reproduc
 
 The new three-ZIP cohort is published at `c65e3b8eeb0f1bc0e06bf555048b85635ec59202`
 in `depot-mvm-guest-files-2026-10-18.evidence.json` and its linked original bundle.
-Its independent original-byte,
-CRC/member/source and actual guest-command joins are now active.
-This supersedes the pending-publication queue status without changing the original eight-ZIP qualification.
-No new allocation is admitted by this review.
+The independent review passed for its original ZIP bytes,
+strict base64 decoding,
+CRC,
+member sizes and SHA256 hashes.
+The cohort contains 81,121 ZIP bytes,
+198 members and 216,993 uncompressed member bytes.
+Both GitHub API artifact digests match the original ZIP hashes;
+the native advertised size matches its original ZIP.
+The linked gzip SHA256 is `6f0bf7c1ea1891b24d8702b373fc9c30b8eb885a0827e6e056cb483cac0183d9`.
+
+Native run `25jpltfpkq` and both jobs in GitHub run `39134227406`
+join immutable harness `1373e624739fbc93502b0c8ca502820c6ff99b45`.
+The harness has no diff from frozen `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`
+in `package`,
+`mise.toml`,
+`mise.lock`,
+`pnpm-lock.yaml` or `pnpm-workspace.yaml`.
+Its owning lifecycle source was read independently,
+including the actual payload assertions and private daemon cleanup.
+
+All 85 command records match their embedded lifecycle records and retained stdout/stderr members.
+For each pool,
+the independently reconstructed nonce-bearing input is 51 bytes and its `guest:` transformation is 57 bytes.
+Both reconstructed hashes match the actual guest `sha256sum` output and retained consumer hashes.
+The recorded guest boot ID differs from the host boot ID.
+The actual `mvm exec` sequence checks the distinct output is absent,
+copies input to it,
+changes it with `sed`,
+then hashes it before `mvm pull`.
+The immutable harness compares pulled bytes directly with the expected transformed buffer before reporting success.
+This qualifies actual guest input visibility,
+output creation and transformation through `/mnt/shared` for this cohort.
+It does not upgrade the original eight-ZIP host shared-directory check.
+
+Each guest reports KVM enabled and running;
+QEMU command lines retain four vCPUs and `size=8388608k` memory.
+The deliberate missing-path command returns status 2,
+while every other recorded command succeeds.
+Each final private domain listing is empty,
+both owned daemon PIDs are observed exited and cleanup errors are empty.
+These are execution and cleanup observations,
+not VM billing-release measurements or application unit-test cases.
+
+The separate cancelled GitHub run `39132577785` has corrupt `$ + value +` runner labels,
+no assigned runner and no actual step execution.
+Its queued `started_at` timestamp does not establish allocated compute.
+The source records the failed generator separately from the successful guest consumers and retains guard removal/restoration.
+
+All decoded members were inspected as UTF8,
+including dense lifecycle/command records and daemon logs.
+Credential patterns found no token,
+authorization value or private-key material.
+Sensitive-word contexts contain passwd/GID diagnostics,
+public repository package names,
+QEMU references to private key files and libvirt help paths;
+they contain no key-file bytes.
+This closes the pending three-ZIP review without changing original archive bytes or allocating resources.
