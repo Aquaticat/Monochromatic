@@ -37,6 +37,21 @@ the new retirement fixture's six errors are fixed.
 Independent current fragmented probes profile retained allocations and replace only private log append completion.
 Their fixtures are `pi-mimo-failure-rpc-3umw1N` and `pi-mimo-failure-rpc-ekAFp9` respectively.
 Both remain bounded to two CPUs and 2 GiB and preserve every original callback and log record.
+Both private fragmented controls terminate with exit 134.
+The append control changes the policy bundle,
+but allocation frames point to the separately loaded logger TypeScript source;
+its application receipt does not prove it changed the active append path.
+Do not use that control to rule out the logger.
+The collected heap `pi-mimo-failure-rpc-bUKHKw/retainers.heapsnapshot` contains a large logger pending-write set.
+Its private analysis completes under the same 2 GiB bound.
+An isolated logger burst delivers 100,000 records while retaining 93,858,312 to 93,859,232 bytes
+across three unchanged runs.
+A private promise-deduplication change retains 37,120 to 37,152 bytes across three runs,
+with all 100,000 sink invocations preserved.
+Implement that ownership repair with asynchronous file batching and shared synchronous-sink completions,
+verify the logger and actual host,
+and bump the logger version before publication.
+No compressed receipt representation is justified by the current retainer evidence.
 Earlier outputs still exit 134 from Node heap exhaustion;
 the private retirement-only replay instead reaches its 600-second driver limit after 58 live assessments.
 The immediate work is diagnosing the remaining fragmented-stream retention,
