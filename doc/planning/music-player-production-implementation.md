@@ -260,7 +260,8 @@ before saying it matches, QAB):
   thread-local destructor during process exit). Proven on all three Windows jobs with a positive control (control run
   38776373884 failed, fix runs passed); the run ids, head commit and the host verification counts are in the Evidence
   sections of `doc/decision/music-player-windows-gui-subsystem.md`. Not seen: the dialog itself. Next: merge procedure
-  as above, then a patch version bump and release (the same drop runs when a person closes the window of 0.1.4; no run did that).
+  as above, then a patch version bump and release (the same drop runs when a person closes the window of 0.1.4;
+  no run did that).
   (e) agent `abe5d14bb8effe0d8`, branch `fix/music-player-cache-batched-commits`, worktree `music-player-cachebatch`:
   the per-row fsync in `DecisionCache::put` (10,073 fsync calls for 10,000 rows, 27 to 99 s cold analysis);
   (f) agent `aca4a721c4f906b9d`, branch `fix/music-player-android-large-library`, worktree `music-player-andlarge`:
