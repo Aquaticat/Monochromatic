@@ -3,7 +3,8 @@
 ## Purpose
 
 The owner asked on 2026-10-18 why the package's lint takes so long,
-and to split `package/module/translation-repair` into packages under `package/translation-repair/<name>`,
+and to split `package/module/translation-repair` (its path before this split) into packages under
+`package/translation-repair/<name>`,
 each of a manageable size,
 before the other queued work.
 This document records the measurements behind the answer,
@@ -650,24 +651,108 @@ Run in keyless worktree `w165` at `2e79bef413` with every file moved by the map
   and the pnpr publish list.
   The move runs file-enforcer in the branch worktree after its install.
 
-The semantic-wrap config change (`3d844e0315`, `76eb00d8fc`) landed after the dry run,
+The semantic-wrap config change (`3d844e0315`,
+`76eb00d8fc`) landed after the dry run,
 so the move runs again at `76eb00d8fc`,
-and that commit's gate g100 (suite 2484 passing, lint, types and scans clean)
+and that commit's gate g100 (suite 2484 passing,
+lint,
+types and scans clean)
 replaces `94ebefa1e3` as the suite baseline in "Controls".
 
 ## Docs
+
+Done on 2026-10-18 in the commits that follow the source move.
 
 - Docs about the family as a whole
   (the ledger,
    the prevention doc,
    the writer brief and the rest of the 133 package-local `.md` files)
-  move to `package/translation-repair/`,
+  moved with `git mv`,
+  contents unchanged,
+  to `package/translation-repair/doc/` under the same file names,
   beside the packages,
   after the `package/music-player/README.md` precedent for a category-level doc.
-- A doc about one package moves into that package.
-- Living docs that cite a moved path are rewritten to the new path.
-  Historical records keep the path as written,
-  with an in-place note naming the new path and the move date.
+  The old README became the family README `package/translation-repair/README.md`,
+  rewritten for the split layout:
+  it keeps the standing constraints,
+  the English variety rule and the contract,
+  and adds the list of the 36 packages and where the docs live.
+- A doc about one package moves into that package's `doc/`.
+  A doc that names code in several packages stays at family level.
+  Two docs left the family level:
+  - `pictures.md` moved to `package/translation-repair/slice-reading/doc/pictures.md`.
+    It describes the picture reading that `slice-reading` declares
+    (the OCR gate,
+    the corroboration threshold,
+    what is sent to a reader),
+    and names `run` and `corpus-pass` only for the reader seats and a configuration constant.
+  - `semantic-wrap-sync-spawn.md` moved to `package/translation-repair/typography/doc/semantic-wrap-sync-spawn.md`.
+    It justifies the one `oxlint-disable` in `typography/src/lint-program.ts`,
+    which cites it,
+    and names the callers in other packages only as the reason the spawn stays synchronous.
+- Docs that were considered and stay at family level:
+  `configuration.md` (credentials and settings read by `run`,
+  `provider`,
+  `corpus-source`,
+  `probe` and others),
+  `provider-availability.md`,
+  `redaction-timing.md` (a policy for all the family's docs),
+  `repetition.md` (names `assembly`,
+  the `probe` instruments and the parse in `markup`),
+  `roster-changes.md`,
+  `seats-and-calibration.md` and `slice-context.md`.
+- The old `LICENSES/` directory was removed.
+  It had no manifest,
+  every family package carries its own texts,
+  and `package/music-player` has none at its root either.
+- Living docs that cite a moved path are rewritten to the new path:
+  runbooks,
+  troubleshooting notes,
+  decisions,
+  the document map,
+  the canonical handover,
+  the prevention doc,
+  the design commitments,
+  the configuration doc,
+  TSDoc and comments,
+  and the package READMEs.
+  A source file is named `package/translation-repair/<package>/src/<path>`,
+  with the package taken from the map file or the tree;
+  a directory or glob is `package/translation-repair/*/src/...`;
+  a task is `//package/translation-repair/<package>:<task>` for its owning package,
+  and `<package>` stands for the tasks every package has (`build`,
+  `lint`,
+  `test:unit`);
+  `dist/final/node/<command>.mjs` goes with the package that owns the command.
+  A file that left the tree before the split keeps its written path with the note `(removed before 2026-10-18)`.
+  Relative Markdown links are recomputed from the new location.
+- Historical records keep the path as written,
+  with an in-place note after the path or its code span:
+  `(moved on 2026-10-18 to \`<new path>\`)`.
+  A path inside a fenced block gets no note inside the block,
+  since the block holds commands and code,
+  and a sentence after the block names each old path and its new one.
+  A Markdown link target in a historical record is the one exception:
+  it is retargeted so the link resolves,
+  and its visible text is left as written.
+  A bare `src/<path>` in a moved record names the old package's `src`:
+  a record with fewer than four such paths gets a note on each,
+  and a record with four or more gets one note at the top instead.
+  Twenty-two audit-ledger parts carry that note,
+  and the map file `doc/audit/translation-repair-package-split-map-2026-10-18.json` gives each file's current path.
+- JSON audit records under `doc/audit/` stay as written,
+  and so does every citation of `package/module/translation-repair/node_modules/.monochromatic`,
+  the kept evidence directory,
+  which is ignored by git and was not moved.
+- The source-scan docs reader (`readPackageDocPaths`) reads the family README,
+  `package/translation-repair/doc/`,
+  and each package's `README.md` and `doc/`.
+  Control:
+  the Markdown set it returns was 169 paths before the move and is 169 after;
+  mapped through the move table the two sets are identical.
+  Scan keys of the family-level docs (`doc/<name>.md`,
+  `README.md`) are unchanged,
+  since they were relative to the old package root and are now relative to the family directory.
 
 ## Controls
 
