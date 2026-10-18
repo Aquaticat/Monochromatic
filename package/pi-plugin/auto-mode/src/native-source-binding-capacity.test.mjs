@@ -64,7 +64,7 @@ for(const name of ['assertBindingIdentity','assertCurrent']){
   assert.throws(function detachedCheck(){check(first.view);},GoverningPolicyBindingError);
   assert.throws(function forgedReceiver(){check.call({...first},first.view);},GoverningPolicyBindingError);
   assert.throws(function foreignGroup(){check.call(other,other.view);},GoverningPolicyBindingError);
-  assert.throws(function accessorReceiver(){check.call({get view(){assert.fail('Unissued receiver accessed');}},first.view);},GoverningPolicyBindingError);
+  assert.throws(function accessorReceiver(){check.call({get view(){throw new Error('Unissued receiver accessed');}},first.view);},GoverningPolicyBindingError);
 }
 assert.equal(state.checks,checksBefore,'Unissued receivers must not reach governing checks');
 const replaced=Object.freeze({...snapshot,runMessageInputs:[Object.freeze({...snapshot.runMessageInputs[0]})]});
