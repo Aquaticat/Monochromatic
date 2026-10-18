@@ -51,8 +51,9 @@ fn a_clip_made_for_the_cap_fits_the_raster_limit_at_every_width_and_scale() {
                 cap >= CODE_ROW,
                 "columns {columns} scale {scale}: cap {cap}"
             );
-            let Some(clip) = band_clip(0.0, 10_000_000.0, (5_000_000.0, 5_010_000.0), cap) else {
-                panic!("columns {columns} scale {scale}: ten million pixels fit a raster");
+            let Some(clip) = band_clip(0.0, 1_000_000_000.0, (500_000_000.0, 500_010_000.0), cap)
+            else {
+                panic!("columns {columns} scale {scale}: a billion pixels fit a raster");
             };
             let rows = ((clip.bottom - clip.top).max(CODE_ROW) * scale).ceil() as u64;
             // A width where even one code row is past the limit has nothing to cut to.

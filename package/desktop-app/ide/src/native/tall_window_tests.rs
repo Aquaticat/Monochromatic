@@ -20,8 +20,9 @@ use super::wrap_tests::{open, shown};
 use super::{State, tile::requested, tile_build::PASS_GATE, viewport::place};
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;
-/// The limit one raster may not pass.
-use ide_app::text_raster::MAX_RASTER_BYTES;
+/// The code row the raster edges are rounded to,
+/// and the limit one raster may not pass.
+use ide_app::{row_map::CODE_ROW, text_raster::MAX_RASTER_BYTES};
 /// Toolkit events.
 use slint::{
     ComponentHandle, LogicalSize,
@@ -109,8 +110,17 @@ fn a_tall_window_over_unmeasured_wrapped_lines_paints_text_and_names_no_failure(
             "",
             "height {height}: the window shows a failure"
         );
-        {
+        // The view moves with the heights the tile measured, so the raster holds it once that has been applied.
+        let mut waiting = Waiting::slow();
+        let mut iterations = 0;
+        loop {
+            update_timers_and_animations();
             let current = opened.source.borrow();
+            eprintln!(
+                "TALLINFO height {height} iteration {iterations} discarded {} applied {}",
+                current.tiles_discarded, current.tiles_applied
+            );
+            iterations += 1;
             let view = current.shaped.as_ref().expect("a shown frame");
             assert!(
                 u64::from(view.width) * u64::from(view.height) * 4 <= MAX_RASTER_BYTES,
@@ -119,10 +129,20 @@ fn a_tall_window_over_unmeasured_wrapped_lines_paints_text_and_names_no_failure(
             let offset = -window.get_scroll_y();
             let top = view.origin;
             let bottom = view.origin + view.height as f32 / view.viewport.scale;
-            assert!(
-                top <= offset + 0.5 && offset + window.get_viewport_height() <= bottom + 0.5,
-                "height {height}: the raster [{top}, {bottom}] does not hold the view at {offset}"
+            if top <= offset + 0.5 && offset + window.get_viewport_height() <= bottom + 0.5 {
+                assert!(
+                    (offset - current.offset).abs() < 1.0,
+                    "height {height}: the window is at {offset} and the state at {}",
+                    current.offset
+                );
+                break;
+            }
+            let state = format!(
+                "height {height}: the raster [{top}, {bottom}] does not hold the view at {offset} (state offset {})",
+                current.offset
             );
+            drop(current);
+            waiting.step(&state);
         }
         let mut inked = false;
         for pixel in shown(window) {
@@ -192,7 +212,7 @@ fn tile_for(
     let holds = (top <= view_top + 0.5 || top <= 0.0)
         && (view_top + height <= bottom + 0.5 || bottom >= current.row_map.height() - 0.5);
     // A view that does not fit a raster of the cap cannot be held by any.
-    let holdable = height <= cap;
+    let holdable = height + 2.0 * CODE_ROW <= (cap / CODE_ROW).floor() * CODE_ROW;
     let detail = format!(
         "raster [{top}, {bottom}], view [{view_top}, {}], cap {cap}, text {}, clip {:?}, asked {:?}",
         view_top + height,
@@ -220,7 +240,7 @@ fn no_window_size_or_scale_makes_a_raster_past_the_limit() {
                 for offset in [0.0_f32, 14_000.0] {
                     let label =
                         format!("scale {scale} width {text_width} height {height} offset {offset}");
-                    let (bytes, cut, _, _) =
+                    let (bytes, cut, _, _, _) =
                         tile_for(&text, scale, text_width, height, offset, false);
                     assert!(
                         bytes <= MAX_RASTER_BYTES,

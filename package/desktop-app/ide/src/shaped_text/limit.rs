@@ -86,12 +86,26 @@ pub fn band_clip(first_top: f32, bottom: f32, band: (f32, f32), cap: f32) -> Opt
         to = from + cap;
     }
     // Whole code rows below the first line's block keep the raster on whole pixels at the usual scales.
-    let top = ((from - first_top) / CODE_ROW).floor().max(0.0) * CODE_ROW;
+    let mut top = ((from - first_top) / CODE_ROW).floor().max(0.0) * CODE_ROW;
     let mut cut = ((to - first_top) / CODE_ROW).ceil() * CODE_ROW;
     cut = cut.min(bottom - first_top).max(top + CODE_ROW);
     // The rounding must not take the raster past what the cap allows.
     let allowed = (cap / CODE_ROW).floor().max(1.0) * CODE_ROW;
-    cut = cut.min(top + allowed);
+    if cut - top > allowed {
+        // What: When the window reaches the last line, the top edge gives way, so the last row of the text stays in
+        //       the raster; otherwise the bottom edge does.
+        // Why: Rounding the top edge down must not push a raster that ends with the text short of its last row.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // if (to >= bottom - 0.5) top = Math.ceil((cut - allowed) / CODE_ROW) * CODE_ROW; else cut = top + allowed;
+        // ```
+        if to >= bottom - 0.5 {
+            top = ((cut - allowed) / CODE_ROW).ceil() * CODE_ROW;
+        } else {
+            cut = top + allowed;
+        }
+    }
     return Some(Clip { top, bottom: cut });
 }
 
