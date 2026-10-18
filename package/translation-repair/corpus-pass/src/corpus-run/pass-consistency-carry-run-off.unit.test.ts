@@ -25,11 +25,15 @@ import {
   SEAT_OPENROUTER_ONLY,
   SEAT_OPENROUTER_ONLY_CHECKER,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
-import { choose, } from '../../dist/final/node/index.mjs';
+import {
+  choose,
+  type ConsistencyCacheValue,
+} from '../../dist/final/node/index.mjs';
 import { promptUniqueClient, } from '@monochromatic-dev/translation-repair-stage/ts';
 import {
   choosing,
   type SeatBehaviour,
+  type SeatScript,
 } from '@monochromatic-dev/translation-repair-run/ts/corpus-run/consistency-page.test-fixture.ts';
 import { candidateTextsOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/consistency-sheet-reading.test-fixture.ts';
 import {
@@ -112,6 +116,137 @@ const WRITER_LABEL = OFFERS.find(function isWriter({ kind, },): boolean {
   return kind === 'writer';
 },)
   ?.label ?? '';
+
+/**
+ The bench of the scene, in roster order.
+ */
+const BENCH_OF_THREE = [SEAT_HYPER_ONLY, SEAT_BEDROCK_ONLY_TEXT, SEAT_HYPER_VISION,];
+
+/**
+ A bench that splits three ways in the first ask, one candidate for each seat, and agrees on the writer's paragraph after.
+
+ @param before - how many calls came before this one
+ @param seat - the judge asked
+ @param sheet - the sheet the judge was shown
+
+ @returns What the judge does
+
+ @example
+ ```ts
+ const scene = carryScene({ behave: splitsThreeWaysThenAgrees, },);
+ ```
+ */
+function splitsThreeWaysThenAgrees({ before, seat, sheet, }: Parameters<SeatScript>[0],): SeatBehaviour {
+  const candidates = candidateTextsOf({ sheet, },);
+  return (before < BENCH_OF_THREE.length)
+    ? choosing({ choice: candidates[BENCH_OF_THREE.indexOf(seat,) % candidates.length]?.label ?? '', },)
+    : choosing({ choice: WRITER_LABEL, },);
+}
+
+/**
+ A bench whose third seat is lost, whose other two name the first and the third candidate in the first ask, and which names the
+ last finalist after.
+
+ @param seat - the judge asked
+ @param sheet - the sheet the judge was shown
+
+ @returns What the judge does
+
+ @example
+ ```ts
+ const scene = carryScene({ behave: twoLeadersThenLastFinalist, },);
+ ```
+ */
+function twoLeadersThenLastFinalist({ seat, sheet, }: Parameters<SeatScript>[0],): SeatBehaviour {
+  if (seat === BENCH_OF_THREE[2])
+    return { kind: 'throws', };
+  const candidates = candidateTextsOf({ sheet, },);
+  if (candidates.length === OFFERS.length)
+    return choosing({ choice: (seat === BENCH_OF_THREE[0]) ? LABELS[0] ?? '' : LABELS[2] ?? '', },);
+  return choosing({ choice: candidates.at(-1,)?.label ?? '', },);
+}
+
+/**
+ What the carry choice comes to when it reads back the records an earlier run stored, each changed by a hand: the bench is
+ asked once to store the two records (the first ask and the run-off), and the carry then reads them back instead of asking.
+
+ @param behave - what the bench does when the records are first stored
+ @param change - the record to read back in place of the stored one, by the order the records were stored in
+ @param judgeModelIds - the bench, the scene's by default
+
+ @returns What the carry came to, the lines it logged, the keys the records were stored under and how often the bench was asked
+ when they were read back
+
+ @example
+ ```ts
+ const readBack = await readBackWith({ behave, change: ({ stored, }) => stored, },);
+ ```
+ */
+async function readBackWith(
+  {
+    behave,
+    change,
+  }: {
+    readonly behave: Parameters<typeof carryScene>[0]['behave'];
+    readonly change: (
+      parameters: { readonly stored: ConsistencyCacheValue; readonly position: number; },
+    ) => ConsistencyCacheValue;
+  },
+): Promise<{
+  readonly carry: Awaited<ReturnType<typeof choose>>;
+  readonly lines: readonly string[];
+  readonly keys: readonly string[];
+  readonly askedAgain: number;
+}> {
+  /**
+   The scene of the first run, whose bench stores the two records.
+   */
+  const first = carryScene({ behave, },);
+  await choose({
+    context: first.context,
+    repeat: CARRY_REPEAT,
+    chosen: first.chosen,
+    unit: first.unit,
+    offers: OFFERS,
+    findings: [],
+  },);
+  /**
+   The records read back, each as changed.
+   */
+  const resumed = new Map<string, ConsistencyCacheValue>(
+    first.persisted.map(function readBack({ key, serialized, }, position,): readonly [string, ConsistencyCacheValue] {
+      return [key, change({ stored: JSON.parse(serialized,) as ConsistencyCacheValue, position, },),];
+    },),
+  );
+  /**
+   The scene of the second run, whose bench is never to be asked.
+   */
+  const second = carryScene({
+    behave: function neverAsked(): SeatBehaviour {
+      return { kind: 'throws', };
+    },
+    resumed,
+  },);
+  /**
+   What the carry came to.
+   */
+  const carry = await choose({
+    context: second.context,
+    repeat: CARRY_REPEAT,
+    chosen: second.chosen,
+    unit: second.unit,
+    offers: OFFERS,
+    findings: [],
+  },);
+  return {
+    carry,
+    lines: second.lines,
+    keys: first.persisted.map(function keyOf({ key, },): string {
+      return key;
+    },),
+    askedAgain: second.asked.length,
+  };
+}
 
 await describe({
   name: '',
@@ -466,6 +601,150 @@ await describe({
             },).toEqual({
               decision: { kind: 'chosen', label: WRITER_LABEL, },
               ballots: [WRITER_LABEL, WRITER_LABEL, WRITER_LABEL,],
+            },);
+          },
+        },),
+        it({
+          name: 'STORES THE RUN-OFF UNDER A KEY AND A STAGE OF ITS OWN, so a stored run-off is read back apart from the first ask, '
+            + 'and LOGS THE SECOND ASK AND HOW THE RUN-OFF ENDED with the counts and the quorum it was counted with',
+          fn: async () => {
+            const readBack = await readBackWith({
+              behave: splitsThreeWaysThenAgrees,
+              change: function unchanged({ stored, },): ConsistencyCacheValue {
+                return stored;
+              },
+            },);
+            expect({
+              keys: readBack.keys.length,
+              distinct: new Set(readBack.keys,).size,
+              askedAgain: readBack.askedAgain,
+              decision: readBack.carry.carries[0]?.decision,
+              lines: readBack.lines,
+            },).toEqual({
+              keys: 2,
+              distinct: 2,
+              askedAgain: 0,
+              decision: { kind: 'chosen', label: WRITER_LABEL, },
+              lines: [
+                'info [choose] [gatherThroughCache] page-consistency-choice: resumed 3 voices',
+                'info [choose] the choice among the candidates had no strict majority (3 usable); asking the bench once more among the '
+                + `finalists ${LABELS.join(' and ',)}`,
+                'info [choose] [gatherThroughCache] page-consistency-choice-run-off: resumed 3 voices',
+                `info [choose] the run-off among the candidates counted 3 usable of 3 heard (quorum 2): ${WRITER_LABEL} won`,
+              ],
+            },);
+          },
+        },),
+        it({
+          name: 'COUNTS THE RUN-OFF WITH ITS OWN QUORUM AND RECORDS IT, a run-off whose quorum is three counting two usable choices '
+            + 'as no quorum where the first ask closed on two, and keeps the findings the run-off gathered',
+          fn: async () => {
+            const readBack = await readBackWith({
+              behave: splitsThreeWaysThenAgrees,
+              change: function runOffOfThree({ stored, position, },): ConsistencyCacheValue {
+                return (position === 1)
+                  ? {
+                    kind: 'choice',
+                    quorum: 3,
+                    voices: [
+                      { seat: SEAT_HYPER_ONLY, reason: 'The writer.', choice: WRITER_LABEL, },
+                      { seat: SEAT_BEDROCK_ONLY_TEXT, reason: 'The writer.', choice: WRITER_LABEL, },
+                    ],
+                    findings: ['a seat of the run-off was lost'],
+                  }
+                  : stored;
+              },
+            },);
+            const [carry,] = readBack.carry.carries;
+            expect({
+              decision: carry?.decision,
+              first: [carry?.usable, carry?.quorum,],
+              runOff: [carry?.runOff?.finalists, carry?.runOff?.usable, carry?.runOff?.quorum,],
+              findings: readBack.carry.findings,
+              edits: readBack.carry.edits,
+              lines: readBack.lines,
+            },).toEqual({
+              decision: { kind: 'none', reason: 'no-quorum', },
+              first: [3, 2,],
+              runOff: [LABELS, 2, 3,],
+              findings: ['a seat of the run-off was lost'],
+              edits: [],
+              lines: [
+                'info [choose] [gatherThroughCache] page-consistency-choice: resumed 3 voices',
+                'info [choose] the choice among the candidates had no strict majority (3 usable); asking the bench once more among the '
+                + `finalists ${LABELS.join(' and ',)}`,
+                'info [choose] [gatherThroughCache] page-consistency-choice-run-off: resumed 2 voices',
+                'info [choose] the run-off among the candidates counted 2 usable of 2 heard (quorum 3): no winner (no-quorum)',
+              ],
+            },);
+          },
+        },),
+        it({
+          name: 'COUNTS THE RUN-OFF AGAINST THE FINALISTS ONLY, so choices that name a candidate which was not a finalist are not '
+            + 'counted and cannot win it, even when they are the most of the run-off\'s record',
+          fn: async () => {
+            const readBack = await readBackWith({
+              behave: twoLeadersThenLastFinalist,
+              change: function strayRunOff({ stored, position, },): ConsistencyCacheValue {
+                return (position === 1)
+                  ? {
+                    kind: 'choice',
+                    quorum: 2,
+                    voices: [
+                      { seat: SEAT_HYPER_ONLY, reason: 'The second.', choice: LABELS[1] ?? '', },
+                      { seat: SEAT_BEDROCK_ONLY_TEXT, reason: 'The second.', choice: LABELS[1] ?? '', },
+                      { seat: SEAT_HYPER_VISION, reason: 'The first.', choice: LABELS[0] ?? '', },
+                    ],
+                    findings: [],
+                  }
+                  : stored;
+              },
+            },);
+            const [carry,] = readBack.carry.carries;
+            expect({
+              decision: carry?.decision,
+              runOff: [carry?.runOff?.finalists, carry?.runOff?.usable, carry?.runOff?.quorum,],
+              edits: readBack.carry.edits,
+            },).toEqual({
+              decision: { kind: 'none', reason: 'no-quorum', },
+              runOff: [[LABELS[0], LABELS[2],], 1, 2,],
+              edits: [],
+            },);
+          },
+        },),
+        it({
+          name: 'RUNS OFF NOTHING WHEN THE FIRST CHOICES MISSED THEIR QUORUM, though the two they heard name different candidates: '
+            + 'the bench is not asked again and no run-off is recorded',
+          fn: async () => {
+            const readBack = await readBackWith({
+              behave: splitsThreeWaysThenAgrees,
+              change: function missedQuorum({ stored, position, },): ConsistencyCacheValue {
+                return (position === 0)
+                  ? {
+                    kind: 'choice',
+                    quorum: 3,
+                    voices: [
+                      { seat: SEAT_HYPER_ONLY, reason: 'The first.', choice: LABELS[0] ?? '', },
+                      { seat: SEAT_BEDROCK_ONLY_TEXT, reason: 'The second.', choice: LABELS[1] ?? '', },
+                    ],
+                    findings: [],
+                  }
+                  : stored;
+              },
+            },);
+            const [carry,] = readBack.carry.carries;
+            expect({
+              decision: carry?.decision,
+              first: [carry?.usable, carry?.quorum,],
+              runOff: carry?.runOff,
+              askedAgain: readBack.askedAgain,
+              edits: readBack.carry.edits,
+            },).toEqual({
+              decision: { kind: 'none', reason: 'no-quorum', },
+              first: [2, 3,],
+              runOff: undefined,
+              askedAgain: 0,
+              edits: [],
             },);
           },
         },),

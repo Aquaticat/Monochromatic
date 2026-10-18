@@ -482,6 +482,97 @@ await describe({
           },
         },),
         it({
+          name: 'LISTS THE SHEET\'S LABELS AS THE ENUM OF THE CHOICE in the response format of the ask, the first ask and the run-off alike',
+          fn: async () => {
+            /**
+             The response format of every call, in order.
+             */
+            const formats: NonNullable<ChatJsonRequest<unknown>['responseFormat']>[] = [];
+            const client = scriptedJudgeClient({ behave: everyJudgeChooses, asked: [], sheets: [], },);
+            /**
+             The client, keeping the response format of each call.
+             */
+            const recording = {
+              ...client,
+              chatJson: function recordingFormat<ValueT,>(request: ChatJsonRequest<ValueT>,) {
+                if (request.responseFormat !== undefined)
+                  formats.push(request.responseFormat,);
+                return client.chatJson(request,);
+              },
+            };
+            for (const runOff of [false, true,]) {
+              await askCarryChoice({
+                client: recording,
+                modelIds: BENCH,
+                subject: CHOICE_SUBJECT,
+                cache: recordingCache({ resumed: new Map(), persisted: [], },),
+                signal: AbortSignal.timeout(HANG_STOP_MS,),
+                exchangeTimeoutMs: HANG_STOP_MS,
+                l: levelCapturingLogger({ lines: [], },),
+                stageSettings: SCRIPTED_STAGE_SETTINGS,
+                runOff,
+              },);
+            }
+            expect(formats.length,).toBe(BENCH.length * 2,);
+            expect(formats.map(function enumOf(format,): unknown {
+              return (format.json_schema.schema.properties as Record<string, { enum?: string[]; }>).choice?.enum;
+            },),).toEqual(formats.map(function expected(): unknown {
+              return ['CANDIDATE 1', 'CANDIDATE 2',];
+            },),);
+          },
+        },),
+        it({
+          name: 'ASKS THE RUN-OFF UNDER A STAGE AND A KEY OF ITS OWN, so its answer is stored and read back apart from the first '
+            + 'ask\'s, which asked the same bench the same candidates',
+          fn: async () => {
+            const persisted: { key: string; serialized: string; }[] = [];
+            const lines: string[] = [];
+            await askCarryChoice({
+              client: scriptedJudgeClient({ behave: everyJudgeChooses, asked: [], sheets: [], },),
+              modelIds: BENCH,
+              subject: CHOICE_SUBJECT,
+              cache: recordingCache({ resumed: new Map(), persisted, },),
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              exchangeTimeoutMs: HANG_STOP_MS,
+              l: levelCapturingLogger({ lines, },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
+              runOff: true,
+            },);
+            /**
+             The key the run-off is kept under.
+             */
+            const runOffKey = consistencyKey({
+              stage: 'choice-run-off',
+              messages: buildCarryChoiceMessages({ subject: CHOICE_SUBJECT, runOff: true, },),
+              modelIds: BENCH,
+            },);
+            expect(persisted.map(function keyOf({ key, },): string {
+              return key;
+            },),).toEqual([runOffKey,],);
+            expect(runOffKey,).not.toBe(CHOICE_KEY,);
+            // A stored record of the run-off is read back from its own key, saying its own stage.
+            const resumedLines: string[] = [];
+            const resumed = await askCarryChoice({
+              client: scriptedJudgeClient({ behave: everyJudgeChooses, asked: [], sheets: [], },),
+              modelIds: BENCH,
+              subject: CHOICE_SUBJECT,
+              cache: recordingCache({
+                resumed: new Map([[runOffKey, JSON.parse(persisted[0]?.serialized ?? 'null',) as ConsistencyCacheValue,],],),
+                persisted: [],
+              },),
+              signal: AbortSignal.timeout(HANG_STOP_MS,),
+              exchangeTimeoutMs: HANG_STOP_MS,
+              l: levelCapturingLogger({ lines: resumedLines, },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
+              runOff: true,
+            },);
+            expect({ resumed: resumed.resumed, resumedLines, },).toEqual({
+              resumed: true,
+              resumedLines: ['info [gatherThroughCache] page-consistency-choice-run-off: resumed 3 voices',],
+            },);
+          },
+        },),
+        it({
           name: 'READS BACK A STORED CHOICE INSTEAD OF ASKING, and asks again when the stored value is a writers\' record',
           fn: async () => {
             const stored: ConsistencyCacheValue = {
