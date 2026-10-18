@@ -1,10 +1,10 @@
 # Native CI job authentication for container builds
 
-Native run `dzsf27t0xx` authenticated and connected to its owned AMD64 builder,
-then failed before executing the Dockerfile because our fixture combined incompatible exporters.
-The source consumer and registry reads remain unqualified.
-Its native slot was released after fresh terminal status;
-no recovery allocation has been made.
+Native run `pxx75mxnw2` passed the actual frozen-source queue producer and exported-file consumer
+using only its automatically injected job credential.
+The initial exporter fixture failure is retained separately.
+A separately admitted image-only registry consumer remains unallocated;
+its authentication and OCI assertions must pass before claiming native registry access.
 
 ## Scope and admission
 
@@ -186,6 +186,88 @@ The proposed local-only consumer would reserve a further `USD 0.23`,
 for `USD 0.46` cumulative full-window timestamp-compute arithmetic under the admitted `USD 1` guard.
 Registry image-read authorization would remain a distinct boundary if no image were exported.
 The solely owned project remains pending exact cleanup or a separately admitted correction.
+
+## Qualified local-export correction
+
+Harness `ddf656ea992952559a975e8693668b2005583499` removed `--save` and retained only the local exporter.
+Native run `pxx75mxnw2` finished successfully,
+with fresh status at `2026-10-18T15:13:40.272Z`.
+Its attempt was `r0vm5jjk75`,
+job `wzvqphjg1w`,
+sandbox `kp101dvl5mw0wnl41726`,
+and build `xwq746tv4z`.
+The isolated missing-token control failed before admission;
+the positive ordinary CLI path used the injected token,
+created one build,
+forwarded no account-listing request,
+and completed `FinishBuild` with `200`.
+
+The pinned Node `24.22.0` producer executed the frozen first-party queue under an actual AMD64 builder
+with sixteen available CPUs and `32997224448` memory bytes.
+The native two-CPU job independently read the exported result and source,
+verified source SHA-256 `e791bea71a4c59e1d6fb17e7d2213a52f55937fe5999329864ddf76b8c0c59a5`,
+and checked FIFO execution,
+clearing/rejection,
+and the empty queue.
+The CLI command took `8301` milliseconds in this single sample.
+This is not a whole-package unit task or a performance comparison.
+
+The original ten-member ZIP is `6295` bytes,
+with SHA-256 `6049cbcdb3fa451ab0e1f269b2e5e134a9f3da51296a452bb9be4dd29199b205`.
+Its CRCs,
+API length,
+Action log digest,
+and independently retrieved frozen source bytes match.
+The artifact API supplies no digest.
+Our first local collector expected a colon in the digest message;
+the retained Action actually says `SHA256 digest of uploaded artifact zip is`.
+Correcting that selector required no cloud rerun or artifact replacement.
+
+## Separately admitted project-registry consumer
+
+The parent authorized a further image-only request before its unchanged graph samples.
+The same owned project will receive one `--save` build,
+with no local exporter and no separately named organization repository.
+The native job will use the organization registry hostname and the project-scoped repository,
+then validate the complete returned OCI index,
+child manifests,
+configuration and layer descriptors,
+decompressed runnable layer digest,
+and the exact first-party files.
+It must import and execute the extracted queue source.
+This is an OCI file consumer,
+not an ordinary container-runtime pull claim.
+
+Preflight at `2026-10-18T15:27:34.195Z` established:
+
+- The current source outside the research fixture remains identical to the frozen application.
+- The generated program parses,
+  and a malformed JavaScript control fails the checker.
+- The organization-hosted registry responds with the exact standard Bearer challenge,
+  realm `https://api.depot.dev/auth/registry/token`,
+  service `l4zncjjbj5.registry.depot.dev`,
+  and scope `repository:ng17dl3xrn:pull`.
+- An invented credential is rejected with `401`.
+- The existing local user credential obtains a repository-scoped pull token in process,
+  then receives `404` for the known absent saved image.
+  This validates the preflight transport and scope,
+  not native job authorization or existing image content.
+- The actual source bytes from the successful cloud export import and execute under the local consumer.
+
+The native runtime receives only its new injected job credential.
+Its anonymous and invented-token controls remain separate from the positive native token exchange and content reads.
+Registry credentials stay in process and are excluded from receipts.
+Redirects drop authorization when crossing origins,
+and every response is bounded to the declared tiny fixture size.
+
+The additional full-window reservation is `USD 0.23`,
+bringing conservative cumulative reservation to `USD 0.69` under the same `USD 1` campaign guard.
+The admitted shape remains one two-CPU/eight-GiB native job and one sixteen-CPU/thirty-two-GiB AMD64 builder,
+each with a five-minute server guard.
+No registry allocation has occurred at this checkpoint.
+After terminal collection,
+the solely owned project and any saved image need exact deletion/absence verification,
+then the native slot returns directly to the parent's graph campaign.
 
 [native-builds]: https://depot.dev/docs/container-builds/integrations/depot-ci
 [github-builds]: https://depot.dev/docs/container-builds/integrations/github-actions
