@@ -483,10 +483,11 @@ await describe({
           },
         },),
         it({
-          name: 'STANDS AT VERSION TWO since the sheet of the page title reading carries the house rule that quoted words keep '
-            + 'the speaker\'s tense (n161), which a reading cached under version one was written without',
+          name: 'STANDS AT VERSION THREE since the sheet of the page title reading carries the house rule that quoted words keep '
+            + 'the speaker\'s tense (n161), which a reading cached under version one was written without, and says so in the '
+            + 'very sentence that puts the life in the past (n166), which a reading cached under version two was written without',
           fn: async () => {
-            expect(PAGE_TITLE_CACHE_VERSION,).toBe(2,);
+            expect(PAGE_TITLE_CACHE_VERSION,).toBe(3,);
           },
         },),
         it({

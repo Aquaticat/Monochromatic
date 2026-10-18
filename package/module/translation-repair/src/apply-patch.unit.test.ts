@@ -6,6 +6,7 @@
  */
 
 import {
+  caught,
   DEFAULT_CONCURRENCY,
   describe,
   expect,
@@ -19,6 +20,7 @@ import {
   buildRemovableQuotes,
   deriveEditableEnvelopes,
   EnvelopeOverlapError,
+  FragmentLandingError,
   hashContent,
   type SpanAnchor,
 } from '../dist/final/node/index.mjs';
@@ -1089,6 +1091,34 @@ await describe({
               return operation.newText;
             },),).toEqual(['{...a} b="it\'s" /> It’s there.',],);
             expect(outcome.patchedText,).toBe('The dogs’ bowl. <Note {...a} b="it\'s" /> It’s there.',);
+          },
+        },),
+
+        it({
+          name: 'REFUSES AN ENVELOPE WITH NO BASE TEXT WHOSE END STANDS BEFORE ITS START with a FragmentLandingError, since the empty '
+            + 'base text matches the empty slice of a backward range and the drift check passes it (n166, Z8)',
+          fn: async () => {
+            /**
+             The one envelope, whose end is before its start.
+             */
+            const envelope = {
+              envelopeId: 'envelope/backward',
+              startOffset: 10,
+              endOffset: 5,
+              baseText: '',
+              baseHash: hashContent({ content: '', },),
+              issueIds: ['adjudicated/backward',],
+            };
+            const refusal = caught(function applyBackward(): unknown {
+              return applyPatchOperations({
+                targetText: TARGET_TEXT,
+                envelopes: [envelope,],
+                operations: [{ envelopeId: envelope.envelopeId, baseHash: envelope.baseHash, newText: 'x', },],
+                preservation: { mode: 'skip', },
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(FragmentLandingError,);
+            expect((refusal as Error).message,).toContain('lands at 10 to 5 in a slice of 72 units',);
           },
         },),
       ],

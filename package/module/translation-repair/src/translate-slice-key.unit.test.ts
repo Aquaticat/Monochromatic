@@ -72,12 +72,14 @@ const INCUMBENT_TEXT = 'The cat sleeps on the windowsill.\n';
  Version 16 reads the typography fold and the guillemet floor from the page parse (n156).
  Version 17 reads a shortcut reference and an address label as no prose and floors a refused candidate that carries a
  guillemet (n159).
+ Version 18 states in the house tense rule, in the sentence that puts the life in the past, that quoted words keep the
+ speaker's own tense (n166).
  These questions changed without input fields.
 
  The roster feeding {@link RUN_SHAPE} is invented, so a production roster change
  leaves this alone.
  */
-const LEGACY_WINDOWLESS_KEY = 'a6db752857b7648baa9ecc7e2a4f7d7639c1c37815141e14b63f9037ccf04355';
+const LEGACY_WINDOWLESS_KEY = 'e4482cebbd5141b2918d3f59cdedf3a384e1adb1029e07b6ab0445fe6af02ccc';
 
 /**
  One slice's key, with whatever this case wants to vary.

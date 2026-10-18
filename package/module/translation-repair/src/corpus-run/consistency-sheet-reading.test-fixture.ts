@@ -287,8 +287,13 @@ export function firstFinalistOf({ sheet, }: { readonly sheet: string; },): strin
  ```
  */
 export function sheetKindOf({ sheet, }: { readonly sheet: string; },): 'ballot' | 'writer' | 'choice' | 'run-off' {
-  // The choice sheet shows the words to replace as the writer's sheet does, so its own marker is read first.
-  if (sheet.includes(' (THE PARAGRAPH AS THE PAGE HAS IT NOW) ',))
+  // The choice sheet shows the words to replace as the writer's sheet does, so its own markers are read first: the
+  // current paragraph's header, which a run-off among candidates leaves out when the current paragraph did not tie, and
+  // the sentence listing the candidates' labels, which every choice sheet ends with.
+  if (
+    sheet.includes(' (THE PARAGRAPH AS THE PAGE HAS IT NOW) ',)
+    || sheet.includes('The labels you may write are exactly: CANDIDATE ',)
+  )
     return 'choice';
   if (sheet.includes('THE WORDS TO REPLACE',))
     return 'writer';

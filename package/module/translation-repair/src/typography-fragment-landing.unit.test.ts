@@ -36,6 +36,11 @@ const BAD_LANDINGS: readonly (readonly [name: string, start: number, end: number
   ['an end past the slice', 8, SLICE.length + 1,],
   ['an end before the start', 12, 8,],
   ['a negative start', -1, 4,],
+  // n166, Z8: offsets that are no whole numbers fail every comparison of the range check, so each needs its own refusal.
+  ['a start that is not a number', Number.NaN, 4,],
+  ['an end that is not a number', 4, Number.NaN,],
+  ['a fraction for each offset', 1.5, 3.5,],
+  ['a fractional end', 4, 8.5,],
 ];
 
 /**

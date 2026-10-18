@@ -56,6 +56,57 @@ function spanIn(
 }
 
 /**
+ The kind of answer the locator gives for some words in an English.
+
+ @param haystack - the English
+
+ @param words - quote that names the span
+
+ @returns `none`, `once` or `many`
+
+ @example
+ ```ts
+ const kind = kindIn({ haystack: 'The cat naps.', words: 'cat', },); // 'once'
+ ```
+ */
+function kindIn(
+  {
+    haystack,
+    words,
+  }: {
+    readonly haystack: string;
+    readonly words: string;
+  },
+): string {
+  return locateWords({ haystack, words, },).kind;
+}
+
+/**
+ The kinds of answer the locator gives for each pair of texts: one with markup written, and its twin, the text a reader sees of it.
+
+ @param rows - the text with the markup, the twin, and the words asked for
+
+ @returns The kind of answer for the text with the markup of each row, and for the twin of each row
+
+ @example
+ ```ts
+ const { kinds, twins, } = twinKindsOf({ rows: [['kit[](u)\'kit', 'kit\'kit', 'kit',],], },); // both ['none']
+ ```
+ */
+function twinKindsOf(
+  { rows, }: { readonly rows: readonly (readonly [string, string, string])[]; },
+): { readonly kinds: readonly string[]; readonly twins: readonly string[]; } {
+  return {
+    kinds: rows.map(function linkedKindOf([linked, , words,],): string {
+      return kindIn({ haystack: linked, words, },);
+    },),
+    twins: rows.map(function twinKindOf([, twin, words,],): string {
+      return kindIn({ haystack: twin, words, },);
+    },),
+  };
+}
+
+/**
  An English with the one span some words name in it replaced, as the splice
  replaces it: by the offsets the locator gives and nothing else.
 
@@ -355,6 +406,338 @@ await describe({
               locateWords({ haystack: 'The cat naps. The cat naps.', words: 'The cat naps', },),
               locateWords({ haystack: '猫猫猫', words: '猫猫', },),
             ],).toEqual([{ kind: 'many', }, { kind: 'many', },],);
+          },
+        },),
+        it({
+          name: 'FINDS NONE for the half of a word that inline code padded by one space on each side shows without the padding (n166, Z6)',
+          fn: async () => {
+            expect([
+              locateWords({ haystack: 'The ` kit `tens ate.', words: 'tens', },),
+              locateWords({ haystack: 'The kit` tens ` ate.', words: 'kit', },),
+            ],).toEqual([{ kind: 'none', }, { kind: 'none', },],);
+            expect([
+              spanIn({ haystack: 'The `kit `tens ate.', words: 'tens', },),
+              spanIn({ haystack: 'The `  kit  `tens ate.', words: 'tens', },),
+            ],).toEqual(['tens', 'tens',],);
+          },
+        },),
+        it({
+          name: 'FINDS THE WORD ONCE beside the tags of a raw element, since the parser reads them to their closing tag and they end a word '
+            + '(n166, Z7)',
+          fn: async () => {
+            expect([
+              spanIn({ haystack: 'cats<pre>dogs</pre>', words: 'cats', },),
+              spanIn({ haystack: 'cats<textarea></textarea>dogs', words: 'cats', },),
+              spanIn({ haystack: 'cats<script></script>dogs', words: 'dogs', },),
+              spanIn({ haystack: 'cats<style></style>dogs', words: 'dogs', },),
+            ],).toEqual(['cats', 'cats', 'dogs', 'dogs',],);
+          },
+        },),
+        it({
+          name: 'FINDS THE WORD ONCE after an apostrophe that follows a link whose label holds no word, since no word run reaches the '
+            + 'apostrophe (n166, Z9)',
+          fn: async () => {
+            expect([
+              spanIn({ haystack: ' [](u&#116;)\'kit', words: 'kit', },),
+              spanIn({ haystack: ' [](u "&#116;")\'kit', words: 'kit', },),
+              spanIn({ haystack: '[](u)\'kit', words: 'kit', },),
+              spanIn({ haystack: '[ ](u&#116;)\'kit', words: 'kit', },),
+              spanIn({ haystack: '[-](u&#116;)\'kit', words: 'kit', },),
+              spanIn({ haystack: '-[_](u "&#116;")\'kit', words: 'kit', },),
+              spanIn({ haystack: '![](u)\'kit', words: 'kit', },),
+            ],).toEqual(['kit', 'kit', 'kit', 'kit', 'kit', 'kit', 'kit',],);
+          },
+        },),
+        it({
+          name: 'FINDS NONE for the word after an apostrophe that a word run reaches through a link, a bracket or a letter beside an empty '
+            + 'link, as before (n166, Z9 controls)',
+          fn: async () => {
+            expect([
+              locateWords({ haystack: ' [x](u&#116;)\'kit', words: 'kit', },),
+              locateWords({ haystack: '[the cat](u)\'s bowl', words: 's bowl', },),
+              locateWords({ haystack: '(grey cat)\'s bowl', words: 's bowl', },),
+              locateWords({ haystack: 'a[](u)\'kit', words: 'kit', },),
+            ],).toEqual([{ kind: 'none', }, { kind: 'none', }, { kind: 'none', }, { kind: 'none', },],);
+          },
+        },),
+        it({
+          name: 'ANSWERS FOR A WORD AFTER AN EMPTY LINK AND AN APOSTROPHE as for the same text with no link there, whatever the link '
+            + 'writes in its destination, its title or its label, and a run of empty links as one (n168)',
+          fn: async () => {
+            /**
+             Each text with the empty link written after a word, the text a reader sees of it (no link), and the word asked for: the
+             word before the link and the word after the apostrophe are one, so the stand after the apostrophe is cut.
+             */
+            const rows: readonly (readonly [string, string, string])[] = [
+              ['kit[](u)\'kit', 'kit\'kit', 'kit',],
+              ['kit[](u&#116;)\'kit', 'kit\'kit', 'kit',],
+              ['kit[](u "t")\'kit', 'kit\'kit', 'kit',],
+              ['kit[]()\'kit', 'kit\'kit', 'kit',],
+              ['kit[](<>)\'kit', 'kit\'kit', 'kit',],
+              ['kit[][r]\'kit\n\n[r]: u', 'kit\'kit\n\n[r]: u', 'kit',],
+              ['kit[](u)[](v)\'kit', 'kit\'kit', 'kit',],
+              ['kit[](u)\'tens', 'kit\'tens', 'tens',],
+              ['kit[](u(a))\'kit', 'kit\'kit', 'kit',],
+              [String.raw`kit[](u\(a)'kit`, 'kit\'kit', 'kit',],
+              [String.raw`kit[](u\\)'kit`, 'kit\'kit', 'kit',],
+              ['kit[](<u(a>)\'kit', 'kit\'kit', 'kit',],
+              ['kit[](u "t(a)")\'kit', 'kit\'kit', 'kit',],
+              [String.raw`kit[](u "t\(a")'kit`, 'kit\'kit', 'kit',],
+              ['kit[](u \'t(a)\')\'kit', 'kit\'kit', 'kit',],
+              ['(grey cat)[](u)\'kit', '(grey cat)\'kit', 'kit',],
+              ['[the cat](x)[](u)\'kit', '[the cat](x)\'kit', 'kit',],
+            ];
+            const { kinds, twins, } = twinKindsOf({ rows, },);
+            expect(kinds,).toEqual(twins,);
+            expect(kinds,).toEqual(rows.map(function none(): string {
+              return 'none';
+            },),);
+          },
+        },),
+        it({
+          name: 'ANSWERS FOR A WORD AFTER AN EMPTY LINK AND AN APOSTROPHE, after a space, as for the same text with no link there: the '
+            + 'apostrophe starts the word, whatever the link writes, and an image with no alt text and a label with a bracket of its own '
+            + 'are read like the rest (n168)',
+          fn: async () => {
+            /**
+             Each text with the link written after a space, the text a reader sees of it, and the word asked for.
+             */
+            const rows: readonly (readonly [string, string, string])[] = [
+              ['a [](u(a))\'kit', 'a \'kit', 'kit',],
+              ['a [](u "t(a)")\'kit', 'a \'kit', 'kit',],
+              ['a [](<u(a>)\'kit', 'a \'kit', 'kit',],
+              [String.raw`a [](u\(a)'kit`, 'a \'kit', 'kit',],
+              ['a [](u)[](v)\'kit', 'a \'kit', 'kit',],
+              ['a [](u) [](v)\'kit', 'a  \'kit', 'kit',],
+              ['a ![](u)\'kit', 'a \'kit', 'kit',],
+              ['a ![][r]\'kit\n\n[r]: u', 'a \'kit\n\n[r]: u', 'kit',],
+              ['a [](u)![](v)[]()\'kit', 'a \'kit', 'kit',],
+              ['a [](u\n)\'kit', 'a \'kit', 'kit',],
+              ['a [ ](u)\'kit', 'a  \'kit', 'kit',],
+              ['a [-](u)\'kit', 'a -\'kit', 'kit',],
+              [String.raw`a [\[](u)'kit`, 'a [\'kit', 'kit',],
+            ];
+            const { kinds, twins, } = twinKindsOf({ rows, },);
+            expect(kinds,).toEqual(twins,);
+            expect(kinds,).toEqual(rows.map(function once(): string {
+              return 'once';
+            },),);
+          },
+        },),
+        it({
+          name: 'ANSWERS FOR A WORD AFTER A LINK THAT SHOWS A WORD OR A CLOSING MARK, a bracket that is no link and a link of marks as for the '
+            + 'text a reader sees there, since the apostrophe follows what is shown (n168 controls)',
+          fn: async () => {
+            /**
+             Each text, the same text read as a reader sees it (a bracket for a link), and the word asked for.
+             */
+            const rows: readonly (readonly [string, string, string])[] = [
+              ['kit[x](u)\'kit', 'kitx\'kit', 'kit',],
+              ['[the cat](u(a))\'s bowl', 'the cat\'s bowl', 's bowl',],
+              ['kit[](u(a)\'kit', 'kit(a)\'kit', 'kit',],
+              [String.raw`kit[](u\)'kit`, 'kit(a)\'kit', 'kit',],
+              ['kit[](u\nv)\'kit', 'kit(a)\'kit', 'kit',],
+              ['kit[](<u)\'kit', 'kit(a)\'kit', 'kit',],
+              ['kit[][r]\'kit', 'kit(a)\'kit', 'kit',],
+              [String.raw`a [\]](u)'kit`, 'a ]\'kit', 'kit',],
+              ['a [()](u)\'kit', 'a ()\'kit', 'kit',],
+              ['a [”](u)\'kit', 'a ”\'kit', 'kit',],
+              ['a [`-`)](u)\'kit', 'a -)\'kit', 'kit',],
+              ['a [*-* )](u)\'kit', 'a - )\'kit', 'kit',],
+              ['a [`)`-](u)\'kit', 'a )-\'kit', 'kit',],
+              ['a [*)*-](u)\'kit', 'a )-\'kit', 'kit',],
+              ['kit[ ](u)\'kit', 'kit \'kit', 'kit',],
+              ['kit[-](u)\'kit', 'kit-\'kit', 'kit',],
+              ['kit[_](u)\'kit', 'kit_\'kit', 'kit',],
+              [String.raw`kit[\[](u)'kit`, 'kit[\'kit', 'kit',],
+            ];
+            const { kinds, twins, } = twinKindsOf({ rows, },);
+            expect(kinds,).toEqual(twins,);
+          },
+        },),
+        it({
+          name: 'ANSWERS FOR A WORD BEFORE AN EMPTY LINK AND AN APOSTROPHE as for the text a reader sees: the forward reading steps over the '
+            + 'link, an image with no alt text shows nothing, a destination with a line break is part of the link, and a label of closing '
+            + 'marks closes as those marks do (n169)',
+          fn: async () => {
+            /**
+             Each text, the text a reader sees of it, and the word asked for.
+             */
+            const rows: readonly (readonly [string, string, string])[] = [
+              ['kit![](u)\'kit', 'kit\'kit', 'kit',],
+              ['kit[](u\n)\'kit', 'kit\'kit', 'kit',],
+              [String.raw`kit[\]](u)'kit`, 'kit]\'kit', 'kit',],
+              ['kit[”](u)\'kit', 'kit”\'kit', 'kit',],
+              ['kit[](u)\'kit kit', 'kit\'kit kit', 'kit',],
+            ];
+            const { kinds, twins, } = twinKindsOf({ rows, },);
+            expect(kinds,).toEqual(twins,);
+            expect(twins,).toEqual(['none', 'none', 'none', 'none', 'once',],);
+          },
+        },),
+        it({
+          name: 'ANSWERS FOR RUNS OF EMPTY LINKS, an empty link at the start or the end of the text, and an empty link beside or inside '
+            + 'emphasis as for the text a reader sees, whichever joint the neighbours make: an apostrophe, a hyphen, a full stop between '
+            + 'digits, or closing marks before an apostrophe (n169)',
+          fn: async () => {
+            /**
+             Each text, the text a reader sees of it, and the word asked for.
+             */
+            const rows: readonly (readonly [string, string, string])[] = [
+              ['kit[](u)[](v)\'kit kit', 'kit\'kit kit', 'kit',],
+              ['kit[](u)![](v)[]()\'kit kit', 'kit\'kit kit', 'kit',],
+              ['kit![][r]\'kit kit\n\n[r]: u', 'kit\'kit kit\n\n[r]: u', 'kit',],
+              ['kit[](u)-kit', 'kit-kit', 'kit',],
+              ['kit-[](u)kit', 'kit-kit', 'kit',],
+              ['kit[](u)[](v)-[](w)kit', 'kit-kit', 'kit',],
+              ['kit\'[](u)kit', 'kit\'kit', 'kit',],
+              ['kit[](u)\'[](v)kit', 'kit\'kit', 'kit',],
+              ['1[](u).5', '1.5', '1',],
+              ['[](u)kit', 'kit', 'kit',],
+              ['kit[](u)', 'kit', 'kit',],
+              ['[](u)kit[](v)', 'kit', 'kit',],
+              ['*kit*[](u)\'kit', '*kit*\'kit', 'kit',],
+              ['*kit[](u)*\'kit', '*kit*\'kit', 'kit',],
+              ['*[](u)kit*\'kit', '*kit*\'kit', 'kit',],
+              ['**kit**[](u)\'s', '**kit**\'s', 'kit',],
+              ['"kit"[](u)\'s', '"kit"\'s', 'kit',],
+              ['(kit)[](u)\'s', '(kit)\'s', 'kit',],
+              ['[kit](x)[](u)\'s', '[kit](x)\'s', 'kit',],
+              ['kit[](u)]\'kit', 'kit]\'kit', 'kit',],
+              [String.raw`kit[](u)[\]](v)'kit`, 'kit]\'kit', 'kit',],
+              [String.raw`kit[\]](u)[](v)'kit`, 'kit]\'kit', 'kit',],
+              [String.raw`kit[\]](u)[\]](v)'kit`, 'kit]]\'kit', 'kit',],
+              ['a [](u)kit', 'a kit', 'kit',],
+              ['kit[](u)(a)\'kit', 'kit(a)\'kit', 'kit',],
+            ];
+            const { kinds, twins, } = twinKindsOf({ rows, },);
+            expect(kinds,).toEqual(twins,);
+            expect(twins,).toEqual([
+              'once',
+              'once',
+              'once',
+              'none',
+              'none',
+              'none',
+              'none',
+              'none',
+              'none',
+              'once',
+              'once',
+              'once',
+              'none',
+              'none',
+              'none',
+              'none',
+              'none',
+              'none',
+              'none',
+              'none',
+              'none',
+              'none',
+              'none',
+              'once',
+              'once',
+            ],);
+          },
+        },),
+        it({
+          name: 'KEEPS THE PRESENT ANSWER for an image with an alt of only spaces or a word, a link of marks and spaces, a reference with '
+            + 'no definition, and a blank line, each as for the text a reader sees (n169 controls)',
+          fn: async () => {
+            /**
+             Each text, the text a reader sees of it, and the word asked for.
+             */
+            const rows: readonly (readonly [string, string, string])[] = [
+              ['kit![ ](u)\'kit', 'kit \'kit', 'kit',],
+              ['kit![alt](u)\'kit', 'kit alt\'kit', 'kit',],
+              ['kit![][r]\'kit', 'kit(a)\'kit', 'kit',],
+              ['kit[ ](u)\'kit', 'kit \'kit', 'kit',],
+              ['kit[-](u)\'kit', 'kit-\'kit', 'kit',],
+              ['kit[](u)\n\nkit', 'kit\n\nkit', 'kit',],
+            ];
+            const { kinds, twins, } = twinKindsOf({ rows, },);
+            expect(kinds,).toEqual(twins,);
+            expect(twins,).toEqual(['many', 'once', 'once', 'many', 'many', 'many',],);
+          },
+        },),
+        it({
+          name: 'FINDS NO WORD ENDING OR STARTING AT AN EMPTY LINK THAT LETTERS STAND BESIDE ON BOTH SIDES, since the text on the two sides '
+            + 'of the link is one word to a reader, as in the text with no link there (n169)',
+          fn: async () => {
+            /**
+             Each text, the text a reader sees of it, and the word asked for.
+             */
+            const rows: readonly (readonly [string, string, string])[] = [
+              ['kit[](u)kit', 'kitkit', 'kit',],
+              ['kit[](u)tens', 'kittens', 'kit',],
+              ['kit[](u)tens', 'kittens', 'tens',],
+              ['kit[](u)![](v)[]()kit', 'kitkit', 'kit',],
+              ['kit![][r]kit\n\n[r]: u', 'kitkit\n\n[r]: u', 'kit',],
+              ['1[](u)2', '12', '1',],
+              ['kit[](u) kit', 'kit kit', 'kit',],
+              ['kit [](u)kit', 'kit kit', 'kit',],
+              ['kit[](u)\nkit', 'kit\nkit', 'kit',],
+              ['kit[ ](u)kit', 'kit kit', 'kit',],
+              ['kit*[](u)kit*', 'kit*kit*', 'kit',],
+            ];
+            const { kinds, twins, } = twinKindsOf({ rows, },);
+            expect(kinds,).toEqual(twins,);
+            expect(twins,).toEqual(['none', 'none', 'none', 'none', 'none', 'none', 'many', 'many', 'many', 'many', 'many',],);
+          },
+        },),
+        it({
+          name: 'READS A REFERENCE WITH AN EMPTY LABEL AS A LINK where its definition stands in another slice of the page, as the page '
+            + 'shows it, and as text where the page holds no definition of that label (n169)',
+          fn: async () => {
+            /**
+             The kind of answer for a text on a page whose other slices hold some definition lines.
+             */
+            function onPage(
+              {
+                haystack,
+                words,
+                definition,
+              }: {
+                readonly haystack: string;
+                readonly words: string;
+                readonly definition: string;
+              },
+            ): string {
+              return locateWords({
+                haystack,
+                words,
+                page: {
+                  text: `${haystack}\n\n${definition}`,
+                  offset: 0,
+                },
+              },).kind;
+            }
+            expect([
+              onPage({ haystack: 'a [][r]\'kit', words: 'kit', definition: '[r]: u', },),
+              onPage({ haystack: 'kit[][r]\'kit kit', words: 'kit', definition: '[r]: u', },),
+              onPage({ haystack: 'a ![][r]\'kit', words: 'kit', definition: '[r]: u', },),
+              onPage({ haystack: 'a [][r]\'kit', words: 'kit', definition: '[x]: u', },),
+              onPage({ haystack: 'kit[][r]\'kit kit', words: 'kit', definition: '[x]: u', },),
+              kindIn({ haystack: 'a [][r]\'kit', words: 'kit', },),
+              kindIn({ haystack: 'kit[][r]\'kit kit', words: 'kit', },),
+            ],).toEqual(['once', 'once', 'once', 'none', 'many', 'none', 'many',],);
+            expect([
+              kindIn({ haystack: 'a \'kit', words: 'kit', },),
+              kindIn({ haystack: 'kit\'kit kit', words: 'kit', },),
+            ],).toEqual(['once', 'once',],);
+          },
+        },),
+        it({
+          name: 'KEEPS THE APOSTROPHE A JOINT after a link that holds a letter, and after an empty link whose own neighbour joins it '
+            + 'to the word before (n168 controls)',
+          fn: async () => {
+            expect([
+              locateWords({ haystack: 'a[x](u)\'kit', words: 'kit', },).kind,
+              locateWords({ haystack: '[the cat](u)\'s bowl', words: 's bowl', },).kind,
+              locateWords({ haystack: 'a[](u(a))\'kit', words: 'kit', },).kind,
+              locateWords({ haystack: '[a](x)[](u(a))\'kit', words: 'kit', },).kind,
+            ],).toEqual(['none', 'none', 'none', 'none',],);
           },
         },),
         it({

@@ -85,6 +85,21 @@ await describe({
         },),
 
         it({
+          name: 'THROWS for a landing whose start or end is not a whole number, which no comparison of the range check refuses (n166, Z8)',
+          fn: async () => {
+            for (const [start, end,] of [[Number.NaN, 3,], [1, Number.NaN,], [1.5, 3.5,], [1, 3.5,], [0.5, 3,],] as const) {
+              expect(caught(function landBetweenUnits(): void {
+                assertLandingInside({
+                  slice: 24,
+                  start,
+                  end,
+                },);
+              },) instanceof FragmentLandingError,).toBe(true,);
+            }
+          },
+        },),
+
+        it({
           name: 'THROWS for a landing that starts before the slice, ends past it, or ends before it starts',
           fn: async () => {
             for (const [start, end,] of [[-1, 3,], [20, 25,], [9, 3,],] as const) {

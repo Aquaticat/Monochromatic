@@ -17,8 +17,8 @@ import {
 
 import {
   choiceTallyOf,
-  CONSISTENCY_CHOICE_RESPONSE_FORMAT,
   type ConsistencyChoiceVoice,
+  consistencyChoiceResponseFormat,
   isConsistencyChoiceWire,
   isUsableChoice,
   usableChoiceFor,
@@ -69,13 +69,14 @@ await describe({
   concurrency: 1,
   children: [
     describe({
-      name: 'CONSISTENCY_CHOICE_RESPONSE_FORMAT',
+      name: consistencyChoiceResponseFormat.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'DECLARES THE REASON BEFORE THE CHOICE, both required, nothing else allowed',
+          name: 'DECLARES THE REASON BEFORE THE CHOICE, both required, nothing else allowed, and lists the labels as an enum',
           fn: async () => {
-            expect(CONSISTENCY_CHOICE_RESPONSE_FORMAT,).toEqual({
+            const format = consistencyChoiceResponseFormat({ labels: LABELS, },);
+            expect(format,).toEqual({
               type: 'json_schema',
               json_schema: {
                 name: 'page_consistency_choice',
@@ -85,15 +86,15 @@ await describe({
                   additionalProperties: false,
                   properties: {
                     reason: { type: 'string', },
-                    choice: { type: 'string', },
+                    choice: { type: 'string', enum: ['CANDIDATE 1', 'CANDIDATE 2',], },
                   },
                 },
               },
             },);
             // The order the keys are written in is the order the reply is asked in.
-            expect(JSON.stringify(CONSISTENCY_CHOICE_RESPONSE_FORMAT.json_schema.schema,),).toBe(
+            expect(JSON.stringify(format.json_schema.schema,),).toBe(
               '{"type":"object","required":["reason","choice"],"additionalProperties":false,'
-              + '"properties":{"reason":{"type":"string"},"choice":{"type":"string"}}}',
+              + '"properties":{"reason":{"type":"string"},"choice":{"type":"string","enum":["CANDIDATE 1","CANDIDATE 2"]}}}',
             );
           },
         },),

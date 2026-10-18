@@ -294,6 +294,26 @@ const WRITER_GRACE_READ_BACK = 'a window of a writer grace the case reads back: 
  Bounds that keep a value of their own, keyed `path#site: form value`.
  */
 const LISTED: Readonly<Record<string, ListedBound>> = {
+  'abandon-kind-answer-reasoning.unit.test.ts#<module>: firstByteMs: 40': {
+    count: 1,
+    bound: 'read back',
+    reason: RECORD_FIELD,
+  },
+  'abandon-kind-answer-reasoning.unit.test.ts#<module>: firstByteMs: 5': {
+    count: 1,
+    bound: 'read back',
+    reason: RECORD_FIELD,
+  },
+  'abandon-kind-answer-reasoning.unit.test.ts#<module>: firstByteMs: 812': {
+    count: 1,
+    bound: 'read back',
+    reason: RECORD_FIELD,
+  },
+  'abandon-kind-answer-reasoning.unit.test.ts#cutAfter: firstByteMs: firstByteMs': {
+    count: 1,
+    bound: 'other',
+    reason: HANDED_ON,
+  },
   'abandon-kind.unit.test.ts#<module>: firstByteMs: -1': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
   'abandon-kind.unit.test.ts#<module>: firstByteMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
   'abandon-kind.unit.test.ts#cutWith: firstByteMs: firstByteMs': { count: 1, bound: 'other', reason: HANDED_ON, },

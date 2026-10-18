@@ -14,12 +14,16 @@
  */
 
 import {
+  caught,
   describe,
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { groupLine, } from '../../dist/final/node/index.mjs';
+import {
+  ConsistencyInvariantError,
+  groupLine,
+} from '../../dist/final/node/index.mjs';
 
 //region Fixtures
 
@@ -157,6 +161,7 @@ await describe({
           name: 'COUNTS every outcome, so the columns add up to the places placed',
           fn: async () => {
             const line = groupLine({
+              groupNumber: 1,
               group: groupOf({
                 outcomes: ['chosen', 'replaced', 'consistent', 'kept-context', 'kept-floor', 'kept-current', 'overlapped', 'unlocated', 'untouched',],
                 verdict: asked({ winner: { kind: 'chosen', label: 'OCCURRENCE 1', }, },),
@@ -184,6 +189,7 @@ await describe({
           name: 'NAMES NO REASON for a group whose places a column counts (replaced, floored, consistent)',
           fn: async () => {
             const line = groupLine({
+              groupNumber: 1,
               group: groupOf({
                 outcomes: ['chosen', 'replaced', 'replaced', 'kept-floor', 'consistent',],
                 verdict: asked({ winner: { kind: 'chosen', label: 'OCCURRENCE 1', }, },),
@@ -203,6 +209,7 @@ await describe({
             name: `NAMES the reason ${reason}`,
             fn: async () => {
               const line = groupLine({
+                groupNumber: 1,
                 group: groupOf({ outcomes: ['untouched', 'untouched',], verdict: { kind: 'not-asked', reason, }, },),
               },);
               expect(becauseOf({ line, },),).toBe(`not-asked:${reason}`,);
@@ -215,6 +222,7 @@ await describe({
           name: 'NAMES NO REASON where the group was already consistent, whose places the consistent column counts',
           fn: async () => {
             const line = groupLine({
+              groupNumber: 1,
               group: groupOf({ outcomes: ['consistent', 'consistent',], verdict: { kind: 'not-asked', reason: 'consistent', }, },),
             },);
             expect(line,).not.toContain('because=',);
@@ -226,6 +234,7 @@ await describe({
           name: 'NAMES the failure of a group that trouble stopped',
           fn: async () => {
             const line = groupLine({
+              groupNumber: 1,
               group: groupOf({ outcomes: ['untouched', 'untouched', 'untouched',], verdict: { kind: 'failed', detail: 'TimeoutError', }, },),
             },);
             expect(becauseOf({ line, },),).toBe('failed:TimeoutError',);
@@ -241,6 +250,7 @@ await describe({
           name: `NAMES the winner reason ${reason}, the four places untouched`,
           fn: async () => {
             const line = groupLine({
+              groupNumber: 1,
               group: groupOf({
                 outcomes: ['untouched', 'untouched', 'untouched', 'untouched',],
                 verdict: asked({ winner: { kind: 'none', reason, }, },),
@@ -262,6 +272,7 @@ await describe({
             name: `NAMES the carry reason ${reason}, three places kept-current beside the chosen one (the shape of TianqiChen66624 group 1)`,
             fn: async () => {
               const line = groupLine({
+                groupNumber: 1,
                 group: groupOf({
                   outcomes: ['chosen', 'kept-current', 'kept-current', 'kept-current',],
                   verdict: asked({ winner: { kind: 'chosen', label: 'OCCURRENCE 1', }, },),
@@ -282,6 +293,7 @@ await describe({
           name: 'NAMES a carry that failed',
           fn: async () => {
             const line = groupLine({
+              groupNumber: 1,
               group: groupOf({
                 outcomes: ['chosen', 'kept-current',],
                 verdict: asked({ winner: { kind: 'chosen', label: 'OCCURRENCE 1', }, },),
@@ -296,6 +308,7 @@ await describe({
           name: 'NAMES a choice that kept the English as it stands',
           fn: async () => {
             const line = groupLine({
+              groupNumber: 1,
               group: groupOf({
                 outcomes: ['chosen', 'kept-current',],
                 verdict: asked({ winner: { kind: 'chosen', label: 'OCCURRENCE 1', }, },),
@@ -310,6 +323,7 @@ await describe({
           name: 'NAMES a splice that cannot reach the place, because the place has no words code can move',
           fn: async () => {
             const line = groupLine({
+              groupNumber: 1,
               group: groupOf({
                 outcomes: ['chosen', 'kept-current',],
                 verdict: asked({ winner: { kind: 'chosen', label: 'OCCURRENCE 1', }, },),
@@ -334,6 +348,7 @@ await describe({
             name: `NAMES the recorded reason ${reason} ahead of the carry's decision`,
             fn: async () => {
               const line = groupLine({
+                groupNumber: 1,
                 group: groupOf({
                   outcomes: ['chosen', 'kept-current',],
                   verdict: asked({ winner: { kind: 'chosen', label: 'OCCURRENCE 1', }, },),
@@ -350,6 +365,7 @@ await describe({
           name: 'NAMES a place with no carry record, rather than guessing',
           fn: async () => {
             const line = groupLine({
+              groupNumber: 1,
               group: groupOf({
                 outcomes: ['chosen', 'kept-current',],
                 verdict: asked({ winner: { kind: 'chosen', label: 'OCCURRENCE 1', }, },),
@@ -363,6 +379,7 @@ await describe({
           name: 'LISTS each distinct reason once, in the order the places stand, when places differ',
           fn: async () => {
             const line = groupLine({
+              groupNumber: 1,
               group: groupOf({
                 outcomes: ['chosen', 'replaced', 'kept-current', 'kept-current', 'kept-current',],
                 verdict: asked({ winner: { kind: 'chosen', label: 'OCCURRENCE 1', }, },),
@@ -376,6 +393,172 @@ await describe({
             expect(becauseOf({ line, },),).toBe('carry:no-majority,carry:failed',);
             expect(line,).toContain(' replaced=1',);
             expect(line,).toContain(' kept-current=3',);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'a kept-current place whose carry offered no splice (n166, Z1)',
+      children: [
+        it({
+          name: 'NAMES the carry decision and not the recorded edge reason, where the carry offered the writers and the current text '
+            + 'and the bench kept the current text',
+          fn: async () => {
+            const line = groupLine({
+              groupNumber: 1,
+              group: groupOf({
+                outcomes: ['chosen', 'kept-current',],
+                verdict: asked({ winner: { kind: 'chosen', label: 'OCCURRENCE 1', }, },),
+                carries: [carryOf({ position: 1, decision: { kind: 'chosen', label: 'CANDIDATE 1', }, kinds: ['current', 'writer',], },),],
+                keptBecause: { 1: 'edge-second-mark', },
+              },),
+            },);
+            expect(becauseOf({ line, },),).toBe('carry:chose-current',);
+            expect(line,).not.toContain('kept:',);
+          },
+        },),
+
+        ...([
+          'gain-pairs',
+          'gain-unproves',
+          'gain-floors',
+          'gain-overlaps',
+          'gain-refused',
+          'edge-second-mark',
+          'edge-reading-changes',
+          'edge-reference-mark',
+        ] as const).map(function notOffered(reason,) {
+          return it({
+            name: `NAMES the carry decision, not the recorded reason ${reason}, where no candidate of the carry is the splice`,
+            fn: async () => {
+              const line = groupLine({
+                groupNumber: 1,
+                group: groupOf({
+                  outcomes: ['chosen', 'kept-current',],
+                  verdict: asked({ winner: { kind: 'chosen', label: 'OCCURRENCE 1', }, },),
+                  carries: [carryOf({ position: 1, decision: { kind: 'none', reason: 'no-majority', }, kinds: ['current', 'writer',], },),],
+                  keptBecause: { 1: reason, },
+                },),
+              },);
+              expect(becauseOf({ line, },),).toBe('carry:no-majority',);
+            },
+          },);
+        },),
+
+        it({
+          name: 'NAMES the carry record as missing, not the recorded reason, where the record holds no carry for a place that has a reason',
+          fn: async () => {
+            const line = groupLine({
+              groupNumber: 1,
+              group: groupOf({
+                outcomes: ['chosen', 'kept-current',],
+                verdict: asked({ winner: { kind: 'chosen', label: 'OCCURRENCE 1', }, },),
+                keptBecause: { 1: 'edge-second-mark', },
+              },),
+            },);
+            expect(becauseOf({ line, },),).toBe('carry:unrecorded',);
+          },
+        },),
+
+        it({
+          name: 'NAMES the recorded reason for a place whose carry offered the splice and the carry decision for one whose carry did not, '
+            + 'in the order the places stand',
+          fn: async () => {
+            const line = groupLine({
+              groupNumber: 1,
+              group: groupOf({
+                outcomes: ['chosen', 'kept-current', 'kept-current',],
+                verdict: asked({ winner: { kind: 'chosen', label: 'OCCURRENCE 1', }, },),
+                carries: [
+                  carryOf({ position: 1, decision: { kind: 'chosen', label: 'CANDIDATE 2', }, },),
+                  carryOf({ position: 2, decision: { kind: 'none', reason: 'no-majority', }, kinds: ['current', 'writer',], },),
+                ],
+                keptBecause: { 1: 'edge-second-mark', 2: 'edge-second-mark', },
+              },),
+            },);
+            expect(becauseOf({ line, },),).toBe('kept:edge-second-mark,carry:no-majority',);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'a record the pass cannot produce (n166, Z2)',
+      children: [
+        it({
+          name: 'THROWS an invariant error naming the group and the place when the carry chose a label no candidate of the record holds',
+          fn: async () => {
+            const refusal = caught(function unexplainedLabel(): unknown {
+              return groupLine({
+                groupNumber: 2,
+                group: groupOf({
+                  outcomes: ['chosen', 'kept-current',],
+                  verdict: asked({ winner: { kind: 'chosen', label: 'OCCURRENCE 1', }, },),
+                  carries: [carryOf({ position: 1, decision: { kind: 'chosen', label: 'CANDIDATE 9', }, },),],
+                },),
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
+            expect(String(refusal,),).toBe(
+              'ConsistencyInvariantError: unreachable: group 2 OCCURRENCE 2 ended kept-current and its carry chose CANDIDATE 9, '
+              + 'which is not among the candidates the carry recorded (2 recorded)',
+            );
+          },
+        },),
+
+        it({
+          name: 'THROWS an invariant error naming the group and the place when a writer text was chosen for a place that ended kept-current',
+          fn: async () => {
+            const refusal = caught(function writerOnKeptPlace(): unknown {
+              return groupLine({
+                groupNumber: 2,
+                group: groupOf({
+                  outcomes: ['chosen', 'kept-current',],
+                  verdict: asked({ winner: { kind: 'chosen', label: 'OCCURRENCE 1', }, },),
+                  carries: [carryOf({ position: 1, decision: { kind: 'chosen', label: 'CANDIDATE 3', }, kinds: ['current', 'splice', 'writer',], },),],
+                },),
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
+            expect(String(refusal,),).toBe(
+              'ConsistencyInvariantError: unreachable: group 2 OCCURRENCE 2 ended kept-current and its carry chose CANDIDATE 3, a '
+              + 'writer text, and a writer text that is chosen replaces every receiving place of its block',
+            );
+          },
+        },),
+
+        it({
+          name: 'THROWS an invariant error naming the group and the place when a verdict that named no winner stands beside a replaced place',
+          fn: async () => {
+            const refusal = caught(function replacedWithoutWinner(): unknown {
+              return groupLine({
+                groupNumber: 2,
+                group: groupOf({
+                  outcomes: ['untouched', 'replaced',],
+                  verdict: asked({ winner: { kind: 'none', reason: 'no-quorum', }, },),
+                },),
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
+            expect(String(refusal,),).toBe(
+              'ConsistencyInvariantError: unreachable: group 2 holds a verdict that named no winner (no-quorum) and OCCURRENCE 2 ended '
+              + 'replaced, and a group whose bench named no winner replaces no place',
+            );
+          },
+        },),
+
+        it({
+          name: 'DOES NOT THROW for a no-winner verdict whose places all stood, the case every group of that verdict is',
+          fn: async () => {
+            const line = groupLine({
+              groupNumber: 2,
+              group: groupOf({
+                outcomes: ['untouched', 'untouched',],
+                verdict: asked({ winner: { kind: 'none', reason: 'no-quorum', }, },),
+              },),
+            },);
+            expect(becauseOf({ line, },),).toBe('no-winner:no-quorum',);
           },
         },),
       ],

@@ -478,6 +478,25 @@ function rowWithSortedBallots({ row, }: { readonly row: SortableDocument; },): S
 }
 
 /**
+ JSON text as the writer of the run formats it: the parsed text written again with an indent of two spaces, and a newline after it
+ where the writer ends its file with one. Compared with the text on disk, it fails when the writer drops the indent or the final
+ newline, which a compare that parses both sides cannot see.
+
+ @param text - JSON text as the run wrote it
+ @param newline - whether the writer ends the file with a newline
+
+ @returns The text in the writer's format
+
+ @example
+ ```ts
+ const formatted = formatterOutputOf({ text: '{"a":1}', newline: true, },); // '{\n  "a": 1\n}\n'
+ ```
+ */
+function formatterOutputOf({ text, newline, }: { readonly text: string; readonly newline: boolean; },): string {
+  return `${JSON.stringify(JSON.parse(text,), undefined, 2,)}${newline ? '\n' : ''}`;
+}
+
+/**
  A row, or a document of rows, as JSON text with every row's ballots sorted by judge. The ballots are kept in the order the
  prompt-rotated bench answered, which moved when the house tense rule changed the prompt, so both the text the run kept and the
  text the test expects are read in one order.
@@ -809,25 +828,37 @@ await describe({
             /**
              Each row's file text, one per position, written as the row completed.
              */
-            const rowFiles = await Promise.all(FOUR_ROWS.map(async function readRowFile(_row, position,): Promise<string> {
-              return ballotsSorted({
-                text: await readFile(
-                  join(
-                    runDir,
-                    `row-${String(position,)}.json`,
-                  ),
-                  'utf8',
+            const rowTexts = await Promise.all(FOUR_ROWS.map(async function readRowText(_row, position,): Promise<string> {
+              return await readFile(
+                join(
+                  runDir,
+                  `row-${String(position,)}.json`,
                 ),
-              },);
+                'utf8',
+              );
             },),);
-            expect(rowFiles,).toEqual(FOUR_ROWS.map(function rowText(row,): string {
+            /**
+             The text of the kept run.
+             */
+            const keptText = await readFile(
+              keptAt,
+              'utf8',
+            );
+            expect(rowTexts.map(function sortedRow(text,): string {
+              return ballotsSorted({ text, },);
+            },),).toEqual(FOUR_ROWS.map(function rowText(row,): string {
               return ballotsSorted({ text: JSON.stringify(row,), },);
             },),);
+            // THE FORMAT ON DISK, beside the content compare that reads every ballot in model-id order (n166, Z3): each row file and
+            // the kept file are the two-space JSON the writer produces, with no newline after it, and the text the run handed to its
+            // writer is that JSON with one newline after it.
+            expect(rowTexts.map(function formatted(text,): string {
+              return formatterOutputOf({ text, newline: false, },);
+            },),).toEqual(rowTexts,);
+            expect(formatterOutputOf({ text: keptText, newline: false, },),).toBe(keptText,);
+            expect(formatterOutputOf({ text: seen.written, newline: true, },),).toBe(seen.written,);
             expect(ballotsSorted({
-              text: await readFile(
-                keptAt,
-                'utf8',
-              ),
+              text: keptText,
             },),).toBe(ballotsSorted({
               text: JSON.stringify({
                 startedAt: STARTED_AT,
@@ -957,6 +988,7 @@ await describe({
             expect(ballotsSorted({ text: seen.written, },),).toBe(ballotsSorted({
               text: JSON.stringify({ rows: [FOUR_ROWS[0],], },),
             },),);
+            expect(formatterOutputOf({ text: seen.written, newline: true, },),).toBe(seen.written,);
           },
         },),
       ],

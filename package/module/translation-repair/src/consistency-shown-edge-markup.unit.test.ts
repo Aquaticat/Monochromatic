@@ -135,6 +135,40 @@ const INLINE_CODE_ROWS: readonly Row[] = [
   ['The kit `tens` ate.', 'kit', false,],
 ];
 
+/**
+ Rows that Z6 names: inline code padded by one space on each side (content not all spaces) shows the code word without the padding,
+ as CommonMark strips it, so the code word runs on into the text beside it. A space on one side only, a space beside spaces only and
+ a second space on each side are shown, and stand between the words.
+ */
+const PADDED_CODE_ROWS: readonly Row[] = [
+  ['The ` kit `tens ate.', 'tens', true,],
+  ['The kit` tens ` ate.', 'kit', true,],
+  ['The `` kit ``tens ate.', 'tens', true,],
+  ['The kit`` tens `` ate.', 'kit', true,],
+  // Controls: the padding is kept where CommonMark keeps it.
+  ['The ` kit`tens ate.', 'tens', true,],
+  ['The kit` tens` ate.', 'kit', false,],
+  ['The `kit `tens ate.', 'tens', false,],
+  ['The `  `tens ate.', 'tens', false,],
+  ['The `  kit  `tens ate.', 'tens', false,],
+];
+
+/**
+ Rows that Z7 names: the four raw elements (`pre`, `textarea`, `script`, `style`) end a word at each of their tags.
+ */
+const RAW_ELEMENT_ROWS: readonly Row[] = [
+  ['cats<pre>dogs</pre>', 'cats', false,],
+  ['cats<pre>dogs</pre>', 'dogs', false,],
+  ['cats<textarea></textarea>dogs', 'cats', false,],
+  ['cats<textarea></textarea>dogs', 'dogs', false,],
+  ['cats<script></script>dogs', 'cats', false,],
+  ['cats<script></script>dogs', 'dogs', false,],
+  ['cats<style></style>dogs', 'cats', false,],
+  ['cats<style></style>dogs', 'dogs', false,],
+  ['cats<PRE>dogs</PRE>', 'cats', false,],
+  ['cats<pre class="x">dogs</pre>', 'dogs', false,],
+];
+
 await describe({
   name: 'the shown-text word test, hidden stretches, boundaries and inline code',
   concurrency: 1,
@@ -143,6 +177,8 @@ await describe({
     ['Y2: separating and annotating markup is a word boundary', BOUNDARY_ROWS,],
     ['Y2: a tag that wraps text stays transparent', WRAPPING_ROWS,],
     ['Y4: the content of inline code is shown', INLINE_CODE_ROWS,],
+    ['Z6: the one padding space of inline code is not shown', PADDED_CODE_ROWS,],
+    ['Z7: the tags of a raw element are a word boundary', RAW_ELEMENT_ROWS,],
   ] as const).map(function groupOf([name, rows,],) {
     return describe({
       name,

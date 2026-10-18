@@ -1524,7 +1524,7 @@ await describe({
                 voiceOf({ seat: 'a', },),
                 voiceOf({ seat: 'b', },),
                 voiceOf({ seat: 'c', over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'The kitten slept', },], }, },),
-                voiceOf({ seat: 'd', over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'the', },], }, },),
+                voiceOf({ seat: 'd', over: { quotes: [{ label: 'OCCURRENCE 1', quote: 'purred loudly', },], }, },),
               ],
               quorum: 3,
             },);

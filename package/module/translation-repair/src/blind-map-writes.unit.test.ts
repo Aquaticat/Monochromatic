@@ -503,6 +503,26 @@ const ALLOWED_BLIND_SETS: ReadonlyMap<string, string> = new Map<string, string>(
     'the key is the tree node that opens a run, and each run of unpositioned text has its own first member',
   ],
   [
+    'consistency-folded-links.ts#foldedLinksOf: emptyStarts.set(last,...)',
+    'the key is the folded unit of the last character of a link the parse positions, and no two links end at the same character '
+    + 'of the English, since a link ends where its own closing bracket stands',
+  ],
+  [
+    'consistency-folded-links.ts#foldedLinksOf: emptyEnds.set(first,...)',
+    'the key is the folded unit of the first character of a link the parse positions, and no two links start at the same character '
+    + 'of the English, since a link starts where its own opening bracket stands',
+  ],
+  [
+    'consistency-folded-links.ts#foldedLinksOf: closingSpans.set(first,...)',
+    'the key is the folded unit of the first character of a link the parse positions, and no two links start at the same character '
+    + 'of the English, since a link starts where its own opening bracket stands',
+  ],
+  [
+    'consistency-link-twin.ts#settlePending: removedBefore.set(units.length,...)',
+    'the key is the number of units the twin holds when the links taken out are settled, which grows with the next unit written, so '
+    + 'no two settlements share a key',
+  ],
+  [
     'consistency-page-english.ts#pageOfSlices: offsets.set(slice.sliceIndex,...)',
     'one write per slice of the list the pass builds from the prepared slices, whose indexes `assertSliceIndexing` holds distinct',
   ],

@@ -16,7 +16,11 @@ import {
 
 import {
   armLines,
+  AUDIT_ARMS,
+  AUDIT_SOURCE_TEXT,
+  buildRenderingAuditMessages,
   keptLine,
+  rotatedBench,
   RUN_MODELS,
   sightedVoices,
   voiceLines,
@@ -38,17 +42,19 @@ const SECOND = nonNullishOrThrow(RUN_MODELS.checkerModelIds[1],);
 const THIRD = nonNullishOrThrow(RUN_MODELS.checkerModelIds[2],);
 
 /**
- The auditors of the flipped arm in the order the report lists them. The auditors are asked from a bench rotated by the prompt,
- so the order they answer in moves whenever a sheet's wording does (n161: the house tense rule); the cases that script the first,
- second and third voice of a report name the voices by that order.
+ The auditors of the flipped arm in the order the report lists them: the roster seated from the bench the prompt rotates
+ (`rotatedBench`, `stage-fanout-window.ts`), taken from the prompt the audit builds for the flipped rendering and from no report, so
+ a report that lists its voices in another order fails (n166, Z3). The order moves whenever a sheet's wording does (n161: the house
+ tense rule); the cases that script the first, second and third voice of a report name the voices by that order.
  */
-const ASKED = (await auditReportOver({
-  reportFor: function quiet() {
-    return QUIET_AUDIT_REPORT;
-  },
-  clean: false,
-},)).rows.map(function modelOf(row,): string {
-  return row.modelId;
+const ASKED = rotatedBench({
+  modelIds: RUN_MODELS.checkerModelIds,
+  messages: buildRenderingAuditMessages({
+    subject: {
+      sourceText: AUDIT_SOURCE_TEXT,
+      candidateText: nonNullishOrThrow(AUDIT_ARMS[0],).candidateText,
+    },
+  },),
 },);
 const ASKED_FIRST = nonNullishOrThrow(ASKED[0],);
 const ASKED_SECOND = nonNullishOrThrow(ASKED[1],);
@@ -58,6 +64,31 @@ await describe({
   name: '',
   concurrency: DEFAULT_CONCURRENCY,
   children: [
+    describe({
+      name: 'the order of the voices',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'LISTS the voices of a report in the order the rotated bench is asked, which the other cases of this file name them by (n166, Z3)',
+          fn: async () => {
+            /**
+             A report of the flipped arm with every voice quiet.
+             */
+            const report = await auditReportOver({
+              reportFor: function quiet() {
+                return QUIET_AUDIT_REPORT;
+              },
+              clean: false,
+            },);
+            expect(report.rows.map(function modelOf(row,): string {
+              return row.modelId;
+            },),).toEqual(ASKED,);
+            expect([...ASKED,].toSorted(),).toEqual([FIRST, SECOND, THIRD,].toSorted(),);
+          },
+        },),
+      ],
+    },),
+
     describe({
       name: voiceLines.name,
       concurrency: DEFAULT_CONCURRENCY,

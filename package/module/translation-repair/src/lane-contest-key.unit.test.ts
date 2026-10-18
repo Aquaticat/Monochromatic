@@ -99,7 +99,10 @@ await describe({
         // eligibility validator read prose guillemets from the page parse.
         // Version 8 (2026-10-15, n159) re-keys every ballot cast before the
         // validator refused a refused candidate that carries a guillemet.
-        expect(key,).toBe('fb873f8bdb2b9a99ed145173661ff296db363df19a0c1b0327d9064084e8d087',);
+        // Version 9 (2026-10-15, n166) re-keys every ballot cast before the
+        // house tense rule said, in the sentence that puts the life in the past,
+        // that quoted words keep the speaker's own tense.
+        expect(key,).toBe('7032283619d38ee8b69dd96d6c91f2b2cacc4ef1b09a4f165f96c053df0d1287',);
       },
     },),
     it({

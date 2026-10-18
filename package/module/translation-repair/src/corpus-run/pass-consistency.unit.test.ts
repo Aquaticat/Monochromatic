@@ -1611,6 +1611,15 @@ await describe({
               logged: [`info [runPassConsistency] [decideAskedGroup] asking the bench once more: ${reason}`,],
               recorded: [`group 2: run-off asked: ${reason}`,],
             },);
+            // ONE LINE FOR THE RUN-OFF'S FINAL COUNT: how many of the choices heard were usable, the quorum, and the winner.
+            expect(lines.filter(function countsRunOff(line,): boolean {
+              return line.includes('the run-off counted',);
+            },),).toEqual([
+              'info [runPassConsistency] [decideAskedGroup] the run-off counted '
+              + `${String(refrain.verdict.kind === 'asked' ? refrain.verdict.runOff?.usable : -1,)} usable of `
+              + `${String(refrain.verdict.kind === 'asked' ? refrain.verdict.runOff?.ballots.length : -1,)} heard `
+              + `(quorum ${String(refrain.verdict.kind === 'asked' ? refrain.verdict.runOff?.quorum : -1,)}): OCCURRENCE 1 won`,
+            ],);
             const runOffSheets = run.sheets.filter(function isRunOff(sheet,): boolean {
               return sheetKindOf({ sheet, },) === 'run-off';
             },);
@@ -2735,7 +2744,8 @@ await describe({
           },
         },),
         it({
-          name: 'KEEPS THE PAGE\'S ENGLISH WHEN THE BENCH HAS NO MAJORITY AMONG THE CANDIDATES, recording why',
+          name: 'KEEPS THE PAGE\'S ENGLISH WHEN THE BENCH HAS NO MAJORITY AMONG THE CANDIDATES TWICE: the split is run off '
+            + 'among the tied candidates, the run-off splits again, and the carry records why',
           fn: async () => {
             await using dir = await scratchDir({ prefix: 'pass-consistency-', },);
             const run = await runCatPass({
@@ -2762,11 +2772,15 @@ await describe({
               slices: run.consistency.slices,
               decision: carry.decision,
               usable: carry.usable,
+              runOffFinalists: carry.runOff?.finalists,
+              runOffUsable: carry.runOff?.usable,
             },).toEqual({
               outcomes: ['chosen', 'kept-current',],
               slices: [],
               decision: { kind: 'none', reason: 'no-majority', },
               usable: 4,
+              runOffFinalists: ['CANDIDATE 1', 'CANDIDATE 2',],
+              runOffUsable: 4,
             },);
           },
         },),
@@ -2901,7 +2915,9 @@ await describe({
             /**
              The seat each sheet was shown to and the sheet, of the questions of one kind.
              */
-            function askedAbout({ kind, }: { readonly kind: 'writer' | 'choice'; },): readonly (readonly [string, string])[] {
+            function askedAbout(
+              { kind, }: { readonly kind: 'ballot' | 'writer' | 'choice'; },
+            ): readonly (readonly [string, string])[] {
               return run.sheets
                 .map(function pairOf(sheet, at,): readonly [string, string] {
                   return [run.asked[at] ?? '', sheet,];
@@ -2931,6 +2947,9 @@ await describe({
             const currentBlock = `${TWO_IN_BLOCK_WORDS[0]}. The kitchen was warm. ${TWO_IN_BLOCK_WORDS[1]}.`;
             const writtenBlock = `${TWO_IN_BLOCK_WORDS[2]}.\nThe kitchen felt warm.\n${TWO_IN_BLOCK_WORDS[2]}.`;
             const splicedBlock = `${TWO_IN_BLOCK_WORDS[2]}. The kitchen was warm. ${TWO_IN_BLOCK_WORDS[2]}.`;
+            // The choice asks its bench in an order the prompt rotates, and stops once the quorum is heard, so which of the
+            // judges the script makes throw are asked moves with the sheet's text; the four that answer are always asked.
+            const choiceSeats = seatsOf({ pairs: choicePairs, },);
             expect({
               outcomes: outcomesOf({ consistency: run.consistency, group: 0, },),
               changed: changedTexts({ consistency: run.consistency, },),
@@ -2948,7 +2967,12 @@ await describe({
               sameChoice: JSON.stringify(group.carries?.[0]?.decision,) === JSON.stringify(group.carries?.[1]?.decision,),
               writerSeats: seatsOf({ pairs: writerPairs, }),
               writerSheets: distinctSheetsOf({ pairs: writerPairs, }),
-              choiceSeats: seatsOf({ pairs: choicePairs, }),
+              choiceSeatsOffBench: choiceSeats.filter(function offBench(seat,): boolean {
+                return !RUN_LATE_JUDGES.includes(seat as RosterModelId,);
+              },),
+              answeringAsked: RUN_LATE_JUDGES.slice(0, 4,).every(function asked(seat,): boolean {
+                return choiceSeats.includes(seat,);
+              },),
               choiceSheets: distinctSheetsOf({ pairs: choicePairs, }),
               placesShown: writerPairs.every(function showsBoth([, sheet,],): boolean {
                 return (sheetBlockOf({ sheet, label: 'THIS PLACE 1: ORIGINAL', },) !== '')
@@ -2967,22 +2991,79 @@ await describe({
               sameChoice: true,
               writerSeats: [...RUN_TRANSLATORS,].toSorted(),
               writerSheets: 1,
-              choiceSeats: [...RUN_LATE_JUDGES,].toSorted(),
+              choiceSeatsOffBench: [],
+              answeringAsked: true,
               choiceSheets: 1,
               placesShown: true,
             },);
-            // The seats the script makes throw are the only findings: four judges of the first round, six writers and four
-            // judges of the choice, each a lost voice, and the quorums the rest closed on.
-            // The first round asks five judges from a bench the prompt rotates (it moved when the house tense rule changed the
-            // prompt), so which of the late judges the script makes throw is among the five moves with the sheet. One of them is
-            // lost, and it leads the findings.
-            expect(RUN_LATE_JUDGES
-              .slice(4,)
-              .map(function lostFirst(seat,): string {
-                return `group 1: stage-voice-lost (page-consistency ${seat})`;
-              },),).toContain(run.consistency.findings[0],);
-            expect(run.consistency.findings.slice(1,),).toEqual([
-              'group 1: stage-roster-incomplete (page-consistency 4/5)',
+            // The seats the script makes throw are the only findings: judges of the first round and of the choice, six
+            // writers, each a lost voice, and the quorums the rest closed on.
+            // Both rounds ask their bench in an order the prompt rotates (it moved when the house tense rule changed the prompt,
+            // and when the sheets came to list their labels), and stop once the four that answer are heard, so which of the
+            // judges the script makes throw are asked, and which of those are lost before the quorum closes, move with the
+            // sheet. What holds whatever the order: each lost voice is a throwing judge the round asked, in roster order, and the
+            // round's ratio counts every judge it asked.
+            const ballotSeats = seatsOf({ pairs: askedAbout({ kind: 'ballot', },), },);
+            /**
+             The first finding of a round's ratio, which ends the voices it lost.
+             */
+            function ratioAt({ stage, }: { readonly stage: string; },): number {
+              return run.consistency.findings.findIndex(function isRatio(finding,): boolean {
+                return finding.startsWith(`group 1: stage-roster-incomplete (${stage} `,);
+              },);
+            }
+            /**
+             Whether findings are lost voices of throwing judges a round asked, in roster order.
+             */
+            function lostThrowingAsked(
+              { findings, stage, asked, }: {
+                readonly findings: readonly string[];
+                readonly stage: string;
+                readonly asked: readonly string[];
+              },
+            ): boolean {
+              /**
+               The lost voice each throwing judge the round asked would leave, in roster order.
+               */
+              const possible = RUN_LATE_JUDGES
+                .slice(4,)
+                .filter(function wasAsked(seat,): boolean {
+                  return asked.includes(seat,);
+                },)
+                .map(function lostAt(seat,): string {
+                  return `group 1: stage-voice-lost (${stage} ${seat})`;
+                },);
+              return (findings.length > 0)
+                && findings.every(function inOrder(finding, at,): boolean {
+                  return (possible.indexOf(finding,) >= 0)
+                    && ((at === 0) || (possible.indexOf(finding,) > possible.indexOf(findings[at - 1] ?? '',)));
+                },);
+            }
+            const firstRatio = ratioAt({ stage: 'page-consistency', },);
+            const choiceRatio = ratioAt({ stage: 'page-consistency-choice', },);
+            const writersEnd = firstRatio + 8;
+            expect({
+              firstLost: lostThrowingAsked({
+                findings: run.consistency.findings.slice(0, firstRatio,),
+                stage: 'page-consistency',
+                asked: ballotSeats,
+              },),
+              firstRatio: run.consistency.findings[firstRatio],
+              choiceLost: lostThrowingAsked({
+                findings: run.consistency.findings.slice(writersEnd, choiceRatio,),
+                stage: 'page-consistency-choice',
+                asked: choiceSeats,
+              },),
+              choiceRatio: run.consistency.findings[choiceRatio],
+              total: run.consistency.findings.length,
+            },).toEqual({
+              firstLost: true,
+              firstRatio: `group 1: stage-roster-incomplete (page-consistency 4/${ballotSeats.length})`,
+              choiceLost: true,
+              choiceRatio: `group 1: stage-roster-incomplete (page-consistency-choice 4/${choiceSeats.length})`,
+              total: choiceRatio + 1,
+            },);
+            expect(run.consistency.findings.slice(firstRatio + 1, writersEnd,),).toEqual([
               'group 1: stage-voice-lost (page-consistency-writers hf:moonshotai/Kimi-K3)',
               'group 1: stage-voice-lost (page-consistency-writers minimax-m3)',
               'group 1: stage-voice-lost (page-consistency-writers gemma-4-26b-a4b-it)',
@@ -2990,11 +3071,6 @@ await describe({
               'group 1: stage-voice-lost (page-consistency-writers deepseek-v4.1-flash)',
               'group 1: stage-voice-lost (page-consistency-writers google.gemma-4-e2b)',
               'group 1: stage-quorum-unmet (page-consistency-writers 2/8)',
-              'group 1: stage-voice-lost (page-consistency-choice glm-5.3)',
-              'group 1: stage-voice-lost (page-consistency-choice deepseek-v4.1-flash)',
-              'group 1: stage-voice-lost (page-consistency-choice google.gemma-4-e2b)',
-              'group 1: stage-voice-lost (page-consistency-choice inception/mercury-2.5)',
-              'group 1: stage-roster-incomplete (page-consistency-choice 4/8)',
             ],);
             expect(parseConsistency({
               value: structuredClone(run.consistency,),

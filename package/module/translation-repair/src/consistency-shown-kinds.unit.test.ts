@@ -79,12 +79,22 @@ await describe({
              */
             const listPath = resolvedFrom({ from: at, name: 'micromark-util-html-tag-name', },);
             /**
-             The parser's list.
+             The parser's two lists: the block names, and the raw names (`pre`, `script`, `style`, `textarea`) whose elements the
+             parser reads to their closing tag.
              */
-            const { htmlBlockNames, } = await import(pathToFileURL(listPath,).href) as { readonly htmlBlockNames: readonly string[]; };
+            const { htmlBlockNames, htmlRawNames, } = await import(pathToFileURL(listPath,).href) as {
+              readonly htmlBlockNames: readonly string[];
+              readonly htmlRawNames: readonly string[];
+            };
             expect(htmlBlockNames.length > 40,).toBe(true,);
             expect(
               htmlBlockNames.filter(function missing(name,): boolean {
+                return !BOUNDARY_TAG_NAMES.has(name,);
+              },),
+            ).toEqual([],);
+            expect(htmlRawNames.length > 0,).toBe(true,);
+            expect(
+              htmlRawNames.filter(function missing(name,): boolean {
                 return !BOUNDARY_TAG_NAMES.has(name,);
               },),
             ).toEqual([],);
@@ -140,6 +150,59 @@ await describe({
           fn: async () => {
             expect(pattern({ english: 'a![p](u)b', },),).toBe('sbbbbbbbs',);
             expect(pattern({ english: 'a`kit`b', },),).toBe('shssshs',);
+          },
+        },),
+
+        it({
+          name: 'READS the tags of the four raw elements as boundaries, since the parser reads them to their closing tag (n166, Z7)',
+          fn: async () => {
+            expect(pattern({ english: 'a<pre>b</pre>c', },),).toBe(`s${'b'.repeat(5,)}s${'b'.repeat(6,)}s`,);
+            expect(pattern({ english: 'a<textarea></textarea>b', },),).toBe(`s${'b'.repeat(10 + 11,)}s`,);
+            expect(pattern({ english: 'a<script></script>b', },),).toBe(`s${'b'.repeat(8 + 9,)}s`,);
+            expect(pattern({ english: 'a<style></style>b', },),).toBe(`s${'b'.repeat(7 + 8,)}s`,);
+          },
+        },),
+
+        it({
+          name: 'READS the one padding space of inline code as hidden beside the backticks, and the code word as shown (n166, Z6)',
+          fn: async () => {
+            expect(pattern({ english: 'a` kit `b', },),).toBe('shhssshhs',);
+            expect(pattern({ english: 'a`` kit ``b', },),).toBe('shhhssshhhs',);
+          },
+        },),
+
+        it({
+          name: 'READS a space of inline code as shown unless it is the one padding space on each side of a content that is not all spaces '
+            + '(n166, Z6)',
+          fn: async () => {
+            expect(pattern({ english: 'a` kit`b', },),).toBe('shsssshs',);
+            expect(pattern({ english: 'a`kit `b', },),).toBe('shsssshs',);
+            expect(pattern({ english: 'a`  `b', },),).toBe('shsshs',);
+            expect(pattern({ english: 'a`  kit  `b', },),).toBe('shhssssshhs',);
+          },
+        },),
+
+        it({
+          name: 'READS an image with no alt text as hidden, and an image with an alt of spaces or a word as boundaries (n169)',
+          fn: async () => {
+            expect(pattern({ english: 'a![](u)b', },),).toBe('shhhhhhs',);
+            expect(pattern({ english: 'a![](u "t")b', },),).toBe(`s${'h'.repeat(10,)}s`,);
+            expect(pattern({ english: 'a![](u)![](v)b', },),).toBe(`s${'h'.repeat(12,)}s`,);
+            expect(pattern({ english: 'a![ ](u)b', },),).toBe('sbbbbbbbs',);
+            expect(pattern({ english: 'a![p](u)b', },),).toBe('sbbbbbbbs',);
+          },
+        },),
+
+        it({
+          name: 'READS a line break inside the resource of a link or an image as hidden with the rest of it, and a line break between '
+            + 'words as shown (n169)',
+          fn: async () => {
+            expect(pattern({ english: 'a[](u\n)b', },),).toBe('shhhhhhs',);
+            expect(pattern({ english: 'a[x](u\n)b', },),).toBe('shshhhhhs',);
+            expect(pattern({ english: 'a[x](u\n "t\nt")b', },),).toBe(`shs${'h'.repeat(11,)}s`,);
+            expect(pattern({ english: 'a![x](u\n)b', },),).toBe(`s${'b'.repeat(8,)}s`,);
+            expect(pattern({ english: 'a\nb', },),).toBe('sss',);
+            expect(pattern({ english: 'a\n\nb', },),).toBe('ssss',);
           },
         },),
       ],

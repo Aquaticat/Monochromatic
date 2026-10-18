@@ -96,6 +96,23 @@ await describe({
             expect(order[0],).toBe(BENCH[start],);
           },
         },),
+
+        it({
+          name: 'STARTS at the seat a launch pins, whatever the prompt says, and keeps every seat once, so a fixture is moved by no '
+            + 'sheet text (n166, Z3)',
+          fn: async () => {
+            for (const start of [0, 3, BENCH.length - 1,]) {
+              /**
+               Bench as the pinned start orders it.
+               */
+              const order = rotatedBench({ modelIds: BENCH, messages: [{ role: 'user', content: 'meow', },], start, },);
+              expect(order,).toEqual([...BENCH.slice(start,), ...BENCH.slice(0, start,),],);
+              expect(
+                rotatedBench({ modelIds: BENCH, messages: [{ role: 'user', content: 'a different prompt entirely', },], start, },),
+              ).toEqual(order,);
+            }
+          },
+        },),
       ],
     },),
 

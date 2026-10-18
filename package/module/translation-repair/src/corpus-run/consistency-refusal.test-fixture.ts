@@ -9,7 +9,11 @@
 
 import { caught, } from '@monochromatic-dev/module-test/ts';
 
-import { ArtifactParseError, } from '../../dist/final/node/index.mjs';
+import {
+  type ArtifactConsistencyCarry,
+  ArtifactParseError,
+  assertCarriesRecount,
+} from '../../dist/final/node/index.mjs';
 
 //region Consistency refusal text
 
@@ -40,6 +44,31 @@ export function refusalTextOf({ read, }: { readonly read: () => unknown; },): st
     );
   }
   return String(refusal,);
+}
+
+/**
+ Text of the refusal the recount of the artifact's carries raises for one carry, read under the path `cat.carries`.
+
+ @param carry - carry as recorded
+
+ @returns The refusal as text, class name first
+
+ @throws {@link Error} when the recount threw something other than an artifact parse refusal, or nothing
+
+ @example
+ ```ts
+ const text = recountRefusalOf({ carry, },);
+ ```
+ */
+export function recountRefusalOf({ carry, }: { readonly carry: ArtifactConsistencyCarry; },): string {
+  return refusalTextOf({
+    read: function recounts(): unknown {
+      return assertCarriesRecount({
+        carries: [carry,],
+        path: 'cat.carries',
+      },);
+    },
+  },);
 }
 
 //endregion Consistency refusal text

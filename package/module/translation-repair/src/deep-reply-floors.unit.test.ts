@@ -48,6 +48,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from './roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from './hang-stop.test-fixture.ts';
+import { sortedByModelId, } from './model-order.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from './stage-settings.test-fixture.ts';
 
 //region Deep reply floor tests
@@ -295,21 +296,22 @@ await describe({
             },);
 
             // The slate lists the voices in the order the prompt-rotated bench answered (it moved when the house tense rule
-            // changed the prompt), so the entries are read back in the roster's order.
-            expect([DEEP_VOICE, ORDINARY_VOICE,]
-              .map(function kindOf(modelId,): string {
-                return `${modelId}: ${
-                  produced.validity
-                    .find(function isVoice(entry,): boolean {
-                      return entry.modelId === modelId;
-                    },)
-                    ?.validation
-                    .kind
-                }`;
-              },),).toEqual([
-              `${DEEP_VOICE}: invalid`,
-              `${ORDINARY_VOICE}: valid`,
-            ],);
+            // changed the prompt), so both the slate and the expectation are read in model-id order. The whole list is compared,
+            // so an extra entry or a duplicate of a voice fails (n166, Z3).
+            expect(sortedByModelId({ items: produced.validity, },)
+              .map(function kindOf(entry,): string {
+                return `${entry.modelId}: ${entry.validation.kind}`;
+              },),).toEqual(
+                sortedByModelId({
+                  items: [
+                    { modelId: DEEP_VOICE, kind: 'invalid', },
+                    { modelId: ORDINARY_VOICE, kind: 'valid', },
+                  ],
+                },)
+                  .map(function expectedOf(entry,): string {
+                    return `${entry.modelId}: ${entry.kind}`;
+                  },),
+              );
             expect(produced.findings
               .filter(function isRefusal(finding,): boolean {
                 return finding.startsWith('translate-invalid',);

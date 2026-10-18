@@ -55,6 +55,20 @@ const SECOND_VIEW: ConsistencyOccurrenceView = {
 };
 
 /**
+ The third place of the repeated sentence as the consistency sheet shows it.
+ */
+const THIRD_VIEW: ConsistencyOccurrenceView = {
+  sliceIndex: 4,
+  paragraph: '夜里，窗台上的阳光让小猫睡着了。',
+  markStart: 3,
+  markEnd: 15,
+  english: {
+    kind: 'present',
+    text: 'At night the sunny window put the kitten to sleep.',
+  },
+};
+
+/**
  The repeated sentence.
  */
 const SENTENCE = {
@@ -150,6 +164,49 @@ export function carrySheets(): readonly RenderedSheet[] {
               quote: 'the sunlight on the sill lulled the kitten to sleep',
               core: 'the sunlight on the sill lulled the kitten to sleep',
               start: 16,
+            },
+          ],
+        },),
+      },),
+    },
+    {
+      // A run-off among a proper subset of the places: the sheet shows the finalists only, so the labels it names
+      // are the first and third, never the second.
+      name: 'page consistency run-off, repeated sentence, first and third of three places',
+      text: joined({
+        messages: buildConsistencyRunOffMessages({
+          subject: {
+            repeat: SENTENCE,
+            occurrences: [
+              FIRST_VIEW,
+              SECOND_VIEW,
+              THIRD_VIEW,
+            ],
+            identityContext: IDENTITY,
+            referenceContext: REFERENCES,
+          },
+          finalists: [
+            'OCCURRENCE 1',
+            'OCCURRENCE 3',
+          ],
+          renderings: [
+            {
+              kind: 'located',
+              quote: 'The sunny window put the kitten to sleep',
+              core: 'The sunny window put the kitten to sleep',
+              start: 0,
+            },
+            {
+              kind: 'located',
+              quote: 'the sunlight on the sill lulled the kitten to sleep',
+              core: 'the sunlight on the sill lulled the kitten to sleep',
+              start: 16,
+            },
+            {
+              kind: 'located',
+              quote: 'the sunny window put the kitten to sleep',
+              core: 'the sunny window put the kitten to sleep',
+              start: 9,
             },
           ],
         },),

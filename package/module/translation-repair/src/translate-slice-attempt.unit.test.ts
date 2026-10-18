@@ -10,6 +10,7 @@
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   describe,
   expect,
@@ -332,17 +333,20 @@ await describe({
         expect(refusal,).toBe(stop.signal.reason,);
         // Every translator is asked at once, before the first refusal settles,
         // and the scripted client refuses each, so each seat's line carries the
-        // refusal, in the order the stage asks them.
-        expect(lines,).toEqual([
-          ...[
-            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-            SEAT_HYPER_VISION,
-            SEAT_SYNTHETIC_VISION_WITHHELD,
-          ].map(function seatLine(seat,): string {
-            return `warn [produceTranslateSlate] translate ${seat}: ${
-              statusFailureLogText({ status: 401, },)
-            }, as the caller stopped the round`;
-          },),
+        // refusal. The stage asks the seats in the order its bench rotates by the
+        // prompt, which moves whenever a sheet's wording does (n166), so the seat
+        // lines are compared in text order and the stage's last line is compared
+        // as it stands.
+        expect(lines.slice(0, -1,).toSorted(),).toEqual([
+          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+          SEAT_HYPER_VISION,
+          SEAT_SYNTHETIC_VISION_WITHHELD,
+        ].map(function seatLine(seat,): string {
+          return `warn [produceTranslateSlate] translate ${seat}: ${
+            statusFailureLogText({ status: 401, },)
+          }, as the caller stopped the round`;
+        },).toSorted(),);
+        expect(lines.slice(-1,),).toEqual([
           `warn slice ${String(slice.target.sliceIndex,)}: abandoned by the caller's abort (refused by AbortError)`,
         ],);
       },
@@ -447,18 +451,32 @@ await describe({
         if (verdict.kind !== 'invalid')
           throw new Error(`the fixture's candidate must fail the publication rule, and the floor said ${verdict.kind}`,);
         expect(refused,).toBe(reason,);
-        // Seats in the order the stage hands them to the repair, the first of
-        // which is re-asked first and refused.
-        expect(warnings,).toEqual([
-          ...[
-            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-            SEAT_HYPER_VISION,
-            SEAT_SYNTHETIC_VISION_WITHHELD,
-          ].map(function askedLine(seat,): string {
-            return `[produceTranslateSlate] [repairOneCandidate] ${seat}: candidate fails the publication rule, so its `
-              + `author is asked about it: ${verdict.findings.join(' ',)}`;
-          },),
-          `[produceTranslateSlate] [repairOneCandidate] translate-repair ${SEAT_HYPER_OPENROUTER_VISION_EDITOR}: `
+        /**
+         The seats of the slate.
+         */
+        const seats = [
+          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+          SEAT_HYPER_VISION,
+          SEAT_SYNTHETIC_VISION_WITHHELD,
+        ];
+        /**
+         The line each seat is asked under.
+         */
+        const askedLines = seats.map(function askedLine(seat,): string {
+          return `[produceTranslateSlate] [repairOneCandidate] ${seat}: candidate fails the publication rule, so its `
+            + `author is asked about it: ${verdict.findings.join(' ',)}`;
+        },);
+        /**
+         The seat the stage handed to the repair first, which is re-asked first and refused: the seat the first asked line names.
+         */
+        const firstSeat = nonNullishOrThrow(seats.find(function isFirst(seat,): boolean {
+          return nonNullishOrThrow(warnings[0],).includes(` ${seat}: `,);
+        },),);
+        // The stage seats the slate in the order its bench rotates by the prompt, which moves whenever a sheet's wording does
+        // (n166), so the asked lines are compared in text order, and the refusal is the one of the seat asked first.
+        expect(warnings.slice(0, seats.length,).toSorted(),).toEqual(askedLines.toSorted(),);
+        expect(warnings.slice(seats.length,),).toEqual([
+          `[produceTranslateSlate] [repairOneCandidate] translate-repair ${firstSeat}: `
           + 'refused by SyntheticHttpError with HTTP 503 (the provider said: "the cat is napping in the sun"), as the '
           + 'caller stopped the repair',
           `slice ${String(slice.target.sliceIndex,)}: abandoned by the caller's abort`,

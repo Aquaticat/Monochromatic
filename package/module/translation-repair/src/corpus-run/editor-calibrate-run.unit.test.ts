@@ -34,9 +34,17 @@ import {
 } from '../../dist/final/node/index.mjs';
 import { HANG_STOP_MS, } from '../hang-stop.test-fixture.ts';
 import { rejectionOf, } from '../rejecting-call.test-fixture.ts';
-import { SEATS_THAT_CAN_EDIT, } from '../roster-seats.test-fixture.ts';
+import {
+  SEAT_BEDROCK_ONLY_TEXT,
+  SEAT_HYPER_ONLY,
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_OPENROUTER_ONLY,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+} from '../roster-seats.test-fixture.ts';
 import { lineOf, } from './command-line.test-fixture.ts';
 import { divertingConsoleLog, } from './console-log-capture.test-fixture.ts';
+import { PINNED_EDITOR_BENCH_START, } from './editor-bench-start.test-fixture.ts';
 import { benchSliceOf, } from './editor-calibrate-rounds.test-fixture.ts';
 import { shippingLaneClient, } from './editor-lane-script.test-fixture.ts';
 import { scriptedClient, } from './scripted-width-client.test-fixture.ts';
@@ -148,6 +156,7 @@ async function calibrateWith(
     writers,
     newClient,
     reaches,
+    editorBenchStart,
   }: {
     readonly typed: readonly string[];
     readonly overlap: number;
@@ -155,6 +164,7 @@ async function calibrateWith(
     readonly writers: WriterGrace;
     readonly newClient: () => SyntheticClient;
     readonly reaches: Reaches;
+    readonly editorBenchStart?: number;
   },
 ): Promise<void> {
   await runEditorCalibrate({
@@ -190,6 +200,7 @@ async function calibrateWith(
       return newClient();
     },
     contestLedger: { kind: 'unkept', },
+    ...((editorBenchStart === undefined) ? {} : { editorBenchStart, }),
   },);
 }
 
@@ -319,6 +330,7 @@ await describe({
               writers: ROUND_WINDOW_WRITERS,
               newClient: shippingLaneClient,
               reaches: noReaches(),
+              editorBenchStart: PINNED_EDITOR_BENCH_START,
             },);
 
             /**
@@ -335,17 +347,19 @@ await describe({
               + 'vote, and a panel whose every judge abstained or failed casts none. Draw more slices.',
               '\nEDITORS SHIPPED on 1 of 1 slice, 1 of them with no editor round judged at all',
             ],);
-            // The lane seats six editors from a bench the prompt rotates (it moved when the house tense rule changed the
-            // prompt), so which six of the seats that can hold an editor chair are credited moves with the sheet. Six distinct
-            // seats of the roster, each credited once, is what holds.
-            expect(new Set(printedLines.slice(3,),).size,).toBe(6,);
-            expect(printedLines.slice(3,).filter(function isUncredited(line,): boolean {
-              return !SEATS_THAT_CAN_EDIT
-                .map(function credited(modelId,): string {
-                  return `  ${modelId}: wrote shipping text on 1 of 1 slice`;
-                },)
-                .includes(line,);
-            },),).toEqual([],);
+            // THE SIX SEATS CREDITED ARE PINNED AGAIN (n166, Z3). The lane seats six editors from a bench the prompt rotates, so
+            // which six of the seven seats that can hold an editor chair are credited moved whenever a sheet's wording did (n161:
+            // the house tense rule). The rotation's start is injected, so no sheet text moves the seats.
+            expect(printedLines.slice(3,),).toEqual([
+              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+              SEAT_HYPER_ONLY,
+              SEAT_HYPER_OPENROUTER_UNMEASURED,
+              SEAT_BEDROCK_ONLY_TEXT,
+              SEAT_OPENROUTER_ONLY,
+            ].map(function credited(modelId,): string {
+              return `  ${modelId}: wrote shipping text on 1 of 1 slice`;
+            },),);
             expect(printed.lines[2],).toBe(
               '  slice 1 of 1 (mittens chunk 0): 1 editor round, 0 refiner rounds (nothing eligible to rewrite), '
                 + '6 editors shipping',

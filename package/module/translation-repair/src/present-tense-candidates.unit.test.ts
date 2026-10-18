@@ -277,6 +277,64 @@ await describe({
         },),
 
         it({
+          name: 'returns no candidate for a sentence quoted in single curly marks, which is speech and not narration (n166, Z10)',
+          fn: async () => {
+            expect(candidatesOf({
+              text: 'The vet said, ‘She naps all day.’ Then she left.',
+              subjectName: 'Mittens',
+            },),).toEqual([],);
+            expect(candidatesOf({
+              text: 'The vet said, ‘She naps all day, and the cat’s bowl is full.’ Then she left.',
+              subjectName: 'Mittens',
+            },),).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'drops the quoted sentence and keeps the narration beside a quotation in single curly marks and an apostrophe after a '
+            + 'plural (n166, Z10)',
+          fn: async () => {
+            expect(candidatesOf({
+              text: 'She naps by the window. ‘She naps.’ Mittens’ bowl is empty.',
+              subjectName: 'Mittens',
+            },),).toEqual([
+              {
+                sentence: 'She naps by the window.',
+                matched: 'She naps',
+                rule: 's-ending-verb',
+              },
+            ],);
+          },
+        },),
+
+        it({
+          name: 'keeps reading a sentence whose apostrophe inside a word is the character a closing single mark is, since no mark opened '
+            + 'a quotation it could close (n166, Z10 controls)',
+          fn: async () => {
+            expect(candidatesOf({
+              text: 'The cat’s bowl is full. She naps by the window.',
+              subjectName: 'Mittens',
+            },),).toEqual([
+              {
+                sentence: 'She naps by the window.',
+                matched: 'She naps',
+                rule: 's-ending-verb',
+              },
+            ],);
+            expect(candidatesOf({
+              text: 'The vet called it ‘the cat’s bowl and she naps by the window.',
+              subjectName: 'Mittens',
+            },),).toEqual([
+              {
+                sentence: 'The vet called it ‘the cat’s bowl and she naps by the window.',
+                matched: 'she naps',
+                rule: 's-ending-verb',
+              },
+            ],);
+          },
+        },),
+
+        it({
           name: 'returns no candidate when a comma separates the subject from the verb',
           fn: async () => {
             expect(candidatesOf({

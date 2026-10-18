@@ -214,7 +214,7 @@ await describe({
             ],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.carry: expected an object.',
               'ArtifactParseError: artifact parse failed at cat.carry.winner: '
-              + 'expected no key here beyond label, candidates, ballots, usable, quorum, decision.',
+              + 'expected no key here beyond label, candidates, ballots, usable, quorum, runOff, decision.',
             ],);
           },
         },),

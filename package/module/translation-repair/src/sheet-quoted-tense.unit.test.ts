@@ -72,6 +72,51 @@ const FORM_LIST_MARKER = 'the past tense for the life of a person who has died';
 const FORM_LIST_EXCEPTION = 'the past tense for the life of a person who has died (never for quoted words)';
 
 /**
+ The words with which the house tense rule puts the narrative of a life, what the person said among it, in the past. A sheet that
+ repeats the rule in its own words (the carry writer's one tense line) is not this sentence.
+ */
+const LIFE_IN_THE_PAST_MARKER = 'the narrative of a life (what the person did, said, made, felt) is told in the past tense';
+
+/**
+ The exception the house tense rule states in the sentence that puts the life in the past (n166, Z11).
+ */
+const EXCEPTION_BESIDE_THE_PAST =
+  'except for the person\'s words quoted as they wrote or said them, which keep the speaker\'s own tense because they are the '
+  + 'speaker\'s own voice';
+
+/**
+ The words with which the judge tail says no rule holds a life in the present.
+ */
+const NO_RULE_MARKER = 'there is no rule holding';
+
+/**
+ The exception the judge tail states in the sentence that says no rule holds a life in the present (n166, Z11).
+ */
+const EXCEPTION_BESIDE_NO_RULE =
+  'and the person\'s words quoted as they wrote or said them are no part of that narration, since they keep the speaker\'s own tense';
+
+/**
+ The sentences of a text that hold a marker, a sentence running to the next full stop and a space.
+
+ @param text - text of a sheet
+ @param marker - words the sentence holds
+
+ @returns The sentences, none when the marker stands nowhere
+
+ @example
+ ```ts
+ const held = sentencesHolding({ text: 'The cat naps. The dog barks.', marker: 'dog', },); // ['The dog barks.']
+ ```
+ */
+function sentencesHolding({ text, marker, }: { readonly text: string; readonly marker: string; },): readonly string[] {
+  return text
+    .split('. ',)
+    .filter(function holds(sentence,): boolean {
+      return sentence.includes(marker,);
+    },);
+}
+
+/**
  Sheets that carry a given marker, by stage name.
  */
 function sheetsCarrying({ marker, }: { readonly marker: string; },): readonly { readonly name: string; readonly text: string; }[] {
@@ -112,6 +157,59 @@ await describe({
                 return name;
               },);
             expect(lacking,).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'STATES the exception in the very sentence that puts the narrative of a life, the person\'s sayings included, in the past '
+            + '(n166, Z11)',
+          fn: async () => {
+            /**
+             The sheets that carry the rule, which must each hold that sentence once.
+             */
+            const carrying = sheetsCarrying({ marker: LIFE_IN_THE_PAST_MARKER, },);
+            expect(carrying.length > 0,).toBe(true,);
+            /**
+             Names of the sheets where the sentence that puts the life in the past lacks the exception.
+             */
+            const lacking = carrying
+              .filter(function lacks({ text, },): boolean {
+                return sentencesHolding({ text, marker: LIFE_IN_THE_PAST_MARKER, },)
+                  .some(function withoutException(sentence,): boolean {
+                    return !sentence.includes(EXCEPTION_BESIDE_THE_PAST,);
+                  },);
+              },)
+              .map(function nameOf({ name, },): string {
+                return name;
+              },);
+            expect(lacking,).toEqual([],);
+            expect(HOUSE_POLICY_BLOCK,).toContain(EXCEPTION_BESIDE_THE_PAST,);
+          },
+        },),
+
+        it({
+          name: 'STATES the exception in the very sentence of the judge tail that says no rule holds a life in the present (n166, Z11)',
+          fn: async () => {
+            /**
+             The sheets that carry the judge tail.
+             */
+            const carrying = sheetsCarrying({ marker: NO_RULE_MARKER, },);
+            expect(carrying.length > 0,).toBe(true,);
+            /**
+             Names of the sheets where that sentence lacks the exception.
+             */
+            const lacking = carrying
+              .filter(function lacks({ text, },): boolean {
+                return sentencesHolding({ text, marker: NO_RULE_MARKER, },)
+                  .some(function withoutException(sentence,): boolean {
+                    return !sentence.includes(EXCEPTION_BESIDE_NO_RULE,);
+                  },);
+              },)
+              .map(function nameOf({ name, },): string {
+                return name;
+              },);
+            expect(lacking,).toEqual([],);
+            expect(JUDGE_POLICY_BLOCK,).toContain(EXCEPTION_BESIDE_NO_RULE,);
           },
         },),
 

@@ -25,7 +25,10 @@ import {
   assertCarriesRecount,
   outcomesAfter,
 } from '../../dist/final/node/index.mjs';
-import { refusalTextOf, } from './consistency-refusal.test-fixture.ts';
+import {
+  recountRefusalOf,
+  refusalTextOf,
+} from './consistency-refusal.test-fixture.ts';
 
 /**
  A carry as the artifact records it: three candidates, two choices of the third.
@@ -82,29 +85,6 @@ const ALONE: ArtifactConsistencyCarry = {
   quorum: 0,
   decision: { kind: 'none', reason: 'no-alternative', },
 };
-
-/**
- The text of the refusal the recount raises for a carry.
-
- @param carry - the carry recorded
-
- @returns The refusal as text, or a note that nothing was refused
-
- @example
- ```ts
- const text = recountRefusal({ carry: CARRY, },);
- ```
- */
-function recountRefusal({ carry, }: { readonly carry: ArtifactConsistencyCarry; },): string {
-  return refusalTextOf({
-    read: function recounts(): unknown {
-      return assertCarriesRecount({
-        carries: [carry,],
-        path: 'cat.carries',
-      },);
-    },
-  },);
-}
 
 await describe({
   name: '',
@@ -166,7 +146,7 @@ await describe({
               { ...CARRY, candidates: [{ ...CURRENT, writers: ['hyper-cat',], }, SPLICE, WRITER,], },
             ];
             expect(carries.map(function refusedFor(carry,): string {
-              return recountRefusal({ carry, },);
+              return recountRefusalOf({ carry, },);
             },),).toEqual([
               'ArtifactParseError: artifact parse failed at cat.carries[0].candidates[1].label: '
               + 'expected the label CANDIDATE 2, since the candidates are labelled in order.',
@@ -186,7 +166,7 @@ await describe({
               { ...CARRY, candidates: [CURRENT, SPLICE, { ...WRITER, kind: 'splice', },], },
             ];
             expect(carries.map(function refusedFor(carry,): string {
-              return recountRefusal({ carry, },);
+              return recountRefusalOf({ carry, },);
             },),).toEqual([
               'ArtifactParseError: artifact parse failed at cat.carries[0].candidates: '
               + 'expected the current English once and the splice at most once.',
@@ -208,7 +188,7 @@ await describe({
               { ...ALONE, candidates: CARRY.candidates, },
             ];
             expect(carries.map(function refusedFor(carry,): string {
-              return recountRefusal({ carry, },);
+              return recountRefusalOf({ carry, },);
             },),).toEqual([
               'ArtifactParseError: artifact parse failed at cat.carries[0]: '
               + 'expected no ballots, no usable count and no quorum, since the bench was not asked among the candidates.',
@@ -235,7 +215,7 @@ await describe({
               { ...CARRY, ballots: [FIRST_BALLOT, { ...SECOND_BALLOT, choice: 'CANDIDATE 9', },], usable: 1, },
             ];
             expect(carries.map(function refusedFor(carry,): string {
-              return recountRefusal({ carry, },);
+              return recountRefusalOf({ carry, },);
             },),).toEqual([
               'ArtifactParseError: artifact parse failed at cat.carries[0]: '
               + 'expected two candidates at least and a quorum of one at least, since the bench was asked among the candidates.',

@@ -17,8 +17,9 @@ import {
 
 import {
   buildConsistencyMessages,
-  CONSISTENCY_RESPONSE_FORMAT,
+  consistencyLabels,
   type ConsistencyOccurrenceView,
+  consistencyResponseFormat,
   type ConsistencySubject,
 } from '../dist/final/node/index.mjs';
 import { fenceOpening, LONG_FENCE_RUN, } from './sheet-fence.test-fixture.ts';
@@ -149,8 +150,11 @@ await describe({
               shape: userText.indexOf('{"reason"',) < userText.indexOf('"choice"',),
               shapeShown: user?.content.endsWith(REPLY_SHAPE,),
               systemFirst: system?.role,
-              schema: Object.keys(CONSISTENCY_RESPONSE_FORMAT.json_schema.schema.properties as Record<string, unknown>,),
-              required: CONSISTENCY_RESPONSE_FORMAT.json_schema.schema.required,
+              schema: Object.keys(
+                consistencyResponseFormat({ labels: ['OCCURRENCE 1', 'OCCURRENCE 2',], },).json_schema.schema
+                  .properties as Record<string, unknown>,
+              ),
+              required: consistencyResponseFormat({ labels: ['OCCURRENCE 1', 'OCCURRENCE 2',], },).json_schema.schema.required,
             },).toEqual({
               rule: true,
               keysInRules: true,
@@ -366,6 +370,11 @@ await describe({
                 '- "Mittens is asleep in the sunny window." (matched "Mittens is", rule copula-or-auxiliary)',
                 fence,
                 `${fence} END ${fence}`,
+                // The labels the reply may use, named in plain words before the reply shape (the lead's ruling of 2026-10-15).
+                `The labels you may write are exactly: ${
+                  consistencyLabels({ count: TENSE_SUBJECT.occurrences.length, },).join(', ',)
+                }. Write each one as shown, with its word and its number, in the choice, the kept places and the label of `
+                + 'each quote; a number alone is not a label.',
                 REPLY_SHAPE,
               ],
             },);

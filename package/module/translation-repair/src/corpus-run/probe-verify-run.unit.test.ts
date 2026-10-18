@@ -335,17 +335,24 @@ await describe({
                 'utf8',
               ),
             ).toBe(formatVerifySheet({ items, },),);
-            expect(
-              claimantsSorted({
-                text: await readFile(
-                  join(
-                    scratch.path,
-                    'probe-verify-manifest.json',
-                  ),
-                  'utf8',
-                ),
-              },),
-            ).toBe(claimantsSorted({ text: formatVerifyManifest({ items, },), },),);
+            /**
+             The manifest as the run wrote it, and as the formatter writes it for the same items.
+             */
+            const manifestText = await readFile(
+              join(
+                scratch.path,
+                'probe-verify-manifest.json',
+              ),
+              'utf8',
+            );
+            const formatted = formatVerifyManifest({ items, },);
+            expect(claimantsSorted({ text: manifestText, },),).toBe(claimantsSorted({ text: formatted, },),);
+            // THE FORMAT ON DISK, beside the content compare that reads both manifests with the claimants in one order (n166, Z3):
+            // the file is the formatter's own text, JSON with an indent of two spaces and no newline after it, so a writer that drops
+            // the indent or adds a newline fails. The formatter's output is its own canonical form, which makes the same read of the
+            // file mean the same thing.
+            expect(JSON.stringify(JSON.parse(formatted,), undefined, 2,),).toBe(formatted,);
+            expect(JSON.stringify(JSON.parse(manifestText,), undefined, 2,),).toBe(manifestText,);
           },
         },),
 

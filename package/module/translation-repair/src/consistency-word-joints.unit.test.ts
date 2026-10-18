@@ -23,6 +23,8 @@ import {
   closingJointsOf,
   cutsWord,
   emphasisDelimitersOf,
+  foldedLinksOf,
+  foldWithOffsets,
   normalizePunctuation,
 } from '../dist/final/node/index.mjs';
 
@@ -675,6 +677,98 @@ await describe({
               cutIn({ text: 'The cat\'\u{1D4FE} bowl.', word: 'cat', },),
               cutIn({ text: 'The cat\'\u{00B5} bowl.', word: 'cat', },),
             ],).toEqual([true, true, false,],);
+          },
+        },),
+        it({
+          name: 'STEPS OVER A RUN OF LINKS THAT SHOW NOTHING on either side of a joint, so a stand beside an empty link is cut as it is '
+            + 'in the text a reader sees: by an apostrophe, a hyphen or a full stop between digits, with emphasis marks beside the run, '
+            + 'and by no joint of the closing marks, which are not asked here (n169)',
+          fn: async () => {
+            /**
+             Whether the stand of a word in an English with links is cut out of a longer word, the closing joints left out so that only
+             the reading beside the stand answers.
+
+             @param english - the English, which folds unit for unit
+             @param word - the word
+             @param which - `first` for the first stand of the word, `last` for the last
+             @returns Whether an edge of the stand is a joint
+             */
+            function cutWith(
+              {
+                english,
+                word,
+                which,
+              }: {
+                readonly english: string;
+                readonly word: string;
+                readonly which: 'first' | 'last';
+              },
+            ): boolean {
+              /**
+               The English in the fold.
+               */
+              const folded = foldWithOffsets({ text: english, },);
+              /**
+               Where the stand starts.
+               */
+              const at = (which === 'first') ? folded.folded.indexOf(word,) : folded.folded.lastIndexOf(word,);
+              return cutsWord({
+                folded: folded.folded,
+                originals: folded.originals,
+                joints: new Set(),
+                emphasis: emphasisDelimitersOf({ english, },).offsets,
+                links: foldedLinksOf({
+                  english,
+                  folded,
+                },),
+                at,
+                end: at + word.length,
+              },);
+            }
+            /**
+             Each English, the word, which stand, and whether that stand is cut.
+             */
+            const rows: readonly (readonly [string, string, 'first' | 'last', boolean])[] = [
+              ['kit[](u)\'kit', 'kit', 'first', true,],
+              ['kit[](u)[](v)\'kit', 'kit', 'first', true,],
+              ['kit[](u)![](v)[]()\'kit', 'kit', 'first', true,],
+              ['kit[](u)-kit', 'kit', 'first', true,],
+              ['kit[](u)-kit', 'kit', 'last', true,],
+              ['kit-[](u)kit', 'kit', 'first', true,],
+              ['kit-[](u)kit', 'kit', 'last', true,],
+              ['kit\'[](u)kit', 'kit', 'last', true,],
+              ['kit[](u)\'[](v)kit', 'kit', 'last', true,],
+              ['1[](u).5', '1', 'first', true,],
+              ['1.[](u)5', '5', 'last', true,],
+              ['*kit*[](u)\'kit', 'kit', 'first', true,],
+              ['*kit[](u)*\'kit', 'kit', 'first', true,],
+              ['[](u)kit', 'kit', 'first', false,],
+              ['kit[](u)', 'kit', 'first', false,],
+              ['a [](u)kit', 'kit', 'last', false,],
+              ['kit [](u)\'kit', 'kit', 'last', false,],
+              ['kit[ ](u)\'kit', 'kit', 'first', false,],
+              ['kit[x](u)\'kit', 'kit', 'first', false,],
+              ['kit[](u)kit', 'kit', 'first', true,],
+              ['kit[](u)kit', 'kit', 'last', true,],
+              ['kit[](u)tens', 'kit', 'first', true,],
+              ['kit[](u)tens', 'tens', 'last', true,],
+              ['kit[](u)![](v)[]()kit', 'kit', 'first', true,],
+              ['1[](u)2', '1', 'first', true,],
+              ['kit[](u) kit', 'kit', 'first', false,],
+              ['kit [](u)kit', 'kit', 'last', false,],
+              ['kit*[](u)kit*', 'kit', 'first', false,],
+            ];
+            expect(rows.map(function cutOf([english, word, which,],): boolean {
+              return cutWith({
+                english,
+                word,
+                which,
+              },);
+            },),).toEqual(rows.map(function expectedOf(row,): boolean {
+              return row.at(-1,) === true;
+            },),);
+            expect(cutWith({ english: `kit${'[](u)'.repeat(5_000,)}'kit`, word: 'kit', which: 'first', },),).toBe(true,);
+            expect(cutWith({ english: `kit${'[](u)'.repeat(5_000,)} kit`, word: 'kit', which: 'first', },),).toBe(false,);
           },
         },),
       ],

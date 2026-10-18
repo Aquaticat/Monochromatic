@@ -185,5 +185,69 @@ await describe({
         ],).toEqual([false, false, false, false, false, false,],);
       },
     },),
+    it({
+      name: 'READS AN IMAGE WITH NO ALT TEXT AS NOTHING, so the word before it and the apostrophe after it are one word as in the text '
+        + 'with no image there, and an image with an alt of only spaces or a word as a boundary as before (n169)',
+      fn: async () => {
+        /**
+         Whether the first `kit` of a text is cut at its end, with the page's definitions given.
+
+         @param text - the English
+         @param definitions - the definitions of the page
+         @returns Whether the stand cuts a shown word
+         */
+        function cutAtFirst(
+          { text, definitions = '', }: { readonly text: string; readonly definitions?: string; },
+        ): boolean {
+          return cutsShownWord({
+            text,
+            start: 0,
+            end: 3,
+            needle: 'kit',
+            definitions,
+          },);
+        }
+        expect([
+          cutAtFirst({ text: 'kit\'kit', },),
+          cutAtFirst({ text: 'kit![](u)\'kit', },),
+          cutAtFirst({ text: 'kit![][r]\'kit\n\n[r]: u', },),
+          cutAtFirst({ text: 'kit![](u)![](v)\'kit', },),
+          cutAtFirst({ text: 'kit![ ](u)\'kit', },),
+          cutAtFirst({ text: 'kit![alt](u)\'kit', },),
+          cutAtFirst({ text: 'kit![alt][r]\'kit\n\n[r]: u', },),
+          cutAtFirst({ text: 'kit \'kit', },),
+          cutAtFirst({ text: 'kit![](u) kit', },),
+        ],).toEqual([true, true, true, true, false, false, false, false, false,],);
+      },
+    },),
+    it({
+      name: 'READS A LINK WHOSE DESTINATION HOLDS A LINE BREAK AS THE GRAMMAR DOES, the break inside the link hidden with the rest of '
+        + 'its destination, and a line break between words as a break (n169)',
+      fn: async () => {
+        /**
+         Whether a span of a text cuts a shown word, the span found by the quote.
+         */
+        function cutAt(
+          { text, quote, }: { readonly text: string; readonly quote: string; },
+        ): boolean {
+          return spanCuts({
+            text,
+            quote,
+          },);
+        }
+        expect([
+          cutAt({ text: 'kit\'kit', quote: 'kit', },),
+          cutAt({ text: 'kit[](u\n)\'kit', quote: 'kit', },),
+          cutAt({ text: 'kit[](u\nv)\'kit', quote: 'kit', },),
+          cutAt({ text: 'kit![](u\n)\'kit', quote: 'kit', },),
+          cutAt({ text: '[kit](u\n)tens', quote: 'kit', },),
+          cutAt({ text: '[kit](u\n "t\nt")tens', quote: 'kit', },),
+          cutAt({ text: 'kit [](u\n) kit', quote: 'kit', },),
+          cutAt({ text: 'kit\n\'kit', quote: 'kit', },),
+          cutAt({ text: 'kit\n\ntens', quote: 'kit', },),
+          cutAt({ text: '[kit](u)\n\ntens', quote: 'kit', },),
+        ],).toEqual([true, true, false, true, true, true, false, false, false, false,],);
+      },
+    },),
   ],
 },);

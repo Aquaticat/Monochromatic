@@ -399,9 +399,13 @@ await describe({
         // prose the page parse shows, which moved this literal.
         // Version 23 (2026-10-15, n159) reads a shortcut reference and an
         // address label as no prose and floors a refused candidate that carries a
-        // guillemet, which moved this literal to the value this expectation names.
+        // guillemet, which moved this literal.
+        // Version 24 (2026-10-15, n166) states in the house tense rule, in the
+        // very sentence that puts the life in the past, that the person's quoted
+        // words keep the speaker's own tense, which moved this literal to the
+        // value this expectation names.
         expect(consolidateSliceKey(SLICE,),).toBe(
-          '85caa765b36f80e3f877de8f92efbd3b2aaef6cbddf64946ce72a1377f98d61c',
+          'e1d187d68b30ab632f119ee93619de3cfecb77f9be17c46b017d2d8d3cfcbc0d',
         );
       },
     },),

@@ -90,6 +90,42 @@ await describe({
             expect(maskQuotedSpeech({ text: 'She said, “I nap', },),).toBe(`She said, ${' '.repeat(6,)}`,);
           },
         },),
+
+        it({
+          name: 'BLANKS speech between single curly marks, marks included, and keeps the text outside, at the same length (n166, Z10)',
+          fn: async () => {
+            /**
+             Text with one quotation in single curly marks.
+             */
+            const text = 'The vet said, ‘She naps.’ Then she left.';
+            expect(maskQuotedSpeech({ text, },),).toBe(`The vet said, ${' '.repeat('‘She naps.’'.length,)} Then she left.`,);
+            expect(maskQuotedSpeech({ text, },).length,).toBe(text.length,);
+          },
+        },),
+
+        it({
+          name: 'BLANKS the whole quotation in single curly marks that holds an apostrophe inside a word, and a quotation nested in it '
+            + '(n166, Z10)',
+          fn: async () => {
+            expect(maskQuotedSpeech({ text: 'The vet said, ‘the cat’s bowl is full.’ Then she left.', },),).toBe(
+              `The vet said, ${' '.repeat('‘the cat’s bowl is full.’'.length,)} Then she left.`,
+            );
+            expect(maskQuotedSpeech({ text: 'The vet said, ‘she said ‘hi’ to me.’ Then she left.', },),).toBe(
+              `The vet said, ${' '.repeat('‘she said ‘hi’ to me.’'.length,)} Then she left.`,
+            );
+          },
+        },),
+
+        it({
+          name: 'KEEPS the text of an apostrophe inside a word and of an opening single mark that no mark closes, since the closing mark '
+            + 'and the apostrophe are one character (n166, Z10)',
+          fn: async () => {
+            expect(maskQuotedSpeech({ text: 'The vet called it ‘the cat’s bowl and left.', },),).toBe('The vet called it ‘the cat’s bowl and left.',);
+            expect(maskQuotedSpeech({ text: 'The cat’s bowl is full, and the cats’ bowls too.', },),).toBe(
+              'The cat’s bowl is full, and the cats’ bowls too.',
+            );
+          },
+        },),
       ],
     },),
 

@@ -1205,6 +1205,40 @@ await describe({
     },),
 
     it({
+      name: 'ASKS THE WINDOW FROM THE SEAT A LAUNCH PINS, whatever the prompt says, so a fixture seats the same voices '
+        + 'whatever the sheet text is (n166, Z3)',
+      fn: async () => {
+        /** Call log shared with the scripted client. */
+        const calls: Record<string, number> = {};
+        /** Full six-model roster, everyone answering at once. */
+        const roster: readonly RosterModelId[] = [
+          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+          SEAT_HYPER_VISION,
+          SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+          SEAT_SYNTHETIC_VISION_WITHHELD,
+          SEAT_HYPER_OPENROUTER_UNMEASURED,
+          SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+        ];
+        /** Gather over the healthy roster, the rotation pinned at the third seat. */
+        const gather = await gatherStageVoices({
+          client: flakyClient({ failuresByModel: {}, calls, },),
+          modelIds: roster,
+          messages: [{ role: 'user', content: 'a prompt whose own rotation is somewhere else', },],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: HANG_STOP_MS,
+          responseFormat: MEOW_FORMAT,
+          validate: isMeowReply,
+          stage: 'critic',
+          l,
+          graceMs: HANG_STOP_MS,
+          benchStart: 2,
+        },);
+        expect(gather.voices,).toHaveLength(4,);
+        expect(Object.keys(calls,).toSorted(),).toEqual(roster.slice(2,).toSorted(),);
+      },
+    },),
+
+    it({
       name: 'records a finding and proceeds when the rounds cannot reach quorum',
       fn: async () => {
         /** Call log shared with the scripted client. */

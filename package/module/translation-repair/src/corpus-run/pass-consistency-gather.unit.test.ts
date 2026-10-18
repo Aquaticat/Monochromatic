@@ -19,9 +19,9 @@ import {
 
 import {
   choiceRecordOf,
-  CONSISTENCY_CHOICE_RESPONSE_FORMAT,
   type ConsistencyChoiceRecord,
   type ConsistencyCacheValue,
+  consistencyChoiceResponseFormat,
   consistencyKey,
   gatherThroughCache,
   recordFits,
@@ -173,7 +173,7 @@ async function gather(
     messages: MESSAGES,
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     exchangeTimeoutMs: HANG_STOP_MS,
-    responseFormat: CONSISTENCY_CHOICE_RESPONSE_FORMAT,
+    responseFormat: consistencyChoiceResponseFormat({ labels: FINALISTS, },),
     validate: usableChoiceFor({ labels: FINALISTS, },),
     stage: 'page-test-gather',
     graceMs: HANG_STOP_MS,

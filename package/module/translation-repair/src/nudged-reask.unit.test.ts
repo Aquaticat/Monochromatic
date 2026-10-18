@@ -84,9 +84,20 @@ await describe({
         const bothFail = await reaskElsewhereNudged({
           request: REQUEST,
           first: { reply: FIRST_REPLY, outcome: FIRST_UNUSABLE, },
-          ask: async () => ({ text: 'not json either', }),
+          ask: async () => ({ text: '{"spot":3}', servedBy: 'hyper', }),
         },);
-        expect(bothFail,).toEqual({ kind: 'schema-mismatch', rawText: 'not json at all', detail: 'fixture', },);
+        // THE FIRST ANSWER IS RETURNED, carrying how the re-ask failed too, so the lost voice can name both failures.
+        expect(bothFail,).toEqual({
+          kind: 'schema-mismatch',
+          rawText: 'not json at all',
+          detail: 'fixture',
+          reaskFailure: {
+            servedBy: 'hyper',
+            kind: 'schema-mismatch',
+            rawText: '{"spot":3}',
+            cause: 'content parsed as JSON but failed the caller schema guard',
+          },
+        },);
       },
     },),
 

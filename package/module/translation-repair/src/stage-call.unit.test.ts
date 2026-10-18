@@ -245,6 +245,39 @@ await describe({
     },),
 
     it({
+      name: 'NAMES BOTH FAILURES WHEN THE RE-ASK ON ANOTHER PROVIDER FAILED TOO, the first answer\'s and the re-ask\'s, '
+        + 'so a voice lost to a label written in a form no guard accepted is not blamed on the first reply alone '
+        + '(the run of TianqiChen66625 logged only the first)',
+      fn: async () => {
+        const warnings: string[] = [];
+        const logger = warningRecordingLogger({ base: l, warnings, },);
+        await callWith({
+          client: scriptedClient({
+            outcome: {
+              kind: 'schema-mismatch',
+              rawText: '{"purr":"Occurrence 3"}',
+              detail: 'content parsed as JSON but failed the caller schema guard',
+              reaskFailure: {
+                servedBy: 'hyper',
+                kind: 'refusal-shaped',
+                rawText: 'I cannot help with that',
+                cause: 'refusal-opening',
+              },
+            },
+          },),
+          signal: new AbortController().signal,
+          logger,
+        },);
+
+        expect(warnings,).toHaveLength(1,);
+        expect(warnings[0],).toContain('content parsed as JSON but failed the caller schema guard',);
+        expect(warnings[0],).toContain('Occurrence 3',);
+        expect(warnings[0],).toContain('the re-ask on hyper failed too: refusal-shaped (refusal-opening)',);
+        expect(warnings[0],).toContain('I cannot help with that',);
+      },
+    },),
+
+    it({
       name: 'TRUNCATES a long reply and flattens its line breaks, so one lost '
         + 'voice cannot bury the rest of a run log',
       fn: async () => {

@@ -530,8 +530,8 @@ await describe({
           },
         },),
         it({
-          name: 'REFUSES A LOCATED RENDERING THAT IS NOT THE WORDS A STRICT MAJORITY QUOTED, though it is a string some ballot '
-            + 'gave, and a reason the ballots contradict',
+          name: 'REFUSES A LOCATED RENDERING THAT IS NOT WORDS A STRICT MAJORITY OF THE QUOTES CONTAIN, though it is a '
+            + 'string some ballot gave, and a reason the ballots contradict',
           fn: async () => {
             expect([
               groupOf({ over: { occurrences: [placeOf({ position: 0, },), placeOf({
@@ -546,7 +546,7 @@ await describe({
               return coherenceRefusal({ group, },);
             },),).toEqual([
               `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[1].rendering: `
-              + 'expected the words a strict majority of the usable ballots quoted, as the place\'s English holds them.',
+              + 'expected words that a strict majority of the quotes naming the place contain, as the place\'s English holds them.',
               `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[1].rendering.reason: `
               + 'expected a reason the usable ballots do not contradict.',
             ],);
@@ -603,7 +603,7 @@ await describe({
             },),).toEqual([
               outcomeRefusal({ place: 0, expected: 'chosen, as the ballots and the renderings give for this place', }),
               `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[1].rendering: `
-              + 'expected the words a strict majority of the usable ballots quoted, as the place\'s English holds them.',
+              + 'expected words that a strict majority of the quotes naming the place contain, as the place\'s English holds them.',
               outcomeRefusal({ place: 1, expected: 'kept-context, as the ballots and the renderings give for this place', }),
             ],);
           },
