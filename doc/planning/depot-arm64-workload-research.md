@@ -1,11 +1,22 @@
 # Depot Linux ARM64 repository workload research
 
-## Purpose and queued admission
+## Purpose and bounded admission
 
-This queued investigation follows the Nextest identity adapter campaign
+This investigation follows the Nextest identity adapter campaign
 and the current platform source-ledger reconciliation.
-No ARM64 workload profile has been dispatched for this investigation.
 The identity adapter is terminal and its exact transport variant has been removed.
+
+The single admitted profile ran as `p4xj5dsh3s`
+from harness `cf2450e05fdbf904382d461c80eb02e216cc9a6e`.
+A fresh exact-run status returned `finished` for its sole attempt `kwctfqx8qv`,
+with sandbox `s23ll6b8pg6kbpgw1t0d`.
+The finite terminal watcher returned at `2026-10-18T13:32:47.031Z`
+without invoking its cancellation watchdog.
+The original artifact is `01a14f36-f474-743c-a8ae-9b448f73f983`,
+named `arm64-repository-functional`,
+with API size `31598` bytes.
+Its original ZIP and consumer results are being validated;
+terminal success alone does not establish the intended functional workload boundary.
 
 The parent admitted one bounded Linux ARM64 profile from frozen application source
 `e02be6c8b8fe9efb41a7f8f1a0b311c17796588a`.
@@ -104,13 +115,11 @@ no linefeed rewrite was applied.
 
 ## Next action
 
-Preserve the selected AMD64 logs and source graph,
-design an isolated ARM workflow,
-validate the workflow and admission locally,
-then dispatch the single admitted finite profile.
-Actual ARM compiler,
-runtime,
-binary architecture,
-source hashes,
-JUnit outcomes,
-and terminal cleanup remain unmeasured until that profile executes.
+Validate the original artifact ZIP,
+retained logs,
+actual compiler and runtime identities,
+ELF machine values,
+frozen source hashes,
+and individual consumer results.
+Publish those receipts with the source-bound fixture and explicit unexercised surfaces.
+No additional cloud allocation is queued for this profile.
